@@ -1,0 +1,27 @@
+<style>
+  body {
+    background-color: #333;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px;
+  }
+  canvas {
+    background-color: #000;
+    border: 2px solid #666;
+  }
+</style>
+
+<!-- Pilot View -->
+<canvas id="canvas" width="600" height="600"></canvas>
+
+<!-- Top-Down Satellite View -->
+<canvas id="topView" width="600" height="600"></canvas>
+
+<script src="math.js"></script>
+<script src="models.js"></script>
+<script src="projection.js"></script>
+<script src="draw.js"></script>
+<script src="input.js"></script>
+<script src="game.js"></script>
+<script src="setup.js"></script>
