@@ -1,57 +1,49 @@
 // --- PROJECTION 1: PILOT VIEW ---
 
-function projectWorld(p) {
-  let dx = p.x - plane.x;
-  let dy = p.y - plane.y;
-  let dz = p.z - plane.z;
+function pilotView({ x, y, z }) {
+  // Vector from plane to point in world space
+  const dx = x - plane.x;
+  const dy = y - plane.y;
+  const dz = z - plane.z;
 
-  // Inverse Camera Rotations
-  const totalYaw = plane.yaw + pilot.azimuth;
-  const r1 = rotate2D(dx, dy, -totalYaw);
-  dx = r1.a;
-  dy = r1.b;
+  const { right, forward, up } = getPlaneAxes();
 
-  const totalPitch = plane.pitch + pilot.elevation;
-  const r2 = rotate2D(dy, dz, -totalPitch);
-  dy = r2.a;
-  dz = r2.b;
+  // Transform into plane's local space (camera space, before pilot look)
+  // cameraX = dot(dx, right)
+  // cameraY = dot(dx, forward)
+  // cameraZ = dot(dx, up)
+  let cx = dx * right.x + dy * right.y + dz * right.z;
+  let cy = dx * forward.x + dy * forward.y + dz * forward.z;
+  let cz = dx * up.x + dy * up.y + dz * up.z;
 
-  const r3 = rotate2D(dx, dz, -plane.roll);
-  dx = r3.a;
-  dz = r3.b;
+  // Apply pilot look as extra yaw (around up) and pitch (around right)
+  if (pilot.azimuth !== 0 || pilot.elevation !== 0) {
+    // Yaw around local up (rotate in cx-cy plane)
+    if (pilot.azimuth !== 0) {
+      const r1 = rotate2D(cx, cy, -pilot.azimuth);
+      cx = r1.a;
+      cy = r1.b;
+    }
+    // Pitch around local right (rotate in cy-cz plane)
+    if (pilot.elevation !== 0) {
+      const r2 = rotate2D(cy, cz, -pilot.elevation);
+      cy = r2.a;
+      cz = r2.b;
+    }
+  }
 
-  if (dy <= 0.1) return null;
-
-  return {
-    x: ((dx * FOCAL_LENGTH) / dy + 0.5) * WIDTH,
-    y: (0.5 - (dz * FOCAL_LENGTH) / dy) * HEIGHT,
-  };
-}
-
-function projectCockpit({ x, y, z }) {
-  let dx = x;
-  let dy = y;
-  let dz = z;
-
-  let r1 = rotate2D(dx, dy, -pilot.azimuth);
-  dx = r1.a;
-  dy = r1.b;
-
-  let r2 = rotate2D(dy, dz, -pilot.elevation);
-  dy = r2.a;
-  dz = r2.b;
-
-  if (dy <= 0.1) return null;
+  // Clip behind camera
+  if (cy <= 0.1) return null;
 
   return {
-    x: ((dx * FOCAL_LENGTH) / dy + 0.5) * WIDTH,
-    y: (0.5 - (dz * FOCAL_LENGTH) / dy) * HEIGHT,
+    x: ((cx * FOCAL_LENGTH) / cy + 0.5) * WIDTH,
+    y: (0.5 - (cz * FOCAL_LENGTH) / cy) * HEIGHT,
   };
 }
 
 // --- PROJECTION 2: TOP VIEW ---
 
-function projectTop({ x, y, z }) {
+function topView({ x, y, z }) {
   // Use dynamic camera position
   const dx = x - topCamera.x;
   const dy = y - topCamera.y;
@@ -70,31 +62,11 @@ function projectTop({ x, y, z }) {
   };
 }
 
-function getPlaneWorldPoint(localP) {
-  let px = localP.x;
-  let py = localP.y;
-  let pz = localP.z;
-
-  // Local -> World Rotations
-  let r1 = rotate2D(px, pz, plane.roll);
-  px = r1.a;
-  pz = r1.b;
-
-  let r2 = rotate2D(py, pz, plane.pitch);
-  py = r2.a;
-  pz = r2.b;
-
-  let r3 = rotate2D(px, py, plane.yaw);
-  px = r3.a;
-  py = r3.b;
-
-  return {
-    x: px + plane.x,
-    y: py + plane.y,
-    z: pz + plane.z,
-  };
-}
-
-function projectPlane(p) {
-  return projectTop(getPlaneWorldPoint(p));
+function getPlaneAxes() {
+  // orientation columns: [right, forward, up]
+  const R = plane.orientation;
+  const right = { x: R[0][0], y: R[1][0], z: R[2][0] };
+  const forward = { x: R[0][1], y: R[1][1], z: R[2][1] };
+  const up = { x: R[0][2], y: R[1][2], z: R[2][2] };
+  return { right, forward, up };
 }

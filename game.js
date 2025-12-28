@@ -1,35 +1,80 @@
-function updatePhysics() {
-  const rotSpeed = 0.03;
-  const lookSpeed = 0.03;
+function updatePhysics(dtSeconds) {
+  // Rates in radians per second
+  const lookSpeed = 1.5; // how fast the pilot can look around
+  const rotSpeedRoll = 1.0; // roll rate (rad/s)
+  const rotSpeedPitch = 0.8; // pitch rate (rad/s)
+  const rotSpeedYaw = 0.5; // yaw rate (rad/s)
 
-  // 1. Roll Control (Ailerons)
-  if (keys.KeyA) plane.roll += rotSpeed;
-  if (keys.KeyD) plane.roll -= rotSpeed;
+  // Pilot Look (apply azimuth/elevation changes over time)
+  if (keys.ArrowLeft) pilot.azimuth += lookSpeed * dtSeconds;
+  if (keys.ArrowRight) pilot.azimuth -= lookSpeed * dtSeconds;
+  if (keys.ArrowUp) pilot.elevation += lookSpeed * dtSeconds;
+  if (keys.ArrowDown) pilot.elevation -= lookSpeed * dtSeconds;
 
-  // 2. Pitch Control (Elevator)
-  let pitchInput = 0;
-  if (keys.KeyS) pitchInput = 1;
-  if (keys.KeyW) pitchInput = -1;
+  // Extract current local axes from orientation (columns)
+  const R = plane.orientation;
+  const rightAxis = { x: R[0][0], y: R[1][0], z: R[2][0] };
+  const fwdAxis = { x: R[0][1], y: R[1][1], z: R[2][1] };
+  const upAxis = { x: R[0][2], y: R[1][2], z: R[2][2] };
 
-  if (pitchInput !== 0) {
-    plane.pitch += pitchInput * rotSpeed;
+  let Rlocal = null;
+
+  // Roll (A/D) around local forward axis
+  if (keys.KeyA) {
+    const Rr = mat3RotAxis(fwdAxis, -rotSpeedRoll * dtSeconds);
+    Rlocal = Rlocal ? mat3Mul(Rr, Rlocal) : Rr;
+  }
+  if (keys.KeyD) {
+    const Rr = mat3RotAxis(fwdAxis, rotSpeedRoll * dtSeconds);
+    Rlocal = Rlocal ? mat3Mul(Rr, Rlocal) : Rr;
   }
 
-  // 3. Pilot Look
-  if (keys.ArrowLeft) pilot.azimuth += lookSpeed;
-  if (keys.ArrowRight) pilot.azimuth -= lookSpeed;
-  if (keys.ArrowUp) pilot.elevation += lookSpeed;
-  if (keys.ArrowDown) pilot.elevation -= lookSpeed;
+  // Pitch (W/S): S = pull nose up, W = nose down
+  let pitchInput = 0;
+  if (keys.KeyS) pitchInput += 1; // pull back: nose up
+  if (keys.KeyW) pitchInput -= 1; // push forward: nose down
+  if (pitchInput !== 0) {
+    const Rp = mat3RotAxis(rightAxis, pitchInput * rotSpeedPitch * dtSeconds);
+    Rlocal = Rlocal ? mat3Mul(Rp, Rlocal) : Rp;
+  }
 
-  // 4. Calculate Velocity
-  const vZ = Math.sin(plane.pitch);
-  const hMag = Math.cos(plane.pitch);
-  const vX = -Math.sin(plane.yaw) * hMag;
-  const vY = Math.cos(plane.yaw) * hMag;
+  // Yaw (Q/E) around local up axis
+  if (keys.KeyQ) {
+    const Ry = mat3RotAxis(upAxis, rotSpeedYaw * dtSeconds); // yaw left
+    Rlocal = Rlocal ? mat3Mul(Ry, Rlocal) : Ry;
+  }
+  if (keys.KeyE) {
+    const Ry = mat3RotAxis(upAxis, -rotSpeedYaw * dtSeconds); // yaw right
+    Rlocal = Rlocal ? mat3Mul(Ry, Rlocal) : Ry;
+  }
 
-  plane.x += vX * plane.speed;
-  plane.y += vY * plane.speed;
-  plane.z += vZ * plane.speed;
+  // Apply local rotation on the left
+  if (Rlocal) {
+    plane.orientation = mat3Mul(Rlocal, plane.orientation);
+  }
+
+  // Forward vector for movement = 2nd column (index 1)
+  const forward = {
+    x: plane.orientation[0][1],
+    y: plane.orientation[1][1],
+    z: plane.orientation[2][1],
+  };
+
+  const speed = plane.speed; // m/s
+
+  // Move plane forward: x += v * dt
+  plane.x += forward.x * speed * dtSeconds;
+  plane.y += forward.y * speed * dtSeconds;
+  plane.z += forward.z * speed * dtSeconds;
+
+  airplanes[0] = move(
+    orient(scale(clone(airplaneModel), plane.scale), plane.orientation),
+    {
+      dx: plane.x,
+      dy: plane.y,
+      dz: plane.z,
+    }
+  );
 }
 
 function getCenterOfMass(obj) {
@@ -50,14 +95,14 @@ function getCenterOfMass(obj) {
 }
 
 function updateTopCamera(objectsToKeepInView) {
-  // 1. Camera is always directly above the airplane in X/Y
+  // 1. Camera is always directly above the airplane in X/Y (meters)
   topCamera.x = plane.x;
   topCamera.y = plane.y;
 
   // 2. If no objects, just keep a simple camera height above the plane
   if (objectsToKeepInView.length == 0) {
-    const offsetAbovePlane = 30;
-    topCamera.z = Math.max(50, plane.z + offsetAbovePlane);
+    const offsetAbovePlane = 30; // m
+    topCamera.z = Math.max(50, plane.z + offsetAbovePlane); // at least 50 m AGL-ish
     return;
   }
 
@@ -77,9 +122,9 @@ function updateTopCamera(objectsToKeepInView) {
   avgObjZ /= objectsToKeepInView.length;
 
   // 4. Compute how far above the objects the camera must be so all objects fit
-  const margin = 1.3; // tweak padding as you like
+  const margin = 1.3;
 
-  // From projectTop: |(dx * FOCAL_LENGTH) / dist| <= 0.5
+  // From topView: |(dx * FOCAL_LENGTH) / dist| <= 0.5
   // => dist >= maxHorizDist * FOCAL_LENGTH / 0.5
   const baseDist = (maxHorizDist * FOCAL_LENGTH) / 0.5;
   const distToObjects = baseDist * margin;
@@ -91,7 +136,7 @@ function updateTopCamera(objectsToKeepInView) {
   );
 
   // 5. Ensure the camera is never below the airplane
-  const minOffsetAbovePlane = 5; // small buffer so we're always above the plane
+  const minOffsetAbovePlane = 50; // small buffer so we're always above the plane
   const heightFromPlane = plane.z + minOffsetAbovePlane;
 
   // Final camera height:
@@ -99,25 +144,49 @@ function updateTopCamera(objectsToKeepInView) {
 }
 
 function render() {
-  updatePhysics();
-  updateTopCamera(cubes); // Update camera before rendering top view
+  const nowMs = performance.now();
+  const dtMs = nowMs - lastTimeMs;
+  lastTimeMs = nowMs;
+
+  const dtSeconds = dtMs / 1000;
+
+  updatePhysics(dtSeconds);
+  updateTopCamera(cubes);
 
   // --- RENDER PILOT VIEW ---
-  clear(ctx);
-  draw(ctx, ground, projectWorld);
-  draw(ctx, cubes, projectWorld);
-  draw(ctx, airplanes, projectCockpit);
+  clear(ctxPilot);
+  draw(ctxPilot, ground, pilotView);
+  draw(ctxPilot, cubes, pilotView);
+  draw(ctxPilot, airplanes, pilotView);
 
   // --- RENDER TOP VIEW ---
   clear(ctxTop);
-  draw(ctxTop, ground, projectTop);
-  draw(ctxTop, cubes, projectTop);
-  draw(ctxTop, airplanes, projectPlane);
+  draw(ctxTop, ground, topView);
+  draw(ctxTop, cubes, topView);
+  draw(ctxTop, airplanes, topView);
 
-  ctxTop.fillRect(0, 0, 200, 30);
+  const speedKnots = plane.speed * 1.94384;
+  const altAGL = plane.z; // ground is z=0, so AGL = z
+
+  ctxTop.fillRect(0, 0, 360, 80);
   ctxTop.fillStyle = "white";
   ctxTop.font = "16px monospace";
-  ctxTop.fillText(`Altitude: ${plane.z.toFixed(2)}`, 10, 20);
 
-  setTimeout(render, FPS);
+  // Absolute altitude (same as before)
+  ctxTop.fillText(`Alt: ${plane.z.toFixed(1)} m MSL`, 10, 20);
+
+  // New line: altitude above ground
+  ctxTop.fillText(`AGL: ${altAGL.toFixed(1)} m`, 10, 40);
+
+  // Speed line, now with F-16-like speed
+  ctxTop.fillText(
+    `Spd: ${plane.speed.toFixed(1)} m/s (${speedKnots.toFixed(0)} kt)`,
+    10,
+    60
+  );
+
+  const mach = plane.speed / 343;
+  ctxTop.fillText(`Mach: ${mach.toFixed(2)}`, 200, 40);
+
+  requestAnimationFrame(render);
 }

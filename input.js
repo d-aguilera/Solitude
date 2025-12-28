@@ -7,6 +7,8 @@ const keys = {
   KeyA: false,
   KeyS: false,
   KeyD: false,
+  KeyQ: false,
+  KeyE: false,
 };
 
 window.addEventListener("keydown", (e) => {
