@@ -6,7 +6,7 @@ function pilotView({ x, y, z }) {
   const dy = y - plane.y;
   const dz = z - plane.z;
 
-  const { right, forward, up } = getPlaneAxes();
+  const { right, forward, up } = plane;
 
   // Transform into plane's local space (camera space, before pilot look)
   // cameraX = dot(dx, right)
@@ -60,13 +60,4 @@ function topView({ x, y, z }) {
     x: (vp.x + 0.5) * WIDTH,
     y: (0.5 - vp.y) * HEIGHT,
   };
-}
-
-function getPlaneAxes() {
-  // orientation columns: [right, forward, up]
-  const R = plane.orientation;
-  const right = { x: R[0][0], y: R[1][0], z: R[2][0] };
-  const forward = { x: R[0][1], y: R[1][1], z: R[2][1] };
-  const up = { x: R[0][2], y: R[1][2], z: R[2][2] };
-  return { right, forward, up };
 }

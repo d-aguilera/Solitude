@@ -41,8 +41,10 @@ function addGround() {
   const tileWorldScale = 100; // tile size scale factor -> 0.9 * 100 ≈ 90 m across
   for (let dx = -100; dx <= 100; dx++) {
     for (let dy = -100; dy <= 100; dy++) {
-      const offset = { dx, dy, dz: 0 }; // each offset is 1 tile in model space
-      ground.push(scale(move(clone(groundTileModel), offset), tileWorldScale));
+      const offset = { dx, dy, dz: 0 };
+      const tile = scale(move(clone(groundTileModel), offset), tileWorldScale);
+      tile.center = getCenterOfMass(tile);
+      ground.push(tile);
     }
   }
 }
@@ -58,12 +60,23 @@ function addCubes() {
   ];
   for (let i = 0; i < locations.length; i++) {
     const offset = { dx: locations[i].x, dy: locations[i].y, dz: 0 };
-    cubes.push(scale(move(clone(cubeModel), offset), cubeWorldScale));
+    const cube = scale(move(clone(cubeModel), offset), cubeWorldScale);
+    cube.center = getCenterOfMass(cube);
+    cubes.push(cube);
   }
 }
 
 function addAirplane() {
-  airplanes.push(scale(clone(airplaneModel), plane.scale));
+  airplanes.push({
+    model: airplaneModel,
+    x: plane.x,
+    y: plane.y,
+    z: plane.z,
+    orientation: plane.orientation,
+    scale: plane.scale,
+    color: airplaneModel.color,
+    lineWidth: airplaneModel.lineWidth,
+  });
 }
 
 function getFocalLength() {
@@ -75,15 +88,9 @@ function getFocalLength() {
 const WIDTH = 600;
 const HEIGHT = 600;
 
-// Target simulation rate: 60 updates per second
-const TARGET_FPS = 60;
-const FRAME_TIME_MS = 1000 / TARGET_FPS;
-
 const FIELD_OF_VIEW = 90;
 const FOCAL_LENGTH = getFocalLength();
-
-// Track last frame time for dt calculation
-let lastTimeMs = performance.now();
+const MAX_TILE_DIST = 2000; // e.g. show tiles within 2000 m radius of plane
 
 const canvas = document.getElementById("pilotViewCanvas");
 canvas.width = WIDTH;
@@ -131,4 +138,13 @@ addGround();
 addCubes();
 addAirplane();
 
-render();
+// --- PROFILING ---
+let lastTimeMs = null;
+let fps = 0;
+let framesThisSecond = 0;
+let lastFpsUpdateMs = 0;
+let profileEveryNFrames = 60;
+let frameCountForProfile = 0;
+
+// --- MAIN LOOP ---
+requestAnimationFrame(render);

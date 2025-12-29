@@ -13,19 +13,20 @@ function updatePhysics(dtSeconds) {
 
   // Extract current local axes from orientation (columns)
   const R = plane.orientation;
-  const rightAxis = { x: R[0][0], y: R[1][0], z: R[2][0] };
-  const fwdAxis = { x: R[0][1], y: R[1][1], z: R[2][1] };
-  const upAxis = { x: R[0][2], y: R[1][2], z: R[2][2] };
+  const [R0, R1, R2] = R;
+  plane.right = { x: R0[0], y: R1[0], z: R2[0] };
+  plane.forward = { x: R0[1], y: R1[1], z: R2[1] };
+  plane.up = { x: R0[2], y: R1[2], z: R2[2] };
 
   let Rlocal = null;
 
   // Roll (A/D) around local forward axis
   if (keys.KeyA) {
-    const Rr = mat3RotAxis(fwdAxis, -rotSpeedRoll * dtSeconds);
+    const Rr = mat3RotAxis(plane.forward, -rotSpeedRoll * dtSeconds);
     Rlocal = Rlocal ? mat3Mul(Rr, Rlocal) : Rr;
   }
   if (keys.KeyD) {
-    const Rr = mat3RotAxis(fwdAxis, rotSpeedRoll * dtSeconds);
+    const Rr = mat3RotAxis(plane.forward, rotSpeedRoll * dtSeconds);
     Rlocal = Rlocal ? mat3Mul(Rr, Rlocal) : Rr;
   }
 
@@ -34,17 +35,17 @@ function updatePhysics(dtSeconds) {
   if (keys.KeyS) pitchInput += 1; // pull back: nose up
   if (keys.KeyW) pitchInput -= 1; // push forward: nose down
   if (pitchInput !== 0) {
-    const Rp = mat3RotAxis(rightAxis, pitchInput * rotSpeedPitch * dtSeconds);
+    const Rp = mat3RotAxis(plane.right, pitchInput * rotSpeedPitch * dtSeconds);
     Rlocal = Rlocal ? mat3Mul(Rp, Rlocal) : Rp;
   }
 
   // Yaw (Q/E) around local up axis
   if (keys.KeyQ) {
-    const Ry = mat3RotAxis(upAxis, rotSpeedYaw * dtSeconds); // yaw left
+    const Ry = mat3RotAxis(plane.up, rotSpeedYaw * dtSeconds); // yaw left
     Rlocal = Rlocal ? mat3Mul(Ry, Rlocal) : Ry;
   }
   if (keys.KeyE) {
-    const Ry = mat3RotAxis(upAxis, -rotSpeedYaw * dtSeconds); // yaw right
+    const Ry = mat3RotAxis(plane.up, -rotSpeedYaw * dtSeconds); // yaw right
     Rlocal = Rlocal ? mat3Mul(Ry, Rlocal) : Ry;
   }
 
@@ -67,14 +68,11 @@ function updatePhysics(dtSeconds) {
   plane.y += forward.y * speed * dtSeconds;
   plane.z += forward.z * speed * dtSeconds;
 
-  airplanes[0] = move(
-    orient(scale(clone(airplaneModel), plane.scale), plane.orientation),
-    {
-      dx: plane.x,
-      dy: plane.y,
-      dz: plane.z,
-    }
-  );
+  airplanes[0].x = plane.x;
+  airplanes[0].y = plane.y;
+  airplanes[0].z = plane.z;
+  airplanes[0].orientation = plane.orientation;
+  airplanes[0].scale = plane.scale;
 }
 
 function getCenterOfMass(obj) {
@@ -111,8 +109,9 @@ function updateTopCamera(objectsToKeepInView) {
   //    - average object altitude (for a ground reference)
   let maxHorizDist = 0;
   let avgObjZ = 0;
+
   for (let obj of objectsToKeepInView) {
-    const c = getCenterOfMass(obj);
+    const c = obj.center || getCenterOfMass(obj);
     const dx = c.x - plane.x;
     const dy = c.y - plane.y;
     const dist = Math.hypot(dx, dy);
@@ -143,27 +142,66 @@ function updateTopCamera(objectsToKeepInView) {
   topCamera.z = Math.max(heightFromObjects, heightFromPlane);
 }
 
-function render() {
-  const nowMs = performance.now();
+function getVisibleGround() {
+  const px = plane.x;
+  const py = plane.y;
+  const max2 = MAX_TILE_DIST * MAX_TILE_DIST;
+  const out = [];
+  for (let i = 0; i < ground.length; i++) {
+    const tile = ground[i];
+    const { x: cx, y: cy } = tile.center;
+    const dx = cx - px;
+    const dy = cy - py;
+    if (dx * dx + dy * dy <= max2) out.push(tile);
+  }
+  return out;
+}
+
+function render(nowMs) {
+  if (lastTimeMs == null) {
+    lastTimeMs = nowMs;
+    lastFpsUpdateMs = nowMs;
+  }
+
   const dtMs = nowMs - lastTimeMs;
   lastTimeMs = nowMs;
 
   const dtSeconds = dtMs / 1000;
 
+  // FPS calculation (update once per second)
+  framesThisSecond++;
+  if (nowMs - lastFpsUpdateMs >= 1000) {
+    fps = framesThisSecond / ((nowMs - lastFpsUpdateMs) / 1000);
+    framesThisSecond = 0;
+    lastFpsUpdateMs = nowMs;
+  }
+
+  frameCountForProfile++;
+  const doProfile = frameCountForProfile >= profileEveryNFrames;
+
+  let t0, t1, t2, t3, t4;
+
+  if (doProfile) t0 = performance.now();
   updatePhysics(dtSeconds);
+  if (doProfile) t1 = performance.now();
   updateTopCamera(cubes);
+  if (doProfile) t2 = performance.now();
+
+  const visibleGround = getVisibleGround();
 
   // --- RENDER PILOT VIEW ---
   clear(ctxPilot);
-  draw(ctxPilot, ground, pilotView);
+  draw(ctxPilot, visibleGround, pilotView);
   draw(ctxPilot, cubes, pilotView);
   draw(ctxPilot, airplanes, pilotView);
+  if (doProfile) t3 = performance.now();
 
   // --- RENDER TOP VIEW ---
   clear(ctxTop);
-  draw(ctxTop, ground, topView);
+  draw(ctxTop, visibleGround, topView);
   draw(ctxTop, cubes, topView);
   draw(ctxTop, airplanes, topView);
+  if (doProfile) t4 = performance.now();
 
   const speedKnots = plane.speed * 1.94384;
   const altAGL = plane.z; // ground is z=0, so AGL = z
@@ -187,6 +225,27 @@ function render() {
 
   const mach = plane.speed / 343;
   ctxTop.fillText(`Mach: ${mach.toFixed(2)}`, 200, 40);
+
+  // New line: FPS
+  ctxTop.fillText(`FPS: ${fps.toFixed(1)}`, 200, 20);
+
+  if (doProfile) {
+    const physicsTime = t1 - t0;
+    const cameraTime = t2 - t1;
+    const pilotViewTime = t3 - t2;
+    const topViewTime = t4 - t3;
+    const totalFrameTime = t4 - t0;
+
+    console.log(
+      `[PROFILE] total=${totalFrameTime.toFixed(2)}ms | ` +
+        `physics=${physicsTime.toFixed(2)} | ` +
+        `camera=${cameraTime.toFixed(2)} | ` +
+        `pilotViewDraw=${pilotViewTime.toFixed(2)} | ` +
+        `topViewDraw=${topViewTime.toFixed(2)}`
+    );
+
+    frameCountForProfile = 0;
+  }
 
   requestAnimationFrame(render);
 }

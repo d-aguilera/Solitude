@@ -99,3 +99,26 @@ function mat3RotAxis(axis, angle) {
     [t * nz * nx - s * ny, t * nz * ny + s * nx, t * nz * nz + c],
   ];
 }
+
+function transformPointsToWorld(points, R, s, tx, ty, tz) {
+  const out = new Array(points.length);
+
+  for (let i = 0; i < points.length; i++) {
+    const { x, y, z } = points[i];
+    const lx = x * s;
+    const ly = y * s;
+    const lz = z * s;
+    const R0 = R[0];
+    const R1 = R[1];
+    const R2 = R[2];
+
+    out[i] = {
+      // R * local + translation
+      x: R0[0] * lx + R0[1] * ly + R0[2] * lz + tx,
+      y: R1[0] * lx + R1[1] * ly + R1[2] * lz + ty,
+      z: R2[0] * lx + R2[1] * ly + R2[2] * lz + tz,
+    };
+  }
+
+  return out;
+}
