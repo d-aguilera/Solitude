@@ -6,7 +6,7 @@ const groundTileModel = {
     { x: -0.45, y: 0.45, z: 0 },
   ],
   lines: [[0, 1, 2, 3]],
-  color: "gray",
+  color: { r: 128, g: 128, b: 128 }, // gray
   lineWidth: 0.1,
 };
 
@@ -35,7 +35,16 @@ const cubeModel = {
     [2, 6],
     [3, 7],
   ],
-  color: "red",
+  faces: [
+    // Each face is an array of point indices, wound CCW when viewed from outside
+    [0, 1, 2, 3], // bottom
+    [4, 7, 6, 5], // top
+    [0, 4, 5, 1],
+    [1, 5, 6, 2],
+    [2, 6, 7, 3],
+    [3, 7, 4, 0],
+  ],
+  color: { r: 200, g: 0, b: 0 }, // red
   lineWidth: 1,
 };
 
@@ -77,6 +86,6 @@ const airplaneModel = {
     [8, 5],
     [5, 1],
   ],
-  color: "cyan",
+  color: { r: 0, g: 255, b: 255 }, // cyan
   lineWidth: 1,
 };

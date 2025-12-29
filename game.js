@@ -92,6 +92,40 @@ function getCenterOfMass(obj) {
   };
 }
 
+function getObjectDepthForSort(obj, projection) {
+  // Use center if available, else approximate by first point or position
+  let cx, cy, cz;
+
+  if (obj.center) {
+    cx = obj.center.x;
+    cy = obj.center.y;
+    cz = obj.center.z;
+  } else if (obj.x !== undefined) {
+    cx = obj.x;
+    cy = obj.y;
+    cz = obj.z;
+  } else if (obj.points && obj.points.length > 0) {
+    // static model like ground tile
+    const p0 = obj.points[0];
+    cx = p0.x;
+    cy = p0.y;
+    cz = p0.z;
+  } else {
+    return 0;
+  }
+
+  if (projection === topView) {
+    const dx = cx - topCamera.x;
+    const dy = cy - topCamera.y;
+    return Math.hypot(dx, dy);
+  } else {
+    const dx = cx - plane.x;
+    const dy = cy - plane.y;
+    const dz = cz - plane.z;
+    return Math.hypot(dx, dy, dz);
+  }
+}
+
 function updateTopCamera(objectsToKeepInView) {
   // 1. Camera is always directly above the airplane in X/Y (meters)
   topCamera.x = plane.x;
@@ -189,18 +223,38 @@ function render(nowMs) {
 
   const visibleGround = getVisibleGround();
 
+  // Sort dynamic objects back-to-front relative to each camera
+  const cubesSortedPilot = [...cubes].sort(
+    (a, b) =>
+      getObjectDepthForSort(b, pilotView) - getObjectDepthForSort(a, pilotView)
+  );
+  const airplanesSortedPilot = [...airplanes].sort(
+    (a, b) =>
+      getObjectDepthForSort(b, pilotView) - getObjectDepthForSort(a, pilotView)
+  );
+
+  const cubesSortedTop = [...cubes].sort(
+    (a, b) =>
+      getObjectDepthForSort(b, topView) - getObjectDepthForSort(a, topView)
+  );
+  const airplanesSortedTop = [...airplanes].sort(
+    (a, b) =>
+      getObjectDepthForSort(b, topView) - getObjectDepthForSort(a, topView)
+  );
+
   // --- RENDER PILOT VIEW ---
   clear(ctxPilot);
-  draw(ctxPilot, visibleGround, pilotView);
-  draw(ctxPilot, cubes, pilotView);
-  draw(ctxPilot, airplanes, pilotView);
+
+  draw(ctxPilot, visibleGround, pilotView); // ground is "infinite" and flat
+  draw(ctxPilot, cubesSortedPilot, pilotView); // far cubes first
+  draw(ctxPilot, airplanesSortedPilot, pilotView); // then airplanes
   if (doProfile) t3 = performance.now();
 
   // --- RENDER TOP VIEW ---
   clear(ctxTop);
   draw(ctxTop, visibleGround, topView);
-  draw(ctxTop, cubes, topView);
-  draw(ctxTop, airplanes, topView);
+  draw(ctxTop, cubesSortedTop, topView);
+  draw(ctxTop, airplanesSortedTop, topView);
   if (doProfile) t4 = performance.now();
 
   const speedKnots = plane.speed * 1.94384;

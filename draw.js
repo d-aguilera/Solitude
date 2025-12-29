@@ -13,10 +13,15 @@ function draw(context, group, projection) {
 
     const points = model.points;
     const lines = model.lines;
-    const color = obj.color ?? model.color;
+    const faces = model.faces;
+    const baseColor = obj.color ?? model.color;
     const lineWidth = obj.lineWidth ?? model.lineWidth;
 
-    // Precompute plane/world transform if this is a "dynamic" object
+    // Convert object/model color to CSS once
+    const baseCss =
+      typeof baseColor === "string" ? baseColor : rgbToCss(baseColor);
+
+    // Dynamic transform?
     const hasTransform =
       obj.x !== undefined &&
       obj.y !== undefined &&
@@ -35,28 +40,42 @@ function draw(context, group, projection) {
         )
       : points;
 
-    if (lines.length == 2 && typeof lines[0] === "number") {
-      const [i, j] = lines;
-      const p1 = projection(worldPoints[i]);
-      const p2 = projection(worldPoints[j]);
-      if (p1 && p2) line(context, p1, p2, color, lineWidth);
-      return;
-    }
-
-    for (let i = 0; i < lines.length; i++) {
-      const polyIndices = lines[i];
-      projectedPoints.length = 0;
-
-      for (let j = 0; j < polyIndices.length; j++) {
-        const p = projection(worldPoints[polyIndices[j]]);
-        if (!p) {
-          projectedPoints.length = 0;
-          break;
-        }
-        projectedPoints.push(p);
+    if (faces && faces.length) {
+      drawFilledModel(
+        context,
+        worldPoints,
+        faces,
+        lines,
+        baseColor, // used by shadeColor
+        baseCss, // used for wireframe strokes
+        lineWidth,
+        projection
+      );
+    } else {
+      // wireframe-only path
+      if (lines.length == 2 && typeof lines[0] === "number") {
+        const [i, j] = lines;
+        const p1 = projection(worldPoints[i]);
+        const p2 = projection(worldPoints[j]);
+        if (p1 && p2) line(context, p1, p2, baseCss, lineWidth);
+        return;
       }
-      if (projectedPoints.length > 0)
-        poly(context, projectedPoints, color, lineWidth);
+
+      for (let i = 0; i < lines.length; i++) {
+        const polyIndices = lines[i];
+        projectedPoints.length = 0;
+
+        for (let j = 0; j < polyIndices.length; j++) {
+          const p = projection(worldPoints[polyIndices[j]]);
+          if (!p) {
+            projectedPoints.length = 0;
+            break;
+          }
+          projectedPoints.push(p);
+        }
+        if (projectedPoints.length > 0)
+          poly(context, projectedPoints, baseCss, lineWidth);
+      }
     }
   });
 }
@@ -146,4 +165,186 @@ function drawPlaneAxes(context) {
     context.lineTo(zTop.x, zTop.y);
     context.stroke();
   }
+}
+
+function drawFilledModel(
+  context,
+  worldPoints,
+  faces,
+  lines,
+  baseColor, // {r,g,b} or string
+  baseCss, // "rgb(...)" or string
+  lineWidth,
+  projection
+) {
+  // Build list of face records with depth for sorting
+  const faceRecords = [];
+
+  for (let i = 0; i < faces.length; i++) {
+    const indices = faces[i];
+
+    // Optional back-face culling; disable temporarily if debugging:
+    if (!isFaceVisible(indices, worldPoints, projection)) continue;
+
+    // Compute face normal (same as in isFaceVisible; we could refactor, but keep it simple)
+    const p0 = worldPoints[indices[0]];
+    const p1 = worldPoints[indices[1]];
+    const p2 = worldPoints[indices[2]];
+
+    const v1 = {
+      x: p1.x - p0.x,
+      y: p1.y - p0.y,
+      z: p1.z - p0.z,
+    };
+    const v2 = {
+      x: p2.x - p0.x,
+      y: p2.y - p0.y,
+      z: p2.z - p0.z,
+    };
+
+    // Face normal
+    const normal = {
+      x: v1.y * v2.z - v1.z * v2.y,
+      y: v1.z * v2.x - v1.x * v2.z,
+      z: v1.x * v2.y - v1.y * v2.x,
+    };
+
+    // Normalize normal for nicer lighting
+    const nLen = Math.hypot(normal.x, normal.y, normal.z);
+    if (nLen > 0) {
+      normal.x /= nLen;
+      normal.y /= nLen;
+      normal.z /= nLen;
+    }
+
+    // Project vertices
+    const projected = [];
+    let avgDepth = 0;
+    let valid = true;
+
+    for (let j = 0; j < indices.length; j++) {
+      const wp = worldPoints[indices[j]];
+      const p = projection(wp);
+      if (!p) {
+        valid = false;
+        break;
+      }
+      projected.push(p);
+
+      // Approximate depth: for pilotView use distance along view direction (Y in camera space),
+      // but we don’t have that here. As a cheap proxy we can use -wp.z or the distance to plane.
+      // For now use distance to camera position if available:
+      avgDepth += getDepthForSort(wp, projection);
+    }
+
+    if (!valid || projected.length < 3) continue;
+
+    avgDepth /= projected.length;
+
+    // Shaded face color
+    const shadedCss =
+      typeof baseColor === "string" ? baseColor : shadeColor(baseColor, normal); // returns "rgb(...)"
+
+    faceRecords.push({ projected, avgDepth, color: shadedCss });
+  }
+
+  // Painter's algorithm: back-to-front
+  faceRecords.sort((a, b) => b.avgDepth - a.avgDepth);
+
+  // Fill faces
+  for (const face of faceRecords) {
+    fillPoly(context, face.projected, face.color);
+  }
+}
+
+function getDepthForSort(wp, projection) {
+  // Simple heuristic:
+  // - For topView: distance in XY from topCamera.
+  // - For pilotView: distance from plane.
+  if (projection === topView) {
+    const dx = wp.x - topCamera.x;
+    const dy = wp.y - topCamera.y;
+    return Math.hypot(dx, dy);
+  } else {
+    const dx = wp.x - plane.x;
+    const dy = wp.y - plane.y;
+    const dz = wp.z - plane.z;
+    return Math.hypot(dx, dy, dz);
+  }
+}
+
+function fillPoly(context, points, color) {
+  context.fillStyle = color;
+  context.beginPath();
+  context.moveTo(points[0].x, points[0].y);
+  for (let i = 1; i < points.length; i++) {
+    context.lineTo(points[i].x, points[i].y);
+  }
+  context.closePath();
+  context.fill();
+}
+
+function isFaceVisible(indices, worldPoints, projection) {
+  const p0 = worldPoints[indices[0]];
+  const p1 = worldPoints[indices[1]];
+  const p2 = worldPoints[indices[2]];
+
+  const v1 = {
+    x: p1.x - p0.x,
+    y: p1.y - p0.y,
+    z: p1.z - p0.z,
+  };
+  const v2 = {
+    x: p2.x - p0.x,
+    y: p2.y - p0.y,
+    z: p2.z - p0.z,
+  };
+
+  // normal = v1 x v2
+  const n = {
+    x: v1.y * v2.z - v1.z * v2.y,
+    y: v1.z * v2.x - v1.x * v2.z,
+    z: v1.x * v2.y - v1.y * v2.x,
+  };
+
+  let cx, cy, cz;
+  if (projection === topView) {
+    cx = topCamera.x;
+    cy = topCamera.y;
+    cz = topCamera.z;
+  } else {
+    cx = plane.x;
+    cy = plane.y;
+    cz = plane.z;
+  }
+
+  const view = {
+    x: p0.x - cx,
+    y: p0.y - cy,
+    z: p0.z - cz,
+  };
+
+  const dot = n.x * view.x + n.y * view.y + n.z * view.z;
+  return dot < 0; // front-facing if normal points toward camera
+}
+
+function shadeColor(baseColor, normal) {
+  // Very simple fixed ambient + diffuse term
+  const len = Math.hypot(lightDir.x, lightDir.y, lightDir.z);
+  const lx = lightDir.x / len;
+  const ly = lightDir.y / len;
+  const lz = lightDir.z / len;
+
+  const dot = Math.max(0, normal.x * lx + normal.y * ly + normal.z * lz);
+
+  const ambient = 0.2;
+  const intensity = ambient + (1 - ambient) * dot;
+
+  return `rgb(${Math.round(baseColor.r * intensity)}, ${Math.round(
+    baseColor.g * intensity
+  )}, ${Math.round(baseColor.b * intensity)})`;
+}
+
+function rgbToCss(c) {
+  return `rgb(${c.r}, ${c.g}, ${c.b})`;
 }
