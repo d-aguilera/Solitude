@@ -131,12 +131,93 @@ const topCamera = {
 };
 
 const ground = [];
+const buildings = [];
 const cubes = [];
 const airplanes = [];
+
+// Helper to create a building instance
+function createBuilding({ centerX, centerY, width, depth, height, color }) {
+  // buildingUnitModel has base 1×1, height 1 in local units.
+  // We will use scale = 1 and encode dimensions into orientation matrix columns
+  // so that: right = (width, 0, 0), forward = (0, depth, 0), up = (0, 0, height).
+  const orientation = [
+    [1, 0, 0], // right
+    [0, 1, 0], // forward
+    [0, 0, 1], // up
+  ];
+
+  return {
+    model: buildingUnitModel,
+    x: centerX,
+    y: centerY,
+    z: 0, // on ground
+    orientation,
+    scale: 1,
+    color,
+    lineWidth: buildingUnitModel.lineWidth,
+    // store dimensions so transform can use them
+    _width: width,
+    _depth: depth,
+    _height: height,
+  };
+}
+
+function addCity() {
+  const blockSize = 90; // world meters (from tile scale)
+  const margin = 5; // meters inset from each edge for building line
+
+  // Tile grid is currently from -100..100 in setup (in tile units)
+  for (let dx = -20; dx <= 20; dx++) {
+    for (let dy = -20; dy <= 20; dy++) {
+      const blockCenterX = dx * blockSize;
+      const blockCenterY = dy * blockSize;
+
+      // Local building area bounds in world coordinates, relative to block center
+      const buildMin = -blockSize / 2 + margin;
+      const buildMax = blockSize / 2 - margin;
+
+      const numBuildings = 1 + Math.floor(Math.random() * 5); // 1–5 per block
+
+      for (let i = 0; i < numBuildings; i++) {
+        const bw = 10 + Math.random() * 20; // 10–30 m width
+        const bd = 10 + Math.random() * 20; // 10–30 m depth
+        const bh = 10 + Math.random() * 70; // 10–80 m height
+
+        // pick a center so building stays inside [buildMin, buildMax]
+        const localXRange = buildMax - buildMin - bw;
+        const localYRange = buildMax - buildMin - bd;
+        if (localXRange <= 0 || localYRange <= 0) continue;
+
+        const localX = buildMin + bw / 2 + Math.random() * localXRange;
+        const localY = buildMin + bd / 2 + Math.random() * localYRange;
+
+        const worldX = blockCenterX + localX;
+        const worldY = blockCenterY + localY;
+
+        const color = {
+          r: 140 + Math.floor(Math.random() * 60),
+          g: 140 + Math.floor(Math.random() * 60),
+          b: 140 + Math.floor(Math.random() * 60),
+        };
+
+        const b = createBuilding({
+          centerX: worldX,
+          centerY: worldY,
+          width: bw,
+          depth: bd,
+          height: bh,
+          color,
+        });
+        buildings.push(b);
+      }
+    }
+  }
+}
 
 addGround();
 addCubes();
 addAirplane();
+addCity();
 
 // --- PROFILING ---
 let lastTimeMs = null;

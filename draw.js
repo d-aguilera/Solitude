@@ -29,16 +29,37 @@ function draw(context, group, projection) {
       obj.orientation &&
       obj.scale !== undefined;
 
-    const worldPoints = hasTransform
-      ? transformPointsToWorld(
+    let worldPoints;
+
+    if (hasTransform) {
+      let R = obj.orientation;
+
+      // If the object has per-axis dimensions (our buildings), fold them into R
+      if (obj._width && obj._depth && obj._height) {
+        const sx = obj._width;
+        const sy = obj._depth;
+        const sz = obj._height;
+
+        const R0 = [R[0][0] * sx, R[0][1] * sy, R[0][2] * sz];
+        const R1 = [R[1][0] * sx, R[1][1] * sy, R[1][2] * sz];
+        const R2 = [R[2][0] * sx, R[2][1] * sy, R[2][2] * sz];
+        R = [R0, R1, R2];
+
+        worldPoints = transformPointsToWorld(points, R, 1, obj.x, obj.y, obj.z);
+      } else {
+        // existing path
+        worldPoints = transformPointsToWorld(
           points,
           obj.orientation,
           obj.scale,
           obj.x,
           obj.y,
           obj.z
-        )
-      : points;
+        );
+      }
+    } else {
+      worldPoints = points;
+    }
 
     if (faces && faces.length) {
       drawFilledModel(

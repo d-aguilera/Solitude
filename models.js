@@ -10,6 +10,41 @@ const groundTileModel = {
   lineWidth: 0.1,
 };
 
+const buildingUnitModel = {
+  points: [
+    // bottom face
+    { x: 0.5, y: 0.5, z: 0 },
+    { x: 0.5, y: -0.5, z: 0 },
+    { x: -0.5, y: -0.5, z: 0 },
+    { x: -0.5, y: 0.5, z: 0 },
+
+    // top face (height 1 in local units)
+    { x: 0.5, y: 0.5, z: 1 },
+    { x: 0.5, y: -0.5, z: 1 },
+    { x: -0.5, y: -0.5, z: 1 },
+    { x: -0.5, y: 0.5, z: 1 },
+  ],
+  lines: [
+    [0, 1, 2, 3],
+    [4, 5, 6, 7],
+    [0, 4],
+    [1, 5],
+    [2, 6],
+    [3, 7],
+  ],
+  faces: [
+    [0, 1, 2, 3], // bottom
+    [4, 7, 6, 5], // top
+    [0, 4, 5, 1],
+    [1, 5, 6, 2],
+    [2, 6, 7, 3],
+    [3, 7, 4, 0],
+  ],
+  color: { r: 180, g: 180, b: 210 },
+  lineWidth: 0.8,
+};
+
+// Restore cubeModel so cubes still work as before
 const cubeModel = {
   points: [
     // bottom face
@@ -65,27 +100,27 @@ const airplaneModel = {
     [0, 1],
     [0, 2],
     [0, 3],
-    [0, 4], // Nose connections
+    [0, 4],
     [1, 5],
     [2, 5],
     [3, 5],
-    [4, 5], // Tail connections
+    [4, 5],
     [1, 2],
     [2, 4],
     [4, 3],
-    [3, 1], // Mid-body cross section
+    [3, 1],
     // Wings
     [2, 6],
     [6, 5],
-    [5, 2], // Left Wing
+    [5, 2],
     [3, 7],
     [7, 5],
-    [5, 3], // Right Wing
+    [5, 3],
     // Vertical Stabilizer
     [1, 8],
     [8, 5],
     [5, 1],
   ],
-  color: { r: 0, g: 255, b: 255 }, // cyan
+  color: { r: 0, g: 255, b: 255 },
   lineWidth: 1,
 };

@@ -232,6 +232,10 @@ function render(nowMs) {
     (a, b) =>
       getObjectDepthForSort(b, pilotView) - getObjectDepthForSort(a, pilotView)
   );
+  const buildingsSortedPilot = [...buildings].sort(
+    (a, b) =>
+      getObjectDepthForSort(b, pilotView) - getObjectDepthForSort(a, pilotView)
+  );
 
   const cubesSortedTop = [...cubes].sort(
     (a, b) =>
@@ -241,18 +245,25 @@ function render(nowMs) {
     (a, b) =>
       getObjectDepthForSort(b, topView) - getObjectDepthForSort(a, topView)
   );
+  /*
+  const buildingsSortedTop = [...buildings].sort(
+    (a, b) =>
+      getObjectDepthForSort(b, topView) - getObjectDepthForSort(a, topView)
+  );
+  */
 
   // --- RENDER PILOT VIEW ---
   clear(ctxPilot);
-
-  draw(ctxPilot, visibleGround, pilotView); // ground is "infinite" and flat
-  draw(ctxPilot, cubesSortedPilot, pilotView); // far cubes first
-  draw(ctxPilot, airplanesSortedPilot, pilotView); // then airplanes
+  draw(ctxPilot, visibleGround, pilotView);
+  draw(ctxPilot, buildingsSortedPilot, pilotView);
+  draw(ctxPilot, cubesSortedPilot, pilotView);
+  draw(ctxPilot, airplanesSortedPilot, pilotView);
   if (doProfile) t3 = performance.now();
 
   // --- RENDER TOP VIEW ---
   clear(ctxTop);
   draw(ctxTop, visibleGround, topView);
+  // draw(ctxTop, buildingsSortedTop, topView);
   draw(ctxTop, cubesSortedTop, topView);
   draw(ctxTop, airplanesSortedTop, topView);
   if (doProfile) t4 = performance.now();
