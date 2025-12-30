@@ -9,6 +9,7 @@ const keys = {
   KeyD: false,
   KeyQ: false,
   KeyE: false,
+  Space: false,
 };
 
 window.addEventListener("keydown", (e) => {

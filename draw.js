@@ -8,6 +8,15 @@ function clear(context) {
 function draw(context, group, projection) {
   const projectedPoints = [];
 
+  let tTotal = 0,
+    tTransform = 0,
+    tFaces = 0,
+    tLines = 0;
+
+  let t0, t1;
+
+  if (doProfile) t0 = performance.now();
+
   group.forEach((obj) => {
     const model = obj.model || obj; // backward compatible: old ground/cubes can stay as-is
 
@@ -30,6 +39,8 @@ function draw(context, group, projection) {
       obj.scale !== undefined;
 
     let worldPoints;
+
+    if (doProfile) t1 = performance.now();
 
     if (hasTransform) {
       let R = obj.orientation;
@@ -61,18 +72,23 @@ function draw(context, group, projection) {
       worldPoints = points;
     }
 
+    if (doProfile) tTransform += performance.now() - t1;
+
     if (faces && faces.length) {
+      if (doProfile) t1 = performance.now();
+
       drawFilledModel(
         context,
         worldPoints,
         faces,
-        lines,
         baseColor, // used by shadeColor
-        baseCss, // used for wireframe strokes
-        lineWidth,
         projection
       );
+
+      if (doProfile) tFaces += performance.now() - t1;
     } else {
+      if (doProfile) t1 = performance.now();
+
       // wireframe-only path
       if (lines.length == 2 && typeof lines[0] === "number") {
         const [i, j] = lines;
@@ -97,8 +113,21 @@ function draw(context, group, projection) {
         if (projectedPoints.length > 0)
           poly(context, projectedPoints, baseCss, lineWidth);
       }
+
+      if (doProfile) tLines += performance.now() - t1;
     }
   });
+
+  if (doProfile) {
+    tTotal += performance.now() - t0;
+
+    console.log(
+      `[DRAW profile] total=${tTotal.toFixed(2)}ms ` +
+        `transform=${tTransform.toFixed(2)} ` +
+        `faces=${tFaces.toFixed(2)} ` +
+        `lines=${tLines.toFixed(2)}`
+    );
+  }
 }
 
 function line(context, p1, p2, color, lineWidth) {
@@ -188,24 +217,27 @@ function drawPlaneAxes(context) {
   }
 }
 
-function drawFilledModel(
-  context,
-  worldPoints,
-  faces,
-  lines,
-  baseColor, // {r,g,b} or string
-  baseCss, // "rgb(...)" or string
-  lineWidth,
-  projection
-) {
+function drawFilledModel(context, worldPoints, faces, baseColor, projection) {
   // Build list of face records with depth for sorting
   const faceRecords = [];
+
+  let tCull = 0,
+    tNormal = 0,
+    tProject = 0,
+    tSort = 0,
+    tFill = 0;
+
+  let t0;
 
   for (let i = 0; i < faces.length; i++) {
     const indices = faces[i];
 
+    if (doProfile) t0 = performance.now();
+
     // Optional back-face culling; disable temporarily if debugging:
     if (!isFaceVisible(indices, worldPoints, projection)) continue;
+
+    if (doProfile) tCull += performance.now() - t0;
 
     // Compute face normal (same as in isFaceVisible; we could refactor, but keep it simple)
     const p0 = worldPoints[indices[0]];
@@ -223,6 +255,8 @@ function drawFilledModel(
       z: p2.z - p0.z,
     };
 
+    if (doProfile) t0 = performance.now();
+
     // Face normal
     const normal = {
       x: v1.y * v2.z - v1.z * v2.y,
@@ -238,10 +272,14 @@ function drawFilledModel(
       normal.z /= nLen;
     }
 
+    if (doProfile) tNormal += performance.now() - t0;
+
     // Project vertices
     const projected = [];
     let avgDepth = 0;
     let valid = true;
+
+    if (doProfile) t0 = performance.now();
 
     for (let j = 0; j < indices.length; j++) {
       const wp = worldPoints[indices[j]];
@@ -258,6 +296,8 @@ function drawFilledModel(
       avgDepth += getDepthForSort(wp, projection);
     }
 
+    if (doProfile) tProject += performance.now() - t0;
+
     if (!valid || projected.length < 3) continue;
 
     avgDepth /= projected.length;
@@ -269,12 +309,30 @@ function drawFilledModel(
     faceRecords.push({ projected, avgDepth, color: shadedCss });
   }
 
+  if (doProfile) t0 = performance.now();
+
   // Painter's algorithm: back-to-front
   faceRecords.sort((a, b) => b.avgDepth - a.avgDepth);
+
+  if (doProfile) {
+    tSort += performance.now() - t0;
+    t0 = performance.now();
+  }
 
   // Fill faces
   for (const face of faceRecords) {
     fillPoly(context, face.projected, face.color);
+  }
+
+  if (doProfile) {
+    tFill += performance.now() - t0;
+
+    console.log(
+      `[FACES profile] faces=${faces.length} ` +
+        `cull=${tCull.toFixed(2)} normal=${tNormal.toFixed(2)} ` +
+        `project=${tProject.toFixed(2)} sort=${tSort.toFixed(2)} ` +
+        `fill=${tFill.toFixed(2)}`
+    );
   }
 }
 

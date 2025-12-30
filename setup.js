@@ -66,76 +66,6 @@ function addCubes() {
   }
 }
 
-function addAirplane() {
-  airplanes.push({
-    model: airplaneModel,
-    x: plane.x,
-    y: plane.y,
-    z: plane.z,
-    orientation: plane.orientation,
-    scale: plane.scale,
-    color: airplaneModel.color,
-    lineWidth: airplaneModel.lineWidth,
-  });
-}
-
-function getFocalLength() {
-  const fovRad = (FIELD_OF_VIEW * Math.PI) / 180;
-  return 1 / Math.tan(fovRad / 2);
-}
-
-// --- SETUP CONTEXTS ---
-const WIDTH = 600;
-const HEIGHT = 600;
-
-const FIELD_OF_VIEW = 90;
-const FOCAL_LENGTH = getFocalLength();
-const MAX_TILE_DIST = 2000; // e.g. show tiles within 2000 m radius of plane
-
-const canvas = document.getElementById("pilotViewCanvas");
-canvas.width = WIDTH;
-canvas.height = HEIGHT;
-const ctxPilot = canvas.getContext("2d");
-
-const canvasTop = document.getElementById("topViewCanvas");
-canvasTop.width = WIDTH;
-canvasTop.height = HEIGHT;
-const ctxTop = canvasTop.getContext("2d");
-
-// --- STATE ---
-
-const plane = {
-  x: 0, // meters
-  y: -1000, // meters
-  z: 100, // meters altitude
-  // Orientation as a 3x3 matrix, columns = local axes in world space
-  // Start pointing along +Y
-  orientation: [
-    [1, 0, 0], // right (column 0)
-    [0, 1, 0], // forward (column 1)
-    [0, 0, 1], // up (column 2)
-  ],
-  speed: 250, // m/s, ~485 knots (subsonic “fast jet” cruise)
-  scale: 15, // meters, approximate F-16 length
-};
-
-const pilot = {
-  azimuth: 0,
-  elevation: 0,
-};
-
-const topCamera = {
-  x: 0,
-  y: 0,
-  z: 200,
-};
-
-const ground = [];
-const buildings = [];
-const cubes = [];
-const airplanes = [];
-
-// Helper to create a building instance
 function createBuilding({ centerX, centerY, width, depth, height, color }) {
   // buildingUnitModel has base 1×1, height 1 in local units.
   // We will use scale = 1 and encode dimensions into orientation matrix columns
@@ -214,12 +144,89 @@ function addCity() {
   }
 }
 
+function addAirplane() {
+  airplanes.push({
+    model: airplaneModel,
+    x: plane.x,
+    y: plane.y,
+    z: plane.z,
+    orientation: plane.orientation,
+    scale: plane.scale,
+    color: airplaneModel.color,
+    lineWidth: airplaneModel.lineWidth,
+  });
+}
+
+function getFocalLength() {
+  const fovRad = (FIELD_OF_VIEW * Math.PI) / 180;
+  return 1 / Math.tan(fovRad / 2);
+}
+
+// --- SETUP CONTEXTS ---
+const WIDTH = 600;
+const HEIGHT = 600;
+
+const canvas = document.getElementById("pilotViewCanvas");
+canvas.width = WIDTH;
+canvas.height = HEIGHT;
+const ctxPilot = canvas.getContext("2d");
+
+const canvasTop = document.getElementById("topViewCanvas");
+canvasTop.width = WIDTH;
+canvasTop.height = HEIGHT;
+const ctxTop = canvasTop.getContext("2d");
+
+// --- GLOBAL PARAMETERS ---
+const FIELD_OF_VIEW = 90;
+const FOCAL_LENGTH = getFocalLength();
+const MAX_TILE_DIST = 2000; // e.g. show tiles within 2000 m radius of plane
+
+// Rates in radians per second
+const lookSpeed = 1.5; // how fast the pilot can look around
+const rotSpeedRoll = 1.0; // roll rate (rad/s)
+const rotSpeedPitch = 0.8; // pitch rate (rad/s)
+const rotSpeedYaw = 0.5; // yaw rate (rad/s)
+
+// --- STATE ---
+
+const plane = {
+  x: 0, // meters
+  y: -1000, // meters
+  z: 100, // meters altitude
+  // Orientation as a 3x3 matrix, columns = local axes in world space
+  // Start pointing along +Y
+  orientation: [
+    [1, 0, 0], // right (column 0)
+    [0, 1, 0], // forward (column 1)
+    [0, 0, 1], // up (column 2)
+  ],
+  speed: 250, // m/s, ~485 knots (subsonic “fast jet” cruise)
+  scale: 15, // meters, approximate F-16 length
+};
+
+const pilot = {
+  azimuth: 0,
+  elevation: 0,
+};
+
+const topCamera = {
+  x: 0,
+  y: 0,
+  z: 200,
+};
+
+const ground = [];
+const buildings = [];
+const cubes = [];
+const airplanes = [];
+
 addGround();
 addCubes();
 addAirplane();
 addCity();
 
 // --- PROFILING ---
+let doProfile = false;
 let lastTimeMs = null;
 let fps = 0;
 let framesThisSecond = 0;
@@ -228,6 +235,11 @@ let profileEveryNFrames = 60;
 let frameCountForProfile = 0;
 
 const lightDir = { x: 0.3, y: 0.5, z: 1.0 }; // arbitrary
+
+// --- PAUSE ---
+let paused = false;
+let spaceKeyDown = false;
+let pausing = false;
 
 // --- MAIN LOOP ---
 requestAnimationFrame(render);
