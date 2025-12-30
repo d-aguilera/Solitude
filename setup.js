@@ -234,7 +234,7 @@ let lastFpsUpdateMs = 0;
 let profileEveryNFrames = 60;
 let frameCountForProfile = 0;
 
-const lightDir = { x: 0.3, y: 0.5, z: 1.0 }; // arbitrary
+const sun = { x: 0.3, y: 0.5, z: 1.0 }; // arbitrary
 
 // --- PAUSE ---
 let paused = false;

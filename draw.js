@@ -409,10 +409,10 @@ function isFaceVisible(indices, worldPoints, projection) {
 
 function shadeColor(baseColor, normal) {
   // Very simple fixed ambient + diffuse term
-  const len = Math.hypot(lightDir.x, lightDir.y, lightDir.z);
-  const lx = lightDir.x / len;
-  const ly = lightDir.y / len;
-  const lz = lightDir.z / len;
+  const len = Math.hypot(sun.x, sun.y, sun.z);
+  const lx = sun.x / len;
+  const ly = sun.y / len;
+  const lz = sun.z / len;
 
   const dot = Math.max(0, normal.x * lx + normal.y * ly + normal.z * lz);
 
