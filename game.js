@@ -112,6 +112,7 @@ function pauseControl() {
         pausing = false;
       } else {
         paused = false;
+        frameCountForProfile = 0;
       }
       spaceKeyDown = false;
     }
