@@ -225,21 +225,18 @@ addCubes();
 addAirplane();
 addCity();
 
-// --- PROFILING ---
-let doProfile = false;
-let lastTimeMs = null;
-let fps = 0;
-let framesThisSecond = 0;
-let lastFpsUpdateMs = 0;
-let profileEveryNFrames = 180;
-let frameCountForProfile = 0;
-
 const sun = { x: 0.3, y: 0.5, z: 1.0 }; // arbitrary
 
 // --- PAUSE ---
 let paused = false;
 let spaceKeyDown = false;
 let pausing = false;
+
+// --- FIRST FRAME ---
+requestAnimationFrame((nowMs) => {
+  lastTimeMs = nowMs;
+  lastFpsUpdateMs = nowMs;
+});
 
 // --- MAIN LOOP ---
 requestAnimationFrame(render);

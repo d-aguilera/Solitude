@@ -8,14 +8,7 @@ function clear(context) {
 function draw(context, group, projection) {
   const projectedPoints = [];
 
-  let tTotal = 0,
-    tTransform = 0,
-    tFaces = 0,
-    tLines = 0;
-
-  let t0, t1;
-
-  if (doProfile) t0 = performance.now();
+  if (doProfile) drawStartTimestamp = performance.now();
 
   group.forEach((obj) => {
     const model = obj.model || obj; // backward compatible: old ground/cubes can stay as-is
@@ -40,7 +33,7 @@ function draw(context, group, projection) {
 
     let worldPoints;
 
-    if (doProfile) t1 = performance.now();
+    if (doProfile) singleOpTimestamp = performance.now();
 
     if (hasTransform) {
       let R = obj.orientation;
@@ -72,10 +65,10 @@ function draw(context, group, projection) {
       worldPoints = points;
     }
 
-    if (doProfile) tTransform += performance.now() - t1;
+    if (doProfile) drawTransformTime += performance.now() - singleOpTimestamp;
 
     if (faces && faces.length) {
-      if (doProfile) t1 = performance.now();
+      if (doProfile) singleOpTimestamp = performance.now();
 
       drawFilledModel(
         context,
@@ -85,9 +78,9 @@ function draw(context, group, projection) {
         projection
       );
 
-      if (doProfile) tFaces += performance.now() - t1;
+      if (doProfile) drawFacesTime += performance.now() - singleOpTimestamp;
     } else {
-      if (doProfile) t1 = performance.now();
+      if (doProfile) singleOpTimestamp = performance.now();
 
       // wireframe-only path
       if (lines.length == 2 && typeof lines[0] === "number") {
@@ -114,19 +107,12 @@ function draw(context, group, projection) {
           poly(context, projectedPoints, baseCss, lineWidth);
       }
 
-      if (doProfile) tLines += performance.now() - t1;
+      if (doProfile) drawLinesTime += performance.now() - singleOpTimestamp;
     }
   });
 
   if (doProfile) {
-    tTotal += performance.now() - t0;
-
-    console.log(
-      `[DRAW profile] total=${tTotal.toFixed(2)}ms ` +
-        `transform=${tTransform.toFixed(2)} ` +
-        `faces=${tFaces.toFixed(2)} ` +
-        `lines=${tLines.toFixed(2)}`
-    );
+    drawTotalTime += performance.now() - drawStartTimestamp;
   }
 }
 
@@ -221,23 +207,15 @@ function drawFilledModel(context, worldPoints, faces, baseColor, projection) {
   // Build list of face records with depth for sorting
   const faceRecords = [];
 
-  let tCull = 0,
-    tNormal = 0,
-    tProject = 0,
-    tSort = 0,
-    tFill = 0;
-
-  let t0;
-
   for (let i = 0; i < faces.length; i++) {
     const indices = faces[i];
 
-    if (doProfile) t0 = performance.now();
+    if (doProfile) singleOpTimestamp = performance.now();
 
     // Optional back-face culling; disable temporarily if debugging:
     if (!isFaceVisible(indices, worldPoints, projection)) continue;
 
-    if (doProfile) tCull += performance.now() - t0;
+    if (doProfile) facesCullTime += performance.now() - singleOpTimestamp;
 
     // Compute face normal (same as in isFaceVisible; we could refactor, but keep it simple)
     const p0 = worldPoints[indices[0]];
@@ -255,7 +233,7 @@ function drawFilledModel(context, worldPoints, faces, baseColor, projection) {
       z: p2.z - p0.z,
     };
 
-    if (doProfile) t0 = performance.now();
+    if (doProfile) singleOpTimestamp = performance.now();
 
     // Face normal
     const normal = {
@@ -272,14 +250,14 @@ function drawFilledModel(context, worldPoints, faces, baseColor, projection) {
       normal.z /= nLen;
     }
 
-    if (doProfile) tNormal += performance.now() - t0;
+    if (doProfile) facesNormalTime += performance.now() - singleOpTimestamp;
 
     // Project vertices
     const projected = [];
     let avgDepth = 0;
     let valid = true;
 
-    if (doProfile) t0 = performance.now();
+    if (doProfile) singleOpTimestamp = performance.now();
 
     for (let j = 0; j < indices.length; j++) {
       const wp = worldPoints[indices[j]];
@@ -296,7 +274,7 @@ function drawFilledModel(context, worldPoints, faces, baseColor, projection) {
       avgDepth += getDepthForSort(wp, projection);
     }
 
-    if (doProfile) tProject += performance.now() - t0;
+    if (doProfile) facesProjectTime += performance.now() - singleOpTimestamp;
 
     if (!valid || projected.length < 3) continue;
 
@@ -309,14 +287,14 @@ function drawFilledModel(context, worldPoints, faces, baseColor, projection) {
     faceRecords.push({ projected, avgDepth, color: shadedCss });
   }
 
-  if (doProfile) t0 = performance.now();
+  if (doProfile) singleOpTimestamp = performance.now();
 
   // Painter's algorithm: back-to-front
   faceRecords.sort((a, b) => b.avgDepth - a.avgDepth);
 
   if (doProfile) {
-    tSort += performance.now() - t0;
-    t0 = performance.now();
+    facesSortTime += performance.now() - singleOpTimestamp;
+    singleOpTimestamp = performance.now();
   }
 
   // Fill faces
@@ -325,14 +303,8 @@ function drawFilledModel(context, worldPoints, faces, baseColor, projection) {
   }
 
   if (doProfile) {
-    tFill += performance.now() - t0;
-
-    console.log(
-      `[FACES profile] faces=${faces.length} ` +
-        `cull=${tCull.toFixed(2)} normal=${tNormal.toFixed(2)} ` +
-        `project=${tProject.toFixed(2)} sort=${tSort.toFixed(2)} ` +
-        `fill=${tFill.toFixed(2)}`
-    );
+    facesFillTime += performance.now() - singleOpTimestamp;
+    facesCount += faces.length;
   }
 }
 

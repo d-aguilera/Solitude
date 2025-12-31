@@ -171,22 +171,19 @@ function getObjectDepthForSort(obj, projection) {
 }
 
 function updateTopCamera(objectsToKeepInView) {
-  // 1. Camera is always directly above the airplane in X/Y (meters)
+  // Camera is always directly above the airplane in X/Y (meters)
   topCamera.x = plane.x;
   topCamera.y = plane.y;
 
-  // 2. If no objects, just keep a simple camera height above the plane
+  // If no objects, just keep a simple camera height above the plane
   if (objectsToKeepInView.length == 0) {
     const offsetAbovePlane = 30; // m
     topCamera.z = Math.max(50, plane.z + offsetAbovePlane); // at least 50 m AGL-ish
     return;
   }
 
-  // 3. Compute:
-  //    - max horizontal distance from plane to any object
-  //    - average object altitude (for a ground reference)
-  let maxHorizDist = 0;
-  let avgObjZ = 0;
+  let maxHorizDist = 0; // max horizontal distance from plane to any object
+  let avgObjZ = 0; // average object altitude (for a ground reference)
 
   for (let obj of objectsToKeepInView) {
     const c = obj.center || getCenterOfMass(obj);
@@ -198,10 +195,10 @@ function updateTopCamera(objectsToKeepInView) {
   }
   avgObjZ /= objectsToKeepInView.length;
 
-  // 4. Compute how far above the objects the camera must be so all objects fit
+  // Compute how far above the objects the camera must be so all objects fit
   const margin = 1.3;
 
-  // From topView: |(dx * FOCAL_LENGTH) / dist| <= 0.5
+  // from topView: |(dx * FOCAL_LENGTH) / dist| <= 0.5
   // => dist >= maxHorizDist * FOCAL_LENGTH / 0.5
   const baseDist = (maxHorizDist * FOCAL_LENGTH) / 0.5;
   const distToObjects = baseDist * margin;
@@ -212,7 +209,7 @@ function updateTopCamera(objectsToKeepInView) {
     avgObjZ + minHeightAboveObjects
   );
 
-  // 5. Ensure the camera is never below the airplane
+  // Ensure the camera is never below the airplane
   const minOffsetAbovePlane = 50; // small buffer so we're always above the plane
   const heightFromPlane = plane.z + minOffsetAbovePlane;
 
@@ -236,38 +233,44 @@ function getVisibleGround() {
 }
 
 function render(nowMs) {
-  if (lastTimeMs == null) {
-    lastTimeMs = nowMs;
-    lastFpsUpdateMs = nowMs;
-  }
-
   const dtMs = nowMs - lastTimeMs;
   lastTimeMs = nowMs;
 
   const dtSeconds = paused ? 0 : dtMs / 1000;
 
-  // FPS calculation (update once per second)
-  framesThisSecond++;
-  if (nowMs - lastFpsUpdateMs >= 1000) {
-    fps = framesThisSecond / ((nowMs - lastFpsUpdateMs) / 1000);
-    framesThisSecond = 0;
-    lastFpsUpdateMs = nowMs;
-  }
+  updateFPS(nowMs);
+  profilingCheck();
 
-  frameCountForProfile++;
-  doProfile = !paused && frameCountForProfile >= profileEveryNFrames;
-
-  let t0, t1, t2, t3, t4;
-
-  if (doProfile) t0 = performance.now();
   updatePhysics(dtSeconds);
-  if (doProfile) t1 = performance.now();
+  if (doProfile) physicsTimestamp = performance.now();
+
   updateTopCamera(cubes);
-  if (doProfile) t2 = performance.now();
+  if (doProfile) cameraTimestamp = performance.now();
 
   const visibleGround = getVisibleGround();
+  if (doProfile) groundTimestamp = performance.now();
 
-  // Sort dynamic objects back-to-front relative to each camera
+  renderPilotView(visibleGround);
+  if (doProfile) pilotViewTimestamp = performance.now();
+
+  renderTopView(visibleGround);
+  if (doProfile) topViewTimestamp = performance.now();
+
+  renderHUD();
+
+  if (doProfile) {
+    hudTimestamp = performance.now();
+    profilingFlush();
+  }
+
+  requestAnimationFrame(render);
+}
+
+function renderPilotView(visibleGround) {
+  const buildingsSortedPilot = [...buildings].sort(
+    (a, b) =>
+      getObjectDepthForSort(b, pilotView) - getObjectDepthForSort(a, pilotView)
+  );
   const cubesSortedPilot = [...cubes].sort(
     (a, b) =>
       getObjectDepthForSort(b, pilotView) - getObjectDepthForSort(a, pilotView)
@@ -276,11 +279,20 @@ function render(nowMs) {
     (a, b) =>
       getObjectDepthForSort(b, pilotView) - getObjectDepthForSort(a, pilotView)
   );
-  const buildingsSortedPilot = [...buildings].sort(
-    (a, b) =>
-      getObjectDepthForSort(b, pilotView) - getObjectDepthForSort(a, pilotView)
-  );
+  clear(ctxPilot);
+  draw(ctxPilot, visibleGround, pilotView);
+  draw(ctxPilot, buildingsSortedPilot, pilotView);
+  draw(ctxPilot, cubesSortedPilot, pilotView);
+  draw(ctxPilot, airplanesSortedPilot, pilotView);
+}
 
+function renderTopView(visibleGround) {
+  /*
+  const buildingsSortedTop = [...buildings].sort(
+    (a, b) =>
+      getObjectDepthForSort(b, topView) - getObjectDepthForSort(a, topView)
+  );
+  */
   const cubesSortedTop = [...cubes].sort(
     (a, b) =>
       getObjectDepthForSort(b, topView) - getObjectDepthForSort(a, topView)
@@ -289,32 +301,14 @@ function render(nowMs) {
     (a, b) =>
       getObjectDepthForSort(b, topView) - getObjectDepthForSort(a, topView)
   );
-  /*
-  const buildingsSortedTop = [...buildings].sort(
-    (a, b) =>
-      getObjectDepthForSort(b, topView) - getObjectDepthForSort(a, topView)
-  );
-  */
-
-  // --- RENDER PILOT VIEW ---
-  clear(ctxPilot);
-  draw(ctxPilot, visibleGround, pilotView);
-  draw(ctxPilot, buildingsSortedPilot, pilotView);
-  draw(ctxPilot, cubesSortedPilot, pilotView);
-  draw(ctxPilot, airplanesSortedPilot, pilotView);
-  if (doProfile) t3 = performance.now();
-
-  // --- RENDER TOP VIEW ---
   clear(ctxTop);
   draw(ctxTop, visibleGround, topView);
   // draw(ctxTop, buildingsSortedTop, topView);
   draw(ctxTop, cubesSortedTop, topView);
   draw(ctxTop, airplanesSortedTop, topView);
-  if (doProfile) t4 = performance.now();
+}
 
-  const speedKnots = plane.speed * 1.94384;
-  const altAGL = plane.z; // ground is z=0, so AGL = z
-
+function renderHUD() {
   ctxTop.fillRect(0, 0, 360, 80);
   ctxTop.fillStyle = "white";
   ctxTop.font = "16px monospace";
@@ -322,10 +316,12 @@ function render(nowMs) {
   // Absolute altitude (same as before)
   ctxTop.fillText(`Alt: ${plane.z.toFixed(1)} m MSL`, 10, 20);
 
-  // New line: altitude above ground
+  // Altitude above ground
+  const altAGL = plane.z; // ground is z=0, so AGL = z
   ctxTop.fillText(`AGL: ${altAGL.toFixed(1)} m`, 10, 40);
 
-  // Speed line, now with F-16-like speed
+  // Speed line
+  const speedKnots = plane.speed * 1.94384;
   ctxTop.fillText(
     `Spd: ${plane.speed.toFixed(1)} m/s (${speedKnots.toFixed(0)} kt)`,
     10,
@@ -335,26 +331,6 @@ function render(nowMs) {
   const mach = plane.speed / 343;
   ctxTop.fillText(`Mach: ${mach.toFixed(2)}`, 200, 40);
 
-  // New line: FPS
+  // FPS
   ctxTop.fillText(`FPS: ${fps.toFixed(1)}`, 200, 20);
-
-  if (doProfile) {
-    const physicsTime = t1 - t0;
-    const cameraTime = t2 - t1;
-    const pilotViewTime = t3 - t2;
-    const topViewTime = t4 - t3;
-    const totalFrameTime = t4 - t0;
-
-    console.log(
-      `[PROFILE] total=${totalFrameTime.toFixed(2)}ms | ` +
-        `physics=${physicsTime.toFixed(2)} | ` +
-        `camera=${cameraTime.toFixed(2)} | ` +
-        `pilotViewDraw=${pilotViewTime.toFixed(2)} | ` +
-        `topViewDraw=${topViewTime.toFixed(2)}`
-    );
-
-    frameCountForProfile = 0;
-  }
-
-  requestAnimationFrame(render);
 }
