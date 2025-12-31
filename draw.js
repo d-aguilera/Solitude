@@ -11,7 +11,7 @@ function draw(context, group, projection) {
   if (doProfile) drawStartTimestamp = performance.now();
 
   group.forEach((obj) => {
-    const model = obj.model || obj; // backward compatible: old ground/cubes can stay as-is
+    const model = obj.model || obj;
 
     const points = model.points;
     const lines = model.lines;
@@ -23,6 +23,10 @@ function draw(context, group, projection) {
     const baseCss =
       typeof baseColor === "string" ? baseColor : rgbToCss(baseColor);
 
+    let worldPoints;
+
+    if (doProfile) singleOpTimestamp = performance.now();
+
     // Dynamic transform?
     const hasTransform =
       obj.x !== undefined &&
@@ -31,36 +35,31 @@ function draw(context, group, projection) {
       obj.orientation &&
       obj.scale !== undefined;
 
-    let worldPoints;
-
-    if (doProfile) singleOpTimestamp = performance.now();
-
     if (hasTransform) {
       let R = obj.orientation;
 
-      // If the object has per-axis dimensions (our buildings), fold them into R
-      if (obj._width && obj._depth && obj._height) {
-        const sx = obj._width;
-        const sy = obj._depth;
-        const sz = obj._height;
-
-        const R0 = [R[0][0] * sx, R[0][1] * sy, R[0][2] * sz];
-        const R1 = [R[1][0] * sx, R[1][1] * sy, R[1][2] * sz];
-        const R2 = [R[2][0] * sx, R[2][1] * sy, R[2][2] * sz];
+      // If the object has per-axis dimensions, fold them into R
+      const width = obj.width;
+      const depth = obj.depth;
+      const height = obj.height;
+      if (width && depth && height) {
+        let R0 = R[0];
+        let R1 = R[1];
+        let R2 = R[2];
+        R0 = [R0[0] * width, R0[1] * depth, R0[2] * height];
+        R1 = [R1[0] * width, R1[1] * depth, R1[2] * height];
+        R2 = [R2[0] * width, R2[1] * depth, R2[2] * height];
         R = [R0, R1, R2];
-
-        worldPoints = transformPointsToWorld(points, R, 1, obj.x, obj.y, obj.z);
-      } else {
-        // existing path
-        worldPoints = transformPointsToWorld(
-          points,
-          obj.orientation,
-          obj.scale,
-          obj.x,
-          obj.y,
-          obj.z
-        );
       }
+
+      worldPoints = transformPointsToWorld(
+        points,
+        R,
+        obj.scale,
+        obj.x,
+        obj.y,
+        obj.z
+      );
     } else {
       worldPoints = points;
     }
@@ -70,13 +69,7 @@ function draw(context, group, projection) {
     if (faces && faces.length) {
       if (doProfile) singleOpTimestamp = performance.now();
 
-      drawFilledModel(
-        context,
-        worldPoints,
-        faces,
-        baseColor, // used by shadeColor
-        projection
-      );
+      drawFilledModel(context, worldPoints, faces, baseColor, projection);
 
       if (doProfile) drawFacesTime += performance.now() - singleOpTimestamp;
     } else {
@@ -280,11 +273,9 @@ function drawFilledModel(context, worldPoints, faces, baseColor, projection) {
 
     avgDepth /= projected.length;
 
-    // Shaded face color
-    const shadedCss =
-      typeof baseColor === "string" ? baseColor : shadeColor(baseColor, normal); // returns "rgb(...)"
+    const color = shadeColor(baseColor, normal); // returns "rgb(...)"
 
-    faceRecords.push({ projected, avgDepth, color: shadedCss });
+    faceRecords.push({ projected, avgDepth, color });
   }
 
   if (doProfile) singleOpTimestamp = performance.now();
@@ -315,12 +306,12 @@ function getDepthForSort(wp, projection) {
   if (projection === topView) {
     const dx = wp.x - topCamera.x;
     const dy = wp.y - topCamera.y;
-    return Math.hypot(dx, dy);
+    return dx * dx + dy * dy;
   } else {
     const dx = wp.x - plane.x;
     const dy = wp.y - plane.y;
     const dz = wp.z - plane.z;
-    return Math.hypot(dx, dy, dz);
+    return dx * dx + dy * dy + dz * dz;
   }
 }
 
@@ -379,7 +370,7 @@ function isFaceVisible(indices, worldPoints, projection) {
   return dot < 0; // front-facing if normal points toward camera
 }
 
-function shadeColor(baseColor, normal) {
+function shadeColor({ r, g, b }, normal) {
   // Very simple fixed ambient + diffuse term
   const len = Math.hypot(sun.x, sun.y, sun.z);
   const lx = sun.x / len;
@@ -391,9 +382,9 @@ function shadeColor(baseColor, normal) {
   const ambient = 0.2;
   const intensity = ambient + (1 - ambient) * dot;
 
-  return `rgb(${Math.round(baseColor.r * intensity)}, ${Math.round(
-    baseColor.g * intensity
-  )}, ${Math.round(baseColor.b * intensity)})`;
+  return `rgb(${Math.round(r * intensity)}, ${Math.round(
+    g * intensity
+  )}, ${Math.round(b * intensity)})`;
 }
 
 function rgbToCss(c) {

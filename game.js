@@ -217,17 +217,17 @@ function updateTopCamera(objectsToKeepInView) {
   topCamera.z = Math.max(heightFromObjects, heightFromPlane);
 }
 
-function getVisibleGround() {
+function getVisibleObjects(group) {
   const px = plane.x;
   const py = plane.y;
   const max2 = MAX_TILE_DIST * MAX_TILE_DIST;
   const out = [];
-  for (let i = 0; i < ground.length; i++) {
-    const tile = ground[i];
-    const { x: cx, y: cy } = tile.center;
-    const dx = cx - px;
-    const dy = cy - py;
-    if (dx * dx + dy * dy <= max2) out.push(tile);
+  for (let i = 0; i < group.length; i++) {
+    const obj = group[i];
+    const center = obj.center ?? obj;
+    const dx = center.x - px;
+    const dy = center.y - py;
+    if (dx * dx + dy * dy <= max2) out.push(obj);
   }
   return out;
 }
@@ -247,7 +247,7 @@ function render(nowMs) {
   updateTopCamera(cubes);
   if (doProfile) cameraTimestamp = performance.now();
 
-  const visibleGround = getVisibleGround();
+  const visibleGround = getVisibleObjects(ground);
   if (doProfile) groundTimestamp = performance.now();
 
   renderPilotView(visibleGround);
@@ -266,11 +266,22 @@ function render(nowMs) {
   requestAnimationFrame(render);
 }
 
+let pilotSortFrameCounter = 0;
+let cachedBuildingsSortedPilot = [];
+
 function renderPilotView(visibleGround) {
-  const buildingsSortedPilot = [...buildings].sort(
-    (a, b) =>
-      getObjectDepthForSort(b, pilotView) - getObjectDepthForSort(a, pilotView)
-  );
+  pilotSortFrameCounter++;
+
+  const visibleBuildings = getVisibleObjects(buildings);
+
+  if (pilotSortFrameCounter % 4 === 0) {
+    cachedBuildingsSortedPilot = visibleBuildings.sort(
+      (a, b) =>
+        getObjectDepthForSort(b, pilotView) -
+        getObjectDepthForSort(a, pilotView)
+    );
+  }
+
   const cubesSortedPilot = [...cubes].sort(
     (a, b) =>
       getObjectDepthForSort(b, pilotView) - getObjectDepthForSort(a, pilotView)
@@ -279,9 +290,10 @@ function renderPilotView(visibleGround) {
     (a, b) =>
       getObjectDepthForSort(b, pilotView) - getObjectDepthForSort(a, pilotView)
   );
+
   clear(ctxPilot);
   draw(ctxPilot, visibleGround, pilotView);
-  draw(ctxPilot, buildingsSortedPilot, pilotView);
+  draw(ctxPilot, cachedBuildingsSortedPilot, pilotView);
   draw(ctxPilot, cubesSortedPilot, pilotView);
   draw(ctxPilot, airplanesSortedPilot, pilotView);
 }

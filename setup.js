@@ -42,7 +42,7 @@ function addGround() {
   for (let dx = -100; dx <= 100; dx++) {
     for (let dy = -100; dy <= 100; dy++) {
       const offset = { dx, dy, dz: 0 };
-      const tile = scale(move(clone(groundTileModel), offset), tileWorldScale);
+      const tile = scale(move(clone(cityBlockModel), offset), tileWorldScale);
       tile.center = getCenterOfMass(tile);
       ground.push(tile);
     }
@@ -66,8 +66,8 @@ function addCubes() {
   }
 }
 
-function createBuilding({ centerX, centerY, width, depth, height, color }) {
-  // buildingUnitModel has base 1×1, height 1 in local units.
+function createBuilding({ x, y, width, depth, height, color }) {
+  // buildingModel has base 1×1, height 1 in local units.
   // We will use scale = 1 and encode dimensions into orientation matrix columns
   // so that: right = (width, 0, 0), forward = (0, depth, 0), up = (0, 0, height).
   const orientation = [
@@ -77,18 +77,18 @@ function createBuilding({ centerX, centerY, width, depth, height, color }) {
   ];
 
   return {
-    model: buildingUnitModel,
-    x: centerX,
-    y: centerY,
+    model: buildingModel,
+    x,
+    y,
     z: 0, // on ground
     orientation,
     scale: 1,
     color,
-    lineWidth: buildingUnitModel.lineWidth,
+    lineWidth: buildingModel.lineWidth,
     // store dimensions so transform can use them
-    _width: width,
-    _depth: depth,
-    _height: height,
+    width,
+    depth,
+    height,
   };
 }
 
@@ -109,20 +109,20 @@ function addCity() {
       const numBuildings = 1 + Math.floor(Math.random() * 5); // 1–5 per block
 
       for (let i = 0; i < numBuildings; i++) {
-        const bw = 10 + Math.random() * 20; // 10–30 m width
-        const bd = 10 + Math.random() * 20; // 10–30 m depth
-        const bh = 10 + Math.random() * 70; // 10–80 m height
+        const width = 10 + Math.random() * 20; // 10–30 m width
+        const depth = 10 + Math.random() * 20; // 10–30 m depth
+        const height = 10 + Math.random() * 70; // 10–80 m height
 
         // pick a center so building stays inside [buildMin, buildMax]
-        const localXRange = buildMax - buildMin - bw;
-        const localYRange = buildMax - buildMin - bd;
+        const localXRange = buildMax - buildMin - width;
+        const localYRange = buildMax - buildMin - depth;
         if (localXRange <= 0 || localYRange <= 0) continue;
 
-        const localX = buildMin + bw / 2 + Math.random() * localXRange;
-        const localY = buildMin + bd / 2 + Math.random() * localYRange;
+        const localX = buildMin + width / 2 + Math.random() * localXRange;
+        const localY = buildMin + depth / 2 + Math.random() * localYRange;
 
-        const worldX = blockCenterX + localX;
-        const worldY = blockCenterY + localY;
+        const x = blockCenterX + localX;
+        const y = blockCenterY + localY;
 
         const color = {
           r: 140 + Math.floor(Math.random() * 60),
@@ -131,13 +131,14 @@ function addCity() {
         };
 
         const b = createBuilding({
-          centerX: worldX,
-          centerY: worldY,
-          width: bw,
-          depth: bd,
-          height: bh,
+          x,
+          y,
+          width,
+          depth,
+          height,
           color,
         });
+
         buildings.push(b);
       }
     }
