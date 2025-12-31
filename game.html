@@ -1,29 +1,26 @@
-<style>
-  body {
-    background-color: #333;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    padding: 20px;
-  }
-  canvas {
-    background-color: #000;
-    border: 2px solid #666;
-  }
-</style>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Flight Demo</title>
+    <style>
+      body {
+        background-color: #333;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        padding: 20px;
+      }
+      canvas {
+        background-color: #000;
+        border: 2px solid #666;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="pilotViewCanvas" width="600" height="600"></canvas>
+    <canvas id="topViewCanvas" width="600" height="600"></canvas>
 
-<!-- Pilot View -->
-<canvas id="pilotViewCanvas" width="600" height="600"></canvas>
-
-<!-- Top-Down Satellite View -->
-<canvas id="topViewCanvas" width="600" height="600"></canvas>
-
-<script src="math.js"></script>
-<script src="models.js"></script>
-<script src="profiling.js"></script>
-<script src="fps.js"></script>
-<script src="projection.js"></script>
-<script src="draw.js"></script>
-<script src="input.js"></script>
-<script src="game.js"></script>
-<script src="setup.js"></script>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

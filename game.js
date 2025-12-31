@@ -1,3 +1,31 @@
+import { mat3RotAxis, mat3Mul } from "./math.js";
+import { keys } from "./input.js";
+import { updateFPS, fps } from "./fps.js";
+import { profilingCheck, profilingFlush, profilingState } from "./profiling.js";
+import { pilotView, topView } from "./projection.js";
+import { clear, draw } from "./draw.js";
+import {
+  lookSpeed,
+  rotSpeedRoll,
+  rotSpeedPitch,
+  rotSpeedYaw,
+  plane,
+  pilot,
+  topCamera,
+  ground,
+  buildings,
+  cubes,
+  airplanes,
+  FOCAL_LENGTH,
+  MAX_TILE_DIST,
+} from "./setup.js";
+
+let paused = false;
+let spaceKeyDown = false;
+let pausing = false;
+
+let lastTimeMs = 0;
+
 // --- PHYSICS ---
 
 // Pilot Look (apply azimuth/elevation changes over time)
@@ -76,6 +104,27 @@ function moveForward(dtSeconds) {
   plane.z += forward.z * speed * dtSeconds;
 }
 
+function pauseControl() {
+  if (keys.Space) {
+    if (!spaceKeyDown) {
+      if (!paused) {
+        pausing = true;
+        paused = true;
+      }
+      spaceKeyDown = true;
+    }
+  } else {
+    if (spaceKeyDown) {
+      if (pausing) {
+        pausing = false;
+      } else {
+        paused = false;
+      }
+      spaceKeyDown = false;
+    }
+  }
+}
+
 function updatePhysics(dtSeconds) {
   pauseControl();
   pilotLookAround(dtSeconds);
@@ -97,28 +146,6 @@ function updatePhysics(dtSeconds) {
   airplanes[0].scale = plane.scale;
 }
 
-function pauseControl() {
-  if (keys.Space) {
-    if (!spaceKeyDown) {
-      if (!paused) {
-        pausing = true;
-        paused = true;
-      }
-      spaceKeyDown = true;
-    }
-  } else {
-    if (spaceKeyDown) {
-      if (pausing) {
-        pausing = false;
-      } else {
-        paused = false;
-        frameCountForProfile = 0;
-      }
-      spaceKeyDown = false;
-    }
-  }
-}
-
 function getCenterOfMass(obj) {
   let sumX = 0;
   let sumY = 0;
@@ -136,7 +163,7 @@ function getCenterOfMass(obj) {
   };
 }
 
-function getObjectDepthForSort(obj, projection) {
+export function getObjectDepthForSort(obj, projection) {
   // Use center if available, else approximate by first point or position
   let cx, cy, cz;
 
@@ -232,44 +259,10 @@ function getVisibleObjects(group) {
   return out;
 }
 
-function render(nowMs) {
-  const dtMs = nowMs - lastTimeMs;
-  lastTimeMs = nowMs;
-
-  const dtSeconds = paused ? 0 : dtMs / 1000;
-
-  updateFPS(nowMs);
-  profilingCheck();
-
-  updatePhysics(dtSeconds);
-  if (doProfile) physicsTimestamp = performance.now();
-
-  updateTopCamera(cubes);
-  if (doProfile) cameraTimestamp = performance.now();
-
-  const visibleGround = getVisibleObjects(ground);
-  if (doProfile) groundTimestamp = performance.now();
-
-  renderPilotView(visibleGround);
-  if (doProfile) pilotViewTimestamp = performance.now();
-
-  renderTopView(visibleGround);
-  if (doProfile) topViewTimestamp = performance.now();
-
-  renderHUD();
-
-  if (doProfile) {
-    hudTimestamp = performance.now();
-    profilingFlush();
-  }
-
-  requestAnimationFrame(render);
-}
-
 let pilotSortFrameCounter = 0;
 let cachedBuildingsSortedPilot = [];
 
-function renderPilotView(visibleGround) {
+function renderPilotView(visibleGround, ctxPilot) {
   pilotSortFrameCounter++;
 
   const visibleBuildings = getVisibleObjects(buildings);
@@ -298,7 +291,7 @@ function renderPilotView(visibleGround) {
   draw(ctxPilot, airplanesSortedPilot, pilotView);
 }
 
-function renderTopView(visibleGround) {
+function renderTopView(visibleGround, ctxTop) {
   /*
   const buildingsSortedTop = [...buildings].sort(
     (a, b) =>
@@ -320,7 +313,7 @@ function renderTopView(visibleGround) {
   draw(ctxTop, airplanesSortedTop, topView);
 }
 
-function renderHUD() {
+function renderHUD(ctxTop) {
   ctxTop.fillRect(0, 0, 360, 80);
   ctxTop.fillStyle = "white";
   ctxTop.font = "16px monospace";
@@ -345,4 +338,50 @@ function renderHUD() {
 
   // FPS
   ctxTop.fillText(`FPS: ${fps.toFixed(1)}`, 200, 20);
+}
+
+export function startGame(ctxPilot, ctxTop) {
+  requestAnimationFrame((nowMs) => {
+    lastTimeMs = nowMs;
+    requestAnimationFrame(renderFrame.bind(null, ctxPilot, ctxTop));
+  });
+}
+
+function renderFrame(ctxPilot, ctxTop, nowMs) {
+  const dtMs = nowMs - lastTimeMs;
+  lastTimeMs = nowMs;
+
+  const dtSeconds = paused ? 0 : dtMs / 1000;
+
+  updateFPS(nowMs);
+  profilingCheck(paused);
+
+  updatePhysics(dtSeconds);
+  if (profilingState.doProfile)
+    profilingState.physicsTimestamp = performance.now();
+
+  updateTopCamera(cubes);
+  if (profilingState.doProfile)
+    profilingState.cameraTimestamp = performance.now();
+
+  const visibleGround = getVisibleObjects(ground);
+  if (profilingState.doProfile)
+    profilingState.groundTimestamp = performance.now();
+
+  renderPilotView(visibleGround, ctxPilot);
+  if (profilingState.doProfile)
+    profilingState.pilotViewTimestamp = performance.now();
+
+  renderTopView(visibleGround, ctxTop);
+  if (profilingState.doProfile)
+    profilingState.topViewTimestamp = performance.now();
+
+  renderHUD(ctxTop);
+
+  if (profilingState.doProfile) {
+    profilingState.hudTimestamp = performance.now();
+    profilingFlush();
+  }
+
+  requestAnimationFrame(renderFrame.bind(null, ctxPilot, ctxTop));
 }

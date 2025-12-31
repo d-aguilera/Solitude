@@ -1,3 +1,70 @@
+import {
+  cityBlockModel,
+  cubeModel,
+  buildingModel,
+  airplaneModel,
+} from "./models.js";
+
+// --- SETUP CONTEXTS ---
+export const WIDTH = 600;
+export const HEIGHT = 600;
+
+const canvas = document.getElementById("pilotViewCanvas");
+canvas.width = WIDTH;
+canvas.height = HEIGHT;
+export const ctxPilot = canvas.getContext("2d");
+
+const canvasTop = document.getElementById("topViewCanvas");
+canvasTop.width = WIDTH;
+canvasTop.height = HEIGHT;
+export const ctxTop = canvasTop.getContext("2d");
+
+// --- GLOBAL PARAMETERS ---
+export const FIELD_OF_VIEW = 90;
+export const FOCAL_LENGTH = getFocalLength();
+export const MAX_TILE_DIST = 2000; // e.g. show tiles within 2000 m radius of plane
+
+// Rates in radians per second
+export const lookSpeed = 1.5; // how fast the pilot can look around
+export const rotSpeedRoll = 1.0; // roll rate (rad/s)
+export const rotSpeedPitch = 0.8; // pitch rate (rad/s)
+export const rotSpeedYaw = 0.5; // yaw rate (rad/s)
+
+// --- STATE ---
+
+export const plane = {
+  x: 0, // meters
+  y: -1000, // meters
+  z: 100, // meters altitude
+  // Orientation as a 3x3 matrix, columns = local axes in world space
+  // Start pointing along +Y
+  orientation: [
+    [1, 0, 0], // right (column 0)
+    [0, 1, 0], // forward (column 1)
+    [0, 0, 1], // up (column 2)
+  ],
+  speed: 250, // m/s, ~485 knots (subsonic “fast jet” cruise)
+  scale: 15, // meters, approximate F-16 length
+};
+
+export const pilot = {
+  azimuth: 0,
+  elevation: 0,
+};
+
+export const topCamera = {
+  x: 0,
+  y: 0,
+  z: 200,
+};
+
+export const ground = [];
+export const buildings = [];
+export const cubes = [];
+export const airplanes = [];
+
+export const sun = { x: 0.3, y: 0.5, z: 1.0 }; // arbitrary
+
 function clone(obj) {
   return { ...obj, points: obj.points.map((p) => ({ ...p })) };
 }
@@ -35,6 +102,23 @@ function move(obj, { dx, dy, dz }) {
     p.z += dz;
   }
   return obj;
+}
+
+function getCenterOfMass(obj) {
+  let sumX = 0;
+  let sumY = 0;
+  let sumZ = 0;
+  for (let p of obj.points) {
+    sumX += p.x;
+    sumY += p.y;
+    sumZ += p.z;
+  }
+  const n = obj.points.length;
+  return {
+    x: sumX / n,
+    y: sumY / n,
+    z: sumZ / n,
+  };
 }
 
 function addGround() {
@@ -163,81 +247,7 @@ function getFocalLength() {
   return 1 / Math.tan(fovRad / 2);
 }
 
-// --- SETUP CONTEXTS ---
-const WIDTH = 600;
-const HEIGHT = 600;
-
-const canvas = document.getElementById("pilotViewCanvas");
-canvas.width = WIDTH;
-canvas.height = HEIGHT;
-const ctxPilot = canvas.getContext("2d");
-
-const canvasTop = document.getElementById("topViewCanvas");
-canvasTop.width = WIDTH;
-canvasTop.height = HEIGHT;
-const ctxTop = canvasTop.getContext("2d");
-
-// --- GLOBAL PARAMETERS ---
-const FIELD_OF_VIEW = 90;
-const FOCAL_LENGTH = getFocalLength();
-const MAX_TILE_DIST = 2000; // e.g. show tiles within 2000 m radius of plane
-
-// Rates in radians per second
-const lookSpeed = 1.5; // how fast the pilot can look around
-const rotSpeedRoll = 1.0; // roll rate (rad/s)
-const rotSpeedPitch = 0.8; // pitch rate (rad/s)
-const rotSpeedYaw = 0.5; // yaw rate (rad/s)
-
-// --- STATE ---
-
-const plane = {
-  x: 0, // meters
-  y: -1000, // meters
-  z: 100, // meters altitude
-  // Orientation as a 3x3 matrix, columns = local axes in world space
-  // Start pointing along +Y
-  orientation: [
-    [1, 0, 0], // right (column 0)
-    [0, 1, 0], // forward (column 1)
-    [0, 0, 1], // up (column 2)
-  ],
-  speed: 250, // m/s, ~485 knots (subsonic “fast jet” cruise)
-  scale: 15, // meters, approximate F-16 length
-};
-
-const pilot = {
-  azimuth: 0,
-  elevation: 0,
-};
-
-const topCamera = {
-  x: 0,
-  y: 0,
-  z: 200,
-};
-
-const ground = [];
-const buildings = [];
-const cubes = [];
-const airplanes = [];
-
 addGround();
 addCubes();
 addAirplane();
 addCity();
-
-const sun = { x: 0.3, y: 0.5, z: 1.0 }; // arbitrary
-
-// --- PAUSE ---
-let paused = false;
-let spaceKeyDown = false;
-let pausing = false;
-
-// --- FIRST FRAME ---
-requestAnimationFrame((nowMs) => {
-  lastTimeMs = nowMs;
-  lastFpsUpdateMs = nowMs;
-});
-
-// --- MAIN LOOP ---
-requestAnimationFrame(render);

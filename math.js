@@ -1,4 +1,4 @@
-function rotate2D(a, b, angle) {
+export function rotate2D(a, b, angle) {
   const c = Math.cos(angle);
   const s = Math.sin(angle);
 
@@ -11,7 +11,7 @@ function rotate2D(a, b, angle) {
 // --- 3D MATH HELPERS ---
 
 // Multiply 3x3 matrices: C = A * B
-function mat3Mul(A, B) {
+export function mat3Mul(A, B) {
   const C = [
     [0, 0, 0],
     [0, 0, 0],
@@ -26,7 +26,7 @@ function mat3Mul(A, B) {
 }
 
 // Multiply a 3x3 matrix by a vector: v' = M * v
-function mat3MulVec(M, v) {
+export function mat3MulVec(M, v) {
   return {
     x: M[0][0] * v.x + M[0][1] * v.y + M[0][2] * v.z,
     y: M[1][0] * v.x + M[1][1] * v.y + M[1][2] * v.z,
@@ -35,7 +35,7 @@ function mat3MulVec(M, v) {
 }
 
 // Build a rotation matrix about X axis by angle (radians)
-function mat3RotX(angle) {
+export function mat3RotX(angle) {
   const c = Math.cos(angle);
   const s = Math.sin(angle);
   return [
@@ -46,7 +46,7 @@ function mat3RotX(angle) {
 }
 
 // Build a rotation matrix about Y axis by angle (radians)
-function mat3RotY(angle) {
+export function mat3RotY(angle) {
   const c = Math.cos(angle);
   const s = Math.sin(angle);
   return [
@@ -57,7 +57,7 @@ function mat3RotY(angle) {
 }
 
 // Build a rotation matrix about Z axis by angle (radians)
-function mat3RotZ(angle) {
+export function mat3RotZ(angle) {
   const c = Math.cos(angle);
   const s = Math.sin(angle);
   return [
@@ -68,7 +68,7 @@ function mat3RotZ(angle) {
 }
 
 // Transpose of 3x3 (used as inverse because orientation is orthonormal)
-function mat3Transpose(M) {
+export function mat3Transpose(M) {
   return [
     [M[0][0], M[1][0], M[2][0]],
     [M[0][1], M[1][1], M[2][1]],
@@ -76,7 +76,7 @@ function mat3Transpose(M) {
   ];
 }
 
-function mat3RotAxis(axis, angle) {
+export function mat3RotAxis(axis, angle) {
   const { x, y, z } = axis;
   const len = Math.hypot(x, y, z);
   if (len === 0) {
@@ -100,7 +100,7 @@ function mat3RotAxis(axis, angle) {
   ];
 }
 
-function transformPointsToWorld(points, R, s, tx, ty, tz) {
+export function transformPointsToWorld(points, R, s, tx, ty, tz) {
   const out = new Array(points.length);
 
   for (let i = 0; i < points.length; i++) {

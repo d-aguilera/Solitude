@@ -1,9 +1,9 @@
-const CITY_BLOCK = "CITY_BLOCK";
-const BUILDING = "BUILDING";
-const CUBE = "CUBE";
-const AIRPLANE = "AIRPLANE";
+export const CITY_BLOCK = "CITY_BLOCK";
+export const BUILDING = "BUILDING";
+export const CUBE = "CUBE";
+export const AIRPLANE = "AIRPLANE";
 
-const cityBlockModel = {
+export const cityBlockModel = {
   objectType: CITY_BLOCK,
   points: [
     { x: 0.45, y: 0.45, z: 0 },
@@ -16,7 +16,7 @@ const cityBlockModel = {
   lineWidth: 0.1,
 };
 
-const buildingModel = {
+export const buildingModel = {
   objectType: BUILDING,
   points: [
     // bottom face
@@ -49,7 +49,7 @@ const buildingModel = {
   lineWidth: 0.8,
 };
 
-const cubeModel = {
+export const cubeModel = {
   objectType: CUBE,
   points: [
     // bottom face
@@ -87,7 +87,7 @@ const cubeModel = {
   lineWidth: 1,
 };
 
-const airplaneModel = {
+export const airplaneModel = {
   objectType: AIRPLANE,
   points: [
     { x: 0, y: 0.5, z: 0 }, // 0: Nose

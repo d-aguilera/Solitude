@@ -1,4 +1,6 @@
-const keys = {
+import { pilot } from "./setup.js";
+
+export const keys = {
   ArrowUp: false,
   ArrowDown: false,
   ArrowLeft: false,
@@ -19,6 +21,7 @@ window.addEventListener("keydown", (e) => {
     pilot.elevation = 0;
   }
 });
+
 window.addEventListener("keyup", (e) => {
   if (keys.hasOwnProperty(e.code)) keys[e.code] = false;
 });

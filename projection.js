@@ -1,6 +1,16 @@
+import { rotate2D } from "./math.js";
+import {
+  plane,
+  pilot,
+  WIDTH,
+  HEIGHT,
+  topCamera,
+  FOCAL_LENGTH,
+} from "./setup.js";
+
 // --- PROJECTION 1: PILOT VIEW ---
 
-function pilotView({ x, y, z }) {
+export function pilotView({ x, y, z }) {
   // Vector from plane to point in world space
   const dx = x - plane.x;
   const dy = y - plane.y;
@@ -43,7 +53,7 @@ function pilotView({ x, y, z }) {
 
 // --- PROJECTION 2: TOP VIEW ---
 
-function topView({ x, y, z }) {
+export function topView({ x, y, z }) {
   // Use dynamic camera position
   const dx = x - topCamera.x;
   const dy = y - topCamera.y;
