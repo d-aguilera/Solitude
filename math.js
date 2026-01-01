@@ -34,6 +34,39 @@ export function mat3MulVec(M, v) {
   };
 }
 
+// Transform a normal from model space to world space given orientation + per-axis scale
+export function transformNormalToWorld(normal, R, width, depth, height) {
+  // For purely uniform scale, we could just do mat3MulVec(R, normal).
+  // Here buildings can have per-axis dimensions encoded as width/depth/height,
+  // which correspond to non-uniform scale along the local axes.
+  //
+  // To account for non-uniform scaling, we need to multiply by the inverse-transpose
+  // of the scale*rotation matrix. For our diagonal-like scaling, that effectively
+  // means dividing by each axis scale after rotating.
+  //
+  // Approximate: worldNormal = R * (normal / axisScale), then renormalize.
+  const sx = width || 1;
+  const sy = depth || 1;
+  const sz = height || 1;
+
+  const nLocal = {
+    x: normal.x / sx,
+    y: normal.y / sy,
+    z: normal.z / sz,
+  };
+
+  const nw = mat3MulVec(R, nLocal);
+
+  const len = Math.hypot(nw.x, nw.y, nw.z);
+  if (len > 0) {
+    nw.x /= len;
+    nw.y /= len;
+    nw.z /= len;
+  }
+
+  return nw;
+}
+
 // Build a rotation matrix about X axis by angle (radians)
 export function mat3RotX(angle) {
   const c = Math.cos(angle);

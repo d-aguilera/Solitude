@@ -1,4 +1,4 @@
-import { transformPointsToWorld } from "./math.js";
+import { transformPointsToWorld, transformNormalToWorld } from "./math.js";
 import { topView } from "./projection.js";
 import { profile, add as profileAdd } from "./profiling.js";
 import { WIDTH, HEIGHT, plane, topCamera, sun } from "./setup.js";
@@ -70,7 +70,14 @@ export function draw(context, group, projection) {
 
       if (faces && faces.length) {
         profile("DRAW", "faces", () => {
-          drawFilledModel(context, worldPoints, faces, baseColor, projection);
+          drawFilledModel(
+            context,
+            worldPoints,
+            faces,
+            baseColor,
+            projection,
+            obj
+          );
         });
       } else {
         profile("DRAW", "lines", () => {
@@ -196,23 +203,56 @@ export function drawFilledModel(
   worldPoints,
   faces,
   baseColor,
-  projection
+  projection,
+  obj
 ) {
   // Build list of face records with depth for sorting
   const faceRecords = [];
+
+  // Optional per-model cached normals (model-space)
+  const model = obj && obj.model ? obj.model : obj;
+  const cachedNormals = model && model.faceNormals ? model.faceNormals : null;
+
+  // Orientation and per-axis dimensions (if any)
+  const R = obj && obj.orientation ? obj.orientation : null;
+  const width = obj && obj.width ? obj.width : 1;
+  const depth = obj && obj.depth ? obj.depth : 1;
+  const height = obj && obj.height ? obj.height : 1;
 
   for (let i = 0; i < faces.length; i++) {
     const indices = faces[i];
 
     // Optional back-face culling; disable temporarily if debugging:
     const faceIsVisible = profile("FACES", "culling", () =>
-      isFaceVisible(indices, worldPoints, projection)
+      isFaceVisible(
+        indices,
+        worldPoints,
+        projection,
+        cachedNormals,
+        i,
+        R,
+        width,
+        depth,
+        height
+      )
     );
 
     if (!faceIsVisible) continue;
 
     const N = profile("FACES", "normal", () => {
-      // Compute face normal (same as in isFaceVisible; we could refactor, but keep it simple)
+      if (cachedNormals && R) {
+        // Use cached model-space normal, transform to world space
+        profileAdd("NORMAL", "cachedCount", 1);
+        return transformNormalToWorld(
+          cachedNormals[i],
+          R,
+          width,
+          depth,
+          height
+        );
+      }
+
+      // Fallback: compute face normal (same as in isFaceVisible; we could refactor, but keep it simple)
       const p0 = worldPoints[indices[0]];
       const p1 = worldPoints[indices[1]];
       const p2 = worldPoints[indices[2]];
@@ -244,6 +284,7 @@ export function drawFilledModel(
         normal.z /= nLen;
       }
 
+      profileAdd("NORMAL", "fallbackCount", 1);
       return normal;
     });
 
@@ -320,28 +361,54 @@ export function fillPoly(context, points, color) {
   context.fill();
 }
 
-export function isFaceVisible(indices, worldPoints, projection) {
-  const p0 = worldPoints[indices[0]];
-  const p1 = worldPoints[indices[1]];
-  const p2 = worldPoints[indices[2]];
+export function isFaceVisible(
+  indices,
+  worldPoints,
+  projection,
+  cachedNormals,
+  faceIndex,
+  R,
+  width,
+  depth,
+  height
+) {
+  let n;
 
-  const v1 = {
-    x: p1.x - p0.x,
-    y: p1.y - p0.y,
-    z: p1.z - p0.z,
-  };
-  const v2 = {
-    x: p2.x - p0.x,
-    y: p2.y - p0.y,
-    z: p2.z - p0.z,
-  };
+  if (cachedNormals && R && typeof faceIndex === "number") {
+    // Transform cached model-space normal to world space
+    n = transformNormalToWorld(
+      cachedNormals[faceIndex],
+      R,
+      width,
+      depth,
+      height
+    );
+    profileAdd("NORMAL", "cachedCount", 1);
+  } else {
+    const p0 = worldPoints[indices[0]];
+    const p1 = worldPoints[indices[1]];
+    const p2 = worldPoints[indices[2]];
 
-  // normal = v1 x v2
-  const n = {
-    x: v1.y * v2.z - v1.z * v2.y,
-    y: v1.z * v2.x - v1.x * v2.z,
-    z: v1.x * v2.y - v1.y * v2.x,
-  };
+    const v1 = {
+      x: p1.x - p0.x,
+      y: p1.y - p0.y,
+      z: p1.z - p0.z,
+    };
+    const v2 = {
+      x: p2.x - p0.x,
+      y: p2.y - p0.y,
+      z: p2.z - p0.z,
+    };
+
+    // normal = v1 x v2
+    n = {
+      x: v1.y * v2.z - v1.z * v2.y,
+      y: v1.z * v2.x - v1.x * v2.z,
+      z: v1.x * v2.y - v1.y * v2.x,
+    };
+
+    profileAdd("NORMAL", "fallbackCount", 1);
+  }
 
   let cx, cy, cz;
   if (projection === topView) {
@@ -354,6 +421,7 @@ export function isFaceVisible(indices, worldPoints, projection) {
     cz = plane.z;
   }
 
+  const p0 = worldPoints[indices[0]];
   const view = {
     x: p0.x - cx,
     y: p0.y - cy,

@@ -3,6 +3,52 @@ export const BUILDING = "BUILDING";
 export const CUBE = "CUBE";
 export const AIRPLANE = "AIRPLANE";
 
+function computeFaceNormals(model) {
+  if (!model.faces) return null;
+
+  const normals = new Array(model.faces.length);
+  const { points, faces } = model;
+
+  for (let i = 0; i < faces.length; i++) {
+    const indices = faces[i];
+
+    const p0 = points[indices[0]];
+    const p1 = points[indices[1]];
+    const p2 = points[indices[2]];
+
+    const v1 = {
+      x: p1.x - p0.x,
+      y: p1.y - p0.y,
+      z: p1.z - p0.z,
+    };
+
+    const v2 = {
+      x: p2.x - p0.x,
+      y: p2.y - p0.y,
+      z: p2.z - p0.z,
+    };
+
+    // Face normal
+    const normal = {
+      x: v1.y * v2.z - v1.z * v2.y,
+      y: v1.z * v2.x - v1.x * v2.z,
+      z: v1.x * v2.y - v1.y * v2.x,
+    };
+
+    // Normalize normal
+    const nLen = Math.hypot(normal.x, normal.y, normal.z);
+    if (nLen > 0) {
+      normal.x /= nLen;
+      normal.y /= nLen;
+      normal.z /= nLen;
+    }
+
+    normals[i] = normal;
+  }
+
+  return normals;
+}
+
 export const cityBlockModel = {
   objectType: CITY_BLOCK,
   points: [
@@ -49,6 +95,9 @@ export const buildingModel = {
   lineWidth: 0.8,
 };
 
+// Precompute model-space face normals for buildingModel
+buildingModel.faceNormals = computeFaceNormals(buildingModel);
+
 export const cubeModel = {
   objectType: CUBE,
   points: [
@@ -86,6 +135,9 @@ export const cubeModel = {
   color: { r: 200, g: 0, b: 0 }, // red
   lineWidth: 1,
 };
+
+// Precompute model-space face normals for cubeModel
+cubeModel.faceNormals = computeFaceNormals(cubeModel);
 
 export const airplaneModel = {
   objectType: AIRPLANE,
