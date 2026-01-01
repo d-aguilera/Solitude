@@ -1,145 +1,103 @@
-// --- PROFILING ---
+import { keys } from "./input.js";
+import { paused } from "./pause.js";
 
-export const profileEveryNFrames = 180;
+const profileEveryMs = 3000;
 
-export const profilingState = {
-  doProfile: false,
-  frameCountForProfile: 0,
+let pKeyDown = false;
+let lastProfileStartMs = 0;
+let doProfile = false;
+let counters;
 
-  startTimestamp: 0,
-  physicsTimestamp: 0,
-  physicsTime: 0,
-  cameraTimestamp: 0,
-  cameraTime: 0,
-  groundTimestamp: 0,
-  groundTime: 0,
-  pilotViewTimestamp: 0,
-  pilotViewTime: 0,
-  topViewTimestamp: 0,
-  topViewTime: 0,
-  hudTimestamp: 0,
-  hudTime: 0,
-  totalTime: 0,
+export let enabled = false;
 
-  drawStartTimestamp: 0,
-  singleOpTimestamp: 0,
+export function check() {
+  enabledControl();
 
-  drawTotalTime: 0,
-  drawTransformTime: 0,
-  drawFacesTime: 0,
-  drawLinesTime: 0,
-  facesCount: 0,
-  facesCullTime: 0,
-  facesNormalTime: 0,
-  facesProjectTime: 0,
-  facesSortTime: 0,
-  facesFillTime: 0,
-};
+  if (!enabled || paused) return;
 
-export function profilingCheck(paused) {
-  const ps = profilingState;
-  ps.frameCountForProfile++;
-
-  if (paused) return;
-
-  if (ps.frameCountForProfile < profileEveryNFrames) {
-    ps.doProfile = false;
+  const now = performance.now();
+  if (now - lastProfileStartMs < profileEveryMs) {
     return;
   }
 
-  ps.doProfile = true;
-  ps.frameCountForProfile = 0;
-  profilingStart();
+  lastProfileStartMs = now;
+  doProfile = true;
+  counters = {};
 }
 
-export function profilingStart() {
-  const ps = profilingState;
+export function profile(counterGroup, counterName, fn) {
+  if (!doProfile) {
+    return fn();
+  }
 
-  ps.drawTotalTime = 0;
-  ps.drawTransformTime = 0;
-  ps.drawFacesTime = 0;
-  ps.drawLinesTime = 0;
-  ps.facesCount = 0;
-  ps.facesCullTime = 0;
-  ps.facesNormalTime = 0;
-  ps.facesProjectTime = 0;
-  ps.facesSortTime = 0;
-  ps.facesFillTime = 0;
+  const markStart = `${counterGroup}:${counterName}:start`;
+  const markEnd = `${counterGroup}:${counterName}:end`;
+  const measureName = `${counterGroup}:${counterName}`;
 
-  ps.startTimestamp = performance.now();
+  performance.mark(markStart);
+  const result = fn();
+  performance.mark(markEnd);
+
+  performance.measure(measureName, markStart, markEnd);
+  const entries = performance.getEntriesByName(measureName);
+  const duration = entries[entries.length - 1].duration;
+
+  add(counterGroup, counterName, duration);
+
+  // Optional: clear marks/measures if you want to avoid buildup
+  performance.clearMarks(markStart);
+  performance.clearMarks(markEnd);
+  performance.clearMeasures(measureName);
+
+  return result;
 }
 
-export function profilingFlush() {
-  const ps = profilingState;
+export function add(counterGroup, counterName, value) {
+  if (!doProfile) return;
 
-  ps.physicsTime = ps.physicsTimestamp - ps.startTimestamp;
-  ps.cameraTime = ps.cameraTimestamp - ps.physicsTimestamp;
-  ps.groundTime = ps.groundTimestamp - ps.cameraTimestamp;
-  ps.pilotViewTime = ps.pilotViewTimestamp - ps.groundTimestamp;
-  ps.topViewTime = ps.topViewTimestamp - ps.pilotViewTimestamp;
-  ps.hudTime = ps.hudTimestamp - ps.topViewTimestamp;
-  ps.totalTime = ps.hudTimestamp - ps.startTimestamp;
+  const group = (counters[counterGroup] ??= {});
+  group[counterName] ??= 0;
+  group[counterName] += value;
+}
 
-  console.log(
-    "".concat(
-      "[PROFILE] ",
-      "total=",
-      ps.totalTime.toFixed(2),
-      ", ",
-      "physics=",
-      ps.physicsTime.toFixed(2),
-      ", ",
-      "camera=",
-      ps.cameraTime.toFixed(2),
-      ", ",
-      "ground=",
-      ps.groundTime.toFixed(2),
-      ", ",
-      "pilotView=",
-      ps.pilotViewTime.toFixed(2),
-      ", ",
-      "topView=",
-      ps.topViewTime.toFixed(2)
-    )
-  );
+export function flush() {
+  if (!doProfile) return;
 
-  console.log(
-    "".concat(
-      "[DRAW profile] ",
-      "total=",
-      ps.drawTotalTime.toFixed(2),
-      ", ",
-      "transform=",
-      ps.drawTransformTime.toFixed(2),
-      ", ",
-      "faces=",
-      ps.drawFacesTime.toFixed(2),
-      ", ",
-      "lines=",
-      ps.drawLinesTime.toFixed(2)
-    )
-  );
+  for (const group of Object.keys(counters)) {
+    console.log(
+      "".concat(
+        "[",
+        group,
+        "] ",
+        Object.entries(counters[group])
+          .map(([name, value]) => ({
+            name,
+            value,
+            isCount: name.endsWith("count") || name.endsWith("Count"),
+          }))
+          .map(
+            (x) =>
+              `${x.name}=${
+                x.isCount ? x.value : Math.round(x.value * 1000) / 1000
+              }${x.isCount ? "" : "ms"}`
+          )
+          .join(", ")
+      )
+    );
+  }
 
-  console.log(
-    "".concat(
-      "[FACES profile] ",
-      "count=",
-      ps.facesCount,
-      ", ",
-      "cull=",
-      ps.facesCullTime.toFixed(2),
-      ", ",
-      "normal=",
-      ps.facesNormalTime.toFixed(2),
-      ", ",
-      "project=",
-      ps.facesProjectTime.toFixed(2),
-      ", ",
-      "sort=",
-      ps.facesSortTime.toFixed(2),
-      ", ",
-      "fill=",
-      ps.facesFillTime.toFixed(2)
-    )
-  );
+  doProfile = false;
+}
+
+function enabledControl() {
+  if (keys.KeyP) {
+    if (!pKeyDown) {
+      enabled = !enabled;
+      pKeyDown = true;
+    }
+  } else {
+    if (pKeyDown) {
+      pKeyDown = false;
+    }
+  }
 }

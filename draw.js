@@ -1,6 +1,6 @@
 import { transformPointsToWorld } from "./math.js";
 import { topView } from "./projection.js";
-import { profilingState as ps } from "./profiling.js";
+import { profile, add as profileAdd } from "./profiling.js";
 import { WIDTH, HEIGHT, plane, topCamera, sun } from "./setup.js";
 
 // --- DRAWING HELPERS ---
@@ -13,108 +13,95 @@ export function clear(context) {
 export function draw(context, group, projection) {
   const projectedPoints = [];
 
-  if (ps.doProfile) ps.drawStartTimestamp = performance.now();
+  profile("DRAW", "total", () => {
+    group.forEach((obj) => {
+      const model = obj.model || obj;
 
-  group.forEach((obj) => {
-    const model = obj.model || obj;
+      const points = model.points;
+      const lines = model.lines;
+      const faces = model.faces;
+      const baseColor = obj.color ?? model.color;
+      const lineWidth = obj.lineWidth ?? model.lineWidth;
 
-    const points = model.points;
-    const lines = model.lines;
-    const faces = model.faces;
-    const baseColor = obj.color ?? model.color;
-    const lineWidth = obj.lineWidth ?? model.lineWidth;
+      // Convert object/model color to CSS once
+      const baseCss =
+        typeof baseColor === "string" ? baseColor : rgbToCss(baseColor);
 
-    // Convert object/model color to CSS once
-    const baseCss =
-      typeof baseColor === "string" ? baseColor : rgbToCss(baseColor);
+      let worldPoints;
 
-    let worldPoints;
+      profile("DRAW", "transform", () => {
+        // Dynamic transform?
+        const hasTransform =
+          obj.x !== undefined &&
+          obj.y !== undefined &&
+          obj.z !== undefined &&
+          obj.orientation &&
+          obj.scale !== undefined;
 
-    if (ps.doProfile) ps.singleOpTimestamp = performance.now();
+        if (hasTransform) {
+          let R = obj.orientation;
 
-    // Dynamic transform?
-    const hasTransform =
-      obj.x !== undefined &&
-      obj.y !== undefined &&
-      obj.z !== undefined &&
-      obj.orientation &&
-      obj.scale !== undefined;
-
-    if (hasTransform) {
-      let R = obj.orientation;
-
-      // If the object has per-axis dimensions, fold them into R
-      const width = obj.width;
-      const depth = obj.depth;
-      const height = obj.height;
-      if (width && depth && height) {
-        let R0 = R[0];
-        let R1 = R[1];
-        let R2 = R[2];
-        R0 = [R0[0] * width, R0[1] * depth, R0[2] * height];
-        R1 = [R1[0] * width, R1[1] * depth, R1[2] * height];
-        R2 = [R2[0] * width, R2[1] * depth, R2[2] * height];
-        R = [R0, R1, R2];
-      }
-
-      worldPoints = transformPointsToWorld(
-        points,
-        R,
-        obj.scale,
-        obj.x,
-        obj.y,
-        obj.z
-      );
-    } else {
-      worldPoints = points;
-    }
-
-    if (ps.doProfile)
-      ps.drawTransformTime += performance.now() - ps.singleOpTimestamp;
-
-    if (faces && faces.length) {
-      if (ps.doProfile) ps.singleOpTimestamp = performance.now();
-
-      drawFilledModel(context, worldPoints, faces, baseColor, projection);
-
-      if (ps.doProfile)
-        ps.singleOpTimestamp += performance.now() - ps.singleOpTimestamp;
-    } else {
-      if (ps.doProfile) ps.singleOpTimestamp = performance.now();
-
-      // wireframe-only path
-      if (lines.length == 2 && typeof lines[0] === "number") {
-        const [i, j] = lines;
-        const p1 = projection(worldPoints[i]);
-        const p2 = projection(worldPoints[j]);
-        if (p1 && p2) line(context, p1, p2, baseCss, lineWidth);
-        return;
-      }
-
-      for (let i = 0; i < lines.length; i++) {
-        const polyIndices = lines[i];
-        projectedPoints.length = 0;
-
-        for (let j = 0; j < polyIndices.length; j++) {
-          const p = projection(worldPoints[polyIndices[j]]);
-          if (!p) {
-            projectedPoints.length = 0;
-            break;
+          // If the object has per-axis dimensions, fold them into R
+          const width = obj.width;
+          const depth = obj.depth;
+          const height = obj.height;
+          if (width && depth && height) {
+            let R0 = R[0];
+            let R1 = R[1];
+            let R2 = R[2];
+            R0 = [R0[0] * width, R0[1] * depth, R0[2] * height];
+            R1 = [R1[0] * width, R1[1] * depth, R1[2] * height];
+            R2 = [R2[0] * width, R2[1] * depth, R2[2] * height];
+            R = [R0, R1, R2];
           }
-          projectedPoints.push(p);
+
+          worldPoints = transformPointsToWorld(
+            points,
+            R,
+            obj.scale,
+            obj.x,
+            obj.y,
+            obj.z
+          );
+        } else {
+          worldPoints = points;
         }
-        if (projectedPoints.length > 0)
-          poly(context, projectedPoints, baseCss, lineWidth);
+      });
+
+      if (faces && faces.length) {
+        profile("DRAW", "faces", () => {
+          drawFilledModel(context, worldPoints, faces, baseColor, projection);
+        });
+      } else {
+        profile("DRAW", "lines", () => {
+          // wireframe-only path
+          if (lines.length == 2 && typeof lines[0] === "number") {
+            const [i, j] = lines;
+            const p1 = projection(worldPoints[i]);
+            const p2 = projection(worldPoints[j]);
+            if (p1 && p2) line(context, p1, p2, baseCss, lineWidth);
+            return;
+          }
+
+          for (let i = 0; i < lines.length; i++) {
+            const polyIndices = lines[i];
+            projectedPoints.length = 0;
+
+            for (let j = 0; j < polyIndices.length; j++) {
+              const p = projection(worldPoints[polyIndices[j]]);
+              if (!p) {
+                projectedPoints.length = 0;
+                break;
+              }
+              projectedPoints.push(p);
+            }
+            if (projectedPoints.length > 0)
+              poly(context, projectedPoints, baseCss, lineWidth);
+          }
+        });
       }
-
-      if (ps.doProfile)
-        ps.singleOpTimestamp += performance.now() - ps.singleOpTimestamp;
-    }
+    });
   });
-
-  if (ps.doProfile) {
-    ps.drawTotalTime += performance.now() - ps.drawStartTimestamp;
-  }
 }
 
 export function line(context, p1, p2, color, lineWidth) {
@@ -217,103 +204,93 @@ export function drawFilledModel(
   for (let i = 0; i < faces.length; i++) {
     const indices = faces[i];
 
-    if (ps.doProfile) ps.singleOpTimestamp = performance.now();
-
     // Optional back-face culling; disable temporarily if debugging:
-    if (!isFaceVisible(indices, worldPoints, projection)) continue;
+    const faceIsVisible = profile("FACES", "culling", () =>
+      isFaceVisible(indices, worldPoints, projection)
+    );
 
-    if (ps.doProfile)
-      ps.singleOpTimestamp += performance.now() - ps.singleOpTimestamp;
+    if (!faceIsVisible) continue;
 
-    // Compute face normal (same as in isFaceVisible; we could refactor, but keep it simple)
-    const p0 = worldPoints[indices[0]];
-    const p1 = worldPoints[indices[1]];
-    const p2 = worldPoints[indices[2]];
+    const N = profile("FACES", "normal", () => {
+      // Compute face normal (same as in isFaceVisible; we could refactor, but keep it simple)
+      const p0 = worldPoints[indices[0]];
+      const p1 = worldPoints[indices[1]];
+      const p2 = worldPoints[indices[2]];
 
-    const v1 = {
-      x: p1.x - p0.x,
-      y: p1.y - p0.y,
-      z: p1.z - p0.z,
-    };
-    const v2 = {
-      x: p2.x - p0.x,
-      y: p2.y - p0.y,
-      z: p2.z - p0.z,
-    };
+      const v1 = {
+        x: p1.x - p0.x,
+        y: p1.y - p0.y,
+        z: p1.z - p0.z,
+      };
 
-    if (ps.doProfile) ps.singleOpTimestamp = performance.now();
+      const v2 = {
+        x: p2.x - p0.x,
+        y: p2.y - p0.y,
+        z: p2.z - p0.z,
+      };
 
-    // Face normal
-    const normal = {
-      x: v1.y * v2.z - v1.z * v2.y,
-      y: v1.z * v2.x - v1.x * v2.z,
-      z: v1.x * v2.y - v1.y * v2.x,
-    };
+      // Face normal
+      const normal = {
+        x: v1.y * v2.z - v1.z * v2.y,
+        y: v1.z * v2.x - v1.x * v2.z,
+        z: v1.x * v2.y - v1.y * v2.x,
+      };
 
-    // Normalize normal for nicer lighting
-    const nLen = Math.hypot(normal.x, normal.y, normal.z);
-    if (nLen > 0) {
-      normal.x /= nLen;
-      normal.y /= nLen;
-      normal.z /= nLen;
-    }
+      // Normalize normal for nicer lighting
+      const nLen = Math.hypot(normal.x, normal.y, normal.z);
+      if (nLen > 0) {
+        normal.x /= nLen;
+        normal.y /= nLen;
+        normal.z /= nLen;
+      }
 
-    if (ps.doProfile)
-      ps.singleOpTimestamp += performance.now() - ps.singleOpTimestamp;
+      return normal;
+    });
 
     // Project vertices
     const projected = [];
     let avgDepth = 0;
     let valid = true;
 
-    if (ps.doProfile) ps.singleOpTimestamp = performance.now();
+    profile("FACES", "project", () => {
+      for (let j = 0; j < indices.length; j++) {
+        const wp = worldPoints[indices[j]];
+        const p = projection(wp);
+        if (!p) {
+          valid = false;
+          break;
+        }
+        projected.push(p);
 
-    for (let j = 0; j < indices.length; j++) {
-      const wp = worldPoints[indices[j]];
-      const p = projection(wp);
-      if (!p) {
-        valid = false;
-        break;
+        // Approximate depth: for pilotView use distance along view direction (Y in camera space),
+        // but we don’t have that here. As a cheap proxy we can use -wp.z or the distance to plane.
+        // For now use distance to camera position if available:
+        avgDepth += getDepthForSort(wp, projection);
       }
-      projected.push(p);
-
-      // Approximate depth: for pilotView use distance along view direction (Y in camera space),
-      // but we don’t have that here. As a cheap proxy we can use -wp.z or the distance to plane.
-      // For now use distance to camera position if available:
-      avgDepth += getDepthForSort(wp, projection);
-    }
-
-    if (ps.doProfile)
-      ps.singleOpTimestamp += performance.now() - ps.singleOpTimestamp;
+    });
 
     if (!valid || projected.length < 3) continue;
 
     avgDepth /= projected.length;
 
-    const color = shadeColor(baseColor, normal); // returns "rgb(...)"
+    const color = shadeColor(baseColor, N); // returns "rgb(...)"
 
     faceRecords.push({ projected, avgDepth, color });
   }
 
-  if (ps.doProfile) ps.singleOpTimestamp = performance.now();
+  profileAdd("FACES", "count", faceRecords.length);
 
   // Painter's algorithm: back-to-front
-  faceRecords.sort((a, b) => b.avgDepth - a.avgDepth);
-
-  if (ps.doProfile) {
-    ps.singleOpTimestamp += performance.now() - ps.singleOpTimestamp;
-    ps.singleOpTimestamp = performance.now();
-  }
+  profile("FACES", "sort", () => {
+    faceRecords.sort((a, b) => b.avgDepth - a.avgDepth);
+  });
 
   // Fill faces
-  for (const face of faceRecords) {
-    fillPoly(context, face.projected, face.color);
-  }
-
-  if (ps.doProfile) {
-    ps.singleOpTimestamp += performance.now() - ps.singleOpTimestamp;
-    ps.singleOpTimestamp += faces.length;
-  }
+  profile("FACES", "fill", () => {
+    for (const face of faceRecords) {
+      fillPoly(context, face.projected, face.color);
+    }
+  });
 }
 
 export function getDepthForSort(wp, projection) {
