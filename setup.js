@@ -71,6 +71,13 @@ export const topCamera = {
   x: plane.x,
   y: plane.y,
   z: plane.z + 200, // arbitrary for now
+  // orientation: columns = local axes in world space
+  // col0 = right, col1 = forward, col2 = up
+  orientation: [
+    [1, 0, 0], // right.x, forward.x, up.x
+    [0, 1, 0], // right.y, forward.y, up.y
+    [0, 0, 1], // right.z, forward.z, up.z
+  ],
 };
 
 export const sun = vecScaleToUnit({ x: 0.3, y: 0.5, z: 1.0 });

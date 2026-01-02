@@ -1,20 +1,22 @@
 import { clear, draw } from "./draw.js";
 import { fps } from "./fps.js";
-import { altitudeAboveSurface } from "./planet.js";
+import { altitudeAboveSurface, planetCenter, vecNormalize } from "./planet.js";
 import { enabled } from "./profiling.js";
-import { pilotView, topView } from "./projection.js";
+import {
+  pilotView,
+  topCameraForward,
+  topCameraRight,
+  topCameraUp,
+  topView,
+  updateTopCameraFrame,
+} from "./projection.js";
 import { airplanes, plane, planetGrid, topCamera } from "./setup.js";
 
 export function renderPilotView(ctxPilot) {
   clear(ctxPilot);
-  // Draw planet grid first (wireframe lat/long)
   draw(ctxPilot, planetGrid, pilotView);
-
-  // Draw the plane (aircraft model in airplanes[0])
   draw(ctxPilot, airplanes, pilotView);
 }
-
-import { planetCenter, vecSub, vecNormalize } from "./planet.js";
 
 export function renderTopView(ctxTop) {
   clear(ctxTop);
@@ -26,10 +28,21 @@ export function renderTopView(ctxTop) {
     z: plane.z - planetCenter.z,
   });
 
-  const distanceAbovePlane = 500;
+  const distanceAbovePlane = 100;
   topCamera.x = plane.x + radial.x * distanceAbovePlane;
   topCamera.y = plane.y + radial.y * distanceAbovePlane;
   topCamera.z = plane.z + radial.z * distanceAbovePlane;
+
+  // Update persistent camera frame to follow the new radial
+  updateTopCameraFrame(radial);
+
+  // Build orientation matrix from tcRight / tcForward / tcUp
+  // (columns = right, forward, up)
+  topCamera.orientation = [
+    [topCameraRight.x, topCameraForward.x, topCameraUp.x],
+    [topCameraRight.y, topCameraForward.y, topCameraUp.y],
+    [topCameraRight.z, topCameraForward.z, topCameraUp.z],
+  ];
 
   // Draw planet grid
   draw(ctxTop, planetGrid, topView);

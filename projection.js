@@ -1,13 +1,8 @@
 import { rotate2D } from "./math.js";
+import { makeLocalFrame } from "./planet.js";
 import {
-  planetCenter,
-  vecNormalize,
-  makeLocalFrame,
-  vecSub,
-} from "./planet.js";
-import {
-  plane,
   pilot,
+  plane,
   topCamera,
   FOCAL_LENGTH,
   HEIGHT,
@@ -58,66 +53,166 @@ export function pilotView({ x, y, z }) {
   };
 }
 
-// --- PROJECTION 2: TOP VIEW ---
-// Orthographic top-down view from the topCamera position, looking down the
-// radial axis through the plane. Plane is always at the center.
+// --- PROJECTION 2: TOP VIEW CAMERA FRAME (PERSPECTIVE) ---
+
+let topCamInitialized = false;
+
+// Top-view camera axes in world space
+export let topCameraForward = null; // towards planet
+export let topCameraRight = null;
+export let topCameraUp = null;
+
+export function updateTopCameraFrame(radialUp) {
+  // First-time initialization: choose any stable tangent frame from radialUp
+  if (
+    !topCamInitialized ||
+    !topCameraRight ||
+    !topCameraForward ||
+    !topCameraUp
+  ) {
+    const frame = makeLocalFrame(radialUp);
+    topCameraRight = frame.right;
+    // We want the camera looking down toward the planet, so forward = -radialUp
+    topCameraForward = {
+      x: -radialUp.x,
+      y: -radialUp.y,
+      z: -radialUp.z,
+    };
+    topCameraUp = frame.forward; // use tangent forward as our "screen up"
+    topCamInitialized = true;
+    return;
+  }
+
+  // Project previous up/right/forward into the new tangent plane
+
+  // 1) Project tcRight & tcUp into tangent plane
+  const dotR =
+    topCameraRight.x * radialUp.x +
+    topCameraRight.y * radialUp.y +
+    topCameraRight.z * radialUp.z;
+  let r = {
+    x: topCameraRight.x - dotR * radialUp.x,
+    y: topCameraRight.y - dotR * radialUp.y,
+    z: topCameraRight.z - dotR * radialUp.z,
+  };
+
+  const dotU =
+    topCameraUp.x * radialUp.x +
+    topCameraUp.y * radialUp.y +
+    topCameraUp.z * radialUp.z;
+  let u = {
+    x: topCameraUp.x - dotU * radialUp.x,
+    y: topCameraUp.y - dotU * radialUp.y,
+    z: topCameraUp.z - dotU * radialUp.z,
+  };
+
+  let lenR = Math.hypot(r.x, r.y, r.z);
+  let lenU = Math.hypot(u.x, u.y, u.z);
+
+  // If both axes collapse, rebuild from scratch
+  if (lenR < 1e-6 && lenU < 1e-6) {
+    const frame = makeLocalFrame(radialUp);
+    topCameraRight = frame.right;
+    topCameraUp = frame.forward;
+    topCameraForward = {
+      x: -radialUp.x,
+      y: -radialUp.y,
+      z: -radialUp.z,
+    };
+    return;
+  }
+
+  // If only one axis collapsed, reconstruct
+  if (lenR < 1e-6 && lenU >= 1e-6) {
+    // normalize u, r = radialUp × u
+    u.x /= lenU;
+    u.y /= lenU;
+    u.z /= lenU;
+    r = {
+      x: radialUp.y * u.z - radialUp.z * u.y,
+      y: radialUp.z * u.x - radialUp.x * u.z,
+      z: radialUp.x * u.y - radialUp.y * u.x,
+    };
+    lenR = Math.hypot(r.x, r.y, r.z) || 1;
+  } else if (lenU < 1e-6 && lenR >= 1e-6) {
+    // normalize r, u = r × radialUp
+    r.x /= lenR;
+    r.y /= lenR;
+    r.z /= lenR;
+    u = {
+      x: r.y * radialUp.z - r.z * radialUp.y,
+      y: r.z * radialUp.x - r.x * radialUp.z,
+      z: r.x * radialUp.y - r.y * radialUp.x,
+    };
+    lenU = Math.hypot(u.x, u.y, u.z) || 1;
+  }
+
+  // Normalize both
+  r.x /= lenR;
+  r.y /= lenR;
+  r.z /= lenR;
+
+  u.x /= lenU;
+  u.y /= lenU;
+  u.z /= lenU;
+
+  // Ensure right-handed: (radialUp, r, u)
+  // cross = radialUp × r should match u; if not, flip u
+  const cross = {
+    x: radialUp.y * r.z - radialUp.z * r.y,
+    y: radialUp.z * r.x - radialUp.x * r.z,
+    z: radialUp.x * r.y - radialUp.y * r.x,
+  };
+  const dotCrossU = cross.x * u.x + cross.y * u.y + cross.z * u.z;
+  if (dotCrossU < 0) {
+    u.x = -u.x;
+    u.y = -u.y;
+    u.z = -u.z;
+  }
+
+  // Keep continuity with previous up (avoid 180° flip over time)
+  const dotPrevU =
+    topCameraUp.x * u.x + topCameraUp.y * u.y + topCameraUp.z * u.z;
+  if (dotPrevU < 0) {
+    r.x = -r.x;
+    r.y = -r.y;
+    r.z = -r.z;
+    u.x = -u.x;
+    u.y = -u.y;
+    u.z = -u.z;
+  }
+
+  // Forward is always down along radial
+  const f = {
+    x: -radialUp.x,
+    y: -radialUp.y,
+    z: -radialUp.z,
+  };
+
+  // Store back
+  topCameraRight = r;
+  topCameraUp = u;
+  topCameraForward = f;
+}
 
 export function topView({ x, y, z }) {
-  // Vector from camera to point
   const dx = x - topCamera.x;
   const dy = y - topCamera.y;
   const dz = z - topCamera.z;
 
-  // Camera "up" is radial (from planet center to plane)
-  const up = vecNormalize({
-    x: plane.x - planetCenter.x,
-    y: plane.y - planetCenter.y,
-    z: plane.z - planetCenter.z,
-  });
+  const R = topCamera.orientation;
+  const right = { x: R[0][0], y: R[1][0], z: R[2][0] };
+  const forward = { x: R[0][1], y: R[1][1], z: R[2][1] };
+  const up = { x: R[0][2], y: R[1][2], z: R[2][2] };
 
-  // We want "forward" in the top view to match the plane plane forward direction
-  // projected into the tangent plane.
-  const planeForward = {
-    x: plane.orientation[0][1],
-    y: plane.orientation[1][1],
-    z: plane.orientation[2][1],
-  };
+  const cx = dx * right.x + dy * right.y + dz * right.z;
+  const cy = dx * up.x + dy * up.y + dz * up.z;
+  const cz = dx * forward.x + dy * forward.y + dz * forward.z;
 
-  // Project planeForward onto tangent plane (perpendicular to up)
-  const dotF =
-    planeForward.x * up.x + planeForward.y * up.y + planeForward.z * up.z;
-  let forward = {
-    x: planeForward.x - dotF * up.x,
-    y: planeForward.y - dotF * up.y,
-    z: planeForward.z - dotF * up.z,
-  };
-  const lenF = Math.hypot(forward.x, forward.y, forward.z);
-  if (lenF > 0) {
-    forward.x /= lenF;
-    forward.y /= lenF;
-    forward.z /= lenF;
-  } else {
-    // Fallback if degenerate: use makeLocalFrame
-    ({ forward } = makeLocalFrame(up));
-  }
-
-  // right = forward × up
-  const right = {
-    x: forward.y * up.z - forward.z * up.y,
-    y: forward.z * up.x - forward.x * up.z,
-    z: forward.x * up.y - forward.y * up.x,
-  };
-
-  // Project point into this local tangent frame
-  const cx = dx * right.x + dy * right.y + dz * right.z; // local right
-  const cy = dx * forward.x + dy * forward.y + dz * forward.z; // local forward
-
-  const worldSpan = 500; // world units from center to edge
-  const sx = cx / worldSpan;
-  const sy = cy / worldSpan;
+  if (cz <= 0.1) return null;
 
   return {
-    x: (0.5 + sx) * WIDTH,
-    y: (0.5 - sy) * HEIGHT,
+    x: ((cx * FOCAL_LENGTH) / cz + 0.5) * WIDTH,
+    y: (0.5 - (cy * FOCAL_LENGTH) / cz) * HEIGHT,
   };
 }
