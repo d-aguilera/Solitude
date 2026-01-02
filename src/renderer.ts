@@ -2,12 +2,12 @@ import { clear, draw } from "./draw.js";
 import { fps } from "./fps.js";
 import { altitudeAboveSurface } from "./planet.js";
 import { makePilotView, makeTopView } from "./projection.js";
-import { planetGrid, sun } from "./setup.js";
 import {
   Camera,
   InstrumentationAdapter,
   PilotState,
   Plane,
+  Scene,
   SceneObject,
 } from "./types.js";
 
@@ -26,6 +26,7 @@ interface TopViewState {
 export function renderPilotView(
   ctxPilot: CanvasRenderingContext2D,
   state: PilotViewState,
+  scene: Scene,
   instrument: InstrumentationAdapter
 ): void {
   clear(ctxPilot);
@@ -39,17 +40,17 @@ export function renderPilotView(
     pilotElevation: pilot.elevation,
   });
 
-  draw(ctxPilot, planetGrid, {
+  draw(ctxPilot, scene.planetGrid, {
     projection,
     cameraPos: { x: plane.x, y: plane.y, z: plane.z },
-    lightDir: sun,
+    lightDir: scene.sunDirection,
     instrument: instrument,
   });
 
   draw(ctxPilot, airplanes, {
     projection,
     cameraPos: { x: plane.x, y: plane.y, z: plane.z },
-    lightDir: sun,
+    lightDir: scene.sunDirection,
     instrument: instrument,
   });
 }
@@ -57,6 +58,7 @@ export function renderPilotView(
 export function renderTopView(
   ctxTop: CanvasRenderingContext2D,
   state: TopViewState,
+  scene: Scene,
   instrument: InstrumentationAdapter
 ): void {
   clear(ctxTop);
@@ -71,17 +73,17 @@ export function renderTopView(
     cameraOrientation: topCamera.orientation,
   });
 
-  draw(ctxTop, planetGrid, {
+  draw(ctxTop, scene.planetGrid, {
     projection,
     cameraPos: cameraPosition,
-    lightDir: sun,
+    lightDir: scene.sunDirection,
     instrument: instrument,
   });
 
   draw(ctxTop, airplanes, {
     projection,
     cameraPos: cameraPosition,
-    lightDir: sun,
+    lightDir: scene.sunDirection,
     instrument: instrument,
   });
 }

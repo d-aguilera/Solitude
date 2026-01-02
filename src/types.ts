@@ -83,3 +83,9 @@ export interface Renderable {
   color: string;
   lineWidth: number;
 }
+
+export interface Scene {
+  planetGrid: Model[];
+  airplanes: SceneObject[];
+  sunDirection: Vec3;
+}

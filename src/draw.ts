@@ -1,6 +1,6 @@
+import { HEIGHT, WIDTH } from "./config.js";
 import { transformPointsToWorld, vec } from "./math.js";
 import type { ScreenPoint } from "./projection.js";
-import { WIDTH, HEIGHT } from "./setup.js";
 import type {
   InstrumentationAdapter,
   Model,

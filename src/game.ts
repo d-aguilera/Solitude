@@ -25,22 +25,31 @@ import {
   type TopCameraFrameState,
 } from "./projection.js";
 import { renderPilotView, renderTopView, renderHUD } from "./renderer.js";
-import { airplanes, pilot, plane, topCamera } from "./setup.js";
-import { InstrumentationAdapter } from "./types.js";
+import { scene, pilot, plane } from "./setup.js";
+import type { Camera, InstrumentationAdapter, SceneObject } from "./types.js";
 
 let lastTimeMs = 0;
 let pKeyDown = false;
 
-// Single source of truth for the mutable flight state during the game loop.
-// This is built from the existing setup.ts singletons, but the physics code
-// no longer depends on those globals directly.
 const flightState: FlightState = {
   plane,
   pilot,
-  mainAirplane: airplanes[0],
 };
 
 let topCameraFrameState: TopCameraFrameState | null = null;
+
+const mainAirplane: SceneObject = scene.airplanes[0];
+
+const topCamera: Camera = {
+  x: plane.x,
+  y: plane.y,
+  z: plane.z + 200,
+  orientation: [
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+  ],
+};
 
 function makeControlInput(): ControlInput {
   const keys = getKeyState();
@@ -89,11 +98,7 @@ function handleProfilingToggle(input: ControlInput): void {
   }
 }
 
-function updateTopCamera(dtSeconds: number): void {
-  // Currently dtSeconds is unused, but keeping it here makes it easy
-  // to add smoothing or lag later if desired.
-  void dtSeconds;
-
+function updateTopCamera(): void {
   const plane = flightState.plane;
 
   const radial = vec.normalize({
@@ -114,6 +119,16 @@ function updateTopCamera(dtSeconds: number): void {
   topCameraFrameState = nextState;
 
   topCamera.orientation = orientation;
+}
+
+// Keep visual representation in sync with simulated plane state.
+function syncMainAirplaneToPlane(): void {
+  const plane = flightState.plane;
+  mainAirplane.x = plane.x;
+  mainAirplane.y = plane.y;
+  mainAirplane.z = plane.z;
+  mainAirplane.orientation = plane.orientation;
+  mainAirplane.scale = plane.scale;
 }
 
 function renderFrame(
@@ -142,8 +157,11 @@ function renderFrame(
       updatePhysics(dtSeconds, input, flightState);
     });
 
+    // Keep scene airplane in sync with physics plane.
+    syncMainAirplaneToPlane();
+
     // Update camera based on latest plane position/orientation.
-    updateTopCamera(dtSeconds);
+    updateTopCamera();
 
     instrument("GAME", "pilot-view", () => {
       renderPilotView(
@@ -151,8 +169,9 @@ function renderFrame(
         {
           plane: flightState.plane,
           pilot: flightState.pilot,
-          airplanes,
+          airplanes: scene.airplanes,
         },
+        scene,
         instrument
       );
     });
@@ -163,8 +182,9 @@ function renderFrame(
         {
           plane: flightState.plane,
           topCamera,
-          airplanes,
+          airplanes: scene.airplanes,
         },
+        scene,
         instrument
       );
     });

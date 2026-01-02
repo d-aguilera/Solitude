@@ -1,6 +1,6 @@
+import { FOCAL_LENGTH, HEIGHT, WIDTH } from "./config.js";
 import { rotate2D } from "./math.js";
 import { makeLocalFrame } from "./planet.js";
-import { FOCAL_LENGTH, HEIGHT, WIDTH } from "./setup.js";
 import type { Vec3, Mat3 } from "./types.js";
 
 export interface ScreenPoint {

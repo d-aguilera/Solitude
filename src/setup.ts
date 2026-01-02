@@ -1,3 +1,4 @@
+import { HEIGHT, WIDTH } from "./config.js";
 import { vec } from "./math.js";
 import { airplaneModel } from "./models.js";
 import {
@@ -7,17 +8,13 @@ import {
   generateIcosahedronSphere,
 } from "./planet.js";
 import type {
-  Camera,
   Model,
   PilotState,
   Plane,
+  Scene,
   SceneObject,
   Vec3,
 } from "./types.js";
-
-// --- SETUP CONTEXTS ---
-export const WIDTH = 600;
-export const HEIGHT = 600;
 
 export function initRenderingContexts(
   pilotCanvas: HTMLCanvasElement,
@@ -39,16 +36,6 @@ export function initRenderingContexts(
 
   return { ctxPilot: pilotCtx, ctxTop: topCtx };
 }
-
-// --- GLOBAL PARAMETERS ---
-export const FIELD_OF_VIEW = 90;
-export const FOCAL_LENGTH = 1 / Math.tan((FIELD_OF_VIEW * Math.PI) / 180 / 2);
-
-// Rates in radians per second
-export const lookSpeed = 1.5;
-export const rotSpeedRoll = 1.0;
-export const rotSpeedPitch = 0.8;
-export const rotSpeedYaw = 0.5;
 
 // Start plane above some point on the planet
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
@@ -80,24 +67,11 @@ export const pilot: PilotState = {
   elevation: 0,
 };
 
-export const topCamera: Camera = {
-  x: plane.x,
-  y: plane.y,
-  z: plane.z + 200,
-  orientation: [
-    [1, 0, 0],
-    [0, 1, 0],
-    [0, 0, 1],
-  ],
-};
-
-export const sun: Vec3 = vec.scaleToUnit({ x: 0.3, y: 0.5, z: 1.0 });
-
-export const airplanes: SceneObject[] = [];
-export const planetGrid: Model[] = [];
+const airplanesInternal: SceneObject[] = [];
+const planetGridInternal: Model[] = [];
 
 function addAirplane(): void {
-  airplanes.push({
+  airplanesInternal.push({
     model: airplaneModel,
     x: plane.x,
     y: plane.y,
@@ -111,8 +85,16 @@ function addAirplane(): void {
 
 function addPlanetGrid(): void {
   const planetMesh = generateIcosahedronSphere(3);
-  planetGrid.push(planetMesh);
+  planetGridInternal.push(planetMesh);
 }
 
 addPlanetGrid();
 addAirplane();
+
+const sunDirection = vec.scaleToUnit({ x: 0.3, y: 0.5, z: 1.0 });
+
+export const scene: Scene = {
+  planetGrid: planetGridInternal,
+  airplanes: airplanesInternal,
+  sunDirection,
+};

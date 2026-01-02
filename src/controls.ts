@@ -1,12 +1,12 @@
-import { mat3, vec } from "./math.js";
-import { PLANET_RADIUS, planetCenter } from "./planet.js";
 import {
   lookSpeed,
   rotSpeedRoll,
   rotSpeedPitch,
   rotSpeedYaw,
-} from "./setup.js";
-import type { Mat3, Plane, SceneObject, Vec3 } from "./types.js";
+} from "./controlsConfig.js";
+import { mat3, vec } from "./math.js";
+import { PLANET_RADIUS, planetCenter } from "./planet.js";
+import type { Mat3, Plane, Vec3 } from "./types.js";
 
 export interface ControlInput {
   rollLeft: boolean;
@@ -31,7 +31,6 @@ export interface FlightState {
     azimuth: number;
     elevation: number;
   };
-  mainAirplane: SceneObject;
 }
 
 /**
@@ -59,14 +58,6 @@ export function updatePhysics(
   updatePlaneAxesSpherical(state);
 
   moveForwardSpherical(dtSeconds, state);
-
-  const mainAirplane = state.mainAirplane;
-  const plane = state.plane;
-  mainAirplane.x = plane.x;
-  mainAirplane.y = plane.y;
-  mainAirplane.z = plane.z;
-  mainAirplane.orientation = plane.orientation;
-  mainAirplane.scale = plane.scale;
 }
 
 function pilotLookAround(
