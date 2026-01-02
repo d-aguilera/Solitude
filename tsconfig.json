@@ -1,16 +1,19 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "ES2020",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noEmitOnError": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "module": "ES2020",
+    "moduleResolution": "bundler",
+    "noEmitOnError": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "outDir": "dist",
     "skipLibCheck": true,
-    "outDir": "dist"
+    "strict": true,
+    "strictNullChecks": true,
+    "target": "ES2020"
   },
   "include": ["src/**/*.ts"]
 }
