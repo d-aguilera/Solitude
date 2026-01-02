@@ -1,5 +1,4 @@
-import { updateTopCamera } from "./cameraSystem.js";
-import { updatePhysics } from "./controls.js";
+import { updatePhysics, updatePlaneAxesSpherical } from "./controls.js";
 import { updateFPS } from "./fps.js";
 import { init as initInput } from "./input.js";
 import { pauseControl, paused } from "./pause.js";
@@ -9,13 +8,15 @@ import {
   flush as profileFlush,
 } from "./profiling.js";
 import { renderPilotView, renderTopView, renderHUD } from "./renderer.js";
-import { ground, cubes } from "./setup.js";
-import { getVisibleObjects } from "./visibility.js";
 
 let lastTimeMs = 0;
 
 export function startGame(ctxPilot, ctxTop) {
   initInput();
+
+  // Ensure plane.right/forward/up match orientation and planet tangent
+  updatePlaneAxesSpherical();
+
   requestAnimationFrame((nowMs) => {
     lastTimeMs = nowMs;
     requestAnimationFrame(renderFrame.bind(null, ctxPilot, ctxTop));
@@ -38,20 +39,12 @@ function renderFrame(ctxPilot, ctxTop, nowMs) {
       updatePhysics(dtSeconds);
     });
 
-    profile("GAME", "top-camera", () => {
-      updateTopCamera(cubes);
-    });
-
-    const visibleGround = profile("GAME", "visible-ground", () =>
-      getVisibleObjects(ground)
-    );
-
     profile("GAME", "pilot-view", () => {
-      renderPilotView(visibleGround, ctxPilot);
+      renderPilotView(ctxPilot);
     });
 
     profile("GAME", "top-view", () => {
-      renderTopView(visibleGround, ctxTop);
+      renderTopView(ctxTop);
     });
 
     profile("GAME", "hud", () => {

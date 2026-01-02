@@ -9,19 +9,31 @@ import {
   pilot,
   airplanes,
 } from "./setup.js";
+import {
+  PLANET_RADIUS,
+  planetCenter,
+  vecSub,
+  vecLength,
+  vecNormalize,
+  vecCross,
+} from "./planet.js";
 
 export function updatePhysics(dtSeconds) {
   pilotLookAround(dtSeconds);
-  updatePlaneAxes();
 
+  // Build local rotation from input around current axes
   let Rlocal = yaw(pitch(roll(null, dtSeconds), dtSeconds), dtSeconds);
 
-  // Apply local rotation on the left
+  // Apply local rotation on the left (Rlocal * currentOrientation)
   if (Rlocal) {
     plane.orientation = mat3Mul(Rlocal, plane.orientation);
   }
 
-  moveForward(dtSeconds);
+  // After changing orientation, update derived axes so projections use
+  // the new orientation this frame.
+  updatePlaneAxesSpherical();
+
+  moveForwardSpherical(dtSeconds);
 
   airplanes[0].x = plane.x;
   airplanes[0].y = plane.y;
@@ -42,13 +54,50 @@ function pilotLookAround(dtSeconds) {
   if (keys.ArrowDown) pilot.elevation -= lookSpeed * dtSeconds;
 }
 
-// Extract current local axes from orientation (columns)
-function updatePlaneAxes() {
+// Extract current local axes from orientation (columns), but recompute up
+// from planet center so we stay tangent to the sphere.
+export function updatePlaneAxesSpherical() {
+  const pos = { x: plane.x, y: plane.y, z: plane.z };
+  const fromCenter = vecSub(pos, planetCenter);
+
+  // Radial up (for HUD/top view, etc.), but DO NOT overwrite orientation
+  const radialUp = vecNormalize(fromCenter);
+
+  // Extract current local axes from orientation (columns)
   const R = plane.orientation;
-  const [R0, R1, R2] = R;
-  plane.right = { x: R0[0], y: R1[0], z: R2[0] };
-  plane.forward = { x: R0[1], y: R1[1], z: R2[1] };
-  plane.up = { x: R0[2], y: R1[2], z: R2[2] };
+  let right = { x: R[0][0], y: R[1][0], z: R[2][0] };
+  let forward = { x: R[0][1], y: R[1][1], z: R[2][1] };
+  let up = { x: R[0][2], y: R[1][2], z: R[2][2] };
+
+  // Optionally keep track of the radial up separately if you like:
+  // plane.radialUp = radialUp;
+
+  // Just update the derived vectors from the orientation;
+  // do NOT project them back onto the tangent plane in a way that
+  // destroys roll/pitch. You can simply normalize them:
+  const lenRight = vecLength(right) || 1;
+  right = {
+    x: right.x / lenRight,
+    y: right.y / lenRight,
+    z: right.z / lenRight,
+  };
+
+  const lenForward = vecLength(forward) || 1;
+  forward = {
+    x: forward.x / lenForward,
+    y: forward.y / lenForward,
+    z: forward.z / lenForward,
+  };
+
+  const lenUp = vecLength(up) || 1;
+  up = { x: up.x / lenUp, y: up.y / lenUp, z: up.z / lenUp };
+
+  plane.right = right;
+  plane.forward = forward;
+  plane.up = up;
+
+  // IMPORTANT: do NOT overwrite plane.orientation here.
+  // plane.orientation remains the true attitude matrix.
 }
 
 // Roll (A/D) around local forward axis
@@ -93,19 +142,35 @@ function yaw(Rlocal, dtSeconds) {
   return Rlocal ? mat3Mul(Ry, Rlocal) : Ry;
 }
 
-// Move plane forward
-function moveForward(dtSeconds) {
-  // Forward vector for movement = 2nd column (index 1)
+// Move plane forward on the spherical surface
+function moveForwardSpherical(dtSeconds) {
+  const speed = plane.speed;
+
+  // Use current orientation forward column
   const forward = {
     x: plane.orientation[0][1],
     y: plane.orientation[1][1],
     z: plane.orientation[2][1],
   };
 
-  const speed = plane.speed; // m/s
+  // Move in world space
+  let newX = plane.x + forward.x * speed * dtSeconds;
+  let newY = plane.y + forward.y * speed * dtSeconds;
+  let newZ = plane.z + forward.z * speed * dtSeconds;
 
-  // Move plane forward: x += v * dt
-  plane.x += forward.x * speed * dtSeconds;
-  plane.y += forward.y * speed * dtSeconds;
-  plane.z += forward.z * speed * dtSeconds;
+  // Keep above surface (no tunneling into planet)
+  const fromCenter = vecSub({ x: newX, y: newY, z: newZ }, planetCenter);
+  const len = vecLength(fromCenter);
+
+  if (len < PLANET_RADIUS + 1) {
+    // If we went below surface, clamp to just above it
+    const scale = (PLANET_RADIUS + 1) / len;
+    newX = planetCenter.x + fromCenter.x * scale;
+    newY = planetCenter.y + fromCenter.y * scale;
+    newZ = planetCenter.z + fromCenter.z * scale;
+  }
+
+  plane.x = newX;
+  plane.y = newY;
+  plane.z = newZ;
 }

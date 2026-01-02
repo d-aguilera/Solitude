@@ -1,9 +1,12 @@
+import { airplaneModel } from "./models.js";
 import {
-  cityBlockModel,
-  cubeModel,
-  buildingModel,
-  airplaneModel,
-} from "./models.js";
+  PLANET_RADIUS,
+  planetCenter,
+  makeLocalFrame,
+  vecAdd,
+  vecScale,
+  generateIcosahedronSphere,
+} from "./planet.js";
 
 // --- SETUP CONTEXTS ---
 export const WIDTH = 600;
@@ -21,8 +24,7 @@ export const ctxTop = canvasTop.getContext("2d");
 
 // --- GLOBAL PARAMETERS ---
 export const FIELD_OF_VIEW = 90;
-export const FOCAL_LENGTH = getFocalLength();
-export const MAX_TILE_DIST = 2000; // e.g. show tiles within 2000 m radius of plane
+export const FOCAL_LENGTH = 1 / Math.tan((FIELD_OF_VIEW * Math.PI) / 180 / 2);
 
 // Rates in radians per second
 export const lookSpeed = 1.5; // how fast the pilot can look around
@@ -32,17 +34,29 @@ export const rotSpeedYaw = 0.5; // yaw rate (rad/s)
 
 // --- STATE ---
 
+// Start plane above some point on the planet: "north pole"-ish
+const initialUp = { x: 0, y: 0, z: 1 }; // surface normal at north pole
+const initialAltitude = 100; // meters
+const initialPos = vecAdd(
+  planetCenter,
+  vecScale(initialUp, PLANET_RADIUS + initialAltitude)
+);
+const initialFrame = makeLocalFrame(initialUp);
+
+// Orientation as a 3x3 matrix, columns = local axes in world space
+// Column 0 = right, Column 1 = forward, Column 2 = up
 export const plane = {
-  x: 0, // meters
-  y: -1000, // meters
-  z: 100, // meters altitude
-  // Orientation as a 3x3 matrix, columns = local axes in world space
-  // Start pointing along +Y
+  x: initialPos.x,
+  y: initialPos.y,
+  z: initialPos.z,
   orientation: [
-    [1, 0, 0], // right (column 0)
-    [0, 1, 0], // forward (column 1)
-    [0, 0, 1], // up (column 2)
+    [initialFrame.right.x, initialFrame.forward.x, initialFrame.up.x],
+    [initialFrame.right.y, initialFrame.forward.y, initialFrame.up.y],
+    [initialFrame.right.z, initialFrame.forward.z, initialFrame.up.z],
   ],
+  right: { ...initialFrame.right },
+  forward: { ...initialFrame.forward },
+  up: { ...initialFrame.up },
   speed: 250, // m/s, ~485 knots (subsonic “fast jet” cruise)
   scale: 15, // meters, approximate F-16 length
 };
@@ -53,181 +67,14 @@ export const pilot = {
 };
 
 export const topCamera = {
-  x: 0,
-  y: 0,
-  z: 200,
+  x: plane.x,
+  y: plane.y,
+  z: plane.z + 200, // arbitrary for now
 };
 
-export const ground = [];
-export const buildings = [];
-export const cubes = [];
-export const airplanes = [];
-
 export const sun = { x: 0.3, y: 0.5, z: 1.0 }; // arbitrary
-
-function clone(obj) {
-  return { ...obj, points: obj.points.map((p) => ({ ...p })) };
-}
-
-function scale(obj, s) {
-  for (let p of obj.points) {
-    p.x *= s;
-    p.y *= s;
-    p.z *= s;
-  }
-  return obj;
-}
-
-function orient(obj, newOri) {
-  const R = newOri;
-  obj.points.forEach((p) => {
-    const x = p.x;
-    const y = p.y;
-    const z = p.z;
-    // R is 3x3, rows = axes in world space
-    const rx = R[0][0] * x + R[0][1] * y + R[0][2] * z;
-    const ry = R[1][0] * x + R[1][1] * y + R[1][2] * z;
-    const rz = R[2][0] * x + R[2][1] * y + R[2][2] * z;
-    p.x = rx;
-    p.y = ry;
-    p.z = rz;
-  });
-  return obj;
-}
-
-function move(obj, { dx, dy, dz }) {
-  for (let p of obj.points) {
-    p.x += dx;
-    p.y += dy;
-    p.z += dz;
-  }
-  return obj;
-}
-
-function getCenterOfMass(obj) {
-  let sumX = 0;
-  let sumY = 0;
-  let sumZ = 0;
-  for (let p of obj.points) {
-    sumX += p.x;
-    sumY += p.y;
-    sumZ += p.z;
-  }
-  const n = obj.points.length;
-  return {
-    x: sumX / n,
-    y: sumY / n,
-    z: sumZ / n,
-  };
-}
-
-function addGround() {
-  const tileWorldScale = 100; // tile size scale factor -> 0.9 * 100 ≈ 90 m across
-  for (let dx = -100; dx <= 100; dx++) {
-    for (let dy = -100; dy <= 100; dy++) {
-      const offset = { dx, dy, dz: 0 };
-      const tile = scale(move(clone(cityBlockModel), offset), tileWorldScale);
-      tile.center = getCenterOfMass(tile);
-      ground.push(tile);
-    }
-  }
-}
-
-function addCubes() {
-  const cubeWorldScale = 20; // 1-unit cube -> 20 m buildings
-  const locations = [
-    { x: 0, y: 0 },
-    { x: 2, y: 2 },
-    { x: 2, y: -2 },
-    { x: -2, y: -2 },
-    { x: -2, y: 2 },
-  ];
-  for (let i = 0; i < locations.length; i++) {
-    const offset = { dx: locations[i].x, dy: locations[i].y, dz: 0 };
-    const cube = scale(move(clone(cubeModel), offset), cubeWorldScale);
-    cube.center = getCenterOfMass(cube);
-    cubes.push(cube);
-  }
-}
-
-function createBuilding({ x, y, width, depth, height, color }) {
-  // buildingModel has base 1×1, height 1 in local units.
-  // We will use scale = 1 and encode dimensions into orientation matrix columns
-  // so that: right = (width, 0, 0), forward = (0, depth, 0), up = (0, 0, height).
-  const orientation = [
-    [1, 0, 0], // right
-    [0, 1, 0], // forward
-    [0, 0, 1], // up
-  ];
-
-  return {
-    model: buildingModel,
-    x,
-    y,
-    z: 0, // on ground
-    orientation,
-    scale: 1,
-    color,
-    lineWidth: buildingModel.lineWidth,
-    // store dimensions so transform can use them
-    width,
-    depth,
-    height,
-  };
-}
-
-function addCity() {
-  const blockSize = 90; // world meters (from tile scale)
-  const margin = 5; // meters inset from each edge for building line
-
-  // Tile grid is currently from -100..100 in setup (in tile units)
-  for (let dx = -20; dx <= 20; dx++) {
-    for (let dy = -20; dy <= 20; dy++) {
-      const blockCenterX = dx * blockSize;
-      const blockCenterY = dy * blockSize;
-
-      // Local building area bounds in world coordinates, relative to block center
-      const buildMin = -blockSize / 2 + margin;
-      const buildMax = blockSize / 2 - margin;
-
-      const numBuildings = 1 + Math.floor(Math.random() * 5); // 1–5 per block
-
-      for (let i = 0; i < numBuildings; i++) {
-        const width = 10 + Math.random() * 20; // 10–30 m width
-        const depth = 10 + Math.random() * 20; // 10–30 m depth
-        const height = 10 + Math.random() * 70; // 10–80 m height
-
-        // pick a center so building stays inside [buildMin, buildMax]
-        const localXRange = buildMax - buildMin - width;
-        const localYRange = buildMax - buildMin - depth;
-        if (localXRange <= 0 || localYRange <= 0) continue;
-
-        const localX = buildMin + width / 2 + Math.random() * localXRange;
-        const localY = buildMin + depth / 2 + Math.random() * localYRange;
-
-        const x = blockCenterX + localX;
-        const y = blockCenterY + localY;
-
-        const color = {
-          r: 140 + Math.floor(Math.random() * 60),
-          g: 140 + Math.floor(Math.random() * 60),
-          b: 140 + Math.floor(Math.random() * 60),
-        };
-
-        const b = createBuilding({
-          x,
-          y,
-          width,
-          depth,
-          height,
-          color,
-        });
-
-        buildings.push(b);
-      }
-    }
-  }
-}
+export const airplanes = [];
+export const planetGrid = [];
 
 function addAirplane() {
   airplanes.push({
@@ -242,12 +89,10 @@ function addAirplane() {
   });
 }
 
-function getFocalLength() {
-  const fovRad = (FIELD_OF_VIEW * Math.PI) / 180;
-  return 1 / Math.tan(fovRad / 2);
+function addPlanetGrid() {
+  const planetMesh = generateIcosahedronSphere(3); // 0..5; 3–4 is usually plenty
+  planetGrid.push(planetMesh);
 }
 
-addGround();
-addCubes();
+addPlanetGrid();
 addAirplane();
-addCity();

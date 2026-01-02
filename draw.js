@@ -1,7 +1,7 @@
-import { transformPointsToWorld, transformNormalToWorld } from "./math.js";
+import { transformPointsToWorld } from "./math.js";
 import { topView } from "./projection.js";
-import { profile, add as profileAdd } from "./profiling.js";
-import { WIDTH, HEIGHT, plane, topCamera, sun } from "./setup.js";
+import { profile } from "./profiling.js";
+import { WIDTH, HEIGHT, plane } from "./setup.js";
 
 // --- DRAWING HELPERS ---
 
@@ -46,13 +46,26 @@ export function draw(context, group, projection) {
           const depth = obj.depth;
           const height = obj.height;
           if (width && depth && height) {
-            let R0 = R[0];
-            let R1 = R[1];
-            let R2 = R[2];
-            R0 = [R0[0] * width, R0[1] * depth, R0[2] * height];
-            R1 = [R1[0] * width, R1[1] * depth, R1[2] * height];
-            R2 = [R2[0] * width, R2[1] * depth, R2[2] * height];
-            R = [R0, R1, R2];
+            // Each row is the world-space components of the three local axes.
+            // To apply non-uniform scale along local X/Y/Z, multiply columns
+            // (i.e., the second index), not the rows themselves.
+            const R00 = R[0][0] * width;
+            const R01 = R[0][1] * depth;
+            const R02 = R[0][2] * height;
+
+            const R10 = R[1][0] * width;
+            const R11 = R[1][1] * depth;
+            const R12 = R[1][2] * height;
+
+            const R20 = R[2][0] * width;
+            const R21 = R[2][1] * depth;
+            const R22 = R[2][2] * height;
+
+            R = [
+              [R00, R01, R02],
+              [R10, R11, R12],
+              [R20, R21, R22],
+            ];
           }
 
           worldPoints = transformPointsToWorld(
@@ -70,18 +83,11 @@ export function draw(context, group, projection) {
 
       if (faces && faces.length) {
         profile("DRAW", "faces", () => {
-          drawFilledModel(
-            context,
-            worldPoints,
-            faces,
-            baseColor,
-            projection,
-            obj
-          );
+          // TODO
         });
       } else {
         profile("DRAW", "lines", () => {
-          // wireframe-only path
+          // wireframe lines
           if (lines.length == 2 && typeof lines[0] === "number") {
             const [i, j] = lines;
             const p1 = projection(worldPoints[i]);
@@ -90,6 +96,7 @@ export function draw(context, group, projection) {
             return;
           }
 
+          // wireframe polys
           for (let i = 0; i < lines.length; i++) {
             const polyIndices = lines[i];
             projectedPoints.length = 0;
@@ -133,14 +140,25 @@ export function poly(context, points, color, lineWidth) {
 }
 
 export function drawPlaneAxes(context) {
-  const axisLength = 10; // in world units
+  const axisLength = 10;
 
   const origin = { x: plane.x, y: plane.y, z: plane.z };
 
-  // Local axes in world space (columns of orientation)
-  const right = plane.right;
-  const forward = plane.forward;
-  const up = plane.up;
+  const right = {
+    x: plane.orientation[0][0],
+    y: plane.orientation[1][0],
+    z: plane.orientation[2][0],
+  };
+  const forward = {
+    x: plane.orientation[0][1],
+    y: plane.orientation[1][1],
+    z: plane.orientation[2][1],
+  };
+  const up = {
+    x: plane.orientation[0][2],
+    y: plane.orientation[1][2],
+    z: plane.orientation[2][2],
+  };
 
   // Endpoints for each axis
   const { x: ox, y: oy, z: oz } = origin;
@@ -198,257 +216,6 @@ export function drawPlaneAxes(context) {
   }
 }
 
-export function drawFilledModel(
-  context,
-  worldPoints,
-  faces,
-  baseColor,
-  projection,
-  obj
-) {
-  // Build list of face records with depth for sorting
-  const faceRecords = [];
-
-  // Optional per-model cached normals (model-space)
-  const model = obj && obj.model ? obj.model : obj;
-  const cachedNormals = model && model.faceNormals ? model.faceNormals : null;
-
-  // Orientation and per-axis dimensions (if any)
-  const R = obj && obj.orientation ? obj.orientation : null;
-  const width = obj && obj.width ? obj.width : 1;
-  const depth = obj && obj.depth ? obj.depth : 1;
-  const height = obj && obj.height ? obj.height : 1;
-
-  for (let i = 0; i < faces.length; i++) {
-    const indices = faces[i];
-
-    // Optional back-face culling; disable temporarily if debugging:
-    const faceIsVisible = profile("FACES", "culling", () =>
-      isFaceVisible(
-        indices,
-        worldPoints,
-        projection,
-        cachedNormals,
-        i,
-        R,
-        width,
-        depth,
-        height
-      )
-    );
-
-    if (!faceIsVisible) continue;
-
-    const N = profile("FACES", "normal", () => {
-      if (cachedNormals && R) {
-        // Use cached model-space normal, transform to world space
-        profileAdd("NORMAL", "cachedCount", 1);
-        return transformNormalToWorld(
-          cachedNormals[i],
-          R,
-          width,
-          depth,
-          height
-        );
-      }
-
-      // Fallback: compute face normal (same as in isFaceVisible; we could refactor, but keep it simple)
-      const p0 = worldPoints[indices[0]];
-      const p1 = worldPoints[indices[1]];
-      const p2 = worldPoints[indices[2]];
-
-      const v1 = {
-        x: p1.x - p0.x,
-        y: p1.y - p0.y,
-        z: p1.z - p0.z,
-      };
-
-      const v2 = {
-        x: p2.x - p0.x,
-        y: p2.y - p0.y,
-        z: p2.z - p0.z,
-      };
-
-      // Face normal
-      const normal = {
-        x: v1.y * v2.z - v1.z * v2.y,
-        y: v1.z * v2.x - v1.x * v2.z,
-        z: v1.x * v2.y - v1.y * v2.x,
-      };
-
-      // Normalize normal for nicer lighting
-      const nLen = Math.hypot(normal.x, normal.y, normal.z);
-      if (nLen > 0) {
-        normal.x /= nLen;
-        normal.y /= nLen;
-        normal.z /= nLen;
-      }
-
-      profileAdd("NORMAL", "fallbackCount", 1);
-      return normal;
-    });
-
-    // Project vertices
-    const projected = [];
-    let avgDepth = 0;
-    let valid = true;
-
-    profile("FACES", "project", () => {
-      for (let j = 0; j < indices.length; j++) {
-        const wp = worldPoints[indices[j]];
-        const p = projection(wp);
-        if (!p) {
-          valid = false;
-          break;
-        }
-        projected.push(p);
-
-        // Approximate depth: for pilotView use distance along view direction (Y in camera space),
-        // but we don’t have that here. As a cheap proxy we can use -wp.z or the distance to plane.
-        // For now use distance to camera position if available:
-        avgDepth += getDepthForSort(wp, projection);
-      }
-    });
-
-    if (!valid || projected.length < 3) continue;
-
-    avgDepth /= projected.length;
-
-    const color = shadeColor(baseColor, N); // returns "rgb(...)"
-
-    faceRecords.push({ projected, avgDepth, color });
-  }
-
-  profileAdd("FACES", "count", faceRecords.length);
-
-  // Painter's algorithm: back-to-front
-  profile("FACES", "sort", () => {
-    faceRecords.sort((a, b) => b.avgDepth - a.avgDepth);
-  });
-
-  // Fill faces
-  profile("FACES", "fill", () => {
-    for (const face of faceRecords) {
-      fillPoly(context, face.projected, face.color);
-    }
-  });
-}
-
-export function getDepthForSort(wp, projection) {
-  // Simple heuristic:
-  // - For topView: distance in XY from topCamera.
-  // - For pilotView: distance from plane.
-  if (projection === topView) {
-    const dx = wp.x - topCamera.x;
-    const dy = wp.y - topCamera.y;
-    return dx * dx + dy * dy;
-  } else {
-    const dx = wp.x - plane.x;
-    const dy = wp.y - plane.y;
-    const dz = wp.z - plane.z;
-    return dx * dx + dy * dy + dz * dz;
-  }
-}
-
-export function fillPoly(context, points, color) {
-  context.fillStyle = color;
-  context.beginPath();
-  context.moveTo(points[0].x, points[0].y);
-  for (let i = 1; i < points.length; i++) {
-    context.lineTo(points[i].x, points[i].y);
-  }
-  context.closePath();
-  context.fill();
-}
-
-export function isFaceVisible(
-  indices,
-  worldPoints,
-  projection,
-  cachedNormals,
-  faceIndex,
-  R,
-  width,
-  depth,
-  height
-) {
-  let n;
-
-  if (cachedNormals && R && typeof faceIndex === "number") {
-    // Transform cached model-space normal to world space
-    n = transformNormalToWorld(
-      cachedNormals[faceIndex],
-      R,
-      width,
-      depth,
-      height
-    );
-    profileAdd("NORMAL", "cachedCount", 1);
-  } else {
-    const p0 = worldPoints[indices[0]];
-    const p1 = worldPoints[indices[1]];
-    const p2 = worldPoints[indices[2]];
-
-    const v1 = {
-      x: p1.x - p0.x,
-      y: p1.y - p0.y,
-      z: p1.z - p0.z,
-    };
-    const v2 = {
-      x: p2.x - p0.x,
-      y: p2.y - p0.y,
-      z: p2.z - p0.z,
-    };
-
-    // normal = v1 x v2
-    n = {
-      x: v1.y * v2.z - v1.z * v2.y,
-      y: v1.z * v2.x - v1.x * v2.z,
-      z: v1.x * v2.y - v1.y * v2.x,
-    };
-
-    profileAdd("NORMAL", "fallbackCount", 1);
-  }
-
-  let cx, cy, cz;
-  if (projection === topView) {
-    cx = topCamera.x;
-    cy = topCamera.y;
-    cz = topCamera.z;
-  } else {
-    cx = plane.x;
-    cy = plane.y;
-    cz = plane.z;
-  }
-
-  const p0 = worldPoints[indices[0]];
-  const view = {
-    x: p0.x - cx,
-    y: p0.y - cy,
-    z: p0.z - cz,
-  };
-
-  const dot = n.x * view.x + n.y * view.y + n.z * view.z;
-  return dot < 0; // front-facing if normal points toward camera
-}
-
-export function shadeColor({ r, g, b }, normal) {
-  // Very simple fixed ambient + diffuse term
-  const len = Math.hypot(sun.x, sun.y, sun.z);
-  const lx = sun.x / len;
-  const ly = sun.y / len;
-  const lz = sun.z / len;
-
-  const dot = Math.max(0, normal.x * lx + normal.y * ly + normal.z * lz);
-
-  const ambient = 0.2;
-  const intensity = ambient + (1 - ambient) * dot;
-
-  return `rgb(${Math.round(r * intensity)}, ${Math.round(
-    g * intensity
-  )}, ${Math.round(b * intensity)})`;
-}
-
-export function rgbToCss(c) {
-  return `rgb(${c.r}, ${c.g}, ${c.b})`;
+function rgbToCss({ r, g, b }) {
+  return `rgb(${r}, ${g}, ${b})`;
 }
