@@ -38,6 +38,12 @@ export function vecNormalize(v) {
   return { x: v.x / len, y: v.y / len, z: v.z / len };
 }
 
+export function vecScaleToUnit(v) {
+  const len = vecLength(v);
+  if (len === 0) return { x: 0, y: 0, z: 0 };
+  return { x: v.x / len, y: v.y / len, z: v.z / len };
+}
+
 // --- Planet projection helpers ---
 
 // Project an arbitrary point to the planet surface (radius PLANET_RADIUS)
@@ -81,84 +87,6 @@ export function makeLocalFrame(up) {
   forward = vecCross(u, right);
 
   return { right, forward, up: u };
-}
-
-// Generate a latitude circle (constant "latitude" angle), returning a model
-// with points on the sphere and line indices forming a loop.
-// latAngle in radians: 0 = equator, +π/2 = north pole, -π/2 = south pole.
-export function generateLatitudeCircle(latAngle, segments = 64) {
-  const points = [];
-  const lines = [];
-  const r = PLANET_RADIUS;
-  const cosLat = Math.cos(latAngle);
-  const sinLat = Math.sin(latAngle);
-
-  for (let i = 0; i < segments; i++) {
-    const t = (i / segments) * 2 * Math.PI;
-    const cosLon = Math.cos(t);
-    const sinLon = Math.sin(t);
-
-    // Spherical to Cartesian:
-    // x = r * cos(lat) * cos(lon)
-    // y = r * cos(lat) * sin(lon)
-    // z = r * sin(lat)
-    points.push({
-      x: planetCenter.x + r * cosLat * cosLon,
-      y: planetCenter.y + r * cosLat * sinLon,
-      z: planetCenter.z + r * sinLat,
-    });
-  }
-
-  // Single polyline loop
-  const indices = [];
-  for (let i = 0; i < segments; i++) {
-    indices.push(i);
-  }
-  // close loop by repeating first index
-  indices.push(0);
-  lines.push(indices);
-
-  return {
-    points,
-    lines,
-    color: { r: 0, g: 200, b: 0 }, // green-ish
-    lineWidth: 1,
-  };
-}
-
-// Generate a longitude circle (constant longitude), full great circle
-// lonAngle in radians, 0..2π
-export function generateLongitudeCircle(lonAngle, segments = 64) {
-  const points = [];
-  const lines = [];
-  const r = PLANET_RADIUS;
-  const cosLon = Math.cos(lonAngle);
-  const sinLon = Math.sin(lonAngle);
-
-  for (let i = 0; i <= segments; i++) {
-    const t = -Math.PI / 2 + (i / segments) * Math.PI; // from south to north
-    const cosLat = Math.cos(t);
-    const sinLat = Math.sin(t);
-
-    points.push({
-      x: planetCenter.x + r * cosLat * cosLon,
-      y: planetCenter.y + r * cosLat * sinLon,
-      z: planetCenter.z + r * sinLat,
-    });
-  }
-
-  const indices = [];
-  for (let i = 0; i <= segments; i++) {
-    indices.push(i);
-  }
-  lines.push(indices);
-
-  return {
-    points,
-    lines,
-    color: { r: 0, g: 120, b: 200 }, // blue-ish
-    lineWidth: 1,
-  };
 }
 
 export function generateIcosahedronSphere(subdivisions = 3) {
@@ -255,19 +183,47 @@ export function generateIcosahedronSphere(subdivisions = 3) {
     z: planetCenter.z + v.z * PLANET_RADIUS,
   }));
 
-  // For wireframe, derive line loops from faces (each triangle as a 3-edge poly)
-  const edgeSet = new Set();
+  // Ensure all faces are oriented CCW when viewed from outside the sphere
+  for (let i = 0; i < faces.length; i++) {
+    const [i0, i1, i2] = faces[i];
+    const v0 = points[i0];
+    const v1 = points[i1];
+    const v2 = points[i2];
+
+    const e1 = {
+      x: v1.x - v0.x,
+      y: v1.y - v0.y,
+      z: v1.z - v0.z,
+    };
+    const e2 = {
+      x: v2.x - v0.x,
+      y: v2.y - v0.y,
+      z: v2.z - v0.z,
+    };
+    const n = vecCross(e1, e2); // unnormalized normal
+
+    const toFace = {
+      x: v0.x - planetCenter.x,
+      y: v0.y - planetCenter.y,
+      z: v0.z - planetCenter.z,
+    };
+
+    // If normal points inward (towards center), flip winding
+    if (vecDot(n, toFace) < 0) {
+      faces[i] = [i0, i2, i1];
+    }
+  }
+
+  // For the grid wireframe, keep the triangle loops as "lines"
   const lines = [];
   for (const [i0, i1, i2] of faces) {
-    const tri = [i0, i1, i2, i0];
-    lines.push(tri);
-    // (optional: deduplicate edges if you want a simpler edge list)
+    lines.push([i0, i1, i2, i0]);
   }
 
   return {
     points,
     lines,
-    faces: undefined, // skip for now
+    faces,
     color: { r: 80, g: 160, b: 220 },
     lineWidth: 1,
   };

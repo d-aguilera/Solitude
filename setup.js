@@ -5,6 +5,7 @@ import {
   makeLocalFrame,
   vecAdd,
   vecScale,
+  vecScaleToUnit,
   generateIcosahedronSphere,
 } from "./planet.js";
 
@@ -72,7 +73,7 @@ export const topCamera = {
   z: plane.z + 200, // arbitrary for now
 };
 
-export const sun = { x: 0.3, y: 0.5, z: 1.0 }; // arbitrary
+export const sun = vecScaleToUnit({ x: 0.3, y: 0.5, z: 1.0 });
 export const airplanes = [];
 export const planetGrid = [];
 

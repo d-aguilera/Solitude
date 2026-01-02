@@ -1,7 +1,8 @@
 import { transformPointsToWorld } from "./math.js";
-import { topView } from "./projection.js";
+import { topView, pilotView } from "./projection.js";
 import { profile } from "./profiling.js";
-import { WIDTH, HEIGHT, plane } from "./setup.js";
+import { WIDTH, HEIGHT, plane, sun, topCamera } from "./setup.js";
+import { vecCross, vecNormalize, vecDot } from "./planet.js";
 
 // --- DRAWING HELPERS ---
 
@@ -83,8 +84,108 @@ export function draw(context, group, projection) {
 
       if (faces && faces.length) {
         profile("DRAW", "faces", () => {
-          // TODO
+          const faceList = [];
+
+          // Camera for culling:
+          const cameraPos =
+            projection === pilotView
+              ? { x: plane.x, y: plane.y, z: plane.z }
+              : projection === topView
+              ? { x: topCamera.x, y: topCamera.y, z: topCamera.z }
+              : null;
+
+          // Base color to RGB
+          let baseR = 255,
+            baseG = 255,
+            baseB = 255;
+          if (typeof baseColor !== "string" && baseColor) {
+            baseR = baseColor.r;
+            baseG = baseColor.g;
+            baseB = baseColor.b;
+          }
+
+          // Build face list with average depth and intensity
+          for (let fi = 0; fi < faces.length; fi++) {
+            const [i0, i1, i2] = faces[fi];
+            const v0 = worldPoints[i0];
+            const v1 = worldPoints[i1];
+            const v2 = worldPoints[i2];
+
+            // Face normal in world space: (v1 - v0) × (v2 - v0)
+            const e1 = {
+              x: v1.x - v0.x,
+              y: v1.y - v0.y,
+              z: v1.z - v0.z,
+            };
+            const e2 = {
+              x: v2.x - v0.x,
+              y: v2.y - v0.y,
+              z: v2.z - v0.z,
+            };
+            const n = vecNormalize(vecCross(e1, e2)); // outward (if faces are CCW)
+
+            // Back-face culling relative to camera (only if we have one)
+            if (cameraPos) {
+              // Vector from triangle to camera
+              const toCamera = {
+                x: cameraPos.x - v0.x,
+                y: cameraPos.y - v0.y,
+                z: cameraPos.z - v0.z,
+              };
+              const facing = vecDot(n, toCamera);
+
+              // Skip faces whose normal points away from camera
+              if (facing <= 0) {
+                continue;
+              }
+            }
+
+            // Simple Lambert factor: max(0, n · sunDir)
+            const intensity = Math.max(0, vecDot(n, sun));
+            const avgZ = (v0.z + v1.z + v2.z) / 3;
+
+            faceList.push({ i0, i1, i2, intensity, depth: avgZ });
+          }
+
+          // Painter’s algorithm: sort back-to-front by depth
+          faceList.sort((a, b) => b.depth - a.depth);
+
+          // Draw triangles
+          for (const face of faceList) {
+            const p0 = projection(worldPoints[face.i0]);
+            const p1 = projection(worldPoints[face.i1]);
+            const p2 = projection(worldPoints[face.i2]);
+            if (!p0 || !p1 || !p2) continue;
+
+            // Apply intensity to base color
+            const k = 0.2 + 0.8 * face.intensity; // ambient 0.2, diffuse up to 1.0
+            const r = Math.round(baseR * k);
+            const g = Math.round(baseG * k);
+            const b = Math.round(baseB * k);
+            const fillStyle = `rgb(${r}, ${g}, ${b})`;
+
+            fillTriangle(context, p0, p1, p2, fillStyle);
+          }
         });
+
+        // Optional: also draw wireframe on top if you want the mesh look
+        // profile("DRAW", "lines-over-faces", () => {
+        //   for (let i = 0; i < lines.length; i++) {
+        //     const polyIndices = lines[i];
+        //     projectedPoints.length = 0;
+        //
+        //     for (let j = 0; j < polyIndices.length; j++) {
+        //       const p = projection(worldPoints[polyIndices[j]]);
+        //       if (!p) {
+        //         projectedPoints.length = 0;
+        //         break;
+        //       }
+        //       projectedPoints.push(p);
+        //     }
+        //     if (projectedPoints.length > 0)
+        //       poly(context, projectedPoints, "rgba(0,0,0,0.3)", lineWidth);
+        //   }
+        // });
       } else {
         profile("DRAW", "lines", () => {
           // wireframe lines
@@ -218,4 +319,14 @@ export function drawPlaneAxes(context) {
 
 function rgbToCss({ r, g, b }) {
   return `rgb(${r}, ${g}, ${b})`;
+}
+
+function fillTriangle(context, p0, p1, p2, fillStyle) {
+  context.fillStyle = fillStyle;
+  context.beginPath();
+  context.moveTo(p0.x, p0.y);
+  context.lineTo(p1.x, p1.y);
+  context.lineTo(p2.x, p2.y);
+  context.closePath();
+  context.fill();
 }
