@@ -24,12 +24,12 @@ interface TopViewState {
 }
 
 export function renderPilotView(
-  ctxPilot: CanvasRenderingContext2D,
+  pilotContext: CanvasRenderingContext2D,
   state: PilotViewState,
   scene: Scene,
   instrument: InstrumentationAdapter
 ): void {
-  clear(ctxPilot);
+  clear(pilotContext);
 
   const { plane, pilot, airplanes } = state;
 
@@ -40,14 +40,14 @@ export function renderPilotView(
     pilotElevation: pilot.elevation,
   });
 
-  draw(ctxPilot, scene.planetGrid, {
+  draw(pilotContext, scene.planetGrid, {
     projection,
     cameraPos: { x: plane.x, y: plane.y, z: plane.z },
     lightDir: scene.sunDirection,
     instrument: instrument,
   });
 
-  draw(ctxPilot, airplanes, {
+  draw(pilotContext, airplanes, {
     projection,
     cameraPos: { x: plane.x, y: plane.y, z: plane.z },
     lightDir: scene.sunDirection,
@@ -56,12 +56,12 @@ export function renderPilotView(
 }
 
 export function renderTopView(
-  ctxTop: CanvasRenderingContext2D,
+  topContext: CanvasRenderingContext2D,
   state: TopViewState,
   scene: Scene,
   instrument: InstrumentationAdapter
 ): void {
-  clear(ctxTop);
+  clear(topContext);
 
   const { topCamera, airplanes } = state;
 
@@ -73,14 +73,14 @@ export function renderTopView(
     cameraOrientation: topCamera.orientation,
   });
 
-  draw(ctxTop, scene.planetGrid, {
+  draw(topContext, scene.planetGrid, {
     projection,
     cameraPos: cameraPosition,
     lightDir: scene.sunDirection,
     instrument: instrument,
   });
 
-  draw(ctxTop, airplanes, {
+  draw(topContext, airplanes, {
     projection,
     cameraPos: cameraPosition,
     lightDir: scene.sunDirection,
@@ -89,26 +89,26 @@ export function renderTopView(
 }
 
 export function renderHUD(
-  ctxTop: CanvasRenderingContext2D,
+  topContext: CanvasRenderingContext2D,
   plane: Plane,
   profilingEnabled: boolean
 ): void {
-  ctxTop.fillStyle = "rgba(0, 0, 0, 0.6)";
-  ctxTop.fillRect(0, 0, 360, 80);
-  ctxTop.fillStyle = "white";
-  ctxTop.font = "16px monospace";
+  topContext.fillStyle = "rgba(0, 0, 0, 0.6)";
+  topContext.fillRect(0, 0, 360, 80);
+  topContext.fillStyle = "white";
+  topContext.font = "16px monospace";
 
   const alt = altitudeAboveSurface({ x: plane.x, y: plane.y, z: plane.z });
-  ctxTop.fillText(`Alt: ${alt.toFixed(1)} m`, 10, 20);
+  topContext.fillText(`Alt: ${alt.toFixed(1)} m`, 10, 20);
 
   const speedKnots = plane.speed * 1.94384;
-  ctxTop.fillText(
+  topContext.fillText(
     `Spd: ${plane.speed.toFixed(1)} m/s (${speedKnots.toFixed(0)} kt)`,
     10,
     40
   );
 
-  ctxTop.fillText(`FPS: ${fps.toFixed(1)}`, 200, 20);
+  topContext.fillText(`FPS: ${fps.toFixed(1)}`, 200, 20);
 
-  if (profilingEnabled) ctxTop.fillText("PROFILING", 250, 60);
+  if (profilingEnabled) topContext.fillText("PROFILING", 250, 60);
 }

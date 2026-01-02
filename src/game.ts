@@ -72,15 +72,17 @@ function makeControlInput(): ControlInput {
 }
 
 export function startGame(
-  ctxPilot: CanvasRenderingContext2D,
-  ctxTop: CanvasRenderingContext2D,
+  pilotContext: CanvasRenderingContext2D,
+  topContext: CanvasRenderingContext2D,
   instrument: InstrumentationAdapter
 ): void {
   initInput();
   updatePlaneAxesSpherical(flightState);
   requestAnimationFrame((nowMs) => {
     lastTimeMs = nowMs;
-    requestAnimationFrame(renderFrame.bind(null, ctxPilot, ctxTop, instrument));
+    requestAnimationFrame(
+      renderFrame.bind(null, pilotContext, topContext, instrument)
+    );
   });
 }
 
@@ -132,8 +134,8 @@ function syncMainAirplaneToPlane(): void {
 }
 
 function renderFrame(
-  ctxPilot: CanvasRenderingContext2D,
-  ctxTop: CanvasRenderingContext2D,
+  pilotContext: CanvasRenderingContext2D,
+  topContext: CanvasRenderingContext2D,
   instrument: InstrumentationAdapter,
   nowMs: number
 ): void {
@@ -165,7 +167,7 @@ function renderFrame(
 
     instrument("GAME", "pilot-view", () => {
       renderPilotView(
-        ctxPilot,
+        pilotContext,
         {
           plane: flightState.plane,
           pilot: flightState.pilot,
@@ -178,7 +180,7 @@ function renderFrame(
 
     instrument("GAME", "top-view", () => {
       renderTopView(
-        ctxTop,
+        topContext,
         {
           plane: flightState.plane,
           topCamera,
@@ -190,11 +192,13 @@ function renderFrame(
     });
 
     instrument("GAME", "hud", () => {
-      renderHUD(ctxTop, flightState.plane, isProfilingEnabled());
+      renderHUD(topContext, flightState.plane, isProfilingEnabled());
     });
   });
 
   profileFlush();
 
-  requestAnimationFrame(renderFrame.bind(null, ctxPilot, ctxTop, instrument));
+  requestAnimationFrame(
+    renderFrame.bind(null, pilotContext, topContext, instrument)
+  );
 }

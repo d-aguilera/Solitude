@@ -14,6 +14,9 @@ if (!pilotCanvas || !topCanvas) {
   throw new Error("Required canvases not found in the document");
 }
 
-const { ctxPilot, ctxTop } = initRenderingContexts(pilotCanvas, topCanvas);
+const { pilotContext, topContext } = initRenderingContexts(
+  pilotCanvas,
+  topCanvas
+);
 
-startGame(ctxPilot, ctxTop, defaultInstrumentationAdapter);
+startGame(pilotContext, topContext, defaultInstrumentationAdapter);

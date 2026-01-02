@@ -19,22 +19,27 @@ import type {
 export function initRenderingContexts(
   pilotCanvas: HTMLCanvasElement,
   topCanvas: HTMLCanvasElement
-): { ctxPilot: CanvasRenderingContext2D; ctxTop: CanvasRenderingContext2D } {
+): {
+  pilotContext: CanvasRenderingContext2D;
+  topContext: CanvasRenderingContext2D;
+} {
   pilotCanvas.width = WIDTH;
   pilotCanvas.height = HEIGHT;
-  const pilotCtx = pilotCanvas.getContext("2d");
-  if (!pilotCtx) {
+
+  const pilotContext = pilotCanvas.getContext("2d");
+  if (!pilotContext) {
     throw new Error("Failed to get 2D context for pilot view canvas");
   }
 
   topCanvas.width = WIDTH;
   topCanvas.height = HEIGHT;
-  const topCtx = topCanvas.getContext("2d");
-  if (!topCtx) {
+
+  const topContext = topCanvas.getContext("2d");
+  if (!topContext) {
     throw new Error("Failed to get 2D context for top view canvas");
   }
 
-  return { ctxPilot: pilotCtx, ctxTop: topCtx };
+  return { pilotContext, topContext };
 }
 
 // Start plane above some point on the planet
