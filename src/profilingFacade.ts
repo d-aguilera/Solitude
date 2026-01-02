@@ -6,6 +6,7 @@ import {
   setProfilingEnabled as realSetProfilingEnabled,
   setPausedForProfiling as realSetPausedForProfiling,
 } from "./profiling.js";
+import type { InstrumentationAdapter } from "./types.js";
 
 /**
  * Wrapper that decouples callers from the concrete profiling implementation.
@@ -41,3 +42,11 @@ export function profileCheck(): void {
 export function profileFlush(): void {
   realFlush();
 }
+
+// Small adapter that lets callers plug in any profiling / tracing / instrumentation
+// without direct coupling to a concrete instrumentation API.
+export const defaultInstrumentationAdapter: InstrumentationAdapter = <T>(
+  group: string,
+  name: string,
+  fn: () => T
+): T => profile(group, name, fn);

@@ -1,5 +1,6 @@
 import { initRenderingContexts } from "./setup.js";
 import { startGame } from "./game.js";
+import { defaultInstrumentationAdapter } from "./profilingFacade.js";
 
 const pilotCanvas = document.getElementById(
   "pilotViewCanvas"
@@ -15,4 +16,4 @@ if (!pilotCanvas || !topCanvas) {
 
 const { ctxPilot, ctxTop } = initRenderingContexts(pilotCanvas, topCanvas);
 
-startGame(ctxPilot, ctxTop);
+startGame(ctxPilot, ctxTop, defaultInstrumentationAdapter);

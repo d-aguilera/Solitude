@@ -6,7 +6,14 @@ import {
   makeLocalFrame,
   generateIcosahedronSphere,
 } from "./planet.js";
-import type { Mat3, Model, Vec3 } from "./types.js";
+import type {
+  Camera,
+  Model,
+  PilotState,
+  Plane,
+  SceneObject,
+  Vec3,
+} from "./types.js";
 
 // --- SETUP CONTEXTS ---
 export const WIDTH = 600;
@@ -42,44 +49,6 @@ export const lookSpeed = 1.5;
 export const rotSpeedRoll = 1.0;
 export const rotSpeedPitch = 0.8;
 export const rotSpeedYaw = 0.5;
-
-export interface Plane {
-  x: number;
-  y: number;
-  z: number;
-  orientation: Mat3;
-  right: Vec3;
-  forward: Vec3;
-  up: Vec3;
-  speed: number;
-  scale: number;
-}
-
-export interface Camera {
-  x: number;
-  y: number;
-  z: number;
-  orientation: Mat3;
-}
-
-export interface PilotState {
-  azimuth: number;
-  elevation: number;
-}
-
-export interface SceneObject {
-  model: Model;
-  x: number;
-  y: number;
-  z: number;
-  orientation: Mat3;
-  scale: number;
-  color?: string | { r: number; g: number; b: number };
-  lineWidth?: number;
-  width?: number;
-  depth?: number;
-  height?: number;
-}
 
 // Start plane above some point on the planet
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };

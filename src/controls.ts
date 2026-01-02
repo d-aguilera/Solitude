@@ -5,10 +5,8 @@ import {
   rotSpeedRoll,
   rotSpeedPitch,
   rotSpeedYaw,
-  type Plane,
-  type SceneObject,
 } from "./setup.js";
-import type { Mat3, Vec3 } from "./types.js";
+import type { Mat3, Plane, SceneObject, Vec3 } from "./types.js";
 
 export interface ControlInput {
   rollLeft: boolean;
