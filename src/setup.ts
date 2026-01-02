@@ -12,15 +12,26 @@ import type { Mat3, Model, Vec3 } from "./types.js";
 export const WIDTH = 600;
 export const HEIGHT = 600;
 
-const canvas = document.getElementById("pilotViewCanvas") as HTMLCanvasElement;
-canvas.width = WIDTH;
-canvas.height = HEIGHT;
-export const ctxPilot = canvas.getContext("2d")!;
+export function initRenderingContexts(
+  pilotCanvas: HTMLCanvasElement,
+  topCanvas: HTMLCanvasElement
+): { ctxPilot: CanvasRenderingContext2D; ctxTop: CanvasRenderingContext2D } {
+  pilotCanvas.width = WIDTH;
+  pilotCanvas.height = HEIGHT;
+  const pilotCtx = pilotCanvas.getContext("2d");
+  if (!pilotCtx) {
+    throw new Error("Failed to get 2D context for pilot view canvas");
+  }
 
-const canvasTop = document.getElementById("topViewCanvas") as HTMLCanvasElement;
-canvasTop.width = WIDTH;
-canvasTop.height = HEIGHT;
-export const ctxTop = canvasTop.getContext("2d")!;
+  topCanvas.width = WIDTH;
+  topCanvas.height = HEIGHT;
+  const topCtx = topCanvas.getContext("2d");
+  if (!topCtx) {
+    throw new Error("Failed to get 2D context for top view canvas");
+  }
+
+  return { ctxPilot: pilotCtx, ctxTop: topCtx };
+}
 
 // --- GLOBAL PARAMETERS ---
 export const FIELD_OF_VIEW = 90;

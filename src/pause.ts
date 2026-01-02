@@ -1,12 +1,10 @@
-import { keys } from "./input.js";
-
 let spaceKeyDown = false;
 let pausing = false;
 
 export let paused = false;
 
-export function pauseControl(): void {
-  if (keys.Space) {
+export function pauseControl(spacePressed: boolean): void {
+  if (spacePressed) {
     if (!spaceKeyDown) {
       if (!paused) {
         pausing = true;

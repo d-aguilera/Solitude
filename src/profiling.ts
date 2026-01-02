@@ -1,19 +1,26 @@
-import { keys } from "./input.js";
-import { paused } from "./pause.js";
-
 const profileEveryMs = 3000;
 
-let pKeyDown = false;
 let lastProfileStartMs = 0;
 let doProfile = false;
 let counters: Record<string, Record<string, number>> = {};
 
-export let enabled = false;
+let enabled = false;
+let pausedThisFrame = false;
+
+export function setProfilingEnabled(value: boolean): void {
+  enabled = value;
+}
+
+export function isProfilingEnabled(): boolean {
+  return enabled;
+}
+
+export function setPausedForProfiling(isPaused: boolean): void {
+  pausedThisFrame = isPaused;
+}
 
 export function check(): void {
-  enabledControl();
-
-  if (!enabled || paused) return;
+  if (!enabled || pausedThisFrame) return;
 
   const now = performance.now();
   if (now - lastProfileStartMs < profileEveryMs) {
@@ -94,17 +101,4 @@ export function flush(): void {
   }
 
   doProfile = false;
-}
-
-function enabledControl(): void {
-  if (keys.KeyP) {
-    if (!pKeyDown) {
-      enabled = !enabled;
-      pKeyDown = true;
-    }
-  } else {
-    if (pKeyDown) {
-      pKeyDown = false;
-    }
-  }
 }

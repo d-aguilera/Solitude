@@ -2,25 +2,75 @@ import { clear, draw } from "./draw.js";
 import { fps } from "./fps.js";
 import { vec } from "./math.js";
 import { altitudeAboveSurface, planetCenter } from "./planet.js";
-import { enabled } from "./profiling.js";
+import { profile } from "./profilingFacade.js";
 import {
-  pilotView,
-  topCameraForward,
-  topCameraRight,
-  topCameraUp,
-  topView,
+  makePilotView,
+  makeTopView,
   updateTopCameraFrame,
+  type TopCameraFrameState,
 } from "./projection.js";
-import { airplanes, plane, planetGrid, topCamera } from "./setup.js";
 
-export function renderPilotView(ctxPilot: CanvasRenderingContext2D): void {
-  clear(ctxPilot);
-  draw(ctxPilot, planetGrid, pilotView);
-  draw(ctxPilot, airplanes, pilotView);
+import {
+  planetGrid,
+  sun,
+  type Plane,
+  type PilotState,
+  type Camera,
+  type SceneObject,
+} from "./setup.js";
+
+interface PilotViewState {
+  plane: Plane;
+  pilot: PilotState;
+  airplanes: SceneObject[];
 }
 
-export function renderTopView(ctxTop: CanvasRenderingContext2D): void {
+interface TopViewState {
+  plane: Plane;
+  topCamera: Camera;
+  airplanes: SceneObject[];
+}
+
+// Keep this module responsible for rendering only; the caller provides
+// all mutable state (plane, pilot, cameras, airplanes).
+export function renderPilotView(
+  ctxPilot: CanvasRenderingContext2D,
+  state: PilotViewState
+): void {
+  clear(ctxPilot);
+
+  const { plane, pilot, airplanes } = state;
+
+  const projection = makePilotView({
+    planePosition: { x: plane.x, y: plane.y, z: plane.z },
+    planeOrientation: plane.orientation,
+    pilotAzimuth: pilot.azimuth,
+    pilotElevation: pilot.elevation,
+  });
+
+  draw(ctxPilot, planetGrid, {
+    projection,
+    cameraPos: { x: plane.x, y: plane.y, z: plane.z },
+    lightDir: sun,
+    profile,
+  });
+  draw(ctxPilot, airplanes, {
+    projection,
+    cameraPos: { x: plane.x, y: plane.y, z: plane.z },
+    lightDir: sun,
+    profile,
+  });
+}
+
+let topCameraFrameState: TopCameraFrameState | null = null;
+
+export function renderTopView(
+  ctxTop: CanvasRenderingContext2D,
+  state: TopViewState
+): void {
   clear(ctxTop);
+
+  const { plane, topCamera, airplanes } = state;
 
   const radial = vec.normalize({
     x: plane.x - planetCenter.x,
@@ -33,23 +83,40 @@ export function renderTopView(ctxTop: CanvasRenderingContext2D): void {
   topCamera.y = plane.y + radial.y * distanceAbovePlane;
   topCamera.z = plane.z + radial.z * distanceAbovePlane;
 
-  updateTopCameraFrame(radial);
+  const { orientation, state: nextState } = updateTopCameraFrame(
+    radial,
+    topCameraFrameState
+  );
+  topCameraFrameState = nextState;
 
-  if (!topCameraRight || !topCameraForward || !topCameraUp) {
-    return;
-  }
+  topCamera.orientation = orientation;
 
-  topCamera.orientation = [
-    [topCameraRight.x, topCameraForward.x, topCameraUp.x],
-    [topCameraRight.y, topCameraForward.y, topCameraUp.y],
-    [topCameraRight.z, topCameraForward.z, topCameraUp.z],
-  ];
+  const topCamPos = { x: topCamera.x, y: topCamera.y, z: topCamera.z };
 
-  draw(ctxTop, planetGrid, topView);
-  draw(ctxTop, airplanes, topView);
+  const projection = makeTopView({
+    cameraPosition: topCamPos,
+    cameraOrientation: topCamera.orientation,
+  });
+
+  draw(ctxTop, planetGrid, {
+    projection,
+    cameraPos: topCamPos,
+    lightDir: sun,
+    profile,
+  });
+  draw(ctxTop, airplanes, {
+    projection,
+    cameraPos: topCamPos,
+    lightDir: sun,
+    profile,
+  });
 }
 
-export function renderHUD(ctxTop: CanvasRenderingContext2D): void {
+export function renderHUD(
+  ctxTop: CanvasRenderingContext2D,
+  plane: Plane,
+  profilingEnabled: boolean
+): void {
   ctxTop.fillStyle = "rgba(0, 0, 0, 0.6)";
   ctxTop.fillRect(0, 0, 360, 80);
   ctxTop.fillStyle = "white";
@@ -67,5 +134,5 @@ export function renderHUD(ctxTop: CanvasRenderingContext2D): void {
 
   ctxTop.fillText(`FPS: ${fps.toFixed(1)}`, 200, 20);
 
-  if (enabled) ctxTop.fillText("PROFILING", 250, 60);
+  if (profilingEnabled) ctxTop.fillText("PROFILING", 250, 60);
 }

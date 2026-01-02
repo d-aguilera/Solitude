@@ -42,3 +42,7 @@ export function init(): void {
     if (code in keys) keys[code] = false;
   });
 }
+
+export function getKeyState(): Readonly<KeyState> {
+  return keys;
+}

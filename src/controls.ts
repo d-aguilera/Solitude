@@ -1,32 +1,69 @@
 import { mat3, vec } from "./math.js";
-import { keys } from "./input.js";
+import { PLANET_RADIUS, planetCenter } from "./planet.js";
 import {
   lookSpeed,
   rotSpeedRoll,
   rotSpeedPitch,
   rotSpeedYaw,
-  plane,
-  pilot,
-  airplanes,
+  type Plane,
   type SceneObject,
 } from "./setup.js";
-import { PLANET_RADIUS, planetCenter } from "./planet.js";
 import type { Mat3, Vec3 } from "./types.js";
 
-export function updatePhysics(dtSeconds: number): void {
-  pilotLookAround(dtSeconds);
+export interface ControlInput {
+  rollLeft: boolean;
+  rollRight: boolean;
+  pitchUp: boolean;
+  pitchDown: boolean;
+  yawLeft: boolean;
+  yawRight: boolean;
+  lookLeft: boolean;
+  lookRight: boolean;
+  lookUp: boolean;
+  lookDown: boolean;
+  resetView: boolean;
+  pause: boolean;
+  toggleProfiling: boolean;
+}
 
-  let Rlocal = yaw(pitch(roll(null, dtSeconds), dtSeconds), dtSeconds);
+// Encapsulate the state that physics operates on rather than reaching into globals
+export interface FlightState {
+  plane: Plane;
+  pilot: {
+    azimuth: number;
+    elevation: number;
+  };
+  mainAirplane: SceneObject;
+}
+
+/**
+ * Pure-ish physics step: consumes current state and input, mutates the provided state object.
+ * This avoids direct dependence on the global singletons in setup.ts, reducing coupling.
+ */
+export function updatePhysics(
+  dtSeconds: number,
+  input: ControlInput,
+  state: FlightState
+): void {
+  pilotLookAround(dtSeconds, input, state);
+
+  let Rlocal = yaw(
+    pitch(roll(null, dtSeconds, input, state), dtSeconds, input, state),
+    dtSeconds,
+    input,
+    state
+  );
 
   if (Rlocal) {
-    plane.orientation = mat3.mul(Rlocal, plane.orientation);
+    state.plane.orientation = mat3.mul(Rlocal, state.plane.orientation);
   }
 
-  updatePlaneAxesSpherical();
+  updatePlaneAxesSpherical(state);
 
-  moveForwardSpherical(dtSeconds);
+  moveForwardSpherical(dtSeconds, state);
 
-  const mainAirplane = airplanes[0] as SceneObject;
+  const mainAirplane = state.mainAirplane;
+  const plane = state.plane;
   mainAirplane.x = plane.x;
   mainAirplane.y = plane.y;
   mainAirplane.z = plane.z;
@@ -34,24 +71,27 @@ export function updatePhysics(dtSeconds: number): void {
   mainAirplane.scale = plane.scale;
 }
 
-function pilotLookAround(dtSeconds: number): void {
-  if (keys.Digit0) {
+function pilotLookAround(
+  dtSeconds: number,
+  input: ControlInput,
+  state: FlightState
+): void {
+  const pilot = state.pilot;
+
+  if (input.resetView) {
     pilot.azimuth = 0;
     pilot.elevation = 0;
   }
-  if (keys.ArrowLeft) pilot.azimuth += lookSpeed * dtSeconds;
-  if (keys.ArrowRight) pilot.azimuth -= lookSpeed * dtSeconds;
-  if (keys.ArrowUp) pilot.elevation += lookSpeed * dtSeconds;
-  if (keys.ArrowDown) pilot.elevation -= lookSpeed * dtSeconds;
+
+  if (input.lookLeft) pilot.azimuth += lookSpeed * dtSeconds;
+  if (input.lookRight) pilot.azimuth -= lookSpeed * dtSeconds;
+  if (input.lookUp) pilot.elevation += lookSpeed * dtSeconds;
+  if (input.lookDown) pilot.elevation -= lookSpeed * dtSeconds;
 }
 
-export function updatePlaneAxesSpherical(): void {
-  const pos: Vec3 = { x: plane.x, y: plane.y, z: plane.z };
-  const fromCenter = vec.sub(pos, planetCenter);
+export function updatePlaneAxesSpherical(state: FlightState): void {
+  const R = state.plane.orientation;
 
-  const radialUp = vec.normalize(fromCenter);
-
-  const R = plane.orientation;
   let right: Vec3 = { x: R[0][0], y: R[1][0], z: R[2][0] };
   let forward: Vec3 = { x: R[0][1], y: R[1][1], z: R[2][1] };
   let up: Vec3 = { x: R[0][2], y: R[1][2], z: R[2][2] };
@@ -73,19 +113,27 @@ export function updatePlaneAxesSpherical(): void {
   const lenUp = vec.length(up) || 1;
   up = { x: up.x / lenUp, y: up.y / lenUp, z: up.z / lenUp };
 
-  plane.right = right;
-  plane.forward = forward;
-  plane.up = up;
-
-  void radialUp; // kept in case you want it later
+  state.plane.right = right;
+  state.plane.forward = forward;
+  state.plane.up = up;
 }
 
-function roll(Rlocal: Mat3 | null, dtSeconds: number): Mat3 | null {
-  if ((!keys.KeyA && !keys.KeyD) || (keys.KeyA && keys.KeyD)) {
+function roll(
+  Rlocal: Mat3 | null,
+  dtSeconds: number,
+  input: ControlInput,
+  state: FlightState
+): Mat3 | null {
+  if (
+    (!input.rollLeft && !input.rollRight) ||
+    (input.rollLeft && input.rollRight)
+  ) {
     return Rlocal;
   }
 
-  if (keys.KeyA) {
+  const plane = state.plane;
+
+  if (input.rollLeft) {
     const Rr = mat3.rotAxis(plane.forward, -rotSpeedRoll * dtSeconds);
     return Rlocal ? mat3.mul(Rr, Rlocal) : Rr;
   }
@@ -94,13 +142,19 @@ function roll(Rlocal: Mat3 | null, dtSeconds: number): Mat3 | null {
   return Rlocal ? mat3.mul(Rr, Rlocal) : Rr;
 }
 
-function pitch(Rlocal: Mat3 | null, dtSeconds: number): Mat3 | null {
+function pitch(
+  Rlocal: Mat3 | null,
+  dtSeconds: number,
+  input: ControlInput,
+  state: FlightState
+): Mat3 | null {
   let pitchInput = 0;
-  if (keys.KeyS) pitchInput += 1;
-  if (keys.KeyW) pitchInput -= 1;
+
+  if (input.pitchDown) pitchInput += 1;
+  if (input.pitchUp) pitchInput -= 1;
   if (pitchInput !== 0) {
     const Rp = mat3.rotAxis(
-      plane.right,
+      state.plane.right,
       pitchInput * rotSpeedPitch * dtSeconds
     );
     Rlocal = Rlocal ? mat3.mul(Rp, Rlocal) : Rp;
@@ -108,12 +162,22 @@ function pitch(Rlocal: Mat3 | null, dtSeconds: number): Mat3 | null {
   return Rlocal;
 }
 
-function yaw(Rlocal: Mat3 | null, dtSeconds: number): Mat3 | null {
-  if ((!keys.KeyQ && !keys.KeyE) || (keys.KeyQ && keys.KeyE)) {
+function yaw(
+  Rlocal: Mat3 | null,
+  dtSeconds: number,
+  input: ControlInput,
+  state: FlightState
+): Mat3 | null {
+  if (
+    (!input.yawLeft && !input.yawRight) ||
+    (input.yawLeft && input.yawRight)
+  ) {
     return Rlocal;
   }
 
-  if (keys.KeyQ) {
+  const plane = state.plane;
+
+  if (input.yawLeft) {
     const Ry = mat3.rotAxis(plane.up, rotSpeedYaw * dtSeconds);
     return Rlocal ? mat3.mul(Ry, Rlocal) : Ry;
   }
@@ -122,7 +186,8 @@ function yaw(Rlocal: Mat3 | null, dtSeconds: number): Mat3 | null {
   return Rlocal ? mat3.mul(Ry, Rlocal) : Ry;
 }
 
-function moveForwardSpherical(dtSeconds: number): void {
+function moveForwardSpherical(dtSeconds: number, state: FlightState): void {
+  const plane = state.plane;
   const speed = plane.speed;
 
   const forward: Vec3 = {

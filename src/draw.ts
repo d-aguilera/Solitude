@@ -1,36 +1,44 @@
 import { transformPointsToWorld, vec } from "./math.js";
-import { topView, pilotView, type ScreenPoint } from "./projection.js";
-import { profile } from "./profiling.js";
-import {
-  WIDTH,
-  HEIGHT,
-  plane,
-  sun,
-  topCamera,
-  type SceneObject,
-} from "./setup.js";
-import type { Model, Vec3 } from "./types.js";
+import type { ScreenPoint } from "./projection.js";
+import { WIDTH, HEIGHT, type SceneObject } from "./setup.js";
+import type { Model, RGB, Vec3 } from "./types.js";
 
-// --- DRAWING HELPERS ---
+type ProjectionFn = (p: Vec3) => ScreenPoint | null;
+
+type ProfileFn = <T>(group: string, name: string, fn: () => T) => T;
+
+interface DrawOptions {
+  projection: ProjectionFn;
+  cameraPos: Vec3 | null;
+  lightDir: Vec3;
+  profile?: ProfileFn;
+}
+
+// Local helper: default to no-op profiling
+function withProfile<T>(
+  profile: ProfileFn | undefined,
+  group: string,
+  name: string,
+  fn: () => T
+): T {
+  return profile ? profile(group, name, fn) : fn();
+}
 
 export function clear(context: CanvasRenderingContext2D): void {
   context.fillStyle = "#505050";
   context.fillRect(0, 0, WIDTH, HEIGHT);
 }
 
-type ProjectionFn = (p: Vec3) => ScreenPoint | null;
-
 export function draw(
   context: CanvasRenderingContext2D,
   group: (Model | SceneObject)[],
-  projection: ProjectionFn
+  { projection, cameraPos, lightDir, profile }: DrawOptions
 ): void {
   const projectedPoints: ScreenPoint[] = [];
 
-  profile("DRAW", "total", () => {
+  withProfile(profile, "DRAW", "total", () => {
     group.forEach((obj) => {
       const model: Model = (obj as SceneObject).model ?? (obj as Model);
-
       const points = model.points;
       const lines = model.lines;
       const faces = model.faces;
@@ -42,7 +50,7 @@ export function draw(
 
       let worldPoints: Vec3[];
 
-      profile("DRAW", "transform", () => {
+      withProfile(profile, "DRAW", "transform", () => {
         const typedObj = obj as SceneObject;
         const hasTransform =
           typedObj.x !== undefined &&
@@ -91,7 +99,7 @@ export function draw(
       });
 
       if (faces && faces.length) {
-        profile("DRAW", "faces", () => {
+        withProfile(profile, "DRAW", "faces", () => {
           const faceList: {
             i0: number;
             i1: number;
@@ -99,13 +107,6 @@ export function draw(
             intensity: number;
             depth: number;
           }[] = [];
-
-          const cameraPos =
-            projection === pilotView
-              ? { x: plane.x, y: plane.y, z: plane.z }
-              : projection === topView
-              ? { x: topCamera.x, y: topCamera.y, z: topCamera.z }
-              : null;
 
           let baseR = 255,
             baseG = 255,
@@ -146,7 +147,7 @@ export function draw(
               }
             }
 
-            const intensity = Math.max(0, vec.dot(n, sun));
+            const intensity = Math.max(0, vec.dot(n, lightDir));
             const avgZ = (v0.z + v1.z + v2.z) / 3;
 
             faceList.push({ i0, i1, i2, intensity, depth: avgZ });
@@ -170,7 +171,7 @@ export function draw(
           }
         });
       } else {
-        profile("DRAW", "lines", () => {
+        withProfile(profile, "DRAW", "lines", () => {
           for (let i = 0; i < lines.length; i++) {
             const polyIndices = lines[i];
 
@@ -233,79 +234,7 @@ export function poly(
   context.stroke();
 }
 
-export function drawPlaneAxes(context: CanvasRenderingContext2D): void {
-  const axisLength = 10;
-
-  const origin: Vec3 = { x: plane.x, y: plane.y, z: plane.z };
-
-  const right: Vec3 = {
-    x: plane.orientation[0][0],
-    y: plane.orientation[1][0],
-    z: plane.orientation[2][0],
-  };
-  const forward: Vec3 = {
-    x: plane.orientation[0][1],
-    y: plane.orientation[1][1],
-    z: plane.orientation[2][1],
-  };
-  const up: Vec3 = {
-    x: plane.orientation[0][2],
-    y: plane.orientation[1][2],
-    z: plane.orientation[2][2],
-  };
-
-  const { x: ox, y: oy, z: oz } = origin;
-  const xEnd: Vec3 = {
-    x: ox + right.x * axisLength,
-    y: oy + right.y * axisLength,
-    z: oz + right.z * axisLength,
-  };
-  const yEnd: Vec3 = {
-    x: ox + forward.x * axisLength,
-    y: oy + forward.y * axisLength,
-    z: oz + forward.z * axisLength,
-  };
-  const zEnd: Vec3 = {
-    x: ox + up.x * axisLength,
-    y: oy + up.y * axisLength,
-    z: oz + up.z * axisLength,
-  };
-
-  const oTop = topView(origin);
-  const xTop = topView(xEnd);
-  const yTop = topView(yEnd);
-  const zTop = topView(zEnd);
-
-  if (!oTop) return;
-
-  context.lineWidth = 2;
-
-  if (xTop) {
-    context.strokeStyle = "red";
-    context.beginPath();
-    context.moveTo(oTop.x, oTop.y);
-    context.lineTo(xTop.x, xTop.y);
-    context.stroke();
-  }
-
-  if (yTop) {
-    context.strokeStyle = "lime";
-    context.beginPath();
-    context.moveTo(oTop.x, oTop.y);
-    context.lineTo(yTop.x, yTop.y);
-    context.stroke();
-  }
-
-  if (zTop) {
-    context.strokeStyle = "blue";
-    context.beginPath();
-    context.moveTo(oTop.x, oTop.y);
-    context.lineTo(zTop.x, zTop.y);
-    context.stroke();
-  }
-}
-
-function rgbToCss({ r, g, b }: { r: number; g: number; b: number }): string {
+function rgbToCss({ r, g, b }: RGB): string {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
