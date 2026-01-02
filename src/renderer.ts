@@ -1,6 +1,7 @@
 import { clear, draw } from "./draw.js";
 import { fps } from "./fps.js";
-import { altitudeAboveSurface, planetCenter, vecNormalize } from "./planet.js";
+import { vec } from "./math.js";
+import { altitudeAboveSurface, planetCenter } from "./planet.js";
 import { enabled } from "./profiling.js";
 import {
   pilotView,
@@ -12,17 +13,16 @@ import {
 } from "./projection.js";
 import { airplanes, plane, planetGrid, topCamera } from "./setup.js";
 
-export function renderPilotView(ctxPilot) {
+export function renderPilotView(ctxPilot: CanvasRenderingContext2D): void {
   clear(ctxPilot);
   draw(ctxPilot, planetGrid, pilotView);
   draw(ctxPilot, airplanes, pilotView);
 }
 
-export function renderTopView(ctxTop) {
+export function renderTopView(ctxTop: CanvasRenderingContext2D): void {
   clear(ctxTop);
 
-  // Exact radial up from planet center to plane
-  const radial = vecNormalize({
+  const radial = vec.normalize({
     x: plane.x - planetCenter.x,
     y: plane.y - planetCenter.y,
     z: plane.z - planetCenter.z,
@@ -33,25 +33,23 @@ export function renderTopView(ctxTop) {
   topCamera.y = plane.y + radial.y * distanceAbovePlane;
   topCamera.z = plane.z + radial.z * distanceAbovePlane;
 
-  // Update persistent camera frame to follow the new radial
   updateTopCameraFrame(radial);
 
-  // Build orientation matrix from tcRight / tcForward / tcUp
-  // (columns = right, forward, up)
+  if (!topCameraRight || !topCameraForward || !topCameraUp) {
+    return;
+  }
+
   topCamera.orientation = [
     [topCameraRight.x, topCameraForward.x, topCameraUp.x],
     [topCameraRight.y, topCameraForward.y, topCameraUp.y],
     [topCameraRight.z, topCameraForward.z, topCameraUp.z],
   ];
 
-  // Draw planet grid
   draw(ctxTop, planetGrid, topView);
-
-  // Draw the plane
   draw(ctxTop, airplanes, topView);
 }
 
-export function renderHUD(ctxTop) {
+export function renderHUD(ctxTop: CanvasRenderingContext2D): void {
   ctxTop.fillStyle = "rgba(0, 0, 0, 0.6)";
   ctxTop.fillRect(0, 0, 360, 80);
   ctxTop.fillStyle = "white";

@@ -3,7 +3,7 @@ let framesThisSecond = 0;
 
 export let fps = 0;
 
-export function updateFPS(nowMs) {
+export function updateFPS(nowMs: number): void {
   if (lastFpsUpdateMs === 0) {
     lastFpsUpdateMs = nowMs;
     return;

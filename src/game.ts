@@ -11,10 +11,12 @@ import { renderPilotView, renderTopView, renderHUD } from "./renderer.js";
 
 let lastTimeMs = 0;
 
-export function startGame(ctxPilot, ctxTop) {
+export function startGame(
+  ctxPilot: CanvasRenderingContext2D,
+  ctxTop: CanvasRenderingContext2D
+): void {
   initInput();
 
-  // Ensure plane.right/forward/up match orientation and planet tangent
   updatePlaneAxesSpherical();
 
   requestAnimationFrame((nowMs) => {
@@ -23,7 +25,11 @@ export function startGame(ctxPilot, ctxTop) {
   });
 }
 
-function renderFrame(ctxPilot, ctxTop, nowMs) {
+function renderFrame(
+  ctxPilot: CanvasRenderingContext2D,
+  ctxTop: CanvasRenderingContext2D,
+  nowMs: number
+): void {
   const dtMs = nowMs - lastTimeMs;
   lastTimeMs = nowMs;
 

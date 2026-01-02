@@ -5,7 +5,7 @@ let pausing = false;
 
 export let paused = false;
 
-export function pauseControl() {
+export function pauseControl(): void {
   if (keys.Space) {
     if (!spaceKeyDown) {
       if (!paused) {

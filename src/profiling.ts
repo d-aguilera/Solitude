@@ -6,11 +6,11 @@ const profileEveryMs = 3000;
 let pKeyDown = false;
 let lastProfileStartMs = 0;
 let doProfile = false;
-let counters;
+let counters: Record<string, Record<string, number>> = {};
 
 export let enabled = false;
 
-export function check() {
+export function check(): void {
   enabledControl();
 
   if (!enabled || paused) return;
@@ -25,7 +25,11 @@ export function check() {
   counters = {};
 }
 
-export function profile(counterGroup, counterName, fn) {
+export function profile<T>(
+  counterGroup: string,
+  counterName: string,
+  fn: () => T
+): T {
   if (!doProfile) {
     return fn();
   }
@@ -40,11 +44,10 @@ export function profile(counterGroup, counterName, fn) {
 
   performance.measure(measureName, markStart, markEnd);
   const entries = performance.getEntriesByName(measureName);
-  const duration = entries[entries.length - 1].duration;
+  const duration = entries[entries.length - 1]!.duration;
 
   add(counterGroup, counterName, duration);
 
-  // Optional: clear marks/measures if you want to avoid buildup
   performance.clearMarks(markStart);
   performance.clearMarks(markEnd);
   performance.clearMeasures(measureName);
@@ -52,7 +55,11 @@ export function profile(counterGroup, counterName, fn) {
   return result;
 }
 
-export function add(counterGroup, counterName, value) {
+export function add(
+  counterGroup: string,
+  counterName: string,
+  value: number
+): void {
   if (!doProfile) return;
 
   const group = (counters[counterGroup] ??= {});
@@ -60,7 +67,7 @@ export function add(counterGroup, counterName, value) {
   group[counterName] += value;
 }
 
-export function flush() {
+export function flush(): void {
   if (!doProfile) return;
 
   for (const group of Object.keys(counters)) {
@@ -89,7 +96,7 @@ export function flush() {
   doProfile = false;
 }
 
-function enabledControl() {
+function enabledControl(): void {
   if (keys.KeyP) {
     if (!pKeyDown) {
       enabled = !enabled;

@@ -1,55 +1,63 @@
-import { transformPointsToWorld } from "./math.js";
-import { topView, pilotView } from "./projection.js";
+import { transformPointsToWorld, vec } from "./math.js";
+import { topView, pilotView, type ScreenPoint } from "./projection.js";
 import { profile } from "./profiling.js";
-import { WIDTH, HEIGHT, plane, sun, topCamera } from "./setup.js";
-import { vecCross, vecNormalize, vecDot } from "./planet.js";
+import {
+  WIDTH,
+  HEIGHT,
+  plane,
+  sun,
+  topCamera,
+  type SceneObject,
+} from "./setup.js";
+import type { Model, Vec3 } from "./types.js";
 
 // --- DRAWING HELPERS ---
 
-export function clear(context) {
+export function clear(context: CanvasRenderingContext2D): void {
   context.fillStyle = "#505050";
   context.fillRect(0, 0, WIDTH, HEIGHT);
 }
 
-export function draw(context, group, projection) {
-  const projectedPoints = [];
+type ProjectionFn = (p: Vec3) => ScreenPoint | null;
+
+export function draw(
+  context: CanvasRenderingContext2D,
+  group: (Model | SceneObject)[],
+  projection: ProjectionFn
+): void {
+  const projectedPoints: ScreenPoint[] = [];
 
   profile("DRAW", "total", () => {
     group.forEach((obj) => {
-      const model = obj.model || obj;
+      const model: Model = (obj as SceneObject).model ?? (obj as Model);
 
       const points = model.points;
       const lines = model.lines;
       const faces = model.faces;
-      const baseColor = obj.color ?? model.color;
-      const lineWidth = obj.lineWidth ?? model.lineWidth;
+      const baseColor = (obj as SceneObject).color ?? model.color;
+      const lineWidth = (obj as SceneObject).lineWidth ?? model.lineWidth;
 
-      // Convert object/model color to CSS once
       const baseCss =
         typeof baseColor === "string" ? baseColor : rgbToCss(baseColor);
 
-      let worldPoints;
+      let worldPoints: Vec3[];
 
       profile("DRAW", "transform", () => {
-        // Dynamic transform?
+        const typedObj = obj as SceneObject;
         const hasTransform =
-          obj.x !== undefined &&
-          obj.y !== undefined &&
-          obj.z !== undefined &&
-          obj.orientation &&
-          obj.scale !== undefined;
+          typedObj.x !== undefined &&
+          typedObj.y !== undefined &&
+          typedObj.z !== undefined &&
+          !!typedObj.orientation &&
+          typedObj.scale !== undefined;
 
         if (hasTransform) {
-          let R = obj.orientation;
+          let R = typedObj.orientation;
 
-          // If the object has per-axis dimensions, fold them into R
-          const width = obj.width;
-          const depth = obj.depth;
-          const height = obj.height;
+          const width = typedObj.width;
+          const depth = typedObj.depth;
+          const height = typedObj.height;
           if (width && depth && height) {
-            // Each row is the world-space components of the three local axes.
-            // To apply non-uniform scale along local X/Y/Z, multiply columns
-            // (i.e., the second index), not the rows themselves.
             const R00 = R[0][0] * width;
             const R01 = R[0][1] * depth;
             const R02 = R[0][2] * height;
@@ -72,10 +80,10 @@ export function draw(context, group, projection) {
           worldPoints = transformPointsToWorld(
             points,
             R,
-            obj.scale,
-            obj.x,
-            obj.y,
-            obj.z
+            typedObj.scale,
+            typedObj.x,
+            typedObj.y,
+            typedObj.z
           );
         } else {
           worldPoints = points;
@@ -84,9 +92,14 @@ export function draw(context, group, projection) {
 
       if (faces && faces.length) {
         profile("DRAW", "faces", () => {
-          const faceList = [];
+          const faceList: {
+            i0: number;
+            i1: number;
+            i2: number;
+            intensity: number;
+            depth: number;
+          }[] = [];
 
-          // Camera for culling:
           const cameraPos =
             projection === pilotView
               ? { x: plane.x, y: plane.y, z: plane.z }
@@ -94,7 +107,6 @@ export function draw(context, group, projection) {
               ? { x: topCamera.x, y: topCamera.y, z: topCamera.z }
               : null;
 
-          // Base color to RGB
           let baseR = 255,
             baseG = 255,
             baseB = 255;
@@ -104,61 +116,51 @@ export function draw(context, group, projection) {
             baseB = baseColor.b;
           }
 
-          // Build face list with average depth and intensity
           for (let fi = 0; fi < faces.length; fi++) {
             const [i0, i1, i2] = faces[fi];
             const v0 = worldPoints[i0];
             const v1 = worldPoints[i1];
             const v2 = worldPoints[i2];
 
-            // Face normal in world space: (v1 - v0) × (v2 - v0)
-            const e1 = {
+            const e1: Vec3 = {
               x: v1.x - v0.x,
               y: v1.y - v0.y,
               z: v1.z - v0.z,
             };
-            const e2 = {
+            const e2: Vec3 = {
               x: v2.x - v0.x,
               y: v2.y - v0.y,
               z: v2.z - v0.z,
             };
-            const n = vecNormalize(vecCross(e1, e2)); // outward (if faces are CCW)
+            const n = vec.normalize(vec.cross(e1, e2));
 
-            // Back-face culling relative to camera (only if we have one)
             if (cameraPos) {
-              // Vector from triangle to camera
-              const toCamera = {
+              const toCamera: Vec3 = {
                 x: cameraPos.x - v0.x,
                 y: cameraPos.y - v0.y,
                 z: cameraPos.z - v0.z,
               };
-              const facing = vecDot(n, toCamera);
-
-              // Skip faces whose normal points away from camera
+              const facing = vec.dot(n, toCamera);
               if (facing <= 0) {
                 continue;
               }
             }
 
-            // Simple Lambert factor: max(0, n · sunDir)
-            const intensity = Math.max(0, vecDot(n, sun));
+            const intensity = Math.max(0, vec.dot(n, sun));
             const avgZ = (v0.z + v1.z + v2.z) / 3;
 
             faceList.push({ i0, i1, i2, intensity, depth: avgZ });
           }
 
-          // Painter’s algorithm: sort back-to-front by depth
           faceList.sort((a, b) => b.depth - a.depth);
 
-          // Draw triangles
           for (const face of faceList) {
             const p0 = projection(worldPoints[face.i0]);
             const p1 = projection(worldPoints[face.i1]);
             const p2 = projection(worldPoints[face.i2]);
             if (!p0 || !p1 || !p2) continue;
 
-            // Apply intensity to base color
-            const k = 0.2 + 0.8 * face.intensity; // ambient 0.2, diffuse up to 1.0
+            const k = 0.2 + 0.8 * face.intensity;
             const r = Math.round(baseR * k);
             const g = Math.round(baseG * k);
             const b = Math.round(baseB * k);
@@ -167,46 +169,26 @@ export function draw(context, group, projection) {
             fillTriangle(context, p0, p1, p2, fillStyle);
           }
         });
-
-        // Optional: also draw wireframe on top if you want the mesh look
-        // profile("DRAW", "lines-over-faces", () => {
-        //   for (let i = 0; i < lines.length; i++) {
-        //     const polyIndices = lines[i];
-        //     projectedPoints.length = 0;
-        //
-        //     for (let j = 0; j < polyIndices.length; j++) {
-        //       const p = projection(worldPoints[polyIndices[j]]);
-        //       if (!p) {
-        //         projectedPoints.length = 0;
-        //         break;
-        //       }
-        //       projectedPoints.push(p);
-        //     }
-        //     if (projectedPoints.length > 0)
-        //       poly(context, projectedPoints, "rgba(0,0,0,0.3)", lineWidth);
-        //   }
-        // });
       } else {
         profile("DRAW", "lines", () => {
-          // wireframe lines
-          if (lines.length == 2 && typeof lines[0] === "number") {
-            const [i, j] = lines;
-            const p1 = projection(worldPoints[i]);
-            const p2 = projection(worldPoints[j]);
-            if (p1 && p2) line(context, p1, p2, baseCss, lineWidth);
-            return;
-          }
-
-          // wireframe polys
           for (let i = 0; i < lines.length; i++) {
             const polyIndices = lines[i];
+
+            if (polyIndices.length === 2) {
+              const [i, j] = polyIndices;
+              const p1 = projection(worldPoints[i]);
+              const p2 = projection(worldPoints[j]);
+              if (p1 && p2) line(context, p1, p2, baseCss, lineWidth);
+              continue;
+            }
+
             projectedPoints.length = 0;
 
             for (let j = 0; j < polyIndices.length; j++) {
               const p = projection(worldPoints[polyIndices[j]]);
               if (!p) {
                 projectedPoints.length = 0;
-                break;
+                continue;
               }
               projectedPoints.push(p);
             }
@@ -219,7 +201,13 @@ export function draw(context, group, projection) {
   });
 }
 
-export function line(context, p1, p2, color, lineWidth) {
+export function line(
+  context: CanvasRenderingContext2D,
+  p1: ScreenPoint,
+  p2: ScreenPoint,
+  color: string,
+  lineWidth: number
+): void {
   context.strokeStyle = color;
   context.lineWidth = lineWidth;
   context.beginPath();
@@ -228,7 +216,12 @@ export function line(context, p1, p2, color, lineWidth) {
   context.stroke();
 }
 
-export function poly(context, points, color, lineWidth) {
+export function poly(
+  context: CanvasRenderingContext2D,
+  points: ScreenPoint[],
+  color: string,
+  lineWidth: number
+): void {
   context.strokeStyle = color;
   context.lineWidth = lineWidth;
   context.beginPath();
@@ -240,46 +233,44 @@ export function poly(context, points, color, lineWidth) {
   context.stroke();
 }
 
-export function drawPlaneAxes(context) {
+export function drawPlaneAxes(context: CanvasRenderingContext2D): void {
   const axisLength = 10;
 
-  const origin = { x: plane.x, y: plane.y, z: plane.z };
+  const origin: Vec3 = { x: plane.x, y: plane.y, z: plane.z };
 
-  const right = {
+  const right: Vec3 = {
     x: plane.orientation[0][0],
     y: plane.orientation[1][0],
     z: plane.orientation[2][0],
   };
-  const forward = {
+  const forward: Vec3 = {
     x: plane.orientation[0][1],
     y: plane.orientation[1][1],
     z: plane.orientation[2][1],
   };
-  const up = {
+  const up: Vec3 = {
     x: plane.orientation[0][2],
     y: plane.orientation[1][2],
     z: plane.orientation[2][2],
   };
 
-  // Endpoints for each axis
   const { x: ox, y: oy, z: oz } = origin;
-  const xEnd = {
+  const xEnd: Vec3 = {
     x: ox + right.x * axisLength,
     y: oy + right.y * axisLength,
     z: oz + right.z * axisLength,
   };
-  const yEnd = {
+  const yEnd: Vec3 = {
     x: ox + forward.x * axisLength,
     y: oy + forward.y * axisLength,
     z: oz + forward.z * axisLength,
   };
-  const zEnd = {
+  const zEnd: Vec3 = {
     x: ox + up.x * axisLength,
     y: oy + up.y * axisLength,
     z: oz + up.z * axisLength,
   };
 
-  // Project to top view
   const oTop = topView(origin);
   const xTop = topView(xEnd);
   const yTop = topView(yEnd);
@@ -289,7 +280,6 @@ export function drawPlaneAxes(context) {
 
   context.lineWidth = 2;
 
-  // X axis: red
   if (xTop) {
     context.strokeStyle = "red";
     context.beginPath();
@@ -298,7 +288,6 @@ export function drawPlaneAxes(context) {
     context.stroke();
   }
 
-  // Y axis: green
   if (yTop) {
     context.strokeStyle = "lime";
     context.beginPath();
@@ -307,7 +296,6 @@ export function drawPlaneAxes(context) {
     context.stroke();
   }
 
-  // Z axis: blue
   if (zTop) {
     context.strokeStyle = "blue";
     context.beginPath();
@@ -317,11 +305,17 @@ export function drawPlaneAxes(context) {
   }
 }
 
-function rgbToCss({ r, g, b }) {
+function rgbToCss({ r, g, b }: { r: number; g: number; b: number }): string {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-function fillTriangle(context, p0, p1, p2, fillStyle) {
+function fillTriangle(
+  context: CanvasRenderingContext2D,
+  p0: ScreenPoint,
+  p1: ScreenPoint,
+  p2: ScreenPoint,
+  fillStyle: string
+): void {
   context.fillStyle = fillStyle;
   context.beginPath();
   context.moveTo(p0.x, p0.y);
