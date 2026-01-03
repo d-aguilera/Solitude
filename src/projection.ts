@@ -9,7 +9,6 @@ export interface ScreenPoint {
   depth?: number; // camera-space depth (positive means in front of camera)
 }
 
-// New: pilot view context
 export interface PilotViewContext {
   planePosition: Vec3;
   planeOrientation: Mat3;
@@ -17,7 +16,6 @@ export interface PilotViewContext {
   pilotElevation: number;
 }
 
-// New: top view context
 export interface TopViewContext {
   cameraPosition: Vec3;
   cameraOrientation: Mat3;
@@ -25,7 +23,6 @@ export interface TopViewContext {
 
 // --- PROJECTION 1: PILOT VIEW ---
 
-// New: factory instead of hard-wired globals
 export function makePilotView(ctx: PilotViewContext) {
   return function pilotView({ x, y, z }: Vec3): ScreenPoint | null {
     const dx = x - ctx.planePosition.x;
@@ -222,7 +219,6 @@ export function updateTopCameraFrame(
   return { orientation, state };
 }
 
-// New: factory for top view instead of using global topCamera
 export function makeTopView(ctx: TopViewContext) {
   return function topView({ x, y, z }: Vec3): ScreenPoint | null {
     const dx = x - ctx.cameraPosition.x;

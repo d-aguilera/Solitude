@@ -29,11 +29,13 @@ import type {
   Scene,
   View,
   WorldState,
+  GravityState,
 } from "./types.js";
 import { renderView } from "./viewRenderer.js";
+import { ensureGravityState, applyGravityAndThrust } from "./gravity.js";
 
 let lastTimeMs = 0;
-let pKeyDown = false;
+let oKeyDown = false;
 
 let topCameraFrameState: TopCameraFrameState | null = null;
 
@@ -50,6 +52,9 @@ let world: WorldState = initialWorld;
 let mainPlaneId: string = planeId;
 let mainPilotViewId: string = pilotId;
 let topCameraId: string = camId;
+
+// Gravity state
+let gravityState: GravityState | null = null;
 
 export function startGame(
   pilotContext: CanvasRenderingContext2D,
@@ -76,10 +81,13 @@ function renderFrame(
 
   const dtSeconds = paused ? 0 : dtMs / 1000;
 
-  const input = makeControlInput();
+  const keys = getKeyState();
 
-  pauseControl(input.pause);
-  handleProfilingToggle(input);
+  pauseControl(keys.KeyP);
+  handleProfilingToggle(keys.KeyO);
+
+  const input = makeControlInput(keys);
+
   setPausedForProfiling(paused);
   profileCheck();
 
@@ -93,12 +101,20 @@ function renderFrame(
         pilotViewId: mainPilotViewId,
       };
       updatePhysics(dtSeconds, input, flightCtx);
+
+      gravityState = ensureGravityState(world, scene, gravityState);
+
+      applyGravityAndThrust(
+        dtSeconds,
+        world,
+        scene,
+        gravityState,
+        mainPlaneId,
+        input.burn
+      );
     });
 
-    // Keep scene airplane(s) in sync with simulation.
     syncPlanesToSceneObjects();
-
-    // Update camera based on latest plane position/orientation.
     updateTopCamera();
 
     const mainPlane = getPlane(world, mainPlaneId);
@@ -123,17 +139,17 @@ function renderFrame(
   );
 }
 
-function handleProfilingToggle(input: ControlInput): void {
-  if (input.toggleProfiling) {
-    if (!pKeyDown) {
+function handleProfilingToggle(oKeyPressed: boolean): void {
+  if (oKeyPressed) {
+    if (!oKeyDown) {
       const current = getProfilingEnabledFromEnv();
       const next = !current;
       setProfilingEnabled(next);
       setProfilingEnabledInEnv(next);
-      pKeyDown = true;
+      oKeyDown = true;
     }
-  } else if (pKeyDown) {
-    pKeyDown = false;
+  } else if (oKeyDown) {
+    oKeyDown = false;
   }
 }
 
@@ -141,7 +157,6 @@ function updateTopCamera(): void {
   const plane = getPlane(world, mainPlaneId);
   const camera = getTopCamera(world);
 
-  // Use the plane's local up direction as the "radial" direction for the top-down camera.
   const radial = vec.normalize(plane.up);
 
   const distanceAbovePlane = 50;
@@ -216,9 +231,7 @@ function renderTopView(
   renderView(topContext, scene, topViewConfig, profiler);
 }
 
-function makeControlInput(): ControlInput {
-  const keys = getKeyState();
-
+function makeControlInput(keys: ReturnType<typeof getKeyState>): ControlInput {
   return {
     rollLeft: keys.KeyA,
     rollRight: keys.KeyD,
@@ -231,8 +244,7 @@ function makeControlInput(): ControlInput {
     lookUp: keys.ArrowUp,
     lookDown: keys.ArrowDown,
     resetView: keys.Digit0,
-    pause: keys.Space,
-    toggleProfiling: keys.KeyP,
+    burn: keys.Space,
   };
 }
 

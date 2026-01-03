@@ -10,6 +10,7 @@ type KeyCode =
   | "KeyD"
   | "KeyQ"
   | "KeyE"
+  | "KeyO"
   | "KeyP"
   | "Space";
 
@@ -27,6 +28,7 @@ export const keys: KeyState = {
   KeyD: false,
   KeyQ: false,
   KeyE: false,
+  KeyO: false,
   KeyP: false,
   Space: false,
 };

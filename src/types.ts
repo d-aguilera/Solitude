@@ -57,6 +57,7 @@ export interface PilotView {
 }
 
 export interface SceneObject {
+  id: string;
   mesh: Mesh;
   position: Vec3;
   orientation: Mat3;
@@ -94,6 +95,26 @@ export interface WorldState {
   planes: Plane[];
   cameras: Camera[];
   pilotViews: PilotView[];
+}
+
+/**
+ * A logical body participating in Newtonian gravity.
+ * Could be a plane or a planet (or anything with mass).
+ */
+export type BodyId = string;
+
+export interface BodyState {
+  id: BodyId;
+  velocity: Vec3;
+  mass: number;
+}
+
+/**
+ * Container for all gravitational bodies. This is kept in WorldState so the
+ * physics step can update them each frame.
+ */
+export interface GravityState {
+  bodies: BodyState[];
 }
 
 export interface View {

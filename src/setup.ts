@@ -39,7 +39,8 @@ export function initRenderingContexts(
   return { pilotContext, topContext };
 }
 
-const initialPos: Vec3 = { x: 0, y: 0, z: 0 };
+const planet1Radius = 1000; // keep this in sync with addPlanetGrid
+const initialPos: Vec3 = { x: 0, y: 0, z: planet1Radius + 200 }; // 200 m above surface
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame = makeLocalFrame(initialUp);
 const initialForward: Vec3 = { ...initialFrame.forward };
@@ -57,7 +58,7 @@ function createInitialPlane(id: string): Plane {
     right: { ...initialFrame.right },
     forward: { ...initialFrame.forward },
     up: { ...initialFrame.up },
-    speed: 2500,
+    speed: 0, // start from rest; actual motion comes from velocity in gravity.ts
     scale: 15,
   };
 }
@@ -85,6 +86,7 @@ function createInitialTopCamera(id: string, plane: Plane): Camera {
 
 function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
   objects.push({
+    id: `sceneobj:${plane.id}`,
     mesh: airplaneModel,
     position: { ...plane.position },
     orientation: plane.orientation,
@@ -94,13 +96,12 @@ function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
   });
 }
 
-function addPlanetGrid(baseSpeed: number, objects: SceneObject[]): void {
+function addPlanetGrid(_baseSpeed: number, objects: SceneObject[]): void {
   // Angle between planets
   const angle = Math.PI / 3; // 60 degrees
 
-  // Distance between planet centers
-  const secondsApart = 10;
-  const distanceApart = baseSpeed * secondsApart;
+  // Distance between planet centers (fixed, not dependent on plane speed)
+  const distanceApart = 50_000; // 50 km between planet centers
 
   // Earth
   const planet1Radius = 1000; // meters
@@ -111,6 +112,7 @@ function addPlanetGrid(baseSpeed: number, objects: SceneObject[]): void {
   planet1Mesh.objectType = "planet-earth";
   planet1Mesh.color = { r: 0, g: 0, b: 255 };
   objects.push({
+    id: "planet:earth",
     mesh: planet1Mesh,
     position: planet1Center,
     orientation: mat3.identity,
@@ -129,6 +131,7 @@ function addPlanetGrid(baseSpeed: number, objects: SceneObject[]): void {
   planet2Mesh.objectType = "planet-mars";
   planet2Mesh.color = { r: 255, g: 0, b: 0 };
   objects.push({
+    id: "planet:mars",
     mesh: planet2Mesh,
     position: planet2Center,
     orientation: mat3.identity,
@@ -153,6 +156,7 @@ function addPlanetGrid(baseSpeed: number, objects: SceneObject[]): void {
   planet3Mesh.objectType = "planet-venus";
   planet3Mesh.color = { r: 0, g: 255, b: 0 };
   objects.push({
+    id: "planet:venus",
     mesh: planet3Mesh,
     position: planet3Center,
     orientation: mat3.identity,
@@ -187,7 +191,7 @@ export function createInitialSceneAndWorld(): {
 
   const objects: SceneObject[] = [];
   addAirplaneObject(mainPlane, objects);
-  addPlanetGrid(mainPlane.speed, objects);
+  addPlanetGrid(0, objects);
 
   const scene: Scene = {
     objects,

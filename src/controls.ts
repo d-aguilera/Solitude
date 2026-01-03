@@ -7,6 +7,9 @@ import {
 import { mat3, vec } from "./math.js";
 import type { Mat3, Plane, Vec3, WorldState } from "./types.js";
 
+// Tunable thrust acceleration in m/s^2 along plane forward axis
+const thrustAcceleration = 30; // adjust for feel
+
 export interface ControlInput {
   rollLeft: boolean;
   rollRight: boolean;
@@ -19,8 +22,7 @@ export interface ControlInput {
   lookUp: boolean;
   lookDown: boolean;
   resetView: boolean;
-  pause: boolean;
-  toggleProfiling: boolean;
+  burn: boolean; // Space: thrust forward while held
 }
 
 export interface FlightContext {
@@ -147,23 +149,28 @@ function yaw(
   return Rlocal ? mat3.mul(Ry, Rlocal) : Ry;
 }
 
-function moveForward(dtSeconds: number, plane: Plane): void {
-  const speed = plane.speed;
+/**
+ * Apply thrust acceleration to the plane's body velocity when burn is active.
+ * Velocity storage lives in the Gravity/BodyState; the gravity step will
+ * integrate position from it, so here we only modify velocity.
+ */
+export function applyThrustToPlaneVelocity(
+  dtSeconds: number,
+  input: ControlInput,
+  planeVelocity: Vec3,
+  plane: Plane
+): void {
+  if (!input.burn || dtSeconds <= 0) return;
 
-  const forward: Vec3 = {
-    x: plane.orientation[0][1],
-    y: plane.orientation[1][1],
-    z: plane.orientation[2][1],
-  };
-
-  plane.position = {
-    x: plane.position.x + forward.x * speed * dtSeconds,
-    y: plane.position.y + forward.y * speed * dtSeconds,
-    z: plane.position.z + forward.z * speed * dtSeconds,
-  };
+  // Use plane.forward as thrust direction (already normalized in updatePlaneAxes)
+  const f = plane.forward;
+  planeVelocity.x += f.x * thrustAcceleration * dtSeconds;
+  planeVelocity.y += f.y * thrustAcceleration * dtSeconds;
+  planeVelocity.z += f.z * thrustAcceleration * dtSeconds;
 }
 
-// Top-level physics update for a single controlled plane and pilot view.
+// Top-level update for orientation & pilot view; does NOT move the plane
+// forward anymore. Position integration is handled by gravity/thrust integration.
 export function updatePhysics(
   dtSeconds: number,
   input: ControlInput,
@@ -185,5 +192,4 @@ export function updatePhysics(
   }
 
   updatePlaneAxes(plane);
-  moveForward(dtSeconds, plane);
 }
