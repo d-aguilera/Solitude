@@ -41,12 +41,14 @@ export interface Plane {
   up: Vec3;
   speed: number;
   scale: number;
+  velocity: Vec3;
 }
 
 export interface Camera {
   id: string;
   position: Vec3;
   orientation: Mat3;
+  role?: "pilot" | "top";
 }
 
 export interface PilotView {
@@ -120,4 +122,9 @@ export interface GravityState {
 export interface View {
   projection: (p: Vec3) => ScreenPoint | null;
   cameraPos: Vec3 | null;
+  // Optional debug overlay, not part of scene geometry
+  debugDraw?: (
+    ctx: CanvasRenderingContext2D,
+    project: (p: Vec3) => ScreenPoint | null
+  ) => void;
 }

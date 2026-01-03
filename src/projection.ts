@@ -10,8 +10,8 @@ export interface ScreenPoint {
 }
 
 export interface PilotViewContext {
-  planePosition: Vec3;
-  planeOrientation: Mat3;
+  cameraPosition: Vec3;
+  cameraOrientation: Mat3;
   pilotAzimuth: number;
   pilotElevation: number;
 }
@@ -25,15 +25,21 @@ export interface TopViewContext {
 
 export function makePilotView(ctx: PilotViewContext) {
   return function pilotView({ x, y, z }: Vec3): ScreenPoint | null {
-    const dx = x - ctx.planePosition.x;
-    const dy = y - ctx.planePosition.y;
-    const dz = z - ctx.planePosition.z;
-
-    const R = ctx.planeOrientation;
+    const R = ctx.cameraOrientation;
     const right: Vec3 = { x: R[0][0], y: R[1][0], z: R[2][0] };
     const forward: Vec3 = { x: R[0][1], y: R[1][1], z: R[2][1] };
     const up: Vec3 = { x: R[0][2], y: R[1][2], z: R[2][2] };
 
+    const cameraX = ctx.cameraPosition.x;
+    const cameraY = ctx.cameraPosition.y;
+    const cameraZ = ctx.cameraPosition.z;
+
+    // Vector from camera to point
+    const dx = x - cameraX;
+    const dy = y - cameraY;
+    const dz = z - cameraZ;
+
+    // Transform to camera space
     let cx = dx * right.x + dy * right.y + dz * right.z;
     let cy = dx * up.x + dy * up.y + dz * up.z;
     let cz = dx * forward.x + dy * forward.y + dz * forward.z;

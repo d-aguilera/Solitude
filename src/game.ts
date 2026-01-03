@@ -30,6 +30,7 @@ import type {
   View,
   WorldState,
   GravityState,
+  Vec3,
 } from "./types.js";
 import { renderView } from "./viewRenderer.js";
 import { ensureGravityState, applyGravityAndThrust } from "./gravity.js";
@@ -68,6 +69,86 @@ export function startGame(
       renderFrame.bind(null, pilotContext, topContext, profiler)
     );
   });
+}
+
+// Draw velocity direction for a single plane in a given view
+function drawPlaneVelocityLine(
+  ctx: CanvasRenderingContext2D,
+  project: (p: Vec3) => { x: number; y: number; depth?: number } | null,
+  plane: Plane
+): void {
+  const v = plane.velocity;
+  const speed = Math.hypot(v.x, v.y, v.z);
+  if (speed === 0) return;
+
+  // Unit direction of motion
+  const dir = { x: v.x / speed, y: v.y / speed, z: v.z / speed };
+
+  const center = plane.position;
+
+  // Total segment length in world units, symmetric around plane center
+  const len = 5000; // meters
+
+  // Radius of the "transparent sphere" around the plane where we don't draw
+  const innerRadius = 8; // meters
+
+  // If the segment would be fully inside the sphere, don't draw anything
+  if (len <= innerRadius) return;
+
+  // World-space points:
+  //  - forwardInner: where drawing starts in the +velocity direction
+  //  - forwardEnd:   far end in +velocity direction
+  //  - backwardInner:where drawing starts in the -velocity direction
+  //  - backwardEnd:  far end in -velocity direction
+  const forwardInner = {
+    x: center.x + dir.x * innerRadius,
+    y: center.y + dir.y * innerRadius,
+    z: center.z + dir.z * innerRadius,
+  };
+  const forwardEnd = {
+    x: center.x + dir.x * len,
+    y: center.y + dir.y * len,
+    z: center.z + dir.z * len,
+  };
+
+  const backwardInner = {
+    x: center.x - dir.x * innerRadius,
+    y: center.y - dir.y * innerRadius,
+    z: center.z - dir.z * innerRadius,
+  };
+  const backwardEnd = {
+    x: center.x - dir.x * len,
+    y: center.y - dir.y * len,
+    z: center.z - dir.z * len,
+  };
+
+  const pForwardInner = project(forwardInner);
+  const pForwardEnd = project(forwardEnd);
+  const pBackwardInner = project(backwardInner);
+  const pBackwardEnd = project(backwardEnd);
+
+  ctx.save();
+  ctx.lineWidth = 4;
+
+  // Green: direction of motion (outside the innerRadius sphere)
+  if (pForwardInner && pForwardEnd) {
+    ctx.strokeStyle = "lime";
+    ctx.beginPath();
+    ctx.moveTo(pForwardInner.x, pForwardInner.y);
+    ctx.lineTo(pForwardEnd.x, pForwardEnd.y);
+    ctx.stroke();
+  }
+
+  // Red: opposite direction of motion (outside the innerRadius sphere)
+  if (pBackwardInner && pBackwardEnd) {
+    ctx.strokeStyle = "red";
+    ctx.beginPath();
+    ctx.moveTo(pBackwardInner.x, pBackwardInner.y);
+    ctx.lineTo(pBackwardEnd.x, pBackwardEnd.y);
+    ctx.stroke();
+  }
+
+  ctx.restore();
 }
 
 function renderFrame(
@@ -115,15 +196,16 @@ function renderFrame(
     });
 
     syncPlanesToSceneObjects();
-    updateTopCamera();
 
     const mainPlane = getPlane(world, mainPlaneId);
 
     profiler.run("GAME", "pilot-view", () => {
-      renderPilotView(pilotContext, mainPlane, profiler);
+      updatePilotCamera(mainPlane);
+      renderPilotView(pilotContext, profiler);
     });
 
     profiler.run("GAME", "top-view", () => {
+      updateTopCamera();
       renderTopView(topContext, profiler);
     });
 
@@ -191,22 +273,28 @@ function syncPlanesToSceneObjects(): void {
 
 function renderPilotView(
   pilotContext: CanvasRenderingContext2D,
-  mainPlane: Plane,
   profiler: Profiler
 ) {
   const pilotView = world.pilotViews.find((p) => p.id === mainPilotViewId);
   if (!pilotView) return;
 
+  const pilotCamera = getPilotCamera(world);
+
   const projection = makePilotView({
-    planePosition: mainPlane.position,
-    planeOrientation: mainPlane.orientation,
+    cameraPosition: pilotCamera.position,
+    cameraOrientation: pilotCamera.orientation,
     pilotAzimuth: pilotView.azimuth,
     pilotElevation: pilotView.elevation,
   });
 
   const pilotViewConfig: View = {
     projection,
-    cameraPos: mainPlane.position,
+    cameraPos: pilotCamera.position,
+    debugDraw: (ctx, project) => {
+      for (const plane of world.planes) {
+        drawPlaneVelocityLine(ctx, project, plane);
+      }
+    },
   };
 
   renderView(pilotContext, scene, pilotViewConfig, profiler);
@@ -226,6 +314,11 @@ function renderTopView(
   const topViewConfig: View = {
     projection,
     cameraPos: camera.position,
+    debugDraw: (ctx, project) => {
+      for (const plane of world.planes) {
+        drawPlaneVelocityLine(ctx, project, plane);
+      }
+    },
   };
 
   renderView(topContext, scene, topViewConfig, profiler);
@@ -262,4 +355,39 @@ function getPlane(world: WorldState, id: string): Plane {
     throw new Error(`Plane not found: ${id}`);
   }
   return plane;
+}
+
+function getPilotCamera(world: WorldState): Camera {
+  const camera =
+    world.cameras.find((c) => c.role === "pilot") ??
+    world.cameras.find((c) => c.id === "camera:pilot");
+  if (!camera) {
+    throw new Error("Pilot camera not found");
+  }
+  return camera;
+}
+
+// Follow-plane logic for pilot camera, using an offset
+function updatePilotCamera(plane: Plane): void {
+  const camera = getPilotCamera(world);
+
+  // Offsets in plane-local space:
+  const backwardOffset = -20.0; // behind
+  const upwardOffset = 5.0; // above
+
+  const forward = plane.forward;
+  const up = plane.up;
+
+  const planePos = plane.position;
+
+  // Position camera relative to plane
+  camera.position.x =
+    planePos.x + forward.x * backwardOffset + up.x * upwardOffset;
+  camera.position.y =
+    planePos.y + forward.y * backwardOffset + up.y * upwardOffset;
+  camera.position.z =
+    planePos.z + forward.z * backwardOffset + up.z * upwardOffset;
+
+  // Make camera orientation match plane orientation (so it looks forward)
+  camera.orientation = plane.orientation;
 }

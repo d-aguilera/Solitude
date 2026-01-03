@@ -188,4 +188,23 @@ export function applyGravityAndThrust(
 
     setPosition(b.id, newPos);
   }
+
+  // Copy velocities back to planes so renderers can use them
+  for (const plane of world.planes) {
+    const body = bodies.find((b) => b.id === plane.id);
+    if (body) {
+      plane.velocity = {
+        x: body.velocity.x,
+        y: body.velocity.y,
+        z: body.velocity.z,
+      };
+      // Optionally keep plane.speed coherent with velocity magnitude
+      const speed = Math.hypot(
+        body.velocity.x,
+        body.velocity.y,
+        body.velocity.z
+      );
+      plane.speed = speed;
+    }
+  }
 }

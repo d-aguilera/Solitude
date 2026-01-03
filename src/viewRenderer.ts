@@ -14,4 +14,8 @@ export function renderView(
     lightDir: scene.sunDirection,
     profiler,
   });
+
+  if (view.debugDraw) {
+    view.debugDraw(context, view.projection);
+  }
 }

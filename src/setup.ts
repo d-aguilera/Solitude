@@ -60,6 +60,7 @@ function createInitialPlane(id: string): Plane {
     up: { ...initialFrame.up },
     speed: 0, // start from rest; actual motion comes from velocity in gravity.ts
     scale: 15,
+    velocity: { x: 0, y: 0, z: 0 },
   };
 }
 
@@ -180,6 +181,15 @@ function rotateAroundAxis(v: Vec3, axis: Vec3, angle: number): Vec3 {
 
 const sunDirection = vec.scaleToUnit({ x: 0.3, y: 0.5, z: 1.0 });
 
+function createInitialPilotCamera(id: string, plane: Plane): Camera {
+  return {
+    id,
+    position: { ...plane.position }, // will be offset in game loop
+    orientation: mat3.identity,
+    role: "pilot",
+  };
+}
+
 export function createInitialSceneAndWorld(): {
   scene: Scene;
   world: WorldState;
@@ -199,11 +209,15 @@ export function createInitialSceneAndWorld(): {
   };
 
   const topCamera = createInitialTopCamera("camera:top", mainPlane);
+  topCamera.role = "top";
+
+  const pilotCamera = createInitialPilotCamera("camera:pilot", mainPlane);
+
   const pilotView = createInitialPilotView("pilot:main", mainPlane.id);
 
   const world: WorldState = {
     planes: [mainPlane],
-    cameras: [topCamera],
+    cameras: [topCamera, pilotCamera],
     pilotViews: [pilotView],
   };
 
