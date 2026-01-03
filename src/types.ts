@@ -18,11 +18,10 @@ export interface RGB {
 
 export interface Model {
   points: Vec3[];
-  lines: number[][];
-  faces?: number[][];
+  faces: number[][];
   color: RGB | string;
   lineWidth: number;
-  objectType?: string;
+  objectType: string;
 }
 
 export interface LocalFrame {
@@ -62,7 +61,7 @@ export interface SceneObject {
   z: number;
   orientation: Mat3;
   scale: number;
-  color?: string | { r: number; g: number; b: number };
+  color: string | { r: number; g: number; b: number };
   lineWidth?: number;
   width?: number;
   depth?: number;
@@ -89,3 +88,5 @@ export interface Scene {
   airplanes: SceneObject[];
   sunDirection: Vec3;
 }
+
+export type DrawMode = "faces" | "lines";

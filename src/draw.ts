@@ -1,4 +1,4 @@
-import { HEIGHT, WIDTH } from "./config.js";
+import { DRAW_MODE, HEIGHT, WIDTH } from "./config.js";
 import { transformPointsToWorld, vec } from "./math.js";
 import type { ScreenPoint } from "./projection.js";
 import type {
@@ -39,11 +39,9 @@ export function draw(
   instrumentationAdapter("DRAW", "total", () => {
     group.forEach((obj) => {
       const { model, worldPoints, color, lineWidth } = toRenderable(obj);
-      const { lines, faces } = model;
+      const { faces } = model;
 
-      const baseCss = color;
-
-      if (faces && faces.length) {
+      if (DRAW_MODE === "faces") {
         instrumentationAdapter("DRAW", "faces", () => {
           const faceList: {
             i0: number;
@@ -117,19 +115,9 @@ export function draw(
         });
       } else {
         instrumentationAdapter("DRAW", "lines", () => {
-          for (let i = 0; i < lines.length; i++) {
-            const polyIndices = lines[i];
-
-            if (polyIndices.length === 2) {
-              const [i, j] = polyIndices;
-              const p1 = projection(worldPoints[i]);
-              const p2 = projection(worldPoints[j]);
-              if (p1 && p2) line(context, p1, p2, baseCss, lineWidth);
-              continue;
-            }
-
+          for (let i = 0; i < faces.length; i++) {
+            const polyIndices = faces[i];
             projectedPoints.length = 0;
-
             for (let j = 0; j < polyIndices.length; j++) {
               const p = projection(worldPoints[polyIndices[j]]);
               if (!p) {
@@ -139,7 +127,7 @@ export function draw(
               projectedPoints.push(p);
             }
             if (projectedPoints.length > 0)
-              poly(context, projectedPoints, baseCss, lineWidth);
+              poly(context, projectedPoints, color, lineWidth);
           }
         });
       }
@@ -147,22 +135,7 @@ export function draw(
   });
 }
 
-export function line(
-  context: CanvasRenderingContext2D,
-  p1: ScreenPoint,
-  p2: ScreenPoint,
-  color: string,
-  lineWidth: number
-): void {
-  context.strokeStyle = color;
-  context.lineWidth = lineWidth;
-  context.beginPath();
-  context.moveTo(p1.x, p1.y);
-  context.lineTo(p2.x, p2.y);
-  context.stroke();
-}
-
-export function poly(
+function poly(
   context: CanvasRenderingContext2D,
   points: ScreenPoint[],
   color: string,

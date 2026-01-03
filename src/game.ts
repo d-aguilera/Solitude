@@ -43,7 +43,7 @@ const mainAirplane: SceneObject = scene.airplanes[0];
 const topCamera: Camera = {
   x: plane.x,
   y: plane.y,
-  z: plane.z + 200,
+  z: plane.z + 50,
   orientation: [
     [1, 0, 0],
     [0, 1, 0],
@@ -109,7 +109,7 @@ function updateTopCamera(): void {
     z: plane.z - planetCenter.z,
   });
 
-  const distanceAbovePlane = 100;
+  const distanceAbovePlane = 50;
   topCamera.x = plane.x + radial.x * distanceAbovePlane;
   topCamera.y = plane.y + radial.y * distanceAbovePlane;
   topCamera.z = plane.z + radial.z * distanceAbovePlane;

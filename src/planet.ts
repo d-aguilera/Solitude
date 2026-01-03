@@ -146,14 +146,9 @@ export function generateIcosahedronSphere(subdivisions = 3): Model {
     }
   }
 
-  const lines: number[][] = [];
-  for (const [i0, i1, i2] of faces) {
-    lines.push([i0, i1, i2, i0]);
-  }
-
   return {
+    objectType: "planet",
     points,
-    lines,
     faces,
     color: { r: 80, g: 160, b: 220 },
     lineWidth: 1,
