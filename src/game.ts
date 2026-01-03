@@ -12,7 +12,6 @@ import { updateFPS } from "./fps.js";
 import { init as initInput, getKeyState } from "./input.js";
 import { vec } from "./math.js";
 import { pauseControl, paused } from "./pause.js";
-import { planetCenter } from "./planet.js";
 import {
   isProfilingEnabled,
   profileCheck,
@@ -103,11 +102,8 @@ function handleProfilingToggle(input: ControlInput): void {
 function updateTopCamera(): void {
   const plane = flightState.plane;
 
-  const radial = vec.normalize({
-    x: plane.x - planetCenter.x,
-    y: plane.y - planetCenter.y,
-    z: plane.z - planetCenter.z,
-  });
+  // Use the plane's local up direction as the "radial" direction for the top-down camera.
+  const radial = vec.normalize(plane.up);
 
   const distanceAbovePlane = 50;
   topCamera.x = plane.x + radial.x * distanceAbovePlane;

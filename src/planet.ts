@@ -1,15 +1,6 @@
 import { vec } from "./math.js";
 import type { LocalFrame, Model, Vec3 } from "./types.js";
 
-export const PLANET_RADIUS = 1000; // meters
-export const planetCenter: Vec3 = { x: 0, y: 0, z: 0 };
-
-export function altitudeAboveSurface(worldPos: Vec3): number {
-  const fromCenter = vec.sub(worldPos, planetCenter);
-  const len = vec.length(fromCenter);
-  return len - PLANET_RADIUS;
-}
-
 export function makeLocalFrame(up: Vec3): LocalFrame {
   const u = vec.normalize(up);
 

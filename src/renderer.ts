@@ -1,6 +1,6 @@
 import { clear, draw } from "./draw.js";
 import { fps } from "./fps.js";
-import { altitudeAboveSurface } from "./planet.js";
+import { vec } from "./math.js";
 import { makePilotView, makeTopView } from "./projection.js";
 import {
   Camera,
@@ -65,7 +65,6 @@ export function renderTopView(
 
   const { topCamera, airplanes } = state;
 
-  // At this point, topCamera is already positioned and oriented by the caller.
   const cameraPosition = { x: topCamera.x, y: topCamera.y, z: topCamera.z };
 
   const projection = makeTopView({
@@ -98,8 +97,8 @@ export function renderHUD(
   topContext.fillStyle = "white";
   topContext.font = "16px monospace";
 
-  const alt = altitudeAboveSurface({ x: plane.x, y: plane.y, z: plane.z });
-  topContext.fillText(`Alt: ${alt.toFixed(1)} m`, 10, 20);
+  const distFromOrigin = vec.length({ x: plane.x, y: plane.y, z: plane.z });
+  topContext.fillText(`|pos|: ${distFromOrigin.toFixed(1)} m`, 10, 20);
 
   const speedKnots = plane.speed * 1.94384;
   topContext.fillText(

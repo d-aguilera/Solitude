@@ -5,7 +5,6 @@ import {
   rotSpeedYaw,
 } from "./controlsConfig.js";
 import { mat3, vec } from "./math.js";
-import { PLANET_RADIUS, planetCenter } from "./planet.js";
 import type { Mat3, Plane, Vec3 } from "./types.js";
 
 export interface ControlInput {
@@ -24,7 +23,6 @@ export interface ControlInput {
   toggleProfiling: boolean;
 }
 
-// Encapsulate the state that physics operates on rather than reaching into globals
 export interface FlightState {
   plane: Plane;
   pilot: {
@@ -33,10 +31,6 @@ export interface FlightState {
   };
 }
 
-/**
- * Pure-ish physics step: consumes current state and input, mutates the provided state object.
- * This avoids direct dependence on the global singletons in setup.ts, reducing coupling.
- */
 export function updatePhysics(
   dtSeconds: number,
   input: ControlInput,
@@ -188,16 +182,6 @@ function moveForwardSpherical(dtSeconds: number, state: FlightState): void {
   let newX = plane.x + forward.x * speed * dtSeconds;
   let newY = plane.y + forward.y * speed * dtSeconds;
   let newZ = plane.z + forward.z * speed * dtSeconds;
-
-  const fromCenter = vec.sub({ x: newX, y: newY, z: newZ }, planetCenter);
-  const len = vec.length(fromCenter);
-
-  if (len < PLANET_RADIUS + 1) {
-    const scale = (PLANET_RADIUS + 1) / len;
-    newX = planetCenter.x + fromCenter.x * scale;
-    newY = planetCenter.y + fromCenter.y * scale;
-    newZ = planetCenter.z + fromCenter.z * scale;
-  }
 
   plane.x = newX;
   plane.y = newY;
