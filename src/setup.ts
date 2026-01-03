@@ -186,7 +186,6 @@ function createInitialPilotCamera(id: string, plane: Plane): Camera {
     id,
     position: { ...plane.position }, // will be offset in game loop
     orientation: mat3.identity,
-    role: "pilot",
   };
 }
 
@@ -196,6 +195,7 @@ export function createInitialSceneAndWorld(): {
   mainPlaneId: string;
   mainPilotViewId: string;
   topCameraId: string;
+  pilotCameraId: string;
 } {
   const mainPlane = createInitialPlane("plane:main");
 
@@ -209,8 +209,6 @@ export function createInitialSceneAndWorld(): {
   };
 
   const topCamera = createInitialTopCamera("camera:top", mainPlane);
-  topCamera.role = "top";
-
   const pilotCamera = createInitialPilotCamera("camera:pilot", mainPlane);
 
   const pilotView = createInitialPilotView("pilot:main", mainPlane.id);
@@ -227,5 +225,6 @@ export function createInitialSceneAndWorld(): {
     mainPlaneId: mainPlane.id,
     mainPilotViewId: pilotView.id,
     topCameraId: topCamera.id,
+    pilotCameraId: pilotCamera.id,
   };
 }

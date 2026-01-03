@@ -26,7 +26,6 @@ import type {
   Camera,
   Plane,
   Profiler,
-  Scene,
   View,
   WorldState,
   GravityState,
@@ -41,18 +40,13 @@ let oKeyDown = false;
 let topCameraFrameState: TopCameraFrameState | null = null;
 
 const {
-  scene: initialScene,
-  world: initialWorld,
-  mainPlaneId: planeId,
-  mainPilotViewId: pilotId,
-  topCameraId: camId,
+  scene: scene,
+  world: world,
+  mainPlaneId: mainPlaneId,
+  mainPilotViewId: mainPilotViewId,
+  topCameraId: topCameraId,
+  pilotCameraId,
 } = createInitialSceneAndWorld();
-
-let scene: Scene = initialScene;
-let world: WorldState = initialWorld;
-let mainPlaneId: string = planeId;
-let mainPilotViewId: string = pilotId;
-let topCameraId: string = camId;
 
 // Gravity state
 let gravityState: GravityState | null = null;
@@ -358,11 +352,9 @@ function getPlane(world: WorldState, id: string): Plane {
 }
 
 function getPilotCamera(world: WorldState): Camera {
-  const camera =
-    world.cameras.find((c) => c.role === "pilot") ??
-    world.cameras.find((c) => c.id === "camera:pilot");
+  const camera = world.cameras.find((c) => c.id === pilotCameraId);
   if (!camera) {
-    throw new Error("Pilot camera not found");
+    throw new Error(`Pilot camera not found: ${pilotCameraId}`);
   }
   return camera;
 }

@@ -48,7 +48,6 @@ export interface Camera {
   id: string;
   position: Vec3;
   orientation: Mat3;
-  role?: "pilot" | "top";
 }
 
 export interface PilotView {
