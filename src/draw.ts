@@ -2,7 +2,7 @@ import { DRAW_MODE, HEIGHT, WIDTH } from "./config.js";
 import { transformPointsToWorld, vec } from "./math.js";
 import type { ScreenPoint } from "./projection.js";
 import type {
-  Model,
+  Mesh,
   Profiler,
   Renderable,
   RGB,
@@ -26,7 +26,7 @@ export function clear(context: CanvasRenderingContext2D): void {
 
 export function draw(
   context: CanvasRenderingContext2D,
-  group: (Model | SceneObject)[],
+  group: SceneObject[],
   { projection, cameraPos, lightDir, profiler }: DrawOptions
 ): void {
   const projectedPoints: ScreenPoint[] = [];
@@ -48,8 +48,8 @@ export function draw(
         const faceList: FaceEntry[] = [];
 
         group.forEach((obj) => {
-          const { model, worldPoints } = toRenderable(obj);
-          const { color, faces } = model;
+          const { mesh, worldPoints } = toRenderable(obj);
+          const { color, faces } = mesh;
 
           let baseR = 255,
             baseG = 255,
@@ -131,8 +131,8 @@ export function draw(
       });
     } else {
       group.forEach((obj) => {
-        const { model, worldPoints, color, lineWidth } = toRenderable(obj);
-        const { faces } = model;
+        const { mesh, worldPoints, color, lineWidth } = toRenderable(obj);
+        const { faces } = mesh;
 
         profiler.run("DRAW", "lines", () => {
           for (let i = 0; i < faces.length; i++) {
@@ -192,27 +192,26 @@ function fillTriangle(
   context.fill();
 }
 
-function toRenderable(obj: Model | SceneObject): Renderable {
-  const sceneObj = obj as SceneObject;
-  const model: Model = sceneObj.model ?? (obj as Model);
-  const baseColor = sceneObj.color ?? model.color;
-  const lineWidth = sceneObj.lineWidth ?? model.lineWidth;
+function toRenderable(obj: SceneObject): Renderable {
+  const mesh: Mesh = obj.mesh;
+  const baseColor = obj.color ?? mesh.color;
+  const lineWidth = obj.lineWidth ?? mesh.lineWidth;
 
   let worldPoints: Vec3[];
 
   const hasTransform =
-    sceneObj.x !== undefined &&
-    sceneObj.y !== undefined &&
-    sceneObj.z !== undefined &&
-    !!sceneObj.orientation &&
-    sceneObj.scale !== undefined;
+    obj.x !== undefined &&
+    obj.y !== undefined &&
+    obj.z !== undefined &&
+    !!obj.orientation &&
+    obj.scale !== undefined;
 
   if (hasTransform) {
-    let R = sceneObj.orientation;
+    let R = obj.orientation;
 
-    const width = sceneObj.width;
-    const depth = sceneObj.depth;
-    const height = sceneObj.height;
+    const width = obj.width;
+    const depth = obj.depth;
+    const height = obj.height;
     if (width && depth && height) {
       const R00 = R[0][0] * width;
       const R01 = R[0][1] * depth;
@@ -234,22 +233,22 @@ function toRenderable(obj: Model | SceneObject): Renderable {
     }
 
     worldPoints = transformPointsToWorld(
-      model.points,
+      mesh.points,
       R,
-      sceneObj.scale,
-      sceneObj.x,
-      sceneObj.y,
-      sceneObj.z
+      obj.scale,
+      obj.x,
+      obj.y,
+      obj.z
     );
   } else {
-    worldPoints = model.points;
+    worldPoints = mesh.points;
   }
 
   const colorCss =
     typeof baseColor === "string" ? baseColor : rgbToCss(baseColor);
 
   return {
-    model,
+    mesh,
     worldPoints,
     color: colorCss,
     lineWidth,

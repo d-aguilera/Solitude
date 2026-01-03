@@ -16,7 +16,7 @@ export interface RGB {
   b: number;
 }
 
-export interface Model {
+export interface Mesh {
   points: Vec3[];
   faces: number[][];
   color: RGB | string;
@@ -55,7 +55,7 @@ export interface PilotState {
 }
 
 export interface SceneObject {
-  model: Model;
+  mesh: Mesh;
   x: number;
   y: number;
   z: number;
@@ -76,14 +76,14 @@ export type Profiler = {
 };
 
 export interface Renderable {
-  model: Model;
+  mesh: Mesh;
   worldPoints: Vec3[];
   color: string;
   lineWidth: number;
 }
 
 export interface Scene {
-  planetGrid: Model[];
+  planetGrid: SceneObject[];
   airplanes: SceneObject[];
   sunDirection: Vec3;
 }

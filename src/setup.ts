@@ -3,7 +3,7 @@ import { mat3, vec } from "./math.js";
 import { airplaneModel } from "./models.js";
 import { generatePlanetMesh, makeLocalFrame } from "./planet.js";
 import type {
-  Model,
+  Mesh,
   PilotState,
   Plane,
   Scene,
@@ -64,11 +64,11 @@ export const pilot: PilotState = {
 };
 
 const airplanesInternal: SceneObject[] = [];
-const planetGridInternal: Model[] = [];
+const planetGridInternal: SceneObject[] = [];
 
 function addAirplane(): void {
   airplanesInternal.push({
-    model: airplaneModel,
+    mesh: airplaneModel,
     x: plane.x,
     y: plane.y,
     z: plane.z,
@@ -90,10 +90,21 @@ function addPlanetGrid(): void {
   // Earth
   const planet1Radius = 1000; // meters
   const planet1Center: Vec3 = { x: 0, y: 0, z: 0 };
-  const planet1Mesh = generatePlanetMesh(planet1Center, planet1Radius, 3);
+  const planetMeshTemplate: Mesh = generatePlanetMesh(3);
+
+  const planet1Mesh: Mesh = { ...planetMeshTemplate };
   planet1Mesh.objectType = "planet-earth";
   planet1Mesh.color = { r: 0, g: 0, b: 255 };
-  planetGridInternal.push(planet1Mesh);
+  planetGridInternal.push({
+    mesh: planet1Mesh,
+    x: planet1Center.x,
+    y: planet1Center.y,
+    z: planet1Center.z,
+    orientation: mat3.identity,
+    scale: planet1Radius,
+    color: planet1Mesh.color,
+    lineWidth: planet1Mesh.lineWidth,
+  });
 
   // Mars: along initial forward from Earth
   const planet2Radius = planet1Radius * 1.5;
@@ -101,10 +112,19 @@ function addPlanetGrid(): void {
     planet1Center,
     vec.scale(initialForward, distanceApart)
   );
-  const planet2Mesh = generatePlanetMesh(planet2Center, planet2Radius, 3);
+  const planet2Mesh: Mesh = { ...planetMeshTemplate };
   planet2Mesh.objectType = "planet-mars";
   planet2Mesh.color = { r: 255, g: 0, b: 0 };
-  planetGridInternal.push(planet2Mesh);
+  planetGridInternal.push({
+    mesh: planet2Mesh,
+    x: planet2Center.x,
+    y: planet2Center.y,
+    z: planet2Center.z,
+    orientation: mat3.identity,
+    scale: planet2Radius,
+    color: planet2Mesh.color,
+    lineWidth: planet2Mesh.lineWidth,
+  });
 
   // Venus: same distance from Earth, but rotated around the up axis
   const rotatedForward: Vec3 = rotateAroundAxis(
@@ -118,10 +138,19 @@ function addPlanetGrid(): void {
     planet1Center,
     vec.scale(rotatedForward, distanceApart)
   );
-  const planet3Mesh = generatePlanetMesh(planet3Center, planet3Radius, 3);
+  const planet3Mesh: Mesh = { ...planetMeshTemplate };
   planet3Mesh.objectType = "planet-venus";
   planet3Mesh.color = { r: 0, g: 255, b: 0 };
-  planetGridInternal.push(planet3Mesh);
+  planetGridInternal.push({
+    mesh: planet3Mesh,
+    x: planet3Center.x,
+    y: planet3Center.y,
+    z: planet3Center.z,
+    orientation: mat3.identity,
+    scale: planet3Radius,
+    color: planet3Mesh.color,
+    lineWidth: planet3Mesh.lineWidth,
+  });
 }
 
 function rotateAroundAxis(v: Vec3, axis: Vec3, angle: number): Vec3 {

@@ -14,10 +14,11 @@ export function rotate2D(
   };
 }
 
-export const mat3 = {
-  mul: mat3Mul,
-  rotAxis: mat3RotAxis,
-};
+const identity: Mat3 = [
+  [1, 0, 0],
+  [0, 1, 0],
+  [0, 0, 1],
+];
 
 function mat3Mul(A: Mat3, B: Mat3): Mat3 {
   const C: Mat3 = [
@@ -57,18 +58,13 @@ function mat3RotAxis(axis: Vec3, angle: number): Mat3 {
   ];
 }
 
-export const vec = {
-  add: vecAdd,
-  cross: vecCross,
-  dot: vecDot,
-  length: vecLength,
-  normalize: vecNormalize,
-  sub: vecSub,
-  scale: vecScale,
-  scaleToUnit: vecScaleToUnit,
+export const mat3 = {
+  identity,
+  mul: mat3Mul,
+  rotAxis: mat3RotAxis,
 };
 
-export function vecAdd(a: Vec3, b: Vec3): Vec3 {
+function vecAdd(a: Vec3, b: Vec3): Vec3 {
   return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z };
 }
 
@@ -107,6 +103,17 @@ function vecScaleToUnit(v: Vec3): Vec3 {
   if (len === 0) return { x: 0, y: 0, z: 0 };
   return { x: v.x / len, y: v.y / len, z: v.z / len };
 }
+
+export const vec = {
+  add: vecAdd,
+  cross: vecCross,
+  dot: vecDot,
+  length: vecLength,
+  normalize: vecNormalize,
+  sub: vecSub,
+  scale: vecScale,
+  scaleToUnit: vecScaleToUnit,
+};
 
 export function transformPointsToWorld(
   points: Vec3[],

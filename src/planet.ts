@@ -1,5 +1,5 @@
 import { vec } from "./math.js";
-import type { LocalFrame, Model, Vec3 } from "./types.js";
+import type { LocalFrame, Mesh, Vec3 } from "./types.js";
 
 export function makeLocalFrame(up: Vec3): LocalFrame {
   const u = vec.normalize(up);
@@ -19,11 +19,7 @@ export function makeLocalFrame(up: Vec3): LocalFrame {
   return { right, forward, up: u };
 }
 
-export function generatePlanetMesh(
-  center: Vec3,
-  radius: number,
-  subdivisions = 3
-): Model {
+export function generatePlanetMesh(subdivisions = 3): Mesh {
   const t = (1 + Math.sqrt(5)) / 2;
 
   let vertices: Vec3[] = [
@@ -43,6 +39,7 @@ export function generatePlanetMesh(
     { x: -t, y: 0, z: 1 },
   ];
 
+  // Normalize to unit sphere
   vertices = vertices.map(vec.normalize);
 
   let faces: number[][] = [
@@ -107,12 +104,12 @@ export function generatePlanetMesh(
   }
 
   const points: Vec3[] = vertices.map((v) => ({
-    x: center.x + v.x * radius,
-    y: center.y + v.y * radius,
-    z: center.z + v.z * radius,
+    x: v.x,
+    y: v.y,
+    z: v.z,
   }));
 
-  // Ensure face normals point outward from this specific center
+  // Ensure face normals point outward from the origin (unit sphere)
   for (let i = 0; i < faces.length; i++) {
     const [i0, i1, i2] = faces[i];
     const v0 = points[i0];
@@ -131,13 +128,8 @@ export function generatePlanetMesh(
     };
     const n = vec.cross(e1, e2);
 
-    const toFace = {
-      x: v0.x - center.x,
-      y: v0.y - center.y,
-      z: v0.z - center.z,
-    };
-
-    if (vec.dot(n, toFace) < 0) {
+    // For a unit sphere centered at origin, v0 points outward.
+    if (vec.dot(n, v0) < 0) {
       faces[i] = [i0, i2, i1];
     }
   }

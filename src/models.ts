@@ -1,9 +1,7 @@
-import type { Model } from "./types.js";
+import type { Mesh } from "./types.js";
 
-export const AIRPLANE = "AIRPLANE";
-
-export const airplaneModel: Model = {
-  objectType: AIRPLANE,
+export const airplaneModel: Mesh = {
+  objectType: "plane",
   points: [
     { x: 0, y: 0.5, z: 0 }, // 0: nose tip
     { x: 0, y: -0.1, z: 0.15 }, // 1: fuselage top center
