@@ -13,6 +13,7 @@ import type {
 type ProjectionFn = (p: Vec3) => ScreenPoint | null;
 
 interface DrawOptions {
+  objects: SceneObject[];
   projection: ProjectionFn;
   cameraPos: Vec3 | null;
   lightDir: Vec3;
@@ -26,8 +27,7 @@ export function clear(context: CanvasRenderingContext2D): void {
 
 export function draw(
   context: CanvasRenderingContext2D,
-  group: SceneObject[],
-  { projection, cameraPos, lightDir, profiler }: DrawOptions
+  { objects, projection, cameraPos, lightDir, profiler }: DrawOptions
 ): void {
   const projectedPoints: ScreenPoint[] = [];
 
@@ -47,7 +47,7 @@ export function draw(
 
         const faceList: FaceEntry[] = [];
 
-        group.forEach((obj) => {
+        objects.forEach((obj) => {
           const { mesh, worldPoints } = toRenderable(obj);
           const { color, faces } = mesh;
 
@@ -130,7 +130,7 @@ export function draw(
         }
       });
     } else {
-      group.forEach((obj) => {
+      objects.forEach((obj) => {
         const { mesh, worldPoints, color, lineWidth } = toRenderable(obj);
         const { faces } = mesh;
 

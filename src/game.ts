@@ -37,7 +37,9 @@ const flightState: FlightState = {
 
 let topCameraFrameState: TopCameraFrameState | null = null;
 
-const mainAirplane: SceneObject = scene.airplanes[0];
+const mainAirplane: SceneObject = scene.objects.find(
+  (o) => o.mesh.objectType === "plane"
+)!;
 
 const topCamera: Camera = {
   x: plane.x,
@@ -167,7 +169,6 @@ function renderFrame(
         {
           plane: flightState.plane,
           pilot: flightState.pilot,
-          airplanes: scene.airplanes,
         },
         scene,
         profiler
@@ -180,7 +181,6 @@ function renderFrame(
         {
           plane: flightState.plane,
           topCamera,
-          airplanes: scene.airplanes,
         },
         scene,
         profiler

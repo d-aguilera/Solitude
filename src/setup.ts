@@ -63,11 +63,11 @@ export const pilot: PilotState = {
   elevation: 0,
 };
 
-const airplanesInternal: SceneObject[] = [];
-const planetGridInternal: SceneObject[] = [];
+const airplanes: SceneObject[] = [];
+const planetGrid: SceneObject[] = [];
 
 function addAirplane(): void {
-  airplanesInternal.push({
+  airplanes.push({
     mesh: airplaneModel,
     x: plane.x,
     y: plane.y,
@@ -95,7 +95,7 @@ function addPlanetGrid(): void {
   const planet1Mesh: Mesh = { ...planetMeshTemplate };
   planet1Mesh.objectType = "planet-earth";
   planet1Mesh.color = { r: 0, g: 0, b: 255 };
-  planetGridInternal.push({
+  planetGrid.push({
     mesh: planet1Mesh,
     x: planet1Center.x,
     y: planet1Center.y,
@@ -115,7 +115,7 @@ function addPlanetGrid(): void {
   const planet2Mesh: Mesh = { ...planetMeshTemplate };
   planet2Mesh.objectType = "planet-mars";
   planet2Mesh.color = { r: 255, g: 0, b: 0 };
-  planetGridInternal.push({
+  planetGrid.push({
     mesh: planet2Mesh,
     x: planet2Center.x,
     y: planet2Center.y,
@@ -141,7 +141,7 @@ function addPlanetGrid(): void {
   const planet3Mesh: Mesh = { ...planetMeshTemplate };
   planet3Mesh.objectType = "planet-venus";
   planet3Mesh.color = { r: 0, g: 255, b: 0 };
-  planetGridInternal.push({
+  planetGrid.push({
     mesh: planet3Mesh,
     x: planet3Center.x,
     y: planet3Center.y,
@@ -171,7 +171,6 @@ addAirplane();
 const sunDirection = vec.scaleToUnit({ x: 0.3, y: 0.5, z: 1.0 });
 
 export const scene: Scene = {
-  planetGrid: planetGridInternal,
-  airplanes: airplanesInternal,
+  objects: [...planetGrid, ...airplanes],
   sunDirection,
 };

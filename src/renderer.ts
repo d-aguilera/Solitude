@@ -2,25 +2,16 @@ import { clear, draw } from "./draw.js";
 import { fps } from "./fps.js";
 import { vec } from "./math.js";
 import { makePilotView, makeTopView } from "./projection.js";
-import {
-  Camera,
-  PilotState,
-  Plane,
-  Profiler,
-  Scene,
-  SceneObject,
-} from "./types.js";
+import { Camera, PilotState, Plane, Profiler, Scene } from "./types.js";
 
 interface PilotViewState {
   plane: Plane;
   pilot: PilotState;
-  airplanes: SceneObject[];
 }
 
 interface TopViewState {
   plane: Plane;
   topCamera: Camera;
-  airplanes: SceneObject[];
 }
 
 export function renderPilotView(
@@ -31,7 +22,7 @@ export function renderPilotView(
 ): void {
   clear(pilotContext);
 
-  const { plane, pilot, airplanes } = state;
+  const { plane, pilot } = state;
 
   const projection = makePilotView({
     planePosition: { x: plane.x, y: plane.y, z: plane.z },
@@ -40,14 +31,8 @@ export function renderPilotView(
     pilotElevation: pilot.elevation,
   });
 
-  draw(pilotContext, scene.planetGrid, {
-    projection,
-    cameraPos: { x: plane.x, y: plane.y, z: plane.z },
-    lightDir: scene.sunDirection,
-    profiler,
-  });
-
-  draw(pilotContext, airplanes, {
+  draw(pilotContext, {
+    objects: scene.objects,
     projection,
     cameraPos: { x: plane.x, y: plane.y, z: plane.z },
     lightDir: scene.sunDirection,
@@ -63,7 +48,7 @@ export function renderTopView(
 ): void {
   clear(topContext);
 
-  const { topCamera, airplanes } = state;
+  const { topCamera } = state;
 
   const cameraPosition = { x: topCamera.x, y: topCamera.y, z: topCamera.z };
 
@@ -72,14 +57,8 @@ export function renderTopView(
     cameraOrientation: topCamera.orientation,
   });
 
-  draw(topContext, scene.planetGrid, {
-    projection,
-    cameraPos: cameraPosition,
-    lightDir: scene.sunDirection,
-    profiler,
-  });
-
-  draw(topContext, airplanes, {
+  draw(topContext, {
+    objects: scene.objects,
     projection,
     cameraPos: cameraPosition,
     lightDir: scene.sunDirection,
