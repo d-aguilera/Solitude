@@ -4,9 +4,9 @@ import { altitudeAboveSurface } from "./planet.js";
 import { makePilotView, makeTopView } from "./projection.js";
 import {
   Camera,
-  InstrumentationAdapter,
   PilotState,
   Plane,
+  Profiler,
   Scene,
   SceneObject,
 } from "./types.js";
@@ -27,7 +27,7 @@ export function renderPilotView(
   pilotContext: CanvasRenderingContext2D,
   state: PilotViewState,
   scene: Scene,
-  instrument: InstrumentationAdapter
+  profiler: Profiler
 ): void {
   clear(pilotContext);
 
@@ -44,14 +44,14 @@ export function renderPilotView(
     projection,
     cameraPos: { x: plane.x, y: plane.y, z: plane.z },
     lightDir: scene.sunDirection,
-    instrument: instrument,
+    profiler,
   });
 
   draw(pilotContext, airplanes, {
     projection,
     cameraPos: { x: plane.x, y: plane.y, z: plane.z },
     lightDir: scene.sunDirection,
-    instrument: instrument,
+    profiler,
   });
 }
 
@@ -59,7 +59,7 @@ export function renderTopView(
   topContext: CanvasRenderingContext2D,
   state: TopViewState,
   scene: Scene,
-  instrument: InstrumentationAdapter
+  profiler: Profiler
 ): void {
   clear(topContext);
 
@@ -77,14 +77,14 @@ export function renderTopView(
     projection,
     cameraPos: cameraPosition,
     lightDir: scene.sunDirection,
-    instrument: instrument,
+    profiler,
   });
 
   draw(topContext, airplanes, {
     projection,
     cameraPos: cameraPosition,
     lightDir: scene.sunDirection,
-    instrument: instrument,
+    profiler,
   });
 }
 

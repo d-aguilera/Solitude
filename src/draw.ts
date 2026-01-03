@@ -2,8 +2,8 @@ import { DRAW_MODE, HEIGHT, WIDTH } from "./config.js";
 import { transformPointsToWorld, vec } from "./math.js";
 import type { ScreenPoint } from "./projection.js";
 import type {
-  InstrumentationAdapter,
   Model,
+  Profiler,
   Renderable,
   RGB,
   SceneObject,
@@ -16,7 +16,7 @@ interface DrawOptions {
   projection: ProjectionFn;
   cameraPos: Vec3 | null;
   lightDir: Vec3;
-  instrument: InstrumentationAdapter;
+  profiler: Profiler;
 }
 
 export function clear(context: CanvasRenderingContext2D): void {
@@ -27,37 +27,37 @@ export function clear(context: CanvasRenderingContext2D): void {
 export function draw(
   context: CanvasRenderingContext2D,
   group: (Model | SceneObject)[],
-  {
-    projection,
-    cameraPos,
-    lightDir,
-    instrument: instrumentationAdapter,
-  }: DrawOptions
+  { projection, cameraPos, lightDir, profiler }: DrawOptions
 ): void {
   const projectedPoints: ScreenPoint[] = [];
 
-  instrumentationAdapter("DRAW", "total", () => {
-    group.forEach((obj) => {
-      const { model, worldPoints, color, lineWidth } = toRenderable(obj);
-      const { faces } = model;
+  profiler.run("DRAW", "total", () => {
+    if (DRAW_MODE === "faces") {
+      profiler.run("DRAW", "faces", () => {
+        type FaceEntry = {
+          intensity: number;
+          depth: number;
+          p0: ScreenPoint;
+          p1: ScreenPoint;
+          p2: ScreenPoint;
+          baseR: number;
+          baseG: number;
+          baseB: number;
+        };
 
-      if (DRAW_MODE === "faces") {
-        instrumentationAdapter("DRAW", "faces", () => {
-          const faceList: {
-            i0: number;
-            i1: number;
-            i2: number;
-            intensity: number;
-            depth: number;
-          }[] = [];
+        const faceList: FaceEntry[] = [];
+
+        group.forEach((obj) => {
+          const { model, worldPoints } = toRenderable(obj);
+          const { color, faces } = model;
 
           let baseR = 255,
             baseG = 255,
             baseB = 255;
-          if (typeof model.color !== "string" && model.color) {
-            baseR = model.color.r;
-            baseG = model.color.g;
-            baseB = model.color.b;
+          if (typeof color !== "string" && color) {
+            baseR = color.r;
+            baseG = color.g;
+            baseB = color.b;
           }
 
           for (let fi = 0; fi < faces.length; fi++) {
@@ -90,31 +90,51 @@ export function draw(
               }
             }
 
-            const intensity = Math.max(0, vec.dot(n, lightDir));
-            const avgZ = (v0.z + v1.z + v2.z) / 3;
-
-            faceList.push({ i0, i1, i2, intensity, depth: avgZ });
-          }
-
-          faceList.sort((a, b) => b.depth - a.depth);
-
-          for (const face of faceList) {
-            const p0 = projection(worldPoints[face.i0]);
-            const p1 = projection(worldPoints[face.i1]);
-            const p2 = projection(worldPoints[face.i2]);
+            const p0 = projection(v0);
+            const p1 = projection(v1);
+            const p2 = projection(v2);
             if (!p0 || !p1 || !p2) continue;
 
-            const k = 0.2 + 0.8 * face.intensity;
-            const r = Math.round(baseR * k);
-            const g = Math.round(baseG * k);
-            const b = Math.round(baseB * k);
-            const fillStyle = `rgb(${r}, ${g}, ${b})`;
+            const intensity = Math.max(0, vec.dot(n, lightDir));
 
-            fillTriangle(context, p0, p1, p2, fillStyle);
+            const d0 = p0.depth ?? 0;
+            const d1 = p1.depth ?? 0;
+            const d2 = p2.depth ?? 0;
+            const avgDepth = (d0 + d1 + d2) / 3;
+
+            faceList.push({
+              intensity,
+              depth: avgDepth,
+              p0,
+              p1,
+              p2,
+              baseR,
+              baseG,
+              baseB,
+            });
           }
         });
-      } else {
-        instrumentationAdapter("DRAW", "lines", () => {
+
+        // Larger depth => farther from camera
+        faceList.sort((a, b) => b.depth - a.depth);
+
+        for (const face of faceList) {
+          const { p0, p1, p2, baseR, baseG, baseB } = face;
+          const k = 0.2 + 0.8 * face.intensity;
+          const r = Math.round(baseR * k);
+          const g = Math.round(baseG * k);
+          const b = Math.round(baseB * k);
+          const fillStyle = `rgb(${r}, ${g}, ${b})`;
+
+          fillTriangle(context, p0, p1, p2, fillStyle);
+        }
+      });
+    } else {
+      group.forEach((obj) => {
+        const { model, worldPoints, color, lineWidth } = toRenderable(obj);
+        const { faces } = model;
+
+        profiler.run("DRAW", "lines", () => {
           for (let i = 0; i < faces.length; i++) {
             const polyIndices = faces[i];
             projectedPoints.length = 0;
@@ -130,8 +150,8 @@ export function draw(
               poly(context, projectedPoints, color, lineWidth);
           }
         });
-      }
-    });
+      });
+    }
   });
 }
 

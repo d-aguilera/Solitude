@@ -28,7 +28,11 @@ export function makeLocalFrame(up: Vec3): LocalFrame {
   return { right, forward, up: u };
 }
 
-export function generateIcosahedronSphere(subdivisions = 3): Model {
+export function generatePlanetMesh(
+  center: Vec3,
+  radius: number,
+  subdivisions = 3
+): Model {
   const t = (1 + Math.sqrt(5)) / 2;
 
   let vertices: Vec3[] = [
@@ -112,11 +116,12 @@ export function generateIcosahedronSphere(subdivisions = 3): Model {
   }
 
   const points: Vec3[] = vertices.map((v) => ({
-    x: planetCenter.x + v.x * PLANET_RADIUS,
-    y: planetCenter.y + v.y * PLANET_RADIUS,
-    z: planetCenter.z + v.z * PLANET_RADIUS,
+    x: center.x + v.x * radius,
+    y: center.y + v.y * radius,
+    z: center.z + v.z * radius,
   }));
 
+  // Ensure face normals point outward from this specific center
   for (let i = 0; i < faces.length; i++) {
     const [i0, i1, i2] = faces[i];
     const v0 = points[i0];
@@ -136,9 +141,9 @@ export function generateIcosahedronSphere(subdivisions = 3): Model {
     const n = vec.cross(e1, e2);
 
     const toFace = {
-      x: v0.x - planetCenter.x,
-      y: v0.y - planetCenter.y,
-      z: v0.z - planetCenter.z,
+      x: v0.x - center.x,
+      y: v0.y - center.y,
+      z: v0.z - center.z,
     };
 
     if (vec.dot(n, toFace) < 0) {

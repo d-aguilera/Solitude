@@ -6,6 +6,7 @@ import type { Vec3, Mat3 } from "./types.js";
 export interface ScreenPoint {
   x: number;
   y: number;
+  depth?: number; // camera-space depth (positive means in front of camera)
 }
 
 // New: pilot view context
@@ -58,6 +59,7 @@ export function makePilotView(ctx: PilotViewContext) {
     return {
       x: ((cx * FOCAL_LENGTH) / cz + 0.5) * WIDTH,
       y: (0.5 - (cy * FOCAL_LENGTH) / cz) * HEIGHT,
+      depth: cz,
     };
   };
 }
@@ -241,6 +243,7 @@ export function makeTopView(ctx: TopViewContext) {
     return {
       x: ((cx * FOCAL_LENGTH) / cz + 0.5) * WIDTH,
       y: (0.5 - (cy * FOCAL_LENGTH) / cz) * HEIGHT,
+      depth: cz,
     };
   };
 }

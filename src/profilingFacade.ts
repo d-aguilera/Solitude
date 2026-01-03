@@ -1,12 +1,13 @@
 import {
-  profile as realProfile,
-  isProfilingEnabled as realIsProfilingEnabled,
+  add as realAdd,
   check as realCheck,
   flush as realFlush,
+  isProfilingEnabled as realIsProfilingEnabled,
+  profile as realProfile,
   setProfilingEnabled as realSetProfilingEnabled,
   setPausedForProfiling as realSetPausedForProfiling,
 } from "./profiling.js";
-import type { InstrumentationAdapter } from "./types.js";
+import type { Profiler } from "./types.js";
 
 /**
  * Wrapper that decouples callers from the concrete profiling implementation.
@@ -45,8 +46,9 @@ export function profileFlush(): void {
 
 // Small adapter that lets callers plug in any profiling / tracing / instrumentation
 // without direct coupling to a concrete instrumentation API.
-export const defaultInstrumentationAdapter: InstrumentationAdapter = <T>(
-  group: string,
-  name: string,
-  fn: () => T
-): T => profile(group, name, fn);
+export const defaultProfiler: Profiler = {
+  run: <T>(group: string, name: string, fn: () => T): T =>
+    profile(group, name, fn),
+  increment: (group: string, name: string, count?: number) =>
+    realAdd(group, name, count ?? 1),
+};

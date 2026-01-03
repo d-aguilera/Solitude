@@ -70,11 +70,10 @@ export interface SceneObject {
 
 // Small adapter that lets callers plug in any profiling / tracing / instrumentation
 // without direct coupling to a concrete instrumentation API.
-export type InstrumentationAdapter = <T>(
-  group: string,
-  name: string,
-  fn: () => T
-) => T;
+export type Profiler = {
+  run: <T>(group: string, name: string, fn: () => T) => T;
+  increment: (group: string, name: string, count?: number) => void;
+};
 
 export interface Renderable {
   model: Model;

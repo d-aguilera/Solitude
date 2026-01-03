@@ -84,21 +84,23 @@ export function flush(): void {
         group,
         "] ",
         Object.entries(counters[group])
-          .map(([name, value]) => ({
-            name,
-            value,
-            isCount: name.endsWith("count") || name.endsWith("Count"),
-          }))
-          .map(
-            (x) =>
-              `${x.name}=${
-                x.isCount ? x.value : Math.round(x.value * 1000) / 1000
-              }${x.isCount ? "" : "ms"}`
-          )
+          .map(([name, value]) => `${name}=${Math.round(value * 1000) / 1000}`)
           .join(", ")
       )
     );
   }
 
   doProfile = false;
+}
+
+export function addMinMax(
+  counterGroup: string,
+  baseName: string,
+  min: number,
+  max: number
+): void {
+  if (!doProfile) return;
+
+  add(counterGroup, `${baseName}_min`, min);
+  add(counterGroup, `${baseName}_max`, max);
 }

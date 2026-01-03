@@ -1,11 +1,11 @@
 import { HEIGHT, WIDTH } from "./config.js";
-import { vec } from "./math.js";
+import { mat3, vec } from "./math.js";
 import { airplaneModel } from "./models.js";
 import {
   PLANET_RADIUS,
-  planetCenter,
+  generatePlanetMesh,
   makeLocalFrame,
-  generateIcosahedronSphere,
+  planetCenter,
 } from "./planet.js";
 import type {
   Model,
@@ -63,7 +63,7 @@ export const plane: Plane = {
   right: { ...initialFrame.right },
   forward: { ...initialFrame.forward },
   up: { ...initialFrame.up },
-  speed: 250,
+  speed: 2500,
   scale: 15,
 };
 
@@ -89,8 +89,58 @@ function addAirplane(): void {
 }
 
 function addPlanetGrid(): void {
-  const planetMesh = generateIcosahedronSphere(3);
+  // Home planet
+  const planetMesh = generatePlanetMesh(planetCenter, PLANET_RADIUS, 3);
+  planetMesh.objectType = "planet-home";
+  planetMesh.color = { r: 0, g: 0, b: 255 };
   planetGridInternal.push(planetMesh);
+
+  // Distance between planet centers along the tangent plane at the north pole
+  const secondsApart = 10;
+  const distanceApart = plane.speed * secondsApart;
+
+  // Initial "up" and forward directions in world space
+  const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
+  const initialForward: Vec3 = { ...initialFrame.forward }; // tangent at north pole
+
+  // Helper: rotate a vector v around axis 'axis' by 'angle' radians
+  const rotateAroundAxis = (v: Vec3, axis: Vec3, angle: number): Vec3 => {
+    const R = mat3.rotAxis(axis, angle);
+    return {
+      x: R[0][0] * v.x + R[0][1] * v.y + R[0][2] * v.z,
+      y: R[1][0] * v.x + R[1][1] * v.y + R[1][2] * v.z,
+      z: R[2][0] * v.x + R[2][1] * v.y + R[2][2] * v.z,
+    };
+  };
+
+  // Planet 2: along initial forward from the home planet
+  const planet2Radius = PLANET_RADIUS * 1.5;
+  const planet2Center: Vec3 = vec.add(
+    planetCenter,
+    vec.scale(initialForward, distanceApart)
+  );
+  const planet2Mesh = generatePlanetMesh(planet2Center, planet2Radius, 3);
+  planet2Mesh.objectType = "planet-mars";
+  planet2Mesh.color = { r: 255, g: 0, b: 0 };
+  planetGridInternal.push(planet2Mesh);
+
+  // Planet 3: same distance from home, but rotated 60° around the up axis
+  const angle = Math.PI / 3; // 60 degrees
+  const rotatedForward: Vec3 = rotateAroundAxis(
+    initialForward,
+    initialUp,
+    angle
+  );
+
+  const planet3Radius = planet2Radius * 1.5;
+  const planet3Center: Vec3 = vec.add(
+    planetCenter,
+    vec.scale(rotatedForward, distanceApart)
+  );
+  const planet3Mesh = generatePlanetMesh(planet3Center, planet3Radius, 3);
+  planet3Mesh.objectType = "planet-venus";
+  planet3Mesh.color = { r: 0, g: 255, b: 0 };
+  planetGridInternal.push(planet3Mesh);
 }
 
 addPlanetGrid();

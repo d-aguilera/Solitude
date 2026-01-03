@@ -26,7 +26,7 @@ import {
 } from "./projection.js";
 import { renderPilotView, renderTopView, renderHUD } from "./renderer.js";
 import { scene, pilot, plane } from "./setup.js";
-import type { Camera, InstrumentationAdapter, SceneObject } from "./types.js";
+import type { Camera, Profiler, SceneObject } from "./types.js";
 
 let lastTimeMs = 0;
 let pKeyDown = false;
@@ -74,14 +74,14 @@ function makeControlInput(): ControlInput {
 export function startGame(
   pilotContext: CanvasRenderingContext2D,
   topContext: CanvasRenderingContext2D,
-  instrument: InstrumentationAdapter
+  profiler: Profiler
 ): void {
   initInput();
   updatePlaneAxesSpherical(flightState);
   requestAnimationFrame((nowMs) => {
     lastTimeMs = nowMs;
     requestAnimationFrame(
-      renderFrame.bind(null, pilotContext, topContext, instrument)
+      renderFrame.bind(null, pilotContext, topContext, profiler)
     );
   });
 }
@@ -136,7 +136,7 @@ function syncMainAirplaneToPlane(): void {
 function renderFrame(
   pilotContext: CanvasRenderingContext2D,
   topContext: CanvasRenderingContext2D,
-  instrument: InstrumentationAdapter,
+  profiler: Profiler,
   nowMs: number
 ): void {
   const dtMs = nowMs - lastTimeMs;
@@ -152,10 +152,10 @@ function renderFrame(
   setPausedForProfiling(paused);
   profileCheck();
 
-  instrument("GAME", "total", () => {
+  profiler.run("GAME", "total", () => {
     updateFPS(nowMs);
 
-    instrument("GAME", "physics", () => {
+    profiler.run("GAME", "physics", () => {
       updatePhysics(dtSeconds, input, flightState);
     });
 
@@ -165,7 +165,7 @@ function renderFrame(
     // Update camera based on latest plane position/orientation.
     updateTopCamera();
 
-    instrument("GAME", "pilot-view", () => {
+    profiler.run("GAME", "pilot-view", () => {
       renderPilotView(
         pilotContext,
         {
@@ -174,11 +174,11 @@ function renderFrame(
           airplanes: scene.airplanes,
         },
         scene,
-        instrument
+        profiler
       );
     });
 
-    instrument("GAME", "top-view", () => {
+    profiler.run("GAME", "top-view", () => {
       renderTopView(
         topContext,
         {
@@ -187,11 +187,11 @@ function renderFrame(
           airplanes: scene.airplanes,
         },
         scene,
-        instrument
+        profiler
       );
     });
 
-    instrument("GAME", "hud", () => {
+    profiler.run("GAME", "hud", () => {
       renderHUD(topContext, flightState.plane, isProfilingEnabled());
     });
   });
@@ -199,6 +199,6 @@ function renderFrame(
   profileFlush();
 
   requestAnimationFrame(
-    renderFrame.bind(null, pilotContext, topContext, instrument)
+    renderFrame.bind(null, pilotContext, topContext, profiler)
   );
 }
