@@ -1,3 +1,5 @@
+import { ScreenPoint } from "./projection";
+
 export interface Vec3 {
   x: number;
   y: number;
@@ -92,4 +94,9 @@ export interface WorldState {
   planes: Plane[];
   cameras: Camera[];
   pilotViews: PilotView[];
+}
+
+export interface View {
+  projection: (p: Vec3) => ScreenPoint | null;
+  cameraPos: Vec3 | null;
 }

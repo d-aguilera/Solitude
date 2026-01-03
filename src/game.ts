@@ -15,12 +15,21 @@ import {
   setProfilingEnabled,
 } from "./profilingFacade.js";
 import {
+  makePilotView,
+  makeTopView,
   updateTopCameraFrame,
   type TopCameraFrameState,
 } from "./projection.js";
-import { renderPilotView, renderTopView, renderHUD } from "./renderer.js";
+import { renderHUD, renderView } from "./renderer.js";
 import { createInitialSceneAndWorld } from "./setup.js";
-import type { Camera, Plane, Profiler, Scene, WorldState } from "./types.js";
+import type {
+  Camera,
+  Plane,
+  Profiler,
+  Scene,
+  View,
+  WorldState,
+} from "./types.js";
 
 let lastTimeMs = 0;
 let pKeyDown = false;
@@ -163,7 +172,6 @@ function renderFrame(
 
   pauseControl(input.pause);
   handleProfilingToggle(input);
-
   setPausedForProfiling(paused);
   profileCheck();
 
@@ -185,24 +193,41 @@ function renderFrame(
     // Update camera based on latest plane position/orientation.
     updateTopCamera();
 
-    profiler.run("GAME", "pilot-view", () => {
-      renderPilotView(pilotContext, {
-        scene,
-        world,
-        pilotViewId: mainPilotViewId,
-        profiler,
-      });
-    });
-
     const mainPlane = getPlane(world, mainPlaneId);
 
-    profiler.run("GAME", "top-view", () => {
-      renderTopView(topContext, {
-        scene,
-        world,
-        topCameraId,
-        profiler,
+    profiler.run("GAME", "pilot-view", () => {
+      const pilotView = world.pilotViews.find((p) => p.id === mainPilotViewId);
+      if (!pilotView) return;
+
+      const projection = makePilotView({
+        planePosition: mainPlane.position,
+        planeOrientation: mainPlane.orientation,
+        pilotAzimuth: pilotView.azimuth,
+        pilotElevation: pilotView.elevation,
       });
+
+      const pilotViewConfig: View = {
+        projection,
+        cameraPos: mainPlane.position,
+      };
+
+      renderView(pilotContext, scene, pilotViewConfig, profiler);
+    });
+
+    profiler.run("GAME", "top-view", () => {
+      const camera = getTopCamera(world);
+
+      const projection = makeTopView({
+        cameraPosition: camera.position,
+        cameraOrientation: camera.orientation,
+      });
+
+      const topViewConfig: View = {
+        projection,
+        cameraPos: camera.position,
+      };
+
+      renderView(topContext, scene, topViewConfig, profiler);
     });
 
     profiler.run("GAME", "hud", () => {

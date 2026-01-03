@@ -1,71 +1,30 @@
 import { clear, draw } from "./draw.js";
 import { fps } from "./fps.js";
 import { vec } from "./math.js";
-import { makePilotView, makeTopView } from "./projection.js";
-import type { Plane, Profiler, Scene, WorldState } from "./types.js";
+import type { ScreenPoint } from "./projection.js";
+import type { Plane, Profiler, Scene, Vec3, View } from "./types.js";
 
-interface PilotViewRenderParams {
+type ProjectionFn = (p: Vec3) => ScreenPoint | null;
+
+export interface RenderViewParams {
   scene: Scene;
-  world: WorldState;
-  pilotViewId: string;
+  projection: ProjectionFn;
+  cameraPos: Vec3 | null;
   profiler: Profiler;
 }
 
-interface TopViewRenderParams {
-  scene: Scene;
-  world: WorldState;
-  topCameraId: string;
-  profiler: Profiler;
-}
-
-export function renderPilotView(
-  pilotContext: CanvasRenderingContext2D,
-  { pilotViewId, profiler, scene, world }: PilotViewRenderParams
+export function renderView(
+  context: CanvasRenderingContext2D,
+  scene: Scene,
+  view: View,
+  profiler: Profiler
 ): void {
-  clear(pilotContext);
+  clear(context);
 
-  const pilotView = world.pilotViews.find((p) => p.id === pilotViewId);
-  if (!pilotView) return;
-
-  const plane = world.planes.find((p) => p.id === pilotView.planeId);
-  if (!plane) return;
-
-  const projection = makePilotView({
-    planePosition: { ...plane.position },
-    planeOrientation: plane.orientation,
-    pilotAzimuth: pilotView.azimuth,
-    pilotElevation: pilotView.elevation,
-  });
-
-  draw(pilotContext, {
+  draw(context, {
     objects: scene.objects,
-    projection,
-    cameraPos: { ...plane.position },
-    lightDir: scene.sunDirection,
-    profiler,
-  });
-}
-
-export function renderTopView(
-  topContext: CanvasRenderingContext2D,
-  { profiler, scene, topCameraId, world }: TopViewRenderParams
-): void {
-  clear(topContext);
-
-  const camera = world.cameras.find((c) => c.id === topCameraId);
-  if (!camera) return;
-
-  const cameraPosition = { ...camera.position };
-
-  const projection = makeTopView({
-    cameraPosition,
-    cameraOrientation: camera.orientation,
-  });
-
-  draw(topContext, {
-    objects: scene.objects,
-    projection,
-    cameraPos: cameraPosition,
+    projection: view.projection,
+    cameraPos: view.cameraPos,
     lightDir: scene.sunDirection,
     profiler,
   });
