@@ -8,14 +8,12 @@ import type {
   RGB,
   SceneObject,
   Vec3,
+  View,
 } from "./types.js";
-
-type ProjectionFn = (p: Vec3) => ScreenPoint | null;
 
 interface DrawOptions {
   objects: SceneObject[];
-  projection: ProjectionFn;
-  cameraPos: Vec3 | null;
+  view: View;
   lightDir: Vec3;
   profiler: Profiler;
 }
@@ -27,8 +25,9 @@ export function clear(context: CanvasRenderingContext2D): void {
 
 export function draw(
   context: CanvasRenderingContext2D,
-  { objects, projection, cameraPos, lightDir, profiler }: DrawOptions
+  { objects, view, lightDir, profiler }: DrawOptions
 ): void {
+  const { projection, cameraPos } = view;
   const projectedPoints: ScreenPoint[] = [];
 
   profiler.run("DRAW", "total", () => {
@@ -207,17 +206,20 @@ function toRenderable(obj: SceneObject): Renderable {
 
     const { width, depth, height } = obj;
     if (width && depth && height) {
-      const R00 = R[0][0] * width;
-      const R01 = R[0][1] * depth;
-      const R02 = R[0][2] * height;
+      const R0 = R[0];
+      const R00 = R0[0] * width;
+      const R01 = R0[1] * depth;
+      const R02 = R0[2] * height;
 
-      const R10 = R[1][0] * width;
-      const R11 = R[1][1] * depth;
-      const R12 = R[1][2] * height;
+      const R1 = R[1];
+      const R10 = R1[0] * width;
+      const R11 = R1[1] * depth;
+      const R12 = R1[2] * height;
 
-      const R20 = R[2][0] * width;
-      const R21 = R[2][1] * depth;
-      const R22 = R[2][2] * height;
+      const R2 = R[2];
+      const R20 = R2[0] * width;
+      const R21 = R2[1] * depth;
+      const R22 = R2[2] * height;
 
       R = [
         [R00, R01, R02],

@@ -1,17 +1,7 @@
 import { clear, draw } from "./draw.js";
 import { fps } from "./fps.js";
 import { vec } from "./math.js";
-import type { ScreenPoint } from "./projection.js";
-import type { Plane, Profiler, Scene, Vec3, View } from "./types.js";
-
-type ProjectionFn = (p: Vec3) => ScreenPoint | null;
-
-export interface RenderViewParams {
-  scene: Scene;
-  projection: ProjectionFn;
-  cameraPos: Vec3 | null;
-  profiler: Profiler;
-}
+import type { Plane, Profiler, Scene, View } from "./types.js";
 
 export function renderView(
   context: CanvasRenderingContext2D,
@@ -23,8 +13,7 @@ export function renderView(
 
   draw(context, {
     objects: scene.objects,
-    projection: view.projection,
-    cameraPos: view.cameraPos,
+    view,
     lightDir: scene.sunDirection,
     profiler,
   });
