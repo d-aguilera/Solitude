@@ -2,67 +2,74 @@ import { clear, draw } from "./draw.js";
 import { fps } from "./fps.js";
 import { vec } from "./math.js";
 import { makePilotView, makeTopView } from "./projection.js";
-import { Camera, PilotState, Plane, Profiler, Scene } from "./types.js";
+import type { Plane, Profiler, Scene, WorldState } from "./types.js";
 
-interface PilotViewState {
-  plane: Plane;
-  pilot: PilotState;
+interface PilotViewRenderParams {
+  scene: Scene;
+  world: WorldState;
+  pilotViewId: string;
+  profiler: Profiler;
 }
 
-interface TopViewState {
-  plane: Plane;
-  topCamera: Camera;
+interface TopViewRenderParams {
+  scene: Scene;
+  world: WorldState;
+  topCameraId: string;
+  profiler: Profiler;
 }
 
 export function renderPilotView(
   pilotContext: CanvasRenderingContext2D,
-  state: PilotViewState,
-  scene: Scene,
-  profiler: Profiler
+  params: PilotViewRenderParams
 ): void {
   clear(pilotContext);
 
-  const { plane, pilot } = state;
+  const pilotView = params.world.pilotViews.find(
+    (p) => p.id === params.pilotViewId
+  );
+  if (!pilotView) return;
+
+  const plane = params.world.planes.find((p) => p.id === pilotView.planeId);
+  if (!plane) return;
 
   const projection = makePilotView({
-    planePosition: { x: plane.x, y: plane.y, z: plane.z },
+    planePosition: { ...plane.position },
     planeOrientation: plane.orientation,
-    pilotAzimuth: pilot.azimuth,
-    pilotElevation: pilot.elevation,
+    pilotAzimuth: pilotView.azimuth,
+    pilotElevation: pilotView.elevation,
   });
 
   draw(pilotContext, {
-    objects: scene.objects,
+    objects: params.scene.objects,
     projection,
-    cameraPos: { x: plane.x, y: plane.y, z: plane.z },
-    lightDir: scene.sunDirection,
-    profiler,
+    cameraPos: { ...plane.position },
+    lightDir: params.scene.sunDirection,
+    profiler: params.profiler,
   });
 }
 
 export function renderTopView(
   topContext: CanvasRenderingContext2D,
-  state: TopViewState,
-  scene: Scene,
-  profiler: Profiler
+  params: TopViewRenderParams
 ): void {
   clear(topContext);
 
-  const { topCamera } = state;
+  const camera = params.world.cameras.find((c) => c.id === params.topCameraId);
+  if (!camera) return;
 
-  const cameraPosition = { x: topCamera.x, y: topCamera.y, z: topCamera.z };
+  const cameraPosition = { ...camera.position };
 
   const projection = makeTopView({
     cameraPosition,
-    cameraOrientation: topCamera.orientation,
+    cameraOrientation: camera.orientation,
   });
 
   draw(topContext, {
-    objects: scene.objects,
+    objects: params.scene.objects,
     projection,
     cameraPos: cameraPosition,
-    lightDir: scene.sunDirection,
-    profiler,
+    lightDir: params.scene.sunDirection,
+    profiler: params.profiler,
   });
 }
 
@@ -76,7 +83,7 @@ export function renderHUD(
   topContext.fillStyle = "white";
   topContext.font = "16px monospace";
 
-  const distFromOrigin = vec.length({ x: plane.x, y: plane.y, z: plane.z });
+  const distFromOrigin = vec.length(plane.position);
   topContext.fillText(`|pos|: ${distFromOrigin.toFixed(1)} m`, 10, 20);
 
   const speedKnots = plane.speed * 1.94384;

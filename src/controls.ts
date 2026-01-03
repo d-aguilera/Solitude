@@ -5,7 +5,7 @@ import {
   rotSpeedYaw,
 } from "./controlsConfig.js";
 import { mat3, vec } from "./math.js";
-import type { Mat3, Plane, Vec3 } from "./types.js";
+import type { Mat3, Plane, Vec3, WorldState } from "./types.js";
 
 export interface ControlInput {
   rollLeft: boolean;
@@ -23,57 +23,39 @@ export interface ControlInput {
   toggleProfiling: boolean;
 }
 
-export interface FlightState {
-  plane: Plane;
-  pilot: {
-    azimuth: number;
-    elevation: number;
-  };
+export interface FlightContext {
+  world: WorldState;
+  controlledPlaneId: string;
+  pilotViewId: string;
 }
 
-export function updatePhysics(
-  dtSeconds: number,
-  input: ControlInput,
-  state: FlightState
-): void {
-  pilotLookAround(dtSeconds, input, state);
-
-  let Rlocal = yaw(
-    pitch(roll(null, dtSeconds, input, state), dtSeconds, input, state),
-    dtSeconds,
-    input,
-    state
-  );
-
-  if (Rlocal) {
-    state.plane.orientation = mat3.mul(Rlocal, state.plane.orientation);
-  }
-
-  updatePlaneAxesSpherical(state);
-
-  moveForwardSpherical(dtSeconds, state);
+function findPlane(world: WorldState, id: string): Plane {
+  const plane = world.planes.find((p) => p.id === id);
+  if (!plane) throw new Error(`Plane not found: ${id}`);
+  return plane;
 }
 
 function pilotLookAround(
   dtSeconds: number,
   input: ControlInput,
-  state: FlightState
+  ctx: FlightContext
 ): void {
-  const pilot = state.pilot;
+  const pilotView = ctx.world.pilotViews.find((p) => p.id === ctx.pilotViewId);
+  if (!pilotView) throw new Error(`Pilot view not found: ${ctx.pilotViewId}`);
 
   if (input.resetView) {
-    pilot.azimuth = 0;
-    pilot.elevation = 0;
+    pilotView.azimuth = 0;
+    pilotView.elevation = 0;
   }
 
-  if (input.lookLeft) pilot.azimuth += lookSpeed * dtSeconds;
-  if (input.lookRight) pilot.azimuth -= lookSpeed * dtSeconds;
-  if (input.lookUp) pilot.elevation += lookSpeed * dtSeconds;
-  if (input.lookDown) pilot.elevation -= lookSpeed * dtSeconds;
+  if (input.lookLeft) pilotView.azimuth += lookSpeed * dtSeconds;
+  if (input.lookRight) pilotView.azimuth -= lookSpeed * dtSeconds;
+  if (input.lookUp) pilotView.elevation += lookSpeed * dtSeconds;
+  if (input.lookDown) pilotView.elevation -= lookSpeed * dtSeconds;
 }
 
-export function updatePlaneAxesSpherical(state: FlightState): void {
-  const R = state.plane.orientation;
+export function updatePlaneAxes(statePlane: Plane): void {
+  const R = statePlane.orientation;
 
   let right: Vec3 = { x: R[0][0], y: R[1][0], z: R[2][0] };
   let forward: Vec3 = { x: R[0][1], y: R[1][1], z: R[2][1] };
@@ -96,16 +78,16 @@ export function updatePlaneAxesSpherical(state: FlightState): void {
   const lenUp = vec.length(up) || 1;
   up = { x: up.x / lenUp, y: up.y / lenUp, z: up.z / lenUp };
 
-  state.plane.right = right;
-  state.plane.forward = forward;
-  state.plane.up = up;
+  statePlane.right = right;
+  statePlane.forward = forward;
+  statePlane.up = up;
 }
 
 function roll(
   Rlocal: Mat3 | null,
   dtSeconds: number,
   input: ControlInput,
-  state: FlightState
+  plane: Plane
 ): Mat3 | null {
   if (
     (!input.rollLeft && !input.rollRight) ||
@@ -113,8 +95,6 @@ function roll(
   ) {
     return Rlocal;
   }
-
-  const plane = state.plane;
 
   if (input.rollLeft) {
     const Rr = mat3.rotAxis(plane.forward, -rotSpeedRoll * dtSeconds);
@@ -129,7 +109,7 @@ function pitch(
   Rlocal: Mat3 | null,
   dtSeconds: number,
   input: ControlInput,
-  state: FlightState
+  plane: Plane
 ): Mat3 | null {
   let pitchInput = 0;
 
@@ -137,7 +117,7 @@ function pitch(
   if (input.pitchUp) pitchInput -= 1;
   if (pitchInput !== 0) {
     const Rp = mat3.rotAxis(
-      state.plane.right,
+      plane.right,
       pitchInput * rotSpeedPitch * dtSeconds
     );
     Rlocal = Rlocal ? mat3.mul(Rp, Rlocal) : Rp;
@@ -149,7 +129,7 @@ function yaw(
   Rlocal: Mat3 | null,
   dtSeconds: number,
   input: ControlInput,
-  state: FlightState
+  plane: Plane
 ): Mat3 | null {
   if (
     (!input.yawLeft && !input.yawRight) ||
@@ -157,8 +137,6 @@ function yaw(
   ) {
     return Rlocal;
   }
-
-  const plane = state.plane;
 
   if (input.yawLeft) {
     const Ry = mat3.rotAxis(plane.up, rotSpeedYaw * dtSeconds);
@@ -169,8 +147,7 @@ function yaw(
   return Rlocal ? mat3.mul(Ry, Rlocal) : Ry;
 }
 
-function moveForwardSpherical(dtSeconds: number, state: FlightState): void {
-  const plane = state.plane;
+function moveForward(dtSeconds: number, plane: Plane): void {
   const speed = plane.speed;
 
   const forward: Vec3 = {
@@ -179,11 +156,34 @@ function moveForwardSpherical(dtSeconds: number, state: FlightState): void {
     z: plane.orientation[2][1],
   };
 
-  let newX = plane.x + forward.x * speed * dtSeconds;
-  let newY = plane.y + forward.y * speed * dtSeconds;
-  let newZ = plane.z + forward.z * speed * dtSeconds;
+  plane.position = {
+    x: plane.position.x + forward.x * speed * dtSeconds,
+    y: plane.position.y + forward.y * speed * dtSeconds,
+    z: plane.position.z + forward.z * speed * dtSeconds,
+  };
+}
 
-  plane.x = newX;
-  plane.y = newY;
-  plane.z = newZ;
+// Top-level physics update for a single controlled plane and pilot view.
+export function updatePhysics(
+  dtSeconds: number,
+  input: ControlInput,
+  ctx: FlightContext
+): void {
+  const plane = findPlane(ctx.world, ctx.controlledPlaneId);
+
+  pilotLookAround(dtSeconds, input, ctx);
+
+  let Rlocal = yaw(
+    pitch(roll(null, dtSeconds, input, plane), dtSeconds, input, plane),
+    dtSeconds,
+    input,
+    plane
+  );
+
+  if (Rlocal) {
+    plane.orientation = mat3.mul(Rlocal, plane.orientation);
+  }
+
+  updatePlaneAxes(plane);
+  moveForward(dtSeconds, plane);
 }

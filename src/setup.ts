@@ -3,12 +3,14 @@ import { mat3, vec } from "./math.js";
 import { airplaneModel } from "./models.js";
 import { generatePlanetMesh, makeLocalFrame } from "./planet.js";
 import type {
+  Camera,
   Mesh,
-  PilotState,
+  PilotView,
   Plane,
   Scene,
   SceneObject,
   Vec3,
+  WorldState,
 } from "./types.js";
 
 export function initRenderingContexts(
@@ -42,36 +44,50 @@ const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame = makeLocalFrame(initialUp);
 const initialForward: Vec3 = { ...initialFrame.forward };
 
-export const plane: Plane = {
-  x: initialPos.x,
-  y: initialPos.y,
-  z: initialPos.z,
-  orientation: [
-    [initialFrame.right.x, initialFrame.forward.x, initialFrame.up.x],
-    [initialFrame.right.y, initialFrame.forward.y, initialFrame.up.y],
-    [initialFrame.right.z, initialFrame.forward.z, initialFrame.up.z],
-  ],
-  right: { ...initialFrame.right },
-  forward: { ...initialFrame.forward },
-  up: { ...initialFrame.up },
-  speed: 2500,
-  scale: 15,
-};
+function createInitialPlane(id: string): Plane {
+  return {
+    id,
+    position: { ...initialPos },
+    orientation: [
+      [initialFrame.right.x, initialFrame.forward.x, initialFrame.up.x],
+      [initialFrame.right.y, initialFrame.forward.y, initialFrame.up.y],
+      [initialFrame.right.z, initialFrame.forward.z, initialFrame.up.z],
+    ],
+    right: { ...initialFrame.right },
+    forward: { ...initialFrame.forward },
+    up: { ...initialFrame.up },
+    speed: 2500,
+    scale: 15,
+  };
+}
 
-export const pilot: PilotState = {
-  azimuth: 0,
-  elevation: 0,
-};
+function createInitialPilotView(id: string, planeId: string): PilotView {
+  return {
+    id,
+    planeId,
+    azimuth: 0,
+    elevation: 0,
+  };
+}
 
-const airplanes: SceneObject[] = [];
-const planetGrid: SceneObject[] = [];
+function createInitialTopCamera(id: string, plane: Plane): Camera {
+  return {
+    id,
+    position: {
+      x: plane.position.x,
+      y: plane.position.y,
+      z: plane.position.z + 50,
+    },
+    orientation: mat3.identity,
+  };
+}
 
-function addAirplane(): void {
-  airplanes.push({
+function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
+  objects.push({
     mesh: airplaneModel,
-    x: plane.x,
-    y: plane.y,
-    z: plane.z,
+    x: plane.position.x,
+    y: plane.position.y,
+    z: plane.position.z,
     orientation: plane.orientation,
     scale: plane.scale,
     color: airplaneModel.color,
@@ -79,13 +95,13 @@ function addAirplane(): void {
   });
 }
 
-function addPlanetGrid(): void {
+function addPlanetGrid(baseSpeed: number, objects: SceneObject[]): void {
   // Angle between planets
   const angle = Math.PI / 3; // 60 degrees
 
   // Distance between planet centers
   const secondsApart = 10;
-  const distanceApart = plane.speed * secondsApart;
+  const distanceApart = baseSpeed * secondsApart;
 
   // Earth
   const planet1Radius = 1000; // meters
@@ -95,7 +111,7 @@ function addPlanetGrid(): void {
   const planet1Mesh: Mesh = { ...planetMeshTemplate };
   planet1Mesh.objectType = "planet-earth";
   planet1Mesh.color = { r: 0, g: 0, b: 255 };
-  planetGrid.push({
+  objects.push({
     mesh: planet1Mesh,
     x: planet1Center.x,
     y: planet1Center.y,
@@ -115,7 +131,7 @@ function addPlanetGrid(): void {
   const planet2Mesh: Mesh = { ...planetMeshTemplate };
   planet2Mesh.objectType = "planet-mars";
   planet2Mesh.color = { r: 255, g: 0, b: 0 };
-  planetGrid.push({
+  objects.push({
     mesh: planet2Mesh,
     x: planet2Center.x,
     y: planet2Center.y,
@@ -141,7 +157,7 @@ function addPlanetGrid(): void {
   const planet3Mesh: Mesh = { ...planetMeshTemplate };
   planet3Mesh.objectType = "planet-venus";
   planet3Mesh.color = { r: 0, g: 255, b: 0 };
-  planetGrid.push({
+  objects.push({
     mesh: planet3Mesh,
     x: planet3Center.x,
     y: planet3Center.y,
@@ -165,12 +181,40 @@ function rotateAroundAxis(v: Vec3, axis: Vec3, angle: number): Vec3 {
   };
 }
 
-addPlanetGrid();
-addAirplane();
-
 const sunDirection = vec.scaleToUnit({ x: 0.3, y: 0.5, z: 1.0 });
 
-export const scene: Scene = {
-  objects: [...planetGrid, ...airplanes],
-  sunDirection,
-};
+export function createInitialSceneAndWorld(): {
+  scene: Scene;
+  world: WorldState;
+  mainPlaneId: string;
+  mainPilotViewId: string;
+  topCameraId: string;
+} {
+  const objects: SceneObject[] = [];
+
+  const mainPlane = createInitialPlane("plane:main");
+  addAirplaneObject(mainPlane, objects);
+  addPlanetGrid(mainPlane.speed, objects);
+
+  const pilotView = createInitialPilotView("pilot:main", mainPlane.id);
+  const topCamera = createInitialTopCamera("camera:top", mainPlane);
+
+  const scene: Scene = {
+    objects,
+    sunDirection,
+  };
+
+  const world: WorldState = {
+    planes: [mainPlane],
+    cameras: [topCamera],
+    pilotViews: [pilotView],
+  };
+
+  return {
+    scene,
+    world,
+    mainPlaneId: mainPlane.id,
+    mainPilotViewId: pilotView.id,
+    topCameraId: topCamera.id,
+  };
+}

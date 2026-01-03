@@ -1,9 +1,4 @@
-import {
-  ControlInput,
-  updatePhysics,
-  updatePlaneAxesSpherical,
-  type FlightState,
-} from "./controls.js";
+import { ControlInput, updatePhysics, type FlightContext } from "./controls.js";
 import {
   getProfilingEnabledFromEnv,
   setProfilingEnabledInEnv,
@@ -24,33 +19,49 @@ import {
   type TopCameraFrameState,
 } from "./projection.js";
 import { renderPilotView, renderTopView, renderHUD } from "./renderer.js";
-import { scene, pilot, plane } from "./setup.js";
-import type { Camera, Profiler, SceneObject } from "./types.js";
+import { createInitialSceneAndWorld } from "./setup.js";
+import type { Camera, Plane, Profiler, Scene, WorldState } from "./types.js";
 
 let lastTimeMs = 0;
 let pKeyDown = false;
 
-const flightState: FlightState = {
-  plane,
-  pilot,
-};
+let scene: Scene;
+let world: WorldState;
+let mainPlaneId: string;
+let mainPilotViewId: string;
+let topCameraId: string;
 
 let topCameraFrameState: TopCameraFrameState | null = null;
 
-const mainAirplane: SceneObject = scene.objects.find(
-  (o) => o.mesh.objectType === "plane"
-)!;
+const {
+  scene: initialScene,
+  world: initialWorld,
+  mainPlaneId: planeId,
+  mainPilotViewId: pilotId,
+  topCameraId: camId,
+} = createInitialSceneAndWorld();
 
-const topCamera: Camera = {
-  x: plane.x,
-  y: plane.y,
-  z: plane.z + 50,
-  orientation: [
-    [1, 0, 0],
-    [0, 1, 0],
-    [0, 0, 1],
-  ],
-};
+scene = initialScene;
+world = initialWorld;
+mainPlaneId = planeId;
+mainPilotViewId = pilotId;
+topCameraId = camId;
+
+function getTopCamera(world: WorldState): Camera {
+  const camera = world.cameras.find((c) => c.id === topCameraId);
+  if (!camera) {
+    throw new Error(`Top camera not found: ${topCameraId}`);
+  }
+  return camera;
+}
+
+function getPlane(world: WorldState, id: string): Plane {
+  const plane = world.planes.find((p) => p.id === id);
+  if (!plane) {
+    throw new Error(`Plane not found: ${id}`);
+  }
+  return plane;
+}
 
 function makeControlInput(): ControlInput {
   const keys = getKeyState();
@@ -78,7 +89,6 @@ export function startGame(
   profiler: Profiler
 ): void {
   initInput();
-  updatePlaneAxesSpherical(flightState);
   requestAnimationFrame((nowMs) => {
     lastTimeMs = nowMs;
     requestAnimationFrame(
@@ -102,15 +112,18 @@ function handleProfilingToggle(input: ControlInput): void {
 }
 
 function updateTopCamera(): void {
-  const plane = flightState.plane;
+  const plane = getPlane(world, mainPlaneId);
+  const camera = getTopCamera(world);
 
   // Use the plane's local up direction as the "radial" direction for the top-down camera.
   const radial = vec.normalize(plane.up);
 
   const distanceAbovePlane = 50;
-  topCamera.x = plane.x + radial.x * distanceAbovePlane;
-  topCamera.y = plane.y + radial.y * distanceAbovePlane;
-  topCamera.z = plane.z + radial.z * distanceAbovePlane;
+  const camPos = camera.position;
+  const planePos = plane.position;
+  camPos.x = planePos.x + radial.x * distanceAbovePlane;
+  camPos.y = planePos.y + radial.y * distanceAbovePlane;
+  camPos.z = planePos.z + radial.z * distanceAbovePlane;
 
   const { orientation, state: nextState } = updateTopCameraFrame(
     radial,
@@ -118,17 +131,23 @@ function updateTopCamera(): void {
   );
   topCameraFrameState = nextState;
 
-  topCamera.orientation = orientation;
+  camera.orientation = orientation;
 }
 
 // Keep visual representation in sync with simulated plane state.
-function syncMainAirplaneToPlane(): void {
-  const plane = flightState.plane;
-  mainAirplane.x = plane.x;
-  mainAirplane.y = plane.y;
-  mainAirplane.z = plane.z;
-  mainAirplane.orientation = plane.orientation;
-  mainAirplane.scale = plane.scale;
+function syncPlanesToSceneObjects(): void {
+  world.planes.forEach((p) => {
+    const obj = scene.objects.find(
+      (o) => o.mesh.objectType === "plane" && o.scale === p.scale
+    );
+    if (!obj) return;
+
+    obj.x = p.position.x;
+    obj.y = p.position.y;
+    obj.z = p.position.z;
+    obj.orientation = p.orientation;
+    obj.scale = p.scale;
+  });
 }
 
 function renderFrame(
@@ -154,41 +173,42 @@ function renderFrame(
     updateFPS(nowMs);
 
     profiler.run("GAME", "physics", () => {
-      updatePhysics(dtSeconds, input, flightState);
+      const flightCtx: FlightContext = {
+        world,
+        controlledPlaneId: mainPlaneId,
+        pilotViewId: mainPilotViewId,
+      };
+      updatePhysics(dtSeconds, input, flightCtx);
     });
 
-    // Keep scene airplane in sync with physics plane.
-    syncMainAirplaneToPlane();
+    // Keep scene airplane(s) in sync with simulation.
+    syncPlanesToSceneObjects();
 
     // Update camera based on latest plane position/orientation.
     updateTopCamera();
 
     profiler.run("GAME", "pilot-view", () => {
-      renderPilotView(
-        pilotContext,
-        {
-          plane: flightState.plane,
-          pilot: flightState.pilot,
-        },
+      renderPilotView(pilotContext, {
         scene,
-        profiler
-      );
+        world,
+        pilotViewId: mainPilotViewId,
+        profiler,
+      });
     });
 
+    const mainPlane = getPlane(world, mainPlaneId);
+
     profiler.run("GAME", "top-view", () => {
-      renderTopView(
-        topContext,
-        {
-          plane: flightState.plane,
-          topCamera,
-        },
+      renderTopView(topContext, {
         scene,
-        profiler
-      );
+        world,
+        topCameraId,
+        profiler,
+      });
     });
 
     profiler.run("GAME", "hud", () => {
-      renderHUD(topContext, flightState.plane, isProfilingEnabled());
+      renderHUD(topContext, mainPlane, isProfilingEnabled());
     });
   });
 

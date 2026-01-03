@@ -31,9 +31,8 @@ export interface LocalFrame {
 }
 
 export interface Plane {
-  x: number;
-  y: number;
-  z: number;
+  id: string;
+  position: Vec3;
   orientation: Mat3;
   right: Vec3;
   forward: Vec3;
@@ -43,13 +42,14 @@ export interface Plane {
 }
 
 export interface Camera {
-  x: number;
-  y: number;
-  z: number;
+  id: string;
+  position: Vec3;
   orientation: Mat3;
 }
 
-export interface PilotState {
+export interface PilotView {
+  id: string;
+  planeId: string;
   azimuth: number;
   elevation: number;
 }
@@ -88,3 +88,10 @@ export interface Scene {
 }
 
 export type DrawMode = "faces" | "lines";
+
+// Generalized world-state container for dynamic entities.
+export interface WorldState {
+  planes: Plane[];
+  cameras: Camera[];
+  pilotViews: PilotView[];
+}
