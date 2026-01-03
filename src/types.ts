@@ -56,9 +56,7 @@ export interface PilotView {
 
 export interface SceneObject {
   mesh: Mesh;
-  x: number;
-  y: number;
-  z: number;
+  position: Vec3;
   orientation: Mat3;
   scale: number;
   color: string | { r: number; g: number; b: number };

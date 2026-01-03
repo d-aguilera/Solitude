@@ -20,16 +20,14 @@ interface TopViewRenderParams {
 
 export function renderPilotView(
   pilotContext: CanvasRenderingContext2D,
-  params: PilotViewRenderParams
+  { pilotViewId, profiler, scene, world }: PilotViewRenderParams
 ): void {
   clear(pilotContext);
 
-  const pilotView = params.world.pilotViews.find(
-    (p) => p.id === params.pilotViewId
-  );
+  const pilotView = world.pilotViews.find((p) => p.id === pilotViewId);
   if (!pilotView) return;
 
-  const plane = params.world.planes.find((p) => p.id === pilotView.planeId);
+  const plane = world.planes.find((p) => p.id === pilotView.planeId);
   if (!plane) return;
 
   const projection = makePilotView({
@@ -40,21 +38,21 @@ export function renderPilotView(
   });
 
   draw(pilotContext, {
-    objects: params.scene.objects,
+    objects: scene.objects,
     projection,
     cameraPos: { ...plane.position },
-    lightDir: params.scene.sunDirection,
-    profiler: params.profiler,
+    lightDir: scene.sunDirection,
+    profiler,
   });
 }
 
 export function renderTopView(
   topContext: CanvasRenderingContext2D,
-  params: TopViewRenderParams
+  { profiler, scene, topCameraId, world }: TopViewRenderParams
 ): void {
   clear(topContext);
 
-  const camera = params.world.cameras.find((c) => c.id === params.topCameraId);
+  const camera = world.cameras.find((c) => c.id === topCameraId);
   if (!camera) return;
 
   const cameraPosition = { ...camera.position };
@@ -65,11 +63,11 @@ export function renderTopView(
   });
 
   draw(topContext, {
-    objects: params.scene.objects,
+    objects: scene.objects,
     projection,
     cameraPos: cameraPosition,
-    lightDir: params.scene.sunDirection,
-    profiler: params.profiler,
+    lightDir: scene.sunDirection,
+    profiler,
   });
 }
 

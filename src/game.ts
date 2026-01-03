@@ -142,9 +142,7 @@ function syncPlanesToSceneObjects(): void {
     );
     if (!obj) return;
 
-    obj.x = p.position.x;
-    obj.y = p.position.y;
-    obj.z = p.position.z;
+    obj.position = { ...p.position };
     obj.orientation = p.orientation;
     obj.scale = p.scale;
   });

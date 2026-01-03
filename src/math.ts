@@ -119,11 +119,10 @@ export function transformPointsToWorld(
   points: Vec3[],
   R: Mat3,
   s: number,
-  tx: number,
-  ty: number,
-  tz: number
+  position: Vec3
 ): Vec3[] {
   const out = new Array<Vec3>(points.length);
+  const { x: tx, y: ty, z: tz } = position;
 
   for (let i = 0; i < points.length; i++) {
     const { x, y, z } = points[i];

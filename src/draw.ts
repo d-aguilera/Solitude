@@ -200,18 +200,12 @@ function toRenderable(obj: SceneObject): Renderable {
   let worldPoints: Vec3[];
 
   const hasTransform =
-    obj.x !== undefined &&
-    obj.y !== undefined &&
-    obj.z !== undefined &&
-    !!obj.orientation &&
-    obj.scale !== undefined;
+    !!obj.position && !!obj.orientation && obj.scale !== undefined;
 
   if (hasTransform) {
     let R = obj.orientation;
 
-    const width = obj.width;
-    const depth = obj.depth;
-    const height = obj.height;
+    const { width, depth, height } = obj;
     if (width && depth && height) {
       const R00 = R[0][0] * width;
       const R01 = R[0][1] * depth;
@@ -236,9 +230,7 @@ function toRenderable(obj: SceneObject): Renderable {
       mesh.points,
       R,
       obj.scale,
-      obj.x,
-      obj.y,
-      obj.z
+      obj.position
     );
   } else {
     worldPoints = mesh.points;

@@ -45,13 +45,14 @@ const initialFrame = makeLocalFrame(initialUp);
 const initialForward: Vec3 = { ...initialFrame.forward };
 
 function createInitialPlane(id: string): Plane {
+  const { right, forward, up } = initialFrame;
   return {
     id,
     position: { ...initialPos },
     orientation: [
-      [initialFrame.right.x, initialFrame.forward.x, initialFrame.up.x],
-      [initialFrame.right.y, initialFrame.forward.y, initialFrame.up.y],
-      [initialFrame.right.z, initialFrame.forward.z, initialFrame.up.z],
+      [right.x, forward.x, up.x],
+      [right.y, forward.y, up.y],
+      [right.z, forward.z, up.z],
     ],
     right: { ...initialFrame.right },
     forward: { ...initialFrame.forward },
@@ -85,9 +86,7 @@ function createInitialTopCamera(id: string, plane: Plane): Camera {
 function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
   objects.push({
     mesh: airplaneModel,
-    x: plane.position.x,
-    y: plane.position.y,
-    z: plane.position.z,
+    position: { ...plane.position },
     orientation: plane.orientation,
     scale: plane.scale,
     color: airplaneModel.color,
@@ -113,9 +112,7 @@ function addPlanetGrid(baseSpeed: number, objects: SceneObject[]): void {
   planet1Mesh.color = { r: 0, g: 0, b: 255 };
   objects.push({
     mesh: planet1Mesh,
-    x: planet1Center.x,
-    y: planet1Center.y,
-    z: planet1Center.z,
+    position: planet1Center,
     orientation: mat3.identity,
     scale: planet1Radius,
     color: planet1Mesh.color,
@@ -133,9 +130,7 @@ function addPlanetGrid(baseSpeed: number, objects: SceneObject[]): void {
   planet2Mesh.color = { r: 255, g: 0, b: 0 };
   objects.push({
     mesh: planet2Mesh,
-    x: planet2Center.x,
-    y: planet2Center.y,
-    z: planet2Center.z,
+    position: planet2Center,
     orientation: mat3.identity,
     scale: planet2Radius,
     color: planet2Mesh.color,
@@ -159,9 +154,7 @@ function addPlanetGrid(baseSpeed: number, objects: SceneObject[]): void {
   planet3Mesh.color = { r: 0, g: 255, b: 0 };
   objects.push({
     mesh: planet3Mesh,
-    x: planet3Center.x,
-    y: planet3Center.y,
-    z: planet3Center.z,
+    position: planet3Center,
     orientation: mat3.identity,
     scale: planet3Radius,
     color: planet3Mesh.color,
