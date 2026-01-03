@@ -183,19 +183,19 @@ export function createInitialSceneAndWorld(): {
   mainPilotViewId: string;
   topCameraId: string;
 } {
-  const objects: SceneObject[] = [];
-
   const mainPlane = createInitialPlane("plane:main");
+
+  const objects: SceneObject[] = [];
   addAirplaneObject(mainPlane, objects);
   addPlanetGrid(mainPlane.speed, objects);
-
-  const pilotView = createInitialPilotView("pilot:main", mainPlane.id);
-  const topCamera = createInitialTopCamera("camera:top", mainPlane);
 
   const scene: Scene = {
     objects,
     sunDirection,
   };
+
+  const topCamera = createInitialTopCamera("camera:top", mainPlane);
+  const pilotView = createInitialPilotView("pilot:main", mainPlane.id);
 
   const world: WorldState = {
     planes: [mainPlane],

@@ -4,6 +4,7 @@ import {
   setProfilingEnabledInEnv,
 } from "./debugEnv.js";
 import { updateFPS } from "./fps.js";
+import { renderHUD } from "./hud.js";
 import { init as initInput, getKeyState } from "./input.js";
 import { vec } from "./math.js";
 import { pauseControl, paused } from "./pause.js";
@@ -20,7 +21,6 @@ import {
   updateTopCameraFrame,
   type TopCameraFrameState,
 } from "./projection.js";
-import { renderHUD, renderView } from "./renderer.js";
 import { createInitialSceneAndWorld } from "./setup.js";
 import type {
   Camera,
@@ -30,15 +30,10 @@ import type {
   View,
   WorldState,
 } from "./types.js";
+import { renderView } from "./viewRenderer.js";
 
 let lastTimeMs = 0;
 let pKeyDown = false;
-
-let scene: Scene;
-let world: WorldState;
-let mainPlaneId: string;
-let mainPilotViewId: string;
-let topCameraId: string;
 
 let topCameraFrameState: TopCameraFrameState | null = null;
 
@@ -50,47 +45,11 @@ const {
   topCameraId: camId,
 } = createInitialSceneAndWorld();
 
-scene = initialScene;
-world = initialWorld;
-mainPlaneId = planeId;
-mainPilotViewId = pilotId;
-topCameraId = camId;
-
-function getTopCamera(world: WorldState): Camera {
-  const camera = world.cameras.find((c) => c.id === topCameraId);
-  if (!camera) {
-    throw new Error(`Top camera not found: ${topCameraId}`);
-  }
-  return camera;
-}
-
-function getPlane(world: WorldState, id: string): Plane {
-  const plane = world.planes.find((p) => p.id === id);
-  if (!plane) {
-    throw new Error(`Plane not found: ${id}`);
-  }
-  return plane;
-}
-
-function makeControlInput(): ControlInput {
-  const keys = getKeyState();
-
-  return {
-    rollLeft: keys.KeyA,
-    rollRight: keys.KeyD,
-    pitchUp: keys.KeyW,
-    pitchDown: keys.KeyS,
-    yawLeft: keys.KeyQ,
-    yawRight: keys.KeyE,
-    lookLeft: keys.ArrowLeft,
-    lookRight: keys.ArrowRight,
-    lookUp: keys.ArrowUp,
-    lookDown: keys.ArrowDown,
-    resetView: keys.Digit0,
-    pause: keys.Space,
-    toggleProfiling: keys.KeyP,
-  };
-}
+let scene: Scene = initialScene;
+let world: WorldState = initialWorld;
+let mainPlaneId: string = planeId;
+let mainPilotViewId: string = pilotId;
+let topCameraId: string = camId;
 
 export function startGame(
   pilotContext: CanvasRenderingContext2D,
@@ -104,6 +63,64 @@ export function startGame(
       renderFrame.bind(null, pilotContext, topContext, profiler)
     );
   });
+}
+
+function renderFrame(
+  pilotContext: CanvasRenderingContext2D,
+  topContext: CanvasRenderingContext2D,
+  profiler: Profiler,
+  nowMs: number
+): void {
+  const dtMs = nowMs - lastTimeMs;
+  lastTimeMs = nowMs;
+
+  const dtSeconds = paused ? 0 : dtMs / 1000;
+
+  const input = makeControlInput();
+
+  pauseControl(input.pause);
+  handleProfilingToggle(input);
+  setPausedForProfiling(paused);
+  profileCheck();
+
+  profiler.run("GAME", "total", () => {
+    updateFPS(nowMs);
+
+    profiler.run("GAME", "physics", () => {
+      const flightCtx: FlightContext = {
+        world,
+        controlledPlaneId: mainPlaneId,
+        pilotViewId: mainPilotViewId,
+      };
+      updatePhysics(dtSeconds, input, flightCtx);
+    });
+
+    // Keep scene airplane(s) in sync with simulation.
+    syncPlanesToSceneObjects();
+
+    // Update camera based on latest plane position/orientation.
+    updateTopCamera();
+
+    const mainPlane = getPlane(world, mainPlaneId);
+
+    profiler.run("GAME", "pilot-view", () => {
+      renderPilotView(pilotContext, mainPlane, profiler);
+    });
+
+    profiler.run("GAME", "top-view", () => {
+      renderTopView(topContext, profiler);
+    });
+
+    profiler.run("GAME", "hud", () => {
+      renderHUD(topContext, mainPlane, isProfilingEnabled());
+    });
+  });
+
+  profileFlush();
+
+  requestAnimationFrame(
+    renderFrame.bind(null, pilotContext, topContext, profiler)
+  );
 }
 
 function handleProfilingToggle(input: ControlInput): void {
@@ -157,87 +174,80 @@ function syncPlanesToSceneObjects(): void {
   });
 }
 
-function renderFrame(
+function renderPilotView(
   pilotContext: CanvasRenderingContext2D,
-  topContext: CanvasRenderingContext2D,
-  profiler: Profiler,
-  nowMs: number
-): void {
-  const dtMs = nowMs - lastTimeMs;
-  lastTimeMs = nowMs;
+  mainPlane: Plane,
+  profiler: Profiler
+) {
+  const pilotView = world.pilotViews.find((p) => p.id === mainPilotViewId);
+  if (!pilotView) return;
 
-  const dtSeconds = paused ? 0 : dtMs / 1000;
-
-  const input = makeControlInput();
-
-  pauseControl(input.pause);
-  handleProfilingToggle(input);
-  setPausedForProfiling(paused);
-  profileCheck();
-
-  profiler.run("GAME", "total", () => {
-    updateFPS(nowMs);
-
-    profiler.run("GAME", "physics", () => {
-      const flightCtx: FlightContext = {
-        world,
-        controlledPlaneId: mainPlaneId,
-        pilotViewId: mainPilotViewId,
-      };
-      updatePhysics(dtSeconds, input, flightCtx);
-    });
-
-    // Keep scene airplane(s) in sync with simulation.
-    syncPlanesToSceneObjects();
-
-    // Update camera based on latest plane position/orientation.
-    updateTopCamera();
-
-    const mainPlane = getPlane(world, mainPlaneId);
-
-    profiler.run("GAME", "pilot-view", () => {
-      const pilotView = world.pilotViews.find((p) => p.id === mainPilotViewId);
-      if (!pilotView) return;
-
-      const projection = makePilotView({
-        planePosition: mainPlane.position,
-        planeOrientation: mainPlane.orientation,
-        pilotAzimuth: pilotView.azimuth,
-        pilotElevation: pilotView.elevation,
-      });
-
-      const pilotViewConfig: View = {
-        projection,
-        cameraPos: mainPlane.position,
-      };
-
-      renderView(pilotContext, scene, pilotViewConfig, profiler);
-    });
-
-    profiler.run("GAME", "top-view", () => {
-      const camera = getTopCamera(world);
-
-      const projection = makeTopView({
-        cameraPosition: camera.position,
-        cameraOrientation: camera.orientation,
-      });
-
-      const topViewConfig: View = {
-        projection,
-        cameraPos: camera.position,
-      };
-
-      renderView(topContext, scene, topViewConfig, profiler);
-    });
-
-    profiler.run("GAME", "hud", () => {
-      renderHUD(topContext, mainPlane, isProfilingEnabled());
-    });
+  const projection = makePilotView({
+    planePosition: mainPlane.position,
+    planeOrientation: mainPlane.orientation,
+    pilotAzimuth: pilotView.azimuth,
+    pilotElevation: pilotView.elevation,
   });
 
-  profileFlush();
+  const pilotViewConfig: View = {
+    projection,
+    cameraPos: mainPlane.position,
+  };
 
-  requestAnimationFrame(
-    renderFrame.bind(null, pilotContext, topContext, profiler)
-  );
+  renderView(pilotContext, scene, pilotViewConfig, profiler);
+}
+
+function renderTopView(
+  topContext: CanvasRenderingContext2D,
+  profiler: Profiler
+) {
+  const camera = getTopCamera(world);
+
+  const projection = makeTopView({
+    cameraPosition: camera.position,
+    cameraOrientation: camera.orientation,
+  });
+
+  const topViewConfig: View = {
+    projection,
+    cameraPos: camera.position,
+  };
+
+  renderView(topContext, scene, topViewConfig, profiler);
+}
+
+function makeControlInput(): ControlInput {
+  const keys = getKeyState();
+
+  return {
+    rollLeft: keys.KeyA,
+    rollRight: keys.KeyD,
+    pitchUp: keys.KeyW,
+    pitchDown: keys.KeyS,
+    yawLeft: keys.KeyQ,
+    yawRight: keys.KeyE,
+    lookLeft: keys.ArrowLeft,
+    lookRight: keys.ArrowRight,
+    lookUp: keys.ArrowUp,
+    lookDown: keys.ArrowDown,
+    resetView: keys.Digit0,
+    pause: keys.Space,
+    toggleProfiling: keys.KeyP,
+  };
+}
+
+function getTopCamera(world: WorldState): Camera {
+  const camera = world.cameras.find((c) => c.id === topCameraId);
+  if (!camera) {
+    throw new Error(`Top camera not found: ${topCameraId}`);
+  }
+  return camera;
+}
+
+function getPlane(world: WorldState, id: string): Plane {
+  const plane = world.planes.find((p) => p.id === id);
+  if (!plane) {
+    throw new Error(`Plane not found: ${id}`);
+  }
+  return plane;
 }
