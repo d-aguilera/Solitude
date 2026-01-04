@@ -1,8 +1,8 @@
 import { DrawMode } from "./types";
 
 // Canvas dimensions in pixels.
-export const HEIGHT = 600;
-export const WIDTH = 600;
+export const WIDTH = 850;
+export const HEIGHT = 900;
 
 // Field of view in degrees for perspective projection.
 export const FIELD_OF_VIEW = 90;
