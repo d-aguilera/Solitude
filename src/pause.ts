@@ -1,25 +1,25 @@
-let spaceKeyDown = false;
+let pauseKeyDown = false;
 let pausing = false;
 
 export let paused = false;
 
-export function pauseControl(spacePressed: boolean): void {
-  if (spacePressed) {
-    if (!spaceKeyDown) {
+export function pauseControl(pauseKeyPressed: boolean): void {
+  if (pauseKeyPressed) {
+    if (!pauseKeyDown) {
       if (!paused) {
         pausing = true;
         paused = true;
       }
-      spaceKeyDown = true;
+      pauseKeyDown = true;
     }
   } else {
-    if (spaceKeyDown) {
+    if (pauseKeyDown) {
       if (pausing) {
         pausing = false;
       } else {
         paused = false;
       }
-      spaceKeyDown = false;
+      pauseKeyDown = false;
     }
   }
 }
