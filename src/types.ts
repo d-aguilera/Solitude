@@ -70,9 +70,6 @@ export interface SceneObject {
   scale: number;
   color: string | { r: number; g: number; b: number };
   lineWidth?: number;
-  width?: number;
-  depth?: number;
-  height?: number;
   wireframeOnly?: boolean;
   initialVelocity?: Vec3;
   applyTransform: boolean;

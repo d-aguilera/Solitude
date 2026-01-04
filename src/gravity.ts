@@ -1,5 +1,4 @@
 import { NEWTON_G, SOFTENING_LENGTH } from "./gravityConfig.js";
-import { applyThrustToPlaneVelocity, type ControlInput } from "./controls.js";
 import type {
   BodyId,
   BodyState,
@@ -22,6 +21,7 @@ export function ensureGravityState(
 
   if (gravity) {
     for (const b of gravity.bodies) {
+      // Copy so callers can mutate the returned GravityState freely
       byId.set(b.id, { ...b });
     }
   }
@@ -74,40 +74,50 @@ export function ensureGravityState(
   return { bodies };
 }
 
-export function applyGravityAndThrust(
-  dtSeconds: number,
+/**
+ * Adapter: compute the world-space position of a body (plane or scene object).
+ */
+function getBodyPosition(id: BodyId, world: WorldState, scene: Scene): Vec3 {
+  const plane = world.planes.find((p) => p.id === id);
+  if (plane) return plane.position;
+
+  const obj = scene.objects.find((o) => o.id === id);
+  if (!obj) {
+    throw new Error(`Body position not found for id=${id}`);
+  }
+  return obj.position;
+}
+
+/**
+ * Adapter: write a new position back into the world/scene for a body.
+ */
+function setBodyPosition(
+  id: BodyId,
+  newPos: Vec3,
   world: WorldState,
-  scene: Scene,
-  gravity: GravityState,
-  controlledPlaneId: string,
-  controls: ControlInput
+  scene: Scene
 ): void {
-  if (dtSeconds <= 0) return;
-  const bodies = gravity.bodies;
+  const plane = world.planes.find((p) => p.id === id);
+  if (plane) {
+    plane.position = newPos;
+    return;
+  }
+  const obj = scene.objects.find((o) => o.id === id);
+  if (!obj) {
+    throw new Error(`Body position target not found for id=${id}`);
+  }
+  obj.position = newPos;
+}
+
+/**
+ * Compute gravitational accelerations for each body, given their positions.
+ */
+function computeGravityAccelerations(
+  bodies: BodyState[],
+  positions: Vec3[]
+): Vec3[] {
   const n = bodies.length;
-  if (n === 0) return;
-
-  const positions: Vec3[] = new Array(n);
-
-  const getPosition = (id: BodyId): Vec3 => {
-    const plane = world.planes.find((p) => p.id === id);
-    if (plane) return plane.position;
-
-    const obj = scene.objects.find((o) => o.id === id);
-    if (!obj) {
-      throw new Error(`Body position not found for id=${id}`);
-    }
-    return obj.position;
-  };
-
-  for (let i = 0; i < n; i++) {
-    positions[i] = getPosition(bodies[i].id);
-  }
-
   const accelerations: Vec3[] = new Array(n);
-  for (let i = 0; i < n; i++) {
-    accelerations[i] = { x: 0, y: 0, z: 0 };
-  }
 
   for (let i = 0; i < n; i++) {
     const pi = positions[i];
@@ -138,47 +148,44 @@ export function applyGravityAndThrust(
       az += factor * dz;
     }
 
-    accelerations[i].x = ax;
-    accelerations[i].y = ay;
-    accelerations[i].z = az;
+    accelerations[i] = { x: ax, y: ay, z: az };
   }
 
-  // Apply gravity accelerations to velocities
+  return accelerations;
+}
+
+/**
+ * Integrate velocities using accelerations over dtSeconds.
+ */
+function integrateBodyVelocities(
+  bodies: BodyState[],
+  accelerations: Vec3[],
+  dtSeconds: number
+): void {
+  const n = bodies.length;
   for (let i = 0; i < n; i++) {
-    const b = bodies[i];
+    const velocity = bodies[i].velocity;
     const a = accelerations[i];
 
-    b.velocity.x += a.x * dtSeconds;
-    b.velocity.y += a.y * dtSeconds;
-    b.velocity.z += a.z * dtSeconds;
+    velocity.x += a.x * dtSeconds;
+    velocity.y += a.y * dtSeconds;
+    velocity.z += a.z * dtSeconds;
   }
+}
 
-  // Apply thrust to the controlled plane, modifying its body's velocity
-
-  const plane = world.planes.find((p) => p.id === controlledPlaneId);
-  if (!plane) {
-    throw new Error(`Controlled plane not found: ${controlledPlaneId}`);
-  }
-  const body = bodies.find((b) => b.id === controlledPlaneId);
-  if (!body) {
-    throw new Error(`BodyState for plane not found: ${controlledPlaneId}`);
-  }
-
-  applyThrustToPlaneVelocity(dtSeconds, controls, body.velocity, plane);
-
-  const setPosition = (id: BodyId, newPos: Vec3): void => {
-    const plane = world.planes.find((p) => p.id === id);
-    if (plane) {
-      plane.position = newPos;
-      return;
-    }
-    const obj = scene.objects.find((o) => o.id === id);
-    if (!obj) {
-      throw new Error(`Body position target not found for id=${id}`);
-    }
-    obj.position = newPos;
-  };
-
+/**
+ * Integrate positions using velocities over dtSeconds and write back
+ * into world/scene via the adapter. The integration math itself is
+ * independent of how positions are stored.
+ */
+function integrateBodyPositions(
+  bodies: BodyState[],
+  positions: Vec3[],
+  dtSeconds: number,
+  world: WorldState,
+  scene: Scene
+): void {
+  const n = bodies.length;
   for (let i = 0; i < n; i++) {
     const b = bodies[i];
     const p = positions[i];
@@ -190,25 +197,62 @@ export function applyGravityAndThrust(
       z: p.z + v.z * dtSeconds,
     };
 
-    setPosition(b.id, newPos);
+    setBodyPosition(b.id, newPos, world, scene);
   }
+}
 
-  // Copy velocities back to planes so renderers can use them
+/**
+ * Adapter: copy velocities from BodyState back to the plane objects so
+ * renderers/HUD can use them. This keeps "plane.speed" in sync with the
+ * underlying physics velocity magnitude.
+ */
+function syncBodyVelocitiesToPlanes(
+  bodies: BodyState[],
+  world: WorldState
+): void {
   for (const plane of world.planes) {
     const body = bodies.find((b) => b.id === plane.id);
-    if (body) {
-      plane.velocity = {
-        x: body.velocity.x,
-        y: body.velocity.y,
-        z: body.velocity.z,
-      };
-      // Optionally keep plane.speed coherent with velocity magnitude
-      const speed = Math.hypot(
-        body.velocity.x,
-        body.velocity.y,
-        body.velocity.z
-      );
-      plane.speed = speed;
-    }
+    if (!body) continue;
+    const velocity = body.velocity;
+    plane.velocity = { ...velocity };
+    plane.speed = Math.hypot(velocity.x, velocity.y, velocity.z);
   }
+}
+
+/**
+ * Orchestrates gravitational integration for one timestep.
+ *
+ * Responsibilities kept here:
+ *  - Snapshot world/scene positions into a local array
+ *  - Run pure gravity integration (accelerations & velocity updates)
+ *  - Integrate positions back into world/scene via adapters
+ *  - Sync plane velocity/speed from BodyState
+ */
+export function applyGravity(
+  dtSeconds: number,
+  world: WorldState,
+  scene: Scene,
+  gravity: GravityState
+): void {
+  if (dtSeconds <= 0) return;
+
+  const bodies = gravity.bodies;
+  const n = bodies.length;
+  if (n === 0) return;
+
+  // Snapshot current positions
+  const positions: Vec3[] = new Array(n);
+  for (let i = 0; i < n; i++) {
+    positions[i] = getBodyPosition(bodies[i].id, world, scene);
+  }
+
+  // 1) Gravity
+  const accelerations = computeGravityAccelerations(bodies, positions);
+  integrateBodyVelocities(bodies, accelerations, dtSeconds);
+
+  // 2) Integrate positions
+  integrateBodyPositions(bodies, positions, dtSeconds, world, scene);
+
+  // 3) Sync body velocities back to planes
+  syncBodyVelocitiesToPlanes(bodies, world);
 }

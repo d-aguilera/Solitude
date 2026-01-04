@@ -1,15 +1,12 @@
 import { DRAW_MODE, HEIGHT, WIDTH } from "./config.js";
-import { transformPointsToWorld, vec } from "./math.js";
 import type { ScreenPoint } from "./projection.js";
-import type {
-  Mesh,
-  Profiler,
-  Renderable,
-  RGB,
-  SceneObject,
-  Vec3,
-  View,
-} from "./types.js";
+import { toRenderable } from "./renderPrep.js";
+import { buildShadedFaces } from "./shadedFaces.js";
+import type { Profiler, SceneObject, Vec3, View } from "./types.js";
+import {
+  renderShadedFacesToCanvas,
+  strokePolylineOnCanvas,
+} from "./canvasRasterizer.js";
 
 interface DrawOptions {
   objects: SceneObject[];
@@ -18,11 +15,22 @@ interface DrawOptions {
   profiler: Profiler;
 }
 
+/**
+ * Clears the entire canvas for a new frame.
+ */
 export function clear(context: CanvasRenderingContext2D): void {
   context.fillStyle = "#505050";
   context.fillRect(0, 0, WIDTH, HEIGHT);
 }
 
+/**
+ * Orchestrate rasterization of all scene objects for a given view.
+ *
+ * Responsibilities kept here:
+ *  - Choosing between face-shaded vs. line (wireframe) draw modes
+ *  - Delegating to shaded-face builder for lighting/culling/projection
+ *  - Building projected polylines / face lists
+ */
 export function draw(
   context: CanvasRenderingContext2D,
   { objects, view, lightDir, profiler }: DrawOptions
@@ -33,105 +41,16 @@ export function draw(
   profiler.run("DRAW", "total", () => {
     if (DRAW_MODE === "faces") {
       profiler.run("DRAW", "faces", () => {
-        type FaceEntry = {
-          intensity: number;
-          depth: number;
-          p0: ScreenPoint;
-          p1: ScreenPoint;
-          p2: ScreenPoint;
-          baseR: number;
-          baseG: number;
-          baseB: number;
-        };
-
-        const faceList: FaceEntry[] = [];
-
         // 1) Solid objects: faces path, skipping wireframe-only
-        objects.forEach((obj) => {
-          if (obj.wireframeOnly) {
-            return;
-          }
-
-          const { mesh, worldPoints } = toRenderable(obj);
-          const { color, faces } = mesh;
-
-          let baseR = 255,
-            baseG = 255,
-            baseB = 255;
-          if (typeof color !== "string" && color) {
-            baseR = color.r;
-            baseG = color.g;
-            baseB = color.b;
-          }
-
-          for (let fi = 0; fi < faces.length; fi++) {
-            const [i0, i1, i2] = faces[fi];
-            const v0 = worldPoints[i0];
-            const v1 = worldPoints[i1];
-            const v2 = worldPoints[i2];
-
-            const e1: Vec3 = {
-              x: v1.x - v0.x,
-              y: v1.y - v0.y,
-              z: v1.z - v0.z,
-            };
-            const e2: Vec3 = {
-              x: v2.x - v0.x,
-              y: v2.y - v0.y,
-              z: v2.z - v0.z,
-            };
-            const n = vec.normalize(vec.cross(e1, e2));
-
-            if (cameraPos) {
-              const toCamera: Vec3 = {
-                x: cameraPos.x - v0.x,
-                y: cameraPos.y - v0.y,
-                z: cameraPos.z - v0.z,
-              };
-              const facing = vec.dot(n, toCamera);
-              if (facing <= 0) {
-                continue;
-              }
-            }
-
-            const p0 = projection(v0);
-            const p1 = projection(v1);
-            const p2 = projection(v2);
-            if (!p0 || !p1 || !p2) continue;
-
-            const intensity = Math.max(0, vec.dot(n, lightDir));
-
-            const d0 = p0.depth ?? 0;
-            const d1 = p1.depth ?? 0;
-            const d2 = p2.depth ?? 0;
-            const avgDepth = (d0 + d1 + d2) / 3;
-
-            faceList.push({
-              intensity,
-              depth: avgDepth,
-              p0,
-              p1,
-              p2,
-              baseR,
-              baseG,
-              baseB,
-            });
-          }
+        const faceList = buildShadedFaces({
+          objects,
+          projection,
+          cameraPos,
+          lightDir,
         });
 
-        // Depth sort & draw faces
-        faceList.sort((a, b) => b.depth - a.depth);
-
-        for (const face of faceList) {
-          const { p0, p1, p2, baseR, baseG, baseB } = face;
-          const k = 0.2 + 0.8 * face.intensity;
-          const r = Math.round(baseR * k);
-          const g = Math.round(baseG * k);
-          const b = Math.round(baseB * k);
-          const fillStyle = `rgb(${r}, ${g}, ${b})`;
-
-          fillTriangle(context, p0, p1, p2, fillStyle);
-        }
+        // Depth sort & draw faces via rasterizer
+        renderShadedFacesToCanvas(context, faceList);
       });
 
       // 2) Wireframe-only objects: lines path
@@ -156,12 +75,18 @@ export function draw(
               projectedPoints.push(p);
             }
             if (projectedPoints.length > 0) {
-              poly(context, projectedPoints, color, lineWidth);
+              strokePolylineOnCanvas(
+                context,
+                projectedPoints,
+                color,
+                lineWidth
+              );
             }
           }
         });
       });
     } else {
+      // Pure wireframe mode: draw all objects as polylines
       objects.forEach((obj) => {
         const { mesh, worldPoints, color, lineWidth } = toRenderable(obj);
         const { faces } = mesh;
@@ -178,104 +103,17 @@ export function draw(
               }
               projectedPoints.push(p);
             }
-            if (projectedPoints.length > 0)
-              poly(context, projectedPoints, color, lineWidth);
+            if (projectedPoints.length > 0) {
+              strokePolylineOnCanvas(
+                context,
+                projectedPoints,
+                color,
+                lineWidth
+              );
+            }
           }
         });
       });
     }
   });
-}
-
-function poly(
-  context: CanvasRenderingContext2D,
-  points: ScreenPoint[],
-  color: string,
-  lineWidth: number
-): void {
-  context.strokeStyle = color;
-  context.lineWidth = lineWidth;
-  context.beginPath();
-  context.moveTo(points[0].x, points[0].y);
-  for (let i = 1; i < points.length; i++) {
-    context.lineTo(points[i].x, points[i].y);
-  }
-  context.closePath();
-  context.stroke();
-}
-
-function rgbToCss({ r, g, b }: RGB): string {
-  return `rgb(${r}, ${g}, ${b})`;
-}
-
-function fillTriangle(
-  context: CanvasRenderingContext2D,
-  p0: ScreenPoint,
-  p1: ScreenPoint,
-  p2: ScreenPoint,
-  fillStyle: string
-): void {
-  context.fillStyle = fillStyle;
-  context.beginPath();
-  context.moveTo(p0.x, p0.y);
-  context.lineTo(p1.x, p1.y);
-  context.lineTo(p2.x, p2.y);
-  context.closePath();
-  context.fill();
-}
-
-function toRenderable(obj: SceneObject): Renderable {
-  const mesh: Mesh = obj.mesh;
-  const baseColor = obj.color ?? mesh.color;
-  const lineWidth = obj.lineWidth ?? mesh.lineWidth;
-
-  let worldPoints: Vec3[];
-
-  if (obj.applyTransform) {
-    let R = obj.orientation;
-
-    const { width, depth, height } = obj;
-    if (width && depth && height) {
-      const R0 = R[0];
-      const R00 = R0[0] * width;
-      const R01 = R0[1] * depth;
-      const R02 = R0[2] * height;
-
-      const R1 = R[1];
-      const R10 = R1[0] * width;
-      const R11 = R1[1] * depth;
-      const R12 = R1[2] * height;
-
-      const R2 = R[2];
-      const R20 = R2[0] * width;
-      const R21 = R2[1] * depth;
-      const R22 = R2[2] * height;
-
-      R = [
-        [R00, R01, R02],
-        [R10, R11, R12],
-        [R20, R21, R22],
-      ];
-    }
-
-    worldPoints = transformPointsToWorld(
-      mesh.points,
-      R,
-      obj.scale,
-      obj.position
-    );
-  } else {
-    // Mesh points are already in world coordinates (e.g., trajectories)
-    worldPoints = mesh.points;
-  }
-
-  const colorCss =
-    typeof baseColor === "string" ? baseColor : rgbToCss(baseColor);
-
-  return {
-    mesh,
-    worldPoints,
-    color: colorCss,
-    lineWidth,
-  };
 }
