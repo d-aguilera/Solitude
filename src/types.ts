@@ -69,6 +69,7 @@ export interface SceneObject {
   depth?: number;
   height?: number;
   wireframeOnly?: boolean;
+  applyTransform: boolean;
 }
 
 // Small adapter that lets callers plug in any profiling / tracing / instrumentation

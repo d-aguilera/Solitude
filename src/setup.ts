@@ -98,6 +98,7 @@ function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
     scale: plane.scale,
     color: airplaneModel.color,
     lineWidth: airplaneModel.lineWidth,
+    applyTransform: true,
   });
 }
 
@@ -116,6 +117,7 @@ function createPlanetPathObject(
     color: mesh.color,
     lineWidth: mesh.lineWidth,
     wireframeOnly: true,
+    applyTransform: false, // polyline points are in world space
   };
 }
 
@@ -239,6 +241,7 @@ function createEmptyOrbitPathObject(id: string): SceneObject {
     color: mesh.color,
     lineWidth: mesh.lineWidth,
     wireframeOnly: true,
+    applyTransform: false, // polyline points are in world space
   };
 }
 

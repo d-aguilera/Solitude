@@ -231,10 +231,7 @@ function toRenderable(obj: SceneObject): Renderable {
 
   let worldPoints: Vec3[];
 
-  const hasTransform =
-    !!obj.position && !!obj.orientation && obj.scale !== undefined;
-
-  if (hasTransform) {
+  if (obj.applyTransform) {
     let R = obj.orientation;
 
     const { width, depth, height } = obj;
@@ -268,6 +265,7 @@ function toRenderable(obj: SceneObject): Renderable {
       obj.position
     );
   } else {
+    // Mesh points are already in world coordinates (e.g., trajectories)
     worldPoints = mesh.points;
   }
 
