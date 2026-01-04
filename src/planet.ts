@@ -139,22 +139,16 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
     points,
     faces,
     color: { r: 80, g: 160, b: 220 },
-    lineWidth: 1,
   };
 }
 
 // Generic polyline mesh (used for plane and planet trajectories)
-export function makePolylineMesh(
-  objectType: string,
-  color: RGB,
-  lineWidth = 1
-): Mesh {
+export function makePolylineMesh(objectType: string, color: RGB): Mesh {
   return {
     objectType, // e.g. "orbit-path", not "planet-*"
     points: [],
     faces: [],
     color,
-    lineWidth,
   };
 }
 

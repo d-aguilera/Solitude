@@ -38,5 +38,4 @@ export const airplaneModel: Mesh = {
     [11, 4, 12], // back fuselage, bottom face
   ],
   color: { r: 0, g: 255, b: 255 },
-  lineWidth: 1,
 };

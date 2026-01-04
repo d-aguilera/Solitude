@@ -26,6 +26,7 @@ import {
   updateTopCameraFrame,
   type TopCameraFrameState,
 } from "./projection.js";
+import { buildDefaultSolarSystemConfigs } from "./solarSystemConfig.js";
 import type {
   Camera,
   Plane,
@@ -54,6 +55,14 @@ const {
 
 // Gravity state
 let gravityState: GravityState | null = null;
+
+// Speed of light in m/s
+const SPEED_OF_LIGHT = 299_792_458;
+// Hyper boost delta: 0.1c
+const HYPER_DELTA_SPEED = 0.1 * SPEED_OF_LIGHT;
+
+// Track previous hyper key state to detect edges
+let prevHyperPressed = false;
 
 export function startGame(
   pilotContext: CanvasRenderingContext2D,
@@ -193,12 +202,16 @@ function integrateForcesAndGravity(
   const controlledPlane = getPlane(world, mainPlaneId);
   const planeBody = gravityState.bodies.find((b) => b.id === mainPlaneId);
   if (planeBody) {
+    // Normal thrust along plane forward axis
     applyThrustToPlaneVelocity(
       gravityDt,
       input,
       planeBody.velocity,
       controlledPlane
     );
+
+    // Hyper-space boost: +/- 0.1c on H down/up
+    applyHyperSpeedToggle(input, planeBody.velocity);
   }
 
   applyGravity(gravityDt, world, scene, gravityState);
@@ -337,6 +350,7 @@ function makeControlInput(keys: ReturnType<typeof getKeyState>): ControlInput {
     resetView: keys.Digit0,
     burn: keys.Space,
     brake: keys.KeyB,
+    hyper: keys.KeyH,
   };
 }
 
@@ -395,21 +409,56 @@ function appendPlaneTrajectoryPoint(): void {
 }
 
 function appendPlanetTrajectories(): void {
-  const earthObj = scene.objects.find((o) => o.id === "planet:earth");
-  const earthPath = scene.objects.find((o) => o.id === "path:planet:earth");
-  if (earthObj && earthPath) {
-    appendPointToPolylineMesh(earthPath.mesh, earthObj.position);
+  const planetConfigs = buildDefaultSolarSystemConfigs();
+  for (const cfg of planetConfigs) {
+    const bodyObj = scene.objects.find((o) => o.id === cfg.id);
+    const pathObj = scene.objects.find((o) => o.id === cfg.pathId);
+    if (bodyObj && pathObj) {
+      appendPointToPolylineMesh(pathObj.mesh, bodyObj.position);
+    }
+  }
+}
+
+function applyHyperSpeedToggle(
+  input: ControlInput,
+  planeBodyVelocity: { x: number; y: number; z: number }
+): void {
+  const nowPressed = input.hyper;
+  const wasPressed = prevHyperPressed;
+
+  // Detect edges
+  const pressedThisFrame = nowPressed && !wasPressed;
+  const releasedThisFrame = !nowPressed && wasPressed;
+
+  // Update for next frame
+  prevHyperPressed = nowPressed;
+
+  if (!pressedThisFrame && !releasedThisFrame) return;
+
+  const v = planeBodyVelocity;
+  const currentSpeed = Math.hypot(v.x, v.y, v.z);
+
+  if (currentSpeed === 0) {
+    // No direction to boost along; nothing to do
+    return;
   }
 
-  const marsObj = scene.objects.find((o) => o.id === "planet:mars");
-  const marsPath = scene.objects.find((o) => o.id === "path:planet:mars");
-  if (marsObj && marsPath) {
-    appendPointToPolylineMesh(marsPath.mesh, marsObj.position);
+  // Direction of motion
+  const dirX = v.x / currentSpeed;
+  const dirY = v.y / currentSpeed;
+  const dirZ = v.z / currentSpeed;
+
+  let newSpeed = currentSpeed;
+
+  if (pressedThisFrame) {
+    newSpeed = currentSpeed + HYPER_DELTA_SPEED;
+  } else if (releasedThisFrame) {
+    newSpeed = currentSpeed - HYPER_DELTA_SPEED;
+    if (newSpeed < 0) newSpeed = 0;
   }
 
-  const venusObj = scene.objects.find((o) => o.id === "planet:venus");
-  const venusPath = scene.objects.find((o) => o.id === "path:planet:venus");
-  if (venusObj && venusPath) {
-    appendPointToPolylineMesh(venusPath.mesh, venusObj.position);
-  }
+  // Rebuild velocity with new magnitude along same direction
+  v.x = dirX * newSpeed;
+  v.y = dirY * newSpeed;
+  v.z = dirZ * newSpeed;
 }

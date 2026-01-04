@@ -24,6 +24,7 @@ export interface ControlInput {
   resetView: boolean;
   burn: boolean; // Space: thrust forward while held
   brake: boolean; // B: thrust opposite to forward to slow down
+  hyper: boolean; // H: hyperspace speed toggle
 }
 
 export interface FlightContext {

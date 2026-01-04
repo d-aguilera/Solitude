@@ -21,7 +21,6 @@ export function ensureGravityState(
 
   if (gravity) {
     for (const b of gravity.bodies) {
-      // Copy so callers can mutate the returned GravityState freely
       byId.set(b.id, { ...b });
     }
   }
@@ -50,19 +49,20 @@ export function ensureGravityState(
     upsertBody(plane.id, mass);
   }
 
-  // Planets: all SceneObjects whose mesh.objectType starts with "planet"
   for (const obj of scene.objects) {
+    // Sun included
     if (!obj.mesh.objectType.startsWith("planet")) continue;
 
-    const radius = obj.scale;
-    const density = 5.5e7; // 10^4 times denser than Earth-like for gameplay
+    // Prefer physical radius when available; fall back to visual scale
+    const radius = obj.physicalRadius ?? obj.scale;
+
+    // Prefer per-object density; fall back to a default if missing
+    const density = obj.density ?? 5.5e3; // kg/m^3
     const volume = (4 / 3) * Math.PI * radius * radius * radius;
     const mass = density * volume;
 
     const body = upsertBody(obj.id, mass);
 
-    // If this body is newly created (velocity still zero) and the SceneObject
-    // provides an initialVelocity, use that to seed the BodyState.
     const hasZeroVelocity =
       body.velocity.x === 0 && body.velocity.y === 0 && body.velocity.z === 0;
 

@@ -27,7 +27,6 @@ export interface Mesh {
   points: Vec3[];
   faces: number[][];
   color: RGB | string;
-  lineWidth: number;
   objectType: string;
 }
 
@@ -67,12 +66,16 @@ export interface SceneObject {
   mesh: Mesh;
   position: Vec3;
   orientation: Mat3;
-  scale: number;
-  color: string | { r: number; g: number; b: number };
-  lineWidth?: number;
-  wireframeOnly?: boolean;
+  scale: number; // unit to world size
+  color: string | RGB;
+  lineWidth: number;
+  wireframeOnly: boolean;
   initialVelocity?: Vec3;
   applyTransform: boolean;
+
+  // Physical properties for gravity
+  density?: number; // kg/m^3
+  physicalRadius?: number; // meters
 }
 
 // Small adapter that lets callers plug in any profiling / tracing / instrumentation

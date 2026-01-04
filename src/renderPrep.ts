@@ -7,7 +7,6 @@ import type { Mesh, Renderable, SceneObject, Vec3 } from "./types.js";
 export function toRenderable(obj: SceneObject): Renderable {
   const mesh: Mesh = obj.mesh;
   const baseColor = obj.color ?? mesh.color;
-  const lineWidth = obj.lineWidth ?? mesh.lineWidth;
 
   const worldPoints: Vec3[] = obj.applyTransform
     ? transformPointsToWorld(
@@ -25,7 +24,7 @@ export function toRenderable(obj: SceneObject): Renderable {
     mesh,
     worldPoints,
     color: colorCss,
-    lineWidth,
+    lineWidth: obj.lineWidth,
   };
 }
 

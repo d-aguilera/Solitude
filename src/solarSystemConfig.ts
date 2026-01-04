@@ -1,0 +1,231 @@
+import type { Polar2D, RGB, Vec3 } from "./types.js";
+import { vec } from "./math.js";
+
+export interface PlanetConfig {
+  id: string; // scene object id, e.g. "planet:earth"
+  pathId: string; // orbit path scene object id, e.g. "path:planet:earth"
+  objectType: string; // mesh.objectType, e.g. "planet-earth"
+
+  // Physical orbital elements / body properties (SI units)
+  orbit: Polar2D; // angleRad + physical radius in meters (semi-major axis, assumed circular)
+  physicalRadius: number; // meters
+  density: number; // kg/m^3
+
+  // Rendering / initial kinematics
+  visualRadius: number; // meters, purely for how big we draw the planet
+  tangentialSpeed: number; // m/s, orbital speed along local tangent
+  color: RGB;
+}
+
+/**
+ * Build a simplified, scaled solar system.
+ *
+ * - Sizes are roughly proportional to real radii.
+ * - Densens are near-realistic for each body class.
+ * - Distances are scaled so Neptune's orbit is ~1000 km.
+ *
+ * All distances and radii are in meters.
+ */
+export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
+  const twoPi = 2 * Math.PI;
+
+  // Base SI unit helpers
+  const km = 1_000;
+  const AU = 1.495978707e11; // m
+
+  // Real(ish) semi‑major axes (meters)
+  const orbitsReal = {
+    mercury: 0.387 * AU,
+    venus: 0.723 * AU,
+    earth: 1.0 * AU,
+    mars: 1.524 * AU,
+    jupiter: 5.203 * AU,
+    saturn: 9.537 * AU,
+    uranus: 19.191 * AU,
+    neptune: 30.07 * AU,
+  };
+
+  // Real planetary mean radii (meters)
+  const radiusReal = {
+    sun: 696_340 * km,
+    mercury: 2_439.7 * km,
+    venus: 6_051.8 * km,
+    earth: 6_371.0 * km,
+    mars: 3_389.5 * km,
+    jupiter: 69_911 * km,
+    saturn: 58_232 * km,
+    uranus: 25_362 * km,
+    neptune: 24_622 * km,
+  };
+
+  // Approximate mean densities (kg/m^3)
+  const densities = {
+    sun: 1_408,
+    mercury: 5_427,
+    venus: 5_243,
+    earth: 5_514,
+    mars: 3_933,
+    jupiter: 1_326,
+    saturn: 687,
+    uranus: 1_270,
+    neptune: 1_638,
+  };
+
+  // Use real Sun mass, not inferred from visual radius
+  const M_sun = 1.98847e30; // kg
+  const G = 6.6743e-11;
+
+  function circularSpeedAtRadius(r: number): number {
+    // v = sqrt(G * M_sun / r)
+    return Math.sqrt((G * M_sun) / r);
+  }
+
+  // Visual scaling:
+  //
+  // Internally, world units are still "meters", but we are free to
+  // pick how many world‑meters we use to *draw* a planet.
+  //
+  // Make Earth's apparent radius ~3_000 world‑meters so it is visible.
+  const earthVisualRadius = 3_000; // world‑m
+  const earthPhysicalRadius = radiusReal.earth;
+  const radiusScale = earthVisualRadius / earthPhysicalRadius;
+
+  function vis(rPhysical: number): number {
+    return rPhysical * radiusScale;
+  }
+
+  return [
+    // Sun at origin
+    {
+      id: "planet:sun",
+      pathId: "path:planet:sun",
+      objectType: "planet-sun",
+      orbit: { angleRad: 0, radius: 0 }, // at origin
+      physicalRadius: radiusReal.sun,
+      visualRadius: vis(radiusReal.sun),
+      tangentialSpeed: 0,
+      color: { r: 255, g: 230, b: 120 },
+      density: densities.sun,
+    },
+    {
+      id: "planet:mercury",
+      pathId: "path:planet:mercury",
+      objectType: "planet-mercury",
+      orbit: { angleRad: 0 * (twoPi / 8), radius: orbitsReal.mercury },
+      physicalRadius: radiusReal.mercury,
+      visualRadius: vis(radiusReal.mercury),
+      tangentialSpeed: circularSpeedAtRadius(orbitsReal.mercury),
+      color: { r: 180, g: 180, b: 180 },
+      density: densities.mercury,
+    },
+    {
+      id: "planet:venus",
+      pathId: "path:planet:venus",
+      objectType: "planet-venus",
+      orbit: { angleRad: 1 * (twoPi / 8), radius: orbitsReal.venus },
+      physicalRadius: radiusReal.venus,
+      visualRadius: vis(radiusReal.venus),
+      tangentialSpeed: circularSpeedAtRadius(orbitsReal.venus),
+      color: { r: 255, g: 220, b: 160 },
+      density: densities.venus,
+    },
+    {
+      id: "planet:earth",
+      pathId: "path:planet:earth",
+      objectType: "planet-earth",
+      orbit: { angleRad: 2 * (twoPi / 8), radius: orbitsReal.earth },
+      physicalRadius: radiusReal.earth,
+      visualRadius: vis(radiusReal.earth),
+      tangentialSpeed: circularSpeedAtRadius(orbitsReal.earth),
+      color: { r: 80, g: 120, b: 255 },
+      density: densities.earth,
+    },
+    {
+      id: "planet:mars",
+      pathId: "path:planet:mars",
+      objectType: "planet-mars",
+      orbit: { angleRad: 3 * (twoPi / 8), radius: orbitsReal.mars },
+      physicalRadius: radiusReal.mars,
+      visualRadius: vis(radiusReal.mars),
+      tangentialSpeed: circularSpeedAtRadius(orbitsReal.mars),
+      color: { r: 255, g: 80, b: 50 },
+      density: densities.mars,
+    },
+    {
+      id: "planet:jupiter",
+      pathId: "path:planet:jupiter",
+      objectType: "planet-jupiter",
+      orbit: { angleRad: 4 * (twoPi / 8), radius: orbitsReal.jupiter },
+      physicalRadius: radiusReal.jupiter,
+      visualRadius: vis(radiusReal.jupiter),
+      tangentialSpeed: circularSpeedAtRadius(orbitsReal.jupiter),
+      color: { r: 220, g: 180, b: 120 },
+      density: densities.jupiter,
+    },
+    {
+      id: "planet:saturn",
+      pathId: "path:planet:saturn",
+      objectType: "planet-saturn",
+      orbit: { angleRad: 5 * (twoPi / 8), radius: orbitsReal.saturn },
+      physicalRadius: radiusReal.saturn,
+      visualRadius: vis(radiusReal.saturn),
+      tangentialSpeed: circularSpeedAtRadius(orbitsReal.saturn),
+      color: { r: 220, g: 200, b: 150 },
+      density: densities.saturn,
+    },
+    {
+      id: "planet:uranus",
+      pathId: "path:planet:uranus",
+      objectType: "planet-uranus",
+      orbit: { angleRad: 6 * (twoPi / 8), radius: orbitsReal.uranus },
+      physicalRadius: radiusReal.uranus,
+      visualRadius: vis(radiusReal.uranus),
+      tangentialSpeed: circularSpeedAtRadius(orbitsReal.uranus),
+      color: { r: 160, g: 220, b: 240 },
+      density: densities.uranus,
+    },
+    {
+      id: "planet:neptune",
+      pathId: "path:planet:neptune",
+      objectType: "planet-neptune",
+      orbit: { angleRad: 7 * (twoPi / 8), radius: orbitsReal.neptune },
+      physicalRadius: radiusReal.neptune,
+      visualRadius: vis(radiusReal.neptune),
+      tangentialSpeed: circularSpeedAtRadius(orbitsReal.neptune),
+      color: { r: 80, g: 120, b: 255 },
+      density: densities.neptune,
+    },
+  ];
+}
+
+/**
+ * Helper: compute a radial direction on a not-necessarily-axis-aligned plane
+ * defined by two basis vectors.
+ */
+export function radialDirAtAngle(
+  theta: number,
+  radialAxis1: Vec3,
+  radialAxis2: Vec3
+): Vec3 {
+  return vec.normalize({
+    x: radialAxis1.x * Math.cos(theta) + radialAxis2.x * Math.sin(theta),
+    y: radialAxis1.y * Math.cos(theta) + radialAxis2.y * Math.sin(theta),
+    z: radialAxis1.z * Math.cos(theta) + radialAxis2.z * Math.sin(theta),
+  });
+}
+
+/**
+ * Helper: local tangential direction around that orbit plane.
+ */
+export function tangentialDirAtAngle(
+  theta: number,
+  radialAxis1: Vec3,
+  radialAxis2: Vec3
+): Vec3 {
+  const t = {
+    x: -radialAxis1.x * Math.sin(theta) + radialAxis2.x * Math.cos(theta),
+    y: -radialAxis1.y * Math.sin(theta) + radialAxis2.y * Math.cos(theta),
+    z: -radialAxis1.z * Math.sin(theta) + radialAxis2.z * Math.cos(theta),
+  };
+  return vec.normalize(t);
+}

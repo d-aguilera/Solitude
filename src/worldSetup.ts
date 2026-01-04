@@ -10,66 +10,28 @@ import type {
   Mesh,
   PilotView,
   Plane,
-  Polar2D,
   RGB,
   Scene,
   SceneObject,
   Vec3,
   WorldState,
 } from "./types.js";
+import {
+  buildDefaultSolarSystemConfigs,
+  radialDirAtAngle,
+  tangentialDirAtAngle,
+  type PlanetConfig,
+} from "./solarSystemConfig.js";
 
-const initialPos: Vec3 = { x: 0, y: 0, z: 0 };
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame = makeLocalFrame(initialUp);
 const initialForward: Vec3 = { ...initialFrame.forward };
 
-interface PlanetConfig {
-  id: string;
-  pathId: string;
-  objectType: string;
-  orbit: Polar2D;
-  radius: number; // meters
-  tangentialSpeed: number; // m/s along initial tangential direction
-  color: RGB;
-}
-
-const twoPi = 2 * Math.PI;
-
-const planetConfigs: PlanetConfig[] = [
-  {
-    id: "planet:earth",
-    pathId: "path:planet:earth",
-    objectType: "planet-earth",
-    orbit: { angleRad: 0 * (twoPi / 3), radius: 50_000 },
-    radius: 1_000,
-    tangentialSpeed: 400,
-    color: { r: 0, g: 0, b: 255 },
-  },
-  {
-    id: "planet:mars",
-    pathId: "path:planet:mars",
-    objectType: "planet-mars",
-    orbit: { angleRad: 1 * (twoPi / 3), radius: 100_000 },
-    radius: 5_000,
-    tangentialSpeed: 300,
-    color: { r: 255, g: 0, b: 0 },
-  },
-  {
-    id: "planet:venus",
-    pathId: "path:planet:venus",
-    objectType: "planet-venus",
-    orbit: { angleRad: 2 * (twoPi / 3), radius: 150_000 },
-    radius: 25_000,
-    tangentialSpeed: 200,
-    color: { r: 0, g: 255, b: 0 },
-  },
-];
-
-function createInitialPlane(id: string): Plane {
+function createInitialPlane(id: string, position: Vec3): Plane {
   const { right, forward, up } = initialFrame;
   return {
     id,
-    position: { ...initialPos },
+    position: { ...position },
     orientation: [
       [right.x, forward.x, up.x],
       [right.y, forward.y, up.y],
@@ -121,13 +83,14 @@ function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
     orientation: plane.orientation,
     scale: plane.scale,
     color: airplaneModel.color,
-    lineWidth: airplaneModel.lineWidth,
+    lineWidth: 1,
     applyTransform: true,
+    wireframeOnly: false,
   });
 }
 
 function createPlanetPathObject(id: string, color: RGB): SceneObject {
-  const mesh = makePolylineMesh("orbit-path", color, 1);
+  const mesh = makePolylineMesh("orbit-path", color);
 
   return {
     id,
@@ -136,7 +99,7 @@ function createPlanetPathObject(id: string, color: RGB): SceneObject {
     orientation: mat3.identity,
     scale: 1,
     color: mesh.color,
-    lineWidth: mesh.lineWidth,
+    lineWidth: 1,
     wireframeOnly: true,
     applyTransform: false, // polyline points are in world space
   };
@@ -148,7 +111,6 @@ function createEmptyOrbitPathObject(id: string): SceneObject {
     points: [],
     faces: [],
     color: { r: 255, g: 255, b: 0 },
-    lineWidth: 1,
   };
 
   return {
@@ -158,60 +120,61 @@ function createEmptyOrbitPathObject(id: string): SceneObject {
     orientation: mat3.identity,
     scale: 1,
     color: mesh.color,
-    lineWidth: mesh.lineWidth,
+    lineWidth: 1,
     wireframeOnly: true,
     applyTransform: false,
   };
 }
 
-function addPlanetGrid(objects: SceneObject[]): void {
+/**
+ * Add planets + their orbit paths from an arbitrary list of PlanetConfig.
+ */
+function addPlanetsFromConfig(
+  configs: PlanetConfig[],
+  objects: SceneObject[]
+): void {
   const planetMeshTemplate: Mesh = generatePlanetMesh(3);
 
+  // Define an orbital plane via two basis vectors:
   const radialAxis1 = vec.normalize(initialForward);
   const radialAxis2 = vec.normalize(initialUp);
 
-  const radialDirAtAngle = (theta: number): Vec3 => {
-    return vec.normalize({
-      x: radialAxis1.x * Math.cos(theta) + radialAxis2.x * Math.sin(theta),
-      y: radialAxis1.y * Math.cos(theta) + radialAxis2.y * Math.sin(theta),
-      z: radialAxis1.z * Math.cos(theta) + radialAxis2.z * Math.sin(theta),
-    });
-  };
-
-  const tangentialDirAtAngle = (theta: number): Vec3 => {
-    const t = {
-      x: -radialAxis1.x * Math.sin(theta) + radialAxis2.x * Math.cos(theta),
-      y: -radialAxis1.y * Math.sin(theta) + radialAxis2.y * Math.cos(theta),
-      z: -radialAxis1.z * Math.sin(theta) + radialAxis2.z * Math.cos(theta),
-    };
-    return vec.normalize(t);
-  };
-
-  for (const cfg of planetConfigs) {
+  for (const cfg of configs) {
     const theta = cfg.orbit.angleRad;
-    const radial = radialDirAtAngle(theta);
-    const tangential = tangentialDirAtAngle(theta);
+    const radial = radialDirAtAngle(theta, radialAxis1, radialAxis2);
+    const tangential = tangentialDirAtAngle(theta, radialAxis1, radialAxis2);
 
+    // Physical orbit radius in meters
     const center: Vec3 = vec.scale(radial, cfg.orbit.radius);
 
     const planetMesh: Mesh = { ...planetMeshTemplate };
     planetMesh.objectType = cfg.objectType;
     planetMesh.color = cfg.color;
 
+    const initialVelocity =
+      cfg.orbit.radius > 0
+        ? {
+            x: tangential.x * cfg.tangentialSpeed,
+            y: tangential.y * cfg.tangentialSpeed,
+            z: tangential.z * cfg.tangentialSpeed,
+          }
+        : undefined; // Sun at origin has no initial orbital velocity
+
     objects.push({
       id: cfg.id,
       mesh: planetMesh,
       position: center,
       orientation: mat3.identity,
-      scale: cfg.radius,
+      // Visual scale only
+      scale: cfg.visualRadius,
       color: planetMesh.color,
-      lineWidth: planetMesh.lineWidth,
-      initialVelocity: {
-        x: tangential.x * cfg.tangentialSpeed,
-        y: tangential.y * cfg.tangentialSpeed,
-        z: tangential.z * cfg.tangentialSpeed,
-      },
+      lineWidth: 1,
+      initialVelocity,
       applyTransform: true,
+      wireframeOnly: false,
+      // Physical properties for gravity
+      density: cfg.density,
+      physicalRadius: cfg.physicalRadius,
     });
 
     objects.push(createPlanetPathObject(cfg.pathId, planetMesh.color));
@@ -219,6 +182,31 @@ function addPlanetGrid(objects: SceneObject[]): void {
 }
 
 const sunDirection = vec.scaleToUnit({ x: 0.3, y: 0.5, z: 1.0 });
+
+// 100 km above Earth's north pole
+const PLANE_START_ALTITUDE_M = 100_000; // meters
+
+function computePlaneStartPosFromEarth(objects: SceneObject[]): Vec3 {
+  const earthObj = objects.find((o) => o.id === "planet:earth");
+  if (!earthObj) {
+    throw new Error("Earth not found in scene objects");
+  }
+
+  // North pole direction: global +Z in this setup
+  const north: Vec3 = { x: 0, y: 0, z: 1 };
+
+  // Use Earth's physical radius from its scene object
+  const earthRadius =
+    earthObj.physicalRadius !== undefined ? earthObj.physicalRadius : 0;
+
+  const offset = vec.scale(north, earthRadius + PLANE_START_ALTITUDE_M);
+
+  return {
+    x: earthObj.position.x + offset.x,
+    y: earthObj.position.y + offset.y,
+    z: earthObj.position.z + offset.z,
+  };
+}
 
 export function createInitialSceneAndWorld(): {
   scene: Scene;
@@ -228,11 +216,17 @@ export function createInitialSceneAndWorld(): {
   topCameraId: string;
   pilotCameraId: string;
 } {
-  const mainPlane = createInitialPlane("plane:main");
-
   const objects: SceneObject[] = [];
+
+  // Build the whole planetary system from config
+  const planetConfigs = buildDefaultSolarSystemConfigs();
+  addPlanetsFromConfig(planetConfigs, objects);
+
+  const planeStartPos = computePlaneStartPosFromEarth(objects);
+  const mainPlane = createInitialPlane("plane:main", planeStartPos);
+
+  // Add the airplane visual object at that position
   addAirplaneObject(mainPlane, objects);
-  addPlanetGrid(objects);
 
   const mainPlanePath = createEmptyOrbitPathObject("path:plane:main");
   objects.push(mainPlanePath);
