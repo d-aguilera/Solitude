@@ -145,9 +145,7 @@ function addPlanetGrid(_baseSpeed: number, objects: SceneObject[]): void {
   });
 
   // Trajectory path for Earth
-  objects.push(
-    createPlanetPathObject("path:planet:earth", { r: 0, g: 0, b: 255 })
-  );
+  objects.push(createPlanetPathObject("path:planet:earth", planet1Mesh.color));
 
   // Mars: along initial forward from Earth
   const planet2Radius = planet1Radius * 1.5;
@@ -169,9 +167,7 @@ function addPlanetGrid(_baseSpeed: number, objects: SceneObject[]): void {
   });
 
   // Trajectory path for Mars
-  objects.push(
-    createPlanetPathObject("path:planet:mars", { r: 255, g: 0, b: 0 })
-  );
+  objects.push(createPlanetPathObject("path:planet:mars", planet2Mesh.color));
 
   // Venus: same distance from Earth, but rotated around the up axis
   const rotatedForward: Vec3 = rotateAroundAxis(
@@ -199,9 +195,7 @@ function addPlanetGrid(_baseSpeed: number, objects: SceneObject[]): void {
   });
 
   // Trajectory path for Venus
-  objects.push(
-    createPlanetPathObject("path:planet:venus", { r: 0, g: 255, b: 0 })
-  );
+  objects.push(createPlanetPathObject("path:planet:venus", planet3Mesh.color));
 }
 
 function rotateAroundAxis(v: Vec3, axis: Vec3, angle: number): Vec3 {
