@@ -23,6 +23,7 @@ export interface ControlInput {
   lookDown: boolean;
   resetView: boolean;
   burn: boolean; // Space: thrust forward while held
+  brake: boolean; // B: thrust opposite to forward to slow down
 }
 
 export interface FlightContext {
@@ -160,13 +161,23 @@ export function applyThrustToPlaneVelocity(
   planeVelocity: Vec3,
   plane: Plane
 ): void {
-  if (!input.burn || dtSeconds <= 0) return;
+  if (dtSeconds <= 0) return;
 
-  // Use plane.forward as thrust direction (already normalized in updatePlaneAxes)
-  const f = plane.forward;
-  planeVelocity.x += f.x * thrustAcceleration * dtSeconds;
-  planeVelocity.y += f.y * thrustAcceleration * dtSeconds;
-  planeVelocity.z += f.z * thrustAcceleration * dtSeconds;
+  // Determine thrust scalar: +1 for burn (forward), -1 for brake (reverse)
+  let thrustSign = 0;
+
+  if (input.burn && !input.brake) thrustSign = 1;
+  else if (input.brake && !input.burn) thrustSign = -1;
+  else if (input.burn && input.brake) thrustSign = 0; // cancel if both pressed
+
+  if (thrustSign === 0) return;
+
+  const f = plane.forward; // already normalized in updatePlaneAxes
+  const accel = thrustAcceleration * thrustSign;
+
+  planeVelocity.x += f.x * accel * dtSeconds;
+  planeVelocity.y += f.y * accel * dtSeconds;
+  planeVelocity.z += f.z * accel * dtSeconds;
 }
 
 // Top-level update for orientation & pilot view; does NOT move the plane

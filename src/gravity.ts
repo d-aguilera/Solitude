@@ -1,5 +1,5 @@
 import { NEWTON_G, SOFTENING_LENGTH } from "./gravityConfig.js";
-import { applyThrustToPlaneVelocity } from "./controls.js";
+import { applyThrustToPlaneVelocity, type ControlInput } from "./controls.js";
 import type {
   BodyId,
   BodyState,
@@ -71,7 +71,7 @@ export function applyGravityAndThrust(
   scene: Scene,
   gravity: GravityState,
   controlledPlaneId: string,
-  planeInputBurn: boolean
+  controls: ControlInput
 ): void {
   if (dtSeconds <= 0) return;
   const bodies = gravity.bodies;
@@ -145,22 +145,17 @@ export function applyGravityAndThrust(
   }
 
   // Apply thrust to the controlled plane, modifying its body's velocity
-  if (planeInputBurn) {
-    const plane = world.planes.find((p) => p.id === controlledPlaneId);
-    if (!plane) {
-      throw new Error(`Controlled plane not found: ${controlledPlaneId}`);
-    }
-    const body = bodies.find((b) => b.id === controlledPlaneId);
-    if (!body) {
-      throw new Error(`BodyState for plane not found: ${controlledPlaneId}`);
-    }
-    applyThrustToPlaneVelocity(
-      dtSeconds,
-      { burn: true } as any,
-      body.velocity,
-      plane
-    );
+
+  const plane = world.planes.find((p) => p.id === controlledPlaneId);
+  if (!plane) {
+    throw new Error(`Controlled plane not found: ${controlledPlaneId}`);
   }
+  const body = bodies.find((b) => b.id === controlledPlaneId);
+  if (!body) {
+    throw new Error(`BodyState for plane not found: ${controlledPlaneId}`);
+  }
+
+  applyThrustToPlaneVelocity(dtSeconds, controls, body.velocity, plane);
 
   const setPosition = (id: BodyId, newPos: Vec3): void => {
     const plane = world.planes.find((p) => p.id === id);

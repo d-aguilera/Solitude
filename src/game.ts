@@ -189,7 +189,7 @@ function renderFrame(
         scene,
         gravityState,
         mainPlaneId,
-        input.burn
+        input
       );
     });
 
@@ -339,6 +339,7 @@ function makeControlInput(keys: ReturnType<typeof getKeyState>): ControlInput {
     lookDown: keys.ArrowDown,
     resetView: keys.Digit0,
     burn: keys.Space,
+    brake: keys.KeyB,
   };
 }
 
