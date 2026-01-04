@@ -8,6 +8,7 @@ import { renderHUD } from "./hud.js";
 import { init as initInput, getKeyState } from "./input.js";
 import { vec } from "./math.js";
 import { pauseControl, paused } from "./pause.js";
+import { appendPointToPolylineMesh } from "./planet.js";
 import {
   isProfilingEnabled,
   profileCheck,
@@ -179,8 +180,11 @@ function renderFrame(
 
       gravityState = ensureGravityState(world, scene, gravityState);
 
+      // Simulate gravity at an accelerated timescale so orbits evolve faster.
+      const gravityTimeScale = 10; // e.g. 10x real time
+
       applyGravityAndThrust(
-        dtSeconds,
+        dtSeconds * gravityTimeScale,
         world,
         scene,
         gravityState,
@@ -190,6 +194,9 @@ function renderFrame(
     });
 
     syncPlanesToSceneObjects();
+
+    appendPlaneTrajectoryPoint();
+    appendPlanetTrajectories();
 
     const mainPlane = getPlane(world, mainPlaneId);
 
@@ -382,4 +389,72 @@ function updatePilotCamera(plane: Plane): void {
 
   // Make camera orientation match plane orientation (so it looks forward)
   camera.orientation = plane.orientation;
+}
+
+function appendPlaneTrajectoryPoint(): void {
+  const mainPlane = getPlane(world, mainPlaneId);
+
+  const pathObj = scene.objects.find((o) => o.id === "path:plane:main");
+  if (!pathObj) return;
+
+  const mesh = pathObj.mesh;
+
+  // Work directly on mesh.points / mesh.faces
+  const lastPoint = mesh.points[mesh.points.length - 1];
+  const currentPos = mainPlane.position;
+
+  // Only add a point if we've moved some minimal distance
+  const minSegmentLength = 100; // meters, tune as needed
+  if (
+    lastPoint &&
+    Math.hypot(
+      currentPos.x - lastPoint.x,
+      currentPos.y - lastPoint.y,
+      currentPos.z - lastPoint.z
+    ) < minSegmentLength
+  ) {
+    return;
+  }
+
+  const newIndex = mesh.points.length;
+  mesh.points.push({ ...currentPos });
+
+  if (newIndex > 0) {
+    // Connect previous point to this one
+    mesh.faces.push([newIndex - 1, newIndex]);
+  }
+}
+
+function appendPlanetTrajectories(): void {
+  const minSegmentLength = 1000; // meters; tune per your scale
+
+  const earthObj = scene.objects.find((o) => o.id === "planet:earth");
+  const earthPath = scene.objects.find((o) => o.id === "path:planet:earth");
+  if (earthObj && earthPath) {
+    appendPointToPolylineMesh(
+      earthPath.mesh,
+      earthObj.position,
+      minSegmentLength
+    );
+  }
+
+  const marsObj = scene.objects.find((o) => o.id === "planet:mars");
+  const marsPath = scene.objects.find((o) => o.id === "path:planet:mars");
+  if (marsObj && marsPath) {
+    appendPointToPolylineMesh(
+      marsPath.mesh,
+      marsObj.position,
+      minSegmentLength
+    );
+  }
+
+  const venusObj = scene.objects.find((o) => o.id === "planet:venus");
+  const venusPath = scene.objects.find((o) => o.id === "path:planet:venus");
+  if (venusObj && venusPath) {
+    appendPointToPolylineMesh(
+      venusPath.mesh,
+      venusObj.position,
+      minSegmentLength
+    );
+  }
 }

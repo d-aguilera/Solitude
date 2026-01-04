@@ -1,7 +1,11 @@
 import { HEIGHT, WIDTH } from "./config.js";
 import { mat3, vec } from "./math.js";
 import { airplaneModel } from "./models.js";
-import { generatePlanetMesh, makeLocalFrame } from "./planet.js";
+import {
+  generatePlanetMesh,
+  makeLocalFrame,
+  makePolylineMesh,
+} from "./planet.js";
 import type {
   Camera,
   Mesh,
@@ -97,6 +101,24 @@ function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
   });
 }
 
+function createPlanetPathObject(
+  id: string,
+  color: { r: number; g: number; b: number }
+): SceneObject {
+  const mesh = makePolylineMesh("orbit-path", color, 1);
+
+  return {
+    id,
+    mesh,
+    position: { x: 0, y: 0, z: 0 },
+    orientation: mat3.identity,
+    scale: 1,
+    color: mesh.color,
+    lineWidth: mesh.lineWidth,
+    wireframeOnly: true,
+  };
+}
+
 function addPlanetGrid(_baseSpeed: number, objects: SceneObject[]): void {
   // Angle between planets
   const angle = Math.PI / 3; // 60 degrees
@@ -122,6 +144,11 @@ function addPlanetGrid(_baseSpeed: number, objects: SceneObject[]): void {
     lineWidth: planet1Mesh.lineWidth,
   });
 
+  // Trajectory path for Earth
+  objects.push(
+    createPlanetPathObject("path:planet:earth", { r: 0, g: 0, b: 255 })
+  );
+
   // Mars: along initial forward from Earth
   const planet2Radius = planet1Radius * 1.5;
   const planet2Center: Vec3 = vec.add(
@@ -140,6 +167,11 @@ function addPlanetGrid(_baseSpeed: number, objects: SceneObject[]): void {
     color: planet2Mesh.color,
     lineWidth: planet2Mesh.lineWidth,
   });
+
+  // Trajectory path for Mars
+  objects.push(
+    createPlanetPathObject("path:planet:mars", { r: 255, g: 0, b: 0 })
+  );
 
   // Venus: same distance from Earth, but rotated around the up axis
   const rotatedForward: Vec3 = rotateAroundAxis(
@@ -165,6 +197,11 @@ function addPlanetGrid(_baseSpeed: number, objects: SceneObject[]): void {
     color: planet3Mesh.color,
     lineWidth: planet3Mesh.lineWidth,
   });
+
+  // Trajectory path for Venus
+  objects.push(
+    createPlanetPathObject("path:planet:venus", { r: 0, g: 255, b: 0 })
+  );
 }
 
 function rotateAroundAxis(v: Vec3, axis: Vec3, angle: number): Vec3 {
@@ -189,6 +226,28 @@ function createInitialPilotCamera(id: string, plane: Plane): Camera {
   };
 }
 
+function createEmptyOrbitPathObject(id: string): SceneObject {
+  const emptyPoints: Vec3[] = [];
+  const mesh: Mesh = {
+    objectType: "orbit-path", // not "planet*"
+    points: emptyPoints,
+    faces: [],
+    color: { r: 255, g: 255, b: 0 }, // yellow path
+    lineWidth: 1,
+  };
+
+  return {
+    id,
+    mesh,
+    position: { x: 0, y: 0, z: 0 },
+    orientation: mat3.identity,
+    scale: 1,
+    color: mesh.color,
+    lineWidth: mesh.lineWidth,
+    wireframeOnly: true,
+  };
+}
+
 export function createInitialSceneAndWorld(): {
   scene: Scene;
   world: WorldState;
@@ -202,6 +261,10 @@ export function createInitialSceneAndWorld(): {
   const objects: SceneObject[] = [];
   addAirplaneObject(mainPlane, objects);
   addPlanetGrid(0, objects);
+
+  // Add an empty trajectory object for plane
+  const mainPlanePath = createEmptyOrbitPathObject("path:plane:main");
+  objects.push(mainPlanePath);
 
   const scene: Scene = {
     objects,

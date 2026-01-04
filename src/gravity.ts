@@ -54,7 +54,7 @@ export function ensureGravityState(
   for (const obj of scene.objects) {
     if (obj.mesh.objectType.startsWith("planet")) {
       const radius = obj.scale;
-      const density = 5500; // kg/m^3 - Earth-like-ish
+      const density = 5.5e7; // 10^4 times denser than Earth-like for gameplay
       const volume = (4 / 3) * Math.PI * radius * radius * radius;
       const mass = density * volume;
 

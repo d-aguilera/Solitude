@@ -46,7 +46,12 @@ export function draw(
 
         const faceList: FaceEntry[] = [];
 
+        // 1) Solid objects: faces path, skipping wireframe-only
         objects.forEach((obj) => {
+          if (obj.wireframeOnly) {
+            return;
+          }
+
           const { mesh, worldPoints } = toRenderable(obj);
           const { color, faces } = mesh;
 
@@ -114,7 +119,7 @@ export function draw(
           }
         });
 
-        // Larger depth => farther from camera
+        // Depth sort & draw faces
         faceList.sort((a, b) => b.depth - a.depth);
 
         for (const face of faceList) {
@@ -127,6 +132,34 @@ export function draw(
 
           fillTriangle(context, p0, p1, p2, fillStyle);
         }
+      });
+
+      // 2) Wireframe-only objects: lines path
+      profiler.run("DRAW", "wireframeOnly", () => {
+        objects.forEach((obj) => {
+          if (!obj.wireframeOnly) {
+            return;
+          }
+
+          const { mesh, worldPoints, color, lineWidth } = toRenderable(obj);
+          const { faces } = mesh;
+
+          for (let i = 0; i < faces.length; i++) {
+            const polyIndices = faces[i];
+            projectedPoints.length = 0;
+            for (let j = 0; j < polyIndices.length; j++) {
+              const p = projection(worldPoints[polyIndices[j]]);
+              if (!p) {
+                projectedPoints.length = 0;
+                break;
+              }
+              projectedPoints.push(p);
+            }
+            if (projectedPoints.length > 0) {
+              poly(context, projectedPoints, color, lineWidth);
+            }
+          }
+        });
       });
     } else {
       objects.forEach((obj) => {
@@ -141,7 +174,7 @@ export function draw(
               const p = projection(worldPoints[polyIndices[j]]);
               if (!p) {
                 projectedPoints.length = 0;
-                continue;
+                break;
               }
               projectedPoints.push(p);
             }
