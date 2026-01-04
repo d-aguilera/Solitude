@@ -18,6 +18,11 @@ export interface RGB {
   b: number;
 }
 
+export interface Polar2D {
+  angleRad: number;
+  radius: number;
+}
+
 export interface Mesh {
   points: Vec3[];
   faces: number[][];
@@ -69,6 +74,7 @@ export interface SceneObject {
   depth?: number;
   height?: number;
   wireframeOnly?: boolean;
+  initialVelocity?: Vec3;
   applyTransform: boolean;
 }
 

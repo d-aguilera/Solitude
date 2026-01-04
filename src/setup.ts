@@ -11,6 +11,7 @@ import type {
   Mesh,
   PilotView,
   Plane,
+  Polar2D,
   Scene,
   SceneObject,
   Vec3,
@@ -43,11 +44,62 @@ export function initRenderingContexts(
   return { pilotContext, topContext };
 }
 
-const planet1Radius = 1000; // keep this in sync with addPlanetGrid
-const initialPos: Vec3 = { x: 0, y: 0, z: planet1Radius + 200 }; // 200 m above surface
+const initialPos: Vec3 = { x: 0, y: 0, z: 0 }; // origin
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame = makeLocalFrame(initialUp);
 const initialForward: Vec3 = { ...initialFrame.forward };
+
+interface PlanetConfig {
+  id: string;
+  pathId: string;
+  objectType: string;
+  orbit: Polar2D;
+  radius: number; // physical radius in meters
+  tangentialSpeed: number; // m/s along initial tangential direction
+  color: { r: number; g: number; b: number };
+}
+
+// Example: three evenly spaced planets, but angles are explicit now.
+const twoPi = 2 * Math.PI;
+
+const planetConfigs: PlanetConfig[] = [
+  {
+    id: "planet:earth",
+    pathId: "path:planet:earth",
+    objectType: "planet-earth",
+    orbit: {
+      angleRad: 0 * (twoPi / 3),
+      radius: 50_000,
+    },
+    radius: 1_000,
+    tangentialSpeed: 40,
+    color: { r: 0, g: 0, b: 255 },
+  },
+  {
+    id: "planet:mars",
+    pathId: "path:planet:mars",
+    objectType: "planet-mars",
+    orbit: {
+      angleRad: 1 * (twoPi / 3),
+      radius: 100_000,
+    },
+    radius: 5_000,
+    tangentialSpeed: 30,
+    color: { r: 255, g: 0, b: 0 },
+  },
+  {
+    id: "planet:venus",
+    pathId: "path:planet:venus",
+    objectType: "planet-venus",
+    orbit: {
+      angleRad: 2 * (twoPi / 3),
+      radius: 150_000,
+    },
+    radius: 25_000,
+    tangentialSpeed: 20,
+    color: { r: 0, g: 255, b: 0 },
+  },
+];
 
 function createInitialPlane(id: string): Plane {
   const { right, forward, up } = initialFrame;
@@ -122,94 +174,57 @@ function createPlanetPathObject(
 }
 
 function addPlanetGrid(_baseSpeed: number, objects: SceneObject[]): void {
-  // Angle between planets
-  const angle = Math.PI / 3; // 60 degrees
-
-  // Distance between planet centers (fixed, not dependent on plane speed)
-  const distanceApart = 50_000; // 50 km between planet centers
-
-  // Earth
-  const planet1Radius = 1000; // meters
-  const planet1Center: Vec3 = { x: 0, y: 0, z: 0 };
   const planetMeshTemplate: Mesh = generatePlanetMesh(3);
 
-  const planet1Mesh: Mesh = { ...planetMeshTemplate };
-  planet1Mesh.objectType = "planet-earth";
-  planet1Mesh.color = { r: 0, g: 0, b: 255 };
-  objects.push({
-    id: "planet:earth",
-    mesh: planet1Mesh,
-    position: planet1Center,
-    orientation: mat3.identity,
-    scale: planet1Radius,
-    color: planet1Mesh.color,
-    lineWidth: planet1Mesh.lineWidth,
-  });
+  const radialAxis1 = vec.normalize(initialForward);
+  const radialAxis2 = vec.normalize(initialUp);
 
-  // Trajectory path for Earth
-  objects.push(createPlanetPathObject("path:planet:earth", planet1Mesh.color));
-
-  // Mars: along initial forward from Earth
-  const planet2Radius = planet1Radius * 1.5;
-  const planet2Center: Vec3 = vec.add(
-    planet1Center,
-    vec.scale(initialForward, distanceApart)
-  );
-  const planet2Mesh: Mesh = { ...planetMeshTemplate };
-  planet2Mesh.objectType = "planet-mars";
-  planet2Mesh.color = { r: 255, g: 0, b: 0 };
-  objects.push({
-    id: "planet:mars",
-    mesh: planet2Mesh,
-    position: planet2Center,
-    orientation: mat3.identity,
-    scale: planet2Radius,
-    color: planet2Mesh.color,
-    lineWidth: planet2Mesh.lineWidth,
-  });
-
-  // Trajectory path for Mars
-  objects.push(createPlanetPathObject("path:planet:mars", planet2Mesh.color));
-
-  // Venus: same distance from Earth, but rotated around the up axis
-  const rotatedForward: Vec3 = rotateAroundAxis(
-    initialForward,
-    initialUp,
-    angle
-  );
-
-  const planet3Radius = planet2Radius * 1.5;
-  const planet3Center: Vec3 = vec.add(
-    planet1Center,
-    vec.scale(rotatedForward, distanceApart)
-  );
-  const planet3Mesh: Mesh = { ...planetMeshTemplate };
-  planet3Mesh.objectType = "planet-venus";
-  planet3Mesh.color = { r: 0, g: 255, b: 0 };
-  objects.push({
-    id: "planet:venus",
-    mesh: planet3Mesh,
-    position: planet3Center,
-    orientation: mat3.identity,
-    scale: planet3Radius,
-    color: planet3Mesh.color,
-    lineWidth: planet3Mesh.lineWidth,
-  });
-
-  // Trajectory path for Venus
-  objects.push(createPlanetPathObject("path:planet:venus", planet3Mesh.color));
-}
-
-function rotateAroundAxis(v: Vec3, axis: Vec3, angle: number): Vec3 {
-  const R = mat3.rotAxis(axis, angle);
-  const R0 = R[0];
-  const R1 = R[1];
-  const R2 = R[2];
-  return {
-    x: R0[0] * v.x + R0[1] * v.y + R0[2] * v.z,
-    y: R1[0] * v.x + R1[1] * v.y + R1[2] * v.z,
-    z: R2[0] * v.x + R2[1] * v.y + R2[2] * v.z,
+  const radialDirAtAngle = (theta: number): Vec3 => {
+    return vec.normalize({
+      x: radialAxis1.x * Math.cos(theta) + radialAxis2.x * Math.sin(theta),
+      y: radialAxis1.y * Math.cos(theta) + radialAxis2.y * Math.sin(theta),
+      z: radialAxis1.z * Math.cos(theta) + radialAxis2.z * Math.sin(theta),
+    });
   };
+
+  const tangentialDirAtAngle = (theta: number): Vec3 => {
+    const t = {
+      x: -radialAxis1.x * Math.sin(theta) + radialAxis2.x * Math.cos(theta),
+      y: -radialAxis1.y * Math.sin(theta) + radialAxis2.y * Math.cos(theta),
+      z: -radialAxis1.z * Math.sin(theta) + radialAxis2.z * Math.cos(theta),
+    };
+    return vec.normalize(t);
+  };
+
+  for (const cfg of planetConfigs) {
+    const theta = cfg.orbit.angleRad;
+    const radial = radialDirAtAngle(theta);
+    const tangential = tangentialDirAtAngle(theta);
+
+    const center: Vec3 = vec.scale(radial, cfg.orbit.radius);
+
+    const planetMesh: Mesh = { ...planetMeshTemplate };
+    planetMesh.objectType = cfg.objectType;
+    planetMesh.color = cfg.color;
+
+    objects.push({
+      id: cfg.id,
+      mesh: planetMesh,
+      position: center,
+      orientation: mat3.identity,
+      scale: cfg.radius,
+      color: planetMesh.color,
+      lineWidth: planetMesh.lineWidth,
+      initialVelocity: {
+        x: tangential.x * cfg.tangentialSpeed,
+        y: tangential.y * cfg.tangentialSpeed,
+        z: tangential.z * cfg.tangentialSpeed,
+      },
+      applyTransform: true,
+    });
+
+    objects.push(createPlanetPathObject(cfg.pathId, planetMesh.color));
+  }
 }
 
 const sunDirection = vec.scaleToUnit({ x: 0.3, y: 0.5, z: 1.0 });
@@ -225,10 +240,10 @@ function createInitialPilotCamera(id: string, plane: Plane): Camera {
 function createEmptyOrbitPathObject(id: string): SceneObject {
   const emptyPoints: Vec3[] = [];
   const mesh: Mesh = {
-    objectType: "orbit-path", // not "planet*"
+    objectType: "orbit-path",
     points: emptyPoints,
     faces: [],
-    color: { r: 255, g: 255, b: 0 }, // yellow path
+    color: { r: 255, g: 255, b: 0 },
     lineWidth: 1,
   };
 

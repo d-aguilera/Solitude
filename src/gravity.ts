@@ -52,13 +52,22 @@ export function ensureGravityState(
 
   // Planets: all SceneObjects whose mesh.objectType starts with "planet"
   for (const obj of scene.objects) {
-    if (obj.mesh.objectType.startsWith("planet")) {
-      const radius = obj.scale;
-      const density = 5.5e7; // 10^4 times denser than Earth-like for gameplay
-      const volume = (4 / 3) * Math.PI * radius * radius * radius;
-      const mass = density * volume;
+    if (!obj.mesh.objectType.startsWith("planet")) continue;
 
-      upsertBody(obj.id, mass);
+    const radius = obj.scale;
+    const density = 5.5e7; // 10^4 times denser than Earth-like for gameplay
+    const volume = (4 / 3) * Math.PI * radius * radius * radius;
+    const mass = density * volume;
+
+    const body = upsertBody(obj.id, mass);
+
+    // If this body is newly created (velocity still zero) and the SceneObject
+    // provides an initialVelocity, use that to seed the BodyState.
+    const hasZeroVelocity =
+      body.velocity.x === 0 && body.velocity.y === 0 && body.velocity.z === 0;
+
+    if (hasZeroVelocity && obj.initialVelocity) {
+      body.velocity = { ...obj.initialVelocity };
     }
   }
 
