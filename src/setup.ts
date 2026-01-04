@@ -72,7 +72,7 @@ const planetConfigs: PlanetConfig[] = [
       radius: 50_000,
     },
     radius: 1_000,
-    tangentialSpeed: 40,
+    tangentialSpeed: 400,
     color: { r: 0, g: 0, b: 255 },
   },
   {
@@ -84,7 +84,7 @@ const planetConfigs: PlanetConfig[] = [
       radius: 100_000,
     },
     radius: 5_000,
-    tangentialSpeed: 30,
+    tangentialSpeed: 300,
     color: { r: 255, g: 0, b: 0 },
   },
   {
@@ -96,7 +96,7 @@ const planetConfigs: PlanetConfig[] = [
       radius: 150_000,
     },
     radius: 25_000,
-    tangentialSpeed: 20,
+    tangentialSpeed: 200,
     color: { r: 0, g: 255, b: 0 },
   },
 ];
@@ -173,7 +173,7 @@ function createPlanetPathObject(
   };
 }
 
-function addPlanetGrid(_baseSpeed: number, objects: SceneObject[]): void {
+function addPlanetGrid(objects: SceneObject[]): void {
   const planetMeshTemplate: Mesh = generatePlanetMesh(3);
 
   const radialAxis1 = vec.normalize(initialForward);
@@ -272,7 +272,7 @@ export function createInitialSceneAndWorld(): {
 
   const objects: SceneObject[] = [];
   addAirplaneObject(mainPlane, objects);
-  addPlanetGrid(0, objects);
+  addPlanetGrid(objects);
 
   // Add an empty trajectory object for plane
   const mainPlanePath = createEmptyOrbitPathObject("path:plane:main");
