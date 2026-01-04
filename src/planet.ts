@@ -1,5 +1,5 @@
 import { vec } from "./math.js";
-import type { LocalFrame, Mesh, Vec3 } from "./types.js";
+import type { LocalFrame, Mesh, RGB, Vec3 } from "./types.js";
 
 export function makeLocalFrame(up: Vec3): LocalFrame {
   const u = vec.normalize(up);
@@ -146,7 +146,7 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
 // Generic polyline mesh (used for plane and planet trajectories)
 export function makePolylineMesh(
   objectType: string,
-  color: { r: number; g: number; b: number },
+  color: RGB,
   lineWidth = 1
 ): Mesh {
   return {
@@ -162,27 +162,12 @@ export function makePolylineMesh(
  * Append a point to a polyline mesh, adding a segment from the
  * previous point to this one if distance >= minSegmentLength.
  */
-export function appendPointToPolylineMesh(
-  mesh: Mesh,
-  point: Vec3,
-  minSegmentLength: number
-): void {
-  const last = mesh.points[mesh.points.length - 1];
-  if (
-    last &&
-    vec.length({
-      x: point.x - last.x,
-      y: point.y - last.y,
-      z: point.z - last.z,
-    }) < minSegmentLength
-  ) {
+export function appendPointToPolylineMesh(mesh: Mesh, point: Vec3): void {
+  const newIndex = mesh.points.length;
+  if (newIndex === 0) {
+    mesh.points.push({ ...point });
     return;
   }
-
-  const newIndex = mesh.points.length;
   mesh.points.push({ ...point });
-
-  if (newIndex > 0) {
-    mesh.faces.push([newIndex - 1, newIndex]);
-  }
+  mesh.faces.push([newIndex - 1, newIndex]);
 }

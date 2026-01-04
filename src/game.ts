@@ -37,6 +37,7 @@ import { ensureGravityState, applyGravityAndThrust } from "./gravity.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;
+let accumTime = 0;
 
 let topCameraFrameState: TopCameraFrameState | null = null;
 
@@ -195,8 +196,17 @@ function renderFrame(
 
     syncPlanesToSceneObjects();
 
-    appendPlaneTrajectoryPoint();
-    appendPlanetTrajectories();
+    const sampleInterval = 1.0; // seconds
+
+    if (!paused) {
+      accumTime += dtSeconds;
+
+      if (accumTime >= sampleInterval) {
+        appendPlaneTrajectoryPoint();
+        appendPlanetTrajectories();
+        accumTime = 0;
+      }
+    }
 
     const mainPlane = getPlane(world, mainPlaneId);
 
@@ -394,68 +404,28 @@ function updatePilotCamera(plane: Plane): void {
 
 function appendPlaneTrajectoryPoint(): void {
   const mainPlane = getPlane(world, mainPlaneId);
-
   const pathObj = scene.objects.find((o) => o.id === "path:plane:main");
-  if (!pathObj) return;
-
-  const mesh = pathObj.mesh;
-
-  // Work directly on mesh.points / mesh.faces
-  const lastPoint = mesh.points[mesh.points.length - 1];
-  const currentPos = mainPlane.position;
-
-  // Only add a point if we've moved some minimal distance
-  const minSegmentLength = 100; // meters, tune as needed
-  if (
-    lastPoint &&
-    Math.hypot(
-      currentPos.x - lastPoint.x,
-      currentPos.y - lastPoint.y,
-      currentPos.z - lastPoint.z
-    ) < minSegmentLength
-  ) {
-    return;
-  }
-
-  const newIndex = mesh.points.length;
-  mesh.points.push({ ...currentPos });
-
-  if (newIndex > 0) {
-    // Connect previous point to this one
-    mesh.faces.push([newIndex - 1, newIndex]);
+  if (pathObj) {
+    appendPointToPolylineMesh(pathObj.mesh, mainPlane.position);
   }
 }
 
 function appendPlanetTrajectories(): void {
-  const minSegmentLength = 1000; // meters; tune per your scale
-
   const earthObj = scene.objects.find((o) => o.id === "planet:earth");
   const earthPath = scene.objects.find((o) => o.id === "path:planet:earth");
   if (earthObj && earthPath) {
-    appendPointToPolylineMesh(
-      earthPath.mesh,
-      earthObj.position,
-      minSegmentLength
-    );
+    appendPointToPolylineMesh(earthPath.mesh, earthObj.position);
   }
 
   const marsObj = scene.objects.find((o) => o.id === "planet:mars");
   const marsPath = scene.objects.find((o) => o.id === "path:planet:mars");
   if (marsObj && marsPath) {
-    appendPointToPolylineMesh(
-      marsPath.mesh,
-      marsObj.position,
-      minSegmentLength
-    );
+    appendPointToPolylineMesh(marsPath.mesh, marsObj.position);
   }
 
   const venusObj = scene.objects.find((o) => o.id === "planet:venus");
   const venusPath = scene.objects.find((o) => o.id === "path:planet:venus");
   if (venusObj && venusPath) {
-    appendPointToPolylineMesh(
-      venusPath.mesh,
-      venusObj.position,
-      minSegmentLength
-    );
+    appendPointToPolylineMesh(venusPath.mesh, venusObj.position);
   }
 }
