@@ -165,8 +165,7 @@ function addPlanetsFromConfig(
       mesh: planetMesh,
       position: center,
       orientation: mat3.identity,
-      // Visual scale only
-      scale: cfg.visualRadius,
+      scale: cfg.physicalRadius,
       color: planetMesh.color,
       lineWidth: 1,
       initialVelocity,

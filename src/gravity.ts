@@ -53,8 +53,10 @@ export function ensureGravityState(
     // Sun included
     if (!obj.mesh.objectType.startsWith("planet")) continue;
 
-    // Prefer physical radius when available; fall back to visual scale
-    const radius = obj.physicalRadius ?? obj.scale;
+    if (obj.physicalRadius === undefined) {
+      throw new Error(`Missing physicalRadius for gravity body: ${obj.id}`);
+    }
+    const radius = obj.physicalRadius;
 
     // Prefer per-object density; fall back to a default if missing
     const density = obj.density ?? 5.5e3; // kg/m^3
