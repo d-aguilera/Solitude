@@ -5,23 +5,27 @@ import {
   makeLocalFrame,
   makePolylineMesh,
 } from "./planet.js";
-import type {
-  Camera,
-  Mesh,
-  PilotView,
-  Plane,
-  RGB,
-  Scene,
-  SceneObject,
-  Vec3,
-  WorldState,
-} from "./types.js";
 import {
   buildDefaultSolarSystemConfigs,
   radialDirAtAngle,
   tangentialDirAtAngle,
   type PlanetConfig,
 } from "./solarSystemConfig.js";
+import type {
+  AirplaneSceneObject,
+  Camera,
+  Mesh,
+  PilotView,
+  Plane,
+  PlanetSceneObject,
+  PolylineSceneObject,
+  RGB,
+  Scene,
+  SceneObject,
+  Vec3,
+  WorldState,
+} from "./types.js";
+import { isPlanetSceneObject } from "./types.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame = makeLocalFrame(initialUp);
@@ -76,8 +80,9 @@ function createInitialPilotCamera(id: string, plane: Plane): Camera {
 }
 
 function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
-  objects.push({
+  const obj: AirplaneSceneObject = {
     id: `sceneobj:${plane.id}`,
+    kind: "airplane",
     mesh: airplaneModel,
     position: { ...plane.position },
     orientation: plane.orientation,
@@ -86,14 +91,16 @@ function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
     lineWidth: 1,
     applyTransform: true,
     wireframeOnly: false,
-  });
+  };
+  objects.push(obj);
 }
 
-function createPlanetPathObject(id: string, color: RGB): SceneObject {
-  const mesh = makePolylineMesh("orbit-path", color);
+function createPlanetPathObject(id: string, color: RGB): PolylineSceneObject {
+  const mesh = makePolylineMesh(color);
 
   return {
     id,
+    kind: "polyline",
     mesh,
     position: { x: 0, y: 0, z: 0 },
     orientation: mat3.identity,
@@ -105,9 +112,8 @@ function createPlanetPathObject(id: string, color: RGB): SceneObject {
   };
 }
 
-function createEmptyOrbitPathObject(id: string): SceneObject {
+function createEmptyOrbitPathObject(id: string): PolylineSceneObject {
   const mesh: Mesh = {
-    objectType: "orbit-path",
     points: [],
     faces: [],
     color: { r: 255, g: 255, b: 0 },
@@ -115,6 +121,7 @@ function createEmptyOrbitPathObject(id: string): SceneObject {
 
   return {
     id,
+    kind: "polyline",
     mesh,
     position: { x: 0, y: 0, z: 0 },
     orientation: mat3.identity,
@@ -148,7 +155,6 @@ function addPlanetsFromConfig(
     const center: Vec3 = vec.scale(radial, cfg.orbit.radius);
 
     const planetMesh: Mesh = { ...planetMeshTemplate };
-    planetMesh.objectType = cfg.objectType;
     planetMesh.color = cfg.color;
 
     const initialVelocity =
@@ -160,22 +166,23 @@ function addPlanetsFromConfig(
           }
         : undefined; // Sun at origin has no initial orbital velocity
 
-    objects.push({
+    const planetObj: PlanetSceneObject = {
       id: cfg.id,
+      kind: "planet",
       mesh: planetMesh,
       position: center,
       orientation: mat3.identity,
       scale: cfg.physicalRadius,
       color: planetMesh.color,
       lineWidth: 1,
-      initialVelocity,
       applyTransform: true,
       wireframeOnly: false,
-      // Physical properties for gravity
+      initialVelocity,
       density: cfg.density,
       physicalRadius: cfg.physicalRadius,
-    });
+    };
 
+    objects.push(planetObj);
     objects.push(createPlanetPathObject(cfg.pathId, planetMesh.color));
   }
 }
@@ -190,15 +197,18 @@ function computePlaneStartPosFromEarth(objects: SceneObject[]): Vec3 {
   if (!earthObj) {
     throw new Error("Earth not found in scene objects");
   }
+  if (!isPlanetSceneObject(earthObj)) {
+    throw new Error("Earth is not a planet");
+  }
 
   // North pole direction: global +Z in this setup
   const north: Vec3 = { x: 0, y: 0, z: 1 };
 
   // Use Earth's physical radius from its scene object
-  const earthRadius =
-    earthObj.physicalRadius !== undefined ? earthObj.physicalRadius : 0;
-
-  const offset = vec.scale(north, earthRadius + PLANE_START_ALTITUDE_M);
+  const offset = vec.scale(
+    north,
+    earthObj.physicalRadius + PLANE_START_ALTITUDE_M
+  );
 
   return {
     x: earthObj.position.x + offset.x,

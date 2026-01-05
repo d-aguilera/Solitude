@@ -27,7 +27,6 @@ export interface Mesh {
   points: Vec3[];
   faces: number[][];
   color: RGB | string;
-  objectType: string;
 }
 
 export interface LocalFrame {
@@ -61,8 +60,14 @@ export interface PilotView {
   elevation: number;
 }
 
-export interface SceneObject {
+type SceneObjectKind = "airplane" | "planet" | "polyline";
+
+/**
+ * Base properties common to all scene objects.
+ */
+interface BaseSceneObject {
   id: string;
+  kind: SceneObjectKind;
   mesh: Mesh;
   position: Vec3;
   orientation: Mat3;
@@ -70,13 +75,54 @@ export interface SceneObject {
   color: string | RGB;
   lineWidth: number;
   wireframeOnly: boolean;
-  initialVelocity?: Vec3;
   applyTransform: boolean;
-
-  // Physical properties for gravity
-  density?: number; // kg/m^3
-  physicalRadius?: number; // meters
 }
+
+/**
+ * Airplane visual object. Transform applied; no gravity properties here.
+ * Currently we only ever create it for the main plane.
+ */
+export interface AirplaneSceneObject extends BaseSceneObject {
+  kind: "airplane";
+  applyTransform: true;
+  wireframeOnly: false;
+}
+
+/**
+ * Planet / star body included in gravity simulation.
+ */
+export interface PlanetSceneObject extends BaseSceneObject {
+  kind: "planet";
+  applyTransform: true;
+  wireframeOnly: false;
+  initialVelocity?: Vec3;
+  density: number; // kg/m^3
+  physicalRadius: number; // meters
+}
+
+export function isPlanetSceneObject(
+  obj: SceneObject
+): obj is PlanetSceneObject {
+  return obj.kind === "planet";
+}
+
+/**
+ * Generic polyline / path object (orbit paths, plane trajectory).
+ * World-space points; no transform applied; not part of gravity.
+ */
+export interface PolylineSceneObject extends BaseSceneObject {
+  kind: "polyline";
+  applyTransform: false;
+  wireframeOnly: true;
+}
+
+/**
+ * Union of all scene object variants.
+ */
+export type SceneObject =
+  | AirplaneSceneObject
+  | PlanetSceneObject
+  | PolylineSceneObject;
 
 // Small adapter that lets callers plug in any profiling / tracing / instrumentation
 // without direct coupling to a concrete instrumentation API.
@@ -119,8 +165,7 @@ export interface BodyState {
 }
 
 /**
- * Container for all gravitational bodies. This is kept in WorldState so the
- * physics step can update them each frame.
+ * Container for all gravitational bodies.
  */
 export interface GravityState {
   bodies: BodyState[];

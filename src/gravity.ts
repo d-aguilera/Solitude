@@ -7,6 +7,7 @@ import type {
   Vec3,
   WorldState,
 } from "./types.js";
+import { isPlanetSceneObject } from "./types.js";
 
 /**
  * Attach or update gravity state on the world. This function ensures that for
@@ -50,16 +51,10 @@ export function ensureGravityState(
   }
 
   for (const obj of scene.objects) {
-    // Sun included
-    if (!obj.mesh.objectType.startsWith("planet")) continue;
+    if (!isPlanetSceneObject(obj)) continue;
 
-    if (obj.physicalRadius === undefined) {
-      throw new Error(`Missing physicalRadius for gravity body: ${obj.id}`);
-    }
     const radius = obj.physicalRadius;
-
-    // Prefer per-object density; fall back to a default if missing
-    const density = obj.density ?? 5.5e3; // kg/m^3
+    const density = obj.density;
     const volume = (4 / 3) * Math.PI * radius * radius * radius;
     const mass = density * volume;
 
