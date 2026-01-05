@@ -7,8 +7,11 @@ import {
 import { mat3, vec } from "./math.js";
 import type { Mat3, Plane, Vec3, WorldState } from "./types.js";
 
-// Tunable thrust acceleration in m/s^2 along plane forward axis
-const thrustAcceleration = 30; // adjust for feel
+// Base thrust acceleration in m/s^2 along plane forward axis
+const baseThrustAcceleration = 30; // normal engine thrust
+
+// Multiplier applied when "hyper" is active (huge but still just thrust)
+const hyperThrustMultiplier = 1e5; // tweak for feel
 
 export interface ControlInput {
   rollLeft: boolean;
@@ -174,7 +177,14 @@ export function applyThrustToPlaneVelocity(
   if (thrustSign === 0) return;
 
   const f = plane.forward; // already normalized in updatePlaneAxes
-  const accel = thrustAcceleration * thrustSign;
+
+  // Choose acceleration: huge when hyper is held, otherwise normal
+  const accelMagnitude =
+    input.hyper && thrustSign !== 0
+      ? baseThrustAcceleration * hyperThrustMultiplier
+      : baseThrustAcceleration;
+
+  const accel = accelMagnitude * thrustSign;
 
   planeVelocity.x += f.x * accel * dtSeconds;
   planeVelocity.y += f.y * accel * dtSeconds;
