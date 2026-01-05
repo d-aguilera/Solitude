@@ -19,7 +19,7 @@ interface DrawOptions {
  * Clears the entire canvas for a new frame.
  */
 export function clear(context: CanvasRenderingContext2D): void {
-  context.fillStyle = "#505050";
+  context.fillStyle = "#000000";
   context.fillRect(0, 0, WIDTH, HEIGHT);
 }
 
