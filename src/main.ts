@@ -1,6 +1,6 @@
 import { startGame } from "./game.js";
 import { defaultProfiler } from "./profilingFacade.js";
-import { init as initResizeHandler } from "./resizeHandler.js";
+import { init as initResizeHandler } from "./canvasLayout.js";
 
 const container = document.querySelector(".canvas-container");
 if (!container) {

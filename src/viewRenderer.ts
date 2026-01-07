@@ -1,4 +1,4 @@
-import { clear, draw } from "./draw.js";
+import { clear, draw } from "./renderScene.js";
 import type { Scene, View, Profiler } from "./types.js";
 
 export function renderView(

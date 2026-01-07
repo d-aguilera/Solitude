@@ -34,8 +34,8 @@ import type {
   WorldState,
   GravityState,
 } from "./types.js";
-import { buildPilotViewConfig, buildTopViewConfig } from "./viewConfig.js";
 import { renderView } from "./viewRenderer.js";
+import { buildPilotViewConfig, buildTopViewConfig } from "./viewSetup.js";
 import {
   createInitialSceneAndWorld,
   syncPlanetsToSceneObjects,
