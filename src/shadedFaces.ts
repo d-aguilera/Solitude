@@ -5,7 +5,6 @@ import { vec } from "./vec3.js";
 
 /**
  * Internal representation of a single shaded triangle face ready for rasterization.
- * Kept separate from SceneObject / Mesh to keep the draw pipeline cohesive.
  */
 export type FaceEntry = {
   intensity: number;
@@ -21,14 +20,6 @@ export type FaceEntry = {
 /**
  * Build the list of shaded triangle faces (with depth and lighting information)
  * for all non-wireframe objects in the scene.
- *
- * This keeps the responsibilities of:
- *  - deriving world-space triangles from scene objects
- *  - applying camera-based back-face culling
- *  - computing per-face lighting intensity
- *  - projecting to screen-space
- *
- * separate from the actual rasterization, which lives in draw.ts.
  */
 export function buildShadedFaces(params: {
   objects: SceneObject[];
@@ -40,21 +31,11 @@ export function buildShadedFaces(params: {
   const faceList: FaceEntry[] = [];
 
   objects.forEach((obj) => {
-    if (obj.wireframeOnly) {
-      return;
-    }
+    if (obj.wireframeOnly) return;
 
-    const { mesh, worldPoints } = toRenderable(obj);
-    const { color, faces } = mesh;
-
-    let baseR = 255;
-    let baseG = 255;
-    let baseB = 255;
-    if (typeof color !== "string" && color) {
-      baseR = color.r;
-      baseG = color.g;
-      baseB = color.b;
-    }
+    const { mesh, worldPoints, baseColor } = toRenderable(obj);
+    const { faces } = mesh;
+    const { r: baseR, g: baseG, b: baseB } = baseColor;
 
     for (let fi = 0; fi < faces.length; fi++) {
       const [i0, i1, i2] = faces[fi];
@@ -82,9 +63,7 @@ export function buildShadedFaces(params: {
           z: cameraPos.z - v0.z,
         };
         const facing = vec.dot(n, toCamera);
-        if (facing <= 0) {
-          continue;
-        }
+        if (facing <= 0) continue;
       }
 
       const p0 = projection(v0);

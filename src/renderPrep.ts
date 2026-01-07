@@ -1,12 +1,12 @@
 import { Mat3 } from "./mat3.js";
-import type { Mesh, Renderable, SceneObject, Vec3 } from "./types.js";
+import type { Mesh, Renderable, SceneObject, Vec3, RGB } from "./types.js";
 
 /**
  * Convert a SceneObject into a Renderable with world-space points.
  */
 export function toRenderable(obj: SceneObject): Renderable {
   const mesh: Mesh = obj.mesh;
-  const baseColor = obj.color ?? mesh.color;
+  const baseColor: RGB = obj.color ?? mesh.color;
 
   const worldPoints: Vec3[] = obj.applyTransform
     ? transformPointsToWorld(
@@ -17,14 +17,14 @@ export function toRenderable(obj: SceneObject): Renderable {
       )
     : mesh.points;
 
-  const colorCss =
-    typeof baseColor === "string" ? baseColor : rgbToCss(baseColor);
+  const colorCss = rgbToCss(baseColor);
 
   return {
     mesh,
     worldPoints,
     color: colorCss,
     lineWidth: obj.lineWidth,
+    baseColor,
   };
 }
 

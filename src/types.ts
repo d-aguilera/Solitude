@@ -20,7 +20,7 @@ export interface Polar2D {
 export interface Mesh {
   points: Vec3[];
   faces: number[][];
-  color: RGB | string;
+  color: RGB;
 }
 
 export interface LocalFrame {
@@ -82,7 +82,7 @@ interface BaseSceneObject {
   position: Vec3;
   orientation: Mat3;
   scale: number; // unit to world size
-  color: string | RGB;
+  color: RGB;
   lineWidth: number;
   wireframeOnly: boolean;
   applyTransform: boolean;
@@ -137,8 +137,9 @@ export type Profiler = {
 export interface Renderable {
   mesh: Mesh;
   worldPoints: Vec3[];
-  color: string;
+  color: string; // CSS string for Canvas
   lineWidth: number;
+  baseColor: RGB; // numeric RGB used for lighting
 }
 
 export interface Scene {
