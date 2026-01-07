@@ -135,10 +135,15 @@ function createEmptyOrbitPathObject(id: string): PolylineSceneObject {
 
 /**
  * Add planets + their orbit paths from an arbitrary list of PlanetConfig.
+ *
+ * This now:
+ *  - Creates visual PlanetSceneObjects
+ *  - Registers corresponding PlanetBody entries in world.planets
  */
 function addPlanetsFromConfig(
   configs: PlanetConfig[],
-  objects: SceneObject[]
+  objects: SceneObject[],
+  worldPlanets: WorldState["planets"]
 ): void {
   const planetMeshTemplate: Mesh = generatePlanetMesh(3);
 
@@ -182,6 +187,13 @@ function addPlanetsFromConfig(
       physicalRadius: cfg.physicalRadius,
     };
 
+    // Register physical planet body in world
+    worldPlanets.push({
+      id: cfg.id,
+      position: { ...center },
+      velocity: initialVelocity ? { ...initialVelocity } : { x: 0, y: 0, z: 0 },
+    });
+
     objects.push(planetObj);
     objects.push(createPlanetPathObject(cfg.pathId, planetMesh.color));
   }
@@ -192,29 +204,37 @@ const sunDirection = vec.scaleToUnit({ x: 0.3, y: 0.5, z: 1.0 });
 // 100 km above Earth's north pole
 const PLANE_START_ALTITUDE_M = 100_000; // meters
 
-function computePlaneStartPosFromEarth(objects: SceneObject[]): Vec3 {
-  const earthObj = objects.find((o) => o.id === "planet:earth");
-  if (!earthObj) {
-    throw new Error("Earth not found in scene objects");
+function computePlaneStartPosFromPlanet(
+  objects: SceneObject[],
+  planetId: string
+): Vec3 {
+  const planetObj = objects.find((o) => o.id === planetId);
+  if (!planetObj) {
+    throw new Error(`Home planet not found in scene objects: ${planetId}`);
   }
-  if (!isPlanetSceneObject(earthObj)) {
-    throw new Error("Earth is not a planet");
+  if (!isPlanetSceneObject(planetObj)) {
+    throw new Error(`Home planet is not a planet: ${planetId}`);
   }
 
   // North pole direction: global +Z in this setup
   const north: Vec3 = { x: 0, y: 0, z: 1 };
 
-  // Use Earth's physical radius from its scene object
+  // Use planet's physical radius from its scene object
   const offset = vec.scale(
     north,
-    earthObj.physicalRadius + PLANE_START_ALTITUDE_M
+    planetObj.physicalRadius + PLANE_START_ALTITUDE_M
   );
 
   return {
-    x: earthObj.position.x + offset.x,
-    y: earthObj.position.y + offset.y,
-    z: earthObj.position.z + offset.z,
+    x: planetObj.position.x + offset.x,
+    y: planetObj.position.y + offset.y,
+    z: planetObj.position.z + offset.z,
   };
+}
+
+export interface PlanetPathMapping {
+  planetId: string;
+  pathId: string;
 }
 
 export function createInitialSceneAndWorld(): {
@@ -224,15 +244,29 @@ export function createInitialSceneAndWorld(): {
   mainPilotViewId: string;
   topCameraId: string;
   pilotCameraId: string;
+  planetPathMappings: PlanetPathMapping[];
 } {
   const objects: SceneObject[] = [];
 
+  const world: WorldState = {
+    planes: [],
+    cameras: [],
+    pilotViews: [],
+    planets: [],
+  };
+
   // Build the whole planetary system from config
   const planetConfigs = buildDefaultSolarSystemConfigs();
-  addPlanetsFromConfig(planetConfigs, objects);
+  addPlanetsFromConfig(planetConfigs, objects, world.planets);
 
-  const planeStartPos = computePlaneStartPosFromEarth(objects);
+  // Choose which planet is treated as the "home" / starting planet.
+  // This is a gameplay decision, so it lives in the setup layer instead of
+  // inside the physical planet configuration.
+  const homePlanetId = "planet:earth";
+  const planeStartPos = computePlaneStartPosFromPlanet(objects, homePlanetId);
   const mainPlane = createInitialPlane("plane:main", planeStartPos);
+
+  world.planes.push(mainPlane);
 
   // Add the airplane visual object at that position
   addAirplaneObject(mainPlane, objects);
@@ -249,11 +283,14 @@ export function createInitialSceneAndWorld(): {
   const pilotCamera = createInitialPilotCamera("camera:pilot", mainPlane);
   const pilotView = createInitialPilotView("pilot:main", mainPlane.id);
 
-  const world: WorldState = {
-    planes: [mainPlane],
-    cameras: [topCamera, pilotCamera],
-    pilotViews: [pilotView],
-  };
+  world.cameras.push(topCamera, pilotCamera);
+  world.pilotViews.push(pilotView);
+
+  // Derive planet–path relationships once from the configs we just used.
+  const planetPathMappings: PlanetPathMapping[] = planetConfigs.map((cfg) => ({
+    planetId: cfg.id,
+    pathId: cfg.pathId,
+  }));
 
   return {
     scene,
@@ -262,5 +299,23 @@ export function createInitialSceneAndWorld(): {
     mainPilotViewId: pilotView.id,
     topCameraId: topCamera.id,
     pilotCameraId: pilotCamera.id,
+    planetPathMappings,
   };
+}
+
+/**
+ * Helper: propagate planet body positions from world.planets into their
+ * corresponding planet SceneObjects. This keeps visual planets in sync
+ * with simulated physics state, without coupling the gravity integrator
+ * to scene wiring.
+ */
+export function syncPlanetsToSceneObjects(
+  world: WorldState,
+  scene: Scene
+): void {
+  for (const planetBody of world.planets) {
+    const obj = scene.objects.find((o) => o.id === planetBody.id);
+    if (!obj) continue;
+    obj.position = { ...planetBody.position };
+  }
 }

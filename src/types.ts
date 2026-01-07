@@ -47,6 +47,16 @@ export interface Plane {
   velocity: Vec3;
 }
 
+/**
+ * Logical planet body that participates in physics / gravity.
+ * Scene objects are just the visual representation of these.
+ */
+export interface PlanetBody {
+  id: string;
+  position: Vec3;
+  velocity: Vec3;
+}
+
 export interface Camera {
   id: string;
   position: Vec3;
@@ -150,6 +160,10 @@ export interface WorldState {
   planes: Plane[];
   cameras: Camera[];
   pilotViews: PilotView[];
+  /**
+   * Planet bodies used by physics / gravity. Scene planets mirror these.
+   */
+  planets: PlanetBody[];
 }
 
 /**

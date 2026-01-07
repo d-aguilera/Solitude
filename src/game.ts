@@ -1,3 +1,4 @@
+import { DEFAULT_DRAW_MODE } from "./config.js";
 import {
   applyThrustToPlaneVelocity,
   ControlInput,
@@ -26,7 +27,6 @@ import {
   updateTopCameraFrame,
   type TopCameraFrameState,
 } from "./projection.js";
-import { buildDefaultSolarSystemConfigs } from "./solarSystemConfig.js";
 import type {
   Camera,
   Plane,
@@ -36,7 +36,10 @@ import type {
 } from "./types.js";
 import { buildPilotViewConfig, buildTopViewConfig } from "./viewConfig.js";
 import { renderView } from "./viewRenderer.js";
-import { createInitialSceneAndWorld } from "./worldSetup.js";
+import {
+  createInitialSceneAndWorld,
+  syncPlanetsToSceneObjects,
+} from "./worldSetup.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;
@@ -51,6 +54,7 @@ const {
   mainPilotViewId: mainPilotViewId,
   topCameraId: topCameraId,
   pilotCameraId,
+  planetPathMappings,
 } = createInitialSceneAndWorld();
 
 // Gravity state
@@ -121,6 +125,7 @@ function stepSimulation(
   //    This is done once per frame after physics, so renderers see a
   //    consistent world/scene snapshot.
   syncPlanesToSceneObjects();
+  syncPlanetsToSceneObjects(world, scene);
 
   // 3) Sample trajectories (derived from updated positions)
   updateTrajectories(dtSeconds);
@@ -202,7 +207,7 @@ function integrateForcesAndGravity(
     );
   }
 
-  applyGravity(gravityDt, world, scene, gravityState);
+  applyGravity(gravityDt, world, gravityState);
 }
 
 /**
@@ -246,7 +251,8 @@ function renderAllViews(
       pilotCamera,
       mainPilotViewId,
       pilotCanvas.width,
-      pilotCanvas.height
+      pilotCanvas.height,
+      DEFAULT_DRAW_MODE
     );
 
     // 2) Render pilot view
@@ -262,7 +268,8 @@ function renderAllViews(
       world,
       topCamera,
       topCanvas.width,
-      topCanvas.height
+      topCanvas.height,
+      DEFAULT_DRAW_MODE
     );
 
     // 2) Render top view
@@ -408,10 +415,9 @@ function appendPlaneTrajectoryPoint(): void {
 }
 
 function appendPlanetTrajectories(): void {
-  const planetConfigs = buildDefaultSolarSystemConfigs();
-  for (const cfg of planetConfigs) {
-    const bodyObj = scene.objects.find((o) => o.id === cfg.id);
-    const pathObj = scene.objects.find((o) => o.id === cfg.pathId);
+  for (const mapping of planetPathMappings) {
+    const bodyObj = scene.objects.find((o) => o.id === mapping.planetId);
+    const pathObj = scene.objects.find((o) => o.id === mapping.pathId);
     if (bodyObj && pathObj) {
       appendPointToPolylineMesh(pathObj.mesh, bodyObj.position);
     }

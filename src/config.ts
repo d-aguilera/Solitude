@@ -7,4 +7,5 @@ const HORIZONTAL_FOV = 90;
 export const HORIZONTAL_FOCAL_LENGTH =
   1 / Math.tan((HORIZONTAL_FOV * Math.PI) / 180 / 2);
 
-export const DRAW_MODE: DrawMode = "faces";
+// Default draw mode for rendering (faces or lines).
+export const DEFAULT_DRAW_MODE: DrawMode = "faces";
