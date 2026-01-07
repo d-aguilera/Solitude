@@ -6,6 +6,7 @@ import {
 } from "./controlsConfig.js";
 import { rotateFrameAroundAxis } from "./localFrame.js";
 import type { LocalFrame, Plane, Vec3, WorldState } from "./types.js";
+import { getPlaneById } from "./worldLookup.js";
 
 // Base thrust acceleration in m/s^2 along plane forward axis
 const baseThrustAcceleration = 30; // normal engine thrust
@@ -34,12 +35,6 @@ export interface FlightContext {
   world: WorldState;
   controlledPlaneId: string;
   pilotViewId: string;
-}
-
-function findPlane(world: WorldState, id: string): Plane {
-  const plane = world.planes.find((p) => p.id === id);
-  if (!plane) throw new Error(`Plane not found: ${id}`);
-  return plane;
 }
 
 function pilotLookAround(
@@ -153,7 +148,7 @@ export function updatePhysics(
   input: ControlInput,
   ctx: FlightContext
 ): void {
-  const plane = findPlane(ctx.world, ctx.controlledPlaneId);
+  const plane = getPlaneById(ctx.world, ctx.controlledPlaneId);
 
   pilotLookAround(dtSeconds, input, ctx);
 

@@ -27,16 +27,11 @@ import {
   updateTopCameraFrame,
   type TopCameraFrameState,
 } from "./projection.js";
-import type {
-  Camera,
-  GravityState,
-  Plane,
-  Profiler,
-  WorldState,
-} from "./types.js";
+import type { GravityState, Plane, Profiler } from "./types.js";
 import { vec } from "./vec3.js";
 import { renderView } from "./viewRenderer.js";
 import { buildPilotViewConfig, buildTopViewConfig } from "./viewSetup.js";
+import { getCameraById, getPlaneById } from "./worldLookup.js";
 import {
   createInitialSceneAndWorld,
   syncPlanetsToSceneObjects,
@@ -140,7 +135,7 @@ function stepSimulation(
  * Kept here so renderAllViews can focus purely on rendering.
  */
 function updateCameras(): void {
-  const mainPlane = getPlane(world, mainPlaneId);
+  const mainPlane = getPlaneById(world, mainPlaneId);
   updatePilotCamera(mainPlane);
   updateTopCamera();
 }
@@ -197,7 +192,7 @@ function integrateForcesAndGravity(
   const gravityTimeScale = 10; // e.g. 10x real time
   const gravityDt = dtSeconds * gravityTimeScale;
 
-  const controlledPlane = getPlane(world, mainPlaneId);
+  const controlledPlane = getPlaneById(world, mainPlaneId);
   const planeBody = gravityState.bodies.find((b) => b.id === mainPlaneId);
   if (planeBody) {
     applyThrustToPlaneVelocity(
@@ -240,11 +235,11 @@ function renderAllViews(
   topContext: CanvasRenderingContext2D,
   profiler: Profiler
 ): void {
-  const mainPlane = getPlane(world, mainPlaneId);
+  const mainPlane = getPlaneById(world, mainPlaneId);
 
   profiler.run("GAME", "pilot-view", () => {
     // 1) Build view configuration from world & camera
-    const pilotCamera = getPilotCamera(world);
+    const pilotCamera = getCameraById(world, pilotCameraId);
     const pilotCanvas = pilotContext.canvas;
 
     const pilotViewConfig = buildPilotViewConfig(
@@ -262,7 +257,7 @@ function renderAllViews(
 
   profiler.run("GAME", "top-view", () => {
     // 1) Build view configuration from world & camera
-    const topCamera = getTopCamera(world);
+    const topCamera = getCameraById(world, topCameraId);
     const topCanvas = topContext.canvas;
 
     const topViewConfig = buildTopViewConfig(
@@ -297,8 +292,8 @@ function handleProfilingToggle(oKeyPressed: boolean): void {
 }
 
 function updateTopCamera(): void {
-  const plane = getPlane(world, mainPlaneId);
-  const camera = getTopCamera(world);
+  const plane = getPlaneById(world, mainPlaneId);
+  const camera = getCameraById(world, topCameraId);
 
   // Plane's local "up" in world space
   const radial = vec.normalize(plane.frame.up);
@@ -361,33 +356,9 @@ function makeControlInput(keys: ReturnType<typeof getKeyState>): ControlInput {
   };
 }
 
-function getTopCamera(world: WorldState): Camera {
-  const camera = world.cameras.find((c) => c.id === topCameraId);
-  if (!camera) {
-    throw new Error(`Top camera not found: ${topCameraId}`);
-  }
-  return camera;
-}
-
-function getPlane(world: WorldState, id: string): Plane {
-  const plane = world.planes.find((p) => p.id === id);
-  if (!plane) {
-    throw new Error(`Plane not found: ${id}`);
-  }
-  return plane;
-}
-
-function getPilotCamera(world: WorldState): Camera {
-  const camera = world.cameras.find((c) => c.id === pilotCameraId);
-  if (!camera) {
-    throw new Error(`Pilot camera not found: ${pilotCameraId}`);
-  }
-  return camera;
-}
-
 // Follow-plane logic for pilot camera, using an offset
 function updatePilotCamera(plane: Plane): void {
-  const camera = getPilotCamera(world);
+  const camera = getCameraById(world, pilotCameraId);
 
   // Offsets in plane-local space:
   const backwardOffset = -20.0; // behind
@@ -410,7 +381,7 @@ function updatePilotCamera(plane: Plane): void {
 }
 
 function appendPlaneTrajectoryPoint(): void {
-  const mainPlane = getPlane(world, mainPlaneId);
+  const mainPlane = getPlaneById(world, mainPlaneId);
   const pathObj = scene.objects.find((o) => o.id === "path:plane:main");
   if (pathObj) {
     appendPointToPolylineMesh(pathObj.mesh, mainPlane.position);

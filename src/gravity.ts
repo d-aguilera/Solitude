@@ -7,6 +7,7 @@ import type {
   Vec3,
   WorldState,
 } from "./types.js";
+import { getBodyPosition, setBodyPosition } from "./worldLookup.js";
 
 /**
  * Attach or update gravity state on the world. This function ensures that for
@@ -34,36 +35,6 @@ export function ensureGravityState(
   }));
 
   return { bodies };
-}
-
-/**
- * Adapter: compute the world-space position of a body (plane or planet body).
- */
-function getBodyPosition(id: BodyId, world: WorldState): Vec3 {
-  const plane = world.planes.find((p) => p.id === id);
-  if (plane) return plane.position;
-
-  const planet = world.planets.find((p) => p.id === id);
-  if (planet) return planet.position;
-
-  throw new Error(`Body position not found for id=${id}`);
-}
-
-/**
- * Adapter: write a new position back into the world for a body.
- */
-function setBodyPosition(id: BodyId, newPos: Vec3, world: WorldState): void {
-  const plane = world.planes.find((p) => p.id === id);
-  if (plane) {
-    plane.position = newPos;
-    return;
-  }
-  const planet = world.planets.find((p) => p.id === id);
-  if (planet) {
-    planet.position = newPos;
-    return;
-  }
-  throw new Error(`Body position target not found for id=${id}`);
 }
 
 /**
@@ -153,7 +124,7 @@ function integrateBodyPositions(
       z: p.z + v.z * dtSeconds,
     };
 
-    setBodyPosition(b.id, newPos, world);
+    setBodyPosition(world, b.id, newPos);
   }
 }
 
@@ -198,7 +169,7 @@ export function applyGravity(
   // Snapshot current positions
   const positions: Vec3[] = new Array(n);
   for (let i = 0; i < n; i++) {
-    positions[i] = getBodyPosition(bodies[i].id, world);
+    positions[i] = getBodyPosition(world, bodies[i].id);
   }
 
   // 1) Gravity
