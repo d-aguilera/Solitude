@@ -1,4 +1,4 @@
-import type { Plane, Vec3 } from "./types.js";
+import type { Plane, Vec3 } from "../../world/types.js";
 
 export type ProjectFn = (
   p: Vec3

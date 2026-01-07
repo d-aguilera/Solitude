@@ -1,4 +1,4 @@
-import { DrawMode } from "./types";
+import { DrawMode } from "../world/types";
 
 // Horizontal field of view in degrees for perspective projection.
 const HORIZONTAL_FOV = 90;

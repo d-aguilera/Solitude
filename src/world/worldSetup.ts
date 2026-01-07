@@ -1,13 +1,12 @@
 import { makeLocalFrameFromUp, mat3FromLocalFrame } from "./localFrame.js";
 import { mat3 } from "./mat3.js";
-import { airplaneModel } from "./models.js";
-import { generatePlanetMesh, makePolylineMesh } from "./planet.js";
+import { airplaneModel, generatePlanetMesh } from "./content/models.js";
 import {
   buildDefaultSolarSystemConfigs,
   radialDirAtAngle,
   tangentialDirAtAngle,
   type PlanetConfig,
-} from "./solarSystemConfig.js";
+} from "./solar/solarSystemConfig.js";
 import type {
   AirplaneSceneObject,
   Camera,
@@ -91,7 +90,11 @@ function createPolylineSceneObject(
   id: string,
   color: RGB
 ): PolylineSceneObject {
-  const mesh = makePolylineMesh(color);
+  const mesh: Mesh = {
+    points: [],
+    faces: [],
+    color,
+  };
   return {
     id,
     kind: "polyline",

@@ -1,6 +1,10 @@
-import { drawPlaneVelocityLine } from "./debugDraw.js";
-import { makePilotView, makeTopView, ScreenPoint } from "./projection.js";
-import type { Camera, WorldState, DrawMode, Vec3 } from "./types.js";
+import { drawPlaneVelocityLine } from "../scene/debugDraw.js";
+import {
+  makePilotView,
+  makeTopView,
+  ScreenPoint,
+} from "../projection/projection.js";
+import type { Camera, WorldState, DrawMode, Vec3 } from "../../world/types.js";
 import type { View } from "./viewTypes.js";
 
 function makeBaseView(

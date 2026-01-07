@@ -1,5 +1,5 @@
-import type { ScreenPoint } from "./projection.js";
-import type { LocalFrame, Vec3, DrawMode } from "./types.js";
+import type { ScreenPoint } from "../projection/projection.js";
+import type { LocalFrame, Vec3, DrawMode } from "../../world/types.js";
 
 export interface View {
   projection: (p: Vec3) => ScreenPoint | null;

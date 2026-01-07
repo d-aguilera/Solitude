@@ -7,7 +7,7 @@ import {
   setProfilingEnabled as realSetProfilingEnabled,
   setPausedForProfiling as realSetPausedForProfiling,
 } from "./profiling.js";
-import type { Profiler } from "./types.js";
+import type { Profiler } from "../world/types.js";
 
 /**
  * Wrapper that decouples callers from the concrete profiling implementation.

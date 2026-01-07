@@ -1,6 +1,6 @@
-import { HORIZONTAL_FOCAL_LENGTH } from "./config.js";
-import { makeLocalFrameFromUp } from "./localFrame.js";
-import type { LocalFrame, Vec3 } from "./types.js";
+import { HORIZONTAL_FOCAL_LENGTH } from "../../app/config.js";
+import { makeLocalFrameFromUp } from "../../world/localFrame.js";
+import type { LocalFrame, Vec3 } from "../../world/types.js";
 
 export interface ScreenPoint {
   x: number;

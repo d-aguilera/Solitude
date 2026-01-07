@@ -4,44 +4,47 @@ import {
   ControlInput,
   updatePhysics,
   type FlightContext,
-} from "./controls.js";
+} from "./controls/controls.js";
 import {
   getProfilingEnabledFromEnv,
   setProfilingEnabledInEnv,
 } from "./debugEnv.js";
 import { updateFPS } from "./fps.js";
-import { ensureGravityState, applyGravity } from "./gravity.js";
+import { ensureGravityState, applyGravity } from "../world/physics/gravity.js";
 import { renderHUD } from "./hud.js";
 import { init as initInput, getKeyState } from "./input.js";
-import { mat3FromLocalFrame } from "./localFrame.js";
+import { mat3FromLocalFrame } from "../world/localFrame.js";
 import { pauseControl, paused } from "./pause.js";
-import { appendPointToPolylineMesh } from "./planet.js";
+import { appendPointToPolylineMesh } from "./trajectory.js";
 import {
   isProfilingEnabled,
   profileCheck,
   profileFlush,
   setPausedForProfiling,
   setProfilingEnabled,
-} from "./profilingFacade.js";
+} from "../profiling/profilingFacade.js";
 import {
   updateTopCameraFrame,
   type TopCameraFrameState,
-} from "./projection.js";
+} from "../render/projection/projection.js";
 import type {
   GravityState,
   LocalFrame,
   Plane,
   Profiler,
   Vec3,
-} from "./types.js";
-import { vec } from "./vec3.js";
-import { renderView } from "./viewRenderer.js";
-import { buildPilotViewConfig, buildTopViewConfig } from "./viewSetup.js";
-import { getCameraById, getPlaneById } from "./worldLookup.js";
+} from "../world/types.js";
+import { vec } from "../world/vec3.js";
+import { renderView } from "../render/projection/viewRenderer.js";
+import {
+  buildPilotViewConfig,
+  buildTopViewConfig,
+} from "../render/projection/viewSetup.js";
+import { getCameraById, getPlaneById } from "../world/worldLookup.js";
 import {
   createInitialSceneAndWorld,
   syncPlanetsToSceneObjects,
-} from "./worldSetup.js";
+} from "../world/worldSetup.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;

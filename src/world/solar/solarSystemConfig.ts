@@ -1,6 +1,6 @@
-import { NEWTON_G } from "./gravityConfig.js";
-import type { Polar2D, RGB, Vec3 } from "./types.js";
-import { vec } from "./vec3.js";
+import { NEWTON_G } from "../physics/gravityConfig.js";
+import type { Polar2D, RGB, Vec3 } from "../../world/types.js";
+import { vec } from "../../world/vec3.js";
 
 export interface PlanetConfig {
   id: string; // scene object id, e.g. "planet:earth"

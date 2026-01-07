@@ -1,5 +1,5 @@
-import { clear, draw } from "./renderScene.js";
-import type { Scene, Profiler } from "./types.js";
+import { clear, draw } from "../scene/renderScene.js";
+import type { Scene, Profiler } from "../../world/types.js";
 import type { View } from "./viewTypes.js";
 
 export function renderView(

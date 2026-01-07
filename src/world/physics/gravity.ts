@@ -6,9 +6,9 @@ import type {
   GravityState,
   Vec3,
   WorldState,
-} from "./types.js";
-import { vec } from "./vec3.js";
-import { getBodyPosition, setBodyPosition } from "./worldLookup.js";
+} from "../../world/types.js";
+import { vec } from "../../world/vec3.js";
+import { getBodyPosition, setBodyPosition } from "../../world/worldLookup.js";
 
 /**
  * Attach or update gravity state on the world. This function ensures that for

@@ -1,4 +1,4 @@
-import type { WorldState, Vec3, BodyId } from "./types.js";
+import type { WorldState, Vec3, BodyId } from "../../world/types.js";
 
 export interface GravitatingBody {
   id: BodyId;

@@ -1,5 +1,5 @@
-import type { ScreenPoint } from "./projection.js";
-import type { FaceEntry } from "./shadedFaces.js";
+import type { ScreenPoint } from "../projection/projection.js";
+import type { FaceEntry } from "../scene/shadedFaces.js";
 
 /**
  * Canvas2D-specific rasterization utilities.

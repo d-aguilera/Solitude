@@ -4,9 +4,9 @@ import {
   rotSpeedPitch,
   rotSpeedYaw,
 } from "./controlsConfig.js";
-import { rotateFrameAroundAxis } from "./localFrame.js";
-import type { LocalFrame, Plane, Vec3, WorldState } from "./types.js";
-import { getPlaneById } from "./worldLookup.js";
+import { rotateFrameAroundAxis } from "../../world/localFrame.js";
+import type { LocalFrame, Plane, Vec3, WorldState } from "../../world/types.js";
+import { getPlaneById } from "../../world/worldLookup.js";
 
 // Base thrust acceleration in m/s^2 along plane forward axis
 const baseThrustAcceleration = 30; // normal engine thrust

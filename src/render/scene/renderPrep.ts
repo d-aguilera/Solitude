@@ -1,5 +1,11 @@
-import { Mat3 } from "./mat3.js";
-import type { Mesh, Renderable, SceneObject, Vec3, RGB } from "./types.js";
+import { Mat3 } from "../../world/mat3.js";
+import type {
+  Mesh,
+  Renderable,
+  SceneObject,
+  Vec3,
+  RGB,
+} from "../../world/types.js";
 
 /**
  * Convert a SceneObject into a Renderable with world-space points.
