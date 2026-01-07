@@ -4,9 +4,8 @@ import {
   rotSpeedPitch,
   rotSpeedYaw,
 } from "./controlsConfig.js";
-import { mat3, Mat3 } from "./mat3.js";
-import type { Plane, Vec3, WorldState } from "./types.js";
-import { vec } from "./vec3.js";
+import { rotateFrameAroundAxis } from "./localFrame.js";
+import type { LocalFrame, Plane, Vec3, WorldState } from "./types.js";
 
 // Base thrust acceleration in m/s^2 along plane forward axis
 const baseThrustAcceleration = 30; // normal engine thrust
@@ -62,97 +61,56 @@ function pilotLookAround(
   if (input.lookDown) pilotView.elevation -= lookSpeed * dtSeconds;
 }
 
-export function updatePlaneAxes(statePlane: Plane): void {
-  const R = statePlane.orientation;
-
-  let right: Vec3 = { x: R[0][0], y: R[1][0], z: R[2][0] };
-  let forward: Vec3 = { x: R[0][1], y: R[1][1], z: R[2][1] };
-  let up: Vec3 = { x: R[0][2], y: R[1][2], z: R[2][2] };
-
-  const lenRight = vec.length(right) || 1;
-  right = {
-    x: right.x / lenRight,
-    y: right.y / lenRight,
-    z: right.z / lenRight,
-  };
-
-  const lenForward = vec.length(forward) || 1;
-  forward = {
-    x: forward.x / lenForward,
-    y: forward.y / lenForward,
-    z: forward.z / lenForward,
-  };
-
-  const lenUp = vec.length(up) || 1;
-  up = { x: up.x / lenUp, y: up.y / lenUp, z: up.z / lenUp };
-
-  statePlane.right = right;
-  statePlane.forward = forward;
-  statePlane.up = up;
-}
-
-function roll(
-  Rlocal: Mat3 | null,
+function rollFrame(
+  frame: LocalFrame,
   dtSeconds: number,
-  input: ControlInput,
-  plane: Plane
-): Mat3 | null {
+  input: ControlInput
+): LocalFrame {
   if (
     (!input.rollLeft && !input.rollRight) ||
     (input.rollLeft && input.rollRight)
   ) {
-    return Rlocal;
+    return frame;
   }
 
-  if (input.rollLeft) {
-    const Rr = mat3.rotAxis(plane.forward, -rotSpeedRoll * dtSeconds);
-    return Rlocal ? mat3.mul(Rr, Rlocal) : Rr;
-  }
+  const angle = (input.rollLeft ? -1 : 1) * rotSpeedRoll * dtSeconds;
 
-  const Rr = mat3.rotAxis(plane.forward, rotSpeedRoll * dtSeconds);
-  return Rlocal ? mat3.mul(Rr, Rlocal) : Rr;
+  // Roll around local forward axis (in world coords)
+  return rotateFrameAroundAxis(frame, frame.forward, angle);
 }
 
-function pitch(
-  Rlocal: Mat3 | null,
+function pitchFrame(
+  frame: LocalFrame,
   dtSeconds: number,
-  input: ControlInput,
-  plane: Plane
-): Mat3 | null {
+  input: ControlInput
+): LocalFrame {
   let pitchInput = 0;
-
   if (input.pitchDown) pitchInput += 1;
   if (input.pitchUp) pitchInput -= 1;
-  if (pitchInput !== 0) {
-    const Rp = mat3.rotAxis(
-      plane.right,
-      pitchInput * rotSpeedPitch * dtSeconds
-    );
-    Rlocal = Rlocal ? mat3.mul(Rp, Rlocal) : Rp;
-  }
-  return Rlocal;
+  if (pitchInput === 0) return frame;
+
+  const angle = pitchInput * rotSpeedPitch * dtSeconds;
+
+  // Pitch around local right axis
+  return rotateFrameAroundAxis(frame, frame.right, angle);
 }
 
-function yaw(
-  Rlocal: Mat3 | null,
+function yawFrame(
+  frame: LocalFrame,
   dtSeconds: number,
-  input: ControlInput,
-  plane: Plane
-): Mat3 | null {
+  input: ControlInput
+): LocalFrame {
   if (
     (!input.yawLeft && !input.yawRight) ||
     (input.yawLeft && input.yawRight)
   ) {
-    return Rlocal;
+    return frame;
   }
 
-  if (input.yawLeft) {
-    const Ry = mat3.rotAxis(plane.up, rotSpeedYaw * dtSeconds);
-    return Rlocal ? mat3.mul(Ry, Rlocal) : Ry;
-  }
+  const angle = (input.yawLeft ? 1 : -1) * rotSpeedYaw * dtSeconds;
 
-  const Ry = mat3.rotAxis(plane.up, -rotSpeedYaw * dtSeconds);
-  return Rlocal ? mat3.mul(Ry, Rlocal) : Ry;
+  // Yaw around local up axis
+  return rotateFrameAroundAxis(frame, frame.up, angle);
 }
 
 /**
@@ -168,18 +126,14 @@ export function applyThrustToPlaneVelocity(
 ): void {
   if (dtSeconds <= 0) return;
 
-  // Determine thrust scalar: +1 for burn (forward), -1 for brake (reverse)
   let thrustSign = 0;
-
   if (input.burn && !input.brake) thrustSign = 1;
   else if (input.brake && !input.burn) thrustSign = -1;
-  else if (input.burn && input.brake) thrustSign = 0; // cancel if both pressed
 
   if (thrustSign === 0) return;
 
-  const f = plane.forward; // already normalized in updatePlaneAxes
+  const f = plane.frame.forward; // LocalFrame forward
 
-  // Choose acceleration: huge when hyper is held, otherwise normal
   const accelMagnitude =
     input.hyper && thrustSign !== 0
       ? baseThrustAcceleration * hyperThrustMultiplier
@@ -203,16 +157,10 @@ export function updatePhysics(
 
   pilotLookAround(dtSeconds, input, ctx);
 
-  let Rlocal = yaw(
-    pitch(roll(null, dtSeconds, input, plane), dtSeconds, input, plane),
-    dtSeconds,
-    input,
-    plane
-  );
+  let frame = plane.frame;
+  frame = rollFrame(frame, dtSeconds, input);
+  frame = pitchFrame(frame, dtSeconds, input);
+  frame = yawFrame(frame, dtSeconds, input);
 
-  if (Rlocal) {
-    plane.orientation = mat3.mul(Rlocal, plane.orientation);
-  }
-
-  updatePlaneAxes(plane);
+  plane.frame = frame; // orientation is now fully expressed by LocalFrame
 }

@@ -13,6 +13,7 @@ import { updateFPS } from "./fps.js";
 import { ensureGravityState, applyGravity } from "./gravity.js";
 import { renderHUD } from "./hud.js";
 import { init as initInput, getKeyState } from "./input.js";
+import { mat3FromLocalFrame } from "./localFrame.js";
 import { pauseControl, paused } from "./pause.js";
 import { appendPointToPolylineMesh } from "./planet.js";
 import {
@@ -28,10 +29,10 @@ import {
 } from "./projection.js";
 import type {
   Camera,
+  GravityState,
   Plane,
   Profiler,
   WorldState,
-  GravityState,
 } from "./types.js";
 import { vec } from "./vec3.js";
 import { renderView } from "./viewRenderer.js";
@@ -299,7 +300,8 @@ function updateTopCamera(): void {
   const plane = getPlane(world, mainPlaneId);
   const camera = getTopCamera(world);
 
-  const radial = vec.normalize(plane.up);
+  // Plane's local "up" in world space
+  const radial = vec.normalize(plane.frame.up);
 
   const distanceAbovePlane = 50;
   const camPos = camera.position;
@@ -308,13 +310,12 @@ function updateTopCamera(): void {
   camPos.y = planePos.y + radial.y * distanceAbovePlane;
   camPos.z = planePos.z + radial.z * distanceAbovePlane;
 
-  const { orientation, state: nextState } = updateTopCameraFrame(
+  const { frame, state: nextState } = updateTopCameraFrame(
     radial,
     topCameraFrameState
   );
   topCameraFrameState = nextState;
-
-  camera.orientation = orientation;
+  camera.frame = frame;
 }
 
 // Keep visual representation in sync with simulated plane state.
@@ -327,7 +328,7 @@ function syncPlanesToSceneObjects(): void {
     }
 
     obj.position = { ...plane.position };
-    obj.orientation = plane.orientation;
+    obj.orientation = mat3FromLocalFrame(plane.frame);
     obj.scale = plane.scale;
   }
 }
@@ -392,7 +393,9 @@ function updatePilotCamera(plane: Plane): void {
   const backwardOffset = -20.0; // behind
   const upwardOffset = 5.0; // above
 
-  const { forward, orientation, position, up } = plane;
+  const forward = plane.frame.forward;
+  const up = plane.frame.up;
+  const position = plane.position;
 
   // Position camera relative to plane
   camera.position.x =
@@ -402,8 +405,8 @@ function updatePilotCamera(plane: Plane): void {
   camera.position.z =
     position.z + forward.z * backwardOffset + up.z * upwardOffset;
 
-  // Make camera orientation match plane orientation (so it looks forward)
-  camera.orientation = orientation;
+  // Align camera orientation to the plane's LocalFrame
+  camera.frame = { ...plane.frame };
 }
 
 function appendPlaneTrajectoryPoint(): void {

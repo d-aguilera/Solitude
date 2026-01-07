@@ -1,3 +1,4 @@
+import { mat3FromLocalFrame } from "./localFrame.js";
 import { mat3 } from "./mat3.js";
 import { airplaneModel } from "./models.js";
 import {
@@ -14,6 +15,7 @@ import {
 import type {
   AirplaneSceneObject,
   Camera,
+  LocalFrame,
   Mesh,
   PilotView,
   Plane,
@@ -29,22 +31,15 @@ import type {
 import { vec } from "./vec3.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
-const initialFrame = makeLocalFrame(initialUp);
-const initialForward: Vec3 = { ...initialFrame.forward };
+const initialFrame: LocalFrame = makeLocalFrame(initialUp);
+const initialForward: Vec3 = initialFrame.forward;
 
 function createInitialPlane(id: string, position: Vec3): Plane {
-  const { right, forward, up } = initialFrame;
+  const frame = initialFrame;
   return {
     id,
     position: { ...position },
-    orientation: [
-      [right.x, forward.x, up.x],
-      [right.y, forward.y, up.y],
-      [right.z, forward.z, up.z],
-    ],
-    right: { ...initialFrame.right },
-    forward: { ...initialFrame.forward },
-    up: { ...initialFrame.up },
+    frame: { ...frame },
     speed: 0, // start from rest
     scale: 15,
     velocity: { x: 0, y: 0, z: 0 },
@@ -68,7 +63,7 @@ function createInitialTopCamera(id: string, plane: Plane): Camera {
       y: plane.position.y,
       z: plane.position.z + 50,
     },
-    orientation: mat3.identity,
+    frame: initialFrame,
   };
 }
 
@@ -76,7 +71,7 @@ function createInitialPilotCamera(id: string, plane: Plane): Camera {
   return {
     id,
     position: { ...plane.position }, // will be offset in game loop
-    orientation: mat3.identity,
+    frame: initialFrame,
   };
 }
 
@@ -86,7 +81,7 @@ function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
     kind: "airplane",
     mesh: airplaneModel,
     position: { ...plane.position },
-    orientation: plane.orientation,
+    orientation: mat3FromLocalFrame(plane.frame),
     scale: plane.scale,
     color: airplaneModel.color,
     lineWidth: 1,

@@ -32,10 +32,7 @@ export interface LocalFrame {
 export interface Plane {
   id: string;
   position: Vec3;
-  orientation: Mat3;
-  right: Vec3;
-  forward: Vec3;
-  up: Vec3;
+  frame: LocalFrame;
   speed: number;
   scale: number;
   velocity: Vec3;
@@ -63,7 +60,7 @@ export interface PlanetPhysics {
 export interface Camera {
   id: string;
   position: Vec3;
-  orientation: Mat3;
+  frame: LocalFrame;
 }
 
 export interface PilotView {

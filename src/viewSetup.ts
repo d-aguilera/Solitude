@@ -15,13 +15,11 @@ export function buildPilotViewConfig(
   drawMode: DrawMode
 ): View {
   const pilotView = world.pilotViews.find((p) => p.id === mainPilotViewId);
-  if (!pilotView) {
-    throw new Error(`Pilot view not found: ${mainPilotViewId}`);
-  }
+  if (!pilotView) throw new Error(`Pilot view not found: ${mainPilotViewId}`);
 
   const projection = makePilotView({
     cameraPosition: pilotCamera.position,
-    cameraOrientation: pilotCamera.orientation,
+    cameraFrame: pilotCamera.frame,
     pilotAzimuth: pilotView.azimuth,
     pilotElevation: pilotView.elevation,
     canvasWidth,
@@ -31,6 +29,7 @@ export function buildPilotViewConfig(
   return {
     projection,
     cameraPos: pilotCamera.position,
+    cameraFrame: pilotCamera.frame,
     drawMode,
     debugDraw: (ctx) => {
       for (const plane of world.planes) {
@@ -52,7 +51,7 @@ export function buildTopViewConfig(
 ): View {
   const projection = makeTopView({
     cameraPosition: topCamera.position,
-    cameraOrientation: topCamera.orientation,
+    cameraFrame: topCamera.frame,
     canvasWidth,
     canvasHeight,
   });
@@ -60,6 +59,7 @@ export function buildTopViewConfig(
   return {
     projection,
     cameraPos: topCamera.position,
+    cameraFrame: topCamera.frame,
     drawMode,
     debugDraw: (ctx) => {
       for (const plane of world.planes) {

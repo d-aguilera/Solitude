@@ -1,7 +1,6 @@
 import { HORIZONTAL_FOCAL_LENGTH } from "./config.js";
-import { Mat3 } from "./mat3.js";
 import { makeLocalFrame } from "./planet.js";
-import type { Vec3 } from "./types.js";
+import type { LocalFrame, Vec3 } from "./types.js";
 
 export interface ScreenPoint {
   x: number;
@@ -11,7 +10,7 @@ export interface ScreenPoint {
 
 export interface PilotViewContext {
   cameraPosition: Vec3;
-  cameraOrientation: Mat3;
+  cameraFrame: LocalFrame;
   pilotAzimuth: number;
   pilotElevation: number;
   canvasWidth: number;
@@ -20,7 +19,7 @@ export interface PilotViewContext {
 
 export interface TopViewContext {
   cameraPosition: Vec3;
-  cameraOrientation: Mat3;
+  cameraFrame: LocalFrame;
   canvasWidth: number;
   canvasHeight: number;
 }
@@ -34,7 +33,7 @@ export function makePilotView(ctx: PilotViewContext) {
     const cameraPoint = worldPointToCameraPoint(
       worldPoint,
       ctx.cameraPosition,
-      ctx.cameraOrientation
+      ctx.cameraFrame
     );
 
     applyPilotLook(cameraPoint, ctx.pilotAzimuth, ctx.pilotElevation);
@@ -49,9 +48,7 @@ export function makePilotView(ctx: PilotViewContext) {
 
 export interface TopCameraFrameState {
   initialized: boolean;
-  right: Vec3;
-  forward: Vec3;
-  up: Vec3;
+  frame: LocalFrame;
 }
 
 /**
@@ -62,29 +59,31 @@ export interface TopCameraFrameState {
 export function updateTopCameraFrame(
   radialUp: Vec3,
   prevState: TopCameraFrameState | null
-): { orientation: Mat3; state: TopCameraFrameState } {
+): { frame: LocalFrame; state: TopCameraFrameState } {
   let state = prevState;
 
   if (!state || !state.initialized) {
-    const frame = makeLocalFrame(radialUp);
-    const right = frame.right;
+    const lf = makeLocalFrame(radialUp);
     const forward: Vec3 = {
       x: -radialUp.x,
       y: -radialUp.y,
       z: -radialUp.z,
     };
-    const up = frame.forward;
 
     state = {
       initialized: true,
-      right,
-      forward,
-      up,
+      frame: {
+        right: lf.right,
+        forward,
+        up: lf.forward,
+      },
     };
   } else {
-    let topCameraRight = state.right;
-    let topCameraForward = state.forward;
-    let topCameraUp = state.up;
+    let {
+      right: topCameraRight,
+      forward: topCameraForward,
+      up: topCameraUp,
+    } = state.frame;
 
     const dotR =
       topCameraRight.x * radialUp.x +
@@ -185,22 +184,15 @@ export function updateTopCameraFrame(
 
     state = {
       initialized: true,
-      right: state ? state.right : { x: 1, y: 0, z: 0 },
-      forward: state ? state.forward : { x: 0, y: 1, z: 0 },
-      up: state ? state.up : { x: 0, y: 0, z: 1 },
+      frame: {
+        right: topCameraRight,
+        forward: topCameraForward,
+        up: topCameraUp,
+      },
     };
-    state.right = topCameraRight;
-    state.forward = topCameraForward;
-    state.up = topCameraUp;
   }
 
-  const orientation: Mat3 = [
-    [state.right.x, state.forward.x, state.up.x],
-    [state.right.y, state.forward.y, state.up.y],
-    [state.right.z, state.forward.z, state.up.z],
-  ];
-
-  return { orientation, state };
+  return { frame: { ...state.frame }, state };
 }
 
 export function makeTopView(ctx: TopViewContext) {
@@ -210,7 +202,7 @@ export function makeTopView(ctx: TopViewContext) {
     const cameraPoint = worldPointToCameraPoint(
       worldPoint,
       ctx.cameraPosition,
-      ctx.cameraOrientation
+      ctx.cameraFrame
     );
 
     if (cameraPoint.z <= 0.1) return null;
@@ -222,15 +214,9 @@ export function makeTopView(ctx: TopViewContext) {
 function worldPointToCameraPoint(
   { x, y, z }: Vec3,
   cameraPosition: Vec3,
-  cameraOrientation: Mat3
+  cameraFrame: LocalFrame
 ): Vec3 {
-  const R = cameraOrientation;
-  const R0 = R[0];
-  const R1 = R[1];
-  const R2 = R[2];
-  const right: Vec3 = { x: R0[0], y: R1[0], z: R2[0] };
-  const forward: Vec3 = { x: R0[1], y: R1[1], z: R2[1] };
-  const up: Vec3 = { x: R0[2], y: R1[2], z: R2[2] };
+  const { right, forward, up } = cameraFrame;
 
   const dx = x - cameraPosition.x;
   const dy = y - cameraPosition.y;
