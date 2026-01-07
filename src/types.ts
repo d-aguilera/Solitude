@@ -56,18 +56,9 @@ export interface PlanetBody {
  */
 export interface PlanetPhysics {
   id: string;
-  /**
-   * Physical radius in meters (used for mass & gameplay).
-   */
-  physicalRadius: number;
-  /**
-   * Density in kg/m^3 (used for mass computation).
-   */
-  density: number;
-  /**
-   * Cached mass in kg (derived from radius and density).
-   */
-  mass: number;
+  physicalRadius: number; // meters
+  density: number; // kg/m^3
+  mass: number; // kg (derived from radius and density)
 }
 
 export interface Camera {
@@ -118,7 +109,7 @@ export interface PlanetSceneObject extends BaseSceneObject {
   kind: "planet";
   applyTransform: true;
   wireframeOnly: false;
-  initialVelocity?: Vec3;
+  initialVelocity: Vec3;
   physicalRadius: number; // meters
 }
 

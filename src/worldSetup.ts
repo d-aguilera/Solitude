@@ -183,7 +183,7 @@ function addPlanetsFromConfig(
             y: tangential.y * cfg.tangentialSpeed,
             z: tangential.z * cfg.tangentialSpeed,
           }
-        : undefined; // Sun at origin has no initial orbital velocity
+        : { x: 0, y: 0, z: 0 }; // Sun at origin has no initial orbital velocity
 
     const planetObj: PlanetSceneObject = {
       id: cfg.id,
