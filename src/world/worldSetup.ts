@@ -78,7 +78,7 @@ function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
     position: { ...plane.position },
     orientation: mat3FromLocalFrame(plane.frame),
     scale: plane.scale,
-    color: airplaneModel.color,
+    color: { r: 0, g: 255, b: 255 },
     lineWidth: 1,
     applyTransform: true,
     wireframeOnly: false,
@@ -93,7 +93,6 @@ function createPolylineSceneObject(
   const mesh: Mesh = {
     points: [],
     faces: [],
-    color,
   };
   return {
     id,
@@ -102,7 +101,7 @@ function createPolylineSceneObject(
     position: { x: 0, y: 0, z: 0 },
     orientation: mat3.identity,
     scale: 1,
-    color: mesh.color,
+    color,
     lineWidth: 1,
     wireframeOnly: true,
     applyTransform: false, // polyline points are in world space
@@ -155,8 +154,7 @@ function addPlanetsFromConfig(
     // Physical orbit radius in meters
     const center: Vec3 = vec.scale(radial, cfg.orbit.radius);
 
-    const planetMesh: Mesh = { ...planetMeshTemplate };
-    planetMesh.color = cfg.color;
+    const bodyMesh: Mesh = { ...bodyMeshTemplate };
 
     const initialVelocity =
       cfg.orbit.radius > 0

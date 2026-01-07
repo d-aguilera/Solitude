@@ -11,26 +11,21 @@ import type {
  * Convert a SceneObject into a Renderable with world-space points.
  */
 export function toRenderable(obj: SceneObject): Renderable {
-  const mesh: Mesh = obj.mesh;
-  const baseColor: RGB = obj.color ?? mesh.color;
-
   const worldPoints: Vec3[] = obj.applyTransform
     ? transformPointsToWorld(
-        mesh.points,
+        obj.mesh.points,
         obj.orientation,
         obj.scale,
         obj.position
       )
-    : mesh.points;
-
-  const colorCss = rgbToCss(baseColor);
+    : obj.mesh.points;
 
   return {
-    mesh,
+    mesh: obj.mesh,
     worldPoints,
-    color: colorCss,
+    color: rgbToCss(obj.color),
     lineWidth: obj.lineWidth,
-    baseColor,
+    baseColor: obj.color,
   };
 }
 

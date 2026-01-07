@@ -37,7 +37,6 @@ export const airplaneModel: Mesh = {
     [3, 12, 4], // back fuselage, bottom right face
     [11, 4, 12], // back fuselage, bottom face
   ],
-  color: { r: 0, g: 255, b: 255 },
 };
 
 const t = (1 + Math.sqrt(5)) / 2;
@@ -84,7 +83,6 @@ export const icosahedronModel: Mesh = {
     [8, 6, 7],
     [9, 8, 1],
   ],
-  color: { r: 80, g: 160, b: 220 },
 };
 
 // --- Planet / sphere-like meshes ---
@@ -168,6 +166,5 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
   return {
     points,
     faces,
-    color: icosahedronModel.color,
   };
 }

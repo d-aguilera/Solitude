@@ -20,7 +20,6 @@ export interface Polar2D {
 export interface Mesh {
   points: Vec3[];
   faces: number[][];
-  color: RGB;
 }
 
 export interface LocalFrame {
