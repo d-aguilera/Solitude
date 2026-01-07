@@ -32,7 +32,9 @@ import type {
   LocalFrame,
   Plane,
   Profiler,
+  Scene,
   Vec3,
+  WorldState,
 } from "../world/types.js";
 import { vec } from "../world/vec3.js";
 import { renderView } from "../render/projection/viewRenderer.js";
@@ -43,6 +45,7 @@ import {
 import { getCameraById, getPlaneById } from "../world/worldLookup.js";
 import {
   createInitialSceneAndWorld,
+  PlanetPathMapping,
   syncPlanetsToSceneObjects,
 } from "../world/worldSetup.js";
 
@@ -52,15 +55,13 @@ let accumTime = 0;
 
 let topCameraFrameState: TopCameraFrameState | null = null;
 
-const {
-  scene: scene,
-  world: world,
-  mainPlaneId: mainPlaneId,
-  mainPilotViewId: mainPilotViewId,
-  topCameraId: topCameraId,
-  pilotCameraId,
-  planetPathMappings,
-} = createInitialSceneAndWorld();
+let scene: Scene,
+  world: WorldState,
+  mainPlaneId: string,
+  mainPilotViewId: string,
+  topCameraId: string,
+  pilotCameraId: string,
+  planetPathMappings: PlanetPathMapping[];
 
 // Gravity state
 let gravityState: GravityState | null = null;
@@ -70,6 +71,15 @@ export function startGame(
   topContext: CanvasRenderingContext2D,
   profiler: Profiler
 ): void {
+  const x = createInitialSceneAndWorld();
+  scene = x.scene;
+  world = x.world;
+  mainPlaneId = x.mainPlaneId;
+  mainPilotViewId = x.mainPilotViewId;
+  topCameraId = x.topCameraId;
+  pilotCameraId = x.pilotCameraId;
+  planetPathMappings = x.planetPathMappings;
+
   initInput();
   requestAnimationFrame((nowMs) => {
     lastTimeMs = nowMs;
