@@ -1,11 +1,12 @@
-import type { ScreenPoint } from "./projection.js";
-import { toRenderable } from "./renderPrep.js";
-import { buildShadedFaces } from "./shadedFaces.js";
-import type { Profiler, SceneObject, Vec3, View } from "./types.js";
 import {
   renderShadedFacesToCanvas,
   strokePolylineOnCanvas,
 } from "./canvasRasterizer.js";
+import type { ScreenPoint } from "./projection.js";
+import { toRenderable } from "./renderPrep.js";
+import { buildShadedFaces } from "./shadedFaces.js";
+import type { Profiler, SceneObject, Vec3 } from "./types.js";
+import type { View } from "./viewTypes.js";
 
 interface DrawOptions {
   objects: SceneObject[];

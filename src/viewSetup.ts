@@ -1,6 +1,7 @@
 import { drawPlaneVelocityLine } from "./debugDraw.js";
 import { makePilotView, makeTopView } from "./projection.js";
-import type { Camera, View, WorldState, DrawMode } from "./types.js";
+import type { Camera, WorldState, DrawMode } from "./types.js";
+import type { View } from "./viewTypes.js";
 
 /**
  * Build the View configuration for the pilot view, given world state.

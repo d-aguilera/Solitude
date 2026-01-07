@@ -1,5 +1,4 @@
 import { Mat3 } from "./mat3";
-import { ScreenPoint } from "./projection";
 
 export interface Vec3 {
   x: number;
@@ -178,12 +177,4 @@ export interface BodyState {
  */
 export interface GravityState {
   bodies: BodyState[];
-}
-
-export interface View {
-  projection: (p: Vec3) => ScreenPoint | null;
-  cameraPos: Vec3 | null;
-  drawMode: DrawMode;
-  // Optional debug overlay, not part of scene geometry
-  debugDraw?: (ctx: CanvasRenderingContext2D) => void;
 }

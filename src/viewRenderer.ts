@@ -1,5 +1,6 @@
 import { clear, draw } from "./renderScene.js";
-import type { Scene, View, Profiler } from "./types.js";
+import type { Scene, Profiler } from "./types.js";
+import type { View } from "./viewTypes.js";
 
 export function renderView(
   context: CanvasRenderingContext2D,
