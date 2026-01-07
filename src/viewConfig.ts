@@ -1,5 +1,6 @@
 import { makePilotView, makeTopView } from "./projection.js";
 import { drawPlaneVelocityLine } from "./debugDraw.js";
+import { DRAW_MODE } from "./config.js";
 import type { Camera, View, WorldState } from "./types.js";
 
 /**
@@ -8,7 +9,9 @@ import type { Camera, View, WorldState } from "./types.js";
 export function buildPilotViewConfig(
   world: WorldState,
   pilotCamera: Camera,
-  mainPilotViewId: string
+  mainPilotViewId: string,
+  canvasWidth: number,
+  canvasHeight: number
 ): View {
   const pilotView = world.pilotViews.find((p) => p.id === mainPilotViewId);
   if (!pilotView) {
@@ -20,11 +23,14 @@ export function buildPilotViewConfig(
     cameraOrientation: pilotCamera.orientation,
     pilotAzimuth: pilotView.azimuth,
     pilotElevation: pilotView.elevation,
+    canvasWidth,
+    canvasHeight,
   });
 
   return {
     projection,
     cameraPos: pilotCamera.position,
+    drawMode: DRAW_MODE,
     debugDraw: (ctx, project) => {
       for (const plane of world.planes) {
         drawPlaneVelocityLine(ctx, project, plane);
@@ -36,15 +42,23 @@ export function buildPilotViewConfig(
 /**
  * Build the View configuration for the top-down view, given world state.
  */
-export function buildTopViewConfig(world: WorldState, topCamera: Camera): View {
+export function buildTopViewConfig(
+  world: WorldState,
+  topCamera: Camera,
+  canvasWidth: number,
+  canvasHeight: number
+): View {
   const projection = makeTopView({
     cameraPosition: topCamera.position,
     cameraOrientation: topCamera.orientation,
+    canvasWidth,
+    canvasHeight,
   });
 
   return {
     projection,
     cameraPos: topCamera.position,
+    drawMode: DRAW_MODE,
     debugDraw: (ctx, project) => {
       for (const plane of world.planes) {
         drawPlaneVelocityLine(ctx, project, plane);

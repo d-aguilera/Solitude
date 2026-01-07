@@ -1,4 +1,3 @@
-import { DRAW_MODE, HEIGHT, WIDTH } from "./config.js";
 import type { ScreenPoint } from "./projection.js";
 import { toRenderable } from "./renderPrep.js";
 import { buildShadedFaces } from "./shadedFaces.js";
@@ -19,8 +18,10 @@ interface DrawOptions {
  * Clears the entire canvas for a new frame.
  */
 export function clear(context: CanvasRenderingContext2D): void {
+  const { width, height } = context.canvas;
+
   context.fillStyle = "#000000";
-  context.fillRect(0, 0, WIDTH, HEIGHT);
+  context.fillRect(0, 0, width, height);
 }
 
 /**
@@ -39,7 +40,7 @@ export function draw(
   const projectedPoints: ScreenPoint[] = [];
 
   profiler.run("DRAW", "total", () => {
-    if (DRAW_MODE === "faces") {
+    if (view.drawMode === "faces") {
       profiler.run("DRAW", "faces", () => {
         // 1) Solid objects: faces path, skipping wireframe-only
         const faceList = buildShadedFaces({

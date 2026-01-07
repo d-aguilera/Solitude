@@ -1,4 +1,4 @@
-import { FOCAL_LENGTH, HEIGHT, WIDTH } from "./config.js";
+import { HORIZONTAL_FOCAL_LENGTH } from "./config.js";
 import { rotate2D } from "./math.js";
 import { makeLocalFrame } from "./planet.js";
 import type { Vec3, Mat3 } from "./types.js";
@@ -14,56 +14,34 @@ export interface PilotViewContext {
   cameraOrientation: Mat3;
   pilotAzimuth: number;
   pilotElevation: number;
+  canvasWidth: number;
+  canvasHeight: number;
 }
 
 export interface TopViewContext {
   cameraPosition: Vec3;
   cameraOrientation: Mat3;
+  canvasWidth: number;
+  canvasHeight: number;
 }
 
 // --- PROJECTION 1: PILOT VIEW ---
 
 export function makePilotView(ctx: PilotViewContext) {
-  return function pilotView({ x, y, z }: Vec3): ScreenPoint | null {
-    const R = ctx.cameraOrientation;
-    const right: Vec3 = { x: R[0][0], y: R[1][0], z: R[2][0] };
-    const forward: Vec3 = { x: R[0][1], y: R[1][1], z: R[2][1] };
-    const up: Vec3 = { x: R[0][2], y: R[1][2], z: R[2][2] };
+  const { canvasWidth, canvasHeight } = ctx;
 
-    const cameraX = ctx.cameraPosition.x;
-    const cameraY = ctx.cameraPosition.y;
-    const cameraZ = ctx.cameraPosition.z;
+  return function pilotView(worldPoint: Vec3): ScreenPoint | null {
+    const cameraPoint = worldPointToCameraPoint(
+      worldPoint,
+      ctx.cameraPosition,
+      ctx.cameraOrientation
+    );
 
-    // Vector from camera to point
-    const dx = x - cameraX;
-    const dy = y - cameraY;
-    const dz = z - cameraZ;
+    applyPilotLook(cameraPoint, ctx.pilotAzimuth, ctx.pilotElevation);
 
-    // Transform to camera space
-    let cx = dx * right.x + dy * right.y + dz * right.z;
-    let cy = dx * up.x + dy * up.y + dz * up.z;
-    let cz = dx * forward.x + dy * forward.y + dz * forward.z;
+    if (cameraPoint.z <= 0.1) return null;
 
-    if (ctx.pilotAzimuth !== 0 || ctx.pilotElevation !== 0) {
-      if (ctx.pilotAzimuth !== 0) {
-        const r1 = rotate2D(cx, cz, -ctx.pilotAzimuth);
-        cx = r1.a;
-        cz = r1.b;
-      }
-      if (ctx.pilotElevation !== 0) {
-        const r2 = rotate2D(cy, cz, -ctx.pilotElevation);
-        cy = r2.a;
-        cz = r2.b;
-      }
-    }
-
-    if (cz <= 0.1) return null;
-
-    return {
-      x: ((cx * FOCAL_LENGTH) / cz + 0.5) * WIDTH,
-      y: (0.5 - (cy * FOCAL_LENGTH) / cz) * HEIGHT,
-      depth: cz,
-    };
+    return applyPerspective(cameraPoint, canvasWidth, canvasHeight);
   };
 }
 
@@ -226,26 +204,80 @@ export function updateTopCameraFrame(
 }
 
 export function makeTopView(ctx: TopViewContext) {
-  return function topView({ x, y, z }: Vec3): ScreenPoint | null {
-    const dx = x - ctx.cameraPosition.x;
-    const dy = y - ctx.cameraPosition.y;
-    const dz = z - ctx.cameraPosition.z;
+  const { canvasWidth, canvasHeight } = ctx;
 
-    const R = ctx.cameraOrientation;
-    const right: Vec3 = { x: R[0][0], y: R[1][0], z: R[2][0] };
-    const forward: Vec3 = { x: R[0][1], y: R[1][1], z: R[2][1] };
-    const up: Vec3 = { x: R[0][2], y: R[1][2], z: R[2][2] };
+  return function topView(worldPoint: Vec3): ScreenPoint | null {
+    const cameraPoint = worldPointToCameraPoint(
+      worldPoint,
+      ctx.cameraPosition,
+      ctx.cameraOrientation
+    );
 
-    const cx = dx * right.x + dy * right.y + dz * right.z;
-    const cy = dx * up.x + dy * up.y + dz * up.z;
-    const cz = dx * forward.x + dy * forward.y + dz * forward.z;
+    if (cameraPoint.z <= 0.1) return null;
 
-    if (cz <= 0.1) return null;
+    return applyPerspective(cameraPoint, canvasWidth, canvasHeight);
+  };
+}
 
-    return {
-      x: ((cx * FOCAL_LENGTH) / cz + 0.5) * WIDTH,
-      y: (0.5 - (cy * FOCAL_LENGTH) / cz) * HEIGHT,
-      depth: cz,
-    };
+function worldPointToCameraPoint(
+  { x, y, z }: Vec3,
+  cameraPosition: Vec3,
+  cameraOrientation: Mat3
+): Vec3 {
+  const R = cameraOrientation;
+  const R0 = R[0];
+  const R1 = R[1];
+  const R2 = R[2];
+  const right: Vec3 = { x: R0[0], y: R1[0], z: R2[0] };
+  const forward: Vec3 = { x: R0[1], y: R1[1], z: R2[1] };
+  const up: Vec3 = { x: R0[2], y: R1[2], z: R2[2] };
+
+  const dx = x - cameraPosition.x;
+  const dy = y - cameraPosition.y;
+  const dz = z - cameraPosition.z;
+
+  return {
+    x: dx * right.x + dy * right.y + dz * right.z,
+    y: dx * up.x + dy * up.y + dz * up.z,
+    z: dx * forward.x + dy * forward.y + dz * forward.z,
+  };
+}
+
+function applyPilotLook(cameraPoint: Vec3, azimuth: number, elevation: number) {
+  if (azimuth === 0 && elevation === 0) {
+    return;
+  }
+
+  if (azimuth !== 0) {
+    const r = rotate2D(cameraPoint.x, cameraPoint.z, -azimuth);
+    cameraPoint.x = r.a;
+    cameraPoint.z = r.b;
+  }
+
+  if (elevation !== 0) {
+    const r = rotate2D(cameraPoint.y, cameraPoint.z, -elevation);
+    cameraPoint.y = r.a;
+    cameraPoint.z = r.b;
+  }
+}
+
+function applyPerspective(
+  { x: cx, y: cy, z: cz }: Vec3,
+  canvasWidth: number,
+  canvasHeight: number
+): ScreenPoint {
+  const aspect = canvasWidth / canvasHeight;
+
+  const fX = HORIZONTAL_FOCAL_LENGTH;
+  const fY = fX / aspect;
+
+  // NDC in [-1, 1]
+  const ndcX = (cx * fX) / cz;
+  const ndcY = (cy * fY) / cz;
+
+  return {
+    x: (ndcX + 1) * 0.5 * canvasWidth,
+    y: (1 - ndcY) * 0.5 * canvasHeight,
+    depth: cz,
   };
 }

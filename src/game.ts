@@ -239,10 +239,14 @@ function renderAllViews(
   profiler.run("GAME", "pilot-view", () => {
     // 1) Build view configuration from world & camera
     const pilotCamera = getPilotCamera(world);
+    const pilotCanvas = pilotContext.canvas;
+
     const pilotViewConfig = buildPilotViewConfig(
       world,
       pilotCamera,
-      mainPilotViewId
+      mainPilotViewId,
+      pilotCanvas.width,
+      pilotCanvas.height
     );
 
     // 2) Render pilot view
@@ -252,7 +256,14 @@ function renderAllViews(
   profiler.run("GAME", "top-view", () => {
     // 1) Build view configuration from world & camera
     const topCamera = getTopCamera(world);
-    const topViewConfig = buildTopViewConfig(world, topCamera);
+    const topCanvas = topContext.canvas;
+
+    const topViewConfig = buildTopViewConfig(
+      world,
+      topCamera,
+      topCanvas.width,
+      topCanvas.height
+    );
 
     // 2) Render top view
     renderView(topContext, scene, topViewConfig, profiler);
