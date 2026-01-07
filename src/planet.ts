@@ -1,23 +1,5 @@
-import type { LocalFrame, Mesh, RGB, Vec3 } from "./types.js";
+import type { Mesh, RGB, Vec3 } from "./types.js";
 import { vec } from "./vec3.js";
-
-export function makeLocalFrame(up: Vec3): LocalFrame {
-  const u = vec.normalize(up);
-
-  const worldForward: Vec3 =
-    Math.abs(u.z) < 0.9 ? { x: 0, y: 0, z: 1 } : { x: 1, y: 0, z: 0 };
-
-  const dot = vec.dot(u, worldForward);
-  let forward = vec.sub(worldForward, vec.scale(u, dot));
-  forward = vec.normalize(forward);
-
-  let right = vec.cross(forward, u);
-  right = vec.normalize(right);
-
-  forward = vec.cross(u, right);
-
-  return { right, forward, up: u };
-}
 
 export function generatePlanetMesh(subdivisions = 3): Mesh {
   const t = (1 + Math.sqrt(5)) / 2;

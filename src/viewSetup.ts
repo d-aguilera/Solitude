@@ -1,7 +1,26 @@
 import { drawPlaneVelocityLine } from "./debugDraw.js";
-import { makePilotView, makeTopView } from "./projection.js";
-import type { Camera, WorldState, DrawMode } from "./types.js";
+import { makePilotView, makeTopView, ScreenPoint } from "./projection.js";
+import type { Camera, WorldState, DrawMode, Vec3 } from "./types.js";
 import type { View } from "./viewTypes.js";
+
+function makeBaseView(
+  world: WorldState,
+  camera: Camera,
+  projection: (p: Vec3) => ScreenPoint | null,
+  drawMode: DrawMode
+): View {
+  return {
+    projection,
+    cameraPos: camera.position,
+    cameraFrame: camera.frame,
+    drawMode,
+    debugDraw: (ctx) => {
+      for (const plane of world.planes) {
+        drawPlaneVelocityLine(ctx, projection, plane);
+      }
+    },
+  };
+}
 
 /**
  * Build the View configuration for the pilot view, given world state.
@@ -26,17 +45,7 @@ export function buildPilotViewConfig(
     canvasHeight,
   });
 
-  return {
-    projection,
-    cameraPos: pilotCamera.position,
-    cameraFrame: pilotCamera.frame,
-    drawMode,
-    debugDraw: (ctx) => {
-      for (const plane of world.planes) {
-        drawPlaneVelocityLine(ctx, projection, plane);
-      }
-    },
-  };
+  return makeBaseView(world, pilotCamera, projection, drawMode);
 }
 
 /**
@@ -56,15 +65,5 @@ export function buildTopViewConfig(
     canvasHeight,
   });
 
-  return {
-    projection,
-    cameraPos: topCamera.position,
-    cameraFrame: topCamera.frame,
-    drawMode,
-    debugDraw: (ctx) => {
-      for (const plane of world.planes) {
-        drawPlaneVelocityLine(ctx, projection, plane);
-      }
-    },
-  };
+  return makeBaseView(world, topCamera, projection, drawMode);
 }

@@ -1,3 +1,4 @@
+import { NEWTON_G } from "./gravityConfig.js";
 import type { Polar2D, RGB, Vec3 } from "./types.js";
 import { vec } from "./vec3.js";
 
@@ -71,11 +72,10 @@ export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
 
   // Use real Sun mass, not inferred from visual radius
   const M_sun = 1.98847e30; // kg
-  const G = 6.6743e-11;
 
   function circularSpeedAtRadius(r: number): number {
     // v = sqrt(G * M_sun / r)
-    return Math.sqrt((G * M_sun) / r);
+    return Math.sqrt((NEWTON_G * M_sun) / r);
   }
 
   return [

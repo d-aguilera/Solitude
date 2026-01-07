@@ -1,11 +1,7 @@
-import { mat3FromLocalFrame } from "./localFrame.js";
+import { makeLocalFrameFromUp, mat3FromLocalFrame } from "./localFrame.js";
 import { mat3 } from "./mat3.js";
 import { airplaneModel } from "./models.js";
-import {
-  generatePlanetMesh,
-  makeLocalFrame,
-  makePolylineMesh,
-} from "./planet.js";
+import { generatePlanetMesh, makePolylineMesh } from "./planet.js";
 import {
   buildDefaultSolarSystemConfigs,
   radialDirAtAngle,
@@ -31,7 +27,7 @@ import type {
 import { vec } from "./vec3.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
-const initialFrame: LocalFrame = makeLocalFrame(initialUp);
+const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
 const initialForward: Vec3 = initialFrame.forward;
 
 function createInitialPlane(id: string, position: Vec3): Plane {
@@ -91,9 +87,11 @@ function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
   objects.push(obj);
 }
 
-function createPlanetPathObject(id: string, color: RGB): PolylineSceneObject {
+function createPolylineSceneObject(
+  id: string,
+  color: RGB
+): PolylineSceneObject {
   const mesh = makePolylineMesh(color);
-
   return {
     id,
     kind: "polyline",
@@ -108,25 +106,12 @@ function createPlanetPathObject(id: string, color: RGB): PolylineSceneObject {
   };
 }
 
-function createEmptyOrbitPathObject(id: string): PolylineSceneObject {
-  const mesh: Mesh = {
-    points: [],
-    faces: [],
-    color: { r: 255, g: 255, b: 0 },
-  };
+function createPlanetPathObject(id: string, color: RGB): PolylineSceneObject {
+  return createPolylineSceneObject(id, color);
+}
 
-  return {
-    id,
-    kind: "polyline",
-    mesh,
-    position: { x: 0, y: 0, z: 0 },
-    orientation: mat3.identity,
-    scale: 1,
-    color: mesh.color,
-    lineWidth: 1,
-    wireframeOnly: true,
-    applyTransform: false,
-  };
+function createEmptyOrbitPathObject(id: string): PolylineSceneObject {
+  return createPolylineSceneObject(id, { r: 255, g: 255, b: 0 });
 }
 
 /**
@@ -214,7 +199,7 @@ function addPlanetsFromConfig(
   }
 }
 
-const sunDirection = vec.scaleToUnit({ x: 0.3, y: 0.5, z: 1.0 });
+const sunDirection = vec.normalize({ x: 0.3, y: 0.5, z: 1.0 });
 
 // 100 km above Earth's north pole
 const PLANE_START_ALTITUDE_M = 100_000; // meters

@@ -1,5 +1,5 @@
 import { HORIZONTAL_FOCAL_LENGTH } from "./config.js";
-import { makeLocalFrame } from "./planet.js";
+import { makeLocalFrameFromUp } from "./localFrame.js";
 import type { LocalFrame, Vec3 } from "./types.js";
 
 export interface ScreenPoint {
@@ -38,9 +38,7 @@ export function makePilotView(ctx: PilotViewContext) {
 
     applyPilotLook(cameraPoint, ctx.pilotAzimuth, ctx.pilotElevation);
 
-    if (cameraPoint.z <= 0.1) return null;
-
-    return applyPerspective(cameraPoint, canvasWidth, canvasHeight);
+    return projectIfInFront(cameraPoint, canvasWidth, canvasHeight);
   };
 }
 
@@ -63,7 +61,7 @@ export function updateTopCameraFrame(
   let state = prevState;
 
   if (!state || !state.initialized) {
-    const lf = makeLocalFrame(radialUp);
+    const lf = makeLocalFrameFromUp(radialUp);
     const forward: Vec3 = {
       x: -radialUp.x,
       y: -radialUp.y,
@@ -109,7 +107,7 @@ export function updateTopCameraFrame(
     let lenU = Math.hypot(u.x, u.y, u.z);
 
     if (lenR < 1e-6 && lenU < 1e-6) {
-      const frame = makeLocalFrame(radialUp);
+      const frame = makeLocalFrameFromUp(radialUp);
       topCameraRight = frame.right;
       topCameraUp = frame.forward;
       topCameraForward = {
@@ -205,9 +203,7 @@ export function makeTopView(ctx: TopViewContext) {
       ctx.cameraFrame
     );
 
-    if (cameraPoint.z <= 0.1) return null;
-
-    return applyPerspective(cameraPoint, canvasWidth, canvasHeight);
+    return projectIfInFront(cameraPoint, canvasWidth, canvasHeight);
   };
 }
 
@@ -280,4 +276,13 @@ function rotate2D(
     a: a * c - b * s,
     b: a * s + b * c,
   };
+}
+
+function projectIfInFront(
+  cameraPoint: Vec3,
+  canvasWidth: number,
+  canvasHeight: number
+): ScreenPoint | null {
+  if (cameraPoint.z <= 0.1) return null;
+  return applyPerspective(cameraPoint, canvasWidth, canvasHeight);
 }

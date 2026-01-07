@@ -27,7 +27,13 @@ import {
   updateTopCameraFrame,
   type TopCameraFrameState,
 } from "./projection.js";
-import type { GravityState, Plane, Profiler } from "./types.js";
+import type {
+  GravityState,
+  LocalFrame,
+  Plane,
+  Profiler,
+  Vec3,
+} from "./types.js";
 import { vec } from "./vec3.js";
 import { renderView } from "./viewRenderer.js";
 import { buildPilotViewConfig, buildTopViewConfig } from "./viewSetup.js";
@@ -358,26 +364,10 @@ function makeControlInput(keys: ReturnType<typeof getKeyState>): ControlInput {
 
 // Follow-plane logic for pilot camera, using an offset
 function updatePilotCamera(plane: Plane): void {
-  const camera = getCameraById(world, pilotCameraId);
-
-  // Offsets in plane-local space:
-  const backwardOffset = -20.0; // behind
-  const upwardOffset = 5.0; // above
-
-  const forward = plane.frame.forward;
-  const up = plane.frame.up;
-  const position = plane.position;
-
-  // Position camera relative to plane
-  camera.position.x =
-    position.x + forward.x * backwardOffset + up.x * upwardOffset;
-  camera.position.y =
-    position.y + forward.y * backwardOffset + up.y * upwardOffset;
-  camera.position.z =
-    position.z + forward.z * backwardOffset + up.z * upwardOffset;
-
-  // Align camera orientation to the plane's LocalFrame
-  camera.frame = { ...plane.frame };
+  const localOffset = { x: 0, y: -20, z: 5 }; // (right, forward, up)
+  setCameraRelativeToPlane(pilotCameraId, plane, localOffset, (p) => ({
+    ...p.frame,
+  }));
 }
 
 function appendPlaneTrajectoryPoint(): void {
@@ -396,4 +386,34 @@ function appendPlanetTrajectories(): void {
       appendPointToPolylineMesh(pathObj.mesh, bodyObj.position);
     }
   }
+}
+
+function setCameraRelativeToPlane(
+  cameraId: string,
+  plane: Plane,
+  localOffset: Vec3,
+  frameFromPlane: (plane: Plane) => LocalFrame
+): void {
+  const camera = getCameraById(world, cameraId);
+  const { right, forward, up } = plane.frame;
+
+  camera.position = {
+    x:
+      plane.position.x +
+      right.x * localOffset.x +
+      forward.x * localOffset.y +
+      up.x * localOffset.z,
+    y:
+      plane.position.y +
+      right.y * localOffset.x +
+      forward.y * localOffset.y +
+      up.y * localOffset.z,
+    z:
+      plane.position.z +
+      right.z * localOffset.x +
+      forward.z * localOffset.y +
+      up.z * localOffset.z,
+  };
+
+  camera.frame = frameFromPlane(plane);
 }

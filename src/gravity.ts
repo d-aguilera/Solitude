@@ -7,6 +7,7 @@ import type {
   Vec3,
   WorldState,
 } from "./types.js";
+import { vec } from "./vec3.js";
 import { getBodyPosition, setBodyPosition } from "./worldLookup.js";
 
 /**
@@ -60,20 +61,16 @@ function computeGravityAccelerations(
       const bj = bodies[j];
       const pj = positions[j];
 
-      const dx = pj.x - pi.x;
-      const dy = pj.y - pi.y;
-      const dz = pj.z - pi.z;
-
-      const distSq =
-        dx * dx + dy * dy + dz * dz + SOFTENING_LENGTH * SOFTENING_LENGTH;
+      const d = vec.sub(pj, pi);
+      const distSq = vec.dot(d, d) + SOFTENING_LENGTH * SOFTENING_LENGTH;
       const dist = Math.sqrt(distSq);
 
       const invDist3 = 1 / (distSq * dist);
       const factor = NEWTON_G * bj.mass * invDist3;
 
-      ax += factor * dx;
-      ay += factor * dy;
-      az += factor * dz;
+      ax += factor * d.x;
+      ay += factor * d.y;
+      az += factor * d.z;
     }
 
     accelerations[i] = { x: ax, y: ay, z: az };

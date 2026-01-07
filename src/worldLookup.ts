@@ -1,15 +1,21 @@
 import type { BodyId, Camera, Plane, Vec3, WorldState } from "./types.js";
 
+function getById<T extends { id: string }>(
+  arr: T[],
+  id: string,
+  typeName: string
+): T {
+  const obj = arr.find((x) => x.id === id);
+  if (!obj) throw new Error(`${typeName} not found: ${id}`);
+  return obj;
+}
+
 export function getPlaneById(world: WorldState, id: string): Plane {
-  const plane = world.planes.find((p) => p.id === id);
-  if (!plane) throw new Error(`Plane not found: ${id}`);
-  return plane;
+  return getById(world.planes, id, "Plane");
 }
 
 export function getCameraById(world: WorldState, id: string): Camera {
-  const camera = world.cameras.find((c) => c.id === id);
-  if (!camera) throw new Error(`Camera not found: ${id}`);
-  return camera;
+  return getById(world.cameras, id, "Camera");
 }
 
 // Optional: gravity-specific body <-> position/velocity

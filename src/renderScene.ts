@@ -38,7 +38,6 @@ export function draw(
   { objects, view, lightDir, profiler }: DrawOptions
 ): void {
   const { projection, cameraPos } = view;
-  const projectedPoints: ScreenPoint[] = [];
 
   profiler.run("DRAW", "total", () => {
     if (view.drawMode === "faces") {
@@ -57,65 +56,48 @@ export function draw(
 
       // 2) Wireframe-only objects: lines path
       profiler.run("DRAW", "wireframeOnly", () => {
-        objects.forEach((obj) => {
-          if (!obj.wireframeOnly) {
-            return;
-          }
-
-          const { mesh, worldPoints, color, lineWidth } = toRenderable(obj);
-          const { faces } = mesh;
-
-          for (let i = 0; i < faces.length; i++) {
-            const polyIndices = faces[i];
-            projectedPoints.length = 0;
-            for (let j = 0; j < polyIndices.length; j++) {
-              const p = projection(worldPoints[polyIndices[j]]);
-              if (!p) {
-                projectedPoints.length = 0;
-                break;
-              }
-              projectedPoints.push(p);
-            }
-            if (projectedPoints.length > 0) {
-              strokePolylineOnCanvas(
-                context,
-                projectedPoints,
-                color,
-                lineWidth
-              );
-            }
-          }
-        });
+        drawMeshPolylines(context, objects, view, (obj) => obj.wireframeOnly);
       });
     } else {
       // Pure wireframe mode: draw all objects as polylines
-      objects.forEach((obj) => {
-        const { mesh, worldPoints, color, lineWidth } = toRenderable(obj);
-        const { faces } = mesh;
-
-        profiler.run("DRAW", "lines", () => {
-          for (let i = 0; i < faces.length; i++) {
-            const polyIndices = faces[i];
-            projectedPoints.length = 0;
-            for (let j = 0; j < polyIndices.length; j++) {
-              const p = projection(worldPoints[polyIndices[j]]);
-              if (!p) {
-                projectedPoints.length = 0;
-                break;
-              }
-              projectedPoints.push(p);
-            }
-            if (projectedPoints.length > 0) {
-              strokePolylineOnCanvas(
-                context,
-                projectedPoints,
-                color,
-                lineWidth
-              );
-            }
-          }
-        });
+      profiler.run("DRAW", "lines", () => {
+        drawMeshPolylines(context, objects, view, () => true);
       });
+    }
+  });
+}
+
+function drawMeshPolylines(
+  context: CanvasRenderingContext2D,
+  objects: SceneObject[],
+  view: View,
+  filter: (obj: SceneObject) => boolean
+): void {
+  const projectedPoints: ScreenPoint[] = [];
+  const { projection } = view;
+
+  objects.forEach((obj) => {
+    if (!filter(obj)) return;
+
+    const { mesh, worldPoints, color, lineWidth } = toRenderable(obj);
+    const { faces } = mesh;
+
+    for (let i = 0; i < faces.length; i++) {
+      const polyIndices = faces[i];
+      projectedPoints.length = 0;
+
+      for (let j = 0; j < polyIndices.length; j++) {
+        const p = projection(worldPoints[polyIndices[j]]);
+        if (!p) {
+          projectedPoints.length = 0;
+          break;
+        }
+        projectedPoints.push(p);
+      }
+
+      if (projectedPoints.length > 0) {
+        strokePolylineOnCanvas(context, projectedPoints, color, lineWidth);
+      }
     }
   });
 }
