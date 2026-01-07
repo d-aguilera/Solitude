@@ -4,8 +4,9 @@ import {
   rotSpeedPitch,
   rotSpeedYaw,
 } from "./controlsConfig.js";
-import { mat3, vec } from "./math.js";
-import type { Mat3, Plane, Vec3, WorldState } from "./types.js";
+import { mat3, Mat3 } from "./mat3.js";
+import type { Plane, Vec3, WorldState } from "./types.js";
+import { vec } from "./vec3.js";
 
 // Base thrust acceleration in m/s^2 along plane forward axis
 const baseThrustAcceleration = 30; // normal engine thrust

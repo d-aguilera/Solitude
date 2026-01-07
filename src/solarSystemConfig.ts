@@ -1,5 +1,5 @@
 import type { Polar2D, RGB, Vec3 } from "./types.js";
-import { vec } from "./math.js";
+import { vec } from "./vec3.js";
 
 export interface PlanetConfig {
   id: string; // scene object id, e.g. "planet:earth"

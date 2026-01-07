@@ -1,3 +1,4 @@
+import { Mat3 } from "./mat3";
 import { ScreenPoint } from "./projection";
 
 export interface Vec3 {
@@ -5,12 +6,6 @@ export interface Vec3 {
   y: number;
   z: number;
 }
-
-export type Mat3 = [
-  [number, number, number],
-  [number, number, number],
-  [number, number, number]
-];
 
 export interface RGB {
   r: number;

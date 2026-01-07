@@ -13,7 +13,6 @@ import { updateFPS } from "./fps.js";
 import { ensureGravityState, applyGravity } from "./gravity.js";
 import { renderHUD } from "./hud.js";
 import { init as initInput, getKeyState } from "./input.js";
-import { vec } from "./math.js";
 import { pauseControl, paused } from "./pause.js";
 import { appendPointToPolylineMesh } from "./planet.js";
 import {
@@ -34,6 +33,7 @@ import type {
   WorldState,
   GravityState,
 } from "./types.js";
+import { vec } from "./vec3.js";
 import { renderView } from "./viewRenderer.js";
 import { buildPilotViewConfig, buildTopViewConfig } from "./viewSetup.js";
 import {

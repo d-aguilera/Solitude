@@ -1,5 +1,5 @@
-import { vec } from "./math.js";
 import type { LocalFrame, Mesh, RGB, Vec3 } from "./types.js";
+import { vec } from "./vec3.js";
 
 export function makeLocalFrame(up: Vec3): LocalFrame {
   const u = vec.normalize(up);

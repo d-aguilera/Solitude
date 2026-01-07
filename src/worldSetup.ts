@@ -1,4 +1,4 @@
-import { mat3, vec } from "./math.js";
+import { mat3 } from "./mat3.js";
 import { airplaneModel } from "./models.js";
 import {
   generatePlanetMesh,
@@ -27,6 +27,7 @@ import type {
   WorldState,
 } from "./types.js";
 import { isPlanetSceneObject } from "./types.js";
+import { vec } from "./vec3.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame = makeLocalFrame(initialUp);

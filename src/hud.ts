@@ -1,6 +1,6 @@
 import { fps } from "./fps.js";
-import { vec } from "./math.js";
 import type { Plane } from "./types.js";
+import { vec } from "./vec3.js";
 
 export function renderHUD(
   context: CanvasRenderingContext2D,

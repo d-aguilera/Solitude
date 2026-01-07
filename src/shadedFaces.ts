@@ -1,7 +1,7 @@
-import { vec } from "./math.js";
+import type { ScreenPoint } from "./projection.js";
 import { toRenderable } from "./renderPrep.js";
 import type { SceneObject, Vec3 } from "./types.js";
-import type { ScreenPoint } from "./projection.js";
+import { vec } from "./vec3.js";
 
 /**
  * Internal representation of a single shaded triangle face ready for rasterization.

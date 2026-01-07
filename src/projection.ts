@@ -1,7 +1,7 @@
 import { HORIZONTAL_FOCAL_LENGTH } from "./config.js";
-import { rotate2D } from "./math.js";
+import { Mat3 } from "./mat3.js";
 import { makeLocalFrame } from "./planet.js";
-import type { Vec3, Mat3 } from "./types.js";
+import type { Vec3 } from "./types.js";
 
 export interface ScreenPoint {
   x: number;
@@ -279,5 +279,19 @@ function applyPerspective(
     x: (ndcX + 1) * 0.5 * canvasWidth,
     y: (1 - ndcY) * 0.5 * canvasHeight,
     depth: cz,
+  };
+}
+
+function rotate2D(
+  a: number,
+  b: number,
+  angle: number
+): { a: number; b: number } {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+
+  return {
+    a: a * c - b * s,
+    b: a * s + b * c,
   };
 }
