@@ -17,6 +17,7 @@ import type {
   Mesh,
   PilotView,
   Plane,
+  PlanetPhysics,
   PlanetSceneObject,
   PolylineSceneObject,
   RGB,
@@ -134,16 +135,28 @@ function createEmptyOrbitPathObject(id: string): PolylineSceneObject {
 }
 
 /**
+ * Helper: compute physical mass from radius and density.
+ * Centralized here so both world setup and gravity share the same mapping.
+ */
+function computePlanetMass(physicalRadius: number, density: number): number {
+  const volume =
+    (4 / 3) * Math.PI * physicalRadius * physicalRadius * physicalRadius;
+  return density * volume;
+}
+
+/**
  * Add planets + their orbit paths from an arbitrary list of PlanetConfig.
  *
  * This now:
  *  - Creates visual PlanetSceneObjects
  *  - Registers corresponding PlanetBody entries in world.planets
+ *  - Registers PlanetPhysics entries for gravity
  */
 function addPlanetsFromConfig(
   configs: PlanetConfig[],
   objects: SceneObject[],
-  worldPlanets: WorldState["planets"]
+  worldPlanets: WorldState["planets"],
+  planetPhysics: PlanetPhysics[]
 ): void {
   const planetMeshTemplate: Mesh = generatePlanetMesh(3);
 
@@ -183,7 +196,6 @@ function addPlanetsFromConfig(
       applyTransform: true,
       wireframeOnly: false,
       initialVelocity,
-      density: cfg.density,
       physicalRadius: cfg.physicalRadius,
     };
 
@@ -192,6 +204,14 @@ function addPlanetsFromConfig(
       id: cfg.id,
       position: { ...center },
       velocity: initialVelocity ? { ...initialVelocity } : { x: 0, y: 0, z: 0 },
+    });
+
+    // Register planet physics used by gravity (mass, radius, density)
+    planetPhysics.push({
+      id: cfg.id,
+      physicalRadius: cfg.physicalRadius,
+      density: cfg.density,
+      mass: computePlanetMass(cfg.physicalRadius, cfg.density),
     });
 
     objects.push(planetObj);
@@ -253,11 +273,17 @@ export function createInitialSceneAndWorld(): {
     cameras: [],
     pilotViews: [],
     planets: [],
+    planetPhysics: [],
   };
 
   // Build the whole planetary system from config
   const planetConfigs = buildDefaultSolarSystemConfigs();
-  addPlanetsFromConfig(planetConfigs, objects, world.planets);
+  addPlanetsFromConfig(
+    planetConfigs,
+    objects,
+    world.planets,
+    world.planetPhysics
+  );
 
   // Choose which planet is treated as the "home" / starting planet.
   // This is a gameplay decision, so it lives in the setup layer instead of

@@ -49,12 +49,30 @@ export interface Plane {
 
 /**
  * Logical planet body that participates in physics / gravity.
- * Scene objects are just the visual representation of these.
  */
 export interface PlanetBody {
   id: string;
   position: Vec3;
   velocity: Vec3;
+}
+
+/**
+ * Physical properties of a planet / star body.
+ */
+export interface PlanetPhysics {
+  id: string;
+  /**
+   * Physical radius in meters (used for mass & gameplay).
+   */
+  physicalRadius: number;
+  /**
+   * Density in kg/m^3 (used for mass computation).
+   */
+  density: number;
+  /**
+   * Cached mass in kg (derived from radius and density).
+   */
+  mass: number;
 }
 
 export interface Camera {
@@ -106,7 +124,6 @@ export interface PlanetSceneObject extends BaseSceneObject {
   applyTransform: true;
   wireframeOnly: false;
   initialVelocity?: Vec3;
-  density: number; // kg/m^3
   physicalRadius: number; // meters
 }
 
@@ -160,10 +177,8 @@ export interface WorldState {
   planes: Plane[];
   cameras: Camera[];
   pilotViews: PilotView[];
-  /**
-   * Planet bodies used by physics / gravity. Scene planets mirror these.
-   */
   planets: PlanetBody[];
+  planetPhysics: PlanetPhysics[];
 }
 
 /**

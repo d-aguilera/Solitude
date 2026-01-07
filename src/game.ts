@@ -190,7 +190,7 @@ function integrateForcesAndGravity(
   dtSeconds: number,
   input: ControlInput
 ): void {
-  gravityState = ensureGravityState(world, scene, gravityState);
+  gravityState = ensureGravityState(world, gravityState);
 
   // Simulate gravity at an accelerated timescale so orbits evolve faster.
   const gravityTimeScale = 10; // e.g. 10x real time

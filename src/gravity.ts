@@ -1,21 +1,19 @@
+import { getGravitatingBodies } from "./gravityBodies.js";
 import { NEWTON_G, SOFTENING_LENGTH } from "./gravityConfig.js";
 import type {
   BodyId,
   BodyState,
   GravityState,
-  Scene,
   Vec3,
   WorldState,
 } from "./types.js";
-import { getGravitatingBodies } from "./gravityBodies.js";
 
 /**
  * Attach or update gravity state on the world. This function ensures that for
- * every gravitating plane and planet-like SceneObject there is exactly one BodyState.
+ * every gravitating plane and planet-like body there is exactly one BodyState.
  */
 export function ensureGravityState(
   world: WorldState,
-  scene: Scene,
   gravity: GravityState | null
 ): GravityState {
   const existingVelocitiesById = new Map<BodyId, Vec3>();
@@ -26,8 +24,8 @@ export function ensureGravityState(
     }
   }
 
-  // Derive current gravitating bodies from world/scene + previous velocities.
-  const gravBodies = getGravitatingBodies(world, scene, existingVelocitiesById);
+  // Derive current gravitating bodies from world + previous velocities.
+  const gravBodies = getGravitatingBodies(world, existingVelocitiesById);
 
   const bodies: BodyState[] = gravBodies.map((g) => ({
     id: g.id,
