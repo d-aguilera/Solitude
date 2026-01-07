@@ -113,12 +113,6 @@ export interface PlanetSceneObject extends BaseSceneObject {
   physicalRadius: number; // meters
 }
 
-export function isPlanetSceneObject(
-  obj: SceneObject
-): obj is PlanetSceneObject {
-  return obj.kind === "planet";
-}
-
 /**
  * Generic polyline / path object (orbit paths, plane trajectory).
  * World-space points; no transform applied; not part of gravity.
@@ -191,8 +185,5 @@ export interface View {
   cameraPos: Vec3 | null;
   drawMode: DrawMode;
   // Optional debug overlay, not part of scene geometry
-  debugDraw?: (
-    ctx: CanvasRenderingContext2D,
-    project: (p: Vec3) => ScreenPoint | null
-  ) => void;
+  debugDraw?: (ctx: CanvasRenderingContext2D) => void;
 }

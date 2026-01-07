@@ -31,9 +31,9 @@ export function buildPilotViewConfig(
     projection,
     cameraPos: pilotCamera.position,
     drawMode,
-    debugDraw: (ctx, project) => {
+    debugDraw: (ctx) => {
       for (const plane of world.planes) {
-        drawPlaneVelocityLine(ctx, project, plane);
+        drawPlaneVelocityLine(ctx, projection, plane);
       }
     },
   };
@@ -60,9 +60,9 @@ export function buildTopViewConfig(
     projection,
     cameraPos: topCamera.position,
     drawMode,
-    debugDraw: (ctx, project) => {
+    debugDraw: (ctx) => {
       for (const plane of world.planes) {
-        drawPlaneVelocityLine(ctx, project, plane);
+        drawPlaneVelocityLine(ctx, projection, plane);
       }
     },
   };

@@ -26,7 +26,6 @@ import type {
   Vec3,
   WorldState,
 } from "./types.js";
-import { isPlanetSceneObject } from "./types.js";
 import { vec } from "./vec3.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
@@ -251,6 +250,10 @@ function computePlaneStartPosFromPlanet(
     y: planetObj.position.y + offset.y,
     z: planetObj.position.z + offset.z,
   };
+}
+
+function isPlanetSceneObject(obj: SceneObject): obj is PlanetSceneObject {
+  return obj.kind === "planet";
 }
 
 export interface PlanetPathMapping {

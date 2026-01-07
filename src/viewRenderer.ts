@@ -16,6 +16,6 @@ export function renderView(
   });
 
   if (view.debugDraw) {
-    view.debugDraw(context, view.projection);
+    view.debugDraw(context);
   }
 }
