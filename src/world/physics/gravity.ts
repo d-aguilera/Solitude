@@ -32,7 +32,7 @@ export function ensureGravityState(
   const bodies: BodyState[] = gravBodies.map((g) => ({
     id: g.id,
     mass: g.mass,
-    velocity: { ...g.velocity },
+    velocity: { ...g.velocity }, // single, intentional clone
   }));
 
   return { bodies };

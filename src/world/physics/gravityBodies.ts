@@ -21,17 +21,14 @@ export function getGravitatingBodies(
   const planeMass = 5e4; // gameplay-tuned mass for planes
 
   for (const plane of world.planes) {
-    const velocity = existingVelocitiesById?.get(plane.id) ?? {
-      x: 0,
-      y: 0,
-      z: 0,
-    };
+    const velocity = existingVelocitiesById?.get(plane.id) ??
+      plane.velocity ?? { x: 0, y: 0, z: 0 };
 
     bodies.push({
       id: plane.id,
       mass: planeMass,
       position: plane.position,
-      velocity: { ...velocity },
+      velocity,
     });
   }
 

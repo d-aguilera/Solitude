@@ -362,7 +362,7 @@ export function syncPlanesToSceneObjects(
   for (const plane of world.planes) {
     const obj = scene.objects.find((o) => o.id === plane.id);
     if (!obj) continue;
-    obj.position = { ...plane.position };
+    obj.position = plane.position;
     obj.orientation = mat3FromLocalFrame(plane.frame);
     obj.scale = plane.scale;
   }
@@ -375,7 +375,7 @@ export function syncPlanetsToSceneObjects(
   for (const planetBody of world.planets) {
     const obj = scene.objects.find((o) => o.id === planetBody.id);
     if (!obj) continue;
-    obj.position = { ...planetBody.position };
+    obj.position = planetBody.position;
   }
 }
 
@@ -383,6 +383,6 @@ export function syncStarsToSceneObjects(world: WorldState, scene: Scene): void {
   for (const starBody of world.stars) {
     const obj = scene.objects.find((o) => o.id === starBody.id);
     if (!obj) continue;
-    obj.position = { ...starBody.position };
+    obj.position = starBody.position;
   }
 }
