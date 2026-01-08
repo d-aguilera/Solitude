@@ -32,15 +32,77 @@ const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
 const initialForward: Vec3 = initialFrame.forward;
 
-function createInitialPlane(id: string, position: Vec3): Plane {
-  const frame = initialFrame;
+function createInitialPlane(
+  id: string,
+  position: Vec3,
+  initialVelocity: Vec3
+): Plane {
+  const speed = vec.length(initialVelocity);
+
+  let frame: LocalFrame = initialFrame;
+
+  if (speed > 0) {
+    const targetForward = vec.normalize(initialVelocity);
+
+    // Start from the canonical initialFrame
+    const baseForward = initialFrame.forward;
+
+    // Compute rotation axis = baseForward × targetForward
+    const axis = vec.cross(baseForward, targetForward);
+    const axisLen = vec.length(axis);
+
+    if (axisLen < 1e-6) {
+      // Vectors are parallel or anti-parallel.
+      const dot = vec.dot(baseForward, targetForward);
+      if (dot > 0.999999) {
+        // Same direction: no change needed.
+        frame = initialFrame;
+      } else {
+        // Opposite direction: rotate 180° around "up" to flip forward.
+        const flippedForward = vec.scale(baseForward, -1);
+        const flippedRight = vec.scale(initialFrame.right, -1);
+        frame = {
+          right: flippedRight,
+          forward: flippedForward,
+          up: initialFrame.up,
+        };
+      }
+    } else {
+      // General case: rotate base frame so its forward matches targetForward.
+      const axisN = vec.normalize(axis);
+      const dot = Math.min(
+        1,
+        Math.max(-1, vec.dot(baseForward, targetForward))
+      );
+      const angle = Math.acos(dot);
+
+      // Build axis-angle rotation matrix once
+      const R = mat3.rotAxis(axisN, angle);
+      const R0 = R[0];
+      const R1 = R[1];
+      const R2 = R[2];
+
+      const applyRot = (v: Vec3): Vec3 => ({
+        x: R0[0] * v.x + R0[1] * v.y + R0[2] * v.z,
+        y: R1[0] * v.x + R1[1] * v.y + R1[2] * v.z,
+        z: R2[0] * v.x + R2[1] * v.y + R2[2] * v.z,
+      });
+
+      frame = {
+        right: applyRot(initialFrame.right),
+        forward: applyRot(initialFrame.forward),
+        up: applyRot(initialFrame.up),
+      };
+    }
+  }
+
   return {
     id,
     position: { ...position },
-    frame: { ...frame },
-    speed: 0, // start from rest
+    frame,
+    speed,
     scale: 15,
-    velocity: { x: 0, y: 0, z: 0 },
+    velocity: { ...initialVelocity },
   };
 }
 
@@ -242,7 +304,7 @@ function addPlanetsAndStarsFromConfig(
 const sunDirection = vec.normalize({ x: 0.3, y: 0.5, z: 1.0 });
 
 // 100 km above Earth's north pole
-const PLANE_START_ALTITUDE_M = 100_000; // meters
+const PLANE_START_ALTITUDE_M = 10_000_000; // meters
 
 function computePlaneStartPosFromPlanet(
   objects: SceneObject[],
@@ -316,7 +378,20 @@ export function createInitialSceneAndWorld(): {
   // Choose which planet is treated as the "home" / starting planet.
   const homePlanetId = "planet:earth";
   const planeStartPos = computePlaneStartPosFromPlanet(objects, homePlanetId);
-  const mainPlane = createInitialPlane("plane:main", planeStartPos);
+
+  // Find Earth's scene object to get its initial orbital velocity
+  const earthObj = objects.find(
+    (o): o is PlanetSceneObject => o.id === homePlanetId && o.kind === "planet"
+  );
+  if (!earthObj) {
+    throw new Error(`Home planet scene object not found: ${homePlanetId}`);
+  }
+
+  const mainPlane = createInitialPlane(
+    "plane:main",
+    planeStartPos,
+    earthObj.initialVelocity
+  );
 
   world.planes.push(mainPlane);
 
