@@ -13,7 +13,6 @@ import { updateFPS } from "./fps.js";
 import { ensureGravityState, applyGravity } from "../world/physics/gravity.js";
 import { renderHUD } from "./hud.js";
 import { init as initInput, getKeyState } from "./input.js";
-import { mat3FromLocalFrame } from "../world/localFrame.js";
 import { pauseControl, paused } from "./pause.js";
 import { appendPointToPolylineMesh } from "./trajectory.js";
 import {
@@ -46,6 +45,7 @@ import { getCameraById, getPlaneById } from "../world/worldLookup.js";
 import {
   createInitialSceneAndWorld,
   PlanetPathMapping,
+  syncPlanesToSceneObjects,
   syncPlanetsToSceneObjects,
 } from "../world/worldSetup.js";
 
@@ -139,7 +139,7 @@ function stepSimulation(
   // 2) Keep visual representation in sync with simulated plane state.
   //    This is done once per frame after physics, so renderers see a
   //    consistent world/scene snapshot.
-  syncPlanesToSceneObjects();
+  syncPlanesToSceneObjects(world, scene);
   syncPlanetsToSceneObjects(world, scene);
 
   // 3) Sample trajectories (derived from updated positions)
@@ -330,21 +330,6 @@ function updateTopCamera(): void {
   );
   topCameraFrameState = nextState;
   camera.frame = frame;
-}
-
-// Keep visual representation in sync with simulated plane state.
-function syncPlanesToSceneObjects(): void {
-  for (const plane of world.planes) {
-    const sceneObjId = `sceneobj:${plane.id}`;
-    const obj = scene.objects.find((o) => o.id === sceneObjId);
-    if (!obj) {
-      throw new Error(`Scene object not found for plane id: ${plane.id}`);
-    }
-
-    obj.position = { ...plane.position };
-    obj.orientation = mat3FromLocalFrame(plane.frame);
-    obj.scale = plane.scale;
-  }
 }
 
 function readAndProcessInput(): ControlInput {

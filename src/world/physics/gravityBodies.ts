@@ -8,12 +8,8 @@ export interface GravitatingBody {
 }
 
 /**
- * Construct the list of gravitating bodies (planes + planets) from the
- * current world state. Mass for planets is derived from PlanetPhysics on
- * the world; plane mass is a gameplay constant.
- *
- * This keeps gravity-specific physical properties and discovery logic
- * in one place, decoupled from the scene graph and visual objects.
+ * Construct the list of gravitating bodies (planes + planets + stars) from the
+ * current world state.
  */
 export function getGravitatingBodies(
   world: WorldState,
@@ -21,7 +17,7 @@ export function getGravitatingBodies(
 ): GravitatingBody[] {
   const bodies: GravitatingBody[] = [];
 
-  // 1) Planes: give them a plausible mass and take their position from world.
+  // 1) Planes
   const planeMass = 5e4; // gameplay-tuned mass for planes
 
   for (const plane of world.planes) {
@@ -39,16 +35,11 @@ export function getGravitatingBodies(
     });
   }
 
-  // 2) Planets: derive mass and physical parameters from world.planetPhysics
+  // 2) Planets
   for (const planetBody of world.planets) {
     const physics = world.planetPhysics.find((p) => p.id === planetBody.id);
-    if (!physics) {
-      // If no physics entry exists, skip this planet; keeps gravity robust
-      // against partially-initialized worlds.
-      continue;
-    }
+    if (!physics) continue;
 
-    // Use any existing velocity if present; otherwise, seed from world.planets.
     const existingV = existingVelocitiesById?.get(planetBody.id);
     const velocity: Vec3 = existingV
       ? { ...existingV }

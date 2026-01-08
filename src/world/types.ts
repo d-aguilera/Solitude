@@ -136,9 +136,8 @@ export type Profiler = {
 export interface Renderable {
   mesh: Mesh;
   worldPoints: Vec3[];
-  color: string; // CSS string for Canvas
   lineWidth: number;
-  baseColor: RGB; // numeric RGB used for lighting
+  baseColor: RGB;
 }
 
 export interface Scene {

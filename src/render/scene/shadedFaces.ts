@@ -1,6 +1,6 @@
 import type { ScreenPoint } from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
-import type { SceneObject, Vec3 } from "../../world/types.js";
+import type { RGB, SceneObject, Vec3 } from "../../world/types.js";
 import { vec } from "../../world/vec3.js";
 
 /**
@@ -12,9 +12,7 @@ export type FaceEntry = {
   p0: ScreenPoint;
   p1: ScreenPoint;
   p2: ScreenPoint;
-  baseR: number;
-  baseG: number;
-  baseB: number;
+  baseColor: RGB;
 };
 
 /**
@@ -35,7 +33,6 @@ export function buildShadedFaces(params: {
 
     const { mesh, worldPoints, baseColor } = toRenderable(obj);
     const { faces } = mesh;
-    const { r: baseR, g: baseG, b: baseB } = baseColor;
 
     for (let fi = 0; fi < faces.length; fi++) {
       const [i0, i1, i2] = faces[fi];
@@ -84,9 +81,7 @@ export function buildShadedFaces(params: {
         p0,
         p1,
         p2,
-        baseR,
-        baseG,
-        baseB,
+        baseColor,
       });
     }
   });

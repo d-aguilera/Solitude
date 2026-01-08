@@ -72,7 +72,7 @@ function createInitialPilotCamera(id: string, plane: Plane): Camera {
 
 function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
   const obj: AirplaneSceneObject = {
-    id: `sceneobj:${plane.id}`,
+    id: plane.id,
     kind: "airplane",
     mesh: airplaneModel,
     position: { ...plane.position },
@@ -154,7 +154,7 @@ function addPlanetsFromConfig(
     // Physical orbit radius in meters
     const center: Vec3 = vec.scale(radial, cfg.orbit.radius);
 
-    const bodyMesh: Mesh = { ...bodyMeshTemplate };
+    const planetMesh: Mesh = { ...planetMeshTemplate };
 
     const initialVelocity =
       cfg.orbit.radius > 0
@@ -172,7 +172,7 @@ function addPlanetsFromConfig(
       position: center,
       orientation: mat3.identity,
       scale: cfg.physicalRadius,
-      color: planetMesh.color,
+      color: cfg.color,
       lineWidth: 1,
       applyTransform: true,
       wireframeOnly: false,
@@ -196,7 +196,7 @@ function addPlanetsFromConfig(
     });
 
     objects.push(planetObj);
-    objects.push(createPlanetPathObject(cfg.pathId, planetMesh.color));
+    objects.push(createPlanetPathObject(cfg.pathId, cfg.color));
   }
 }
 
@@ -271,8 +271,6 @@ export function createInitialSceneAndWorld(): {
   );
 
   // Choose which planet is treated as the "home" / starting planet.
-  // This is a gameplay decision, so it lives in the setup layer instead of
-  // inside the physical planet configuration.
   const homePlanetId = "planet:earth";
   const planeStartPos = computePlaneStartPosFromPlanet(objects, homePlanetId);
   const mainPlane = createInitialPlane("plane:main", planeStartPos);
@@ -314,12 +312,19 @@ export function createInitialSceneAndWorld(): {
   };
 }
 
-/**
- * Helper: propagate planet body positions from world.planets into their
- * corresponding planet SceneObjects. This keeps visual planets in sync
- * with simulated physics state, without coupling the gravity integrator
- * to scene wiring.
- */
+export function syncPlanesToSceneObjects(
+  world: WorldState,
+  scene: Scene
+): void {
+  for (const plane of world.planes) {
+    const obj = scene.objects.find((o) => o.id === plane.id);
+    if (!obj) continue;
+    obj.position = { ...plane.position };
+    obj.orientation = mat3FromLocalFrame(plane.frame);
+    obj.scale = plane.scale;
+  }
+}
+
 export function syncPlanetsToSceneObjects(
   world: WorldState,
   scene: Scene

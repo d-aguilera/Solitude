@@ -1,11 +1,5 @@
 import { Mat3 } from "../../world/mat3.js";
-import type {
-  Mesh,
-  Renderable,
-  SceneObject,
-  Vec3,
-  RGB,
-} from "../../world/types.js";
+import type { Renderable, SceneObject, Vec3 } from "../../world/types.js";
 
 /**
  * Convert a SceneObject into a Renderable with world-space points.
@@ -23,7 +17,6 @@ export function toRenderable(obj: SceneObject): Renderable {
   return {
     mesh: obj.mesh,
     worldPoints,
-    color: rgbToCss(obj.color),
     lineWidth: obj.lineWidth,
     baseColor: obj.color,
   };
@@ -55,8 +48,4 @@ function transformPointsToWorld(
   }
 
   return out;
-}
-
-function rgbToCss({ r, g, b }: { r: number; g: number; b: number }): string {
-  return `rgb(${r}, ${g}, ${b})`;
 }

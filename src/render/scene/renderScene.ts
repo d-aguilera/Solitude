@@ -1,6 +1,6 @@
 import {
-  renderShadedFacesToCanvas,
-  strokePolylineOnCanvas,
+  renderShadedFaces,
+  renderPolyline,
 } from "../canvas/canvasRasterizer.js";
 import type { ScreenPoint } from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
@@ -51,17 +51,21 @@ export function draw(
         });
 
         // Depth sort & draw faces via rasterizer
-        renderShadedFacesToCanvas(context, faceList);
+        renderShadedFaces(context, faceList);
       });
 
       // 2) Wireframe-only objects: lines path
       profiler.run("DRAW", "wireframeOnly", () => {
-        drawMeshPolylines(context, objects, view, (obj) => obj.wireframeOnly);
+        drawMeshPolylines(
+          context,
+          objects.filter((obj) => obj.wireframeOnly),
+          projection
+        );
       });
     } else {
       // Pure wireframe mode: draw all objects as polylines
       profiler.run("DRAW", "lines", () => {
-        drawMeshPolylines(context, objects, view, () => true);
+        drawMeshPolylines(context, objects, projection);
       });
     }
   });
@@ -70,33 +74,30 @@ export function draw(
 function drawMeshPolylines(
   context: CanvasRenderingContext2D,
   objects: SceneObject[],
-  view: View,
-  filter: (obj: SceneObject) => boolean
+  projection: (p: Vec3) => ScreenPoint | null
 ): void {
   const projectedPoints: ScreenPoint[] = [];
-  const { projection } = view;
 
   objects.forEach((obj) => {
-    if (!filter(obj)) return;
-
-    const { mesh, worldPoints, color, lineWidth } = toRenderable(obj);
+    const { mesh, worldPoints, baseColor, lineWidth } = toRenderable(obj);
     const { faces } = mesh;
 
     for (let i = 0; i < faces.length; i++) {
       const polyIndices = faces[i];
-      projectedPoints.length = 0;
 
       for (let j = 0; j < polyIndices.length; j++) {
         const p = projection(worldPoints[polyIndices[j]]);
-        if (!p) {
+        if (p) {
+          projectedPoints.push(p);
+        } else {
           projectedPoints.length = 0;
           break;
         }
-        projectedPoints.push(p);
       }
 
       if (projectedPoints.length > 0) {
-        strokePolylineOnCanvas(context, projectedPoints, color, lineWidth);
+        renderPolyline(context, projectedPoints, baseColor, lineWidth);
+        projectedPoints.length = 0;
       }
     }
   });
