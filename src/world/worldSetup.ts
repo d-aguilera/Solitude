@@ -20,6 +20,9 @@ import type {
   RGB,
   Scene,
   SceneObject,
+  StarSceneObject,
+  StarBody,
+  StarPhysics,
   Vec3,
   WorldState,
 } from "./types.js";
@@ -127,20 +130,22 @@ function computePlanetMass(physicalRadius: number, density: number): number {
 }
 
 /**
- * Add planets + their orbit paths from an arbitrary list of PlanetConfig.
+ * Add planets + stars + their orbit paths from an arbitrary list of PlanetConfig.
  *
  * This now:
- *  - Creates visual PlanetSceneObjects
- *  - Registers corresponding PlanetBody entries in world.planets
- *  - Registers PlanetPhysics entries for gravity
+ *  - Creates visual PlanetSceneObject or StarSceneObject
+ *  - Registers corresponding PlanetBody / StarBody entries in world
+ *  - Registers PlanetPhysics / StarPhysics entries for gravity
  */
-function addPlanetsFromConfig(
+function addPlanetsAndStarsFromConfig(
   configs: PlanetConfig[],
   objects: SceneObject[],
   worldPlanets: WorldState["planets"],
-  planetPhysics: PlanetPhysics[]
+  worldPlanetPhysics: PlanetPhysics[],
+  worldStars: WorldState["stars"],
+  worldStarPhysics: StarPhysics[]
 ): void {
-  const planetMeshTemplate: Mesh = generatePlanetMesh(3);
+  const bodyMeshTemplate: Mesh = generatePlanetMesh(3);
 
   // Define an orbital plane via two basis vectors:
   const radialAxis1 = vec.normalize(initialForward);
@@ -154,7 +159,7 @@ function addPlanetsFromConfig(
     // Physical orbit radius in meters
     const center: Vec3 = vec.scale(radial, cfg.orbit.radius);
 
-    const planetMesh: Mesh = { ...planetMeshTemplate };
+    const bodyMesh: Mesh = { ...bodyMeshTemplate };
 
     const initialVelocity =
       cfg.orbit.radius > 0
@@ -163,39 +168,73 @@ function addPlanetsFromConfig(
             y: tangential.y * cfg.tangentialSpeed,
             z: tangential.z * cfg.tangentialSpeed,
           }
-        : { x: 0, y: 0, z: 0 }; // Sun at origin has no initial orbital velocity
+        : { x: 0, y: 0, z: 0 };
 
-    const planetObj: PlanetSceneObject = {
-      id: cfg.id,
-      kind: "planet",
-      mesh: planetMesh,
-      position: center,
-      orientation: mat3.identity,
-      scale: cfg.physicalRadius,
-      color: cfg.color,
-      lineWidth: 1,
-      applyTransform: true,
-      wireframeOnly: false,
-      initialVelocity,
-      physicalRadius: cfg.physicalRadius,
-    };
+    if (cfg.kind === "star") {
+      const starObj: StarSceneObject = {
+        id: cfg.id,
+        kind: "star",
+        mesh: bodyMesh,
+        position: center,
+        orientation: mat3.identity,
+        scale: cfg.physicalRadius,
+        color: cfg.color,
+        lineWidth: 1,
+        applyTransform: true,
+        wireframeOnly: false,
+        initialVelocity,
+        physicalRadius: cfg.physicalRadius,
+      };
 
-    // Register physical planet body in world
-    worldPlanets.push({
-      id: cfg.id,
-      position: { ...center },
-      velocity: initialVelocity ? { ...initialVelocity } : { x: 0, y: 0, z: 0 },
-    });
+      const starBody: StarBody = {
+        id: cfg.id,
+        position: { ...center },
+        velocity: { ...initialVelocity },
+      };
 
-    // Register planet physics used by gravity (mass, radius, density)
-    planetPhysics.push({
-      id: cfg.id,
-      physicalRadius: cfg.physicalRadius,
-      density: cfg.density,
-      mass: computePlanetMass(cfg.physicalRadius, cfg.density),
-    });
+      const starPhys: StarPhysics = {
+        id: cfg.id,
+        physicalRadius: cfg.physicalRadius,
+        density: cfg.density,
+        mass: computePlanetMass(cfg.physicalRadius, cfg.density),
+      };
 
-    objects.push(planetObj);
+      worldStars.push(starBody);
+      worldStarPhysics.push(starPhys);
+      objects.push(starObj);
+    } else {
+      const planetObj: PlanetSceneObject = {
+        id: cfg.id,
+        kind: "planet",
+        mesh: bodyMesh,
+        position: center,
+        orientation: mat3.identity,
+        scale: cfg.physicalRadius,
+        color: cfg.color,
+        lineWidth: 1,
+        applyTransform: true,
+        wireframeOnly: false,
+        initialVelocity,
+        physicalRadius: cfg.physicalRadius,
+      };
+
+      worldPlanets.push({
+        id: cfg.id,
+        position: { ...center },
+        velocity: { ...initialVelocity },
+      });
+
+      worldPlanetPhysics.push({
+        id: cfg.id,
+        physicalRadius: cfg.physicalRadius,
+        density: cfg.density,
+        mass: computePlanetMass(cfg.physicalRadius, cfg.density),
+      });
+
+      objects.push(planetObj);
+    }
+
+    // All get a path polyline
     objects.push(createPlanetPathObject(cfg.pathId, cfg.color));
   }
 }
@@ -259,15 +298,19 @@ export function createInitialSceneAndWorld(): {
     pilotViews: [],
     planets: [],
     planetPhysics: [],
+    stars: [],
+    starPhysics: [],
   };
 
   // Build the whole planetary system from config
   const planetConfigs = buildDefaultSolarSystemConfigs();
-  addPlanetsFromConfig(
+  addPlanetsAndStarsFromConfig(
     planetConfigs,
     objects,
     world.planets,
-    world.planetPhysics
+    world.planetPhysics,
+    world.stars,
+    world.starPhysics
   );
 
   // Choose which planet is treated as the "home" / starting planet.
@@ -333,5 +376,13 @@ export function syncPlanetsToSceneObjects(
     const obj = scene.objects.find((o) => o.id === planetBody.id);
     if (!obj) continue;
     obj.position = { ...planetBody.position };
+  }
+}
+
+export function syncStarsToSceneObjects(world: WorldState, scene: Scene): void {
+  for (const starBody of world.stars) {
+    const obj = scene.objects.find((o) => o.id === starBody.id);
+    if (!obj) continue;
+    obj.position = { ...starBody.position };
   }
 }

@@ -47,6 +47,15 @@ export interface PlanetBody {
 }
 
 /**
+ * Logical star body that participates in physics / gravity.
+ */
+export interface StarBody {
+  id: string;
+  position: Vec3;
+  velocity: Vec3;
+}
+
+/**
  * Physical properties of a planet / star body.
  */
 export interface PlanetPhysics {
@@ -54,6 +63,16 @@ export interface PlanetPhysics {
   physicalRadius: number; // meters
   density: number; // kg/m^3
   mass: number; // kg (derived from radius and density)
+}
+
+/**
+ * Physical properties of a star body.
+ */
+export interface StarPhysics {
+  id: string;
+  physicalRadius: number; // meters
+  density: number; // kg/m^3
+  mass: number; // kg
 }
 
 export interface Camera {
@@ -69,7 +88,7 @@ export interface PilotView {
   elevation: number;
 }
 
-type SceneObjectKind = "airplane" | "planet" | "polyline";
+type SceneObjectKind = "airplane" | "planet" | "polyline" | "star";
 
 /**
  * Base properties common to all scene objects.
@@ -109,6 +128,17 @@ export interface PlanetSceneObject extends BaseSceneObject {
 }
 
 /**
+ * Star body included in gravity simulation and also contributes light.
+ */
+export interface StarSceneObject extends BaseSceneObject {
+  kind: "star";
+  applyTransform: true;
+  wireframeOnly: false;
+  initialVelocity: Vec3;
+  physicalRadius: number; // meters
+}
+
+/**
  * Generic polyline / path object (orbit paths, plane trajectory).
  * World-space points; no transform applied; not part of gravity.
  */
@@ -124,6 +154,7 @@ export interface PolylineSceneObject extends BaseSceneObject {
 export type SceneObject =
   | AirplaneSceneObject
   | PlanetSceneObject
+  | StarSceneObject
   | PolylineSceneObject;
 
 // Small adapter that lets callers plug in any profiling / tracing / instrumentation
@@ -154,6 +185,8 @@ export interface WorldState {
   pilotViews: PilotView[];
   planets: PlanetBody[];
   planetPhysics: PlanetPhysics[];
+  stars: StarBody[];
+  starPhysics: StarPhysics[];
 }
 
 /**

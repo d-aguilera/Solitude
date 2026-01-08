@@ -47,6 +47,7 @@ import {
   PlanetPathMapping,
   syncPlanesToSceneObjects,
   syncPlanetsToSceneObjects,
+  syncStarsToSceneObjects,
 } from "../world/worldSetup.js";
 
 let lastTimeMs = 0;
@@ -133,19 +134,11 @@ function stepSimulation(
   input: ControlInput,
   profiler: Profiler
 ): void {
-  // 1) Physics integration (orientation, gravity, thrust)
   stepPhysics(dtSeconds, input, profiler);
-
-  // 2) Keep visual representation in sync with simulated plane state.
-  //    This is done once per frame after physics, so renderers see a
-  //    consistent world/scene snapshot.
   syncPlanesToSceneObjects(world, scene);
   syncPlanetsToSceneObjects(world, scene);
-
-  // 3) Sample trajectories (derived from updated positions)
+  syncStarsToSceneObjects(world, scene);
   updateTrajectories(dtSeconds);
-
-  // 4) Update cameras to follow the new simulation state
   updateCameras();
 }
 

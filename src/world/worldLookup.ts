@@ -26,6 +26,9 @@ export function getBodyPosition(world: WorldState, id: BodyId): Vec3 {
   const planet = world.planets.find((p) => p.id === id);
   if (planet) return planet.position;
 
+  const star = world.stars.find((s) => s.id === id);
+  if (star) return star.position;
+
   throw new Error(`Body position not found for id=${id}`);
 }
 
@@ -43,6 +46,12 @@ export function setBodyPosition(
   const planet = world.planets.find((p) => p.id === id);
   if (planet) {
     planet.position = pos;
+    return;
+  }
+
+  const star = world.stars.find((s) => s.id === id);
+  if (star) {
+    star.position = pos;
     return;
   }
 

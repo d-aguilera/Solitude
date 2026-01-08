@@ -53,5 +53,23 @@ export function getGravitatingBodies(
     });
   }
 
+  // 3) Stars
+  for (const starBody of world.stars) {
+    const physics = world.starPhysics.find((p) => p.id === starBody.id);
+    if (!physics) continue;
+
+    const existingV = existingVelocitiesById?.get(starBody.id);
+    const velocity: Vec3 = existingV
+      ? { ...existingV }
+      : { ...starBody.velocity };
+
+    bodies.push({
+      id: starBody.id,
+      mass: physics.mass,
+      position: starBody.position,
+      velocity,
+    });
+  }
+
   return bodies;
 }

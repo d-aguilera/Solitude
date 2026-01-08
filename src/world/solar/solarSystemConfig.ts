@@ -2,10 +2,13 @@ import { NEWTON_G } from "../physics/gravityConfig.js";
 import type { Polar2D, RGB, Vec3 } from "../../world/types.js";
 import { vec } from "../../world/vec3.js";
 
+export type PlanetKind = "planet" | "star";
+
 export interface PlanetConfig {
   id: string; // scene object id, e.g. "planet:earth"
   pathId: string; // orbit path scene object id, e.g. "path:planet:earth"
   objectType: string; // mesh.objectType, e.g. "planet-earth"
+  kind: PlanetKind;
 
   // Physical orbital elements / body properties (SI units)
   orbit: Polar2D; // angleRad + physical radius in meters (semi-major axis, assumed circular)
@@ -84,6 +87,7 @@ export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
       id: "planet:sun",
       pathId: "path:planet:sun",
       objectType: "planet-sun",
+      kind: "star",
       orbit: { angleRad: 0, radius: 0 }, // at origin
       physicalRadius: radiusReal.sun,
       tangentialSpeed: 0,
@@ -94,6 +98,7 @@ export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
       id: "planet:mercury",
       pathId: "path:planet:mercury",
       objectType: "planet-mercury",
+      kind: "planet",
       orbit: { angleRad: 0 * (twoPi / 8), radius: orbitsReal.mercury },
       physicalRadius: radiusReal.mercury,
       tangentialSpeed: circularSpeedAtRadius(orbitsReal.mercury),
@@ -104,6 +109,7 @@ export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
       id: "planet:venus",
       pathId: "path:planet:venus",
       objectType: "planet-venus",
+      kind: "planet",
       orbit: { angleRad: 1 * (twoPi / 8), radius: orbitsReal.venus },
       physicalRadius: radiusReal.venus,
       tangentialSpeed: circularSpeedAtRadius(orbitsReal.venus),
@@ -114,6 +120,7 @@ export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
       id: "planet:earth",
       pathId: "path:planet:earth",
       objectType: "planet-earth",
+      kind: "planet",
       orbit: { angleRad: 2 * (twoPi / 8), radius: orbitsReal.earth },
       physicalRadius: radiusReal.earth,
       tangentialSpeed: circularSpeedAtRadius(orbitsReal.earth),
@@ -124,6 +131,7 @@ export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
       id: "planet:mars",
       pathId: "path:planet:mars",
       objectType: "planet-mars",
+      kind: "planet",
       orbit: { angleRad: 3 * (twoPi / 8), radius: orbitsReal.mars },
       physicalRadius: radiusReal.mars,
       tangentialSpeed: circularSpeedAtRadius(orbitsReal.mars),
@@ -134,6 +142,7 @@ export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
       id: "planet:jupiter",
       pathId: "path:planet:jupiter",
       objectType: "planet-jupiter",
+      kind: "planet",
       orbit: { angleRad: 4 * (twoPi / 8), radius: orbitsReal.jupiter },
       physicalRadius: radiusReal.jupiter,
       tangentialSpeed: circularSpeedAtRadius(orbitsReal.jupiter),
@@ -144,6 +153,7 @@ export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
       id: "planet:saturn",
       pathId: "path:planet:saturn",
       objectType: "planet-saturn",
+      kind: "planet",
       orbit: { angleRad: 5 * (twoPi / 8), radius: orbitsReal.saturn },
       physicalRadius: radiusReal.saturn,
       tangentialSpeed: circularSpeedAtRadius(orbitsReal.saturn),
@@ -154,6 +164,7 @@ export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
       id: "planet:uranus",
       pathId: "path:planet:uranus",
       objectType: "planet-uranus",
+      kind: "planet",
       orbit: { angleRad: 6 * (twoPi / 8), radius: orbitsReal.uranus },
       physicalRadius: radiusReal.uranus,
       tangentialSpeed: circularSpeedAtRadius(orbitsReal.uranus),
@@ -164,6 +175,7 @@ export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
       id: "planet:neptune",
       pathId: "path:planet:neptune",
       objectType: "planet-neptune",
+      kind: "planet",
       orbit: { angleRad: 7 * (twoPi / 8), radius: orbitsReal.neptune },
       physicalRadius: radiusReal.neptune,
       tangentialSpeed: circularSpeedAtRadius(orbitsReal.neptune),
