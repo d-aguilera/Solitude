@@ -1,5 +1,6 @@
-import { Mat3 } from "../../world/mat3.js";
+import { Mat3, mat3 } from "../../world/mat3.js";
 import type { Renderable, SceneObject, Vec3 } from "../../world/types.js";
+import { vec } from "../../world/vec3.js";
 
 /**
  * Convert a SceneObject into a Renderable with world-space points.
@@ -29,22 +30,12 @@ function transformPointsToWorld(
   position: Vec3
 ): Vec3[] {
   const out = new Array<Vec3>(points.length);
-  const { x: tx, y: ty, z: tz } = position;
 
   for (let i = 0; i < points.length; i++) {
-    const { x, y, z } = points[i];
-    const lx = x * s;
-    const ly = y * s;
-    const lz = z * s;
-    const R0 = R[0];
-    const R1 = R[1];
-    const R2 = R[2];
-
-    out[i] = {
-      x: R0[0] * lx + R0[1] * ly + R0[2] * lz + tx,
-      y: R1[0] * lx + R1[1] * ly + R1[2] * lz + ty,
-      z: R2[0] * lx + R2[1] * ly + R2[2] * lz + tz,
-    };
+    // Scale in model space, then apply orientation, then translate
+    const p = vec.scale(points[i], s);
+    const rotated: Vec3 = mat3.mulVec3(R, p);
+    out[i] = vec.add(rotated, position);
   }
 
   return out;

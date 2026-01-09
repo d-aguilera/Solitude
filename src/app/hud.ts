@@ -15,9 +15,10 @@ export function renderHUD(
   const distFromOrigin = vec.length(plane.position);
   context.fillText(`|pos|: ${distFromOrigin.toFixed(1)} m`, 10, 20);
 
-  const speedKnots = plane.speed * 1.94384;
+  const speed = vec.length(plane.velocity);
+  const speedKnots = speed * 1.94384;
   context.fillText(
-    `Spd: ${plane.speed.toFixed(1)} m/s (${speedKnots.toFixed(0)} kt)`,
+    `Spd: ${speed.toFixed(1)} m/s (${speedKnots.toFixed(0)} kt)`,
     10,
     40
   );

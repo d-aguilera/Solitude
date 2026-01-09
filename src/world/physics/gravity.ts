@@ -51,9 +51,8 @@ function computeGravityAccelerations(
   for (let i = 0; i < n; i++) {
     const pi = positions[i];
 
-    let ax = 0;
-    let ay = 0;
-    let az = 0;
+    // Start with zero acceleration vector
+    let a: Vec3 = { x: 0, y: 0, z: 0 };
 
     for (let j = 0; j < n; j++) {
       if (i === j) continue;
@@ -61,19 +60,21 @@ function computeGravityAccelerations(
       const bj = bodies[j];
       const pj = positions[j];
 
+      // Direction from i -> j
       const d = vec.sub(pj, pi);
-      const distSq = vec.dot(d, d) + SOFTENING_LENGTH * SOFTENING_LENGTH;
-      const dist = Math.sqrt(distSq);
 
-      const invDist3 = 1 / (distSq * dist);
-      const factor = NEWTON_G * bj.mass * invDist3;
+      // Softened distance magnitude
+      const r = Math.sqrt(vec.dot(d, d) + SOFTENING_LENGTH * SOFTENING_LENGTH);
+      if (r === 0) continue;
 
-      ax += factor * d.x;
-      ay += factor * d.y;
-      az += factor * d.z;
+      // a_i += G * m_j / r^3 * d
+      const invR3 = 1 / (r * r * r);
+      const scale = NEWTON_G * bj.mass * invR3;
+
+      a = vec.add(a, vec.scale(d, scale));
     }
 
-    accelerations[i] = { x: ax, y: ay, z: az };
+    accelerations[i] = a;
   }
 
   return accelerations;
@@ -89,12 +90,10 @@ function integrateBodyVelocities(
 ): void {
   const n = bodies.length;
   for (let i = 0; i < n; i++) {
-    const velocity = bodies[i].velocity;
-    const a = accelerations[i];
-
-    velocity.x += a.x * dtSeconds;
-    velocity.y += a.y * dtSeconds;
-    velocity.z += a.z * dtSeconds;
+    // v = v + a * dt
+    const dv = vec.scale(accelerations[i], dtSeconds);
+    const body = bodies[i];
+    body.velocity = vec.add(body.velocity, dv);
   }
 }
 
@@ -115,11 +114,8 @@ function integrateBodyPositions(
     const p = positions[i];
     const v = b.velocity;
 
-    const newPos: Vec3 = {
-      x: p.x + v.x * dtSeconds,
-      y: p.y + v.y * dtSeconds,
-      z: p.z + v.z * dtSeconds,
-    };
+    // p_new = p + v * dt
+    const newPos: Vec3 = vec.add(p, vec.scale(v, dtSeconds));
 
     setBodyPosition(world, b.id, newPos);
   }

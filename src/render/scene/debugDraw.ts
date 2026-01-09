@@ -1,4 +1,5 @@
 import type { Plane, Vec3 } from "../../world/types.js";
+import { vec } from "../../world/vec3.js";
 
 export type ProjectFn = (
   p: Vec3
@@ -24,11 +25,11 @@ export interface VelocityDebugSegment {
  */
 export function getPlaneVelocitySegments(plane: Plane): VelocityDebugSegment[] {
   const v = plane.velocity;
-  const speed = Math.hypot(v.x, v.y, v.z);
+  const speed = vec.length(v);
   if (speed === 0) return [];
 
   // Unit direction of motion
-  const dir = { x: v.x / speed, y: v.y / speed, z: v.z / speed };
+  const dir = vec.normalize(v);
 
   const center = plane.position;
 
@@ -41,27 +42,11 @@ export function getPlaneVelocitySegments(plane: Plane): VelocityDebugSegment[] {
   // If the segment would be fully inside the sphere, don't draw anything
   if (len <= innerRadius) return [];
 
-  const forwardInner: Vec3 = {
-    x: center.x + dir.x * innerRadius,
-    y: center.y + dir.y * innerRadius,
-    z: center.z + dir.z * innerRadius,
-  };
-  const forwardEnd: Vec3 = {
-    x: center.x + dir.x * len,
-    y: center.y + dir.y * len,
-    z: center.z + dir.z * len,
-  };
+  const forwardInner: Vec3 = vec.add(center, vec.scale(dir, innerRadius));
+  const forwardEnd: Vec3 = vec.add(center, vec.scale(dir, len));
 
-  const backwardInner: Vec3 = {
-    x: center.x - dir.x * innerRadius,
-    y: center.y - dir.y * innerRadius,
-    z: center.z - dir.z * innerRadius,
-  };
-  const backwardEnd: Vec3 = {
-    x: center.x - dir.x * len,
-    y: center.y - dir.y * len,
-    z: center.z - dir.z * len,
-  };
+  const backwardInner: Vec3 = vec.add(center, vec.scale(dir, -innerRadius));
+  const backwardEnd: Vec3 = vec.add(center, vec.scale(dir, -len));
 
   return [
     { start: forwardInner, end: forwardEnd, color: "forward" },

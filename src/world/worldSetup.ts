@@ -1,4 +1,8 @@
-import { makeLocalFrameFromUp, mat3FromLocalFrame } from "./localFrame.js";
+import {
+  makeLocalFrameFromUp,
+  mat3FromLocalFrame,
+  rotateFrameAroundAxis,
+} from "./localFrame.js";
 import { mat3 } from "./mat3.js";
 import { airplaneModel, generatePlanetMesh } from "./content/models.js";
 import {
@@ -59,11 +63,9 @@ function createInitialPlane(
         frame = initialFrame;
       } else {
         // Opposite direction: rotate 180° around "up" to flip forward.
-        const flippedForward = vec.scale(baseForward, -1);
-        const flippedRight = vec.scale(initialFrame.right, -1);
         frame = {
-          right: flippedRight,
-          forward: flippedForward,
+          right: vec.scale(initialFrame.right, -1),
+          forward: vec.scale(baseForward, -1),
           up: initialFrame.up,
         };
       }
@@ -76,23 +78,7 @@ function createInitialPlane(
       );
       const angle = Math.acos(dot);
 
-      // Build axis-angle rotation matrix once
-      const R = mat3.rotAxis(axisN, angle);
-      const R0 = R[0];
-      const R1 = R[1];
-      const R2 = R[2];
-
-      const applyRot = (v: Vec3): Vec3 => ({
-        x: R0[0] * v.x + R0[1] * v.y + R0[2] * v.z,
-        y: R1[0] * v.x + R1[1] * v.y + R1[2] * v.z,
-        z: R2[0] * v.x + R2[1] * v.y + R2[2] * v.z,
-      });
-
-      frame = {
-        right: applyRot(initialFrame.right),
-        forward: applyRot(initialFrame.forward),
-        up: applyRot(initialFrame.up),
-      };
+      frame = rotateFrameAroundAxis(initialFrame, axisN, angle);
     }
   }
 
@@ -116,13 +102,11 @@ function createInitialPilotView(id: string, planeId: string): PilotView {
 }
 
 function createInitialTopCamera(id: string, plane: Plane): Camera {
+  const offset: Vec3 = { x: 0, y: 0, z: 50 };
+
   return {
     id,
-    position: {
-      x: plane.position.x,
-      y: plane.position.y,
-      z: plane.position.z + 50,
-    },
+    position: vec.add(plane.position, offset),
     frame: initialFrame,
   };
 }
@@ -327,11 +311,7 @@ function computePlaneStartPosFromPlanet(
     planetObj.physicalRadius + PLANE_START_ALTITUDE_M
   );
 
-  return {
-    x: planetObj.position.x + offset.x,
-    y: planetObj.position.y + offset.y,
-    z: planetObj.position.z + offset.z,
-  };
+  return vec.add(planetObj.position, offset);
 }
 
 function isPlanetSceneObject(obj: SceneObject): obj is PlanetSceneObject {

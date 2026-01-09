@@ -7,6 +7,7 @@ import {
 import { rotateFrameAroundAxis } from "../../world/localFrame.js";
 import type { LocalFrame, Plane, Vec3, WorldState } from "../../world/types.js";
 import { getPlaneById } from "../../world/worldLookup.js";
+import { vec } from "../../world/vec3.js";
 
 // Base thrust acceleration in m/s^2 along plane forward axis
 const baseThrustAcceleration = 30; // normal engine thrust
@@ -136,9 +137,11 @@ export function applyThrustToPlaneVelocity(
 
   const accel = accelMagnitude * thrustSign;
 
-  planeVelocity.x += f.x * accel * dtSeconds;
-  planeVelocity.y += f.y * accel * dtSeconds;
-  planeVelocity.z += f.z * accel * dtSeconds;
+  // v = v + (forward * accel * dt)
+  const dv = vec.scale(f, accel * dtSeconds);
+  planeVelocity.x += dv.x;
+  planeVelocity.y += dv.y;
+  planeVelocity.z += dv.z;
 }
 
 // Top-level update for orientation & pilot view; does NOT move the plane

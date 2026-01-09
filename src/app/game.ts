@@ -310,12 +310,10 @@ function updateTopCamera(): void {
   // Plane's local "up" in world space
   const radial = vec.normalize(plane.frame.up);
 
+  // Compute camera position offset from plane
   const distanceAbovePlane = 50;
-  const camPos = camera.position;
-  const planePos = plane.position;
-  camPos.x = planePos.x + radial.x * distanceAbovePlane;
-  camPos.y = planePos.y + radial.y * distanceAbovePlane;
-  camPos.z = planePos.z + radial.z * distanceAbovePlane;
+  const offset = vec.scale(radial, distanceAbovePlane);
+  camera.position = vec.add(plane.position, offset);
 
   const { frame, state: nextState } = updateTopCameraFrame(
     radial,
@@ -388,23 +386,12 @@ function setCameraRelativeToPlane(
   const camera = getCameraById(world, cameraId);
   const { right, forward, up } = plane.frame;
 
-  camera.position = {
-    x:
-      plane.position.x +
-      right.x * localOffset.x +
-      forward.x * localOffset.y +
-      up.x * localOffset.z,
-    y:
-      plane.position.y +
-      right.y * localOffset.x +
-      forward.y * localOffset.y +
-      up.y * localOffset.z,
-    z:
-      plane.position.z +
-      right.z * localOffset.x +
-      forward.z * localOffset.y +
-      up.z * localOffset.z,
-  };
+  const worldOffset = vec.add3(
+    vec.scale(right, localOffset.x),
+    vec.scale(forward, localOffset.y),
+    vec.scale(up, localOffset.z)
+  );
 
+  camera.position = vec.add(plane.position, worldOffset);
   camera.frame = frameFromPlane(plane);
 }

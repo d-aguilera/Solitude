@@ -40,25 +40,13 @@ export function buildShadedFaces(params: {
       const v1 = worldPoints[i1];
       const v2 = worldPoints[i2];
 
-      const e1: Vec3 = {
-        x: v1.x - v0.x,
-        y: v1.y - v0.y,
-        z: v1.z - v0.z,
-      };
-      const e2: Vec3 = {
-        x: v2.x - v0.x,
-        y: v2.y - v0.y,
-        z: v2.z - v0.z,
-      };
+      const e1 = vec.sub(v1, v0);
+      const e2 = vec.sub(v2, v0);
       const n = vec.normalize(vec.cross(e1, e2));
 
       // Back-face culling if we have a camera position
       if (cameraPos) {
-        const toCamera: Vec3 = {
-          x: cameraPos.x - v0.x,
-          y: cameraPos.y - v0.y,
-          z: cameraPos.z - v0.z,
-        };
+        const toCamera = vec.sub(cameraPos, v0);
         const facing = vec.dot(n, toCamera);
         if (facing <= 0) continue;
       }

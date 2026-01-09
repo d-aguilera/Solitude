@@ -1,10 +1,18 @@
 import type { Vec3 } from "./types.js";
 
-function vecAdd(a: Vec3, b: Vec3): Vec3 {
+function add(a: Vec3, b: Vec3): Vec3 {
   return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z };
 }
 
-function vecCross(a: Vec3, b: Vec3): Vec3 {
+function add3(a: Vec3, b: Vec3, c: Vec3): Vec3 {
+  return { x: a.x + b.x + c.x, y: a.y + b.y + c.y, z: a.z + b.z + c.z };
+}
+
+function clone(v: Vec3): Vec3 {
+  return { x: v.x, y: v.y, z: v.z };
+}
+
+function cross(a: Vec3, b: Vec3): Vec3 {
   return {
     x: a.y * b.z - a.z * b.y,
     y: a.z * b.x - a.x * b.z,
@@ -12,42 +20,44 @@ function vecCross(a: Vec3, b: Vec3): Vec3 {
   };
 }
 
-function vecDistanceSquared(a: Vec3, b: Vec3): number {
+function distSq(a: Vec3, b: Vec3): number {
   const dx = a.x - b.x;
   const dy = a.y - b.y;
   const dz = a.z - b.z;
   return dx * dx + dy * dy + dz * dz;
 }
 
-function vecDot(a: Vec3, b: Vec3): number {
+function dot(a: Vec3, b: Vec3): number {
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-function vecLength(v: Vec3): number {
+function length(v: Vec3): number {
   return Math.hypot(v.x, v.y, v.z);
 }
 
-function vecNormalize(v: Vec3): Vec3 {
-  const len = vecLength(v);
+function normalize(v: Vec3): Vec3 {
+  const len = length(v);
   if (len === 0) return { x: 0, y: 0, z: 0 };
   return { x: v.x / len, y: v.y / len, z: v.z / len };
 }
 
-function vecScale(v: Vec3, s: number): Vec3 {
+function scale(v: Vec3, s: number): Vec3 {
   return { x: v.x * s, y: v.y * s, z: v.z * s };
 }
 
-function vecSub(a: Vec3, b: Vec3): Vec3 {
+function sub(a: Vec3, b: Vec3): Vec3 {
   return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
 }
 
 export const vec = {
-  add: vecAdd,
-  cross: vecCross,
-  distSq: vecDistanceSquared,
-  dot: vecDot,
-  length: vecLength,
-  normalize: vecNormalize,
-  scale: vecScale,
-  sub: vecSub,
+  add,
+  add3,
+  clone,
+  cross,
+  distSq,
+  dot,
+  length,
+  normalize,
+  scale,
+  sub,
 };

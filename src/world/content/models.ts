@@ -145,16 +145,8 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
     const v1 = points[i1];
     const v2 = points[i2];
 
-    const e1 = {
-      x: v1.x - v0.x,
-      y: v1.y - v0.y,
-      z: v1.z - v0.z,
-    };
-    const e2 = {
-      x: v2.x - v0.x,
-      y: v2.y - v0.y,
-      z: v2.z - v0.z,
-    };
+    const e1 = vec.sub(v1, v0);
+    const e2 = vec.sub(v2, v0);
     const n = vec.cross(e1, e2);
 
     // For a unit sphere centered at origin, v0 points outward.

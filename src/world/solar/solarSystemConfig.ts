@@ -209,10 +209,12 @@ export function tangentialDirAtAngle(
   radialAxis1: Vec3,
   radialAxis2: Vec3
 ): Vec3 {
-  const t = {
-    x: -radialAxis1.x * Math.sin(theta) + radialAxis2.x * Math.cos(theta),
-    y: -radialAxis1.y * Math.sin(theta) + radialAxis2.y * Math.cos(theta),
-    z: -radialAxis1.z * Math.sin(theta) + radialAxis2.z * Math.cos(theta),
-  };
+  const s = Math.sin(theta);
+  const c = Math.cos(theta);
+
+  const scaled1 = vec.scale(radialAxis1, -s);
+  const scaled2 = vec.scale(radialAxis2, c);
+  const t = vec.add(scaled1, scaled2);
+
   return vec.normalize(t);
 }

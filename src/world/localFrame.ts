@@ -8,21 +8,18 @@ export function makeLocalFrameFromUp(up: Vec3): LocalFrame {
     Math.abs(u.z) < 0.9 ? { x: 0, y: 0, z: 1 } : { x: 1, y: 0, z: 0 };
 
   const dot = vec.dot(u, worldForward);
-  let forward = vec.normalize(vec.sub(worldForward, vec.scale(u, dot)));
-  let right = vec.normalize(vec.cross(forward, u));
-  forward = vec.cross(u, right);
+  const forwardUnnormalized = vec.sub(worldForward, vec.scale(u, dot));
+  const forward = vec.normalize(forwardUnnormalized);
+  const right = vec.normalize(vec.cross(forward, u));
 
   return { right, forward, up: u };
 }
 
 /** Extract a LocalFrame from a 3×3 orientation matrix (columns = [R,F,U]). */
 export function localFrameFromMat3(R: Mat3): LocalFrame {
-  const R0 = R[0];
-  const R1 = R[1];
-  const R2 = R[2];
-  const right: Vec3 = { x: R0[0], y: R1[0], z: R2[0] };
-  const forward: Vec3 = { x: R0[1], y: R1[1], z: R2[1] };
-  const up: Vec3 = { x: R0[2], y: R1[2], z: R2[2] };
+  const right = mat3.mulVec3(R, { x: 1, y: 0, z: 0 });
+  const forward = mat3.mulVec3(R, { x: 0, y: 1, z: 0 });
+  const up = mat3.mulVec3(R, { x: 0, y: 0, z: 1 });
   return makeLocalFrameFromAxes(right, forward, up);
 }
 
@@ -43,18 +40,11 @@ export function rotateFrameAroundAxis(
   angle: number
 ): LocalFrame {
   const R = mat3.rotAxis(axis, angle);
-  const R0 = R[0];
-  const R1 = R[1];
-  const R2 = R[2];
-  const apply = (v: Vec3): Vec3 => ({
-    x: R0[0] * v.x + R0[1] * v.y + R0[2] * v.z,
-    y: R1[0] * v.x + R1[1] * v.y + R1[2] * v.z,
-    z: R2[0] * v.x + R2[1] * v.y + R2[2] * v.z,
-  });
+
   return makeLocalFrameFromAxes(
-    apply(frame.right),
-    apply(frame.forward),
-    apply(frame.up)
+    mat3.mulVec3(R, frame.right),
+    mat3.mulVec3(R, frame.forward),
+    mat3.mulVec3(R, frame.up)
   );
 }
 
