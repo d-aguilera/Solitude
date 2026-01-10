@@ -8,22 +8,21 @@ export function renderHUD(
   profilingEnabled: boolean
 ): void {
   context.fillStyle = "rgba(0, 0, 0, 0.6)";
-  context.fillRect(0, 0, 360, 80);
+  context.fillRect(0, 0, 420, 80);
   context.fillStyle = "white";
   context.font = "16px monospace";
 
-  const distFromOrigin = vec.length(plane.position);
-  context.fillText(`|pos|: ${distFromOrigin.toFixed(1)} m`, 10, 20);
+  // Distance from origin in kilometers
+  const distFromOriginM = vec.length(plane.position);
+  const distFromOriginKm = distFromOriginM / 1000;
+  context.fillText(`|pos|: ${distFromOriginKm.toFixed(1)} km`, 10, 20);
 
-  const speed = vec.length(plane.velocity);
-  const speedKnots = speed * 1.94384;
-  context.fillText(
-    `Spd: ${speed.toFixed(1)} m/s (${speedKnots.toFixed(0)} kt)`,
-    10,
-    40
-  );
+  // Speed in km/h
+  const speedMps = vec.length(plane.velocity);
+  const speedKmh = speedMps * 3.6;
+  context.fillText(`Spd: ${speedKmh.toFixed(1)} km/h`, 10, 40);
 
-  context.fillText(`FPS: ${fps.toFixed(1)}`, 200, 20);
+  context.fillText(`FPS: ${fps.toFixed(1)}`, 250, 20);
 
   if (profilingEnabled) context.fillText("PROFILING", 250, 60);
 }

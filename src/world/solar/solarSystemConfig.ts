@@ -2,6 +2,9 @@ import { NEWTON_G } from "../physics/gravityConfig.js";
 import type { Polar2D, RGB, Vec3 } from "../../world/types.js";
 import { vec } from "../../world/vec3.js";
 
+// Export AU so other modules (e.g., HUD) can use it
+export const AU = 1.495978707e11; // m
+
 export type PlanetKind = "planet" | "star";
 
 export interface PlanetConfig {
@@ -33,7 +36,6 @@ export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
 
   // Base SI unit helpers
   const km = 1_000;
-  const AU = 1.495978707e11; // m
 
   // Real(ish) semi‑major axes (meters)
   const orbitsReal = {
