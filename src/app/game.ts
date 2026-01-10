@@ -22,10 +22,6 @@ import {
   setPausedForProfiling,
   setProfilingEnabled,
 } from "../profiling/profilingFacade.js";
-import {
-  updateTopCameraFrame,
-  type TopCameraFrameState,
-} from "../render/projection/projection.js";
 import type {
   GravityState,
   LocalFrame,
@@ -53,8 +49,6 @@ import {
 let lastTimeMs = 0;
 let oKeyDown = false;
 let accumTime = 0;
-
-let topCameraFrameState: TopCameraFrameState | null = null;
 
 let scene: Scene,
   world: WorldState,
@@ -307,20 +301,20 @@ function updateTopCamera(): void {
   const plane = getPlaneById(world, mainPlaneId);
   const camera = getCameraById(world, topCameraId);
 
-  // Plane's local "up" in world space
-  const radial = vec.normalize(plane.frame.up);
+  const { right, forward, up } = plane.frame;
 
-  // Compute camera position offset from plane
   const distanceAbovePlane = 50;
-  const offset = vec.scale(radial, distanceAbovePlane);
+
+  // Position: directly above plane center along its local up axis
+  const offset = vec.scale(up, distanceAbovePlane);
   camera.position = vec.add(plane.position, offset);
 
-  const { frame, state: nextState } = updateTopCameraFrame(
-    radial,
-    topCameraFrameState
-  );
-  topCameraFrameState = nextState;
-  camera.frame = frame;
+  // Orientation: top-down, bolted to plane
+  camera.frame = {
+    right: vec.clone(right),
+    forward: vec.scale(up, -1), // look down toward the plane
+    up: vec.clone(forward), // plane's nose is "up" on screen
+  };
 }
 
 function readAndProcessInput(): ControlInput {
