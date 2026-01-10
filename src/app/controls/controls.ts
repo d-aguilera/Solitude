@@ -12,9 +12,6 @@ import { vec } from "../../world/vec3.js";
 // Base thrust acceleration in m/s^2 along plane forward axis
 const baseThrustAcceleration = 30; // normal engine thrust
 
-// Multiplier applied when "hyper" is active (huge but still just thrust)
-const hyperThrustMultiplier = 1e4; // tweak for feel
-
 export interface ControlInput {
   rollLeft: boolean;
   rollRight: boolean;
@@ -29,7 +26,8 @@ export interface ControlInput {
   resetView: boolean;
   burn: boolean; // Space: thrust forward while held
   brake: boolean; // B: thrust opposite to forward to slow down
-  hyper: boolean; // H: hyperspace speed toggle
+  fastThrust: boolean; // Alt: 1e4 multiplier
+  ultraThrust: boolean; // Shift: 1e2 multiplier
 }
 
 export interface FlightContext {
@@ -130,10 +128,15 @@ export function applyThrustToPlaneVelocity(
 
   const f = plane.frame.forward; // LocalFrame forward
 
-  const accelMagnitude = input.hyper
-    ? baseThrustAcceleration * hyperThrustMultiplier
-    : baseThrustAcceleration;
+  // Thrust multipliers:
+  // - Ctrl → 1e4
+  // - Shift → 1e2
+  // - Both → 1e6 (1e4 * 1e2)
+  let multiplier = 1;
+  if (input.fastThrust) multiplier *= 1e4;
+  if (input.ultraThrust) multiplier *= 1e2;
 
+  const accelMagnitude = baseThrustAcceleration * multiplier;
   const accel = accelMagnitude * thrustSign;
 
   // v = v + (forward * accel * dt)

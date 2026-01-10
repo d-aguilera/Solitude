@@ -14,7 +14,10 @@ type KeyCode =
   | "KeyP"
   | "Space"
   | "KeyB"
-  | "KeyH";
+  | "AltLeft"
+  | "AltRight"
+  | "ShiftLeft"
+  | "ShiftRight";
 
 type KeyState = Record<KeyCode, boolean>;
 
@@ -34,7 +37,10 @@ export const keys: KeyState = {
   KeyP: false,
   Space: false,
   KeyB: false,
-  KeyH: false,
+  AltLeft: false,
+  AltRight: false,
+  ShiftLeft: false,
+  ShiftRight: false,
 };
 
 export function init(): void {

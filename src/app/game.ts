@@ -341,7 +341,8 @@ function makeControlInput(keys: ReturnType<typeof getKeyState>): ControlInput {
     resetView: keys.Digit0,
     burn: keys.Space,
     brake: keys.KeyB,
-    hyper: keys.KeyH,
+    fastThrust: keys.AltLeft || keys.AltRight, // Alt = 1e4
+    ultraThrust: keys.ShiftLeft || keys.ShiftRight, // Shift = 1e2
   };
 }
 
