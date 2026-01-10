@@ -12,30 +12,30 @@ export function init(
   });
 }
 
-function resizeCanvas(
+function resizeCanvasToCssBox(
   canvas: HTMLCanvasElement,
-  newClientWidth: number,
-  newClientHeight: number
+  cssWidth: number,
+  cssHeight: number
 ): void {
-  canvas.style.width = `${newClientWidth}px`;
-  canvas.style.height = `${newClientHeight}px`;
+  canvas.style.width = `${cssWidth}px`;
+  canvas.style.height = `${cssHeight}px`;
 
   const dpr = window.devicePixelRatio || 1;
-  const cssWidth = Math.round(newClientWidth * dpr);
-  const cssHeight = Math.round(newClientHeight * dpr);
+  const deviceWidth = Math.round(cssWidth * dpr);
+  const deviceHeight = Math.round(cssHeight * dpr);
 
-  if (canvas.width === cssWidth && canvas.height === cssHeight) return;
+  if (canvas.width === deviceWidth && canvas.height === deviceHeight) return;
 
-  canvas.width = cssWidth;
-  canvas.height = cssHeight;
+  canvas.width = deviceWidth;
+  canvas.height = deviceHeight;
 
   console.log(
     "[resizeCanvasToCssBox]",
     "id=",
     canvas.id,
     "Device pixels (w,h)=",
-    newClientWidth,
-    newClientHeight,
+    deviceWidth,
+    deviceHeight,
     "DPR=",
     dpr,
     "CSS pixels (w,h)=",
@@ -51,32 +51,30 @@ function resizeCanvases(
 ): void {
   if (!container) return;
 
-  // Available width is the container width divided by 2 (for two canvases)
-  const availableWidthPerCanvas = container.clientWidth / 2;
-  const availableHeight = container.clientHeight;
+  const containerWidth = container.clientWidth;
+  const containerHeight = container.clientHeight;
   const aspectRatio = 16 / 9;
 
-  let newClientWidth, newClientHeight;
+  // Pilot view: fill entire container while preserving aspect ratio
+  let pilotWidth = containerWidth;
+  let pilotHeight = pilotWidth / aspectRatio;
 
-  // Calculate dimensions based on available width, then check if height fits
-  let widthFromWidth = availableWidthPerCanvas;
-  let heightFromWidth = widthFromWidth / aspectRatio;
-
-  // Calculate dimensions based on available height, then check if width fits
-  let heightFromHeight = availableHeight;
-  let widthFromHeight = heightFromHeight * aspectRatio;
-
-  // Use the dimensions that fit entirely within the available space
-  if (heightFromWidth <= availableHeight) {
-    newClientWidth = Math.round(widthFromWidth);
-    newClientHeight = Math.round(heightFromWidth);
-  } else {
-    newClientWidth = Math.round(widthFromHeight);
-    newClientHeight = Math.round(heightFromHeight);
+  if (pilotHeight > containerHeight) {
+    pilotHeight = containerHeight;
+    pilotWidth = pilotHeight * aspectRatio;
   }
 
-  resizeCanvas(pilotCanvas, newClientWidth, newClientHeight);
-  resizeCanvas(topCanvas, newClientWidth, newClientHeight);
+  resizeCanvasToCssBox(pilotCanvas, pilotWidth, pilotHeight);
+
+  // Top view: 20% of container width, fixed aspect ratio, overlay bottom-right
+  const topWidth = containerWidth * 0.2;
+  const topHeight = topWidth / aspectRatio;
+
+  // Position via style so it stays in bottom-right
+  topCanvas.style.right = "16px";
+  topCanvas.style.bottom = "16px";
+
+  resizeCanvasToCssBox(topCanvas, topWidth, topHeight);
 }
 
 function updatePixelRatio(

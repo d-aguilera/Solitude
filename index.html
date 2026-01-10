@@ -4,20 +4,44 @@
     <meta charset="UTF-8" />
     <title>Flight Demo</title>
     <style>
-      body,
-      html {
+      html,
+      body {
         margin: 0;
         padding: 0;
         height: 100%;
         overflow: hidden;
         background-color: #333;
       }
+
       .canvas-container {
-        display: flex;
+        position: relative; /* parent for absolute children */
         width: 100%;
         height: 100%;
-        justify-content: center;
-        align-items: center;
+        overflow: hidden;
+      }
+
+      /* Pilot view: full screen */
+      #pilotViewCanvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      /* Top view: picture‑in‑picture overlay */
+      #topViewCanvas {
+        position: absolute;
+        right: 1rem;
+        bottom: 1rem;
+        /* These widths/heights are CSS sizes; actual pixel size is set in TS */
+        width: 20%; /* 20% of container width */
+        aspect-ratio: 16 / 9;
+        display: block;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+        border: 1px solid #555;
+        background: #000;
       }
     </style>
   </head>

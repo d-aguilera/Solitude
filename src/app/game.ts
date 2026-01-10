@@ -259,6 +259,9 @@ function renderAllViews(
 
     // 2) Render pilot view
     renderView(pilotContext, scene, pilotViewConfig, profiler);
+
+    // 3) HUD on top of pilot view
+    renderHUD(pilotContext, mainPlane, isProfilingEnabled());
   });
 
   profiler.run("GAME", "top-view", () => {
@@ -276,10 +279,6 @@ function renderAllViews(
 
     // 2) Render top view
     renderView(topContext, scene, topViewConfig, profiler);
-  });
-
-  profiler.run("GAME", "hud", () => {
-    renderHUD(topContext, mainPlane, isProfilingEnabled());
   });
 }
 
