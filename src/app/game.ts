@@ -138,20 +138,15 @@ function stepSimulation(
 
 /**
  * Update all camera positions / orientations to follow the simulation state.
- * Kept here so renderAllViews can focus purely on rendering.
  */
 function updateCameras(): void {
   const mainPlane = getPlaneById(world, mainPlaneId);
   updatePilotCamera(mainPlane);
-  updateTopCamera();
+  updateTopCamera(mainPlane);
 }
 
 /**
  * Advance physical simulation only (orientation, forces, gravity).
- *
- * Cohesive responsibilities:
- *  - Update plane orientation from controls (no position movement here).
- *  - Integrate gravity + thrust and update body positions/velocities.
  */
 function stepPhysics(
   dtSeconds: number,
@@ -296,24 +291,16 @@ function handleProfilingToggle(oKeyPressed: boolean): void {
   }
 }
 
-function updateTopCamera(): void {
-  const plane = getPlaneById(world, mainPlaneId);
-  const camera = getCameraById(world, topCameraId);
-
-  const { right, forward, up } = plane.frame;
-
-  const distanceAbovePlane = 50;
-
-  // Position: directly above plane center along its local up axis
-  const offset = vec.scale(up, distanceAbovePlane);
-  camera.position = vec.add(plane.position, offset);
-
-  // Orientation: top-down, bolted to plane
-  camera.frame = {
-    right: vec.clone(right),
-    forward: vec.scale(up, -1), // look down toward the plane
-    up: vec.clone(forward), // plane's nose is "up" on screen
-  };
+function updateTopCamera(plane: Plane): void {
+  const localOffset = { x: 0, y: 0, z: 50 }; // (right, forward, up)
+  setCameraRelativeToPlane(topCameraId, plane, localOffset, (p) => {
+    const { right, forward, up } = p.frame;
+    return {
+      right: vec.clone(right),
+      forward: vec.scale(up, -1), // look down toward the plane
+      up: vec.clone(forward), // plane's nose is "up" on screen
+    };
+  });
 }
 
 function readAndProcessInput(): ControlInput {
@@ -345,7 +332,6 @@ function makeControlInput(keys: ReturnType<typeof getKeyState>): ControlInput {
   };
 }
 
-// Follow-plane logic for pilot camera, using an offset
 function updatePilotCamera(plane: Plane): void {
   const localOffset = { x: 0, y: -20, z: 5 }; // (right, forward, up)
   setCameraRelativeToPlane(pilotCameraId, plane, localOffset, (p) => ({
