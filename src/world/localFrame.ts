@@ -15,17 +15,25 @@ export function makeLocalFrameFromUp(up: Vec3): LocalFrame {
   return { right, forward, up: u };
 }
 
-/** Extract a LocalFrame from a 3×3 orientation matrix (columns = [R,F,U]). */
+/** Extract a LocalFrame from a 3×3 orientation matrix (local→world). */
 export function localFrameFromMat3(R: Mat3): LocalFrame {
-  const right = mat3.mulVec3(R, { x: 1, y: 0, z: 0 });
-  const forward = mat3.mulVec3(R, { x: 0, y: 1, z: 0 });
-  const up = mat3.mulVec3(R, { x: 0, y: 0, z: 1 });
+  // R maps local -> world; columns are the world-space axes.
+  const R0 = R[0];
+  const R1 = R[1];
+  const R2 = R[2];
+  const right: Vec3 = { x: R0[0], y: R1[0], z: R2[0] };
+  const forward: Vec3 = { x: R0[1], y: R1[1], z: R2[1] };
+  const up: Vec3 = { x: R0[2], y: R1[2], z: R2[2] };
+
   return makeLocalFrameFromAxes(right, forward, up);
 }
 
-/** Convert a LocalFrame to a column-major orientation matrix. */
+/** Convert a LocalFrame to a local→world orientation matrix (row-major). */
 export function mat3FromLocalFrame(frame: LocalFrame): Mat3 {
   const { right, forward, up } = frame;
+
+  // Local (x,y,z) -> World = x*right + y*forward + z*up
+  // Implemented as v_world = R * v_local with rows = components of axes.
   return [
     [right.x, forward.x, up.x],
     [right.y, forward.y, up.y],

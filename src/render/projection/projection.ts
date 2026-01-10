@@ -124,8 +124,8 @@ export function updateTopCameraFrame(
       const frame = localFrameFromMat3(R);
 
       topCameraRight = frame.right;
-      topCameraUp = frame.up;
       topCameraForward = frame.forward;
+      topCameraUp = frame.up;
     } else {
       if (lenR < 1e-6 && lenU >= 1e-6) {
         u = vec.normalize(u);
@@ -163,8 +163,8 @@ export function updateTopCameraFrame(
       const frame = localFrameFromMat3(R);
 
       topCameraRight = frame.right;
-      topCameraUp = frame.up;
       topCameraForward = frame.forward;
+      topCameraUp = frame.up;
     }
 
     state = {
@@ -194,22 +194,20 @@ export function makeTopView(ctx: TopViewContext) {
   };
 }
 
+// Translate world point into camera-relative coordinates
 function worldPointToCameraPoint(
   worldPoint: Vec3,
   cameraPosition: Vec3,
   cameraFrame: LocalFrame
 ): Vec3 {
-  // Translate world point into camera-relative coordinates
-  const d = vec.sub(worldPoint, cameraPosition);
-
-  // Build a row-major matrix whose rows are the camera basis vectors,
-  // then reuse mat3.mulVec3 to apply it.
-  const { right, up, forward } = cameraFrame;
+  const { right, forward, up } = cameraFrame;
   const R: Mat3 = [
     [right.x, right.y, right.z],
-    [up.x, up.y, up.z],
     [forward.x, forward.y, forward.z],
+    [up.x, up.y, up.z],
   ];
+
+  const d = vec.sub(worldPoint, cameraPosition);
 
   return mat3.mulVec3(R, d);
 }
@@ -219,16 +217,18 @@ function applyPilotLook(cameraPoint: Vec3, azimuth: number, elevation: number) {
     return;
   }
 
+  // Azimuth: yaw around up axis -> rotate (right, forward) = (x,y)
   if (azimuth !== 0) {
-    const r = rotate2D(cameraPoint.x, cameraPoint.z, -azimuth);
-    cameraPoint.x = r.a;
-    cameraPoint.z = r.b;
+    const r = rotate2D(cameraPoint.x, cameraPoint.y, -azimuth);
+    cameraPoint.x = r.a; // right
+    cameraPoint.y = r.b; // forward
   }
 
+  // Elevation: pitch around right axis -> rotate (forward, up) = (y,z)
   if (elevation !== 0) {
     const r = rotate2D(cameraPoint.y, cameraPoint.z, -elevation);
-    cameraPoint.y = r.a;
-    cameraPoint.z = r.b;
+    cameraPoint.y = r.a; // forward
+    cameraPoint.z = r.b; // up
   }
 }
 
@@ -241,11 +241,11 @@ function applyPerspective(
 
   const fX = HORIZONTAL_FOCAL_LENGTH;
   const fY = fX / aspect;
+  const depth = cameraPoint.y;
 
-  // Scale x and y by their respective focal lengths
   const scaled = vec.scale(
-    { x: cameraPoint.x * fX, y: cameraPoint.y * fY, z: 0 },
-    1 / cameraPoint.z
+    { x: cameraPoint.x * fX, y: cameraPoint.z * fY, z: 0 },
+    1 / depth
   );
 
   // NDC in [-1, 1]
@@ -254,7 +254,7 @@ function applyPerspective(
   return {
     x: (ndcX + 1) * 0.5 * canvasWidth,
     y: (1 - ndcY) * 0.5 * canvasHeight,
-    depth: cameraPoint.z,
+    depth,
   };
 }
 
@@ -277,6 +277,7 @@ function projectIfInFront(
   canvasWidth: number,
   canvasHeight: number
 ): ScreenPoint | null {
-  if (cameraPoint.z <= 0.1) return null;
+  const depth = cameraPoint.y;
+  if (depth <= 0.1) return null;
   return applyPerspective(cameraPoint, canvasWidth, canvasHeight);
 }
