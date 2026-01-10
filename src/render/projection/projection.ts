@@ -1,11 +1,11 @@
-import { HORIZONTAL_FOCAL_LENGTH } from "../../app/config.js";
+import { getFocalLengths } from "../../app/config.js";
 import {
   makeLocalFrameFromUp,
   localFrameFromMat3,
   mat3FromLocalFrame,
 } from "../../world/localFrame.js";
 import type { LocalFrame, Vec3 } from "../../world/types.js";
-import { mat3, type Mat3 } from "../../world/mat3.js";
+import { mat3 } from "../../world/mat3.js";
 import { vec } from "../../world/vec3.js";
 
 export interface ScreenPoint {
@@ -200,16 +200,16 @@ function worldPointToCameraPoint(
   cameraPosition: Vec3,
   cameraFrame: LocalFrame
 ): Vec3 {
-  const { right, forward, up } = cameraFrame;
-  const R: Mat3 = [
-    [right.x, right.y, right.z],
-    [forward.x, forward.y, forward.z],
-    [up.x, up.y, up.z],
-  ];
+  // R_worldFromLocal: columns = camera's local basis vectors in world space
+  const R_worldFromLocal = mat3FromLocalFrame(cameraFrame);
+
+  // For pure rotations, inverse = transpose (R_localFromWorld)
+  const R_localFromWorld = mat3.transpose(R_worldFromLocal);
 
   const d = vec.sub(worldPoint, cameraPosition);
 
-  return mat3.mulVec3(R, d);
+  // Interpreted as a world-space column vector, map to camera/local space.
+  return mat3.mulVec3(R_localFromWorld, d);
 }
 
 function applyPilotLook(cameraPoint: Vec3, azimuth: number, elevation: number) {
@@ -237,10 +237,7 @@ function applyPerspective(
   canvasWidth: number,
   canvasHeight: number
 ): ScreenPoint {
-  const aspect = canvasWidth / canvasHeight;
-
-  const fX = HORIZONTAL_FOCAL_LENGTH;
-  const fY = fX / aspect;
+  const { fX, fY } = getFocalLengths(canvasWidth, canvasHeight);
   const depth = cameraPoint.y;
 
   const scaled = vec.scale(
@@ -248,7 +245,6 @@ function applyPerspective(
     1 / depth
   );
 
-  // NDC in [-1, 1]
   const { x: ndcX, y: ndcY } = scaled;
 
   return {

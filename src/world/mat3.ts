@@ -7,40 +7,33 @@ export type Mat3 = [
   [number, number, number]
 ];
 
+/**
+ * 3×3 rotation matrix stored in row-major order.
+ * Convention:
+ *   - Vectors are treated as column vectors.
+ *   - Columns of the matrix are basis vectors (e.g., right | forward | up).
+ */
 const identity: Mat3 = [
   [1, 0, 0],
   [0, 1, 0],
   [0, 0, 1],
 ];
 
-function mul(A: Mat3, B: Mat3): Mat3 {
-  const C: Mat3 = [
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0],
-  ];
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
-      C[i][j] = A[i][0] * B[0][j] + A[i][1] * B[1][j] + A[i][2] * B[2][j];
-    }
-  }
-  return C;
-}
-
-/** Apply a 3×3 matrix to a Vec3 (R * v), treating rows as basis vectors. */
+/**
+ * Apply a 3×3 matrix to a Vec3 (v' = R * v), treating COLUMNS as basis vectors.
+ *
+ * If R's columns are [r | f | u], then:
+ *   v' = v.x * r + v.y * f + v.z * u
+ */
 function mulVec3(R: Mat3, v: Vec3): Vec3 {
-  const R0 = R[0];
-  const R1 = R[1];
-  const R2 = R[2];
-
-  const row0: Vec3 = { x: R0[0], y: R0[1], z: R0[2] };
-  const row1: Vec3 = { x: R1[0], y: R1[1], z: R1[2] };
-  const row2: Vec3 = { x: R2[0], y: R2[1], z: R2[2] };
+  const right: Vec3 = { x: R[0][0], y: R[1][0], z: R[2][0] };
+  const forward: Vec3 = { x: R[0][1], y: R[1][1], z: R[2][1] };
+  const up: Vec3 = { x: R[0][2], y: R[1][2], z: R[2][2] };
 
   return {
-    x: vec.dot(row0, v),
-    y: vec.dot(row1, v),
-    z: vec.dot(row2, v),
+    x: right.x * v.x + forward.x * v.y + up.x * v.z,
+    y: right.y * v.x + forward.y * v.y + up.y * v.z,
+    z: right.z * v.x + forward.z * v.y + up.z * v.z,
   };
 }
 
@@ -79,7 +72,6 @@ function transpose(M: Mat3): Mat3 {
 
 export const mat3 = {
   identity,
-  mul,
   mulVec3,
   rotAxis,
   transpose,

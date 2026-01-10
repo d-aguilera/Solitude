@@ -15,9 +15,10 @@ export function makeLocalFrameFromUp(up: Vec3): LocalFrame {
   return { right, forward, up: u };
 }
 
-/** Extract a LocalFrame from a 3×3 orientation matrix (local→world). */
+/** Extract a LocalFrame from a 3×3 orientation matrix (local→world).
+ *  Columns of R are the world-space axes of the local frame.
+ */
 export function localFrameFromMat3(R: Mat3): LocalFrame {
-  // R maps local -> world; columns are the world-space axes.
   const R0 = R[0];
   const R1 = R[1];
   const R2 = R[2];
@@ -28,12 +29,12 @@ export function localFrameFromMat3(R: Mat3): LocalFrame {
   return makeLocalFrameFromAxes(right, forward, up);
 }
 
-/** Convert a LocalFrame to a local→world orientation matrix (row-major). */
+/** Convert a LocalFrame to a local→world orientation matrix.
+ *  Columns are basis vectors: [right | forward | up].
+ */
 export function mat3FromLocalFrame(frame: LocalFrame): Mat3 {
   const { right, forward, up } = frame;
 
-  // Local (x,y,z) -> World = x*right + y*forward + z*up
-  // Implemented as v_world = R * v_local with rows = components of axes.
   return [
     [right.x, forward.x, up.x],
     [right.y, forward.y, up.y],
@@ -56,14 +57,20 @@ export function rotateFrameAroundAxis(
   );
 }
 
-/** Build a LocalFrame from right/forward/up, normalized */
+/** Build a LocalFrame from right/forward/up */
 function makeLocalFrameFromAxes(
   right: Vec3,
   forward: Vec3,
   up: Vec3
 ): LocalFrame {
-  const r = vec.normalize(right);
-  const f = vec.normalize(forward);
-  const u = vec.normalize(up);
+  // Gram–Schmidt to ensure orthonormal axes
+  let r = vec.normalize(right);
+  // Remove any component of forward along r, then normalize
+  let fUn = vec.sub(forward, vec.scale(r, vec.dot(forward, r)));
+  let f = vec.normalize(fUn);
+  void up;
+  // up = r × f to guarantee orthogonality
+  let u = vec.normalize(vec.cross(r, f));
+
   return { right: r, forward: f, up: u };
 }
