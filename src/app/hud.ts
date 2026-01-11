@@ -1,14 +1,15 @@
 import { fps } from "./fps.js";
-import type { Plane } from "../world/types.js";
+import type { Plane, Vec3 } from "../world/types.js";
 import { vec } from "../world/vec3.js";
 
 export function renderHUD(
   context: CanvasRenderingContext2D,
   plane: Plane,
-  profilingEnabled: boolean
+  profilingEnabled: boolean,
+  pilotCameraLocalOffset: Vec3
 ): void {
   const hudWidth = 420;
-  const hudHeight = 80;
+  const hudHeight = 100;
   const margin = 10;
 
   const canvasWidth = context.canvas.width;
@@ -35,4 +36,14 @@ export function renderHUD(
   context.fillText(`FPS: ${fps.toFixed(1)}`, x + 250, y + 20);
 
   if (profilingEnabled) context.fillText("PROFILING", x + 250, y + 60);
+
+  // Pilot camera local offset (right, forward, up)
+  const off = pilotCameraLocalOffset;
+  context.fillText(
+    `Cam(local): x=${off.x.toFixed(2)} y=${off.y.toFixed(2)} z=${off.z.toFixed(
+      2
+    )}`,
+    x + 10,
+    y + 80
+  );
 }

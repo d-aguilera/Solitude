@@ -4,7 +4,7 @@ import { vec } from "../../world/vec3.js";
 export const airplaneModel: Mesh = {
   points: [
     { x: 0, y: 0.5, z: 0 }, // 0: nose tip
-    { x: 0, y: -0.1, z: 0.15 }, // 1: fuselage top center
+    { x: 0, y: 0.2, z: 0.1 }, // 1: fuselage top center
     { x: -0.1, y: 0, z: 0 }, // 2: fuselage left center
     { x: 0.1, y: 0, z: 0 }, // 3: fuselage right center
     { x: 0, y: 0, z: -0.1 }, // 4: fuselage bottom center
@@ -16,10 +16,11 @@ export const airplaneModel: Mesh = {
     { x: 0.025, y: -0.5, z: 0.025 }, // 10: tail top right
     { x: -0.025, y: -0.5, z: -0.025 }, // 11: tail bottom left
     { x: 0.025, y: -0.5, z: -0.025 }, // 12: tail bottom right
+    { x: 0, y: 0.2, z: 0 }, // 13: fuselage top front quarter
   ],
   faces: [
-    [1, 0, 2], // front fuselage, top left face
-    [3, 0, 1], // front fuselage, top right face
+    [13, 0, 2], // front fuselage, top left face
+    [3, 0, 13], // front fuselage, top right face
     [2, 0, 4], // front fuselage, bottom left face
     [4, 0, 3], // front fuselage, bottom right face
     [2, 6, 9], // left wing top face

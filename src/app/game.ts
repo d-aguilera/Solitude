@@ -61,6 +61,9 @@ let scene: Scene,
 // Gravity state
 let gravityState: GravityState | null = null;
 
+// Pilot camera local offset (right, forward, up) in plane-local units
+let pilotCameraLocalOffset: Vec3 = { x: 0, y: 1.7, z: 1.1 };
+
 export function startGame(
   pilotContext: CanvasRenderingContext2D,
   topContext: CanvasRenderingContext2D,
@@ -148,7 +151,10 @@ function stepPhysics(
     // 1) Controls / orientation only (no forward movement here).
     updatePlaneOrientationFromControls(dtSeconds, input);
 
-    // 2) Gravity + thrust integration.
+    // 2) Camera offset adjustments
+    updatePilotCameraOffset(dtSeconds, input);
+
+    // 3) Gravity + thrust integration.
     integrateForcesAndGravity(dtSeconds, input);
   });
 }
@@ -247,7 +253,12 @@ function renderAllViews(
     renderView(pilotContext, scene, pilotViewConfig, profiler);
 
     // 3) HUD on top of pilot view
-    renderHUD(pilotContext, mainPlane, isProfilingEnabled());
+    renderHUD(
+      pilotContext,
+      mainPlane,
+      isProfilingEnabled(),
+      pilotCameraLocalOffset
+    );
   });
 
   profiler.run("GAME", "top-view", () => {
@@ -308,6 +319,10 @@ function makeControlInput(keys: ReturnType<typeof getKeyState>): ControlInput {
     brake: keys.KeyB,
     fastThrust: keys.AltLeft || keys.AltRight, // Alt = 1e4
     ultraThrust: keys.ShiftLeft || keys.ShiftRight, // Shift = 1e2
+    camForward: keys.KeyU, // move camera forward (toward nose)
+    camBackward: keys.KeyJ, // move camera backward
+    camUp: keys.KeyI, // move camera up
+    camDown: keys.KeyK, // move camera down
   };
 }
 
@@ -320,7 +335,7 @@ function updateCameras(): void {
   setCameraRelativeToPlane(
     pilotCameraId,
     mainPlane,
-    { x: 0, y: -20, z: 5 }, // (right, forward, up)
+    pilotCameraLocalOffset, // dynamic local offset
     frameFromPlaneForPilot
   );
 
@@ -380,4 +395,28 @@ function appendPlanetTrajectories(): void {
       appendPointToPolylineMesh(pathObj.mesh, bodyObj.position);
     }
   }
+}
+
+function updatePilotCameraOffset(dtSeconds: number, input: ControlInput): void {
+  if (dtSeconds <= 0) return;
+
+  // Step size in local units per second
+  const moveSpeed = 0.5;
+
+  let dx = 0;
+  let dy = 0;
+  let dz = 0;
+
+  if (input.camForward) dy += moveSpeed;
+  if (input.camBackward) dy -= moveSpeed;
+  if (input.camUp) dz += moveSpeed;
+  if (input.camDown) dz -= moveSpeed;
+
+  if (dx === 0 && dy === 0 && dz === 0) return;
+
+  pilotCameraLocalOffset = {
+    x: pilotCameraLocalOffset.x + dx * dtSeconds,
+    y: pilotCameraLocalOffset.y + dy * dtSeconds,
+    z: pilotCameraLocalOffset.z + dz * dtSeconds,
+  };
 }

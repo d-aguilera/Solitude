@@ -28,6 +28,10 @@ export interface ControlInput {
   brake: boolean; // B: thrust opposite to forward to slow down
   fastThrust: boolean; // Alt: 1e4 multiplier
   ultraThrust: boolean; // Shift: 1e2 multiplier
+  camForward: boolean; // U
+  camBackward: boolean; // J
+  camUp: boolean; // I
+  camDown: boolean; // K
 }
 
 export interface FlightContext {
