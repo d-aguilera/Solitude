@@ -219,6 +219,8 @@ function addPlanetsAndStarsFromConfig(
         : { x: 0, y: 0, z: 0 };
 
     if (cfg.kind === "star") {
+      const luminosity = cfg.luminosity ?? 0;
+
       const starObj: StarSceneObject = {
         id: cfg.id,
         kind: "star",
@@ -234,6 +236,7 @@ function addPlanetsAndStarsFromConfig(
         physicalRadius: cfg.physicalRadius,
         backFaceCulling: true,
         velocity: { ...initialVelocity },
+        luminosity,
       };
 
       const starBody: StarBody = {
@@ -247,6 +250,7 @@ function addPlanetsAndStarsFromConfig(
         physicalRadius: cfg.physicalRadius,
         density: cfg.density,
         mass: computePlanetMass(cfg.physicalRadius, cfg.density),
+        luminosity,
       };
 
       worldStars.push(starBody);
@@ -290,8 +294,6 @@ function addPlanetsAndStarsFromConfig(
     objects.push(createPlanetPathObject(cfg.pathId, cfg.color));
   }
 }
-
-const sunDirection = vec.normalize({ x: 0.3, y: 0.5, z: 1.0 });
 
 // 100 km above Earth's north pole
 const PLANE_START_ALTITUDE_M = 10_000_000; // meters
@@ -389,7 +391,8 @@ export function createInitialSceneAndWorld(): {
 
   const scene: Scene = {
     objects,
-    sunDirection,
+    // Lights will be populated from stars after world setup.
+    lights: [],
   };
 
   const topCamera = createInitialTopCamera("camera:top", mainPlane);
@@ -404,6 +407,9 @@ export function createInitialSceneAndWorld(): {
     planetId: cfg.id,
     pathId: cfg.pathId,
   }));
+
+  // Build point lights from star bodies (e.g., Sun at origin).
+  buildLightsFromStars(world, scene);
 
   return {
     scene,
@@ -452,4 +458,21 @@ export function syncStarsToSceneObjects(world: WorldState, scene: Scene): void {
     obj.position = starBody.position;
     obj.velocity = starBody.velocity;
   }
+}
+
+function buildLightsFromStars(world: WorldState, scene: Scene): void {
+  const lights = [];
+
+  for (const starBody of world.stars) {
+    const phys = world.starPhysics.find((p) => p.id === starBody.id);
+    if (!phys) continue;
+
+    lights.push({
+      position: { ...starBody.position },
+      // Use physical luminosity directly; renderer is responsible for scaling.
+      intensity: phys.luminosity,
+    });
+  }
+
+  scene.lights = lights;
 }

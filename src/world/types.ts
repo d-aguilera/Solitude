@@ -74,6 +74,7 @@ export interface StarPhysics {
   physicalRadius: number; // meters
   density: number; // kg/m^3
   mass: number; // kg
+  luminosity: number; // W or scaled units for lighting
 }
 
 export interface Camera {
@@ -142,6 +143,7 @@ export interface StarSceneObject extends SolidSceneObject {
   physicalRadius: number; // meters
   backFaceCulling: true;
   velocity: Vec3;
+  luminosity: number; // W or scaled units for lighting
 }
 
 /**
@@ -187,9 +189,16 @@ export interface Renderable {
   baseColor: RGB;
 }
 
+export interface PointLight {
+  position: Vec3;
+  /** Luminous power / intensity in arbitrary units (e.g. W or scaled W). */
+  intensity: number;
+}
+
 export interface Scene {
   objects: SceneObject[];
-  sunDirection: Vec3;
+  // Array of point lights (e.g., stars). All lighting is derived from these.
+  lights: PointLight[];
 }
 
 export type DrawMode = "faces" | "lines";

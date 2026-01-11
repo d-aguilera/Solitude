@@ -6,11 +6,13 @@ import type {
   SceneObject,
   SceneObjectWithCache,
   Vec3,
+  PointLight,
 } from "../../world/types.js";
 import { vec } from "../../world/vec3.js";
 import { mat3FromLocalFrame } from "../../world/localFrame.js";
 import { mat3 } from "../../world/mat3.js";
 import { getFocalLengths } from "../../app/config.js";
+import { E_SUN_AT_EARTH } from "../../world/solar/solarSystemConfig.js";
 
 /**
  * Internal representation of a single shaded triangle face ready for rasterization.
@@ -34,7 +36,7 @@ export function buildShadedFaces(params: {
   cameraFrame: LocalFrame;
   canvasWidth: number;
   canvasHeight: number;
-  lightDir: Vec3;
+  lights: PointLight[];
   frameId: number;
 }): FaceEntry[] {
   const {
@@ -43,7 +45,7 @@ export function buildShadedFaces(params: {
     cameraFrame,
     canvasWidth,
     canvasHeight,
-    lightDir,
+    lights,
     frameId,
   } = params;
   const faceList: FaceEntry[] = [];
@@ -101,7 +103,7 @@ export function buildShadedFaces(params: {
       const clipped = clipTriangleAgainstNearPlaneCamera(c0, c1, c2);
       if (clipped.length === 0) continue;
 
-      const intensity = Math.max(0, vec.dot(n, lightDir));
+      const isStar = obj.kind === "star";
 
       for (const [A, B, C] of clipped) {
         const p0 = projectCameraPoint(A, canvasWidth, canvasHeight);
@@ -112,6 +114,10 @@ export function buildShadedFaces(params: {
         const d1 = p1.depth ?? 0;
         const d2 = p2.depth ?? 0;
         const avgDepth = (d0 + d1 + d2) / 3;
+
+        const intensity = isStar
+          ? 1 // fully lit regardless of normals
+          : toneMapIrradiance(computeIrradianceAtPoint(v0, n, lights));
 
         faceList.push({
           intensity,
@@ -316,4 +322,50 @@ function getWorldFaceNormalsForObject(
 
   cachedObj.__faceNormalsFrameId = frameId;
   return cache;
+}
+
+function computeIrradianceAtPoint(
+  p: Vec3,
+  n: Vec3,
+  lights: PointLight[]
+): number {
+  if (lights.length === 0) return 0;
+
+  let E = 0;
+
+  // Very simple Lambertian irradiance from point lights:
+  //   E = Σ (I / (4π r²)) * max(0, cosθ)
+  // Here, I is luminosity-like (W or scaled W), r is distance in meters,
+  // and n·L = cosθ is the Lambertian term.
+  for (const light of lights) {
+    const toLight = vec.sub(light.position, p);
+    const r2 = vec.dot(toLight, toLight);
+    if (r2 === 0) continue;
+
+    const r = Math.sqrt(r2);
+    const invR = 1 / r;
+    const L = vec.scale(toLight, invR);
+    const ndotl = vec.dot(n, L);
+    if (ndotl <= 0) continue;
+
+    const I = light.intensity; // luminosity-like
+    const Ei = (I / (4 * Math.PI * r2)) * ndotl;
+    E += Ei;
+  }
+
+  return E; // in arbitrary W/m^2-like units
+}
+
+// Simple exposure/tone-mapping constants.
+const EXPOSURE = 10 / E_SUN_AT_EARTH;
+
+function toneMapIrradiance(E: number): number {
+  const hdr = EXPOSURE * E;
+  const mapped = hdr / (1 + hdr); // Reinhard
+
+  // Mild gamma to lift darks
+  const gamma = 1.0 / 1.3;
+  const ldr = Math.pow(mapped, gamma);
+
+  return Math.max(0, Math.min(1, ldr));
 }

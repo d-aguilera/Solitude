@@ -16,7 +16,7 @@ export function renderView(
   draw(context, {
     objects: scene.objects,
     view,
-    lightDir: scene.sunDirection,
+    lights: scene.lights,
     profiler,
     frameId,
   });

@@ -9,13 +9,18 @@ import {
   getCameraPointsForObject,
   projectCameraPoint,
 } from "./shadedFaces.js";
-import type { Profiler, SceneObject, Vec3 } from "../../world/types.js";
+import type {
+  PointLight,
+  Profiler,
+  SceneObject,
+  Vec3,
+} from "../../world/types.js";
 import type { View } from "../projection/viewTypes.js";
 
 interface DrawOptions {
   objects: SceneObject[];
   view: View;
-  lightDir: Vec3;
+  lights: PointLight[];
   profiler: Profiler;
   frameId: number;
 }
@@ -40,7 +45,7 @@ export function clear(context: CanvasRenderingContext2D): void {
  */
 export function draw(
   context: CanvasRenderingContext2D,
-  { objects, view, lightDir, profiler, frameId }: DrawOptions
+  { objects, view, lights, profiler, frameId }: DrawOptions
 ): void {
   const { cameraPos, cameraFrame } = view;
   const { width, height } = context.canvas;
@@ -55,7 +60,7 @@ export function draw(
           cameraFrame,
           canvasWidth: width,
           canvasHeight: height,
-          lightDir,
+          lights,
           frameId,
         });
 

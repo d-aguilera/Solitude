@@ -303,7 +303,7 @@ function makeTopViewScene(base: Scene): Scene {
 
   return {
     objects: filteredObjects,
-    sunDirection: base.sunDirection,
+    lights: base.lights,
   };
 }
 

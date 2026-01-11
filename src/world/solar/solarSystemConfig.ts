@@ -5,6 +5,13 @@ import { vec } from "../../world/vec3.js";
 // Export AU so other modules (e.g., HUD) can use it
 export const AU = 1.495978707e11; // m
 
+const SUN_LUMINOSITY = 3.828e26; // W
+const EARTH_ORBIT_RADIUS = AU; // 1.4959e11 m
+
+// E = I / (4π r²)
+export const E_SUN_AT_EARTH =
+  SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS * EARTH_ORBIT_RADIUS);
+
 export type PlanetKind = "planet" | "star";
 
 export interface PlanetConfig {
@@ -21,6 +28,9 @@ export interface PlanetConfig {
   // Rendering / initial kinematics
   tangentialSpeed: number; // m/s, orbital speed along local tangent
   color: RGB;
+
+  // Radiative properties for stars (ignored for planets)
+  luminosity?: number; // W (or scaled W) for stars
 }
 
 /**
@@ -83,6 +93,12 @@ export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
     return Math.sqrt((NEWTON_G * M_sun) / r);
   }
 
+  // Approximate bolometric luminosities (W), scaled down for gameplay / rendering.
+  // Real Sun luminosity is ~3.828e26 W, but these values can be re‑scaled by the renderer.
+  const luminosities = {
+    sun: 3.828e26,
+  };
+
   return [
     // Sun at origin
     {
@@ -95,6 +111,7 @@ export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
       tangentialSpeed: 0,
       color: { r: 255, g: 230, b: 120 },
       density: densities.sun,
+      luminosity: luminosities.sun,
     },
     {
       id: "planet:mercury",
