@@ -31,6 +31,7 @@ import type {
   Plane,
   Profiler,
   Scene,
+  SceneObject,
   Vec3,
   WorldState,
 } from "../world/types.js";
@@ -237,7 +238,7 @@ function renderAllViews(
   const mainPlane = getPlaneById(world, mainPlaneId);
 
   profiler.run("GAME", "pilot-view", () => {
-    // 1) Build view configuration from world & camera
+    // Pilot view: full scene, including trajectories
     const pilotCamera = getCameraById(world, pilotCameraId);
     const pilotCanvas = pilotContext.canvas;
 
@@ -250,10 +251,8 @@ function renderAllViews(
       DEFAULT_DRAW_MODE
     );
 
-    // 2) Render pilot view
     renderView(pilotContext, scene, pilotViewConfig, profiler);
 
-    // 3) HUD on top of pilot view
     renderHUD(
       pilotContext,
       mainPlane,
@@ -263,7 +262,6 @@ function renderAllViews(
   });
 
   profiler.run("GAME", "top-view", () => {
-    // 1) Build view configuration from world & camera
     const topCamera = getCameraById(world, topCameraId);
     const topCanvas = topContext.canvas;
 
@@ -275,9 +273,27 @@ function renderAllViews(
       DEFAULT_DRAW_MODE
     );
 
-    // 2) Render top view
-    renderView(topContext, scene, topViewConfig, profiler);
+    // filtered scene without trajectories
+    const topScene = makeTopViewScene(scene);
+
+    renderView(topContext, topScene, topViewConfig, profiler);
   });
+}
+
+function makeTopViewScene(base: Scene): Scene {
+  // Keep everything except trajectory/path polylines
+  const filteredObjects: SceneObject[] = base.objects.filter((obj) => {
+    // Remove all polyline paths (plane + planets)
+    if (obj.kind === "polyline" && obj.id.startsWith("path:")) {
+      return false;
+    }
+    return true;
+  });
+
+  return {
+    objects: filteredObjects,
+    sunDirection: base.sunDirection,
+  };
 }
 
 function handleProfilingToggle(oKeyPressed: boolean): void {
