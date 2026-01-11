@@ -205,9 +205,21 @@ export interface BodyState {
   mass: number;
 }
 
+export interface GravityBodyBinding {
+  id: BodyId;
+  kind: "plane" | "planet" | "star";
+  // Index within the corresponding world array, e.g. world.planes[planeIndex]
+  planeIndex?: number;
+  planetIndex?: number;
+  starIndex?: number;
+}
+
 /**
  * Container for all gravitational bodies.
  */
 export interface GravityState {
   bodies: BodyState[];
+  bindings: GravityBodyBinding[];
+  // Index of the controlled plane's BodyState in `bodies`
+  mainPlaneBodyIndex: number;
 }

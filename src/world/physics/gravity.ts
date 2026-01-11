@@ -1,41 +1,144 @@
-import { getGravitatingBodies } from "./gravityBodies.js";
 import { NEWTON_G, SOFTENING_LENGTH } from "./gravityConfig.js";
 import type {
-  BodyId,
   BodyState,
+  GravityBodyBinding,
   GravityState,
   Vec3,
   WorldState,
 } from "../../world/types.js";
 import { vec } from "../../world/vec3.js";
-import { getBodyPosition, setBodyPosition } from "../../world/worldLookup.js";
 
-/**
- * Attach or update gravity state on the world. This function ensures that for
- * every gravitating plane and planet-like body there is exactly one BodyState.
- */
-export function ensureGravityState(
-  world: WorldState,
-  gravity: GravityState | null
-): GravityState {
-  const existingVelocitiesById = new Map<BodyId, Vec3>();
+function buildGravityBindings(world: WorldState): GravityBodyBinding[] {
+  const bindings: GravityBodyBinding[] = [];
 
-  if (gravity) {
-    for (const b of gravity.bodies) {
-      existingVelocitiesById.set(b.id, { ...b.velocity });
-    }
+  // Planes
+  for (let i = 0; i < world.planes.length; i++) {
+    const plane = world.planes[i];
+    bindings.push({
+      id: plane.id,
+      kind: "plane",
+      planeIndex: i,
+    });
   }
 
-  // Derive current gravitating bodies from world + previous velocities.
-  const gravBodies = getGravitatingBodies(world, existingVelocitiesById);
+  // Planets
+  for (let i = 0; i < world.planets.length; i++) {
+    const planet = world.planets[i];
+    bindings.push({
+      id: planet.id,
+      kind: "planet",
+      planetIndex: i,
+    });
+  }
 
-  const bodies: BodyState[] = gravBodies.map((g) => ({
-    id: g.id,
-    mass: g.mass,
-    velocity: { ...g.velocity }, // single, intentional clone
-  }));
+  // Stars
+  for (let i = 0; i < world.stars.length; i++) {
+    const star = world.stars[i];
+    bindings.push({
+      id: star.id,
+      kind: "star",
+      starIndex: i,
+    });
+  }
 
-  return { bodies };
+  return bindings;
+}
+
+function getPositionFromBinding(
+  world: WorldState,
+  binding: GravityBodyBinding
+): Vec3 {
+  switch (binding.kind) {
+    case "plane":
+      return world.planes[binding.planeIndex!].position;
+    case "planet":
+      return world.planets[binding.planetIndex!].position;
+    case "star":
+      return world.stars[binding.starIndex!].position;
+  }
+}
+
+function setPositionFromBinding(
+  world: WorldState,
+  binding: GravityBodyBinding,
+  pos: Vec3
+): void {
+  switch (binding.kind) {
+    case "plane": {
+      const p = world.planes[binding.planeIndex!];
+      p.position = pos;
+      break;
+    }
+    case "planet": {
+      const b = world.planets[binding.planetIndex!];
+      b.position = pos;
+      break;
+    }
+    case "star": {
+      const b = world.stars[binding.starIndex!];
+      b.position = pos;
+      break;
+    }
+  }
+}
+
+/**
+ * Create a brand-new GravityState from the current world contents.
+ * Should be called once at setup time, or if entities are added/removed.
+ */
+export function buildInitialGravityState(
+  world: WorldState,
+  mainPlaneId: string
+): GravityState {
+  const bindings = buildGravityBindings(world);
+  const bodies: BodyState[] = [];
+
+  const planeMass = 5e4;
+
+  // Planes
+  for (let i = 0; i < world.planes.length; i++) {
+    const plane = world.planes[i];
+    bodies.push({
+      id: plane.id,
+      mass: planeMass,
+      velocity: { ...plane.velocity },
+    });
+  }
+
+  // Planets
+  for (let i = 0; i < world.planets.length; i++) {
+    const body = world.planets[i];
+    const physics = world.planetPhysics.find((p) => p.id === body.id);
+    if (!physics) continue;
+
+    bodies.push({
+      id: body.id,
+      mass: physics.mass,
+      velocity: { ...body.velocity },
+    });
+  }
+
+  // Stars
+  for (let i = 0; i < world.stars.length; i++) {
+    const body = world.stars[i];
+    const physics = world.starPhysics.find((p) => p.id === body.id);
+    if (!physics) continue;
+
+    bodies.push({
+      id: body.id,
+      mass: physics.mass,
+      velocity: { ...body.velocity },
+    });
+  }
+
+  const mainPlaneBodyIndex = bodies.findIndex((b) => b.id === mainPlaneId);
+  if (mainPlaneBodyIndex === -1) {
+    throw new Error(
+      `buildInitialGravityState: main plane body not found for id=${mainPlaneId}`
+    );
+  }
+
+  return { bodies, bindings, mainPlaneBodyIndex };
 }
 
 /**
@@ -106,7 +209,8 @@ function integrateBodyPositions(
   bodies: BodyState[],
   positions: Vec3[],
   dtSeconds: number,
-  world: WorldState
+  world: WorldState,
+  bindings: GravityBodyBinding[]
 ): void {
   const n = bodies.length;
   for (let i = 0; i < n; i++) {
@@ -116,8 +220,7 @@ function integrateBodyPositions(
 
     // p_new = p + v * dt
     const newPos: Vec3 = vec.add(p, vec.scale(v, dtSeconds));
-
-    setBodyPosition(world, b.id, newPos);
+    setPositionFromBinding(world, bindings[i], newPos);
   }
 }
 
@@ -156,21 +259,22 @@ export function applyGravity(
   if (dtSeconds <= 0) return;
 
   const bodies = gravity.bodies;
+  const bindings = gravity.bindings;
   const n = bodies.length;
   if (n === 0) return;
 
-  // Snapshot current positions
+  // Snapshot current positions from bindings
   const positions: Vec3[] = new Array(n);
   for (let i = 0; i < n; i++) {
-    positions[i] = getBodyPosition(world, bodies[i].id);
+    positions[i] = getPositionFromBinding(world, bindings[i]);
   }
 
   // 1) Gravity
   const accelerations = computeGravityAccelerations(bodies, positions);
   integrateBodyVelocities(bodies, accelerations, dtSeconds);
 
-  // 2) Integrate positions
-  integrateBodyPositions(bodies, positions, dtSeconds, world);
+  // 2) Integrate positions back into world via bindings
+  integrateBodyPositions(bodies, positions, dtSeconds, world, bindings);
 
   // 3) Sync body velocities back to planes
   syncBodyVelocitiesToPlanes(bodies, world);

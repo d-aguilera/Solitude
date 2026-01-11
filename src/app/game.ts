@@ -10,7 +10,10 @@ import {
   setProfilingEnabledInEnv,
 } from "./debugEnv.js";
 import { updateFPS } from "./fps.js";
-import { ensureGravityState, applyGravity } from "../world/physics/gravity.js";
+import {
+  applyGravity,
+  buildInitialGravityState,
+} from "../world/physics/gravity.js";
 import { renderHUD } from "./hud.js";
 import { init as initInput, getKeyState } from "./input.js";
 import { pauseControl, paused } from "./pause.js";
@@ -59,7 +62,7 @@ let scene: Scene,
   planetPathMappings: PlanetPathMapping[];
 
 // Gravity state
-let gravityState: GravityState | null = null;
+let gravityState: GravityState;
 
 // Pilot camera local offset (right, forward, up) in plane-local units
 let pilotCameraLocalOffset: Vec3 = { x: 0, y: 1.7, z: 1.1 };
@@ -77,6 +80,8 @@ export function startGame(
   topCameraId = x.topCameraId;
   pilotCameraId = x.pilotCameraId;
   planetPathMappings = x.planetPathMappings;
+
+  gravityState = buildInitialGravityState(world, mainPlaneId);
 
   initInput();
   requestAnimationFrame((nowMs) => {
@@ -184,22 +189,18 @@ function integrateForcesAndGravity(
   dtSeconds: number,
   input: ControlInput
 ): void {
-  gravityState = ensureGravityState(world, gravityState);
-
-  // Simulate gravity at an accelerated timescale so orbits evolve faster.
-  const gravityTimeScale = 10; // e.g. 10x real time
+  const gravityTimeScale = 10;
   const gravityDt = dtSeconds * gravityTimeScale;
 
   const controlledPlane = getPlaneById(world, mainPlaneId);
-  const planeBody = gravityState.bodies.find((b) => b.id === mainPlaneId);
-  if (planeBody) {
-    applyThrustToPlaneVelocity(
-      gravityDt,
-      input,
-      planeBody.velocity,
-      controlledPlane
-    );
-  }
+
+  const planeBody = gravityState.bodies[gravityState.mainPlaneBodyIndex];
+  applyThrustToPlaneVelocity(
+    gravityDt,
+    input,
+    planeBody.velocity,
+    controlledPlane
+  );
 
   applyGravity(gravityDt, world, gravityState);
 }
