@@ -9,8 +9,8 @@ import type { LocalFrame, Plane, Vec3, WorldState } from "../../world/types.js";
 import { getPlaneById } from "../../world/worldLookup.js";
 import { vec } from "../../world/vec3.js";
 
-// Base thrust acceleration in m/s^2 along plane forward axis
-const baseThrustAcceleration = 30; // normal engine thrust
+// Max thrust acceleration in m/s^2 at 100% thrust
+const maxThrustAcceleration = 1_000_000; // ~ 100_000 G
 
 export interface ControlInput {
   rollLeft: boolean;
@@ -23,15 +23,20 @@ export interface ControlInput {
   lookRight: boolean;
   lookUp: boolean;
   lookDown: boolean;
-  resetView: boolean;
-  burn: boolean; // Space: thrust forward while held
-  brake: boolean; // B: thrust opposite to forward to slow down
-  fastThrust: boolean; // Alt: 1e4 multiplier
-  ultraThrust: boolean; // Shift: 1e2 multiplier
-  camForward: boolean; // U
-  camBackward: boolean; // J
-  camUp: boolean; // I
-  camDown: boolean; // K
+  lookReset: boolean;
+  camForward: boolean;
+  camBackward: boolean;
+  camUp: boolean;
+  camDown: boolean;
+  // thrust
+  burnForward: boolean;
+  burnBackwards: boolean;
+  thrust0: boolean;
+  thrust1: boolean;
+  thrust2: boolean;
+  thrust3: boolean;
+  thrust4: boolean;
+  thrust5: boolean;
 }
 
 export interface FlightContext {
@@ -48,7 +53,7 @@ function pilotLookAround(
   const pilotView = ctx.world.pilotViews.find((p) => p.id === ctx.pilotViewId);
   if (!pilotView) throw new Error(`Pilot view not found: ${ctx.pilotViewId}`);
 
-  if (input.resetView) {
+  if (input.lookReset) {
     pilotView.azimuth = 0;
     pilotView.elevation = 0;
   }
@@ -111,10 +116,61 @@ function yawFrame(
   return rotateFrameAroundAxis(frame, frame.up, angle);
 }
 
+// Persistent thrust magnitude in [0..1], updated by numeric keys.
+let currentThrustPercent = 0;
+
 /**
- * Apply thrust acceleration to the plane's body velocity when burn is active.
- * Velocity storage lives in the Gravity/BodyState; the gravity step will
- * integrate position from it, so here we only modify velocity.
+ * Update the persistent thrust magnitude based on numeric-key input.
+ *
+ * Mapping:
+ *   0 -> 0%
+ *   1 -> 1%
+ *   2 -> 5%
+ *   3 -> 25%
+ *   4 -> 50%
+ *   5 -> 100%
+ *
+ * If multiple keys are pressed at once, the highest level wins for this frame.
+ */
+export function updateThrustMagnitudeFromInput(input: ControlInput): void {
+  if (input.thrust5) currentThrustPercent = 1.0; // 100%
+  else if (input.thrust4) currentThrustPercent = 0.5; // 50%
+  else if (input.thrust3) currentThrustPercent = 0.25; // 25%
+  else if (input.thrust2) currentThrustPercent = 0.05; // 5%
+  else if (input.thrust1) currentThrustPercent = 0.01; // 1%
+  else if (input.thrust0) currentThrustPercent = 0; // 0%
+}
+
+/**
+ * Return the *stored* thrust magnitude [0..1].
+ */
+export function getThrustMagnitudePercentFromState(): number {
+  return currentThrustPercent;
+}
+
+/**
+ * Signed thrust percent in [-1, 1]:
+ *  - Sign from Space (forward) / B (backward)
+ *  - Magnitude from stored thrust level (set by 0–5)
+ */
+export function getSignedThrustPercent(input: ControlInput): number {
+  const mag = getThrustMagnitudePercentFromState();
+
+  const forward = input.burnForward;
+  const backward = input.burnBackwards;
+  if (forward && backward) return 0;
+  if (forward) return mag;
+  if (backward) return -mag;
+
+  return 0;
+}
+
+/**
+ * Apply thrust acceleration to the plane's body velocity when burn/brake are active.
+ * Acceleration magnitude is:
+ *   a = maxThrustAcceleration * thrustPercent
+ * where thrustPercent ∈ [-1, 1] and is chosen from discrete levels
+ * depending on Space/B and Shift/Alt modifiers.
  */
 export function applyThrustToPlaneVelocity(
   dtSeconds: number,
@@ -124,27 +180,13 @@ export function applyThrustToPlaneVelocity(
 ): void {
   if (dtSeconds <= 0) return;
 
-  let thrustSign = 0;
-  if (input.burn) thrustSign += 1;
-  if (input.brake) thrustSign -= 1;
+  const thrustPercent = getSignedThrustPercent(input);
+  if (thrustPercent === 0) return;
 
-  if (thrustSign === 0) return;
+  const f = plane.frame.forward;
+  const accelMagnitude = maxThrustAcceleration * thrustPercent;
 
-  const f = plane.frame.forward; // LocalFrame forward
-
-  // Thrust multipliers:
-  // - Ctrl → 1e4
-  // - Shift → 1e2
-  // - Both → 1e6 (1e4 * 1e2)
-  let multiplier = 1;
-  if (input.fastThrust) multiplier *= 1e4;
-  if (input.ultraThrust) multiplier *= 1e2;
-
-  const accelMagnitude = baseThrustAcceleration * multiplier;
-  const accel = accelMagnitude * thrustSign;
-
-  // v = v + (forward * accel * dt)
-  const dv = vec.scale(f, accel * dtSeconds);
+  const dv = vec.scale(f, accelMagnitude * dtSeconds);
   planeVelocity.x += dv.x;
   planeVelocity.y += dv.y;
   planeVelocity.z += dv.z;
@@ -158,6 +200,9 @@ export function updatePhysics(
   ctx: FlightContext
 ): void {
   const plane = getPlaneById(ctx.world, ctx.controlledPlaneId);
+
+  // Update thrust level before we use it anywhere
+  updateThrustMagnitudeFromInput(input);
 
   pilotLookAround(dtSeconds, input, ctx);
 

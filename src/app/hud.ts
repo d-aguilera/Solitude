@@ -6,10 +6,11 @@ export function renderHUD(
   context: CanvasRenderingContext2D,
   plane: Plane,
   profilingEnabled: boolean,
-  pilotCameraLocalOffset: Vec3
+  pilotCameraLocalOffset: Vec3,
+  thrustPercent: number
 ): void {
   const hudWidth = 420;
-  const hudHeight = 50;
+  const hudHeight = 70;
   const margin = 10;
 
   const canvasWidth = context.canvas.width;
@@ -39,7 +40,11 @@ export function renderHUD(
     y + 40
   );
 
+  // Thrust
+  const thrustDisplay = `${(thrustPercent * 100).toFixed(0)}%`;
+  context.fillText(`Thrust: ${thrustDisplay}`, x + 320, y + 40);
+
   if (profilingEnabled) {
-    context.fillText("PROFILING", x + 320, y + 40);
+    context.fillText("PROFILING", x + 320, y + 60);
   }
 }

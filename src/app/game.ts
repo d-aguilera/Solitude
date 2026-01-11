@@ -4,6 +4,7 @@ import {
   ControlInput,
   updatePhysics,
   type FlightContext,
+  getSignedThrustPercent,
 } from "./controls/controls.js";
 import {
   getProfilingEnabledFromEnv,
@@ -108,6 +109,9 @@ function renderFrame(
   setPausedForProfiling(paused);
   profileCheck();
 
+  // Compute current signed thrust percent from input for HUD display
+  const thrustPercent = getSignedThrustPercent(input);
+
   profiler.run("GAME", "total", () => {
     updateFPS(nowMs);
 
@@ -115,7 +119,7 @@ function renderFrame(
     stepSimulation(dtSeconds, input, profiler);
 
     // 2) Render all visual outputs
-    renderAllViews(pilotContext, topContext, profiler);
+    renderAllViews(pilotContext, topContext, profiler, thrustPercent);
   });
 
   profileFlush();
@@ -233,7 +237,8 @@ function updateTrajectories(dtSeconds: number): void {
 function renderAllViews(
   pilotContext: CanvasRenderingContext2D,
   topContext: CanvasRenderingContext2D,
-  profiler: Profiler
+  profiler: Profiler,
+  thrustPercent: number
 ): void {
   const mainPlane = getPlaneById(world, mainPlaneId);
 
@@ -258,7 +263,8 @@ function renderAllViews(
       pilotContext,
       mainPlane,
       isProfilingEnabled(),
-      pilotCameraLocalOffset
+      pilotCameraLocalOffset,
+      thrustPercent
     );
   });
 
@@ -326,25 +332,29 @@ function readAndProcessInput(): ControlInput {
 
 function makeControlInput(keys: ReturnType<typeof getKeyState>): ControlInput {
   return {
-    rollLeft: keys.KeyA,
-    rollRight: keys.KeyD,
-    pitchUp: keys.KeyW,
-    pitchDown: keys.KeyS,
-    yawLeft: keys.KeyQ,
-    yawRight: keys.KeyE,
+    burnBackwards: keys.KeyB,
+    burnForward: keys.Space,
+    camForward: keys.KeyU,
+    camBackward: keys.KeyJ,
+    camUp: keys.KeyI,
+    camDown: keys.KeyK,
+    lookDown: keys.ArrowDown,
     lookLeft: keys.ArrowLeft,
     lookRight: keys.ArrowRight,
     lookUp: keys.ArrowUp,
-    lookDown: keys.ArrowDown,
-    resetView: keys.Digit0,
-    burn: keys.Space,
-    brake: keys.KeyB,
-    fastThrust: keys.AltLeft || keys.AltRight, // Alt = 1e4
-    ultraThrust: keys.ShiftLeft || keys.ShiftRight, // Shift = 1e2
-    camForward: keys.KeyU, // move camera forward (toward nose)
-    camBackward: keys.KeyJ, // move camera backward
-    camUp: keys.KeyI, // move camera up
-    camDown: keys.KeyK, // move camera down
+    lookReset: keys.KeyR,
+    pitchDown: keys.KeyS,
+    pitchUp: keys.KeyW,
+    rollLeft: keys.KeyA,
+    rollRight: keys.KeyD,
+    thrust0: keys.Digit0,
+    thrust1: keys.Digit1,
+    thrust2: keys.Digit2,
+    thrust3: keys.Digit3,
+    thrust4: keys.Digit4,
+    thrust5: keys.Digit5,
+    yawLeft: keys.KeyQ,
+    yawRight: keys.KeyE,
   };
 }
 

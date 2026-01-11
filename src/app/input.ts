@@ -1,54 +1,58 @@
 type KeyCode =
-  | "ArrowUp"
   | "ArrowDown"
   | "ArrowLeft"
   | "ArrowRight"
+  | "ArrowUp"
   | "Digit0"
-  | "KeyW"
+  | "Digit1"
+  | "Digit2"
+  | "Digit3"
+  | "Digit4"
+  | "Digit5"
   | "KeyA"
-  | "KeyS"
+  | "KeyB"
   | "KeyD"
-  | "KeyQ"
   | "KeyE"
+  | "KeyI"
+  | "KeyJ"
+  | "KeyK"
   | "KeyO"
   | "KeyP"
-  | "Space"
-  | "KeyB"
-  | "AltLeft"
-  | "AltRight"
-  | "ShiftLeft"
-  | "ShiftRight"
+  | "KeyQ"
+  | "KeyR"
+  | "KeyS"
   | "KeyU"
-  | "KeyJ"
-  | "KeyI"
-  | "KeyK";
+  | "KeyW"
+  | "Space";
 
 type KeyState = Record<KeyCode, boolean>;
 
 export const keys: KeyState = {
-  ArrowUp: false,
   ArrowDown: false,
   ArrowLeft: false,
   ArrowRight: false,
+  ArrowUp: false,
   Digit0: false,
-  KeyW: false,
+  Digit1: false,
+  Digit2: false,
+  Digit3: false,
+  Digit4: false,
+  Digit5: false,
   KeyA: false,
-  KeyS: false,
+  KeyB: false,
   KeyD: false,
-  KeyQ: false,
   KeyE: false,
+  KeyI: false,
+  KeyJ: false,
+  KeyK: false,
   KeyO: false,
   KeyP: false,
-  Space: false,
-  KeyB: false,
-  AltLeft: false,
-  AltRight: false,
-  ShiftLeft: false,
-  ShiftRight: false,
+  KeyQ: false,
+  KeyR: false,
+  KeyS: false,
   KeyU: false,
-  KeyJ: false,
-  KeyI: false,
-  KeyK: false,
+  KeyW: false,
+  Space: false,
 };
 
 export function init(): void {
