@@ -28,20 +28,6 @@ function resizeCanvasToCssBox(
 
   canvas.width = deviceWidth;
   canvas.height = deviceHeight;
-
-  console.log(
-    "[resizeCanvasToCssBox]",
-    "id=",
-    canvas.id,
-    "Device pixels (w,h)=",
-    deviceWidth,
-    deviceHeight,
-    "DPR=",
-    dpr,
-    "CSS pixels (w,h)=",
-    cssWidth,
-    cssHeight
-  );
 }
 
 function resizeCanvases(
