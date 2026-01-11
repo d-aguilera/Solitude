@@ -248,6 +248,7 @@ function renderAllViews(
       mainPilotViewId,
       pilotCanvas.width,
       pilotCanvas.height,
+      mainPlane,
       DEFAULT_DRAW_MODE
     );
 
@@ -270,8 +271,12 @@ function renderAllViews(
       topCamera,
       topCanvas.width,
       topCanvas.height,
+      mainPlane,
       DEFAULT_DRAW_MODE
     );
+
+    // Attach reference plane for debug overlays
+    topViewConfig.referencePlane = mainPlane;
 
     // filtered scene without trajectories
     const topScene = makeTopViewScene(scene);

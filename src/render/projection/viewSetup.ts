@@ -1,16 +1,23 @@
-import { drawPlaneVelocityLine } from "../scene/debugDraw.js";
+import { drawPlaneVelocityLine, drawBodyLabels } from "../scene/debugDraw.js";
 import {
   makePilotView,
   makeTopView,
   ScreenPoint,
 } from "../projection/projection.js";
-import type { Camera, WorldState, DrawMode, Vec3 } from "../../world/types.js";
+import type {
+  Camera,
+  WorldState,
+  DrawMode,
+  Vec3,
+  Plane,
+} from "../../world/types.js";
 import type { View } from "./viewTypes.js";
 
 function makeBaseView(
   world: WorldState,
   camera: Camera,
   projection: (p: Vec3) => ScreenPoint | null,
+  referencePlane: Plane,
   drawMode: DrawMode
 ): View {
   return {
@@ -18,10 +25,15 @@ function makeBaseView(
     cameraPos: camera.position,
     cameraFrame: camera.frame,
     drawMode,
-    debugDraw: (ctx) => {
+    referencePlane,
+    debugDraw: (ctx, scene, referencePlane) => {
+      // Velocity lines
       for (const plane of world.planes) {
         drawPlaneVelocityLine(ctx, projection, plane);
       }
+
+      // Planet/star labels
+      drawBodyLabels(ctx, projection, scene, referencePlane);
     },
   };
 }
@@ -35,6 +47,7 @@ export function buildPilotViewConfig(
   mainPilotViewId: string,
   canvasWidth: number,
   canvasHeight: number,
+  referencePlane: Plane,
   drawMode: DrawMode
 ): View {
   const pilotView = world.pilotViews.find((p) => p.id === mainPilotViewId);
@@ -49,7 +62,7 @@ export function buildPilotViewConfig(
     canvasHeight,
   });
 
-  return makeBaseView(world, pilotCamera, projection, drawMode);
+  return makeBaseView(world, pilotCamera, projection, referencePlane, drawMode);
 }
 
 /**
@@ -60,6 +73,7 @@ export function buildTopViewConfig(
   topCamera: Camera,
   canvasWidth: number,
   canvasHeight: number,
+  referencePlane: Plane,
   drawMode: DrawMode
 ): View {
   const projection = makeTopView({
@@ -69,5 +83,5 @@ export function buildTopViewConfig(
     canvasHeight,
   });
 
-  return makeBaseView(world, topCamera, projection, drawMode);
+  return makeBaseView(world, topCamera, projection, referencePlane, drawMode);
 }

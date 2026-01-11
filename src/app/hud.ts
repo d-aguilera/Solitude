@@ -9,12 +9,12 @@ export function renderHUD(
   pilotCameraLocalOffset: Vec3
 ): void {
   const hudWidth = 420;
-  const hudHeight = 100;
+  const hudHeight = 50;
   const margin = 10;
 
   const canvasWidth = context.canvas.width;
 
-  // Top-right corner
+  // HUD's top-left corner
   const x = canvasWidth - hudWidth - margin;
   const y = margin;
 
@@ -23,27 +23,23 @@ export function renderHUD(
   context.fillStyle = "white";
   context.font = "16px monospace";
 
-  // Distance from origin in kilometers
-  const distFromOriginM = vec.length(plane.position);
-  const distFromOriginKm = distFromOriginM / 1000;
-  context.fillText(`|pos|: ${distFromOriginKm.toFixed(1)} km`, x + 10, y + 20);
-
   // Speed in km/h
   const speedMps = vec.length(plane.velocity);
   const speedKmh = speedMps * 3.6;
-  context.fillText(`Spd: ${speedKmh.toFixed(1)} km/h`, x + 10, y + 40);
+  context.fillText(`Spd: ${speedKmh.toFixed(0)} km/h`, x + 10, y + 20);
 
-  context.fillText(`FPS: ${fps.toFixed(1)}`, x + 250, y + 20);
-
-  if (profilingEnabled) context.fillText("PROFILING", x + 250, y + 60);
+  // FPS
+  context.fillText(`FPS: ${fps.toFixed(0)}`, x + 320, y + 20);
 
   // Pilot camera local offset (right, forward, up)
-  const off = pilotCameraLocalOffset;
+  const { x: ox, y: oy, z: oz } = pilotCameraLocalOffset;
   context.fillText(
-    `Cam(local): x=${off.x.toFixed(2)} y=${off.y.toFixed(2)} z=${off.z.toFixed(
-      2
-    )}`,
+    `Cam: x=${ox.toFixed(2)} y=${oy.toFixed(2)} z=${oz.toFixed(2)}`,
     x + 10,
-    y + 80
+    y + 40
   );
+
+  if (profilingEnabled) {
+    context.fillText("PROFILING", x + 320, y + 40);
+  }
 }

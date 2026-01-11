@@ -22,6 +22,6 @@ export function renderView(
   });
 
   if (view.debugDraw) {
-    view.debugDraw(context);
+    view.debugDraw(context, scene, view.referencePlane);
   }
 }

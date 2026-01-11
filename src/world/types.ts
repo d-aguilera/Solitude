@@ -130,6 +130,7 @@ export interface PlanetSceneObject extends SolidSceneObject {
   initialVelocity: Vec3;
   physicalRadius: number; // meters
   backFaceCulling: true;
+  velocity: Vec3;
 }
 
 /**
@@ -140,6 +141,7 @@ export interface StarSceneObject extends SolidSceneObject {
   initialVelocity: Vec3;
   physicalRadius: number; // meters
   backFaceCulling: true;
+  velocity: Vec3;
 }
 
 /**

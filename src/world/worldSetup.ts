@@ -233,6 +233,7 @@ function addPlanetsAndStarsFromConfig(
         initialVelocity,
         physicalRadius: cfg.physicalRadius,
         backFaceCulling: true,
+        velocity: { ...initialVelocity },
       };
 
       const starBody: StarBody = {
@@ -266,6 +267,7 @@ function addPlanetsAndStarsFromConfig(
         initialVelocity,
         physicalRadius: cfg.physicalRadius,
         backFaceCulling: true,
+        velocity: { ...initialVelocity },
       };
 
       worldPlanets.push({
@@ -432,16 +434,22 @@ export function syncPlanetsToSceneObjects(
   scene: Scene
 ): void {
   for (const planetBody of world.planets) {
-    const obj = scene.objects.find((o) => o.id === planetBody.id);
+    const obj = scene.objects.find(
+      (o) => o.id === planetBody.id
+    ) as PlanetSceneObject;
     if (!obj) continue;
     obj.position = planetBody.position;
+    obj.velocity = planetBody.velocity;
   }
 }
 
 export function syncStarsToSceneObjects(world: WorldState, scene: Scene): void {
   for (const starBody of world.stars) {
-    const obj = scene.objects.find((o) => o.id === starBody.id);
+    const obj = scene.objects.find(
+      (o) => o.id === starBody.id
+    ) as StarSceneObject;
     if (!obj) continue;
     obj.position = starBody.position;
+    obj.velocity = starBody.velocity;
   }
 }

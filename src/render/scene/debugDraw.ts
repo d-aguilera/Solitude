@@ -1,4 +1,4 @@
-import type { Plane, Vec3 } from "../../world/types.js";
+import type { Plane, Scene, Vec3 } from "../../world/types.js";
 import { vec } from "../../world/vec3.js";
 
 export type ProjectFn = (
@@ -89,4 +89,113 @@ export function drawPlaneVelocityLine(
   }
 
   ctx.restore();
+}
+
+/**
+ * Draw labels for planets and stars:
+ *  - Name
+ *  - Distance to referencePlane
+ *  - Body speed magnitude
+ */
+export function drawBodyLabels(
+  ctx: CanvasRenderingContext2D,
+  project: ProjectFn,
+  scene: Scene,
+  referencePlane: Plane
+): void {
+  ctx.save();
+  ctx.font = "14px monospace";
+  ctx.textBaseline = "middle";
+
+  const refPos = referencePlane.position;
+
+  // Collect planet/star objects with their distance to the reference plane.
+  const bodies: {
+    obj: Scene["objects"][number];
+    distance: number;
+  }[] = [];
+
+  for (const obj of scene.objects) {
+    if (obj.kind !== "planet" && obj.kind !== "star") continue;
+
+    const d = vec.length(vec.sub(obj.position, refPos));
+    bodies.push({ obj, distance: d });
+  }
+
+  // Sort so we render farthest first, nearest last.
+  bodies.sort((a, b) => b.distance - a.distance);
+
+  for (const { obj, distance } of bodies) {
+    if (obj.kind !== "planet" && obj.kind !== "star") continue;
+
+    const screenPoint = project(obj.position);
+    if (!screenPoint) continue;
+
+    const name = displayNameForBodyId(obj.id);
+
+    const dKm = distance / 1000;
+    const distanceText = `d=${dKm.toFixed(0)} km`;
+
+    const speedMps = vec.length(obj.velocity);
+    const speedKmh = speedMps * 3.6;
+    const speedText = `v=${speedKmh.toFixed(2)} km/h`;
+
+    const lines = [name, distanceText, speedText];
+
+    // Measure box size
+    let maxTextWidth = 0;
+    for (const line of lines) {
+      const w = ctx.measureText(line).width;
+      if (w > maxTextWidth) maxTextWidth = w;
+    }
+
+    const paddingX = 6;
+    const paddingY = 4;
+    const boxWidth = maxTextWidth + paddingX * 2;
+    const lineHeight = 16;
+    const boxHeight = lines.length * lineHeight + paddingY * 2;
+
+    const anchorX = screenPoint.x;
+    const anchorY = screenPoint.y;
+
+    const offsetX = 16;
+    const offsetY = -24;
+    const boxX = anchorX + offsetX;
+    const boxY = anchorY + offsetY;
+
+    // Leader line
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(anchorX, anchorY);
+    ctx.lineTo(boxX, boxY + boxHeight / 2);
+    ctx.stroke();
+
+    // Box background
+    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+    ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+
+    // Box border
+    ctx.strokeStyle = "white";
+    ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+
+    // Text lines
+    ctx.fillStyle = "white";
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const cy = boxY + paddingY + lineHeight * (i + 0.5);
+      ctx.fillText(line, boxX + paddingX, cy);
+    }
+  }
+
+  ctx.restore();
+}
+
+function displayNameForBodyId(id: string): string {
+  // Expecting ids like "planet:earth", "planet:sun"
+  const parts = id.split(":");
+  const raw = parts[parts.length - 1] || id;
+
+  // Capitalize first letter
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
 }
