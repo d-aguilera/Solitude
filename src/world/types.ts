@@ -104,6 +104,7 @@ interface BaseSceneObject {
   lineWidth: number;
   wireframeOnly: boolean;
   applyTransform: boolean;
+  backFaceCulling: boolean;
 }
 
 export interface SolidSceneObject extends BaseSceneObject {
@@ -117,6 +118,7 @@ export interface SolidSceneObject extends BaseSceneObject {
  */
 export interface AirplaneSceneObject extends SolidSceneObject {
   kind: "airplane";
+  backFaceCulling: false;
 }
 
 /**
@@ -126,6 +128,7 @@ export interface PlanetSceneObject extends SolidSceneObject {
   kind: "planet";
   initialVelocity: Vec3;
   physicalRadius: number; // meters
+  backFaceCulling: true;
 }
 
 /**
@@ -135,6 +138,7 @@ export interface StarSceneObject extends SolidSceneObject {
   kind: "star";
   initialVelocity: Vec3;
   physicalRadius: number; // meters
+  backFaceCulling: true;
 }
 
 /**
@@ -145,6 +149,7 @@ export interface PolylineSceneObject extends BaseSceneObject {
   kind: "polyline";
   applyTransform: false;
   wireframeOnly: true;
+  backFaceCulling: false;
 }
 
 /**

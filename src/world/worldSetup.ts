@@ -131,6 +131,7 @@ function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
     lineWidth: 1,
     applyTransform: true,
     wireframeOnly: false,
+    backFaceCulling: false,
   };
   objects.push(obj);
 }
@@ -154,6 +155,7 @@ function createPolylineSceneObject(
     lineWidth: 1,
     wireframeOnly: true,
     applyTransform: false, // polyline points are in world space
+    backFaceCulling: false,
   };
 }
 
@@ -230,6 +232,7 @@ function addPlanetsAndStarsFromConfig(
         wireframeOnly: false,
         initialVelocity,
         physicalRadius: cfg.physicalRadius,
+        backFaceCulling: true,
       };
 
       const starBody: StarBody = {
@@ -262,6 +265,7 @@ function addPlanetsAndStarsFromConfig(
         wireframeOnly: false,
         initialVelocity,
         physicalRadius: cfg.physicalRadius,
+        backFaceCulling: true,
       };
 
       worldPlanets.push({

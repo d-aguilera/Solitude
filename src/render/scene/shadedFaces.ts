@@ -44,8 +44,7 @@ export function buildShadedFaces(params: {
       const e2 = vec.sub(v2, v0);
       const n = vec.normalize(vec.cross(e1, e2));
 
-      // Back-face culling if we have a camera position
-      if (cameraPos) {
+      if (obj.backFaceCulling) {
         const toCamera = vec.sub(cameraPos, v0);
         const facing = vec.dot(n, toCamera);
         if (facing <= 0) continue;
