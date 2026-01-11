@@ -20,6 +20,7 @@ export interface Polar2D {
 export interface Mesh {
   points: Vec3[];
   faces: number[][];
+  faceNormals?: Vec3[];
 }
 
 export interface LocalFrame {
@@ -166,6 +167,8 @@ export type SceneObjectWithCache = SceneObject & {
   __worldPointsCache?: Vec3[];
   __cameraPointsCache?: Vec3[];
   __cameraCacheFrameId?: number;
+  __worldFaceNormalsCache?: Vec3[];
+  __faceNormalsFrameId?: number;
 };
 
 // Small adapter that lets callers plug in any profiling / tracing / instrumentation

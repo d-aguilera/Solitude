@@ -139,25 +139,37 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
     z: v.z,
   }));
 
+  const faceNormals: Vec3[] = new Array(faces.length);
+
   // Ensure face normals point outward from the origin (unit sphere)
   for (let i = 0; i < faces.length; i++) {
-    const [i0, i1, i2] = faces[i];
+    let [i0, i1, i2] = faces[i];
     const v0 = points[i0];
     const v1 = points[i1];
     const v2 = points[i2];
 
     const e1 = vec.sub(v1, v0);
     const e2 = vec.sub(v2, v0);
-    const n = vec.cross(e1, e2);
+    let n = vec.cross(e1, e2);
 
     // For a unit sphere centered at origin, v0 points outward.
     if (vec.dot(n, v0) < 0) {
+      // Flip winding
       faces[i] = [i0, i2, i1];
+      // Recompute with flipped vertices
+      const vv1 = v2;
+      const vv2 = v1;
+      const ee1 = vec.sub(vv1, v0);
+      const ee2 = vec.sub(vv2, v0);
+      n = vec.cross(ee1, ee2);
     }
+
+    faceNormals[i] = vec.normalize(n);
   }
 
   return {
     points,
     faces,
+    faceNormals,
   };
 }

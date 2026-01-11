@@ -52,7 +52,7 @@ export function buildShadedFaces(params: {
     if (obj.wireframeOnly) return;
 
     const { mesh, worldPoints, baseColor } = toRenderable(obj);
-    const { faces } = mesh;
+    const { faces, faceNormals } = mesh;
 
     // Prepare camera-space cache once per object & frame
     const cameraPoints = getCameraPointsForObject(
@@ -63,16 +63,29 @@ export function buildShadedFaces(params: {
       frameId
     );
 
+    const worldFaceNormals = getWorldFaceNormalsForObject(
+      obj,
+      faceNormals,
+      frameId
+    );
+
     for (let fi = 0; fi < faces.length; fi++) {
       const [i0, i1, i2] = faces[fi];
       const v0 = worldPoints[i0];
       const v1 = worldPoints[i1];
       const v2 = worldPoints[i2];
 
-      // World-space normal for lighting & back-face culling
-      const e1 = vec.sub(v1, v0);
-      const e2 = vec.sub(v2, v0);
-      const n = vec.normalize(vec.cross(e1, e2));
+      let n: Vec3;
+
+      if (worldFaceNormals) {
+        // Use precomputed world-space face normal
+        n = worldFaceNormals[fi];
+      } else {
+        // Fallback for meshes without precomputed normals (airplane)
+        const e1 = vec.sub(v1, v0);
+        const e2 = vec.sub(v2, v0);
+        n = vec.normalize(vec.cross(e1, e2));
+      }
 
       if (obj.backFaceCulling) {
         const toCamera = vec.sub(cameraPos, v0);
@@ -249,5 +262,58 @@ export function getCameraPointsForObject(
   }
 
   cachedObj.__cameraCacheFrameId = frameId;
+  return cache;
+}
+
+function getWorldFaceNormalsForObject(
+  obj: SceneObject,
+  meshFaceNormals: Vec3[] | undefined,
+  frameId: number
+): Vec3[] | undefined {
+  if (!meshFaceNormals) return undefined;
+
+  const cachedObj = obj as SceneObjectWithCache;
+
+  if (
+    cachedObj.__worldFaceNormalsCache &&
+    cachedObj.__faceNormalsFrameId === frameId
+  ) {
+    return cachedObj.__worldFaceNormalsCache;
+  }
+
+  const nFaces = meshFaceNormals.length;
+  let cache = cachedObj.__worldFaceNormalsCache;
+  if (!cache || cache.length !== nFaces) {
+    cache = new Array<Vec3>(nFaces);
+    for (let i = 0; i < nFaces; i++) {
+      cache[i] = { x: 0, y: 0, z: 0 };
+    }
+    cachedObj.__worldFaceNormalsCache = cache;
+  }
+
+  const R = obj.orientation;
+  const r00 = R[0][0],
+    r01 = R[0][1],
+    r02 = R[0][2];
+  const r10 = R[1][0],
+    r11 = R[1][1],
+    r12 = R[1][2];
+  const r20 = R[2][0],
+    r21 = R[2][1],
+    r22 = R[2][2];
+
+  for (let i = 0; i < nFaces; i++) {
+    const m = meshFaceNormals[i];
+    const out = cache[i];
+    const nx = m.x,
+      ny = m.y,
+      nz = m.z;
+
+    out.x = r00 * nx + r01 * ny + r02 * nz;
+    out.y = r10 * nx + r11 * ny + r12 * nz;
+    out.z = r20 * nx + r21 * ny + r22 * nz;
+  }
+
+  cachedObj.__faceNormalsFrameId = frameId;
   return cache;
 }
