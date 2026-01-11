@@ -1,9 +1,5 @@
 import { getFocalLengths } from "../../app/config.js";
-import {
-  makeLocalFrameFromUp,
-  localFrameFromMat3,
-  mat3FromLocalFrame,
-} from "../../world/localFrame.js";
+import { mat3FromLocalFrame } from "../../world/localFrame.js";
 import type { LocalFrame, Vec3 } from "../../world/types.js";
 import { mat3 } from "../../world/mat3.js";
 import { vec } from "../../world/vec3.js";
@@ -14,15 +10,6 @@ export interface ScreenPoint {
   depth?: number; // camera-space depth (positive means in front of camera)
 }
 
-export interface PilotViewContext {
-  cameraPosition: Vec3;
-  cameraFrame: LocalFrame;
-  pilotAzimuth: number;
-  pilotElevation: number;
-  canvasWidth: number;
-  canvasHeight: number;
-}
-
 export interface TopViewContext {
   cameraPosition: Vec3;
   cameraFrame: LocalFrame;
@@ -30,7 +17,10 @@ export interface TopViewContext {
   canvasHeight: number;
 }
 
-// --- PROJECTION 1: PILOT VIEW ---
+export interface PilotViewContext extends TopViewContext {
+  pilotAzimuth: number;
+  pilotElevation: number;
+}
 
 export function makePilotView(ctx: PilotViewContext) {
   const { canvasWidth, canvasHeight } = ctx;
@@ -46,138 +36,6 @@ export function makePilotView(ctx: PilotViewContext) {
 
     return projectIfInFront(cameraPoint, canvasWidth, canvasHeight);
   };
-}
-
-// --- PROJECTION 2: TOP VIEW CAMERA FRAME (PERSPECTIVE) ---
-
-export interface TopCameraFrameState {
-  initialized: boolean;
-  frame: LocalFrame;
-}
-
-/**
- * Computes an updated top-camera orientation frame given the current radialUp.
- * The function is pure: it takes the previous frame state and returns a new one.
- * Callers can store this state between frames.
- */
-export function updateTopCameraFrame(
-  radialUp: Vec3,
-  prevState: TopCameraFrameState | null
-): { frame: LocalFrame; state: TopCameraFrameState } {
-  let state = prevState;
-
-  if (!state || !state.initialized) {
-    const lf = makeLocalFrameFromUp(radialUp);
-    const forward: Vec3 = {
-      x: -radialUp.x,
-      y: -radialUp.y,
-      z: -radialUp.z,
-    };
-
-    // Build a rotation matrix with columns = [right, forward, up]
-    const initialFrame: LocalFrame = {
-      right: lf.right,
-      forward,
-      up: lf.forward,
-    };
-    const R = mat3FromLocalFrame(initialFrame);
-    const frame = localFrameFromMat3(R);
-
-    state = {
-      initialized: true,
-      frame,
-    };
-  } else {
-    let {
-      right: topCameraRight,
-      forward: topCameraForward,
-      up: topCameraUp,
-    } = state.frame;
-
-    // Project previous right and up onto plane orthogonal to radialUp
-    let r: Vec3 = vec.sub(
-      topCameraRight,
-      vec.scale(radialUp, vec.dot(topCameraRight, radialUp))
-    );
-    let u: Vec3 = vec.sub(
-      topCameraUp,
-      vec.scale(radialUp, vec.dot(topCameraUp, radialUp))
-    );
-
-    let lenR = vec.length(r);
-    let lenU = vec.length(u);
-
-    if (lenR < 1e-6 && lenU < 1e-6) {
-      const base = makeLocalFrameFromUp(radialUp);
-      const forward: Vec3 = {
-        x: -radialUp.x,
-        y: -radialUp.y,
-        z: -radialUp.z,
-      };
-
-      const resetFrame: LocalFrame = {
-        right: base.right,
-        forward,
-        up: base.forward,
-      };
-      const R = mat3FromLocalFrame(resetFrame);
-      const frame = localFrameFromMat3(R);
-
-      topCameraRight = frame.right;
-      topCameraForward = frame.forward;
-      topCameraUp = frame.up;
-    } else {
-      if (lenR < 1e-6 && lenU >= 1e-6) {
-        u = vec.normalize(u);
-        r = vec.cross(radialUp, u);
-        lenR = vec.length(r) || 1;
-      } else if (lenU < 1e-6 && lenR >= 1e-6) {
-        r = vec.normalize(r);
-        u = vec.cross(r, radialUp);
-        lenU = vec.length(u) || 1;
-      }
-
-      r = vec.normalize(r);
-      u = vec.normalize(u);
-
-      const cross = vec.cross(radialUp, r);
-      const dotCrossU = vec.dot(cross, u);
-      if (dotCrossU < 0) {
-        u = vec.scale(u, -1);
-      }
-
-      const dotPrevU = vec.dot(topCameraUp, u);
-      if (dotPrevU < 0) {
-        r = vec.scale(r, -1);
-        u = vec.scale(u, -1);
-      }
-
-      const f: Vec3 = vec.scale(radialUp, -1);
-
-      const nextFrame: LocalFrame = {
-        right: r,
-        forward: f,
-        up: u,
-      };
-      const R = mat3FromLocalFrame(nextFrame);
-      const frame = localFrameFromMat3(R);
-
-      topCameraRight = frame.right;
-      topCameraForward = frame.forward;
-      topCameraUp = frame.up;
-    }
-
-    state = {
-      initialized: true,
-      frame: {
-        right: topCameraRight,
-        forward: topCameraForward,
-        up: topCameraUp,
-      },
-    };
-  }
-
-  return { frame: { ...state.frame }, state };
 }
 
 export function makeTopView(ctx: TopViewContext) {

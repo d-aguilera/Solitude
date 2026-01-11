@@ -137,15 +137,6 @@ function stepSimulation(
 }
 
 /**
- * Update all camera positions / orientations to follow the simulation state.
- */
-function updateCameras(): void {
-  const mainPlane = getPlaneById(world, mainPlaneId);
-  updatePilotCamera(mainPlane);
-  updateTopCamera(mainPlane);
-}
-
-/**
  * Advance physical simulation only (orientation, forces, gravity).
  */
 function stepPhysics(
@@ -291,18 +282,6 @@ function handleProfilingToggle(oKeyPressed: boolean): void {
   }
 }
 
-function updateTopCamera(plane: Plane): void {
-  const localOffset = { x: 0, y: 0, z: 50 }; // (right, forward, up)
-  setCameraRelativeToPlane(topCameraId, plane, localOffset, (p) => {
-    const { right, forward, up } = p.frame;
-    return {
-      right: vec.clone(right),
-      forward: vec.scale(up, -1), // look down toward the plane
-      up: vec.clone(forward), // plane's nose is "up" on screen
-    };
-  });
-}
-
 function readAndProcessInput(): ControlInput {
   const keys = getKeyState();
 
@@ -332,29 +311,38 @@ function makeControlInput(keys: ReturnType<typeof getKeyState>): ControlInput {
   };
 }
 
-function updatePilotCamera(plane: Plane): void {
-  const localOffset = { x: 0, y: -20, z: 5 }; // (right, forward, up)
-  setCameraRelativeToPlane(pilotCameraId, plane, localOffset, (p) => ({
-    ...p.frame,
-  }));
-}
-
-function appendPlaneTrajectoryPoint(): void {
+/**
+ * Update all camera positions / orientations.
+ */
+function updateCameras(): void {
   const mainPlane = getPlaneById(world, mainPlaneId);
-  const pathObj = scene.objects.find((o) => o.id === "path:plane:main");
-  if (pathObj) {
-    appendPointToPolylineMesh(pathObj.mesh, mainPlane.position);
-  }
+
+  setCameraRelativeToPlane(
+    pilotCameraId,
+    mainPlane,
+    { x: 0, y: -20, z: 5 }, // (right, forward, up)
+    frameFromPlaneForPilot
+  );
+
+  setCameraRelativeToPlane(
+    topCameraId,
+    mainPlane,
+    { x: 0, y: 0, z: 50 }, // (right, forward, up),
+    frameFromPlaneForTop
+  );
 }
 
-function appendPlanetTrajectories(): void {
-  for (const mapping of planetPathMappings) {
-    const bodyObj = scene.objects.find((o) => o.id === mapping.planetId);
-    const pathObj = scene.objects.find((o) => o.id === mapping.pathId);
-    if (bodyObj && pathObj) {
-      appendPointToPolylineMesh(pathObj.mesh, bodyObj.position);
-    }
-  }
+function frameFromPlaneForPilot(plane: Plane): LocalFrame {
+  return { ...plane.frame };
+}
+
+function frameFromPlaneForTop(plane: Plane): LocalFrame {
+  const { right, forward, up } = plane.frame;
+  return {
+    right: vec.clone(right),
+    forward: vec.scale(up, -1), // look down toward the plane
+    up: vec.clone(forward), // plane's nose is "up" on screen
+  };
 }
 
 function setCameraRelativeToPlane(
@@ -374,4 +362,22 @@ function setCameraRelativeToPlane(
 
   camera.position = vec.add(plane.position, worldOffset);
   camera.frame = frameFromPlane(plane);
+}
+
+function appendPlaneTrajectoryPoint(): void {
+  const mainPlane = getPlaneById(world, mainPlaneId);
+  const pathObj = scene.objects.find((o) => o.id === "path:plane:main");
+  if (pathObj) {
+    appendPointToPolylineMesh(pathObj.mesh, mainPlane.position);
+  }
+}
+
+function appendPlanetTrajectories(): void {
+  for (const mapping of planetPathMappings) {
+    const bodyObj = scene.objects.find((o) => o.id === mapping.planetId);
+    const pathObj = scene.objects.find((o) => o.id === mapping.pathId);
+    if (bodyObj && pathObj) {
+      appendPointToPolylineMesh(pathObj.mesh, bodyObj.position);
+    }
+  }
 }

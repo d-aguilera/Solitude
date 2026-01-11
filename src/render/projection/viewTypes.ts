@@ -3,7 +3,7 @@ import type { LocalFrame, Vec3, DrawMode } from "../../world/types.js";
 
 export interface View {
   projection: (p: Vec3) => ScreenPoint | null;
-  cameraPos: Vec3 | null;
+  cameraPos: Vec3;
   cameraFrame: LocalFrame;
   drawMode: DrawMode;
   // Optional debug overlay, not part of scene geometry

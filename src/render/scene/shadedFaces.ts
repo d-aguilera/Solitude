@@ -22,7 +22,7 @@ export type FaceEntry = {
 export function buildShadedFaces(params: {
   objects: SceneObject[];
   projection: (p: Vec3) => ScreenPoint | null;
-  cameraPos: Vec3 | null;
+  cameraPos: Vec3;
   lightDir: Vec3;
 }): FaceEntry[] {
   const { objects, projection, cameraPos, lightDir } = params;

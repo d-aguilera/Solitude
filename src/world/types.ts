@@ -106,23 +106,24 @@ interface BaseSceneObject {
   applyTransform: boolean;
 }
 
-/**
- * Airplane visual object. Transform applied; no gravity properties here.
- * Currently we only ever create it for the main plane.
- */
-export interface AirplaneSceneObject extends BaseSceneObject {
-  kind: "airplane";
+export interface SolidSceneObject extends BaseSceneObject {
   applyTransform: true;
   wireframeOnly: false;
 }
 
 /**
+ * Airplane visual object. Transform applied; no gravity properties here.
+ * Currently we only ever create it for the main plane.
+ */
+export interface AirplaneSceneObject extends SolidSceneObject {
+  kind: "airplane";
+}
+
+/**
  * Planet / star body included in gravity simulation.
  */
-export interface PlanetSceneObject extends BaseSceneObject {
+export interface PlanetSceneObject extends SolidSceneObject {
   kind: "planet";
-  applyTransform: true;
-  wireframeOnly: false;
   initialVelocity: Vec3;
   physicalRadius: number; // meters
 }
@@ -130,10 +131,8 @@ export interface PlanetSceneObject extends BaseSceneObject {
 /**
  * Star body included in gravity simulation and also contributes light.
  */
-export interface StarSceneObject extends BaseSceneObject {
+export interface StarSceneObject extends SolidSceneObject {
   kind: "star";
-  applyTransform: true;
-  wireframeOnly: false;
   initialVelocity: Vec3;
   physicalRadius: number; // meters
 }
