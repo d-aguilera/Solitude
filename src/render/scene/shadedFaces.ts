@@ -1,6 +1,9 @@
-import type { ScreenPoint } from "../projection/projection.js";
+import {
+  worldTriangleToScreenTriangles,
+  type ScreenPoint,
+} from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
-import type { RGB, SceneObject, Vec3 } from "../../world/types.js";
+import type { LocalFrame, RGB, SceneObject, Vec3 } from "../../world/types.js";
 import { vec } from "../../world/vec3.js";
 
 /**
@@ -21,11 +24,20 @@ export type FaceEntry = {
  */
 export function buildShadedFaces(params: {
   objects: SceneObject[];
-  projection: (p: Vec3) => ScreenPoint | null;
   cameraPos: Vec3;
+  cameraFrame: LocalFrame;
+  canvasWidth: number;
+  canvasHeight: number;
   lightDir: Vec3;
 }): FaceEntry[] {
-  const { objects, projection, cameraPos, lightDir } = params;
+  const {
+    objects,
+    cameraPos,
+    cameraFrame,
+    canvasWidth,
+    canvasHeight,
+    lightDir,
+  } = params;
   const faceList: FaceEntry[] = [];
 
   objects.forEach((obj) => {
@@ -50,26 +62,34 @@ export function buildShadedFaces(params: {
         if (facing <= 0) continue;
       }
 
-      const p0 = projection(v0);
-      const p1 = projection(v1);
-      const p2 = projection(v2);
-      if (!p0 || !p1 || !p2) continue;
+      const clippedTris = worldTriangleToScreenTriangles(
+        v0,
+        v1,
+        v2,
+        cameraPos,
+        cameraFrame,
+        canvasWidth,
+        canvasHeight
+      );
+      if (clippedTris.length === 0) continue;
 
       const intensity = Math.max(0, vec.dot(n, lightDir));
 
-      const d0 = p0.depth ?? 0;
-      const d1 = p1.depth ?? 0;
-      const d2 = p2.depth ?? 0;
-      const avgDepth = (d0 + d1 + d2) / 3;
+      for (const { p0, p1, p2 } of clippedTris) {
+        const d0 = p0.depth ?? 0;
+        const d1 = p1.depth ?? 0;
+        const d2 = p2.depth ?? 0;
+        const avgDepth = (d0 + d1 + d2) / 3;
 
-      faceList.push({
-        intensity,
-        depth: avgDepth,
-        p0,
-        p1,
-        p2,
-        baseColor,
-      });
+        faceList.push({
+          intensity,
+          depth: avgDepth,
+          p0,
+          p1,
+          p2,
+          baseColor,
+        });
+      }
     }
   });
 

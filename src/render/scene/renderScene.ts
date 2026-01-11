@@ -37,7 +37,8 @@ export function draw(
   context: CanvasRenderingContext2D,
   { objects, view, lightDir, profiler }: DrawOptions
 ): void {
-  const { projection, cameraPos } = view;
+  const { projection, cameraPos, cameraFrame } = view;
+  const { width, height } = context.canvas;
 
   profiler.run("DRAW", "total", () => {
     if (view.drawMode === "faces") {
@@ -45,8 +46,10 @@ export function draw(
         // 1) Solid objects: faces path, skipping wireframe-only
         const faceList = buildShadedFaces({
           objects,
-          projection,
           cameraPos,
+          cameraFrame,
+          canvasWidth: width,
+          canvasHeight: height,
           lightDir,
         });
 
