@@ -161,6 +161,13 @@ export type SceneObject =
   | StarSceneObject
   | PolylineSceneObject;
 
+// Renderer-side cache; may be attached to any SceneObject.
+export type SceneObjectWithCache = SceneObject & {
+  __worldPointsCache?: Vec3[];
+  __cameraPointsCache?: Vec3[];
+  __cameraCacheFrameId?: number;
+};
+
 // Small adapter that lets callers plug in any profiling / tracing / instrumentation
 // without direct coupling to a concrete instrumentation API.
 export type Profiler = {

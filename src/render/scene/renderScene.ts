@@ -4,7 +4,11 @@ import {
 } from "../canvas/canvasRasterizer.js";
 import type { ScreenPoint } from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
-import { buildShadedFaces } from "./shadedFaces.js";
+import {
+  buildShadedFaces,
+  getCameraPointsForObject,
+  projectCameraPoint,
+} from "./shadedFaces.js";
 import type { Profiler, SceneObject, Vec3 } from "../../world/types.js";
 import type { View } from "../projection/viewTypes.js";
 
@@ -13,6 +17,7 @@ interface DrawOptions {
   view: View;
   lightDir: Vec3;
   profiler: Profiler;
+  frameId: number;
 }
 
 /**
@@ -35,9 +40,9 @@ export function clear(context: CanvasRenderingContext2D): void {
  */
 export function draw(
   context: CanvasRenderingContext2D,
-  { objects, view, lightDir, profiler }: DrawOptions
+  { objects, view, lightDir, profiler, frameId }: DrawOptions
 ): void {
-  const { projection, cameraPos, cameraFrame } = view;
+  const { cameraPos, cameraFrame } = view;
   const { width, height } = context.canvas;
 
   profiler.run("DRAW", "total", () => {
@@ -51,6 +56,7 @@ export function draw(
           canvasWidth: width,
           canvasHeight: height,
           lightDir,
+          frameId,
         });
 
         // Depth sort & draw faces via rasterizer
@@ -59,25 +65,41 @@ export function draw(
 
       // 2) Wireframe-only objects: lines path
       profiler.run("DRAW", "wireframeOnly", () => {
-        drawMeshPolylines(
+        drawMeshPolylinesCameraSpace(
           context,
           objects.filter((obj) => obj.wireframeOnly),
-          projection
+          cameraPos,
+          cameraFrame,
+          width,
+          height,
+          frameId
         );
       });
     } else {
-      // Pure wireframe mode: draw all objects as polylines
+      // Pure wireframe mode: draw all objects as polylines using camera-space cache
       profiler.run("DRAW", "lines", () => {
-        drawMeshPolylines(context, objects, projection);
+        drawMeshPolylinesCameraSpace(
+          context,
+          objects,
+          cameraPos,
+          cameraFrame,
+          width,
+          height,
+          frameId
+        );
       });
     }
   });
 }
 
-function drawMeshPolylines(
+function drawMeshPolylinesCameraSpace(
   context: CanvasRenderingContext2D,
   objects: SceneObject[],
-  projection: (p: Vec3) => ScreenPoint | null
+  cameraPos: Vec3,
+  cameraFrame: import("../../world/types.js").LocalFrame,
+  canvasWidth: number,
+  canvasHeight: number,
+  frameId: number
 ): void {
   const projectedPoints: ScreenPoint[] = [];
 
@@ -85,22 +107,35 @@ function drawMeshPolylines(
     const { mesh, worldPoints, baseColor, lineWidth } = toRenderable(obj);
     const { faces } = mesh;
 
+    // Get (or build) camera-space vertices for this object and frame
+    const cameraPoints = getCameraPointsForObject(
+      obj,
+      worldPoints,
+      cameraPos,
+      cameraFrame,
+      frameId
+    );
+
     for (let i = 0; i < faces.length; i++) {
       const polyIndices = faces[i];
+      projectedPoints.length = 0;
 
       for (let j = 0; j < polyIndices.length; j++) {
-        const p = projection(worldPoints[polyIndices[j]]);
-        if (p) {
-          projectedPoints.push(p);
-        } else {
+        const idx = polyIndices[j];
+        const cp = cameraPoints[idx];
+
+        // Skip points behind near plane (consistent with makeTopView/makePilotView)
+        if (cp.y < 0.01) {
           projectedPoints.length = 0;
           break;
         }
+
+        const sp = projectCameraPoint(cp, canvasWidth, canvasHeight);
+        projectedPoints.push(sp);
       }
 
       if (projectedPoints.length > 0) {
         renderPolyline(context, projectedPoints, baseColor, lineWidth);
-        projectedPoints.length = 0;
       }
     }
   });
