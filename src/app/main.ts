@@ -1,10 +1,7 @@
 import { startGame } from "./game.js";
 import { defaultProfiler } from "../profiling/profilingFacade.js";
 import { init as initResizeHandler } from "../render/canvas/canvasLayout.js";
-import {
-  CanvasRenderer,
-  CanvasViewRenderer,
-} from "../render/canvas/canvasRenderer.js";
+import { CanvasRenderer } from "../render/canvas/canvasRenderer.js";
 
 const container = document.querySelector(".canvas-container");
 if (!container) {
@@ -37,8 +34,8 @@ if (!topContext) {
   throw new Error("Failed to get 2D context for top view canvas");
 }
 
-const viewRenderer = new CanvasViewRenderer(pilotContext, topContext);
+// Concrete Canvas2D adapter implementing the Renderer port.
 const renderer = new CanvasRenderer(pilotContext, topContext);
 
 initResizeHandler(container, pilotCanvas, topCanvas);
-startGame(renderer, viewRenderer, defaultProfiler);
+startGame(renderer, defaultProfiler);

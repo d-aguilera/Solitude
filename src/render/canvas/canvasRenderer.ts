@@ -1,4 +1,4 @@
-import type { Renderer } from "../../app/renderer.js";
+import type { Renderer } from "../../app/rendererPort.js";
 import type {
   DrawMode,
   Plane,
@@ -102,10 +102,10 @@ export class CanvasViewRenderer implements ViewRenderer {
   }
 
   /**
-   * Convenience for drawing HUD into the pilot view canvas.
+   * Draw HUD into the pilot view canvas.
    *
-   * HUD composition is intentionally not part of ViewRenderer so that
-   * the app layer can choose if/how HUD overlays are composed with views.
+   * HUD composition is kept separate from core scene rendering so that
+   * it can be layered on top of whatever view configuration is used.
    */
   renderHudOverlay(
     mainPlane: Plane,
@@ -125,20 +125,17 @@ export class CanvasViewRenderer implements ViewRenderer {
 /**
  * Canvas2D implementation of the top-level Renderer abstraction.
  *
- * This adapter relies on an external ViewRenderer instance for per-view
- * drawing, and wires in HUD drawing on top of the pilot view when the
- * ViewRenderer is a CanvasViewRenderer.
+ * This adapter owns its internal ViewRenderer and is responsible
+ * for composing pilot/top views and HUD into the associated canvases.
  */
 export class CanvasRenderer implements Renderer {
+  private readonly viewRenderer: CanvasViewRenderer;
+
   constructor(
     pilotContext: CanvasRenderingContext2D,
     topContext: CanvasRenderingContext2D
   ) {
-    // Constructor remains in place so callers can construct this class
-    // with whatever contexts they choose. The concrete ViewRenderer
-    // instance is provided to renderFrame from the app layer.
-    void pilotContext;
-    void topContext;
+    this.viewRenderer = new CanvasViewRenderer(pilotContext, topContext);
   }
 
   renderFrame(params: {
@@ -153,7 +150,6 @@ export class CanvasRenderer implements Renderer {
     profiler: Profiler;
     pilotCameraLocalOffset: Vec3;
     thrustPercent: number;
-    viewRenderer: ViewRenderer;
   }): void {
     const {
       scene,
@@ -166,11 +162,10 @@ export class CanvasRenderer implements Renderer {
       profiler,
       pilotCameraLocalOffset,
       thrustPercent,
-      viewRenderer,
     } = params;
 
-    // Delegate per-view drawing to the provided ViewRenderer.
-    viewRenderer.renderPilotView({
+    // Delegate per-view drawing to the internal ViewRenderer.
+    this.viewRenderer.renderPilotView({
       scene,
       world,
       pilotCameraId,
@@ -182,7 +177,7 @@ export class CanvasRenderer implements Renderer {
       thrustPercent,
     });
 
-    viewRenderer.renderTopView({
+    this.viewRenderer.renderTopView({
       scene,
       world,
       topCameraId,
@@ -192,13 +187,11 @@ export class CanvasRenderer implements Renderer {
       profiler,
     });
 
-    // If the ViewRenderer is a CanvasViewRenderer, compose the HUD on top.
-    if (viewRenderer instanceof CanvasViewRenderer) {
-      viewRenderer.renderHudOverlay(
-        mainPlane,
-        pilotCameraLocalOffset,
-        thrustPercent
-      );
-    }
+    // Compose the HUD on top of the pilot view.
+    this.viewRenderer.renderHudOverlay(
+      mainPlane,
+      pilotCameraLocalOffset,
+      thrustPercent
+    );
   }
 }

@@ -6,24 +6,23 @@ import type {
   Vec3,
   WorldState,
 } from "../world/types.js";
-import type { ViewRenderer } from "../render/projection/viewRendererPort.js";
 
 /**
- * Thin abstraction over the rendering pipeline.
+ * Top‑level rendering abstraction for the app layer.
  *
- * This keeps the game loop unaware of any specific UI technology
- * (canvas, WebGL, etc.) and lets an adapter translate these calls
- * into concrete draw operations.
+ * The game loop depends only on this interface and remains unaware of:
+ *  - Any specific rendering API (Canvas2D, WebGL, etc.)
+ *  - Any per‑view configuration or projection details
  *
- * Implementations compose a lower‑level ViewRenderer that owns the
- * details of how individual views (pilot, top‑down, etc.) are drawn.
+ * Concrete adapters are free to compose lower‑level helpers internally.
  */
 export interface Renderer {
   /**
    * Render all visual outputs for the current frame.
    *
    * Implementations are responsible for:
-   *  - Delegating to a ViewRenderer for per‑view drawing
+   *  - Selecting and configuring views (pilot, top‑down, etc.)
+   *  - Delegating to any internal helpers for per‑view drawing
    *  - Issuing draw calls into their rendering backend
    *  - Rendering any HUD / overlays
    */
@@ -39,6 +38,5 @@ export interface Renderer {
     profiler: Profiler;
     pilotCameraLocalOffset: Vec3;
     thrustPercent: number;
-    viewRenderer: ViewRenderer;
   }): void;
 }
