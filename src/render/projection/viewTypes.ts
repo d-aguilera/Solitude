@@ -1,22 +1,43 @@
-import type { ScreenPoint } from "../projection/projection.js";
-import type {
-  LocalFrame,
-  Vec3,
-  DrawMode,
-  Scene,
-  Plane,
-} from "../../world/types.js";
+import type { NdcPoint } from "../projection/projection.js";
+import type { LocalFrame, Vec3, DrawMode, Scene } from "../../world/types.js";
 
+/**
+ * Core configuration for rendering a scene from a particular viewpoint.
+ *
+ * Responsibilities:
+ *  - Define how world-space points map to camera / NDC space (`projection`)
+ *  - Specify the camera pose (`cameraPos`, `cameraFrame`)
+ *  - Choose draw mode (`drawMode`)
+ *
+ * NOTE:
+ *  This type is intentionally focused on pure rendering and camera-space math.
+ *  Any debug overlays (velocity lines, labels, etc.) are configured separately
+ *  via `ViewDebugOverlay` and invoked from the game loop.
+ */
 export interface View {
-  projection: (p: Vec3) => ScreenPoint | null;
+  /**
+   * World-space -> NDC projection in the coordinate system
+   * expected by the active renderer.
+   *
+   * Implementations return normalized device coordinates (x,y in [-1,1])
+   * plus camera-space depth. Mapping to pixel coordinates is handled
+   * by the rasterizer / overlay code based on the current canvas.
+   */
+  projection: (p: Vec3) => NdcPoint | null;
   cameraPos: Vec3;
   cameraFrame: LocalFrame;
   drawMode: DrawMode;
-  referencePlane: Plane;
-  // Optional debug overlay, not part of scene geometry
-  debugDraw?: (
-    ctx: CanvasRenderingContext2D,
-    scene: Scene,
-    referencePlane: Plane
-  ) => void;
+}
+
+/**
+ * Optional debug overlay hook for a view. Not part of scene geometry.
+ *
+ * NOTE:
+ *  This is intentionally *decoupled* from the core `View`. Callers are
+ *  responsible for threading any additional data they need (e.g. reference
+ *  plane, chosen debug planes) into their overlay implementation rather than
+ *  encoding that policy into the renderer.
+ */
+export interface ViewDebugOverlay {
+  draw: (ctx: CanvasRenderingContext2D, scene: Scene) => void;
 }

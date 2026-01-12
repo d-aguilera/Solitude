@@ -1,10 +1,9 @@
 import type { Plane, Scene, Vec3 } from "../../world/types.js";
 import { vec } from "../../world/vec3.js";
+import type { NdcPoint } from "../projection/projection.js";
+import { ndcToScreen } from "../projection/projection.js";
 
-export type ProjectFn = (
-  p: Vec3
-) => { x: number; y: number; depth?: number } | null;
-
+export type ProjectFn = (p: Vec3) => NdcPoint | null;
 /**
  * World-space line segment for velocity debug visualization.
  */
@@ -73,13 +72,18 @@ export function drawPlaneVelocityLine(
   const segments = getPlaneVelocitySegments(plane);
   if (segments.length === 0) return;
 
+  const { width, height } = ctx.canvas;
+
   ctx.save();
   ctx.lineWidth = 4;
 
   for (const seg of segments) {
-    const pStart = project(seg.start);
-    const pEnd = project(seg.end);
-    if (!pStart || !pEnd) continue;
+    const ndcStart = project(seg.start);
+    const ndcEnd = project(seg.end);
+    if (!ndcStart || !ndcEnd) continue;
+
+    const pStart = ndcToScreen(ndcStart, width, height);
+    const pEnd = ndcToScreen(ndcEnd, width, height);
 
     ctx.strokeStyle = seg.color === "forward" ? "lime" : "red";
     ctx.beginPath();
@@ -108,6 +112,7 @@ export function drawBodyLabels(
   ctx.textBaseline = "middle";
 
   const refPos = referencePlane.position;
+  const { width, height } = ctx.canvas;
 
   // Collect planet/star objects with their distance to the reference plane.
   const bodies: {
@@ -128,8 +133,10 @@ export function drawBodyLabels(
   for (const { obj, distance } of bodies) {
     if (obj.kind !== "planet" && obj.kind !== "star") continue;
 
-    const screenPoint = project(obj.position);
-    if (!screenPoint) continue;
+    const ndc = project(obj.position);
+    if (!ndc) continue;
+
+    const screenPoint = ndcToScreen(ndc, width, height);
 
     const name = displayNameForBodyId(obj.id);
 

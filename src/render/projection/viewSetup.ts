@@ -1,8 +1,9 @@
 import { drawPlaneVelocityLine, drawBodyLabels } from "../scene/debugDraw.js";
 import {
-  makePilotView,
-  makeTopView,
-  ScreenPoint,
+  NdcPoint,
+  worldPointToCameraPoint,
+  applyPilotLook,
+  projectCameraPointToNdc,
 } from "../projection/projection.js";
 import type {
   Camera,
@@ -11,13 +12,13 @@ import type {
   Vec3,
   Plane,
 } from "../../world/types.js";
-import type { View } from "./viewTypes.js";
+import type { View, ViewDebugOverlay } from "./viewTypes.js";
+
+const NEAR = 0.01; // must match projection.ts
 
 function makeBaseView(
-  world: WorldState,
   camera: Camera,
-  projection: (p: Vec3) => ScreenPoint | null,
-  referencePlane: Plane,
+  projection: (p: Vec3) => NdcPoint | null,
   drawMode: DrawMode
 ): View {
   return {
@@ -25,14 +26,37 @@ function makeBaseView(
     cameraPos: camera.position,
     cameraFrame: camera.frame,
     drawMode,
-    referencePlane,
-    debugDraw: (ctx, scene, referencePlane) => {
-      // Velocity lines
-      for (const plane of world.planes) {
+  };
+}
+
+/**
+ * Build the default debug overlay used by pilot/top views:
+ *  - Velocity lines for the chosen debug planes (typically all planes).
+ *  - Planet/star labels for all relevant bodies in the scene, measured
+ *    relative to the chosen referencePlane.
+ *
+ * Kept separate from `View` so that debug policy does not leak into
+ * camera/projection setup.
+ *
+ * NOTE:
+ *  The overlay takes an NDC projection; it is responsible for mapping NDC
+ *  to pixel coordinates using the canvas it is drawing into.
+ */
+export function makeStandardViewDebugOverlay(options: {
+  projection: (p: Vec3) => NdcPoint | null;
+  referencePlane: Plane;
+  debugPlanes: Plane[];
+}): ViewDebugOverlay {
+  const { projection, referencePlane, debugPlanes } = options;
+
+  return {
+    draw: (ctx, scene) => {
+      // Velocity lines for the chosen debug planes (typically all planes).
+      for (const plane of debugPlanes) {
         drawPlaneVelocityLine(ctx, projection, plane);
       }
 
-      // Planet/star labels
+      // Planet/star labels for all relevant bodies in the scene.
       drawBodyLabels(ctx, projection, scene, referencePlane);
     },
   };
@@ -48,40 +72,67 @@ export function buildPilotViewConfig(
   canvasWidth: number,
   canvasHeight: number,
   referencePlane: Plane,
-  drawMode: DrawMode
-): View {
+  drawMode: DrawMode,
+  debugPlanes: Plane[]
+): { view: View; debugOverlay: ViewDebugOverlay } {
   const pilotView = world.pilotViews.find((p) => p.id === mainPilotViewId);
   if (!pilotView) throw new Error(`Pilot view not found: ${mainPilotViewId}`);
 
-  const projection = makePilotView({
-    cameraPosition: pilotCamera.position,
-    cameraFrame: pilotCamera.frame,
-    pilotAzimuth: pilotView.azimuth,
-    pilotElevation: pilotView.elevation,
-    canvasWidth,
-    canvasHeight,
+  const projection = (worldPoint: Vec3): NdcPoint | null => {
+    const cameraPoint = worldPointToCameraPoint(
+      worldPoint,
+      pilotCamera.position,
+      pilotCamera.frame
+    );
+
+    applyPilotLook(cameraPoint, pilotView.azimuth, pilotView.elevation);
+
+    const depth = cameraPoint.y;
+    if (depth < NEAR) return null;
+
+    return projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
+  };
+
+  const view = makeBaseView(pilotCamera, projection, drawMode);
+  const debugOverlay = makeStandardViewDebugOverlay({
+    projection,
+    referencePlane,
+    debugPlanes,
   });
 
-  return makeBaseView(world, pilotCamera, projection, referencePlane, drawMode);
+  return { view, debugOverlay };
 }
 
 /**
- * Build the View configuration for the top-down view, given world state.
+ * Build the View configuration for the top-down view, given a camera.
  */
 export function buildTopViewConfig(
-  world: WorldState,
   topCamera: Camera,
   canvasWidth: number,
   canvasHeight: number,
   referencePlane: Plane,
-  drawMode: DrawMode
-): View {
-  const projection = makeTopView({
-    cameraPosition: topCamera.position,
-    cameraFrame: topCamera.frame,
-    canvasWidth,
-    canvasHeight,
+  drawMode: DrawMode,
+  debugPlanes: Plane[]
+): { view: View; debugOverlay: ViewDebugOverlay } {
+  const projection = (worldPoint: Vec3): NdcPoint | null => {
+    const cameraPoint = worldPointToCameraPoint(
+      worldPoint,
+      topCamera.position,
+      topCamera.frame
+    );
+
+    const depth = cameraPoint.y;
+    if (depth < NEAR) return null;
+
+    return projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
+  };
+
+  const view = makeBaseView(topCamera, projection, drawMode);
+  const debugOverlay = makeStandardViewDebugOverlay({
+    projection,
+    referencePlane,
+    debugPlanes,
   });
 
-  return makeBaseView(world, topCamera, projection, referencePlane, drawMode);
+  return { view, debugOverlay };
 }

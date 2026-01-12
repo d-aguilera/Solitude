@@ -242,22 +242,33 @@ function renderAllViews(
 ): void {
   const mainPlane = getPlaneById(world, mainPlaneId);
 
+  // For now, we debug all planes in the world in both views.
+  const debugPlanes = world.planes;
+
   profiler.run("GAME", "pilot-view", () => {
     // Pilot view: full scene, including trajectories
     const pilotCamera = getCameraById(world, pilotCameraId);
     const pilotCanvas = pilotContext.canvas;
 
-    const pilotViewConfig = buildPilotViewConfig(
-      world,
-      pilotCamera,
-      mainPilotViewId,
-      pilotCanvas.width,
-      pilotCanvas.height,
-      mainPlane,
-      DEFAULT_DRAW_MODE
-    );
+    const { view: pilotViewConfig, debugOverlay: pilotDebugOverlay } =
+      buildPilotViewConfig(
+        world,
+        pilotCamera,
+        mainPilotViewId,
+        pilotCanvas.width,
+        pilotCanvas.height,
+        mainPlane,
+        DEFAULT_DRAW_MODE,
+        debugPlanes
+      );
 
-    renderView(pilotContext, scene, pilotViewConfig, profiler);
+    renderView(
+      pilotContext,
+      scene,
+      pilotViewConfig,
+      profiler,
+      pilotDebugOverlay
+    );
 
     renderHUD(
       pilotContext,
@@ -272,22 +283,20 @@ function renderAllViews(
     const topCamera = getCameraById(world, topCameraId);
     const topCanvas = topContext.canvas;
 
-    const topViewConfig = buildTopViewConfig(
-      world,
-      topCamera,
-      topCanvas.width,
-      topCanvas.height,
-      mainPlane,
-      DEFAULT_DRAW_MODE
-    );
-
-    // Attach reference plane for debug overlays
-    topViewConfig.referencePlane = mainPlane;
+    const { view: topViewConfig, debugOverlay: topDebugOverlay } =
+      buildTopViewConfig(
+        topCamera,
+        topCanvas.width,
+        topCanvas.height,
+        mainPlane,
+        DEFAULT_DRAW_MODE,
+        debugPlanes
+      );
 
     // filtered scene without trajectories
     const topScene = makeTopViewScene(scene);
 
-    renderView(topContext, topScene, topViewConfig, profiler);
+    renderView(topContext, topScene, topViewConfig, profiler, topDebugOverlay);
   });
 }
 
