@@ -39,6 +39,14 @@ export interface ControlInput {
 }
 
 /**
+ * Pilot's view state relative to the controlled vehicle.
+ */
+export interface PilotLookState {
+  azimuth: number;
+  elevation: number;
+}
+
+/**
  * Per-player control state that must persist across frames.
  */
 export interface ControlState {
@@ -46,14 +54,11 @@ export interface ControlState {
    * Persistent thrust magnitude in [0..1], updated by numeric keys.
    */
   thrustPercent: number;
-}
 
-/**
- * Pilot's view state relative to the controlled vehicle.
- */
-export interface PilotLookState {
-  azimuth: number;
-  elevation: number;
+  /**
+   * Persistent pilot look state owned by the controls layer.
+   */
+  look: PilotLookState;
 }
 
 /**
@@ -72,6 +77,10 @@ export interface ControlledBodyState {
 export function createInitialControlState(): ControlState {
   return {
     thrustPercent: 0,
+    look: {
+      azimuth: 0,
+      elevation: 0,
+    },
   };
 }
 
@@ -235,18 +244,23 @@ export function applyThrustToVelocity(
 /**
  * Top-level update for orientation only; does NOT move the body forward.
  * Position integration is handled by gravity/thrust integration.
+ *
+ * This function updates:
+ *  - thrustPercent in the given ControlState
+ *  - persistent pilot look angles inside ControlState.look
+ *  - the body's LocalFrame based on roll/pitch/yaw input
  */
 export function updateBodyOrientationFromInput(
   dtSeconds: number,
   input: ControlInput,
   controlState: ControlState,
-  body: ControlledBodyState,
-  lookState: PilotLookState
+  body: ControlledBodyState
 ): void {
-  // Update thrust level before we use it anywhere
+  // Update thrust level before we use it anywhere.
   updateThrustMagnitudeFromInput(input, controlState);
 
-  updatePilotLook(dtSeconds, input, lookState);
+  // Update persistent pilot look state owned by the controls.
+  updatePilotLook(dtSeconds, input, controlState.look);
 
   let frame = body.frame;
   frame = rollFrame(frame, dtSeconds, input);

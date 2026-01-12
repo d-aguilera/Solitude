@@ -5,14 +5,7 @@ import {
   projectCameraPointToNdc,
   NEAR,
 } from "../projection/projection.js";
-import { applyPilotLook } from "./pilotLook.js";
-import type {
-  Camera,
-  WorldState,
-  DrawMode,
-  Vec3,
-  Plane,
-} from "../../world/types.js";
+import type { Camera, DrawMode, Vec3, Plane } from "../../world/types.js";
 import type { View, ViewDebugOverlay } from "./viewTypes.js";
 
 function makeBaseView(
@@ -63,28 +56,24 @@ export function makeStandardViewDebugOverlay(options: {
 
 /**
  * Build the View configuration for the pilot view, given world state.
+ *
+ * The pilot camera's LocalFrame is expected to already encode any pilot‑look
+ * yaw/pitch adjustments. This function does not apply additional rotations.
  */
 export function buildPilotViewConfig(
-  world: WorldState,
   pilotCamera: Camera,
-  mainPilotViewId: string,
   canvasWidth: number,
   canvasHeight: number,
   referencePlane: Plane,
   drawMode: DrawMode,
   debugPlanes: Plane[]
 ): { view: View; debugOverlay: ViewDebugOverlay } {
-  const pilotView = world.pilotViews.find((p) => p.id === mainPilotViewId);
-  if (!pilotView) throw new Error(`Pilot view not found: ${mainPilotViewId}`);
-
   const projection = (worldPoint: Vec3): NdcPoint | null => {
     const cameraPoint = worldPointToCameraPoint(
       worldPoint,
       pilotCamera.position,
       pilotCamera.frame
     );
-
-    applyPilotLook(cameraPoint, pilotView.azimuth, pilotView.elevation);
 
     const depth = cameraPoint.y;
     if (depth < NEAR) return null;

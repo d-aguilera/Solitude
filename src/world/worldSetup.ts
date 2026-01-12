@@ -16,7 +16,6 @@ import type {
   Camera,
   LocalFrame,
   Mesh,
-  PilotView,
   Plane,
   PlanetPhysics,
   PlanetSceneObject,
@@ -88,15 +87,6 @@ function createInitialPlane(
     frame,
     speed,
     velocity: { ...initialVelocity },
-  };
-}
-
-function createInitialPilotView(id: string, planeId: string): PilotView {
-  return {
-    id,
-    planeId,
-    azimuth: 0,
-    elevation: 0,
   };
 }
 
@@ -336,7 +326,6 @@ export function createInitialSceneAndWorld(): {
   scene: Scene;
   world: WorldState;
   mainPlaneId: string;
-  mainPilotViewId: string;
   topCameraId: string;
   pilotCameraId: string;
   planetPathMappings: PlanetPathMapping[];
@@ -346,7 +335,6 @@ export function createInitialSceneAndWorld(): {
   const world: WorldState = {
     planes: [],
     cameras: [],
-    pilotViews: [],
     planets: [],
     planetPhysics: [],
     stars: [],
@@ -397,10 +385,8 @@ export function createInitialSceneAndWorld(): {
 
   const topCamera = createInitialTopCamera("camera:top", mainPlane);
   const pilotCamera = createInitialPilotCamera("camera:pilot", mainPlane);
-  const pilotView = createInitialPilotView("pilot:main", mainPlane.id);
 
   world.cameras.push(topCamera, pilotCamera);
-  world.pilotViews.push(pilotView);
 
   // Derive planet–path relationships once from the configs we just used.
   const planetPathMappings: PlanetPathMapping[] = planetConfigs.map((cfg) => ({
@@ -416,7 +402,6 @@ export function createInitialSceneAndWorld(): {
     scene,
     world,
     mainPlaneId: mainPlane.id,
-    mainPilotViewId: pilotView.id,
     topCameraId: topCamera.id,
     pilotCameraId: pilotCamera.id,
     planetPathMappings,

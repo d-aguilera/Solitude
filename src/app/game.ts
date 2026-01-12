@@ -7,7 +7,6 @@ import {
   ControlState,
   createInitialControlState,
   ControlledBodyState,
-  PilotLookState,
 } from "./controls/controls.js";
 import {
   getProfilingEnabledFromEnv,
@@ -38,7 +37,6 @@ import type {
   SceneObject,
   Vec3,
   WorldState,
-  PilotView,
 } from "../world/types.js";
 import { vec } from "../world/vec3.js";
 import { renderView } from "../render/projection/viewRenderer.js";
@@ -55,6 +53,7 @@ import {
   syncStarsToSceneObjects,
   syncLightsToStars,
 } from "../world/worldSetup.js";
+import { rotateFrameAroundAxis } from "../world/localFrame.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;
@@ -63,7 +62,6 @@ let accumTime = 0;
 let scene: Scene,
   world: WorldState,
   mainPlaneId: string,
-  mainPilotViewId: string,
   topCameraId: string,
   pilotCameraId: string,
   planetPathMappings: PlanetPathMapping[];
@@ -88,7 +86,6 @@ export function startGame(
   scene = x.scene;
   world = x.world;
   mainPlaneId = x.mainPlaneId;
-  mainPilotViewId = x.mainPilotViewId;
   topCameraId = x.topCameraId;
   pilotCameraId = x.pilotCameraId;
   planetPathMappings = x.planetPathMappings;
@@ -176,27 +173,12 @@ function makeControlledBodyState(plane: Plane): ControlledBodyState {
   };
 }
 
-function makePilotLookState(pilotView: PilotView): PilotLookState {
-  return {
-    azimuth: pilotView.azimuth,
-    elevation: pilotView.elevation,
-  };
-}
-
 function writeBackControlledBodyState(
   plane: Plane,
   body: ControlledBodyState
 ): void {
   plane.frame = body.frame;
   plane.velocity = body.velocity;
-}
-
-function writeBackPilotLookState(
-  pilotView: PilotView,
-  look: PilotLookState
-): void {
-  pilotView.azimuth = look.azimuth;
-  pilotView.elevation = look.elevation;
 }
 
 /**
@@ -228,24 +210,11 @@ function updatePlaneOrientationFromControls(
   input: ControlInput
 ): void {
   const plane = getPlaneById(world, mainPlaneId);
-  const pilotView = world.pilotViews.find((p) => p.id === mainPilotViewId);
-  if (!pilotView) {
-    throw new Error(`Pilot view not found: ${mainPilotViewId}`);
-  }
-
   const bodyState = makeControlledBodyState(plane);
-  const lookState = makePilotLookState(pilotView);
 
-  updateBodyOrientationFromInput(
-    dtSeconds,
-    input,
-    controlState,
-    bodyState,
-    lookState
-  );
+  updateBodyOrientationFromInput(dtSeconds, input, controlState, bodyState);
 
   writeBackControlledBodyState(plane, bodyState);
-  writeBackPilotLookState(pilotView, lookState);
 }
 
 /**
@@ -320,9 +289,7 @@ function renderAllViews(
 
     const { view: pilotViewConfig, debugOverlay: pilotDebugOverlay } =
       buildPilotViewConfig(
-        world,
         pilotCamera,
-        mainPilotViewId,
         pilotCanvas.width,
         pilotCanvas.height,
         mainPlane,
@@ -457,7 +424,25 @@ function updateCameras(): void {
 }
 
 function frameFromPlaneForPilot(plane: Plane): LocalFrame {
-  return { ...plane.frame };
+  const base = plane.frame;
+  const { azimuth, elevation } = controlState.look;
+
+  // Apply yaw (azimuth) around the plane's local up axis,
+  // then pitch (elevation) around the resulting local right axis.
+  let frame: LocalFrame = {
+    right: vec.clone(base.right),
+    forward: vec.clone(base.forward),
+    up: vec.clone(base.up),
+  };
+
+  if (azimuth !== 0) {
+    frame = rotateFrameAroundAxis(frame, frame.up, azimuth);
+  }
+  if (elevation !== 0) {
+    frame = rotateFrameAroundAxis(frame, frame.right, elevation);
+  }
+
+  return frame;
 }
 
 function frameFromPlaneForTop(plane: Plane): LocalFrame {

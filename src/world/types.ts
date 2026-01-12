@@ -205,7 +205,6 @@ export type DrawMode = "faces" | "lines";
 export interface WorldState {
   planes: Plane[];
   cameras: Camera[];
-  pilotViews: PilotView[];
   planets: PlanetBody[];
   planetPhysics: PlanetPhysics[];
   stars: StarBody[];
