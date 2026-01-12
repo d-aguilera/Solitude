@@ -2,6 +2,7 @@ import { startGame } from "./game.js";
 import { defaultProfiler } from "../profiling/profilingFacade.js";
 import { init as initResizeHandler } from "../render/canvas/canvasLayout.js";
 import { CanvasRenderer } from "../render/canvas/canvasRenderer.js";
+import { NewtonianGravityEngine } from "../world/physics/newtonianGravityEngine.js";
 
 const container = document.querySelector(".canvas-container");
 if (!container) {
@@ -37,5 +38,8 @@ if (!topContext) {
 // Concrete Canvas2D adapter implementing the Renderer port.
 const renderer = new CanvasRenderer(pilotContext, topContext);
 
+// Concrete gravity engine implementing the GravityEngine port.
+const gravityEngine = new NewtonianGravityEngine();
+
 initResizeHandler(container, pilotCanvas, topCanvas);
-startGame(renderer, defaultProfiler);
+startGame(renderer, gravityEngine, defaultProfiler);

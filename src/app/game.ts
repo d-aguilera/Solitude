@@ -13,10 +13,6 @@ import {
   setProfilingEnabledInEnv,
 } from "./debugEnv.js";
 import { updateFPS } from "./fps.js";
-import {
-  applyGravity,
-  buildInitialGravityState,
-} from "../world/physics/gravity.js";
 import { init as initInput, getKeyState } from "./input.js";
 import { pauseControl, paused } from "./pause.js";
 import { appendPointToPolylineMesh } from "./trajectory.js";
@@ -47,6 +43,7 @@ import {
 } from "../world/worldSetup.js";
 import { rotateFrameAroundAxis } from "../world/localFrame.js";
 import type { Renderer } from "./rendererPort.js";
+import type { GravityEngine } from "../world/physics/gravityPort.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;
@@ -61,6 +58,7 @@ let planetPathMappings: PlanetPathMapping[];
 
 // Gravity state
 let gravityState: GravityState;
+let gravityEngine: GravityEngine;
 
 // Pilot camera local offset (right, forward, up) in plane-local units
 let pilotCameraLocalOffset: Vec3 = { x: 0, y: 1.7, z: 1.1 };
@@ -77,7 +75,11 @@ let controlState: ControlState = createInitialControlState();
  * kicks off the main animation loop, delegating all rendering to
  * the provided Renderer abstraction.
  */
-export function startGame(renderer: Renderer, profiler: Profiler): void {
+export function startGame(
+  renderer: Renderer,
+  engine: GravityEngine,
+  profiler: Profiler
+): void {
   const x = createInitialSceneAndWorld();
   scene = x.scene;
   world = x.world;
@@ -86,7 +88,8 @@ export function startGame(renderer: Renderer, profiler: Profiler): void {
   pilotCameraId = x.pilotCameraId;
   planetPathMappings = x.planetPathMappings;
 
-  gravityState = buildInitialGravityState(world, mainPlaneId);
+  gravityEngine = engine;
+  gravityState = gravityEngine.buildInitialState(world, mainPlaneId);
 
   controlState = createInitialControlState();
 
@@ -237,7 +240,6 @@ function integrateForcesAndGravity(
   const gravityDt = dtSeconds * gravityTimeScale;
 
   const controlledPlane = getPlaneById(world, mainPlaneId);
-
   const planeBody = gravityState.bodies[gravityState.mainPlaneBodyIndex];
 
   // Adapt to ControlledBodyState view for thrust application.
@@ -250,7 +252,7 @@ function integrateForcesAndGravity(
 
   planeBody.velocity = bodyState.velocity;
 
-  applyGravity(gravityDt, world, gravityState);
+  gravityEngine.step(gravityDt, world, gravityState);
 }
 
 /**

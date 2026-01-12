@@ -13,19 +13,8 @@ import type {
  * The game loop depends only on this interface and remains unaware of:
  *  - Any specific rendering API (Canvas2D, WebGL, etc.)
  *  - Any per‑view configuration or projection details
- *
- * Concrete adapters are free to compose lower‑level helpers internally.
  */
 export interface Renderer {
-  /**
-   * Render all visual outputs for the current frame.
-   *
-   * Implementations are responsible for:
-   *  - Selecting and configuring views (pilot, top‑down, etc.)
-   *  - Delegating to any internal helpers for per‑view drawing
-   *  - Issuing draw calls into their rendering backend
-   *  - Rendering any HUD / overlays
-   */
   renderFrame(params: {
     scene: Scene;
     world: WorldState;
