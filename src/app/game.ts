@@ -5,6 +5,8 @@ import {
   updatePhysics,
   type FlightContext,
   getSignedThrustPercent,
+  ControlState,
+  createInitialControlState,
 } from "./controls/controls.js";
 import {
   getProfilingEnabledFromEnv,
@@ -70,6 +72,11 @@ let gravityState: GravityState;
 // Pilot camera local offset (right, forward, up) in plane-local units
 let pilotCameraLocalOffset: Vec3 = { x: 0, y: 1.7, z: 1.1 };
 
+/**
+ * Persistent per-player control state.
+ */
+let controlState: ControlState = createInitialControlState();
+
 export function startGame(
   pilotContext: CanvasRenderingContext2D,
   topContext: CanvasRenderingContext2D,
@@ -85,6 +92,8 @@ export function startGame(
   planetPathMappings = x.planetPathMappings;
 
   gravityState = buildInitialGravityState(world, mainPlaneId);
+
+  controlState = createInitialControlState();
 
   initInput();
   requestAnimationFrame((nowMs) => {
@@ -110,8 +119,8 @@ function renderFrame(
   setPausedForProfiling(paused);
   profileCheck();
 
-  // Compute current signed thrust percent from input for HUD display
-  const thrustPercent = getSignedThrustPercent(input);
+  // Compute current signed thrust percent from input + persistent control state
+  const thrustPercent = getSignedThrustPercent(input, controlState);
 
   profiler.run("GAME", "total", () => {
     updateFPS(nowMs);
@@ -176,6 +185,7 @@ function stepPhysics(
 
 /**
  * Handles control-input-based orientation updates for the controlled plane.
+ * Also updates the persistent control state.
  */
 function updatePlaneOrientationFromControls(
   dtSeconds: number,
@@ -186,7 +196,7 @@ function updatePlaneOrientationFromControls(
     controlledPlaneId: mainPlaneId,
     pilotViewId: mainPilotViewId,
   };
-  updatePhysics(dtSeconds, input, flightCtx);
+  updatePhysics(dtSeconds, input, controlState, flightCtx);
 }
 
 /**
@@ -208,6 +218,7 @@ function integrateForcesAndGravity(
   applyThrustToPlaneVelocity(
     gravityDt,
     input,
+    controlState,
     planeBody.velocity,
     controlledPlane
   );

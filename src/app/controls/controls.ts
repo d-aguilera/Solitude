@@ -39,10 +39,30 @@ export interface ControlInput {
   thrust5: boolean;
 }
 
+/**
+ * Per-player control state that must persist across frames.
+ */
+export interface ControlState {
+  /**
+   * Persistent thrust magnitude in [0..1], updated by numeric keys.
+   */
+  thrustPercent: number;
+}
+
 export interface FlightContext {
   world: WorldState;
   controlledPlaneId: string;
   pilotViewId: string;
+}
+
+/**
+ * Create a default-initialized control state.
+ * Call this once at game setup and then keep mutating the same instance.
+ */
+export function createInitialControlState(): ControlState {
+  return {
+    thrustPercent: 0,
+  };
 }
 
 function pilotLookAround(
@@ -116,11 +136,9 @@ function yawFrame(
   return rotateFrameAroundAxis(frame, frame.up, angle);
 }
 
-// Persistent thrust magnitude in [0..1], updated by numeric keys.
-let currentThrustPercent = 0;
-
 /**
- * Update the persistent thrust magnitude based on numeric-key input.
+ * Update the persistent thrust magnitude in the given ControlState based on
+ * numeric-key input.
  *
  * Mapping:
  *   0 -> 0%
@@ -132,29 +150,39 @@ let currentThrustPercent = 0;
  *
  * If multiple keys are pressed at once, the highest level wins for this frame.
  */
-export function updateThrustMagnitudeFromInput(input: ControlInput): void {
-  if (input.thrust5) currentThrustPercent = 1.0; // 100%
-  else if (input.thrust4) currentThrustPercent = 0.5; // 50%
-  else if (input.thrust3) currentThrustPercent = 0.25; // 25%
-  else if (input.thrust2) currentThrustPercent = 0.05; // 5%
-  else if (input.thrust1) currentThrustPercent = 0.01; // 1%
-  else if (input.thrust0) currentThrustPercent = 0; // 0%
+export function updateThrustMagnitudeFromInput(
+  input: ControlInput,
+  state: ControlState
+): void {
+  if (input.thrust5) state.thrustPercent = 1.0; // 100%
+  else if (input.thrust4) state.thrustPercent = 0.5; // 50%
+  else if (input.thrust3) state.thrustPercent = 0.25; // 25%
+  else if (input.thrust2) state.thrustPercent = 0.05; // 5%
+  else if (input.thrust1) state.thrustPercent = 0.01; // 1%
+  else if (input.thrust0) state.thrustPercent = 0; // 0%
 }
 
 /**
- * Return the *stored* thrust magnitude [0..1].
+ * Compute unsigned thrust magnitude [0..1] from the current control state.
+ * Kept as a named helper to document the contract and allow future
+ * extensions (e.g. clamping, non-linear curves).
  */
-export function getThrustMagnitudePercentFromState(): number {
-  return currentThrustPercent;
+export function getThrustMagnitudePercentFromState(
+  state: ControlState
+): number {
+  return state.thrustPercent;
 }
 
 /**
  * Signed thrust percent in [-1, 1]:
  *  - Sign from Space (forward) / B (backward)
- *  - Magnitude from stored thrust level (set by 0–5)
+ *  - Magnitude from stored thrust level (set by 0–5) in the given state.
  */
-export function getSignedThrustPercent(input: ControlInput): number {
-  const mag = getThrustMagnitudePercentFromState();
+export function getSignedThrustPercent(
+  input: ControlInput,
+  state: ControlState
+): number {
+  const mag = getThrustMagnitudePercentFromState(state);
 
   const forward = input.burnForward;
   const backward = input.burnBackwards;
@@ -166,21 +194,24 @@ export function getSignedThrustPercent(input: ControlInput): number {
 }
 
 /**
- * Apply thrust acceleration to the plane's body velocity when burn/brake are active.
- * Acceleration magnitude is:
+ * Apply thrust acceleration to the plane's body velocity when burn/brake are
+ * active. Acceleration magnitude is:
+ *
  *   a = maxThrustAcceleration * thrustPercent
+ *
  * where thrustPercent ∈ [-1, 1] and is chosen from discrete levels
- * depending on Space/B and Shift/Alt modifiers.
+ * depending on Space/B and numeric thrust keys.
  */
 export function applyThrustToPlaneVelocity(
   dtSeconds: number,
   input: ControlInput,
+  controlState: ControlState,
   planeVelocity: Vec3,
   plane: Plane
 ): void {
   if (dtSeconds <= 0) return;
 
-  const thrustPercent = getSignedThrustPercent(input);
+  const thrustPercent = getSignedThrustPercent(input, controlState);
   if (thrustPercent === 0) return;
 
   const f = plane.frame.forward;
@@ -197,12 +228,13 @@ export function applyThrustToPlaneVelocity(
 export function updatePhysics(
   dtSeconds: number,
   input: ControlInput,
+  controlState: ControlState,
   ctx: FlightContext
 ): void {
   const plane = getPlaneById(ctx.world, ctx.controlledPlaneId);
 
   // Update thrust level before we use it anywhere
-  updateThrustMagnitudeFromInput(input);
+  updateThrustMagnitudeFromInput(input, controlState);
 
   pilotLookAround(dtSeconds, input, ctx);
 
