@@ -391,7 +391,6 @@ export function createInitialSceneAndWorld(): {
 
   const scene: Scene = {
     objects,
-    // Lights will be populated from stars after world setup.
     lights: [],
   };
 
@@ -408,7 +407,8 @@ export function createInitialSceneAndWorld(): {
     pathId: cfg.pathId,
   }));
 
-  // Build point lights from star bodies (e.g., Sun at origin).
+  // Build initial point lights from star bodies (e.g., Sun at origin).
+  // Subsequent frames should call syncLightsToStars to keep this up to date.
   buildLightsFromStars(world, scene);
 
   return {
@@ -460,6 +460,10 @@ export function syncStarsToSceneObjects(world: WorldState, scene: Scene): void {
   }
 }
 
+/**
+ * Internal helper: build the array of point lights from the current star bodies.
+ * Used both at initial setup time and by syncLightsToStars on each frame.
+ */
 function buildLightsFromStars(world: WorldState, scene: Scene): void {
   const lights = [];
 
@@ -475,4 +479,13 @@ function buildLightsFromStars(world: WorldState, scene: Scene): void {
   }
 
   scene.lights = lights;
+}
+
+/**
+ * Per‑frame adapter: keep Scene.lights in sync with the current star bodies.
+ * This separates long‑lived world/physics state (WorldState) from the
+ * renderer‑side Scene representation.
+ */
+export function syncLightsToStars(world: WorldState, scene: Scene): void {
+  buildLightsFromStars(world, scene);
 }

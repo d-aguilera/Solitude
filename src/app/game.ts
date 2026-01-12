@@ -49,6 +49,7 @@ import {
   syncPlanesToSceneObjects,
   syncPlanetsToSceneObjects,
   syncStarsToSceneObjects,
+  syncLightsToStars,
 } from "../world/worldSetup.js";
 
 let lastTimeMs = 0;
@@ -142,9 +143,13 @@ function stepSimulation(
   profiler: Profiler
 ): void {
   stepPhysics(dtSeconds, input, profiler);
+
+  // Keep all renderer-facing scene state aligned with WorldState.
   syncPlanesToSceneObjects(world, scene);
   syncPlanetsToSceneObjects(world, scene);
   syncStarsToSceneObjects(world, scene);
+  syncLightsToStars(world, scene);
+
   updateTrajectories(dtSeconds);
   updateCameras();
 }
