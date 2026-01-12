@@ -36,10 +36,6 @@ import type {
   WorldState,
 } from "../world/types.js";
 import { vec } from "../world/vec3.js";
-import {
-  renderPilotView,
-  renderTopView,
-} from "../render/projection/viewRenderer.js";
 import { getCameraById, getPlaneById } from "../world/worldLookup.js";
 import {
   createInitialSceneAndWorld,
@@ -50,17 +46,18 @@ import {
   syncLightsToStars,
 } from "../world/worldSetup.js";
 import { rotateFrameAroundAxis } from "../world/localFrame.js";
+import type { Renderer } from "./renderer.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;
 let accumTime = 0;
 
-let scene: Scene,
-  world: WorldState,
-  mainPlaneId: string,
-  topCameraId: string,
-  pilotCameraId: string,
-  planetPathMappings: PlanetPathMapping[];
+let scene: Scene;
+let world: WorldState;
+let mainPlaneId: string;
+let topCameraId: string;
+let pilotCameraId: string;
+let planetPathMappings: PlanetPathMapping[];
 
 // Gravity state
 let gravityState: GravityState;
@@ -73,11 +70,14 @@ let pilotCameraLocalOffset: Vec3 = { x: 0, y: 1.7, z: 1.1 };
  */
 let controlState: ControlState = createInitialControlState();
 
-export function startGame(
-  pilotContext: CanvasRenderingContext2D,
-  topContext: CanvasRenderingContext2D,
-  profiler: Profiler
-): void {
+/**
+ * Top-level game entry point.
+ *
+ * This function orchestrates world/scene initialization and then
+ * kicks off the main animation loop, delegating all rendering to
+ * the provided Renderer.
+ */
+export function startGame(renderer: Renderer, profiler: Profiler): void {
   const x = createInitialSceneAndWorld();
   scene = x.scene;
   world = x.world;
@@ -93,15 +93,12 @@ export function startGame(
   initInput();
   requestAnimationFrame((nowMs) => {
     lastTimeMs = nowMs;
-    requestAnimationFrame(
-      renderFrame.bind(null, pilotContext, topContext, profiler)
-    );
+    requestAnimationFrame(renderFrame.bind(null, renderer, profiler));
   });
 }
 
 function renderFrame(
-  pilotContext: CanvasRenderingContext2D,
-  topContext: CanvasRenderingContext2D,
+  renderer: Renderer,
   profiler: Profiler,
   nowMs: number
 ): void {
@@ -123,15 +120,28 @@ function renderFrame(
     // 1) Advance simulation / physics
     stepSimulation(dtSeconds, input, profiler);
 
-    // 2) Render all visual outputs
-    renderAllViews(pilotContext, topContext, profiler, thrustPercent);
+    // 2) Render all visual outputs via the Renderer abstraction
+    const mainPlane = getPlaneById(world, mainPlaneId);
+    const debugPlanes = world.planes;
+
+    renderer.renderFrame({
+      scene,
+      world,
+      mainPlane,
+      mainPlaneId,
+      topCameraId,
+      pilotCameraId,
+      debugPlanes,
+      drawMode: DEFAULT_DRAW_MODE,
+      profiler,
+      pilotCameraLocalOffset,
+      thrustPercent,
+    });
   });
 
   profileFlush();
 
-  requestAnimationFrame(
-    renderFrame.bind(null, pilotContext, topContext, profiler)
-  );
+  requestAnimationFrame(renderFrame.bind(null, renderer, profiler));
 }
 
 /**
@@ -261,46 +271,6 @@ function updateTrajectories(dtSeconds: number): void {
     appendPlanetTrajectories();
     accumTime = 0;
   }
-}
-
-/**
- * Update cameras and render pilot / top views and HUD.
- * No simulation or game-state mutation beyond cameras/HUD.
- */
-function renderAllViews(
-  pilotContext: CanvasRenderingContext2D,
-  topContext: CanvasRenderingContext2D,
-  profiler: Profiler,
-  thrustPercent: number
-): void {
-  const mainPlane = getPlaneById(world, mainPlaneId);
-
-  // For now, we debug all planes in the world in both views.
-  const debugPlanes = world.planes;
-
-  renderPilotView(
-    pilotContext,
-    scene,
-    world,
-    pilotCameraId,
-    mainPlane,
-    DEFAULT_DRAW_MODE,
-    debugPlanes,
-    profiler,
-    pilotCameraLocalOffset,
-    thrustPercent
-  );
-
-  renderTopView(
-    topContext,
-    scene,
-    world,
-    topCameraId,
-    mainPlane,
-    DEFAULT_DRAW_MODE,
-    debugPlanes,
-    profiler
-  );
 }
 
 function handleProfilingToggle(oKeyPressed: boolean): void {

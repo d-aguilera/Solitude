@@ -10,8 +10,6 @@ import type { View, ViewDebugOverlay } from "./viewTypes.js";
 import { buildPilotViewConfig, buildTopViewConfig } from "./viewSetup.js";
 import { getCameraById } from "../../world/worldLookup.js";
 import type { DrawMode, SceneObject } from "../../world/types.js";
-import { isProfilingEnabled } from "../../profiling/profilingFacade.js";
-import { renderHUD } from "../../app/hud.js";
 
 let viewFrameCounter = 0;
 
@@ -50,7 +48,7 @@ export function renderView(
 }
 
 /**
- * Helper that builds and renders the pilot view, including HUD.
+ * Helper that builds and renders the pilot view.
  *
  * The camera frame is expected to already encode any pilot look
  * adjustments computed elsewhere.
@@ -67,6 +65,9 @@ export function renderPilotView(
   pilotCameraLocalOffset: Vec3,
   thrustPercent: number
 ): void {
+  void pilotCameraLocalOffset;
+  void thrustPercent;
+
   const pilotCamera = getCameraById(world, pilotCameraId);
   const pilotCanvas = context.canvas;
 
@@ -80,14 +81,6 @@ export function renderPilotView(
   );
 
   renderView(context, scene, view, profiler, debugOverlay);
-
-  renderHUD(
-    context,
-    referencePlane,
-    isProfilingEnabled(),
-    pilotCameraLocalOffset,
-    thrustPercent
-  );
 }
 
 /**
