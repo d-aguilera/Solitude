@@ -34,7 +34,6 @@ export interface Plane {
   position: Vec3;
   frame: LocalFrame;
   speed: number;
-  scale: number;
   velocity: Vec3;
 }
 
@@ -115,8 +114,7 @@ export interface SolidSceneObject extends BaseSceneObject {
 }
 
 /**
- * Airplane visual object. Transform applied; no gravity properties here.
- * Currently we only ever create it for the main plane.
+ * Airplane visual object.
  */
 export interface AirplaneSceneObject extends SolidSceneObject {
   kind: "airplane";

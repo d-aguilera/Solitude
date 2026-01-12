@@ -87,7 +87,6 @@ function createInitialPlane(
     position: { ...position },
     frame,
     speed,
-    scale: 15,
     velocity: { ...initialVelocity },
   };
 }
@@ -119,6 +118,8 @@ function createInitialPilotCamera(id: string, plane: Plane): Camera {
   };
 }
 
+const AIRPLANE_VISUAL_SCALE = 15;
+
 function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
   const obj: AirplaneSceneObject = {
     id: plane.id,
@@ -126,7 +127,7 @@ function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
     mesh: airplaneModel,
     position: { ...plane.position },
     orientation: mat3FromLocalFrame(plane.frame),
-    scale: plane.scale,
+    scale: AIRPLANE_VISUAL_SCALE,
     color: { r: 0, g: 255, b: 255 },
     lineWidth: 1,
     applyTransform: true,
@@ -429,9 +430,10 @@ export function syncPlanesToSceneObjects(
   for (const plane of world.planes) {
     const obj = scene.objects.find((o) => o.id === plane.id);
     if (!obj) continue;
+
+    // Keep renderer-facing pose in sync with physics plane.
     obj.position = plane.position;
     obj.orientation = mat3FromLocalFrame(plane.frame);
-    obj.scale = plane.scale;
   }
 }
 
