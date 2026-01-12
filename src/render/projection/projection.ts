@@ -7,13 +7,13 @@ import { vec } from "../../world/vec3.js";
 export interface ScreenPoint {
   x: number;
   y: number;
-  depth?: number; // camera-space depth (positive means in front of camera)
+  depth: number; // camera-space depth (positive means in front of camera)
 }
 
 /**
  * Normalized device coordinate in the projection plane:
  *   - x, y in [-1, 1] after perspective divide
- *   - depth is still camera-space Y (forward distance)
+ *   - depth is camera-space Y (forward distance)
  *
  * Mapping to pixel coordinates is done separately via `ndcToScreen`.
  */

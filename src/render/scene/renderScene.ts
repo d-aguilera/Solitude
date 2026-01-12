@@ -3,12 +3,9 @@ import {
   renderPolyline,
 } from "../canvas/canvasRasterizer.js";
 import type { ScreenPoint } from "../projection/projection.js";
+import { projectCameraPoint } from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
-import {
-  buildShadedFaces,
-  getCameraPointsForObject,
-  projectCameraPoint,
-} from "./shadedFaces.js";
+import { buildShadedFaces, getCameraPointsForObject } from "./shadedFaces.js";
 import type {
   PointLight,
   Profiler,

@@ -1,4 +1,5 @@
 import type { ScreenPoint } from "../projection/projection.js";
+import { projectCameraPoint } from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
 import type {
   LocalFrame,
@@ -11,7 +12,6 @@ import type {
 import { vec } from "../../world/vec3.js";
 import { mat3FromLocalFrame } from "../../world/localFrame.js";
 import { mat3 } from "../../world/mat3.js";
-import { getFocalLengths } from "../../app/config.js";
 import { E_SUN_AT_EARTH } from "../../world/solar/solarSystemConfig.js";
 
 /**
@@ -110,13 +110,13 @@ export function buildShadedFaces(params: {
         const p1 = projectCameraPoint(B, canvasWidth, canvasHeight);
         const p2 = projectCameraPoint(C, canvasWidth, canvasHeight);
 
-        const d0 = p0.depth ?? 0;
-        const d1 = p1.depth ?? 0;
-        const d2 = p2.depth ?? 0;
+        const d0 = p0.depth;
+        const d1 = p1.depth;
+        const d2 = p2.depth;
         const avgDepth = (d0 + d1 + d2) / 3;
 
         const intensity = isStar
-          ? 1 // fully lit regardless of normals
+          ? 1
           : toneMapIrradiance(computeIrradianceAtPoint(v0, n, lights));
 
         faceList.push({
@@ -188,28 +188,6 @@ function clipTriangleAgainstNearPlaneCamera(
     [P, Q, IP],
     [Q, IQ, IP],
   ];
-}
-
-export function projectCameraPoint(
-  cameraPoint: Vec3,
-  canvasWidth: number,
-  canvasHeight: number
-): ScreenPoint {
-  const { fX, fY } = getFocalLengths(canvasWidth, canvasHeight);
-  const depth = cameraPoint.y;
-
-  const scaled = vec.scale(
-    { x: cameraPoint.x * fX, y: cameraPoint.z * fY, z: 0 },
-    1 / depth
-  );
-
-  const { x: ndcX, y: ndcY } = scaled;
-
-  return {
-    x: (ndcX + 1) * 0.5 * canvasWidth,
-    y: (1 - ndcY) * 0.5 * canvasHeight,
-    depth,
-  };
 }
 
 // Object-level: ensure camera-space cache for this frame.
