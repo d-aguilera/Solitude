@@ -47,6 +47,7 @@ import {
 } from "../world/worldSetup.js";
 import { rotateFrameAroundAxis } from "../world/localFrame.js";
 import type { Renderer } from "./renderer.js";
+import type { ViewRenderer } from "../render/projection/viewRendererPort.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;
@@ -75,9 +76,13 @@ let controlState: ControlState = createInitialControlState();
  *
  * This function orchestrates world/scene initialization and then
  * kicks off the main animation loop, delegating all rendering to
- * the provided Renderer.
+ * the provided Renderer and ViewRenderer abstractions.
  */
-export function startGame(renderer: Renderer, profiler: Profiler): void {
+export function startGame(
+  renderer: Renderer,
+  viewRenderer: ViewRenderer,
+  profiler: Profiler
+): void {
   const x = createInitialSceneAndWorld();
   scene = x.scene;
   world = x.world;
@@ -93,12 +98,15 @@ export function startGame(renderer: Renderer, profiler: Profiler): void {
   initInput();
   requestAnimationFrame((nowMs) => {
     lastTimeMs = nowMs;
-    requestAnimationFrame(renderFrame.bind(null, renderer, profiler));
+    requestAnimationFrame(
+      renderFrame.bind(null, renderer, viewRenderer, profiler)
+    );
   });
 }
 
 function renderFrame(
   renderer: Renderer,
+  viewRenderer: ViewRenderer,
   profiler: Profiler,
   nowMs: number
 ): void {
@@ -136,12 +144,15 @@ function renderFrame(
       profiler,
       pilotCameraLocalOffset,
       thrustPercent,
+      viewRenderer,
     });
   });
 
   profileFlush();
 
-  requestAnimationFrame(renderFrame.bind(null, renderer, profiler));
+  requestAnimationFrame(
+    renderFrame.bind(null, renderer, viewRenderer, profiler)
+  );
 }
 
 /**
