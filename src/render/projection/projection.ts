@@ -23,19 +23,7 @@ export interface NdcPoint {
   depth: number;
 }
 
-export interface TopViewContext {
-  cameraPosition: Vec3;
-  cameraFrame: LocalFrame;
-  canvasWidth: number;
-  canvasHeight: number;
-}
-
-export interface PilotViewContext extends TopViewContext {
-  pilotAzimuth: number;
-  pilotElevation: number;
-}
-
-const NEAR = 0.01; // camera-space forward threshold
+export const NEAR = 0.01; // camera-space forward threshold
 
 /**
  * Pure: world-space -> camera-space.
@@ -49,31 +37,6 @@ export function worldPointToCameraPoint(
   const R_localFromWorld = mat3.transpose(R_worldFromLocal);
   const d = vec.sub(worldPoint, cameraPosition);
   return mat3.mulVec3(R_localFromWorld, d);
-}
-
-/**
- * In-place look adjustment in camera space for pilot view.
- */
-export function applyPilotLook(
-  cameraPoint: Vec3,
-  azimuth: number,
-  elevation: number
-): void {
-  if (azimuth === 0 && elevation === 0) {
-    return;
-  }
-
-  if (azimuth !== 0) {
-    const r = rotate2D(cameraPoint.x, cameraPoint.y, -azimuth);
-    cameraPoint.x = r.a;
-    cameraPoint.y = r.b;
-  }
-
-  if (elevation !== 0) {
-    const r = rotate2D(cameraPoint.y, cameraPoint.z, -elevation);
-    cameraPoint.y = r.a;
-    cameraPoint.z = r.b;
-  }
 }
 
 /**
@@ -125,61 +88,4 @@ export function projectCameraPoint(
 ): ScreenPoint {
   const ndc = projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
   return ndcToScreen(ndc, canvasWidth, canvasHeight);
-}
-
-/**
- * Convenience: full world->screen projection for pilot view.
- * Used by callers that want a ready-made closure for a specific camera + canvas.
- */
-export function makePilotView(ctx: PilotViewContext) {
-  const { canvasWidth, canvasHeight } = ctx;
-
-  return function pilotView(worldPoint: Vec3): ScreenPoint | null {
-    const cameraPoint = worldPointToCameraPoint(
-      worldPoint,
-      ctx.cameraPosition,
-      ctx.cameraFrame
-    );
-
-    applyPilotLook(cameraPoint, ctx.pilotAzimuth, ctx.pilotElevation);
-
-    const depth = cameraPoint.y;
-    if (depth < NEAR) return null;
-
-    return projectCameraPoint(cameraPoint, canvasWidth, canvasHeight);
-  };
-}
-
-/**
- * Convenience: full world->screen projection for a top-down view.
- */
-export function makeTopView(ctx: TopViewContext) {
-  const { canvasWidth, canvasHeight } = ctx;
-
-  return function topView(worldPoint: Vec3): ScreenPoint | null {
-    const cameraPoint = worldPointToCameraPoint(
-      worldPoint,
-      ctx.cameraPosition,
-      ctx.cameraFrame
-    );
-
-    const depth = cameraPoint.y;
-    if (depth < NEAR) return null;
-
-    return projectCameraPoint(cameraPoint, canvasWidth, canvasHeight);
-  };
-}
-
-function rotate2D(
-  a: number,
-  b: number,
-  angle: number
-): { a: number; b: number } {
-  const c = Math.cos(angle);
-  const s = Math.sin(angle);
-
-  return {
-    a: a * c - b * s,
-    b: a * s + b * c,
-  };
 }

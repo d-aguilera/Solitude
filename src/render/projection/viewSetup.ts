@@ -2,9 +2,10 @@ import { drawPlaneVelocityLine, drawBodyLabels } from "../scene/debugDraw.js";
 import {
   NdcPoint,
   worldPointToCameraPoint,
-  applyPilotLook,
   projectCameraPointToNdc,
+  NEAR,
 } from "../projection/projection.js";
+import { applyPilotLook } from "./pilotLook.js";
 import type {
   Camera,
   WorldState,
@@ -13,8 +14,6 @@ import type {
   Plane,
 } from "../../world/types.js";
 import type { View, ViewDebugOverlay } from "./viewTypes.js";
-
-const NEAR = 0.01; // must match projection.ts
 
 function makeBaseView(
   camera: Camera,

@@ -3,7 +3,7 @@ import {
   renderPolyline,
 } from "../canvas/canvasRasterizer.js";
 import type { ScreenPoint } from "../projection/projection.js";
-import { projectCameraPoint } from "../projection/projection.js";
+import { projectCameraPoint, NEAR } from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
 import { buildShadedFaces, getCameraPointsForObject } from "./shadedFaces.js";
 import type {
@@ -126,8 +126,8 @@ function drawMeshPolylinesCameraSpace(
         const idx = polyIndices[j];
         const cp = cameraPoints[idx];
 
-        // Skip points behind near plane (consistent with makeTopView/makePilotView)
-        if (cp.y < 0.01) {
+        // Skip points behind near plane
+        if (cp.y < NEAR) {
           projectedPoints.length = 0;
           break;
         }
