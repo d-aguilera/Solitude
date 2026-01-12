@@ -17,12 +17,10 @@ import {
   applyGravity,
   buildInitialGravityState,
 } from "../world/physics/gravity.js";
-import { renderHUD } from "./hud.js";
 import { init as initInput, getKeyState } from "./input.js";
 import { pauseControl, paused } from "./pause.js";
 import { appendPointToPolylineMesh } from "./trajectory.js";
 import {
-  isProfilingEnabled,
   profileCheck,
   profileFlush,
   setPausedForProfiling,
@@ -34,16 +32,14 @@ import type {
   Plane,
   Profiler,
   Scene,
-  SceneObject,
   Vec3,
   WorldState,
 } from "../world/types.js";
 import { vec } from "../world/vec3.js";
-import { renderView } from "../render/projection/viewRenderer.js";
 import {
-  buildPilotViewConfig,
-  buildTopViewConfig,
-} from "../render/projection/viewSetup.js";
+  renderPilotView,
+  renderTopView,
+} from "../render/projection/viewRenderer.js";
 import { getCameraById, getPlaneById } from "../world/worldLookup.js";
 import {
   createInitialSceneAndWorld,
@@ -282,73 +278,29 @@ function renderAllViews(
   // For now, we debug all planes in the world in both views.
   const debugPlanes = world.planes;
 
-  profiler.run("GAME", "pilot-view", () => {
-    // Pilot view: full scene, including trajectories
-    const pilotCamera = getCameraById(world, pilotCameraId);
-    const pilotCanvas = pilotContext.canvas;
+  renderPilotView(
+    pilotContext,
+    scene,
+    world,
+    pilotCameraId,
+    mainPlane,
+    DEFAULT_DRAW_MODE,
+    debugPlanes,
+    profiler,
+    pilotCameraLocalOffset,
+    thrustPercent
+  );
 
-    const { view: pilotViewConfig, debugOverlay: pilotDebugOverlay } =
-      buildPilotViewConfig(
-        pilotCamera,
-        pilotCanvas.width,
-        pilotCanvas.height,
-        mainPlane,
-        DEFAULT_DRAW_MODE,
-        debugPlanes
-      );
-
-    renderView(
-      pilotContext,
-      scene,
-      pilotViewConfig,
-      profiler,
-      pilotDebugOverlay
-    );
-
-    renderHUD(
-      pilotContext,
-      mainPlane,
-      isProfilingEnabled(),
-      pilotCameraLocalOffset,
-      thrustPercent
-    );
-  });
-
-  profiler.run("GAME", "top-view", () => {
-    const topCamera = getCameraById(world, topCameraId);
-    const topCanvas = topContext.canvas;
-
-    const { view: topViewConfig, debugOverlay: topDebugOverlay } =
-      buildTopViewConfig(
-        topCamera,
-        topCanvas.width,
-        topCanvas.height,
-        mainPlane,
-        DEFAULT_DRAW_MODE,
-        debugPlanes
-      );
-
-    // filtered scene without trajectories
-    const topScene = makeTopViewScene(scene);
-
-    renderView(topContext, topScene, topViewConfig, profiler, topDebugOverlay);
-  });
-}
-
-function makeTopViewScene(base: Scene): Scene {
-  // Keep everything except trajectory/path polylines
-  const filteredObjects: SceneObject[] = base.objects.filter((obj) => {
-    // Remove all polyline paths (plane + planets)
-    if (obj.kind === "polyline" && obj.id.startsWith("path:")) {
-      return false;
-    }
-    return true;
-  });
-
-  return {
-    objects: filteredObjects,
-    lights: base.lights,
-  };
+  renderTopView(
+    topContext,
+    scene,
+    world,
+    topCameraId,
+    mainPlane,
+    DEFAULT_DRAW_MODE,
+    debugPlanes,
+    profiler
+  );
 }
 
 function handleProfilingToggle(oKeyPressed: boolean): void {
