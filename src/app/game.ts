@@ -1,12 +1,13 @@
 import { DEFAULT_DRAW_MODE } from "./config.js";
 import {
-  applyThrustToPlaneVelocity,
+  applyThrustToVelocity,
   ControlInput,
-  updatePhysics,
-  type FlightContext,
+  updateBodyOrientationFromInput,
   getSignedThrustPercent,
   ControlState,
   createInitialControlState,
+  ControlledBodyState,
+  PilotLookState,
 } from "./controls/controls.js";
 import {
   getProfilingEnabledFromEnv,
@@ -37,6 +38,7 @@ import type {
   SceneObject,
   Vec3,
   WorldState,
+  PilotView,
 } from "../world/types.js";
 import { vec } from "../world/vec3.js";
 import { renderView } from "../render/projection/viewRenderer.js";
@@ -164,6 +166,40 @@ function stepSimulation(
 }
 
 /**
+ * Adapt the main plane and its pilot view into the data structures
+ * used by the controls module.
+ */
+function makeControlledBodyState(plane: Plane): ControlledBodyState {
+  return {
+    frame: plane.frame,
+    velocity: plane.velocity,
+  };
+}
+
+function makePilotLookState(pilotView: PilotView): PilotLookState {
+  return {
+    azimuth: pilotView.azimuth,
+    elevation: pilotView.elevation,
+  };
+}
+
+function writeBackControlledBodyState(
+  plane: Plane,
+  body: ControlledBodyState
+): void {
+  plane.frame = body.frame;
+  plane.velocity = body.velocity;
+}
+
+function writeBackPilotLookState(
+  pilotView: PilotView,
+  look: PilotLookState
+): void {
+  pilotView.azimuth = look.azimuth;
+  pilotView.elevation = look.elevation;
+}
+
+/**
  * Advance physical simulation only (orientation, forces, gravity).
  */
 function stepPhysics(
@@ -185,18 +221,31 @@ function stepPhysics(
 
 /**
  * Handles control-input-based orientation updates for the controlled plane.
- * Also updates the persistent control state.
+ * Also updates the persistent control state and pilot view look state.
  */
 function updatePlaneOrientationFromControls(
   dtSeconds: number,
   input: ControlInput
 ): void {
-  const flightCtx: FlightContext = {
-    world,
-    controlledPlaneId: mainPlaneId,
-    pilotViewId: mainPilotViewId,
-  };
-  updatePhysics(dtSeconds, input, controlState, flightCtx);
+  const plane = getPlaneById(world, mainPlaneId);
+  const pilotView = world.pilotViews.find((p) => p.id === mainPilotViewId);
+  if (!pilotView) {
+    throw new Error(`Pilot view not found: ${mainPilotViewId}`);
+  }
+
+  const bodyState = makeControlledBodyState(plane);
+  const lookState = makePilotLookState(pilotView);
+
+  updateBodyOrientationFromInput(
+    dtSeconds,
+    input,
+    controlState,
+    bodyState,
+    lookState
+  );
+
+  writeBackControlledBodyState(plane, bodyState);
+  writeBackPilotLookState(pilotView, lookState);
 }
 
 /**
@@ -215,13 +264,16 @@ function integrateForcesAndGravity(
   const controlledPlane = getPlaneById(world, mainPlaneId);
 
   const planeBody = gravityState.bodies[gravityState.mainPlaneBodyIndex];
-  applyThrustToPlaneVelocity(
-    gravityDt,
-    input,
-    controlState,
-    planeBody.velocity,
-    controlledPlane
-  );
+
+  // Adapt to ControlledBodyState view for thrust application.
+  const bodyState: ControlledBodyState = {
+    frame: controlledPlane.frame,
+    velocity: planeBody.velocity,
+  };
+
+  applyThrustToVelocity(gravityDt, input, controlState, bodyState);
+
+  planeBody.velocity = bodyState.velocity;
 
   applyGravity(gravityDt, world, gravityState);
 }

@@ -5,8 +5,7 @@ import {
   rotSpeedYaw,
 } from "./controlsConfig.js";
 import { rotateFrameAroundAxis } from "../../world/localFrame.js";
-import type { LocalFrame, Plane, Vec3, WorldState } from "../../world/types.js";
-import { getPlaneById } from "../../world/worldLookup.js";
+import type { LocalFrame, Vec3 } from "../../world/types.js";
 import { vec } from "../../world/vec3.js";
 
 // Max thrust acceleration in m/s^2 at 100% thrust
@@ -49,10 +48,21 @@ export interface ControlState {
   thrustPercent: number;
 }
 
-export interface FlightContext {
-  world: WorldState;
-  controlledPlaneId: string;
-  pilotViewId: string;
+/**
+ * Pilot's view state relative to the controlled vehicle.
+ */
+export interface PilotLookState {
+  azimuth: number;
+  elevation: number;
+}
+
+/**
+ * Simple container for the controlled body's pose and velocity.
+ * Kept separate from the broader WorldState.
+ */
+export interface ControlledBodyState {
+  frame: LocalFrame;
+  velocity: Vec3;
 }
 
 /**
@@ -65,23 +75,23 @@ export function createInitialControlState(): ControlState {
   };
 }
 
-function pilotLookAround(
+/**
+ * Update pilot look angles in-place based on input.
+ */
+export function updatePilotLook(
   dtSeconds: number,
   input: ControlInput,
-  ctx: FlightContext
+  lookState: PilotLookState
 ): void {
-  const pilotView = ctx.world.pilotViews.find((p) => p.id === ctx.pilotViewId);
-  if (!pilotView) throw new Error(`Pilot view not found: ${ctx.pilotViewId}`);
-
   if (input.lookReset) {
-    pilotView.azimuth = 0;
-    pilotView.elevation = 0;
+    lookState.azimuth = 0;
+    lookState.elevation = 0;
   }
 
-  if (input.lookLeft) pilotView.azimuth += lookSpeed * dtSeconds;
-  if (input.lookRight) pilotView.azimuth -= lookSpeed * dtSeconds;
-  if (input.lookUp) pilotView.elevation += lookSpeed * dtSeconds;
-  if (input.lookDown) pilotView.elevation -= lookSpeed * dtSeconds;
+  if (input.lookLeft) lookState.azimuth += lookSpeed * dtSeconds;
+  if (input.lookRight) lookState.azimuth -= lookSpeed * dtSeconds;
+  if (input.lookUp) lookState.elevation += lookSpeed * dtSeconds;
+  if (input.lookDown) lookState.elevation -= lookSpeed * dtSeconds;
 }
 
 function rollFrame(
@@ -194,54 +204,54 @@ export function getSignedThrustPercent(
 }
 
 /**
- * Apply thrust acceleration to the plane's body velocity when burn/brake are
- * active. Acceleration magnitude is:
+ * Apply thrust acceleration to the controlled body's velocity when burn/brake
+ * are active. Acceleration magnitude is:
  *
  *   a = maxThrustAcceleration * thrustPercent
  *
  * where thrustPercent ∈ [-1, 1] and is chosen from discrete levels
  * depending on Space/B and numeric thrust keys.
  */
-export function applyThrustToPlaneVelocity(
+export function applyThrustToVelocity(
   dtSeconds: number,
   input: ControlInput,
   controlState: ControlState,
-  planeVelocity: Vec3,
-  plane: Plane
+  body: ControlledBodyState
 ): void {
   if (dtSeconds <= 0) return;
 
   const thrustPercent = getSignedThrustPercent(input, controlState);
   if (thrustPercent === 0) return;
 
-  const f = plane.frame.forward;
+  const f = body.frame.forward;
   const accelMagnitude = maxThrustAcceleration * thrustPercent;
 
   const dv = vec.scale(f, accelMagnitude * dtSeconds);
-  planeVelocity.x += dv.x;
-  planeVelocity.y += dv.y;
-  planeVelocity.z += dv.z;
+  body.velocity.x += dv.x;
+  body.velocity.y += dv.y;
+  body.velocity.z += dv.z;
 }
 
-// Top-level update for orientation & pilot view; does NOT move the plane
-// forward anymore. Position integration is handled by gravity/thrust integration.
-export function updatePhysics(
+/**
+ * Top-level update for orientation only; does NOT move the body forward.
+ * Position integration is handled by gravity/thrust integration.
+ */
+export function updateBodyOrientationFromInput(
   dtSeconds: number,
   input: ControlInput,
   controlState: ControlState,
-  ctx: FlightContext
+  body: ControlledBodyState,
+  lookState: PilotLookState
 ): void {
-  const plane = getPlaneById(ctx.world, ctx.controlledPlaneId);
-
   // Update thrust level before we use it anywhere
   updateThrustMagnitudeFromInput(input, controlState);
 
-  pilotLookAround(dtSeconds, input, ctx);
+  updatePilotLook(dtSeconds, input, lookState);
 
-  let frame = plane.frame;
+  let frame = body.frame;
   frame = rollFrame(frame, dtSeconds, input);
   frame = pitchFrame(frame, dtSeconds, input);
   frame = yawFrame(frame, dtSeconds, input);
 
-  plane.frame = frame; // orientation is now fully expressed by LocalFrame
+  body.frame = frame;
 }
