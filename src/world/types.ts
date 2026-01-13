@@ -1,86 +1,44 @@
-import { Mat3 } from "./mat3";
+import type {
+  CameraPose,
+  DomainScene,
+  DomainSceneObject,
+  DomainWorld,
+  LocalFrame as DomainLocalFrame,
+  Mesh as DomainMesh,
+  PlaneBody,
+  PointLight as DomainPointLight,
+  RGB as DomainRGB,
+  Vec3 as DomainVec3,
+} from "./domain.js";
 
-export interface Vec3 {
-  x: number;
-  y: number;
-  z: number;
-}
+export type Vec3 = DomainVec3;
+export type RGB = DomainRGB;
+export type Mesh = DomainMesh;
+export type LocalFrame = DomainLocalFrame;
+export type PointLight = DomainPointLight;
 
-export interface RGB {
-  r: number;
-  g: number;
-  b: number;
-}
+export {
+  Polar2D,
+  BodyId,
+  BodyState,
+  GravityBodyBinding,
+  GravityState,
+} from "./domain.js";
 
-export interface Polar2D {
-  angleRad: number;
-  radius: number;
-}
-
-export interface Mesh {
-  points: Vec3[];
-  faces: number[][];
-  faceNormals?: Vec3[];
-}
-
-export interface LocalFrame {
-  right: Vec3;
-  forward: Vec3;
-  up: Vec3;
-}
-
-export interface Plane {
-  id: string;
-  position: Vec3;
-  frame: LocalFrame;
+/**
+ * Adapter-level plane view used by app and rendering.
+ *
+ * This is a thin DTO around the domain PlaneBody.
+ */
+export interface Plane extends PlaneBody {
   speed: number;
-  velocity: Vec3;
 }
 
 /**
- * Logical planet body that participates in physics / gravity.
+ * Camera adapter type; identical to domain but kept separate so
+ * outer layers can evolve without affecting the core domain.
  */
-export interface PlanetBody {
-  id: string;
-  position: Vec3;
-  velocity: Vec3;
-}
-
-/**
- * Logical star body that participates in physics / gravity.
- */
-export interface StarBody {
-  id: string;
-  position: Vec3;
-  velocity: Vec3;
-}
-
-/**
- * Physical properties of a planet / star body.
- */
-export interface PlanetPhysics {
-  id: string;
-  physicalRadius: number; // meters
-  density: number; // kg/m^3
-  mass: number; // kg (derived from radius and density)
-}
-
-/**
- * Physical properties of a star body.
- */
-export interface StarPhysics {
-  id: string;
-  physicalRadius: number; // meters
-  density: number; // kg/m^3
-  mass: number; // kg
-  luminosity: number; // W or scaled units for lighting
-}
-
-export interface Camera {
-  id: string;
-  position: Vec3;
-  frame: LocalFrame;
-}
+export type Camera = CameraPose;
 
 export interface PilotView {
   id: string;
@@ -94,14 +52,8 @@ type SceneObjectKind = "airplane" | "planet" | "polyline" | "star";
 /**
  * Base properties common to all scene objects.
  */
-interface BaseSceneObject {
-  id: string;
+interface BaseSceneObject extends DomainSceneObject {
   kind: SceneObjectKind;
-  mesh: Mesh;
-  position: Vec3;
-  orientation: Mat3;
-  scale: number; // unit to world size
-  color: RGB;
   lineWidth: number;
   wireframeOnly: boolean;
   applyTransform: boolean;
@@ -164,6 +116,13 @@ export type SceneObject =
   | StarSceneObject
   | PolylineSceneObject;
 
+/**
+ * Adapter-level scene used by renderers.
+ */
+export interface Scene extends DomainScene {
+  objects: SceneObject[];
+}
+
 // Renderer-side cache; may be attached to any SceneObject.
 export type SceneObjectWithCache = SceneObject & {
   __worldPointsCache?: Vec3[];
@@ -187,57 +146,14 @@ export interface Renderable {
   baseColor: RGB;
 }
 
-export interface PointLight {
-  position: Vec3;
-  /** Luminous power / intensity in arbitrary units (e.g. W or scaled W). */
-  intensity: number;
-}
-
-export interface Scene {
-  objects: SceneObject[];
-  // Array of point lights (e.g., stars). All lighting is derived from these.
-  lights: PointLight[];
-}
-
 export type DrawMode = "faces" | "lines";
 
-// Generalized world-state container for dynamic entities.
-export interface WorldState {
+/**
+ * Adapter-level world state used by the app and renderer.
+ *
+ * This is a thin wrapper around DomainWorld so that outer layers do
+ * not depend on the raw domain container directly.
+ */
+export interface WorldState extends DomainWorld {
   planes: Plane[];
-  cameras: Camera[];
-  planets: PlanetBody[];
-  planetPhysics: PlanetPhysics[];
-  stars: StarBody[];
-  starPhysics: StarPhysics[];
-}
-
-/**
- * A logical body participating in Newtonian gravity.
- * Could be a plane or a planet (or anything with mass).
- */
-export type BodyId = string;
-
-export interface BodyState {
-  id: BodyId;
-  velocity: Vec3;
-  mass: number;
-}
-
-export interface GravityBodyBinding {
-  id: BodyId;
-  kind: "plane" | "planet" | "star";
-  // Index within the corresponding world array, e.g. world.planes[planeIndex]
-  planeIndex?: number;
-  planetIndex?: number;
-  starIndex?: number;
-}
-
-/**
- * Container for all gravitational bodies.
- */
-export interface GravityState {
-  bodies: BodyState[];
-  bindings: GravityBodyBinding[];
-  // Index of the controlled plane's BodyState in `bodies`
-  mainPlaneBodyIndex: number;
 }

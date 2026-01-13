@@ -4,11 +4,11 @@ import type {
   GravityBodyBinding,
   GravityState,
   Vec3,
-  WorldState,
-} from "../../world/types.js";
+  DomainWorld,
+} from "../../world/domain.js";
 import { vec } from "../../world/vec3.js";
 
-function buildGravityBindings(world: WorldState): GravityBodyBinding[] {
+function buildGravityBindings(world: DomainWorld): GravityBodyBinding[] {
   const bindings: GravityBodyBinding[] = [];
 
   // Planes
@@ -18,6 +18,8 @@ function buildGravityBindings(world: WorldState): GravityBodyBinding[] {
       id: plane.id,
       kind: "plane",
       planeIndex: i,
+      planetIndex: -1,
+      starIndex: -1,
     });
   }
 
@@ -27,7 +29,9 @@ function buildGravityBindings(world: WorldState): GravityBodyBinding[] {
     bindings.push({
       id: planet.id,
       kind: "planet",
+      planeIndex: -1,
       planetIndex: i,
+      starIndex: -1,
     });
   }
 
@@ -37,6 +41,8 @@ function buildGravityBindings(world: WorldState): GravityBodyBinding[] {
     bindings.push({
       id: star.id,
       kind: "star",
+      planeIndex: -1,
+      planetIndex: -1,
       starIndex: i,
     });
   }
@@ -45,37 +51,37 @@ function buildGravityBindings(world: WorldState): GravityBodyBinding[] {
 }
 
 function getPositionFromBinding(
-  world: WorldState,
+  world: DomainWorld,
   binding: GravityBodyBinding
 ): Vec3 {
   switch (binding.kind) {
     case "plane":
-      return world.planes[binding.planeIndex!].position;
+      return world.planes[binding.planeIndex].position;
     case "planet":
-      return world.planets[binding.planetIndex!].position;
+      return world.planets[binding.planetIndex].position;
     case "star":
-      return world.stars[binding.starIndex!].position;
+      return world.stars[binding.starIndex].position;
   }
 }
 
 function setPositionFromBinding(
-  world: WorldState,
+  world: DomainWorld,
   binding: GravityBodyBinding,
   pos: Vec3
 ): void {
   switch (binding.kind) {
     case "plane": {
-      const p = world.planes[binding.planeIndex!];
+      const p = world.planes[binding.planeIndex];
       p.position = pos;
       break;
     }
     case "planet": {
-      const b = world.planets[binding.planetIndex!];
+      const b = world.planets[binding.planetIndex];
       b.position = pos;
       break;
     }
     case "star": {
-      const b = world.stars[binding.starIndex!];
+      const b = world.stars[binding.starIndex];
       b.position = pos;
       break;
     }
@@ -87,7 +93,7 @@ function setPositionFromBinding(
  * Should be called once at setup time, or if entities are added/removed.
  */
 export function buildInitialGravityState(
-  world: WorldState,
+  world: DomainWorld,
   mainPlaneId: string
 ): GravityState {
   const bindings = buildGravityBindings(world);
@@ -209,7 +215,7 @@ function integrateBodyPositions(
   bodies: BodyState[],
   positions: Vec3[],
   dtSeconds: number,
-  world: WorldState,
+  world: DomainWorld,
   bindings: GravityBodyBinding[]
 ): void {
   const n = bodies.length;
@@ -231,14 +237,13 @@ function integrateBodyPositions(
  */
 function syncBodyVelocitiesToPlanes(
   bodies: BodyState[],
-  world: WorldState
+  world: DomainWorld
 ): void {
   for (const plane of world.planes) {
     const body = bodies.find((b) => b.id === plane.id);
     if (!body) continue;
     const velocity = body.velocity;
     plane.velocity = { ...velocity };
-    plane.speed = Math.hypot(velocity.x, velocity.y, velocity.z);
   }
 }
 
@@ -249,11 +254,11 @@ function syncBodyVelocitiesToPlanes(
  *  - Snapshot world positions into a local array
  *  - Run pure gravity integration (accelerations & velocity updates)
  *  - Integrate positions back into world via adapters
- *  - Sync plane velocity/speed from BodyState
+ *  - Sync plane velocity from BodyState
  */
 export function applyGravity(
   dtSeconds: number,
-  world: WorldState,
+  world: DomainWorld,
   gravity: GravityState
 ): void {
   if (dtSeconds <= 0) return;

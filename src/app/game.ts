@@ -31,6 +31,7 @@ import type {
   Vec3,
   WorldState,
 } from "../world/types.js";
+import type { DomainWorld } from "../world/domain.js";
 import { vec } from "../world/vec3.js";
 import { getCameraById, getPlaneById } from "../world/worldLookup.js";
 import {
@@ -89,7 +90,9 @@ export function startGame(
   planetPathMappings = x.planetPathMappings;
 
   gravityEngine = engine;
-  gravityState = gravityEngine.buildInitialState(world, mainPlaneId);
+  // Pass only the domain portion into gravity
+  const domainWorld: DomainWorld = world;
+  gravityState = gravityEngine.buildInitialState(domainWorld, mainPlaneId);
 
   controlState = createInitialControlState();
 
@@ -252,7 +255,8 @@ function integrateForcesAndGravity(
 
   planeBody.velocity = bodyState.velocity;
 
-  gravityEngine.step(gravityDt, world, gravityState);
+  const domainWorld: DomainWorld = world;
+  gravityEngine.step(gravityDt, domainWorld, gravityState);
 }
 
 /**

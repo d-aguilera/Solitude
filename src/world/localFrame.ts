@@ -1,5 +1,5 @@
+import type { LocalFrame, Vec3 } from "./domain.js";
 import { Mat3, mat3 } from "./mat3.js";
-import type { LocalFrame, Vec3 } from "./types.js";
 import { vec } from "./vec3.js";
 
 export function makeLocalFrameFromUp(up: Vec3): LocalFrame {

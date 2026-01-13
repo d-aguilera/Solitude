@@ -1,4 +1,4 @@
-import type { Vec3 } from "./types.js";
+import type { Vec3 } from "./domain.js";
 import { vec } from "./vec3.js";
 
 export type Mat3 = [

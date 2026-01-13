@@ -17,19 +17,17 @@ import type {
   LocalFrame,
   Mesh,
   Plane,
-  PlanetPhysics,
   PlanetSceneObject,
   PolylineSceneObject,
   RGB,
   Scene,
   SceneObject,
   StarSceneObject,
-  StarBody,
-  StarPhysics,
   Vec3,
   WorldState,
 } from "./types.js";
 import { vec } from "./vec3.js";
+import { PlanetPhysics, StarBody, StarPhysics } from "./domain.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
