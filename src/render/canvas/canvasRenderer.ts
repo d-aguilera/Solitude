@@ -20,6 +20,7 @@ import type { ViewRenderer } from "../projection/viewRendererPort.js";
  *
  * This adapter owns all knowledge about concrete CanvasRenderingContext2D
  * instances and how pilot/top views + HUD are drawn into them.
+ * The application/game layer does not know about these contexts.
  */
 export class CanvasViewRenderer implements ViewRenderer {
   private readonly pilotContext: CanvasRenderingContext2D;
@@ -127,6 +128,7 @@ export class CanvasViewRenderer implements ViewRenderer {
  *
  * This adapter owns its internal ViewRenderer and is responsible
  * for composing pilot/top views and HUD into the associated canvases.
+ * It is constructed by an outer composition root.
  */
 export class CanvasRenderer implements Renderer {
   private readonly viewRenderer: CanvasViewRenderer;

@@ -1,45 +1,23 @@
 import { startGame } from "./game.js";
-import { defaultProfiler } from "../profiling/profilingFacade.js";
-import { init as initResizeHandler } from "../render/canvas/canvasLayout.js";
-import { CanvasRenderer } from "../render/canvas/canvasRenderer.js";
-import { NewtonianGravityEngine } from "../world/physics/newtonianGravityEngine.js";
+import type { Renderer } from "./rendererPort.js";
+import type { GravityEngine } from "../world/physics/gravityPort.js";
+import type { Profiler } from "../world/types.js";
 
-const container = document.querySelector(".canvas-container");
-if (!container) {
-  throw new Error("Required '.canvas-container' not found in document");
+/**
+ * App-level entry point.
+ *
+ * This function assumes that:
+ *  - A concrete Renderer has already been constructed by an outer layer.
+ *  - A concrete GravityEngine has already been constructed by an outer layer.
+ *  - A Profiler implementation has been chosen by an outer layer.
+ *
+ * It delegates entirely to the game loop without any knowledge of
+ * DOM, canvas, or other infrastructure details.
+ */
+export function runApp(
+  renderer: Renderer,
+  gravityEngine: GravityEngine,
+  profiler: Profiler
+): void {
+  startGame(renderer, gravityEngine, profiler);
 }
-
-const pilotCanvas = document.getElementById(
-  "pilotViewCanvas"
-) as HTMLCanvasElement | null;
-
-if (!pilotCanvas) {
-  throw new Error("Required 'pilotViewCanvas' not found in document");
-}
-
-const pilotContext = pilotCanvas.getContext("2d");
-if (!pilotContext) {
-  throw new Error("Failed to get 2D context for pilot view canvas");
-}
-
-const topCanvas = document.getElementById(
-  "topViewCanvas"
-) as HTMLCanvasElement | null;
-
-if (!topCanvas) {
-  throw new Error("Required 'topViewCanvas' not found in document");
-}
-
-const topContext = topCanvas.getContext("2d");
-if (!topContext) {
-  throw new Error("Failed to get 2D context for top view canvas");
-}
-
-// Concrete Canvas2D adapter implementing the Renderer port.
-const renderer = new CanvasRenderer(pilotContext, topContext);
-
-// Concrete gravity engine implementing the GravityEngine port.
-const gravityEngine = new NewtonianGravityEngine();
-
-initResizeHandler(container, pilotCanvas, topCanvas);
-startGame(renderer, gravityEngine, defaultProfiler);
