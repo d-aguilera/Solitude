@@ -1,5 +1,5 @@
 import { NEWTON_G } from "../physics/gravityConfig.js";
-import type { Polar2D, RGB, Vec3 } from "../../world/types.js";
+import type { Polar2D, RGB, Vec3 } from "../../world/domain.js";
 import { vec } from "../../world/vec3.js";
 
 // Export AU so other modules (e.g., HUD) can use it

@@ -3,19 +3,13 @@ import type {
   DomainScene,
   DomainSceneObject,
   DomainWorld,
-  LocalFrame as DomainLocalFrame,
-  Mesh as DomainMesh,
+  Mesh,
   PlaneBody,
-  PointLight as DomainPointLight,
-  RGB as DomainRGB,
-  Vec3 as DomainVec3,
+  RGB,
+  Vec3,
 } from "./domain.js";
 
-export type Vec3 = DomainVec3;
-export type RGB = DomainRGB;
-export type Mesh = DomainMesh;
-export type LocalFrame = DomainLocalFrame;
-export type PointLight = DomainPointLight;
+export type { Vec3, RGB, Mesh, LocalFrame, PointLight } from "./domain.js";
 
 export {
   Polar2D,
@@ -151,8 +145,8 @@ export type DrawMode = "faces" | "lines";
 /**
  * Adapter-level world state used by the app and renderer.
  *
- * This is a thin wrapper around DomainWorld so that outer layers do
- * not depend on the raw domain container directly.
+ * This wraps the DomainWorld so that outer layers do not depend on
+ * the raw domain container directly.
  */
 export interface WorldState extends DomainWorld {
   planes: Plane[];

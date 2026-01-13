@@ -1,4 +1,4 @@
-import type { Mesh, Vec3 } from "../../world/types.js";
+import type { Mesh, Vec3 } from "../../world/domain.js";
 import { vec } from "../../world/vec3.js";
 
 export const airplaneModel: Mesh = {
