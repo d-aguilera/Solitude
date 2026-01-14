@@ -33,7 +33,7 @@ export interface LocalFrame {
  * Domain-level airplane/ship body.
  *
  * This is the simulation model; it does not know about rendering or
- * concrete adapter concerns like Canvas, DOM, etc.
+ * adapter concerns like Canvas, DOM, etc.
  */
 export interface PlaneBody {
   id: string;

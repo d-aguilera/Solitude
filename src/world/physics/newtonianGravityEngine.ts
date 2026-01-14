@@ -12,17 +12,21 @@ import { vec } from "../vec3.js";
 /**
  * Concrete GravityEngine using a Newtonian N-body implementation.
  *
- * This file now contains both:
- *  - The engine adapter (implements GravityEngine)
- *  - The internal Newtonian integration helpers
+ * This module is kept domain-only: it operates on DomainWorld and
+ * GravityState and does not depend on any adapter-side types or
+ * rendering concerns.
  */
 export class NewtonianGravityEngine implements GravityEngine {
   buildInitialState(world: DomainWorld, mainPlaneId: string): GravityState {
     return buildInitialGravityState(world, mainPlaneId);
   }
 
-  step(dtSeconds: number, world: DomainWorld, state: GravityState): void {
-    applyGravity(dtSeconds, world, state);
+  step(
+    dtSeconds: number,
+    world: DomainWorld,
+    state: GravityState
+  ): GravityState {
+    return applyGravity(dtSeconds, world, state);
   }
 }
 
@@ -216,14 +220,23 @@ function integrateBodyVelocities(
   bodies: BodyState[],
   accelerations: Vec3[],
   dtSeconds: number
-): void {
+): BodyState[] {
   const n = bodies.length;
+  const nextBodies: BodyState[] = new Array(n);
+
   for (let i = 0; i < n; i++) {
-    // v = v + a * dt
     const dv = vec.scale(accelerations[i], dtSeconds);
     const body = bodies[i];
-    body.velocity = vec.add(body.velocity, dv);
+    const velocity = vec.add(body.velocity, dv);
+
+    nextBodies[i] = {
+      id: body.id,
+      mass: body.mass,
+      velocity,
+    };
   }
+
+  return nextBodies;
 }
 
 /**
@@ -231,7 +244,7 @@ function integrateBodyVelocities(
  * into world via the adapter. The integration math itself is
  * independent of how positions are stored.
  */
-function integrateBodyPositions(
+function integrateBodyPositionsIntoWorld(
   bodies: BodyState[],
   positions: Vec3[],
   dtSeconds: number,
@@ -244,63 +257,51 @@ function integrateBodyPositions(
     const p = positions[i];
     const v = b.velocity;
 
-    // p_new = p + v * dt
     const newPos: Vec3 = vec.add(p, vec.scale(v, dtSeconds));
     setPositionFromBinding(world, bindings[i], newPos);
   }
 }
 
 /**
- * Adapter: copy velocities from BodyState back to the plane objects so
- * renderers/HUD can use them. This keeps "plane.speed" in sync with the
- * underlying physics velocity magnitude.
- */
-function syncBodyVelocitiesToPlanes(
-  bodies: BodyState[],
-  world: DomainWorld
-): void {
-  for (const plane of world.planes) {
-    const body = bodies.find((b) => b.id === plane.id);
-    if (!body) continue;
-    const velocity = body.velocity;
-    plane.velocity = { ...velocity };
-  }
-}
-
-/**
  * Orchestrates gravitational integration for one timestep.
  *
- * Responsibilities kept here:
+ * This stays purely in the domain layer:
  *  - Snapshot world positions into a local array
  *  - Run pure gravity integration (accelerations & velocity updates)
- *  - Integrate positions back into world via adapters
- *  - Sync plane velocity from BodyState
+ *  - Return a new GravityState with updated body velocities
+ *  - Position updates are applied via bindings inside this module
  */
 export function applyGravity(
   dtSeconds: number,
   world: DomainWorld,
   gravity: GravityState
-): void {
-  if (dtSeconds <= 0) return;
+): GravityState {
+  if (dtSeconds <= 0) return gravity;
 
   const bodies = gravity.bodies;
   const bindings = gravity.bindings;
   const n = bodies.length;
-  if (n === 0) return;
+  if (n === 0) return gravity;
 
-  // Snapshot current positions from bindings
   const positions: Vec3[] = new Array(n);
   for (let i = 0; i < n; i++) {
     positions[i] = getPositionFromBinding(world, bindings[i]);
   }
 
-  // 1) Gravity
   const accelerations = computeGravityAccelerations(bodies, positions);
-  integrateBodyVelocities(bodies, accelerations, dtSeconds);
+  const nextBodies = integrateBodyVelocities(bodies, accelerations, dtSeconds);
 
-  // 2) Integrate positions back into world via bindings
-  integrateBodyPositions(bodies, positions, dtSeconds, world, bindings);
+  integrateBodyPositionsIntoWorld(
+    nextBodies,
+    positions,
+    dtSeconds,
+    world,
+    bindings
+  );
 
-  // 3) Sync body velocities back to planes
-  syncBodyVelocitiesToPlanes(bodies, world);
+  return {
+    bodies: nextBodies,
+    bindings,
+    mainPlaneBodyIndex: gravity.mainPlaneBodyIndex,
+  };
 }

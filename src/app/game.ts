@@ -90,7 +90,6 @@ export function startGame(
   planetPathMappings = x.planetPathMappings;
 
   gravityEngine = engine;
-  // Pass only the domain portion into gravity
   const domainWorld: DomainWorld = world;
   gravityState = gravityEngine.buildInitialState(domainWorld, mainPlaneId);
 
@@ -117,16 +116,13 @@ function renderFrame(
   setPausedForProfiling(paused);
   profileCheck();
 
-  // Compute current signed thrust percent from input + persistent control state
   const thrustPercent = getSignedThrustPercent(input, controlState);
 
   profiler.run("GAME", "total", () => {
     updateFPS(nowMs);
 
-    // 1) Advance simulation / physics
     stepSimulation(dtSeconds, input, profiler);
 
-    // 2) Render all visual outputs via the Renderer abstraction
     const mainPlane = getPlaneById(world, mainPlaneId);
     const debugPlanes = world.planes;
 
@@ -164,7 +160,6 @@ function stepSimulation(
 ): void {
   stepPhysics(dtSeconds, input, profiler);
 
-  // Keep all renderer-facing scene state aligned with WorldState.
   syncPlanesToSceneObjects(world, scene);
   syncPlanetsToSceneObjects(world, scene);
   syncStarsToSceneObjects(world, scene);
@@ -202,13 +197,8 @@ function stepPhysics(
   profiler: Profiler
 ): void {
   profiler.run("GAME", "physics", () => {
-    // 1) Controls / orientation only (no forward movement here).
     updatePlaneOrientationFromControls(dtSeconds, input);
-
-    // 2) Camera offset adjustments
     updatePilotCameraOffset(dtSeconds, input);
-
-    // 3) Gravity + thrust integration.
     integrateForcesAndGravity(dtSeconds, input);
   });
 }
@@ -245,7 +235,6 @@ function integrateForcesAndGravity(
   const controlledPlane = getPlaneById(world, mainPlaneId);
   const planeBody = gravityState.bodies[gravityState.mainPlaneBodyIndex];
 
-  // Adapt to ControlledBodyState view for thrust application.
   const bodyState: ControlledBodyState = {
     frame: controlledPlane.frame,
     velocity: planeBody.velocity,
@@ -256,12 +245,11 @@ function integrateForcesAndGravity(
   planeBody.velocity = bodyState.velocity;
 
   const domainWorld: DomainWorld = world;
-  gravityEngine.step(gravityDt, domainWorld, gravityState);
+  gravityState = gravityEngine.step(gravityDt, domainWorld, gravityState);
 }
 
 /**
  * Sample and update trajectory polylines for the plane and planets.
- * Separated from core physics integration for better cohesion and testability.
  */
 function updateTrajectories(dtSeconds: number): void {
   const sampleInterval = 1.0; // seconds
@@ -339,14 +327,14 @@ function updateCameras(): void {
   setCameraRelativeToPlane(
     pilotCameraId,
     mainPlane,
-    pilotCameraLocalOffset, // dynamic local offset
+    pilotCameraLocalOffset,
     frameFromPlaneForPilot
   );
 
   setCameraRelativeToPlane(
     topCameraId,
     mainPlane,
-    { x: 0, y: 0, z: 50 }, // (right, forward, up),
+    { x: 0, y: 0, z: 50 },
     frameFromPlaneForTop
   );
 }
@@ -355,8 +343,6 @@ function frameFromPlaneForPilot(plane: Plane): LocalFrame {
   const base = plane.frame;
   const { azimuth, elevation } = controlState.look;
 
-  // Apply yaw (azimuth) around the plane's local up axis,
-  // then pitch (elevation) around the resulting local right axis.
   let frame: LocalFrame = {
     right: vec.clone(base.right),
     forward: vec.clone(base.forward),
@@ -377,8 +363,8 @@ function frameFromPlaneForTop(plane: Plane): LocalFrame {
   const { right, forward, up } = plane.frame;
   return {
     right: vec.clone(right),
-    forward: vec.scale(up, -1), // look down toward the plane
-    up: vec.clone(forward), // plane's nose is "up" on screen
+    forward: vec.scale(up, -1),
+    up: vec.clone(forward),
   };
 }
 
@@ -422,7 +408,6 @@ function appendPlanetTrajectories(): void {
 function updatePilotCameraOffset(dtSeconds: number, input: ControlInput): void {
   if (dtSeconds <= 0) return;
 
-  // Step size in local units per second
   const moveSpeed = 0.5;
 
   let dx = 0;
