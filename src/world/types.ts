@@ -9,16 +9,6 @@ import type {
   Vec3,
 } from "./domain.js";
 
-export type { Vec3, RGB, Mesh, LocalFrame, PointLight } from "./domain.js";
-
-export {
-  Polar2D,
-  BodyId,
-  BodyState,
-  GravityBodyBinding,
-  GravityState,
-} from "./domain.js";
-
 /**
  * Adapter-level plane view used by app and rendering.
  *
@@ -124,13 +114,6 @@ export type SceneObjectWithCache = SceneObject & {
   __cameraCacheFrameId?: number;
   __worldFaceNormalsCache?: Vec3[];
   __faceNormalsFrameId?: number;
-};
-
-// Small adapter that lets callers plug in any profiling / tracing / instrumentation
-// without direct coupling to a concrete instrumentation API.
-export type Profiler = {
-  run: <T>(group: string, name: string, fn: () => T) => T;
-  increment: (group: string, name: string, count?: number) => void;
 };
 
 export interface Renderable {

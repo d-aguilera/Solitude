@@ -5,8 +5,9 @@ import {
   projectCameraPointToNdc,
   NEAR,
 } from "../projection/projection.js";
-import type { Camera, DrawMode, Vec3, Plane } from "../../world/types.js";
+import type { Camera, DrawMode, Plane } from "../../world/types.js";
 import type { View, ViewDebugOverlay } from "./viewTypes.js";
+import { Vec3 } from "../../world/domain.js";
 
 function makeBaseView(
   camera: Camera,

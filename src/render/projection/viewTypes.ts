@@ -1,5 +1,6 @@
 import type { NdcPoint } from "../projection/projection.js";
-import type { LocalFrame, Vec3, DrawMode, Scene } from "../../world/types.js";
+import type { DrawMode, Scene } from "../../world/types.js";
+import { LocalFrame, Vec3 } from "../../world/domain.js";
 
 /**
  * Core configuration for rendering a scene from a particular viewpoint.

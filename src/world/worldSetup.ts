@@ -17,7 +17,6 @@ import type {
   Plane,
   PlanetSceneObject,
   PolylineSceneObject,
-  RGB,
   Scene,
   SceneObject,
   StarSceneObject,
@@ -30,6 +29,7 @@ import type {
   PlanetPhysics,
   StarBody,
   StarPhysics,
+  RGB,
 } from "./domain.js";
 import { vec } from "./vec3.js";
 

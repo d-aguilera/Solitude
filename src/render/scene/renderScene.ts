@@ -6,13 +6,9 @@ import type { ScreenPoint } from "../projection/projection.js";
 import { projectCameraPoint, NEAR } from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
 import { buildShadedFaces, getCameraPointsForObject } from "./shadedFaces.js";
-import type {
-  PointLight,
-  Profiler,
-  SceneObject,
-  Vec3,
-} from "../../world/types.js";
+import type { SceneObject } from "../../world/types.js";
 import type { View } from "../projection/viewTypes.js";
+import { LocalFrame, PointLight, Profiler, Vec3 } from "../../world/domain.js";
 
 interface DrawOptions {
   objects: SceneObject[];
@@ -98,7 +94,7 @@ function drawMeshPolylinesCameraSpace(
   context: CanvasRenderingContext2D,
   objects: SceneObject[],
   cameraPos: Vec3,
-  cameraFrame: import("../../world/types.js").LocalFrame,
+  cameraFrame: LocalFrame,
   canvasWidth: number,
   canvasHeight: number,
   frameId: number

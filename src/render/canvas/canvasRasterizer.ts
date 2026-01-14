@@ -1,4 +1,4 @@
-import { RGB } from "../../world/types.js";
+import { RGB } from "../../world/domain.js";
 import type { ScreenPoint } from "../projection/projection.js";
 import type { FaceEntry } from "../scene/shadedFaces.js";
 

@@ -1,9 +1,9 @@
+import { Vec3 } from "../../world/domain.js";
 import { Mat3 } from "../../world/mat3.js";
 import type {
   Renderable,
   SceneObject,
   SceneObjectWithCache,
-  Vec3,
 } from "../../world/types.js";
 
 /**

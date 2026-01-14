@@ -1,6 +1,6 @@
 import { getFocalLengths } from "../../app/config.js";
+import { LocalFrame, Vec3 } from "../../world/domain.js";
 import { mat3FromLocalFrame } from "../../world/localFrame.js";
-import type { LocalFrame, Vec3 } from "../../world/types.js";
 import { mat3 } from "../../world/mat3.js";
 import { vec } from "../../world/vec3.js";
 

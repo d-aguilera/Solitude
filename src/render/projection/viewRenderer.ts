@@ -1,15 +1,10 @@
 import { clear, draw } from "../scene/renderScene.js";
-import type {
-  Scene,
-  Profiler,
-  WorldState,
-  Plane,
-  Vec3,
-} from "../../world/types.js";
+import type { Scene, WorldState, Plane } from "../../world/types.js";
 import type { View, ViewDebugOverlay } from "./viewTypes.js";
 import { buildPilotViewConfig, buildTopViewConfig } from "./viewSetup.js";
 import { getCameraById } from "../../world/worldLookup.js";
 import type { DrawMode, SceneObject } from "../../world/types.js";
+import { Profiler, Vec3 } from "../../world/domain.js";
 
 let viewFrameCounter = 0;
 

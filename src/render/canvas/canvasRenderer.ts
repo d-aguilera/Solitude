@@ -1,12 +1,5 @@
 import type { Renderer } from "../../app/rendererPort.js";
-import type {
-  DrawMode,
-  Plane,
-  Profiler,
-  Scene,
-  Vec3,
-  WorldState,
-} from "../../world/types.js";
+import type { DrawMode, Plane, Scene, WorldState } from "../../world/types.js";
 import {
   renderPilotView as renderPilotViewImpl,
   renderTopView as renderTopViewImpl,
@@ -14,6 +7,7 @@ import {
 import { renderHUD } from "../../app/hud.js";
 import { isProfilingEnabled } from "../../profiling/profilingFacade.js";
 import type { ViewRenderer } from "../projection/viewRendererPort.js";
+import { Profiler, Vec3 } from "../../world/domain.js";
 
 /**
  * Canvas2D implementation of the ViewRenderer abstraction.

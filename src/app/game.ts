@@ -22,16 +22,14 @@ import {
   setPausedForProfiling,
   setProfilingEnabled,
 } from "../profiling/profilingFacade.js";
+import type { Plane, Scene, WorldState } from "../world/types.js";
 import type {
+  DomainWorld,
   GravityState,
   LocalFrame,
-  Plane,
   Profiler,
-  Scene,
   Vec3,
-  WorldState,
-} from "../world/types.js";
-import type { DomainWorld } from "../world/domain.js";
+} from "../world/domain.js";
 import { vec } from "../world/vec3.js";
 import { getCameraById, getPlaneById } from "../world/worldLookup.js";
 import {
@@ -76,6 +74,19 @@ let controlState: ControlState = createInitialControlState();
  * kicks off the main animation loop, delegating all rendering to
  * the provided Renderer abstraction.
  */
+function toDomainWorld(world: WorldState): DomainWorld {
+  // Explicit adapter→domain projection so that gravity only sees
+  // domain-level entities and not adapter-specific extensions.
+  return {
+    planes: world.planes,
+    cameras: world.cameras,
+    planets: world.planets,
+    planetPhysics: world.planetPhysics,
+    stars: world.stars,
+    starPhysics: world.starPhysics,
+  };
+}
+
 export function startGame(
   renderer: Renderer,
   engine: GravityEngine,
@@ -90,7 +101,7 @@ export function startGame(
   planetPathMappings = x.planetPathMappings;
 
   gravityEngine = engine;
-  const domainWorld: DomainWorld = world;
+  const domainWorld = toDomainWorld(world);
   gravityState = gravityEngine.buildInitialState(domainWorld, mainPlaneId);
 
   controlState = createInitialControlState();

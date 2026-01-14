@@ -1,11 +1,5 @@
-import type {
-  DrawMode,
-  Plane,
-  Profiler,
-  Scene,
-  Vec3,
-  WorldState,
-} from "../world/types.js";
+import { Profiler, Vec3 } from "../world/domain.js";
+import type { DrawMode, Plane, Scene, WorldState } from "../world/types.js";
 
 /**
  * Top‑level rendering abstraction for the app layer.

@@ -5,8 +5,8 @@ import {
   rotSpeedYaw,
 } from "./controlsConfig.js";
 import { rotateFrameAroundAxis } from "../../world/localFrame.js";
-import type { LocalFrame, Vec3 } from "../../world/types.js";
 import { vec } from "../../world/vec3.js";
+import { LocalFrame, Vec3 } from "../../world/domain.js";
 
 // Max thrust acceleration in m/s^2 at 100% thrust
 const maxThrustAcceleration = 1_000_000; // ~ 100_000 G

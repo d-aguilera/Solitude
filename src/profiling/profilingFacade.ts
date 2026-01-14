@@ -1,3 +1,4 @@
+import { Profiler } from "../world/domain.js";
 import {
   add as realAdd,
   check as realCheck,
@@ -7,7 +8,6 @@ import {
   setProfilingEnabled as realSetProfilingEnabled,
   setPausedForProfiling as realSetPausedForProfiling,
 } from "./profiling.js";
-import type { Profiler } from "../world/types.js";
 
 /**
  * Wrapper that decouples callers from the concrete profiling implementation.

@@ -1,4 +1,5 @@
-import type { Plane, Scene, Vec3 } from "../../world/types.js";
+import { Vec3 } from "../../world/domain.js";
+import type { Plane, Scene } from "../../world/types.js";
 import { vec } from "../../world/vec3.js";
 import type { NdcPoint } from "../projection/projection.js";
 import { ndcToScreen } from "../projection/projection.js";
