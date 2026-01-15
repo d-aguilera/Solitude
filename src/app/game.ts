@@ -7,7 +7,7 @@ import {
   ControlState,
   createInitialControlState,
   ControlledBodyState,
-} from "./controls/controls.js";
+} from "./controls.js";
 import {
   getProfilingEnabledFromEnv,
   setProfilingEnabledInEnv,
