@@ -2,11 +2,9 @@ import { NEWTON_G } from "../physics/gravityConfig.js";
 import type { Polar2D, RGB, Vec3 } from "../../world/domain.js";
 import { vec } from "../../world/vec3.js";
 
-// Export AU so other modules (e.g., HUD) can use it
-export const AU = 1.495978707e11; // m
-
+const AU = 1.495978707e11; // m
 const SUN_LUMINOSITY = 3.828e26; // W
-const EARTH_ORBIT_RADIUS = AU; // 1.4959e11 m
+const EARTH_ORBIT_RADIUS = AU;
 
 // E = I / (4π r²)
 export const E_SUN_AT_EARTH =
@@ -93,8 +91,7 @@ export function buildDefaultSolarSystemConfigs(): PlanetConfig[] {
     return Math.sqrt((NEWTON_G * M_sun) / r);
   }
 
-  // Approximate bolometric luminosities (W), scaled down for gameplay / rendering.
-  // Real Sun luminosity is ~3.828e26 W, but these values can be re‑scaled by the renderer.
+  // Bolometric luminosities (W)
   const luminosities = {
     sun: 3.828e26,
   };

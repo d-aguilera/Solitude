@@ -1,5 +1,14 @@
-import { Mesh, RGB, Vec3 } from "../../world/domain";
-import { SceneObject } from "../../world/types";
+import { Mesh, PointLight, Profiler, RGB, Vec3 } from "../../world/domain.js";
+import { SceneObject } from "../../world/types.js";
+import { View } from "../projection/viewTypes.js";
+
+export interface DrawOptions {
+  objects: SceneObject[];
+  view: View;
+  lights: PointLight[];
+  profiler: Profiler;
+  frameId: number;
+}
 
 export interface Renderable {
   mesh: Mesh;

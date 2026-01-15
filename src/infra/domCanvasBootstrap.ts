@@ -1,5 +1,5 @@
-import { CanvasRenderer } from "../render/canvas/canvasRenderer.js";
-import { NewtonianGravityEngine } from "../world/physics/newtonianGravityEngine.js";
+import { CanvasRenderer } from "../render/canvas/CanvasRenderer.js";
+import { NewtonianGravityEngine } from "../world/physics/NewtonianGravityEngine.js";
 import { defaultProfiler } from "../profiling/profilingFacade.js";
 import { runApp } from "../app/main.js";
 
@@ -25,11 +25,6 @@ export function bootstrapDomApp(): void {
     throw new Error("Required 'pilotViewCanvas' not found in document");
   }
 
-  const pilotContext = pilotCanvas.getContext("2d");
-  if (!pilotContext) {
-    throw new Error("Failed to get 2D context for pilot view canvas");
-  }
-
   const topCanvas = document.getElementById(
     "topViewCanvas"
   ) as HTMLCanvasElement | null;
@@ -37,12 +32,17 @@ export function bootstrapDomApp(): void {
     throw new Error("Required 'topViewCanvas' not found in document");
   }
 
+  const pilotContext = pilotCanvas.getContext("2d");
+  if (!pilotContext) {
+    throw new Error("Failed to get 2D context for pilot view canvas");
+  }
+
   const topContext = topCanvas.getContext("2d");
   if (!topContext) {
     throw new Error("Failed to get 2D context for top view canvas");
   }
 
-  const renderer = new CanvasRenderer(pilotContext, topContext);
+  const renderer = new CanvasRenderer();
   const gravityEngine = new NewtonianGravityEngine();
   const profiler = defaultProfiler;
 

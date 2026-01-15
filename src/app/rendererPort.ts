@@ -1,17 +1,20 @@
-import { Profiler, Vec3 } from "../world/domain.js";
-import type { Plane, Scene, WorldState } from "../world/types.js";
-import type { ViewConfig } from "./viewConfig.js";
+import type { Profiler, Vec3 } from "../world/domain.js";
+import type { Plane, WorldState } from "../world/types.js";
 
 /**
  * Top‑level rendering abstraction for the app layer.
+ *
+ * This interface intentionally does not depend on Scene or any
+ * view‑composition types. The app is responsible for mapping
+ * world state into whatever view configuration is needed before
+ * calling into a concrete renderer.
  */
 export interface Renderer {
   renderFrame(params: {
-    scene: Scene;
     world: WorldState;
     mainPlane: Plane;
-    pilotView: ViewConfig;
-    topView: ViewConfig;
+    pilotContext: CanvasRenderingContext2D;
+    topContext: CanvasRenderingContext2D;
     profiler: Profiler;
     pilotCameraLocalOffset: Vec3;
     thrustPercent: number;

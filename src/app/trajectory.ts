@@ -1,4 +1,4 @@
-import { Mesh, Vec3 } from "../world/domain";
+import { Mesh, Vec3 } from "../world/domain.js";
 
 /**
  * Append a point to a polyline mesh, adding a segment from the
