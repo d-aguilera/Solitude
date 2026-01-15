@@ -1,4 +1,5 @@
-import type { Camera, Plane, WorldState } from "./types.js";
+import { CameraPose } from "./domain.js";
+import type { Plane, WorldState } from "./types.js";
 
 function getById<T extends { id: string }>(
   arr: T[],
@@ -14,6 +15,6 @@ export function getPlaneById(world: WorldState, id: string): Plane {
   return getById(world.planes, id, "Plane");
 }
 
-export function getCameraById(world: WorldState, id: string): Camera {
+export function getCameraById(world: WorldState, id: string): CameraPose {
   return getById(world.cameras, id, "Camera");
 }

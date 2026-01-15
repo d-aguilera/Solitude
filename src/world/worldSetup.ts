@@ -13,7 +13,6 @@ import {
 } from "./solar/solarSystemConfig.js";
 import type {
   AirplaneSceneObject,
-  Camera,
   Plane,
   PlanetSceneObject,
   PolylineSceneObject,
@@ -23,13 +22,14 @@ import type {
   WorldState,
 } from "./types.js";
 import type {
-  Vec3,
+  CelestialBody,
   LocalFrame,
   Mesh,
   PlanetPhysics,
-  StarBody,
   StarPhysics,
   RGB,
+  Vec3,
+  CameraPose,
 } from "./domain.js";
 import { vec } from "./vec3.js";
 
@@ -92,7 +92,7 @@ function createInitialPlane(
   };
 }
 
-function createInitialTopCamera(id: string, plane: Plane): Camera {
+function createInitialTopCamera(id: string, plane: Plane): CameraPose {
   const offset: Vec3 = { x: 0, y: 0, z: 50 };
 
   return {
@@ -102,7 +102,7 @@ function createInitialTopCamera(id: string, plane: Plane): Camera {
   };
 }
 
-function createInitialPilotCamera(id: string, plane: Plane): Camera {
+function createInitialPilotCamera(id: string, plane: Plane): CameraPose {
   return {
     id,
     position: { ...plane.position }, // will be offset in game loop
@@ -232,7 +232,7 @@ function addPlanetsAndStarsFromConfig(
         luminosity,
       };
 
-      const starBody: StarBody = {
+      const starBody: CelestialBody = {
         id: cfg.id,
         position: { ...center },
         velocity: { ...initialVelocity },

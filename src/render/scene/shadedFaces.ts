@@ -1,12 +1,13 @@
 import type { ScreenPoint } from "../projection/projection.js";
 import { projectCameraPoint } from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
-import type { SceneObject, SceneObjectWithCache } from "../../world/types.js";
+import type { SceneObject } from "../../world/types.js";
 import { vec } from "../../world/vec3.js";
 import { mat3FromLocalFrame } from "../../world/localFrame.js";
 import { mat3 } from "../../world/mat3.js";
 import { E_SUN_AT_EARTH } from "../../world/solar/solarSystemConfig.js";
 import { LocalFrame, PointLight, RGB, Vec3 } from "../../world/domain.js";
+import { SceneObjectWithCache } from "./sceneTypes.js";
 
 /**
  * Internal representation of a single shaded triangle face ready for rasterization.

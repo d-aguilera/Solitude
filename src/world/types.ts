@@ -1,11 +1,8 @@
 import type {
-  CameraPose,
   DomainScene,
   DomainSceneObject,
   DomainWorld,
-  Mesh,
   PlaneBody,
-  RGB,
   Vec3,
 } from "./domain.js";
 
@@ -16,19 +13,6 @@ import type {
  */
 export interface Plane extends PlaneBody {
   speed: number;
-}
-
-/**
- * Camera adapter type; identical to domain but kept separate so
- * outer layers can evolve without affecting the core domain.
- */
-export type Camera = CameraPose;
-
-export interface PilotView {
-  id: string;
-  planeId: string;
-  azimuth: number;
-  elevation: number;
 }
 
 type SceneObjectKind = "airplane" | "planet" | "polyline" | "star";
@@ -58,10 +42,10 @@ export interface AirplaneSceneObject extends SolidSceneObject {
 }
 
 /**
- * Planet / star body included in gravity simulation.
+ * Celestial body included in gravity simulation.
  */
-export interface PlanetSceneObject extends SolidSceneObject {
-  kind: "planet";
+export interface CelestialBodySceneObject extends SolidSceneObject {
+  kind: "planet" | "star";
   initialVelocity: Vec3;
   physicalRadius: number; // meters
   backFaceCulling: true;
@@ -69,14 +53,17 @@ export interface PlanetSceneObject extends SolidSceneObject {
 }
 
 /**
- * Star body included in gravity simulation and also contributes light.
+ * Planet included in gravity simulation.
  */
-export interface StarSceneObject extends SolidSceneObject {
+export interface PlanetSceneObject extends CelestialBodySceneObject {
+  kind: "planet";
+}
+
+/**
+ * Star included in gravity simulation and also contributes light.
+ */
+export interface StarSceneObject extends CelestialBodySceneObject {
   kind: "star";
-  initialVelocity: Vec3;
-  physicalRadius: number; // meters
-  backFaceCulling: true;
-  velocity: Vec3;
   luminosity: number; // W or scaled units for lighting
 }
 
@@ -106,24 +93,6 @@ export type SceneObject =
 export interface Scene extends DomainScene {
   objects: SceneObject[];
 }
-
-// Renderer-side cache; may be attached to any SceneObject.
-export type SceneObjectWithCache = SceneObject & {
-  __worldPointsCache?: Vec3[];
-  __cameraPointsCache?: Vec3[];
-  __cameraCacheFrameId?: number;
-  __worldFaceNormalsCache?: Vec3[];
-  __faceNormalsFrameId?: number;
-};
-
-export interface Renderable {
-  mesh: Mesh;
-  worldPoints: Vec3[];
-  lineWidth: number;
-  baseColor: RGB;
-}
-
-export type DrawMode = "faces" | "lines";
 
 /**
  * Adapter-level world state used by the app and renderer.

@@ -4,8 +4,8 @@ import {
   buildPilotViewConfig,
   buildTopViewConfig,
 } from "../render/projection/viewSetup.js";
-import type { DrawMode } from "../world/types.js";
 import type { ViewConfig } from "./viewConfig.js";
+import { DrawMode } from "../render/projection/viewTypes.js";
 
 /**
  * Filter the scene for the top‑down view (e.g., remove trajectory polylines).

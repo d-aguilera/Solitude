@@ -5,12 +5,12 @@ import {
   projectCameraPointToNdc,
   NEAR,
 } from "../projection/projection.js";
-import type { Camera, DrawMode, Plane } from "../../world/types.js";
-import type { View, ViewDebugOverlay } from "./viewTypes.js";
-import { Vec3 } from "../../world/domain.js";
+import type { Plane } from "../../world/types.js";
+import type { DrawMode, View, ViewDebugOverlay } from "./viewTypes.js";
+import { CameraPose, Vec3 } from "../../world/domain.js";
 
 function makeBaseView(
-  camera: Camera,
+  camera: CameraPose,
   projection: (p: Vec3) => NdcPoint | null,
   drawMode: DrawMode
 ): View {
@@ -62,7 +62,7 @@ export function makeStandardViewDebugOverlay(options: {
  * yaw/pitch adjustments. This function does not apply additional rotations.
  */
 export function buildPilotViewConfig(
-  pilotCamera: Camera,
+  pilotCamera: CameraPose,
   canvasWidth: number,
   canvasHeight: number,
   referencePlane: Plane,
@@ -96,7 +96,7 @@ export function buildPilotViewConfig(
  * Build the View configuration for the top-down view, given a camera.
  */
 export function buildTopViewConfig(
-  topCamera: Camera,
+  topCamera: CameraPose,
   canvasWidth: number,
   canvasHeight: number,
   referencePlane: Plane,

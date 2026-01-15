@@ -1,5 +1,9 @@
-import type { DrawMode, Plane } from "../world/types.js";
-import type { View, ViewDebugOverlay } from "../render/projection/viewTypes.js";
+import type { Plane } from "../world/types.js";
+import type {
+  DrawMode,
+  View,
+  ViewDebugOverlay,
+} from "../render/projection/viewTypes.js";
 
 /**
  * Adapter-level container describing how a single view

@@ -1,4 +1,4 @@
-import type { DrawMode } from "../world/types.js";
+import { DrawMode } from "../render/projection/viewTypes";
 
 // Vertical field of view in degrees.
 const VERTICAL_FOV = 30;

@@ -31,9 +31,6 @@ export interface LocalFrame {
 
 /**
  * Domain-level airplane/ship body.
- *
- * This is the simulation model; it does not know about rendering or
- * adapter concerns like Canvas, DOM, etc.
  */
 export interface PlaneBody {
   id: string;
@@ -43,18 +40,9 @@ export interface PlaneBody {
 }
 
 /**
- * Logical planet body that participates in physics / gravity.
+ * Logical celestial body that participates in physics / gravity.
  */
-export interface PlanetBody {
-  id: string;
-  position: Vec3;
-  velocity: Vec3;
-}
-
-/**
- * Logical star body that participates in physics / gravity.
- */
-export interface StarBody {
+export interface CelestialBody {
   id: string;
   position: Vec3;
   velocity: Vec3;
@@ -73,11 +61,7 @@ export interface PlanetPhysics {
 /**
  * Physical properties of a star body.
  */
-export interface StarPhysics {
-  id: string;
-  physicalRadius: number; // meters
-  density: number; // kg/m^3
-  mass: number; // kg
+export interface StarPhysics extends PlanetPhysics {
   luminosity: number; // W or scaled units for lighting
 }
 
@@ -99,9 +83,9 @@ export interface CameraPose {
 export interface DomainWorld {
   planes: PlaneBody[];
   cameras: CameraPose[];
-  planets: PlanetBody[];
+  planets: CelestialBody[];
   planetPhysics: PlanetPhysics[];
-  stars: StarBody[];
+  stars: CelestialBody[];
   starPhysics: StarPhysics[];
 }
 
