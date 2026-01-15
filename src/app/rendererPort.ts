@@ -1,25 +1,20 @@
 import { Profiler, Vec3 } from "../world/domain.js";
-import type { DrawMode, Plane, Scene, WorldState } from "../world/types.js";
+import type { Plane, Scene, WorldState } from "../world/types.js";
+import type { ViewConfig } from "./viewConfig.js";
 
 /**
  * Top‑level rendering abstraction for the app layer.
- *
- * The game loop depends only on this interface and remains unaware of:
- *  - Any specific rendering API (Canvas2D, WebGL, etc.)
- *  - Any per‑view configuration or projection details
  */
 export interface Renderer {
   renderFrame(params: {
     scene: Scene;
     world: WorldState;
     mainPlane: Plane;
-    mainPlaneId: string;
-    topCameraId: string;
-    pilotCameraId: string;
-    debugPlanes: Plane[];
-    drawMode: DrawMode;
+    pilotView: ViewConfig;
+    topView: ViewConfig;
     profiler: Profiler;
     pilotCameraLocalOffset: Vec3;
     thrustPercent: number;
+    profilingEnabled: boolean;
   }): void;
 }

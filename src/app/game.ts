@@ -21,6 +21,7 @@ import {
   profileFlush,
   setPausedForProfiling,
   setProfilingEnabled,
+  isProfilingEnabled,
 } from "../profiling/profilingFacade.js";
 import type { Plane, Scene, WorldState } from "../world/types.js";
 import type {
@@ -43,6 +44,8 @@ import {
 import { rotateFrameAroundAxis } from "../world/localFrame.js";
 import type { Renderer } from "./rendererPort.js";
 import type { GravityEngine } from "../world/physics/gravityPort.js";
+import { buildPilotView, buildTopView } from "./viewComposition.js";
+import type { ViewConfig } from "./viewConfig.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;
@@ -55,28 +58,14 @@ let topCameraId: string;
 let pilotCameraId: string;
 let planetPathMappings: PlanetPathMapping[];
 
-// Gravity state
 let gravityState: GravityState;
 let gravityEngine: GravityEngine;
 
-// Pilot camera local offset (right, forward, up) in plane-local units
 let pilotCameraLocalOffset: Vec3 = { x: 0, y: 1.7, z: 1.1 };
 
-/**
- * Persistent per-player control state.
- */
 let controlState: ControlState = createInitialControlState();
 
-/**
- * Top-level game entry point.
- *
- * This function orchestrates world/scene initialization and then
- * kicks off the main animation loop, delegating all rendering to
- * the provided Renderer abstraction.
- */
 function toDomainWorld(world: WorldState): DomainWorld {
-  // Explicit adapter→domain projection so that gravity only sees
-  // domain-level entities and not adapter-specific extensions.
   return {
     planes: world.planes,
     cameras: world.cameras,
@@ -137,18 +126,46 @@ function renderFrame(
     const mainPlane = getPlaneById(world, mainPlaneId);
     const debugPlanes = world.planes;
 
+    const profilingEnabled = isProfilingEnabled();
+
+    const pilotCanvas = (document.getElementById(
+      "pilotViewCanvas"
+    ) as HTMLCanvasElement)!;
+    const topCanvas = (document.getElementById(
+      "topViewCanvas"
+    ) as HTMLCanvasElement)!;
+
+    const pilotViewConfig: ViewConfig = buildPilotView(
+      world,
+      pilotCameraId,
+      mainPlane,
+      DEFAULT_DRAW_MODE,
+      debugPlanes,
+      pilotCanvas.width,
+      pilotCanvas.height
+    );
+
+    const { viewConfig: topViewConfig } = buildTopView(
+      world,
+      scene,
+      topCameraId,
+      mainPlane,
+      DEFAULT_DRAW_MODE,
+      debugPlanes,
+      topCanvas.width,
+      topCanvas.height
+    );
+
     renderer.renderFrame({
       scene,
       world,
       mainPlane,
-      mainPlaneId,
-      topCameraId,
-      pilotCameraId,
-      debugPlanes,
-      drawMode: DEFAULT_DRAW_MODE,
+      pilotView: pilotViewConfig,
+      topView: topViewConfig,
       profiler,
       pilotCameraLocalOffset,
       thrustPercent,
+      profilingEnabled,
     });
   });
 

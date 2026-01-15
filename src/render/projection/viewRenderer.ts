@@ -1,23 +1,14 @@
 import { clear, draw } from "../scene/renderScene.js";
-import type { Scene, WorldState, Plane } from "../../world/types.js";
+import type { Scene } from "../../world/types.js";
 import type { View, ViewDebugOverlay } from "./viewTypes.js";
-import { buildPilotViewConfig, buildTopViewConfig } from "./viewSetup.js";
-import { getCameraById } from "../../world/worldLookup.js";
-import type { DrawMode, SceneObject } from "../../world/types.js";
-import { Profiler, Vec3 } from "../../world/domain.js";
+import type { ViewRenderer } from "./viewRendererPort.js";
+import type { ViewConfig } from "../../app/viewConfig.js";
+import type { Profiler } from "../../world/domain.js";
 
 let viewFrameCounter = 0;
 
 /**
  * Render a scene from a given view.
- *
- * Responsibilities:
- *  - Clear the canvas
- *  - Rasterize all scene objects according to the view's camera/projection
- *  - Optionally render a debug overlay
- *
- * Any higher-level policy about which entities are debugged is kept
- * outside this function and provided via ViewDebugOverlay.
  */
 export function renderView(
   context: CanvasRenderingContext2D,
@@ -43,88 +34,18 @@ export function renderView(
 }
 
 /**
- * Helper that builds and renders the pilot view.
- *
- * The camera frame is expected to already encode any pilot look
- * adjustments computed elsewhere.
+ * Concrete ViewRenderer implementation that delegates to renderView.
  */
-export function renderPilotView(
-  context: CanvasRenderingContext2D,
-  scene: Scene,
-  world: WorldState,
-  pilotCameraId: string,
-  referencePlane: Plane,
-  drawMode: DrawMode,
-  debugPlanes: Plane[],
-  profiler: Profiler,
-  pilotCameraLocalOffset: Vec3,
-  thrustPercent: number
-): void {
-  void pilotCameraLocalOffset;
-  void thrustPercent;
+export class DefaultViewRenderer implements ViewRenderer {
+  renderView(params: {
+    context: CanvasRenderingContext2D;
+    scene: Scene;
+    viewConfig: ViewConfig;
+    profiler: Profiler;
+  }): void {
+    const { context, scene, viewConfig, profiler } = params;
+    const { view, debugOverlay } = viewConfig;
 
-  const pilotCamera = getCameraById(world, pilotCameraId);
-  const pilotCanvas = context.canvas;
-
-  const { view, debugOverlay } = buildPilotViewConfig(
-    pilotCamera,
-    pilotCanvas.width,
-    pilotCanvas.height,
-    referencePlane,
-    drawMode,
-    debugPlanes
-  );
-
-  renderView(context, scene, view, profiler, debugOverlay);
-}
-
-/**
- * Helper that builds and renders the top-down view.
- *
- * Scene filtering for this view (e.g., removing trajectory polylines)
- * is handled here before draw() is called.
- */
-export function renderTopView(
-  context: CanvasRenderingContext2D,
-  scene: Scene,
-  world: WorldState,
-  topCameraId: string,
-  referencePlane: Plane,
-  drawMode: DrawMode,
-  debugPlanes: Plane[],
-  profiler: Profiler
-): void {
-  const topCamera = getCameraById(world, topCameraId);
-  const topCanvas = context.canvas;
-
-  const filteredScene = makeTopViewScene(scene);
-
-  const { view, debugOverlay } = buildTopViewConfig(
-    topCamera,
-    topCanvas.width,
-    topCanvas.height,
-    referencePlane,
-    drawMode,
-    debugPlanes
-  );
-
-  renderView(context, filteredScene, view, profiler, debugOverlay);
-}
-
-/**
- * Filter the scene for the top-down view.
- * Currently removes all polyline path objects (plane + planets).
- */
-function makeTopViewScene(base: Scene): Scene {
-  const filteredObjects: SceneObject[] = base.objects.filter((obj) => {
-    if (obj.kind === "polyline" && obj.id.startsWith("path:")) {
-      return false;
-    }
-    return true;
-  });
-
-  return {
-    objects: filteredObjects,
-    lights: base.lights,
-  };
+    renderView(context, scene, view, profiler, debugOverlay);
+  }
 }
