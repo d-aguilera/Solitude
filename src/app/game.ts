@@ -243,6 +243,7 @@ function integrateForcesAndGravity(
   const gravityTimeScale = 10;
   const gravityDt = dtSeconds * gravityTimeScale;
 
+  // 1) Apply thrust to the main plane's body velocity in gravityState.
   const controlledPlane = getPlaneById(world, mainPlaneId);
   const planeBody = gravityState.bodies[gravityState.mainPlaneBodyIndex];
 
@@ -255,8 +256,25 @@ function integrateForcesAndGravity(
 
   planeBody.velocity = bodyState.velocity;
 
+  // 2) Step gravity (updates positions in world via bindings, returns new velocities in gravityState).
   const domainWorld: DomainWorld = world;
   gravityState = gravityEngine.step(gravityDt, domainWorld, gravityState);
+
+  // 3) Sync plane velocities in WorldState from gravityState so debug & HUD see them.
+  syncPlaneVelocitiesFromGravity();
+}
+
+function syncPlaneVelocitiesFromGravity(): void {
+  for (const binding of gravityState.bindings) {
+    if (binding.kind !== "plane") continue;
+
+    const body = gravityState.bodies[binding.planeIndex];
+    if (!body) continue;
+
+    const plane = world.planes[binding.planeIndex];
+    plane.velocity = { ...body.velocity };
+    plane.speed = vec.length(plane.velocity);
+  }
 }
 
 /**
