@@ -1,6 +1,8 @@
 import type { Vec3 } from "../domain/domainPorts.js";
 import type { Scene } from "./scene/scenePorts.js";
 import type { Profiler } from "../app/profilingPorts.js";
+import type { View } from "./projection/View.js";
+import type { ViewDebugOverlay } from "./projection/ViewDebugOverlay.js";
 
 /**
  * Adapter-level plane DTO used for debug overlays.
@@ -21,21 +23,16 @@ export interface RenderPlane {
  * depend on app-layer definitions.
  */
 export interface ViewConfig {
-  view: {
-    projection: (p: Vec3) => { x: number; y: number; depth: number } | null;
-    cameraPos: Vec3;
-    cameraFrame: import("../domain/domainPorts.js").LocalFrame;
-    drawMode: "faces" | "lines";
-  };
-  debugOverlay?: {
-    draw: (ctx: CanvasRenderingContext2D, scene: Scene) => void;
-  };
+  view: View;
+  debugOverlay?: ViewDebugOverlay;
   referencePlane: RenderPlane;
-  drawMode: "faces" | "lines";
+  drawMode: View["drawMode"];
 }
 
 /**
  * Top-level rendering abstraction for the app layer.
+ *
+ * This interface defines the boundary from the app into the render layer.
  */
 export interface Renderer {
   renderFrame(params: {

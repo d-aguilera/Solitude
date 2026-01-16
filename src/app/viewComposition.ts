@@ -6,8 +6,10 @@ import {
   buildTopViewConfig,
   DebugPlane,
 } from "../render/projection/viewSetup.js";
-import type { ViewConfig as RenderViewConfig } from "../render/projection/ViewRenderer.js";
-import type { RenderPlane } from "../render/RenderPorts.js";
+import type {
+  ViewConfig as RenderViewConfig,
+  RenderPlane,
+} from "../render/RenderPorts.js";
 import type { DrawMode } from "../render/projection/ViewDebugOverlay.js";
 
 /**

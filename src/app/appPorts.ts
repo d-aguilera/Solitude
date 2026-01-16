@@ -1,11 +1,5 @@
 import type { LocalFrame, Vec3 } from "../domain/domainPorts.js";
-import { View } from "../render/projection/View.js";
-import {
-  DrawMode,
-  ViewDebugOverlay,
-} from "../render/projection/ViewDebugOverlay.js";
-import { Profiler } from "./profilingPorts.js";
-import { Plane, WorldState } from "./worldState.js";
+import type { DrawMode } from "../render/projection/ViewDebugOverlay.js";
 
 /**
  * Environment wiring owned by the outermost bootstrap.
@@ -67,38 +61,6 @@ export interface PilotLookState {
 }
 
 /**
- * Top‑level rendering abstraction for the app layer.
- *
- * This interface intentionally does not depend on Scene or any
- * view‑composition types. The app is responsible for mapping
- * world state into whatever view configuration is needed before
- * calling into a concrete renderer.
+ * Default draw mode for rendering.
  */
-export interface Renderer {
-  renderFrame(params: {
-    world: WorldState;
-    mainPlane: Plane;
-    pilotContext: CanvasRenderingContext2D;
-    topContext: CanvasRenderingContext2D;
-    profiler: Profiler;
-    pilotCameraLocalOffset: Vec3;
-    thrustPercent: number;
-    profilingEnabled: boolean;
-  }): void;
-}
-
-/**
- * Adapter-level container describing how a single view
- * should render the current scene for this frame.
- *
- * Built by the app layer from world state and then passed
- * into the Renderer implementation.
- */
-export interface ViewConfig {
-  view: View;
-  debugOverlay?: ViewDebugOverlay;
-  referencePlane: Plane;
-  drawMode: DrawMode;
-} // Default draw mode for rendering (faces or lines).
-
 export const DEFAULT_DRAW_MODE: DrawMode = "faces";
