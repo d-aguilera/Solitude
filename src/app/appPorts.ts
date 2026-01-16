@@ -1,17 +1,21 @@
-import type { View } from "../render/projection/View.js";
-import type {
-  ViewDebugOverlay,
-  DrawMode,
-} from "../render/projection/ViewDebugOverlay.js";
 import type { LocalFrame, Vec3 } from "../domain/domainPorts.js";
-import type { Plane, WorldState } from "./worldState.js";
-import type { Profiler } from "./profilingPorts.js";
+import { View } from "../render/projection/View.js";
+import {
+  DrawMode,
+  ViewDebugOverlay,
+} from "../render/projection/ViewDebugOverlay.js";
+import { Profiler } from "./profilingPorts.js";
+import { Plane, WorldState } from "./worldState.js";
 
+/**
+ * Environment wiring owned by the outermost bootstrap.
+ */
 export interface AppEnvironment {
   container: Element;
   pilotCanvas: HTMLCanvasElement;
   topCanvas: HTMLCanvasElement;
 }
+
 export interface ControlInput {
   rollLeft: boolean;
   rollRight: boolean;
@@ -28,7 +32,6 @@ export interface ControlInput {
   camBackward: boolean;
   camUp: boolean;
   camDown: boolean;
-  // thrust
   burnForward: boolean;
   burnBackwards: boolean;
   thrust0: boolean;
@@ -41,7 +44,6 @@ export interface ControlInput {
 
 /**
  * Simple container for the controlled body's pose and velocity.
- * Kept separate from the broader WorldState.
  */
 export interface ControlledBodyState {
   frame: LocalFrame;
@@ -52,14 +54,7 @@ export interface ControlledBodyState {
  * Per-player control state that must persist across frames.
  */
 export interface ControlState {
-  /**
-   * Persistent thrust magnitude in [0..1], updated by numeric keys.
-   */
   thrustPercent: number;
-
-  /**
-   * Persistent pilot look state owned by the controls layer.
-   */
   look: PilotLookState;
 }
 

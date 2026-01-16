@@ -3,12 +3,17 @@ import {
   worldPointToCameraPoint,
   projectCameraPointToNdc,
   NEAR,
-} from "../projection/projection.js";
-import { NdcPoint } from "./NdcPoint.js";
+} from "./projection.js";
+import type { NdcPoint } from "./NdcPoint.js";
 import type { DomainCameraPose, Vec3 } from "../../domain/domainPorts.js";
 import type { DrawMode, ViewDebugOverlay } from "./ViewDebugOverlay.js";
 import type { View } from "./View.js";
-import { Plane } from "../../app/worldState.js";
+
+export interface DebugPlane {
+  id: string;
+  position: Vec3;
+  velocity: Vec3;
+}
 
 function makeBaseView(
   camera: DomainCameraPose,
@@ -24,51 +29,36 @@ function makeBaseView(
 }
 
 /**
- * Build the default debug overlay used by pilot/top views:
- *  - Velocity lines for the chosen debug planes (typically all planes).
- *  - Planet/star labels for all relevant bodies in the scene, measured
- *    relative to the chosen referencePlane.
+ * Build the default debug overlay used by pilot/top views.
  *
- * Kept separate from `View` so that debug policy does not leak into
- * camera/projection setup.
- *
- * NOTE:
- *  The overlay takes an NDC projection; it is responsible for mapping NDC
- *  to pixel coordinates using the canvas it is drawing into.
+ * The overlay works with a minimal DebugPlane DTO so it does not depend
+ * on any app-level world types.
  */
 export function makeStandardViewDebugOverlay(options: {
   projection: (p: Vec3) => NdcPoint | null;
-  referencePlane: Plane;
-  debugPlanes: Plane[];
+  referencePlane: DebugPlane;
+  debugPlanes: DebugPlane[];
 }): ViewDebugOverlay {
   const { projection, referencePlane, debugPlanes } = options;
 
   return {
     draw: (ctx, scene) => {
-      // Velocity lines for the chosen debug planes (typically all planes).
       for (const plane of debugPlanes) {
         drawPlaneVelocityLine(ctx, projection, plane);
       }
 
-      // Planet/star labels for all relevant bodies in the scene.
       drawBodyLabels(ctx, projection, scene, referencePlane);
     },
   };
 }
 
-/**
- * Build the View configuration for the pilot view, given world state.
- *
- * The pilot camera's LocalFrame is expected to already encode any pilot‑look
- * yaw/pitch adjustments. This function does not apply additional rotations.
- */
 export function buildPilotViewConfig(
   pilotCamera: DomainCameraPose,
   canvasWidth: number,
   canvasHeight: number,
-  referencePlane: Plane,
+  referencePlane: DebugPlane,
   drawMode: DrawMode,
-  debugPlanes: Plane[],
+  debugPlanes: DebugPlane[],
 ): { view: View; debugOverlay: ViewDebugOverlay } {
   const projection = (worldPoint: Vec3): NdcPoint | null => {
     const cameraPoint = worldPointToCameraPoint(
@@ -93,16 +83,13 @@ export function buildPilotViewConfig(
   return { view, debugOverlay };
 }
 
-/**
- * Build the View configuration for the top-down view, given a camera.
- */
 export function buildTopViewConfig(
   topCamera: DomainCameraPose,
   canvasWidth: number,
   canvasHeight: number,
-  referencePlane: Plane,
+  referencePlane: DebugPlane,
   drawMode: DrawMode,
-  debugPlanes: Plane[],
+  debugPlanes: DebugPlane[],
 ): { view: View; debugOverlay: ViewDebugOverlay } {
   const projection = (worldPoint: Vec3): NdcPoint | null => {
     const cameraPoint = worldPointToCameraPoint(

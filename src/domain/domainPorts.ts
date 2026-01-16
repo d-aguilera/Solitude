@@ -1,9 +1,8 @@
 /**
  * Core domain types and ports.
  *
- * This module intentionally does not depend on any app, rendering,
- * or infrastructure concerns. Outer layers adapt these types into
- * their own representations.
+ * This module does not depend on app, rendering, or infrastructure concerns.
+ * Outer layers adapt these types into their own representations.
  */
 
 /**
@@ -18,7 +17,8 @@ export type Mat3 = [
 ];
 
 /**
- * Generalized world-state container for dynamic entities.
+ * Generalized world-state container for dynamic entities controlled by
+ * the domain logic.
  *
  * Outer layers can wrap this container in adapter types but should not
  * mutate its shape from within the domain.

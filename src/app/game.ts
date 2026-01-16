@@ -2,7 +2,6 @@ import type {
   ControlInput,
   ControlledBodyState,
   ControlState,
-  Renderer,
 } from "./appPorts.js";
 import type { Profiler } from "./profilingPorts.js";
 import type {
@@ -44,9 +43,11 @@ import {
   setProfilingEnabled,
   isProfilingEnabled,
 } from "../profiling/profilingFacade.js";
-import { Scene } from "../render/scene/scenePorts.js";
+import type { Scene } from "../render/scene/scenePorts.js";
 import { getPlaneById } from "./worldLookup.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
+import { buildPilotView, buildTopView } from "./viewComposition.js";
+import type { Renderer, RenderPlane } from "../render/RenderPorts.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;
@@ -66,7 +67,6 @@ let pilotCameraLocalOffset: Vec3 = { x: 0, y: 1.7, z: 1.1 };
 
 let controlState: ControlState = createInitialControlState();
 
-// Canvas contexts supplied by the outer environment.
 let pilotContext: CanvasRenderingContext2D;
 let topContext: CanvasRenderingContext2D;
 
@@ -78,6 +78,14 @@ function toDomainWorld(world: WorldState): DomainWorld {
     planetPhysics: world.planetPhysics,
     stars: world.stars,
     starPhysics: world.starPhysics,
+  };
+}
+
+function toRenderPlane(plane: Plane): RenderPlane {
+  return {
+    id: plane.id,
+    position: plane.position,
+    velocity: plane.velocity,
   };
 }
 
@@ -138,21 +146,73 @@ function renderFrame(
     const mainPlane = getPlaneById(world, mainPlaneId);
     const profilingEnabled = isProfilingEnabled();
 
-    renderer.renderFrame({
+    const debugPlanes = world.planes;
+
+    const { viewConfig: pilotViewConfig, scene: pilotScene } = buildPilotView(
       world,
+      scene,
+      pilotCameraId,
       mainPlane,
+      "faces",
+      debugPlanes,
+      pilotContext.canvas.width,
+      pilotContext.canvas.height,
+    );
+
+    const { viewConfig: topViewConfig, scene: topScene } = buildTopView(
+      world,
+      scene,
+      topCameraId,
+      mainPlane,
+      "faces",
+      debugPlanes,
+      topContext.canvas.width,
+      topContext.canvas.height,
+    );
+
+    renderer.renderFrame({
+      pilotScene,
+      topScene,
+      mainPlane: toRenderPlane(mainPlane),
       pilotContext,
       topContext,
       profiler,
       pilotCameraLocalOffset,
       thrustPercent,
       profilingEnabled,
+      pilotView: pilotViewConfig,
+      topView: topViewConfig,
     });
+
+    renderHUDOverlay(
+      pilotContext,
+      mainPlane,
+      profilingEnabled,
+      pilotCameraLocalOffset,
+      thrustPercent,
+    );
   });
 
   profileFlush();
-
   requestAnimationFrame(renderFrame.bind(null, renderer, profiler));
+}
+
+import { renderHUD } from "./hud.js";
+
+function renderHUDOverlay(
+  ctx: CanvasRenderingContext2D,
+  plane: Plane,
+  profilingEnabled: boolean,
+  pilotCameraLocalOffset: Vec3,
+  thrustPercent: number,
+): void {
+  renderHUD(
+    ctx,
+    plane,
+    profilingEnabled,
+    pilotCameraLocalOffset,
+    thrustPercent,
+  );
 }
 
 /**

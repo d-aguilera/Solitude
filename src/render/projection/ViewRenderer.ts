@@ -1,6 +1,19 @@
-import type { ViewConfig } from "../../app/appPorts.js";
+import type { View } from "./View.js";
 import type { Profiler } from "../../app/profilingPorts.js";
-import { Scene } from "../scene/scenePorts.js";
+import type { Scene } from "../scene/scenePorts.js";
+import type { ViewDebugOverlay } from "./ViewDebugOverlay.js";
+import type { DrawMode } from "./ViewDebugOverlay.js";
+
+export interface ViewConfig {
+  view: View;
+  debugOverlay?: ViewDebugOverlay;
+  referencePlane: {
+    id: string;
+    position: import("../../domain/domainPorts.js").Vec3;
+    velocity: import("../../domain/domainPorts.js").Vec3;
+  };
+  drawMode: DrawMode;
+}
 
 export type ViewRendererParams = {
   context: CanvasRenderingContext2D;

@@ -1,9 +1,9 @@
 import { startGame } from "./game.js";
-import type { Renderer } from "./appPorts.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { init as initResizeHandler } from "../render/canvas/canvasLayout.js";
 import type { Profiler } from "./profilingPorts.js";
-import { AppEnvironment } from "./appPorts.js";
+import type { AppEnvironment } from "./appPorts.js";
+import type { Renderer } from "../render/RenderPorts.js";
 
 export function runApp(
   renderer: Renderer,
@@ -13,8 +13,18 @@ export function runApp(
 ): void {
   initResizeHandler(env.container, env.pilotCanvas, env.topCanvas);
 
+  const pilotContext = env.pilotCanvas.getContext("2d");
+  if (!pilotContext) {
+    throw new Error("Failed to get 2D context for pilot view canvas");
+  }
+
+  const topContext = env.topCanvas.getContext("2d");
+  if (!topContext) {
+    throw new Error("Failed to get 2D context for top view canvas");
+  }
+
   startGame(renderer, gravityEngine, profiler, {
-    pilotContext: env.pilotCanvas.getContext("2d") as CanvasRenderingContext2D,
-    topContext: env.topCanvas.getContext("2d") as CanvasRenderingContext2D,
+    pilotContext,
+    topContext,
   });
 }
