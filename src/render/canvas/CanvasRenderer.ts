@@ -1,4 +1,4 @@
-import type { Scene } from "../scene/scenePorts.js";
+import type { Scene } from "../ScenePorts.js";
 import type { Profiler } from "../../app/profilingPorts.js";
 import type { Renderer, ViewConfig } from "../RenderPorts.js";
 import { CanvasViewRenderer } from "./CanvasViewRenderer.js";

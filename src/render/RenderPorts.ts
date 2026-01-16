@@ -1,5 +1,5 @@
 import type { Vec3 } from "../domain/domainPorts.js";
-import type { Scene } from "./scene/scenePorts.js";
+import type { Scene } from "./ScenePorts.js";
 import type { Profiler } from "../app/profilingPorts.js";
 import type { View } from "./projection/View.js";
 import type { ViewDebugOverlay } from "./projection/ViewDebugOverlay.js";

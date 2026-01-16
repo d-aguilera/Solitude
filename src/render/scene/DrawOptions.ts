@@ -1,4 +1,4 @@
-import type { PointLight, SceneObject } from "./scenePorts.js";
+import type { PointLight, SceneObject } from "../ScenePorts.js";
 import type { View } from "../projection/View.js";
 import type { Profiler } from "../../app/profilingPorts.js";
 

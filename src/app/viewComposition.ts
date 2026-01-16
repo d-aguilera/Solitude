@@ -1,5 +1,5 @@
 import type { WorldState, Plane } from "./worldState.js";
-import type { Scene } from "../render/scene/scenePorts.js";
+import type { Scene } from "../render/ScenePorts.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
 import {
   buildPilotViewConfig,

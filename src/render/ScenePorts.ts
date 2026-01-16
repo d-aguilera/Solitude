@@ -1,9 +1,9 @@
-import type { Mat3, Mesh, RGB, Vec3 } from "../../domain/domainPorts.js";
+import type { Mat3, Mesh, RGB, Vec3 } from "../domain/domainPorts.js";
 
 export type SceneObjectKind = "airplane" | "planet" | "polyline" | "star";
 
 /**
- * Base properties common to all scene objects.
+ * Base properties common to all scene objects used by renderers.
  */
 export interface BaseSceneObject {
   id: string;

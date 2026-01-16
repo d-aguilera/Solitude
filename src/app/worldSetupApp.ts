@@ -26,13 +26,13 @@ import { trig } from "../domain/trig.js";
 import { vec3 } from "../domain/vec3.js";
 import { getStarPhysicsById } from "../domain/worldLookup.js";
 import type {
-  Scene,
   SceneObject,
   AirplaneSceneObject,
   PlanetSceneObject,
   StarSceneObject,
   PolylineSceneObject,
-} from "../render/scene/scenePorts.js";
+  Scene,
+} from "../render/ScenePorts.js";
 import type { Plane, WorldState } from "./worldState.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };

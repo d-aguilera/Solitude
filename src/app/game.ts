@@ -43,7 +43,7 @@ import {
   setProfilingEnabled,
   isProfilingEnabled,
 } from "../profiling/profilingFacade.js";
-import type { Scene } from "../render/scene/scenePorts.js";
+import type { Scene } from "../render/ScenePorts.js";
 import { getPlaneById } from "./worldLookup.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
 import { buildPilotView, buildTopView } from "./viewComposition.js";

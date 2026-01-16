@@ -6,7 +6,7 @@ import type { ScreenPoint } from "../projection/ScreenPoint.js";
 import { projectCameraPoint } from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
 import type { SceneObjectWithCache } from "./sceneTypes.js";
-import type { PointLight, SceneObject } from "./scenePorts.js";
+import type { PointLight, SceneObject } from "../ScenePorts.js";
 import { E_SUN_AT_EARTH } from "./lightingConstants.js";
 
 /**
