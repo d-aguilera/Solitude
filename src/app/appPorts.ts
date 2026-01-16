@@ -1,5 +1,5 @@
 import type { LocalFrame, Vec3 } from "../domain/domainPorts.js";
-import type { DrawMode } from "../render/projection/ViewDebugOverlay.js";
+import type { DrawMode } from "../renderPorts/renderPorts.js";
 
 /**
  * Environment wiring owned by the outermost bootstrap.

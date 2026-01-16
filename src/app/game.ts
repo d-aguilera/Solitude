@@ -45,7 +45,7 @@ import {
 import { getPlaneById } from "./worldLookup.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
 import { buildPilotView, buildTopView } from "./viewComposition.js";
-import type { Renderer, RenderPlane } from "../renderPorts/RenderPorts.js";
+import type { Renderer, RenderPlane } from "../renderPorts/renderPorts.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;
@@ -197,7 +197,7 @@ function renderFrame(
 
 import { renderHUD } from "./hud.js";
 import { Profiler } from "../profiling/profilingPorts.js";
-import { Scene } from "../renderPorts/ScenePorts.js";
+import { Scene } from "../renderPorts/scenePorts.js";
 
 function renderHUDOverlay(
   ctx: CanvasRenderingContext2D,

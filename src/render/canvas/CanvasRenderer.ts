@@ -1,5 +1,5 @@
-import type { Scene } from "../../renderPorts/ScenePorts.js";
-import type { Renderer, ViewConfig } from "../../renderPorts/RenderPorts.js";
+import type { Scene } from "../../renderPorts/scenePorts.js";
+import type { Renderer, ViewConfig } from "../../renderPorts/renderPorts.js";
 import { CanvasViewRenderer } from "./CanvasViewRenderer.js";
 import { Profiler } from "../../profiling/profilingPorts.js";
 

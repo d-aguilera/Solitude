@@ -3,7 +3,7 @@ import type { GravityEngine } from "../domain/domainPorts.js";
 import { init as initResizeHandler } from "../render/canvas/canvasLayout.js";
 import type { AppEnvironment } from "./appPorts.js";
 import { Profiler } from "../profiling/profilingPorts.js";
-import { Renderer } from "../renderPorts/RenderPorts.js";
+import { Renderer } from "../renderPorts/renderPorts.js";
 
 export function runApp(
   renderer: Renderer,

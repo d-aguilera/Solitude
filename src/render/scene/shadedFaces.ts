@@ -1,25 +1,18 @@
 import { mat3FromLocalFrame } from "../../domain/localFrame.js";
-import type { LocalFrame, RGB, Vec3 } from "../../domain/domainPorts.js";
+import type { LocalFrame, Vec3 } from "../../domain/domainPorts.js";
 import { mat3 } from "../../domain/mat3.js";
 import { vec3 } from "../../domain/vec3.js";
-import type { ScreenPoint } from "../projection/ScreenPoint.js";
 import { projectCameraPoint } from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
-import type { SceneObjectWithCache } from "./sceneTypes.js";
-import type { PointLight, SceneObject } from "../../renderPorts/ScenePorts.js";
-import { E_SUN_AT_EARTH } from "./lightingConstants.js";
+import type { SceneObjectWithCache } from "./sceneInternals.js";
+import type { FaceEntry } from "../renderInternals.js";
+import type { PointLight, SceneObject } from "../../renderPorts/scenePorts.js";
 
-/**
- * Internal representation of a single shaded triangle face ready for rasterization.
- */
-export type FaceEntry = {
-  intensity: number;
-  depth: number;
-  p0: ScreenPoint;
-  p1: ScreenPoint;
-  p2: ScreenPoint;
-  baseColor: RGB;
-};
+// E = I / (4π r²) at 1 AU from the Sun.
+const SUN_LUMINOSITY = 3.828e26; // W
+const AU = 1.495978707e11; // m
+const EARTH_ORBIT_RADIUS_2 = AU * AU;
+const E_SUN_AT_EARTH = SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS_2);
 
 /**
  * Build the list of shaded triangle faces (with depth and lighting information)

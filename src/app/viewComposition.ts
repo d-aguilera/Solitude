@@ -3,14 +3,14 @@ import { getDomainCameraById } from "../domain/worldLookup.js";
 import {
   buildPilotViewConfig,
   buildTopViewConfig,
-  DebugPlane,
 } from "../render/projection/viewSetup.js";
+import { DebugPlane } from "../render/projection/projectionPorts.js";
 import type {
   ViewConfig as RenderViewConfig,
   RenderPlane,
-} from "../renderPorts/RenderPorts.js";
-import type { DrawMode } from "../render/projection/ViewDebugOverlay.js";
-import { Scene } from "../renderPorts/ScenePorts.js";
+} from "../renderPorts/renderPorts.js";
+import type { DrawMode } from "../renderPorts/renderPorts.js";
+import { Scene } from "../renderPorts/scenePorts.js";
 
 /**
  * Convert an app-layer Plane into the minimal RenderPlane DTO.

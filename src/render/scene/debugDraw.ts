@@ -1,12 +1,20 @@
-import type { Scene } from "../../renderPorts/ScenePorts.js";
+import type { Scene } from "../../renderPorts/scenePorts.js";
 import type { Vec3 } from "../../domain/domainPorts.js";
 import { vec3 } from "../../domain/vec3.js";
-import type { NdcPoint } from "../projection/NdcPoint.js";
+import type { NdcPoint } from "../renderInternals.js";
 import { ndcToScreen } from "../projection/projection.js";
-import type { VelocityDebugSegment } from "./VelocityDebugSegment.js";
-import type { DebugPlane } from "../projection/viewSetup.js";
+import type { DebugPlane } from "../projection/projectionPorts.js";
 
 export type ProjectFn = (p: Vec3) => NdcPoint | null;
+
+/**
+ * World-space line segment for velocity debug visualization.
+ */
+interface VelocityDebugSegment {
+  start: Vec3;
+  end: Vec3;
+  color: "forward" | "backward";
+}
 
 /**
  * Pure helper that computes the world-space line segments representing

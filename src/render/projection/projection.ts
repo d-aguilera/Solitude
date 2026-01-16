@@ -1,7 +1,7 @@
 import { mat3 } from "../../domain/mat3.js";
 import { vec3 } from "../../domain/vec3.js";
-import type { NdcPoint } from "./NdcPoint.js";
-import type { ScreenPoint } from "./ScreenPoint.js";
+import type { NdcPoint } from "../renderInternals.js";
+import type { ScreenPoint } from "../renderInternals.js";
 import type { LocalFrame, Vec3 } from "../../domain/domainPorts.js";
 import { mat3FromLocalFrame } from "../../domain/localFrame.js";
 
@@ -17,7 +17,7 @@ const VERTICAL_FOV = 30;
 export function worldPointToCameraPoint(
   worldPoint: Vec3,
   cameraPosition: Vec3,
-  cameraFrame: LocalFrame
+  cameraFrame: LocalFrame,
 ): Vec3 {
   const R_worldFromLocal = mat3FromLocalFrame(cameraFrame);
   const R_localFromWorld = mat3.transpose(R_worldFromLocal);
@@ -31,14 +31,14 @@ export function worldPointToCameraPoint(
 export function projectCameraPointToNdc(
   cameraPoint: Vec3,
   canvasWidth: number,
-  canvasHeight: number
+  canvasHeight: number,
 ): NdcPoint {
   const { fX, fY } = getFocalLengths(canvasWidth, canvasHeight);
   const depth = cameraPoint.y;
 
   const scaled = vec3.scale(
     { x: cameraPoint.x * fX, y: cameraPoint.z * fY, z: 0 },
-    1 / depth
+    1 / depth,
   );
 
   return {
@@ -54,7 +54,7 @@ export function projectCameraPointToNdc(
 export function ndcToScreen(
   ndc: NdcPoint,
   canvasWidth: number,
-  canvasHeight: number
+  canvasHeight: number,
 ): ScreenPoint {
   return {
     x: (ndc.x + 1) * 0.5 * canvasWidth,
@@ -70,7 +70,7 @@ export function ndcToScreen(
 export function projectCameraPoint(
   cameraPoint: Vec3,
   canvasWidth: number,
-  canvasHeight: number
+  canvasHeight: number,
 ): ScreenPoint {
   const ndc = projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
   return ndcToScreen(ndc, canvasWidth, canvasHeight);
@@ -100,7 +100,7 @@ export function projectCameraPoint(
  */
 function getFocalLengths(
   canvasWidth: number,
-  canvasHeight: number
+  canvasHeight: number,
 ): { fX: number; fY: number } {
   const vFovRad = (VERTICAL_FOV * Math.PI) / 180;
 

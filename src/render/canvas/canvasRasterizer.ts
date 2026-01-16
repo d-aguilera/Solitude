@@ -1,13 +1,13 @@
 import { RGB } from "../../domain/domainPorts.js";
-import type { ScreenPoint } from "../projection/ScreenPoint.js";
-import type { FaceEntry } from "../scene/shadedFaces.js";
+import type { ScreenPoint } from "../renderInternals.js";
+import type { FaceEntry } from "../renderInternals.js";
 
 /**
  * Depth-sort and rasterize shaded triangle faces.
  */
 export function renderShadedFaces(
   context: CanvasRenderingContext2D,
-  faceList: FaceEntry[]
+  faceList: FaceEntry[],
 ): void {
   faceList.sort((a, b) => b.depth - a.depth);
 
@@ -31,7 +31,7 @@ export function renderPolyline(
   context: CanvasRenderingContext2D,
   points: ScreenPoint[],
   color: RGB,
-  lineWidth: number
+  lineWidth: number,
 ): void {
   const strokeStyle = rgbToCss(color);
   strokePolyline(context, points, strokeStyle, lineWidth);
@@ -41,7 +41,7 @@ function strokePolyline(
   context: CanvasRenderingContext2D,
   points: ScreenPoint[],
   strokeStyle: string,
-  lineWidth: number
+  lineWidth: number,
 ) {
   if (points.length < 2) return;
   context.strokeStyle = strokeStyle;
@@ -59,7 +59,7 @@ function fillTriangle(
   p0: ScreenPoint,
   p1: ScreenPoint,
   p2: ScreenPoint,
-  fillStyle: string
+  fillStyle: string,
 ): void {
   context.fillStyle = fillStyle;
   context.beginPath();
