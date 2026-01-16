@@ -1,18 +1,13 @@
 import { mat3FromLocalFrame } from "../../domain/localFrame.js";
-import { E_SUN_AT_EARTH } from "../../domain/domainPorts.js";
-import type {
-  LocalFrame,
-  PointLight,
-  RGB,
-  SceneObject,
-  Vec3,
-} from "../../domain/domainPorts.js";
+import type { LocalFrame, RGB, Vec3 } from "../../domain/domainPorts.js";
 import { mat3 } from "../../domain/mat3.js";
 import { vec3 } from "../../domain/vec3.js";
 import type { ScreenPoint } from "../projection/ScreenPoint.js";
 import { projectCameraPoint } from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
 import type { SceneObjectWithCache } from "./sceneTypes.js";
+import type { PointLight, SceneObject } from "./scenePorts.js";
+import { E_SUN_AT_EARTH } from "./lightingConstants.js";
 
 /**
  * Internal representation of a single shaded triangle face ready for rasterization.
@@ -62,13 +57,13 @@ export function buildShadedFaces(params: {
       worldPoints,
       cameraPos,
       cameraFrame,
-      frameId
+      frameId,
     );
 
     const worldFaceNormals = getWorldFaceNormalsForObject(
       obj,
       faceNormals,
-      frameId
+      frameId,
     );
 
     for (let fi = 0; fi < faces.length; fi++) {
@@ -141,7 +136,7 @@ export const NEAR = 0.01;
 function clipTriangleAgainstNearPlaneCamera(
   a: Vec3,
   b: Vec3,
-  c: Vec3
+  c: Vec3,
 ): [Vec3, Vec3, Vec3][] {
   const inside = (p: Vec3) => p.y >= NEAR;
 
@@ -196,7 +191,7 @@ export function getCameraPointsForObject(
   worldPoints: Vec3[],
   cameraPos: Vec3,
   cameraFrame: LocalFrame,
-  frameId: number
+  frameId: number,
 ): Vec3[] {
   const cachedObj = obj as SceneObjectWithCache;
 
@@ -252,7 +247,7 @@ export function getCameraPointsForObject(
 function getWorldFaceNormalsForObject(
   obj: SceneObject,
   meshFaceNormals: Vec3[] | undefined,
-  frameId: number
+  frameId: number,
 ): Vec3[] | undefined {
   if (!meshFaceNormals) return undefined;
 
@@ -305,7 +300,7 @@ function getWorldFaceNormalsForObject(
 function computeIrradianceAtPoint(
   p: Vec3,
   n: Vec3,
-  lights: PointLight[]
+  lights: PointLight[],
 ): number {
   if (lights.length === 0) return 0;
 

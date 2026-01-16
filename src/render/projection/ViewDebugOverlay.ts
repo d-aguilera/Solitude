@@ -1,4 +1,4 @@
-import type { Scene } from "../../domain/domainPorts.js";
+import { Scene } from "../scene/scenePorts";
 
 export type DrawMode = "faces" | "lines";
 

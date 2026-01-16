@@ -1,13 +1,14 @@
-import type { Plane, Vec3 } from "../domain/domainPorts.js";
+import type { Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { fps } from "./fps.js";
+import { Plane } from "./worldState.js";
 
 export function renderHUD(
   context: CanvasRenderingContext2D,
   plane: Plane,
   profilingEnabled: boolean,
   pilotCameraLocalOffset: Vec3,
-  thrustPercent: number
+  thrustPercent: number,
 ): void {
   const hudWidth = 420;
   const hudHeight = 70;
@@ -37,7 +38,7 @@ export function renderHUD(
   context.fillText(
     `Cam: x=${ox.toFixed(2)} y=${oy.toFixed(2)} z=${oz.toFixed(2)}`,
     x + 10,
-    y + 40
+    y + 40,
   );
 
   // Thrust

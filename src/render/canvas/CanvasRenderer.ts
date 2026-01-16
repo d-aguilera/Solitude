@@ -1,11 +1,8 @@
 import type { Renderer } from "../../app/appPorts.js";
-import type {
-  Plane,
-  Profiler,
-  Scene,
-  Vec3,
-  WorldState,
-} from "../../domain/domainPorts.js";
+import type { Vec3 } from "../../domain/domainPorts.js";
+import type { Plane, WorldState } from "../../app/worldState.js";
+import type { Scene } from "../scene/scenePorts.js";
+import type { Profiler } from "../../app/profilingPorts.js";
 import { renderHUD } from "../../app/hud.js";
 import { DEFAULT_DRAW_MODE } from "../../app/appPorts.js";
 import { buildPilotView, buildTopView } from "../../app/viewComposition.js";
@@ -91,7 +88,7 @@ export class CanvasRenderer implements Renderer {
       DEFAULT_DRAW_MODE,
       debugPlanes,
       pilotContext.canvas.width,
-      pilotContext.canvas.height
+      pilotContext.canvas.height,
     );
 
     // Build top view configuration and filtered scene.
@@ -103,7 +100,7 @@ export class CanvasRenderer implements Renderer {
       DEFAULT_DRAW_MODE,
       debugPlanes,
       topContext.canvas.width,
-      topContext.canvas.height
+      topContext.canvas.height,
     );
 
     this.viewRenderer.renderView({
@@ -126,7 +123,7 @@ export class CanvasRenderer implements Renderer {
       mainPlane,
       profilingEnabled,
       pilotCameraLocalOffset,
-      thrustPercent
+      thrustPercent,
     );
   }
 }

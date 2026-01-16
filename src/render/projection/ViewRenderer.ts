@@ -1,6 +1,6 @@
-import type { Profiler } from "../../domain/domainPorts.js";
-import type { Scene } from "../../domain/domainPorts.js";
 import type { ViewConfig } from "../../app/appPorts.js";
+import type { Profiler } from "../../app/profilingPorts.js";
+import { Scene } from "../scene/scenePorts.js";
 
 export type ViewRendererParams = {
   context: CanvasRenderingContext2D;

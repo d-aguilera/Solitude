@@ -5,14 +5,15 @@ import {
   NEAR,
 } from "../projection/projection.js";
 import { NdcPoint } from "./NdcPoint.js";
-import type { CameraPose, Plane, Vec3 } from "../../domain/domainPorts.js";
+import type { DomainCameraPose, Vec3 } from "../../domain/domainPorts.js";
 import type { DrawMode, ViewDebugOverlay } from "./ViewDebugOverlay.js";
 import type { View } from "./View.js";
+import { Plane } from "../../app/worldState.js";
 
 function makeBaseView(
-  camera: CameraPose,
+  camera: DomainCameraPose,
   projection: (p: Vec3) => NdcPoint | null,
-  drawMode: DrawMode
+  drawMode: DrawMode,
 ): View {
   return {
     projection,
@@ -62,18 +63,18 @@ export function makeStandardViewDebugOverlay(options: {
  * yaw/pitch adjustments. This function does not apply additional rotations.
  */
 export function buildPilotViewConfig(
-  pilotCamera: CameraPose,
+  pilotCamera: DomainCameraPose,
   canvasWidth: number,
   canvasHeight: number,
   referencePlane: Plane,
   drawMode: DrawMode,
-  debugPlanes: Plane[]
+  debugPlanes: Plane[],
 ): { view: View; debugOverlay: ViewDebugOverlay } {
   const projection = (worldPoint: Vec3): NdcPoint | null => {
     const cameraPoint = worldPointToCameraPoint(
       worldPoint,
       pilotCamera.position,
-      pilotCamera.frame
+      pilotCamera.frame,
     );
 
     const depth = cameraPoint.y;
@@ -96,18 +97,18 @@ export function buildPilotViewConfig(
  * Build the View configuration for the top-down view, given a camera.
  */
 export function buildTopViewConfig(
-  topCamera: CameraPose,
+  topCamera: DomainCameraPose,
   canvasWidth: number,
   canvasHeight: number,
   referencePlane: Plane,
   drawMode: DrawMode,
-  debugPlanes: Plane[]
+  debugPlanes: Plane[],
 ): { view: View; debugOverlay: ViewDebugOverlay } {
   const projection = (worldPoint: Vec3): NdcPoint | null => {
     const cameraPoint = worldPointToCameraPoint(
       worldPoint,
       topCamera.position,
-      topCamera.frame
+      topCamera.frame,
     );
 
     const depth = cameraPoint.y;

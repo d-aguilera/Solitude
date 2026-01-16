@@ -1,4 +1,4 @@
-import { Profiler } from "../domain/domainPorts.js";
+import type { Profiler } from "../app/profilingPorts.js";
 import {
   add as realAdd,
   check as realCheck,
@@ -17,7 +17,7 @@ import {
 export function profile<T>(
   counterGroup: string,
   counterName: string,
-  fn: () => T
+  fn: () => T,
 ): T {
   return realIsProfilingEnabled()
     ? realProfile(counterGroup, counterName, fn)

@@ -1,8 +1,6 @@
-import type { SceneObject } from "../domain/domainPorts.js";
-import type { WorldState } from "../domain/domainPorts.js";
-import type { Scene } from "../domain/domainPorts.js";
-import type { Plane } from "../domain/domainPorts.js";
-import { getCameraById } from "../domain/worldLookup.js";
+import type { Plane, WorldState } from "./worldState.js";
+import type { Scene, SceneObject } from "../render/scene/scenePorts.js";
+import { getDomainCameraById } from "../domain/worldLookup.js";
 import {
   buildPilotViewConfig,
   buildTopViewConfig,
@@ -18,9 +16,9 @@ export function buildPilotView(
   drawMode: DrawMode,
   debugPlanes: Plane[],
   canvasWidth: number,
-  canvasHeight: number
+  canvasHeight: number,
 ): { viewConfig: ViewConfig; scene: Scene } {
-  const pilotCamera = getCameraById(world, pilotCameraId);
+  const pilotCamera = getDomainCameraById(world, pilotCameraId);
   const adjustedScene = makePilotViewScene(scene);
 
   const { view, debugOverlay } = buildPilotViewConfig(
@@ -29,7 +27,7 @@ export function buildPilotView(
     canvasHeight,
     referencePlane,
     drawMode,
-    debugPlanes
+    debugPlanes,
   );
 
   return {
@@ -51,9 +49,9 @@ export function buildTopView(
   drawMode: DrawMode,
   debugPlanes: Plane[],
   canvasWidth: number,
-  canvasHeight: number
+  canvasHeight: number,
 ): { viewConfig: ViewConfig; scene: Scene } {
-  const topCamera = getCameraById(world, topCameraId);
+  const topCamera = getDomainCameraById(world, topCameraId);
   const adjustedScene = makeTopViewScene(scene);
 
   const { view, debugOverlay } = buildTopViewConfig(
@@ -62,7 +60,7 @@ export function buildTopView(
     canvasHeight,
     referencePlane,
     drawMode,
-    debugPlanes
+    debugPlanes,
   );
 
   return {

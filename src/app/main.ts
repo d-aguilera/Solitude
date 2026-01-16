@@ -2,14 +2,14 @@ import { startGame } from "./game.js";
 import type { Renderer } from "./appPorts.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { init as initResizeHandler } from "../render/canvas/canvasLayout.js";
-import type { Profiler } from "../domain/domainPorts.js";
+import type { Profiler } from "./profilingPorts.js";
 import { AppEnvironment } from "./appPorts.js";
 
 export function runApp(
   renderer: Renderer,
   gravityEngine: GravityEngine,
   profiler: Profiler,
-  env: AppEnvironment
+  env: AppEnvironment,
 ): void {
   initResizeHandler(env.container, env.pilotCanvas, env.topCanvas);
 

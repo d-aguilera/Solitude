@@ -1,23 +1,15 @@
 import type { PlanetBodyConfig, StarBodyConfig } from "./domainInternals.js";
 import { colors } from "./domainInternals.js";
 import type {
-  AirplaneSceneObject,
-  CameraPose,
   CelestialBody,
+  DomainCameraPose,
   LocalFrame,
   Mesh,
-  Plane,
   PlanetPathMapping,
   PlanetPhysics,
-  PlanetSceneObject,
-  PolylineSceneObject,
   RGB,
-  Scene,
-  SceneObject,
   StarPhysics,
-  StarSceneObject,
   Vec3,
-  WorldState,
 } from "./domainPorts.js";
 import {
   makeLocalFrameFromUp,
@@ -30,6 +22,15 @@ import { buildDefaultSolarSystemConfigs } from "./solarSystem.js";
 import { trig } from "./trig.js";
 import { vec3 } from "./vec3.js";
 import { getStarPhysicsById } from "./worldLookup.js";
+import type {
+  Scene,
+  SceneObject,
+  AirplaneSceneObject,
+  PlanetSceneObject,
+  StarSceneObject,
+  PolylineSceneObject,
+} from "../render/scene/scenePorts.js";
+import type { Plane, WorldState } from "../app/worldState.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
@@ -90,7 +91,7 @@ function createInitialPlane(
   };
 }
 
-function createInitialTopCamera(id: string, plane: Plane): CameraPose {
+function createInitialTopCamera(id: string, plane: Plane): DomainCameraPose {
   const offset: Vec3 = { x: 0, y: 0, z: 50 };
 
   return {
@@ -100,7 +101,7 @@ function createInitialTopCamera(id: string, plane: Plane): CameraPose {
   };
 }
 
-function createInitialPilotCamera(id: string, plane: Plane): CameraPose {
+function createInitialPilotCamera(id: string, plane: Plane): DomainCameraPose {
   return {
     id,
     position: { ...plane.position }, // will be offset in game loop

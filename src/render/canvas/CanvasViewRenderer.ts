@@ -1,8 +1,4 @@
-import type {
-  LocalFrame,
-  SceneObject,
-  Vec3,
-} from "../../domain/domainPorts.js";
+import type { LocalFrame, Vec3 } from "../../domain/domainPorts.js";
 import { NEAR, projectCameraPoint } from "../projection/projection.js";
 import type { ScreenPoint } from "../projection/ScreenPoint.js";
 import type {
@@ -16,6 +12,7 @@ import {
   getCameraPointsForObject,
 } from "../scene/shadedFaces.js";
 import { renderPolyline, renderShadedFaces } from "./canvasRasterizer.js";
+import { SceneObject } from "../scene/scenePorts.js";
 
 /**
  * Canvas2D implementation of the ViewRenderer abstraction.
@@ -65,7 +62,7 @@ export class CanvasViewRenderer implements ViewRenderer {
    */
   draw(
     context: CanvasRenderingContext2D,
-    { objects, view, lights, profiler, frameId }: DrawOptions
+    { objects, view, lights, profiler, frameId }: DrawOptions,
   ): void {
     const { cameraPos, cameraFrame } = view;
     const { width, height } = context.canvas;
@@ -97,7 +94,7 @@ export class CanvasViewRenderer implements ViewRenderer {
             cameraFrame,
             width,
             height,
-            frameId
+            frameId,
           );
         });
       } else {
@@ -110,7 +107,7 @@ export class CanvasViewRenderer implements ViewRenderer {
             cameraFrame,
             width,
             height,
-            frameId
+            frameId,
           );
         });
       }
@@ -124,7 +121,7 @@ export class CanvasViewRenderer implements ViewRenderer {
     cameraFrame: LocalFrame,
     canvasWidth: number,
     canvasHeight: number,
-    frameId: number
+    frameId: number,
   ): void {
     const projectedPoints: ScreenPoint[] = [];
 
@@ -138,7 +135,7 @@ export class CanvasViewRenderer implements ViewRenderer {
         worldPoints,
         cameraPos,
         cameraFrame,
-        frameId
+        frameId,
       );
 
       for (let i = 0; i < faces.length; i++) {

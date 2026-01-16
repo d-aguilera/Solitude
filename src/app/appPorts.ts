@@ -3,13 +3,9 @@ import type {
   ViewDebugOverlay,
   DrawMode,
 } from "../render/projection/ViewDebugOverlay.js";
-import type {
-  LocalFrame,
-  Profiler,
-  Plane,
-  Vec3,
-  WorldState,
-} from "../domain/domainPorts.js";
+import type { LocalFrame, Vec3 } from "../domain/domainPorts.js";
+import type { Plane, WorldState } from "./worldState.js";
+import type { Profiler } from "./profilingPorts.js";
 
 export interface AppEnvironment {
   container: Element;

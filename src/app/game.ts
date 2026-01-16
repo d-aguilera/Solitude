@@ -4,6 +4,16 @@ import type {
   ControlState,
   Renderer,
 } from "./appPorts.js";
+import type { Profiler } from "./profilingPorts.js";
+import type {
+  DomainWorld,
+  GravityEngine,
+  GravityState,
+  LocalFrame,
+  PlanetPathMapping,
+  Vec3,
+} from "../domain/domainPorts.js";
+import type { WorldState, Plane } from "./worldState.js";
 import {
   applyThrustToVelocity,
   updateBodyOrientationFromInput,
@@ -15,20 +25,7 @@ import {
   setProfilingEnabledInEnv,
 } from "./debugEnv.js";
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
-import type {
-  DomainWorld,
-  GravityEngine,
-  GravityState,
-  LocalFrame,
-  PlanetPathMapping,
-  Profiler,
-  Plane,
-  Scene,
-  Vec3,
-  WorldState,
-} from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
-import { getCameraById, getPlaneById } from "../domain/worldLookup.js";
 import {
   createInitialSceneAndWorld,
   syncPlanesToSceneObjects,
@@ -47,6 +44,9 @@ import {
   setProfilingEnabled,
   isProfilingEnabled,
 } from "../profiling/profilingFacade.js";
+import { Scene } from "../render/scene/scenePorts.js";
+import { getPlaneById } from "./worldLookup.js";
+import { getDomainCameraById } from "../domain/worldLookup.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;
@@ -88,7 +88,7 @@ export function startGame(
   contexts: {
     pilotContext: CanvasRenderingContext2D;
     topContext: CanvasRenderingContext2D;
-  }
+  },
 ): void {
   pilotContext = contexts.pilotContext;
   topContext = contexts.topContext;
@@ -117,7 +117,7 @@ export function startGame(
 function renderFrame(
   renderer: Renderer,
   profiler: Profiler,
-  nowMs: number
+  nowMs: number,
 ): void {
   const dtMs = nowMs - lastTimeMs;
   lastTimeMs = nowMs;
@@ -165,7 +165,7 @@ function renderFrame(
 function stepSimulation(
   dtSeconds: number,
   input: ControlInput,
-  profiler: Profiler
+  profiler: Profiler,
 ): void {
   stepPhysics(dtSeconds, input, profiler);
 
@@ -191,7 +191,7 @@ function makeControlledBodyState(plane: Plane): ControlledBodyState {
 
 function writeBackControlledBodyState(
   plane: Plane,
-  body: ControlledBodyState
+  body: ControlledBodyState,
 ): void {
   plane.frame = body.frame;
   plane.velocity = body.velocity;
@@ -203,7 +203,7 @@ function writeBackControlledBodyState(
 function stepPhysics(
   dtSeconds: number,
   input: ControlInput,
-  profiler: Profiler
+  profiler: Profiler,
 ): void {
   profiler.run("GAME", "physics", () => {
     updatePlaneOrientationFromControls(dtSeconds, input);
@@ -218,7 +218,7 @@ function stepPhysics(
  */
 function updatePlaneOrientationFromControls(
   dtSeconds: number,
-  input: ControlInput
+  input: ControlInput,
 ): void {
   const plane = getPlaneById(world, mainPlaneId);
   const bodyState = makeControlledBodyState(plane);
@@ -236,7 +236,7 @@ function updatePlaneOrientationFromControls(
  */
 function integrateForcesAndGravity(
   dtSeconds: number,
-  input: ControlInput
+  input: ControlInput,
 ): void {
   const gravityTimeScale = 10;
   const gravityDt = dtSeconds * gravityTimeScale;
@@ -355,14 +355,14 @@ function updateCameras(): void {
     pilotCameraId,
     mainPlane,
     pilotCameraLocalOffset,
-    frameFromPlaneForPilot
+    frameFromPlaneForPilot,
   );
 
   setCameraRelativeToPlane(
     topCameraId,
     mainPlane,
     { x: 0, y: 0, z: 50 },
-    frameFromPlaneForTop
+    frameFromPlaneForTop,
   );
 }
 
@@ -399,15 +399,15 @@ function setCameraRelativeToPlane(
   cameraId: string,
   plane: Plane,
   localOffset: Vec3,
-  frameFromPlane: (plane: Plane) => LocalFrame
+  frameFromPlane: (plane: Plane) => LocalFrame,
 ): void {
-  const camera = getCameraById(world, cameraId);
+  const camera = getDomainCameraById(world, cameraId);
   const { right, forward, up } = plane.frame;
 
   const worldOffset = vec3.add3(
     vec3.scale(right, localOffset.x),
     vec3.scale(forward, localOffset.y),
-    vec3.scale(up, localOffset.z)
+    vec3.scale(up, localOffset.z),
   );
 
   camera.position = vec3.add(plane.position, worldOffset);

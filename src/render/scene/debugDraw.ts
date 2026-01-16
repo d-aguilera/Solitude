@@ -1,8 +1,10 @@
-import type { Plane, Scene, Vec3 } from "../../domain/domainPorts.js";
+import type { Scene } from "./scenePorts.js";
+import type { Vec3 } from "../../domain/domainPorts.js";
 import { vec3 } from "../../domain/vec3.js";
 import type { NdcPoint } from "../projection/NdcPoint.js";
 import { ndcToScreen } from "../projection/projection.js";
 import { VelocityDebugSegment } from "./VelocityDebugSegment.js";
+import { Plane } from "../../app/worldState.js";
 
 export type ProjectFn = (p: Vec3) => NdcPoint | null;
 
@@ -60,7 +62,7 @@ export function getPlaneVelocitySegments(plane: Plane): VelocityDebugSegment[] {
 export function drawPlaneVelocityLine(
   ctx: CanvasRenderingContext2D,
   project: ProjectFn,
-  plane: Plane
+  plane: Plane,
 ): void {
   const segments = getPlaneVelocitySegments(plane);
   if (segments.length === 0) return;
@@ -98,7 +100,7 @@ export function drawBodyLabels(
   ctx: CanvasRenderingContext2D,
   project: ProjectFn,
   scene: Scene,
-  referencePlane: Plane
+  referencePlane: Plane,
 ): void {
   ctx.save();
   ctx.font = "14px monospace";

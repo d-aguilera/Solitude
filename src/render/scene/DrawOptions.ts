@@ -1,9 +1,7 @@
-import type {
-  PointLight,
-  Profiler,
-  SceneObject,
-} from "../../domain/domainPorts.js";
+import type { PointLight } from "./scenePorts.js";
+import type { SceneObject } from "./scenePorts.js";
 import type { View } from "../projection/View.js";
+import { Profiler } from "../../app/profilingPorts.js";
 
 export interface DrawOptions {
   objects: SceneObject[];

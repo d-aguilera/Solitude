@@ -1,6 +1,7 @@
-import type { Mat3, SceneObject, Vec3 } from "../../domain/domainPorts.js";
+import type { Mat3, Vec3 } from "../../domain/domainPorts.js";
 import type { SceneObjectWithCache } from "./sceneTypes.js";
 import type { Renderable } from "./Renderable.js";
+import { SceneObject } from "./scenePorts.js";
 
 /**
  * Convert a SceneObject into a Renderable with world-space points.
@@ -33,7 +34,7 @@ export function toRenderable(obj: SceneObject): Renderable {
       cache,
       obj.orientation,
       obj.scale,
-      obj.position
+      obj.position,
     );
 
     worldPoints = cache;
@@ -52,7 +53,7 @@ function transformPointsToWorldInPlace(
   dst: Vec3[],
   R: Mat3,
   s: number,
-  position: Vec3
+  position: Vec3,
 ): void {
   const r0 = R[0];
   const r00 = r0[0],

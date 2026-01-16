@@ -14,56 +14,25 @@ export type BodyId = string;
 export type Mat3 = [
   [number, number, number],
   [number, number, number],
-  [number, number, number]
+  [number, number, number],
 ];
 
 /**
- * Small adapter that lets callers plug in any profiling / tracing in
- * the domain layer without direct coupling to a concrete API.
+ * Generalized world-state container for dynamic entities.
+ *
+ * This is the core simulation model. Outer layers adapt this into
+ * whatever representation they need for rendering or I/O.
  */
-export type Profiler = {
-  run: <T>(group: string, name: string, fn: () => T) => T;
-  increment: (group: string, name: string, count?: number) => void;
-};
-
-/**
- * Union of all scene object variants.
- */
-export type SceneObject =
-  | AirplaneSceneObject
-  | PlanetSceneObject
-  | StarSceneObject
-  | PolylineSceneObject;
-
-/**
- * Airplane visual object.
- */
-export interface AirplaneSceneObject extends SolidSceneObject {
-  kind: "airplane";
-  backFaceCulling: false;
+export interface DomainWorld {
+  planes: PlaneBody[];
+  cameras: DomainCameraPose[];
+  planets: CelestialBody[];
+  planetPhysics: PlanetPhysics[];
+  stars: CelestialBody[];
+  starPhysics: StarPhysics[];
 }
 
-/**
- * Base properties common to all scene objects.
- */
-export interface BaseSceneObject extends DomainSceneObject {
-  kind: SceneObjectKind;
-  lineWidth: number;
-  wireframeOnly: boolean;
-  applyTransform: boolean;
-  backFaceCulling: boolean;
-}
-
-export interface BodyState {
-  id: BodyId;
-  velocity: Vec3;
-  mass: number;
-}
-
-/**
- * Domain-level camera pose used by simulation and view configuration.
- */
-export interface CameraPose {
+export interface DomainCameraPose {
   id: string;
   position: Vec3;
   frame: LocalFrame;
@@ -78,44 +47,19 @@ export interface CelestialBody {
   velocity: Vec3;
 }
 
-/**
- * Celestial body included in gravity simulation.
- */
-export interface CelestialBodySceneObject extends SolidSceneObject {
-  kind: "planet" | "star";
-  initialVelocity: Vec3;
-  physicalRadius: number; // meters
-  backFaceCulling: true;
+export interface BodyState {
+  id: BodyId;
   velocity: Vec3;
-}
-
-export interface DomainScene {
-  objects: DomainSceneObject[];
-  lights: PointLight[];
-}
-
-export interface DomainSceneObject {
-  id: string;
-  position: Vec3;
-  orientation: Mat3;
-  mesh: Mesh;
-  scale: number;
-  color: RGB;
+  mass: number;
 }
 
 /**
- * Generalized world-state container for dynamic entities.
- *
- * This is the core simulation model. Outer layers adapt this into
- * whatever representation they need for rendering or I/O.
+ * Container for all gravitational bodies in the domain.
  */
-export interface DomainWorld {
-  planes: PlaneBody[];
-  cameras: CameraPose[];
-  planets: CelestialBody[];
-  planetPhysics: PlanetPhysics[];
-  stars: CelestialBody[];
-  starPhysics: StarPhysics[];
+export interface GravityState {
+  bodies: BodyState[];
+  bindings: GravityBodyBinding[];
+  mainPlaneBodyIndex: number;
 }
 
 export interface GravityBodyBinding {
@@ -151,17 +95,8 @@ export interface GravityEngine {
   step(
     dtSeconds: number,
     world: DomainWorld,
-    state: GravityState
+    state: GravityState,
   ): GravityState;
-}
-
-/**
- * Container for all gravitational bodies in the domain.
- */
-export interface GravityState {
-  bodies: BodyState[];
-  bindings: GravityBodyBinding[];
-  mainPlaneBodyIndex: number;
 }
 
 export interface LocalFrame {
@@ -177,15 +112,6 @@ export interface Mesh {
 }
 
 /**
- * Adapter-level plane view used by app and rendering.
- *
- * This is a thin DTO around the domain PlaneBody.
- */
-export interface Plane extends PlaneBody {
-  speed: number;
-}
-
-/**
  * Domain-level airplane/ship body.
  */
 export interface PlaneBody {
@@ -193,43 +119,6 @@ export interface PlaneBody {
   position: Vec3;
   frame: LocalFrame;
   velocity: Vec3;
-}
-
-export interface PlanetPathMapping {
-  planetId: string;
-  pathId: string;
-}
-
-/**
- * Domain-level scene representation for lighting etc.
- * Rendering adapters can extend this with extra fields as needed.
- */
-export interface PointLight {
-  position: Vec3;
-  intensity: number;
-}
-
-export interface RGB {
-  r: number;
-  g: number;
-  b: number;
-}
-
-/**
- * Adapter-level scene used by renderers.
- */
-export interface Scene extends DomainScene {
-  objects: SceneObject[];
-}
-
-/**
- * Adapter-level world state used by the app and renderer.
- *
- * This wraps the DomainWorld so that outer layers do not depend on
- * the raw domain container directly.
- */
-export interface WorldState extends DomainWorld {
-  planes: Plane[];
 }
 
 /**
@@ -243,43 +132,21 @@ export interface PlanetPhysics {
 }
 
 /**
- * Planet included in gravity simulation.
- */
-export interface PlanetSceneObject extends CelestialBodySceneObject {
-  kind: "planet";
-}
-
-/**
- * Generic polyline / path object (orbit paths, plane trajectory).
- * World-space points; no transform applied; not part of gravity.
- */
-export interface PolylineSceneObject extends BaseSceneObject {
-  kind: "polyline";
-  applyTransform: false;
-  wireframeOnly: true;
-  backFaceCulling: false;
-}
-
-export type SceneObjectKind = "airplane" | "planet" | "polyline" | "star";
-
-export interface SolidSceneObject extends BaseSceneObject {
-  applyTransform: true;
-  wireframeOnly: false;
-}
-
-/**
  * Physical properties of a star body.
  */
 export interface StarPhysics extends PlanetPhysics {
   luminosity: number; // W or scaled units for lighting
 }
 
-/**
- * Star included in gravity simulation and also contributes light.
- */
-export interface StarSceneObject extends CelestialBodySceneObject {
-  kind: "star";
-  luminosity: number; // W or scaled units for lighting
+export interface PlanetPathMapping {
+  planetId: string;
+  pathId: string;
+}
+
+export interface RGB {
+  r: number;
+  g: number;
+  b: number;
 }
 
 export interface Vec3 {
