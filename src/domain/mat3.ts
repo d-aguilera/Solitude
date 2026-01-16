@@ -1,11 +1,5 @@
-import type { Vec3 } from "./domain.js";
-import { vec } from "./vec3.js";
-
-export type Mat3 = [
-  [number, number, number],
-  [number, number, number],
-  [number, number, number]
-];
+import { Mat3, Vec3 } from "./domainPorts.js";
+import { vec3 } from "./vec3.js";
 
 /**
  * 3×3 rotation matrix stored in row-major order.
@@ -38,8 +32,8 @@ function mulVec3(R: Mat3, v: Vec3): Vec3 {
 }
 
 function rotAxis(axis: Vec3, angle: number): Mat3 {
-  const n = vec.normalize(axis);
-  const len = vec.length(n);
+  const n = vec3.normalize(axis);
+  const len = vec3.length(n);
 
   // Degenerate axis → identity
   if (len === 0) {

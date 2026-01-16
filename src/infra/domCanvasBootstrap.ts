@@ -1,5 +1,5 @@
 import { CanvasRenderer } from "../render/canvas/CanvasRenderer.js";
-import { NewtonianGravityEngine } from "../world/physics/NewtonianGravityEngine.js";
+import { NewtonianGravityEngine } from "../domain/NewtonianGravityEngine.js";
 import { defaultProfiler } from "../profiling/profilingFacade.js";
 import { runApp } from "../app/main.js";
 

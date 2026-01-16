@@ -1,13 +1,13 @@
 import { drawPlaneVelocityLine, drawBodyLabels } from "../scene/debugDraw.js";
 import {
-  NdcPoint,
   worldPointToCameraPoint,
   projectCameraPointToNdc,
   NEAR,
 } from "../projection/projection.js";
-import type { Plane } from "../../world/types.js";
-import type { DrawMode, View, ViewDebugOverlay } from "./viewTypes.js";
-import { CameraPose, Vec3 } from "../../world/domain.js";
+import { NdcPoint } from "./NdcPoint.js";
+import type { CameraPose, Plane, Vec3 } from "../../domain/domainPorts.js";
+import type { DrawMode, ViewDebugOverlay } from "./ViewDebugOverlay.js";
+import type { View } from "./View.js";
 
 function makeBaseView(
   camera: CameraPose,

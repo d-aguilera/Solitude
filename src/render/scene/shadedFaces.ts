@@ -1,13 +1,18 @@
-import type { ScreenPoint } from "../projection/projection.js";
+import { mat3FromLocalFrame } from "../../domain/localFrame.js";
+import { E_SUN_AT_EARTH } from "../../domain/domainPorts.js";
+import type {
+  LocalFrame,
+  PointLight,
+  RGB,
+  SceneObject,
+  Vec3,
+} from "../../domain/domainPorts.js";
+import { mat3 } from "../../domain/mat3.js";
+import { vec3 } from "../../domain/vec3.js";
+import type { ScreenPoint } from "../projection/ScreenPoint.js";
 import { projectCameraPoint } from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
-import type { SceneObject } from "../../world/types.js";
-import { vec } from "../../world/vec3.js";
-import { mat3FromLocalFrame } from "../../world/localFrame.js";
-import { mat3 } from "../../world/mat3.js";
-import { E_SUN_AT_EARTH } from "../../world/solar/solarSystemConfig.js";
-import { LocalFrame, PointLight, RGB, Vec3 } from "../../world/domain.js";
-import { SceneObjectWithCache } from "./sceneTypes.js";
+import type { SceneObjectWithCache } from "./sceneTypes.js";
 
 /**
  * Internal representation of a single shaded triangle face ready for rasterization.
@@ -79,14 +84,14 @@ export function buildShadedFaces(params: {
         n = worldFaceNormals[fi];
       } else {
         // Fallback for meshes without precomputed normals (airplane)
-        const e1 = vec.sub(v1, v0);
-        const e2 = vec.sub(v2, v0);
-        n = vec.normalize(vec.cross(e1, e2));
+        const e1 = vec3.sub(v1, v0);
+        const e2 = vec3.sub(v2, v0);
+        n = vec3.normalize(vec3.cross(e1, e2));
       }
 
       if (obj.backFaceCulling) {
-        const toCamera = vec.sub(cameraPos, v0);
-        const facing = vec.dot(n, toCamera);
+        const toCamera = vec3.sub(cameraPos, v0);
+        const facing = vec3.dot(n, toCamera);
         if (facing <= 0) continue;
       }
 
@@ -311,14 +316,14 @@ function computeIrradianceAtPoint(
   // Here, I is luminosity-like (W or scaled W), r is distance in meters,
   // and n·L = cosθ is the Lambertian term.
   for (const light of lights) {
-    const toLight = vec.sub(light.position, p);
-    const r2 = vec.dot(toLight, toLight);
+    const toLight = vec3.sub(light.position, p);
+    const r2 = vec3.dot(toLight, toLight);
     if (r2 === 0) continue;
 
     const r = Math.sqrt(r2);
     const invR = 1 / r;
-    const L = vec.scale(toLight, invR);
-    const ndotl = vec.dot(n, L);
+    const L = vec3.scale(toLight, invR);
+    const ndotl = vec3.dot(n, L);
     if (ndotl <= 0) continue;
 
     const I = light.intensity; // luminosity-like

@@ -1,74 +1,19 @@
-import {
-  lookSpeed,
-  rotSpeedRoll,
-  rotSpeedPitch,
-  rotSpeedYaw,
-} from "./controlsConfig.js";
-import { rotateFrameAroundAxis } from "../world/localFrame.js";
-import { vec } from "../world/vec3.js";
-import { LocalFrame, Vec3 } from "../world/domain.js";
+import { rotateFrameAroundAxis } from "../domain/localFrame.js";
+import { vec3 } from "../domain/vec3.js";
+import { LocalFrame } from "../domain/domainPorts.js";
+import { ControlInput } from "./appPorts.js";
+import { PilotLookState } from "./appPorts.js";
+import { ControlState } from "./appPorts.js";
+import { ControlledBodyState } from "./appPorts.js";
 
 // Max thrust acceleration in m/s^2 at 100% thrust
 const maxThrustAcceleration = 1_000_000; // ~ 100_000 G
 
-export interface ControlInput {
-  rollLeft: boolean;
-  rollRight: boolean;
-  pitchUp: boolean;
-  pitchDown: boolean;
-  yawLeft: boolean;
-  yawRight: boolean;
-  lookLeft: boolean;
-  lookRight: boolean;
-  lookUp: boolean;
-  lookDown: boolean;
-  lookReset: boolean;
-  camForward: boolean;
-  camBackward: boolean;
-  camUp: boolean;
-  camDown: boolean;
-  // thrust
-  burnForward: boolean;
-  burnBackwards: boolean;
-  thrust0: boolean;
-  thrust1: boolean;
-  thrust2: boolean;
-  thrust3: boolean;
-  thrust4: boolean;
-  thrust5: boolean;
-}
-
-/**
- * Pilot's view state relative to the controlled vehicle.
- */
-export interface PilotLookState {
-  azimuth: number;
-  elevation: number;
-}
-
-/**
- * Per-player control state that must persist across frames.
- */
-export interface ControlState {
-  /**
-   * Persistent thrust magnitude in [0..1], updated by numeric keys.
-   */
-  thrustPercent: number;
-
-  /**
-   * Persistent pilot look state owned by the controls layer.
-   */
-  look: PilotLookState;
-}
-
-/**
- * Simple container for the controlled body's pose and velocity.
- * Kept separate from the broader WorldState.
- */
-export interface ControlledBodyState {
-  frame: LocalFrame;
-  velocity: Vec3;
-}
+// Rates in radians per second
+const lookSpeed = 1.5;
+const rotSpeedRoll = 1.0;
+const rotSpeedPitch = 0.8;
+const rotSpeedYaw = 0.5;
 
 /**
  * Create a default-initialized control state.
@@ -169,7 +114,7 @@ function yawFrame(
  *
  * If multiple keys are pressed at once, the highest level wins for this frame.
  */
-export function updateThrustMagnitudeFromInput(
+function updateThrustMagnitudeFromInput(
   input: ControlInput,
   state: ControlState
 ): void {
@@ -235,7 +180,7 @@ export function applyThrustToVelocity(
   const f = body.frame.forward;
   const accelMagnitude = maxThrustAcceleration * thrustPercent;
 
-  const dv = vec.scale(f, accelMagnitude * dtSeconds);
+  const dv = vec3.scale(f, accelMagnitude * dtSeconds);
   body.velocity.x += dv.x;
   body.velocity.y += dv.y;
   body.velocity.z += dv.z;

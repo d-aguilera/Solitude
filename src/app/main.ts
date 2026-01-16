@@ -1,14 +1,9 @@
 import { startGame } from "./game.js";
-import type { Renderer } from "./rendererPort.js";
-import type { GravityEngine } from "../world/physics/GravityEngine.js";
+import type { Renderer } from "./appPorts.js";
+import type { GravityEngine } from "../domain/domainPorts.js";
 import { init as initResizeHandler } from "../render/canvas/canvasLayout.js";
-import type { Profiler } from "../world/domain.js";
-
-export interface AppEnvironment {
-  container: Element;
-  pilotCanvas: HTMLCanvasElement;
-  topCanvas: HTMLCanvasElement;
-}
+import type { Profiler } from "../domain/domainPorts.js";
+import { AppEnvironment } from "./appPorts.js";
 
 export function runApp(
   renderer: Renderer,

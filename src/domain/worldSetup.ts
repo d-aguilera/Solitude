@@ -1,37 +1,34 @@
+import type { PlanetBodyConfig, StarBodyConfig } from "./domainInternals.js";
+import { colors } from "./domainInternals.js";
+import type {
+  AirplaneSceneObject,
+  CameraPose,
+  CelestialBody,
+  LocalFrame,
+  Mesh,
+  Plane,
+  PlanetPathMapping,
+  PlanetPhysics,
+  PlanetSceneObject,
+  PolylineSceneObject,
+  RGB,
+  Scene,
+  SceneObject,
+  StarPhysics,
+  StarSceneObject,
+  Vec3,
+  WorldState,
+} from "./domainPorts.js";
 import {
   makeLocalFrameFromUp,
   mat3FromLocalFrame,
   rotateFrameAroundAxis,
 } from "./localFrame.js";
 import { mat3 } from "./mat3.js";
-import { airplaneModel, generatePlanetMesh } from "./content/models.js";
-import {
-  buildDefaultSolarSystemConfigs,
-  radialDirAtAngle,
-  tangentialDirAtAngle,
-  type PlanetConfig,
-} from "./solar/solarSystemConfig.js";
-import type {
-  AirplaneSceneObject,
-  Plane,
-  PlanetSceneObject,
-  PolylineSceneObject,
-  Scene,
-  SceneObject,
-  StarSceneObject,
-  WorldState,
-} from "./types.js";
-import type {
-  CelestialBody,
-  LocalFrame,
-  Mesh,
-  PlanetPhysics,
-  StarPhysics,
-  RGB,
-  Vec3,
-  CameraPose,
-} from "./domain.js";
-import { vec } from "./vec3.js";
+import { airplaneModel, generatePlanetMesh } from "./models.js";
+import { buildDefaultSolarSystemConfigs } from "./solarSystem.js";
+import { trig } from "./trig.js";
+import { vec3 } from "./vec3.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
@@ -42,40 +39,40 @@ function createInitialPlane(
   position: Vec3,
   initialVelocity: Vec3
 ): Plane {
-  const speed = vec.length(initialVelocity);
+  const speed = vec3.length(initialVelocity);
 
   let frame: LocalFrame = initialFrame;
 
   if (speed > 0) {
-    const targetForward = vec.normalize(initialVelocity);
+    const targetForward = vec3.normalize(initialVelocity);
 
     // Start from the canonical initialFrame
     const baseForward = initialFrame.forward;
 
     // Compute rotation axis = baseForward × targetForward
-    const axis = vec.cross(baseForward, targetForward);
-    const axisLen = vec.length(axis);
+    const axis = vec3.cross(baseForward, targetForward);
+    const axisLen = vec3.length(axis);
 
     if (axisLen < 1e-6) {
       // Vectors are parallel or anti-parallel.
-      const dot = vec.dot(baseForward, targetForward);
+      const dot = vec3.dot(baseForward, targetForward);
       if (dot > 0.999999) {
         // Same direction: no change needed.
         frame = initialFrame;
       } else {
         // Opposite direction: rotate 180° around "up" to flip forward.
         frame = {
-          right: vec.scale(initialFrame.right, -1),
-          forward: vec.scale(baseForward, -1),
+          right: vec3.scale(initialFrame.right, -1),
+          forward: vec3.scale(baseForward, -1),
           up: initialFrame.up,
         };
       }
     } else {
       // General case: rotate base frame so its forward matches targetForward.
-      const axisN = vec.normalize(axis);
+      const axisN = vec3.normalize(axis);
       const dot = Math.min(
         1,
-        Math.max(-1, vec.dot(baseForward, targetForward))
+        Math.max(-1, vec3.dot(baseForward, targetForward))
       );
       const angle = Math.acos(dot);
 
@@ -97,7 +94,7 @@ function createInitialTopCamera(id: string, plane: Plane): CameraPose {
 
   return {
     id,
-    position: vec.add(plane.position, offset),
+    position: vec3.add(plane.position, offset),
     frame: initialFrame,
   };
 }
@@ -120,7 +117,7 @@ function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
     position: { ...plane.position },
     orientation: mat3FromLocalFrame(plane.frame),
     scale: AIRPLANE_VISUAL_SCALE,
-    color: { r: 0, g: 255, b: 255 },
+    color: colors.airplane,
     lineWidth: 1,
     applyTransform: true,
     wireframeOnly: false,
@@ -152,14 +149,6 @@ function createPolylineSceneObject(
   };
 }
 
-function createPlanetPathObject(id: string, color: RGB): PolylineSceneObject {
-  return createPolylineSceneObject(id, color);
-}
-
-function createEmptyOrbitPathObject(id: string): PolylineSceneObject {
-  return createPolylineSceneObject(id, { r: 255, g: 255, b: 0 });
-}
-
 /**
  * Helper: compute physical mass from radius and density.
  * Centralized here so both world setup and gravity share the same mapping.
@@ -179,7 +168,7 @@ function computePlanetMass(physicalRadius: number, density: number): number {
  *  - Registers PlanetPhysics / StarPhysics entries for gravity
  */
 function addPlanetsAndStarsFromConfig(
-  configs: PlanetConfig[],
+  configs: (PlanetBodyConfig | StarBodyConfig)[],
   objects: SceneObject[],
   worldPlanets: WorldState["planets"],
   worldPlanetPhysics: PlanetPhysics[],
@@ -189,16 +178,20 @@ function addPlanetsAndStarsFromConfig(
   const bodyMeshTemplate: Mesh = generatePlanetMesh(3);
 
   // Define an orbital plane via two basis vectors:
-  const radialAxis1 = vec.normalize(initialForward);
-  const radialAxis2 = vec.normalize(initialUp);
+  const radialAxis1 = vec3.normalize(initialForward);
+  const radialAxis2 = vec3.normalize(initialUp);
 
   for (const cfg of configs) {
     const theta = cfg.orbit.angleRad;
-    const radial = radialDirAtAngle(theta, radialAxis1, radialAxis2);
-    const tangential = tangentialDirAtAngle(theta, radialAxis1, radialAxis2);
+    const radial = trig.radialDirAtAngle(theta, radialAxis1, radialAxis2);
+    const tangential = trig.tangentialDirAtAngle(
+      theta,
+      radialAxis1,
+      radialAxis2
+    );
 
     // Physical orbit radius in meters
-    const center: Vec3 = vec.scale(radial, cfg.orbit.radius);
+    const center: Vec3 = vec3.scale(radial, cfg.orbit.radius);
 
     const bodyMesh: Mesh = { ...bodyMeshTemplate };
 
@@ -212,8 +205,6 @@ function addPlanetsAndStarsFromConfig(
         : { x: 0, y: 0, z: 0 };
 
     if (cfg.kind === "star") {
-      const luminosity = cfg.luminosity ?? 0;
-
       const starObj: StarSceneObject = {
         id: cfg.id,
         kind: "star",
@@ -229,7 +220,7 @@ function addPlanetsAndStarsFromConfig(
         physicalRadius: cfg.physicalRadius,
         backFaceCulling: true,
         velocity: { ...initialVelocity },
-        luminosity,
+        luminosity: cfg.luminosity,
       };
 
       const starBody: CelestialBody = {
@@ -243,7 +234,7 @@ function addPlanetsAndStarsFromConfig(
         physicalRadius: cfg.physicalRadius,
         density: cfg.density,
         mass: computePlanetMass(cfg.physicalRadius, cfg.density),
-        luminosity,
+        luminosity: cfg.luminosity,
       };
 
       worldStars.push(starBody);
@@ -284,7 +275,7 @@ function addPlanetsAndStarsFromConfig(
     }
 
     // All get a path polyline
-    objects.push(createPlanetPathObject(cfg.pathId, cfg.color));
+    objects.push(createPolylineSceneObject(cfg.pathId, cfg.color));
   }
 }
 
@@ -307,21 +298,16 @@ function computePlaneStartPosFromPlanet(
   const north: Vec3 = { x: 0, y: 0, z: 1 };
 
   // Use planet's physical radius from its scene object
-  const offset = vec.scale(
+  const offset = vec3.scale(
     north,
     planetObj.physicalRadius + PLANE_START_ALTITUDE_M
   );
 
-  return vec.add(planetObj.position, offset);
+  return vec3.add(planetObj.position, offset);
 }
 
 function isPlanetSceneObject(obj: SceneObject): obj is PlanetSceneObject {
   return obj.kind === "planet";
-}
-
-export interface PlanetPathMapping {
-  planetId: string;
-  pathId: string;
 }
 
 export function createInitialSceneAndWorld(): {
@@ -377,7 +363,10 @@ export function createInitialSceneAndWorld(): {
   // Add the airplane visual object at that position
   addAirplaneObject(mainPlane, objects);
 
-  const mainPlanePath = createEmptyOrbitPathObject("path:plane:main");
+  const mainPlanePath = createPolylineSceneObject(
+    "path:plane:main",
+    colors.yellow
+  );
   objects.push(mainPlanePath);
 
   const scene: Scene = {

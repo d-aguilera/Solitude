@@ -1,29 +1,15 @@
-import { getFocalLengths } from "../../app/config.js";
-import { LocalFrame, Vec3 } from "../../world/domain.js";
-import { mat3FromLocalFrame } from "../../world/localFrame.js";
-import { mat3 } from "../../world/mat3.js";
-import { vec } from "../../world/vec3.js";
+import { mat3 } from "../../domain/mat3.js";
+import { vec3 } from "../../domain/vec3.js";
+import type { NdcPoint } from "./NdcPoint.js";
+import type { ScreenPoint } from "./ScreenPoint.js";
+import type { LocalFrame, Vec3 } from "../../domain/domainPorts.js";
+import { mat3FromLocalFrame } from "../../domain/localFrame.js";
 
-export interface ScreenPoint {
-  x: number;
-  y: number;
-  depth: number; // camera-space depth (positive means in front of camera)
-}
+// camera-space forward threshold
+export const NEAR = 0.01;
 
-/**
- * Normalized device coordinate in the projection plane:
- *   - x, y in [-1, 1] after perspective divide
- *   - depth is camera-space Y (forward distance)
- *
- * Mapping to pixel coordinates is done separately via `ndcToScreen`.
- */
-export interface NdcPoint {
-  x: number;
-  y: number;
-  depth: number;
-}
-
-export const NEAR = 0.01; // camera-space forward threshold
+// Vertical field of view in degrees.
+const VERTICAL_FOV = 30;
 
 /**
  * Pure: world-space -> camera-space.
@@ -35,7 +21,7 @@ export function worldPointToCameraPoint(
 ): Vec3 {
   const R_worldFromLocal = mat3FromLocalFrame(cameraFrame);
   const R_localFromWorld = mat3.transpose(R_worldFromLocal);
-  const d = vec.sub(worldPoint, cameraPosition);
+  const d = vec3.sub(worldPoint, cameraPosition);
   return mat3.mulVec3(R_localFromWorld, d);
 }
 
@@ -50,7 +36,7 @@ export function projectCameraPointToNdc(
   const { fX, fY } = getFocalLengths(canvasWidth, canvasHeight);
   const depth = cameraPoint.y;
 
-  const scaled = vec.scale(
+  const scaled = vec3.scale(
     { x: cameraPoint.x * fX, y: cameraPoint.z * fY, z: 0 },
     1 / depth
   );
@@ -88,4 +74,41 @@ export function projectCameraPoint(
 ): ScreenPoint {
   const ndc = projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
   return ndcToScreen(ndc, canvasWidth, canvasHeight);
+}
+
+/**
+ * Compute focal lengths (fX, fY) for our camera.
+ *
+ * Design goals:
+ *   - We define a vertical field of view (VERTICAL_FOV) in radians.
+ *   - We then choose fX so that a *sphere centered on the view axis*
+ *     appears circular in pixel space, even when canvasWidth != canvasHeight.
+ *
+ * This “circle condition” is:
+ *
+ *   fX * canvasWidth == fY * canvasHeight
+ *
+ * Intuition:
+ *   - In NDC, x and y are scaled by fX and fY, then mapped to pixels by
+ *     multiplying by canvasWidth / 2 and canvasHeight / 2 respectively.
+ *   - For a unit sphere straight ahead, equal pixel radii horizontally
+ *     and vertically requires the combined scale in x and y to match.
+ *
+ * This is different from the conventional “fix VFOV, derive HFOV from aspect”
+ * camera; here we bias the intrinsics so that round things look round
+ * on screen.
+ */
+function getFocalLengths(
+  canvasWidth: number,
+  canvasHeight: number
+): { fX: number; fY: number } {
+  const vFovRad = (VERTICAL_FOV * Math.PI) / 180;
+
+  // Vertical focal length from chosen vertical FOV:
+  const fY = 1 / Math.tan(vFovRad / 2);
+
+  // Enforce circle condition: fX * W == fY * H
+  const fX = fY * (canvasHeight / canvasWidth);
+
+  return { fX, fY };
 }

@@ -1,5 +1,5 @@
-import type { Mesh, Vec3 } from "../../world/domain.js";
-import { vec } from "../../world/vec3.js";
+import type { Mesh, Vec3 } from "./domainPorts.js";
+import { vec3 } from "./vec3.js";
 
 export const airplaneModel: Mesh = {
   points: [
@@ -58,7 +58,7 @@ export const icosahedronModel: Mesh = {
     { x: t, y: 0, z: 1 },
     { x: -t, y: 0, z: -1 },
     { x: -t, y: 0, z: 1 },
-  ].map(vec.normalize),
+  ].map(vec3.normalize),
   faces: [
     [0, 11, 5],
     [0, 5, 1],
@@ -108,7 +108,7 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
 
       const v1 = vertices[i1];
       const v2 = vertices[i2];
-      const mid = vec.normalize({
+      const mid = vec3.normalize({
         x: (v1.x + v2.x) * 0.5,
         y: (v1.y + v2.y) * 0.5,
         z: (v1.z + v2.z) * 0.5,
@@ -148,23 +148,23 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
     const v1 = points[i1];
     const v2 = points[i2];
 
-    const e1 = vec.sub(v1, v0);
-    const e2 = vec.sub(v2, v0);
-    let n = vec.cross(e1, e2);
+    const e1 = vec3.sub(v1, v0);
+    const e2 = vec3.sub(v2, v0);
+    let n = vec3.cross(e1, e2);
 
     // For a unit sphere centered at origin, v0 points outward.
-    if (vec.dot(n, v0) < 0) {
+    if (vec3.dot(n, v0) < 0) {
       // Flip winding
       faces[i] = [i0, i2, i1];
       // Recompute with flipped vertices
       const vv1 = v2;
       const vv2 = v1;
-      const ee1 = vec.sub(vv1, v0);
-      const ee2 = vec.sub(vv2, v0);
-      n = vec.cross(ee1, ee2);
+      const ee1 = vec3.sub(vv1, v0);
+      const ee2 = vec3.sub(vv2, v0);
+      n = vec3.cross(ee1, ee2);
     }
 
-    faceNormals[i] = vec.normalize(n);
+    faceNormals[i] = vec3.normalize(n);
   }
 
   return {

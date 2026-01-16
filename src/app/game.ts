@@ -1,16 +1,41 @@
+import type {
+  ControlInput,
+  ControlledBodyState,
+  ControlState,
+  Renderer,
+} from "./appPorts.js";
 import {
   applyThrustToVelocity,
-  ControlInput,
   updateBodyOrientationFromInput,
   getSignedThrustPercent,
-  ControlState,
   createInitialControlState,
-  ControlledBodyState,
 } from "./controls.js";
 import {
   getProfilingEnabledFromEnv,
   setProfilingEnabledInEnv,
 } from "./debugEnv.js";
+import { rotateFrameAroundAxis } from "../domain/localFrame.js";
+import type {
+  DomainWorld,
+  GravityEngine,
+  GravityState,
+  LocalFrame,
+  PlanetPathMapping,
+  Profiler,
+  Plane,
+  Scene,
+  Vec3,
+  WorldState,
+} from "../domain/domainPorts.js";
+import { vec3 } from "../domain/vec3.js";
+import { getCameraById, getPlaneById } from "../domain/worldLookup.js";
+import {
+  createInitialSceneAndWorld,
+  syncPlanesToSceneObjects,
+  syncPlanetsToSceneObjects,
+  syncStarsToSceneObjects,
+  syncLightsToStars,
+} from "../domain/worldSetup.js";
 import { updateFPS } from "./fps.js";
 import { init as initInput, getKeyState } from "./input.js";
 import { pauseControl, paused } from "./pause.js";
@@ -22,27 +47,6 @@ import {
   setProfilingEnabled,
   isProfilingEnabled,
 } from "../profiling/profilingFacade.js";
-import type { Plane, Scene, WorldState } from "../world/types.js";
-import type {
-  DomainWorld,
-  GravityState,
-  LocalFrame,
-  Profiler,
-  Vec3,
-} from "../world/domain.js";
-import { vec } from "../world/vec3.js";
-import { getCameraById, getPlaneById } from "../world/worldLookup.js";
-import {
-  createInitialSceneAndWorld,
-  PlanetPathMapping,
-  syncPlanesToSceneObjects,
-  syncPlanetsToSceneObjects,
-  syncStarsToSceneObjects,
-  syncLightsToStars,
-} from "../world/worldSetup.js";
-import { rotateFrameAroundAxis } from "../world/localFrame.js";
-import type { Renderer } from "./rendererPort.js";
-import type { GravityEngine } from "../world/physics/GravityEngine.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;
@@ -267,7 +271,7 @@ function syncPlaneVelocitiesFromGravity(): void {
 
     const plane = world.planes[binding.planeIndex];
     plane.velocity = { ...body.velocity };
-    plane.speed = vec.length(plane.velocity);
+    plane.speed = vec3.length(plane.velocity);
   }
 }
 
@@ -367,9 +371,9 @@ function frameFromPlaneForPilot(plane: Plane): LocalFrame {
   const { azimuth, elevation } = controlState.look;
 
   let frame: LocalFrame = {
-    right: vec.clone(base.right),
-    forward: vec.clone(base.forward),
-    up: vec.clone(base.up),
+    right: vec3.clone(base.right),
+    forward: vec3.clone(base.forward),
+    up: vec3.clone(base.up),
   };
 
   if (azimuth !== 0) {
@@ -385,9 +389,9 @@ function frameFromPlaneForPilot(plane: Plane): LocalFrame {
 function frameFromPlaneForTop(plane: Plane): LocalFrame {
   const { right, forward, up } = plane.frame;
   return {
-    right: vec.clone(right),
-    forward: vec.scale(up, -1),
-    up: vec.clone(forward),
+    right: vec3.clone(right),
+    forward: vec3.scale(up, -1),
+    up: vec3.clone(forward),
   };
 }
 
@@ -400,13 +404,13 @@ function setCameraRelativeToPlane(
   const camera = getCameraById(world, cameraId);
   const { right, forward, up } = plane.frame;
 
-  const worldOffset = vec.add3(
-    vec.scale(right, localOffset.x),
-    vec.scale(forward, localOffset.y),
-    vec.scale(up, localOffset.z)
+  const worldOffset = vec3.add3(
+    vec3.scale(right, localOffset.x),
+    vec3.scale(forward, localOffset.y),
+    vec3.scale(up, localOffset.z)
   );
 
-  camera.position = vec.add(plane.position, worldOffset);
+  camera.position = vec3.add(plane.position, worldOffset);
   camera.frame = frameFromPlane(plane);
 }
 

@@ -1,18 +1,10 @@
-import { Vec3 } from "../../world/domain.js";
-import type { Plane, Scene } from "../../world/types.js";
-import { vec } from "../../world/vec3.js";
-import type { NdcPoint } from "../projection/projection.js";
+import type { Plane, Scene, Vec3 } from "../../domain/domainPorts.js";
+import { vec3 } from "../../domain/vec3.js";
+import type { NdcPoint } from "../projection/NdcPoint.js";
 import { ndcToScreen } from "../projection/projection.js";
+import { VelocityDebugSegment } from "./VelocityDebugSegment.js";
 
 export type ProjectFn = (p: Vec3) => NdcPoint | null;
-/**
- * World-space line segment for velocity debug visualization.
- */
-export interface VelocityDebugSegment {
-  start: Vec3;
-  end: Vec3;
-  color: "forward" | "backward";
-}
 
 /**
  * Pure helper that computes the world-space line segments representing
@@ -25,11 +17,11 @@ export interface VelocityDebugSegment {
  */
 export function getPlaneVelocitySegments(plane: Plane): VelocityDebugSegment[] {
   const v = plane.velocity;
-  const speed = vec.length(v);
+  const speed = vec3.length(v);
   if (speed === 0) return [];
 
   // Unit direction of motion
-  const dir = vec.normalize(v);
+  const dir = vec3.normalize(v);
 
   const center = plane.position;
 
@@ -42,11 +34,11 @@ export function getPlaneVelocitySegments(plane: Plane): VelocityDebugSegment[] {
   // If the segment would be fully inside the sphere, don't draw anything
   if (len <= innerRadius) return [];
 
-  const forwardInner: Vec3 = vec.add(center, vec.scale(dir, innerRadius));
-  const forwardEnd: Vec3 = vec.add(center, vec.scale(dir, len));
+  const forwardInner: Vec3 = vec3.add(center, vec3.scale(dir, innerRadius));
+  const forwardEnd: Vec3 = vec3.add(center, vec3.scale(dir, len));
 
-  const backwardInner: Vec3 = vec.add(center, vec.scale(dir, -innerRadius));
-  const backwardEnd: Vec3 = vec.add(center, vec.scale(dir, -len));
+  const backwardInner: Vec3 = vec3.add(center, vec3.scale(dir, -innerRadius));
+  const backwardEnd: Vec3 = vec3.add(center, vec3.scale(dir, -len));
 
   return [
     { start: forwardInner, end: forwardEnd, color: "forward" },
@@ -124,7 +116,7 @@ export function drawBodyLabels(
   for (const obj of scene.objects) {
     if (obj.kind !== "planet" && obj.kind !== "star") continue;
 
-    const d = vec.length(vec.sub(obj.position, refPos));
+    const d = vec3.length(vec3.sub(obj.position, refPos));
     bodies.push({ obj, distance: d });
   }
 
@@ -144,7 +136,7 @@ export function drawBodyLabels(
     const dKm = distance / 1000;
     const distanceText = `d=${dKm.toFixed(0)} km`;
 
-    const speedMps = vec.length(obj.velocity);
+    const speedMps = vec3.length(obj.velocity);
     const speedKmh = speedMps * 3.6;
     const speedText = `v=${speedKmh.toFixed(2)} km/h`;
 

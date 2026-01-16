@@ -1,8 +1,6 @@
-import type { NdcPoint } from "../projection/projection.js";
-import type { Scene } from "../../world/types.js";
-import { LocalFrame, Vec3 } from "../../world/domain.js";
-
-export type DrawMode = "faces" | "lines";
+import type { LocalFrame, Vec3 } from "../../domain/domainPorts.js";
+import type { NdcPoint } from "./NdcPoint.js";
+import type { DrawMode } from "./ViewDebugOverlay.js";
 
 /**
  * Core configuration for rendering a scene from a particular viewpoint.
@@ -17,6 +15,7 @@ export type DrawMode = "faces" | "lines";
  *  Any debug overlays (velocity lines, labels, etc.) are configured separately
  *  via `ViewDebugOverlay` and invoked from the game loop.
  */
+
 export interface View {
   /**
    * World-space -> NDC projection in the coordinate system
@@ -30,17 +29,4 @@ export interface View {
   cameraPos: Vec3;
   cameraFrame: LocalFrame;
   drawMode: DrawMode;
-}
-
-/**
- * Optional debug overlay hook for a view. Not part of scene geometry.
- *
- * NOTE:
- *  This is intentionally *decoupled* from the core `View`. Callers are
- *  responsible for threading any additional data they need (e.g. reference
- *  plane, chosen debug planes) into their overlay implementation rather than
- *  encoding that policy into the renderer.
- */
-export interface ViewDebugOverlay {
-  draw: (ctx: CanvasRenderingContext2D, scene: Scene) => void;
 }

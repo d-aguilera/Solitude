@@ -1,16 +1,16 @@
-import type { LocalFrame, Vec3 } from "./domain.js";
-import { Mat3, mat3 } from "./mat3.js";
-import { vec } from "./vec3.js";
+import type { LocalFrame, Mat3, Vec3 } from "./domainPorts.js";
+import { mat3 } from "./mat3.js";
+import { vec3 } from "./vec3.js";
 
 export function makeLocalFrameFromUp(up: Vec3): LocalFrame {
-  const u = vec.normalize(up);
+  const u = vec3.normalize(up);
   const worldForward: Vec3 =
     Math.abs(u.z) < 0.9 ? { x: 0, y: 0, z: 1 } : { x: 1, y: 0, z: 0 };
 
-  const dot = vec.dot(u, worldForward);
-  const forwardUnnormalized = vec.sub(worldForward, vec.scale(u, dot));
-  const forward = vec.normalize(forwardUnnormalized);
-  const right = vec.normalize(vec.cross(forward, u));
+  const dot = vec3.dot(u, worldForward);
+  const forwardUnnormalized = vec3.sub(worldForward, vec3.scale(u, dot));
+  const forward = vec3.normalize(forwardUnnormalized);
+  const right = vec3.normalize(vec3.cross(forward, u));
 
   return { right, forward, up: u };
 }
@@ -64,13 +64,13 @@ function makeLocalFrameFromAxes(
   up: Vec3
 ): LocalFrame {
   // Gram–Schmidt to ensure orthonormal axes
-  let r = vec.normalize(right);
+  let r = vec3.normalize(right);
   // Remove any component of forward along r, then normalize
-  let fUn = vec.sub(forward, vec.scale(r, vec.dot(forward, r)));
-  let f = vec.normalize(fUn);
+  let fUn = vec3.sub(forward, vec3.scale(r, vec3.dot(forward, r)));
+  let f = vec3.normalize(fUn);
   void up;
   // up = r × f to guarantee orthogonality
-  let u = vec.normalize(vec.cross(r, f));
+  let u = vec3.normalize(vec3.cross(r, f));
 
   return { right: r, forward: f, up: u };
 }

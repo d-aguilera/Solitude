@@ -1,7 +1,6 @@
+import type { Plane, Vec3 } from "../domain/domainPorts.js";
+import { vec3 } from "../domain/vec3.js";
 import { fps } from "./fps.js";
-import type { Plane } from "../world/types.js";
-import { vec } from "../world/vec3.js";
-import { Vec3 } from "../world/domain.js";
 
 export function renderHUD(
   context: CanvasRenderingContext2D,
@@ -26,7 +25,7 @@ export function renderHUD(
   context.font = "16px monospace";
 
   // Speed in km/h
-  const speedMps = vec.length(plane.velocity);
+  const speedMps = vec3.length(plane.velocity);
   const speedKmh = speedMps * 3.6;
   context.fillText(`Spd: ${speedKmh.toFixed(0)} km/h`, x + 10, y + 20);
 

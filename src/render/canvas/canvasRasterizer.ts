@@ -1,5 +1,5 @@
-import { RGB } from "../../world/domain.js";
-import type { ScreenPoint } from "../projection/projection.js";
+import { RGB } from "../../domain/domainPorts.js";
+import type { ScreenPoint } from "../projection/ScreenPoint.js";
 import type { FaceEntry } from "../scene/shadedFaces.js";
 
 /**

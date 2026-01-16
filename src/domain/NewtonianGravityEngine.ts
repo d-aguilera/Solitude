@@ -1,13 +1,13 @@
-import { NEWTON_G, SOFTENING_LENGTH } from "./gravityConfig.js";
-import type { GravityEngine } from "./GravityEngine.js";
+import { NEWTON_G, SOFTENING_LENGTH } from "./domainInternals.js";
 import type {
   BodyState,
+  DomainWorld,
   GravityBodyBinding,
+  GravityEngine,
   GravityState,
   Vec3,
-  DomainWorld,
-} from "../domain.js";
-import { vec } from "../vec3.js";
+} from "./domainPorts.js";
+import { vec3 } from "./vec3.js";
 
 /**
  * Concrete GravityEngine using a Newtonian N-body implementation.
@@ -184,11 +184,11 @@ export class NewtonianGravityEngine implements GravityEngine {
         const pj = positions[j];
 
         // Direction from i -> j
-        const d = vec.sub(pj, pi);
+        const d = vec3.sub(pj, pi);
 
         // Softened distance magnitude
         const r = Math.sqrt(
-          vec.dot(d, d) + SOFTENING_LENGTH * SOFTENING_LENGTH
+          vec3.dot(d, d) + SOFTENING_LENGTH * SOFTENING_LENGTH
         );
         if (r === 0) continue;
 
@@ -196,7 +196,7 @@ export class NewtonianGravityEngine implements GravityEngine {
         const invR3 = 1 / (r * r * r);
         const scale = NEWTON_G * bj.mass * invR3;
 
-        a = vec.add(a, vec.scale(d, scale));
+        a = vec3.add(a, vec3.scale(d, scale));
       }
 
       accelerations[i] = a;
@@ -217,9 +217,9 @@ export class NewtonianGravityEngine implements GravityEngine {
     const nextBodies: BodyState[] = new Array(n);
 
     for (let i = 0; i < n; i++) {
-      const dv = vec.scale(accelerations[i], dtSeconds);
+      const dv = vec3.scale(accelerations[i], dtSeconds);
       const body = bodies[i];
-      const velocity = vec.add(body.velocity, dv);
+      const velocity = vec3.add(body.velocity, dv);
 
       nextBodies[i] = {
         id: body.id,
@@ -249,7 +249,7 @@ export class NewtonianGravityEngine implements GravityEngine {
       const p = positions[i];
       const v = b.velocity;
 
-      const newPos: Vec3 = vec.add(p, vec.scale(v, dtSeconds));
+      const newPos: Vec3 = vec3.add(p, vec3.scale(v, dtSeconds));
       this.setPositionFromBinding(world, bindings[i], newPos);
     }
   }

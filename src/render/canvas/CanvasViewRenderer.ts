@@ -1,16 +1,16 @@
-import { LocalFrame, Vec3 } from "../../world/domain.js";
-import { SceneObject } from "../../world/types.js";
-import {
-  NEAR,
-  projectCameraPoint,
-  ScreenPoint,
-} from "../projection/projection.js";
+import type {
+  LocalFrame,
+  SceneObject,
+  Vec3,
+} from "../../domain/domainPorts.js";
+import { NEAR, projectCameraPoint } from "../projection/projection.js";
+import type { ScreenPoint } from "../projection/ScreenPoint.js";
 import type {
   ViewRenderer,
   ViewRendererParams,
-} from "../projection/viewRendererPort.js";
+} from "../projection/ViewRenderer.js";
 import { toRenderable } from "../scene/renderPrep.js";
-import { DrawOptions } from "../scene/sceneTypes.js";
+import { DrawOptions } from "../scene/DrawOptions.js";
 import {
   buildShadedFaces,
   getCameraPointsForObject,

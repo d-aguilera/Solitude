@@ -1,8 +1,13 @@
-import type { Renderer } from "../../app/rendererPort.js";
-import type { Plane, Scene, WorldState } from "../../world/types.js";
+import type { Renderer } from "../../app/appPorts.js";
+import type {
+  Plane,
+  Profiler,
+  Scene,
+  Vec3,
+  WorldState,
+} from "../../domain/domainPorts.js";
 import { renderHUD } from "../../app/hud.js";
-import type { Profiler, Vec3 } from "../../world/domain.js";
-import { DEFAULT_DRAW_MODE } from "../../app/config.js";
+import { DEFAULT_DRAW_MODE } from "../../app/appPorts.js";
 import { buildPilotView, buildTopView } from "../../app/viewComposition.js";
 import {
   createInitialSceneAndWorld,
@@ -10,7 +15,7 @@ import {
   syncPlanetsToSceneObjects,
   syncStarsToSceneObjects,
   syncLightsToStars,
-} from "../../world/worldSetup.js";
+} from "../../domain/worldSetup.js";
 import { CanvasViewRenderer } from "./CanvasViewRenderer.js";
 
 /**
@@ -78,8 +83,9 @@ export class CanvasRenderer implements Renderer {
     const debugPlanes = world.planes;
 
     // Build pilot view configuration for the current canvas size.
-    const pilotViewConfig = buildPilotView(
+    const { viewConfig: pilotViewConfig, scene: pilotScene } = buildPilotView(
       world,
+      this.scene,
       this.pilotCameraId,
       mainPlane,
       DEFAULT_DRAW_MODE,
@@ -100,15 +106,13 @@ export class CanvasRenderer implements Renderer {
       topContext.canvas.height
     );
 
-    // Pilot view uses the full scene.
     this.viewRenderer.renderView({
       context: pilotContext,
-      scene: this.scene,
+      scene: pilotScene,
       viewConfig: pilotViewConfig,
       profiler,
     });
 
-    // Top view uses a scene that may omit some objects.
     this.viewRenderer.renderView({
       context: topContext,
       scene: topScene,

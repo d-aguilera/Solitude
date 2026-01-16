@@ -1,4 +1,4 @@
-import { Profiler } from "../world/domain.js";
+import { Profiler } from "../domain/domainPorts.js";
 import {
   add as realAdd,
   check as realCheck,
