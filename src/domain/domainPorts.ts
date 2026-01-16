@@ -1,10 +1,10 @@
-import { EARTH_ORBIT_RADIUS } from "./solarSystem.js";
-
-const SUN_LUMINOSITY = 3.828e26; // W
+import { AU } from "./solarSystem.js";
 
 // E = I / (4π r²)
+const SUN_LUMINOSITY = 3.828e26; // W
+const EARTH_ORBIT_RADIUS_2 = AU * AU;
 export const E_SUN_AT_EARTH =
-  SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS * EARTH_ORBIT_RADIUS);
+  SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS_2);
 
 /**
  * A logical body participating in gravity.

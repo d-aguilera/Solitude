@@ -25,7 +25,6 @@ export type PlanetKind = "planet" | "star";
 export interface CelestialBodyConfig {
   id: string; // scene object id, e.g. "planet:earth"
   pathId: string; // orbit path scene object id, e.g. "path:planet:earth"
-  objectType: string; // mesh.objectType, e.g. "planet-earth"
   kind: PlanetKind;
 
   // Physical orbital elements / body properties (SI units)

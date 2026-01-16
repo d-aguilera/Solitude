@@ -29,6 +29,7 @@ import { airplaneModel, generatePlanetMesh } from "./models.js";
 import { buildDefaultSolarSystemConfigs } from "./solarSystem.js";
 import { trig } from "./trig.js";
 import { vec3 } from "./vec3.js";
+import { getStarPhysicsById } from "./worldLookup.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
@@ -446,12 +447,10 @@ function buildLightsFromStars(world: WorldState, scene: Scene): void {
   const lights = [];
 
   for (const starBody of world.stars) {
-    const phys = world.starPhysics.find((p) => p.id === starBody.id);
-    if (!phys) continue;
+    const phys = getStarPhysicsById(world, starBody.id);
 
     lights.push({
       position: { ...starBody.position },
-      // Use physical luminosity directly; renderer is responsible for scaling.
       intensity: phys.luminosity,
     });
   }

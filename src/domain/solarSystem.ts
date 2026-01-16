@@ -1,9 +1,56 @@
-import { colors, NEWTON_G } from "./domainInternals.js";
+import { colors } from "./domainInternals.js";
 import type { PlanetBodyConfig, StarBodyConfig } from "./domainInternals.js";
+import { circularSpeedAtRadius } from "./phys.js";
 
-const AU = 1.495978707e11; // m
+export const AU = 1.495978707e11; // m
 
-export const EARTH_ORBIT_RADIUS = AU;
+const twoPi = 2 * Math.PI;
+
+// Base SI unit helpers
+const km = 1_000;
+
+// Real(ish) semi‑major axes (meters)
+const orbits = {
+  mercury: 0.387 * AU,
+  venus: 0.723 * AU,
+  earth: 1.0 * AU,
+  mars: 1.524 * AU,
+  jupiter: 5.203 * AU,
+  saturn: 9.537 * AU,
+  uranus: 19.191 * AU,
+  neptune: 30.07 * AU,
+};
+
+// Real planetary mean radii (meters)
+const radii = {
+  sun: 696_340 * km,
+  mercury: 2_439.7 * km,
+  venus: 6_051.8 * km,
+  earth: 6_371.0 * km,
+  mars: 3_389.5 * km,
+  jupiter: 69_911 * km,
+  saturn: 58_232 * km,
+  uranus: 25_362 * km,
+  neptune: 24_622 * km,
+};
+
+// Approximate mean densities (kg/m^3)
+const densities = {
+  sun: 1_408,
+  mercury: 5_427,
+  venus: 5_243,
+  earth: 5_514,
+  mars: 3_933,
+  jupiter: 1_326,
+  saturn: 687,
+  uranus: 1_270,
+  neptune: 1_638,
+};
+
+// Bolometric luminosities (W)
+const luminosities = {
+  sun: 3.828e26,
+};
 
 /**
  * Build a simplified solar system.
@@ -17,71 +64,14 @@ export function buildDefaultSolarSystemConfigs(): (
   | PlanetBodyConfig
   | StarBodyConfig
 )[] {
-  const twoPi = 2 * Math.PI;
-
-  // Base SI unit helpers
-  const km = 1_000;
-
-  // Real(ish) semi‑major axes (meters)
-  const orbits = {
-    mercury: 0.387 * AU,
-    venus: 0.723 * AU,
-    earth: 1.0 * AU,
-    mars: 1.524 * AU,
-    jupiter: 5.203 * AU,
-    saturn: 9.537 * AU,
-    uranus: 19.191 * AU,
-    neptune: 30.07 * AU,
-  };
-
-  // Real planetary mean radii (meters)
-  const radiusReal = {
-    sun: 696_340 * km,
-    mercury: 2_439.7 * km,
-    venus: 6_051.8 * km,
-    earth: 6_371.0 * km,
-    mars: 3_389.5 * km,
-    jupiter: 69_911 * km,
-    saturn: 58_232 * km,
-    uranus: 25_362 * km,
-    neptune: 24_622 * km,
-  };
-
-  // Approximate mean densities (kg/m^3)
-  const densities = {
-    sun: 1_408,
-    mercury: 5_427,
-    venus: 5_243,
-    earth: 5_514,
-    mars: 3_933,
-    jupiter: 1_326,
-    saturn: 687,
-    uranus: 1_270,
-    neptune: 1_638,
-  };
-
-  // Use real Sun mass, not inferred from visual radius
-  const M_sun = 1.98847e30; // kg
-
-  function circularSpeedAtRadius(r: number): number {
-    // v = sqrt(G * M_sun / r)
-    return Math.sqrt((NEWTON_G * M_sun) / r);
-  }
-
-  // Bolometric luminosities (W)
-  const luminosities = {
-    sun: 3.828e26,
-  };
-
   return [
     // Sun at origin
     {
       id: "planet:sun",
       pathId: "path:planet:sun",
-      objectType: "planet-sun",
       kind: "star",
       orbit: { angleRad: 0, radius: 0 }, // at origin
-      physicalRadius: radiusReal.sun,
+      physicalRadius: radii.sun,
       tangentialSpeed: 0,
       color: colors.sun,
       density: densities.sun,
@@ -90,10 +80,9 @@ export function buildDefaultSolarSystemConfigs(): (
     {
       id: "planet:mercury",
       pathId: "path:planet:mercury",
-      objectType: "planet-mercury",
       kind: "planet",
       orbit: { angleRad: 0 * (twoPi / 8), radius: orbits.mercury },
-      physicalRadius: radiusReal.mercury,
+      physicalRadius: radii.mercury,
       tangentialSpeed: circularSpeedAtRadius(orbits.mercury),
       color: colors.mercury,
       density: densities.mercury,
@@ -101,10 +90,9 @@ export function buildDefaultSolarSystemConfigs(): (
     {
       id: "planet:venus",
       pathId: "path:planet:venus",
-      objectType: "planet-venus",
       kind: "planet",
       orbit: { angleRad: 1 * (twoPi / 8), radius: orbits.venus },
-      physicalRadius: radiusReal.venus,
+      physicalRadius: radii.venus,
       tangentialSpeed: circularSpeedAtRadius(orbits.venus),
       color: colors.venus,
       density: densities.venus,
@@ -112,10 +100,9 @@ export function buildDefaultSolarSystemConfigs(): (
     {
       id: "planet:earth",
       pathId: "path:planet:earth",
-      objectType: "planet-earth",
       kind: "planet",
       orbit: { angleRad: 2 * (twoPi / 8), radius: orbits.earth },
-      physicalRadius: radiusReal.earth,
+      physicalRadius: radii.earth,
       tangentialSpeed: circularSpeedAtRadius(orbits.earth),
       color: colors.earth,
       density: densities.earth,
@@ -123,10 +110,9 @@ export function buildDefaultSolarSystemConfigs(): (
     {
       id: "planet:mars",
       pathId: "path:planet:mars",
-      objectType: "planet-mars",
       kind: "planet",
       orbit: { angleRad: 3 * (twoPi / 8), radius: orbits.mars },
-      physicalRadius: radiusReal.mars,
+      physicalRadius: radii.mars,
       tangentialSpeed: circularSpeedAtRadius(orbits.mars),
       color: colors.mars,
       density: densities.mars,
@@ -134,10 +120,9 @@ export function buildDefaultSolarSystemConfigs(): (
     {
       id: "planet:jupiter",
       pathId: "path:planet:jupiter",
-      objectType: "planet-jupiter",
       kind: "planet",
       orbit: { angleRad: 4 * (twoPi / 8), radius: orbits.jupiter },
-      physicalRadius: radiusReal.jupiter,
+      physicalRadius: radii.jupiter,
       tangentialSpeed: circularSpeedAtRadius(orbits.jupiter),
       color: colors.jupiter,
       density: densities.jupiter,
@@ -145,10 +130,9 @@ export function buildDefaultSolarSystemConfigs(): (
     {
       id: "planet:saturn",
       pathId: "path:planet:saturn",
-      objectType: "planet-saturn",
       kind: "planet",
       orbit: { angleRad: 5 * (twoPi / 8), radius: orbits.saturn },
-      physicalRadius: radiusReal.saturn,
+      physicalRadius: radii.saturn,
       tangentialSpeed: circularSpeedAtRadius(orbits.saturn),
       color: colors.saturn,
       density: densities.saturn,
@@ -156,10 +140,9 @@ export function buildDefaultSolarSystemConfigs(): (
     {
       id: "planet:uranus",
       pathId: "path:planet:uranus",
-      objectType: "planet-uranus",
       kind: "planet",
       orbit: { angleRad: 6 * (twoPi / 8), radius: orbits.uranus },
-      physicalRadius: radiusReal.uranus,
+      physicalRadius: radii.uranus,
       tangentialSpeed: circularSpeedAtRadius(orbits.uranus),
       color: colors.uranus,
       density: densities.uranus,
@@ -167,10 +150,9 @@ export function buildDefaultSolarSystemConfigs(): (
     {
       id: "planet:neptune",
       pathId: "path:planet:neptune",
-      objectType: "planet-neptune",
       kind: "planet",
       orbit: { angleRad: 7 * (twoPi / 8), radius: orbits.neptune },
-      physicalRadius: radiusReal.neptune,
+      physicalRadius: radii.neptune,
       tangentialSpeed: circularSpeedAtRadius(orbits.neptune),
       color: colors.neptune,
       density: densities.neptune,
