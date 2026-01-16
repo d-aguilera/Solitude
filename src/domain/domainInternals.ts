@@ -6,6 +6,9 @@ export const NEWTON_G = 6.6743e-11;
 // Small softening term to avoid singularities when bodies get very close.
 export const SOFTENING_LENGTH = 1.0;
 
+// Sun mass (for heliocentric orbits)
+export const M_SUN = 1.98847e30; // kg
+
 export const colors: { [key: string]: RGB } = {
   airplane: { r: 0, g: 255, b: 255 },
   earth: { r: 80, g: 120, b: 255 },

@@ -38,7 +38,7 @@ const initialForward: Vec3 = initialFrame.forward;
 function createInitialPlane(
   id: string,
   position: Vec3,
-  initialVelocity: Vec3
+  initialVelocity: Vec3,
 ): Plane {
   const speed = vec3.length(initialVelocity);
 
@@ -73,7 +73,7 @@ function createInitialPlane(
       const axisN = vec3.normalize(axis);
       const dot = Math.min(
         1,
-        Math.max(-1, vec3.dot(baseForward, targetForward))
+        Math.max(-1, vec3.dot(baseForward, targetForward)),
       );
       const angle = Math.acos(dot);
 
@@ -129,7 +129,7 @@ function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
 
 function createPolylineSceneObject(
   id: string,
-  color: RGB
+  color: RGB,
 ): PolylineSceneObject {
   const mesh: Mesh = {
     points: [],
@@ -174,7 +174,7 @@ function addPlanetsAndStarsFromConfig(
   worldPlanets: WorldState["planets"],
   worldPlanetPhysics: PlanetPhysics[],
   worldStars: WorldState["stars"],
-  worldStarPhysics: StarPhysics[]
+  worldStarPhysics: StarPhysics[],
 ): void {
   const bodyMeshTemplate: Mesh = generatePlanetMesh(3);
 
@@ -188,7 +188,7 @@ function addPlanetsAndStarsFromConfig(
     const tangential = trig.tangentialDirAtAngle(
       theta,
       radialAxis1,
-      radialAxis2
+      radialAxis2,
     );
 
     // Physical orbit radius in meters
@@ -285,13 +285,13 @@ const PLANE_START_ALTITUDE_M = 10_000_000; // meters
 
 function computePlaneStartPosFromPlanet(
   objects: SceneObject[],
-  planetId: string
+  planetId: string,
 ): Vec3 {
   const planetObj = objects.find((o) => o.id === planetId);
   if (!planetObj) {
     throw new Error(`Home planet not found in scene objects: ${planetId}`);
   }
-  if (!isPlanetSceneObject(planetObj)) {
+  if (planetObj.kind !== "planet") {
     throw new Error(`Home planet is not a planet: ${planetId}`);
   }
 
@@ -301,14 +301,50 @@ function computePlaneStartPosFromPlanet(
   // Use planet's physical radius from its scene object
   const offset = vec3.scale(
     north,
-    planetObj.physicalRadius + PLANE_START_ALTITUDE_M
+    planetObj.physicalRadius + PLANE_START_ALTITUDE_M,
   );
 
   return vec3.add(planetObj.position, offset);
 }
 
-function isPlanetSceneObject(obj: SceneObject): obj is PlanetSceneObject {
-  return obj.kind === "planet";
+function computePlaneInitialNearEarthOrbitVelocity(
+  planeStartPos: Vec3,
+  earthObj: PlanetSceneObject,
+): Vec3 {
+  // Earth heliocentric velocity: dominant motion
+  const vEarth = vec3.clone(earthObj.initialVelocity);
+
+  // Radial offset Earth -> plane
+  const earthCenter = earthObj.position;
+  const offset = vec3.sub(planeStartPos, earthCenter);
+  const r = vec3.length(offset);
+  if (r === 0) {
+    // Fallback: just use Earth's velocity
+    return vEarth;
+  }
+
+  const radialDir = vec3.scale(offset, 1 / r);
+
+  // Build a small tangential component around Earth, perpendicular to radialDir.
+  // Use Earth's current orbital direction as a reference, projected to be orthogonal.
+  const earthDir = vec3.normalize(vEarth);
+  const tangentialUnnormalized = vec3.sub(
+    earthDir,
+    vec3.scale(radialDir, vec3.dot(earthDir, radialDir)),
+  );
+  const tangentialDir =
+    vec3.length(tangentialUnnormalized) > 0
+      ? vec3.normalize(tangentialUnnormalized)
+      : earthDir;
+
+  // Choose a modest orbital speed relative to Earth, much smaller than vEarth.
+  //  For example ~3 km/s is LEO-ish; you are at 10_000 km altitude, so this
+  //  will be bound to Earth but not dominate the heliocentric motion.
+  const vRelMag = 3_000; // m/s
+  const vRel = vec3.scale(tangentialDir, vRelMag);
+
+  // Total: Earth's heliocentric velocity + small relative orbital component.
+  return vec3.add(vEarth, vRel);
 }
 
 export function createInitialSceneAndWorld(): {
@@ -338,25 +374,36 @@ export function createInitialSceneAndWorld(): {
     world.planets,
     world.planetPhysics,
     world.stars,
-    world.starPhysics
+    world.starPhysics,
   );
 
   // Choose which planet is treated as the "home" / starting planet.
   const homePlanetId = "planet:earth";
   const planeStartPos = computePlaneStartPosFromPlanet(objects, homePlanetId);
 
-  // Find Earth's scene object to get its initial orbital velocity
+  // Find Earth's scene object
   const earthObj = objects.find(
-    (o): o is PlanetSceneObject => o.id === homePlanetId && o.kind === "planet"
+    (o): o is PlanetSceneObject => o.id === homePlanetId && o.kind === "planet",
   );
   if (!earthObj) {
     throw new Error(`Home planet scene object not found: ${homePlanetId}`);
   }
 
+  // Look up Earth's mass from planet physics
+  const earthPhys = world.planetPhysics.find((p) => p.id === homePlanetId);
+  if (!earthPhys) {
+    throw new Error(`Home planet physics not found: ${homePlanetId}`);
+  }
+
+  const planeInitialVelocity = computePlaneInitialNearEarthOrbitVelocity(
+    planeStartPos,
+    earthObj,
+  );
+
   const mainPlane = createInitialPlane(
     "plane:main",
     planeStartPos,
-    earthObj.initialVelocity
+    planeInitialVelocity,
   );
 
   world.planes.push(mainPlane);
@@ -366,7 +413,7 @@ export function createInitialSceneAndWorld(): {
 
   const mainPlanePath = createPolylineSceneObject(
     "path:plane:main",
-    colors.yellow
+    colors.yellow,
   );
   objects.push(mainPlanePath);
 
@@ -402,7 +449,7 @@ export function createInitialSceneAndWorld(): {
 
 export function syncPlanesToSceneObjects(
   world: WorldState,
-  scene: Scene
+  scene: Scene,
 ): void {
   for (const plane of world.planes) {
     const obj = scene.objects.find((o) => o.id === plane.id);
@@ -416,11 +463,11 @@ export function syncPlanesToSceneObjects(
 
 export function syncPlanetsToSceneObjects(
   world: WorldState,
-  scene: Scene
+  scene: Scene,
 ): void {
   for (const planetBody of world.planets) {
     const obj = scene.objects.find(
-      (o) => o.id === planetBody.id
+      (o) => o.id === planetBody.id,
     ) as PlanetSceneObject;
     if (!obj) continue;
     obj.position = planetBody.position;
@@ -431,7 +478,7 @@ export function syncPlanetsToSceneObjects(
 export function syncStarsToSceneObjects(world: WorldState, scene: Scene): void {
   for (const starBody of world.stars) {
     const obj = scene.objects.find(
-      (o) => o.id === starBody.id
+      (o) => o.id === starBody.id,
     ) as StarSceneObject;
     if (!obj) continue;
     obj.position = starBody.position;
