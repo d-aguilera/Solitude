@@ -11,6 +11,9 @@ import { vec3 } from "./vec3.js";
 
 /**
  * Concrete GravityEngine using a Newtonian N-body implementation.
+ *
+ * This implementation only depends on DomainWorld and domain math utilities.
+ * It does not know about adapter-level world types or rendering.
  */
 export class NewtonianGravityEngine implements GravityEngine {
   buildInitialState(world: DomainWorld, mainPlaneId: string): GravityState {
@@ -20,7 +23,7 @@ export class NewtonianGravityEngine implements GravityEngine {
   step(
     dtSeconds: number,
     world: DomainWorld,
-    state: GravityState
+    state: GravityState,
   ): GravityState {
     return this.applyGravity(dtSeconds, world, state);
   }
@@ -69,7 +72,7 @@ export class NewtonianGravityEngine implements GravityEngine {
 
   getPositionFromBinding(
     world: DomainWorld,
-    binding: GravityBodyBinding
+    binding: GravityBodyBinding,
   ): Vec3 {
     switch (binding.kind) {
       case "plane":
@@ -84,7 +87,7 @@ export class NewtonianGravityEngine implements GravityEngine {
   setPositionFromBinding(
     world: DomainWorld,
     binding: GravityBodyBinding,
-    pos: Vec3
+    pos: Vec3,
   ): void {
     switch (binding.kind) {
       case "plane": {
@@ -107,11 +110,11 @@ export class NewtonianGravityEngine implements GravityEngine {
 
   /**
    * Create a brand-new GravityState from the current world contents.
-   * Should be called once at setup time, or if entities are added/removed.
+   * Call this once at setup time, or if entities are added/removed.
    */
   buildInitialGravityState(
     world: DomainWorld,
-    mainPlaneId: string
+    mainPlaneId: string,
   ): GravityState {
     const bindings = this.buildGravityBindings(world);
     const bodies: BodyState[] = [];
@@ -157,7 +160,7 @@ export class NewtonianGravityEngine implements GravityEngine {
     const mainPlaneBodyIndex = bodies.findIndex((b) => b.id === mainPlaneId);
     if (mainPlaneBodyIndex === -1) {
       throw new Error(
-        `buildInitialGravityState: main plane body not found for id=${mainPlaneId}`
+        `buildInitialGravityState: main plane body not found for id=${mainPlaneId}`,
       );
     }
 
@@ -174,7 +177,6 @@ export class NewtonianGravityEngine implements GravityEngine {
     for (let i = 0; i < n; i++) {
       const pi = positions[i];
 
-      // Start with zero acceleration vector
       let a: Vec3 = { x: 0, y: 0, z: 0 };
 
       for (let j = 0; j < n; j++) {
@@ -183,16 +185,13 @@ export class NewtonianGravityEngine implements GravityEngine {
         const bj = bodies[j];
         const pj = positions[j];
 
-        // Direction from i -> j
         const d = vec3.sub(pj, pi);
 
-        // Softened distance magnitude
         const r = Math.sqrt(
-          vec3.dot(d, d) + SOFTENING_LENGTH * SOFTENING_LENGTH
+          vec3.dot(d, d) + SOFTENING_LENGTH * SOFTENING_LENGTH,
         );
         if (r === 0) continue;
 
-        // a_i += G * m_j / r^3 * d
         const invR3 = 1 / (r * r * r);
         const scale = NEWTON_G * bj.mass * invR3;
 
@@ -211,7 +210,7 @@ export class NewtonianGravityEngine implements GravityEngine {
   integrateBodyVelocities(
     bodies: BodyState[],
     accelerations: Vec3[],
-    dtSeconds: number
+    dtSeconds: number,
   ): BodyState[] {
     const n = bodies.length;
     const nextBodies: BodyState[] = new Array(n);
@@ -233,15 +232,15 @@ export class NewtonianGravityEngine implements GravityEngine {
 
   /**
    * Integrate positions using velocities over dtSeconds and write back
-   * into world via the adapter. The integration math itself is
-   * independent of how positions are stored.
+   * into world via bindings. Position storage and any adapter-level
+   * state are owned by outer layers.
    */
   integrateBodyPositionsIntoWorld(
     bodies: BodyState[],
     positions: Vec3[],
     dtSeconds: number,
     world: DomainWorld,
-    bindings: GravityBodyBinding[]
+    bindings: GravityBodyBinding[],
   ): void {
     const n = bodies.length;
     for (let i = 0; i < n; i++) {
@@ -256,17 +255,11 @@ export class NewtonianGravityEngine implements GravityEngine {
 
   /**
    * Orchestrates gravitational integration for one timestep.
-   *
-   * This stays purely in the domain layer:
-   *  - Snapshot world positions into a local array
-   *  - Run pure gravity integration (accelerations & velocity updates)
-   *  - Return a new GravityState with updated body velocities
-   *  - Position updates are applied via bindings inside this module
    */
   applyGravity(
     dtSeconds: number,
     world: DomainWorld,
-    gravity: GravityState
+    gravity: GravityState,
   ): GravityState {
     if (dtSeconds <= 0) return gravity;
 
@@ -284,7 +277,7 @@ export class NewtonianGravityEngine implements GravityEngine {
     const nextBodies = this.integrateBodyVelocities(
       bodies,
       accelerations,
-      dtSeconds
+      dtSeconds,
     );
 
     this.integrateBodyPositionsIntoWorld(
@@ -292,7 +285,7 @@ export class NewtonianGravityEngine implements GravityEngine {
       positions,
       dtSeconds,
       world,
-      bindings
+      bindings,
     );
 
     return {

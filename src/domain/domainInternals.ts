@@ -1,4 +1,4 @@
-import { RGB } from "./domainPorts.js";
+import type { RGB } from "./domainPorts.js";
 
 // Gravitational constant in m^3 / (kg * s^2).
 export const NEWTON_G = 6.6743e-11;
@@ -25,9 +25,12 @@ export const colors: { [key: string]: RGB } = {
 
 export type PlanetKind = "planet" | "star";
 
+/**
+ * Shared configuration for bodies that participate in orbits.
+ */
 export interface CelestialBodyConfig {
-  id: string; // scene object id, e.g. "planet:earth"
-  pathId: string; // orbit path scene object id, e.g. "path:planet:earth"
+  id: string; // domain id, e.g. "planet:earth"
+  pathId: string; // orbit path id, purely logical association
   kind: PlanetKind;
 
   // Physical orbital elements / body properties (SI units)

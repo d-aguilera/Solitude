@@ -1,10 +1,10 @@
-import { AU } from "./solarSystem.js";
-
-// E = I / (4π r²)
-const SUN_LUMINOSITY = 3.828e26; // W
-const EARTH_ORBIT_RADIUS_2 = AU * AU;
-export const E_SUN_AT_EARTH =
-  SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS_2);
+/**
+ * Core domain types and ports.
+ *
+ * This module intentionally does not depend on any app, rendering,
+ * or infrastructure concerns. Outer layers adapt these types into
+ * their own representations.
+ */
 
 /**
  * A logical body participating in gravity.
@@ -20,8 +20,8 @@ export type Mat3 = [
 /**
  * Generalized world-state container for dynamic entities.
  *
- * This is the core simulation model. Outer layers adapt this into
- * whatever representation they need for rendering or I/O.
+ * Outer layers can wrap this container in adapter types but should not
+ * mutate its shape from within the domain.
  */
 export interface DomainWorld {
   planes: PlaneBody[];
@@ -62,6 +62,12 @@ export interface GravityState {
   mainPlaneBodyIndex: number;
 }
 
+/**
+ * Binding between domain bodies and indices in the DomainWorld.
+ *
+ * Adapters are responsible for honoring these indices when mutating
+ * their own world representations.
+ */
 export interface GravityBodyBinding {
   id: BodyId;
   kind: "plane" | "planet" | "star";
@@ -73,15 +79,12 @@ export interface GravityBodyBinding {
 /**
  * Domain-level abstraction for gravitational integration.
  *
- * The domain layer and any outer layers that need pure physics depend on this
- * port, not on a specific implementation.
+ * Implementations stay port-pure: they do not know about rendering,
+ * input, or adapter-level types.
  */
 export interface GravityEngine {
   /**
    * Build an immutable GravityState snapshot from the given DomainWorld.
-   *
-   * The DomainWorld passed here should be a pure domain container, not any
-   * adapter-extended world state.
    */
   buildInitialState(world: DomainWorld, mainPlaneId: string): GravityState;
 
@@ -89,8 +92,8 @@ export interface GravityEngine {
    * Advance gravity simulation by dtSeconds, returning a new GravityState.
    *
    * Implementations must be side‑effect free with respect to the passed
-   * DomainWorld and GravityState. Any world mutation is the responsibility
-   * of an outer adapter.
+   * DomainWorld and GravityState. Any mutation of adapter-level worlds is
+   * the responsibility of outer layers.
    */
   step(
     dtSeconds: number,
@@ -138,6 +141,12 @@ export interface StarPhysics extends PlanetPhysics {
   luminosity: number; // W or scaled units for lighting
 }
 
+/**
+ * Adapter-level mapping between planet ids and their trajectory path ids.
+ *
+ * This is kept here because it is purely an id-level relationship and has
+ * no knowledge of rendering internals.
+ */
 export interface PlanetPathMapping {
   planetId: string;
   pathId: string;

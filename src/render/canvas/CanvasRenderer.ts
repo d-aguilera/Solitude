@@ -12,7 +12,7 @@ import {
   syncPlanetsToSceneObjects,
   syncStarsToSceneObjects,
   syncLightsToStars,
-} from "../../domain/worldSetup.js";
+} from "../../app/worldSetupApp.js";
 import { CanvasViewRenderer } from "./CanvasViewRenderer.js";
 
 /**

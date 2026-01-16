@@ -1,5 +1,8 @@
-import type { PlanetBodyConfig, StarBodyConfig } from "./domainInternals.js";
-import { colors } from "./domainInternals.js";
+import type {
+  PlanetBodyConfig,
+  StarBodyConfig,
+} from "../domain/domainInternals.js";
+import { colors } from "../domain/domainInternals.js";
 import type {
   CelestialBody,
   DomainCameraPose,
@@ -10,18 +13,18 @@ import type {
   RGB,
   StarPhysics,
   Vec3,
-} from "./domainPorts.js";
+} from "../domain/domainPorts.js";
 import {
   makeLocalFrameFromUp,
   mat3FromLocalFrame,
   rotateFrameAroundAxis,
-} from "./localFrame.js";
-import { mat3 } from "./mat3.js";
-import { airplaneModel, generatePlanetMesh } from "./models.js";
-import { buildDefaultSolarSystemConfigs } from "./solarSystem.js";
-import { trig } from "./trig.js";
-import { vec3 } from "./vec3.js";
-import { getStarPhysicsById } from "./worldLookup.js";
+} from "../domain/localFrame.js";
+import { mat3 } from "../domain/mat3.js";
+import { airplaneModel, generatePlanetMesh } from "../domain/models.js";
+import { buildDefaultSolarSystemConfigs } from "../domain/solarSystem.js";
+import { trig } from "../domain/trig.js";
+import { vec3 } from "../domain/vec3.js";
+import { getStarPhysicsById } from "../domain/worldLookup.js";
 import type {
   Scene,
   SceneObject,
@@ -30,7 +33,7 @@ import type {
   StarSceneObject,
   PolylineSceneObject,
 } from "../render/scene/scenePorts.js";
-import type { Plane, WorldState } from "../app/worldState.js";
+import type { Plane, WorldState } from "./worldState.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
@@ -153,7 +156,6 @@ function createPolylineSceneObject(
 
 /**
  * Helper: compute physical mass from radius and density.
- * Centralized here so both world setup and gravity share the same mapping.
  */
 function computePlanetMass(physicalRadius: number, density: number): number {
   const volume =
@@ -164,10 +166,10 @@ function computePlanetMass(physicalRadius: number, density: number): number {
 /**
  * Add planets + stars + their orbit paths from an arbitrary list of PlanetConfig.
  *
- * This now:
- *  - Creates visual PlanetSceneObject or StarSceneObject
- *  - Registers corresponding PlanetBody / StarBody entries in world
- *  - Registers PlanetPhysics / StarPhysics entries for gravity
+ * Responsibilities kept here:
+ *  - Create visual PlanetSceneObject / StarSceneObject
+ *  - Register corresponding CelestialBody entries in world
+ *  - Register PlanetPhysics / StarPhysics entries for gravity
  */
 function addPlanetsAndStarsFromConfig(
   configs: (PlanetBodyConfig | StarBodyConfig)[],
@@ -338,9 +340,7 @@ function computePlaneInitialNearEarthOrbitVelocity(
       ? vec3.normalize(tangentialUnnormalized)
       : earthDir;
 
-  // Choose a modest orbital speed relative to Earth, much smaller than vEarth.
-  //  For example ~3 km/s is LEO-ish; you are at 10_000 km altitude, so this
-  //  will be bound to Earth but not dominate the heliocentric motion.
+  // Choose a modest orbital speed relative to Earth.
   const vRelMag = 3_000; // m/s
   const vRel = vec3.scale(tangentialDir, vRelMag);
 
@@ -390,12 +390,6 @@ export function createInitialSceneAndWorld(): {
     throw new Error(`Home planet scene object not found: ${homePlanetId}`);
   }
 
-  // Look up Earth's mass from planet physics
-  const earthPhys = world.planetPhysics.find((p) => p.id === homePlanetId);
-  if (!earthPhys) {
-    throw new Error(`Home planet physics not found: ${homePlanetId}`);
-  }
-
   const planeInitialVelocity = computePlaneInitialNearEarthOrbitVelocity(
     planeStartPos,
     earthObj,
@@ -434,8 +428,7 @@ export function createInitialSceneAndWorld(): {
     pathId: cfg.pathId,
   }));
 
-  // Build initial point lights from star bodies (e.g., Sun at origin).
-  // Subsequent frames should call syncLightsToStars to keep this up to date.
+  // Build initial point lights from star bodies.
   buildLightsFromStars(world, scene);
 
   return {
@@ -489,7 +482,6 @@ export function syncStarsToSceneObjects(world: WorldState, scene: Scene): void {
 
 /**
  * Internal helper: build the array of point lights from the current star bodies.
- * Used both at initial setup time and by syncLightsToStars on each frame.
  */
 function buildLightsFromStars(world: WorldState, scene: Scene): void {
   const lights = [];
@@ -508,8 +500,6 @@ function buildLightsFromStars(world: WorldState, scene: Scene): void {
 
 /**
  * Per‑frame adapter: keep Scene.lights in sync with the current star bodies.
- * This separates long‑lived world/physics state (WorldState) from the
- * renderer‑side Scene representation.
  */
 export function syncLightsToStars(world: WorldState, scene: Scene): void {
   buildLightsFromStars(world, scene);

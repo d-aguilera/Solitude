@@ -32,7 +32,7 @@ import {
   syncPlanetsToSceneObjects,
   syncStarsToSceneObjects,
   syncLightsToStars,
-} from "../domain/worldSetup.js";
+} from "./worldSetupApp.js";
 import { updateFPS } from "./fps.js";
 import { init as initInput, getKeyState } from "./input.js";
 import { pauseControl, paused } from "./pause.js";
