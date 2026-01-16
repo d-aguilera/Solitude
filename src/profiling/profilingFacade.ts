@@ -1,4 +1,3 @@
-import type { Profiler } from "../app/profilingPorts.js";
 import {
   add as realAdd,
   check as realCheck,
@@ -8,6 +7,7 @@ import {
   setProfilingEnabled as realSetProfilingEnabled,
   setPausedForProfiling as realSetPausedForProfiling,
 } from "./profiling.js";
+import { Profiler } from "./profilingPorts.js";
 
 /**
  * Wrapper that decouples callers from the concrete profiling implementation.

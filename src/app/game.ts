@@ -3,7 +3,6 @@ import type {
   ControlledBodyState,
   ControlState,
 } from "./appPorts.js";
-import type { Profiler } from "./profilingPorts.js";
 import type {
   DomainWorld,
   GravityEngine,
@@ -198,6 +197,7 @@ function renderFrame(
 }
 
 import { renderHUD } from "./hud.js";
+import { Profiler } from "../profiling/profilingPorts.js";
 
 function renderHUDOverlay(
   ctx: CanvasRenderingContext2D,

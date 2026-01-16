@@ -1,8 +1,8 @@
 import type { View } from "./View.js";
-import type { Profiler } from "../../app/profilingPorts.js";
 import type { Scene } from "../ScenePorts.js";
 import type { ViewDebugOverlay } from "./ViewDebugOverlay.js";
 import type { DrawMode } from "./ViewDebugOverlay.js";
+import { Profiler } from "../../profiling/profilingPorts.js";
 
 export interface ViewConfig {
   view: View;
