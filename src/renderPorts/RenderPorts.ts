@@ -1,8 +1,8 @@
 import type { Vec3 } from "../domain/domainPorts.js";
-import { Profiler } from "../profiling/profilingPorts.js";
 import type { Scene } from "./ScenePorts.js";
-import type { View } from "./projection/View.js";
-import type { ViewDebugOverlay } from "./projection/ViewDebugOverlay.js";
+import type { Profiler } from "../profiling/profilingPorts.js";
+import type { View } from "../render/projection/View.js";
+import type { ViewDebugOverlay } from "../render/projection/ViewDebugOverlay.js";
 
 /**
  * Adapter-level plane DTO used for debug overlays.
@@ -19,7 +19,7 @@ export interface RenderPlane {
 /**
  * Public view configuration type used by app code to drive renderers.
  *
- * This lives in the render layer so render implementations do not
+ * This lives in the render ports package so render implementations do not
  * depend on app-layer definitions.
  */
 export interface ViewConfig {

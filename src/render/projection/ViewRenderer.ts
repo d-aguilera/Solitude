@@ -1,5 +1,5 @@
 import type { View } from "./View.js";
-import type { Scene } from "../ScenePorts.js";
+import type { Scene } from "../../renderPorts/ScenePorts.js";
 import type { ViewDebugOverlay } from "./ViewDebugOverlay.js";
 import type { DrawMode } from "./ViewDebugOverlay.js";
 import { Profiler } from "../../profiling/profilingPorts.js";

@@ -42,11 +42,10 @@ import {
   setProfilingEnabled,
   isProfilingEnabled,
 } from "../profiling/profilingFacade.js";
-import type { Scene } from "../render/ScenePorts.js";
 import { getPlaneById } from "./worldLookup.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
 import { buildPilotView, buildTopView } from "./viewComposition.js";
-import type { Renderer, RenderPlane } from "../render/RenderPorts.js";
+import type { Renderer, RenderPlane } from "../renderPorts/RenderPorts.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;
@@ -198,6 +197,7 @@ function renderFrame(
 
 import { renderHUD } from "./hud.js";
 import { Profiler } from "../profiling/profilingPorts.js";
+import { Scene } from "../renderPorts/ScenePorts.js";
 
 function renderHUDOverlay(
   ctx: CanvasRenderingContext2D,

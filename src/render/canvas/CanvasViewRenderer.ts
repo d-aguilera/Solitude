@@ -12,7 +12,7 @@ import {
   getCameraPointsForObject,
 } from "../scene/shadedFaces.js";
 import { renderPolyline, renderShadedFaces } from "./canvasRasterizer.js";
-import type { SceneObject } from "../ScenePorts.js";
+import type { SceneObject } from "../../renderPorts/ScenePorts.js";
 
 /**
  * Canvas2D implementation of the ViewRenderer abstraction.

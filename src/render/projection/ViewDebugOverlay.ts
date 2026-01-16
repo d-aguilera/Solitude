@@ -1,4 +1,4 @@
-import type { Scene } from "../ScenePorts.js";
+import type { Scene } from "../../renderPorts/ScenePorts.js";
 
 export type DrawMode = "faces" | "lines";
 
