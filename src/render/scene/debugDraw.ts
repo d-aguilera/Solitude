@@ -1,4 +1,4 @@
-import type { Scene } from "../../renderPorts/scenePorts.js";
+import type { Scene } from "../scenePorts.js";
 import type { Vec3 } from "../../domain/domainPorts.js";
 import { vec3 } from "../../domain/vec3.js";
 import type { NdcPoint } from "../renderInternals.js";

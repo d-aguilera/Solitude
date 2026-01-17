@@ -32,6 +32,7 @@ import {
   syncLightsToStars,
 } from "./worldSetupApp.js";
 import { updateFPS } from "./fps.js";
+import { renderHUD } from "./hud.js";
 import { init as initInput, getKeyState } from "./input.js";
 import { pauseControl, paused } from "./pause.js";
 import { appendPointToPolylineMesh } from "./trajectory.js";
@@ -45,7 +46,9 @@ import {
 import { getPlaneById } from "./worldLookup.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
 import { buildPilotView, buildTopView } from "./viewComposition.js";
-import type { Renderer, RenderPlane } from "../renderPorts/renderPorts.js";
+import type { Renderer, RenderPlane } from "../render/renderPorts.js";
+import type { Scene } from "../render/scenePorts.js";
+import type { Profiler } from "../profiling/profilingPorts.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;
@@ -194,10 +197,6 @@ function renderFrame(
   profileFlush();
   requestAnimationFrame(renderFrame.bind(null, renderer, profiler));
 }
-
-import { renderHUD } from "./hud.js";
-import { Profiler } from "../profiling/profilingPorts.js";
-import { Scene } from "../renderPorts/scenePorts.js";
 
 function renderHUDOverlay(
   ctx: CanvasRenderingContext2D,

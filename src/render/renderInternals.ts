@@ -1,11 +1,7 @@
 import type { Mesh, RGB, Vec3 } from "../domain/domainPorts";
-import { Profiler } from "../profiling/profilingPorts";
-import type {
-  View,
-  ViewDebugOverlay,
-  DrawMode,
-} from "../renderPorts/renderPorts";
-import type { PointLight, Scene, SceneObject } from "../renderPorts/scenePorts";
+import type { Profiler } from "../profiling/profilingPorts";
+import type { View, ViewDebugOverlay, DrawMode } from "./renderPorts";
+import type { PointLight, Scene, SceneObject } from "./scenePorts";
 
 export interface DrawOptions {
   objects: SceneObject[];

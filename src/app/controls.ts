@@ -1,10 +1,12 @@
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
-import { LocalFrame } from "../domain/domainPorts.js";
-import { ControlInput } from "./appPorts.js";
-import { PilotLookState } from "./appPorts.js";
-import { ControlState } from "./appPorts.js";
-import { ControlledBodyState } from "./appPorts.js";
+import type { LocalFrame } from "../domain/domainPorts.js";
+import type {
+  ControlInput,
+  ControlledBodyState,
+  ControlState,
+  PilotLookState,
+} from "./appPorts.js";
 
 // Max thrust acceleration in m/s^2 at 100% thrust
 const maxThrustAcceleration = 1_000_000; // ~ 100_000 G
@@ -35,7 +37,7 @@ export function createInitialControlState(): ControlState {
 export function updatePilotLook(
   dtSeconds: number,
   input: ControlInput,
-  lookState: PilotLookState
+  lookState: PilotLookState,
 ): void {
   if (input.lookReset) {
     lookState.azimuth = 0;
@@ -51,7 +53,7 @@ export function updatePilotLook(
 function rollFrame(
   frame: LocalFrame,
   dtSeconds: number,
-  input: ControlInput
+  input: ControlInput,
 ): LocalFrame {
   if (
     (!input.rollLeft && !input.rollRight) ||
@@ -69,7 +71,7 @@ function rollFrame(
 function pitchFrame(
   frame: LocalFrame,
   dtSeconds: number,
-  input: ControlInput
+  input: ControlInput,
 ): LocalFrame {
   let pitchInput = 0;
   if (input.pitchDown) pitchInput += 1;
@@ -85,7 +87,7 @@ function pitchFrame(
 function yawFrame(
   frame: LocalFrame,
   dtSeconds: number,
-  input: ControlInput
+  input: ControlInput,
 ): LocalFrame {
   if (
     (!input.yawLeft && !input.yawRight) ||
@@ -116,13 +118,18 @@ function yawFrame(
  */
 function updateThrustMagnitudeFromInput(
   input: ControlInput,
-  state: ControlState
+  state: ControlState,
 ): void {
-  if (input.thrust5) state.thrustPercent = 1.0; // 100%
-  else if (input.thrust4) state.thrustPercent = 0.5; // 50%
-  else if (input.thrust3) state.thrustPercent = 0.25; // 25%
-  else if (input.thrust2) state.thrustPercent = 0.05; // 5%
-  else if (input.thrust1) state.thrustPercent = 0.01; // 1%
+  if (input.thrust5)
+    state.thrustPercent = 1.0; // 100%
+  else if (input.thrust4)
+    state.thrustPercent = 0.5; // 50%
+  else if (input.thrust3)
+    state.thrustPercent = 0.25; // 25%
+  else if (input.thrust2)
+    state.thrustPercent = 0.05; // 5%
+  else if (input.thrust1)
+    state.thrustPercent = 0.01; // 1%
   else if (input.thrust0) state.thrustPercent = 0; // 0%
 }
 
@@ -132,7 +139,7 @@ function updateThrustMagnitudeFromInput(
  * extensions (e.g. clamping, non-linear curves).
  */
 export function getThrustMagnitudePercentFromState(
-  state: ControlState
+  state: ControlState,
 ): number {
   return state.thrustPercent;
 }
@@ -144,7 +151,7 @@ export function getThrustMagnitudePercentFromState(
  */
 export function getSignedThrustPercent(
   input: ControlInput,
-  state: ControlState
+  state: ControlState,
 ): number {
   const mag = getThrustMagnitudePercentFromState(state);
 
@@ -170,7 +177,7 @@ export function applyThrustToVelocity(
   dtSeconds: number,
   input: ControlInput,
   controlState: ControlState,
-  body: ControlledBodyState
+  body: ControlledBodyState,
 ): void {
   if (dtSeconds <= 0) return;
 
@@ -199,7 +206,7 @@ export function updateBodyOrientationFromInput(
   dtSeconds: number,
   input: ControlInput,
   controlState: ControlState,
-  body: ControlledBodyState
+  body: ControlledBodyState,
 ): void {
   // Update thrust level before we use it anywhere.
   updateThrustMagnitudeFromInput(input, controlState);

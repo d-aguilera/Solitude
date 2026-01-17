@@ -4,13 +4,13 @@ import {
   buildPilotViewConfig,
   buildTopViewConfig,
 } from "../render/projection/viewSetup.js";
-import { DebugPlane } from "../render/projection/projectionPorts.js";
+import type { DebugPlane } from "../render/projection/projectionPorts.js";
 import type {
   ViewConfig as RenderViewConfig,
   RenderPlane,
-} from "../renderPorts/renderPorts.js";
-import type { DrawMode } from "../renderPorts/renderPorts.js";
-import { Scene } from "../renderPorts/scenePorts.js";
+} from "../render/renderPorts.js";
+import type { DrawMode } from "../render/renderPorts.js";
+import type { Scene } from "../render/scenePorts.js";
 
 /**
  * Convert an app-layer Plane into the minimal RenderPlane DTO.

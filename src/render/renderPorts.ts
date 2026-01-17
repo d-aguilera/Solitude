@@ -1,7 +1,7 @@
 import type { LocalFrame, Vec3 } from "../domain/domainPorts.js";
 import type { Scene } from "./scenePorts.js";
 import type { Profiler } from "../profiling/profilingPorts.js";
-import type { NdcPoint } from "../render/renderInternals.js";
+import type { NdcPoint } from "./renderInternals.js";
 
 export type DrawMode = "faces" | "lines";
 

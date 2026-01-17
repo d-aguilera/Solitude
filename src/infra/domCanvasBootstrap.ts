@@ -1,10 +1,10 @@
 import { runApp } from "../app/main.js";
-import { GravityEngine } from "../domain/domainPorts.js";
+import type { GravityEngine } from "../domain/domainPorts.js";
 import { NewtonianGravityEngine } from "../domain/NewtonianGravityEngine.js";
 import { DefaultProfiler } from "../profiling/DefaultProfiler.js";
-import { Profiler } from "../profiling/profilingPorts.js";
+import type { Profiler } from "../profiling/profilingPorts.js";
 import { CanvasRenderer } from "../render/canvas/CanvasRenderer.js";
-import { Renderer } from "../renderPorts/renderPorts.js";
+import type { Renderer } from "../render/renderPorts.js";
 
 /**
  * DOM-level bootstrap responsible for:

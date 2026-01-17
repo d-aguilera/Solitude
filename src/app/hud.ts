@@ -1,7 +1,7 @@
 import type { Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { fps } from "./fps.js";
-import { Plane } from "./worldState.js";
+import type { Plane } from "./worldState.js";
 
 export function renderHUD(
   context: CanvasRenderingContext2D,

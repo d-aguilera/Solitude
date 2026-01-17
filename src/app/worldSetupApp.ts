@@ -32,7 +32,7 @@ import type {
   PlanetSceneObject,
   StarSceneObject,
   PolylineSceneObject,
-} from "../renderPorts/scenePorts.js";
+} from "../render/scenePorts.js";
 import type { Plane, WorldState } from "./worldState.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };

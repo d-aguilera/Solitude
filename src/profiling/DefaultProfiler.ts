@@ -1,6 +1,6 @@
-import { add as realAdd } from "./profiling";
-import { profile } from "./profilingFacade";
-import { Profiler } from "./profilingPorts";
+import { add as realAdd } from "./profiling.js";
+import { profile } from "./profilingFacade.js";
+import type { Profiler } from "./profilingPorts.js";
 
 export class DefaultProfiler implements Profiler {
   run<T>(group: string, name: string, fn: () => T): T {

@@ -6,10 +6,10 @@ import {
 } from "./projection.js";
 import type { NdcPoint } from "../renderInternals.js";
 import type { DomainCameraPose, Vec3 } from "../../domain/domainPorts.js";
-import type { DrawMode } from "../../renderPorts/renderPorts.js";
-import type { ViewDebugOverlay } from "../../renderPorts/renderPorts.js";
-import type { View } from "../../renderPorts/renderPorts.js";
-import { DebugPlane } from "./projectionPorts.js";
+import type { DrawMode } from "../renderPorts.js";
+import type { ViewDebugOverlay } from "../renderPorts.js";
+import type { View } from "../renderPorts.js";
+import type { DebugPlane } from "./projectionPorts.js";
 
 function makeBaseView(
   camera: DomainCameraPose,

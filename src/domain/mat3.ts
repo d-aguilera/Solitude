@@ -1,4 +1,4 @@
-import { Mat3, Vec3 } from "./domainPorts.js";
+import type { Mat3, Vec3 } from "./domainPorts.js";
 import { vec3 } from "./vec3.js";
 
 /**

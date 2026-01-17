@@ -6,7 +6,7 @@ import { projectCameraPoint } from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
 import type { SceneObjectWithCache } from "./sceneInternals.js";
 import type { FaceEntry } from "../renderInternals.js";
-import type { PointLight, SceneObject } from "../../renderPorts/scenePorts.js";
+import type { PointLight, SceneObject } from "../scenePorts.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
 const SUN_LUMINOSITY = 3.828e26; // W

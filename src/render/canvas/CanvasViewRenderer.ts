@@ -4,13 +4,13 @@ import type { ScreenPoint } from "../renderInternals.js";
 import type { ViewRenderer } from "../renderInternals.js";
 import type { ViewRendererParams } from "../renderInternals.js";
 import { toRenderable } from "../scene/renderPrep.js";
-import { DrawOptions } from "../renderInternals.js";
+import type { DrawOptions } from "../renderInternals.js";
 import {
   buildShadedFaces,
   getCameraPointsForObject,
 } from "../scene/shadedFaces.js";
 import { renderPolyline, renderShadedFaces } from "./canvasRasterizer.js";
-import type { SceneObject } from "../../renderPorts/scenePorts.js";
+import type { SceneObject } from "../scenePorts.js";
 
 /**
  * Canvas2D implementation of the ViewRenderer abstraction.
