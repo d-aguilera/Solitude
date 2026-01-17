@@ -1,7 +1,12 @@
 import { Profiler } from "../domain/domainPorts.js";
-import type { Renderer, ViewConfig } from "../render/renderPorts.js";
+import type {
+  Renderer,
+  ViewConfig,
+  HudRenderData,
+} from "../render/renderPorts.js";
 import type { Scene } from "../render/scenePorts.js";
 import { CanvasViewRenderer } from "./CanvasViewRenderer.js";
+import { renderCanvasHud } from "./CanvasHudRenderer.js";
 
 /**
  * Canvas2D implementation of the top-level Renderer abstraction.
@@ -22,11 +27,13 @@ export class CanvasRenderer implements Renderer {
   renderFrame(params: {
     pilotScene: Scene;
     topScene: Scene;
+    mainPlane: { id: string; position: any; velocity: any };
     pilotContext: CanvasRenderingContext2D;
     topContext: CanvasRenderingContext2D;
     profiler: Profiler;
     pilotView: ViewConfig;
     topView: ViewConfig;
+    hud: HudRenderData;
   }): void {
     const {
       pilotScene,
@@ -36,6 +43,7 @@ export class CanvasRenderer implements Renderer {
       profiler,
       pilotView,
       topView,
+      hud,
     } = params;
 
     this.viewRenderer.renderView({
@@ -52,6 +60,6 @@ export class CanvasRenderer implements Renderer {
       profiler,
     });
 
-    // HUD stays in app layer (see game.ts); nothing to do here.
+    renderCanvasHud(pilotContext, hud);
   }
 }

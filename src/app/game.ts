@@ -18,7 +18,6 @@ import {
   setProfilingEnabledInEnv,
 } from "./debugEnv.js";
 import { updateFPS } from "./fps.js";
-import { renderHUD } from "./hud.js";
 import { init as initInput, readControlInput, readEnvInput } from "./input.js";
 import { pauseControl, paused } from "./pause.js";
 import { appendPointToPolylineMesh } from "./trajectory.js";
@@ -43,7 +42,12 @@ import type {
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
-import type { Renderer, RenderPlane } from "../render/renderPorts.js";
+import { fps } from "./fps.js";
+import type {
+  HudRenderData,
+  Renderer,
+  RenderPlane,
+} from "../render/renderPorts.js";
 import type { Scene } from "../render/scenePorts.js";
 
 let lastTimeMs = 0;
@@ -191,6 +195,14 @@ function renderCurrentFrame(
     lights: scene.lights,
   };
 
+  const hud: HudRenderData = {
+    speedMps: vec3.length(mainPlane.velocity),
+    fps,
+    profilingEnabled,
+    pilotCameraLocalOffset,
+    thrustPercent,
+  };
+
   renderer.renderFrame({
     pilotScene,
     topScene,
@@ -200,15 +212,8 @@ function renderCurrentFrame(
     profiler,
     pilotView: pilotViewConfig,
     topView: topViewConfig,
+    hud,
   });
-
-  renderHUD(
-    pilotContext,
-    mainPlane,
-    profilingEnabled,
-    pilotCameraLocalOffset,
-    thrustPercent,
-  );
 }
 
 /**

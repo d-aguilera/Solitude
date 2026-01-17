@@ -27,6 +27,7 @@ export interface Renderer {
     profiler: Profiler;
     pilotView: ViewConfig;
     topView: ViewConfig;
+    hud: HudRenderData;
   }): void;
 }
 
@@ -54,4 +55,30 @@ export interface ViewConfig {
  */
 export interface ViewDebugOverlay {
   draw: (ctx: CanvasRenderingContext2D, scene: Scene) => void;
+}
+
+/**
+ * Adapter‑agnostic HUD inputs.
+ */
+export interface HudRenderData {
+  /**
+   * Speed in meters per second for the controlled plane.
+   */
+  speedMps: number;
+  /**
+   * Latest measured frames per second.
+   */
+  fps: number;
+  /**
+   * Whether profiling is currently enabled.
+   */
+  profilingEnabled: boolean;
+  /**
+   * Pilot camera offset expressed in the plane's local frame.
+   */
+  pilotCameraLocalOffset: Vec3;
+  /**
+   * Signed thrust level in [-1, 1].
+   */
+  thrustPercent: number;
 }

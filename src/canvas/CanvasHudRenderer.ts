@@ -1,14 +1,11 @@
-import type { Plane } from "./appInternals.js";
-import { fps } from "./fps.js";
-import type { Vec3 } from "../domain/domainPorts.js";
-import { vec3 } from "../domain/vec3.js";
+import type { HudRenderData } from "../render/renderPorts.js";
 
-export function renderHUD(
+/**
+ * Canvas2D HUD renderer.
+ */
+export function renderCanvasHud(
   context: CanvasRenderingContext2D,
-  plane: Plane,
-  profilingEnabled: boolean,
-  pilotCameraLocalOffset: Vec3,
-  thrustPercent: number,
+  hud: HudRenderData,
 ): void {
   const hudWidth = 420;
   const hudHeight = 70;
@@ -26,15 +23,14 @@ export function renderHUD(
   context.font = "16px monospace";
 
   // Speed in km/h
-  const speedMps = vec3.length(plane.velocity);
-  const speedKmh = speedMps * 3.6;
+  const speedKmh = hud.speedMps * 3.6;
   context.fillText(`Spd: ${speedKmh.toFixed(0)} km/h`, x + 10, y + 20);
 
   // FPS
-  context.fillText(`FPS: ${fps.toFixed(0)}`, x + 320, y + 20);
+  context.fillText(`FPS: ${hud.fps.toFixed(0)}`, x + 320, y + 20);
 
   // Pilot camera local offset (right, forward, up)
-  const { x: ox, y: oy, z: oz } = pilotCameraLocalOffset;
+  const { x: ox, y: oy, z: oz } = hud.pilotCameraLocalOffset;
   context.fillText(
     `Cam: x=${ox.toFixed(2)} y=${oy.toFixed(2)} z=${oz.toFixed(2)}`,
     x + 10,
@@ -42,10 +38,10 @@ export function renderHUD(
   );
 
   // Thrust
-  const thrustDisplay = `${(thrustPercent * 100).toFixed(0)}%`;
+  const thrustDisplay = `${(hud.thrustPercent * 100).toFixed(0)}%`;
   context.fillText(`Thrust: ${thrustDisplay}`, x + 320, y + 40);
 
-  if (profilingEnabled) {
+  if (hud.profilingEnabled) {
     context.fillText("PROFILING", x + 320, y + 60);
   }
 }
