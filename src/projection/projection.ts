@@ -2,9 +2,6 @@ import type { Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import type { NdcPoint, ScreenPoint } from "../render/renderInternals.js";
 
-// camera-space forward threshold
-export const NEAR = 0.01;
-
 // Vertical field of view in degrees.
 const VERTICAL_FOV = 30;
 

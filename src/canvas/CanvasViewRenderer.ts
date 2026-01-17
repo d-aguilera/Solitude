@@ -1,6 +1,6 @@
 import { Vec3, LocalFrame } from "../domain/domainPorts.js";
 import type { Profiler } from "../profiling/profilingPorts.js";
-import { NEAR, projectCameraPoint } from "../projection/projection.js";
+import { projectCameraPoint } from "../projection/projection.js";
 import {
   ViewRenderer,
   ViewRendererParams,
@@ -10,7 +10,10 @@ import type { View } from "../render/renderPorts.js";
 import { SceneObject, type PointLight } from "../render/scenePorts.js";
 import { toRenderable } from "../scene/renderPrep.js";
 import { buildShadedFaces } from "../scene/shadedFaces.js";
-import { getCameraPointsForObject } from "../scene/camera.js";
+import {
+  getCameraPointsForObject,
+  isInFrontOfNearPlane,
+} from "../scene/camera.js";
 import { renderShadedFaces, renderPolyline } from "./canvasRasterizer.js";
 
 interface DrawOptions {
@@ -154,7 +157,7 @@ export class CanvasViewRenderer implements ViewRenderer {
           const cp = cameraPoints[idx];
 
           // Skip points behind near plane
-          if (cp.y < NEAR) {
+          if (!isInFrontOfNearPlane(cp)) {
             projectedPoints.length = 0;
             break;
           }

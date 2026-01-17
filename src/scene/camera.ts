@@ -4,7 +4,45 @@ import { mat3 } from "../domain/mat3.js";
 import { SceneObject } from "../render/scenePorts.js";
 import { SceneObjectWithCache } from "./sceneInternals.js";
 
+// camera-space forward threshold
 export const NEAR = 0.01;
+
+/**
+ * True if a camera-space point is in front of the near plane.
+ */
+export function isInFrontOfNearPlane(p: Vec3): boolean {
+  return p.y >= NEAR;
+}
+
+/**
+ * Pure: world-space -> camera-space for a single point.
+ * This is now the canonical world→camera transform.
+ */
+export function worldPointToCameraPoint(
+  worldPoint: Vec3,
+  cameraPos: Vec3,
+  cameraFrame: LocalFrame,
+): Vec3 {
+  const R_worldFromLocal = mat3FromLocalFrame(cameraFrame);
+  const R_localFromWorld = mat3.transpose(R_worldFromLocal);
+  const dx = worldPoint.x - cameraPos.x;
+  const dy = worldPoint.y - cameraPos.y;
+  const dz = worldPoint.z - cameraPos.z;
+  return {
+    x:
+      R_localFromWorld[0][0] * dx +
+      R_localFromWorld[0][1] * dy +
+      R_localFromWorld[0][2] * dz,
+    y:
+      R_localFromWorld[1][0] * dx +
+      R_localFromWorld[1][1] * dy +
+      R_localFromWorld[1][2] * dz,
+    z:
+      R_localFromWorld[2][0] * dx +
+      R_localFromWorld[2][1] * dy +
+      R_localFromWorld[2][2] * dz,
+  };
+}
 
 export function getCameraPointsForObject(
   obj: SceneObject,
@@ -33,31 +71,14 @@ export function getCameraPointsForObject(
     cachedObj.__cameraPointsCache = cache;
   }
 
-  // world -> camera transform (same as worldPointToCameraPoint)
-  const R_worldFromLocal = mat3FromLocalFrame(cameraFrame);
-  const R_localFromWorld = mat3.transpose(R_worldFromLocal);
-
+  // world -> camera transform (canonical, via helper)
   for (let i = 0; i < n; i++) {
     const wp = worldPoints[i];
-    const dx = wp.x - cameraPos.x;
-    const dy = wp.y - cameraPos.y;
-    const dz = wp.z - cameraPos.z;
-
+    const cp = worldPointToCameraPoint(wp, cameraPos, cameraFrame);
     const out = cache[i];
-
-    const r00 = R_localFromWorld[0][0],
-      r01 = R_localFromWorld[0][1],
-      r02 = R_localFromWorld[0][2];
-    const r10 = R_localFromWorld[1][0],
-      r11 = R_localFromWorld[1][1],
-      r12 = R_localFromWorld[1][2];
-    const r20 = R_localFromWorld[2][0],
-      r21 = R_localFromWorld[2][1],
-      r22 = R_localFromWorld[2][2];
-
-    out.x = r00 * dx + r01 * dy + r02 * dz;
-    out.y = r10 * dx + r11 * dy + r12 * dz;
-    out.z = r20 * dx + r21 * dy + r22 * dz;
+    out.x = cp.x;
+    out.y = cp.y;
+    out.z = cp.z;
   }
 
   cachedObj.__cameraCacheFrameId = frameId;

@@ -1,11 +1,9 @@
 import { DomainCameraPose, Vec3 } from "../domain/domainPorts.js";
-import { mat3FromLocalFrame } from "../domain/localFrame.js";
-import { mat3 } from "../domain/mat3.js";
-import { vec3 } from "../domain/vec3.js";
 import { NdcPoint } from "../render/renderInternals.js";
 import { DrawMode, View, ViewDebugOverlay } from "../render/renderPorts.js";
 import { drawPlaneVelocityLine, drawBodyLabels } from "../scene/debugDraw.js";
-import { NEAR, projectCameraPointToNdc } from "./projection.js";
+import { worldPointToCameraPoint, NEAR } from "../scene/camera.js";
+import { projectCameraPointToNdc } from "./projection.js";
 import { DebugPlane } from "./projectionPorts.js";
 
 function makeBaseView(
@@ -49,7 +47,11 @@ export function buildViewConfig(
   drawMode: DrawMode,
 ): { view: View; debugOverlay: ViewDebugOverlay } {
   const projection = (worldPoint: Vec3): NdcPoint | null => {
-    const cameraPoint = worldPointToCameraPoint(worldPoint, pose);
+    const cameraPoint = worldPointToCameraPoint(
+      worldPoint,
+      pose.position,
+      pose.frame,
+    );
     const depth = cameraPoint.y;
     if (depth < NEAR) return null;
     return projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
@@ -61,17 +63,4 @@ export function buildViewConfig(
   });
 
   return { view, debugOverlay };
-}
-
-/**
- * Pure: world-space -> camera-space.
- */
-function worldPointToCameraPoint(
-  worldPoint: Vec3,
-  cameraPose: DomainCameraPose,
-): Vec3 {
-  const R_worldFromLocal = mat3FromLocalFrame(cameraPose.frame);
-  const R_localFromWorld = mat3.transpose(R_worldFromLocal);
-  const d = vec3.sub(worldPoint, cameraPose.position);
-  return mat3.mulVec3(R_localFromWorld, d);
 }
