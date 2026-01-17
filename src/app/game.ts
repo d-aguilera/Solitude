@@ -65,6 +65,8 @@ let planetPathMappings: PlanetPathMapping[];
 let gravityState: GravityState;
 let gravityEngine: GravityEngine;
 
+let mainPlaneBodyIndex: number = -1;
+
 let pilotCameraLocalOffset: Vec3 = { x: 0, y: 1.7, z: 1.1 };
 
 let controlState: ControlState = createInitialControlState();
@@ -113,7 +115,17 @@ export function startGame(
 
   gravityEngine = engine;
   const domainWorld = toDomainWorld(world);
-  gravityState = gravityEngine.buildInitialState(domainWorld, mainPlaneId);
+  gravityState = gravityEngine.buildInitialState(domainWorld);
+
+  // Determine which gravity body corresponds to the main plane.
+  mainPlaneBodyIndex = gravityState.bindings.findIndex(
+    (b) => b.kind === "plane" && b.id === mainPlaneId,
+  );
+  if (mainPlaneBodyIndex === -1) {
+    throw new Error(
+      `startGame: main plane body not found in gravity bindings for id=${mainPlaneId}`,
+    );
+  }
 
   controlState = createInitialControlState();
 
@@ -305,9 +317,23 @@ function integrateForcesAndGravity(
   const gravityTimeScale = 10;
   const gravityDt = dtSeconds * gravityTimeScale;
 
+  if (gravityDt <= 0) {
+    return;
+  }
+
   // 1) Apply thrust to the main plane's body velocity in gravityState.
   const controlledPlane = getPlaneById(world, mainPlaneId);
-  const planeBody = gravityState.bodies[gravityState.mainPlaneBodyIndex];
+
+  if (
+    mainPlaneBodyIndex < 0 ||
+    mainPlaneBodyIndex >= gravityState.bodies.length
+  ) {
+    throw new Error(
+      `integrateForcesAndGravity: invalid mainPlaneBodyIndex=${mainPlaneBodyIndex}`,
+    );
+  }
+
+  const planeBody = gravityState.bodies[mainPlaneBodyIndex];
 
   const bodyState: ControlledBodyState = {
     frame: controlledPlane.frame,

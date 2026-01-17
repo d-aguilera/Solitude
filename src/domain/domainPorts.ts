@@ -61,7 +61,7 @@ export interface GravityEngine {
   /**
    * Build an immutable GravityState snapshot from the given DomainWorld.
    */
-  buildInitialState(world: DomainWorld, mainPlaneId: string): GravityState;
+  buildInitialState(world: DomainWorld): GravityState;
 
   /**
    * Advance gravity simulation by dtSeconds, returning a new GravityState.
@@ -83,7 +83,6 @@ export interface GravityEngine {
 export interface GravityState {
   bodies: BodyState[];
   bindings: GravityBodyBinding[];
-  mainPlaneBodyIndex: number;
 }
 
 export interface LocalFrame {

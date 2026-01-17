@@ -16,8 +16,8 @@ import { vec3 } from "./vec3.js";
  * It does not know about adapter-level world types or rendering.
  */
 export class NewtonianGravityEngine implements GravityEngine {
-  buildInitialState(world: DomainWorld, mainPlaneId: string): GravityState {
-    return this.buildInitialGravityState(world, mainPlaneId);
+  buildInitialState(world: DomainWorld): GravityState {
+    return this.buildInitialGravityState(world);
   }
 
   step(
@@ -112,10 +112,7 @@ export class NewtonianGravityEngine implements GravityEngine {
    * Create a brand-new GravityState from the current world contents.
    * Call this once at setup time, or if entities are added/removed.
    */
-  buildInitialGravityState(
-    world: DomainWorld,
-    mainPlaneId: string,
-  ): GravityState {
+  buildInitialGravityState(world: DomainWorld): GravityState {
     const bindings = this.buildGravityBindings(world);
     const bodies: BodyState[] = [];
 
@@ -157,14 +154,7 @@ export class NewtonianGravityEngine implements GravityEngine {
       });
     }
 
-    const mainPlaneBodyIndex = bodies.findIndex((b) => b.id === mainPlaneId);
-    if (mainPlaneBodyIndex === -1) {
-      throw new Error(
-        `buildInitialGravityState: main plane body not found for id=${mainPlaneId}`,
-      );
-    }
-
-    return { bodies, bindings, mainPlaneBodyIndex };
+    return { bodies, bindings };
   }
 
   /**
@@ -291,7 +281,6 @@ export class NewtonianGravityEngine implements GravityEngine {
     return {
       bodies: nextBodies,
       bindings,
-      mainPlaneBodyIndex: gravity.mainPlaneBodyIndex,
     };
   }
 }
