@@ -74,25 +74,6 @@ let controlState: ControlState = createInitialControlState();
 let pilotContext: CanvasRenderingContext2D;
 let topContext: CanvasRenderingContext2D;
 
-function toDomainWorld(world: AppWorld): DomainWorld {
-  return {
-    planeBodies: world.planeBodies,
-    cameras: world.cameras,
-    planets: world.planets,
-    planetPhysics: world.planetPhysics,
-    stars: world.stars,
-    starPhysics: world.starPhysics,
-  };
-}
-
-function toRenderPlane(plane: Plane): RenderPlane {
-  return {
-    id: plane.id,
-    position: plane.position,
-    velocity: plane.velocity,
-  };
-}
-
 export function startGame(
   renderer: Renderer,
   engine: GravityEngine,
@@ -114,6 +95,7 @@ export function startGame(
   planetPathMappings = x.planetPathMappings;
 
   gravityEngine = engine;
+
   const domainWorld = toDomainWorld(world);
   gravityState = gravityEngine.buildInitialState(domainWorld);
 
@@ -121,6 +103,7 @@ export function startGame(
   mainPlaneBodyIndex = gravityState.bindings.findIndex(
     (b) => b.kind === "plane" && b.id === mainPlaneId,
   );
+
   if (mainPlaneBodyIndex === -1) {
     throw new Error(
       `startGame: main plane body not found in gravity bindings for id=${mainPlaneId}`,
@@ -150,81 +133,75 @@ function renderFrame(
   setPausedForProfiling(paused);
   profileCheck();
 
-  const thrustPercent = getSignedThrustPercent(input, controlState);
-
   profiler.run("GAME", "total", () => {
     updateFPS(nowMs);
 
     stepSimulation(dtSeconds, input, profiler);
-
-    const mainPlane = getPlaneById(world, mainPlaneId);
-    const profilingEnabled = isProfilingEnabled();
-
-    // Pilot scene: full scene, unfiltered
-    const pilotViewConfig = buildPilotView(
-      world,
-      pilotCameraId,
-      mainPlane,
-      "faces",
-      pilotContext.canvas.width,
-      pilotContext.canvas.height,
-    );
-    const pilotScene: Scene = scene;
-
-    // Top scene: filtered scene without trajectory/path polylines
-    const topScene: Scene = {
-      objects: scene.objects.filter((obj) => {
-        if (obj.kind === "polyline" && obj.id.startsWith("path:")) {
-          return false;
-        }
-        return true;
-      }),
-      lights: scene.lights,
-    };
-
-    const topViewConfig = buildTopView(
-      world,
-      topCameraId,
-      mainPlane,
-      "faces",
-      topContext.canvas.width,
-      topContext.canvas.height,
-    );
-
-    renderer.renderFrame({
-      pilotScene,
-      topScene,
-      mainPlane: toRenderPlane(mainPlane),
-      pilotContext,
-      topContext,
-      profiler,
-      pilotView: pilotViewConfig,
-      topView: topViewConfig,
-    });
-
-    renderHUDOverlay(
-      pilotContext,
-      mainPlane,
-      profilingEnabled,
-      pilotCameraLocalOffset,
-      thrustPercent,
-    );
+    renderCurrentFrame(renderer, profiler, input);
   });
 
   profileFlush();
   requestAnimationFrame(renderFrame.bind(null, renderer, profiler));
 }
 
-function renderHUDOverlay(
-  ctx: CanvasRenderingContext2D,
-  plane: Plane,
-  profilingEnabled: boolean,
-  pilotCameraLocalOffset: Vec3,
-  thrustPercent: number,
+/**
+ * Render the current world/scene state using the configured renderer.
+ */
+function renderCurrentFrame(
+  renderer: Renderer,
+  profiler: Profiler,
+  input: ControlInput,
 ): void {
+  const mainPlane = getPlaneById(world, mainPlaneId);
+  const profilingEnabled = isProfilingEnabled();
+  const thrustPercent = getSignedThrustPercent(input, controlState);
+
+  const pilotViewConfig = buildPilotView(
+    world,
+    pilotCameraId,
+    mainPlane,
+    "faces",
+    pilotContext.canvas.width,
+    pilotContext.canvas.height,
+  );
+
+  // Pilot scene: full scene, unfiltered
+  const pilotScene: Scene = scene;
+
+  const topViewConfig = buildTopView(
+    world,
+    topCameraId,
+    mainPlane,
+    "faces",
+    topContext.canvas.width,
+    topContext.canvas.height,
+  );
+
+  // Top scene: no trajectory polylines
+  const topScene: Scene = {
+    objects: scene.objects.filter((obj) => {
+      if (obj.kind === "polyline" && obj.id.startsWith("path:")) {
+        return false;
+      }
+      return true;
+    }),
+    lights: scene.lights,
+  };
+
+  renderer.renderFrame({
+    pilotScene,
+    topScene,
+    mainPlane: toRenderPlane(mainPlane),
+    pilotContext,
+    topContext,
+    profiler,
+    pilotView: pilotViewConfig,
+    topView: topViewConfig,
+  });
+
   renderHUD(
-    ctx,
-    plane,
+    pilotContext,
+    mainPlane,
     profilingEnabled,
     pilotCameraLocalOffset,
     thrustPercent,
@@ -323,15 +300,6 @@ function integrateForcesAndGravity(
 
   // 1) Apply thrust to the main plane's body velocity in gravityState.
   const controlledPlane = getPlaneById(world, mainPlaneId);
-
-  if (
-    mainPlaneBodyIndex < 0 ||
-    mainPlaneBodyIndex >= gravityState.bodies.length
-  ) {
-    throw new Error(
-      `integrateForcesAndGravity: invalid mainPlaneBodyIndex=${mainPlaneBodyIndex}`,
-    );
-  }
 
   const planeBody = gravityState.bodies[mainPlaneBodyIndex];
 
@@ -542,5 +510,24 @@ function updatePilotCameraOffset(dtSeconds: number, input: ControlInput): void {
     x: pilotCameraLocalOffset.x + dx * dtSeconds,
     y: pilotCameraLocalOffset.y + dy * dtSeconds,
     z: pilotCameraLocalOffset.z + dz * dtSeconds,
+  };
+}
+
+function toDomainWorld(world: AppWorld): DomainWorld {
+  return {
+    planeBodies: world.planeBodies,
+    cameras: world.cameras,
+    planets: world.planets,
+    planetPhysics: world.planetPhysics,
+    stars: world.stars,
+    starPhysics: world.starPhysics,
+  };
+}
+
+function toRenderPlane(plane: Plane): RenderPlane {
+  return {
+    id: plane.id,
+    position: plane.position,
+    velocity: plane.velocity,
   };
 }
