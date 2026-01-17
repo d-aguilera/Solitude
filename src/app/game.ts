@@ -175,9 +175,6 @@ function renderFrame(
       pilotContext,
       topContext,
       profiler,
-      pilotCameraLocalOffset,
-      thrustPercent,
-      profilingEnabled,
       pilotView: pilotViewConfig,
       topView: topViewConfig,
     });

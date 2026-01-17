@@ -2,18 +2,33 @@ import { DomainCameraPose, Vec3 } from "../domain/domainPorts.js";
 import { NdcPoint } from "../render/renderInternals.js";
 import { DrawMode, View, ViewDebugOverlay } from "../render/renderPorts.js";
 import { drawPlaneVelocityLine, drawBodyLabels } from "../scene/debugDraw.js";
-import { projectWorldPointToNdc } from "../scene/camera.js";
+import {
+  Camera,
+  makeCamera,
+  projectWorldPointToNdcWithCamera,
+} from "../scene/camera.js";
 import { DebugPlane } from "./projectionPorts.js";
 
 function makeBaseView(
-  camera: DomainCameraPose,
-  projection: (p: Vec3) => NdcPoint | null,
+  cameraPose: DomainCameraPose,
+  canvasWidth: number,
+  canvasHeight: number,
   drawMode: DrawMode,
 ): View {
+  const camera: Camera = makeCamera(
+    cameraPose.position,
+    cameraPose.frame,
+    canvasWidth,
+    canvasHeight,
+  );
+
+  const projection = (p: Vec3): NdcPoint | null => {
+    return projectWorldPointToNdcWithCamera(p, camera);
+  };
+
   return {
+    camera,
     projection,
-    cameraPos: camera.position,
-    cameraFrame: camera.frame,
     drawMode,
   };
 }
@@ -45,18 +60,9 @@ export function buildViewConfig(
   referencePlane: DebugPlane,
   drawMode: DrawMode,
 ): { view: View; debugOverlay: ViewDebugOverlay } {
-  const projection = (worldPoint: Vec3): NdcPoint | null => {
-    return projectWorldPointToNdc(
-      worldPoint,
-      pose.position,
-      pose.frame,
-      canvasWidth,
-      canvasHeight,
-    );
-  };
-  const view = makeBaseView(pose, projection, drawMode);
+  const view = makeBaseView(pose, canvasWidth, canvasHeight, drawMode);
   const debugOverlay = makeStandardViewDebugOverlay({
-    projection,
+    projection: view.projection,
     referencePlane,
   });
 

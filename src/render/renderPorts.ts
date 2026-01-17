@@ -1,7 +1,8 @@
-import type { LocalFrame, Vec3 } from "../domain/domainPorts.js";
+import type { Vec3 } from "../domain/domainPorts.js";
 import type { Scene } from "./scenePorts.js";
 import type { Profiler } from "../profiling/profilingPorts.js";
 import type { NdcPoint } from "./renderInternals.js";
+import type { Camera } from "../scene/camera.js";
 
 export type DrawMode = "faces" | "lines";
 
@@ -25,9 +26,6 @@ export interface Renderer {
     pilotContext: CanvasRenderingContext2D;
     topContext: CanvasRenderingContext2D;
     profiler: Profiler;
-    pilotCameraLocalOffset: Vec3;
-    thrustPercent: number;
-    profilingEnabled: boolean;
     pilotView: ViewConfig;
     topView: ViewConfig;
   }): void;
@@ -37,9 +35,8 @@ export interface Renderer {
  * Core configuration for rendering a scene from a particular viewpoint.
  */
 export interface View {
+  camera: Camera;
   projection: (p: Vec3) => NdcPoint | null;
-  cameraPos: Vec3;
-  cameraFrame: LocalFrame;
   drawMode: DrawMode;
 }
 

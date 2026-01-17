@@ -38,7 +38,9 @@ export function buildShadedFaces(params: {
   frameId: number;
 }): FaceEntry[] {
   const { objects, view, canvasWidth, canvasHeight, lights, frameId } = params;
-  const { cameraPos, cameraFrame } = view;
+  const { camera } = view;
+  const cameraPos = camera.position;
+  const cameraFrame = camera.frame;
   const faceList: FaceEntry[] = [];
 
   objects.forEach((obj) => {
