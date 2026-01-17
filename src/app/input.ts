@@ -1,3 +1,5 @@
+import type { ControlInput, EnvInput } from "./appInternals.js";
+
 type KeyCode =
   | "ArrowDown"
   | "ArrowLeft"
@@ -27,7 +29,10 @@ type KeyCode =
 
 type KeyState = Record<KeyCode, boolean>;
 
-export const keys: KeyState = {
+/**
+ * Process-level key state cache. Updated by DOM event listeners.
+ */
+const keys: KeyState = {
   ArrowDown: false,
   ArrowLeft: false,
   ArrowRight: false,
@@ -55,6 +60,9 @@ export const keys: KeyState = {
   Space: false,
 };
 
+/**
+ * Initialize keyboard listeners and keep the internal key state updated.
+ */
 export function init(): void {
   window.addEventListener("keydown", (e: KeyboardEvent) => {
     const code = e.code as KeyCode;
@@ -67,6 +75,54 @@ export function init(): void {
   });
 }
 
-export function getKeyState(): Readonly<KeyState> {
+/**
+ * Snapshot of the current low-level key state.
+ */
+function getKeyState(): Readonly<KeyState> {
   return keys;
+}
+
+/**
+ * Map low-level key state into semantic ship/camera controls.
+ */
+export function readControlInput(): ControlInput {
+  const state = getKeyState();
+
+  return {
+    burnBackwards: state.KeyB,
+    burnForward: state.Space,
+    camForward: state.KeyU,
+    camBackward: state.KeyJ,
+    camUp: state.KeyI,
+    camDown: state.KeyK,
+    lookDown: state.ArrowDown,
+    lookLeft: state.ArrowLeft,
+    lookRight: state.ArrowRight,
+    lookUp: state.ArrowUp,
+    lookReset: state.KeyR,
+    pitchDown: state.KeyS,
+    pitchUp: state.KeyW,
+    rollLeft: state.KeyA,
+    rollRight: state.KeyD,
+    thrust0: state.Digit0,
+    thrust1: state.Digit1,
+    thrust2: state.Digit2,
+    thrust3: state.Digit3,
+    thrust4: state.Digit4,
+    thrust5: state.Digit5,
+    yawLeft: state.KeyQ,
+    yawRight: state.KeyE,
+  };
+}
+
+/**
+ * Map low-level key state into environment-level controls.
+ */
+export function readEnvInput(): EnvInput {
+  const state = getKeyState();
+
+  return {
+    pauseToggle: state.KeyP,
+    profilingToggle: state.KeyO,
+  };
 }

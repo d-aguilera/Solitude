@@ -1,9 +1,9 @@
+import { ProfilerController } from "../app/appPorts.js";
 import { runApp } from "../app/main.js";
 import { CanvasRenderer } from "../canvas/CanvasRenderer.js";
-import type { GravityEngine } from "../domain/domainPorts.js";
+import type { GravityEngine, Profiler } from "../domain/domainPorts.js";
 import { NewtonianGravityEngine } from "../domain/NewtonianGravityEngine.js";
 import { DefaultProfiler } from "../profiling/DefaultProfiler.js";
-import type { Profiler } from "../profiling/profilingPorts.js";
 import type { Renderer } from "../render/renderPorts.js";
 
 /**
@@ -32,7 +32,7 @@ export function bootstrapDomApp(): void {
   }
 
   const gravityEngine: GravityEngine = new NewtonianGravityEngine();
-  const profiler: Profiler = new DefaultProfiler();
+  const profiler: Profiler & ProfilerController = new DefaultProfiler();
   const renderer: Renderer = new CanvasRenderer();
 
   runApp(renderer, gravityEngine, profiler, {

@@ -1,14 +1,14 @@
-import type { GravityEngine } from "../domain/domainPorts.js";
-import type { Profiler } from "../profiling/profilingPorts.js";
+import type { GravityEngine, Profiler } from "../domain/domainPorts.js";
 import type { Renderer } from "../render/renderPorts.js";
 import { init as initResizeHandler } from "../canvas/canvasLayout.js";
 import type { AppEnvironment } from "./appInternals.js";
 import { startGame } from "./game.js";
+import { ProfilerController } from "./appPorts.js";
 
 export function runApp(
   renderer: Renderer,
   gravityEngine: GravityEngine,
-  profiler: Profiler,
+  profiler: Profiler & ProfilerController,
   env: AppEnvironment,
 ): void {
   initResizeHandler(env.container, env.pilotCanvas, env.topCanvas);

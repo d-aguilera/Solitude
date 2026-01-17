@@ -13,14 +13,6 @@ export interface AppWorld extends DomainWorld {
 }
 
 /**
- * Plane adapter type extends the domain PlaneBody with derived speed
- * for HUD/debug overlays.
- */
-export interface Plane extends PlaneBody {
-  speed: number;
-}
-
-/**
  * Environment wiring owned by the outermost bootstrap.
  */
 export interface AppEnvironment {
@@ -72,9 +64,25 @@ export interface ControlState {
 }
 
 /**
+ * Environment-level input.
+ */
+export interface EnvInput {
+  pauseToggle: boolean;
+  profilingToggle: boolean;
+}
+
+/**
  * Pilot's view state relative to the controlled vehicle.
  */
 export interface PilotLookState {
   azimuth: number;
   elevation: number;
+}
+
+/**
+ * Plane adapter type extends the domain PlaneBody with derived speed
+ * for HUD/debug overlays.
+ */
+export interface Plane extends PlaneBody {
+  speed: number;
 }

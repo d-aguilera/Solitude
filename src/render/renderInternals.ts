@@ -1,5 +1,4 @@
-import type { Mesh, RGB, Vec3 } from "../domain/domainPorts.js";
-import type { Profiler } from "../profiling/profilingPorts.js";
+import type { Mesh, Profiler, RGB, Vec3 } from "../domain/domainPorts.js";
 import type { ViewConfig } from "./renderPorts.js";
 import type { Scene } from "./scenePorts.js";
 

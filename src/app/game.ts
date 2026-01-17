@@ -3,8 +3,10 @@ import type {
   ControlInput,
   ControlledBodyState,
   ControlState,
+  EnvInput,
   Plane,
 } from "./appInternals.js";
+import { ProfilerController } from "./appPorts.js";
 import {
   applyThrustToVelocity,
   updateBodyOrientationFromInput,
@@ -17,7 +19,7 @@ import {
 } from "./debugEnv.js";
 import { updateFPS } from "./fps.js";
 import { renderHUD } from "./hud.js";
-import { init as initInput, getKeyState } from "./input.js";
+import { init as initInput, readControlInput, readEnvInput } from "./input.js";
 import { pauseControl, paused } from "./pause.js";
 import { appendPointToPolylineMesh } from "./trajectory.js";
 import { buildPilotView, buildTopView } from "./viewComposition.js";
@@ -35,19 +37,12 @@ import type {
   GravityState,
   LocalFrame,
   PlanetPathMapping,
+  Profiler,
   Vec3,
 } from "../domain/domainPorts.js";
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
-import {
-  profileCheck,
-  profileFlush,
-  setPausedForProfiling,
-  setProfilingEnabled,
-  isProfilingEnabled,
-} from "../profiling/profilingFacade.js";
-import type { Profiler } from "../profiling/profilingPorts.js";
 import type { Renderer, RenderPlane } from "../render/renderPorts.js";
 import type { Scene } from "../render/scenePorts.js";
 
@@ -74,10 +69,12 @@ let controlState: ControlState = createInitialControlState();
 let pilotContext: CanvasRenderingContext2D;
 let topContext: CanvasRenderingContext2D;
 
+let profilerController: ProfilerController;
+
 export function startGame(
   renderer: Renderer,
   engine: GravityEngine,
-  profiler: Profiler,
+  profiler: Profiler & ProfilerController,
   contexts: {
     pilotContext: CanvasRenderingContext2D;
     topContext: CanvasRenderingContext2D;
@@ -85,6 +82,8 @@ export function startGame(
 ): void {
   pilotContext = contexts.pilotContext;
   topContext = contexts.topContext;
+
+  profilerController = profiler;
 
   const x = createInitialSceneAndWorld();
   scene = x.scene;
@@ -125,22 +124,26 @@ function renderFrame(
   nowMs: number,
 ): void {
   const dtMs = nowMs - lastTimeMs;
+  const dtSeconds = paused ? 0 : dtMs / 1000;
   lastTimeMs = nowMs;
 
-  const input = readAndProcessInput();
-  const dtSeconds = paused ? 0 : dtMs / 1000;
-
-  setPausedForProfiling(paused);
-  profileCheck();
-
   profiler.run("GAME", "total", () => {
+    const envInput: EnvInput = readEnvInput();
+    pauseControl(envInput.pauseToggle);
+    handleProfilingToggle(envInput.profilingToggle);
+
+    profilerController.setPaused(paused);
+    profilerController.check();
+
     updateFPS(nowMs);
 
-    stepSimulation(dtSeconds, input, profiler);
-    renderCurrentFrame(renderer, profiler, input);
+    const controlInput: ControlInput = readControlInput();
+    stepSimulation(dtSeconds, controlInput, profiler);
+    renderCurrentFrame(renderer, profiler, controlInput);
   });
 
-  profileFlush();
+  profilerController.flush();
+
   requestAnimationFrame(renderFrame.bind(null, renderer, profiler));
 }
 
@@ -153,7 +156,7 @@ function renderCurrentFrame(
   input: ControlInput,
 ): void {
   const mainPlane = getPlaneById(world, mainPlaneId);
-  const profilingEnabled = isProfilingEnabled();
+  const profilingEnabled = profilerController.isEnabled();
   const thrustPercent = getSignedThrustPercent(input, controlState);
 
   const pilotViewConfig = buildPilotView(
@@ -352,55 +355,18 @@ function updateTrajectories(dtSeconds: number): void {
   }
 }
 
-function handleProfilingToggle(oKeyPressed: boolean): void {
-  if (oKeyPressed) {
+function handleProfilingToggle(profilingTogglePressed: boolean): void {
+  if (profilingTogglePressed) {
     if (!oKeyDown) {
       const current = getProfilingEnabledFromEnv();
       const next = !current;
-      setProfilingEnabled(next);
+      profilerController.setEnabled(next);
       setProfilingEnabledInEnv(next);
       oKeyDown = true;
     }
   } else if (oKeyDown) {
     oKeyDown = false;
   }
-}
-
-function readAndProcessInput(): ControlInput {
-  const keys = getKeyState();
-
-  pauseControl(keys.KeyP);
-  handleProfilingToggle(keys.KeyO);
-
-  return makeControlInput(keys);
-}
-
-function makeControlInput(keys: ReturnType<typeof getKeyState>): ControlInput {
-  return {
-    burnBackwards: keys.KeyB,
-    burnForward: keys.Space,
-    camForward: keys.KeyU,
-    camBackward: keys.KeyJ,
-    camUp: keys.KeyI,
-    camDown: keys.KeyK,
-    lookDown: keys.ArrowDown,
-    lookLeft: keys.ArrowLeft,
-    lookRight: keys.ArrowRight,
-    lookUp: keys.ArrowUp,
-    lookReset: keys.KeyR,
-    pitchDown: keys.KeyS,
-    pitchUp: keys.KeyW,
-    rollLeft: keys.KeyA,
-    rollRight: keys.KeyD,
-    thrust0: keys.Digit0,
-    thrust1: keys.Digit1,
-    thrust2: keys.Digit2,
-    thrust3: keys.Digit3,
-    thrust4: keys.Digit4,
-    thrust5: keys.Digit5,
-    yawLeft: keys.KeyQ,
-    yawRight: keys.KeyE,
-  };
 }
 
 /**

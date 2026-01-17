@@ -1,6 +1,5 @@
-import type { Vec3 } from "../domain/domainPorts.js";
+import type { Profiler, Vec3 } from "../domain/domainPorts.js";
 import type { Scene } from "./scenePorts.js";
-import type { Profiler } from "../profiling/profilingPorts.js";
 import type { NdcPoint } from "./renderInternals.js";
 import type { Camera } from "../scene/camera.js";
 
