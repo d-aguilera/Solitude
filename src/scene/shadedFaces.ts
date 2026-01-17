@@ -1,11 +1,11 @@
 import { Vec3, LocalFrame } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
-import { projectCameraPoint } from "../projection/projection.js";
 import { FaceEntry } from "../render/renderInternals.js";
 import { SceneObject, PointLight } from "../render/scenePorts.js";
 import {
   clipTriangleAgainstNearPlaneCamera,
   getCameraPointsForObject,
+  projectCameraPoint,
 } from "./camera.js";
 import { toRenderable } from "./renderPrep.js";
 import { SceneObjectWithCache } from "./sceneInternals.js";

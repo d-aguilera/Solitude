@@ -3,9 +3,14 @@ import { mat3FromLocalFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { SceneObject } from "../render/scenePorts.js";
 import { SceneObjectWithCache } from "./sceneInternals.js";
+import type { NdcPoint, ScreenPoint } from "../render/renderInternals.js";
+import { vec3 } from "../domain/vec3.js";
 
-// camera-space forward threshold
+// Camera-space forward threshold.
 export const NEAR = 0.01;
+
+// Vertical field of view in degrees.
+const VERTICAL_FOV = 30;
 
 /**
  * True if a camera-space point is in front of the near plane.
@@ -16,7 +21,7 @@ export function isInFrontOfNearPlane(p: Vec3): boolean {
 
 /**
  * Pure: world-space -> camera-space for a single point.
- * This is now the canonical world→camera transform.
+ * This is the canonical world→camera transform used throughout the app.
  */
 export function worldPointToCameraPoint(
   worldPoint: Vec3,
@@ -135,4 +140,98 @@ export function clipTriangleAgainstNearPlaneCamera(
     [P, Q, IP],
     [Q, IQ, IP],
   ];
+}
+
+/**
+ * Compute focal lengths (fX, fY) for our camera.
+ *
+ * The camera is parameterized in terms of a vertical field of view
+ * and a “circle condition” so that a sphere centered on the view axis
+ * appears circular in screen space, even when canvasWidth != canvasHeight.
+ */
+function getFocalLengths(
+  canvasWidth: number,
+  canvasHeight: number,
+): { fX: number; fY: number } {
+  const vFovRad = (VERTICAL_FOV * Math.PI) / 180;
+
+  // Vertical focal length from chosen vertical FOV:
+  const fY = 1 / Math.tan(vFovRad / 2);
+
+  // Enforce circle condition: fX * W == fY * H
+  const fX = fY * (canvasHeight / canvasWidth);
+
+  return { fX, fY };
+}
+
+/**
+ * Core projection from camera space -> NDC (no canvas size baked in).
+ */
+export function projectCameraPointToNdc(
+  cameraPoint: Vec3,
+  canvasWidth: number,
+  canvasHeight: number,
+): NdcPoint {
+  const { fX, fY } = getFocalLengths(canvasWidth, canvasHeight);
+  const depth = cameraPoint.y;
+
+  const scaled = vec3.scale(
+    { x: cameraPoint.x * fX, y: cameraPoint.z * fY, z: 0 },
+    1 / depth,
+  );
+
+  return {
+    x: scaled.x,
+    y: scaled.y,
+    depth,
+  };
+}
+
+/**
+ * Full world-space -> NDC projection with near-plane rejection.
+ *
+ * Returns null when the point lies behind the near plane in camera space.
+ */
+export function projectWorldPointToNdc(
+  worldPoint: Vec3,
+  cameraPos: Vec3,
+  cameraFrame: LocalFrame,
+  canvasWidth: number,
+  canvasHeight: number,
+): NdcPoint | null {
+  const cameraPoint = worldPointToCameraPoint(
+    worldPoint,
+    cameraPos,
+    cameraFrame,
+  );
+  if (!isInFrontOfNearPlane(cameraPoint)) return null;
+  return projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
+}
+
+/**
+ * Map NDC coordinates into pixel space for a given canvas.
+ */
+export function ndcToScreen(
+  ndc: NdcPoint,
+  canvasWidth: number,
+  canvasHeight: number,
+): ScreenPoint {
+  return {
+    x: (ndc.x + 1) * 0.5 * canvasWidth,
+    y: (1 - ndc.y) * 0.5 * canvasHeight,
+    depth: ndc.depth,
+  };
+}
+
+/**
+ * Convenience: project a camera-space point that is known to be in front of NEAR,
+ * returning pixel coordinates for a specific canvas.
+ */
+export function projectCameraPoint(
+  cameraPoint: Vec3,
+  canvasWidth: number,
+  canvasHeight: number,
+): ScreenPoint {
+  const ndc = projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
+  return ndcToScreen(ndc, canvasWidth, canvasHeight);
 }

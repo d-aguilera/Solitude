@@ -2,8 +2,7 @@ import { DomainCameraPose, Vec3 } from "../domain/domainPorts.js";
 import { NdcPoint } from "../render/renderInternals.js";
 import { DrawMode, View, ViewDebugOverlay } from "../render/renderPorts.js";
 import { drawPlaneVelocityLine, drawBodyLabels } from "../scene/debugDraw.js";
-import { worldPointToCameraPoint, NEAR } from "../scene/camera.js";
-import { projectCameraPointToNdc } from "./projection.js";
+import { projectWorldPointToNdc } from "../scene/camera.js";
 import { DebugPlane } from "./projectionPorts.js";
 
 function makeBaseView(
@@ -47,14 +46,13 @@ export function buildViewConfig(
   drawMode: DrawMode,
 ): { view: View; debugOverlay: ViewDebugOverlay } {
   const projection = (worldPoint: Vec3): NdcPoint | null => {
-    const cameraPoint = worldPointToCameraPoint(
+    return projectWorldPointToNdc(
       worldPoint,
       pose.position,
       pose.frame,
+      canvasWidth,
+      canvasHeight,
     );
-    const depth = cameraPoint.y;
-    if (depth < NEAR) return null;
-    return projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
   };
   const view = makeBaseView(pose, projection, drawMode);
   const debugOverlay = makeStandardViewDebugOverlay({

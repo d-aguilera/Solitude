@@ -1,6 +1,6 @@
 import { Vec3, LocalFrame } from "../domain/domainPorts.js";
 import type { Profiler } from "../profiling/profilingPorts.js";
-import { projectCameraPoint } from "../projection/projection.js";
+import { projectCameraPoint } from "../scene/camera.js";
 import {
   ViewRenderer,
   ViewRendererParams,

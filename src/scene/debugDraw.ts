@@ -1,6 +1,6 @@
 import { Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
-import { ndcToScreen } from "../projection/projection.js";
+import { ndcToScreen } from "./camera.js";
 import { DebugPlane } from "../projection/projectionPorts.js";
 import { NdcPoint } from "../render/renderInternals.js";
 import { Scene } from "../render/scenePorts.js";
