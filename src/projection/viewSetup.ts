@@ -1,4 +1,4 @@
-import { DomainCameraPose, Vec3, LocalFrame } from "../domain/domainPorts.js";
+import { DomainCameraPose, Vec3 } from "../domain/domainPorts.js";
 import { mat3FromLocalFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
@@ -30,78 +30,34 @@ function makeBaseView(
 function makeStandardViewDebugOverlay(options: {
   projection: (p: Vec3) => NdcPoint | null;
   referencePlane: DebugPlane;
-  debugPlanes: DebugPlane[];
 }): ViewDebugOverlay {
-  const { projection, referencePlane, debugPlanes } = options;
+  const { projection, referencePlane } = options;
 
   return {
     draw: (ctx, scene) => {
-      for (const plane of debugPlanes) {
-        drawPlaneVelocityLine(ctx, projection, plane);
-      }
-
-      drawBodyLabels(ctx, projection, scene, referencePlane);
+      drawPlaneVelocityLine(ctx, projection, referencePlane);
+      drawBodyLabels(ctx, projection, scene, referencePlane.position);
     },
   };
 }
 
-export function buildPilotViewConfig(
-  pilotCamera: DomainCameraPose,
+export function buildViewConfig(
+  pose: DomainCameraPose,
   canvasWidth: number,
   canvasHeight: number,
   referencePlane: DebugPlane,
   drawMode: DrawMode,
-  debugPlanes: DebugPlane[],
 ): { view: View; debugOverlay: ViewDebugOverlay } {
   const projection = (worldPoint: Vec3): NdcPoint | null => {
-    const cameraPoint = worldPointToCameraPoint(
-      worldPoint,
-      pilotCamera.position,
-      pilotCamera.frame,
-    );
-
+    const cameraPoint = worldPointToCameraPoint(worldPoint, pose);
     const depth = cameraPoint.y;
     if (depth < NEAR) return null;
-
     return projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
   };
-
-  const view = makeBaseView(pilotCamera, projection, drawMode);
+  const view = makeBaseView(pose, projection, drawMode);
   const debugOverlay = makeStandardViewDebugOverlay({
     projection,
     referencePlane,
-    debugPlanes,
-  });
-
-  return { view, debugOverlay };
-}
-
-export function buildTopViewConfig(
-  topCamera: DomainCameraPose,
-  canvasWidth: number,
-  canvasHeight: number,
-  referencePlane: DebugPlane,
-  drawMode: DrawMode,
-  debugPlanes: DebugPlane[],
-): { view: View; debugOverlay: ViewDebugOverlay } {
-  const projection = (worldPoint: Vec3): NdcPoint | null => {
-    const cameraPoint = worldPointToCameraPoint(
-      worldPoint,
-      topCamera.position,
-      topCamera.frame,
-    );
-
-    const depth = cameraPoint.y;
-    if (depth < NEAR) return null;
-
-    return projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
-  };
-
-  const view = makeBaseView(topCamera, projection, drawMode);
-  const debugOverlay = makeStandardViewDebugOverlay({
-    projection,
-    referencePlane,
-    debugPlanes,
   });
 
   return { view, debugOverlay };
@@ -110,13 +66,12 @@ export function buildTopViewConfig(
 /**
  * Pure: world-space -> camera-space.
  */
-export function worldPointToCameraPoint(
+function worldPointToCameraPoint(
   worldPoint: Vec3,
-  cameraPosition: Vec3,
-  cameraFrame: LocalFrame,
+  cameraPose: DomainCameraPose,
 ): Vec3 {
-  const R_worldFromLocal = mat3FromLocalFrame(cameraFrame);
+  const R_worldFromLocal = mat3FromLocalFrame(cameraPose.frame);
   const R_localFromWorld = mat3.transpose(R_worldFromLocal);
-  const d = vec3.sub(worldPoint, cameraPosition);
+  const d = vec3.sub(worldPoint, cameraPose.position);
   return mat3.mulVec3(R_localFromWorld, d);
 }

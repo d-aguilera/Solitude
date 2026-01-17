@@ -81,13 +81,12 @@ export function drawBodyLabels(
   ctx: CanvasRenderingContext2D,
   project: ProjectFn,
   scene: Scene,
-  referencePlane: DebugPlane,
+  referencePosition: Vec3,
 ): void {
   ctx.save();
   ctx.font = "14px monospace";
   ctx.textBaseline = "middle";
 
-  const refPos = referencePlane.position;
   const { width, height } = ctx.canvas;
 
   const bodies: {
@@ -98,7 +97,7 @@ export function drawBodyLabels(
   for (const obj of scene.objects) {
     if (obj.kind !== "planet" && obj.kind !== "star") continue;
 
-    const d = vec3.length(vec3.sub(obj.position, refPos));
+    const d = vec3.length(vec3.sub(obj.position, referencePosition));
     bodies.push({ obj, distance: d });
   }
 

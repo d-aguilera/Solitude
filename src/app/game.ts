@@ -148,15 +148,12 @@ function renderFrame(
     const mainPlane = getPlaneById(world, mainPlaneId);
     const profilingEnabled = isProfilingEnabled();
 
-    const debugPlanes = world.planeBodies;
-
     const { viewConfig: pilotViewConfig, scene: pilotScene } = buildPilotView(
       world,
       scene,
       pilotCameraId,
       mainPlane,
       "faces",
-      debugPlanes,
       pilotContext.canvas.width,
       pilotContext.canvas.height,
     );
@@ -167,7 +164,6 @@ function renderFrame(
       topCameraId,
       mainPlane,
       "faces",
-      debugPlanes,
       topContext.canvas.width,
       topContext.canvas.height,
     );

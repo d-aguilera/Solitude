@@ -1,18 +1,25 @@
 import { Vec3, LocalFrame } from "../domain/domainPorts.js";
+import type { Profiler } from "../profiling/profilingPorts.js";
 import { NEAR, projectCameraPoint } from "../projection/projection.js";
 import {
   ViewRenderer,
   ViewRendererParams,
-  DrawOptions,
   ScreenPoint,
 } from "../render/renderInternals.js";
-import { SceneObject } from "../render/scenePorts.js";
+import type { View } from "../render/renderPorts.js";
+import { SceneObject, type PointLight } from "../render/scenePorts.js";
 import { toRenderable } from "../scene/renderPrep.js";
-import {
-  buildShadedFaces,
-  getCameraPointsForObject,
-} from "../scene/shadedFaces.js";
+import { buildShadedFaces } from "../scene/shadedFaces.js";
+import { getCameraPointsForObject } from "../scene/camera.js";
 import { renderShadedFaces, renderPolyline } from "./canvasRasterizer.js";
+
+interface DrawOptions {
+  objects: SceneObject[];
+  view: View;
+  lights: PointLight[];
+  profiler: Profiler;
+  frameId: number;
+}
 
 /**
  * Canvas2D implementation of the ViewRenderer abstraction.

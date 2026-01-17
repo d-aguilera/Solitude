@@ -1,15 +1,7 @@
 import type { Mesh, RGB, Vec3 } from "../domain/domainPorts.js";
 import type { Profiler } from "../profiling/profilingPorts.js";
-import type { View, ViewConfig } from "./renderPorts.js";
-import type { PointLight, Scene, SceneObject } from "./scenePorts.js";
-
-export interface DrawOptions {
-  objects: SceneObject[];
-  view: View;
-  lights: PointLight[];
-  profiler: Profiler;
-  frameId: number;
-}
+import type { ViewConfig } from "./renderPorts.js";
+import type { Scene } from "./scenePorts.js";
 
 export interface FaceEntry {
   intensity: number;

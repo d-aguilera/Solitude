@@ -1,9 +1,6 @@
 import { getDomainCameraById } from "../domain/worldLookup.js";
 import type { DebugPlane } from "../projection/projectionPorts.js";
-import {
-  buildPilotViewConfig,
-  buildTopViewConfig,
-} from "../projection/viewSetup.js";
+import { buildViewConfig } from "../projection/viewSetup.js";
 import type {
   RenderPlane,
   DrawMode,
@@ -37,23 +34,19 @@ export function buildPilotView(
   pilotCameraId: string,
   referencePlane: Plane,
   drawMode: DrawMode,
-  debugPlanes: Plane[],
   canvasWidth: number,
   canvasHeight: number,
 ): { viewConfig: ViewConfig; scene: Scene } {
   const pilotCamera = getDomainCameraById(world, pilotCameraId);
   const adjustedScene = makePilotViewScene(scene);
-
   const refDebug = toDebugPlane(referencePlane);
-  const debugDebugPlanes = debugPlanes.map(toDebugPlane);
 
-  const { view, debugOverlay } = buildPilotViewConfig(
+  const { view, debugOverlay } = buildViewConfig(
     pilotCamera,
     canvasWidth,
     canvasHeight,
     refDebug,
     drawMode,
-    debugDebugPlanes,
   );
 
   return {
@@ -73,23 +66,19 @@ export function buildTopView(
   topCameraId: string,
   referencePlane: Plane,
   drawMode: DrawMode,
-  debugPlanes: Plane[],
   canvasWidth: number,
   canvasHeight: number,
 ): { viewConfig: ViewConfig; scene: Scene } {
   const topCamera = getDomainCameraById(world, topCameraId);
   const adjustedScene = makeTopViewScene(scene);
-
   const refDebug = toDebugPlane(referencePlane);
-  const debugDebugPlanes = debugPlanes.map(toDebugPlane);
 
-  const { view, debugOverlay } = buildTopViewConfig(
+  const { view, debugOverlay } = buildViewConfig(
     topCamera,
     canvasWidth,
     canvasHeight,
     refDebug,
     drawMode,
-    debugDebugPlanes,
   );
 
   return {

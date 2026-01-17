@@ -8,41 +8,41 @@ import { SceneObjectWithCache } from "./sceneInternals.js";
  * Reuses a per-object worldPoints cache to avoid per-frame allocations.
  */
 export function toRenderable(obj: SceneObject): Renderable {
-  const cachedObj = obj as SceneObjectWithCache;
-
-  let worldPoints: Vec3[];
-
   if (!obj.applyTransform) {
     // Polyline or other world-space-only geometry: no transform, no copies.
-    worldPoints = obj.mesh.points;
-  } else {
-    // Transformable object: cache worldPoints buffer on the object
-    const srcPoints = obj.mesh.points;
-    const n = srcPoints.length;
-
-    let cache = cachedObj.__worldPointsCache;
-    if (!cache || cache.length !== n) {
-      cache = new Array<Vec3>(n);
-      for (let i = 0; i < n; i++) {
-        cache[i] = { x: 0, y: 0, z: 0 };
-      }
-      cachedObj.__worldPointsCache = cache;
-    }
-
-    transformPointsToWorldInPlace(
-      srcPoints,
-      cache,
-      obj.orientation,
-      obj.scale,
-      obj.position,
-    );
-
-    worldPoints = cache;
+    return {
+      mesh: obj.mesh,
+      worldPoints: obj.mesh.points,
+      lineWidth: obj.lineWidth,
+      baseColor: obj.color,
+    };
   }
+
+  // Transformable object: cache worldPoints buffer on the object
+  const srcPoints = obj.mesh.points;
+  const n = srcPoints.length;
+
+  const cachedObj = obj as SceneObjectWithCache;
+  let cache = cachedObj.__worldPointsCache;
+  if (!cache || cache.length !== n) {
+    cache = new Array<Vec3>(n);
+    for (let i = 0; i < n; i++) {
+      cache[i] = { x: 0, y: 0, z: 0 };
+    }
+    cachedObj.__worldPointsCache = cache;
+  }
+
+  transformPointsToWorldInPlace(
+    srcPoints,
+    cache,
+    obj.orientation,
+    obj.scale,
+    obj.position,
+  );
 
   return {
     mesh: obj.mesh,
-    worldPoints,
+    worldPoints: cache,
     lineWidth: obj.lineWidth,
     baseColor: obj.color,
   };
