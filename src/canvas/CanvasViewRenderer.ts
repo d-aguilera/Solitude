@@ -1,17 +1,17 @@
-import type { Vec3, LocalFrame } from "../domain/domainPorts.js";
+import { Vec3, LocalFrame } from "../domain/domainPorts.js";
 import { NEAR, projectCameraPoint } from "../projection/projection.js";
-import type {
+import {
   ViewRenderer,
   ViewRendererParams,
   DrawOptions,
   ScreenPoint,
 } from "../render/renderInternals.js";
-import { toRenderable } from "../render/scene/renderPrep.js";
+import { SceneObject } from "../render/scenePorts.js";
+import { toRenderable } from "../scene/renderPrep.js";
 import {
   buildShadedFaces,
   getCameraPointsForObject,
-} from "../render/scene/shadedFaces.js";
-import type { SceneObject } from "../render/scenePorts.js";
+} from "../scene/shadedFaces.js";
 import { renderShadedFaces, renderPolyline } from "./canvasRasterizer.js";
 
 /**

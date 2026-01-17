@@ -1,23 +1,12 @@
-import type {
-  DomainCameraPose,
-  LocalFrame,
-  Vec3,
-} from "../domain/domainPorts.js";
+import { DomainCameraPose, Vec3, LocalFrame } from "../domain/domainPorts.js";
 import { mat3FromLocalFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
-import type { NdcPoint } from "../render/renderInternals.js";
-import type {
-  DrawMode,
-  View,
-  ViewDebugOverlay,
-} from "../render/renderPorts.js";
-import {
-  drawBodyLabels,
-  drawPlaneVelocityLine,
-} from "../render/scene/debugDraw.js";
+import { NdcPoint } from "../render/renderInternals.js";
+import { DrawMode, View, ViewDebugOverlay } from "../render/renderPorts.js";
+import { drawPlaneVelocityLine, drawBodyLabels } from "../scene/debugDraw.js";
 import { NEAR, projectCameraPointToNdc } from "./projection.js";
-import type { DebugPlane } from "./projectionPorts.js";
+import { DebugPlane } from "./projectionPorts.js";
 
 function makeBaseView(
   camera: DomainCameraPose,

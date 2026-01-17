@@ -1,7 +1,7 @@
-import type { Mat3, Vec3 } from "../../domain/domainPorts.js";
-import type { SceneObjectWithCache } from "./sceneInternals.js";
-import type { SceneObject } from "../scenePorts.js";
-import type { Renderable } from "../renderInternals.js";
+import { Vec3, Mat3 } from "../domain/domainPorts.js";
+import { Renderable } from "../render/renderInternals.js";
+import { SceneObject } from "../render/scenePorts.js";
+import { SceneObjectWithCache } from "./sceneInternals.js";
 
 /**
  * Convert a SceneObject into a Renderable with world-space points.
