@@ -1,5 +1,24 @@
-import type { LocalFrame, Vec3 } from "../domain/domainPorts.js";
-import type { DrawMode } from "../render/renderPorts.js";
+import type {
+  DomainWorld,
+  LocalFrame,
+  PlaneBody,
+  Vec3,
+} from "../domain/domainPorts";
+
+/**
+ * Adapter-level world state used by the app and renderer.
+ */
+export interface AppWorld extends DomainWorld {
+  planeBodies: Plane[];
+}
+
+/**
+ * Plane adapter type extends the domain PlaneBody with derived speed
+ * for HUD/debug overlays.
+ */
+export interface Plane extends PlaneBody {
+  speed: number;
+}
 
 /**
  * Environment wiring owned by the outermost bootstrap.
@@ -59,8 +78,3 @@ export interface PilotLookState {
   azimuth: number;
   elevation: number;
 }
-
-/**
- * Default draw mode for rendering.
- */
-export const DEFAULT_DRAW_MODE: DrawMode = "faces";

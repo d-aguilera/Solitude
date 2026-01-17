@@ -1,41 +1,12 @@
 /**
- * Core domain types and ports.
- *
- * This module does not depend on app, rendering, or infrastructure concerns.
- * Outer layers adapt these types into their own representations.
- */
-
-/**
- * A logical body participating in gravity.
+ * ID of a logical body participating in gravity.
  */
 export type BodyId = string;
 
-export type Mat3 = [
-  [number, number, number],
-  [number, number, number],
-  [number, number, number],
-];
-
-/**
- * Generalized world-state container for dynamic entities controlled by
- * the domain logic.
- *
- * Outer layers can wrap this container in adapter types but should not
- * mutate its shape from within the domain.
- */
-export interface DomainWorld {
-  planes: PlaneBody[];
-  cameras: DomainCameraPose[];
-  planets: CelestialBody[];
-  planetPhysics: PlanetPhysics[];
-  stars: CelestialBody[];
-  starPhysics: StarPhysics[];
-}
-
-export interface DomainCameraPose {
-  id: string;
-  position: Vec3;
-  frame: LocalFrame;
+export interface BodyState {
+  id: BodyId;
+  velocity: Vec3;
+  mass: number;
 }
 
 /**
@@ -47,19 +18,23 @@ export interface CelestialBody {
   velocity: Vec3;
 }
 
-export interface BodyState {
-  id: BodyId;
-  velocity: Vec3;
-  mass: number;
+export interface DomainCameraPose {
+  id: string;
+  position: Vec3;
+  frame: LocalFrame;
 }
 
 /**
- * Container for all gravitational bodies in the domain.
+ * Generalized world-state container for dynamic entities controlled by
+ * the domain logic.
  */
-export interface GravityState {
-  bodies: BodyState[];
-  bindings: GravityBodyBinding[];
-  mainPlaneBodyIndex: number;
+export interface DomainWorld {
+  planeBodies: PlaneBody[];
+  cameras: DomainCameraPose[];
+  planets: CelestialBody[];
+  planetPhysics: PlanetPhysics[];
+  stars: CelestialBody[];
+  starPhysics: StarPhysics[];
 }
 
 /**
@@ -102,11 +77,26 @@ export interface GravityEngine {
   ): GravityState;
 }
 
+/**
+ * Container for all gravitational bodies in the domain.
+ */
+export interface GravityState {
+  bodies: BodyState[];
+  bindings: GravityBodyBinding[];
+  mainPlaneBodyIndex: number;
+}
+
 export interface LocalFrame {
   right: Vec3;
   forward: Vec3;
   up: Vec3;
 }
+
+export type Mat3 = [
+  [number, number, number],
+  [number, number, number],
+  [number, number, number],
+];
 
 export interface Mesh {
   points: Vec3[];
@@ -135,17 +125,7 @@ export interface PlanetPhysics {
 }
 
 /**
- * Physical properties of a star body.
- */
-export interface StarPhysics extends PlanetPhysics {
-  luminosity: number; // W or scaled units for lighting
-}
-
-/**
  * Adapter-level mapping between planet ids and their trajectory path ids.
- *
- * This is kept here because it is purely an id-level relationship and has
- * no knowledge of rendering internals.
  */
 export interface PlanetPathMapping {
   planetId: string;
@@ -156,6 +136,13 @@ export interface RGB {
   r: number;
   g: number;
   b: number;
+}
+
+/**
+ * Physical properties of a star body.
+ */
+export interface StarPhysics extends PlanetPhysics {
+  luminosity: number; // W or scaled units for lighting
 }
 
 export interface Vec3 {

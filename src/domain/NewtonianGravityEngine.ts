@@ -32,8 +32,8 @@ export class NewtonianGravityEngine implements GravityEngine {
     const bindings: GravityBodyBinding[] = [];
 
     // Planes
-    for (let i = 0; i < world.planes.length; i++) {
-      const plane = world.planes[i];
+    for (let i = 0; i < world.planeBodies.length; i++) {
+      const plane = world.planeBodies[i];
       bindings.push({
         id: plane.id,
         kind: "plane",
@@ -76,7 +76,7 @@ export class NewtonianGravityEngine implements GravityEngine {
   ): Vec3 {
     switch (binding.kind) {
       case "plane":
-        return world.planes[binding.planeIndex].position;
+        return world.planeBodies[binding.planeIndex].position;
       case "planet":
         return world.planets[binding.planetIndex].position;
       case "star":
@@ -91,7 +91,7 @@ export class NewtonianGravityEngine implements GravityEngine {
   ): void {
     switch (binding.kind) {
       case "plane": {
-        const p = world.planes[binding.planeIndex];
+        const p = world.planeBodies[binding.planeIndex];
         p.position = pos;
         break;
       }
@@ -122,8 +122,8 @@ export class NewtonianGravityEngine implements GravityEngine {
     const planeMass = 5e4;
 
     // Planes
-    for (let i = 0; i < world.planes.length; i++) {
-      const plane = world.planes[i];
+    for (let i = 0; i < world.planeBodies.length; i++) {
+      const plane = world.planeBodies[i];
       bodies.push({
         id: plane.id,
         mass: planeMass,

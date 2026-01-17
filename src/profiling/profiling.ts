@@ -5,7 +5,7 @@ let doProfile = false;
 let counters: Record<string, Record<string, number>> = {};
 
 let enabled = false;
-let pausedThisFrame = false;
+let paused = false;
 
 export function setProfilingEnabled(value: boolean): void {
   enabled = value;
@@ -16,11 +16,11 @@ export function isProfilingEnabled(): boolean {
 }
 
 export function setPausedForProfiling(isPaused: boolean): void {
-  pausedThisFrame = isPaused;
+  paused = isPaused;
 }
 
 export function check(): void {
-  if (!enabled || pausedThisFrame) return;
+  if (!enabled || paused) return;
 
   const now = performance.now();
   if (now - lastProfileStartMs < profileEveryMs) {
@@ -35,7 +35,7 @@ export function check(): void {
 export function profile<T>(
   counterGroup: string,
   counterName: string,
-  fn: () => T
+  fn: () => T,
 ): T {
   if (!doProfile) {
     return fn();
@@ -65,7 +65,7 @@ export function profile<T>(
 export function add(
   counterGroup: string,
   counterName: string,
-  value: number
+  value: number,
 ): void {
   if (!doProfile) return;
 
@@ -85,8 +85,8 @@ export function flush(): void {
         "] ",
         Object.entries(counters[group])
           .map(([name, value]) => `${name}=${Math.round(value * 1000) / 1000}`)
-          .join(", ")
-      )
+          .join(", "),
+      ),
     );
   }
 
@@ -97,7 +97,7 @@ export function addMinMax(
   counterGroup: string,
   baseName: string,
   min: number,
-  max: number
+  max: number,
 ): void {
   if (!doProfile) return;
 

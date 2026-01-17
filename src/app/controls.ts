@@ -1,12 +1,12 @@
+import type {
+  ControlState,
+  ControlledBodyState,
+  ControlInput,
+  PilotLookState,
+} from "./appInternals.js";
+import type { LocalFrame } from "../domain/domainPorts.js";
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
-import type { LocalFrame } from "../domain/domainPorts.js";
-import type {
-  ControlInput,
-  ControlledBodyState,
-  ControlState,
-  PilotLookState,
-} from "./appPorts.js";
 
 // Max thrust acceleration in m/s^2 at 100% thrust
 const maxThrustAcceleration = 1_000_000; // ~ 100_000 G

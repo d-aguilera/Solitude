@@ -1,9 +1,9 @@
+import type { AppEnvironment } from "./appInternals.js";
 import { startGame } from "./game.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
-import { init as initResizeHandler } from "../render/canvas/canvasLayout.js";
-import type { AppEnvironment } from "./appPorts.js";
 import type { Profiler } from "../profiling/profilingPorts.js";
 import type { Renderer } from "../render/renderPorts.js";
+import { init as initResizeHandler } from "../render/canvas/canvasLayout.js";
 
 export function runApp(
   renderer: Renderer,

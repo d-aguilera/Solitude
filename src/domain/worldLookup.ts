@@ -1,9 +1,9 @@
 import type {
   BodyId,
   DomainCameraPose,
+  DomainWorld,
   PlaneBody,
   StarPhysics,
-  DomainWorld,
 } from "./domainPorts.js";
 
 function getById<T extends { id: BodyId }>(
@@ -24,7 +24,7 @@ export function getDomainCameraById(
 }
 
 export function getPlaneBodyById(world: DomainWorld, id: BodyId): PlaneBody {
-  return getById(world.planes, id, "PlaneBody");
+  return getById(world.planeBodies, id, "PlaneBody");
 }
 
 export function getStarPhysicsById(

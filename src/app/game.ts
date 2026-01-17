@@ -1,17 +1,10 @@
 import type {
+  AppWorld,
   ControlInput,
   ControlledBodyState,
   ControlState,
-} from "./appPorts.js";
-import type {
-  DomainWorld,
-  GravityEngine,
-  GravityState,
-  LocalFrame,
-  PlanetPathMapping,
-  Vec3,
-} from "../domain/domainPorts.js";
-import type { WorldState, Plane } from "./worldState.js";
+  Plane,
+} from "./appInternals.js";
 import {
   applyThrustToVelocity,
   updateBodyOrientationFromInput,
@@ -22,8 +15,13 @@ import {
   getProfilingEnabledFromEnv,
   setProfilingEnabledInEnv,
 } from "./debugEnv.js";
-import { rotateFrameAroundAxis } from "../domain/localFrame.js";
-import { vec3 } from "../domain/vec3.js";
+import { updateFPS } from "./fps.js";
+import { renderHUD } from "./hud.js";
+import { init as initInput, getKeyState } from "./input.js";
+import { pauseControl, paused } from "./pause.js";
+import { appendPointToPolylineMesh } from "./trajectory.js";
+import { buildPilotView, buildTopView } from "./viewComposition.js";
+import { getPlaneById } from "./worldLookup.js";
 import {
   createInitialSceneAndWorld,
   syncPlanesToSceneObjects,
@@ -31,11 +29,17 @@ import {
   syncStarsToSceneObjects,
   syncLightsToStars,
 } from "./worldSetupApp.js";
-import { updateFPS } from "./fps.js";
-import { renderHUD } from "./hud.js";
-import { init as initInput, getKeyState } from "./input.js";
-import { pauseControl, paused } from "./pause.js";
-import { appendPointToPolylineMesh } from "./trajectory.js";
+import type {
+  DomainWorld,
+  GravityEngine,
+  GravityState,
+  LocalFrame,
+  PlanetPathMapping,
+  Vec3,
+} from "../domain/domainPorts.js";
+import { rotateFrameAroundAxis } from "../domain/localFrame.js";
+import { vec3 } from "../domain/vec3.js";
+import { getDomainCameraById } from "../domain/worldLookup.js";
 import {
   profileCheck,
   profileFlush,
@@ -43,19 +47,16 @@ import {
   setProfilingEnabled,
   isProfilingEnabled,
 } from "../profiling/profilingFacade.js";
-import { getPlaneById } from "./worldLookup.js";
-import { getDomainCameraById } from "../domain/worldLookup.js";
-import { buildPilotView, buildTopView } from "./viewComposition.js";
+import type { Profiler } from "../profiling/profilingPorts.js";
 import type { Renderer, RenderPlane } from "../render/renderPorts.js";
 import type { Scene } from "../render/scenePorts.js";
-import type { Profiler } from "../profiling/profilingPorts.js";
 
 let lastTimeMs = 0;
 let oKeyDown = false;
 let accumTime = 0;
 
 let scene: Scene;
-let world: WorldState;
+let world: AppWorld;
 let mainPlaneId: string;
 let topCameraId: string;
 let pilotCameraId: string;
@@ -71,9 +72,9 @@ let controlState: ControlState = createInitialControlState();
 let pilotContext: CanvasRenderingContext2D;
 let topContext: CanvasRenderingContext2D;
 
-function toDomainWorld(world: WorldState): DomainWorld {
+function toDomainWorld(world: AppWorld): DomainWorld {
   return {
-    planes: world.planes,
+    planeBodies: world.planeBodies,
     cameras: world.cameras,
     planets: world.planets,
     planetPhysics: world.planetPhysics,
@@ -147,7 +148,7 @@ function renderFrame(
     const mainPlane = getPlaneById(world, mainPlaneId);
     const profilingEnabled = isProfilingEnabled();
 
-    const debugPlanes = world.planes;
+    const debugPlanes = world.planeBodies;
 
     const { viewConfig: pilotViewConfig, scene: pilotScene } = buildPilotView(
       world,
@@ -328,7 +329,7 @@ function syncPlaneVelocitiesFromGravity(): void {
     const body = gravityState.bodies[binding.planeIndex];
     if (!body) continue;
 
-    const plane = world.planes[binding.planeIndex];
+    const plane = world.planeBodies[binding.planeIndex];
     plane.velocity = { ...body.velocity };
     plane.speed = vec3.length(plane.velocity);
   }

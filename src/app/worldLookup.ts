@@ -1,5 +1,5 @@
+import type { AppWorld, Plane } from "./appInternals.js";
 import type { BodyId } from "../domain/domainPorts.js";
-import type { Plane, WorldState } from "./worldState.js";
 
 function getById<T extends { id: BodyId }>(
   arr: T[],
@@ -11,6 +11,6 @@ function getById<T extends { id: BodyId }>(
   return obj;
 }
 
-export function getPlaneById(world: WorldState, id: BodyId): Plane {
-  return getById(world.planes, id, "Plane");
+export function getPlaneById(world: AppWorld, id: BodyId): Plane {
+  return getById(world.planeBodies, id, "Plane");
 }

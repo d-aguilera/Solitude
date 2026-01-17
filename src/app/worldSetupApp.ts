@@ -1,3 +1,4 @@
+import type { AppWorld, Plane } from "./appInternals.js";
 import type {
   PlanetBodyConfig,
   StarBodyConfig,
@@ -33,7 +34,6 @@ import type {
   StarSceneObject,
   PolylineSceneObject,
 } from "../render/scenePorts.js";
-import type { Plane, WorldState } from "./worldState.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
@@ -174,9 +174,9 @@ function computePlanetMass(physicalRadius: number, density: number): number {
 function addPlanetsAndStarsFromConfig(
   configs: (PlanetBodyConfig | StarBodyConfig)[],
   objects: SceneObject[],
-  worldPlanets: WorldState["planets"],
+  worldPlanets: AppWorld["planets"],
   worldPlanetPhysics: PlanetPhysics[],
-  worldStars: WorldState["stars"],
+  worldStars: AppWorld["stars"],
   worldStarPhysics: StarPhysics[],
 ): void {
   const bodyMeshTemplate: Mesh = generatePlanetMesh(3);
@@ -350,7 +350,7 @@ function computePlaneInitialNearEarthOrbitVelocity(
 
 export function createInitialSceneAndWorld(): {
   scene: Scene;
-  world: WorldState;
+  world: AppWorld;
   mainPlaneId: string;
   topCameraId: string;
   pilotCameraId: string;
@@ -358,8 +358,8 @@ export function createInitialSceneAndWorld(): {
 } {
   const objects: SceneObject[] = [];
 
-  const world: WorldState = {
-    planes: [],
+  const world: AppWorld = {
+    planeBodies: [],
     cameras: [],
     planets: [],
     planetPhysics: [],
@@ -401,7 +401,7 @@ export function createInitialSceneAndWorld(): {
     planeInitialVelocity,
   );
 
-  world.planes.push(mainPlane);
+  world.planeBodies.push(mainPlane);
 
   // Add the airplane visual object at that position
   addAirplaneObject(mainPlane, objects);
@@ -441,11 +441,8 @@ export function createInitialSceneAndWorld(): {
   };
 }
 
-export function syncPlanesToSceneObjects(
-  world: WorldState,
-  scene: Scene,
-): void {
-  for (const plane of world.planes) {
+export function syncPlanesToSceneObjects(world: AppWorld, scene: Scene): void {
+  for (const plane of world.planeBodies) {
     const obj = scene.objects.find((o) => o.id === plane.id);
     if (!obj) continue;
 
@@ -455,10 +452,7 @@ export function syncPlanesToSceneObjects(
   }
 }
 
-export function syncPlanetsToSceneObjects(
-  world: WorldState,
-  scene: Scene,
-): void {
+export function syncPlanetsToSceneObjects(world: AppWorld, scene: Scene): void {
   for (const planetBody of world.planets) {
     const obj = scene.objects.find(
       (o) => o.id === planetBody.id,
@@ -469,7 +463,7 @@ export function syncPlanetsToSceneObjects(
   }
 }
 
-export function syncStarsToSceneObjects(world: WorldState, scene: Scene): void {
+export function syncStarsToSceneObjects(world: AppWorld, scene: Scene): void {
   for (const starBody of world.stars) {
     const obj = scene.objects.find(
       (o) => o.id === starBody.id,
@@ -483,7 +477,7 @@ export function syncStarsToSceneObjects(world: WorldState, scene: Scene): void {
 /**
  * Internal helper: build the array of point lights from the current star bodies.
  */
-function buildLightsFromStars(world: WorldState, scene: Scene): void {
+function buildLightsFromStars(world: AppWorld, scene: Scene): void {
   const lights = [];
 
   for (const starBody of world.stars) {
@@ -501,6 +495,6 @@ function buildLightsFromStars(world: WorldState, scene: Scene): void {
 /**
  * Per‑frame adapter: keep Scene.lights in sync with the current star bodies.
  */
-export function syncLightsToStars(world: WorldState, scene: Scene): void {
+export function syncLightsToStars(world: AppWorld, scene: Scene): void {
   buildLightsFromStars(world, scene);
 }

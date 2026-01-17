@@ -1,16 +1,16 @@
-import type { WorldState, Plane } from "./worldState.js";
+import type { AppWorld, Plane } from "./appInternals.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
+import type {
+  DrawMode,
+  ViewConfig as RenderViewConfig,
+  RenderPlane,
+} from "../render/renderPorts.js";
+import type { Scene } from "../render/scenePorts.js";
+import type { DebugPlane } from "../render/projection/projectionPorts.js";
 import {
   buildPilotViewConfig,
   buildTopViewConfig,
 } from "../render/projection/viewSetup.js";
-import type { DebugPlane } from "../render/projection/projectionPorts.js";
-import type {
-  ViewConfig as RenderViewConfig,
-  RenderPlane,
-} from "../render/renderPorts.js";
-import type { DrawMode } from "../render/renderPorts.js";
-import type { Scene } from "../render/scenePorts.js";
 
 /**
  * Convert an app-layer Plane into the minimal RenderPlane DTO.
@@ -32,7 +32,7 @@ function toDebugPlane(plane: Plane): DebugPlane {
 }
 
 export function buildPilotView(
-  world: WorldState,
+  world: AppWorld,
   scene: Scene,
   pilotCameraId: string,
   referencePlane: Plane,
@@ -68,7 +68,7 @@ export function buildPilotView(
 }
 
 export function buildTopView(
-  world: WorldState,
+  world: AppWorld,
   scene: Scene,
   topCameraId: string,
   referencePlane: Plane,
