@@ -1,13 +1,15 @@
-import { CanvasRenderer } from "../render/canvas/CanvasRenderer.js";
-import { NewtonianGravityEngine } from "../domain/NewtonianGravityEngine.js";
-import { defaultProfiler } from "../profiling/profilingFacade.js";
 import { runApp } from "../app/main.js";
+import { GravityEngine } from "../domain/domainPorts.js";
+import { NewtonianGravityEngine } from "../domain/NewtonianGravityEngine.js";
+import { DefaultProfiler } from "../profiling/DefaultProfiler.js";
+import { Profiler } from "../profiling/profilingPorts.js";
+import { CanvasRenderer } from "../render/canvas/CanvasRenderer.js";
+import { Renderer } from "../renderPorts/renderPorts.js";
 
 /**
  * DOM-level bootstrap responsible for:
  *  - Looking up canvas elements in the document
- *  - Constructing the concrete CanvasRenderer
- *  - Wiring a concrete GravityEngine and Profiler
+ *  - Wiring concrete Renderer, GravityEngine and Profiler instances
  */
 export function bootstrapDomApp(): void {
   const container = document.querySelector(".canvas-container");
@@ -29,9 +31,9 @@ export function bootstrapDomApp(): void {
     throw new Error("Required 'topViewCanvas' not found in document");
   }
 
-  const renderer = new CanvasRenderer();
-  const gravityEngine = new NewtonianGravityEngine();
-  const profiler = defaultProfiler;
+  const gravityEngine: GravityEngine = new NewtonianGravityEngine();
+  const profiler: Profiler = new DefaultProfiler();
+  const renderer: Renderer = new CanvasRenderer();
 
   runApp(renderer, gravityEngine, profiler, {
     container,

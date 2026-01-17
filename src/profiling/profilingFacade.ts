@@ -1,5 +1,4 @@
 import {
-  add as realAdd,
   check as realCheck,
   flush as realFlush,
   isProfilingEnabled as realIsProfilingEnabled,
@@ -7,7 +6,6 @@ import {
   setProfilingEnabled as realSetProfilingEnabled,
   setPausedForProfiling as realSetPausedForProfiling,
 } from "./profiling.js";
-import { Profiler } from "./profilingPorts.js";
 
 /**
  * Wrapper that decouples callers from the concrete profiling implementation.
@@ -43,12 +41,3 @@ export function profileCheck(): void {
 export function profileFlush(): void {
   realFlush();
 }
-
-// Small adapter that lets callers plug in any profiling / tracing / instrumentation
-// without direct coupling to a concrete instrumentation API.
-export const defaultProfiler: Profiler = {
-  run: <T>(group: string, name: string, fn: () => T): T =>
-    profile(group, name, fn),
-  increment: (group: string, name: string, count?: number) =>
-    realAdd(group, name, count ?? 1),
-};
