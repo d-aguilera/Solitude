@@ -1,14 +1,15 @@
-import { Vec3, LocalFrame } from "../domain/domainPorts.js";
+import { Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
-import { FaceEntry } from "../render/renderInternals.js";
+import { FaceEntry, NdcPoint } from "../render/renderInternals.js";
 import { SceneObject, PointLight } from "../render/scenePorts.js";
 import {
   clipTriangleAgainstNearPlaneCamera,
   getCameraPointsForObject,
-  projectCameraPoint,
 } from "./camera.js";
 import { toRenderable } from "./renderPrep.js";
 import { SceneObjectWithCache } from "./sceneInternals.js";
+import type { View } from "../render/renderPorts.js";
+import { ndcToScreen, projectCameraPointToNdc } from "./camera.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
 const SUN_LUMINOSITY = 3.828e26; // W
@@ -16,28 +17,28 @@ const AU = 1.495978707e11; // m
 const EARTH_ORBIT_RADIUS_2 = AU * AU;
 const E_SUN_AT_EARTH = SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS_2);
 
+function projectionFromCamera(
+  cameraPoint: Vec3,
+  canvasWidth: number,
+  canvasHeight: number,
+): NdcPoint {
+  return projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
+}
+
 /**
  * Build the list of shaded triangle faces (with depth and lighting information)
  * for all non-wireframe objects in the scene.
  */
 export function buildShadedFaces(params: {
   objects: SceneObject[];
-  cameraPos: Vec3;
-  cameraFrame: LocalFrame;
+  view: View;
   canvasWidth: number;
   canvasHeight: number;
   lights: PointLight[];
   frameId: number;
 }): FaceEntry[] {
-  const {
-    objects,
-    cameraPos,
-    cameraFrame,
-    canvasWidth,
-    canvasHeight,
-    lights,
-    frameId,
-  } = params;
+  const { objects, view, canvasWidth, canvasHeight, lights, frameId } = params;
+  const { cameraPos, cameraFrame } = view;
   const faceList: FaceEntry[] = [];
 
   objects.forEach((obj) => {
@@ -96,9 +97,13 @@ export function buildShadedFaces(params: {
       const isStar = obj.kind === "star";
 
       for (const [A, B, C] of clipped) {
-        const p0 = projectCameraPoint(A, canvasWidth, canvasHeight);
-        const p1 = projectCameraPoint(B, canvasWidth, canvasHeight);
-        const p2 = projectCameraPoint(C, canvasWidth, canvasHeight);
+        const ndc0 = projectionFromCamera(A, canvasWidth, canvasHeight);
+        const ndc1 = projectionFromCamera(B, canvasWidth, canvasHeight);
+        const ndc2 = projectionFromCamera(C, canvasWidth, canvasHeight);
+
+        const p0 = ndcToScreen(ndc0, canvasWidth, canvasHeight);
+        const p1 = ndcToScreen(ndc1, canvasWidth, canvasHeight);
+        const p2 = ndcToScreen(ndc2, canvasWidth, canvasHeight);
 
         const d0 = p0.depth;
         const d1 = p1.depth;

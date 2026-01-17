@@ -1,6 +1,4 @@
-import { Vec3, LocalFrame } from "../domain/domainPorts.js";
 import type { Profiler } from "../profiling/profilingPorts.js";
-import { projectCameraPoint } from "../scene/camera.js";
 import {
   ViewRenderer,
   ViewRendererParams,
@@ -10,10 +8,6 @@ import type { View } from "../render/renderPorts.js";
 import { SceneObject, type PointLight } from "../render/scenePorts.js";
 import { toRenderable } from "../scene/renderPrep.js";
 import { buildShadedFaces } from "../scene/shadedFaces.js";
-import {
-  getCameraPointsForObject,
-  isInFrontOfNearPlane,
-} from "../scene/camera.js";
 import { renderShadedFaces, renderPolyline } from "./canvasRasterizer.js";
 
 interface DrawOptions {
@@ -74,79 +68,56 @@ export class CanvasViewRenderer implements ViewRenderer {
     context: CanvasRenderingContext2D,
     { objects, view, lights, profiler, frameId }: DrawOptions,
   ): void {
-    const { cameraPos, cameraFrame } = view;
     const { width, height } = context.canvas;
 
     profiler.run("DRAW", "total", () => {
       if (view.drawMode === "faces") {
         profiler.run("DRAW", "faces", () => {
-          // 1) Solid objects: faces path, skipping wireframe-only
+          // Solid objects use shaded‑face path
           const faceList = buildShadedFaces({
             objects,
-            cameraPos,
-            cameraFrame,
+
+            view,
             canvasWidth: width,
             canvasHeight: height,
             lights,
             frameId,
           });
 
-          // Depth sort & draw faces via rasterizer
           renderShadedFaces(context, faceList);
         });
 
-        // 2) Wireframe-only objects: lines path
         profiler.run("DRAW", "wireframeOnly", () => {
-          this.drawMeshPolylinesCameraSpace(
+          this.drawMeshPolylinesWorldSpace(
             context,
             objects.filter((obj) => obj.wireframeOnly),
-            cameraPos,
-            cameraFrame,
-            width,
-            height,
-            frameId,
+            view,
           );
         });
       } else {
-        // Pure wireframe mode: draw all objects as polylines using camera-space cache
         profiler.run("DRAW", "lines", () => {
-          this.drawMeshPolylinesCameraSpace(
-            context,
-            objects,
-            cameraPos,
-            cameraFrame,
-            width,
-            height,
-            frameId,
-          );
+          this.drawMeshPolylinesWorldSpace(context, objects, view);
         });
       }
     });
   }
 
-  drawMeshPolylinesCameraSpace(
+  /**
+   * Draw mesh faces as polylines by projecting world‑space vertices via the
+   * view's projection function.
+   */
+  private drawMeshPolylinesWorldSpace(
     context: CanvasRenderingContext2D,
     objects: SceneObject[],
-    cameraPos: Vec3,
-    cameraFrame: LocalFrame,
-    canvasWidth: number,
-    canvasHeight: number,
-    frameId: number,
+    view: View,
   ): void {
     const projectedPoints: ScreenPoint[] = [];
+    const { projection } = view;
+    const { width, height } = context.canvas;
 
     objects.forEach((obj) => {
       const { mesh, worldPoints, baseColor, lineWidth } = toRenderable(obj);
       const { faces } = mesh;
-
-      // Get (or build) camera-space vertices for this object and frame
-      const cameraPoints = getCameraPointsForObject(
-        obj,
-        worldPoints,
-        cameraPos,
-        cameraFrame,
-        frameId,
-      );
 
       for (let i = 0; i < faces.length; i++) {
         const polyIndices = faces[i];
@@ -154,16 +125,22 @@ export class CanvasViewRenderer implements ViewRenderer {
 
         for (let j = 0; j < polyIndices.length; j++) {
           const idx = polyIndices[j];
-          const cp = cameraPoints[idx];
+          const wp = worldPoints[idx];
 
-          // Skip points behind near plane
-          if (!isInFrontOfNearPlane(cp)) {
+          const ndc = projection(wp);
+          if (!ndc) {
             projectedPoints.length = 0;
             break;
           }
 
-          const sp = projectCameraPoint(cp, canvasWidth, canvasHeight);
-          projectedPoints.push(sp);
+          const x = (ndc.x + 1) * 0.5 * width;
+          const y = (1 - ndc.y) * 0.5 * height;
+
+          projectedPoints.push({
+            x,
+            y,
+            depth: ndc.depth,
+          });
         }
 
         if (projectedPoints.length > 0) {
