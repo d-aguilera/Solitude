@@ -1,7 +1,7 @@
-import type { Mesh, RGB, Vec3 } from "../domain/domainPorts";
-import type { Profiler } from "../profiling/profilingPorts";
-import type { View, ViewDebugOverlay, DrawMode } from "./renderPorts";
-import type { PointLight, Scene, SceneObject } from "./scenePorts";
+import type { Mesh, RGB, Vec3 } from "../domain/domainPorts.js";
+import type { Profiler } from "../profiling/profilingPorts.js";
+import type { View, ViewConfig } from "./renderPorts.js";
+import type { PointLight, Scene, SceneObject } from "./scenePorts.js";
 
 export interface DrawOptions {
   objects: SceneObject[];
@@ -44,17 +44,6 @@ export interface ScreenPoint {
   x: number;
   y: number;
   depth: number; // camera-space depth (positive means in front of camera)
-}
-
-export interface ViewConfig {
-  view: View;
-  debugOverlay?: ViewDebugOverlay;
-  referencePlane: {
-    id: string;
-    position: Vec3;
-    velocity: Vec3;
-  };
-  drawMode: DrawMode;
 }
 
 /**

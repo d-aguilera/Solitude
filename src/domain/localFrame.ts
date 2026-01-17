@@ -46,14 +46,14 @@ export function mat3FromLocalFrame(frame: LocalFrame): Mat3 {
 export function rotateFrameAroundAxis(
   frame: LocalFrame,
   axis: Vec3,
-  angle: number
+  angle: number,
 ): LocalFrame {
   const R = mat3.rotAxis(axis, angle);
 
   return makeLocalFrameFromAxes(
     mat3.mulVec3(R, frame.right),
     mat3.mulVec3(R, frame.forward),
-    mat3.mulVec3(R, frame.up)
+    mat3.mulVec3(R, frame.up),
   );
 }
 
@@ -61,7 +61,7 @@ export function rotateFrameAroundAxis(
 function makeLocalFrameFromAxes(
   right: Vec3,
   forward: Vec3,
-  up: Vec3
+  up: Vec3,
 ): LocalFrame {
   // Gram–Schmidt to ensure orthonormal axes
   let r = vec3.normalize(right);

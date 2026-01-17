@@ -1,14 +1,22 @@
-import { drawPlaneVelocityLine, drawBodyLabels } from "../scene/debugDraw.js";
+import type {
+  DomainCameraPose,
+  LocalFrame,
+  Vec3,
+} from "../domain/domainPorts.js";
+import { mat3FromLocalFrame } from "../domain/localFrame.js";
+import { mat3 } from "../domain/mat3.js";
+import { vec3 } from "../domain/vec3.js";
+import type { NdcPoint } from "../render/renderInternals.js";
+import type {
+  DrawMode,
+  View,
+  ViewDebugOverlay,
+} from "../render/renderPorts.js";
 import {
-  worldPointToCameraPoint,
-  projectCameraPointToNdc,
-  NEAR,
-} from "./projection.js";
-import type { NdcPoint } from "../renderInternals.js";
-import type { DomainCameraPose, Vec3 } from "../../domain/domainPorts.js";
-import type { DrawMode } from "../renderPorts.js";
-import type { ViewDebugOverlay } from "../renderPorts.js";
-import type { View } from "../renderPorts.js";
+  drawBodyLabels,
+  drawPlaneVelocityLine,
+} from "../render/scene/debugDraw.js";
+import { NEAR, projectCameraPointToNdc } from "./projection.js";
 import type { DebugPlane } from "./projectionPorts.js";
 
 function makeBaseView(
@@ -30,7 +38,7 @@ function makeBaseView(
  * The overlay works with a minimal DebugPlane DTO so it does not depend
  * on any app-level world types.
  */
-export function makeStandardViewDebugOverlay(options: {
+function makeStandardViewDebugOverlay(options: {
   projection: (p: Vec3) => NdcPoint | null;
   referencePlane: DebugPlane;
   debugPlanes: DebugPlane[];
@@ -108,4 +116,18 @@ export function buildTopViewConfig(
   });
 
   return { view, debugOverlay };
+}
+
+/**
+ * Pure: world-space -> camera-space.
+ */
+export function worldPointToCameraPoint(
+  worldPoint: Vec3,
+  cameraPosition: Vec3,
+  cameraFrame: LocalFrame,
+): Vec3 {
+  const R_worldFromLocal = mat3FromLocalFrame(cameraFrame);
+  const R_localFromWorld = mat3.transpose(R_worldFromLocal);
+  const d = vec3.sub(worldPoint, cameraPosition);
+  return mat3.mulVec3(R_localFromWorld, d);
 }

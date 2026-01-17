@@ -1,29 +1,12 @@
-import { mat3 } from "../../domain/mat3.js";
-import { vec3 } from "../../domain/vec3.js";
-import type { NdcPoint } from "../renderInternals.js";
-import type { ScreenPoint } from "../renderInternals.js";
-import type { LocalFrame, Vec3 } from "../../domain/domainPorts.js";
-import { mat3FromLocalFrame } from "../../domain/localFrame.js";
+import type { Vec3 } from "../domain/domainPorts.js";
+import { vec3 } from "../domain/vec3.js";
+import type { NdcPoint, ScreenPoint } from "../render/renderInternals.js";
 
 // camera-space forward threshold
 export const NEAR = 0.01;
 
 // Vertical field of view in degrees.
 const VERTICAL_FOV = 30;
-
-/**
- * Pure: world-space -> camera-space.
- */
-export function worldPointToCameraPoint(
-  worldPoint: Vec3,
-  cameraPosition: Vec3,
-  cameraFrame: LocalFrame,
-): Vec3 {
-  const R_worldFromLocal = mat3FromLocalFrame(cameraFrame);
-  const R_localFromWorld = mat3.transpose(R_worldFromLocal);
-  const d = vec3.sub(worldPoint, cameraPosition);
-  return mat3.mulVec3(R_localFromWorld, d);
-}
 
 /**
  * Core projection from camera space -> NDC (no canvas size baked in).

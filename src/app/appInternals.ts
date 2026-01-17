@@ -3,7 +3,7 @@ import type {
   LocalFrame,
   PlaneBody,
   Vec3,
-} from "../domain/domainPorts";
+} from "../domain/domainPorts.js";
 
 /**
  * Adapter-level world state used by the app and renderer.

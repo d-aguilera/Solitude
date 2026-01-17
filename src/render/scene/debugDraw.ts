@@ -1,9 +1,9 @@
+import type { NdcPoint } from "../renderInternals.js";
 import type { Scene } from "../scenePorts.js";
 import type { Vec3 } from "../../domain/domainPorts.js";
 import { vec3 } from "../../domain/vec3.js";
-import type { NdcPoint } from "../renderInternals.js";
-import { ndcToScreen } from "../projection/projection.js";
-import type { DebugPlane } from "../projection/projectionPorts.js";
+import { ndcToScreen } from "../../projection/projection.js";
+import type { DebugPlane } from "../../projection/projectionPorts.js";
 
 export type ProjectFn = (p: Vec3) => NdcPoint | null;
 

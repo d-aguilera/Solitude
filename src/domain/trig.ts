@@ -4,7 +4,7 @@ import { vec3 } from "./vec3.js";
 function radialDirAtAngle(
   theta: number,
   radialAxis1: Vec3,
-  radialAxis2: Vec3
+  radialAxis2: Vec3,
 ): Vec3 {
   return vec3.normalize({
     x: radialAxis1.x * Math.cos(theta) + radialAxis2.x * Math.sin(theta),
@@ -16,7 +16,7 @@ function radialDirAtAngle(
 function tangentialDirAtAngle(
   theta: number,
   radialAxis1: Vec3,
-  radialAxis2: Vec3
+  radialAxis2: Vec3,
 ): Vec3 {
   const s = Math.sin(theta);
   const c = Math.cos(theta);

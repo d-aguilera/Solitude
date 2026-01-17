@@ -1,7 +1,7 @@
-import type { Scene } from "../scenePorts.js";
-import type { Renderer, ViewConfig } from "../renderPorts.js";
+import type { Profiler } from "../profiling/profilingPorts.js";
+import type { Renderer, ViewConfig } from "../render/renderPorts.js";
+import type { Scene } from "../render/scenePorts.js";
 import { CanvasViewRenderer } from "./CanvasViewRenderer.js";
-import type { Profiler } from "../../profiling/profilingPorts.js";
 
 /**
  * Canvas2D implementation of the top-level Renderer abstraction.

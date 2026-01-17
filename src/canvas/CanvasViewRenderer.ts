@@ -1,16 +1,18 @@
-import type { LocalFrame, Vec3 } from "../../domain/domainPorts.js";
+import type { Vec3, LocalFrame } from "../domain/domainPorts.js";
 import { NEAR, projectCameraPoint } from "../projection/projection.js";
-import type { ScreenPoint } from "../renderInternals.js";
-import type { ViewRenderer } from "../renderInternals.js";
-import type { ViewRendererParams } from "../renderInternals.js";
-import { toRenderable } from "../scene/renderPrep.js";
-import type { DrawOptions } from "../renderInternals.js";
+import type {
+  ViewRenderer,
+  ViewRendererParams,
+  DrawOptions,
+  ScreenPoint,
+} from "../render/renderInternals.js";
+import { toRenderable } from "../render/scene/renderPrep.js";
 import {
   buildShadedFaces,
   getCameraPointsForObject,
-} from "../scene/shadedFaces.js";
-import { renderPolyline, renderShadedFaces } from "./canvasRasterizer.js";
-import type { SceneObject } from "../scenePorts.js";
+} from "../render/scene/shadedFaces.js";
+import type { SceneObject } from "../render/scenePorts.js";
+import { renderShadedFaces, renderPolyline } from "./canvasRasterizer.js";
 
 /**
  * Canvas2D implementation of the ViewRenderer abstraction.

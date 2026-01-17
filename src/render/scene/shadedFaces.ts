@@ -1,12 +1,12 @@
-import { mat3FromLocalFrame } from "../../domain/localFrame.js";
-import type { LocalFrame, Vec3 } from "../../domain/domainPorts.js";
-import { mat3 } from "../../domain/mat3.js";
-import { vec3 } from "../../domain/vec3.js";
-import { projectCameraPoint } from "../projection/projection.js";
 import { toRenderable } from "./renderPrep.js";
 import type { SceneObjectWithCache } from "./sceneInternals.js";
 import type { FaceEntry } from "../renderInternals.js";
 import type { PointLight, SceneObject } from "../scenePorts.js";
+import type { LocalFrame, Vec3 } from "../../domain/domainPorts.js";
+import { mat3FromLocalFrame } from "../../domain/localFrame.js";
+import { mat3 } from "../../domain/mat3.js";
+import { vec3 } from "../../domain/vec3.js";
+import { projectCameraPoint } from "../../projection/projection.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
 const SUN_LUMINOSITY = 3.828e26; // W

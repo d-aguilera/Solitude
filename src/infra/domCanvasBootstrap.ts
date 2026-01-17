@@ -1,9 +1,9 @@
 import { runApp } from "../app/main.js";
+import { CanvasRenderer } from "../canvas/CanvasRenderer.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { NewtonianGravityEngine } from "../domain/NewtonianGravityEngine.js";
 import { DefaultProfiler } from "../profiling/DefaultProfiler.js";
 import type { Profiler } from "../profiling/profilingPorts.js";
-import { CanvasRenderer } from "../render/canvas/CanvasRenderer.js";
 import type { Renderer } from "../render/renderPorts.js";
 
 /**

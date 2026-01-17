@@ -1,16 +1,16 @@
-import type { AppWorld, Plane } from "./appInternals.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
-import type {
-  DrawMode,
-  ViewConfig as RenderViewConfig,
-  RenderPlane,
-} from "../render/renderPorts.js";
-import type { Scene } from "../render/scenePorts.js";
-import type { DebugPlane } from "../render/projection/projectionPorts.js";
+import type { DebugPlane } from "../projection/projectionPorts.js";
 import {
   buildPilotViewConfig,
   buildTopViewConfig,
-} from "../render/projection/viewSetup.js";
+} from "../projection/viewSetup.js";
+import type {
+  RenderPlane,
+  DrawMode,
+  ViewConfig,
+} from "../render/renderPorts.js";
+import type { Scene } from "../render/scenePorts.js";
+import type { Plane, AppWorld } from "./appInternals.js";
 
 /**
  * Convert an app-layer Plane into the minimal RenderPlane DTO.
@@ -40,7 +40,7 @@ export function buildPilotView(
   debugPlanes: Plane[],
   canvasWidth: number,
   canvasHeight: number,
-): { viewConfig: RenderViewConfig; scene: Scene } {
+): { viewConfig: ViewConfig; scene: Scene } {
   const pilotCamera = getDomainCameraById(world, pilotCameraId);
   const adjustedScene = makePilotViewScene(scene);
 
@@ -76,7 +76,7 @@ export function buildTopView(
   debugPlanes: Plane[],
   canvasWidth: number,
   canvasHeight: number,
-): { viewConfig: RenderViewConfig; scene: Scene } {
+): { viewConfig: ViewConfig; scene: Scene } {
   const topCamera = getDomainCameraById(world, topCameraId);
   const adjustedScene = makeTopViewScene(scene);
 
