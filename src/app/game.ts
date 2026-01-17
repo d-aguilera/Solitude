@@ -148,19 +148,30 @@ function renderFrame(
     const mainPlane = getPlaneById(world, mainPlaneId);
     const profilingEnabled = isProfilingEnabled();
 
-    const { viewConfig: pilotViewConfig, scene: pilotScene } = buildPilotView(
+    // Pilot scene: full scene, unfiltered
+    const pilotViewConfig = buildPilotView(
       world,
-      scene,
       pilotCameraId,
       mainPlane,
       "faces",
       pilotContext.canvas.width,
       pilotContext.canvas.height,
     );
+    const pilotScene: Scene = scene;
 
-    const { viewConfig: topViewConfig, scene: topScene } = buildTopView(
+    // Top scene: filtered scene without trajectory/path polylines
+    const topScene: Scene = {
+      objects: scene.objects.filter((obj) => {
+        if (obj.kind === "polyline" && obj.id.startsWith("path:")) {
+          return false;
+        }
+        return true;
+      }),
+      lights: scene.lights,
+    };
+
+    const topViewConfig = buildTopView(
       world,
-      scene,
       topCameraId,
       mainPlane,
       "faces",

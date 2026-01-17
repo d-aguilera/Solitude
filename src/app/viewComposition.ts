@@ -6,7 +6,6 @@ import type {
   DrawMode,
   ViewConfig,
 } from "../render/renderPorts.js";
-import type { Scene } from "../render/scenePorts.js";
 import type { Plane, AppWorld } from "./appInternals.js";
 
 /**
@@ -28,84 +27,62 @@ function toDebugPlane(plane: Plane): DebugPlane {
   };
 }
 
+/**
+ * Build the pilot view configuration for the given camera and reference plane.
+ */
 export function buildPilotView(
   world: AppWorld,
-  scene: Scene,
-  pilotCameraId: string,
+  cameraId: string,
   referencePlane: Plane,
   drawMode: DrawMode,
   canvasWidth: number,
   canvasHeight: number,
-): { viewConfig: ViewConfig; scene: Scene } {
-  const pilotCamera = getDomainCameraById(world, pilotCameraId);
-  const adjustedScene = makePilotViewScene(scene);
-  const refDebug = toDebugPlane(referencePlane);
+): ViewConfig {
+  const camera = getDomainCameraById(world, cameraId);
+  const plane = toDebugPlane(referencePlane);
 
   const { view, debugOverlay } = buildViewConfig(
-    pilotCamera,
+    camera,
     canvasWidth,
     canvasHeight,
-    refDebug,
+    plane,
     drawMode,
   );
 
   return {
-    viewConfig: {
-      view,
-      debugOverlay,
-      referencePlane: toRenderPlane(referencePlane),
-      drawMode,
-    },
-    scene: adjustedScene,
+    view,
+    debugOverlay,
+    referencePlane: toRenderPlane(referencePlane),
+    drawMode,
   };
 }
 
+/**
+ * Build the top view configuration for the given camera and reference plane.
+ */
 export function buildTopView(
   world: AppWorld,
-  scene: Scene,
-  topCameraId: string,
+  cameraId: string,
   referencePlane: Plane,
   drawMode: DrawMode,
   canvasWidth: number,
   canvasHeight: number,
-): { viewConfig: ViewConfig; scene: Scene } {
-  const topCamera = getDomainCameraById(world, topCameraId);
-  const adjustedScene = makeTopViewScene(scene);
-  const refDebug = toDebugPlane(referencePlane);
+): ViewConfig {
+  const camera = getDomainCameraById(world, cameraId);
+  const plane = toDebugPlane(referencePlane);
 
   const { view, debugOverlay } = buildViewConfig(
-    topCamera,
+    camera,
     canvasWidth,
     canvasHeight,
-    refDebug,
+    plane,
     drawMode,
   );
 
   return {
-    viewConfig: {
-      view,
-      debugOverlay,
-      referencePlane: toRenderPlane(referencePlane),
-      drawMode,
-    },
-    scene: adjustedScene,
-  };
-}
-
-function makePilotViewScene(base: Scene): Scene {
-  return base;
-}
-
-function makeTopViewScene(base: Scene): Scene {
-  const filteredObjects = base.objects.filter((obj) => {
-    if (obj.kind === "polyline" && obj.id.startsWith("path:")) {
-      return false;
-    }
-    return true;
-  });
-
-  return {
-    objects: filteredObjects,
-    lights: base.lights,
+    view,
+    debugOverlay,
+    referencePlane: toRenderPlane(referencePlane),
+    drawMode,
   };
 }
