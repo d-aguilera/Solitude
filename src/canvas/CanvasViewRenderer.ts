@@ -4,19 +4,11 @@ import type {
   ScreenPoint,
   ViewRendererParams,
   ViewRenderer,
-  View,
 } from "../render/renderPorts.js";
 import { buildShadedFaces } from "../render/shadedFaces.js";
 import { ndcToScreen } from "../render/shadedFaces.js";
 import { toRenderable } from "../scene/renderPrep.js";
 import { renderShadedFaces, renderPolyline } from "./canvasRasterizer.js";
-
-interface DrawOptions {
-  objects: SceneObject[];
-  view: View;
-  lights: PointLight[];
-  frameId: number;
-}
 
 /**
  * Canvas2D implementation of the ViewRenderer abstraction.
@@ -28,19 +20,17 @@ export class CanvasViewRenderer implements ViewRenderer {
 
   renderView(params: ViewRendererParams): void {
     const { context, scene, viewConfig } = params;
-    const { view, debugOverlay } = viewConfig;
+    const controller = viewConfig.controller;
 
     this.clear(context);
     this.draw(context, {
       objects: scene.objects,
-      view,
       lights: scene.lights,
       frameId: ++this.viewFrameCounter,
+      controller,
     });
 
-    if (debugOverlay) {
-      debugOverlay.draw(context, scene);
-    }
+    controller.getDebugOverlay().draw(context, scene);
   }
 
   /**
@@ -53,27 +43,28 @@ export class CanvasViewRenderer implements ViewRenderer {
     context.fillRect(0, 0, width, height);
   }
 
-  /**
-   * Orchestrate rasterization of all scene objects for a given view.
-   *
-   * Responsibilities kept here:
-   *  - Choosing between face-shaded vs. line (wireframe) draw modes
-   *  - Delegating to shaded-face builder for lighting/culling/projection
-   *  - Building projected polylines / face lists
-   */
-  draw(
+  private draw(
     context: CanvasRenderingContext2D,
-    { objects, view, lights, frameId }: DrawOptions,
+    params: {
+      objects: SceneObject[];
+      lights: PointLight[];
+      frameId: number;
+      controller: import("../projection/ViewController.js").ViewController;
+    },
   ): void {
     const { width, height } = context.canvas;
+    const { objects, lights, frameId, controller } = params;
+
+    const camera = controller.getCamera();
+    const drawMode = controller.getDrawMode();
 
     this.profiler.run("DRAW", "total", () => {
-      if (view.drawMode === "faces") {
+      if (drawMode === "faces") {
         this.profiler.run("DRAW", "faces", () => {
           // Solid objects use shaded‑face path
           const faceList = buildShadedFaces({
             objects,
-            view,
+            camera,
             canvasWidth: width,
             canvasHeight: height,
             lights,
@@ -87,12 +78,12 @@ export class CanvasViewRenderer implements ViewRenderer {
           this.drawMeshPolylinesWorldSpace(
             context,
             objects.filter((obj) => obj.wireframeOnly),
-            view,
+            controller,
           );
         });
       } else {
         this.profiler.run("DRAW", "lines", () => {
-          this.drawMeshPolylinesWorldSpace(context, objects, view);
+          this.drawMeshPolylinesWorldSpace(context, objects, controller);
         });
       }
     });
@@ -100,15 +91,14 @@ export class CanvasViewRenderer implements ViewRenderer {
 
   /**
    * Draw mesh faces as polylines by projecting world‑space vertices via the
-   * view's projection function and mapping to screen space using the camera.
+   * view controller and mapping to screen space using the camera.
    */
   private drawMeshPolylinesWorldSpace(
     context: CanvasRenderingContext2D,
     objects: SceneObject[],
-    view: View,
+    controller: import("../projection/ViewController.js").ViewController,
   ): void {
     const projectedPoints: ScreenPoint[] = [];
-    const { projection } = view;
     const { width, height } = context.canvas;
 
     objects.forEach((obj) => {
@@ -123,14 +113,13 @@ export class CanvasViewRenderer implements ViewRenderer {
           const idx = polyIndices[j];
           const wp = worldPoints[idx];
 
-          const ndc = projection(wp);
+          const ndc = controller.project(wp);
           if (!ndc) {
             projectedPoints.length = 0;
             break;
           }
 
           const screenPoint = ndcToScreen(ndc, width, height);
-
           projectedPoints.push(screenPoint);
         }
 

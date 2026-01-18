@@ -1,5 +1,5 @@
 import { getDomainCameraById } from "../domain/worldLookup.js";
-import { ViewBuilder } from "../projection/ViewBuilder.js";
+import { ViewController } from "../projection/ViewController.js";
 import type { RenderPlane, ViewConfig } from "../render/renderPorts.js";
 import type { Plane, AppWorld } from "./appInternals.js";
 import type { DrawMode } from "./appPorts.js";
@@ -10,15 +10,9 @@ import type { DrawMode } from "./appPorts.js";
  *
  * Responsibilities:
  *  - Mapping AppWorld cameras and planes into render-layer DTOs
- *  - Delegating projection-specific work to ViewBuilder
+ *  - Delegating projection-specific work to ViewController
  */
 export class ViewComposer {
-  private readonly viewBuilder: ViewBuilder;
-
-  constructor(viewBuilder?: ViewBuilder) {
-    this.viewBuilder = viewBuilder ?? new ViewBuilder();
-  }
-
   /**
    * Convert an app-layer Plane into the minimal RenderPlane DTO.
    */
@@ -44,13 +38,17 @@ export class ViewComposer {
     const camera = getDomainCameraById(world, cameraId);
     const plane = this.toRenderPlane(referencePlane);
 
-    return this.viewBuilder.buildViewConfig(
-      camera,
+    const controller = new ViewController({
+      pose: camera,
       canvasWidth,
       canvasHeight,
-      plane,
+      referencePlane: plane,
       drawMode,
-    );
+    });
+
+    return {
+      controller,
+    };
   }
 
   /**
@@ -67,12 +65,16 @@ export class ViewComposer {
     const camera = getDomainCameraById(world, cameraId);
     const plane = this.toRenderPlane(referencePlane);
 
-    return this.viewBuilder.buildViewConfig(
-      camera,
+    const controller = new ViewController({
+      pose: camera,
       canvasWidth,
       canvasHeight,
-      plane,
+      referencePlane: plane,
       drawMode,
-    );
+    });
+
+    return {
+      controller,
+    };
   }
 }

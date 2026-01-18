@@ -5,9 +5,9 @@ import { CameraService } from "../scene/CameraService.js";
 import { ProjectionService } from "../scene/ProjectionService.js";
 import { toRenderable } from "../scene/renderPrep.js";
 import type { SceneObjectWithCache } from "../scene/sceneInternals.js";
-import type { NdcPoint } from "../scene/scenePorts.js";
+import type { NdcPoint, Camera } from "../scene/scenePorts.js";
 import type { FaceEntry } from "./renderPorts.js";
-import type { ScreenPoint, View } from "./renderPorts.js";
+import type { ScreenPoint } from "./renderPorts.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
 const SUN_LUMINOSITY = 3.828e26; // W
@@ -21,14 +21,14 @@ const E_SUN_AT_EARTH = SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS_2);
  */
 export function buildShadedFaces(params: {
   objects: SceneObject[];
-  view: View;
+  camera: Camera;
   canvasWidth: number;
   canvasHeight: number;
   lights: PointLight[];
   frameId: number;
 }): FaceEntry[] {
-  const { objects, view, canvasWidth, canvasHeight, lights, frameId } = params;
-  const { camera } = view;
+  const { objects, camera, canvasWidth, canvasHeight, lights, frameId } =
+    params;
 
   const projectionService = new ProjectionService(
     camera,

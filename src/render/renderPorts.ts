@@ -1,7 +1,7 @@
-import type { DrawMode, HudRenderData } from "../app/appPorts.js";
+import type { HudRenderData } from "../app/appPorts.js";
 import type { Scene } from "../appScene/appScenePorts.js";
 import type { RGB, Vec3 } from "../domain/domainPorts.js";
-import type { Camera, NdcPoint } from "../scene/scenePorts.js";
+import type { ViewController } from "../projection/ViewController.js";
 
 export interface FaceEntry {
   baseColor: RGB;
@@ -45,21 +45,11 @@ export interface ScreenPoint {
 
 /**
  * Core configuration for rendering a scene from a particular viewpoint.
- */
-export interface View {
-  camera: Camera;
-  projection: (p: Vec3) => NdcPoint | null;
-  drawMode: DrawMode;
-}
-
-/**
- * Public view configuration type used by app code to drive renderers.
+ *
+ * The underlying projection and camera pose are owned by the ViewController.
  */
 export interface ViewConfig {
-  view: View;
-  debugOverlay?: ViewDebugOverlay;
-  referencePlane: RenderPlane;
-  drawMode: View["drawMode"];
+  controller: ViewController;
 }
 
 /**
@@ -72,7 +62,6 @@ export interface ViewDebugOverlay {
 /**
  * Thin abstraction over how individual views are rendered.
  */
-
 export interface ViewRenderer {
   renderView(params: ViewRendererParams): void;
 }
