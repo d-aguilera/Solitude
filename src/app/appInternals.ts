@@ -12,15 +12,6 @@ export interface AppWorld extends DomainWorld {
   planeBodies: Plane[];
 }
 
-/**
- * Environment wiring owned by the outermost bootstrap.
- */
-export interface AppEnvironment {
-  container: Element;
-  pilotCanvas: HTMLCanvasElement;
-  topCanvas: HTMLCanvasElement;
-}
-
 export interface ControlInput {
   rollLeft: boolean;
   rollRight: boolean;

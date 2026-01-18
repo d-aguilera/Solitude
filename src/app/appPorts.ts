@@ -1,6 +1,17 @@
-import type { Vec3 } from "../domain/domainPorts";
+import type { GravityEngine, Profiler, Vec3 } from "../domain/domainPorts";
+import type { Renderer, RenderSurface2D } from "../render/renderPorts";
+import type { ControlInput, EnvInput } from "./appInternals";
 
 export type DrawMode = "faces" | "lines";
+
+export interface GameDependencies {
+  renderer: Renderer;
+  gravityEngine: GravityEngine;
+  profiler: Profiler;
+  profilerController: ProfilerController;
+  pilotSurface: RenderSurface2D;
+  topSurface: RenderSurface2D;
+}
 
 /**
  * Adapter‑agnostic HUD inputs.
@@ -59,4 +70,13 @@ export interface ProfilerController {
    * Flush accumulated counters and timing data, if enabled.
    */
   flush(): void;
+}
+
+export type TickCallback = (params: TickParams) => void;
+
+export interface TickParams {
+  nowMs: number;
+  controlInput: ControlInput;
+  envInput: EnvInput;
+  profilingEnabled: boolean;
 }

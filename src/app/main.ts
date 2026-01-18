@@ -1,39 +1,22 @@
-import { init as initResizeHandler } from "../canvas/canvasLayout.js";
-import { CanvasSurface } from "../canvas/CanvasSurface.js";
-import type { GravityEngine, Profiler } from "../domain/domainPorts.js";
-import { runDomGameLoop } from "../infra/domGameLoop.js";
-import type { Renderer } from "../render/renderPorts.js";
-import type { AppEnvironment } from "./appInternals.js";
-import type { ProfilerController } from "./appPorts.js";
+import { type GameDependencies } from "./appPorts.js";
+import type { TickCallback } from "./appPorts.js";
+import { startGame } from "./game.js";
 
-export function runApp(
-  renderer: Renderer,
-  gravityEngine: GravityEngine,
-  profiler: Profiler,
-  profilerController: ProfilerController,
-  env: AppEnvironment,
-): void {
-  initResizeHandler(env.container, env.pilotCanvas, env.topCanvas);
+/**
+ * Application-level entry point.
+ *
+ * Wires the core game loop against abstract surfaces and ports
+ * and returns a per-frame tick function that outer layers can drive.
+ */
+export function createApp(deps: GameDependencies): TickCallback {
+  const gameDeps: GameDependencies = {
+    renderer: deps.renderer,
+    gravityEngine: deps.gravityEngine,
+    profiler: deps.profiler,
+    profilerController: deps.profilerController,
+    pilotSurface: deps.pilotSurface,
+    topSurface: deps.topSurface,
+  };
 
-  const pilotContext = env.pilotCanvas.getContext("2d");
-  if (!pilotContext) {
-    throw new Error("Failed to get 2D context for pilot view canvas");
-  }
-
-  const topContext = env.topCanvas.getContext("2d");
-  if (!topContext) {
-    throw new Error("Failed to get 2D context for top view canvas");
-  }
-
-  const pilotSurface = new CanvasSurface(pilotContext);
-  const topSurface = new CanvasSurface(topContext);
-
-  runDomGameLoop({
-    renderer,
-    gravityEngine,
-    profiler,
-    profilerController,
-    pilotSurface,
-    topSurface,
-  });
+  return startGame(gameDeps);
 }

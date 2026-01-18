@@ -1,9 +1,10 @@
-import type { GameDependencies } from "../app/game.js";
+import type { GameDependencies } from "../app/appPorts.js";
+import type { TickCallback } from "../app/appPorts.js";
 import {
   getProfilingEnabledFromEnv,
   setProfilingEnabledInEnv,
 } from "../app/debugEnv.js";
-import { startGame } from "../app/game.js";
+import { createApp } from "../app/main.js";
 import {
   init as initInput,
   readControlInput,
@@ -12,9 +13,11 @@ import {
 
 /**
  * DOM-level game loop bootstrap.
+ *
+ * Owns requestAnimationFrame, input polling, and env-level profiling toggles.
  */
 export function runDomGameLoop(deps: GameDependencies): void {
-  const tick = startGame(deps);
+  const tick: TickCallback = createApp(deps);
 
   initInput();
 

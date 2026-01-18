@@ -1,30 +1,4 @@
 import type {
-  AppWorld,
-  ControlInput,
-  ControlledBodyState,
-  ControlState,
-  EnvInput,
-  Plane,
-} from "./appInternals.js";
-import type { ProfilerController } from "./appPorts.js";
-import {
-  applyThrustToVelocity,
-  updateBodyOrientationFromInput,
-  getSignedThrustPercent,
-  createInitialControlState,
-} from "./controls.js";
-import { updateFPS, fps } from "./fps.js";
-import { pauseControl, paused } from "./pause.js";
-import { appendPointToPolylineMesh } from "./trajectory.js";
-import { getPlaneById } from "./worldLookup.js";
-import {
-  createInitialSceneAndWorld,
-  syncPlanesToSceneObjects,
-  syncPlanetsToSceneObjects,
-  syncStarsToSceneObjects,
-  syncLightsToStars,
-} from "./worldSetupApp.js";
-import type {
   DomainWorld,
   GravityEngine,
   GravityState,
@@ -37,9 +11,38 @@ import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
 import type { Renderer, RenderSurface2D } from "../render/renderPorts.js";
-import type { HudRenderData } from "./appPorts.js";
+import type {
+  AppWorld,
+  ControlInput,
+  ControlledBodyState,
+  ControlState,
+  Plane,
+} from "./appInternals.js";
+import type { GameDependencies } from "./appPorts.js";
+import type {
+  HudRenderData,
+  ProfilerController,
+  TickCallback,
+} from "./appPorts.js";
 import type { Scene } from "../appScene/appScenePorts.js";
+import {
+  applyThrustToVelocity,
+  updateBodyOrientationFromInput,
+  getSignedThrustPercent,
+  createInitialControlState,
+} from "./controls.js";
+import { updateFPS, fps } from "./fps.js";
+import { pauseControl, paused } from "./pause.js";
+import { appendPointToPolylineMesh } from "./trajectory.js";
 import { ViewComposer } from "./ViewComposer.js";
+import { getPlaneById } from "./worldLookup.js";
+import {
+  createInitialSceneAndWorld,
+  syncPlanesToSceneObjects,
+  syncPlanetsToSceneObjects,
+  syncStarsToSceneObjects,
+  syncLightsToStars,
+} from "./worldSetupApp.js";
 
 let accumTime = 0;
 
@@ -69,26 +72,10 @@ let topSurface: RenderSurface2D;
 // Single shared view composer instance for all views.
 const viewComposer = new ViewComposer();
 
-export type GameDependencies = {
-  renderer: Renderer;
-  gravityEngine: GravityEngine;
-  profiler: Profiler;
-  profilerController: ProfilerController;
-  pilotSurface: RenderSurface2D;
-  topSurface: RenderSurface2D;
-};
-
 /**
  * App‑core game entry.
  */
-export function startGame(
-  deps: GameDependencies,
-): (params: {
-  nowMs: number;
-  controlInput: ControlInput;
-  envInput: EnvInput;
-  profilingEnabled: boolean;
-}) => void {
+export function startGame(deps: GameDependencies): TickCallback {
   rendererInstance = deps.renderer;
   gravityEngine = deps.gravityEngine;
   profilerInstance = deps.profiler;
