@@ -296,12 +296,54 @@ function integrateForcesAndGravity(
 
   planeBody.velocity = bodyState.velocity;
 
-  // 2) Step gravity (updates positions in world via bindings, returns new velocities in gravityState).
+  // 2) Step gravity (pure domain: updates velocities and returns new positions).
   const domainWorld: DomainWorld = world;
-  gravityState = gravityEngine.step(gravityDt, domainWorld, gravityState);
+  const { nextState, positions } = gravityEngine.step(
+    gravityDt,
+    domainWorld,
+    gravityState,
+  );
 
-  // 3) Sync plane velocities in WorldState from gravityState so debug & HUD see them.
+  gravityState = nextState;
+
+  // 3) Apply positions back into AppWorld via bindings.
+  applyGravityPositionsToWorld(positions);
+
+  // 4) Sync plane velocities in WorldState from gravityState so debug & HUD see them.
   syncPlaneVelocitiesFromGravity();
+}
+
+function applyGravityPositionsToWorld(positions: Vec3[]): void {
+  const bindings = gravityState.bindings;
+  const n = bindings.length;
+  if (positions.length !== n) {
+    throw new Error(
+      `applyGravityPositionsToWorld: position count ${positions.length} does not match bindings ${n}`,
+    );
+  }
+
+  for (let i = 0; i < n; i++) {
+    const binding = bindings[i];
+    const pos = positions[i];
+
+    switch (binding.kind) {
+      case "plane": {
+        const plane = world.planeBodies[binding.planeIndex];
+        plane.position = { ...pos };
+        break;
+      }
+      case "planet": {
+        const planet = world.planets[binding.planetIndex];
+        planet.position = { ...pos };
+        break;
+      }
+      case "star": {
+        const star = world.stars[binding.starIndex];
+        star.position = { ...pos };
+        break;
+      }
+    }
+  }
 }
 
 function syncPlaneVelocitiesFromGravity(): void {

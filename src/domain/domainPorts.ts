@@ -64,17 +64,18 @@ export interface GravityEngine {
   buildInitialState(world: DomainWorld): GravityState;
 
   /**
-   * Advance gravity simulation by dtSeconds, returning a new GravityState.
+   * Advance gravity simulation by dtSeconds, returning a new GravityState
+   * and updated positions for each binding.
    *
    * Implementations must be side‑effect free with respect to the passed
-   * DomainWorld and GravityState. Any mutation of adapter-level worlds is
-   * the responsibility of outer layers.
+   * DomainWorld and GravityState. Adapter layers are responsible for
+   * writing positions back into their own world representations.
    */
   step(
     dtSeconds: number,
     world: DomainWorld,
     state: GravityState,
-  ): GravityState;
+  ): { nextState: GravityState; positions: Vec3[] };
 }
 
 /**

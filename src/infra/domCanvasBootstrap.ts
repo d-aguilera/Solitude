@@ -4,7 +4,7 @@ import { CanvasSurface } from "../canvas/CanvasSurface.js";
 import { init as initResizeHandler } from "../canvas/canvasLayout.js";
 import type { GravityEngine, Profiler } from "../domain/domainPorts.js";
 import { NewtonianGravityEngine } from "../domain/NewtonianGravityEngine.js";
-import { DefaultProfiler } from "../profiling/DefaultProfiler.js";
+import { DefaultProfiler } from "./DefaultProfiler.js";
 import type { ProfilerController } from "../app/appPorts.js";
 import type { Renderer } from "../render/renderPorts.js";
 import { runDomGameLoop } from "./domGameLoop.js";

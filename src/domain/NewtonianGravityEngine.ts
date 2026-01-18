@@ -11,9 +11,6 @@ import { vec3 } from "./vec3.js";
 
 /**
  * Concrete GravityEngine using a Newtonian N-body implementation.
- *
- * This implementation only depends on DomainWorld and domain math utilities.
- * It does not know about adapter-level world types or rendering.
  */
 export class NewtonianGravityEngine implements GravityEngine {
   buildInitialState(world: DomainWorld): GravityState {
@@ -24,7 +21,7 @@ export class NewtonianGravityEngine implements GravityEngine {
     dtSeconds: number,
     world: DomainWorld,
     state: GravityState,
-  ): GravityState {
+  ): { nextState: GravityState; positions: Vec3[] } {
     return this.applyGravity(dtSeconds, world, state);
   }
 
@@ -221,42 +218,48 @@ export class NewtonianGravityEngine implements GravityEngine {
   }
 
   /**
-   * Integrate positions using velocities over dtSeconds and write back
-   * into world via bindings. Position storage and any adapter-level
-   * state are owned by outer layers.
+   * Integrate positions using velocities over dtSeconds and return the
+   * updated positions. Outer layers are responsible for applying these
+   * positions back into their own world representation.
    */
-  integrateBodyPositionsIntoWorld(
+  integrateBodyPositions(
     bodies: BodyState[],
     positions: Vec3[],
     dtSeconds: number,
-    world: DomainWorld,
-    bindings: GravityBodyBinding[],
-  ): void {
+  ): Vec3[] {
     const n = bodies.length;
+    const nextPositions: Vec3[] = new Array(n);
+
     for (let i = 0; i < n; i++) {
       const b = bodies[i];
       const p = positions[i];
       const v = b.velocity;
 
-      const newPos: Vec3 = vec3.add(p, vec3.scale(v, dtSeconds));
-      this.setPositionFromBinding(world, bindings[i], newPos);
+      nextPositions[i] = vec3.add(p, vec3.scale(v, dtSeconds));
     }
+
+    return nextPositions;
   }
 
   /**
-   * Orchestrates gravitational integration for one timestep.
+   * Orchestrates gravitational integration for one timestep, without mutating
+   * the provided DomainWorld.
    */
   applyGravity(
     dtSeconds: number,
     world: DomainWorld,
     gravity: GravityState,
-  ): GravityState {
-    if (dtSeconds <= 0) return gravity;
+  ): { nextState: GravityState; positions: Vec3[] } {
+    if (dtSeconds <= 0) {
+      return { nextState: gravity, positions: [] };
+    }
 
     const bodies = gravity.bodies;
     const bindings = gravity.bindings;
     const n = bodies.length;
-    if (n === 0) return gravity;
+    if (n === 0) {
+      return { nextState: gravity, positions: [] };
+    }
 
     const positions: Vec3[] = new Array(n);
     for (let i = 0; i < n; i++) {
@@ -270,17 +273,18 @@ export class NewtonianGravityEngine implements GravityEngine {
       dtSeconds,
     );
 
-    this.integrateBodyPositionsIntoWorld(
+    const nextPositions = this.integrateBodyPositions(
       nextBodies,
       positions,
       dtSeconds,
-      world,
-      bindings,
     );
 
     return {
-      bodies: nextBodies,
-      bindings,
+      nextState: {
+        bodies: nextBodies,
+        bindings,
+      },
+      positions: nextPositions,
     };
   }
 }
