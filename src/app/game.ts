@@ -36,7 +36,7 @@ import type {
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
-import type { Renderer, RenderPlane } from "../render/renderPorts.js";
+import type { Renderer } from "../render/renderPorts.js";
 import type { HudRenderData } from "./appPorts.js";
 import type { Scene } from "../appScene/appScenePorts.js";
 import { ViewComposer } from "./ViewComposer.js";
@@ -200,16 +200,15 @@ function renderCurrentFrame(input: ControlInput): void {
     thrustPercent,
   };
 
-  rendererInstance.renderFrame({
+  rendererInstance.renderFrame(
     pilotScene,
     topScene,
-    mainPlane: toRenderPlane(mainPlane),
     pilotContext,
     topContext,
-    pilotView: pilotViewConfig,
-    topView: topViewConfig,
+    pilotViewConfig,
+    topViewConfig,
     hud,
-  });
+  );
 }
 
 /**
@@ -466,13 +465,5 @@ function toDomainWorld(world: AppWorld): DomainWorld {
     planetPhysics: world.planetPhysics,
     stars: world.stars,
     starPhysics: world.starPhysics,
-  };
-}
-
-function toRenderPlane(plane: Plane): RenderPlane {
-  return {
-    id: plane.id,
-    position: plane.position,
-    velocity: plane.velocity,
   };
 }

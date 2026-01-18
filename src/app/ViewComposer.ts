@@ -1,6 +1,7 @@
 import { getDomainCameraById } from "../domain/worldLookup.js";
 import { ViewController } from "../projection/ViewController.js";
-import type { RenderPlane, ViewConfig } from "../render/renderPorts.js";
+import { ViewConfig } from "../render/ViewConfig.js";
+import type { RenderPlane } from "../render/renderPorts.js";
 import type { Plane, AppWorld } from "./appInternals.js";
 import type { DrawMode } from "./appPorts.js";
 
@@ -46,9 +47,7 @@ export class ViewComposer {
       drawMode,
     });
 
-    return {
-      controller,
-    };
+    return new ViewConfig(controller);
   }
 
   /**
@@ -73,8 +72,6 @@ export class ViewComposer {
       drawMode,
     });
 
-    return {
-      controller,
-    };
+    return new ViewConfig(controller);
   }
 }
