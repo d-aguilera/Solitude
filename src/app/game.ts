@@ -36,7 +36,7 @@ import type {
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
-import type { Renderer } from "../render/renderPorts.js";
+import type { Renderer, RenderSurface2D } from "../render/renderPorts.js";
 import type { HudRenderData } from "./appPorts.js";
 import type { Scene } from "../appScene/appScenePorts.js";
 import { ViewComposer } from "./ViewComposer.js";
@@ -59,12 +59,11 @@ let pilotCameraLocalOffset: Vec3 = { x: 0, y: 1.7, z: 1.1 };
 
 let controlState: ControlState;
 
-let pilotContext: CanvasRenderingContext2D;
-let topContext: CanvasRenderingContext2D;
-
 let profilerInstance: Profiler & ProfilerController;
-
 let rendererInstance: Renderer;
+
+let pilotSurface: RenderSurface2D;
+let topSurface: RenderSurface2D;
 
 // Single shared view composer instance for all views.
 const viewComposer = new ViewComposer();
@@ -73,8 +72,8 @@ export type GameDependencies = {
   renderer: Renderer;
   gravityEngine: GravityEngine;
   profiler: Profiler & ProfilerController;
-  pilotContext: CanvasRenderingContext2D;
-  topContext: CanvasRenderingContext2D;
+  pilotSurface: RenderSurface2D;
+  topSurface: RenderSurface2D;
 };
 
 /**
@@ -91,8 +90,8 @@ export function startGame(
   rendererInstance = deps.renderer;
   gravityEngine = deps.gravityEngine;
   profilerInstance = deps.profiler;
-  pilotContext = deps.pilotContext;
-  topContext = deps.topContext;
+  pilotSurface = deps.pilotSurface;
+  topSurface = deps.topSurface;
 
   const x = createInitialSceneAndWorld();
   scene = x.scene;
@@ -165,8 +164,8 @@ function renderCurrentFrame(input: ControlInput): void {
     pilotCameraId,
     mainPlane,
     "faces",
-    pilotContext.canvas.width,
-    pilotContext.canvas.height,
+    pilotSurface.width,
+    pilotSurface.height,
   );
 
   // Pilot scene: full scene, unfiltered
@@ -177,8 +176,8 @@ function renderCurrentFrame(input: ControlInput): void {
     topCameraId,
     mainPlane,
     "faces",
-    topContext.canvas.width,
-    topContext.canvas.height,
+    topSurface.width,
+    topSurface.height,
   );
 
   // Top scene: no trajectory polylines
@@ -203,8 +202,8 @@ function renderCurrentFrame(input: ControlInput): void {
   rendererInstance.renderFrame(
     pilotScene,
     topScene,
-    pilotContext,
-    topContext,
+    pilotSurface,
+    topSurface,
     pilotViewConfig,
     topViewConfig,
     hud,

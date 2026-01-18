@@ -5,65 +5,81 @@ import type {
   SceneObject,
 } from "../appScene/appScenePorts.js";
 import type { Profiler } from "../domain/domainPorts.js";
-import type { Renderer, ScreenPoint } from "../render/renderPorts.js";
+import type {
+  PolylineRenderer,
+  RenderSurface2D,
+  Renderer,
+  ScreenPoint,
+  ShadedFaceRenderer,
+} from "../render/renderPorts.js";
 import { buildShadedFaces, ndcToScreen } from "../render/shadedFaces.js";
 import type { ViewConfig } from "../render/ViewConfig.js";
 import { toRenderable } from "../scene/renderPrep.js";
-import { renderCanvasHud } from "./CanvasHudRenderer.js";
-import { renderPolyline, renderShadedFaces } from "./canvasRasterizer.js";
+import { CanvasDebugOverlayRenderer } from "./CanvasDebugOverlayRenderer.js";
+import { CanvasHudRenderer } from "./CanvasHudRenderer.js";
+import { CanvasPolylineRenderer } from "./CanvasPolylineRenderer.js";
+import { CanvasShadedFaceRenderer } from "./CanvasShadedFaceRenderer.js";
+import { CanvasSurface } from "./CanvasSurface.js";
 
 /**
  * Canvas2D implementation of the top-level Renderer abstraction.
  */
 export class CanvasRenderer implements Renderer {
   private viewFrameCounter = 0;
+  private readonly hudRenderer = new CanvasHudRenderer();
+  private readonly shadedFaceRenderer: ShadedFaceRenderer =
+    new CanvasShadedFaceRenderer();
+  private readonly polylineRenderer: PolylineRenderer =
+    new CanvasPolylineRenderer();
 
   constructor(private profiler: Profiler) {}
 
   renderFrame(
     pilotScene: Scene,
     topScene: Scene,
-    pilotContext: CanvasRenderingContext2D,
-    topContext: CanvasRenderingContext2D,
+    pilotSurface: RenderSurface2D,
+    topSurface: RenderSurface2D,
     pilotView: ViewConfig,
     topView: ViewConfig,
     hud: HudRenderData,
   ): void {
-    this.renderView(pilotView, pilotScene, pilotContext);
-    this.renderView(topView, topScene, topContext);
-    renderCanvasHud(pilotContext, hud);
+    this.renderView(pilotView, pilotScene, pilotSurface);
+    this.renderView(topView, topScene, topSurface);
+    this.hudRenderer.render(pilotSurface, hud);
   }
 
   private renderView(
     viewConfig: ViewConfig,
     scene: Scene,
-    context: CanvasRenderingContext2D,
+    surface: RenderSurface2D,
   ): void {
     const controller = viewConfig.getController();
 
-    this.clear(context);
-    this.draw(context, {
+    this.clear(surface);
+    this.draw(surface, {
       objects: scene.objects,
       lights: scene.lights,
       frameId: ++this.viewFrameCounter,
       controller,
     });
 
-    controller.getDebugOverlay().draw(context, scene);
+    // Debug overlay rendering via a Canvas-specific overlay renderer.
+    const canvasSurface = surface as CanvasSurface;
+    const overlayRenderer = new CanvasDebugOverlayRenderer(
+      canvasSurface.getContext(),
+    );
+    controller.getDebugOverlay().draw(overlayRenderer, scene);
   }
 
   /**
-   * Clears the entire canvas for a new frame.
+   * Clears the entire surface for a new frame.
    */
-  clear(context: CanvasRenderingContext2D): void {
-    const { width, height } = context.canvas;
-
-    context.fillStyle = "#000000";
-    context.fillRect(0, 0, width, height);
+  clear(surface: RenderSurface2D): void {
+    surface.clear("#000000");
   }
 
   private draw(
-    context: CanvasRenderingContext2D,
+    surface: RenderSurface2D,
     params: {
       objects: SceneObject[];
       lights: PointLight[];
@@ -71,7 +87,7 @@ export class CanvasRenderer implements Renderer {
       controller: import("../projection/ViewController.js").ViewController;
     },
   ): void {
-    const { width, height } = context.canvas;
+    const { width, height } = surface;
     const { objects, lights, frameId, controller } = params;
 
     const camera = controller.getCamera();
@@ -90,19 +106,19 @@ export class CanvasRenderer implements Renderer {
             frameId,
           });
 
-          renderShadedFaces(context, faceList);
+          this.shadedFaceRenderer.render(surface, faceList);
         });
 
         this.profiler.run("DRAW", "wireframe", () => {
           this.drawMeshPolylinesWorldSpace(
-            context,
+            surface,
             objects.filter((obj) => obj.wireframeOnly),
             controller,
           );
         });
       } else {
         this.profiler.run("DRAW", "lines", () => {
-          this.drawMeshPolylinesWorldSpace(context, objects, controller);
+          this.drawMeshPolylinesWorldSpace(surface, objects, controller);
         });
       }
     });
@@ -113,12 +129,12 @@ export class CanvasRenderer implements Renderer {
    * view controller and mapping to screen space using the camera.
    */
   private drawMeshPolylinesWorldSpace(
-    context: CanvasRenderingContext2D,
+    surface: RenderSurface2D,
     objects: SceneObject[],
     controller: import("../projection/ViewController.js").ViewController,
   ): void {
     const projectedPoints: ScreenPoint[] = [];
-    const { width, height } = context.canvas;
+    const { width, height } = surface;
 
     objects.forEach((obj) => {
       const { mesh, worldPoints, baseColor, lineWidth } = toRenderable(obj);
@@ -143,7 +159,12 @@ export class CanvasRenderer implements Renderer {
         }
 
         if (projectedPoints.length > 0) {
-          renderPolyline(context, projectedPoints, baseColor, lineWidth);
+          this.polylineRenderer.render(
+            surface,
+            projectedPoints,
+            baseColor,
+            lineWidth,
+          );
         }
       }
     });

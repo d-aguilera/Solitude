@@ -13,12 +13,22 @@ export interface FaceEntry {
 }
 
 /**
- * Adapter-level plane DTO used for debug overlays.
+ * Rendering adapter responsible for HUD drawing on a given surface.
  */
-export interface RenderPlane {
-  id: string;
-  position: Vec3;
-  velocity: Vec3;
+export interface HudRenderer {
+  render(surface: RenderSurface2D, hud: HudRenderData): void;
+}
+
+/**
+ * Rendering adapter responsible for polylines in screen space.
+ */
+export interface PolylineRenderer {
+  render(
+    surface: RenderSurface2D,
+    points: ScreenPoint[],
+    color: RGB,
+    lineWidth: number,
+  ): void;
 }
 
 /**
@@ -28,12 +38,32 @@ export interface Renderer {
   renderFrame(
     pilotScene: Scene,
     topScene: Scene,
-    pilotContext: CanvasRenderingContext2D,
-    topContext: CanvasRenderingContext2D,
+    pilotSurface: RenderSurface2D,
+    topSurface: RenderSurface2D,
     pilotView: ViewConfig,
     topView: ViewConfig,
     hud: HudRenderData,
   ): void;
+}
+
+/**
+ * Adapter-level plane DTO used for debug overlays.
+ */
+export interface RenderPlane {
+  id: string;
+  position: Vec3;
+  velocity: Vec3;
+}
+
+/**
+ * Minimal 2D drawing surface abstraction used by renderers.
+ *
+ * Implementations may be backed by Canvas2D, WebGL, etc.
+ */
+export interface RenderSurface2D {
+  readonly width: number;
+  readonly height: number;
+  clear(color: string): void;
 }
 
 export interface ScreenPoint {
@@ -43,8 +73,35 @@ export interface ScreenPoint {
 }
 
 /**
+ * Rendering adapter responsible for shaded triangle faces.
+ */
+export interface ShadedFaceRenderer {
+  render(surface: RenderSurface2D, faceList: FaceEntry[]): void;
+}
+
+/**
  * Optional debug overlay hook for a view. Not part of scene geometry.
  */
 export interface ViewDebugOverlay {
-  draw: (ctx: CanvasRenderingContext2D, scene: Scene) => void;
+  draw: (overlay: ViewDebugOverlayRenderer, scene: Scene) => void;
+}
+
+/**
+ * Rendering adapter for debug overlays on a view.
+ */
+export interface ViewDebugOverlayRenderer {
+  drawPlaneVelocityLine(
+    segments: {
+      start: ScreenPoint;
+      end: ScreenPoint;
+      color: "forward" | "backward";
+    }[],
+  ): void;
+
+  drawBodyLabel(label: {
+    anchor: ScreenPoint;
+    name: string;
+    distanceKm: number;
+    speedKmh: number;
+  }): void;
 }

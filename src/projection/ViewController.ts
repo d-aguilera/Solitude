@@ -3,7 +3,11 @@ import type { Scene } from "../appScene/appScenePorts.js";
 import type { DomainCameraPose, Vec3 } from "../domain/domainPorts.js";
 import { ProjectionService } from "../scene/ProjectionService.js";
 import type { Camera, NdcPoint } from "../scene/scenePorts.js";
-import type { RenderPlane, ViewDebugOverlay } from "../render/renderPorts.js";
+import type {
+  RenderPlane,
+  ViewDebugOverlay,
+  ViewDebugOverlayRenderer,
+} from "../render/renderPorts.js";
 import { drawPlaneVelocityLine, drawBodyLabels } from "./debugDraw.js";
 
 /**
@@ -20,6 +24,8 @@ export class ViewController {
   private readonly referencePlane: RenderPlane;
   private readonly drawMode: DrawMode;
   private readonly debugOverlay: ViewDebugOverlay;
+  private readonly width: number;
+  private readonly height: number;
 
   constructor(params: {
     pose: DomainCameraPose;
@@ -47,19 +53,25 @@ export class ViewController {
 
     this.referencePlane = referencePlane;
     this.drawMode = drawMode;
+    this.width = canvasWidth;
+    this.height = canvasHeight;
 
     this.debugOverlay = {
-      draw: (ctx: CanvasRenderingContext2D, scene: Scene) => {
+      draw: (overlay: ViewDebugOverlayRenderer, scene: Scene) => {
         drawPlaneVelocityLine(
-          ctx,
+          overlay,
           (p: Vec3) => this.project(p),
           this.referencePlane,
+          this.width,
+          this.height,
         );
         drawBodyLabels(
-          ctx,
+          overlay,
           (p: Vec3) => this.project(p),
           scene,
           this.referencePlane.position,
+          this.width,
+          this.height,
         );
       },
     };

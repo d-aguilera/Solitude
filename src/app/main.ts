@@ -1,4 +1,5 @@
 import { init as initResizeHandler } from "../canvas/canvasLayout.js";
+import { CanvasSurface } from "../canvas/CanvasSurface.js";
 import type { GravityEngine, Profiler } from "../domain/domainPorts.js";
 import { runDomGameLoop } from "../infra/domGameLoop.js";
 import type { Renderer } from "../render/renderPorts.js";
@@ -23,11 +24,14 @@ export function runApp(
     throw new Error("Failed to get 2D context for top view canvas");
   }
 
+  const pilotSurface = new CanvasSurface(pilotContext);
+  const topSurface = new CanvasSurface(topContext);
+
   runDomGameLoop({
     renderer,
     gravityEngine,
     profiler,
-    pilotContext,
-    topContext,
+    pilotSurface,
+    topSurface,
   });
 }

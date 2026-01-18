@@ -3,7 +3,10 @@ import type { Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { ndcToScreen } from "../render/shadedFaces.js";
 import type { NdcPoint } from "../scene/scenePorts.js";
-import type { RenderPlane } from "../render/renderPorts.js";
+import type {
+  RenderPlane,
+  ViewDebugOverlayRenderer,
+} from "../render/renderPorts.js";
 
 export type ProjectFn = (p: Vec3) => NdcPoint | null;
 
@@ -45,48 +48,45 @@ function getPlaneVelocitySegments(plane: RenderPlane): VelocityDebugSegment[] {
 }
 
 export function drawPlaneVelocityLine(
-  ctx: CanvasRenderingContext2D,
+  overlay: ViewDebugOverlayRenderer,
   project: ProjectFn,
   plane: RenderPlane,
+  surfaceWidth: number,
+  surfaceHeight: number,
 ): void {
   const segments = getPlaneVelocitySegments(plane);
   if (segments.length === 0) return;
 
-  const { width, height } = ctx.canvas;
-
-  ctx.save();
-  ctx.lineWidth = 4;
+  const overlaySegments = [];
 
   for (const seg of segments) {
     const ndcStart = project(seg.start);
     const ndcEnd = project(seg.end);
     if (!ndcStart || !ndcEnd) continue;
 
-    const pStart = ndcToScreen(ndcStart, width, height);
-    const pEnd = ndcToScreen(ndcEnd, width, height);
+    const pStart = ndcToScreen(ndcStart, surfaceWidth, surfaceHeight);
+    const pEnd = ndcToScreen(ndcEnd, surfaceWidth, surfaceHeight);
 
-    ctx.strokeStyle = seg.color === "forward" ? "lime" : "red";
-    ctx.beginPath();
-    ctx.moveTo(pStart.x, pStart.y);
-    ctx.lineTo(pEnd.x, pEnd.y);
-    ctx.stroke();
+    overlaySegments.push({
+      start: pStart,
+      end: pEnd,
+      color: seg.color,
+    });
   }
 
-  ctx.restore();
+  if (overlaySegments.length > 0) {
+    overlay.drawPlaneVelocityLine(overlaySegments);
+  }
 }
 
 export function drawBodyLabels(
-  ctx: CanvasRenderingContext2D,
+  overlay: ViewDebugOverlayRenderer,
   project: ProjectFn,
   scene: Scene,
   referencePosition: Vec3,
+  surfaceWidth: number,
+  surfaceHeight: number,
 ): void {
-  ctx.save();
-  ctx.font = "14px monospace";
-  ctx.textBaseline = "middle";
-
-  const { width, height } = ctx.canvas;
-
   const bodies: {
     obj: Scene["objects"][number];
     distance: number;
@@ -107,61 +107,21 @@ export function drawBodyLabels(
     const ndc = project(obj.position);
     if (!ndc) continue;
 
-    const screenPoint = ndcToScreen(ndc, width, height);
+    const screenPoint = ndcToScreen(ndc, surfaceWidth, surfaceHeight);
 
     const name = displayNameForBodyId(obj.id);
 
     const dKm = distance / 1000;
-    const distanceText = `d=${dKm.toFixed(0)} km`;
-
     const speedMps = vec3.length(obj.velocity);
     const speedKmh = speedMps * 3.6;
-    const speedText = `v=${speedKmh.toFixed(2)} km/h`;
 
-    const lines = [name, distanceText, speedText];
-
-    let maxTextWidth = 0;
-    for (const line of lines) {
-      const w = ctx.measureText(line).width;
-      if (w > maxTextWidth) maxTextWidth = w;
-    }
-
-    const paddingX = 6;
-    const paddingY = 4;
-    const boxWidth = maxTextWidth + paddingX * 2;
-    const lineHeight = 16;
-    const boxHeight = lines.length * lineHeight + paddingY * 2;
-
-    const anchorX = screenPoint.x;
-    const anchorY = screenPoint.y;
-
-    const offsetX = 16;
-    const offsetY = -24;
-    const boxX = anchorX + offsetX;
-    const boxY = anchorY + offsetY;
-
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(anchorX, anchorY);
-    ctx.lineTo(boxX, boxY + boxHeight / 2);
-    ctx.stroke();
-
-    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-    ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
-
-    ctx.strokeStyle = "white";
-    ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
-
-    ctx.fillStyle = "white";
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const cy = boxY + paddingY + lineHeight * (i + 0.5);
-      ctx.fillText(line, boxX + paddingX, cy);
-    }
+    overlay.drawBodyLabel({
+      anchor: screenPoint,
+      name,
+      distanceKm: dKm,
+      speedKmh,
+    });
   }
-
-  ctx.restore();
 }
 
 function displayNameForBodyId(id: string): string {
