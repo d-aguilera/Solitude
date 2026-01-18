@@ -23,7 +23,10 @@ export function runApp(
     throw new Error("Failed to get 2D context for top view canvas");
   }
 
-  startGame(renderer, gravityEngine, profiler, {
+  startGame({
+    renderer,
+    gravityEngine,
+    profiler,
     pilotContext,
     topContext,
   });

@@ -1,4 +1,4 @@
-import type { Profiler, Vec3 } from "../domain/domainPorts.js";
+import type { Vec3 } from "../domain/domainPorts.js";
 import type { Scene } from "./scenePorts.js";
 import type { NdcPoint } from "./renderInternals.js";
 import type { Camera } from "../scene/camera.js";
@@ -24,7 +24,6 @@ export interface Renderer {
     mainPlane: RenderPlane;
     pilotContext: CanvasRenderingContext2D;
     topContext: CanvasRenderingContext2D;
-    profiler: Profiler;
     pilotView: ViewConfig;
     topView: ViewConfig;
     hud: HudRenderData;

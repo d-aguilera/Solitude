@@ -1,4 +1,4 @@
-import type { Mesh, Profiler, RGB, Vec3 } from "../domain/domainPorts.js";
+import type { Mesh, RGB, Vec3 } from "../domain/domainPorts.js";
 import type { ViewConfig } from "./renderPorts.js";
 import type { Scene } from "./scenePorts.js";
 
@@ -48,5 +48,4 @@ export type ViewRendererParams = {
   context: CanvasRenderingContext2D;
   scene: Scene;
   viewConfig: ViewConfig;
-  profiler: Profiler;
 };

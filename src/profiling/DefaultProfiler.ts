@@ -1,15 +1,6 @@
 import { ProfilerController } from "../app/appPorts";
 import { Profiler } from "../domain/domainPorts";
 
-const profileEveryMs = 3000;
-
-let doProfile = false;
-let enabled = false;
-let lastProfileStartMs = 0;
-let paused = false;
-
-let counters: Record<string, Record<string, number>> = {};
-
 /**
  * Default profiling adapter.
  *
@@ -18,8 +9,12 @@ let counters: Record<string, Record<string, number>> = {};
  * through ProfilerController.
  */
 export class DefaultProfiler implements Profiler, ProfilerController {
+  // Profiler implementation
+
+  private counters: Record<string, Record<string, number>> = {};
+
   run<T>(group: string, name: string, fn: () => T): T {
-    if (!doProfile) {
+    if (!this.doProfile) {
       return fn();
     }
 
@@ -45,50 +40,64 @@ export class DefaultProfiler implements Profiler, ProfilerController {
   }
 
   increment(group: string, name: string, count?: number): void {
-    if (!doProfile) return;
+    if (!this.doProfile) return;
 
-    const group2 = (counters[group] ??= {});
-    group2[name] ??= 0;
-    group2[name] += count ?? 1;
-  }
-
-  // ProfilerController
-
-  setEnabled(value: boolean): void {
-    enabled = value;
-  }
-
-  isEnabled(): boolean {
-    return enabled;
-  }
-
-  setPaused(isPaused: boolean): void {
-    paused = isPaused;
-  }
-
-  check(): void {
-    if (!enabled || paused) return;
-
-    const now = performance.now();
-    if (now - lastProfileStartMs < profileEveryMs) {
+    if (group in this.counters) {
+      const g = this.counters[group];
+      if (name in g) {
+        g[name] += count ?? 1;
+      } else {
+        g[name] = count ?? 1;
+      }
       return;
     }
 
-    lastProfileStartMs = now;
-    doProfile = true;
-    counters = {};
+    this.counters[group] = { [name]: count ?? 1 };
+  }
+
+  // ProfilerController implementation
+
+  private readonly profileEveryMs = 3000;
+  private doProfile = false;
+  private enabled = false;
+  private paused = false;
+  private lastProfileStartMs = 0;
+
+  setEnabled(value: boolean): void {
+    this.enabled = value;
+  }
+
+  isEnabled(): boolean {
+    return this.enabled;
+  }
+
+  setPaused(isPaused: boolean): void {
+    this.paused = isPaused;
+  }
+
+  check(): void {
+    if (!this.enabled || this.paused) return;
+
+    const now = performance.now();
+    if (now - this.lastProfileStartMs < this.profileEveryMs) {
+      return;
+    }
+
+    this.lastProfileStartMs = now;
+    this.doProfile = true;
+    this.counters = {};
   }
 
   flush(): void {
-    if (!doProfile) return;
+    if (!this.doProfile) return;
 
-    for (const group of Object.keys(counters)) {
+    for (const group of Object.keys(this.counters)) {
       console.log(
         "".concat(
           "[",
           group,
           "] ",
-          Object.entries(counters[group])
+          Object.entries(this.counters[group])
             .map(
               ([name, value]) => `${name}=${Math.round(value * 1000) / 1000}`,
             )
@@ -97,6 +106,6 @@ export class DefaultProfiler implements Profiler, ProfilerController {
       );
     }
 
-    doProfile = false;
+    this.doProfile = false;
   }
 }

@@ -68,26 +68,29 @@ let mainPlaneBodyIndex: number = -1;
 
 let pilotCameraLocalOffset: Vec3 = { x: 0, y: 1.7, z: 1.1 };
 
-let controlState: ControlState = createInitialControlState();
+let controlState: ControlState;
 
 let pilotContext: CanvasRenderingContext2D;
 let topContext: CanvasRenderingContext2D;
 
-let profilerController: ProfilerController;
+let profilerInstance: Profiler & ProfilerController;
 
-export function startGame(
-  renderer: Renderer,
-  engine: GravityEngine,
-  profiler: Profiler & ProfilerController,
-  contexts: {
-    pilotContext: CanvasRenderingContext2D;
-    topContext: CanvasRenderingContext2D;
-  },
-): void {
-  pilotContext = contexts.pilotContext;
-  topContext = contexts.topContext;
+let rendererInstance: Renderer;
 
-  profilerController = profiler;
+export type gameDependencies = {
+  renderer: Renderer;
+  gravityEngine: GravityEngine;
+  profiler: Profiler & ProfilerController;
+  pilotContext: CanvasRenderingContext2D;
+  topContext: CanvasRenderingContext2D;
+};
+
+export function startGame(deps: gameDependencies): void {
+  rendererInstance = deps.renderer;
+  gravityEngine = deps.gravityEngine;
+  profilerInstance = deps.profiler;
+  pilotContext = deps.pilotContext;
+  topContext = deps.topContext;
 
   const x = createInitialSceneAndWorld();
   scene = x.scene;
@@ -96,8 +99,6 @@ export function startGame(
   topCameraId = x.topCameraId;
   pilotCameraId = x.pilotCameraId;
   planetPathMappings = x.planetPathMappings;
-
-  gravityEngine = engine;
 
   const domainWorld = toDomainWorld(world);
   gravityState = gravityEngine.buildInitialState(domainWorld);
@@ -118,49 +119,41 @@ export function startGame(
   initInput();
   requestAnimationFrame((nowMs) => {
     lastTimeMs = nowMs;
-    requestAnimationFrame(renderFrame.bind(null, renderer, profiler));
+    requestAnimationFrame(renderFrame);
   });
 }
 
-function renderFrame(
-  renderer: Renderer,
-  profiler: Profiler,
-  nowMs: number,
-): void {
+function renderFrame(nowMs: number): void {
   const dtMs = nowMs - lastTimeMs;
   const dtSeconds = paused ? 0 : dtMs / 1000;
   lastTimeMs = nowMs;
 
-  profiler.run("GAME", "total", () => {
+  profilerInstance.run("GAME", "total", () => {
     const envInput: EnvInput = readEnvInput();
     pauseControl(envInput.pauseToggle);
     handleProfilingToggle(envInput.profilingToggle);
 
-    profilerController.setPaused(paused);
-    profilerController.check();
+    profilerInstance.setPaused(paused);
+    profilerInstance.check();
 
     updateFPS(nowMs);
 
     const controlInput: ControlInput = readControlInput();
-    stepSimulation(dtSeconds, controlInput, profiler);
-    renderCurrentFrame(renderer, profiler, controlInput);
+    stepSimulation(dtSeconds, controlInput);
+    renderCurrentFrame(controlInput);
   });
 
-  profilerController.flush();
+  profilerInstance.flush();
 
-  requestAnimationFrame(renderFrame.bind(null, renderer, profiler));
+  requestAnimationFrame(renderFrame);
 }
 
 /**
  * Render the current world/scene state using the configured renderer.
  */
-function renderCurrentFrame(
-  renderer: Renderer,
-  profiler: Profiler,
-  input: ControlInput,
-): void {
+function renderCurrentFrame(input: ControlInput): void {
   const mainPlane = getPlaneById(world, mainPlaneId);
-  const profilingEnabled = profilerController.isEnabled();
+  const profilingEnabled = profilerInstance.isEnabled();
   const thrustPercent = getSignedThrustPercent(input, controlState);
 
   const pilotViewConfig = buildPilotView(
@@ -203,13 +196,12 @@ function renderCurrentFrame(
     thrustPercent,
   };
 
-  renderer.renderFrame({
+  rendererInstance.renderFrame({
     pilotScene,
     topScene,
     mainPlane: toRenderPlane(mainPlane),
     pilotContext,
     topContext,
-    profiler,
     pilotView: pilotViewConfig,
     topView: topViewConfig,
     hud,
@@ -223,12 +215,8 @@ function renderCurrentFrame(
  *  - Orchestrate per-frame simulation steps in the correct order
  *  - Keep scene objects in sync with simulated world entities
  */
-function stepSimulation(
-  dtSeconds: number,
-  input: ControlInput,
-  profiler: Profiler,
-): void {
-  stepPhysics(dtSeconds, input, profiler);
+function stepSimulation(dtSeconds: number, input: ControlInput): void {
+  stepPhysics(dtSeconds, input);
 
   syncPlanesToSceneObjects(world, scene);
   syncPlanetsToSceneObjects(world, scene);
@@ -261,12 +249,8 @@ function writeBackControlledBodyState(
 /**
  * Advance physical simulation only (orientation, forces, gravity).
  */
-function stepPhysics(
-  dtSeconds: number,
-  input: ControlInput,
-  profiler: Profiler,
-): void {
-  profiler.run("GAME", "physics", () => {
+function stepPhysics(dtSeconds: number, input: ControlInput): void {
+  profilerInstance.run("GAME", "physics", () => {
     updatePlaneOrientationFromControls(dtSeconds, input);
     updatePilotCameraOffset(dtSeconds, input);
     integrateForcesAndGravity(dtSeconds, input);
@@ -365,7 +349,7 @@ function handleProfilingToggle(profilingTogglePressed: boolean): void {
     if (!oKeyDown) {
       const current = getProfilingEnabledFromEnv();
       const next = !current;
-      profilerController.setEnabled(next);
+      profilerInstance.setEnabled(next);
       setProfilingEnabledInEnv(next);
       oKeyDown = true;
     }

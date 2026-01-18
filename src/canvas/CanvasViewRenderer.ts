@@ -6,6 +6,7 @@ import {
 } from "../render/renderInternals.js";
 import type { View } from "../render/renderPorts.js";
 import { SceneObject, type PointLight } from "../render/scenePorts.js";
+import { ndcToScreen } from "../scene/camera.js";
 import { toRenderable } from "../scene/renderPrep.js";
 import { buildShadedFaces } from "../scene/shadedFaces.js";
 import { renderShadedFaces, renderPolyline } from "./canvasRasterizer.js";
@@ -14,22 +15,19 @@ interface DrawOptions {
   objects: SceneObject[];
   view: View;
   lights: PointLight[];
-  profiler: Profiler;
   frameId: number;
 }
 
 /**
  * Canvas2D implementation of the ViewRenderer abstraction.
- *
- * This adapter owns all knowledge about concrete CanvasRenderingContext2D
- * instances and how pilot/top views + HUD are drawn into them.
- * The application/game layer does not know about these contexts.
  */
 export class CanvasViewRenderer implements ViewRenderer {
   private viewFrameCounter = 0;
 
+  constructor(private profiler: Profiler) {}
+
   renderView(params: ViewRendererParams): void {
-    const { context, scene, viewConfig, profiler } = params;
+    const { context, scene, viewConfig } = params;
     const { view, debugOverlay } = viewConfig;
 
     this.clear(context);
@@ -37,7 +35,6 @@ export class CanvasViewRenderer implements ViewRenderer {
       objects: scene.objects,
       view,
       lights: scene.lights,
-      profiler,
       frameId: ++this.viewFrameCounter,
     });
 
@@ -66,17 +63,16 @@ export class CanvasViewRenderer implements ViewRenderer {
    */
   draw(
     context: CanvasRenderingContext2D,
-    { objects, view, lights, profiler, frameId }: DrawOptions,
+    { objects, view, lights, frameId }: DrawOptions,
   ): void {
     const { width, height } = context.canvas;
 
-    profiler.run("DRAW", "total", () => {
+    this.profiler.run("DRAW", "total", () => {
       if (view.drawMode === "faces") {
-        profiler.run("DRAW", "faces", () => {
+        this.profiler.run("DRAW", "faces", () => {
           // Solid objects use shaded‑face path
           const faceList = buildShadedFaces({
             objects,
-
             view,
             canvasWidth: width,
             canvasHeight: height,
@@ -87,7 +83,7 @@ export class CanvasViewRenderer implements ViewRenderer {
           renderShadedFaces(context, faceList);
         });
 
-        profiler.run("DRAW", "wireframeOnly", () => {
+        this.profiler.run("DRAW", "wireframe", () => {
           this.drawMeshPolylinesWorldSpace(
             context,
             objects.filter((obj) => obj.wireframeOnly),
@@ -95,7 +91,7 @@ export class CanvasViewRenderer implements ViewRenderer {
           );
         });
       } else {
-        profiler.run("DRAW", "lines", () => {
+        this.profiler.run("DRAW", "lines", () => {
           this.drawMeshPolylinesWorldSpace(context, objects, view);
         });
       }
@@ -104,7 +100,7 @@ export class CanvasViewRenderer implements ViewRenderer {
 
   /**
    * Draw mesh faces as polylines by projecting world‑space vertices via the
-   * view's projection function.
+   * view's projection function and mapping to screen space using the camera.
    */
   private drawMeshPolylinesWorldSpace(
     context: CanvasRenderingContext2D,
@@ -112,7 +108,7 @@ export class CanvasViewRenderer implements ViewRenderer {
     view: View,
   ): void {
     const projectedPoints: ScreenPoint[] = [];
-    const { projection } = view;
+    const { projection, camera } = view;
 
     objects.forEach((obj) => {
       const { mesh, worldPoints, baseColor, lineWidth } = toRenderable(obj);
@@ -132,16 +128,13 @@ export class CanvasViewRenderer implements ViewRenderer {
             break;
           }
 
-          // Map NDC to screen using the camera that backs this view.
-          const { canvasWidth, canvasHeight } = view.camera;
-          const x = (ndc.x + 1) * 0.5 * canvasWidth;
-          const y = (1 - ndc.y) * 0.5 * canvasHeight;
+          const screenPoint = ndcToScreen(
+            ndc,
+            camera.canvasWidth,
+            camera.canvasHeight,
+          );
 
-          projectedPoints.push({
-            x,
-            y,
-            depth: ndc.depth,
-          });
+          projectedPoints.push(screenPoint);
         }
 
         if (projectedPoints.length > 0) {
