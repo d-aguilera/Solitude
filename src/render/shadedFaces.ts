@@ -4,13 +4,12 @@ import { vec3 } from "../domain/vec3.js";
 import {
   clipTriangleAgainstNearPlaneCamera,
   getCameraPointsForObject,
-  projectCameraPointToNdc,
 } from "../scene/camera.js";
+import { ProjectionService } from "../scene/ProjectionService.js";
 import { toRenderable } from "../scene/renderPrep.js";
 import type { SceneObjectWithCache } from "../scene/sceneInternals.js";
-import type { FaceEntry } from "../scene/scenePorts.js";
+import type { FaceEntry, NdcPoint } from "../scene/scenePorts.js";
 import type { ScreenPoint, View } from "./renderPorts.js";
-import type { NdcPoint } from "../scene/scenePorts.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
 const SUN_LUMINOSITY = 3.828e26; // W
@@ -34,6 +33,13 @@ export function buildShadedFaces(params: {
   const { camera } = view;
   const cameraPos = camera.position;
   const cameraFrame = camera.frame;
+
+  const projectionService = new ProjectionService(
+    camera,
+    canvasWidth,
+    canvasHeight,
+  );
+
   const faceList: FaceEntry[] = [];
 
   objects.forEach((obj) => {
@@ -92,9 +98,9 @@ export function buildShadedFaces(params: {
       const isStar = obj.kind === "star";
 
       for (const [A, B, C] of clipped) {
-        const ndc0 = projectionFromCamera(A, canvasWidth, canvasHeight);
-        const ndc1 = projectionFromCamera(B, canvasWidth, canvasHeight);
-        const ndc2 = projectionFromCamera(C, canvasWidth, canvasHeight);
+        const ndc0 = projectionFromCamera(projectionService, A);
+        const ndc1 = projectionFromCamera(projectionService, B);
+        const ndc2 = projectionFromCamera(projectionService, C);
 
         const p0 = ndcToScreen(ndc0, canvasWidth, canvasHeight);
         const p1 = ndcToScreen(ndc1, canvasWidth, canvasHeight);
@@ -125,11 +131,10 @@ export function buildShadedFaces(params: {
 }
 
 function projectionFromCamera(
+  projectionService: ProjectionService,
   cameraPoint: Vec3,
-  canvasWidth: number,
-  canvasHeight: number,
 ): NdcPoint {
-  return projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
+  return projectionService.projectCameraPointToNdc(cameraPoint);
 }
 
 function getWorldFaceNormalsForObject(

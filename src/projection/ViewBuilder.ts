@@ -1,15 +1,11 @@
 import type { DrawMode } from "../app/appPorts.js";
+import type { Scene } from "../appScene/appScenePorts.js";
 import type { DomainCameraPose, Vec3 } from "../domain/domainPorts.js";
 import type { View, ViewDebugOverlay } from "../render/renderPorts.js";
-import type { Camera } from "../scene/camera.js";
-import {
-  projectCameraPointToNdc,
-  worldPointToCameraPoint,
-} from "../scene/camera.js";
+import { ProjectionService } from "../scene/ProjectionService.js";
 import type { NdcPoint } from "../scene/scenePorts.js";
 import { drawPlaneVelocityLine, drawBodyLabels } from "./debugDraw.js";
 import type { DebugPlane } from "./projectionPorts.js";
-import type { Scene } from "../appScene/appScenePorts.js";
 
 /**
  * Builder for projection-aware view configurations.
@@ -49,17 +45,24 @@ export class ViewBuilder {
     referencePlane: DebugPlane,
     drawMode: DrawMode,
   ): { view: View; debugOverlay: ViewDebugOverlay } {
-    const camera: Camera = {
-      position: pose.position,
-      frame: pose.frame,
-    };
+    const projectionService = new ProjectionService(
+      {
+        position: pose.position,
+        frame: pose.frame,
+      },
+      canvasWidth,
+      canvasHeight,
+    );
 
     const projection = (p: Vec3): NdcPoint | null => {
-      return this.projectWorldPointToNdc(p, camera, canvasWidth, canvasHeight);
+      return projectionService.projectWorldPointToNdc(p);
     };
 
     const view: View = {
-      camera,
+      camera: {
+        position: pose.position,
+        frame: pose.frame,
+      },
       projection,
       drawMode,
     };
@@ -70,28 +73,5 @@ export class ViewBuilder {
     });
 
     return { view, debugOverlay };
-  }
-
-  /**
-   * Full world-space -> NDC projection with near-plane rejection,
-   * parameterized by pose and canvas size.
-   *
-   * Returns null when the point lies behind the near plane in camera space.
-   */
-  private projectWorldPointToNdc(
-    worldPoint: Vec3,
-    camera: Camera,
-    canvasWidth: number,
-    canvasHeight: number,
-  ): NdcPoint | null {
-    const cameraPoint: Vec3 | null = worldPointToCameraPoint(
-      worldPoint,
-      camera.position,
-      camera.frame,
-    );
-
-    return cameraPoint === null
-      ? null
-      : projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
   }
 }
