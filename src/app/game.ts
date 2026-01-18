@@ -13,12 +13,7 @@ import {
   getSignedThrustPercent,
   createInitialControlState,
 } from "./controls.js";
-import {
-  getProfilingEnabledFromEnv,
-  setProfilingEnabledInEnv,
-} from "./debugEnv.js";
-import { updateFPS } from "./fps.js";
-import { init as initInput, readControlInput, readEnvInput } from "./input.js";
+import { updateFPS, fps } from "./fps.js";
 import { pauseControl, paused } from "./pause.js";
 import { appendPointToPolylineMesh } from "./trajectory.js";
 import { buildPilotView, buildTopView } from "./viewComposition.js";
@@ -42,7 +37,6 @@ import type {
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
-import { fps } from "./fps.js";
 import type {
   HudRenderData,
   Renderer,
@@ -50,8 +44,6 @@ import type {
 } from "../render/renderPorts.js";
 import type { Scene } from "../render/scenePorts.js";
 
-let lastTimeMs = 0;
-let oKeyDown = false;
 let accumTime = 0;
 
 let scene: Scene;
@@ -77,7 +69,7 @@ let profilerInstance: Profiler & ProfilerController;
 
 let rendererInstance: Renderer;
 
-export type gameDependencies = {
+export type GameDependencies = {
   renderer: Renderer;
   gravityEngine: GravityEngine;
   profiler: Profiler & ProfilerController;
@@ -85,7 +77,17 @@ export type gameDependencies = {
   topContext: CanvasRenderingContext2D;
 };
 
-export function startGame(deps: gameDependencies): void {
+/**
+ * App‑core game entry.
+ */
+export function startGame(
+  deps: GameDependencies,
+): (params: {
+  nowMs: number;
+  controlInput: ControlInput;
+  envInput: EnvInput;
+  profilingEnabled: boolean;
+}) => void {
   rendererInstance = deps.renderer;
   gravityEngine = deps.gravityEngine;
   profilerInstance = deps.profiler;
@@ -116,36 +118,38 @@ export function startGame(deps: gameDependencies): void {
 
   controlState = createInitialControlState();
 
-  initInput();
-  requestAnimationFrame((nowMs) => {
+  let lastTimeMs = 0;
+  let initialized = false;
+
+  /**
+   * Per‑frame update/render entry called by the outer loop.
+   */
+  return ({ nowMs, controlInput, envInput, profilingEnabled }) => {
+    if (!initialized) {
+      lastTimeMs = nowMs;
+      initialized = true;
+      return;
+    }
+
+    const dtMs = nowMs - lastTimeMs;
+    const dtSeconds = paused ? 0 : dtMs / 1000;
     lastTimeMs = nowMs;
-    requestAnimationFrame(renderFrame);
-  });
-}
 
-function renderFrame(nowMs: number): void {
-  const dtMs = nowMs - lastTimeMs;
-  const dtSeconds = paused ? 0 : dtMs / 1000;
-  lastTimeMs = nowMs;
+    profilerInstance.run("GAME", "total", () => {
+      pauseControl(envInput.pauseToggle);
 
-  profilerInstance.run("GAME", "total", () => {
-    const envInput: EnvInput = readEnvInput();
-    pauseControl(envInput.pauseToggle);
-    handleProfilingToggle(envInput.profilingToggle);
+      profilerInstance.setEnabled(profilingEnabled);
+      profilerInstance.setPaused(paused);
+      profilerInstance.check();
 
-    profilerInstance.setPaused(paused);
-    profilerInstance.check();
+      updateFPS(nowMs);
 
-    updateFPS(nowMs);
+      stepSimulation(dtSeconds, controlInput);
+      renderCurrentFrame(controlInput);
+    });
 
-    const controlInput: ControlInput = readControlInput();
-    stepSimulation(dtSeconds, controlInput);
-    renderCurrentFrame(controlInput);
-  });
-
-  profilerInstance.flush();
-
-  requestAnimationFrame(renderFrame);
+    profilerInstance.flush();
+  };
 }
 
 /**
@@ -341,20 +345,6 @@ function updateTrajectories(dtSeconds: number): void {
     appendPlaneTrajectoryPoint();
     appendPlanetTrajectories();
     accumTime = 0;
-  }
-}
-
-function handleProfilingToggle(profilingTogglePressed: boolean): void {
-  if (profilingTogglePressed) {
-    if (!oKeyDown) {
-      const current = getProfilingEnabledFromEnv();
-      const next = !current;
-      profilerInstance.setEnabled(next);
-      setProfilingEnabledInEnv(next);
-      oKeyDown = true;
-    }
-  } else if (oKeyDown) {
-    oKeyDown = false;
   }
 }
 
