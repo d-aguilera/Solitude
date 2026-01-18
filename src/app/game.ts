@@ -39,7 +39,7 @@ import { getDomainCameraById } from "../domain/worldLookup.js";
 import type { Renderer, RenderPlane } from "../render/renderPorts.js";
 import type { HudRenderData } from "./appPorts.js";
 import type { Scene } from "../appScene/appScenePorts.js";
-import { ViewComposer } from "./viewComposition.js";
+import { ViewComposer } from "./ViewComposer.js";
 
 let accumTime = 0;
 

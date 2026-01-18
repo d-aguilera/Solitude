@@ -1,77 +1,40 @@
 import type { DrawMode } from "../app/appPorts.js";
-import type { Scene } from "../appScene/appScenePorts.js";
-import type { DomainCameraPose, Vec3 } from "../domain/domainPorts.js";
-import type { View, ViewDebugOverlay } from "../render/renderPorts.js";
-import { ProjectionService } from "../scene/ProjectionService.js";
-import type { NdcPoint } from "../scene/scenePorts.js";
-import { drawPlaneVelocityLine, drawBodyLabels } from "./debugDraw.js";
-import type { DebugPlane } from "./projectionPorts.js";
+import type { DomainCameraPose } from "../domain/domainPorts.js";
+import type { ViewConfig } from "../render/renderPorts.js";
+import type { RenderPlane } from "../render/renderPorts.js";
+import { ViewInstance } from "./ViewInstance.js";
 
 /**
  * Builder for projection-aware view configurations.
  *
- * Responsibilities kept here:
- *  - Adapting DomainCameraPose into a render-layer Camera and projection fn
- *  - Building View and ViewDebugOverlay instances
+ * Responsibilities:
+ *  - Adapting DomainCameraPose into a render-layer View and projection fn
+ *  - Constructing ViewInstance objects that own projection and debug overlay
  */
 export class ViewBuilder {
   /**
-   * Build the default debug overlay used by pilot/top views.
-   *
-   * The overlay works with a minimal DebugPlane DTO so it does not depend
-   * on any app-level world types.
-   */
-  private makeStandardViewDebugOverlay(options: {
-    projection: (p: Vec3) => NdcPoint | null;
-    referencePlane: DebugPlane;
-  }): ViewDebugOverlay {
-    const { projection, referencePlane } = options;
-
-    return {
-      draw: (ctx: CanvasRenderingContext2D, scene: Scene) => {
-        drawPlaneVelocityLine(ctx, projection, referencePlane);
-        drawBodyLabels(ctx, projection, scene, referencePlane.position);
-      },
-    };
-  }
-
-  /**
-   * Build a View and its associated debug overlay from a domain camera pose.
+   * Build a ViewConfig backed by a ViewInstance from a domain camera pose.
    */
   buildViewConfig(
     pose: DomainCameraPose,
     canvasWidth: number,
     canvasHeight: number,
-    referencePlane: DebugPlane,
+    referencePlane: RenderPlane,
     drawMode: DrawMode,
-  ): { view: View; debugOverlay: ViewDebugOverlay } {
-    const projectionService = new ProjectionService(
-      {
-        position: pose.position,
-        frame: pose.frame,
-      },
+  ): ViewConfig {
+    const instance = new ViewInstance({
+      pose,
       canvasWidth,
       canvasHeight,
-    );
-
-    const projection = (p: Vec3): NdcPoint | null => {
-      return projectionService.projectWorldPointToNdc(p);
-    };
-
-    const view: View = {
-      camera: {
-        position: pose.position,
-        frame: pose.frame,
-      },
-      projection,
-      drawMode,
-    };
-
-    const debugOverlay = this.makeStandardViewDebugOverlay({
-      projection,
       referencePlane,
+      drawMode,
     });
 
-    return { view, debugOverlay };
+    return {
+      view: instance.getView(),
+      debugOverlay: instance.getDebugOverlay(),
+      referencePlane,
+      drawMode,
+    };
   }
 }

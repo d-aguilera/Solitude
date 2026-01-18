@@ -3,7 +3,7 @@ import type { Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { ndcToScreen } from "../render/shadedFaces.js";
 import type { NdcPoint } from "../scene/scenePorts.js";
-import type { DebugPlane } from "./projectionPorts.js";
+import type { RenderPlane } from "../render/renderPorts.js";
 
 export type ProjectFn = (p: Vec3) => NdcPoint | null;
 
@@ -20,7 +20,7 @@ interface VelocityDebugSegment {
  * Pure helper that computes the world-space line segments representing
  * a plane's velocity direction.
  */
-function getPlaneVelocitySegments(plane: DebugPlane): VelocityDebugSegment[] {
+function getPlaneVelocitySegments(plane: RenderPlane): VelocityDebugSegment[] {
   const v = plane.velocity;
   const speed = vec3.length(v);
   if (speed === 0) return [];
@@ -47,7 +47,7 @@ function getPlaneVelocitySegments(plane: DebugPlane): VelocityDebugSegment[] {
 export function drawPlaneVelocityLine(
   ctx: CanvasRenderingContext2D,
   project: ProjectFn,
-  plane: DebugPlane,
+  plane: RenderPlane,
 ): void {
   const segments = getPlaneVelocitySegments(plane);
   if (segments.length === 0) return;
