@@ -9,7 +9,8 @@ import type { ProfilerController } from "./appPorts.js";
 export function runApp(
   renderer: Renderer,
   gravityEngine: GravityEngine,
-  profiler: Profiler & ProfilerController,
+  profiler: Profiler,
+  profilerController: ProfilerController,
   env: AppEnvironment,
 ): void {
   initResizeHandler(env.container, env.pilotCanvas, env.topCanvas);
@@ -31,6 +32,7 @@ export function runApp(
     renderer,
     gravityEngine,
     profiler,
+    profilerController,
     pilotSurface,
     topSurface,
   });

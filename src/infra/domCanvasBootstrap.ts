@@ -32,10 +32,12 @@ export function bootstrapDomApp(): void {
   }
 
   const gravityEngine: GravityEngine = new NewtonianGravityEngine();
-  const profiler: Profiler & ProfilerController = new DefaultProfiler();
+  const defaultProfiler = new DefaultProfiler();
+  const profiler: Profiler = defaultProfiler;
+  const profilerController: ProfilerController = defaultProfiler;
   const renderer: Renderer = new CanvasRenderer(profiler);
 
-  runApp(renderer, gravityEngine, profiler, {
+  runApp(renderer, gravityEngine, profiler, profilerController, {
     container,
     pilotCanvas,
     topCanvas,

@@ -59,7 +59,8 @@ let pilotCameraLocalOffset: Vec3 = { x: 0, y: 1.7, z: 1.1 };
 
 let controlState: ControlState;
 
-let profilerInstance: Profiler & ProfilerController;
+let profilerInstance: Profiler;
+let profilerController: ProfilerController;
 let rendererInstance: Renderer;
 
 let pilotSurface: RenderSurface2D;
@@ -71,7 +72,8 @@ const viewComposer = new ViewComposer();
 export type GameDependencies = {
   renderer: Renderer;
   gravityEngine: GravityEngine;
-  profiler: Profiler & ProfilerController;
+  profiler: Profiler;
+  profilerController: ProfilerController;
   pilotSurface: RenderSurface2D;
   topSurface: RenderSurface2D;
 };
@@ -90,6 +92,7 @@ export function startGame(
   rendererInstance = deps.renderer;
   gravityEngine = deps.gravityEngine;
   profilerInstance = deps.profiler;
+  profilerController = deps.profilerController;
   pilotSurface = deps.pilotSurface;
   topSurface = deps.topSurface;
 
@@ -137,9 +140,9 @@ export function startGame(
     profilerInstance.run("GAME", "total", () => {
       pauseControl(envInput.pauseToggle);
 
-      profilerInstance.setEnabled(profilingEnabled);
-      profilerInstance.setPaused(paused);
-      profilerInstance.check();
+      profilerController.setEnabled(profilingEnabled);
+      profilerController.setPaused(paused);
+      profilerController.check();
 
       updateFPS(nowMs);
 
@@ -147,7 +150,7 @@ export function startGame(
       renderCurrentFrame(controlInput);
     });
 
-    profilerInstance.flush();
+    profilerController.flush();
   };
 }
 
@@ -156,7 +159,7 @@ export function startGame(
  */
 function renderCurrentFrame(input: ControlInput): void {
   const mainPlane = getPlaneById(world, mainPlaneId);
-  const profilingEnabled = profilerInstance.isEnabled();
+  const profilingEnabled = profilerController.isEnabled();
   const thrustPercent = getSignedThrustPercent(input, controlState);
 
   const pilotViewConfig = viewComposer.buildPilotView(
