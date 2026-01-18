@@ -16,7 +16,6 @@ import {
 import { updateFPS, fps } from "./fps.js";
 import { pauseControl, paused } from "./pause.js";
 import { appendPointToPolylineMesh } from "./trajectory.js";
-import { buildPilotView, buildTopView } from "./viewComposition.js";
 import { getPlaneById } from "./worldLookup.js";
 import {
   createInitialSceneAndWorld,
@@ -40,6 +39,7 @@ import { getDomainCameraById } from "../domain/worldLookup.js";
 import type { Renderer, RenderPlane } from "../render/renderPorts.js";
 import type { HudRenderData } from "./appPorts.js";
 import type { Scene } from "../appScene/appScenePorts.js";
+import { ViewComposer } from "./viewComposition.js";
 
 let accumTime = 0;
 
@@ -65,6 +65,9 @@ let topContext: CanvasRenderingContext2D;
 let profilerInstance: Profiler & ProfilerController;
 
 let rendererInstance: Renderer;
+
+// Single shared view composer instance for all views.
+const viewComposer = new ViewComposer();
 
 export type GameDependencies = {
   renderer: Renderer;
@@ -157,7 +160,7 @@ function renderCurrentFrame(input: ControlInput): void {
   const profilingEnabled = profilerInstance.isEnabled();
   const thrustPercent = getSignedThrustPercent(input, controlState);
 
-  const pilotViewConfig = buildPilotView(
+  const pilotViewConfig = viewComposer.buildPilotView(
     world,
     pilotCameraId,
     mainPlane,
@@ -169,7 +172,7 @@ function renderCurrentFrame(input: ControlInput): void {
   // Pilot scene: full scene, unfiltered
   const pilotScene: Scene = scene;
 
-  const topViewConfig = buildTopView(
+  const topViewConfig = viewComposer.buildTopView(
     world,
     topCameraId,
     mainPlane,

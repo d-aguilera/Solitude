@@ -6,83 +6,99 @@ import type { DrawMode } from "./appPorts.js";
 import type { Plane, AppWorld } from "./appInternals.js";
 
 /**
- * Convert an app-layer Plane into the minimal RenderPlane DTO.
+ * Adapter-level helper responsible for composing ViewConfig instances
+ * for different viewpoints (pilot, top, etc.).
+ *
+ * Responsibilities kept here:
+ *  - Mapping AppWorld cameras and planes into render-layer DTOs
+ *  - Delegating projection-specific work to ViewBuilder
  */
-function toRenderPlane(plane: Plane): RenderPlane {
-  return {
-    id: plane.id,
-    position: plane.position,
-    velocity: plane.velocity,
-  };
-}
+export class ViewComposer {
+  private readonly viewBuilder: ViewBuilder;
 
-function toDebugPlane(plane: Plane): DebugPlane {
-  return {
-    id: plane.id,
-    position: plane.position,
-    velocity: plane.velocity,
-  };
-}
+  constructor(viewBuilder?: ViewBuilder) {
+    this.viewBuilder = viewBuilder ?? new ViewBuilder();
+  }
 
-// Single shared builder instance for all views.
-const viewBuilder = new ViewBuilder();
+  /**
+   * Convert an app-layer Plane into the minimal RenderPlane DTO.
+   */
+  private toRenderPlane(plane: Plane): RenderPlane {
+    return {
+      id: plane.id,
+      position: plane.position,
+      velocity: plane.velocity,
+    };
+  }
 
-/**
- * Build the pilot view configuration for the given camera and reference plane.
- */
-export function buildPilotView(
-  world: AppWorld,
-  cameraId: string,
-  referencePlane: Plane,
-  drawMode: DrawMode,
-  canvasWidth: number,
-  canvasHeight: number,
-): ViewConfig {
-  const camera = getDomainCameraById(world, cameraId);
-  const plane = toDebugPlane(referencePlane);
+  /**
+   * Convert an app-layer Plane into the minimal DebugPlane DTO.
+   */
+  private toDebugPlane(plane: Plane): DebugPlane {
+    return {
+      id: plane.id,
+      position: plane.position,
+      velocity: plane.velocity,
+    };
+  }
 
-  const { view, debugOverlay } = viewBuilder.buildViewConfig(
-    camera,
-    canvasWidth,
-    canvasHeight,
-    plane,
-    drawMode,
-  );
+  /**
+   * Build the pilot view configuration for the given camera and reference plane.
+   */
+  buildPilotView(
+    world: AppWorld,
+    cameraId: string,
+    referencePlane: Plane,
+    drawMode: DrawMode,
+    canvasWidth: number,
+    canvasHeight: number,
+  ): ViewConfig {
+    const camera = getDomainCameraById(world, cameraId);
+    const plane = this.toDebugPlane(referencePlane);
 
-  return {
-    view,
-    debugOverlay,
-    referencePlane: toRenderPlane(referencePlane),
-    drawMode,
-  };
-}
+    const { view, debugOverlay } = this.viewBuilder.buildViewConfig(
+      camera,
+      canvasWidth,
+      canvasHeight,
+      plane,
+      drawMode,
+    );
 
-/**
- * Build the top view configuration for the given camera and reference plane.
- */
-export function buildTopView(
-  world: AppWorld,
-  cameraId: string,
-  referencePlane: Plane,
-  drawMode: DrawMode,
-  canvasWidth: number,
-  canvasHeight: number,
-): ViewConfig {
-  const camera = getDomainCameraById(world, cameraId);
-  const plane = toDebugPlane(referencePlane);
+    return {
+      view,
+      debugOverlay,
+      referencePlane: this.toRenderPlane(referencePlane),
+      drawMode,
+    };
+  }
 
-  const { view, debugOverlay } = viewBuilder.buildViewConfig(
-    camera,
-    canvasWidth,
-    canvasHeight,
-    plane,
-    drawMode,
-  );
+  /**
+   * Build the top view configuration for the given camera and reference plane.
+   */
+  buildTopView(
+    world: AppWorld,
+    cameraId: string,
+    referencePlane: Plane,
+    drawMode: DrawMode,
+    canvasWidth: number,
+    canvasHeight: number,
+  ): ViewConfig {
+    const camera = getDomainCameraById(world, cameraId);
+    const plane = this.toDebugPlane(referencePlane);
 
-  return {
-    view,
-    debugOverlay,
-    referencePlane: toRenderPlane(referencePlane),
-    drawMode,
-  };
+    const { view, debugOverlay } = this.viewBuilder.buildViewConfig(
+      camera,
+      canvasWidth,
+      canvasHeight,
+      plane,
+      drawMode,
+    );
+
+    return {
+      view,
+      debugOverlay,
+      referencePlane: this.toRenderPlane(referencePlane),
+      drawMode,
+    };
+  }
 }
