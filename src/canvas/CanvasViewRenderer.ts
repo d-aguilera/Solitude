@@ -108,7 +108,8 @@ export class CanvasViewRenderer implements ViewRenderer {
     view: View,
   ): void {
     const projectedPoints: ScreenPoint[] = [];
-    const { projection, camera } = view;
+    const { projection } = view;
+    const { width, height } = context.canvas;
 
     objects.forEach((obj) => {
       const { mesh, worldPoints, baseColor, lineWidth } = toRenderable(obj);
@@ -128,11 +129,7 @@ export class CanvasViewRenderer implements ViewRenderer {
             break;
           }
 
-          const screenPoint = ndcToScreen(
-            ndc,
-            camera.canvasWidth,
-            camera.canvasHeight,
-          );
+          const screenPoint = ndcToScreen(ndc, width, height);
 
           projectedPoints.push(screenPoint);
         }

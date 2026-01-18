@@ -13,15 +13,11 @@ const NEAR = 0.01;
 const VERTICAL_FOV = 30;
 
 /**
- * Canonical camera representation used throughout rendering:
- *   - pose in world space
- *   - canvas size
+ * Canonical camera representation used throughout world/scene transforms.
  */
 export interface Camera {
   position: Vec3;
   frame: LocalFrame;
-  canvasWidth: number;
-  canvasHeight: number;
 }
 
 export function getCameraPointsForObject(
@@ -118,7 +114,8 @@ export function clipTriangleAgainstNearPlaneCamera(
 }
 
 /**
- * Core projection from camera space -> NDC.
+ * Core projection from camera space -> NDC, parameterized by
+ * canvas dimensions via focal lengths.
  */
 export function projectCameraPointToNdc(
   cameraPoint: Vec3,
@@ -170,7 +167,7 @@ function worldPointToCameraPoint(
 }
 
 /**
- * Compute focal lengths (fX, fY) for our camera.
+ * Compute focal lengths (fX, fY) for a perspective projection.
  *
  * The camera is parameterized in terms of a vertical field of view
  * and a “circle condition” so that a sphere centered on the view axis
@@ -192,13 +189,16 @@ function getFocalLengths(
 }
 
 /**
- * Full world-space -> NDC projection with near-plane rejection, using a Camera.
+ * Full world-space -> NDC projection with near-plane rejection,
+ * parameterized by pose and canvas size.
  *
  * Returns null when the point lies behind the near plane in camera space.
  */
-export function projectWorldPointToNdcWithCamera(
+export function projectWorldPointToNdc(
   worldPoint: Vec3,
   camera: Camera,
+  canvasWidth: number,
+  canvasHeight: number,
 ): NdcPoint | null {
   const cameraPoint = worldPointToCameraPoint(
     worldPoint,
@@ -206,11 +206,7 @@ export function projectWorldPointToNdcWithCamera(
     camera.frame,
   );
   if (!isInFrontOfNearPlane(cameraPoint)) return null;
-  return projectCameraPointToNdc(
-    cameraPoint,
-    camera.canvasWidth,
-    camera.canvasHeight,
-  );
+  return projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
 }
 
 /**
@@ -229,19 +225,12 @@ export function ndcToScreen(
 }
 
 /**
- * Helper to construct a Camera from a world-space pose and canvas size.
+ * Helper to construct a Camera from a world-space pose.
  */
-export function makeCamera(
-  position: Vec3,
-  frame: LocalFrame,
-  canvasWidth: number,
-  canvasHeight: number,
-): Camera {
+export function makeCamera(position: Vec3, frame: LocalFrame): Camera {
   return {
     position,
     frame,
-    canvasWidth,
-    canvasHeight,
   };
 }
 

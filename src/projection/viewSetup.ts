@@ -1,12 +1,9 @@
 import { DomainCameraPose, Vec3 } from "../domain/domainPorts.js";
 import { NdcPoint } from "../render/renderInternals.js";
 import { DrawMode, View, ViewDebugOverlay } from "../render/renderPorts.js";
+import type { Camera } from "../scene/camera.js";
+import { makeCamera, projectWorldPointToNdc } from "../scene/camera.js";
 import { drawPlaneVelocityLine, drawBodyLabels } from "../scene/debugDraw.js";
-import {
-  Camera,
-  makeCamera,
-  projectWorldPointToNdcWithCamera,
-} from "../scene/camera.js";
 import { DebugPlane } from "./projectionPorts.js";
 
 function makeBaseView(
@@ -15,15 +12,10 @@ function makeBaseView(
   canvasHeight: number,
   drawMode: DrawMode,
 ): View {
-  const camera: Camera = makeCamera(
-    cameraPose.position,
-    cameraPose.frame,
-    canvasWidth,
-    canvasHeight,
-  );
+  const camera: Camera = makeCamera(cameraPose.position, cameraPose.frame);
 
   const projection = (p: Vec3): NdcPoint | null => {
-    return projectWorldPointToNdcWithCamera(p, camera);
+    return projectWorldPointToNdc(p, camera, canvasWidth, canvasHeight);
   };
 
   return {
