@@ -1,18 +1,21 @@
 import type { HudRenderData } from "../app/appPorts.js";
 import type {
+  PlanetSceneObject,
   PointLight,
   Scene,
   SceneObject,
 } from "../appScene/appScenePorts.js";
 import type { Profiler } from "../domain/domainPorts.js";
+import { ndcToScreen } from "../render/ndcToScreen.js";
 import type {
+  OverlayBody,
   PolylineRenderer,
   RenderSurface2D,
   Renderer,
   ScreenPoint,
   ShadedFaceRenderer,
 } from "../render/renderPorts.js";
-import { buildShadedFaces, ndcToScreen } from "../render/shadedFaces.js";
+import { buildShadedFaces } from "../render/shadedFaces.js";
 import type { ViewConfig } from "../render/ViewConfig.js";
 import { toRenderable } from "../scene/renderPrep.js";
 import { CanvasDebugOverlayRenderer } from "./CanvasDebugOverlayRenderer.js";
@@ -63,12 +66,24 @@ export class CanvasRenderer implements Renderer {
       controller,
     });
 
-    // Debug overlay rendering via a Canvas-specific overlay renderer.
     const canvasSurface = surface as CanvasSurface;
     const overlayRenderer = new CanvasDebugOverlayRenderer(
       canvasSurface.getContext(),
     );
-    controller.getDebugOverlay().draw(overlayRenderer, scene);
+
+    const overlayBodies: OverlayBody[] = scene.objects
+      .filter(
+        (obj): obj is PlanetSceneObject =>
+          obj.kind === "planet" || obj.kind === "star",
+      )
+      .map((obj) => ({
+        id: obj.id,
+        position: obj.position,
+        velocity: obj.velocity,
+        kind: obj.kind,
+      }));
+
+    controller.getDebugOverlay().draw(overlayRenderer, overlayBodies);
   }
 
   /**

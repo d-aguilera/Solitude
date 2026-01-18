@@ -19,6 +19,13 @@ export interface HudRenderer {
   render(surface: RenderSurface2D, hud: HudRenderData): void;
 }
 
+export interface OverlayBody {
+  id: string;
+  position: Vec3;
+  velocity: Vec3;
+  kind: "planet" | "star";
+}
+
 /**
  * Rendering adapter responsible for polylines in screen space.
  */
@@ -82,8 +89,8 @@ export interface ShadedFaceRenderer {
 /**
  * Optional debug overlay hook for a view. Not part of scene geometry.
  */
-export interface ViewDebugOverlay {
-  draw: (overlay: ViewDebugOverlayRenderer, scene: Scene) => void;
+export interface ViewDebugOverlay<TContext = OverlayBody[]> {
+  draw: (overlay: ViewDebugOverlayRenderer, context: TContext) => void;
 }
 
 /**

@@ -6,8 +6,8 @@ import { ProjectionService } from "../scene/ProjectionService.js";
 import { toRenderable } from "../scene/renderPrep.js";
 import type { SceneObjectWithCache } from "../scene/sceneInternals.js";
 import type { NdcPoint, Camera } from "../scene/scenePorts.js";
+import { ndcToScreen } from "./ndcToScreen.js";
 import type { FaceEntry } from "./renderPorts.js";
-import type { ScreenPoint } from "./renderPorts.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
 const SUN_LUMINOSITY = 3.828e26; // W
@@ -233,19 +233,4 @@ function toneMapIrradiance(E: number): number {
   const ldr = Math.pow(mapped, gamma);
 
   return Math.max(0, Math.min(1, ldr));
-}
-
-/**
- * Map NDC coordinates into pixel space for a given canvas.
- */
-export function ndcToScreen(
-  ndc: NdcPoint,
-  canvasWidth: number,
-  canvasHeight: number,
-): ScreenPoint {
-  return {
-    x: (ndc.x + 1) * 0.5 * canvasWidth,
-    y: (1 - ndc.y) * 0.5 * canvasHeight,
-    depth: ndc.depth,
-  };
 }

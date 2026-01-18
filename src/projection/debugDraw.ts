@@ -1,12 +1,12 @@
-import type { Scene } from "../appScene/appScenePorts.js";
 import type { Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
-import { ndcToScreen } from "../render/shadedFaces.js";
-import type { NdcPoint } from "../scene/scenePorts.js";
+import { ndcToScreen } from "../render/ndcToScreen.js";
 import type {
+  OverlayBody,
   RenderPlane,
   ViewDebugOverlayRenderer,
 } from "../render/renderPorts.js";
+import type { NdcPoint } from "../scene/scenePorts.js";
 
 export type ProjectFn = (p: Vec3) => NdcPoint | null;
 
@@ -82,37 +82,33 @@ export function drawPlaneVelocityLine(
 export function drawBodyLabels(
   overlay: ViewDebugOverlayRenderer,
   project: ProjectFn,
-  scene: Scene,
+  bodies: OverlayBody[],
   referencePosition: Vec3,
   surfaceWidth: number,
   surfaceHeight: number,
 ): void {
-  const bodies: {
-    obj: Scene["objects"][number];
+  const sorted: {
+    body: OverlayBody;
     distance: number;
   }[] = [];
 
-  for (const obj of scene.objects) {
-    if (obj.kind !== "planet" && obj.kind !== "star") continue;
-
-    const d = vec3.length(vec3.sub(obj.position, referencePosition));
-    bodies.push({ obj, distance: d });
+  for (const body of bodies) {
+    const d = vec3.length(vec3.sub(body.position, referencePosition));
+    sorted.push({ body, distance: d });
   }
 
-  bodies.sort((a, b) => b.distance - a.distance);
+  sorted.sort((a, b) => b.distance - a.distance);
 
-  for (const { obj, distance } of bodies) {
-    if (obj.kind !== "planet" && obj.kind !== "star") continue;
-
-    const ndc = project(obj.position);
+  for (const { body, distance } of sorted) {
+    const ndc = project(body.position);
     if (!ndc) continue;
 
     const screenPoint = ndcToScreen(ndc, surfaceWidth, surfaceHeight);
 
-    const name = displayNameForBodyId(obj.id);
+    const name = displayNameForBodyId(body.id);
 
     const dKm = distance / 1000;
-    const speedMps = vec3.length(obj.velocity);
+    const speedMps = vec3.length(body.velocity);
     const speedKmh = speedMps * 3.6;
 
     overlay.drawBodyLabel({

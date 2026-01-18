@@ -1,5 +1,4 @@
 import type { DrawMode } from "../app/appPorts.js";
-import type { Scene } from "../appScene/appScenePorts.js";
 import type { DomainCameraPose, Vec3 } from "../domain/domainPorts.js";
 import { ProjectionService } from "../scene/ProjectionService.js";
 import type { Camera, NdcPoint } from "../scene/scenePorts.js";
@@ -7,6 +6,7 @@ import type {
   RenderPlane,
   ViewDebugOverlay,
   ViewDebugOverlayRenderer,
+  OverlayBody,
 } from "../render/renderPorts.js";
 import { drawPlaneVelocityLine, drawBodyLabels } from "./debugDraw.js";
 
@@ -23,7 +23,7 @@ export class ViewController {
   private readonly camera: Camera;
   private readonly referencePlane: RenderPlane;
   private readonly drawMode: DrawMode;
-  private readonly debugOverlay: ViewDebugOverlay;
+  private readonly debugOverlay: ViewDebugOverlay<OverlayBody[]>;
   private readonly width: number;
   private readonly height: number;
 
@@ -57,7 +57,7 @@ export class ViewController {
     this.height = canvasHeight;
 
     this.debugOverlay = {
-      draw: (overlay: ViewDebugOverlayRenderer, scene: Scene) => {
+      draw: (overlay: ViewDebugOverlayRenderer, bodies: OverlayBody[]) => {
         drawPlaneVelocityLine(
           overlay,
           (p: Vec3) => this.project(p),
@@ -68,7 +68,7 @@ export class ViewController {
         drawBodyLabels(
           overlay,
           (p: Vec3) => this.project(p),
-          scene,
+          bodies,
           this.referencePlane.position,
           this.width,
           this.height,
@@ -94,7 +94,7 @@ export class ViewController {
   /**
    * Accessor for the debug overlay associated with this view.
    */
-  getDebugOverlay(): ViewDebugOverlay {
+  getDebugOverlay(): ViewDebugOverlay<OverlayBody[]> {
     return this.debugOverlay;
   }
 
