@@ -1,4 +1,4 @@
-import type { HudRenderData } from "../render/renderPorts.js";
+import type { HudRenderData } from "../app/appPorts.js";
 
 /**
  * Canvas2D HUD renderer.

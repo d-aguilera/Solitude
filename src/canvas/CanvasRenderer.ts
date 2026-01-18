@@ -1,12 +1,9 @@
-import { Profiler } from "../domain/domainPorts.js";
-import type {
-  Renderer,
-  ViewConfig,
-  HudRenderData,
-} from "../render/renderPorts.js";
-import type { Scene } from "../render/scenePorts.js";
-import { CanvasViewRenderer } from "./CanvasViewRenderer.js";
+import type { Scene } from "../appScene/appScenePorts.js";
+import type { Profiler } from "../domain/domainPorts.js";
+import type { Renderer, ViewConfig } from "../render/renderPorts.js";
+import type { HudRenderData } from "../app/appPorts.js";
 import { renderCanvasHud } from "./CanvasHudRenderer.js";
+import { CanvasViewRenderer } from "./CanvasViewRenderer.js";
 
 /**
  * Canvas2D implementation of the top-level Renderer abstraction.

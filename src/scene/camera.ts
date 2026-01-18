@@ -1,10 +1,10 @@
-import { Vec3, LocalFrame } from "../domain/domainPorts.js";
+import type { SceneObject } from "../appScene/appScenePorts.js";
+import type { Vec3, LocalFrame } from "../domain/domainPorts.js";
 import { mat3FromLocalFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
-import { SceneObject } from "../render/scenePorts.js";
-import { SceneObjectWithCache } from "./sceneInternals.js";
-import type { NdcPoint, ScreenPoint } from "../render/renderInternals.js";
 import { vec3 } from "../domain/vec3.js";
+import type { NdcPoint } from "./scenePorts.js";
+import type { SceneObjectWithCache } from "./sceneInternals.js";
 
 // Camera-space forward threshold.
 const NEAR = 0.01;
@@ -50,7 +50,7 @@ export function getCameraPointsForObject(
   // world -> camera transform (canonical, via helper)
   for (let i = 0; i < n; i++) {
     const wp = worldPoints[i];
-    const cp = worldPointToCameraPoint(wp, cameraPos, cameraFrame);
+    const cp = worldPointToCameraPointNoClip(wp, cameraPos, cameraFrame);
     const out = cache[i];
     out.x = cp.x;
     out.y = cp.y;
@@ -140,7 +140,20 @@ export function projectCameraPointToNdc(
 /**
  * World-space -> camera-space for a single point.
  */
-function worldPointToCameraPoint(
+export function worldPointToCameraPoint(
+  worldPoint: Vec3,
+  cameraPos: Vec3,
+  cameraFrame: LocalFrame,
+): Vec3 | null {
+  const cameraPoint = worldPointToCameraPointNoClip(
+    worldPoint,
+    cameraPos,
+    cameraFrame,
+  );
+  return isInFrontOfNearPlane(cameraPoint) ? cameraPoint : null;
+}
+
+function worldPointToCameraPointNoClip(
   worldPoint: Vec3,
   cameraPos: Vec3,
   cameraFrame: LocalFrame,
@@ -150,7 +163,7 @@ function worldPointToCameraPoint(
   const dx = worldPoint.x - cameraPos.x;
   const dy = worldPoint.y - cameraPos.y;
   const dz = worldPoint.z - cameraPos.z;
-  return {
+  const cameraPoint: Vec3 = {
     x:
       R_localFromWorld[0][0] * dx +
       R_localFromWorld[0][1] * dy +
@@ -164,6 +177,7 @@ function worldPointToCameraPoint(
       R_localFromWorld[2][1] * dy +
       R_localFromWorld[2][2] * dz,
   };
+  return cameraPoint;
 }
 
 /**
@@ -186,52 +200,6 @@ function getFocalLengths(
   const fX = fY * (canvasHeight / canvasWidth);
 
   return { fX, fY };
-}
-
-/**
- * Full world-space -> NDC projection with near-plane rejection,
- * parameterized by pose and canvas size.
- *
- * Returns null when the point lies behind the near plane in camera space.
- */
-export function projectWorldPointToNdc(
-  worldPoint: Vec3,
-  camera: Camera,
-  canvasWidth: number,
-  canvasHeight: number,
-): NdcPoint | null {
-  const cameraPoint = worldPointToCameraPoint(
-    worldPoint,
-    camera.position,
-    camera.frame,
-  );
-  if (!isInFrontOfNearPlane(cameraPoint)) return null;
-  return projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
-}
-
-/**
- * Map NDC coordinates into pixel space for a given canvas.
- */
-export function ndcToScreen(
-  ndc: NdcPoint,
-  canvasWidth: number,
-  canvasHeight: number,
-): ScreenPoint {
-  return {
-    x: (ndc.x + 1) * 0.5 * canvasWidth,
-    y: (1 - ndc.y) * 0.5 * canvasHeight,
-    depth: ndc.depth,
-  };
-}
-
-/**
- * Helper to construct a Camera from a world-space pose.
- */
-export function makeCamera(position: Vec3, frame: LocalFrame): Camera {
-  return {
-    position,
-    frame,
-  };
 }
 
 /**

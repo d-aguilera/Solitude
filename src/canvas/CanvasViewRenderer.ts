@@ -1,14 +1,14 @@
-import { Profiler } from "../domain/domainPorts.js";
-import {
-  ViewRenderer,
-  ViewRendererParams,
+import type { PointLight, SceneObject } from "../appScene/appScenePorts.js";
+import type { Profiler } from "../domain/domainPorts.js";
+import type {
   ScreenPoint,
-} from "../render/renderInternals.js";
-import type { View } from "../render/renderPorts.js";
-import { SceneObject, type PointLight } from "../render/scenePorts.js";
-import { ndcToScreen } from "../scene/camera.js";
+  ViewRendererParams,
+  ViewRenderer,
+  View,
+} from "../render/renderPorts.js";
+import { buildShadedFaces } from "../render/shadedFaces.js";
+import { ndcToScreen } from "../render/shadedFaces.js";
 import { toRenderable } from "../scene/renderPrep.js";
-import { buildShadedFaces } from "../scene/shadedFaces.js";
 import { renderShadedFaces, renderPolyline } from "./canvasRasterizer.js";
 
 interface DrawOptions {

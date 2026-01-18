@@ -1,9 +1,8 @@
+import type { DrawMode, HudRenderData } from "../app/appPorts.js";
 import type { Vec3 } from "../domain/domainPorts.js";
-import type { Scene } from "./scenePorts.js";
-import type { NdcPoint } from "./renderInternals.js";
+import type { Scene } from "../appScene/appScenePorts.js";
 import type { Camera } from "../scene/camera.js";
-
-export type DrawMode = "faces" | "lines";
+import type { NdcPoint } from "../scene/scenePorts.js";
 
 /**
  * Adapter-level plane DTO used for debug overlays.
@@ -28,6 +27,12 @@ export interface Renderer {
     topView: ViewConfig;
     hud: HudRenderData;
   }): void;
+}
+
+export interface ScreenPoint {
+  x: number;
+  y: number;
+  depth: number; // camera-space depth (positive means in front of camera)
 }
 
 /**
@@ -57,27 +62,15 @@ export interface ViewDebugOverlay {
 }
 
 /**
- * Adapter‑agnostic HUD inputs.
+ * Thin abstraction over how individual views are rendered.
  */
-export interface HudRenderData {
-  /**
-   * Speed in meters per second for the controlled plane.
-   */
-  speedMps: number;
-  /**
-   * Latest measured frames per second.
-   */
-  fps: number;
-  /**
-   * Whether profiling is currently enabled.
-   */
-  profilingEnabled: boolean;
-  /**
-   * Pilot camera offset expressed in the plane's local frame.
-   */
-  pilotCameraLocalOffset: Vec3;
-  /**
-   * Signed thrust level in [-1, 1].
-   */
-  thrustPercent: number;
+
+export interface ViewRenderer {
+  renderView(params: ViewRendererParams): void;
 }
+
+export type ViewRendererParams = {
+  context: CanvasRenderingContext2D;
+  scene: Scene;
+  viewConfig: ViewConfig;
+};

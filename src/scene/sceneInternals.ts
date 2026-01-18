@@ -1,5 +1,5 @@
-import { Vec3 } from "../domain/domainPorts.js";
-import { SceneObject } from "../render/scenePorts.js";
+import type { SceneObject } from "../appScene/appScenePorts.js";
+import type { Vec3 } from "../domain/domainPorts.js";
 
 // Renderer-side cache; may be attached to any SceneObject.
 export type SceneObjectWithCache = SceneObject & {

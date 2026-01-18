@@ -1,11 +1,8 @@
 import { getDomainCameraById } from "../domain/worldLookup.js";
 import type { DebugPlane } from "../projection/projectionPorts.js";
 import { buildViewConfig } from "../projection/viewSetup.js";
-import type {
-  RenderPlane,
-  DrawMode,
-  ViewConfig,
-} from "../render/renderPorts.js";
+import type { RenderPlane, ViewConfig } from "../render/renderPorts.js";
+import type { DrawMode } from "./appPorts.js";
 import type { Plane, AppWorld } from "./appInternals.js";
 
 /**

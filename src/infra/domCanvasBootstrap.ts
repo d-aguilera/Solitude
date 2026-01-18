@@ -1,4 +1,4 @@
-import { ProfilerController } from "../app/appPorts.js";
+import type { ProfilerController } from "../app/appPorts.js";
 import { runApp } from "../app/main.js";
 import { CanvasRenderer } from "../canvas/CanvasRenderer.js";
 import type { GravityEngine, Profiler } from "../domain/domainPorts.js";

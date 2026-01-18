@@ -6,7 +6,7 @@ import type {
   EnvInput,
   Plane,
 } from "./appInternals.js";
-import { ProfilerController } from "./appPorts.js";
+import type { ProfilerController } from "./appPorts.js";
 import {
   applyThrustToVelocity,
   updateBodyOrientationFromInput,
@@ -37,12 +37,9 @@ import type {
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import { getDomainCameraById } from "../domain/worldLookup.js";
-import type {
-  HudRenderData,
-  Renderer,
-  RenderPlane,
-} from "../render/renderPorts.js";
-import type { Scene } from "../render/scenePorts.js";
+import type { Renderer, RenderPlane } from "../render/renderPorts.js";
+import type { HudRenderData } from "./appPorts.js";
+import type { Scene } from "../appScene/appScenePorts.js";
 
 let accumTime = 0;
 

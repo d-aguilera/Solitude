@@ -1,3 +1,33 @@
+import type { Vec3 } from "../domain/domainPorts";
+
+export type DrawMode = "faces" | "lines";
+
+/**
+ * Adapter‑agnostic HUD inputs.
+ */
+export interface HudRenderData {
+  /**
+   * Speed in meters per second for the controlled plane.
+   */
+  speedMps: number;
+  /**
+   * Latest measured frames per second.
+   */
+  fps: number;
+  /**
+   * Whether profiling is currently enabled.
+   */
+  profilingEnabled: boolean;
+  /**
+   * Pilot camera offset expressed in the plane's local frame.
+   */
+  pilotCameraLocalOffset: Vec3;
+  /**
+   * Signed thrust level in [-1, 1].
+   */
+  thrustPercent: number;
+}
+
 /**
  * Control-side profiling interface.
  *

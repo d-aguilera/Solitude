@@ -1,5 +1,5 @@
-import { ProfilerController } from "../app/appPorts";
-import { Profiler } from "../domain/domainPorts";
+import type { ProfilerController } from "../app/appPorts";
+import type { Profiler } from "../domain/domainPorts";
 
 /**
  * Default profiling adapter.

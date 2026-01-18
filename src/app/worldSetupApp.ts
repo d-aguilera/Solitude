@@ -26,14 +26,12 @@ import { buildDefaultSolarSystemConfigs } from "../domain/solarSystem.js";
 import { trig } from "../domain/trig.js";
 import { vec3 } from "../domain/vec3.js";
 import { getStarPhysicsById } from "../domain/worldLookup.js";
-import type {
-  Scene,
-  SceneObject,
-  AirplaneSceneObject,
-  PlanetSceneObject,
-  StarSceneObject,
-  PolylineSceneObject,
-} from "../render/scenePorts.js";
+import type { SceneObject } from "../appScene/appScenePorts.js";
+import type { Scene } from "../appScene/appScenePorts.js";
+import type { StarSceneObject } from "../appScene/appScenePorts.js";
+import type { PlanetSceneObject } from "../appScene/appScenePorts.js";
+import type { AirplaneSceneObject } from "../appScene/appScenePorts.js";
+import type { PolylineSceneObject } from "../appScene/appScenePorts.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);

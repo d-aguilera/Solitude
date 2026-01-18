@@ -1,5 +1,6 @@
 import type { RGB } from "../domain/domainPorts.js";
-import type { FaceEntry, ScreenPoint } from "../render/renderInternals.js";
+import type { FaceEntry } from "../scene/scenePorts.js";
+import type { ScreenPoint } from "../render/renderPorts.js";
 
 /**
  * Depth-sort and rasterize shaded triangle faces.

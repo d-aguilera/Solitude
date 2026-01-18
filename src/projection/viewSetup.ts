@@ -1,29 +1,14 @@
-import { DomainCameraPose, Vec3 } from "../domain/domainPorts.js";
-import { NdcPoint } from "../render/renderInternals.js";
-import { DrawMode, View, ViewDebugOverlay } from "../render/renderPorts.js";
+import type { DrawMode } from "../app/appPorts.js";
+import type { DomainCameraPose, Vec3 } from "../domain/domainPorts.js";
+import type { View, ViewDebugOverlay } from "../render/renderPorts.js";
 import type { Camera } from "../scene/camera.js";
-import { makeCamera, projectWorldPointToNdc } from "../scene/camera.js";
-import { drawPlaneVelocityLine, drawBodyLabels } from "../scene/debugDraw.js";
-import { DebugPlane } from "./projectionPorts.js";
-
-function makeBaseView(
-  cameraPose: DomainCameraPose,
-  canvasWidth: number,
-  canvasHeight: number,
-  drawMode: DrawMode,
-): View {
-  const camera: Camera = makeCamera(cameraPose.position, cameraPose.frame);
-
-  const projection = (p: Vec3): NdcPoint | null => {
-    return projectWorldPointToNdc(p, camera, canvasWidth, canvasHeight);
-  };
-
-  return {
-    camera,
-    projection,
-    drawMode,
-  };
-}
+import {
+  projectCameraPointToNdc,
+  worldPointToCameraPoint,
+} from "../scene/camera.js";
+import type { NdcPoint } from "../scene/scenePorts.js";
+import { drawPlaneVelocityLine, drawBodyLabels } from "./debugDraw.js";
+import type { DebugPlane } from "./projectionPorts.js";
 
 /**
  * Build the default debug overlay used by pilot/top views.
@@ -52,11 +37,47 @@ export function buildViewConfig(
   referencePlane: DebugPlane,
   drawMode: DrawMode,
 ): { view: View; debugOverlay: ViewDebugOverlay } {
-  const view = makeBaseView(pose, canvasWidth, canvasHeight, drawMode);
+  const camera: Camera = {
+    position: pose.position,
+    frame: pose.frame,
+  };
+
+  const projection = (p: Vec3): NdcPoint | null => {
+    return projectWorldPointToNdc(p, camera, canvasWidth, canvasHeight);
+  };
+
+  const view: View = {
+    camera,
+    projection,
+    drawMode,
+  };
+
   const debugOverlay = makeStandardViewDebugOverlay({
-    projection: view.projection,
+    projection,
     referencePlane,
   });
 
   return { view, debugOverlay };
+}
+
+/**
+ * Full world-space -> NDC projection with near-plane rejection,
+ * parameterized by pose and canvas size.
+ *
+ * Returns null when the point lies behind the near plane in camera space.
+ */
+function projectWorldPointToNdc(
+  worldPoint: Vec3,
+  camera: Camera,
+  canvasWidth: number,
+  canvasHeight: number,
+): NdcPoint | null {
+  const cameraPoint: Vec3 | null = worldPointToCameraPoint(
+    worldPoint,
+    camera.position,
+    camera.frame,
+  );
+  return cameraPoint === null
+    ? null
+    : projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
 }

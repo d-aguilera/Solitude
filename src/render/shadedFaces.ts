@@ -1,29 +1,22 @@
-import { Vec3 } from "../domain/domainPorts.js";
+import type { PointLight, SceneObject } from "../appScene/appScenePorts.js";
+import type { Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
-import { FaceEntry, NdcPoint } from "../render/renderInternals.js";
-import { SceneObject, PointLight } from "../render/scenePorts.js";
 import {
   clipTriangleAgainstNearPlaneCamera,
   getCameraPointsForObject,
-} from "./camera.js";
-import { toRenderable } from "./renderPrep.js";
-import { SceneObjectWithCache } from "./sceneInternals.js";
-import type { View } from "../render/renderPorts.js";
-import { ndcToScreen, projectCameraPointToNdc } from "./camera.js";
+  projectCameraPointToNdc,
+} from "../scene/camera.js";
+import { toRenderable } from "../scene/renderPrep.js";
+import type { SceneObjectWithCache } from "../scene/sceneInternals.js";
+import type { FaceEntry } from "../scene/scenePorts.js";
+import type { ScreenPoint, View } from "./renderPorts.js";
+import type { NdcPoint } from "../scene/scenePorts.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
 const SUN_LUMINOSITY = 3.828e26; // W
 const AU = 1.495978707e11; // m
 const EARTH_ORBIT_RADIUS_2 = AU * AU;
 const E_SUN_AT_EARTH = SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS_2);
-
-function projectionFromCamera(
-  cameraPoint: Vec3,
-  canvasWidth: number,
-  canvasHeight: number,
-): NdcPoint {
-  return projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
-}
 
 /**
  * Build the list of shaded triangle faces (with depth and lighting information)
@@ -131,6 +124,14 @@ export function buildShadedFaces(params: {
   return faceList;
 }
 
+function projectionFromCamera(
+  cameraPoint: Vec3,
+  canvasWidth: number,
+  canvasHeight: number,
+): NdcPoint {
+  return projectCameraPointToNdc(cameraPoint, canvasWidth, canvasHeight);
+}
+
 function getWorldFaceNormalsForObject(
   obj: SceneObject,
   meshFaceNormals: Vec3[] | undefined,
@@ -228,4 +229,19 @@ function toneMapIrradiance(E: number): number {
   const ldr = Math.pow(mapped, gamma);
 
   return Math.max(0, Math.min(1, ldr));
+}
+
+/**
+ * Map NDC coordinates into pixel space for a given canvas.
+ */
+export function ndcToScreen(
+  ndc: NdcPoint,
+  canvasWidth: number,
+  canvasHeight: number,
+): ScreenPoint {
+  return {
+    x: (ndc.x + 1) * 0.5 * canvasWidth,
+    y: (1 - ndc.y) * 0.5 * canvasHeight,
+    depth: ndc.depth,
+  };
 }

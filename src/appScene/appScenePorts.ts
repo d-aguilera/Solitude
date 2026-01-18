@@ -1,10 +1,15 @@
-import type { Mat3, Mesh, RGB, Vec3 } from "../domain/domainPorts.js";
+import type { Vec3, Mat3, Mesh, RGB } from "../domain/domainPorts";
 
 export type SceneObjectKind = "airplane" | "planet" | "polyline" | "star";
 
 /**
  * Base properties common to all scene objects used by renderers.
  */
+export interface AirplaneSceneObject extends SolidSceneObject {
+  kind: "airplane";
+  backFaceCulling: false;
+}
+
 export interface BaseSceneObject {
   id: string;
   kind: SceneObjectKind;
@@ -19,23 +24,6 @@ export interface BaseSceneObject {
   backFaceCulling: boolean;
 }
 
-export interface SolidSceneObject extends BaseSceneObject {
-  applyTransform: true;
-  wireframeOnly: false;
-}
-
-export interface PolylineSceneObject extends BaseSceneObject {
-  kind: "polyline";
-  applyTransform: false;
-  wireframeOnly: true;
-  backFaceCulling: false;
-}
-
-export interface AirplaneSceneObject extends SolidSceneObject {
-  kind: "airplane";
-  backFaceCulling: false;
-}
-
 export interface CelestialBodySceneObject extends SolidSceneObject {
   kind: "planet" | "star";
   initialVelocity: Vec3;
@@ -48,9 +36,19 @@ export interface PlanetSceneObject extends CelestialBodySceneObject {
   kind: "planet";
 }
 
-export interface StarSceneObject extends CelestialBodySceneObject {
-  kind: "star";
-  luminosity: number; // W or scaled units for lighting
+/**
+ * Point light used by rendering adapters.
+ */
+export interface PointLight {
+  position: Vec3;
+  intensity: number;
+}
+
+export interface PolylineSceneObject extends BaseSceneObject {
+  kind: "polyline";
+  applyTransform: false;
+  wireframeOnly: true;
+  backFaceCulling: false;
 }
 
 /**
@@ -70,10 +68,12 @@ export type SceneObject =
   | StarSceneObject
   | PolylineSceneObject;
 
-/**
- * Point light used by rendering adapters.
- */
-export interface PointLight {
-  position: Vec3;
-  intensity: number;
+export interface SolidSceneObject extends BaseSceneObject {
+  applyTransform: true;
+  wireframeOnly: false;
+}
+
+export interface StarSceneObject extends CelestialBodySceneObject {
+  kind: "star";
+  luminosity: number; // W or scaled units for lighting
 }
