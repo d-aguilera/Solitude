@@ -1,6 +1,6 @@
 import { getDomainCameraById } from "../domain/worldLookup.js";
 import type { DebugPlane } from "../projection/projectionPorts.js";
-import { buildViewConfig } from "../projection/viewSetup.js";
+import { ViewBuilder } from "../projection/ViewBuilder.js";
 import type { RenderPlane, ViewConfig } from "../render/renderPorts.js";
 import type { DrawMode } from "./appPorts.js";
 import type { Plane, AppWorld } from "./appInternals.js";
@@ -24,6 +24,9 @@ function toDebugPlane(plane: Plane): DebugPlane {
   };
 }
 
+// Single shared builder instance for all views.
+const viewBuilder = new ViewBuilder();
+
 /**
  * Build the pilot view configuration for the given camera and reference plane.
  */
@@ -38,7 +41,7 @@ export function buildPilotView(
   const camera = getDomainCameraById(world, cameraId);
   const plane = toDebugPlane(referencePlane);
 
-  const { view, debugOverlay } = buildViewConfig(
+  const { view, debugOverlay } = viewBuilder.buildViewConfig(
     camera,
     canvasWidth,
     canvasHeight,
@@ -68,7 +71,7 @@ export function buildTopView(
   const camera = getDomainCameraById(world, cameraId);
   const plane = toDebugPlane(referencePlane);
 
-  const { view, debugOverlay } = buildViewConfig(
+  const { view, debugOverlay } = viewBuilder.buildViewConfig(
     camera,
     canvasWidth,
     canvasHeight,
