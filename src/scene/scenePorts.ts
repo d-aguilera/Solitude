@@ -1,13 +1,11 @@
-import type { Mesh, Vec3, RGB } from "../domain/domainPorts";
-import type { ScreenPoint } from "../render/renderPorts";
+import type { Mesh, Vec3, RGB, LocalFrame } from "../domain/domainPorts";
 
-export interface FaceEntry {
-  baseColor: RGB;
-  depth: number;
-  intensity: number;
-  p0: ScreenPoint;
-  p1: ScreenPoint;
-  p2: ScreenPoint;
+/**
+ * Canonical camera representation used throughout world/scene transforms.
+ */
+export interface Camera {
+  position: Vec3;
+  frame: LocalFrame;
 }
 
 /**

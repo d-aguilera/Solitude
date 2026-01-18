@@ -1,8 +1,16 @@
 import type { DrawMode, HudRenderData } from "../app/appPorts.js";
-import type { Vec3 } from "../domain/domainPorts.js";
 import type { Scene } from "../appScene/appScenePorts.js";
-import type { Camera } from "../scene/camera.js";
-import type { NdcPoint } from "../scene/scenePorts.js";
+import type { RGB, Vec3 } from "../domain/domainPorts.js";
+import type { Camera, NdcPoint } from "../scene/scenePorts.js";
+
+export interface FaceEntry {
+  baseColor: RGB;
+  depth: number;
+  intensity: number;
+  p0: ScreenPoint;
+  p1: ScreenPoint;
+  p2: ScreenPoint;
+}
 
 /**
  * Adapter-level plane DTO used for debug overlays.

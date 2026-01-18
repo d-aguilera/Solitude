@@ -1,14 +1,12 @@
 import type { PointLight, SceneObject } from "../appScene/appScenePorts.js";
 import type { Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
-import {
-  clipTriangleAgainstNearPlaneCamera,
-  getCameraPointsForObject,
-} from "../scene/camera.js";
+import { CameraService } from "../scene/CameraService.js";
 import { ProjectionService } from "../scene/ProjectionService.js";
 import { toRenderable } from "../scene/renderPrep.js";
 import type { SceneObjectWithCache } from "../scene/sceneInternals.js";
-import type { FaceEntry, NdcPoint } from "../scene/scenePorts.js";
+import type { NdcPoint } from "../scene/scenePorts.js";
+import type { FaceEntry } from "./renderPorts.js";
 import type { ScreenPoint, View } from "./renderPorts.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
@@ -31,14 +29,14 @@ export function buildShadedFaces(params: {
 }): FaceEntry[] {
   const { objects, view, canvasWidth, canvasHeight, lights, frameId } = params;
   const { camera } = view;
-  const cameraPos = camera.position;
-  const cameraFrame = camera.frame;
 
   const projectionService = new ProjectionService(
     camera,
     canvasWidth,
     canvasHeight,
   );
+
+  const cameraService = new CameraService(camera, frameId);
 
   const faceList: FaceEntry[] = [];
 
@@ -49,12 +47,9 @@ export function buildShadedFaces(params: {
     const { faces, faceNormals } = mesh;
 
     // Prepare camera-space cache once per object & frame
-    const cameraPoints = getCameraPointsForObject(
+    const cameraPoints = cameraService.getCameraPointsForObject(
       obj,
       worldPoints,
-      cameraPos,
-      cameraFrame,
-      frameId,
     );
 
     const worldFaceNormals = getWorldFaceNormalsForObject(
@@ -82,7 +77,7 @@ export function buildShadedFaces(params: {
       }
 
       if (obj.backFaceCulling) {
-        const toCamera = vec3.sub(cameraPos, v0);
+        const toCamera = vec3.sub(camera.position, v0);
         const facing = vec3.dot(n, toCamera);
         if (facing <= 0) continue;
       }
@@ -92,7 +87,11 @@ export function buildShadedFaces(params: {
       const c1 = cameraPoints[i1];
       const c2 = cameraPoints[i2];
 
-      const clipped = clipTriangleAgainstNearPlaneCamera(c0, c1, c2);
+      const clipped = cameraService.clipTriangleAgainstNearPlaneCamera(
+        c0,
+        c1,
+        c2,
+      );
       if (clipped.length === 0) continue;
 
       const isStar = obj.kind === "star";

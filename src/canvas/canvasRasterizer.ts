@@ -1,5 +1,5 @@
 import type { RGB } from "../domain/domainPorts.js";
-import type { FaceEntry } from "../scene/scenePorts.js";
+import type { FaceEntry } from "../render/renderPorts.js";
 import type { ScreenPoint } from "../render/renderPorts.js";
 
 /**
