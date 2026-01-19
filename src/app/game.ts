@@ -346,10 +346,14 @@ function syncShipVelocitiesFromGravity(): void {
   for (const binding of gravityState.bindings) {
     if (binding.kind !== "ship") continue;
 
-    const body = gravityState.bodies[binding.shipIndex];
-    if (!body) continue;
+    const bodyIndex = gravityState.bodies.findIndex((b) => b.id === binding.id);
+    if (bodyIndex === -1) {
+      continue;
+    }
 
+    const body = gravityState.bodies[bodyIndex];
     const ship = world.shipBodies[binding.shipIndex];
+
     ship.velocity = { ...body.velocity };
     ship.speed = vec3.length(ship.velocity);
   }
