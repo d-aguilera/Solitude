@@ -24,6 +24,7 @@ type KeyCode =
   | "KeyR"
   | "KeyS"
   | "KeyU"
+  | "KeyV"
   | "KeyW"
   | "Space";
 
@@ -56,6 +57,7 @@ const keys: KeyState = {
   KeyR: false,
   KeyS: false,
   KeyU: false,
+  KeyV: false,
   KeyW: false,
   Space: false,
 };
@@ -112,6 +114,7 @@ export function readControlInput(): ControlInput {
     thrust5: state.Digit5,
     yawLeft: state.KeyQ,
     yawRight: state.KeyE,
+    alignToVelocity: state.KeyV,
   };
 }
 

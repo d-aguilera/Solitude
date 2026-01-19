@@ -17,6 +17,9 @@ const rotSpeedRoll = 1.0;
 const rotSpeedPitch = 0.8;
 const rotSpeedYaw = 0.5;
 
+// Max rate at which the ship can reorient itself toward its velocity vector.
+const alignToVelocityMaxAngularSpeed = 0.7; // rad/s
+
 /**
  * Create a default-initialized control state.
  * Call this once at game setup and then keep mutating the same instance.
@@ -28,6 +31,7 @@ export function createInitialControlState(): ControlState {
       azimuth: 0,
       elevation: 0,
     },
+    alignToVelocity: false,
   };
 }
 
@@ -200,7 +204,9 @@ export function applyThrustToVelocity(
  * This function updates:
  *  - thrustPercent in the given ControlState
  *  - persistent pilot look angles inside ControlState.look
+ *  - alignToVelocity flag inside the ControlState
  *  - the body's LocalFrame based on roll/pitch/yaw input
+ *  - the body's LocalFrame when aligning to velocity is requested
  */
 export function updateBodyOrientationFromInput(
   dtSeconds: number,
@@ -214,10 +220,105 @@ export function updateBodyOrientationFromInput(
   // Update persistent pilot look state owned by the controls.
   updatePilotLook(dtSeconds, input, controlState.look);
 
+  // Update persistent "align to velocity" intent.
+  updateAlignToVelocityFromInput(input, controlState);
+
   let frame = body.frame;
   frame = rollFrame(frame, dtSeconds, input);
   frame = pitchFrame(frame, dtSeconds, input);
   frame = yawFrame(frame, dtSeconds, input);
 
   body.frame = frame;
+
+  // Apply alignment toward the velocity vector, if requested.
+  updateFrameAlignToVelocity(dtSeconds, input, controlState, body);
+}
+
+/**
+ * When enabled, gradually rotate the body's frame so that its forward axis
+ * aligns with the current velocity direction.
+ *
+ * Rotation is rate-limited to alignToVelocityMaxAngularSpeed so that the
+ * effect feels like small attitude-control thrusters rather than an
+ * instantaneous snap.
+ */
+function updateFrameAlignToVelocity(
+  dtSeconds: number,
+  input: ControlInput,
+  state: ControlState,
+  body: ControlledBodyState,
+): void {
+  // Respect the high-level flag owned by the ControlState so that
+  // future logic can gate alignment without depending directly on input.
+  const wantAlign = state.alignToVelocity && input.alignToVelocity;
+  if (!wantAlign) {
+    return;
+  }
+
+  const v = body.velocity;
+  const speed = vec3.length(v);
+  if (speed <= 0) {
+    // No meaningful velocity direction to align to.
+    return;
+  }
+
+  const targetForward = vec3.scale(v, 1 / speed);
+  const currentForward = body.frame.forward;
+
+  // If we're already nearly aligned, do nothing.
+  const dot = vec3.dot(currentForward, targetForward);
+  const clampedDot = Math.min(1, Math.max(-1, dot));
+  const angle = Math.acos(clampedDot);
+  if (angle < 1e-4) {
+    return;
+  }
+
+  // Compute the rotation axis that would take currentForward to targetForward.
+  const fullAxis = vec3.cross(currentForward, targetForward);
+  const axisLen = vec3.length(fullAxis);
+  if (axisLen < 1e-6) {
+    // Parallel or anti-parallel: simple axis choice.
+    if (clampedDot > 0) {
+      // Same direction: nothing to do.
+      return;
+    }
+    // Opposite direction: choose an axis orthogonal to forward.
+    const up = body.frame.up;
+    const fallbackAxis = vec3.cross(currentForward, up);
+    const fallbackLen = vec3.length(fallbackAxis);
+    if (fallbackLen < 1e-6) {
+      // As a last resort, use the frame's right axis.
+      const axis = body.frame.right;
+      const maxStep = alignToVelocityMaxAngularSpeed * dtSeconds;
+      const stepAngle = Math.min(Math.PI, maxStep);
+      body.frame = rotateFrameAroundAxis(body.frame, axis, stepAngle);
+      return;
+    }
+
+    const axis = vec3.scale(fallbackAxis, 1 / fallbackLen);
+    const maxStep = alignToVelocityMaxAngularSpeed * dtSeconds;
+    const stepAngle = Math.min(Math.PI, maxStep);
+    body.frame = rotateFrameAroundAxis(body.frame, axis, stepAngle);
+    return;
+  }
+
+  // General case: rotate partially toward the target, clamped by max angular speed.
+  const axis = vec3.scale(fullAxis, 1 / axisLen);
+  const maxStep = alignToVelocityMaxAngularSpeed * dtSeconds;
+  const stepAngle = Math.min(angle, maxStep);
+
+  body.frame = rotateFrameAroundAxis(body.frame, axis, stepAngle);
+}
+
+/**
+ * Update the persistent "align to velocity" intent in the given ControlState.
+ *
+ * While the align key is held, the ship's attitude will be steered
+ * toward the velocity vector.
+ */
+function updateAlignToVelocityFromInput(
+  input: ControlInput,
+  state: ControlState,
+): void {
+  state.alignToVelocity = input.alignToVelocity;
 }

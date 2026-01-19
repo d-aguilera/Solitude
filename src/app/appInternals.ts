@@ -36,6 +36,7 @@ export interface ControlInput {
   thrust3: boolean;
   thrust4: boolean;
   thrust5: boolean;
+  alignToVelocity: boolean;
 }
 
 /**
@@ -52,6 +53,7 @@ export interface ControlledBodyState {
 export interface ControlState {
   thrustPercent: number;
   look: PilotLookState;
+  alignToVelocity: boolean;
 }
 
 /**
