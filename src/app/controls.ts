@@ -4,7 +4,7 @@ import type {
   ControlInput,
   PilotLookState,
 } from "./appInternals.js";
-import type { LocalFrame } from "../domain/domainPorts.js";
+import type { LocalFrame, Vec3 } from "../domain/domainPorts.js";
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 
@@ -178,6 +178,11 @@ export function getSignedThrustPercent(
  *
  * where thrustPercent ∈ [-1, 1] and is chosen from discrete levels
  * depending on Space/B and numeric thrust keys.
+ *
+ * When braking (negative thrustPercent), the component of velocity along
+ * the ship's forward axis is clamped so that it does not reverse: once it
+ * reaches zero, further braking thrust will not push the ship back the
+ * other way along that axis.
  */
 export function applyThrustToVelocity(
   dtSeconds: number,
@@ -193,7 +198,33 @@ export function applyThrustToVelocity(
   const f = body.frame.forward;
   const accelMagnitude = maxThrustAcceleration * thrustPercent;
 
+  // Proposed change in velocity from thrust alone.
   const dv = vec3.scale(f, accelMagnitude * dtSeconds);
+
+  if (thrustPercent < 0) {
+    // Braking: ensure we do not overshoot and reverse the component of
+    // velocity along the forward axis. Instead, clamp that component to 0
+    // when it would cross through zero.
+    const v = body.velocity;
+
+    const vForward = vec3.dot(v, f);
+    const dvForward = vec3.dot(dv, f);
+    const newVForward = vForward + dvForward;
+
+    // If braking would cross zero along forward, clamp that component.
+    if (vForward > 0 && newVForward < 0) {
+      const vPerp: Vec3 = {
+        x: v.x - f.x * vForward,
+        y: v.y - f.y * vForward,
+        z: v.z - f.z * vForward,
+      };
+
+      // No forward component after braking: speed along forward axis is zero.
+      body.velocity = vPerp;
+      return;
+    }
+  }
+
   body.velocity.x += dv.x;
   body.velocity.y += dv.y;
   body.velocity.z += dv.z;
