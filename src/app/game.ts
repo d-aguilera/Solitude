@@ -283,7 +283,7 @@ function integrateForcesAndGravity(
     return;
   }
 
-  // 1) Apply thrust to the main ship's body velocity in gravityState.
+  // 1) Apply thrust to the main ship's body velocity inside gravityState.
   const controlledShip = getShipById(world, mainShipId);
 
   const shipBody = gravityState.bodies[mainShipBodyIndex];
@@ -297,13 +297,8 @@ function integrateForcesAndGravity(
 
   shipBody.velocity = bodyState.velocity;
 
-  // 2) Step gravity (pure domain: updates velocities and returns new positions).
-  const domainWorld: DomainWorld = world;
-  const { nextState, positions } = gravityEngine.step(
-    gravityDt,
-    domainWorld,
-    gravityState,
-  );
+  // 2) Step gravity (pure domain: updates velocities and positions).
+  const { nextState, positions } = gravityEngine.step(gravityDt, gravityState);
 
   gravityState = nextState;
 

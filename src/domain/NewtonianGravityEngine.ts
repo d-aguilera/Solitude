@@ -1,8 +1,6 @@
 import { NEWTON_G, SOFTENING_LENGTH } from "./domainInternals.js";
 import type {
   BodyState,
-  DomainWorld,
-  GravityBodyBinding,
   GravityEngine,
   GravityState,
   Vec3,
@@ -15,27 +13,21 @@ import { vec3 } from "./vec3.js";
 export class NewtonianGravityEngine implements GravityEngine {
   /**
    * Advance gravity simulation by dtSeconds, returning a new GravityState
-   * and updated positions for each binding.
+   * and updated positions for each body.
    */
   step(
     dtSeconds: number,
-    world: DomainWorld,
     state: GravityState,
   ): { nextState: GravityState; positions: Vec3[] } {
     if (dtSeconds <= 0) {
-      return { nextState: state, positions: [] };
+      return { nextState: state, positions: state.positions };
     }
 
     const bodies = state.bodies;
+    const positions = state.positions;
     const n = bodies.length;
     if (n === 0) {
-      return { nextState: state, positions: [] };
-    }
-
-    const bindings = state.bindings;
-    const positions: Vec3[] = new Array(n);
-    for (let i = 0; i < n; i++) {
-      positions[i] = this.getPositionFromBinding(world, bindings[i]);
+      return { nextState: state, positions };
     }
 
     const accelerations = this.computeGravityAccelerations(bodies, positions);
@@ -54,48 +46,11 @@ export class NewtonianGravityEngine implements GravityEngine {
     return {
       nextState: {
         bodies: nextBodies,
-        bindings,
+        bindings: state.bindings,
+        positions: nextPositions,
       },
       positions: nextPositions,
     };
-  }
-
-  getPositionFromBinding(
-    world: DomainWorld,
-    binding: GravityBodyBinding,
-  ): Vec3 {
-    switch (binding.kind) {
-      case "ship":
-        return world.shipBodies[binding.shipIndex].position;
-      case "planet":
-        return world.planets[binding.planetIndex].position;
-      case "star":
-        return world.stars[binding.starIndex].position;
-    }
-  }
-
-  setPositionFromBinding(
-    world: DomainWorld,
-    binding: GravityBodyBinding,
-    pos: Vec3,
-  ): void {
-    switch (binding.kind) {
-      case "ship": {
-        const p = world.shipBodies[binding.shipIndex];
-        p.position = pos;
-        break;
-      }
-      case "planet": {
-        const b = world.planets[binding.planetIndex];
-        b.position = pos;
-        break;
-      }
-      case "star": {
-        const b = world.stars[binding.starIndex];
-        b.position = pos;
-        break;
-      }
-    }
   }
 
   /**

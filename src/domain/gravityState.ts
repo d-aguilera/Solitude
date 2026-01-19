@@ -3,15 +3,22 @@ import type {
   DomainWorld,
   GravityBodyBinding,
   GravityState,
+  Vec3,
 } from "./domainPorts";
 
 /**
  * Create a brand-new GravityState from the current world contents.
  * Call this once at setup time, or if entities are added/removed.
+ *
+ * The resulting GravityState contains:
+ *  - bindings that associate each gravity body with a world entity
+ *  - bodies with mass and velocity
+ *  - positions array with the current world positions
  */
 export function buildInitialGravityState(world: DomainWorld): GravityState {
   const bindings = buildGravityBindings(world);
   const bodies: BodyState[] = [];
+  const positions: Vec3[] = [];
 
   const shipMass = 5e4;
 
@@ -23,6 +30,7 @@ export function buildInitialGravityState(world: DomainWorld): GravityState {
       mass: shipMass,
       velocity: { ...ship.velocity },
     });
+    positions.push({ ...ship.position });
   }
 
   // Planets
@@ -36,6 +44,7 @@ export function buildInitialGravityState(world: DomainWorld): GravityState {
       mass: physics.mass,
       velocity: { ...body.velocity },
     });
+    positions.push({ ...body.position });
   }
 
   // Stars
@@ -49,9 +58,10 @@ export function buildInitialGravityState(world: DomainWorld): GravityState {
       mass: physics.mass,
       velocity: { ...body.velocity },
     });
+    positions.push({ ...body.position });
   }
 
-  return { bodies, bindings };
+  return { bodies, bindings, positions };
 }
 
 function buildGravityBindings(world: DomainWorld): GravityBodyBinding[] {

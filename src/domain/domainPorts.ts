@@ -55,20 +55,22 @@ export interface GravityBodyBinding {
  * Domain-level abstraction for gravitational integration.
  *
  * Implementations stay port-pure: they do not know about rendering,
- * input, or adapter-level types.
+ * input, or adapter- or world-level types.
+ *
+ * The engine operates purely on a GravityState and returns updated
+ * velocities and positions for each body.
  */
 export interface GravityEngine {
   /**
    * Advance gravity simulation by dtSeconds, returning a new GravityState
-   * and updated positions for each binding.
+   * and updated positions for each body.
    *
    * Implementations must be side‑effect free with respect to the passed
-   * DomainWorld and GravityState. Adapter layers are responsible for
-   * writing positions back into their own world representations.
+   * GravityState. Adapter layers are responsible for writing positions
+   * back into their own world representations.
    */
   step(
     dtSeconds: number,
-    world: DomainWorld,
     state: GravityState,
   ): { nextState: GravityState; positions: Vec3[] };
 }
@@ -79,6 +81,7 @@ export interface GravityEngine {
 export interface GravityState {
   bodies: BodyState[];
   bindings: GravityBodyBinding[];
+  positions: Vec3[];
 }
 
 export interface LocalFrame {
