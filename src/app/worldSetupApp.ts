@@ -22,6 +22,7 @@ import {
 } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { shipModel, generatePlanetMesh } from "../domain/models.js";
+import { circularSpeedAtRadius } from "../domain/phys.js";
 import { buildDefaultSolarSystemConfigs } from "../domain/solarSystem.js";
 import { trig } from "../domain/trig.js";
 import { vec3 } from "../domain/vec3.js";
@@ -308,9 +309,20 @@ function computeShipStartPosFromPlanet(
   return vec3.add(planetObj.position, offset);
 }
 
+/**
+ * Compute an initial heliocentric velocity for the ship that corresponds
+ * to a near-circular orbit around Earth at the given start position.
+ *
+ * The result is:
+ *   v_ship = v_earth + v_rel
+ *
+ * where v_rel is perpendicular to the Earth→ship radial direction and
+ * has the circular speed for an orbit around Earth's mass at that radius.
+ */
 function computeShipInitialNearEarthOrbitVelocity(
   shipStartPos: Vec3,
   earthObj: PlanetSceneObject,
+  earthPhys: PlanetPhysics,
 ): Vec3 {
   // Earth heliocentric velocity: dominant motion
   const vEarth = vec3.clone(earthObj.initialVelocity);
@@ -326,7 +338,10 @@ function computeShipInitialNearEarthOrbitVelocity(
 
   const radialDir = vec3.scale(offset, 1 / r);
 
-  // Build a small tangential component around Earth, perpendicular to radialDir.
+  // Local circular orbital speed around Earth at this radius.
+  const vRelMag = circularSpeedAtRadius(earthPhys.mass, r);
+
+  // Build a tangential direction around Earth, perpendicular to radialDir.
   // Use Earth's current orbital direction as a reference, projected to be orthogonal.
   const earthDir = vec3.normalize(vEarth);
   const tangentialUnnormalized = vec3.sub(
@@ -338,11 +353,9 @@ function computeShipInitialNearEarthOrbitVelocity(
       ? vec3.normalize(tangentialUnnormalized)
       : earthDir;
 
-  // Choose a modest orbital speed relative to Earth.
-  const vRelMag = 3_000; // m/s
   const vRel = vec3.scale(tangentialDir, vRelMag);
 
-  // Total: Earth's heliocentric velocity + small relative orbital component.
+  // Total: Earth's heliocentric velocity + local orbital component.
   return vec3.add(vEarth, vRel);
 }
 
@@ -388,9 +401,12 @@ export function createInitialSceneAndWorld(): {
     throw new Error(`Home planet scene object not found: ${homePlanetId}`);
   }
 
+  const earthPhys = getPlanetPhysicsById(world.planetPhysics, homePlanetId);
+
   const shipInitialVelocity = computeShipInitialNearEarthOrbitVelocity(
     shipStartPos,
     earthObj,
+    earthPhys,
   );
 
   const mainShip = createInitialShip(
@@ -495,4 +511,15 @@ function buildLightsFromStars(world: AppWorld, scene: Scene): void {
  */
 export function syncLightsToStars(world: AppWorld, scene: Scene): void {
   buildLightsFromStars(world, scene);
+}
+
+function getPlanetPhysicsById(
+  planetPhysics: PlanetPhysics[],
+  id: string,
+): PlanetPhysics {
+  const phys = planetPhysics.find((p) => p.id === id);
+  if (!phys) {
+    throw new Error(`PlanetPhysics not found: ${id}`);
+  }
+  return phys;
 }
