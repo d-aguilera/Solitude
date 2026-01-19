@@ -2,7 +2,7 @@ import type {
   BodyId,
   DomainCameraPose,
   DomainWorld,
-  PlaneBody,
+  ShipBody,
   StarPhysics,
 } from "./domainPorts.js";
 
@@ -23,8 +23,8 @@ export function getDomainCameraById(
   return getById(world.cameras, id, "Camera");
 }
 
-export function getPlaneBodyById(world: DomainWorld, id: BodyId): PlaneBody {
-  return getById(world.planeBodies, id, "PlaneBody");
+export function getShipBodyById(world: DomainWorld, id: BodyId): ShipBody {
+  return getById(world.shipBodies, id, "ShipBody");
 }
 
 export function getStarPhysicsById(

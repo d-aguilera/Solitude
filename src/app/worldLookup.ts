@@ -1,4 +1,4 @@
-import type { AppWorld, Plane } from "./appInternals.js";
+import type { AppWorld, Ship } from "./appInternals.js";
 import type { BodyId } from "../domain/domainPorts.js";
 
 function getById<T extends { id: BodyId }>(
@@ -11,6 +11,6 @@ function getById<T extends { id: BodyId }>(
   return obj;
 }
 
-export function getPlaneById(world: AppWorld, id: BodyId): Plane {
-  return getById(world.planeBodies, id, "Plane");
+export function getShipById(world: AppWorld, id: BodyId): Ship {
+  return getById(world.shipBodies, id, "Ship");
 }

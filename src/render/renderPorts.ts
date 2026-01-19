@@ -54,9 +54,9 @@ export interface Renderer {
 }
 
 /**
- * Adapter-level plane DTO used for debug overlays.
+ * Adapter-level ship DTO used for debug overlays.
  */
-export interface RenderPlane {
+export interface RenderShip {
   id: string;
   position: Vec3;
   velocity: Vec3;
@@ -97,7 +97,7 @@ export interface ViewDebugOverlay<TContext = OverlayBody[]> {
  * Rendering adapter for debug overlays on a view.
  */
 export interface ViewDebugOverlayRenderer {
-  drawPlaneVelocityLine(
+  drawShipVelocityLine(
     segments: {
       start: ScreenPoint;
       end: ScreenPoint;

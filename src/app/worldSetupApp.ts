@@ -1,4 +1,4 @@
-import type { AppWorld, Plane } from "./appInternals.js";
+import type { AppWorld, Ship } from "./appInternals.js";
 import type {
   PlanetBodyConfig,
   StarBodyConfig,
@@ -21,7 +21,7 @@ import {
   rotateFrameAroundAxis,
 } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
-import { airplaneModel, generatePlanetMesh } from "../domain/models.js";
+import { shipModel, generatePlanetMesh } from "../domain/models.js";
 import { buildDefaultSolarSystemConfigs } from "../domain/solarSystem.js";
 import { trig } from "../domain/trig.js";
 import { vec3 } from "../domain/vec3.js";
@@ -30,18 +30,18 @@ import type { SceneObject } from "../appScene/appScenePorts.js";
 import type { Scene } from "../appScene/appScenePorts.js";
 import type { StarSceneObject } from "../appScene/appScenePorts.js";
 import type { PlanetSceneObject } from "../appScene/appScenePorts.js";
-import type { AirplaneSceneObject } from "../appScene/appScenePorts.js";
+import type { ShipSceneObject } from "../appScene/appScenePorts.js";
 import type { PolylineSceneObject } from "../appScene/appScenePorts.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
 const initialForward: Vec3 = initialFrame.forward;
 
-function createInitialPlane(
+function createInitialShip(
   id: string,
   position: Vec3,
   initialVelocity: Vec3,
-): Plane {
+): Ship {
   const speed = vec3.length(initialVelocity);
 
   let frame: LocalFrame = initialFrame;
@@ -92,35 +92,35 @@ function createInitialPlane(
   };
 }
 
-function createInitialTopCamera(id: string, plane: Plane): DomainCameraPose {
+function createInitialTopCamera(id: string, ship: Ship): DomainCameraPose {
   const offset: Vec3 = { x: 0, y: 0, z: 50 };
 
   return {
     id,
-    position: vec3.add(plane.position, offset),
+    position: vec3.add(ship.position, offset),
     frame: initialFrame,
   };
 }
 
-function createInitialPilotCamera(id: string, plane: Plane): DomainCameraPose {
+function createInitialPilotCamera(id: string, ship: Ship): DomainCameraPose {
   return {
     id,
-    position: { ...plane.position }, // will be offset in game loop
+    position: { ...ship.position }, // will be offset in game loop
     frame: initialFrame,
   };
 }
 
-const AIRPLANE_VISUAL_SCALE = 15;
+const SHIP_VISUAL_SCALE = 15;
 
-function addAirplaneObject(plane: Plane, objects: SceneObject[]): void {
-  const obj: AirplaneSceneObject = {
-    id: plane.id,
-    kind: "airplane",
-    mesh: airplaneModel,
-    position: { ...plane.position },
-    orientation: mat3FromLocalFrame(plane.frame),
-    scale: AIRPLANE_VISUAL_SCALE,
-    color: colors.airplane,
+function addShipObject(ship: Ship, objects: SceneObject[]): void {
+  const obj: ShipSceneObject = {
+    id: ship.id,
+    kind: "ship",
+    mesh: shipModel,
+    position: { ...ship.position },
+    orientation: mat3FromLocalFrame(ship.frame),
+    scale: SHIP_VISUAL_SCALE,
+    color: colors.ship,
     lineWidth: 1,
     applyTransform: true,
     wireframeOnly: false,
@@ -179,7 +179,7 @@ function addPlanetsAndStarsFromConfig(
 ): void {
   const bodyMeshTemplate: Mesh = generatePlanetMesh(3);
 
-  // Define an orbital plane via two basis vectors:
+  // Define an orbital ship via two basis vectors:
   const radialAxis1 = vec3.normalize(initialForward);
   const radialAxis2 = vec3.normalize(initialUp);
 
@@ -284,7 +284,7 @@ function addPlanetsAndStarsFromConfig(
 // 100 km above Earth's north pole
 const PLANE_START_ALTITUDE_M = 10_000_000; // meters
 
-function computePlaneStartPosFromPlanet(
+function computeShipStartPosFromPlanet(
   objects: SceneObject[],
   planetId: string,
 ): Vec3 {
@@ -308,16 +308,16 @@ function computePlaneStartPosFromPlanet(
   return vec3.add(planetObj.position, offset);
 }
 
-function computePlaneInitialNearEarthOrbitVelocity(
-  planeStartPos: Vec3,
+function computeShipInitialNearEarthOrbitVelocity(
+  shipStartPos: Vec3,
   earthObj: PlanetSceneObject,
 ): Vec3 {
   // Earth heliocentric velocity: dominant motion
   const vEarth = vec3.clone(earthObj.initialVelocity);
 
-  // Radial offset Earth -> plane
+  // Radial offset Earth -> ship
   const earthCenter = earthObj.position;
-  const offset = vec3.sub(planeStartPos, earthCenter);
+  const offset = vec3.sub(shipStartPos, earthCenter);
   const r = vec3.length(offset);
   if (r === 0) {
     // Fallback: just use Earth's velocity
@@ -349,7 +349,7 @@ function computePlaneInitialNearEarthOrbitVelocity(
 export function createInitialSceneAndWorld(): {
   scene: Scene;
   world: AppWorld;
-  mainPlaneId: string;
+  mainShipId: string;
   topCameraId: string;
   pilotCameraId: string;
   planetPathMappings: PlanetPathMapping[];
@@ -357,7 +357,7 @@ export function createInitialSceneAndWorld(): {
   const objects: SceneObject[] = [];
 
   const world: AppWorld = {
-    planeBodies: [],
+    shipBodies: [],
     cameras: [],
     planets: [],
     planetPhysics: [],
@@ -378,7 +378,7 @@ export function createInitialSceneAndWorld(): {
 
   // Choose which planet is treated as the "home" / starting planet.
   const homePlanetId = "planet:earth";
-  const planeStartPos = computePlaneStartPosFromPlanet(objects, homePlanetId);
+  const shipStartPos = computeShipStartPosFromPlanet(objects, homePlanetId);
 
   // Find Earth's scene object
   const earthObj = objects.find(
@@ -388,35 +388,35 @@ export function createInitialSceneAndWorld(): {
     throw new Error(`Home planet scene object not found: ${homePlanetId}`);
   }
 
-  const planeInitialVelocity = computePlaneInitialNearEarthOrbitVelocity(
-    planeStartPos,
+  const shipInitialVelocity = computeShipInitialNearEarthOrbitVelocity(
+    shipStartPos,
     earthObj,
   );
 
-  const mainPlane = createInitialPlane(
-    "plane:main",
-    planeStartPos,
-    planeInitialVelocity,
+  const mainShip = createInitialShip(
+    "ship:main",
+    shipStartPos,
+    shipInitialVelocity,
   );
 
-  world.planeBodies.push(mainPlane);
+  world.shipBodies.push(mainShip);
 
-  // Add the airplane visual object at that position
-  addAirplaneObject(mainPlane, objects);
+  // Add the ship visual object at that position
+  addShipObject(mainShip, objects);
 
-  const mainPlanePath = createPolylineSceneObject(
-    "path:plane:main",
+  const mainShipPath = createPolylineSceneObject(
+    "path:ship:main",
     colors.yellow,
   );
-  objects.push(mainPlanePath);
+  objects.push(mainShipPath);
 
   const scene: Scene = {
     objects,
     lights: [],
   };
 
-  const topCamera = createInitialTopCamera("camera:top", mainPlane);
-  const pilotCamera = createInitialPilotCamera("camera:pilot", mainPlane);
+  const topCamera = createInitialTopCamera("camera:top", mainShip);
+  const pilotCamera = createInitialPilotCamera("camera:pilot", mainShip);
 
   world.cameras.push(topCamera, pilotCamera);
 
@@ -432,21 +432,21 @@ export function createInitialSceneAndWorld(): {
   return {
     scene,
     world,
-    mainPlaneId: mainPlane.id,
+    mainShipId: mainShip.id,
     topCameraId: topCamera.id,
     pilotCameraId: pilotCamera.id,
     planetPathMappings,
   };
 }
 
-export function syncPlanesToSceneObjects(world: AppWorld, scene: Scene): void {
-  for (const plane of world.planeBodies) {
-    const obj = scene.objects.find((o) => o.id === plane.id);
+export function syncShipsToSceneObjects(world: AppWorld, scene: Scene): void {
+  for (const ship of world.shipBodies) {
+    const obj = scene.objects.find((o) => o.id === ship.id);
     if (!obj) continue;
 
-    // Keep renderer-facing pose in sync with physics plane.
-    obj.position = plane.position;
-    obj.orientation = mat3FromLocalFrame(plane.frame);
+    // Keep renderer-facing pose in sync with physics ship.
+    obj.position = ship.position;
+    obj.orientation = mat3FromLocalFrame(ship.frame);
   }
 }
 

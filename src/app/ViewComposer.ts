@@ -1,8 +1,8 @@
 import { getDomainCameraById } from "../domain/worldLookup.js";
 import { ViewController } from "../projection/ViewController.js";
 import { ViewConfig } from "../render/ViewConfig.js";
-import type { RenderPlane } from "../render/renderPorts.js";
-import type { Plane, AppWorld } from "./appInternals.js";
+import type { RenderShip } from "../render/renderPorts.js";
+import type { Ship, AppWorld } from "./appInternals.js";
 import type { DrawMode } from "./appPorts.js";
 
 /**
@@ -10,40 +10,40 @@ import type { DrawMode } from "./appPorts.js";
  * for different viewpoints (pilot, top, etc.).
  *
  * Responsibilities:
- *  - Mapping AppWorld cameras and planes into render-layer DTOs
+ *  - Mapping AppWorld cameras and ships into render-layer DTOs
  *  - Delegating projection-specific work to ViewController
  */
 export class ViewComposer {
   /**
-   * Convert an app-layer Plane into the minimal RenderPlane DTO.
+   * Convert an app-layer Ship into the minimal RenderShip DTO.
    */
-  private toRenderPlane(plane: Plane): RenderPlane {
+  private toRenderShip(ship: Ship): RenderShip {
     return {
-      id: plane.id,
-      position: plane.position,
-      velocity: plane.velocity,
+      id: ship.id,
+      position: ship.position,
+      velocity: ship.velocity,
     };
   }
 
   /**
-   * Build the pilot view configuration for the given camera and reference plane.
+   * Build the pilot view configuration for the given camera and reference ship.
    */
   buildPilotView(
     world: AppWorld,
     cameraId: string,
-    referencePlane: Plane,
+    referenceShip: Ship,
     drawMode: DrawMode,
     canvasWidth: number,
     canvasHeight: number,
   ): ViewConfig {
     const camera = getDomainCameraById(world, cameraId);
-    const plane = this.toRenderPlane(referencePlane);
+    const ship = this.toRenderShip(referenceShip);
 
     const controller = new ViewController({
       pose: camera,
       canvasWidth,
       canvasHeight,
-      referencePlane: plane,
+      referenceShip: ship,
       drawMode,
     });
 
@@ -51,24 +51,24 @@ export class ViewComposer {
   }
 
   /**
-   * Build the top view configuration for the given camera and reference plane.
+   * Build the top view configuration for the given camera and reference ship.
    */
   buildTopView(
     world: AppWorld,
     cameraId: string,
-    referencePlane: Plane,
+    referenceShip: Ship,
     drawMode: DrawMode,
     canvasWidth: number,
     canvasHeight: number,
   ): ViewConfig {
     const camera = getDomainCameraById(world, cameraId);
-    const plane = this.toRenderPlane(referencePlane);
+    const ship = this.toRenderShip(referenceShip);
 
     const controller = new ViewController({
       pose: camera,
       canvasWidth,
       canvasHeight,
-      referencePlane: plane,
+      referenceShip: ship,
       drawMode,
     });
 

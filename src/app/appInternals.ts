@@ -1,7 +1,7 @@
 import type {
   DomainWorld,
   LocalFrame,
-  PlaneBody,
+  ShipBody,
   Vec3,
 } from "../domain/domainPorts.js";
 
@@ -9,7 +9,7 @@ import type {
  * Adapter-level world state used by the app and renderer.
  */
 export interface AppWorld extends DomainWorld {
-  planeBodies: Plane[];
+  shipBodies: Ship[];
 }
 
 export interface ControlInput {
@@ -71,9 +71,9 @@ export interface PilotLookState {
 }
 
 /**
- * Plane adapter type extends the domain PlaneBody with derived speed
+ * Ship adapter type extends the domain ShipBody with derived speed
  * for HUD/debug overlays.
  */
-export interface Plane extends PlaneBody {
+export interface Ship extends ShipBody {
   speed: number;
 }

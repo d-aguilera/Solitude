@@ -3,12 +3,12 @@ import type { DomainCameraPose, Vec3 } from "../domain/domainPorts.js";
 import { ProjectionService } from "../scene/ProjectionService.js";
 import type { Camera, NdcPoint } from "../scene/scenePorts.js";
 import type {
-  RenderPlane,
+  RenderShip,
   ViewDebugOverlay,
   ViewDebugOverlayRenderer,
   OverlayBody,
 } from "../render/renderPorts.js";
-import { drawPlaneVelocityLine, drawBodyLabels } from "./debugDraw.js";
+import { drawShipVelocityLine, drawBodyLabels } from "./debugDraw.js";
 
 /**
  * Adapter-level controller for a concrete rendered view.
@@ -21,7 +21,7 @@ import { drawPlaneVelocityLine, drawBodyLabels } from "./debugDraw.js";
 export class ViewController {
   private readonly projectionService: ProjectionService;
   private readonly camera: Camera;
-  private readonly referencePlane: RenderPlane;
+  private readonly referenceShip: RenderShip;
   private readonly drawMode: DrawMode;
   private readonly debugOverlay: ViewDebugOverlay<OverlayBody[]>;
   private readonly width: number;
@@ -31,11 +31,10 @@ export class ViewController {
     pose: DomainCameraPose;
     canvasWidth: number;
     canvasHeight: number;
-    referencePlane: RenderPlane;
+    referenceShip: RenderShip;
     drawMode: DrawMode;
   }) {
-    const { pose, canvasWidth, canvasHeight, referencePlane, drawMode } =
-      params;
+    const { pose, canvasWidth, canvasHeight, referenceShip, drawMode } = params;
 
     this.projectionService = new ProjectionService(
       {
@@ -51,17 +50,17 @@ export class ViewController {
       frame: pose.frame,
     };
 
-    this.referencePlane = referencePlane;
+    this.referenceShip = referenceShip;
     this.drawMode = drawMode;
     this.width = canvasWidth;
     this.height = canvasHeight;
 
     this.debugOverlay = {
       draw: (overlay: ViewDebugOverlayRenderer, bodies: OverlayBody[]) => {
-        drawPlaneVelocityLine(
+        drawShipVelocityLine(
           overlay,
           (p: Vec3) => this.project(p),
-          this.referencePlane,
+          this.referenceShip,
           this.width,
           this.height,
         );
@@ -69,7 +68,7 @@ export class ViewController {
           overlay,
           (p: Vec3) => this.project(p),
           bodies,
-          this.referencePlane.position,
+          this.referenceShip.position,
           this.width,
           this.height,
         );

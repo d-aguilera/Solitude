@@ -3,7 +3,7 @@ import { vec3 } from "../domain/vec3.js";
 import { ndcToScreen } from "../render/ndcToScreen.js";
 import type {
   OverlayBody,
-  RenderPlane,
+  RenderShip,
   ViewDebugOverlayRenderer,
 } from "../render/renderPorts.js";
 import type { NdcPoint } from "../scene/scenePorts.js";
@@ -21,15 +21,15 @@ interface VelocityDebugSegment {
 
 /**
  * Pure helper that computes the world-space line segments representing
- * a plane's velocity direction.
+ * a ship's velocity direction.
  */
-function getPlaneVelocitySegments(plane: RenderPlane): VelocityDebugSegment[] {
-  const v = plane.velocity;
+function getShipVelocitySegments(ship: RenderShip): VelocityDebugSegment[] {
+  const v = ship.velocity;
   const speed = vec3.length(v);
   if (speed === 0) return [];
 
   const dir = vec3.normalize(v);
-  const center = plane.position;
+  const center = ship.position;
 
   const len = 5000; // meters
   const innerRadius = 8; // meters
@@ -47,14 +47,14 @@ function getPlaneVelocitySegments(plane: RenderPlane): VelocityDebugSegment[] {
   ];
 }
 
-export function drawPlaneVelocityLine(
+export function drawShipVelocityLine(
   overlay: ViewDebugOverlayRenderer,
   project: ProjectFn,
-  plane: RenderPlane,
+  ship: RenderShip,
   surfaceWidth: number,
   surfaceHeight: number,
 ): void {
-  const segments = getPlaneVelocitySegments(plane);
+  const segments = getShipVelocitySegments(ship);
   if (segments.length === 0) return;
 
   const overlaySegments = [];
@@ -75,7 +75,7 @@ export function drawPlaneVelocityLine(
   }
 
   if (overlaySegments.length > 0) {
-    overlay.drawPlaneVelocityLine(overlaySegments);
+    overlay.drawShipVelocityLine(overlaySegments);
   }
 }
 

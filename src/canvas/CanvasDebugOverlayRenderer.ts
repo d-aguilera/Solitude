@@ -9,7 +9,7 @@ import type {
 export class CanvasDebugOverlayRenderer implements ViewDebugOverlayRenderer {
   constructor(private readonly ctx: CanvasRenderingContext2D) {}
 
-  drawPlaneVelocityLine(
+  drawShipVelocityLine(
     segments: {
       start: ScreenPoint;
       end: ScreenPoint;

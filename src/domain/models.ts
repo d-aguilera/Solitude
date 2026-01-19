@@ -1,7 +1,7 @@
 import type { Mesh, Vec3 } from "./domainPorts.js";
 import { vec3 } from "./vec3.js";
 
-export const airplaneModel: Mesh = {
+export const shipModel: Mesh = {
   points: [
     { x: 0, y: 0.5, z: 0 }, // 0: nose tip
     { x: 0, y: 0.2, z: 0.1 }, // 1: fuselage top center

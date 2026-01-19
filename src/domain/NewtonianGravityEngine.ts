@@ -28,13 +28,13 @@ export class NewtonianGravityEngine implements GravityEngine {
   buildGravityBindings(world: DomainWorld): GravityBodyBinding[] {
     const bindings: GravityBodyBinding[] = [];
 
-    // Planes
-    for (let i = 0; i < world.planeBodies.length; i++) {
-      const plane = world.planeBodies[i];
+    // Ships
+    for (let i = 0; i < world.shipBodies.length; i++) {
+      const ship = world.shipBodies[i];
       bindings.push({
-        id: plane.id,
-        kind: "plane",
-        planeIndex: i,
+        id: ship.id,
+        kind: "ship",
+        shipIndex: i,
         planetIndex: -1,
         starIndex: -1,
       });
@@ -46,7 +46,7 @@ export class NewtonianGravityEngine implements GravityEngine {
       bindings.push({
         id: planet.id,
         kind: "planet",
-        planeIndex: -1,
+        shipIndex: -1,
         planetIndex: i,
         starIndex: -1,
       });
@@ -58,7 +58,7 @@ export class NewtonianGravityEngine implements GravityEngine {
       bindings.push({
         id: star.id,
         kind: "star",
-        planeIndex: -1,
+        shipIndex: -1,
         planetIndex: -1,
         starIndex: i,
       });
@@ -72,8 +72,8 @@ export class NewtonianGravityEngine implements GravityEngine {
     binding: GravityBodyBinding,
   ): Vec3 {
     switch (binding.kind) {
-      case "plane":
-        return world.planeBodies[binding.planeIndex].position;
+      case "ship":
+        return world.shipBodies[binding.shipIndex].position;
       case "planet":
         return world.planets[binding.planetIndex].position;
       case "star":
@@ -87,8 +87,8 @@ export class NewtonianGravityEngine implements GravityEngine {
     pos: Vec3,
   ): void {
     switch (binding.kind) {
-      case "plane": {
-        const p = world.planeBodies[binding.planeIndex];
+      case "ship": {
+        const p = world.shipBodies[binding.shipIndex];
         p.position = pos;
         break;
       }
@@ -113,15 +113,15 @@ export class NewtonianGravityEngine implements GravityEngine {
     const bindings = this.buildGravityBindings(world);
     const bodies: BodyState[] = [];
 
-    const planeMass = 5e4;
+    const shipMass = 5e4;
 
-    // Planes
-    for (let i = 0; i < world.planeBodies.length; i++) {
-      const plane = world.planeBodies[i];
+    // Ships
+    for (let i = 0; i < world.shipBodies.length; i++) {
+      const ship = world.shipBodies[i];
       bodies.push({
-        id: plane.id,
-        mass: planeMass,
-        velocity: { ...plane.velocity },
+        id: ship.id,
+        mass: shipMass,
+        velocity: { ...ship.velocity },
       });
     }
 

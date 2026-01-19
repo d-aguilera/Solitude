@@ -18,7 +18,7 @@ export interface GameDependencies {
  */
 export interface HudRenderData {
   /**
-   * Speed in meters per second for the controlled plane.
+   * Speed in meters per second for the controlled ship.
    */
   speedMps: number;
   /**
@@ -30,7 +30,7 @@ export interface HudRenderData {
    */
   profilingEnabled: boolean;
   /**
-   * Pilot camera offset expressed in the plane's local frame.
+   * Pilot camera offset expressed in the ship's local frame.
    */
   pilotCameraLocalOffset: Vec3;
   /**

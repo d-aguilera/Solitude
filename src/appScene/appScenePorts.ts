@@ -1,12 +1,12 @@
 import type { Vec3, Mat3, Mesh, RGB } from "../domain/domainPorts";
 
-export type SceneObjectKind = "airplane" | "planet" | "polyline" | "star";
+export type SceneObjectKind = "ship" | "planet" | "polyline" | "star";
 
 /**
  * Base properties common to all scene objects used by renderers.
  */
-export interface AirplaneSceneObject extends SolidSceneObject {
-  kind: "airplane";
+export interface ShipSceneObject extends SolidSceneObject {
+  kind: "ship";
   backFaceCulling: false;
 }
 
@@ -63,7 +63,7 @@ export interface Scene {
  * Domain-level scene object union for rendering adapters.
  */
 export type SceneObject =
-  | AirplaneSceneObject
+  | ShipSceneObject
   | PlanetSceneObject
   | StarSceneObject
   | PolylineSceneObject;

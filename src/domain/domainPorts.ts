@@ -29,7 +29,7 @@ export interface DomainCameraPose {
  * the domain logic.
  */
 export interface DomainWorld {
-  planeBodies: PlaneBody[];
+  shipBodies: ShipBody[];
   cameras: DomainCameraPose[];
   planets: CelestialBody[];
   planetPhysics: PlanetPhysics[];
@@ -45,8 +45,8 @@ export interface DomainWorld {
  */
 export interface GravityBodyBinding {
   id: BodyId;
-  kind: "plane" | "planet" | "star";
-  planeIndex: number;
+  kind: "ship" | "planet" | "star";
+  shipIndex: number;
   planetIndex: number;
   starIndex: number;
 }
@@ -105,9 +105,9 @@ export interface Mesh {
 }
 
 /**
- * Domain-level airplane/ship body.
+ * Domain-level ship body.
  */
-export interface PlaneBody {
+export interface ShipBody {
   id: string;
   position: Vec3;
   frame: LocalFrame;

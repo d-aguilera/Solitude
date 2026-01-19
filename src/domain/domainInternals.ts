@@ -10,7 +10,7 @@ export const SOFTENING_LENGTH = 1.0;
 export const M_SUN = 1.98847e30; // kg
 
 export const colors: { [key: string]: RGB } = {
-  airplane: { r: 0, g: 255, b: 255 },
+  ship: { r: 0, g: 255, b: 255 },
   earth: { r: 80, g: 120, b: 255 },
   jupiter: { r: 220, g: 180, b: 120 },
   mars: { r: 255, g: 80, b: 50 },
