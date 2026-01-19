@@ -124,16 +124,18 @@ function updateThrustMagnitudeFromInput(
   input: ControlInput,
   state: ControlState,
 ): void {
-  if (input.thrust5)
+  if (input.thrust6)
     state.thrustPercent = 1.0; // 100%
-  else if (input.thrust4)
+  else if (input.thrust5)
     state.thrustPercent = 0.5; // 50%
-  else if (input.thrust3)
+  else if (input.thrust4)
     state.thrustPercent = 0.25; // 25%
-  else if (input.thrust2)
+  else if (input.thrust3)
     state.thrustPercent = 0.05; // 5%
-  else if (input.thrust1)
+  else if (input.thrust2)
     state.thrustPercent = 0.01; // 1%
+  else if (input.thrust1)
+    state.thrustPercent = 0.001; // 0.1%
   else if (input.thrust0) state.thrustPercent = 0; // 0%
 }
 

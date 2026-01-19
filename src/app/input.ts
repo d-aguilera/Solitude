@@ -11,6 +11,7 @@ type KeyCode =
   | "Digit3"
   | "Digit4"
   | "Digit5"
+  | "Digit6"
   | "KeyA"
   | "KeyB"
   | "KeyD"
@@ -44,6 +45,7 @@ const keys: KeyState = {
   Digit3: false,
   Digit4: false,
   Digit5: false,
+  Digit6: false,
   KeyA: false,
   KeyB: false,
   KeyD: false,
@@ -112,6 +114,7 @@ export function readControlInput(): ControlInput {
     thrust3: state.Digit3,
     thrust4: state.Digit4,
     thrust5: state.Digit5,
+    thrust6: state.Digit6,
     yawLeft: state.KeyQ,
     yawRight: state.KeyE,
     alignToVelocity: state.KeyV,

@@ -36,6 +36,7 @@ export interface ControlInput {
   thrust3: boolean;
   thrust4: boolean;
   thrust5: boolean;
+  thrust6: boolean;
   alignToVelocity: boolean;
 }
 
