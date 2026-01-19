@@ -25,6 +25,7 @@ import type {
   TickCallback,
 } from "./appPorts.js";
 import type { Scene } from "../appScene/appScenePorts.js";
+import { buildInitialGravityState } from "../domain/gravityState.js";
 import {
   applyThrustToVelocity,
   updateBodyOrientationFromInput,
@@ -92,7 +93,7 @@ export function startGame(deps: GameDependencies): TickCallback {
   planetPathMappings = x.planetPathMappings;
 
   const domainWorld = toDomainWorld(world);
-  gravityState = gravityEngine.buildInitialState(domainWorld);
+  gravityState = buildInitialGravityState(domainWorld);
 
   // Determine which gravity body corresponds to the main ship.
   mainShipBodyIndex = gravityState.bindings.findIndex(
@@ -278,7 +279,7 @@ function integrateForcesAndGravity(
   const gravityTimeScale = 10;
   const gravityDt = dtSeconds * gravityTimeScale;
 
-  if (gravityDt <= 0) {
+  if (gravityDt === 0) {
     return;
   }
 

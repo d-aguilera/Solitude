@@ -13,58 +13,51 @@ import { vec3 } from "./vec3.js";
  * Concrete GravityEngine using a Newtonian N-body implementation.
  */
 export class NewtonianGravityEngine implements GravityEngine {
-  buildInitialState(world: DomainWorld): GravityState {
-    return this.buildInitialGravityState(world);
-  }
-
+  /**
+   * Advance gravity simulation by dtSeconds, returning a new GravityState
+   * and updated positions for each binding.
+   */
   step(
     dtSeconds: number,
     world: DomainWorld,
     state: GravityState,
   ): { nextState: GravityState; positions: Vec3[] } {
-    return this.applyGravity(dtSeconds, world, state);
-  }
-
-  buildGravityBindings(world: DomainWorld): GravityBodyBinding[] {
-    const bindings: GravityBodyBinding[] = [];
-
-    // Ships
-    for (let i = 0; i < world.shipBodies.length; i++) {
-      const ship = world.shipBodies[i];
-      bindings.push({
-        id: ship.id,
-        kind: "ship",
-        shipIndex: i,
-        planetIndex: -1,
-        starIndex: -1,
-      });
+    if (dtSeconds <= 0) {
+      return { nextState: state, positions: [] };
     }
 
-    // Planets
-    for (let i = 0; i < world.planets.length; i++) {
-      const planet = world.planets[i];
-      bindings.push({
-        id: planet.id,
-        kind: "planet",
-        shipIndex: -1,
-        planetIndex: i,
-        starIndex: -1,
-      });
+    const bodies = state.bodies;
+    const n = bodies.length;
+    if (n === 0) {
+      return { nextState: state, positions: [] };
     }
 
-    // Stars
-    for (let i = 0; i < world.stars.length; i++) {
-      const star = world.stars[i];
-      bindings.push({
-        id: star.id,
-        kind: "star",
-        shipIndex: -1,
-        planetIndex: -1,
-        starIndex: i,
-      });
+    const bindings = state.bindings;
+    const positions: Vec3[] = new Array(n);
+    for (let i = 0; i < n; i++) {
+      positions[i] = this.getPositionFromBinding(world, bindings[i]);
     }
 
-    return bindings;
+    const accelerations = this.computeGravityAccelerations(bodies, positions);
+    const nextBodies = this.integrateBodyVelocities(
+      bodies,
+      accelerations,
+      dtSeconds,
+    );
+
+    const nextPositions = this.integrateBodyPositions(
+      nextBodies,
+      positions,
+      dtSeconds,
+    );
+
+    return {
+      nextState: {
+        bodies: nextBodies,
+        bindings,
+      },
+      positions: nextPositions,
+    };
   }
 
   getPositionFromBinding(
@@ -103,55 +96,6 @@ export class NewtonianGravityEngine implements GravityEngine {
         break;
       }
     }
-  }
-
-  /**
-   * Create a brand-new GravityState from the current world contents.
-   * Call this once at setup time, or if entities are added/removed.
-   */
-  buildInitialGravityState(world: DomainWorld): GravityState {
-    const bindings = this.buildGravityBindings(world);
-    const bodies: BodyState[] = [];
-
-    const shipMass = 5e4;
-
-    // Ships
-    for (let i = 0; i < world.shipBodies.length; i++) {
-      const ship = world.shipBodies[i];
-      bodies.push({
-        id: ship.id,
-        mass: shipMass,
-        velocity: { ...ship.velocity },
-      });
-    }
-
-    // Planets
-    for (let i = 0; i < world.planets.length; i++) {
-      const body = world.planets[i];
-      const physics = world.planetPhysics.find((p) => p.id === body.id);
-      if (!physics) continue;
-
-      bodies.push({
-        id: body.id,
-        mass: physics.mass,
-        velocity: { ...body.velocity },
-      });
-    }
-
-    // Stars
-    for (let i = 0; i < world.stars.length; i++) {
-      const body = world.stars[i];
-      const physics = world.starPhysics.find((p) => p.id === body.id);
-      if (!physics) continue;
-
-      bodies.push({
-        id: body.id,
-        mass: physics.mass,
-        velocity: { ...body.velocity },
-      });
-    }
-
-    return { bodies, bindings };
   }
 
   /**
@@ -239,52 +183,5 @@ export class NewtonianGravityEngine implements GravityEngine {
     }
 
     return nextPositions;
-  }
-
-  /**
-   * Orchestrates gravitational integration for one timestep, without mutating
-   * the provided DomainWorld.
-   */
-  applyGravity(
-    dtSeconds: number,
-    world: DomainWorld,
-    gravity: GravityState,
-  ): { nextState: GravityState; positions: Vec3[] } {
-    if (dtSeconds <= 0) {
-      return { nextState: gravity, positions: [] };
-    }
-
-    const bodies = gravity.bodies;
-    const bindings = gravity.bindings;
-    const n = bodies.length;
-    if (n === 0) {
-      return { nextState: gravity, positions: [] };
-    }
-
-    const positions: Vec3[] = new Array(n);
-    for (let i = 0; i < n; i++) {
-      positions[i] = this.getPositionFromBinding(world, bindings[i]);
-    }
-
-    const accelerations = this.computeGravityAccelerations(bodies, positions);
-    const nextBodies = this.integrateBodyVelocities(
-      bodies,
-      accelerations,
-      dtSeconds,
-    );
-
-    const nextPositions = this.integrateBodyPositions(
-      nextBodies,
-      positions,
-      dtSeconds,
-    );
-
-    return {
-      nextState: {
-        bodies: nextBodies,
-        bindings,
-      },
-      positions: nextPositions,
-    };
   }
 }

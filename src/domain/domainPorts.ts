@@ -59,11 +59,6 @@ export interface GravityBodyBinding {
  */
 export interface GravityEngine {
   /**
-   * Build an immutable GravityState snapshot from the given DomainWorld.
-   */
-  buildInitialState(world: DomainWorld): GravityState;
-
-  /**
    * Advance gravity simulation by dtSeconds, returning a new GravityState
    * and updated positions for each binding.
    *
