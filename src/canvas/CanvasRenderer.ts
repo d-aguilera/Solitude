@@ -6,6 +6,7 @@ import type {
   SceneObject,
 } from "../appScene/appScenePorts.js";
 import type { Profiler } from "../domain/domainPorts.js";
+import type { ViewController } from "../projection/ViewController.js";
 import { ndcToScreen } from "../render/ndcToScreen.js";
 import type {
   OverlayBody,
@@ -99,7 +100,7 @@ export class CanvasRenderer implements Renderer {
       objects: SceneObject[];
       lights: PointLight[];
       frameId: number;
-      controller: import("../projection/ViewController.js").ViewController;
+      controller: ViewController;
     },
   ): void {
     const { width, height } = surface;
@@ -146,7 +147,7 @@ export class CanvasRenderer implements Renderer {
   private drawMeshPolylinesWorldSpace(
     surface: RenderSurface2D,
     objects: SceneObject[],
-    controller: import("../projection/ViewController.js").ViewController,
+    controller: ViewController,
   ): void {
     const projectedPoints: ScreenPoint[] = [];
     const { width, height } = surface;

@@ -45,8 +45,11 @@ import {
   syncStarsToSceneObjects,
   syncLightsToStars,
 } from "./worldSetupApp.js";
-
-let accumTime = 0;
+import {
+  rebuildPlanetPathMesh,
+  updatePlanetTrajectory,
+  type PlanetTrajectory,
+} from "./planetTrajectories.js";
 
 let scene: Scene;
 let world: AppWorld;
@@ -54,10 +57,11 @@ let mainShipId: string;
 let topCameraId: string;
 let pilotCameraId: string;
 let planetPathMappings: PlanetPathMapping[];
+let planetTrajectories: PlanetTrajectory[];
 
 let gravityState: GravityState;
 let gravityEngine: GravityEngine;
-
+let trajectoryAccumTime = 0;
 let mainShipBodyIndex: number = -1;
 
 let pilotCameraLocalOffset: Vec3 = { x: 0, y: 1.7, z: 1.1 };
@@ -92,6 +96,7 @@ export function startGame(deps: GameDependencies): TickCallback {
   topCameraId = x.topCameraId;
   pilotCameraId = x.pilotCameraId;
   planetPathMappings = x.planetPathMappings;
+  planetTrajectories = x.planetTrajectories;
 
   const domainWorld = toDomainWorld(world);
   gravityState = buildInitialGravityState(domainWorld);
@@ -109,7 +114,7 @@ export function startGame(deps: GameDependencies): TickCallback {
 
   controlState = createInitialControlState();
 
-  let lastTimeMs = 0;
+  let lastTimeMs: number;
   let initialized = false;
 
   /**
@@ -217,10 +222,9 @@ function stepSimulation(dtSeconds: number, input: ControlInput): void {
   syncStarsToSceneObjects(world, scene);
   syncLightsToStars(world, scene);
 
-  // Advance axial rotation for planets and stars based on dtSeconds.
   rotateCelestialBodies(scene, dtSeconds);
-
   updateTrajectories(dtSeconds);
+
   updateCameras();
 }
 
@@ -373,12 +377,12 @@ function updateTrajectories(dtSeconds: number): void {
     return;
   }
 
-  accumTime += dtSeconds;
+  trajectoryAccumTime += dtSeconds;
 
-  if (accumTime >= sampleInterval) {
+  while (trajectoryAccumTime >= sampleInterval) {
     appendShipTrajectoryPoint();
     appendPlanetTrajectories();
-    accumTime = 0;
+    trajectoryAccumTime -= sampleInterval;
   }
 }
 
@@ -463,9 +467,18 @@ function appendPlanetTrajectories(): void {
   for (const mapping of planetPathMappings) {
     const bodyObj = scene.objects.find((o) => o.id === mapping.planetId);
     const pathObj = scene.objects.find((o) => o.id === mapping.pathId);
-    if (bodyObj && pathObj) {
-      appendPointToPolylineMesh(pathObj.mesh, bodyObj.position);
-    }
+    if (!bodyObj || !pathObj) continue;
+
+    const trajectory = planetTrajectories.find(
+      (t) => t.planetId === mapping.planetId,
+    );
+    if (!trajectory) continue;
+
+    // 1) Update trajectory tiers (1 second step implied)
+    updatePlanetTrajectory(trajectory, bodyObj.position);
+
+    // 2) Rebuild mesh from tiers
+    rebuildPlanetPathMesh(trajectory, pathObj.mesh);
   }
 }
 

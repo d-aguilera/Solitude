@@ -33,6 +33,10 @@ import type { StarSceneObject } from "../appScene/appScenePorts.js";
 import type { PlanetSceneObject } from "../appScene/appScenePorts.js";
 import type { ShipSceneObject } from "../appScene/appScenePorts.js";
 import type { PolylineSceneObject } from "../appScene/appScenePorts.js";
+import {
+  createPlanetTrajectory,
+  type PlanetTrajectory,
+} from "./planetTrajectories.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
@@ -146,7 +150,7 @@ function createPolylineSceneObject(
     orientation: mat3.identity,
     scale: 1,
     color,
-    lineWidth: 1,
+    lineWidth: 2,
     wireframeOnly: true,
     applyTransform: false, // polyline points are in world space
     backFaceCulling: false,
@@ -373,6 +377,7 @@ export function createInitialSceneAndWorld(): {
   topCameraId: string;
   pilotCameraId: string;
   planetPathMappings: PlanetPathMapping[];
+  planetTrajectories: PlanetTrajectory[];
 } {
   const objects: SceneObject[] = [];
 
@@ -449,6 +454,11 @@ export function createInitialSceneAndWorld(): {
     pathId: cfg.pathId,
   }));
 
+  // Build trajectory state per planet
+  const planetTrajectories: PlanetTrajectory[] = planetConfigs.map((cfg) =>
+    createPlanetTrajectory(cfg.id),
+  );
+
   // Build initial point lights from star bodies.
   buildLightsFromStars(world, scene);
 
@@ -459,6 +469,7 @@ export function createInitialSceneAndWorld(): {
     topCameraId: topCamera.id,
     pilotCameraId: pilotCamera.id,
     planetPathMappings,
+    planetTrajectories,
   };
 }
 
