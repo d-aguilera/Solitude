@@ -39,6 +39,7 @@ import { ViewComposer } from "./ViewComposer.js";
 import { getShipById } from "./worldLookup.js";
 import {
   createInitialSceneAndWorld,
+  rotateCelestialBodies,
   syncShipsToSceneObjects,
   syncPlanetsToSceneObjects,
   syncStarsToSceneObjects,
@@ -215,6 +216,9 @@ function stepSimulation(dtSeconds: number, input: ControlInput): void {
   syncPlanetsToSceneObjects(world, scene);
   syncStarsToSceneObjects(world, scene);
   syncLightsToStars(world, scene);
+
+  // Advance axial rotation for planets and stars based on dtSeconds.
+  rotateCelestialBodies(scene, dtSeconds);
 
   updateTrajectories(dtSeconds);
   updateCameras();

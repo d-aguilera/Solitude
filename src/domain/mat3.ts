@@ -31,6 +31,38 @@ function mulVec3(R: Mat3, v: Vec3): Vec3 {
   };
 }
 
+/**
+ * Matrix multiplication C = A * B for 3×3 matrices.
+ *
+ * Both A and B are local→world rotation matrices in the same convention.
+ */
+function mulMat3(A: Mat3, B: Mat3): Mat3 {
+  const a0 = A[0],
+    a1 = A[1],
+    a2 = A[2];
+  const b0 = B[0],
+    b1 = B[1],
+    b2 = B[2];
+
+  return [
+    [
+      a0[0] * b0[0] + a0[1] * b1[0] + a0[2] * b2[0],
+      a0[0] * b0[1] + a0[1] * b1[1] + a0[2] * b2[1],
+      a0[0] * b0[2] + a0[1] * b1[2] + a0[2] * b2[2],
+    ],
+    [
+      a1[0] * b0[0] + a1[1] * b1[0] + a1[2] * b2[0],
+      a1[0] * b0[1] + a1[1] * b1[1] + a1[2] * b2[1],
+      a1[0] * b0[2] + a1[1] * b1[2] + a1[2] * b2[2],
+    ],
+    [
+      a2[0] * b0[0] + a2[1] * b1[0] + a2[2] * b2[0],
+      a2[0] * b0[1] + a2[1] * b1[1] + a2[2] * b2[1],
+      a2[0] * b0[2] + a2[1] * b1[2] + a2[2] * b2[2],
+    ],
+  ];
+}
+
 function rotAxis(axis: Vec3, angle: number): Mat3 {
   const n = vec3.normalize(axis);
   const len = vec3.length(n);
@@ -67,6 +99,7 @@ function transpose(M: Mat3): Mat3 {
 export const mat3 = {
   identity,
   mulVec3,
+  mulMat3,
   rotAxis,
   transpose,
 };

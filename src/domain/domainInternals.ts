@@ -41,6 +41,14 @@ export interface CelestialBodyConfig {
   // Rendering / initial kinematics
   tangentialSpeed: number; // m/s, orbital speed along local tangent
   color: RGB;
+
+  /**
+   * Axial rotation:
+   *  - rotationAxis is a unit vector in world space (e.g. approximate spin axis)
+   *  - angularSpeedRadPerSec is the constant spin rate around that axis
+   */
+  rotationAxis: { x: number; y: number; z: number };
+  angularSpeedRadPerSec: number;
 }
 
 export interface PlanetBodyConfig extends CelestialBodyConfig {

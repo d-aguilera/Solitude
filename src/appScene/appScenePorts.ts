@@ -30,6 +30,17 @@ export interface CelestialBodySceneObject extends SolidSceneObject {
   physicalRadius: number; // meters
   backFaceCulling: true;
   velocity: Vec3;
+
+  /**
+   * Constant axial rotation described by:
+   *  - rotationAxis: unit vector in world space
+   *  - angularSpeedRadPerSec: spin rate in radians per second
+   *
+   * The app layer is responsible for integrating the current spin angle
+   * and updating orientation accordingly.
+   */
+  rotationAxis: Vec3;
+  angularSpeedRadPerSec: number;
 }
 
 export interface PlanetSceneObject extends CelestialBodySceneObject {

@@ -207,6 +207,9 @@ function addPlanetsAndStarsFromConfig(
           }
         : { x: 0, y: 0, z: 0 };
 
+    const rotationAxis = vec3.normalize(cfg.rotationAxis);
+    const angularSpeedRadPerSec = cfg.angularSpeedRadPerSec;
+
     if (cfg.kind === "star") {
       const starObj: StarSceneObject = {
         id: cfg.id,
@@ -224,6 +227,8 @@ function addPlanetsAndStarsFromConfig(
         backFaceCulling: true,
         velocity: { ...initialVelocity },
         luminosity: cfg.luminosity,
+        rotationAxis,
+        angularSpeedRadPerSec,
       };
 
       const starBody: CelestialBody = {
@@ -259,6 +264,8 @@ function addPlanetsAndStarsFromConfig(
         physicalRadius: cfg.physicalRadius,
         backFaceCulling: true,
         velocity: { ...initialVelocity },
+        rotationAxis,
+        angularSpeedRadPerSec,
       };
 
       worldPlanets.push({
@@ -522,4 +529,26 @@ function getPlanetPhysicsById(
     throw new Error(`PlanetPhysics not found: ${id}`);
   }
   return phys;
+}
+
+/**
+ * Per-frame adapter: advance axial rotation for planets and stars.
+ *
+ * This updates only the visual orientation; positions are governed by gravity.
+ */
+export function rotateCelestialBodies(scene: Scene, dtSeconds: number): void {
+  if (dtSeconds <= 0) return;
+
+  for (const obj of scene.objects) {
+    if (obj.kind !== "planet" && obj.kind !== "star") continue;
+
+    const angle = obj.angularSpeedRadPerSec * dtSeconds;
+    if (angle === 0) continue;
+
+    const Rspin = mat3.rotAxis(obj.rotationAxis, angle);
+
+    // Orientation is a local→world transform. Apply spin in local space
+    // by left-multiplying the existing orientation.
+    obj.orientation = mat3.mulMat3(Rspin, obj.orientation);
+  }
 }
