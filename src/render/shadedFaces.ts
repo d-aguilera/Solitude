@@ -3,7 +3,6 @@ import type { PointLight, SceneObject } from "../appScene/appScenePorts.js";
 import type { Vec3 } from "../domain/domainPorts.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
-import { CameraService } from "../scene/CameraService.js";
 import { ProjectionService } from "../scene/ProjectionService.js";
 import { toRenderable } from "../scene/renderPrep.js";
 import type { NdcPoint } from "../scene/scenePorts.js";
@@ -35,19 +34,15 @@ export function buildShadedFaces(params: {
     canvasHeight,
   );
 
-  const cameraService = new CameraService(camera);
-
   const faceList: FaceEntry[] = [];
 
   objects.forEach((obj) => {
     if (obj.wireframeOnly) return;
 
     const { mesh, worldPoints, baseColor } = toRenderable(obj);
+    const cameraPoints =
+      projectionService.worldPointsToCameraPointsNoClip(worldPoints);
     const { faces, faceNormals } = mesh;
-
-    // Prepare camera-space cache once per object & frame
-    const cameraPoints = cameraService.getCameraPointsForObject(worldPoints);
-
     const worldFaceNormals = getWorldFaceNormalsForObject(obj, faceNormals);
 
     for (let fi = 0; fi < faces.length; fi++) {
@@ -79,7 +74,7 @@ export function buildShadedFaces(params: {
       const c1 = cameraPoints[i1];
       const c2 = cameraPoints[i2];
 
-      const clipped = cameraService.clipTriangleAgainstNearPlaneCamera(
+      const clipped = projectionService.clipTriangleAgainstNearPlaneCamera(
         c0,
         c1,
         c2,
