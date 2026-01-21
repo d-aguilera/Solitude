@@ -1,5 +1,6 @@
 import type { DrawMode } from "../app/appPorts.js";
-import type { DomainCameraPose, Vec3 } from "../domain/domainPorts.js";
+import type { Vec3 } from "../domain/domainPorts.js";
+import type { DomainCameraPose } from "../app/appPorts.js";
 import { ProjectionService } from "../scene/ProjectionService.js";
 import type { Camera, NdcPoint } from "../scene/scenePorts.js";
 import type {

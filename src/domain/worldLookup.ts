@@ -1,6 +1,5 @@
 import type {
   BodyId,
-  DomainCameraPose,
   DomainWorld,
   ShipBody,
   StarPhysics,
@@ -14,13 +13,6 @@ function getById<T extends { id: BodyId }>(
   const obj = arr.find((x) => x.id === id);
   if (!obj) throw new Error(`${typeName} not found: ${id}`);
   return obj;
-}
-
-export function getDomainCameraById(
-  world: DomainWorld,
-  id: BodyId,
-): DomainCameraPose {
-  return getById(world.cameras, id, "Camera");
 }
 
 export function getShipBodyById(world: DomainWorld, id: BodyId): ShipBody {

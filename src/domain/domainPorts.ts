@@ -18,19 +18,12 @@ export interface CelestialBody {
   velocity: Vec3;
 }
 
-export interface DomainCameraPose {
-  id: string;
-  position: Vec3;
-  frame: LocalFrame;
-}
-
 /**
  * Generalized world-state container for dynamic entities controlled by
  * the domain logic.
  */
 export interface DomainWorld {
   shipBodies: ShipBody[];
-  cameras: DomainCameraPose[];
   planets: CelestialBody[];
   planetPhysics: PlanetPhysics[];
   stars: CelestialBody[];

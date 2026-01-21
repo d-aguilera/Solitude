@@ -1,8 +1,19 @@
-import type { GravityEngine, Profiler, Vec3 } from "../domain/domainPorts";
+import type {
+  GravityEngine,
+  LocalFrame,
+  Profiler,
+  Vec3,
+} from "../domain/domainPorts";
 import type { Renderer, RenderSurface2D } from "../render/renderPorts";
 import type { ControlInput, EnvInput } from "./appInternals";
 
 export type DrawMode = "faces" | "lines";
+
+export interface DomainCameraPose {
+  id: string;
+  position: Vec3;
+  frame: LocalFrame;
+}
 
 export interface GameDependencies {
   renderer: Renderer;

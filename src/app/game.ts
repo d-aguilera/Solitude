@@ -7,9 +7,9 @@ import type {
   Profiler,
   Vec3,
 } from "../domain/domainPorts.js";
+import type { DomainCameraPose } from "./appPorts.js";
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
-import { getDomainCameraById } from "../domain/worldLookup.js";
 import type { Renderer, RenderSurface2D } from "../render/renderPorts.js";
 import type {
   AppWorld,
@@ -34,6 +34,11 @@ import {
 } from "./controls.js";
 import { updateFPS, fps } from "./fps.js";
 import { pauseControl, paused } from "./pause.js";
+import {
+  rebuildPlanetPathMesh,
+  updatePlanetTrajectory,
+  type PlanetTrajectory,
+} from "./planetTrajectories.js";
 import { appendPointToPolylineMesh } from "./trajectory.js";
 import { ViewComposer } from "./ViewComposer.js";
 import { getShipById } from "./worldLookup.js";
@@ -45,17 +50,12 @@ import {
   syncStarsToSceneObjects,
   syncLightsToStars,
 } from "./worldSetupApp.js";
-import {
-  rebuildPlanetPathMesh,
-  updatePlanetTrajectory,
-  type PlanetTrajectory,
-} from "./planetTrajectories.js";
 
 let scene: Scene;
 let world: AppWorld;
 let mainShipId: string;
-let topCameraId: string;
-let pilotCameraId: string;
+let topCamera: DomainCameraPose;
+let pilotCamera: DomainCameraPose;
 let planetPathMappings: PlanetPathMapping[];
 let planetTrajectories: PlanetTrajectory[];
 
@@ -93,8 +93,8 @@ export function startGame(deps: GameDependencies): TickCallback {
   scene = x.scene;
   world = x.world;
   mainShipId = x.mainShipId;
-  topCameraId = x.topCameraId;
-  pilotCameraId = x.pilotCameraId;
+  topCamera = x.topCamera;
+  pilotCamera = x.pilotCamera;
   planetPathMappings = x.planetPathMappings;
   planetTrajectories = x.planetTrajectories;
 
@@ -157,8 +157,7 @@ function renderCurrentFrame(input: ControlInput): void {
   const thrustPercent = getSignedThrustPercent(input, controlState);
 
   const pilotViewConfig = viewComposer.buildPilotView(
-    world,
-    pilotCameraId,
+    pilotCamera,
     mainShip,
     "faces",
     pilotSurface.width,
@@ -169,8 +168,7 @@ function renderCurrentFrame(input: ControlInput): void {
   const pilotScene: Scene = scene;
 
   const topViewConfig = viewComposer.buildTopView(
-    world,
-    topCameraId,
+    topCamera,
     mainShip,
     "faces",
     topSurface.width,
@@ -186,6 +184,7 @@ function renderCurrentFrame(input: ControlInput): void {
       return true;
     }),
     lights: scene.lights,
+    cameras: scene.cameras,
   };
 
   const hud: HudRenderData = {
@@ -393,14 +392,14 @@ function updateCameras(): void {
   const mainShip = getShipById(world, mainShipId);
 
   setCameraRelativeToShip(
-    pilotCameraId,
+    pilotCamera,
     mainShip,
     pilotCameraLocalOffset,
     frameFromShipForPilot,
   );
 
   setCameraRelativeToShip(
-    topCameraId,
+    topCamera,
     mainShip,
     { x: 0, y: 0, z: 50 },
     frameFromShipForTop,
@@ -437,12 +436,11 @@ function frameFromShipForTop(ship: Ship): LocalFrame {
 }
 
 function setCameraRelativeToShip(
-  cameraId: string,
+  pose: DomainCameraPose,
   ship: Ship,
   localOffset: Vec3,
   frameFromShip: (ship: Ship) => LocalFrame,
 ): void {
-  const camera = getDomainCameraById(world, cameraId);
   const { right, forward, up } = ship.frame;
 
   const worldOffset = vec3.add3(
@@ -451,8 +449,8 @@ function setCameraRelativeToShip(
     vec3.scale(up, localOffset.z),
   );
 
-  camera.position = vec3.add(ship.position, worldOffset);
-  camera.frame = frameFromShip(ship);
+  pose.position = vec3.add(ship.position, worldOffset);
+  pose.frame = frameFromShip(ship);
 }
 
 function appendShipTrajectoryPoint(): void {
@@ -508,7 +506,6 @@ function updatePilotCameraOffset(dtSeconds: number, input: ControlInput): void {
 function toDomainWorld(world: AppWorld): DomainWorld {
   return {
     shipBodies: world.shipBodies,
-    cameras: world.cameras,
     planets: world.planets,
     planetPhysics: world.planetPhysics,
     stars: world.stars,

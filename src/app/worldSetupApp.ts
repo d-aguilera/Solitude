@@ -6,7 +6,6 @@ import type {
 import { colors } from "../domain/domainInternals.js";
 import type {
   CelestialBody,
-  DomainCameraPose,
   LocalFrame,
   Mesh,
   PlanetPathMapping,
@@ -15,6 +14,7 @@ import type {
   StarPhysics,
   Vec3,
 } from "../domain/domainPorts.js";
+import type { DomainCameraPose } from "./appPorts.js";
 import {
   makeLocalFrameFromUp,
   mat3FromLocalFrame,
@@ -374,8 +374,8 @@ export function createInitialSceneAndWorld(): {
   scene: Scene;
   world: AppWorld;
   mainShipId: string;
-  topCameraId: string;
-  pilotCameraId: string;
+  topCamera: DomainCameraPose;
+  pilotCamera: DomainCameraPose;
   planetPathMappings: PlanetPathMapping[];
   planetTrajectories: PlanetTrajectory[];
 } {
@@ -383,7 +383,6 @@ export function createInitialSceneAndWorld(): {
 
   const world: AppWorld = {
     shipBodies: [],
-    cameras: [],
     planets: [],
     planetPhysics: [],
     stars: [],
@@ -438,15 +437,14 @@ export function createInitialSceneAndWorld(): {
   );
   objects.push(mainShipPath);
 
-  const scene: Scene = {
-    objects,
-    lights: [],
-  };
-
   const topCamera = createInitialTopCamera("camera:top", mainShip);
   const pilotCamera = createInitialPilotCamera("camera:pilot", mainShip);
 
-  world.cameras.push(topCamera, pilotCamera);
+  const scene: Scene = {
+    objects,
+    lights: [],
+    cameras: [topCamera, pilotCamera],
+  };
 
   // Derive planet–path relationships once from the configs we just used.
   const planetPathMappings: PlanetPathMapping[] = planetConfigs.map((cfg) => ({
@@ -466,8 +464,8 @@ export function createInitialSceneAndWorld(): {
     scene,
     world,
     mainShipId: mainShip.id,
-    topCameraId: topCamera.id,
-    pilotCameraId: pilotCamera.id,
+    topCamera,
+    pilotCamera,
     planetPathMappings,
     planetTrajectories,
   };

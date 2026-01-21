@@ -1,8 +1,8 @@
-import { getDomainCameraById } from "../domain/worldLookup.js";
+import type { DomainCameraPose } from "./appPorts.js";
 import { ViewController } from "../projection/ViewController.js";
 import { ViewConfig } from "../render/ViewConfig.js";
 import type { RenderShip } from "../render/renderPorts.js";
-import type { Ship, AppWorld } from "./appInternals.js";
+import type { Ship } from "./appInternals.js";
 import type { DrawMode } from "./appPorts.js";
 
 /**
@@ -29,18 +29,16 @@ export class ViewComposer {
    * Build the pilot view configuration for the given camera and reference ship.
    */
   buildPilotView(
-    world: AppWorld,
-    cameraId: string,
+    pose: DomainCameraPose,
     referenceShip: Ship,
     drawMode: DrawMode,
     canvasWidth: number,
     canvasHeight: number,
   ): ViewConfig {
-    const camera = getDomainCameraById(world, cameraId);
     const ship = this.toRenderShip(referenceShip);
 
     const controller = new ViewController({
-      pose: camera,
+      pose,
       canvasWidth,
       canvasHeight,
       referenceShip: ship,
@@ -54,18 +52,16 @@ export class ViewComposer {
    * Build the top view configuration for the given camera and reference ship.
    */
   buildTopView(
-    world: AppWorld,
-    cameraId: string,
+    pose: DomainCameraPose,
     referenceShip: Ship,
     drawMode: DrawMode,
     canvasWidth: number,
     canvasHeight: number,
   ): ViewConfig {
-    const camera = getDomainCameraById(world, cameraId);
     const ship = this.toRenderShip(referenceShip);
 
     const controller = new ViewController({
-      pose: camera,
+      pose,
       canvasWidth,
       canvasHeight,
       referenceShip: ship,
