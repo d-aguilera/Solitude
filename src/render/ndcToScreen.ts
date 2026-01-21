@@ -2,16 +2,16 @@ import type { NdcPoint } from "../scene/scenePorts.js";
 import type { ScreenPoint } from "./renderPorts.js";
 
 /**
- * Map NDC coordinates into pixel space for a given canvas.
+ * Map NDC coordinates into pixel space for a given screen size.
  */
 export function ndcToScreen(
   ndc: NdcPoint,
-  canvasWidth: number,
-  canvasHeight: number,
+  screenWidth: number,
+  screenHeight: number,
 ): ScreenPoint {
   return {
-    x: (ndc.x + 1) * 0.5 * canvasWidth,
-    y: (1 - ndc.y) * 0.5 * canvasHeight,
+    x: (ndc.x + 1) * 0.5 * screenWidth,
+    y: (1 - ndc.y) * 0.5 * screenHeight,
     depth: ndc.depth,
   };
 }

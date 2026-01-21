@@ -42,6 +42,10 @@ function length(v: Readonly<Vec3>): number {
   return Math.hypot(v.x, v.y, v.z);
 }
 
+function lengthSq(v: Readonly<Vec3>): number {
+  return v.x * v.x + v.y * v.y + v.z * v.z;
+}
+
 function normalize(v: Readonly<Vec3>): Vec3 {
   const len = length(v);
   if (len === 0) return { x: 0, y: 0, z: 0 };
@@ -76,6 +80,7 @@ export const vec3 = {
   distSq,
   dot,
   length,
+  lengthSq,
   normalize,
   scale,
   scaleAndAdd,

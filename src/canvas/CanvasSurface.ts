@@ -1,4 +1,4 @@
-import type { RenderSurface2D } from "../render/renderPorts.js";
+import type { RenderSurface2D } from "../app/appPorts.js";
 
 /**
  * Canvas-backed implementation of RenderSurface2D.

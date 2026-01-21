@@ -1,10 +1,7 @@
 import type { RGB } from "../domain/domainPorts.js";
-import type {
-  PolylineRenderer,
-  RenderSurface2D,
-  ScreenPoint,
-} from "../render/renderPorts.js";
-import { rgbToCss } from "./canvasRasterizer.js";
+import { rgbToCss } from "../render/color.js";
+import type { PolylineRenderer, ScreenPoint } from "../render/renderPorts.js";
+import type { RenderSurface2D } from "../app/appPorts.js";
 import type { CanvasSurface } from "./CanvasSurface.js";
 
 /**

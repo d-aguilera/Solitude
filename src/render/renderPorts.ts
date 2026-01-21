@@ -1,4 +1,4 @@
-import type { HudRenderData } from "../app/appPorts.js";
+import type { HudRenderData, RenderSurface2D } from "../app/appPorts.js";
 import type { Scene } from "../appScene/appScenePorts.js";
 import type { RGB, Vec3 } from "../domain/domainPorts.js";
 import type { ViewConfig } from "./ViewConfig.js";
@@ -38,6 +38,13 @@ export interface PolylineRenderer {
   ): void;
 }
 
+export interface RenderedFace {
+  p0: ScreenPoint;
+  p1: ScreenPoint;
+  p2: ScreenPoint;
+  color: RGB;
+}
+
 /**
  * Top-level rendering abstraction for the app layer.
  */
@@ -62,17 +69,6 @@ export interface RenderShip {
   velocity: Vec3;
 }
 
-/**
- * Minimal 2D drawing surface abstraction used by renderers.
- *
- * Implementations may be backed by Canvas2D, WebGL, etc.
- */
-export interface RenderSurface2D {
-  readonly width: number;
-  readonly height: number;
-  clear(color: string): void;
-}
-
 export interface ScreenPoint {
   x: number;
   y: number;
@@ -82,8 +78,8 @@ export interface ScreenPoint {
 /**
  * Rendering adapter responsible for shaded triangle faces.
  */
-export interface ShadedFaceRenderer {
-  render(surface: RenderSurface2D, faceList: FaceEntry[]): void;
+export interface FaceRenderer {
+  render(surface: RenderSurface2D, faces: RenderedFace[]): void;
 }
 
 /**
@@ -98,6 +94,7 @@ export interface ViewDebugOverlay<TContext = OverlayBody[]> {
  */
 export interface ViewDebugOverlayRenderer {
   drawShipVelocityLine(
+    surface: RenderSurface2D,
     segments: {
       start: ScreenPoint;
       end: ScreenPoint;
@@ -105,10 +102,13 @@ export interface ViewDebugOverlayRenderer {
     }[],
   ): void;
 
-  drawBodyLabel(label: {
-    anchor: ScreenPoint;
-    name: string;
-    distanceKm: number;
-    speedKmh: number;
-  }): void;
+  drawBodyLabel(
+    surface: RenderSurface2D,
+    label: {
+      anchor: ScreenPoint;
+      name: string;
+      distanceKm: number;
+      speedKmh: number;
+    },
+  ): void;
 }

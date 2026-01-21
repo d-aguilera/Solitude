@@ -1,5 +1,6 @@
 import type { HudRenderData } from "../app/appPorts.js";
-import type { HudRenderer, RenderSurface2D } from "../render/renderPorts.js";
+import type { HudRenderer } from "../render/renderPorts.js";
+import type { RenderSurface2D } from "../app/appPorts.js";
 import { CanvasSurface } from "./CanvasSurface.js";
 
 const hudWidth = 420;

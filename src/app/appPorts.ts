@@ -4,7 +4,7 @@ import type {
   Profiler,
   Vec3,
 } from "../domain/domainPorts";
-import type { Renderer, RenderSurface2D } from "../render/renderPorts";
+import type { Renderer } from "../render/renderPorts";
 import type { ControlInput, EnvInput } from "./appInternals";
 
 export type DrawMode = "faces" | "lines";
@@ -80,6 +80,18 @@ export interface ProfilerController {
    * Flush accumulated counters and timing data, if enabled.
    */
   flush(): void;
+}
+
+/**
+ * Minimal 2D drawing surface abstraction used by renderers.
+ *
+ * Implementations may be backed by Canvas2D, WebGL, etc.
+ */
+
+export interface RenderSurface2D {
+  readonly width: number;
+  readonly height: number;
+  clear(color: string): void;
 }
 
 export type TickCallback = (params: TickParams) => void;

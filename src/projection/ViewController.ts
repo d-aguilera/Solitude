@@ -9,6 +9,7 @@ import type {
   ViewDebugOverlayRenderer,
   OverlayBody,
 } from "../render/renderPorts.js";
+import type { RenderSurface2D } from "../app/appPorts.js";
 import { drawShipVelocityLine, drawBodyLabels } from "./debugDraw.js";
 
 /**
@@ -25,46 +26,39 @@ export class ViewController {
   private readonly referenceShip: RenderShip;
   private readonly drawMode: DrawMode;
   private readonly debugOverlay: ViewDebugOverlay<OverlayBody[]>;
-  private readonly width: number;
-  private readonly height: number;
 
   constructor(params: {
     pose: DomainCameraPose;
-    canvasWidth: number;
-    canvasHeight: number;
+    surface: RenderSurface2D;
     referenceShip: RenderShip;
     drawMode: DrawMode;
   }) {
-    const { pose, canvasWidth, canvasHeight, referenceShip, drawMode } = params;
+    const { pose, surface, referenceShip, drawMode } = params;
 
     this.projectionService = new ProjectionService(
       pose,
-      canvasWidth,
-      canvasHeight,
+      surface.width,
+      surface.height,
     );
 
     this.pose = pose;
     this.referenceShip = referenceShip;
     this.drawMode = drawMode;
-    this.width = canvasWidth;
-    this.height = canvasHeight;
 
     this.debugOverlay = {
       draw: (overlay: ViewDebugOverlayRenderer, bodies: OverlayBody[]) => {
         drawShipVelocityLine(
           overlay,
+          surface,
           (p: Vec3) => this.project(p),
           this.referenceShip,
-          this.width,
-          this.height,
         );
         drawBodyLabels(
           overlay,
+          surface,
           (p: Vec3) => this.project(p),
           bodies,
           this.referenceShip.position,
-          this.width,
-          this.height,
         );
       },
     };

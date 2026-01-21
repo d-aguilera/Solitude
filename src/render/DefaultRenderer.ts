@@ -7,35 +7,33 @@ import type {
 } from "../appScene/appScenePorts.js";
 import type { Profiler } from "../domain/domainPorts.js";
 import type { ViewController } from "../projection/ViewController.js";
-import { ndcToScreen } from "../render/ndcToScreen.js";
+import { ndcToScreen } from "./ndcToScreen.js";
 import type {
   OverlayBody,
   PolylineRenderer,
-  RenderSurface2D,
+  RenderedFace,
   Renderer,
   ScreenPoint,
-  ShadedFaceRenderer,
-} from "../render/renderPorts.js";
-import { buildShadedFaces } from "../render/shadedFaces.js";
-import type { ViewConfig } from "../render/ViewConfig.js";
+  FaceRenderer,
+  HudRenderer,
+  ViewDebugOverlayRenderer,
+} from "./renderPorts.js";
+import type { RenderSurface2D } from "../app/appPorts.js";
+import { buildShadedFaces } from "./shadedFaces.js";
+import type { ViewConfig } from "./ViewConfig.js";
 import { toRenderable } from "../scene/renderPrep.js";
-import { CanvasDebugOverlayRenderer } from "./CanvasDebugOverlayRenderer.js";
-import { CanvasHudRenderer } from "./CanvasHudRenderer.js";
-import { CanvasPolylineRenderer } from "./CanvasPolylineRenderer.js";
-import { CanvasShadedFaceRenderer } from "./CanvasShadedFaceRenderer.js";
-import { CanvasSurface } from "./CanvasSurface.js";
 
 /**
- * Canvas2D implementation of the top-level Renderer abstraction.
+ * Default implementation of the top-level Renderer abstraction.
  */
-export class CanvasRenderer implements Renderer {
-  private readonly hudRenderer = new CanvasHudRenderer();
-  private readonly shadedFaceRenderer: ShadedFaceRenderer =
-    new CanvasShadedFaceRenderer();
-  private readonly polylineRenderer: PolylineRenderer =
-    new CanvasPolylineRenderer();
-
-  constructor(private profiler: Profiler) {}
+export class DefaultRenderer implements Renderer {
+  constructor(
+    private readonly faceRenderer: FaceRenderer,
+    private readonly polylineRenderer: PolylineRenderer,
+    private readonly overlayRenderer: ViewDebugOverlayRenderer,
+    private readonly hudRenderer: HudRenderer,
+    private profiler: Profiler,
+  ) {}
 
   renderFrame(
     pilotScene: Scene,
@@ -65,11 +63,6 @@ export class CanvasRenderer implements Renderer {
       controller,
     });
 
-    const canvasSurface = surface as CanvasSurface;
-    const overlayRenderer = new CanvasDebugOverlayRenderer(
-      canvasSurface.getContext(),
-    );
-
     const overlayBodies: OverlayBody[] = scene.objects
       .filter(
         (obj): obj is PlanetSceneObject =>
@@ -82,7 +75,7 @@ export class CanvasRenderer implements Renderer {
         kind: obj.kind,
       }));
 
-    controller.getDebugOverlay().draw(overlayRenderer, overlayBodies);
+    controller.getDebugOverlay().draw(this.overlayRenderer, overlayBodies);
   }
 
   /**
@@ -118,7 +111,27 @@ export class CanvasRenderer implements Renderer {
             lights,
           });
 
-          this.shadedFaceRenderer.render(surface, faceList);
+          faceList.sort((a, b) => b.depth - a.depth);
+
+          const renderedFaces = new Array<RenderedFace>(faceList.length);
+
+          for (let i = 0; i < faceList.length; i++) {
+            const face = faceList[i];
+            const { p0, p1, p2, baseColor, intensity } = face;
+            const { r: baseR, g: baseG, b: baseB } = baseColor;
+            const k = 0.2 + 0.8 * intensity;
+            const r = Math.round(baseR * k);
+            const g = Math.round(baseG * k);
+            const b = Math.round(baseB * k);
+            renderedFaces[i] = {
+              p0,
+              p1,
+              p2,
+              color: { r, g, b },
+            };
+          }
+
+          this.faceRenderer.render(surface, renderedFaces);
         });
 
         this.profiler.run("DRAW", "wireframe", () => {

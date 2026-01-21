@@ -6,6 +6,7 @@ import type {
   RenderShip,
   ViewDebugOverlayRenderer,
 } from "../render/renderPorts.js";
+import type { RenderSurface2D } from "../app/appPorts.js";
 import type { NdcPoint } from "../scene/scenePorts.js";
 
 export type ProjectFn = (p: Vec3) => NdcPoint | null;
@@ -25,15 +26,14 @@ interface VelocityDebugSegment {
  */
 function getShipVelocitySegments(ship: RenderShip): VelocityDebugSegment[] {
   const v = ship.velocity;
-  const speed = vec3.length(v);
-  if (speed === 0) return [];
+  const speedSq = vec3.lengthSq(v);
+  if (speedSq < 1e-24) return [];
 
   const dir = vec3.normalize(v);
   const center = ship.position;
 
-  const len = 5000; // meters
-  const innerRadius = 8; // meters
-  if (len <= innerRadius) return [];
+  const len = 500000; // meters
+  const innerRadius = 6; // meters
 
   const forwardInner: Vec3 = vec3.add(center, vec3.scale(dir, innerRadius));
   const forwardEnd: Vec3 = vec3.add(center, vec3.scale(dir, len));
@@ -49,10 +49,9 @@ function getShipVelocitySegments(ship: RenderShip): VelocityDebugSegment[] {
 
 export function drawShipVelocityLine(
   overlay: ViewDebugOverlayRenderer,
+  surface: RenderSurface2D,
   project: ProjectFn,
   ship: RenderShip,
-  surfaceWidth: number,
-  surfaceHeight: number,
 ): void {
   const segments = getShipVelocitySegments(ship);
   if (segments.length === 0) return;
@@ -64,8 +63,8 @@ export function drawShipVelocityLine(
     const ndcEnd = project(seg.end);
     if (!ndcStart || !ndcEnd) continue;
 
-    const pStart = ndcToScreen(ndcStart, surfaceWidth, surfaceHeight);
-    const pEnd = ndcToScreen(ndcEnd, surfaceWidth, surfaceHeight);
+    const pStart = ndcToScreen(ndcStart, surface.width, surface.height);
+    const pEnd = ndcToScreen(ndcEnd, surface.width, surface.height);
 
     overlaySegments.push({
       start: pStart,
@@ -75,17 +74,16 @@ export function drawShipVelocityLine(
   }
 
   if (overlaySegments.length > 0) {
-    overlay.drawShipVelocityLine(overlaySegments);
+    overlay.drawShipVelocityLine(surface, overlaySegments);
   }
 }
 
 export function drawBodyLabels(
   overlay: ViewDebugOverlayRenderer,
+  surface: RenderSurface2D,
   project: ProjectFn,
   bodies: OverlayBody[],
   referencePosition: Vec3,
-  surfaceWidth: number,
-  surfaceHeight: number,
 ): void {
   const sorted: {
     body: OverlayBody;
@@ -103,7 +101,7 @@ export function drawBodyLabels(
     const ndc = project(body.position);
     if (!ndc) continue;
 
-    const screenPoint = ndcToScreen(ndc, surfaceWidth, surfaceHeight);
+    const screenPoint = ndcToScreen(ndc, surface.width, surface.height);
 
     const name = displayNameForBodyId(body.id);
 
@@ -111,7 +109,7 @@ export function drawBodyLabels(
     const speedMps = vec3.length(body.velocity);
     const speedKmh = speedMps * 3.6;
 
-    overlay.drawBodyLabel({
+    overlay.drawBodyLabel(surface, {
       anchor: screenPoint,
       name,
       distanceKm: dKm,

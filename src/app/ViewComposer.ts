@@ -2,6 +2,7 @@ import type { DomainCameraPose } from "./appPorts.js";
 import { ViewController } from "../projection/ViewController.js";
 import { ViewConfig } from "../render/ViewConfig.js";
 import type { RenderShip } from "../render/renderPorts.js";
+import type { RenderSurface2D } from "./appPorts.js";
 import type { Ship } from "./appInternals.js";
 import type { DrawMode } from "./appPorts.js";
 
@@ -32,15 +33,13 @@ export class ViewComposer {
     pose: DomainCameraPose,
     referenceShip: Ship,
     drawMode: DrawMode,
-    canvasWidth: number,
-    canvasHeight: number,
+    surface: RenderSurface2D,
   ): ViewConfig {
     const ship = this.toRenderShip(referenceShip);
 
     const controller = new ViewController({
       pose,
-      canvasWidth,
-      canvasHeight,
+      surface,
       referenceShip: ship,
       drawMode,
     });
@@ -55,15 +54,13 @@ export class ViewComposer {
     pose: DomainCameraPose,
     referenceShip: Ship,
     drawMode: DrawMode,
-    canvasWidth: number,
-    canvasHeight: number,
+    surface: RenderSurface2D,
   ): ViewConfig {
     const ship = this.toRenderShip(referenceShip);
 
     const controller = new ViewController({
       pose,
-      canvasWidth,
-      canvasHeight,
+      surface,
       referenceShip: ship,
       drawMode,
     });

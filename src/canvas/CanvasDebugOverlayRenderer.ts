@@ -2,21 +2,23 @@ import type {
   ViewDebugOverlayRenderer,
   ScreenPoint,
 } from "../render/renderPorts.js";
+import type { RenderSurface2D } from "../app/appPorts.js";
+import type { CanvasSurface } from "./CanvasSurface.js";
 
 /**
  * Canvas-backed implementation of ViewDebugOverlayRenderer.
  */
 export class CanvasDebugOverlayRenderer implements ViewDebugOverlayRenderer {
-  constructor(private readonly ctx: CanvasRenderingContext2D) {}
-
   drawShipVelocityLine(
+    surface: RenderSurface2D,
     segments: {
       start: ScreenPoint;
       end: ScreenPoint;
       color: "forward" | "backward";
     }[],
   ): void {
-    const ctx = this.ctx;
+    const canvasSurface = surface as CanvasSurface;
+    const ctx = canvasSurface.getContext();
     ctx.save();
     ctx.lineWidth = 4;
 
@@ -31,13 +33,17 @@ export class CanvasDebugOverlayRenderer implements ViewDebugOverlayRenderer {
     ctx.restore();
   }
 
-  drawBodyLabel(label: {
-    anchor: ScreenPoint;
-    name: string;
-    distanceKm: number;
-    speedKmh: number;
-  }): void {
-    const ctx = this.ctx;
+  drawBodyLabel(
+    surface: RenderSurface2D,
+    label: {
+      anchor: ScreenPoint;
+      name: string;
+      distanceKm: number;
+      speedKmh: number;
+    },
+  ): void {
+    const canvasSurface = surface as CanvasSurface;
+    const ctx = canvasSurface.getContext();
     ctx.save();
     ctx.font = "14px monospace";
     ctx.textBaseline = "middle";

@@ -10,7 +10,8 @@ import type {
 import type { DomainCameraPose } from "./appPorts.js";
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
-import type { Renderer, RenderSurface2D } from "../render/renderPorts.js";
+import type { Renderer } from "../render/renderPorts.js";
+import type { RenderSurface2D } from "./appPorts.js";
 import type {
   AppWorld,
   ControlInput,
@@ -160,8 +161,7 @@ function renderCurrentFrame(input: ControlInput): void {
     pilotCamera,
     mainShip,
     "faces",
-    pilotSurface.width,
-    pilotSurface.height,
+    pilotSurface,
   );
 
   // Pilot scene: full scene, unfiltered
@@ -171,8 +171,7 @@ function renderCurrentFrame(input: ControlInput): void {
     topCamera,
     mainShip,
     "faces",
-    topSurface.width,
-    topSurface.height,
+    topSurface,
   );
 
   // Top scene: no trajectory polylines
