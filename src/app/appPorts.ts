@@ -10,7 +10,6 @@ import type { ControlInput, EnvInput } from "./appInternals";
 export type DrawMode = "faces" | "lines";
 
 export interface DomainCameraPose {
-  id: string;
   position: Vec3;
   frame: LocalFrame;
 }

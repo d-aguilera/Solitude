@@ -1,3 +1,4 @@
+import type { DomainCameraPose } from "../app/appPorts.js";
 import type { PointLight, SceneObject } from "../appScene/appScenePorts.js";
 import type { Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
@@ -5,7 +6,7 @@ import { CameraService } from "../scene/CameraService.js";
 import { ProjectionService } from "../scene/ProjectionService.js";
 import { toRenderable } from "../scene/renderPrep.js";
 import type { SceneObjectWithCache } from "../scene/sceneInternals.js";
-import type { NdcPoint, Camera } from "../scene/scenePorts.js";
+import type { NdcPoint } from "../scene/scenePorts.js";
 import { ndcToScreen } from "./ndcToScreen.js";
 import type { FaceEntry } from "./renderPorts.js";
 
@@ -21,7 +22,7 @@ const E_SUN_AT_EARTH = SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS_2);
  */
 export function buildShadedFaces(params: {
   objects: SceneObject[];
-  camera: Camera;
+  camera: DomainCameraPose;
   canvasWidth: number;
   canvasHeight: number;
   lights: PointLight[];

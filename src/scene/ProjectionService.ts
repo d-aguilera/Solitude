@@ -1,4 +1,5 @@
-import type { Vec3, LocalFrame } from "../domain/domainPorts.js";
+import type { DomainCameraPose } from "../app/appPorts.js";
+import type { Vec3 } from "../domain/domainPorts.js";
 import { mat3FromLocalFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
@@ -15,14 +16,6 @@ const NEAR = 0.01;
 const VERTICAL_FOV = 30;
 
 /**
- * Canonical camera representation used throughout world/scene transforms.
- */
-export interface CameraPose {
-  position: Vec3;
-  frame: LocalFrame;
-}
-
-/**
  * Projection service responsible for:
  *  - Transforming world-space positions into camera space
  *  - Clipping against the near plane
@@ -31,12 +24,16 @@ export interface CameraPose {
  * The service is parameterized by a camera pose and canvas size.
  */
 export class ProjectionService {
-  private readonly camera: CameraPose;
+  private readonly pose: DomainCameraPose;
   private readonly fX: number;
   private readonly fY: number;
 
-  constructor(camera: CameraPose, canvasWidth: number, canvasHeight: number) {
-    this.camera = camera;
+  constructor(
+    pose: DomainCameraPose,
+    canvasWidth: number,
+    canvasHeight: number,
+  ) {
+    this.pose = pose;
 
     const { fX, fY } = this.getFocalLengths(canvasWidth, canvasHeight);
     this.fX = fX;
@@ -59,7 +56,7 @@ export class ProjectionService {
    * World-space -> camera-space for a single point, without clipping.
    */
   worldPointToCameraPointNoClip(worldPoint: Vec3): Vec3 {
-    const { position: cameraPos, frame: cameraFrame } = this.camera;
+    const { position: cameraPos, frame: cameraFrame } = this.pose;
 
     const R_worldFromLocal = mat3FromLocalFrame(cameraFrame);
     const R_localFromWorld = mat3.transpose(R_worldFromLocal);

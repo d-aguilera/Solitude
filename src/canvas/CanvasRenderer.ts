@@ -106,7 +106,7 @@ export class CanvasRenderer implements Renderer {
     const { width, height } = surface;
     const { objects, lights, frameId, controller } = params;
 
-    const camera = controller.getCamera();
+    const camera = controller.getCameraPose();
     const drawMode = controller.getDrawMode();
 
     this.profiler.run("DRAW", "total", () => {

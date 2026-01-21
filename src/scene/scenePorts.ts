@@ -1,12 +1,4 @@
-import type { Mesh, Vec3, RGB, LocalFrame } from "../domain/domainPorts";
-
-/**
- * Canonical camera representation used throughout world/scene transforms.
- */
-export interface Camera {
-  position: Vec3;
-  frame: LocalFrame;
-}
+import type { Mesh, Vec3, RGB } from "../domain/domainPorts";
 
 /**
  * Normalized device coordinate in the projection plane:

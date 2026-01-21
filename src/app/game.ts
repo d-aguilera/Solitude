@@ -184,7 +184,6 @@ function renderCurrentFrame(input: ControlInput): void {
       return true;
     }),
     lights: scene.lights,
-    cameras: scene.cameras,
   };
 
   const hud: HudRenderData = {

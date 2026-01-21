@@ -1,5 +1,4 @@
 import type { Vec3, Mat3, Mesh, RGB } from "../domain/domainPorts";
-import type { DomainCameraPose } from "../app/appPorts";
 
 export type SceneObjectKind = "ship" | "planet" | "polyline" | "star";
 
@@ -69,7 +68,6 @@ export interface PolylineSceneObject extends BaseSceneObject {
 export interface Scene {
   objects: SceneObject[];
   lights: PointLight[];
-  cameras: DomainCameraPose[];
 }
 
 /**

@@ -97,19 +97,17 @@ function createInitialShip(
   };
 }
 
-function createInitialTopCamera(id: string, ship: Ship): DomainCameraPose {
+function createInitialTopCamera(ship: Ship): DomainCameraPose {
   const offset: Vec3 = { x: 0, y: 0, z: 50 };
 
   return {
-    id,
     position: vec3.add(ship.position, offset),
     frame: initialFrame,
   };
 }
 
-function createInitialPilotCamera(id: string, ship: Ship): DomainCameraPose {
+function createInitialPilotCamera(ship: Ship): DomainCameraPose {
   return {
-    id,
     position: { ...ship.position }, // will be offset in game loop
     frame: initialFrame,
   };
@@ -437,13 +435,12 @@ export function createInitialSceneAndWorld(): {
   );
   objects.push(mainShipPath);
 
-  const topCamera = createInitialTopCamera("camera:top", mainShip);
-  const pilotCamera = createInitialPilotCamera("camera:pilot", mainShip);
+  const topCamera = createInitialTopCamera(mainShip);
+  const pilotCamera = createInitialPilotCamera(mainShip);
 
   const scene: Scene = {
     objects,
     lights: [],
-    cameras: [topCamera, pilotCamera],
   };
 
   // Derive planet–path relationships once from the configs we just used.

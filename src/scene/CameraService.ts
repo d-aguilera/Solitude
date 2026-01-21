@@ -1,9 +1,9 @@
+import type { DomainCameraPose } from "../app/appPorts.js";
 import type { SceneObject } from "../appScene/appScenePorts.js";
 import type { Vec3, LocalFrame } from "../domain/domainPorts.js";
 import { mat3FromLocalFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import type { SceneObjectWithCache } from "./sceneInternals.js";
-import type { Camera } from "./scenePorts.js";
 
 /**
  * Camera-space forward threshold.
@@ -23,9 +23,9 @@ export class CameraService {
   private readonly cameraFrame: LocalFrame;
   private readonly frameId: number;
 
-  constructor(camera: Camera, frameId: number) {
-    this.cameraPos = camera.position;
-    this.cameraFrame = camera.frame;
+  constructor(pose: DomainCameraPose, frameId: number) {
+    this.cameraPos = pose.position;
+    this.cameraFrame = pose.frame;
     this.frameId = frameId;
   }
 

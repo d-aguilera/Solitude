@@ -2,7 +2,7 @@ import type { DrawMode } from "../app/appPorts.js";
 import type { Vec3 } from "../domain/domainPorts.js";
 import type { DomainCameraPose } from "../app/appPorts.js";
 import { ProjectionService } from "../scene/ProjectionService.js";
-import type { Camera, NdcPoint } from "../scene/scenePorts.js";
+import type { NdcPoint } from "../scene/scenePorts.js";
 import type {
   RenderShip,
   ViewDebugOverlay,
@@ -21,7 +21,7 @@ import { drawShipVelocityLine, drawBodyLabels } from "./debugDraw.js";
  */
 export class ViewController {
   private readonly projectionService: ProjectionService;
-  private readonly camera: Camera;
+  private readonly pose: DomainCameraPose;
   private readonly referenceShip: RenderShip;
   private readonly drawMode: DrawMode;
   private readonly debugOverlay: ViewDebugOverlay<OverlayBody[]>;
@@ -38,19 +38,12 @@ export class ViewController {
     const { pose, canvasWidth, canvasHeight, referenceShip, drawMode } = params;
 
     this.projectionService = new ProjectionService(
-      {
-        position: pose.position,
-        frame: pose.frame,
-      },
+      pose,
       canvasWidth,
       canvasHeight,
     );
 
-    this.camera = {
-      position: pose.position,
-      frame: pose.frame,
-    };
-
+    this.pose = pose;
     this.referenceShip = referenceShip;
     this.drawMode = drawMode;
     this.width = canvasWidth;
@@ -87,8 +80,8 @@ export class ViewController {
   /**
    * Accessor for the underlying camera pose used by this view.
    */
-  getCamera(): Camera {
-    return this.camera;
+  getCameraPose(): DomainCameraPose {
+    return this.pose;
   }
 
   /**
