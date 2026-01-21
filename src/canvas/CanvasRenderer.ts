@@ -29,7 +29,6 @@ import { CanvasSurface } from "./CanvasSurface.js";
  * Canvas2D implementation of the top-level Renderer abstraction.
  */
 export class CanvasRenderer implements Renderer {
-  private viewFrameCounter = 0;
   private readonly hudRenderer = new CanvasHudRenderer();
   private readonly shadedFaceRenderer: ShadedFaceRenderer =
     new CanvasShadedFaceRenderer();
@@ -63,7 +62,6 @@ export class CanvasRenderer implements Renderer {
     this.draw(surface, {
       objects: scene.objects,
       lights: scene.lights,
-      frameId: ++this.viewFrameCounter,
       controller,
     });
 
@@ -99,12 +97,11 @@ export class CanvasRenderer implements Renderer {
     params: {
       objects: SceneObject[];
       lights: PointLight[];
-      frameId: number;
       controller: ViewController;
     },
   ): void {
     const { width, height } = surface;
-    const { objects, lights, frameId, controller } = params;
+    const { objects, lights, controller } = params;
 
     const camera = controller.getCameraPose();
     const drawMode = controller.getDrawMode();
@@ -119,7 +116,6 @@ export class CanvasRenderer implements Renderer {
             canvasWidth: width,
             canvasHeight: height,
             lights,
-            frameId,
           });
 
           this.shadedFaceRenderer.render(surface, faceList);

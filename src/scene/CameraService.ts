@@ -1,9 +1,7 @@
 import type { DomainCameraPose } from "../app/appPorts.js";
-import type { SceneObject } from "../appScene/appScenePorts.js";
 import type { Vec3, LocalFrame } from "../domain/domainPorts.js";
 import { mat3FromLocalFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
-import type { SceneObjectWithCache } from "./sceneInternals.js";
 
 /**
  * Camera-space forward threshold.
@@ -15,57 +13,30 @@ const NEAR = 0.01;
  *
  * Responsibilities kept here:
  *  - Transforming world-space points into camera space for a given pose
- *  - Maintaining per-object, per-frame camera-space caches
  *  - Clipping camera-space triangles against the near plane
  */
 export class CameraService {
   private readonly cameraPos: Vec3;
   private readonly cameraFrame: LocalFrame;
-  private readonly frameId: number;
 
-  constructor(pose: DomainCameraPose, frameId: number) {
+  constructor(pose: DomainCameraPose) {
     this.cameraPos = pose.position;
     this.cameraFrame = pose.frame;
-    this.frameId = frameId;
   }
 
   /**
-   * Convert an object's world-space points into camera space,
-   * using a per-object cache keyed by the current frame id.
+   * Convert world-space points into camera space.
    */
-  getCameraPointsForObject(obj: SceneObject, worldPoints: Vec3[]): Vec3[] {
-    const cachedObj = obj as SceneObjectWithCache;
-
-    if (
-      cachedObj.__cameraCacheFrameId === this.frameId &&
-      cachedObj.__cameraPointsCache
-    ) {
-      return cachedObj.__cameraPointsCache;
-    }
-
+  getCameraPointsForObject(worldPoints: Vec3[]): Vec3[] {
     const n = worldPoints.length;
-    let cache = cachedObj.__cameraPointsCache;
-
-    if (!cache || cache.length !== n) {
-      cache = new Array<Vec3>(n);
-      for (let i = 0; i < n; i++) {
-        cache[i] = { x: 0, y: 0, z: 0 };
-      }
-      cachedObj.__cameraPointsCache = cache;
-    }
+    const cameraPoints = new Array<Vec3>(n);
 
     // world -> camera transform for each point
     for (let i = 0; i < n; i++) {
-      const wp = worldPoints[i];
-      const cp = this.worldPointToCameraPointNoClip(wp);
-      const out = cache[i];
-      out.x = cp.x;
-      out.y = cp.y;
-      out.z = cp.z;
+      cameraPoints[i] = this.worldPointToCameraPointNoClip(worldPoints[i]);
     }
 
-    cachedObj.__cameraCacheFrameId = this.frameId;
-    return cache;
+    return cameraPoints;
   }
 
   /**

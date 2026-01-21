@@ -19,16 +19,24 @@ const identity: Mat3 = [
  * If R's columns are [r | f | u], then:
  *   v' = v.x * r + v.y * f + v.z * u
  */
-function mulVec3(R: Mat3, v: Vec3): Vec3 {
-  const right: Vec3 = { x: R[0][0], y: R[1][0], z: R[2][0] };
-  const forward: Vec3 = { x: R[0][1], y: R[1][1], z: R[2][1] };
-  const up: Vec3 = { x: R[0][2], y: R[1][2], z: R[2][2] };
+function mulVec3(R: Readonly<Mat3>, v: Readonly<Vec3>): Vec3 {
+  return mulVec3Into({ x: 0, y: 0, z: 0 }, R, v);
+}
 
-  return {
-    x: right.x * v.x + forward.x * v.y + up.x * v.z,
-    y: right.y * v.x + forward.y * v.y + up.y * v.z,
-    z: right.z * v.x + forward.z * v.y + up.z * v.z,
-  };
+/**
+ * In-place mulVec3: out = R * v, using the same column-basis convention.
+ */
+function mulVec3Into(out: Vec3, R: Readonly<Mat3>, v: Readonly<Vec3>): Vec3 {
+  const { x, y, z } = v,
+    R0 = R[0],
+    R1 = R[1],
+    R2 = R[2];
+
+  out.x = R0[0] * x + R0[1] * y + R0[2] * z;
+  out.y = R1[0] * x + R1[1] * y + R1[2] * z;
+  out.z = R2[0] * x + R2[1] * y + R2[2] * z;
+
+  return out;
 }
 
 /**
@@ -36,34 +44,52 @@ function mulVec3(R: Mat3, v: Vec3): Vec3 {
  *
  * Both A and B are local→world rotation matrices in the same convention.
  */
-function mulMat3(A: Mat3, B: Mat3): Mat3 {
-  const a0 = A[0],
-    a1 = A[1],
-    a2 = A[2];
-  const b0 = B[0],
-    b1 = B[1],
-    b2 = B[2];
+function mulMat3(A: Readonly<Mat3>, B: Readonly<Mat3>): Mat3 {
+  const A0 = A[0],
+    A00 = A0[0],
+    A01 = A0[1],
+    A02 = A0[2],
+    A1 = A[1],
+    A10 = A1[0],
+    A11 = A1[1],
+    A12 = A1[2],
+    A2 = A[2],
+    A20 = A2[0],
+    A21 = A2[1],
+    A22 = A2[2],
+    B0 = B[0],
+    B00 = B0[0],
+    B01 = B0[1],
+    B02 = B0[2],
+    B1 = B[1],
+    B10 = B1[0],
+    B11 = B1[1],
+    B12 = B1[2],
+    B2 = B[2],
+    B20 = B2[0],
+    B21 = B2[1],
+    B22 = B2[2];
 
   return [
     [
-      a0[0] * b0[0] + a0[1] * b1[0] + a0[2] * b2[0],
-      a0[0] * b0[1] + a0[1] * b1[1] + a0[2] * b2[1],
-      a0[0] * b0[2] + a0[1] * b1[2] + a0[2] * b2[2],
+      A00 * B00 + A01 * B10 + A02 * B20,
+      A00 * B01 + A01 * B11 + A02 * B21,
+      A00 * B02 + A01 * B12 + A02 * B22,
     ],
     [
-      a1[0] * b0[0] + a1[1] * b1[0] + a1[2] * b2[0],
-      a1[0] * b0[1] + a1[1] * b1[1] + a1[2] * b2[1],
-      a1[0] * b0[2] + a1[1] * b1[2] + a1[2] * b2[2],
+      A10 * B00 + A11 * B10 + A12 * B20,
+      A10 * B01 + A11 * B11 + A12 * B21,
+      A10 * B02 + A11 * B12 + A12 * B22,
     ],
     [
-      a2[0] * b0[0] + a2[1] * b1[0] + a2[2] * b2[0],
-      a2[0] * b0[1] + a2[1] * b1[1] + a2[2] * b2[1],
-      a2[0] * b0[2] + a2[1] * b1[2] + a2[2] * b2[2],
+      A20 * B00 + A21 * B10 + A22 * B20,
+      A20 * B01 + A21 * B11 + A22 * B21,
+      A20 * B02 + A21 * B12 + A22 * B22,
     ],
   ];
 }
 
-function rotAxis(axis: Vec3, angle: number): Mat3 {
+function rotAxis(axis: Readonly<Vec3>, angle: number): Mat3 {
   const n = vec3.normalize(axis);
   const len = vec3.length(n);
 
@@ -85,7 +111,7 @@ function rotAxis(axis: Vec3, angle: number): Mat3 {
   ];
 }
 
-function transpose(M: Mat3): Mat3 {
+function transpose(M: Readonly<Mat3>): Mat3 {
   const M0 = M[0];
   const M1 = M[1];
   const M2 = M[2];
@@ -99,6 +125,7 @@ function transpose(M: Mat3): Mat3 {
 export const mat3 = {
   identity,
   mulVec3,
+  mulVec3Into,
   mulMat3,
   rotAxis,
   transpose,
