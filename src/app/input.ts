@@ -1,4 +1,4 @@
-import type { ControlInput, EnvInput } from "./appInternals.js";
+import type { ControlInput, EnvInput } from "./appPorts.js";
 
 type KeyCode =
   | "ArrowDown"

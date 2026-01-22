@@ -1,5 +1,4 @@
-import type { HudRenderData, RenderSurface2D } from "../app/appPorts.js";
-import type { Scene } from "../appScene/appScenePorts.js";
+import type { HudRenderData, RenderSurface2D, Scene } from "../app/appPorts.js";
 import type { RGB, Vec3 } from "../domain/domainPorts.js";
 import type { ViewController } from "../projection/ViewController.js";
 

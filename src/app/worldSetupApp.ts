@@ -1,4 +1,3 @@
-import type { AppWorld, Ship } from "./appInternals.js";
 import type {
   PlanetBodyConfig,
   StarBodyConfig,
@@ -14,7 +13,6 @@ import type {
   StarPhysics,
   Vec3,
 } from "../domain/domainPorts.js";
-import type { DomainCameraPose } from "./appPorts.js";
 import {
   makeLocalFrameFromUp,
   mat3FromLocalFrame,
@@ -27,12 +25,16 @@ import { buildDefaultSolarSystemConfigs } from "../domain/solarSystem.js";
 import { trig } from "../domain/trig.js";
 import { vec3 } from "../domain/vec3.js";
 import { getStarPhysicsById } from "../domain/worldLookup.js";
-import type { SceneObject } from "../appScene/appScenePorts.js";
-import type { Scene } from "../appScene/appScenePorts.js";
-import type { StarSceneObject } from "../appScene/appScenePorts.js";
-import type { PlanetSceneObject } from "../appScene/appScenePorts.js";
-import type { ShipSceneObject } from "../appScene/appScenePorts.js";
-import type { PolylineSceneObject } from "../appScene/appScenePorts.js";
+import type { AppWorld, Ship } from "./appInternals.js";
+import type {
+  DomainCameraPose,
+  PlanetSceneObject,
+  PolylineSceneObject,
+  Scene,
+  SceneObject,
+  ShipSceneObject,
+  StarSceneObject,
+} from "./appPorts.js";
 import {
   createPlanetTrajectory,
   type PlanetTrajectory,

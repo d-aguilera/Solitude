@@ -1,12 +1,14 @@
-import type { HudRenderData } from "../app/appPorts.js";
 import type {
+  HudRenderData,
   PlanetSceneObject,
   PointLight,
+  RenderSurface2D,
   Scene,
   SceneObject,
-} from "../appScene/appScenePorts.js";
+} from "../app/appPorts.js";
 import type { Profiler } from "../domain/domainPorts.js";
 import type { ViewController } from "../projection/ViewController.js";
+import { toRenderable } from "../scene/renderPrep.js";
 import { ndcToScreen } from "./ndcToScreen.js";
 import type {
   OverlayBody,
@@ -18,9 +20,7 @@ import type {
   HudRenderer,
   ViewDebugOverlayRenderer,
 } from "./renderPorts.js";
-import type { RenderSurface2D } from "../app/appPorts.js";
 import { buildShadedFaces } from "./shadedFaces.js";
-import { toRenderable } from "../scene/renderPrep.js";
 
 /**
  * Default implementation of the top-level Renderer abstraction.

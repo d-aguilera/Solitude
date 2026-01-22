@@ -7,26 +7,26 @@ import type {
   Profiler,
   Vec3,
 } from "../domain/domainPorts.js";
-import type { DomainCameraPose } from "./appPorts.js";
+import { buildInitialGravityState } from "../domain/gravityState.js";
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import type { Renderer } from "../render/renderPorts.js";
-import type { RenderSurface2D } from "./appPorts.js";
 import type {
   AppWorld,
-  ControlInput,
   ControlledBodyState,
   ControlState,
   Ship,
 } from "./appInternals.js";
-import type { GameDependencies } from "./appPorts.js";
 import type {
+  ControlInput,
+  DomainCameraPose,
+  GameDependencies,
   HudRenderData,
   ProfilerController,
+  RenderSurface2D,
+  Scene,
   TickCallback,
 } from "./appPorts.js";
-import type { Scene } from "../appScene/appScenePorts.js";
-import { buildInitialGravityState } from "../domain/gravityState.js";
 import {
   applyThrustToVelocity,
   updateBodyOrientationFromInput,
