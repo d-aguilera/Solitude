@@ -1,7 +1,7 @@
 import type { HudRenderData, RenderSurface2D } from "../app/appPorts.js";
 import type { Scene } from "../appScene/appScenePorts.js";
 import type { RGB, Vec3 } from "../domain/domainPorts.js";
-import type { ViewConfig } from "./ViewConfig.js";
+import type { ViewController } from "../projection/ViewController.js";
 
 export interface FaceEntry {
   baseColor: RGB;
@@ -54,8 +54,8 @@ export interface Renderer {
     topScene: Scene,
     pilotSurface: RenderSurface2D,
     topSurface: RenderSurface2D,
-    pilotView: ViewConfig,
-    topView: ViewConfig,
+    pilotViewController: ViewController,
+    topViewController: ViewController,
     hud: HudRenderData,
   ): void;
 }

@@ -20,7 +20,6 @@ import type {
 } from "./renderPorts.js";
 import type { RenderSurface2D } from "../app/appPorts.js";
 import { buildShadedFaces } from "./shadedFaces.js";
-import type { ViewConfig } from "./ViewConfig.js";
 import { toRenderable } from "../scene/renderPrep.js";
 
 /**
@@ -40,22 +39,20 @@ export class DefaultRenderer implements Renderer {
     topScene: Scene,
     pilotSurface: RenderSurface2D,
     topSurface: RenderSurface2D,
-    pilotView: ViewConfig,
-    topView: ViewConfig,
+    pilotViewController: ViewController,
+    topViewController: ViewController,
     hud: HudRenderData,
   ): void {
-    this.renderView(pilotView, pilotScene, pilotSurface);
-    this.renderView(topView, topScene, topSurface);
+    this.renderView(pilotViewController, pilotScene, pilotSurface);
+    this.renderView(topViewController, topScene, topSurface);
     this.hudRenderer.render(pilotSurface, hud);
   }
 
   private renderView(
-    viewConfig: ViewConfig,
+    controller: ViewController,
     scene: Scene,
     surface: RenderSurface2D,
   ): void {
-    const controller = viewConfig.getController();
-
     this.clear(surface);
     this.draw(surface, {
       objects: scene.objects,
