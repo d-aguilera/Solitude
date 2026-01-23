@@ -37,28 +37,20 @@ export function rebuildPlanetPathMesh(
   traj: PlanetTrajectory,
   mesh: Mesh,
 ): void {
-  // Clear mesh
-  mesh.points.length = 0;
-  mesh.faces.length = 0;
-
+  const { points, faces } = mesh;
   const count = traj.buffers.reduce((acc, buf) => acc + buf.count, 0);
-  if (count === 0) return;
-
-  const points: Vec3[] = new Array(count);
+  points.length = count;
+  faces.length = count - (count > 0 ? 1 : 0);
 
   // Collect points in from newest to oldest: G1 -> G2 -> ...
   let i = 0;
   traj.buffers.forEach((buf) => {
     buf.forEach((p) => {
-      points[i++] = p;
+      points[i] = p;
+      if (i > 0) {
+        faces[i - 1] = [i - 1, i];
+      }
+      i++;
     });
   });
-
-  // Fill mesh
-  for (i = 0; i < points.length; i++) {
-    mesh.points.push(points[i]);
-    if (i > 0) {
-      mesh.faces.push([i - 1, i]);
-    }
-  }
 }
