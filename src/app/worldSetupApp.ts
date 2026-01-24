@@ -5,7 +5,6 @@ import type {
 import { colors } from "../domain/domainInternals.js";
 import type {
   CelestialBody,
-  DomainWorld,
   LocalFrame,
   Mesh,
   PlanetPathMapping,
@@ -14,6 +13,7 @@ import type {
   ShipBody,
   StarPhysics,
   Vec3,
+  World,
 } from "../domain/domainPorts.js";
 import {
   makeLocalFrameFromUp,
@@ -177,9 +177,9 @@ function computePlanetMass(physicalRadius: number, density: number): number {
 function addPlanetsAndStarsFromConfig(
   configs: (PlanetBodyConfig | StarBodyConfig)[],
   objects: SceneObject[],
-  worldPlanets: DomainWorld["planets"],
+  worldPlanets: World["planets"],
   worldPlanetPhysics: PlanetPhysics[],
-  worldStars: DomainWorld["stars"],
+  worldStars: World["stars"],
   worldStarPhysics: StarPhysics[],
 ): void {
   const bodyMeshTemplate: Mesh = generatePlanetMesh(3);
@@ -372,7 +372,7 @@ function computeShipInitialNearEarthOrbitVelocity(
 
 export function createInitialSceneAndWorld(): {
   scene: Scene;
-  world: DomainWorld;
+  world: World;
   mainShipId: string;
   topCamera: DomainCameraPose;
   pilotCamera: DomainCameraPose;
@@ -381,7 +381,7 @@ export function createInitialSceneAndWorld(): {
 } {
   const objects: SceneObject[] = [];
 
-  const world: DomainWorld = {
+  const world: World = {
     shipBodies: [],
     planets: [],
     planetPhysics: [],
@@ -470,10 +470,7 @@ export function createInitialSceneAndWorld(): {
   };
 }
 
-export function syncShipsToSceneObjects(
-  world: DomainWorld,
-  scene: Scene,
-): void {
+export function syncShipsToSceneObjects(world: World, scene: Scene): void {
   for (const ship of world.shipBodies) {
     const obj = scene.objects.find((o) => o.id === ship.id);
     if (!obj) continue;
@@ -484,10 +481,7 @@ export function syncShipsToSceneObjects(
   }
 }
 
-export function syncPlanetsToSceneObjects(
-  world: DomainWorld,
-  scene: Scene,
-): void {
+export function syncPlanetsToSceneObjects(world: World, scene: Scene): void {
   for (const planetBody of world.planets) {
     const obj = scene.objects.find(
       (o) => o.id === planetBody.id,
@@ -498,10 +492,7 @@ export function syncPlanetsToSceneObjects(
   }
 }
 
-export function syncStarsToSceneObjects(
-  world: DomainWorld,
-  scene: Scene,
-): void {
+export function syncStarsToSceneObjects(world: World, scene: Scene): void {
   for (const starBody of world.stars) {
     const obj = scene.objects.find(
       (o) => o.id === starBody.id,
@@ -515,7 +506,7 @@ export function syncStarsToSceneObjects(
 /**
  * Internal helper: build the array of point lights from the current star bodies.
  */
-function buildLightsFromStars(world: DomainWorld, scene: Scene): void {
+function buildLightsFromStars(world: World, scene: Scene): void {
   const lights = [];
 
   for (const starBody of world.stars) {
@@ -533,7 +524,7 @@ function buildLightsFromStars(world: DomainWorld, scene: Scene): void {
 /**
  * Per‑frame adapter: keep Scene.lights in sync with the current star bodies.
  */
-export function syncLightsToStars(world: DomainWorld, scene: Scene): void {
+export function syncLightsToStars(world: World, scene: Scene): void {
   buildLightsFromStars(world, scene);
 }
 

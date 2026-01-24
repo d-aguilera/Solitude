@@ -1,4 +1,4 @@
-import type { BodyState, DomainWorld, GravityState, Vec3 } from "./domainPorts";
+import type { BodyState, GravityState, Vec3, World } from "./domainPorts";
 
 /**
  * Create a brand-new GravityState from the current world contents.
@@ -9,7 +9,7 @@ import type { BodyState, DomainWorld, GravityState, Vec3 } from "./domainPorts";
  *  - bodies with mass and velocity
  *  - positions array with the current world positions
  */
-export function buildInitialGravityState(world: DomainWorld): GravityState {
+export function buildInitialGravityState(world: World): GravityState {
   const bodies: BodyState[] = [];
   const positions: Vec3[] = [];
 

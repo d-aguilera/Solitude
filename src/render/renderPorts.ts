@@ -5,7 +5,7 @@ import type {
   HudRenderData,
   Scene,
 } from "../app/appPorts.js";
-import type { DomainWorld, Mesh, RGB, Vec3 } from "../domain/domainPorts.js";
+import type { Mesh, RGB, Vec3, World } from "../domain/domainPorts.js";
 
 export interface FaceEntry {
   baseColor: RGB;
@@ -85,7 +85,7 @@ export interface RenderParams {
   controlState: ControlState;
   input: ControlInput;
   scene: Scene;
-  world: DomainWorld;
+  world: World;
   mainShipId: string;
   pilotCamera: DomainCameraPose;
   topCamera: DomainCameraPose;

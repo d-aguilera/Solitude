@@ -19,18 +19,6 @@ export interface CelestialBody {
 }
 
 /**
- * Generalized world-state container for dynamic entities controlled by
- * the domain logic.
- */
-export interface DomainWorld {
-  shipBodies: ShipBody[];
-  planets: CelestialBody[];
-  planetPhysics: PlanetPhysics[];
-  stars: CelestialBody[];
-  starPhysics: StarPhysics[];
-}
-
-/**
  * Domain-level abstraction for gravitational integration.
  *
  * Implementations stay port-pure: they do not know about rendering,
@@ -132,4 +120,16 @@ export interface Vec3 {
   x: number;
   y: number;
   z: number;
+}
+
+/**
+ * Generalized world-state container for dynamic entities controlled by
+ * the domain logic.
+ */
+export interface World {
+  shipBodies: ShipBody[];
+  planets: CelestialBody[];
+  planetPhysics: PlanetPhysics[];
+  stars: CelestialBody[];
+  starPhysics: StarPhysics[];
 }

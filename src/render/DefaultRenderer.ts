@@ -14,7 +14,7 @@ import { getSignedThrustPercent } from "../app/controls.js";
 import { fps } from "../app/fps.js";
 import { ViewComposer } from "./ViewComposer.js";
 import { getShipById } from "../app/worldLookup.js";
-import type { DomainWorld, Vec3 } from "../domain/domainPorts.js";
+import type { Vec3, World } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import type { ViewController } from "./ViewController.js";
 import { toRenderable } from "./renderPrep.js";
@@ -64,7 +64,7 @@ export class DefaultRenderer implements Renderer {
     input: ControlInput;
     controlState: ControlState;
     scene: Scene;
-    world: DomainWorld;
+    world: World;
     mainShipId: string;
     pilotCamera: DomainCameraPose;
     topCamera: DomainCameraPose;

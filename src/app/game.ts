@@ -1,5 +1,4 @@
 import type {
-  DomainWorld,
   GravityEngine,
   GravityState,
   LocalFrame,
@@ -7,6 +6,7 @@ import type {
   Profiler,
   ShipBody,
   Vec3,
+  World,
 } from "../domain/domainPorts.js";
 import type { GravityBodyBinding } from "./appPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
@@ -127,7 +127,7 @@ export function startGame(deps: {
   };
 }
 
-function buildGravityBindings(world: DomainWorld): GravityBodyBinding[] {
+function buildGravityBindings(world: World): GravityBodyBinding[] {
   const bindings: GravityBodyBinding[] = [];
 
   // Ships

@@ -1,11 +1,11 @@
 import type {
   BodyId,
-  DomainWorld,
   LocalFrame,
   Mat3,
   Mesh,
   RGB,
   Vec3,
+  World,
 } from "../domain/domainPorts";
 import type { ControlState } from "./appInternals";
 
@@ -89,7 +89,7 @@ export interface EnvInput {
 export interface GameState {
   controlState: ControlState;
   scene: Scene;
-  world: DomainWorld;
+  world: World;
   mainShipId: string;
   pilotCamera: DomainCameraPose;
   topCamera: DomainCameraPose;
