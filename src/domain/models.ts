@@ -89,79 +89,60 @@ export const icosahedronModel: Mesh = {
 // --- Planet / sphere-like meshes ---
 
 export function generatePlanetMesh(subdivisions = 3): Mesh {
-  // Start from a deep clone of the base icosahedron mesh
-  let vertices: Vec3[] = icosahedronModel.points.map((v) => ({
-    x: v.x,
-    y: v.y,
-    z: v.z,
-  }));
+  const getMidpointIndex = (i1: number, i2: number): number => {
+    const cacheKey = i1 < i2 ? `${i1}_${i2}` : `${i2}_${i1}`;
+    let idx = midpointCache[cacheKey];
+    if (idx === undefined) {
+      const v = vec3.normalize(vec3.add(vertices[i1], vertices[i2]));
+      idx = vertices.push(v) - 1;
+      midpointCache[cacheKey] = idx;
+    }
+    return idx;
+  };
 
-  let faces: number[][] = icosahedronModel.faces.map((f) => [...f] as number[]);
+  // Start from a deep clone of the base icosahedron mesh
+  let vertices: Vec3[] = icosahedronModel.points.map(vec3.clone);
+  let faces: number[][] = icosahedronModel.faces.map((f) => [...f]);
+  let midpointCache: { [key: string]: number } = {};
 
   for (let s = 0; s < subdivisions; s++) {
     const newFaces: number[][] = [];
-    const midpointCache = new Map<string, number>();
-
-    const getMidpointIndex = (i1: number, i2: number): number => {
-      const key = i1 < i2 ? `${i1}_${i2}` : `${i2}_${i1}`;
-      if (midpointCache.has(key)) return midpointCache.get(key)!;
-
-      const v1 = vertices[i1];
-      const v2 = vertices[i2];
-      const mid = vec3.normalize({
-        x: (v1.x + v2.x) * 0.5,
-        y: (v1.y + v2.y) * 0.5,
-        z: (v1.z + v2.z) * 0.5,
-      });
-
-      const idx = vertices.length;
-      vertices.push(mid);
-      midpointCache.set(key, idx);
-      return idx;
-    };
-
     for (const [a, b, c] of faces) {
+      // split each side of the triangle in 2 halfs
       const ab = getMidpointIndex(a, b);
       const bc = getMidpointIndex(b, c);
       const ca = getMidpointIndex(c, a);
-
+      // and create 4 smaller triangles
       newFaces.push([a, ab, ca]);
       newFaces.push([b, bc, ab]);
       newFaces.push([c, ca, bc]);
       newFaces.push([ab, bc, ca]);
     }
+
+    midpointCache = {};
     faces = newFaces;
   }
 
-  const points: Vec3[] = vertices.map((v) => ({
-    x: v.x,
-    y: v.y,
-    z: v.z,
-  }));
-
+  const points: Vec3[] = vertices.map(vec3.clone);
   const faceNormals: Vec3[] = new Array(faces.length);
+
+  const getFaceNormal = (face: number[]): Vec3 => {
+    const v0 = points[face[0]];
+    const e1 = vec3.sub(points[face[1]], v0);
+    const e2 = vec3.sub(points[face[2]], v0);
+    return vec3.cross(e1, e2);
+  };
 
   // Ensure face normals point outward from the origin (unit sphere)
   for (let i = 0; i < faces.length; i++) {
-    let [i0, i1, i2] = faces[i];
-    const v0 = points[i0];
-    const v1 = points[i1];
-    const v2 = points[i2];
-
-    const e1 = vec3.sub(v1, v0);
-    const e2 = vec3.sub(v2, v0);
-    let n = vec3.cross(e1, e2);
-
-    // For a unit sphere centered at origin, v0 points outward.
-    if (vec3.dot(n, v0) < 0) {
-      // Flip winding
-      faces[i] = [i0, i2, i1];
-      // Recompute with flipped vertices
-      const vv1 = v2;
-      const vv2 = v1;
-      const ee1 = vec3.sub(vv1, v0);
-      const ee2 = vec3.sub(vv2, v0);
-      n = vec3.cross(ee1, ee2);
+    const face = faces[i];
+    let n = getFaceNormal(face);
+    if (vec3.dot(n, points[face[0]]) < 0) {
+      // if not, flip winding
+      const aux = face[1];
+      face[1] = face[2];
+      face[2] = aux;
+      n = getFaceNormal(face);
     }
 
     faceNormals[i] = vec3.normalize(n);
