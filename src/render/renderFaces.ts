@@ -1,16 +1,21 @@
 import type {
   DomainCameraPose,
   PointLight,
+  Scene,
   SceneObject,
 } from "../app/appPorts.js";
-import type { Vec3 } from "../domain/domainPorts.js";
+import type { RGB, Vec3 } from "../domain/domainPorts.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
+import { ndcToScreen } from "./ndcToScreen.js";
 import { ProjectionService } from "./ProjectionService.js";
 import { toRenderable } from "./renderPrep.js";
-import type { NdcPoint } from "./renderPorts.js";
-import { ndcToScreen } from "./ndcToScreen.js";
-import type { FaceEntry } from "./renderPorts.js";
+import type {
+  NdcPoint,
+  RenderedFace,
+  RenderSurface2D,
+  ScreenPoint,
+} from "./renderPorts.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
 const SUN_LUMINOSITY = 3.828e26; // W
@@ -18,19 +23,34 @@ const AU = 1.495978707e11; // m
 const EARTH_ORBIT_RADIUS_2 = AU * AU;
 const E_SUN_AT_EARTH = SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS_2);
 
+export function renderFaces(
+  scene: Scene,
+  camera: DomainCameraPose,
+  surface: RenderSurface2D,
+): RenderedFace[] {
+  const { width, height } = surface;
+  const { objects, lights } = scene;
+
+  const faceList = buildFaces(objects, camera, width, height, lights);
+
+  faceList.sort((a, b) => b.depth - a.depth);
+
+  const shadedFaces = shadeFaces(faceList);
+
+  return shadedFaces;
+}
+
 /**
  * Build the list of shaded triangle faces (with depth and lighting information)
  * for all non-wireframe objects in the scene.
  */
-export function buildShadedFaces(params: {
-  objects: SceneObject[];
-  camera: DomainCameraPose;
-  canvasWidth: number;
-  canvasHeight: number;
-  lights: PointLight[];
-}): FaceEntry[] {
-  const { objects, camera, canvasWidth, canvasHeight, lights } = params;
-
+function buildFaces(
+  objects: SceneObject[],
+  camera: DomainCameraPose,
+  canvasWidth: number,
+  canvasHeight: number,
+  lights: PointLight[],
+): FaceEntry[] {
   const projectionService = new ProjectionService(
     camera,
     canvasWidth,
@@ -87,13 +107,13 @@ export function buildShadedFaces(params: {
       const isStar = obj.kind === "star";
 
       for (const [A, B, C] of clipped) {
-        const ndc0 = projectionFromCamera(projectionService, A);
-        const ndc1 = projectionFromCamera(projectionService, B);
-        const ndc2 = projectionFromCamera(projectionService, C);
+        const ndc0: NdcPoint = projectionService.projectCameraPointToNdc(A);
+        const ndc1: NdcPoint = projectionService.projectCameraPointToNdc(B);
+        const ndc2: NdcPoint = projectionService.projectCameraPointToNdc(C);
 
-        const p0 = ndcToScreen(ndc0, canvasWidth, canvasHeight);
-        const p1 = ndcToScreen(ndc1, canvasWidth, canvasHeight);
-        const p2 = ndcToScreen(ndc2, canvasWidth, canvasHeight);
+        const p0: ScreenPoint = ndcToScreen(ndc0, canvasWidth, canvasHeight);
+        const p1: ScreenPoint = ndcToScreen(ndc1, canvasWidth, canvasHeight);
+        const p2: ScreenPoint = ndcToScreen(ndc2, canvasWidth, canvasHeight);
 
         const d0 = p0.depth;
         const d1 = p1.depth;
@@ -117,13 +137,6 @@ export function buildShadedFaces(params: {
   });
 
   return faceList;
-}
-
-function projectionFromCamera(
-  projectionService: ProjectionService,
-  cameraPoint: Vec3,
-): NdcPoint {
-  return projectionService.projectCameraPointToNdc(cameraPoint);
 }
 
 function getWorldFaceNormalsForObject(
@@ -187,4 +200,35 @@ function toneMapIrradiance(E: number): number {
   const ldr = Math.pow(mapped, gamma);
 
   return Math.max(0, Math.min(1, ldr));
+}
+
+function shadeFaces(faceList: FaceEntry[]) {
+  const shadedFaces = new Array<RenderedFace>(faceList.length);
+
+  for (let i = 0; i < faceList.length; i++) {
+    const face = faceList[i];
+    const { p0, p1, p2, baseColor, intensity } = face;
+    const { r: baseR, g: baseG, b: baseB } = baseColor;
+    const k = 0.2 + 0.8 * intensity;
+    const r = Math.round(baseR * k);
+    const g = Math.round(baseG * k);
+    const b = Math.round(baseB * k);
+    shadedFaces[i] = {
+      p0,
+      p1,
+      p2,
+      color: { r, g, b },
+    };
+  }
+
+  return shadedFaces;
+}
+
+interface FaceEntry {
+  baseColor: RGB;
+  depth: number;
+  intensity: number;
+  p0: ScreenPoint;
+  p1: ScreenPoint;
+  p2: ScreenPoint;
 }

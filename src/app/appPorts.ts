@@ -107,32 +107,6 @@ export interface GravityBodyBinding {
   starIndex: number;
 }
 
-/**
- * Adapter‑agnostic HUD inputs.
- */
-export interface HudRenderData {
-  /**
-   * Speed in meters per second for the controlled ship.
-   */
-  speedMps: number;
-  /**
-   * Latest measured frames per second.
-   */
-  fps: number;
-  /**
-   * Whether profiling is currently enabled.
-   */
-  profilingEnabled: boolean;
-  /**
-   * Pilot camera offset expressed in the ship's local frame.
-   */
-  pilotCameraLocalOffset: Vec3;
-  /**
-   * Signed thrust level in [-1, 1].
-   */
-  thrustPercent: number;
-}
-
 export interface PlanetSceneObject extends CelestialBodySceneObject {
   kind: "planet";
 }

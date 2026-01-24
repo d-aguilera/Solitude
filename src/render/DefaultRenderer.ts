@@ -1,54 +1,45 @@
-import type { ControlState } from "../app/appInternals.js";
 import type {
-  ControlInput,
   DomainCameraPose,
-  HudRenderData,
+  DrawMode,
   PlanetSceneObject,
-  PointLight,
   ProfilerController,
   Scene,
   SceneObject,
 } from "../app/appPorts.js";
-import type { RenderSurface2D } from "./renderPorts.js";
 import { getSignedThrustPercent } from "../app/controls.js";
 import { fps } from "../app/fps.js";
-import { ViewComposer } from "./ViewComposer.js";
 import { getShipById } from "../app/worldLookup.js";
-import type { Vec3, World } from "../domain/domainPorts.js";
+import type { ShipBody, Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
-import type { ViewController } from "./ViewController.js";
-import { toRenderable } from "./renderPrep.js";
-import { ndcToScreen } from "./ndcToScreen.js";
 import type {
-  OverlayBody,
-  PolylineRenderer,
+  Rasterizer,
+  RenderedBodyLabel,
   RenderedFace,
+  RenderedHud,
+  RenderedPolyline,
+  RenderedSegment,
+  RenderedView,
   Renderer,
-  ScreenPoint,
-  FaceRenderer,
-  HudRenderer,
-  ViewDebugOverlayRenderer,
+  RenderParams,
+  RenderSurface2D,
 } from "./renderPorts.js";
-import { buildShadedFaces } from "./shadedFaces.js";
+import { renderFaces } from "./renderFaces.js";
+import { renderPolylines } from "./renderPolylines.js";
+import { renderBodyLabels } from "./renderBodyLabels.js";
+import { renderVelocitySegments } from "./renderVelocitySegments.js";
+import { ProjectionService } from "./ProjectionService.js";
 
-/**
- * Default implementation of the top-level Renderer abstraction.
- */
+const drawMode: DrawMode = "faces";
+
+const isNotPolylinePath = (obj: SceneObject) =>
+  obj.kind !== "polyline" || !obj.id.startsWith("path:");
+
 export class DefaultRenderer implements Renderer {
   constructor(
-    private readonly faceRenderer: FaceRenderer,
-    private readonly polylineRenderer: PolylineRenderer,
-    private readonly overlayRenderer: ViewDebugOverlayRenderer,
-    private readonly hudRenderer: HudRenderer,
+    private readonly rasterizer: Rasterizer,
     private profilerController: ProfilerController,
   ) {}
 
-  // Single shared view composer instance for all views.
-  private viewComposer = new ViewComposer();
-
-  /**
-   * Render the current world/scene state using the configured renderer.
-   */
   renderCurrentFrame({
     input,
     controlState,
@@ -60,216 +51,165 @@ export class DefaultRenderer implements Renderer {
     pilotSurface,
     topSurface,
     pilotCameraLocalOffset,
-  }: {
-    input: ControlInput;
-    controlState: ControlState;
-    scene: Scene;
-    world: World;
-    mainShipId: string;
-    pilotCamera: DomainCameraPose;
-    topCamera: DomainCameraPose;
-    pilotSurface: RenderSurface2D;
-    topSurface: RenderSurface2D;
-    pilotCameraLocalOffset: Vec3;
-  }): void {
+  }: RenderParams): void {
     const mainShip = getShipById(world, mainShipId);
+    const overlayBodies: PlanetSceneObject[] = scene.objects.filter(
+      (obj): obj is PlanetSceneObject =>
+        obj.kind === "planet" || obj.kind === "star",
+    );
+
+    var pilotData: RenderedView = renderPilotView(
+      pilotCamera,
+      pilotSurface,
+      scene,
+      mainShip,
+      overlayBodies,
+    );
+
+    var topData: RenderedView = renderTopView(
+      topCamera,
+      topSurface,
+      scene,
+      mainShip,
+      overlayBodies,
+    );
+
     const profilingEnabled = this.profilerController.isEnabled();
     const thrustPercent = getSignedThrustPercent(input, controlState);
 
-    const pilotViewConfig = this.viewComposer.buildPilotView(
-      pilotCamera,
+    var hudData = renderHud(
       mainShip,
-      "faces",
-      pilotSurface,
-    );
-
-    // Pilot scene: full scene, unfiltered
-    const pilotScene: Scene = scene;
-
-    const topViewConfig = this.viewComposer.buildTopView(
-      topCamera,
-      mainShip,
-      "faces",
-      topSurface,
-    );
-
-    // Top scene: no trajectory polylines
-    const topScene: Scene = {
-      objects: scene.objects.filter((obj) => {
-        if (obj.kind === "polyline" && obj.id.startsWith("path:")) {
-          return false;
-        }
-        return true;
-      }),
-      lights: scene.lights,
-    };
-
-    const hud: HudRenderData = {
-      speedMps: vec3.length(mainShip.velocity),
-      fps,
+      pilotCameraLocalOffset,
       profilingEnabled,
-      pilotCameraLocalOffset: pilotCameraLocalOffset,
       thrustPercent,
-    };
-
-    this.renderFrame(
-      pilotScene,
-      topScene,
-      pilotSurface,
-      topSurface,
-      pilotViewConfig,
-      topViewConfig,
-      hud,
     );
+
+    this.rasterizer.clear(pilotSurface, "#000000");
+    this.rasterizer.drawFaces(pilotSurface, pilotData.faces);
+    this.rasterizer.drawPolylines(pilotSurface, pilotData.polylines);
+    this.rasterizer.drawSegments(pilotSurface, pilotData.segments);
+    this.rasterizer.drawBodyLabels(pilotSurface, pilotData.bodyLabels);
+
+    this.rasterizer.clear(topSurface, "#000000");
+    this.rasterizer.drawFaces(topSurface, topData.faces);
+    this.rasterizer.drawPolylines(topSurface, topData.polylines);
+    this.rasterizer.drawSegments(topSurface, topData.segments);
+    this.rasterizer.drawBodyLabels(topSurface, topData.bodyLabels);
+
+    this.rasterizer.drawHud(pilotSurface, hudData);
   }
+}
 
-  private renderFrame(
-    pilotScene: Scene,
-    topScene: Scene,
-    pilotSurface: RenderSurface2D,
-    topSurface: RenderSurface2D,
-    pilotViewController: ViewController,
-    topViewController: ViewController,
-    hud: HudRenderData,
-  ): void {
-    this.renderView(pilotViewController, pilotScene, pilotSurface);
-    this.renderView(topViewController, topScene, topSurface);
-    this.hudRenderer.render(pilotSurface, hud);
-  }
+function renderPilotView(
+  camera: DomainCameraPose,
+  surface: RenderSurface2D,
+  scene: Scene,
+  mainShip: ShipBody,
+  overlayBodies: PlanetSceneObject[],
+): RenderedView {
+  const projectionService = new ProjectionService(
+    camera,
+    surface.width,
+    surface.height,
+  );
 
-  private renderView(
-    controller: ViewController,
-    scene: Scene,
-    surface: RenderSurface2D,
-  ): void {
-    this.clear(surface);
-    this.draw(surface, {
-      objects: scene.objects,
-      lights: scene.lights,
-      controller,
-    });
+  const project = (wp: Vec3) => projectionService.projectWorldPointToNdc(wp);
 
-    const overlayBodies: OverlayBody[] = scene.objects
-      .filter(
-        (obj): obj is PlanetSceneObject =>
-          obj.kind === "planet" || obj.kind === "star",
-      )
-      .map((obj) => ({
-        id: obj.id,
-        position: obj.position,
-        velocity: obj.velocity,
-        kind: obj.kind,
-      }));
+  const pilotScene: Scene = scene; // full, unfiltered
 
-    controller.getDebugOverlay().draw(this.overlayRenderer, overlayBodies);
-  }
+  const faces: RenderedFace[] =
+    drawMode === "faces" ? renderFaces(pilotScene, camera, surface) : [];
 
-  /**
-   * Clears the entire surface for a new frame.
-   */
-  clear(surface: RenderSurface2D): void {
-    surface.clear("#000000");
-  }
+  const polylines: RenderedPolyline[] =
+    drawMode === "faces"
+      ? renderPolylines(
+          surface,
+          pilotScene.objects.filter((obj) => obj.wireframeOnly),
+          project,
+        )
+      : renderPolylines(surface, pilotScene.objects, project);
 
-  private draw(
-    surface: RenderSurface2D,
-    params: {
-      objects: SceneObject[];
-      lights: PointLight[];
-      controller: ViewController;
-    },
-  ): void {
-    const { width, height } = surface;
-    const { objects, lights, controller } = params;
+  const segments: RenderedSegment[] = renderVelocitySegments(
+    surface,
+    mainShip,
+    project,
+  );
 
-    const camera = controller.getCameraPose();
-    const drawMode = controller.getDrawMode();
+  const bodyLabels: RenderedBodyLabel[] = renderBodyLabels(
+    surface,
+    overlayBodies,
+    mainShip.position,
+    project,
+  );
 
-    if (drawMode === "faces") {
-      // Solid objects use shaded‑face path
-      const faceList = buildShadedFaces({
-        objects,
-        camera,
-        canvasWidth: width,
-        canvasHeight: height,
-        lights,
-      });
+  return {
+    faces,
+    polylines,
+    segments,
+    bodyLabels,
+  };
+}
 
-      faceList.sort((a, b) => b.depth - a.depth);
+function renderTopView(
+  camera: DomainCameraPose,
+  surface: RenderSurface2D,
+  scene: Scene,
+  mainShip: ShipBody,
+  overlayBodies: PlanetSceneObject[],
+): RenderedView {
+  const projectionService = new ProjectionService(
+    camera,
+    surface.width,
+    surface.height,
+  );
 
-      const renderedFaces = new Array<RenderedFace>(faceList.length);
+  const project = (wp: Vec3) => projectionService.projectWorldPointToNdc(wp);
 
-      for (let i = 0; i < faceList.length; i++) {
-        const face = faceList[i];
-        const { p0, p1, p2, baseColor, intensity } = face;
-        const { r: baseR, g: baseG, b: baseB } = baseColor;
-        const k = 0.2 + 0.8 * intensity;
-        const r = Math.round(baseR * k);
-        const g = Math.round(baseG * k);
-        const b = Math.round(baseB * k);
-        renderedFaces[i] = {
-          p0,
-          p1,
-          p2,
-          color: { r, g, b },
-        };
-      }
+  // Top scene: no trajectory polylines
+  const topScene: Scene = {
+    ...scene,
+    objects: scene.objects.filter(isNotPolylinePath),
+  };
 
-      this.faceRenderer.render(surface, renderedFaces);
+  const faces: RenderedFace[] =
+    drawMode === "faces" ? renderFaces(topScene, camera, surface) : [];
 
-      this.drawMeshPolylinesWorldSpace(
-        surface,
-        objects.filter((obj) => obj.wireframeOnly),
-        controller,
-      );
-    } else {
-      this.drawMeshPolylinesWorldSpace(surface, objects, controller);
-    }
-  }
+  const polylines: RenderedPolyline[] =
+    drawMode === "faces"
+      ? renderPolylines(
+          surface,
+          topScene.objects.filter((obj) => obj.wireframeOnly),
+          project,
+        )
+      : renderPolylines(surface, topScene.objects, project);
 
-  /**
-   * Draw mesh faces as polylines by projecting world‑space vertices via the
-   * view controller and mapping to screen space using the camera.
-   */
-  private drawMeshPolylinesWorldSpace(
-    surface: RenderSurface2D,
-    objects: SceneObject[],
-    controller: ViewController,
-  ): void {
-    const projectedPoints: ScreenPoint[] = [];
-    const { width, height } = surface;
+  const segments: RenderedSegment[] = renderVelocitySegments(
+    surface,
+    mainShip,
+    project,
+  );
 
-    objects.forEach((obj) => {
-      const { mesh, worldPoints, baseColor, lineWidth } = toRenderable(obj);
-      const { faces } = mesh;
+  const bodyLabels: RenderedBodyLabel[] = renderBodyLabels(
+    surface,
+    overlayBodies,
+    mainShip.position,
+    project,
+  );
 
-      for (let i = 0; i < faces.length; i++) {
-        const polyIndices = faces[i];
-        projectedPoints.length = 0;
+  return { faces, polylines, segments, bodyLabels };
+}
 
-        for (let j = 0; j < polyIndices.length; j++) {
-          const idx = polyIndices[j];
-          const wp = worldPoints[idx];
-
-          const ndc = controller.project(wp);
-          if (!ndc) {
-            projectedPoints.length = 0;
-            break;
-          }
-
-          const screenPoint = ndcToScreen(ndc, width, height);
-          projectedPoints.push(screenPoint);
-        }
-
-        if (projectedPoints.length > 0) {
-          this.polylineRenderer.render(
-            surface,
-            projectedPoints,
-            baseColor,
-            lineWidth,
-          );
-        }
-      }
-    });
-  }
+function renderHud(
+  mainShip: ShipBody,
+  pilotCameraLocalOffset: Vec3,
+  profilingEnabled: boolean,
+  thrustPercent: number,
+): RenderedHud {
+  return {
+    speedMps: vec3.length(mainShip.velocity),
+    fps,
+    profilingEnabled,
+    pilotCameraLocalOffset,
+    thrustPercent,
+  };
 }

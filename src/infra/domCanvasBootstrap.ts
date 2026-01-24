@@ -5,19 +5,10 @@ import type { GravityEngine, Profiler } from "../domain/domainPorts.js";
 import { NewtonianGravityEngine } from "../domain/NewtonianGravityEngine.js";
 import { DefaultProfiler } from "./DefaultProfiler.js";
 import type { ProfilerController } from "../app/appPorts.js";
-import type {
-  FaceRenderer,
-  HudRenderer,
-  PolylineRenderer,
-  Renderer,
-  ViewDebugOverlayRenderer,
-} from "../render/renderPorts.js";
+import type { Rasterizer, Renderer } from "../render/renderPorts.js";
 import type { RenderSurface2D } from "../render/renderPorts.js";
 import { runDomGameLoop } from "./domGameLoop.js";
-import { CanvasFaceRenderer } from "../canvas/CanvasFaceRenderer.js";
-import { CanvasPolylineRenderer } from "../canvas/CanvasPolylineRenderer.js";
-import { CanvasDebugOverlayRenderer } from "../canvas/CanvasDebugOverlayRenderer.js";
-import { CanvasHudRenderer } from "../canvas/CanvasHudRenderer.js";
+import { CanvasRasterizer } from "../canvas/CanvasRasterizer.js";
 
 /**
  * DOM-level bootstrap responsible for:
@@ -66,17 +57,10 @@ export function bootstrapDomApp(): void {
   const profiler: Profiler = defaultProfiler;
   const profilerController: ProfilerController = defaultProfiler;
 
-  const faceRenderer: FaceRenderer = new CanvasFaceRenderer(),
-    polylineRenderer: PolylineRenderer = new CanvasPolylineRenderer(),
-    debugOverlayRenderer: ViewDebugOverlayRenderer =
-      new CanvasDebugOverlayRenderer(),
-    hudRenderer: HudRenderer = new CanvasHudRenderer();
+  const rasterizer: Rasterizer = new CanvasRasterizer();
 
   const renderer: Renderer = new DefaultRenderer(
-    faceRenderer,
-    polylineRenderer,
-    debugOverlayRenderer,
-    hudRenderer,
+    rasterizer,
     profilerController,
   );
 
