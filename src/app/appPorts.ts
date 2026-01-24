@@ -1,13 +1,13 @@
 import type {
-  GravityEngine,
+  BodyId,
+  DomainWorld,
   LocalFrame,
   Mat3,
   Mesh,
-  Profiler,
   RGB,
   Vec3,
 } from "../domain/domainPorts";
-import type { Renderer } from "../render/renderPorts";
+import type { ControlState } from "./appInternals";
 
 export interface BaseSceneObject {
   id: string;
@@ -86,13 +86,25 @@ export interface EnvInput {
   profilingToggle: boolean;
 }
 
-export interface GameDependencies {
-  renderer: Renderer;
-  gravityEngine: GravityEngine;
-  profiler: Profiler;
-  profilerController: ProfilerController;
-  pilotSurface: RenderSurface2D;
-  topSurface: RenderSurface2D;
+export interface GameState {
+  controlState: ControlState;
+  scene: Scene;
+  world: DomainWorld;
+  mainShipId: string;
+  pilotCamera: DomainCameraPose;
+  topCamera: DomainCameraPose;
+  pilotCameraLocalOffset: Vec3;
+}
+
+/**
+ * Binding between domain bodies and indices in the DomainWorld.
+ */
+export interface GravityBodyBinding {
+  id: BodyId;
+  kind: "ship" | "planet" | "star";
+  shipIndex: number;
+  planetIndex: number;
+  starIndex: number;
 }
 
 /**
@@ -174,18 +186,6 @@ export interface ProfilerController {
 }
 
 /**
- * Minimal 2D drawing surface abstraction used by renderers.
- *
- * Implementations may be backed by Canvas2D, WebGL, etc.
- */
-
-export interface RenderSurface2D {
-  readonly width: number;
-  readonly height: number;
-  clear(color: string): void;
-}
-
-/**
  * Adapter-level scene used by renderers.
  */
 export interface Scene {
@@ -222,7 +222,7 @@ export interface StarSceneObject extends CelestialBodySceneObject {
   luminosity: number; // W or scaled units for lighting
 }
 
-export type TickCallback = (params: TickParams) => void;
+export type TickCallback = (params: TickParams) => GameState;
 
 export interface TickParams {
   nowMs: number;

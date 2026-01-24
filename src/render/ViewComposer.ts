@@ -1,9 +1,8 @@
-import type { DomainCameraPose } from "./appPorts.js";
-import { ViewController } from "../projection/ViewController.js";
-import type { RenderShip } from "../render/renderPorts.js";
-import type { RenderSurface2D } from "./appPorts.js";
-import type { Ship } from "./appInternals.js";
-import type { DrawMode } from "./appPorts.js";
+import type { DomainCameraPose, DrawMode } from "../app/appPorts.js";
+import type { RenderSurface2D } from "./renderPorts.js";
+import type { ShipBody } from "../domain/domainPorts.js";
+import { ViewController } from "./ViewController.js";
+import type { RenderShip } from "./renderPorts.js";
 
 /**
  * Adapter-level helper responsible for composing ViewConfig instances
@@ -17,7 +16,7 @@ export class ViewComposer {
   /**
    * Convert an app-layer Ship into the minimal RenderShip DTO.
    */
-  private toRenderShip(ship: Ship): RenderShip {
+  private toRenderShip(ship: ShipBody): RenderShip {
     return {
       id: ship.id,
       position: ship.position,
@@ -30,7 +29,7 @@ export class ViewComposer {
    */
   buildPilotView(
     pose: DomainCameraPose,
-    referenceShip: Ship,
+    referenceShip: ShipBody,
     drawMode: DrawMode,
     surface: RenderSurface2D,
   ): ViewController {
@@ -49,7 +48,7 @@ export class ViewComposer {
    */
   buildTopView(
     pose: DomainCameraPose,
-    referenceShip: Ship,
+    referenceShip: ShipBody,
     drawMode: DrawMode,
     surface: RenderSurface2D,
   ): ViewController {

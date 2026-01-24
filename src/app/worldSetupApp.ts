@@ -5,11 +5,13 @@ import type {
 import { colors } from "../domain/domainInternals.js";
 import type {
   CelestialBody,
+  DomainWorld,
   LocalFrame,
   Mesh,
   PlanetPathMapping,
   PlanetPhysics,
   RGB,
+  ShipBody,
   StarPhysics,
   Vec3,
 } from "../domain/domainPorts.js";
@@ -25,7 +27,6 @@ import { buildDefaultSolarSystemConfigs } from "../domain/solarSystem.js";
 import { trig } from "../domain/trig.js";
 import { vec3 } from "../domain/vec3.js";
 import { getStarPhysicsById } from "../domain/worldLookup.js";
-import type { AppWorld, Ship } from "./appInternals.js";
 import type {
   DomainCameraPose,
   PlanetSceneObject,
@@ -48,7 +49,7 @@ function createInitialShip(
   id: string,
   position: Vec3,
   initialVelocity: Vec3,
-): Ship {
+): ShipBody {
   const speed = vec3.length(initialVelocity);
 
   let frame: LocalFrame = initialFrame;
@@ -94,12 +95,11 @@ function createInitialShip(
     id,
     position: { ...position },
     frame,
-    speed,
     velocity: { ...initialVelocity },
   };
 }
 
-function createInitialTopCamera(ship: Ship): DomainCameraPose {
+function createInitialTopCamera(ship: ShipBody): DomainCameraPose {
   const offset: Vec3 = { x: 0, y: 0, z: 50 };
 
   return {
@@ -108,7 +108,7 @@ function createInitialTopCamera(ship: Ship): DomainCameraPose {
   };
 }
 
-function createInitialPilotCamera(ship: Ship): DomainCameraPose {
+function createInitialPilotCamera(ship: ShipBody): DomainCameraPose {
   return {
     position: { ...ship.position }, // will be offset in game loop
     frame: initialFrame,
@@ -117,7 +117,7 @@ function createInitialPilotCamera(ship: Ship): DomainCameraPose {
 
 const SHIP_VISUAL_SCALE = 15;
 
-function addShipObject(ship: Ship, objects: SceneObject[]): void {
+function addShipObject(ship: ShipBody, objects: SceneObject[]): void {
   const obj: ShipSceneObject = {
     id: ship.id,
     kind: "ship",
@@ -177,9 +177,9 @@ function computePlanetMass(physicalRadius: number, density: number): number {
 function addPlanetsAndStarsFromConfig(
   configs: (PlanetBodyConfig | StarBodyConfig)[],
   objects: SceneObject[],
-  worldPlanets: AppWorld["planets"],
+  worldPlanets: DomainWorld["planets"],
   worldPlanetPhysics: PlanetPhysics[],
-  worldStars: AppWorld["stars"],
+  worldStars: DomainWorld["stars"],
   worldStarPhysics: StarPhysics[],
 ): void {
   const bodyMeshTemplate: Mesh = generatePlanetMesh(3);
@@ -372,7 +372,7 @@ function computeShipInitialNearEarthOrbitVelocity(
 
 export function createInitialSceneAndWorld(): {
   scene: Scene;
-  world: AppWorld;
+  world: DomainWorld;
   mainShipId: string;
   topCamera: DomainCameraPose;
   pilotCamera: DomainCameraPose;
@@ -381,7 +381,7 @@ export function createInitialSceneAndWorld(): {
 } {
   const objects: SceneObject[] = [];
 
-  const world: AppWorld = {
+  const world: DomainWorld = {
     shipBodies: [],
     planets: [],
     planetPhysics: [],
@@ -470,7 +470,10 @@ export function createInitialSceneAndWorld(): {
   };
 }
 
-export function syncShipsToSceneObjects(world: AppWorld, scene: Scene): void {
+export function syncShipsToSceneObjects(
+  world: DomainWorld,
+  scene: Scene,
+): void {
   for (const ship of world.shipBodies) {
     const obj = scene.objects.find((o) => o.id === ship.id);
     if (!obj) continue;
@@ -481,7 +484,10 @@ export function syncShipsToSceneObjects(world: AppWorld, scene: Scene): void {
   }
 }
 
-export function syncPlanetsToSceneObjects(world: AppWorld, scene: Scene): void {
+export function syncPlanetsToSceneObjects(
+  world: DomainWorld,
+  scene: Scene,
+): void {
   for (const planetBody of world.planets) {
     const obj = scene.objects.find(
       (o) => o.id === planetBody.id,
@@ -492,7 +498,10 @@ export function syncPlanetsToSceneObjects(world: AppWorld, scene: Scene): void {
   }
 }
 
-export function syncStarsToSceneObjects(world: AppWorld, scene: Scene): void {
+export function syncStarsToSceneObjects(
+  world: DomainWorld,
+  scene: Scene,
+): void {
   for (const starBody of world.stars) {
     const obj = scene.objects.find(
       (o) => o.id === starBody.id,
@@ -506,7 +515,7 @@ export function syncStarsToSceneObjects(world: AppWorld, scene: Scene): void {
 /**
  * Internal helper: build the array of point lights from the current star bodies.
  */
-function buildLightsFromStars(world: AppWorld, scene: Scene): void {
+function buildLightsFromStars(world: DomainWorld, scene: Scene): void {
   const lights = [];
 
   for (const starBody of world.stars) {
@@ -524,7 +533,7 @@ function buildLightsFromStars(world: AppWorld, scene: Scene): void {
 /**
  * Per‑frame adapter: keep Scene.lights in sync with the current star bodies.
  */
-export function syncLightsToStars(world: AppWorld, scene: Scene): void {
+export function syncLightsToStars(world: DomainWorld, scene: Scene): void {
   buildLightsFromStars(world, scene);
 }
 

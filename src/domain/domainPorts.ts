@@ -31,20 +31,6 @@ export interface DomainWorld {
 }
 
 /**
- * Binding between domain bodies and indices in the DomainWorld.
- *
- * Adapters are responsible for honoring these indices when mutating
- * their own world representations.
- */
-export interface GravityBodyBinding {
-  id: BodyId;
-  kind: "ship" | "planet" | "star";
-  shipIndex: number;
-  planetIndex: number;
-  starIndex: number;
-}
-
-/**
  * Domain-level abstraction for gravitational integration.
  *
  * Implementations stay port-pure: they do not know about rendering,
@@ -55,17 +41,9 @@ export interface GravityBodyBinding {
  */
 export interface GravityEngine {
   /**
-   * Advance gravity simulation by dtSeconds, returning a new GravityState
-   * and updated positions for each body.
-   *
-   * Implementations must be side‑effect free with respect to the passed
-   * GravityState. Adapter layers are responsible for writing positions
-   * back into their own world representations.
+   * Advance gravity simulation by dtSeconds, returning a new GravityState.
    */
-  step(
-    dtSeconds: number,
-    state: GravityState,
-  ): { nextState: GravityState; positions: Vec3[] };
+  step(dtSeconds: number, state: GravityState): GravityState;
 }
 
 /**
@@ -73,7 +51,6 @@ export interface GravityEngine {
  */
 export interface GravityState {
   bodies: BodyState[];
-  bindings: GravityBodyBinding[];
   positions: Vec3[];
 }
 

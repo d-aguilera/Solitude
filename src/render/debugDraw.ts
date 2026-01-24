@@ -1,13 +1,13 @@
 import type { Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
-import { ndcToScreen } from "../render/ndcToScreen.js";
+import type { NdcPoint } from "./renderPorts.js";
+import { ndcToScreen } from "./ndcToScreen.js";
 import type {
   OverlayBody,
   RenderShip,
+  RenderSurface2D,
   ViewDebugOverlayRenderer,
-} from "../render/renderPorts.js";
-import type { RenderSurface2D } from "../app/appPorts.js";
-import type { NdcPoint } from "../scene/scenePorts.js";
+} from "./renderPorts.js";
 
 export type ProjectFn = (p: Vec3) => NdcPoint | null;
 

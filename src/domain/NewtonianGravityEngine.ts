@@ -12,25 +12,21 @@ import { vec3 } from "./vec3.js";
  */
 export class NewtonianGravityEngine implements GravityEngine {
   /**
-   * Advance gravity simulation by dtSeconds, returning a new GravityState
-   * and updated positions for each body.
+   * Advance gravity simulation by dtSeconds, returning a new GravityState.
    */
-  step(
-    dtSeconds: number,
-    state: GravityState,
-  ): { nextState: GravityState; positions: Vec3[] } {
+  step(dtSeconds: number, state: GravityState): GravityState {
     if (dtSeconds <= 0) {
-      return { nextState: state, positions: state.positions };
+      return state;
     }
 
-    const bodies = state.bodies;
-    const positions = state.positions;
-    const n = bodies.length;
-    if (n === 0) {
-      return { nextState: state, positions };
+    const { bodies, positions } = state;
+
+    if (bodies.length === 0) {
+      return state;
     }
 
     const accelerations = this.computeGravityAccelerations(bodies, positions);
+
     const nextBodies = this.integrateBodyVelocities(
       bodies,
       accelerations,
@@ -44,11 +40,7 @@ export class NewtonianGravityEngine implements GravityEngine {
     );
 
     return {
-      nextState: {
-        bodies: nextBodies,
-        bindings: state.bindings,
-        positions: nextPositions,
-      },
+      bodies: nextBodies,
       positions: nextPositions,
     };
   }
@@ -63,25 +55,23 @@ export class NewtonianGravityEngine implements GravityEngine {
     for (let i = 0; i < n; i++) {
       const pi = positions[i];
 
-      let a: Vec3 = { x: 0, y: 0, z: 0 };
+      const a: Vec3 = { x: 0, y: 0, z: 0 };
 
       for (let j = 0; j < n; j++) {
         if (i === j) continue;
 
-        const bj = bodies[j];
-        const pj = positions[j];
-
-        const d = vec3.sub(pj, pi);
+        const d = vec3.sub(positions[j], pi);
 
         const r = Math.sqrt(
           vec3.dot(d, d) + SOFTENING_LENGTH * SOFTENING_LENGTH,
         );
+
         if (r === 0) continue;
 
         const invR3 = 1 / (r * r * r);
-        const scale = NEWTON_G * bj.mass * invR3;
+        const scale = NEWTON_G * bodies[j].mass * invR3;
 
-        a = vec3.add(a, vec3.scale(d, scale));
+        vec3.addInto(a, a, vec3.scale(d, scale));
       }
 
       accelerations[i] = a;

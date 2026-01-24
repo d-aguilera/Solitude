@@ -2,7 +2,7 @@ import type { SceneObject } from "../app/appPorts.js";
 import type { Vec3, Mat3 } from "../domain/domainPorts.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
-import type { Renderable } from "./scenePorts.js";
+import type { Renderable } from "./renderPorts.js";
 
 /**
  * Convert a SceneObject into a Renderable with world-space points.

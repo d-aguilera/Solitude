@@ -1,14 +1,23 @@
+import type { ControlState } from "../app/appInternals.js";
 import type {
+  ControlInput,
+  DomainCameraPose,
   HudRenderData,
   PlanetSceneObject,
   PointLight,
-  RenderSurface2D,
+  ProfilerController,
   Scene,
   SceneObject,
 } from "../app/appPorts.js";
-import type { Profiler } from "../domain/domainPorts.js";
-import type { ViewController } from "../projection/ViewController.js";
-import { toRenderable } from "../scene/renderPrep.js";
+import type { RenderSurface2D } from "./renderPorts.js";
+import { getSignedThrustPercent } from "../app/controls.js";
+import { fps } from "../app/fps.js";
+import { ViewComposer } from "./ViewComposer.js";
+import { getShipById } from "../app/worldLookup.js";
+import type { DomainWorld, Vec3 } from "../domain/domainPorts.js";
+import { vec3 } from "../domain/vec3.js";
+import type { ViewController } from "./ViewController.js";
+import { toRenderable } from "./renderPrep.js";
 import { ndcToScreen } from "./ndcToScreen.js";
 import type {
   OverlayBody,
@@ -31,10 +40,90 @@ export class DefaultRenderer implements Renderer {
     private readonly polylineRenderer: PolylineRenderer,
     private readonly overlayRenderer: ViewDebugOverlayRenderer,
     private readonly hudRenderer: HudRenderer,
-    private profiler: Profiler,
+    private profilerController: ProfilerController,
   ) {}
 
-  renderFrame(
+  // Single shared view composer instance for all views.
+  private viewComposer = new ViewComposer();
+
+  /**
+   * Render the current world/scene state using the configured renderer.
+   */
+  renderCurrentFrame({
+    input,
+    controlState,
+    scene,
+    world,
+    mainShipId,
+    pilotCamera,
+    topCamera,
+    pilotSurface,
+    topSurface,
+    pilotCameraLocalOffset,
+  }: {
+    input: ControlInput;
+    controlState: ControlState;
+    scene: Scene;
+    world: DomainWorld;
+    mainShipId: string;
+    pilotCamera: DomainCameraPose;
+    topCamera: DomainCameraPose;
+    pilotSurface: RenderSurface2D;
+    topSurface: RenderSurface2D;
+    pilotCameraLocalOffset: Vec3;
+  }): void {
+    const mainShip = getShipById(world, mainShipId);
+    const profilingEnabled = this.profilerController.isEnabled();
+    const thrustPercent = getSignedThrustPercent(input, controlState);
+
+    const pilotViewConfig = this.viewComposer.buildPilotView(
+      pilotCamera,
+      mainShip,
+      "faces",
+      pilotSurface,
+    );
+
+    // Pilot scene: full scene, unfiltered
+    const pilotScene: Scene = scene;
+
+    const topViewConfig = this.viewComposer.buildTopView(
+      topCamera,
+      mainShip,
+      "faces",
+      topSurface,
+    );
+
+    // Top scene: no trajectory polylines
+    const topScene: Scene = {
+      objects: scene.objects.filter((obj) => {
+        if (obj.kind === "polyline" && obj.id.startsWith("path:")) {
+          return false;
+        }
+        return true;
+      }),
+      lights: scene.lights,
+    };
+
+    const hud: HudRenderData = {
+      speedMps: vec3.length(mainShip.velocity),
+      fps,
+      profilingEnabled,
+      pilotCameraLocalOffset: pilotCameraLocalOffset,
+      thrustPercent,
+    };
+
+    this.renderFrame(
+      pilotScene,
+      topScene,
+      pilotSurface,
+      topSurface,
+      pilotViewConfig,
+      topViewConfig,
+      hud,
+    );
+  }
+
+  private renderFrame(
     pilotScene: Scene,
     topScene: Scene,
     pilotSurface: RenderSurface2D,
@@ -96,54 +185,46 @@ export class DefaultRenderer implements Renderer {
     const camera = controller.getCameraPose();
     const drawMode = controller.getDrawMode();
 
-    this.profiler.run("DRAW", "total", () => {
-      if (drawMode === "faces") {
-        this.profiler.run("DRAW", "faces", () => {
-          // Solid objects use shaded‑face path
-          const faceList = buildShadedFaces({
-            objects,
-            camera,
-            canvasWidth: width,
-            canvasHeight: height,
-            lights,
-          });
+    if (drawMode === "faces") {
+      // Solid objects use shaded‑face path
+      const faceList = buildShadedFaces({
+        objects,
+        camera,
+        canvasWidth: width,
+        canvasHeight: height,
+        lights,
+      });
 
-          faceList.sort((a, b) => b.depth - a.depth);
+      faceList.sort((a, b) => b.depth - a.depth);
 
-          const renderedFaces = new Array<RenderedFace>(faceList.length);
+      const renderedFaces = new Array<RenderedFace>(faceList.length);
 
-          for (let i = 0; i < faceList.length; i++) {
-            const face = faceList[i];
-            const { p0, p1, p2, baseColor, intensity } = face;
-            const { r: baseR, g: baseG, b: baseB } = baseColor;
-            const k = 0.2 + 0.8 * intensity;
-            const r = Math.round(baseR * k);
-            const g = Math.round(baseG * k);
-            const b = Math.round(baseB * k);
-            renderedFaces[i] = {
-              p0,
-              p1,
-              p2,
-              color: { r, g, b },
-            };
-          }
-
-          this.faceRenderer.render(surface, renderedFaces);
-        });
-
-        this.profiler.run("DRAW", "wireframe", () => {
-          this.drawMeshPolylinesWorldSpace(
-            surface,
-            objects.filter((obj) => obj.wireframeOnly),
-            controller,
-          );
-        });
-      } else {
-        this.profiler.run("DRAW", "lines", () => {
-          this.drawMeshPolylinesWorldSpace(surface, objects, controller);
-        });
+      for (let i = 0; i < faceList.length; i++) {
+        const face = faceList[i];
+        const { p0, p1, p2, baseColor, intensity } = face;
+        const { r: baseR, g: baseG, b: baseB } = baseColor;
+        const k = 0.2 + 0.8 * intensity;
+        const r = Math.round(baseR * k);
+        const g = Math.round(baseG * k);
+        const b = Math.round(baseB * k);
+        renderedFaces[i] = {
+          p0,
+          p1,
+          p2,
+          color: { r, g, b },
+        };
       }
-    });
+
+      this.faceRenderer.render(surface, renderedFaces);
+
+      this.drawMeshPolylinesWorldSpace(
+        surface,
+        objects.filter((obj) => obj.wireframeOnly),
+        controller,
+      );
+    } else {
+      this.drawMeshPolylinesWorldSpace(surface, objects, controller);
+    }
   }
 
   /**

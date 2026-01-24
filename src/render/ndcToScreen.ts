@@ -1,4 +1,4 @@
-import type { NdcPoint } from "../scene/scenePorts.js";
+import type { NdcPoint } from "./renderPorts.js";
 import type { ScreenPoint } from "./renderPorts.js";
 
 /**

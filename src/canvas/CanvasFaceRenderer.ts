@@ -1,6 +1,6 @@
 import { rgbToCss } from "../render/color.js";
 import type { FaceRenderer, RenderedFace } from "../render/renderPorts.js";
-import type { RenderSurface2D } from "../app/appPorts.js";
+import type { RenderSurface2D } from "../render/renderPorts.js";
 import type { CanvasSurface } from "./CanvasSurface.js";
 
 /**

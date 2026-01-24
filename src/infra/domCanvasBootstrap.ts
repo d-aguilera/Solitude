@@ -1,4 +1,3 @@
-import type { GameDependencies } from "../app/appPorts.js";
 import { DefaultRenderer } from "../render/DefaultRenderer.js";
 import { CanvasSurface } from "../canvas/CanvasSurface.js";
 import { init as initResizeHandler } from "../canvas/canvasLayout.js";
@@ -13,7 +12,7 @@ import type {
   Renderer,
   ViewDebugOverlayRenderer,
 } from "../render/renderPorts.js";
-import type { RenderSurface2D } from "../app/appPorts.js";
+import type { RenderSurface2D } from "../render/renderPorts.js";
 import { runDomGameLoop } from "./domGameLoop.js";
 import { CanvasFaceRenderer } from "../canvas/CanvasFaceRenderer.js";
 import { CanvasPolylineRenderer } from "../canvas/CanvasPolylineRenderer.js";
@@ -78,17 +77,15 @@ export function bootstrapDomApp(): void {
     polylineRenderer,
     debugOverlayRenderer,
     hudRenderer,
-    profiler,
+    profilerController,
   );
 
-  const deps: GameDependencies = {
+  runDomGameLoop(
     renderer,
     gravityEngine,
     profiler,
     profilerController,
     pilotSurface,
     topSurface,
-  };
-
-  runDomGameLoop(deps);
+  );
 }

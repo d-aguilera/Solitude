@@ -2,7 +2,7 @@ import type {
   ViewDebugOverlayRenderer,
   ScreenPoint,
 } from "../render/renderPorts.js";
-import type { RenderSurface2D } from "../app/appPorts.js";
+import type { RenderSurface2D } from "../render/renderPorts.js";
 import type { CanvasSurface } from "./CanvasSurface.js";
 
 /**

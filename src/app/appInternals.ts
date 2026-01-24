@@ -1,16 +1,4 @@
-import type {
-  DomainWorld,
-  LocalFrame,
-  ShipBody,
-  Vec3,
-} from "../domain/domainPorts.js";
-
-/**
- * Adapter-level world state used by the app and renderer.
- */
-export interface AppWorld extends DomainWorld {
-  shipBodies: Ship[];
-}
+import type { LocalFrame, Vec3 } from "../domain/domainPorts.js";
 
 /**
  * Simple container for the controlled body's pose and velocity.
@@ -35,12 +23,4 @@ export interface ControlState {
 export interface PilotLookState {
   azimuth: number;
   elevation: number;
-}
-
-/**
- * Ship adapter type extends the domain ShipBody with derived speed
- * for HUD/debug overlays.
- */
-export interface Ship extends ShipBody {
-  speed: number;
 }

@@ -1,10 +1,4 @@
-import type {
-  BodyState,
-  DomainWorld,
-  GravityBodyBinding,
-  GravityState,
-  Vec3,
-} from "./domainPorts";
+import type { BodyState, DomainWorld, GravityState, Vec3 } from "./domainPorts";
 
 /**
  * Create a brand-new GravityState from the current world contents.
@@ -16,7 +10,6 @@ import type {
  *  - positions array with the current world positions
  */
 export function buildInitialGravityState(world: DomainWorld): GravityState {
-  const bindings = buildGravityBindings(world);
   const bodies: BodyState[] = [];
   const positions: Vec3[] = [];
 
@@ -61,47 +54,5 @@ export function buildInitialGravityState(world: DomainWorld): GravityState {
     positions.push({ ...body.position });
   }
 
-  return { bodies, bindings, positions };
-}
-
-function buildGravityBindings(world: DomainWorld): GravityBodyBinding[] {
-  const bindings: GravityBodyBinding[] = [];
-
-  // Ships
-  for (let i = 0; i < world.shipBodies.length; i++) {
-    const ship = world.shipBodies[i];
-    bindings.push({
-      id: ship.id,
-      kind: "ship",
-      shipIndex: i,
-      planetIndex: -1,
-      starIndex: -1,
-    });
-  }
-
-  // Planets
-  for (let i = 0; i < world.planets.length; i++) {
-    const planet = world.planets[i];
-    bindings.push({
-      id: planet.id,
-      kind: "planet",
-      shipIndex: -1,
-      planetIndex: i,
-      starIndex: -1,
-    });
-  }
-
-  // Stars
-  for (let i = 0; i < world.stars.length; i++) {
-    const star = world.stars[i];
-    bindings.push({
-      id: star.id,
-      kind: "star",
-      shipIndex: -1,
-      planetIndex: -1,
-      starIndex: i,
-    });
-  }
-
-  return bindings;
+  return { bodies, positions };
 }

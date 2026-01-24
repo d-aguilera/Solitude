@@ -1,16 +1,15 @@
-import type { DrawMode } from "../app/appPorts.js";
+import type { DomainCameraPose, DrawMode } from "../app/appPorts.js";
+import type { RenderSurface2D } from "./renderPorts.js";
 import type { Vec3 } from "../domain/domainPorts.js";
-import type { DomainCameraPose } from "../app/appPorts.js";
-import { ProjectionService } from "../scene/ProjectionService.js";
-import type { NdcPoint } from "../scene/scenePorts.js";
+import { drawShipVelocityLine, drawBodyLabels } from "./debugDraw.js";
+import { ProjectionService } from "./ProjectionService.js";
+import type { NdcPoint } from "./renderPorts.js";
 import type {
   RenderShip,
   ViewDebugOverlay,
   ViewDebugOverlayRenderer,
   OverlayBody,
-} from "../render/renderPorts.js";
-import type { RenderSurface2D } from "../app/appPorts.js";
-import { drawShipVelocityLine, drawBodyLabels } from "./debugDraw.js";
+} from "./renderPorts.js";
 
 /**
  * Adapter-level controller for a concrete rendered view.
