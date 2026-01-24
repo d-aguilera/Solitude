@@ -114,6 +114,13 @@ function renderPilotView(
   );
 
   const project = (wp: Vec3) => projectionService.projectWorldPointToNdc(wp);
+  const projectSegment = (a: Vec3, b: Vec3) =>
+    projectionService.projectWorldSegmentToScreen(
+      a,
+      b,
+      surface.width,
+      surface.height,
+    );
 
   const pilotScene: Scene = scene; // full, unfiltered
 
@@ -125,9 +132,9 @@ function renderPilotView(
       ? renderPolylines(
           surface,
           pilotScene.objects.filter((obj) => obj.wireframeOnly),
-          project,
+          projectSegment,
         )
-      : renderPolylines(surface, pilotScene.objects, project);
+      : renderPolylines(surface, pilotScene.objects, projectSegment);
 
   const segments: RenderedSegment[] = renderVelocitySegments(
     surface,
@@ -164,6 +171,13 @@ function renderTopView(
   );
 
   const project = (wp: Vec3) => projectionService.projectWorldPointToNdc(wp);
+  const projectSegment = (a: Vec3, b: Vec3) =>
+    projectionService.projectWorldSegmentToScreen(
+      a,
+      b,
+      surface.width,
+      surface.height,
+    );
 
   // Top scene: no trajectory polylines
   const topScene: Scene = {
@@ -179,9 +193,9 @@ function renderTopView(
       ? renderPolylines(
           surface,
           topScene.objects.filter((obj) => obj.wireframeOnly),
-          project,
+          projectSegment,
         )
-      : renderPolylines(surface, topScene.objects, project);
+      : renderPolylines(surface, topScene.objects, projectSegment);
 
   const segments: RenderedSegment[] = renderVelocitySegments(
     surface,

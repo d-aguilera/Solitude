@@ -3,7 +3,8 @@ import type { Mat3, Vec3 } from "../domain/domainPorts.js";
 import { mat3FromLocalFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
-import type { NdcPoint } from "./renderPorts.js";
+import type { NdcPoint, ScreenPoint } from "./renderPorts.js";
+import { ndcToScreen } from "./ndcToScreen.js";
 
 /**
  * Camera-space forward threshold.
@@ -24,20 +25,25 @@ const VERTICAL_FOV = 30;
  * The service is parameterized by a camera pose and canvas size.
  */
 export class ProjectionService {
-  private readonly pose: DomainCameraPose;
   private readonly fX: number;
   private readonly fY: number;
+
+  // Precomputed camera transform helpers for segment/point projection.
+  private readonly R_localFromWorld: Mat3;
+  private readonly cameraPosition: Vec3;
 
   constructor(
     pose: DomainCameraPose,
     canvasWidth: number,
     canvasHeight: number,
   ) {
-    this.pose = pose;
-
     const { fX, fY } = this.getFocalLengths(canvasWidth, canvasHeight);
     this.fX = fX;
     this.fY = fY;
+
+    const R_worldFromLocal = mat3FromLocalFrame(pose.frame);
+    this.R_localFromWorld = mat3.transpose(R_worldFromLocal);
+    this.cameraPosition = pose.position;
   }
 
   /**
@@ -56,18 +62,14 @@ export class ProjectionService {
    * Convert world-space points into camera space.
    */
   worldPointsToCameraPointsNoClip(worldPoints: Vec3[]): Vec3[] {
-    const { position, frame } = this.pose;
-    const R_worldFromLocal = mat3FromLocalFrame(frame);
-    const R_localFromWorld = mat3.transpose(R_worldFromLocal);
-
     const n = worldPoints.length;
     const cameraPoints = new Array<Vec3>(n);
 
     for (let i = 0; i < n; i++) {
       cameraPoints[i] = this.worldPointToCameraPointNoClip2(
         worldPoints[i],
-        R_localFromWorld,
-        position,
+        this.R_localFromWorld,
+        this.cameraPosition,
       );
     }
 
@@ -78,13 +80,10 @@ export class ProjectionService {
    * World-space -> camera-space for a single point, without clipping.
    */
   private worldPointToCameraPointNoClip(worldPoint: Vec3): Vec3 {
-    const { position, frame } = this.pose;
-    const R_worldFromLocal = mat3FromLocalFrame(frame);
-    const R_localFromWorld = mat3.transpose(R_worldFromLocal);
     return this.worldPointToCameraPointNoClip2(
       worldPoint,
-      R_localFromWorld,
-      position,
+      this.R_localFromWorld,
+      this.cameraPosition,
     );
   }
 
@@ -170,6 +169,70 @@ export class ProjectionService {
       [P, Q, IP],
       [Q, IQ, IP],
     ];
+  }
+
+  /**
+   * Project a world-space segment [A, B] to one or more screen-space
+   * polylines, clipping against the near plane.
+   *
+   * Returns:
+   *   []                if fully behind the near plane
+   *   [[P0, P1]]        if fully in front of the near plane
+   *   [[P_inside, P_I]] if crossing the near plane
+   */
+  projectWorldSegmentToScreen(
+    aWorld: Vec3,
+    bWorld: Vec3,
+    screenWidth: number,
+    screenHeight: number,
+  ): ScreenPoint[][] {
+    // 1) World -> camera space
+    const aCam = this.worldPointToCameraPointNoClip(aWorld);
+    const bCam = this.worldPointToCameraPointNoClip(bWorld);
+
+    const inA = this.isInFrontOfNearPlane(aCam);
+    const inB = this.isInFrontOfNearPlane(bCam);
+
+    // Both behind near plane: discard
+    if (!inA && !inB) {
+      return [];
+    }
+
+    // Helper for intersection with y = NEAR in camera space
+    const intersect = (p: Vec3, q: Vec3): Vec3 => {
+      const t = (NEAR - p.y) / (q.y - p.y);
+      return {
+        x: p.x + t * (q.x - p.x),
+        y: NEAR,
+        z: p.z + t * (q.z - p.z),
+      };
+    };
+
+    // Both in front of near plane: project as-is
+    if (inA && inB) {
+      const ndcA = this.projectCameraPointToNdc(aCam);
+      const ndcB = this.projectCameraPointToNdc(bCam);
+      return [
+        [
+          ndcToScreen(ndcA, screenWidth, screenHeight),
+          ndcToScreen(ndcB, screenWidth, screenHeight),
+        ],
+      ];
+    }
+
+    // One inside, one outside: clip at near plane and keep visible half
+    const insideCam = inA ? aCam : bCam;
+    const outsideCam = inA ? bCam : aCam;
+
+    const I = intersect(insideCam, outsideCam);
+
+    const ndcInside = this.projectCameraPointToNdc(insideCam);
+    const ndcI = this.projectCameraPointToNdc(I);
+
+    const pInside = ndcToScreen(ndcInside, screenWidth, screenHeight);
+    const pI = ndcToScreen(ndcI, screenWidth, screenHeight);
+
+    return [[pInside, pI]];
   }
 
   /**
