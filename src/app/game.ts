@@ -41,7 +41,7 @@ import {
   syncPlanetsToSceneObjects,
   syncStarsToSceneObjects,
   syncLightsToStars,
-} from "./worldSetupApp.js";
+} from "./worldSetup.js";
 
 let gameState: GameState = {} as GameState;
 
