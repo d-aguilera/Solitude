@@ -40,17 +40,20 @@ export function rebuildPlanetPathMesh(
   const { points, faces } = mesh;
   const count = traj.buffers.reduce((acc, buf) => acc + buf.count, 0);
   points.length = count;
-  faces.length = count - (count > 0 ? 1 : 0);
 
   // Collect points in from newest to oldest: G1 -> G2 -> ...
   let i = 0;
   traj.buffers.forEach((buf) => {
     buf.forEach((p) => {
-      points[i] = p;
-      if (i > 0) {
-        faces[i - 1] = [i - 1, i];
-      }
-      i++;
+      points[i++] = p;
     });
   });
+
+  if (count < 2) {
+    faces.length = 0;
+    return;
+  }
+
+  faces.length = 1;
+  faces[0] = [...Array(count).keys()];
 }

@@ -16,7 +16,6 @@ export function renderPolylines(
   project: (worldPoint: Vec3) => NdcPoint | null,
 ): RenderedPolyline[] {
   const renderedPolylines: RenderedPolyline[] = [];
-  const projectedPoints: ScreenPoint[] = [];
   const { width, height } = surface;
 
   objects.forEach((obj) => {
@@ -26,11 +25,10 @@ export function renderPolylines(
 
     for (let i = 0; i < faces.length; i++) {
       const polyIndices = faces[i];
-      projectedPoints.length = 0;
+      const projectedPoints: ScreenPoint[] = [];
 
       for (let j = 0; j < polyIndices.length; j++) {
-        const idx = polyIndices[j];
-        const wp = worldPoints[idx];
+        const wp = worldPoints[polyIndices[j]];
 
         const ndc = project(wp);
         if (!ndc) {
