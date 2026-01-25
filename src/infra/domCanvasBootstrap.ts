@@ -1,23 +1,23 @@
-import { DefaultRenderer } from "../render/DefaultRenderer.js";
+import type { ProfilerController } from "../app/appPorts.js";
+import { CanvasRasterizer } from "../canvas/CanvasRasterizer.js";
 import { CanvasSurface } from "../canvas/CanvasSurface.js";
-import { init as initResizeHandler } from "../canvas/canvasLayout.js";
 import type { GravityEngine, Profiler } from "../domain/domainPorts.js";
 import { NewtonianGravityEngine } from "../domain/NewtonianGravityEngine.js";
+import { DefaultRenderer } from "../render/DefaultRenderer.js";
+import type {
+  Rasterizer,
+  Renderer,
+  RenderSurface2D,
+} from "../render/renderPorts.js";
 import { DefaultProfiler } from "./DefaultProfiler.js";
-import type { ProfilerController } from "../app/appPorts.js";
-import type { Rasterizer, Renderer } from "../render/renderPorts.js";
-import type { RenderSurface2D } from "../render/renderPorts.js";
-import { runDomGameLoop } from "./domGameLoop.js";
-import { CanvasRasterizer } from "../canvas/CanvasRasterizer.js";
+import { runLoop } from "./domGameLoop.js";
+import { initInput } from "./domKeyboardInput.js";
+import { initLayout } from "./domLayout.js";
 
 /**
- * DOM-level bootstrap responsible for:
- *  - Looking up canvas elements in the document
- *  - Wiring concrete Renderer, GravityEngine and Profiler instances
- *  - Creating RenderSurface2D adapters for Canvas2D
- *  - Starting the DOM-driven game loop
+ * Canvas 2D DOM-level bootstrap
  */
-export function bootstrapDomApp(): void {
+export function bootstrap(): void {
   const container = document.querySelector(".canvas-container");
   if (!container) {
     throw new Error("Required '.canvas-container' not found in document");
@@ -37,7 +37,7 @@ export function bootstrapDomApp(): void {
     throw new Error("Required 'topViewCanvas' not found in document");
   }
 
-  initResizeHandler(container, pilotCanvas, topCanvas);
+  initLayout(container, pilotCanvas, topCanvas);
 
   const pilotContext = pilotCanvas.getContext("2d");
   if (!pilotContext) {
@@ -57,20 +57,25 @@ export function bootstrapDomApp(): void {
   const profiler: Profiler = defaultProfiler;
   const profilerController: ProfilerController = defaultProfiler;
 
-  const rasterizer: Rasterizer = new CanvasRasterizer();
+  const pilotRasterizer: Rasterizer = new CanvasRasterizer();
+  const topRasterizer: Rasterizer = new CanvasRasterizer();
 
   const renderer: Renderer = new DefaultRenderer(
-    rasterizer,
-    rasterizer,
+    pilotRasterizer,
+    topRasterizer,
     profilerController,
   );
 
-  runDomGameLoop(
+  const { controlInput, envInput } = initInput();
+
+  runLoop(
     renderer,
     gravityEngine,
     profiler,
     profilerController,
     pilotSurface,
     topSurface,
+    controlInput,
+    envInput,
   );
 }

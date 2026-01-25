@@ -1,16 +1,23 @@
-import { DefaultRenderer } from "../render/DefaultRenderer.js";
-import { init as initResizeHandler } from "../canvas/canvasLayout.js";
+import type { ProfilerController } from "../app/appPorts.js";
 import type { GravityEngine, Profiler } from "../domain/domainPorts.js";
 import { NewtonianGravityEngine } from "../domain/NewtonianGravityEngine.js";
-import { DefaultProfiler } from "./DefaultProfiler.js";
-import type { ProfilerController } from "../app/appPorts.js";
-import type { Rasterizer, Renderer } from "../render/renderPorts.js";
-import type { RenderSurface2D } from "../render/renderPorts.js";
-import { runDomGameLoop } from "./domGameLoop.js";
-import { WebGLSurface } from "../webgl/WebGLSurface.js";
+import { DefaultRenderer } from "../render/DefaultRenderer.js";
+import type {
+  Rasterizer,
+  Renderer,
+  RenderSurface2D,
+} from "../render/renderPorts.js";
 import { WebGLRasterizer } from "../webgl/WebGLRasterizer.js";
+import { WebGLSurface } from "../webgl/WebGLSurface.js";
+import { DefaultProfiler } from "./DefaultProfiler.js";
+import { runLoop } from "./domGameLoop.js";
+import { initInput } from "./domKeyboardInput.js";
+import { initLayout } from "./domLayout.js";
 
-export function bootstrapDomWebGlApp(): void {
+/**
+ * WebGL DOM-level bootstrap
+ */
+export function bootstrap(): void {
   const container = document.querySelector(".canvas-container");
   if (!container) {
     throw new Error("Required '.canvas-container' not found in document");
@@ -30,28 +37,28 @@ export function bootstrapDomWebGlApp(): void {
     throw new Error("Required 'topViewCanvas' not found in document");
   }
 
-  initResizeHandler(container, pilotCanvas, topCanvas);
+  initLayout(container, pilotCanvas, topCanvas);
 
-  const glPilot = pilotCanvas.getContext("webgl2");
-  if (!glPilot) {
+  const pilotContext = pilotCanvas.getContext("webgl2");
+  if (!pilotContext) {
     throw new Error("Failed to get WebGL2 context for pilot canvas");
   }
 
-  const glTop = topCanvas.getContext("webgl2");
-  if (!glTop) {
+  const topContext = topCanvas.getContext("webgl2");
+  if (!topContext) {
     throw new Error("Failed to get WebGL2 context for top canvas");
   }
 
-  const pilotSurface: RenderSurface2D = new WebGLSurface(glPilot);
-  const topSurface: RenderSurface2D = new WebGLSurface(glTop);
+  const pilotSurface: RenderSurface2D = new WebGLSurface(pilotContext);
+  const topSurface: RenderSurface2D = new WebGLSurface(topContext);
 
   const gravityEngine: GravityEngine = new NewtonianGravityEngine();
   const defaultProfiler = new DefaultProfiler();
   const profiler: Profiler = defaultProfiler;
   const profilerController: ProfilerController = defaultProfiler;
 
-  const pilotRasterizer: Rasterizer = new WebGLRasterizer(glPilot);
-  const topRasterizer: Rasterizer = new WebGLRasterizer(glTop);
+  const pilotRasterizer: Rasterizer = new WebGLRasterizer(pilotContext);
+  const topRasterizer: Rasterizer = new WebGLRasterizer(topContext);
 
   const renderer: Renderer = new DefaultRenderer(
     pilotRasterizer,
@@ -59,12 +66,16 @@ export function bootstrapDomWebGlApp(): void {
     profilerController,
   );
 
-  runDomGameLoop(
+  const { controlInput, envInput } = initInput();
+
+  runLoop(
     renderer,
     gravityEngine,
     profiler,
     profilerController,
     pilotSurface,
     topSurface,
+    controlInput,
+    envInput,
   );
 }

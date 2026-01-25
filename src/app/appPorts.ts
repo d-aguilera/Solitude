@@ -42,48 +42,51 @@ export interface CelestialBodySceneObject extends SolidSceneObject {
   angularSpeedRadPerSec: number;
 }
 
-export interface ControlInput {
-  rollLeft: boolean;
-  rollRight: boolean;
-  pitchUp: boolean;
-  pitchDown: boolean;
-  yawLeft: boolean;
-  yawRight: boolean;
-  lookLeft: boolean;
-  lookRight: boolean;
-  lookUp: boolean;
-  lookDown: boolean;
-  lookReset: boolean;
-  camForward: boolean;
-  camBackward: boolean;
-  camUp: boolean;
-  camDown: boolean;
-  burnForward: boolean;
-  burnBackwards: boolean;
-  thrust0: boolean;
-  thrust1: boolean;
-  thrust2: boolean;
-  thrust3: boolean;
-  thrust4: boolean;
-  thrust5: boolean;
-  thrust6: boolean;
-  alignToVelocity: boolean;
-}
+// --- Actions as canonical arrays ---
+
+export const ALL_CONTROL_ACTIONS = [
+  "rollLeft",
+  "rollRight",
+  "pitchUp",
+  "pitchDown",
+  "yawLeft",
+  "yawRight",
+  "lookLeft",
+  "lookRight",
+  "lookUp",
+  "lookDown",
+  "lookReset",
+  "camForward",
+  "camBackward",
+  "camUp",
+  "camDown",
+  "burnForward",
+  "burnBackwards",
+  "thrust0",
+  "thrust1",
+  "thrust2",
+  "thrust3",
+  "thrust4",
+  "thrust5",
+  "thrust6",
+  "alignToVelocity",
+] as const;
+
+export const ALL_ENV_ACTIONS = ["pauseToggle", "profilingToggle"] as const;
+
+// --- Types derived from arrays ---
+
+export type ControlAction = (typeof ALL_CONTROL_ACTIONS)[number];
+export type ControlInput = Record<ControlAction, boolean>;
+
+export type EnvAction = (typeof ALL_ENV_ACTIONS)[number];
+export type EnvInput = Record<EnvAction, boolean>;
 
 export type DrawMode = "faces" | "lines";
 
 export interface DomainCameraPose {
   position: Vec3;
   frame: LocalFrame;
-}
-
-/**
- * Environment-level input.
- */
-
-export interface EnvInput {
-  pauseToggle: boolean;
-  profilingToggle: boolean;
 }
 
 export interface GameState {

@@ -1,9 +1,9 @@
 let remove: (() => void) | null = null;
 
-export function init(
+export function initLayout(
   container: Element,
   pilotCanvas: HTMLCanvasElement,
-  topCanvas: HTMLCanvasElement
+  topCanvas: HTMLCanvasElement,
 ) {
   updatePixelRatio(container, pilotCanvas, topCanvas);
 
@@ -15,7 +15,7 @@ export function init(
 function resizeCanvasToCssBox(
   canvas: HTMLCanvasElement,
   cssWidth: number,
-  cssHeight: number
+  cssHeight: number,
 ): void {
   canvas.style.width = `${cssWidth}px`;
   canvas.style.height = `${cssHeight}px`;
@@ -33,7 +33,7 @@ function resizeCanvasToCssBox(
 function resizeCanvases(
   container: Element,
   pilotCanvas: HTMLCanvasElement,
-  topCanvas: HTMLCanvasElement
+  topCanvas: HTMLCanvasElement,
 ): void {
   if (!container) return;
 
@@ -66,7 +66,7 @@ function resizeCanvases(
 function updatePixelRatio(
   container: Element,
   pilotCanvas: HTMLCanvasElement,
-  topCanvas: HTMLCanvasElement
+  topCanvas: HTMLCanvasElement,
 ) {
   // Remove current DPR listener
   remove?.();

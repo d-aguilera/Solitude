@@ -1,30 +1,33 @@
-import type { ProfilerController, TickCallback } from "../app/appPorts.js";
-import type { RenderSurface2D } from "../render/renderPorts.js";
+import type {
+  ControlInput,
+  EnvInput,
+  ProfilerController,
+  TickCallback,
+} from "../app/appPorts.js";
 import {
   getProfilingEnabledFromEnv,
   setProfilingEnabledInEnv,
 } from "../app/debugEnv.js";
 import { startGame } from "../app/game.js";
-import {
-  init as initInput,
-  readControlInput,
-  readEnvInput,
-} from "../app/input.js";
 import type { GravityEngine, Profiler } from "../domain/domainPorts.js";
-import type { Renderer, RenderParams } from "../render/renderPorts.js";
+import type {
+  Renderer,
+  RenderParams,
+  RenderSurface2D,
+} from "../render/renderPorts.js";
 
 /**
- * DOM-level game loop bootstrap.
- *
- * Owns requestAnimationFrame, input polling, and env-level profiling toggles.
+ * DOM-level game loop (depends on requestAnimationFrame).
  */
-export function runDomGameLoop(
+export function runLoop(
   renderer: Renderer,
   gravityEngine: GravityEngine,
   profiler: Profiler,
   profilerController: ProfilerController,
   pilotSurface: RenderSurface2D,
   topSurface: RenderSurface2D,
+  controlInput: ControlInput,
+  envInput: EnvInput,
 ): void {
   const tick: TickCallback = startGame({
     gravityEngine,
@@ -32,24 +35,8 @@ export function runDomGameLoop(
     profilerController,
   });
 
-  initInput();
-
-  let lastProfilingToggleDown = false;
-
   const loop = (nowMs: number) => {
-    const controlInput = readControlInput();
-    const envInput = readEnvInput();
-
-    // Edge-triggered profiling toggle based on env input and env flag.
-    const profilingTogglePressed = envInput.profilingToggle;
-    const currentProfiling = getProfilingEnabledFromEnv();
-    let profilingEnabled = currentProfiling;
-
-    if (profilingTogglePressed && !lastProfilingToggleDown) {
-      profilingEnabled = !currentProfiling;
-      setProfilingEnabledInEnv(profilingEnabled);
-    }
-    lastProfilingToggleDown = profilingTogglePressed;
+    let profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
 
     const renderData = tick({
       nowMs,
@@ -71,4 +58,20 @@ export function runDomGameLoop(
   };
 
   requestAnimationFrame(loop);
+}
+
+let lastProfilingToggleDown = false;
+
+function handleProfilingToggle(profilingTogglePressed: boolean) {
+  const currentProfiling = getProfilingEnabledFromEnv();
+  let profilingEnabled = currentProfiling;
+
+  if (profilingTogglePressed && !lastProfilingToggleDown) {
+    profilingEnabled = !currentProfiling;
+    setProfilingEnabledInEnv(profilingEnabled);
+  }
+
+  lastProfilingToggleDown = profilingTogglePressed;
+
+  return profilingEnabled;
 }
