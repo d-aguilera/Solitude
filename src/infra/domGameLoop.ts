@@ -1,6 +1,7 @@
 import type {
   ControlInput,
   EnvInput,
+  GameState,
   ProfilerController,
   TickCallback,
 } from "../app/appPorts.js";
@@ -29,16 +30,16 @@ export function runLoop(
   controlInput: ControlInput,
   envInput: EnvInput,
 ): void {
-  const tick: TickCallback = startGame({
+  const tick: TickCallback = startGame(
     gravityEngine,
     profiler,
     profilerController,
-  });
+  );
 
   const loop = (nowMs: number) => {
     let profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
 
-    const renderData = tick({
+    const renderData: GameState = tick({
       nowMs,
       controlInput,
       envInput,

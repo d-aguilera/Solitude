@@ -199,7 +199,9 @@ export interface StarSceneObject extends CelestialBodySceneObject {
   luminosity: number; // W or scaled units for lighting
 }
 
-export type TickCallback = (params: TickParams) => GameState;
+export type TickCallback = (
+  params: Readonly<TickParams>,
+) => Readonly<GameState>;
 
 export interface TickParams {
   nowMs: number;

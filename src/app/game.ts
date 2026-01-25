@@ -8,11 +8,11 @@ import type {
   Vec3,
   World,
 } from "../domain/domainPorts.js";
-import type { GravityBodyBinding } from "./appPorts.js";
+import type { GravityBodyBinding, Scene } from "./appPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
-import type { ControlledBodyState } from "./appInternals.js";
+import type { ControlledBodyState, ControlState } from "./appInternals.js";
 import type {
   ControlInput,
   DomainCameraPose,
@@ -43,48 +43,42 @@ import {
   syncLightsToStars,
 } from "./worldSetup.js";
 
-let gameState: GameState = {} as GameState;
-
-let planetPathMappings: PlanetPathMapping[];
-let planetTrajectories: PlanetTrajectory[];
-
-let gravityState: GravityState;
-let gravityBindings: GravityBodyBinding[];
-let gravityEngine: GravityEngine;
-let trajectoryAccumTime = 0;
-let mainShipBodyIndex: number = -1;
-
-let profilerController: ProfilerController;
-
 /**
  * App‑core game entry.
  */
-export function startGame(deps: {
-  gravityEngine: GravityEngine;
-  profiler: Profiler;
-  profilerController: ProfilerController;
-}): TickCallback {
-  gravityEngine = deps.gravityEngine;
-  profilerController = deps.profilerController;
+export function startGame(
+  gravityEngine: GravityEngine,
+  profiler: Profiler,
+  profilerController: ProfilerController,
+): TickCallback {
+  void profiler;
 
   const x = createInitialSceneAndWorld();
 
-  gameState.scene = x.scene;
-  gameState.world = x.world;
-  gameState.mainShipId = x.mainShipId;
-  gameState.topCamera = x.topCamera;
-  gameState.pilotCamera = x.pilotCamera;
-  gameState.controlState = createInitialControlState();
-  gameState.pilotCameraLocalOffset = { x: 0, y: 1.7, z: 1.1 };
+  let gameState: GameState = {
+    scene: x.scene,
+    world: x.world,
+    mainShipId: x.mainShipId,
+    topCamera: x.topCamera,
+    pilotCamera: x.pilotCamera,
+    controlState: createInitialControlState(),
+    pilotCameraLocalOffset: { x: 0, y: 1.7, z: 1.1 },
+  };
 
-  planetPathMappings = x.planetPathMappings;
-  planetTrajectories = x.planetTrajectories;
+  const mainShip: ShipBody = getShipById(gameState.world, gameState.mainShipId);
 
-  gravityState = buildInitialGravityState(gameState.world);
-  gravityBindings = buildGravityBindings(gameState.world);
+  let trajectoryAccumTime = 0;
+
+  let planetPathMappings: PlanetPathMapping[] = x.planetPathMappings;
+  let planetTrajectories: PlanetTrajectory[] = x.planetTrajectories;
+
+  let gravityState: GravityState = buildInitialGravityState(gameState.world);
+  let gravityBindings: GravityBodyBinding[] = buildGravityBindings(
+    gameState.world,
+  );
 
   // Determine which gravity body corresponds to the main ship.
-  mainShipBodyIndex = gravityBindings.findIndex(
+  let mainShipBodyIndex: number = gravityBindings.findIndex(
     (b) => b.kind === "ship" && b.id === gameState.mainShipId,
   );
 
@@ -100,7 +94,12 @@ export function startGame(deps: {
   /**
    * Per‑frame update/render entry called by the outer loop.
    */
-  return ({ nowMs, controlInput, envInput, profilingEnabled }): GameState => {
+  return ({
+    nowMs,
+    controlInput,
+    envInput,
+    profilingEnabled,
+  }): Readonly<GameState> => {
     if (!initialized) {
       lastTimeMs = nowMs;
       initialized = true;
@@ -119,7 +118,24 @@ export function startGame(deps: {
 
     updateFPS(nowMs);
 
-    stepSimulation(dtSeconds, controlInput);
+    gravityState = stepSimulation(
+      dtSeconds,
+      gameState.world,
+      gameState.scene,
+      gameState.pilotCamera,
+      gameState.topCamera,
+      mainShip,
+      mainShipBodyIndex,
+      gravityEngine,
+      gravityState,
+      gravityBindings,
+      controlInput,
+      gameState.controlState,
+      gameState.pilotCameraLocalOffset,
+      planetPathMappings,
+      planetTrajectories,
+      trajectoryAccumTime,
+    );
 
     profilerController.flush();
 
@@ -176,18 +192,62 @@ function buildGravityBindings(world: World): GravityBodyBinding[] {
  *  - Orchestrate per-frame simulation steps in the correct order
  *  - Keep scene objects in sync with simulated world entities
  */
-function stepSimulation(dtSeconds: number, input: ControlInput): void {
-  stepPhysics(dtSeconds, input);
+function stepSimulation(
+  dtSeconds: number,
+  world: World,
+  scene: Scene,
+  pilotCamera: DomainCameraPose,
+  topCamera: DomainCameraPose,
+  mainShip: ShipBody,
+  mainShipBodyIndex: number,
+  gravityEngine: GravityEngine,
+  gravityState: GravityState,
+  gravityBindings: GravityBodyBinding[],
+  input: ControlInput,
+  controlState: ControlState,
+  pilotCameraLocalOffset: Vec3,
+  planetPathMappings: PlanetPathMapping[],
+  planetTrajectories: PlanetTrajectory[],
+  trajectoryAccumTime: number,
+): GravityState {
+  const newGravityState = stepPhysics(
+    dtSeconds,
+    world,
+    mainShip,
+    mainShipBodyIndex,
+    gravityEngine,
+    gravityState,
+    gravityBindings,
+    input,
+    controlState,
+    pilotCameraLocalOffset,
+  );
 
-  syncShipsToSceneObjects(gameState.world, gameState.scene);
-  syncPlanetsToSceneObjects(gameState.world, gameState.scene);
-  syncStarsToSceneObjects(gameState.world, gameState.scene);
-  syncLightsToStars(gameState.world, gameState.scene);
+  syncShipsToSceneObjects(world, scene);
+  syncPlanetsToSceneObjects(world, scene);
+  syncStarsToSceneObjects(world, scene);
+  syncLightsToStars(world, scene);
 
-  rotateCelestialBodies(gameState.scene, dtSeconds);
-  updateTrajectories(dtSeconds);
+  rotateCelestialBodies(scene, dtSeconds);
 
-  updateCameras();
+  updateTrajectories(
+    dtSeconds,
+    scene,
+    mainShip,
+    planetPathMappings,
+    planetTrajectories,
+    trajectoryAccumTime,
+  );
+
+  updateCameras(
+    mainShip,
+    pilotCamera,
+    topCamera,
+    pilotCameraLocalOffset,
+    controlState,
+  );
+
+  return newGravityState;
 }
 
 /**
@@ -212,10 +272,33 @@ function writeBackControlledBodyState(
 /**
  * Advance physical simulation only (orientation, forces, gravity).
  */
-function stepPhysics(dtSeconds: number, input: ControlInput): void {
-  updateShipOrientationFromControls(dtSeconds, input);
-  updatePilotCameraOffset(dtSeconds, input);
-  integrateForcesAndGravity(dtSeconds, input);
+function stepPhysics(
+  dtSeconds: number,
+  world: World,
+  mainShip: ShipBody,
+  mainShipBodyIndex: number,
+  gravityEngine: GravityEngine,
+  gravityState: GravityState,
+  gravityBindings: GravityBodyBinding[],
+  input: ControlInput,
+  controlState: ControlState,
+  pilotCameraLocalOffset: Vec3,
+): GravityState {
+  updateShipOrientationFromControls(dtSeconds, mainShip, input, controlState);
+
+  updatePilotCameraOffset(dtSeconds, input, pilotCameraLocalOffset);
+
+  return integrateForcesAndGravity(
+    dtSeconds,
+    world,
+    mainShip,
+    mainShipBodyIndex,
+    gravityEngine,
+    gravityState,
+    gravityBindings,
+    input,
+    controlState,
+  );
 }
 
 /**
@@ -224,18 +307,12 @@ function stepPhysics(dtSeconds: number, input: ControlInput): void {
  */
 function updateShipOrientationFromControls(
   dtSeconds: number,
+  ship: ShipBody,
   input: ControlInput,
+  controlState: ControlState,
 ): void {
-  const ship = getShipById(gameState.world, gameState.mainShipId);
   const bodyState = makeControlledBodyState(ship);
-
-  updateBodyOrientationFromInput(
-    dtSeconds,
-    input,
-    gameState.controlState,
-    bodyState,
-  );
-
+  updateBodyOrientationFromInput(dtSeconds, input, controlState, bodyState);
   writeBackControlledBodyState(ship, bodyState);
 }
 
@@ -247,40 +324,55 @@ function updateShipOrientationFromControls(
  */
 function integrateForcesAndGravity(
   dtSeconds: number,
+  world: World,
+  controlledShip: ShipBody,
+  mainShipBodyIndex: number,
+  gravityEngine: GravityEngine,
+  gravityState: GravityState,
+  gravityBindings: GravityBodyBinding[],
   input: ControlInput,
-): void {
+  controlState: ControlState,
+): GravityState {
   const gravityTimeScale = 10;
   const gravityDt = dtSeconds * gravityTimeScale;
 
   if (gravityDt === 0) {
-    return;
+    return gravityState;
   }
 
   // 1) Apply thrust to the main ship's body velocity inside gravityState.
-  const controlledShip = getShipById(gameState.world, gameState.mainShipId);
-
-  const shipBody = gravityState.bodies[mainShipBodyIndex];
+  const shipBodyState = gravityState.bodies[mainShipBodyIndex];
 
   const bodyState: ControlledBodyState = {
     frame: controlledShip.frame,
-    velocity: shipBody.velocity,
+    velocity: shipBodyState.velocity,
   };
 
-  applyThrustToVelocity(gravityDt, input, gameState.controlState, bodyState);
+  applyThrustToVelocity(gravityDt, input, controlState, bodyState);
 
-  shipBody.velocity = bodyState.velocity;
+  shipBodyState.velocity = bodyState.velocity;
 
-  // 2) Step gravity (pure domain: updates velocities and positions).
-  gravityState = gravityEngine.step(gravityDt, gravityState);
+  // 2) Step gravity (updates velocities and positions).
+  const newGravityState = gravityEngine.step(gravityDt, gravityState);
 
   // 3) Apply positions back into AppWorld via bindings.
-  applyGravityPositionsToWorld(gravityState.positions);
+  applyGravityPositionsToWorld(
+    world,
+    newGravityState.positions,
+    gravityBindings,
+  );
 
   // 4) Sync ship velocities in WorldState from gravityState so debug & HUD see them.
-  syncShipVelocitiesFromGravity();
+  syncShipVelocitiesFromGravity(world, newGravityState, gravityBindings);
+
+  return newGravityState;
 }
 
-function applyGravityPositionsToWorld(positions: Vec3[]): void {
+function applyGravityPositionsToWorld(
+  world: World,
+  positions: Vec3[],
+  gravityBindings: GravityBodyBinding[],
+): void {
   const n = gravityBindings.length;
   if (positions.length !== n) {
     throw new Error(
@@ -294,17 +386,17 @@ function applyGravityPositionsToWorld(positions: Vec3[]): void {
 
     switch (binding.kind) {
       case "ship": {
-        const ship = gameState.world.shipBodies[binding.shipIndex];
+        const ship = world.shipBodies[binding.shipIndex];
         ship.position = { ...pos };
         break;
       }
       case "planet": {
-        const planet = gameState.world.planets[binding.planetIndex];
+        const planet = world.planets[binding.planetIndex];
         planet.position = { ...pos };
         break;
       }
       case "star": {
-        const star = gameState.world.stars[binding.starIndex];
+        const star = world.stars[binding.starIndex];
         star.position = { ...pos };
         break;
       }
@@ -312,7 +404,11 @@ function applyGravityPositionsToWorld(positions: Vec3[]): void {
   }
 }
 
-function syncShipVelocitiesFromGravity(): void {
+function syncShipVelocitiesFromGravity(
+  world: World,
+  gravityState: GravityState,
+  gravityBindings: GravityBodyBinding[],
+): void {
   for (const binding of gravityBindings) {
     if (binding.kind !== "ship") continue;
 
@@ -322,7 +418,7 @@ function syncShipVelocitiesFromGravity(): void {
     }
 
     const body = gravityState.bodies[bodyIndex];
-    const ship = gameState.world.shipBodies[binding.shipIndex];
+    const ship = world.shipBodies[binding.shipIndex];
 
     ship.velocity = { ...body.velocity };
   }
@@ -331,7 +427,14 @@ function syncShipVelocitiesFromGravity(): void {
 /**
  * Sample and update trajectory polylines for the ship and planets.
  */
-function updateTrajectories(dtSeconds: number): void {
+function updateTrajectories(
+  dtSeconds: number,
+  scene: Scene,
+  mainShip: ShipBody,
+  planetPathMappings: PlanetPathMapping[],
+  planetTrajectories: PlanetTrajectory[],
+  trajectoryAccumTime: number,
+): void {
   const sampleInterval = 1.0; // seconds
 
   if (paused) {
@@ -341,8 +444,8 @@ function updateTrajectories(dtSeconds: number): void {
   trajectoryAccumTime += dtSeconds;
 
   while (trajectoryAccumTime >= sampleInterval) {
-    appendShipTrajectoryPoint();
-    appendPlanetTrajectories();
+    appendShipTrajectoryPoint(scene, mainShip);
+    appendPlanetTrajectories(scene, planetPathMappings, planetTrajectories);
     trajectoryAccumTime -= sampleInterval;
   }
 }
@@ -350,27 +453,36 @@ function updateTrajectories(dtSeconds: number): void {
 /**
  * Update all camera positions / orientations.
  */
-function updateCameras(): void {
-  const mainShip = getShipById(gameState.world, gameState.mainShipId);
-
+function updateCameras(
+  mainShip: ShipBody,
+  pilotCamera: DomainCameraPose,
+  topCamera: DomainCameraPose,
+  pilotCameraLocalOffset: Vec3,
+  controlState: ControlState,
+): void {
   setCameraRelativeToShip(
-    gameState.pilotCamera,
+    pilotCamera,
     mainShip,
-    gameState.pilotCameraLocalOffset,
+    pilotCameraLocalOffset,
+    controlState,
     frameFromShipForPilot,
   );
 
   setCameraRelativeToShip(
-    gameState.topCamera,
+    topCamera,
     mainShip,
     { x: 0, y: 0, z: 50 },
+    controlState,
     frameFromShipForTop,
   );
 }
 
-function frameFromShipForPilot(ship: ShipBody): LocalFrame {
+function frameFromShipForPilot(
+  ship: ShipBody,
+  controlState: ControlState,
+): LocalFrame {
   const base = ship.frame;
-  const { azimuth, elevation } = gameState.controlState.look;
+  const { azimuth, elevation } = controlState.look;
 
   let frame: LocalFrame = {
     right: vec3.clone(base.right),
@@ -388,7 +500,11 @@ function frameFromShipForPilot(ship: ShipBody): LocalFrame {
   return frame;
 }
 
-function frameFromShipForTop(ship: ShipBody): LocalFrame {
+function frameFromShipForTop(
+  ship: ShipBody,
+  controlState: ControlState,
+): LocalFrame {
+  void controlState;
   const { right, forward, up } = ship.frame;
   return {
     right: vec3.clone(right),
@@ -401,7 +517,8 @@ function setCameraRelativeToShip(
   pose: DomainCameraPose,
   ship: ShipBody,
   localOffset: Vec3,
-  frameFromShip: (ship: ShipBody) => LocalFrame,
+  controlState: ControlState,
+  frameFromShip: (ship: ShipBody, controlState: ControlState) => LocalFrame,
 ): void {
   const { right, forward, up } = ship.frame;
 
@@ -412,27 +529,24 @@ function setCameraRelativeToShip(
   );
 
   pose.position = vec3.add(ship.position, worldOffset);
-  pose.frame = frameFromShip(ship);
+  pose.frame = frameFromShip(ship, controlState);
 }
 
-function appendShipTrajectoryPoint(): void {
-  const mainShip = getShipById(gameState.world, gameState.mainShipId);
-  const pathObj = gameState.scene.objects.find(
-    (o) => o.id === "path:ship:main",
-  );
+function appendShipTrajectoryPoint(scene: Scene, mainShip: ShipBody): void {
+  const pathObj = scene.objects.find((o) => o.id === "path:ship:main");
   if (pathObj) {
     appendPointToPolylineMesh(pathObj.mesh, mainShip.position);
   }
 }
 
-function appendPlanetTrajectories(): void {
+function appendPlanetTrajectories(
+  scene: Scene,
+  planetPathMappings: PlanetPathMapping[],
+  planetTrajectories: PlanetTrajectory[],
+): void {
   for (const mapping of planetPathMappings) {
-    const bodyObj = gameState.scene.objects.find(
-      (o) => o.id === mapping.planetId,
-    );
-    const pathObj = gameState.scene.objects.find(
-      (o) => o.id === mapping.pathId,
-    );
+    const bodyObj = scene.objects.find((o) => o.id === mapping.planetId);
+    const pathObj = scene.objects.find((o) => o.id === mapping.pathId);
     if (!bodyObj || !pathObj) continue;
 
     const trajectory = planetTrajectories.find(
@@ -448,7 +562,11 @@ function appendPlanetTrajectories(): void {
   }
 }
 
-function updatePilotCameraOffset(dtSeconds: number, input: ControlInput): void {
+function updatePilotCameraOffset(
+  dtSeconds: number,
+  input: ControlInput,
+  pilotCameraLocalOffset: Vec3,
+): void {
   if (dtSeconds <= 0) return;
 
   const moveSpeed = 0.5;
@@ -464,9 +582,7 @@ function updatePilotCameraOffset(dtSeconds: number, input: ControlInput): void {
 
   if (dx === 0 && dy === 0 && dz === 0) return;
 
-  gameState.pilotCameraLocalOffset = {
-    x: gameState.pilotCameraLocalOffset.x + dx * dtSeconds,
-    y: gameState.pilotCameraLocalOffset.y + dy * dtSeconds,
-    z: gameState.pilotCameraLocalOffset.z + dz * dtSeconds,
-  };
+  pilotCameraLocalOffset.x += dx * dtSeconds;
+  pilotCameraLocalOffset.y += dy * dtSeconds;
+  pilotCameraLocalOffset.z += dz * dtSeconds;
 }
