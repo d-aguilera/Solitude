@@ -36,7 +36,8 @@ const isNotPolylinePath = (obj: SceneObject) =>
 
 export class DefaultRenderer implements Renderer {
   constructor(
-    private readonly rasterizer: Rasterizer,
+    private readonly pilotRasterizer: Rasterizer,
+    private readonly topRasterizer: Rasterizer,
     private profilerController: ProfilerController,
   ) {}
 
@@ -84,19 +85,19 @@ export class DefaultRenderer implements Renderer {
       thrustPercent,
     );
 
-    this.rasterizer.clear(pilotSurface, "#000000");
-    this.rasterizer.drawFaces(pilotSurface, pilotData.faces);
-    this.rasterizer.drawPolylines(pilotSurface, pilotData.polylines);
-    this.rasterizer.drawSegments(pilotSurface, pilotData.segments);
-    this.rasterizer.drawBodyLabels(pilotSurface, pilotData.bodyLabels);
+    this.pilotRasterizer.clear(pilotSurface, "#000000");
+    this.pilotRasterizer.drawFaces(pilotSurface, pilotData.faces);
+    this.pilotRasterizer.drawPolylines(pilotSurface, pilotData.polylines);
+    this.pilotRasterizer.drawSegments(pilotSurface, pilotData.segments);
+    this.pilotRasterizer.drawBodyLabels(pilotSurface, pilotData.bodyLabels);
 
-    this.rasterizer.clear(topSurface, "#000000");
-    this.rasterizer.drawFaces(topSurface, topData.faces);
-    this.rasterizer.drawPolylines(topSurface, topData.polylines);
-    this.rasterizer.drawSegments(topSurface, topData.segments);
-    this.rasterizer.drawBodyLabels(topSurface, topData.bodyLabels);
+    this.topRasterizer.clear(topSurface, "#000000");
+    this.topRasterizer.drawFaces(topSurface, topData.faces);
+    this.topRasterizer.drawPolylines(topSurface, topData.polylines);
+    this.topRasterizer.drawSegments(topSurface, topData.segments);
+    this.topRasterizer.drawBodyLabels(topSurface, topData.bodyLabels);
 
-    this.rasterizer.drawHud(pilotSurface, hudData);
+    this.pilotRasterizer.drawHud(pilotSurface, hudData);
   }
 }
 

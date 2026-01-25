@@ -1,5 +1,4 @@
 import { DefaultRenderer } from "../render/DefaultRenderer.js";
-import { CanvasSurface } from "../canvas/CanvasSurface.js";
 import { init as initResizeHandler } from "../canvas/canvasLayout.js";
 import type { GravityEngine, Profiler } from "../domain/domainPorts.js";
 import { NewtonianGravityEngine } from "../domain/NewtonianGravityEngine.js";
@@ -8,16 +7,10 @@ import type { ProfilerController } from "../app/appPorts.js";
 import type { Rasterizer, Renderer } from "../render/renderPorts.js";
 import type { RenderSurface2D } from "../render/renderPorts.js";
 import { runDomGameLoop } from "./domGameLoop.js";
-import { CanvasRasterizer } from "../canvas/CanvasRasterizer.js";
+import { WebGLSurface } from "../webgl/WebGLSurface.js";
+import { WebGLRasterizer } from "../webgl/WebGLRasterizer.js";
 
-/**
- * DOM-level bootstrap responsible for:
- *  - Looking up canvas elements in the document
- *  - Wiring concrete Renderer, GravityEngine and Profiler instances
- *  - Creating RenderSurface2D adapters for Canvas2D
- *  - Starting the DOM-driven game loop
- */
-export function bootstrapDomApp(): void {
+export function bootstrapDomWebGlApp(): void {
   const container = document.querySelector(".canvas-container");
   if (!container) {
     throw new Error("Required '.canvas-container' not found in document");
@@ -39,29 +32,30 @@ export function bootstrapDomApp(): void {
 
   initResizeHandler(container, pilotCanvas, topCanvas);
 
-  const pilotContext = pilotCanvas.getContext("2d");
-  if (!pilotContext) {
-    throw new Error("Failed to get 2D context for pilot view canvas");
+  const glPilot = pilotCanvas.getContext("webgl2");
+  if (!glPilot) {
+    throw new Error("Failed to get WebGL2 context for pilot canvas");
   }
 
-  const topContext = topCanvas.getContext("2d");
-  if (!topContext) {
-    throw new Error("Failed to get 2D context for top view canvas");
+  const glTop = topCanvas.getContext("webgl2");
+  if (!glTop) {
+    throw new Error("Failed to get WebGL2 context for top canvas");
   }
 
-  const pilotSurface: RenderSurface2D = new CanvasSurface(pilotContext);
-  const topSurface: RenderSurface2D = new CanvasSurface(topContext);
+  const pilotSurface: RenderSurface2D = new WebGLSurface(glPilot);
+  const topSurface: RenderSurface2D = new WebGLSurface(glTop);
 
   const gravityEngine: GravityEngine = new NewtonianGravityEngine();
   const defaultProfiler = new DefaultProfiler();
   const profiler: Profiler = defaultProfiler;
   const profilerController: ProfilerController = defaultProfiler;
 
-  const rasterizer: Rasterizer = new CanvasRasterizer();
+  const pilotRasterizer: Rasterizer = new WebGLRasterizer(glPilot);
+  const topRasterizer: Rasterizer = new WebGLRasterizer(glTop);
 
   const renderer: Renderer = new DefaultRenderer(
-    rasterizer,
-    rasterizer,
+    pilotRasterizer,
+    topRasterizer,
     profilerController,
   );
 

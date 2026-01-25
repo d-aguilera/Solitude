@@ -1,4 +1,4 @@
-import { bootstrapDomApp } from "./infra/domCanvasBootstrap.js";
+import { bootstrapDomWebGlApp } from "./infra/domWebGlBootstrap.js";
 
 /**
  * Top‑level composition entry for the browser runtime.
@@ -7,7 +7,7 @@ import { bootstrapDomApp } from "./infra/domCanvasBootstrap.js";
  * the rest of the application can depend only on ports.
  */
 function main(): void {
-  bootstrapDomApp();
+  bootstrapDomWebGlApp();
 }
 
 main();
