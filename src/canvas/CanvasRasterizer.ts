@@ -1,9 +1,9 @@
-import type { RenderedHud } from "../render/renderPorts.js";
 import { rgbToCss } from "../render/color.js";
 import type {
   Rasterizer,
   RenderedBodyLabel,
   RenderedFace,
+  RenderedHud,
   RenderedPolyline,
   RenderedSegment,
   RenderSurface2D,
