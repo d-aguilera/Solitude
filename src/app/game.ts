@@ -7,6 +7,7 @@ import type {
   Vec3,
   World,
 } from "../domain/domainPorts.js";
+import { getShipById } from "../domain/worldLookup.js";
 import type { ControlState } from "./appInternals.js";
 import type {
   ControlInput,
@@ -34,7 +35,6 @@ import {
 } from "./physics.js";
 import type { PlanetTrajectory } from "./trajectories.js";
 import { updateTrajectories } from "./trajectories.js";
-import { getShipById } from "./worldLookup.js";
 import {
   createInitialSceneAndWorld,
   rotateCelestialBodies,

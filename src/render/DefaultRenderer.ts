@@ -8,7 +8,7 @@ import type {
 } from "../app/appPorts.js";
 import { getSignedThrustPercent } from "../app/controls.js";
 import { fps } from "../app/fps.js";
-import { getShipById } from "../app/worldLookup.js";
+import { getShipById } from "../domain/worldLookup.js";
 import type { ShipBody, Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import type {
