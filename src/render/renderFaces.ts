@@ -9,13 +9,13 @@ import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import { ndcToScreen } from "./ndcToScreen.js";
 import { ProjectionService } from "./ProjectionService.js";
-import { toRenderable } from "./renderPrep.js";
 import type {
   NdcPoint,
   RenderedFace,
   RenderSurface2D,
   ScreenPoint,
 } from "./renderPorts.js";
+import { toRenderable } from "./renderPrep.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
 const SUN_LUMINOSITY = 3.828e26; // W

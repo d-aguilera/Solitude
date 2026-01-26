@@ -1,5 +1,4 @@
-import type { NdcPoint } from "./renderPorts.js";
-import type { ScreenPoint } from "./renderPorts.js";
+import type { NdcPoint, ScreenPoint } from "./renderPorts.js";
 
 /**
  * Map NDC coordinates into pixel space for a given screen size.
