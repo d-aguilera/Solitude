@@ -119,7 +119,7 @@ export function startGame(
 
     updateFPS(nowMs);
 
-    gravityState = stepSimulation(
+    stepSimulation(
       dtSeconds,
       gameState.world,
       gameState.scene,
@@ -164,13 +164,13 @@ function stepSimulation(
   planetPathMappings: PlanetPathMapping[],
   planetTrajectories: PlanetTrajectory[],
   trajectoryAccumTime: number,
-): GravityState {
+): void {
   updateThrustMagnitudeFromInput(input, controlState);
   updatePilotLook(dtSeconds, input, controlState.look);
   updateAlignToVelocityFromInput(input, controlState);
   updateShipOrientationFromControls(dtSeconds, mainShip, input, controlState);
   updatePilotCameraOffset(dtSeconds, input, pilotCameraLocalOffset);
-  const newGravityState = integrateForcesAndGravity(
+  integrateForcesAndGravity(
     dtSeconds,
     world,
     mainShip,
@@ -201,6 +201,4 @@ function stepSimulation(
     pilotCameraLocalOffset,
     controlState,
   );
-
-  return newGravityState;
 }

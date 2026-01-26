@@ -20,18 +20,12 @@ export interface CelestialBody {
 
 /**
  * Domain-level abstraction for gravitational integration.
- *
- * Implementations stay port-pure: they do not know about rendering,
- * input, or adapter- or world-level types.
- *
- * The engine operates purely on a GravityState and returns updated
- * velocities and positions for each body.
  */
 export interface GravityEngine {
   /**
-   * Advance gravity simulation by dtSeconds, returning a new GravityState.
+   * Advance gravity simulation by dtSeconds.
    */
-  step(dtSeconds: number, state: GravityState): GravityState;
+  step(dtSeconds: number, state: GravityState): void;
 }
 
 /**

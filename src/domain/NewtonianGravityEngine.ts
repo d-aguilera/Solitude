@@ -14,41 +14,31 @@ export class NewtonianGravityEngine implements GravityEngine {
   /**
    * Advance gravity simulation by dtSeconds, returning a new GravityState.
    */
-  step(dtSeconds: number, state: GravityState): GravityState {
-    if (dtSeconds <= 0) {
-      return state;
+  step(dtSeconds: number, state: GravityState): void {
+    if (dtSeconds == 0) {
+      return;
     }
 
     const { bodies, positions } = state;
 
     if (bodies.length === 0) {
-      return state;
+      return;
     }
 
     const accelerations = this.computeGravityAccelerations(bodies, positions);
 
-    const nextBodies = this.integrateBodyVelocities(
-      bodies,
-      accelerations,
-      dtSeconds,
-    );
+    this.integrateBodyVelocities(bodies, accelerations, dtSeconds);
 
-    const nextPositions = this.integrateBodyPositions(
-      nextBodies,
-      positions,
-      dtSeconds,
-    );
-
-    return {
-      bodies: nextBodies,
-      positions: nextPositions,
-    };
+    this.integrateBodyPositions(bodies, positions, dtSeconds);
   }
 
   /**
    * Compute gravitational accelerations for each body, given their positions.
    */
-  computeGravityAccelerations(bodies: BodyState[], positions: Vec3[]): Vec3[] {
+  private computeGravityAccelerations(
+    bodies: BodyState[],
+    positions: Vec3[],
+  ): Vec3[] {
     const n = bodies.length;
     const accelerations: Vec3[] = new Array(n);
 
@@ -83,50 +73,36 @@ export class NewtonianGravityEngine implements GravityEngine {
   /**
    * Integrate velocities using accelerations over dtSeconds.
    */
-  integrateBodyVelocities(
+  private integrateBodyVelocities(
     bodies: BodyState[],
     accelerations: Vec3[],
     dtSeconds: number,
-  ): BodyState[] {
+  ): void {
     const n = bodies.length;
-    const nextBodies: BodyState[] = new Array(n);
 
     for (let i = 0; i < n; i++) {
       const dv = vec3.scale(accelerations[i], dtSeconds);
       const body = bodies[i];
-      const velocity = vec3.add(body.velocity, dv);
-
-      nextBodies[i] = {
-        id: body.id,
-        mass: body.mass,
-        velocity,
-      };
+      body.velocity = vec3.add(body.velocity, dv);
     }
-
-    return nextBodies;
   }
 
   /**
-   * Integrate positions using velocities over dtSeconds and return the
-   * updated positions. Outer layers are responsible for applying these
-   * positions back into their own world representation.
+   * Integrate positions using velocities over dtSeconds.
    */
-  integrateBodyPositions(
+  private integrateBodyPositions(
     bodies: BodyState[],
     positions: Vec3[],
     dtSeconds: number,
-  ): Vec3[] {
+  ): void {
     const n = bodies.length;
-    const nextPositions: Vec3[] = new Array(n);
+    positions.length = n;
 
     for (let i = 0; i < n; i++) {
-      const b = bodies[i];
-      const p = positions[i];
-      const v = b.velocity;
-
-      nextPositions[i] = vec3.add(p, vec3.scale(v, dtSeconds));
+      positions[i] = vec3.add(
+        positions[i],
+        vec3.scale(bodies[i].velocity, dtSeconds),
+      );
     }
-
-    return nextPositions;
   }
 }

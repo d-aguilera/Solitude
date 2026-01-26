@@ -203,12 +203,12 @@ export function integrateForcesAndGravity(
   gravityBindings: GravityBodyBinding[],
   input: ControlInput,
   controlState: ControlState,
-): GravityState {
+): void {
   const gravityTimeScale = 10;
   const gravityDt = dtSeconds * gravityTimeScale;
 
   if (gravityDt === 0) {
-    return gravityState;
+    return;
   }
 
   // 1) Apply thrust to the main ship's body velocity inside gravityState.
@@ -224,17 +224,11 @@ export function integrateForcesAndGravity(
   shipBodyState.velocity = bodyState.velocity;
 
   // 2) Step gravity (updates velocities and positions).
-  const newGravityState = gravityEngine.step(gravityDt, gravityState);
+  gravityEngine.step(gravityDt, gravityState);
 
   // 3) Apply positions back into AppWorld via bindings.
-  applyGravityPositionsToWorld(
-    world,
-    newGravityState.positions,
-    gravityBindings,
-  );
+  applyGravityPositionsToWorld(world, gravityState.positions, gravityBindings);
 
   // 4) Sync ship velocities in WorldState from gravityState so debug & HUD see them.
-  syncShipVelocitiesFromGravity(world, newGravityState, gravityBindings);
-
-  return newGravityState;
+  syncShipVelocitiesFromGravity(world, gravityState, gravityBindings);
 }
