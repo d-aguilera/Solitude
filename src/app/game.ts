@@ -8,7 +8,6 @@ import type {
   Vec3,
   World,
 } from "../domain/domainPorts.js";
-import type { GravityBodyBinding, Scene } from "./appPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
@@ -17,7 +16,9 @@ import type {
   ControlInput,
   DomainCameraPose,
   GameState,
+  GravityBodyBinding,
   ProfilerController,
+  Scene,
   TickCallback,
 } from "./appPorts.js";
 import {

@@ -1,4 +1,4 @@
-import type { Vec3 } from "../domain/domainPorts.js";
+import type { Mesh, Vec3 } from "../domain/domainPorts.js";
 import type { RingBuffer } from "./RingBuffer.js";
 import { Vec3RingBuffer } from "./RingBuffer.js";
 
@@ -30,8 +30,6 @@ export function updatePlanetTrajectory(
     evicted = t.buffers[b].push(evicted);
   }
 }
-
-import type { Mesh } from "../domain/domainPorts.js";
 
 export function rebuildPlanetPathMesh(
   traj: PlanetTrajectory,
