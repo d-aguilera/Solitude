@@ -7,7 +7,6 @@ import type {
   Vec3,
   World,
 } from "../domain/domainPorts";
-import type { ControlState } from "./appInternals";
 
 export interface BaseSceneObject {
   id: string;
@@ -84,6 +83,16 @@ export type EnvInput = Record<EnvAction, boolean>;
 
 export type DrawMode = "faces" | "lines";
 
+/**
+ * Per-player control state that must persist across frames.
+ */
+export interface ControlState {
+  alignToVelocity: boolean;
+  look: PilotLookState;
+  pilotCameraLocalOffset: Vec3;
+  thrustPercent: number;
+}
+
 export interface DomainCameraPose {
   position: Vec3;
   frame: LocalFrame;
@@ -115,6 +124,14 @@ export interface GravityBodyBinding {
 
 export interface PlanetSceneObject extends CelestialBodySceneObject {
   kind: "planet";
+}
+
+/**
+ * Pilot's view state relative to the controlled vehicle.
+ */
+export interface PilotLookState {
+  azimuth: number;
+  elevation: number;
 }
 
 /**

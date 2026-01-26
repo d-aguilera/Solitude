@@ -1,8 +1,11 @@
 import type { LocalFrame, ShipBody, Vec3 } from "../domain/domainPorts.js";
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
-import type { ControlState } from "./appInternals.js";
-import type { ControlInput, DomainCameraPose } from "./appPorts.js";
+import type {
+  ControlInput,
+  ControlState,
+  DomainCameraPose,
+} from "./appPorts.js";
 
 /**
  * Update all camera positions / orientations.
