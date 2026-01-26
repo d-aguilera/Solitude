@@ -39,7 +39,7 @@ import type {
 import {
   createPlanetTrajectory,
   type PlanetTrajectory,
-} from "./planetTrajectories.js";
+} from "./trajectories.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
@@ -545,7 +545,7 @@ function getPlanetPhysicsById(
  * This updates only the visual orientation; positions are governed by gravity.
  */
 export function rotateCelestialBodies(scene: Scene, dtSeconds: number): void {
-  if (dtSeconds <= 0) return;
+  if (dtSeconds == 0) return;
 
   for (const obj of scene.objects) {
     if (obj.kind !== "planet" && obj.kind !== "star") continue;

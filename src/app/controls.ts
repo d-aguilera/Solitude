@@ -1,4 +1,4 @@
-import type { LocalFrame } from "../domain/domainPorts.js";
+import type { LocalFrame, ShipBody } from "../domain/domainPorts.js";
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import type {
@@ -9,7 +9,7 @@ import type {
 import type { ControlInput } from "./appPorts.js";
 
 // Max thrust acceleration in m/s^2 at 100% thrust
-const maxThrustAcceleration = 1_000_000; // ~ 100_000 G
+export const maxThrustAcceleration = 1_000_000; // ~ 100_000 G
 
 // Rates in radians per second
 const lookSpeed = 1.5;
@@ -120,7 +120,7 @@ function yawFrame(
  *
  * If multiple keys are pressed at once, the highest level wins for this frame.
  */
-function updateThrustMagnitudeFromInput(
+export function updateThrustMagnitudeFromInput(
   input: ControlInput,
   state: ControlState,
 ): void {
@@ -144,9 +144,7 @@ function updateThrustMagnitudeFromInput(
  * Kept as a named helper to document the contract and allow future
  * extensions (e.g. clamping, non-linear curves).
  */
-export function getThrustMagnitudePercentFromState(
-  state: ControlState,
-): number {
+function getThrustMagnitudePercentFromState(state: ControlState): number {
   return state.thrustPercent;
 }
 
@@ -168,38 +166,6 @@ export function getSignedThrustPercent(
 }
 
 /**
- * Apply thrust acceleration to the controlled body's velocity when burn/brake
- * are active. Acceleration magnitude is:
- *
- *   a = maxThrustAcceleration * thrustPercent
- *
- * where thrustPercent ∈ [-1, 1] and is chosen from discrete levels
- * depending on Space/B and numeric thrust keys.
- *
- * When braking (negative thrustPercent), the component of velocity along
- * the ship's forward axis is clamped so that it does not reverse: once it
- * reaches zero, further braking thrust will not push the ship back the
- * other way along that axis.
- */
-export function applyThrustToVelocity(
-  dtSeconds: number,
-  input: ControlInput,
-  controlState: ControlState,
-  body: ControlledBodyState,
-): void {
-  if (dtSeconds <= 0) return;
-
-  const thrustPercent = getSignedThrustPercent(input, controlState);
-  if (thrustPercent === 0) return;
-
-  const { frame, velocity } = body;
-  const accelMagnitude = maxThrustAcceleration * thrustPercent;
-  const dv = vec3.scale(frame.forward, accelMagnitude * dtSeconds);
-
-  vec3.addInto(body.velocity, velocity, dv);
-}
-
-/**
  * Top-level update for orientation only; does NOT move the body forward.
  * Position integration is handled by gravity/thrust integration.
  *
@@ -210,21 +176,12 @@ export function applyThrustToVelocity(
  *  - the body's LocalFrame based on roll/pitch/yaw input
  *  - the body's LocalFrame when aligning to velocity is requested
  */
-export function updateBodyOrientationFromInput(
+function updateBodyOrientationFromInput(
   dtSeconds: number,
   input: ControlInput,
   controlState: ControlState,
   body: ControlledBodyState,
 ): void {
-  // Update thrust level before we use it anywhere.
-  updateThrustMagnitudeFromInput(input, controlState);
-
-  // Update persistent pilot look state owned by the controls.
-  updatePilotLook(dtSeconds, input, controlState.look);
-
-  // Update persistent "align to velocity" intent.
-  updateAlignToVelocityFromInput(input, controlState);
-
   let frame = body.frame;
   frame = rollFrame(frame, dtSeconds, input);
   frame = pitchFrame(frame, dtSeconds, input);
@@ -318,9 +275,43 @@ function updateFrameAlignToVelocity(
  * While the align key is held, the ship's attitude will be steered
  * toward the velocity vector.
  */
-function updateAlignToVelocityFromInput(
+export function updateAlignToVelocityFromInput(
   input: ControlInput,
   state: ControlState,
 ): void {
   state.alignToVelocity = input.alignToVelocity;
+}
+
+/**
+ * Handles control-input-based orientation updates for the controlled ship.
+ * Also updates the persistent control state and pilot view look state.
+ */
+export function updateShipOrientationFromControls(
+  dtSeconds: number,
+  ship: ShipBody,
+  input: ControlInput,
+  controlState: ControlState,
+): void {
+  const bodyState = makeControlledBodyState(ship);
+  updateBodyOrientationFromInput(dtSeconds, input, controlState, bodyState);
+  writeBackControlledBodyState(ship, bodyState);
+}
+
+/**
+ * Adapt the main ship and its pilot view into the data structures
+ * used by the controls module.
+ */
+function makeControlledBodyState(ship: ShipBody): ControlledBodyState {
+  return {
+    frame: ship.frame,
+    velocity: ship.velocity,
+  };
+}
+
+function writeBackControlledBodyState(
+  ship: ShipBody,
+  body: ControlledBodyState,
+): void {
+  ship.frame = body.frame;
+  ship.velocity = body.velocity;
 }
