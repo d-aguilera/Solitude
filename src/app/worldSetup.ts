@@ -1,8 +1,6 @@
-import type {
-  PlanetBodyConfig,
-  StarBodyConfig,
-} from "../domain/domainInternals.js";
-import { colors } from "../domain/domainInternals.js";
+import type { StarBodyConfig } from "../domain/domainPorts.js";
+import type { PlanetBodyConfig } from "../domain/domainPorts.js";
+import { colors } from "../domain/domainPorts.js";
 import type {
   CelestialBody,
   LocalFrame,

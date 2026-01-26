@@ -1,13 +1,17 @@
-import { colors, M_SUN } from "./domainInternals.js";
-import type { PlanetBodyConfig, StarBodyConfig } from "./domainInternals.js";
+import { colors } from "./domainPorts.js";
+import type { StarBodyConfig } from "./domainPorts.js";
+import type { PlanetBodyConfig } from "./domainPorts.js";
 import { circularSpeedAtRadius } from "./phys.js";
 
-export const AU = 1.495978707e11; // m
-
-const twoPi = 2 * Math.PI;
+const AU = 1.495978707e11; // m
 
 // Base SI unit helpers
 const km = 1_000;
+
+// Sun mass (for heliocentric orbits)
+const M_SUN = 1.98847e30; // kg
+
+const twoPi = 2 * Math.PI;
 
 // Real(ish) semi‑major axes (meters)
 const orbits = {
