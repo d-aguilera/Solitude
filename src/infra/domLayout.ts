@@ -41,14 +41,13 @@ function resizeCanvases(
   const containerHeight = container.clientHeight;
   const aspectRatio = 16 / 9;
 
-  // Pilot view: fill entire container while preserving aspect ratio
   let pilotWidth = containerWidth;
-  let pilotHeight = pilotWidth / aspectRatio;
+  let pilotHeight = containerHeight; // pilotWidth / aspectRatio;
 
-  if (pilotHeight > containerHeight) {
-    pilotHeight = containerHeight;
-    pilotWidth = pilotHeight * aspectRatio;
-  }
+  // if (pilotHeight > containerHeight) {
+  //   pilotHeight = containerHeight;
+  //   pilotWidth = pilotHeight * aspectRatio;
+  // }
 
   resizeCanvasToCssBox(pilotCanvas, pilotWidth, pilotHeight);
 
