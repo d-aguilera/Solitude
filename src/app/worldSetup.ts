@@ -21,7 +21,6 @@ import {
 import { mat3 } from "../domain/mat3.js";
 import { shipModel, generatePlanetMesh } from "../domain/models.js";
 import { circularSpeedAtRadius } from "../domain/phys.js";
-import { buildDefaultSolarSystemConfigs } from "../domain/solarSystem.js";
 import { trig } from "../domain/trig.js";
 import { vec3 } from "../domain/vec3.js";
 import { getStarPhysicsById } from "../domain/worldLookup.js";
@@ -34,6 +33,7 @@ import type {
   ShipSceneObject,
   StarSceneObject,
 } from "./appPorts.js";
+import { buildDefaultSolarSystemConfigs } from "./solarSystem.js";
 import {
   createPlanetTrajectory,
   type PlanetTrajectory,
