@@ -1,8 +1,8 @@
 import type { ProfilerController } from "../app/appPorts.js";
 import { CanvasRasterizer } from "../canvas/CanvasRasterizer.js";
 import { CanvasSurface } from "../canvas/CanvasSurface.js";
+import { NEWTON_G, SOFTENING_LENGTH } from "../domain/domainPorts.js";
 import type { GravityEngine, Profiler } from "../domain/domainPorts.js";
-import { NewtonianGravityEngine } from "../domain/NewtonianGravityEngine.js";
 import { DefaultRenderer } from "../render/DefaultRenderer.js";
 import type {
   Rasterizer,
@@ -13,6 +13,7 @@ import { DefaultProfiler } from "./DefaultProfiler.js";
 import { runLoop } from "./domGameLoop.js";
 import { initInput } from "./domKeyboardInput.js";
 import { initLayout } from "./domLayout.js";
+import { NewtonianGravityEngine } from "./NewtonianGravityEngine.js";
 
 /**
  * Canvas 2D DOM-level bootstrap
@@ -52,7 +53,10 @@ export function bootstrap(): void {
   const pilotSurface: RenderSurface2D = new CanvasSurface(pilotContext);
   const topSurface: RenderSurface2D = new CanvasSurface(topContext);
 
-  const gravityEngine: GravityEngine = new NewtonianGravityEngine();
+  const gravityEngine: GravityEngine = new NewtonianGravityEngine(
+    NEWTON_G,
+    SOFTENING_LENGTH,
+  );
   const defaultProfiler = new DefaultProfiler();
   const profiler: Profiler = defaultProfiler;
   const profilerController: ProfilerController = defaultProfiler;

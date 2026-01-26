@@ -1,16 +1,19 @@
-import { NEWTON_G, SOFTENING_LENGTH } from "./domainInternals.js";
 import type {
   BodyState,
   GravityEngine,
   GravityState,
   Vec3,
-} from "./domainPorts.js";
-import { vec3 } from "./vec3.js";
+} from "../domain/domainPorts.js";
+import { vec3 } from "../domain/vec3.js";
 
 /**
  * Concrete GravityEngine using a Newtonian N-body implementation.
  */
 export class NewtonianGravityEngine implements GravityEngine {
+  constructor(
+    private G: number,
+    private softeningLength: number,
+  ) {}
   /**
    * Advance gravity simulation by dtSeconds, returning a new GravityState.
    */
@@ -53,13 +56,13 @@ export class NewtonianGravityEngine implements GravityEngine {
         const d = vec3.sub(positions[j], pi);
 
         const r = Math.sqrt(
-          vec3.dot(d, d) + SOFTENING_LENGTH * SOFTENING_LENGTH,
+          vec3.dot(d, d) + this.softeningLength * this.softeningLength,
         );
 
         if (r === 0) continue;
 
         const invR3 = 1 / (r * r * r);
-        const scale = NEWTON_G * bodies[j].mass * invR3;
+        const scale = this.G * bodies[j].mass * invR3;
 
         vec3.addInto(a, a, vec3.scale(d, scale));
       }
