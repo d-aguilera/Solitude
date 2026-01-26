@@ -48,7 +48,6 @@ export function runLoop(
 
     const renderParams: RenderParams = {
       ...renderData,
-      input: controlInput,
       pilotSurface,
       topSurface,
     };

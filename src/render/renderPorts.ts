@@ -1,6 +1,5 @@
-import type { ControlState } from "../app/appInternals.js";
-import type { ControlInput, DomainCameraPose, Scene } from "../app/appPorts.js";
-import type { Mesh, RGB, Vec3, World } from "../domain/domainPorts.js";
+import type { GameState } from "../app/appPorts.js";
+import type { Mesh, RGB, Vec3 } from "../domain/domainPorts.js";
 
 /**
  * Normalized device coordinate in the projection plane:
@@ -46,30 +45,12 @@ export interface RenderedFace {
   color: RGB;
 }
 
-/**
- * Adapter‑agnostic HUD inputs.
- */
 export interface RenderedHud {
-  /**
-   * Speed in meters per second for the controlled ship.
-   */
-  speedMps: number;
-  /**
-   * Latest measured frames per second.
-   */
+  currentThrustPercent: number;
   fps: number;
-  /**
-   * Whether profiling is currently enabled.
-   */
-  profilingEnabled: boolean;
-  /**
-   * Pilot camera offset expressed in the ship's local frame.
-   */
   pilotCameraLocalOffset: Vec3;
-  /**
-   * Signed thrust level in [-1, 1].
-   */
-  thrustPercent: number;
+  profilingEnabled: boolean;
+  speedMps: number;
 }
 
 export interface RenderedPolyline {
@@ -98,17 +79,9 @@ export interface Renderer {
   renderCurrentFrame(renderParams: RenderParams): void;
 }
 
-export interface RenderParams {
-  controlState: ControlState;
-  input: ControlInput;
-  scene: Scene;
-  world: World;
-  mainShipId: string;
-  pilotCamera: DomainCameraPose;
-  topCamera: DomainCameraPose;
+export interface RenderParams extends GameState {
   pilotSurface: RenderSurface2D;
   topSurface: RenderSurface2D;
-  pilotCameraLocalOffset: Vec3;
 }
 
 /**

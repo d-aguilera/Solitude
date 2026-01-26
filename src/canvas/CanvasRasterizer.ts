@@ -132,7 +132,7 @@ export class CanvasRasterizer implements Rasterizer {
     );
 
     // Thrust
-    const thrustDisplay = `${(hud.thrustPercent * 100).toFixed(0)}%`;
+    const thrustDisplay = `${(hud.currentThrustPercent * 100).toFixed(0)}%`;
     ctx.fillText(`Thrust: ${thrustDisplay}`, x + 320, y + 40);
 
     if (hud.profilingEnabled) {

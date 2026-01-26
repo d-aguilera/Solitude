@@ -26,12 +26,13 @@ const alignToVelocityMaxAngularSpeed = 0.7; // rad/s
  */
 export function createInitialControlState(): ControlState {
   return {
-    thrustPercent: 0,
+    alignToVelocity: false,
     look: {
       azimuth: 0,
       elevation: 0,
     },
-    alignToVelocity: false,
+    pilotCameraLocalOffset: { x: 0, y: 1.7, z: 1.1 },
+    thrustPercent: 0,
   };
 }
 
@@ -122,30 +123,21 @@ function yawFrame(
  */
 export function updateThrustMagnitudeFromInput(
   input: ControlInput,
-  state: ControlState,
+  controlState: ControlState,
 ): void {
   if (input.thrust6)
-    state.thrustPercent = 1.0; // 100%
+    controlState.thrustPercent = 1.0; // 100%
   else if (input.thrust5)
-    state.thrustPercent = 0.5; // 50%
+    controlState.thrustPercent = 0.5; // 50%
   else if (input.thrust4)
-    state.thrustPercent = 0.25; // 25%
+    controlState.thrustPercent = 0.25; // 25%
   else if (input.thrust3)
-    state.thrustPercent = 0.05; // 5%
+    controlState.thrustPercent = 0.05; // 5%
   else if (input.thrust2)
-    state.thrustPercent = 0.01; // 1%
+    controlState.thrustPercent = 0.01; // 1%
   else if (input.thrust1)
-    state.thrustPercent = 0.001; // 0.1%
-  else if (input.thrust0) state.thrustPercent = 0; // 0%
-}
-
-/**
- * Compute unsigned thrust magnitude [0..1] from the current control state.
- * Kept as a named helper to document the contract and allow future
- * extensions (e.g. clamping, non-linear curves).
- */
-function getThrustMagnitudePercentFromState(state: ControlState): number {
-  return state.thrustPercent;
+    controlState.thrustPercent = 0.001; // 0.1%
+  else if (input.thrust0) controlState.thrustPercent = 0; // 0%
 }
 
 /**
@@ -155,10 +147,9 @@ function getThrustMagnitudePercentFromState(state: ControlState): number {
  */
 export function getSignedThrustPercent(
   input: ControlInput,
-  state: ControlState,
+  controlState: ControlState,
 ): number {
-  const mag = getThrustMagnitudePercentFromState(state);
-
+  const mag = controlState.thrustPercent;
   const forward = input.burnForward ? mag : 0;
   const backward = input.burnBackwards ? mag : 0;
 
@@ -170,7 +161,6 @@ export function getSignedThrustPercent(
  * Position integration is handled by gravity/thrust integration.
  *
  * This function updates:
- *  - thrustPercent in the given ControlState
  *  - persistent pilot look angles inside ControlState.look
  *  - alignToVelocity flag inside the ControlState
  *  - the body's LocalFrame based on roll/pitch/yaw input
@@ -204,19 +194,19 @@ function updateBodyOrientationFromInput(
 function updateFrameAlignToVelocity(
   dtSeconds: number,
   input: ControlInput,
-  state: ControlState,
+  controlState: ControlState,
   body: ControlledBodyState,
 ): void {
   // Respect the high-level flag owned by the ControlState so that
   // future logic can gate alignment without depending directly on input.
-  const wantAlign = state.alignToVelocity && input.alignToVelocity;
+  const wantAlign = controlState.alignToVelocity && input.alignToVelocity;
   if (!wantAlign) {
     return;
   }
 
   const v = body.velocity;
   const speed = vec3.length(v);
-  if (speed <= 0) {
+  if (speed === 0) {
     // No meaningful velocity direction to align to.
     return;
   }
@@ -277,9 +267,9 @@ function updateFrameAlignToVelocity(
  */
 export function updateAlignToVelocityFromInput(
   input: ControlInput,
-  state: ControlState,
+  controlState: ControlState,
 ): void {
-  state.alignToVelocity = input.alignToVelocity;
+  controlState.alignToVelocity = input.alignToVelocity;
 }
 
 /**

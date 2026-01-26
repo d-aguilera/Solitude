@@ -11,13 +11,12 @@ export function updateCameras(
   mainShip: ShipBody,
   pilotCamera: DomainCameraPose,
   topCamera: DomainCameraPose,
-  pilotCameraLocalOffset: Vec3,
   controlState: ControlState,
 ): void {
   setCameraRelativeToShip(
     pilotCamera,
     mainShip,
-    pilotCameraLocalOffset,
+    controlState.pilotCameraLocalOffset,
     controlState,
     frameFromShipForPilot,
   );

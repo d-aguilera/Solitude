@@ -12,9 +12,10 @@ export interface ControlledBodyState {
  * Per-player control state that must persist across frames.
  */
 export interface ControlState {
-  thrustPercent: number;
-  look: PilotLookState;
   alignToVelocity: boolean;
+  look: PilotLookState;
+  pilotCameraLocalOffset: Vec3;
+  thrustPercent: number;
 }
 
 /**

@@ -1,66 +1,14 @@
 import type {
   World,
   GravityState,
-  BodyState,
   Vec3,
   GravityEngine,
   ShipBody,
 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
-import type { ControlState, ControlledBodyState } from "./appInternals.js";
-import type { ControlInput, GravityBodyBinding } from "./appPorts.js";
-import { getSignedThrustPercent, maxThrustAcceleration } from "./controls.js";
-
-/**
- * Create a brand-new GravityState from the current world contents.
- */
-export function buildInitialGravityState(world: World): GravityState {
-  const bodies: BodyState[] = [];
-  const positions: Vec3[] = [];
-
-  const shipMass = 5e4;
-
-  // Ships
-  for (let i = 0; i < world.shipBodies.length; i++) {
-    const ship = world.shipBodies[i];
-    bodies.push({
-      id: ship.id,
-      mass: shipMass,
-      velocity: { ...ship.velocity },
-    });
-    positions.push({ ...ship.position });
-  }
-
-  // Planets
-  for (let i = 0; i < world.planets.length; i++) {
-    const body = world.planets[i];
-    const physics = world.planetPhysics.find((p) => p.id === body.id);
-    if (!physics) continue;
-
-    bodies.push({
-      id: body.id,
-      mass: physics.mass,
-      velocity: { ...body.velocity },
-    });
-    positions.push({ ...body.position });
-  }
-
-  // Stars
-  for (let i = 0; i < world.stars.length; i++) {
-    const body = world.stars[i];
-    const physics = world.starPhysics.find((p) => p.id === body.id);
-    if (!physics) continue;
-
-    bodies.push({
-      id: body.id,
-      mass: physics.mass,
-      velocity: { ...body.velocity },
-    });
-    positions.push({ ...body.position });
-  }
-
-  return { bodies, positions };
-}
+import type { ControlledBodyState } from "./appInternals.js";
+import type { GravityBodyBinding } from "./appPorts.js";
+import { maxThrustAcceleration } from "./controls.js";
 
 export function buildGravityBindings(world: World): GravityBodyBinding[] {
   const bindings: GravityBodyBinding[] = [];
@@ -108,24 +56,17 @@ export function buildGravityBindings(world: World): GravityBodyBinding[] {
  * Apply thrust acceleration to the controlled body's velocity when burn/brake
  * are active. Acceleration magnitude is:
  *
- *   a = maxThrustAcceleration * thrustPercent
- *
- * where thrustPercent ∈ [-1, 1] and is chosen from discrete levels
- * depending on Space/B and numeric thrust keys.
+ *   a = maxThrustAcceleration * currentThrustPercent
  */
 export function applyThrustToVelocity(
   dtSeconds: number,
-  input: ControlInput,
-  controlState: ControlState,
+  currentThrustPercent: number,
   body: ControlledBodyState,
 ): void {
-  if (dtSeconds <= 0) return;
-
-  const thrustPercent = getSignedThrustPercent(input, controlState);
-  if (thrustPercent === 0) return;
+  if (dtSeconds === 0 || currentThrustPercent === 0) return;
 
   const { frame, velocity } = body;
-  const accelMagnitude = maxThrustAcceleration * thrustPercent;
+  const accelMagnitude = maxThrustAcceleration * currentThrustPercent;
   const dv = vec3.scale(frame.forward, accelMagnitude * dtSeconds);
 
   vec3.addInto(body.velocity, velocity, dv);
@@ -201,8 +142,7 @@ export function integrateForcesAndGravity(
   gravityEngine: GravityEngine,
   gravityState: GravityState,
   gravityBindings: GravityBodyBinding[],
-  input: ControlInput,
-  controlState: ControlState,
+  currentThrustPercent: number,
 ): void {
   const gravityTimeScale = 10;
   const gravityDt = dtSeconds * gravityTimeScale;
@@ -219,7 +159,7 @@ export function integrateForcesAndGravity(
     velocity: shipBodyState.velocity,
   };
 
-  applyThrustToVelocity(gravityDt, input, controlState, bodyState);
+  applyThrustToVelocity(gravityDt, currentThrustPercent, bodyState);
 
   shipBodyState.velocity = bodyState.velocity;
 

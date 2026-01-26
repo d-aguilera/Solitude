@@ -96,7 +96,10 @@ export interface GameState {
   mainShipId: string;
   pilotCamera: DomainCameraPose;
   topCamera: DomainCameraPose;
+  fps: number;
+  currentThrustPercent: number;
   pilotCameraLocalOffset: Vec3;
+  speedMps: number;
 }
 
 /**
