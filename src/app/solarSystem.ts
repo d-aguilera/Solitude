@@ -1,7 +1,7 @@
-import { colors } from "../domain/domainPorts.js";
 import type { StarBodyConfig } from "../domain/domainPorts.js";
 import type { PlanetBodyConfig } from "../domain/domainPorts.js";
 import { circularSpeedAtRadius } from "../domain/phys.js";
+import { colors } from "./appInternals.js";
 
 const AU = 1.495978707e11; // m
 
