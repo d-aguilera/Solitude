@@ -13,8 +13,8 @@ export type PlanetKind = "planet" | "star";
 
 export interface BodyState {
   id: BodyId;
-  velocity: Vec3;
   mass: number;
+  velocity: Vec3;
 }
 
 /**
@@ -91,11 +91,8 @@ export interface Mesh {
 /**
  * Domain-level ship body.
  */
-export interface ShipBody {
-  id: string;
-  position: Vec3;
+export interface ShipBody extends CelestialBody {
   frame: LocalFrame;
-  velocity: Vec3;
 }
 
 export interface PlanetBodyConfig extends CelestialBodyConfig {

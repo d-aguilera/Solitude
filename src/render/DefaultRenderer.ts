@@ -1,4 +1,5 @@
 import type { PlanetSceneObject, ProfilerController } from "../app/appPorts.js";
+import type { ShipBody } from "../domain/domainPorts.js";
 import { getShipById } from "../domain/worldLookup.js";
 import type {
   Rasterizer,
@@ -29,7 +30,7 @@ export class DefaultRenderer implements Renderer {
     pilotSurface,
     topSurface,
   }: RenderParams): void {
-    const mainShip = getShipById(world, mainShipId);
+    const mainShip: ShipBody = getShipById(world, mainShipId);
     const overlayBodies: PlanetSceneObject[] = scene.objects.filter(
       (obj): obj is PlanetSceneObject =>
         obj.kind === "planet" || obj.kind === "star",
