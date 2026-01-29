@@ -4,15 +4,9 @@ import type {
   ShipBody,
   Vec3,
 } from "../domain/domainPorts.js";
+import type { PlanetTrajectory } from "./appInternals.js";
 import type { Scene } from "./appPorts.js";
-import { paused } from "./pause.js";
-import type { RingBuffer } from "./RingBuffer.js";
-import { Vec3RingBuffer } from "./RingBuffer.js";
-
-export interface PlanetTrajectory {
-  planetId: string;
-  buffers: RingBuffer<Vec3>[];
-}
+import { Vec3RingBuffer } from "./Vec3RingBuffer.js";
 
 export function createPlanetTrajectory(planetId: string): PlanetTrajectory {
   return {
@@ -95,21 +89,19 @@ export function updateTrajectories(
   mainShip: ShipBody,
   planetPathMappings: PlanetPathMapping[],
   planetTrajectories: PlanetTrajectory[],
-  trajectoryAccumTime: { time: number },
-): void {
+  trajectoryAccumTime: number,
+): number {
   const sampleInterval = 1.0; // seconds
 
-  if (paused) {
-    return;
-  }
+  trajectoryAccumTime += dtSeconds;
 
-  trajectoryAccumTime.time += dtSeconds;
-
-  while (trajectoryAccumTime.time >= sampleInterval) {
+  while (trajectoryAccumTime >= sampleInterval) {
     appendShipTrajectoryPoint(scene, mainShip);
     appendPlanetTrajectories(scene, planetPathMappings, planetTrajectories);
-    trajectoryAccumTime.time -= sampleInterval;
+    trajectoryAccumTime -= sampleInterval;
   }
+
+  return trajectoryAccumTime;
 }
 
 /**

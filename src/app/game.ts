@@ -1,19 +1,18 @@
 import type {
   GravityEngine,
   GravityState,
-  PlanetPathMapping,
   Profiler,
-  ShipBody,
 } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
 import { vec3 } from "../domain/vec3.js";
 import { getShipById } from "../domain/worldLookup.js";
 import type {
-  ControlInput,
   GameState,
   GravityBodyBinding,
   ProfilerController,
+  GameOutput,
   TickCallback,
+  ControlInput,
 } from "./appPorts.js";
 import { updateCameras, updatePilotCameraOffset } from "./cameras.js";
 import {
@@ -26,7 +25,6 @@ import {
 } from "./controls.js";
 import { pauseControl, paused } from "./pause.js";
 import { buildGravityBindings, integrateForcesAndGravity } from "./physics.js";
-import type { PlanetTrajectory } from "./trajectories.js";
 import { updateTrajectories } from "./trajectories.js";
 import {
   createInitialSceneAndWorld,
@@ -49,41 +47,42 @@ export function startGame(
 
   const x = createInitialSceneAndWorld();
 
-  const mainShip: ShipBody = getShipById(x.world, x.mainShipId);
-
-  let gameState: GameState = {
-    scene: x.scene,
-    world: x.world,
-    mainShip,
-    topCamera: x.topCamera,
-    pilotCamera: x.pilotCamera,
-    controlState: createInitialControlState(),
-    fps: 0,
-    currentThrustPercent: 0,
-    pilotCameraLocalOffset: vec3.zero(),
-    speedMps: 0,
-  };
-
-  let trajectoryAccumTime: { time: number } = { time: 0 };
-
-  let planetPathMappings: PlanetPathMapping[] = x.planetPathMappings;
-  let planetTrajectories: PlanetTrajectory[] = x.planetTrajectories;
-
-  let gravityState: GravityState = buildInitialGravityState(gameState.world);
-  let gravityBindings: GravityBodyBinding[] = buildGravityBindings(
-    gameState.world,
-  );
+  let gravityBindings: GravityBodyBinding[] = buildGravityBindings(x.world);
 
   // Determine which gravity body corresponds to the main ship.
   let mainShipBodyIndex: number = gravityBindings.findIndex(
-    (b) => b.kind === "ship" && b.id === gameState.mainShip.id,
+    (b) => b.kind === "ship" && b.id === x.mainShipId,
   );
 
   if (mainShipBodyIndex === -1) {
     throw new Error(
-      `startGame: main ship body not found in gravity bindings for id=${gameState.mainShip.id}`,
+      `startGame: main ship body not found in gravity bindings for id=${x.mainShipId}`,
     );
   }
+
+  const gravityState: GravityState = buildInitialGravityState(x.world);
+
+  const mainShipBodyState = gravityState.bodies[mainShipBodyIndex];
+
+  let gameState: GameState = {
+    controlState: createInitialControlState(),
+    currentThrustPercent: 0,
+    fps: 0,
+    gravityBindings,
+    gravityEngine,
+    gravityState,
+    mainShip: getShipById(x.world, x.mainShipId),
+    mainShipBodyState,
+    pilotCamera: x.pilotCamera,
+    pilotCameraLocalOffset: vec3.zero(),
+    planetPathMappings: x.planetPathMappings,
+    planetTrajectories: x.planetTrajectories,
+    scene: x.scene,
+    speedMps: 0,
+    topCamera: x.topCamera,
+    trajectoryAccumTime: 0,
+    world: x.world,
+  };
 
   let lastTimeMs: number;
   let initialized = false;
@@ -96,11 +95,10 @@ export function startGame(
     controlInput,
     envInput,
     profilingEnabled,
-  }): Readonly<GameState> => {
+  }): Readonly<GameOutput> => {
     if (!initialized) {
-      lastTimeMs = nowMs;
+      lastTimeMs = nowMs - 1;
       initialized = true;
-      return gameState;
     }
 
     const dtMs = nowMs - lastTimeMs;
@@ -115,23 +113,20 @@ export function startGame(
 
     gameState.fps = paused ? 0 : 1 / dtSeconds;
 
-    stepSimulation(
-      gameState,
-      dtSeconds,
-      mainShip,
-      mainShipBodyIndex,
-      gravityEngine,
-      gravityState,
-      gravityBindings,
-      controlInput,
-      planetPathMappings,
-      planetTrajectories,
-      trajectoryAccumTime,
-    );
+    stepSimulation(dtSeconds, gameState, controlInput);
 
     profilerController.flush();
 
-    return gameState;
+    return {
+      scene: gameState.scene,
+      mainShip: gameState.mainShip,
+      pilotCamera: gameState.pilotCamera,
+      topCamera: gameState.topCamera,
+      fps: gameState.fps,
+      currentThrustPercent: gameState.currentThrustPercent,
+      pilotCameraLocalOffset: gameState.pilotCameraLocalOffset,
+      speedMps: gameState.speedMps,
+    };
   };
 }
 
@@ -139,64 +134,48 @@ export function startGame(
  * Advance world/scene state (physics, gravity, trajectories, cameras).
  */
 function stepSimulation(
-  gameState: GameState,
   dtSeconds: number,
-  mainShip: ShipBody,
-  mainShipBodyIndex: number,
-  gravityEngine: GravityEngine,
-  gravityState: GravityState,
-  gravityBindings: GravityBodyBinding[],
+  s: GameState,
   controlInput: ControlInput,
-  planetPathMappings: PlanetPathMapping[],
-  planetTrajectories: PlanetTrajectory[],
-  trajectoryAccumTime: { time: number },
 ): void {
-  updateThrustMagnitudeFromInput(controlInput, gameState.controlState);
-  gameState.currentThrustPercent = getSignedThrustPercent(
-    controlInput,
-    gameState.controlState,
-  );
-  updatePilotLook(dtSeconds, controlInput, gameState.controlState.look);
-  updateAlignToVelocityFromInput(controlInput, gameState.controlState);
+  updateThrustMagnitudeFromInput(controlInput, s.controlState);
+  s.currentThrustPercent = getSignedThrustPercent(controlInput, s.controlState);
+  updatePilotLook(dtSeconds, controlInput, s.controlState.look);
+  updateAlignToVelocityFromInput(controlInput, s.controlState);
   updateShipOrientationFromControls(
     dtSeconds,
-    mainShip,
+    s.mainShip,
     controlInput,
-    gameState.controlState,
+    s.controlState,
   );
   updatePilotCameraOffset(
     dtSeconds,
     controlInput,
-    gameState.controlState.pilotCameraLocalOffset,
+    s.controlState.pilotCameraLocalOffset,
   );
   integrateForcesAndGravity(
     dtSeconds,
-    gameState.world,
-    mainShip,
-    mainShipBodyIndex,
-    gravityEngine,
-    gravityState,
-    gravityBindings,
-    gameState.currentThrustPercent,
+    s.world,
+    s.mainShip,
+    s.mainShipBodyState,
+    s.gravityEngine,
+    s.gravityState,
+    s.gravityBindings,
+    s.currentThrustPercent,
   );
-  gameState.speedMps = vec3.length(mainShip.velocity);
-  syncShipsToSceneObjects(gameState.world, gameState.scene);
-  syncPlanetsToSceneObjects(gameState.world, gameState.scene);
-  syncStarsToSceneObjects(gameState.world, gameState.scene);
-  syncLightsToStars(gameState.world, gameState.scene);
-  rotateCelestialBodies(gameState.scene, dtSeconds);
-  updateTrajectories(
+  s.speedMps = vec3.length(s.mainShip.velocity);
+  syncShipsToSceneObjects(s.world, s.scene);
+  syncPlanetsToSceneObjects(s.world, s.scene);
+  syncStarsToSceneObjects(s.world, s.scene);
+  syncLightsToStars(s.world, s.scene);
+  rotateCelestialBodies(s.scene, dtSeconds);
+  s.trajectoryAccumTime = updateTrajectories(
     dtSeconds,
-    gameState.scene,
-    mainShip,
-    planetPathMappings,
-    planetTrajectories,
-    trajectoryAccumTime,
+    s.scene,
+    s.mainShip,
+    s.planetPathMappings,
+    s.planetTrajectories,
+    s.trajectoryAccumTime,
   );
-  updateCameras(
-    mainShip,
-    gameState.pilotCamera,
-    gameState.topCamera,
-    gameState.controlState,
-  );
+  updateCameras(s.mainShip, s.pilotCamera, s.topCamera, s.controlState);
 }

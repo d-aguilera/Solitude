@@ -1,7 +1,7 @@
 import type {
   ControlInput,
   EnvInput,
-  GameState,
+  GameOutput,
   ProfilerController,
   TickCallback,
 } from "../app/appPorts.js";
@@ -39,7 +39,7 @@ export function runLoop(
   const loop = (nowMs: number) => {
     let profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
 
-    const renderData: GameState = tick({
+    const output: GameOutput = tick({
       nowMs,
       controlInput,
       envInput,
@@ -47,15 +47,14 @@ export function runLoop(
     });
 
     const renderParams: RenderParams = {
-      controlState: renderData.controlState,
-      scene: renderData.scene,
-      mainShip: renderData.mainShip,
-      pilotCamera: renderData.pilotCamera,
-      topCamera: renderData.topCamera,
-      fps: renderData.fps,
-      currentThrustPercent: renderData.currentThrustPercent,
-      pilotCameraLocalOffset: renderData.pilotCameraLocalOffset,
-      speedMps: renderData.speedMps,
+      scene: output.scene,
+      mainShip: output.mainShip,
+      pilotCamera: output.pilotCamera,
+      topCamera: output.topCamera,
+      fps: output.fps,
+      currentThrustPercent: output.currentThrustPercent,
+      pilotCameraLocalOffset: output.pilotCameraLocalOffset,
+      speedMps: output.speedMps,
       pilotSurface,
       topSurface,
     };

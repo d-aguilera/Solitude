@@ -23,6 +23,7 @@ import { circularSpeedAtRadius } from "../domain/phys.js";
 import { trig } from "../domain/trig.js";
 import { vec3 } from "../domain/vec3.js";
 import { getStarPhysicsById } from "../domain/worldLookup.js";
+import { type PlanetTrajectory } from "./appInternals.js";
 import { colors } from "./appInternals.js";
 import type {
   DomainCameraPose,
@@ -34,10 +35,7 @@ import type {
   StarSceneObject,
 } from "./appPorts.js";
 import { buildDefaultSolarSystemConfigs } from "./solarSystem.js";
-import {
-  createPlanetTrajectory,
-  type PlanetTrajectory,
-} from "./trajectories.js";
+import { createPlanetTrajectory } from "./trajectories.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);

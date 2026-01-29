@@ -1,5 +1,5 @@
-import type { ControlState, DomainCameraPose, Scene } from "../app/appPorts.js";
-import type { Mesh, RGB, ShipBody, Vec3 } from "../domain/domainPorts.js";
+import type { GameOutput } from "../app/appPorts.js";
+import type { Mesh, RGB, Vec3 } from "../domain/domainPorts.js";
 
 /**
  * Normalized device coordinate in the projection plane:
@@ -79,16 +79,7 @@ export interface Renderer {
   renderCurrentFrame(renderParams: RenderParams): void;
 }
 
-export interface RenderParams {
-  controlState: ControlState;
-  scene: Scene;
-  mainShip: ShipBody;
-  pilotCamera: DomainCameraPose;
-  topCamera: DomainCameraPose;
-  fps: number;
-  currentThrustPercent: number;
-  pilotCameraLocalOffset: Vec3;
-  speedMps: number;
+export interface RenderParams extends GameOutput {
   pilotSurface: RenderSurface2D;
   topSurface: RenderSurface2D;
 }

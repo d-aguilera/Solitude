@@ -21,3 +21,34 @@ export interface ControlledBodyState {
   frame: LocalFrame;
   velocity: Vec3;
 }
+
+export interface PlanetTrajectory {
+  planetId: string;
+  buffers: RingBuffer<Vec3>[];
+}
+
+export interface RingBuffer<T> {
+  /** Fixed capacity of the buffer. */
+  readonly capacity: number;
+
+  /** Number of elements currently in the buffer. */
+  readonly count: number;
+
+  /** Index of newest element. */
+  readonly tail: number;
+
+  /**
+   * Append a new element as the newest entry.
+   *
+   * - If buffer is not full, this increases `count`.
+   * - If buffer is full, this overwrites the oldest element.
+   *
+   * Returns the evicted element when overwriting, or `undefined` if nothing was evicted.
+   */
+  push(value: T): T | undefined;
+
+  /**
+   * Iterate from tail to head (newest → oldest).
+   */
+  forEach(fn: (value: T) => void): void;
+}

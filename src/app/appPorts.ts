@@ -1,13 +1,18 @@
 import type {
   BodyId,
+  BodyState,
+  GravityEngine,
+  GravityState,
   LocalFrame,
   Mat3,
   Mesh,
+  PlanetPathMapping,
   RGB,
   ShipBody,
   Vec3,
   World,
 } from "../domain/domainPorts";
+import type { PlanetTrajectory } from "./appInternals";
 
 export interface BaseSceneObject {
   id: string;
@@ -99,10 +104,8 @@ export interface DomainCameraPose {
   frame: LocalFrame;
 }
 
-export interface GameState {
-  controlState: ControlState;
+export interface GameOutput {
   scene: Scene;
-  world: World;
   mainShip: ShipBody;
   pilotCamera: DomainCameraPose;
   topCamera: DomainCameraPose;
@@ -110,6 +113,19 @@ export interface GameState {
   currentThrustPercent: number;
   pilotCameraLocalOffset: Vec3;
   speedMps: number;
+}
+
+export interface GameState extends GameOutput {
+  controlState: ControlState;
+  gravityBindings: GravityBodyBinding[];
+  gravityEngine: GravityEngine;
+  gravityState: GravityState;
+  mainShip: ShipBody;
+  mainShipBodyState: BodyState;
+  planetPathMappings: PlanetPathMapping[];
+  planetTrajectories: PlanetTrajectory[];
+  trajectoryAccumTime: number;
+  world: World;
 }
 
 /**
@@ -222,7 +238,7 @@ export interface StarSceneObject extends CelestialBodySceneObject {
 
 export type TickCallback = (
   params: Readonly<TickParams>,
-) => Readonly<GameState>;
+) => Readonly<GameOutput>;
 
 export interface TickParams {
   nowMs: number;

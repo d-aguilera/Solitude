@@ -1,9 +1,10 @@
 import type {
-  World,
-  GravityState,
-  Vec3,
+  BodyState,
   GravityEngine,
+  GravityState,
   ShipBody,
+  Vec3,
+  World,
 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import type { ControlledBodyState } from "./appInternals.js";
@@ -138,7 +139,7 @@ export function integrateForcesAndGravity(
   dtSeconds: number,
   world: World,
   controlledShip: ShipBody,
-  mainShipBodyIndex: number,
+  mainShipBodyState: BodyState,
   gravityEngine: GravityEngine,
   gravityState: GravityState,
   gravityBindings: GravityBodyBinding[],
@@ -152,16 +153,14 @@ export function integrateForcesAndGravity(
   }
 
   // 1) Apply thrust to the main ship's body velocity inside gravityState.
-  const shipBodyState = gravityState.bodies[mainShipBodyIndex];
-
   const bodyState: ControlledBodyState = {
     frame: controlledShip.frame,
-    velocity: shipBodyState.velocity,
+    velocity: mainShipBodyState.velocity,
   };
 
   applyThrustToVelocity(gravityDt, currentThrustPercent, bodyState);
 
-  shipBodyState.velocity = bodyState.velocity;
+  mainShipBodyState.velocity = bodyState.velocity;
 
   // 2) Step gravity (updates velocities and positions).
   gravityEngine.step(gravityDt, gravityState);

@@ -278,20 +278,12 @@ export function updateShipOrientationFromControls(
   input: ControlInput,
   controlState: ControlState,
 ): void {
-  const bodyState = makeControlledBodyState(ship);
-  updateBodyOrientationFromInput(dtSeconds, input, controlState, bodyState);
-  writeBackControlledBodyState(ship, bodyState);
-}
-
-/**
- * Adapt the main ship and its pilot view into the data structures
- * used by the controls module.
- */
-function makeControlledBodyState(ship: ShipBody): ControlledBodyState {
-  return {
+  const bodyState = {
     frame: ship.frame,
     velocity: ship.velocity,
   };
+  updateBodyOrientationFromInput(dtSeconds, input, controlState, bodyState);
+  writeBackControlledBodyState(ship, bodyState);
 }
 
 function writeBackControlledBodyState(
