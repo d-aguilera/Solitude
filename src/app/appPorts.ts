@@ -4,6 +4,7 @@ import type {
   Mat3,
   Mesh,
   RGB,
+  ShipBody,
   Vec3,
   World,
 } from "../domain/domainPorts";
@@ -102,7 +103,7 @@ export interface GameState {
   controlState: ControlState;
   scene: Scene;
   world: World;
-  mainShipId: string;
+  mainShip: ShipBody;
   pilotCamera: DomainCameraPose;
   topCamera: DomainCameraPose;
   fps: number;

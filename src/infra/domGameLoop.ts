@@ -47,7 +47,15 @@ export function runLoop(
     });
 
     const renderParams: RenderParams = {
-      ...renderData,
+      controlState: renderData.controlState,
+      scene: renderData.scene,
+      mainShip: renderData.mainShip,
+      pilotCamera: renderData.pilotCamera,
+      topCamera: renderData.topCamera,
+      fps: renderData.fps,
+      currentThrustPercent: renderData.currentThrustPercent,
+      pilotCameraLocalOffset: renderData.pilotCameraLocalOffset,
+      speedMps: renderData.speedMps,
       pilotSurface,
       topSurface,
     };

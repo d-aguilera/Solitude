@@ -49,10 +49,12 @@ export function startGame(
 
   const x = createInitialSceneAndWorld();
 
+  const mainShip: ShipBody = getShipById(x.world, x.mainShipId);
+
   let gameState: GameState = {
     scene: x.scene,
     world: x.world,
-    mainShipId: x.mainShipId,
+    mainShip,
     topCamera: x.topCamera,
     pilotCamera: x.pilotCamera,
     controlState: createInitialControlState(),
@@ -61,8 +63,6 @@ export function startGame(
     pilotCameraLocalOffset: vec3.zero(),
     speedMps: 0,
   };
-
-  const mainShip: ShipBody = getShipById(gameState.world, gameState.mainShipId);
 
   let trajectoryAccumTime: { time: number } = { time: 0 };
 
@@ -76,12 +76,12 @@ export function startGame(
 
   // Determine which gravity body corresponds to the main ship.
   let mainShipBodyIndex: number = gravityBindings.findIndex(
-    (b) => b.kind === "ship" && b.id === gameState.mainShipId,
+    (b) => b.kind === "ship" && b.id === gameState.mainShip.id,
   );
 
   if (mainShipBodyIndex === -1) {
     throw new Error(
-      `startGame: main ship body not found in gravity bindings for id=${gameState.mainShipId}`,
+      `startGame: main ship body not found in gravity bindings for id=${gameState.mainShip.id}`,
     );
   }
 
