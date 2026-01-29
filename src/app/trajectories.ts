@@ -95,7 +95,7 @@ export function updateTrajectories(
   mainShip: ShipBody,
   planetPathMappings: PlanetPathMapping[],
   planetTrajectories: PlanetTrajectory[],
-  trajectoryAccumTime: number,
+  trajectoryAccumTime: { time: number },
 ): void {
   const sampleInterval = 1.0; // seconds
 
@@ -103,12 +103,12 @@ export function updateTrajectories(
     return;
   }
 
-  trajectoryAccumTime += dtSeconds;
+  trajectoryAccumTime.time += dtSeconds;
 
-  while (trajectoryAccumTime >= sampleInterval) {
+  while (trajectoryAccumTime.time >= sampleInterval) {
     appendShipTrajectoryPoint(scene, mainShip);
     appendPlanetTrajectories(scene, planetPathMappings, planetTrajectories);
-    trajectoryAccumTime -= sampleInterval;
+    trajectoryAccumTime.time -= sampleInterval;
   }
 }
 

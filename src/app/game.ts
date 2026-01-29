@@ -64,7 +64,7 @@ export function startGame(
 
   const mainShip: ShipBody = getShipById(gameState.world, gameState.mainShipId);
 
-  let trajectoryAccumTime = 0;
+  let trajectoryAccumTime: { time: number } = { time: 0 };
 
   let planetPathMappings: PlanetPathMapping[] = x.planetPathMappings;
   let planetTrajectories: PlanetTrajectory[] = x.planetTrajectories;
@@ -149,7 +149,7 @@ function stepSimulation(
   controlInput: ControlInput,
   planetPathMappings: PlanetPathMapping[],
   planetTrajectories: PlanetTrajectory[],
-  trajectoryAccumTime: number,
+  trajectoryAccumTime: { time: number },
 ): void {
   updateThrustMagnitudeFromInput(controlInput, gameState.controlState);
   gameState.currentThrustPercent = getSignedThrustPercent(
