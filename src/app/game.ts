@@ -1,25 +1,20 @@
-import type {
-  GravityEngine,
-  GravityState,
-  Profiler,
-} from "../domain/domainPorts.js";
+import type { GravityEngine, GravityState } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
 import { getShipById } from "../domain/worldLookup.js";
 import type {
   GameState,
   GravityBodyBinding,
-  ProfilerController,
   TickOutput,
   TickCallback,
   PresentationState,
   SimulationState,
   SimControlState,
+  TickParams,
 } from "./appPorts.js";
 import {
   createInitialSimControlState,
   createInitialViewControlState,
 } from "./controls.js";
-import { pauseControl, paused } from "./pause.js";
 import { buildGravityBindings } from "./physics.js";
 import { handleTick as handleTick } from "./handleTick.js";
 import { createInitialSceneAndWorld } from "./worldSetup.js";
@@ -27,13 +22,7 @@ import { createInitialSceneAndWorld } from "./worldSetup.js";
 /**
  * App‑core game entry.
  */
-export function startGame(
-  gravityEngine: GravityEngine,
-  profiler: Profiler,
-  profilerController: ProfilerController,
-): TickCallback {
-  void profiler;
-
+export function startGame(gravityEngine: GravityEngine): TickCallback {
   const x = createInitialSceneAndWorld();
 
   let gravityBindings: GravityBodyBinding[] = buildGravityBindings(x.world);
@@ -95,9 +84,11 @@ export function startGame(
   return ({
     nowMs,
     controlInput,
-    envInput,
-    profilingEnabled,
-  }): Readonly<TickOutput> => {
+    profiler,
+    paused,
+  }: TickParams): Readonly<TickOutput> => {
+    void profiler;
+
     if (!initialized) {
       lastTimeMs = nowMs - 1;
       initialized = true;
@@ -107,15 +98,7 @@ export function startGame(
     const dtSeconds = paused ? 0 : dtMs / 1000;
     lastTimeMs = nowMs;
 
-    pauseControl(envInput.pauseToggle);
-
-    profilerController.setEnabled(profilingEnabled);
-    profilerController.setPaused(paused);
-    profilerController.check();
-
     handleTick(dtSeconds, gameState, controlInput);
-
-    profilerController.flush();
 
     return {
       mainShip: mainShip,

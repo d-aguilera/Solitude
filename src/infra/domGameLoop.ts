@@ -4,6 +4,7 @@ import type {
   TickOutput,
   ProfilerController,
   TickCallback,
+  TickParams,
 } from "../app/appPorts.js";
 import {
   getProfilingEnabledFromEnv,
@@ -16,6 +17,7 @@ import type {
   RenderParams,
   RenderSurface2D,
 } from "../render/renderPorts.js";
+import { handlePauseToggle } from "./pause.js";
 
 /**
  * DOM-level game loop (depends on requestAnimationFrame).
@@ -30,21 +32,24 @@ export function runLoop(
   controlInput: ControlInput,
   envInput: EnvInput,
 ): void {
-  const tick: TickCallback = createTickHandler(
-    gravityEngine,
-    profiler,
-    profilerController,
-  );
+  const tick: TickCallback = createTickHandler(gravityEngine);
 
   const loop = (nowMs: number) => {
-    let profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
+    const paused = handlePauseToggle(envInput.pauseToggle);
+    const profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
 
-    const output: TickOutput = tick({
+    profilerController.setEnabled(profilingEnabled);
+    profilerController.setPaused(paused);
+    profilerController.check();
+
+    const tickParams: TickParams = {
       nowMs,
       controlInput,
-      envInput,
-      profilingEnabled,
-    });
+      profiler,
+      paused,
+    };
+
+    const output: TickOutput = tick(tickParams);
 
     const renderParams: RenderParams = {
       scene: output.scene,
@@ -60,6 +65,8 @@ export function runLoop(
     };
 
     renderer.renderCurrentFrame(renderParams);
+
+    profilerController.flush();
 
     requestAnimationFrame(loop);
   };

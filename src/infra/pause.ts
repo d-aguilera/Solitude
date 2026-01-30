@@ -1,9 +1,8 @@
+let paused = false;
 let pauseKeyDown = false;
 let pausing = false;
 
-export let paused = false;
-
-export function pauseControl(pauseKeyPressed: boolean): void {
+export function handlePauseToggle(pauseKeyPressed: boolean): boolean {
   if (pauseKeyPressed) {
     if (!pauseKeyDown) {
       if (!paused) {
@@ -22,4 +21,6 @@ export function pauseControl(pauseKeyPressed: boolean): void {
       pauseKeyDown = false;
     }
   }
+
+  return paused;
 }

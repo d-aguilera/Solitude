@@ -7,6 +7,7 @@ import type {
   Mat3,
   Mesh,
   PlanetPathMapping,
+  Profiler,
   RGB,
   ShipBody,
   Vec3,
@@ -244,8 +245,8 @@ export type TickCallback = (
 export interface TickParams {
   nowMs: number;
   controlInput: ControlInput;
-  envInput: EnvInput;
-  profilingEnabled: boolean;
+  profiler: Profiler;
+  paused: boolean;
 }
 
 export interface TickOutput {
