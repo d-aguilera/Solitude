@@ -89,43 +89,16 @@ export type EnvInput = Record<EnvAction, boolean>;
 
 export type DrawMode = "faces" | "lines";
 
-/**
- * Per-player control state that must persist across frames.
- */
-export interface ControlState {
-  alignToVelocity: boolean;
-  look: PilotLookState;
-  pilotCameraLocalOffset: Vec3;
-  thrustPercent: number;
-}
-
 export interface DomainCameraPose {
   position: Vec3;
   frame: LocalFrame;
 }
 
-export interface GameOutput {
-  scene: Scene;
-  mainShip: ShipBody;
-  pilotCamera: DomainCameraPose;
-  topCamera: DomainCameraPose;
-  fps: number;
-  currentThrustPercent: number;
-  pilotCameraLocalOffset: Vec3;
-  speedMps: number;
-}
-
-export interface GameState extends GameOutput {
-  controlState: ControlState;
-  gravityBindings: GravityBodyBinding[];
-  gravityEngine: GravityEngine;
-  gravityState: GravityState;
-  mainShip: ShipBody;
-  mainShipBodyState: BodyState;
-  planetPathMappings: PlanetPathMapping[];
-  planetTrajectories: PlanetTrajectory[];
-  trajectoryAccumTime: number;
-  world: World;
+export interface GameState {
+  presentationState: PresentationState;
+  simControlState: SimControlState;
+  simState: SimulationState;
+  viewControlState: ViewControlState;
 }
 
 /**
@@ -164,6 +137,16 @@ export interface PolylineSceneObject extends BaseSceneObject {
   applyTransform: false;
   wireframeOnly: true;
   backFaceCulling: false;
+}
+
+export interface PresentationState {
+  pilotCamera: DomainCameraPose;
+  planetPathMappings: PlanetPathMapping[];
+  planetTrajectories: PlanetTrajectory[];
+  scene: Scene;
+  speedMps: number;
+  topCamera: DomainCameraPose;
+  trajectoryAccumTime: number;
 }
 
 /**
@@ -231,6 +214,24 @@ export interface ShipSceneObject extends SolidSceneObject {
   backFaceCulling: false;
 }
 
+/**
+ * Per-player simulation control state that must persist across frames.
+ */
+export interface SimControlState {
+  alignToVelocity: boolean;
+  thrustPercent: number;
+}
+
+export interface SimulationState {
+  currentThrustPercent: number;
+  gravityBindings: GravityBodyBinding[];
+  gravityEngine: GravityEngine;
+  gravityState: GravityState;
+  mainShip: ShipBody;
+  mainShipBodyState: BodyState;
+  world: World;
+}
+
 export interface StarSceneObject extends CelestialBodySceneObject {
   kind: "star";
   luminosity: number; // W or scaled units for lighting
@@ -238,11 +239,30 @@ export interface StarSceneObject extends CelestialBodySceneObject {
 
 export type TickCallback = (
   params: Readonly<TickParams>,
-) => Readonly<GameOutput>;
+) => Readonly<TickOutput>;
 
 export interface TickParams {
   nowMs: number;
   controlInput: ControlInput;
   envInput: EnvInput;
   profilingEnabled: boolean;
+}
+
+export interface TickOutput {
+  scene: Scene;
+  mainShip: ShipBody;
+  pilotCamera: DomainCameraPose;
+  topCamera: DomainCameraPose;
+  fps: number;
+  currentThrustPercent: number;
+  pilotCameraLocalOffset: Vec3;
+  speedMps: number;
+}
+
+/**
+ * Per-player view control state that must persist across frames.
+ */
+export interface ViewControlState {
+  look: PilotLookState;
+  pilotCameraLocalOffset: Vec3;
 }

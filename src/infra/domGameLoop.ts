@@ -1,7 +1,7 @@
 import type {
   ControlInput,
   EnvInput,
-  GameOutput,
+  TickOutput,
   ProfilerController,
   TickCallback,
 } from "../app/appPorts.js";
@@ -9,7 +9,7 @@ import {
   getProfilingEnabledFromEnv,
   setProfilingEnabledInEnv,
 } from "../app/debugEnv.js";
-import { startGame } from "../app/game.js";
+import { startGame as createTickHandler } from "../app/game.js";
 import type { GravityEngine, Profiler } from "../domain/domainPorts.js";
 import type {
   Renderer,
@@ -30,7 +30,7 @@ export function runLoop(
   controlInput: ControlInput,
   envInput: EnvInput,
 ): void {
-  const tick: TickCallback = startGame(
+  const tick: TickCallback = createTickHandler(
     gravityEngine,
     profiler,
     profilerController,
@@ -39,7 +39,7 @@ export function runLoop(
   const loop = (nowMs: number) => {
     let profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
 
-    const output: GameOutput = tick({
+    const output: TickOutput = tick({
       nowMs,
       controlInput,
       envInput,

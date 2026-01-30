@@ -2,7 +2,12 @@ import type { LocalFrame, ShipBody } from "../domain/domainPorts.js";
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import type { ControlledBodyState } from "./appInternals.js";
-import type { ControlInput, ControlState, PilotLookState } from "./appPorts.js";
+import type {
+  ControlInput,
+  SimControlState,
+  PilotLookState,
+  ViewControlState,
+} from "./appPorts.js";
 
 // Max thrust acceleration in m/s^2 at 100% thrust
 export const maxThrustAcceleration = 1_000_000; // ~ 100_000 G
@@ -17,18 +22,25 @@ const rotSpeedYaw = 0.5;
 const alignToVelocityMaxAngularSpeed = 0.7; // rad/s
 
 /**
- * Create a default-initialized control state.
- * Call this once at game setup and then keep mutating the same instance.
+ * Create a default-initialized simulation control state.
  */
-export function createInitialControlState(): ControlState {
+export function createInitialSimControlState(): SimControlState {
   return {
     alignToVelocity: false,
+    thrustPercent: 0,
+  };
+}
+
+/**
+ * Create a default-initialized view control state.
+ */
+export function createInitialViewControlState(): ViewControlState {
+  return {
     look: {
       azimuth: 0,
       elevation: 0,
     },
     pilotCameraLocalOffset: { x: 0, y: 1.7, z: 1.1 },
-    thrustPercent: 0,
   };
 }
 
@@ -119,7 +131,7 @@ function yawFrame(
  */
 export function updateThrustMagnitudeFromInput(
   input: ControlInput,
-  controlState: ControlState,
+  controlState: SimControlState,
 ): void {
   if (input.thrust6)
     controlState.thrustPercent = 1.0; // 100%
@@ -143,7 +155,7 @@ export function updateThrustMagnitudeFromInput(
  */
 export function getSignedThrustPercent(
   input: ControlInput,
-  controlState: ControlState,
+  controlState: SimControlState,
 ): number {
   const mag = controlState.thrustPercent;
   const forward = input.burnForward ? mag : 0;
@@ -165,7 +177,7 @@ export function getSignedThrustPercent(
 function updateBodyOrientationFromInput(
   dtSeconds: number,
   input: ControlInput,
-  controlState: ControlState,
+  controlState: SimControlState,
   body: ControlledBodyState,
 ): void {
   let frame = body.frame;
@@ -190,7 +202,7 @@ function updateBodyOrientationFromInput(
 function updateFrameAlignToVelocity(
   dtSeconds: number,
   input: ControlInput,
-  controlState: ControlState,
+  controlState: SimControlState,
   body: ControlledBodyState,
 ): void {
   // Respect the high-level flag owned by the ControlState so that
@@ -263,7 +275,7 @@ function updateFrameAlignToVelocity(
  */
 export function updateAlignToVelocityFromInput(
   input: ControlInput,
-  controlState: ControlState,
+  controlState: SimControlState,
 ): void {
   controlState.alignToVelocity = input.alignToVelocity;
 }
@@ -276,7 +288,7 @@ export function updateShipOrientationFromControls(
   dtSeconds: number,
   ship: ShipBody,
   input: ControlInput,
-  controlState: ControlState,
+  controlState: SimControlState,
 ): void {
   const bodyState = {
     frame: ship.frame,

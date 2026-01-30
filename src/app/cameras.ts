@@ -3,8 +3,8 @@ import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import type {
   ControlInput,
-  ControlState,
   DomainCameraPose,
+  ViewControlState,
 } from "./appPorts.js";
 
 /**
@@ -14,13 +14,13 @@ export function updateCameras(
   mainShip: ShipBody,
   pilotCamera: DomainCameraPose,
   topCamera: DomainCameraPose,
-  controlState: ControlState,
+  viewControlState: ViewControlState,
 ): void {
   setCameraRelativeToShip(
     pilotCamera,
     mainShip,
-    controlState.pilotCameraLocalOffset,
-    controlState,
+    viewControlState.pilotCameraLocalOffset,
+    viewControlState,
     frameFromShipForPilot,
   );
 
@@ -28,17 +28,17 @@ export function updateCameras(
     topCamera,
     mainShip,
     { x: 0, y: 0, z: 50 },
-    controlState,
+    viewControlState,
     frameFromShipForTop,
   );
 }
 
 function frameFromShipForPilot(
   ship: ShipBody,
-  controlState: ControlState,
+  viewControlState: ViewControlState,
 ): LocalFrame {
   const base = ship.frame;
-  const { azimuth, elevation } = controlState.look;
+  const { azimuth, elevation } = viewControlState.look;
 
   let frame: LocalFrame = {
     right: vec3.clone(base.right),
@@ -58,9 +58,9 @@ function frameFromShipForPilot(
 
 function frameFromShipForTop(
   ship: ShipBody,
-  controlState: ControlState,
+  viewControlState: ViewControlState,
 ): LocalFrame {
-  void controlState;
+  void viewControlState;
   const { right, forward, up } = ship.frame;
   return {
     right: vec3.clone(right),
@@ -73,8 +73,8 @@ function setCameraRelativeToShip(
   pose: DomainCameraPose,
   ship: ShipBody,
   localOffset: Vec3,
-  controlState: ControlState,
-  frameFromShip: (ship: ShipBody, controlState: ControlState) => LocalFrame,
+  viewControlState: ViewControlState,
+  frameFromShip: (ship: ShipBody, controlState: ViewControlState) => LocalFrame,
 ): void {
   const { right, forward, up } = ship.frame;
 
@@ -85,12 +85,12 @@ function setCameraRelativeToShip(
   );
 
   pose.position = vec3.add(ship.position, worldOffset);
-  pose.frame = frameFromShip(ship, controlState);
+  pose.frame = frameFromShip(ship, viewControlState);
 }
 
 export function updatePilotCameraOffset(
   dtSeconds: number,
-  input: ControlInput,
+  controlInput: ControlInput,
   pilotCameraLocalOffset: Vec3,
 ): void {
   if (dtSeconds <= 0) return;
@@ -101,10 +101,10 @@ export function updatePilotCameraOffset(
   let dy = 0;
   let dz = 0;
 
-  if (input.camForward) dy += moveSpeed;
-  if (input.camBackward) dy -= moveSpeed;
-  if (input.camUp) dz += moveSpeed;
-  if (input.camDown) dz -= moveSpeed;
+  if (controlInput.camForward) dy += moveSpeed;
+  if (controlInput.camBackward) dy -= moveSpeed;
+  if (controlInput.camUp) dz += moveSpeed;
+  if (controlInput.camDown) dz -= moveSpeed;
 
   if (dx === 0 && dy === 0 && dz === 0) return;
 

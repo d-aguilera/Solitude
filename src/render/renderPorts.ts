@@ -1,4 +1,4 @@
-import type { GameOutput } from "../app/appPorts.js";
+import type { TickOutput } from "../app/appPorts.js";
 import type { Mesh, RGB, Vec3 } from "../domain/domainPorts.js";
 
 /**
@@ -79,7 +79,7 @@ export interface Renderer {
   renderCurrentFrame(renderParams: RenderParams): void;
 }
 
-export interface RenderParams extends GameOutput {
+export interface RenderParams extends TickOutput {
   pilotSurface: RenderSurface2D;
   topSurface: RenderSurface2D;
 }
