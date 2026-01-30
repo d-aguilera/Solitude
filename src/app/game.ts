@@ -15,8 +15,8 @@ import {
   createInitialSimControlState,
   createInitialViewControlState,
 } from "./controls.js";
+import { handleTick } from "./handleTick.js";
 import { buildGravityBindings } from "./physics.js";
-import { handleTick as handleTick } from "./handleTick.js";
 import { createInitialSceneAndWorld } from "./worldSetup.js";
 
 /**
@@ -87,8 +87,6 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
     profiler,
     paused,
   }: TickParams): Readonly<TickOutput> => {
-    void profiler;
-
     if (!initialized) {
       lastTimeMs = nowMs - 1;
       initialized = true;
@@ -98,7 +96,7 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
     const dtSeconds = paused ? 0 : dtMs / 1000;
     lastTimeMs = nowMs;
 
-    handleTick(dtSeconds, gameState, controlInput);
+    handleTick(dtSeconds, gameState, controlInput, profiler);
 
     return {
       mainShip: mainShip,

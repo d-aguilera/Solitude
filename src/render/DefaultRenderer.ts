@@ -1,4 +1,4 @@
-import type { PlanetSceneObject, ProfilerController } from "../app/appPorts.js";
+import type { PlanetSceneObject } from "../app/appPorts.js";
 import type {
   Rasterizer,
   RenderedHud,
@@ -12,7 +12,6 @@ export class DefaultRenderer implements Renderer {
   constructor(
     private readonly pilotRasterizer: Rasterizer,
     private readonly topRasterizer: Rasterizer,
-    private profilerController: ProfilerController,
   ) {}
 
   renderCurrentFrame({
@@ -26,7 +25,11 @@ export class DefaultRenderer implements Renderer {
     speedMps,
     pilotSurface,
     topSurface,
+    profilingEnabled,
+    profiler,
   }: RenderParams): void {
+    void profiler;
+
     const overlayBodies: PlanetSceneObject[] = scene.objects.filter(
       (obj): obj is PlanetSceneObject =>
         obj.kind === "planet" || obj.kind === "star",
@@ -52,7 +55,7 @@ export class DefaultRenderer implements Renderer {
       currentThrustPercent,
       fps,
       pilotCameraLocalOffset,
-      profilingEnabled: this.profilerController.isEnabled(),
+      profilingEnabled,
       speedMps,
     };
 

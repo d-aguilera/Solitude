@@ -1,3 +1,4 @@
+import type { Profiler } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import type {
   GameState,
@@ -32,7 +33,10 @@ export function handleTick(
   dtSeconds: number,
   gameState: GameState,
   controlInput: ControlInput,
+  profiler: Profiler,
 ): void {
+  void profiler;
+
   const { presentationState, simControlState, simState, viewControlState } =
     gameState;
   advanceSimulation(dtSeconds, simState, simControlState, controlInput);

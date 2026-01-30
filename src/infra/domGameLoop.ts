@@ -62,6 +62,8 @@ export function runLoop(
       speedMps: output.speedMps,
       pilotSurface,
       topSurface,
+      profilingEnabled,
+      profiler,
     };
 
     renderer.renderCurrentFrame(renderParams);

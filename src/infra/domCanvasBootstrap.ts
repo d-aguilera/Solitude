@@ -67,7 +67,6 @@ export function bootstrap(): void {
   const renderer: Renderer = new DefaultRenderer(
     pilotRasterizer,
     topRasterizer,
-    profilerController,
   );
 
   const { controlInput, envInput } = initInput();
