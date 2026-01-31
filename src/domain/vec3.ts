@@ -4,11 +4,11 @@ function add(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
   return addInto({ x: 0, y: 0, z: 0 }, a, b);
 }
 
-function addInto(out: Vec3, a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
-  out.x = a.x + b.x;
-  out.y = a.y + b.y;
-  out.z = a.z + b.z;
-  return out;
+function addInto(into: Vec3, a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
+  into.x = a.x + b.x;
+  into.y = a.y + b.y;
+  into.z = a.z + b.z;
+  return into;
 }
 
 function add3(a: Readonly<Vec3>, b: Readonly<Vec3>, c: Readonly<Vec3>): Vec3 {
@@ -56,11 +56,11 @@ function scale(v: Readonly<Vec3>, s: number): Vec3 {
   return scaleInto({ x: 0, y: 0, z: 0 }, s, v);
 }
 
-function scaleInto(out: Vec3, s: number, v: Readonly<Vec3>): Vec3 {
-  out.x = v.x * s;
-  out.y = v.y * s;
-  out.z = v.z * s;
-  return out;
+function scaleInto(into: Vec3, s: number, v: Readonly<Vec3>): Vec3 {
+  into.x = v.x * s;
+  into.y = v.y * s;
+  into.z = v.z * s;
+  return into;
 }
 
 function scaleAndAdd(a: Readonly<Vec3>, b: Readonly<Vec3>, s: number): Vec3 {
