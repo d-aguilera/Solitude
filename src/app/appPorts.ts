@@ -196,7 +196,7 @@ export type SceneObjectKind = "ship" | "planet" | "polyline" | "star";
 export interface SceneState {
   pilotCamera: DomainCameraPose;
   planetPathMappings: PlanetPathMapping[];
-  planetTrajectories: PlanetTrajectory[];
+  planetTrajectories: Record<BodyId, PlanetTrajectory>;
   scene: Scene;
   speedMps: number;
   topCamera: DomainCameraPose;

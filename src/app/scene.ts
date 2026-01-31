@@ -36,9 +36,9 @@ export function mutateScene(
 
   sceneState.speedMps = vec3.length(mainShip.velocity);
 
-  syncShipsToSceneObjects(world, scene);
-  syncPlanetsToSceneObjects(world, scene);
-  syncStarsToSceneObjects(world, scene);
+  syncShipsToSceneObjects(world.shipBodies, scene);
+  syncPlanetsToSceneObjects(world.planets, scene);
+  syncStarsToSceneObjects(world.stars, scene);
   syncLightsToStars(world, scene);
   rotateCelestialBodies(scene, dtSeconds);
 

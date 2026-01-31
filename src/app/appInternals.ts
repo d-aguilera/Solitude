@@ -1,4 +1,5 @@
 import type { LocalFrame, RGB, Vec3 } from "../domain/domainPorts.js";
+import type { Vec3RingBuffer } from "./Vec3RingBuffer.js";
 
 export const colors: { [key: string]: RGB } = {
   ship: { r: 0, g: 255, b: 255 },
@@ -22,10 +23,9 @@ export interface ControlledBodyState {
   velocity: Vec3;
 }
 
-export interface PlanetTrajectory {
-  planetId: string;
-  buffers: RingBuffer<Vec3>[];
-}
+export type PlanetTrajectory = {
+  buffers: Vec3RingBuffer[];
+};
 
 export interface RingBuffer<T> {
   /** Fixed capacity of the buffer. */

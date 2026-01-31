@@ -1,4 +1,5 @@
 import type {
+  BodyId,
   Mesh,
   PlanetPathMapping,
   ShipBody,
@@ -8,9 +9,8 @@ import type { PlanetTrajectory } from "./appInternals.js";
 import type { Scene } from "./appPorts.js";
 import { Vec3RingBuffer } from "./Vec3RingBuffer.js";
 
-export function createPlanetTrajectory(planetId: string): PlanetTrajectory {
+export function createPlanetTrajectory(): PlanetTrajectory {
   return {
-    planetId,
     buffers: [
       new Vec3RingBuffer(20),
       new Vec3RingBuffer(30),
@@ -60,17 +60,14 @@ export function rebuildPlanetPathMesh(
 export function appendPlanetTrajectories(
   scene: Scene,
   planetPathMappings: PlanetPathMapping[],
-  planetTrajectories: PlanetTrajectory[],
+  planetTrajectories: Record<BodyId, PlanetTrajectory>,
 ): void {
   for (const mapping of planetPathMappings) {
     const bodyObj = scene.objects.find((o) => o.id === mapping.planetId);
     const pathObj = scene.objects.find((o) => o.id === mapping.pathId);
     if (!bodyObj || !pathObj) continue;
 
-    const trajectory = planetTrajectories.find(
-      (t) => t.planetId === mapping.planetId,
-    );
-    if (!trajectory) continue;
+    const trajectory = planetTrajectories[mapping.planetId];
 
     // 1) Update trajectory tiers (1 second step implied)
     updatePlanetTrajectory(trajectory, bodyObj.position);
@@ -88,7 +85,7 @@ export function updateTrajectories(
   scene: Scene,
   mainShip: ShipBody,
   planetPathMappings: PlanetPathMapping[],
-  planetTrajectories: PlanetTrajectory[],
+  planetTrajectories: Record<BodyId, PlanetTrajectory>,
   trajectoryAccumTime: number,
 ): number {
   const sampleInterval = 1.0; // seconds

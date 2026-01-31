@@ -1,4 +1,4 @@
-import type { StarBodyConfig } from "../domain/domainPorts.js";
+import type { BodyId, StarBodyConfig } from "../domain/domainPorts.js";
 import type { PlanetBodyConfig } from "../domain/domainPorts.js";
 import type {
   CelestialBody,
@@ -373,7 +373,7 @@ export function createInitialSceneAndWorld(): {
   topCamera: DomainCameraPose;
   pilotCamera: DomainCameraPose;
   planetPathMappings: PlanetPathMapping[];
-  planetTrajectories: PlanetTrajectory[];
+  planetTrajectories: Record<BodyId, PlanetTrajectory>;
 } {
   const objects: SceneObject[] = [];
 
@@ -447,10 +447,11 @@ export function createInitialSceneAndWorld(): {
     pathId: cfg.pathId,
   }));
 
-  // Build trajectory state per planet
-  const planetTrajectories: PlanetTrajectory[] = planetConfigs.map((cfg) =>
-    createPlanetTrajectory(cfg.id),
-  );
+  // Build a trajectory for each planet
+  const planetTrajectories: Record<BodyId, PlanetTrajectory> = {};
+  for (const cfg of planetConfigs) {
+    planetTrajectories[cfg.id] = createPlanetTrajectory();
+  }
 
   // Build initial point lights from star bodies.
   buildLightsFromStars(world, scene);
@@ -466,8 +467,11 @@ export function createInitialSceneAndWorld(): {
   };
 }
 
-export function syncShipsToSceneObjects(world: World, scene: Scene): void {
-  for (const ship of world.shipBodies) {
+export function syncShipsToSceneObjects(
+  shipBodies: ShipBody[],
+  scene: Scene,
+): void {
+  for (const ship of shipBodies) {
     const obj = scene.objects.find((o) => o.id === ship.id);
     if (!obj) continue;
 
@@ -477,23 +481,31 @@ export function syncShipsToSceneObjects(world: World, scene: Scene): void {
   }
 }
 
-export function syncPlanetsToSceneObjects(world: World, scene: Scene): void {
-  for (const planetBody of world.planets) {
+export function syncPlanetsToSceneObjects(
+  planets: CelestialBody[],
+  scene: Scene,
+): void {
+  for (const body of planets) {
     const obj = scene.objects.find(
-      (o) => o.id === planetBody.id,
+      (o) => o.id === body.id,
     ) as PlanetSceneObject;
     if (!obj) continue;
-    obj.position = planetBody.position;
-    obj.velocity = planetBody.velocity;
+
+    obj.position = body.position;
+    obj.velocity = body.velocity;
   }
 }
 
-export function syncStarsToSceneObjects(world: World, scene: Scene): void {
-  for (const starBody of world.stars) {
+export function syncStarsToSceneObjects(
+  stars: CelestialBody[],
+  scene: Scene,
+): void {
+  for (const starBody of stars) {
     const obj = scene.objects.find(
       (o) => o.id === starBody.id,
     ) as StarSceneObject;
     if (!obj) continue;
+
     obj.position = starBody.position;
     obj.velocity = starBody.velocity;
   }
@@ -537,8 +549,6 @@ function getPlanetPhysicsById(
 
 /**
  * Per-frame adapter: advance axial rotation for planets and stars.
- *
- * This updates only the visual orientation; positions are governed by gravity.
  */
 export function rotateCelestialBodies(scene: Scene, dtSeconds: number): void {
   if (dtSeconds == 0) return;
