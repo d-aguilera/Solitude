@@ -13,9 +13,10 @@ import type {
   TickOutput,
   TickParams,
 } from "./appPorts.js";
-import { buildGravityBindings } from "./physics.js";
-import { mutateScene } from "./scene.js";
-import { mutateSimulation } from "./sim.js";
+import { updateShipOrientationFromControls } from "./controls.js";
+import { buildGravityBindings, applyForcesAndGravity } from "./physics.js";
+import { mutateScene as updateSceneGraph } from "./scene.js";
+import { updateControlState } from "./sim.js";
 import { createInitialSceneAndWorld } from "./worldSetup.js";
 
 /**
@@ -96,9 +97,30 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
     const dtSeconds = paused ? 0 : dtMs / 1000;
     lastTimeMs = nowMs;
 
-    mutateSimulation(dtSeconds, simState, simControlState, controlInput);
+    simState.currentThrustPercent = updateControlState(
+      controlInput,
+      simControlState,
+    );
 
-    mutateScene(
+    updateShipOrientationFromControls(
+      dtSeconds,
+      simState.mainShip,
+      controlInput,
+      simControlState,
+    );
+
+    applyForcesAndGravity(
+      dtSeconds,
+      x.world,
+      mainShip,
+      mainShipBodyState,
+      simState.currentThrustPercent,
+      gravityEngine,
+      gravityState,
+      gravityBindings,
+    );
+
+    updateSceneGraph(
       dtSeconds,
       sceneState,
       sceneControlState,

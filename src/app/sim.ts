@@ -1,52 +1,16 @@
 import type { ControlInput } from "./appPorts.js";
-import type { SimControlState, SimulationState } from "./appInternals.js";
+import type { SimControlState } from "./appInternals.js";
 import {
   getSignedThrustPercent,
   updateAlignToVelocityFromInput,
-  updateShipOrientationFromControls,
   updateThrustMagnitudeFromInput,
 } from "./controls.js";
-import { integrateForcesAndGravity } from "./physics.js";
 
-export function mutateSimulation(
-  dtSeconds: number,
-  simState: SimulationState,
-  controlState: SimControlState,
+export function updateControlState(
   controlInput: ControlInput,
-) {
-  const {
-    gravityBindings,
-    gravityEngine,
-    gravityState,
-    mainShip,
-    mainShipBodyState,
-    world,
-  } = simState;
-
+  controlState: SimControlState,
+): number {
   updateThrustMagnitudeFromInput(controlInput, controlState);
-
-  simState.currentThrustPercent = getSignedThrustPercent(
-    controlInput,
-    controlState,
-  );
-
   updateAlignToVelocityFromInput(controlInput, controlState);
-
-  updateShipOrientationFromControls(
-    dtSeconds,
-    mainShip,
-    controlInput,
-    controlState,
-  );
-
-  integrateForcesAndGravity(
-    dtSeconds,
-    world,
-    mainShip,
-    mainShipBodyState,
-    gravityEngine,
-    gravityState,
-    gravityBindings,
-    simState.currentThrustPercent,
-  );
+  return getSignedThrustPercent(controlInput, controlState);
 }

@@ -49,18 +49,11 @@ export function runLoop(
     const output: TickOutput = tick(tickParams);
 
     const renderParams: RenderParams = {
-      scene: output.scene,
-      mainShip: output.mainShip,
-      pilotCamera: output.pilotCamera,
-      topCamera: output.topCamera,
-      fps: output.fps,
-      currentThrustPercent: output.currentThrustPercent,
-      pilotCameraLocalOffset: output.pilotCameraLocalOffset,
-      speedMps: output.speedMps,
+      ...output,
       pilotSurface,
       topSurface,
-      profilingEnabled,
       profiler,
+      profilingEnabled,
     };
 
     renderer.renderCurrentFrame(renderParams);

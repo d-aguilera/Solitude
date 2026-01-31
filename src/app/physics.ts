@@ -137,15 +137,15 @@ function syncShipVelocitiesFromGravity(
  *  - Applying thrust into the ship's body velocity
  *  - Applying gravity and integrating positions
  */
-export function integrateForcesAndGravity(
+export function applyForcesAndGravity(
   dtSeconds: number,
   world: World,
   controlledShip: ShipBody,
   mainShipBodyState: BodyState,
+  currentThrustPercent: number,
   gravityEngine: GravityEngine,
   gravityState: GravityState,
   gravityBindings: GravityBodyBinding[],
-  currentThrustPercent: number,
 ): void {
   const gravityTimeScale = 10;
   const gravityDt = dtSeconds * gravityTimeScale;

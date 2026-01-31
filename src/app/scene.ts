@@ -30,12 +30,11 @@ export function mutateScene(
     trajectoryAccumTime,
   } = sceneState;
 
-  sceneState.speedMps = vec3.length(mainShip.velocity);
-
   syncShipsToSceneObjects(world.shipBodies, scene);
   syncPlanetsToSceneObjects(world.planets, scene);
   syncStarsToSceneObjects(world.stars, scene);
   syncLightsToStars(world, scene);
+
   rotateCelestialBodies(scene, dtSeconds);
 
   sceneState.trajectoryAccumTime = updateTrajectories(
@@ -56,4 +55,6 @@ export function mutateScene(
   );
 
   updateCameras(mainShip, pilotCamera, topCamera, sceneControlState);
+
+  sceneState.speedMps = vec3.length(mainShip.velocity);
 }
