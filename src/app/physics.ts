@@ -59,7 +59,7 @@ export function buildGravityBindings(world: World): GravityBodyBinding[] {
  *
  *   a = maxThrustAcceleration * currentThrustPercent
  */
-export function applyThrustToVelocity(
+function applyThrustToVelocity(
   dtSeconds: number,
   currentThrustPercent: number,
   body: ControlledBodyState,
@@ -73,7 +73,7 @@ export function applyThrustToVelocity(
   vec3.addInto(body.velocity, velocity, dv);
 }
 
-export function applyGravityPositionsToWorld(
+function applyGravityPositionsToWorld(
   world: World,
   positions: Vec3[],
   gravityBindings: GravityBodyBinding[],
@@ -109,7 +109,7 @@ export function applyGravityPositionsToWorld(
   }
 }
 
-export function syncShipVelocitiesFromGravity(
+function syncShipVelocitiesFromGravity(
   world: World,
   gravityState: GravityState,
   gravityBindings: GravityBodyBinding[],

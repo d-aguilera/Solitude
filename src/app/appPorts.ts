@@ -6,7 +6,6 @@ import type {
   LocalFrame,
   Mat3,
   Mesh,
-  PlanetPathMapping,
   Profiler,
   RGB,
   ShipBody,
@@ -195,7 +194,7 @@ export type SceneObjectKind = "ship" | "planet" | "polyline" | "star";
 
 export interface SceneState {
   pilotCamera: DomainCameraPose;
-  planetPathMappings: PlanetPathMapping[];
+  planetPathMappings: Record<BodyId, BodyId>;
   planetTrajectories: Record<BodyId, PlanetTrajectory>;
   scene: Scene;
   speedMps: number;

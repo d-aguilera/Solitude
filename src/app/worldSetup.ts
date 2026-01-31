@@ -4,7 +4,6 @@ import type {
   CelestialBody,
   LocalFrame,
   Mesh,
-  PlanetPathMapping,
   PlanetPhysics,
   RGB,
   ShipBody,
@@ -372,7 +371,7 @@ export function createInitialSceneAndWorld(): {
   mainShipId: string;
   topCamera: DomainCameraPose;
   pilotCamera: DomainCameraPose;
-  planetPathMappings: PlanetPathMapping[];
+  planetPathMappings: Record<BodyId, BodyId>;
   planetTrajectories: Record<BodyId, PlanetTrajectory>;
 } {
   const objects: SceneObject[] = [];
@@ -442,10 +441,10 @@ export function createInitialSceneAndWorld(): {
   };
 
   // Derive planet–path relationships once from the configs we just used.
-  const planetPathMappings: PlanetPathMapping[] = planetConfigs.map((cfg) => ({
-    planetId: cfg.id,
-    pathId: cfg.pathId,
-  }));
+  const planetPathMappings: Record<BodyId, BodyId> = {};
+  for (const cfg of planetConfigs) {
+    planetPathMappings[cfg.id] = cfg.pathId;
+  }
 
   // Build a trajectory for each planet
   const planetTrajectories: Record<BodyId, PlanetTrajectory> = {};

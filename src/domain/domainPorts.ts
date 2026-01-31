@@ -109,14 +109,6 @@ export interface PlanetPhysics {
   mass: number; // kg (derived from radius and density)
 }
 
-/**
- * Adapter-level mapping between planet ids and their trajectory path ids.
- */
-export interface PlanetPathMapping {
-  planetId: string;
-  pathId: string;
-}
-
 export interface Polar2D {
   angleRad: number;
   radius: number;

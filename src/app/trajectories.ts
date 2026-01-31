@@ -1,10 +1,5 @@
-import type {
-  BodyId,
-  Mesh,
-  PlanetPathMapping,
-  ShipBody,
-  Vec3,
-} from "../domain/domainPorts.js";
+import type { BodyId, Mesh, ShipBody, Vec3 } from "../domain/domainPorts.js";
+import { vec3 } from "../domain/vec3.js";
 import type { PlanetTrajectory } from "./appInternals.js";
 import type { Scene } from "./appPorts.js";
 import { Vec3RingBuffer } from "./Vec3RingBuffer.js";
@@ -33,8 +28,8 @@ export function updatePlanetTrajectory(
 }
 
 export function rebuildPlanetPathMesh(
-  traj: PlanetTrajectory,
   mesh: Mesh,
+  traj: PlanetTrajectory,
 ): void {
   const { points, faces } = mesh;
   const count = traj.buffers.reduce((acc, buf) => acc + buf.count, 0);
@@ -59,21 +54,25 @@ export function rebuildPlanetPathMesh(
 
 export function appendPlanetTrajectories(
   scene: Scene,
-  planetPathMappings: PlanetPathMapping[],
+  planetPathMappings: Record<BodyId, BodyId>,
   planetTrajectories: Record<BodyId, PlanetTrajectory>,
 ): void {
-  for (const mapping of planetPathMappings) {
-    const bodyObj = scene.objects.find((o) => o.id === mapping.planetId);
-    const pathObj = scene.objects.find((o) => o.id === mapping.pathId);
-    if (!bodyObj || !pathObj) continue;
+  const { objects } = scene;
 
-    const trajectory = planetTrajectories[mapping.planetId];
+  // build a scene objects lookup index
+  const lookup: Record<BodyId, number> = {};
+  for (let i = 0; i < objects.length; i++) {
+    lookup[objects[i].id] = i;
+  }
 
-    // 1) Update trajectory tiers (1 second step implied)
-    updatePlanetTrajectory(trajectory, bodyObj.position);
+  for (const obj of objects) {
+    if (obj.kind !== "planet" && obj.kind !== "star") continue;
+    const pathId: BodyId = planetPathMappings[obj.id];
+    const pathMesh: Mesh = objects[lookup[pathId]].mesh;
+    const trajectory = planetTrajectories[obj.id];
 
-    // 2) Rebuild mesh from tiers
-    rebuildPlanetPathMesh(trajectory, pathObj.mesh);
+    updatePlanetTrajectory(trajectory, obj.position);
+    rebuildPlanetPathMesh(pathMesh, trajectory);
   }
 }
 
@@ -84,7 +83,7 @@ export function updateTrajectories(
   dtSeconds: number,
   scene: Scene,
   mainShip: ShipBody,
-  planetPathMappings: PlanetPathMapping[],
+  planetPathMappings: Record<BodyId, BodyId>,
   planetTrajectories: Record<BodyId, PlanetTrajectory>,
   trajectoryAccumTime: number,
 ): number {
@@ -108,28 +107,33 @@ export function updateTrajectories(
  * Mesh points are assumed to be in world space (no transform applied).
  */
 export function appendPointToPolylineMesh(mesh: Mesh, point: Vec3): void {
-  const newIndex = mesh.points.length;
+  const { faces, points } = mesh;
+  const clone = vec3.clone(point);
+  const newIndex = points.length;
   if (newIndex === 0) {
-    mesh.points = [];
-    mesh.points.push({ ...point });
-    mesh.faces = [];
+    // initialize empty mesh
+    points.length = 0;
+    points.push(clone);
+    faces.length = 0;
     return;
   }
   if (newIndex === 1) {
-    mesh.points.push({ ...point });
-    mesh.faces.push([0, 1]);
+    // now that we have 2 points, add a first segment
+    points.push(clone);
+    faces.push([0, 1]);
     return;
   }
-  mesh.points.push({ ...point });
-  mesh.faces[0].push(newIndex);
+  // add current new point to the the path
+  points.push(clone);
+  faces[0].push(newIndex);
 }
 
 export function appendShipTrajectoryPoint(
   scene: Scene,
   mainShip: ShipBody,
 ): void {
-  const pathObj = scene.objects.find((o) => o.id === "path:ship:main");
-  if (pathObj) {
-    appendPointToPolylineMesh(pathObj.mesh, mainShip.position);
+  for (const obj of scene.objects) {
+    if (obj.id !== "path:ship:main") continue;
+    appendPointToPolylineMesh(obj.mesh, mainShip.position);
   }
 }
