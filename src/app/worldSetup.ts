@@ -1,6 +1,5 @@
-import type { BodyId, StarBodyConfig } from "../domain/domainPorts.js";
-import type { PlanetBodyConfig } from "../domain/domainPorts.js";
 import type {
+  BodyId,
   CelestialBody,
   LocalFrame,
   Mesh,
@@ -22,7 +21,11 @@ import { circularSpeedAtRadius } from "../domain/phys.js";
 import { trig } from "../domain/trig.js";
 import { vec3 } from "../domain/vec3.js";
 import { getStarPhysicsById } from "../domain/worldLookup.js";
-import { type PlanetTrajectory } from "./appInternals.js";
+import type {
+  PlanetBodyConfig,
+  PlanetTrajectory,
+  StarBodyConfig,
+} from "./appInternals.js";
 import { colors } from "./appInternals.js";
 import type {
   DomainCameraPose,

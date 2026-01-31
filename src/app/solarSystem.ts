@@ -1,5 +1,5 @@
-import type { StarBodyConfig } from "../domain/domainPorts.js";
-import type { PlanetBodyConfig } from "../domain/domainPorts.js";
+import type { StarBodyConfig } from "./appInternals.js";
+import type { PlanetBodyConfig } from "./appInternals.js";
 import { circularSpeedAtRadius } from "../domain/phys.js";
 import { colors } from "./appInternals.js";
 

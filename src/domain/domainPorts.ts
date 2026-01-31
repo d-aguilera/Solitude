@@ -27,32 +27,6 @@ export interface CelestialBody {
 }
 
 /**
- * Shared configuration for bodies that participate in orbits.
- */
-export interface CelestialBodyConfig {
-  id: string; // domain id, e.g. "planet:earth"
-  pathId: string; // orbit path id, purely logical association
-  kind: PlanetKind;
-
-  // Physical orbital elements / body properties (SI units)
-  orbit: Polar2D; // angleRad + physical radius in meters (semi-major axis, assumed circular)
-  physicalRadius: number; // meters
-  density: number; // kg/m^3
-
-  // Rendering / initial kinematics
-  tangentialSpeed: number; // m/s, orbital speed along local tangent
-  color: RGB;
-
-  /**
-   * Axial rotation:
-   *  - rotationAxis is a unit vector in world space (e.g. approximate spin axis)
-   *  - angularSpeedRadPerSec is the constant spin rate around that axis
-   */
-  rotationAxis: { x: number; y: number; z: number };
-  angularSpeedRadPerSec: number;
-}
-
-/**
  * Domain-level abstraction for gravitational integration.
  */
 export interface GravityEngine {
@@ -95,10 +69,6 @@ export interface ShipBody extends CelestialBody {
   frame: LocalFrame;
 }
 
-export interface PlanetBodyConfig extends CelestialBodyConfig {
-  kind: "planet";
-}
-
 /**
  * Physical properties of a planet / star body.
  */
@@ -133,11 +103,6 @@ export interface RGB {
   r: number;
   g: number;
   b: number;
-}
-
-export interface StarBodyConfig extends CelestialBodyConfig {
-  kind: "star";
-  luminosity: number; // W (or scaled W) for stars
 }
 
 /**

@@ -4,6 +4,8 @@ import type {
   GravityEngine,
   GravityState,
   LocalFrame,
+  PlanetKind,
+  Polar2D,
   RGB,
   ShipBody,
   Vec3,
@@ -11,6 +13,32 @@ import type {
 } from "../domain/domainPorts.js";
 import type { DomainCameraPose, Scene } from "./appPorts.js";
 import type { Vec3RingBuffer } from "./Vec3RingBuffer.js";
+
+/**
+ * Shared configuration for bodies that participate in orbits.
+ */
+export interface CelestialBodyConfig {
+  id: string; // domain id, e.g. "planet:earth"
+  pathId: string; // orbit path id, purely logical association
+  kind: PlanetKind;
+
+  // Physical orbital elements / body properties (SI units)
+  orbit: Polar2D; // angleRad + physical radius in meters (semi-major axis, assumed circular)
+  physicalRadius: number; // meters
+  density: number; // kg/m^3
+
+  // Rendering / initial kinematics
+  tangentialSpeed: number; // m/s, orbital speed along local tangent
+  color: RGB;
+
+  /**
+   * Axial rotation:
+   *  - rotationAxis is a unit vector in world space (e.g. approximate spin axis)
+   *  - angularSpeedRadPerSec is the constant spin rate around that axis
+   */
+  rotationAxis: { x: number; y: number; z: number };
+  angularSpeedRadPerSec: number;
+}
 
 export const colors: { [key: string]: RGB } = {
   ship: { r: 0, g: 255, b: 255 },
@@ -43,6 +71,10 @@ export interface GravityBodyBinding {
   shipIndex: number;
   planetIndex: number;
   starIndex: number;
+}
+
+export interface PlanetBodyConfig extends CelestialBodyConfig {
+  kind: "planet";
 }
 
 export type PlanetTrajectory = {
@@ -101,4 +133,9 @@ export interface SimulationState {
   mainShip: ShipBody;
   mainShipBodyState: BodyState;
   world: World;
+}
+
+export interface StarBodyConfig extends CelestialBodyConfig {
+  kind: "star";
+  luminosity: number; // W (or scaled W) for stars
 }
