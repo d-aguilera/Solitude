@@ -6,6 +6,8 @@ import type {
 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 
+const accelerations: Vec3[] = [];
+
 /**
  * Concrete GravityEngine using a Newtonian N-body implementation.
  */
@@ -28,9 +30,9 @@ export class NewtonianGravityEngine implements GravityEngine {
       return;
     }
 
-    const accelerations = this.computeGravityAccelerations(bodies, positions);
+    this.computeGravityAccelerations(bodies, positions);
 
-    this.integrateBodyVelocities(bodies, accelerations, dtSeconds);
+    this.integrateBodyVelocities(bodies, dtSeconds);
 
     this.integrateBodyPositions(bodies, positions, dtSeconds);
   }
@@ -41,14 +43,24 @@ export class NewtonianGravityEngine implements GravityEngine {
   private computeGravityAccelerations(
     bodies: BodyState[],
     positions: Vec3[],
-  ): Vec3[] {
+  ): void {
     const n = bodies.length;
-    const accelerations: Vec3[] = new Array(n);
+
+    if (accelerations.length < n) {
+      for (let i = accelerations.length; i < n; i++) {
+        accelerations.push(vec3.zero());
+      }
+    } else {
+      accelerations.length = n;
+    }
 
     for (let i = 0; i < n; i++) {
       const pi = positions[i];
 
-      const a: Vec3 = { x: 0, y: 0, z: 0 };
+      const a: Vec3 = accelerations[i];
+      a.x = 0;
+      a.y = 0;
+      a.z = 0;
 
       for (let j = 0; j < n; j++) {
         if (i === j) continue;
@@ -64,13 +76,9 @@ export class NewtonianGravityEngine implements GravityEngine {
         const invR3 = 1 / (r * r * r);
         const scale = this.G * bodies[j].mass * invR3;
 
-        vec3.addInto(a, a, vec3.scale(d, scale));
+        vec3.addInto(a, a, vec3.scaleInto(d, scale, d));
       }
-
-      accelerations[i] = a;
     }
-
-    return accelerations;
   }
 
   /**
@@ -78,15 +86,14 @@ export class NewtonianGravityEngine implements GravityEngine {
    */
   private integrateBodyVelocities(
     bodies: BodyState[],
-    accelerations: Vec3[],
     dtSeconds: number,
   ): void {
     const n = bodies.length;
 
     for (let i = 0; i < n; i++) {
-      const dv = vec3.scale(accelerations[i], dtSeconds);
+      const a = accelerations[i];
       const v = bodies[i].velocity;
-      vec3.addInto(v, v, dv);
+      vec3.addInto(v, v, vec3.scaleInto(a, dtSeconds, a));
     }
   }
 
@@ -103,7 +110,8 @@ export class NewtonianGravityEngine implements GravityEngine {
 
     for (let i = 0; i < n; i++) {
       const pos = positions[i];
-      vec3.addInto(pos, pos, vec3.scale(bodies[i].velocity, dtSeconds));
+      const v = bodies[i].velocity;
+      vec3.addInto(pos, pos, vec3.scale(v, dtSeconds));
     }
   }
 }

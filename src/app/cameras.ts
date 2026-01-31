@@ -62,10 +62,13 @@ function frameFromShipForTop(
 ): LocalFrame {
   void sceneControlState;
   const { right, forward, up } = ship.frame;
+  const rightClone = vec3.clone(right);
+  const forwardClone = vec3.clone(up);
+  const upClone = vec3.clone(forward);
   return {
-    right: vec3.clone(right),
-    forward: vec3.scale(up, -1),
-    up: vec3.clone(forward),
+    right: rightClone,
+    forward: vec3.scaleInto(forwardClone, -1, forwardClone),
+    up: upClone,
   };
 }
 
@@ -87,7 +90,7 @@ function setCameraRelativeToShip(
     vec3.scale(up, localOffset.z),
   );
 
-  pose.position = vec3.add(ship.position, worldOffset);
+  vec3.addInto(pose.position, ship.position, worldOffset);
   pose.frame = frameFromShip(ship, sceneControlState);
 }
 
