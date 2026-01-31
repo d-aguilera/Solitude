@@ -85,8 +85,8 @@ export class NewtonianGravityEngine implements GravityEngine {
 
     for (let i = 0; i < n; i++) {
       const dv = vec3.scale(accelerations[i], dtSeconds);
-      const body = bodies[i];
-      body.velocity = vec3.add(body.velocity, dv);
+      const v = bodies[i].velocity;
+      vec3.addInto(v, v, dv);
     }
   }
 
@@ -102,10 +102,8 @@ export class NewtonianGravityEngine implements GravityEngine {
     positions.length = n;
 
     for (let i = 0; i < n; i++) {
-      positions[i] = vec3.add(
-        positions[i],
-        vec3.scale(bodies[i].velocity, dtSeconds),
-      );
+      const pos = positions[i];
+      vec3.addInto(pos, pos, vec3.scale(bodies[i].velocity, dtSeconds));
     }
   }
 }
