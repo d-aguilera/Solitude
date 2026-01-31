@@ -2,21 +2,18 @@ import type { GravityEngine, GravityState } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
 import { getShipById } from "../domain/worldLookup.js";
 import type {
-  GameState,
   GravityBodyBinding,
-  TickOutput,
-  TickCallback,
-  PresentationState,
-  SimulationState,
+  SceneControlState,
+  SceneState,
   SimControlState,
+  SimulationState,
+  TickCallback,
+  TickOutput,
   TickParams,
 } from "./appPorts.js";
-import {
-  createInitialSimControlState,
-  createInitialViewControlState,
-} from "./controls.js";
-import { handleTick } from "./handleTick.js";
 import { buildGravityBindings } from "./physics.js";
+import { mutateScene } from "./scene.js";
+import { mutateSimulation } from "./sim.js";
 import { createInitialSceneAndWorld } from "./worldSetup.js";
 
 /**
@@ -44,17 +41,10 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
 
   const mainShipBodyState = gravityState.bodies[mainShipBodyIndex];
 
-  const presentationState: PresentationState = {
-    pilotCamera: x.pilotCamera,
-    planetPathMappings: x.planetPathMappings,
-    planetTrajectories: x.planetTrajectories,
-    scene: x.scene,
-    speedMps: 0,
-    topCamera: x.topCamera,
-    trajectoryAccumTime: 0,
+  const simControlState: SimControlState = {
+    alignToVelocity: false,
+    thrustPercent: 0,
   };
-
-  const simControlState: SimControlState = createInitialSimControlState();
 
   const simState: SimulationState = {
     currentThrustPercent: 0,
@@ -66,13 +56,22 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
     world: x.world,
   };
 
-  const viewControlState = createInitialViewControlState();
+  const sceneControlState: SceneControlState = {
+    look: {
+      azimuth: 0,
+      elevation: 0,
+    },
+    pilotCameraLocalOffset: { x: 0, y: 1.7, z: 1.1 },
+  };
 
-  let gameState: GameState = {
-    presentationState,
-    simControlState,
-    simState,
-    viewControlState,
+  const sceneState: SceneState = {
+    pilotCamera: x.pilotCamera,
+    planetPathMappings: x.planetPathMappings,
+    planetTrajectories: x.planetTrajectories,
+    scene: x.scene,
+    speedMps: 0,
+    topCamera: x.topCamera,
+    trajectoryAccumTime: 0,
   };
 
   let lastTimeMs: number;
@@ -84,7 +83,6 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
   return ({
     nowMs,
     controlInput,
-    profiler,
     paused,
   }: TickParams): Readonly<TickOutput> => {
     if (!initialized) {
@@ -96,17 +94,25 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
     const dtSeconds = paused ? 0 : dtMs / 1000;
     lastTimeMs = nowMs;
 
-    handleTick(dtSeconds, gameState, controlInput, profiler);
+    mutateSimulation(dtSeconds, simState, simControlState, controlInput);
+
+    mutateScene(
+      dtSeconds,
+      sceneState,
+      sceneControlState,
+      simState,
+      controlInput,
+    );
 
     return {
-      mainShip: mainShip,
       currentThrustPercent: simState.currentThrustPercent,
-      pilotCameraLocalOffset: viewControlState.pilotCameraLocalOffset,
-      pilotCamera: presentationState.pilotCamera,
-      scene: presentationState.scene,
-      speedMps: presentationState.speedMps,
-      topCamera: presentationState.topCamera,
       fps: paused ? 0 : 1 / dtSeconds,
+      mainShip,
+      pilotCamera: sceneState.pilotCamera,
+      pilotCameraLocalOffset: sceneControlState.pilotCameraLocalOffset,
+      scene: sceneState.scene,
+      speedMps: sceneState.speedMps,
+      topCamera: sceneState.topCamera,
     };
   };
 }

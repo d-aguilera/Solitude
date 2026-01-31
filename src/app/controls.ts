@@ -6,7 +6,6 @@ import type {
   ControlInput,
   SimControlState,
   PilotLookState,
-  ViewControlState,
 } from "./appPorts.js";
 
 // Max thrust acceleration in m/s^2 at 100% thrust
@@ -20,29 +19,6 @@ const rotSpeedYaw = 0.5;
 
 // Max rate at which the ship can reorient itself toward its velocity vector.
 const alignToVelocityMaxAngularSpeed = 0.7; // rad/s
-
-/**
- * Create a default-initialized simulation control state.
- */
-export function createInitialSimControlState(): SimControlState {
-  return {
-    alignToVelocity: false,
-    thrustPercent: 0,
-  };
-}
-
-/**
- * Create a default-initialized view control state.
- */
-export function createInitialViewControlState(): ViewControlState {
-  return {
-    look: {
-      azimuth: 0,
-      elevation: 0,
-    },
-    pilotCameraLocalOffset: { x: 0, y: 1.7, z: 1.1 },
-  };
-}
 
 /**
  * Update pilot look angles in-place based on input.

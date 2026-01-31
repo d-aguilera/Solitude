@@ -95,13 +95,6 @@ export interface DomainCameraPose {
   frame: LocalFrame;
 }
 
-export interface GameState {
-  presentationState: PresentationState;
-  simControlState: SimControlState;
-  simState: SimulationState;
-  viewControlState: ViewControlState;
-}
-
 /**
  * Binding between domain bodies and indices in the DomainWorld.
  */
@@ -138,16 +131,6 @@ export interface PolylineSceneObject extends BaseSceneObject {
   applyTransform: false;
   wireframeOnly: true;
   backFaceCulling: false;
-}
-
-export interface PresentationState {
-  pilotCamera: DomainCameraPose;
-  planetPathMappings: PlanetPathMapping[];
-  planetTrajectories: PlanetTrajectory[];
-  scene: Scene;
-  speedMps: number;
-  topCamera: DomainCameraPose;
-  trajectoryAccumTime: number;
 }
 
 /**
@@ -192,6 +175,14 @@ export interface Scene {
 }
 
 /**
+ * Per-player scene control state that must persist across frames.
+ */
+export interface SceneControlState {
+  look: PilotLookState;
+  pilotCameraLocalOffset: Vec3;
+}
+
+/**
  * Domain-level scene object union for rendering adapters.
  */
 export type SceneObject =
@@ -201,6 +192,16 @@ export type SceneObject =
   | PolylineSceneObject;
 
 export type SceneObjectKind = "ship" | "planet" | "polyline" | "star";
+
+export interface SceneState {
+  pilotCamera: DomainCameraPose;
+  planetPathMappings: PlanetPathMapping[];
+  planetTrajectories: PlanetTrajectory[];
+  scene: Scene;
+  speedMps: number;
+  topCamera: DomainCameraPose;
+  trajectoryAccumTime: number;
+}
 
 export interface SolidSceneObject extends BaseSceneObject {
   applyTransform: true;
@@ -258,12 +259,4 @@ export interface TickOutput {
   currentThrustPercent: number;
   pilotCameraLocalOffset: Vec3;
   speedMps: number;
-}
-
-/**
- * Per-player view control state that must persist across frames.
- */
-export interface ViewControlState {
-  look: PilotLookState;
-  pilotCameraLocalOffset: Vec3;
 }
