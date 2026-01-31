@@ -1,10 +1,6 @@
 import { vec3 } from "../domain/vec3.js";
-import type {
-  ControlInput,
-  SceneControlState,
-  SceneState,
-  SimulationState,
-} from "./appPorts.js";
+import type { SceneState, SimulationState } from "./appInternals.js";
+import type { ControlInput, SceneControlState } from "./appPorts.js";
 import { updatePilotCameraOffset, updateCameras } from "./cameras.js";
 import { updatePilotLook } from "./controls.js";
 import { updateTrajectories } from "./trajectories.js";

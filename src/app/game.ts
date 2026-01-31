@@ -3,10 +3,12 @@ import { buildInitialGravityState } from "../domain/gravityState.js";
 import { getShipById } from "../domain/worldLookup.js";
 import type {
   GravityBodyBinding,
-  SceneControlState,
   SceneState,
   SimControlState,
   SimulationState,
+} from "./appInternals.js";
+import type {
+  SceneControlState,
   TickCallback,
   TickOutput,
   TickParams,

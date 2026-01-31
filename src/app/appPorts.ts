@@ -1,8 +1,4 @@
 import type {
-  BodyId,
-  BodyState,
-  GravityEngine,
-  GravityState,
   LocalFrame,
   Mat3,
   Mesh,
@@ -10,9 +6,7 @@ import type {
   RGB,
   ShipBody,
   Vec3,
-  World,
 } from "../domain/domainPorts";
-import type { PlanetTrajectory } from "./appInternals";
 
 export interface BaseSceneObject {
   id: string;
@@ -92,17 +86,6 @@ export type DrawMode = "faces" | "lines";
 export interface DomainCameraPose {
   position: Vec3;
   frame: LocalFrame;
-}
-
-/**
- * Binding between domain bodies and indices in the DomainWorld.
- */
-export interface GravityBodyBinding {
-  id: BodyId;
-  kind: "ship" | "planet" | "star";
-  shipIndex: number;
-  planetIndex: number;
-  starIndex: number;
 }
 
 export interface PlanetSceneObject extends CelestialBodySceneObject {
@@ -192,16 +175,6 @@ export type SceneObject =
 
 export type SceneObjectKind = "ship" | "planet" | "polyline" | "star";
 
-export interface SceneState {
-  pilotCamera: DomainCameraPose;
-  planetPathMappings: Record<BodyId, BodyId>;
-  planetTrajectories: Record<BodyId, PlanetTrajectory>;
-  scene: Scene;
-  speedMps: number;
-  topCamera: DomainCameraPose;
-  trajectoryAccumTime: number;
-}
-
 export interface SolidSceneObject extends BaseSceneObject {
   applyTransform: true;
   wireframeOnly: false;
@@ -213,24 +186,6 @@ export interface SolidSceneObject extends BaseSceneObject {
 export interface ShipSceneObject extends SolidSceneObject {
   kind: "ship";
   backFaceCulling: false;
-}
-
-/**
- * Per-player simulation control state that must persist across frames.
- */
-export interface SimControlState {
-  alignToVelocity: boolean;
-  thrustPercent: number;
-}
-
-export interface SimulationState {
-  currentThrustPercent: number;
-  gravityBindings: GravityBodyBinding[];
-  gravityEngine: GravityEngine;
-  gravityState: GravityState;
-  mainShip: ShipBody;
-  mainShipBodyState: BodyState;
-  world: World;
 }
 
 export interface StarSceneObject extends CelestialBodySceneObject {

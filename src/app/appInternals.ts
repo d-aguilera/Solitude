@@ -1,4 +1,15 @@
-import type { LocalFrame, RGB, Vec3 } from "../domain/domainPorts.js";
+import type {
+  BodyId,
+  BodyState,
+  GravityEngine,
+  GravityState,
+  LocalFrame,
+  RGB,
+  ShipBody,
+  Vec3,
+  World,
+} from "../domain/domainPorts.js";
+import type { DomainCameraPose, Scene } from "./appPorts.js";
 import type { Vec3RingBuffer } from "./Vec3RingBuffer.js";
 
 export const colors: { [key: string]: RGB } = {
@@ -21,6 +32,17 @@ export const colors: { [key: string]: RGB } = {
 export interface ControlledBodyState {
   frame: LocalFrame;
   velocity: Vec3;
+}
+
+/**
+ * Binding between domain bodies and indices in the DomainWorld.
+ */
+export interface GravityBodyBinding {
+  id: BodyId;
+  kind: "ship" | "planet" | "star";
+  shipIndex: number;
+  planetIndex: number;
+  starIndex: number;
 }
 
 export type PlanetTrajectory = {
@@ -51,4 +73,32 @@ export interface RingBuffer<T> {
    * Iterate from tail to head (newest → oldest).
    */
   forEach(fn: (value: T) => void): void;
+}
+
+export interface SceneState {
+  pilotCamera: DomainCameraPose;
+  planetPathMappings: Record<BodyId, BodyId>;
+  planetTrajectories: Record<BodyId, PlanetTrajectory>;
+  scene: Scene;
+  speedMps: number;
+  topCamera: DomainCameraPose;
+  trajectoryAccumTime: number;
+}
+
+/**
+ * Per-player simulation control state that must persist across frames.
+ */
+export interface SimControlState {
+  alignToVelocity: boolean;
+  thrustPercent: number;
+}
+
+export interface SimulationState {
+  currentThrustPercent: number;
+  gravityBindings: GravityBodyBinding[];
+  gravityEngine: GravityEngine;
+  gravityState: GravityState;
+  mainShip: ShipBody;
+  mainShipBodyState: BodyState;
+  world: World;
 }

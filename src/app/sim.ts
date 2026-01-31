@@ -1,8 +1,5 @@
-import type {
-  ControlInput,
-  SimControlState,
-  SimulationState,
-} from "./appPorts.js";
+import type { ControlInput } from "./appPorts.js";
+import type { SimControlState, SimulationState } from "./appInternals.js";
 import {
   getSignedThrustPercent,
   updateAlignToVelocityFromInput,
