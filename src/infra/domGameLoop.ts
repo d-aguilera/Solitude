@@ -6,10 +6,6 @@ import type {
   TickCallback,
   TickParams,
 } from "../app/appPorts.js";
-import {
-  getProfilingEnabledFromEnv,
-  setProfilingEnabledInEnv,
-} from "../app/debugEnv.js";
 import { startGame as createTickHandler } from "../app/game.js";
 import type { GravityEngine, Profiler } from "../domain/domainPorts.js";
 import type {
@@ -18,6 +14,7 @@ import type {
   RenderSurface2D,
 } from "../render/renderPorts.js";
 import { handlePauseToggle } from "./pause.js";
+import { handleProfilingToggle } from "./profiling.js";
 
 /**
  * DOM-level game loop (depends on requestAnimationFrame).
@@ -74,20 +71,4 @@ export function runLoop(
   };
 
   requestAnimationFrame(loop);
-}
-
-let lastProfilingToggleDown = false;
-
-function handleProfilingToggle(profilingTogglePressed: boolean) {
-  const currentProfiling = getProfilingEnabledFromEnv();
-  let profilingEnabled = currentProfiling;
-
-  if (profilingTogglePressed && !lastProfilingToggleDown) {
-    profilingEnabled = !currentProfiling;
-    setProfilingEnabledInEnv(profilingEnabled);
-  }
-
-  lastProfilingToggleDown = profilingTogglePressed;
-
-  return profilingEnabled;
 }
