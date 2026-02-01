@@ -54,9 +54,22 @@ function lengthSq(v: Readonly<Vec3>): number {
 }
 
 function normalize(v: Readonly<Vec3>): Vec3 {
+  return normalizeInto({ x: 0, y: 0, z: 0 }, v);
+}
+
+function normalizeInto(into: Vec3, v: Readonly<Vec3>): Vec3 {
   const len = length(v);
-  if (len === 0) return { x: 0, y: 0, z: 0 };
-  return { x: v.x / len, y: v.y / len, z: v.z / len };
+  if (len === 0) {
+    into.x = 0;
+    into.y = 0;
+    into.z = 0;
+    return into;
+  }
+  const invLen = 1 / len;
+  into.x = v.x * invLen;
+  into.y = v.y * invLen;
+  into.z = v.z * invLen;
+  return into;
 }
 
 function scale(v: Readonly<Vec3>, s: number): Vec3 {
@@ -99,6 +112,7 @@ export const vec3 = {
   length,
   lengthSq,
   normalize,
+  normalizeInto,
   scale,
   scaleAndAdd,
   scaleInto,

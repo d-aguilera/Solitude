@@ -43,22 +43,30 @@ export const shipModel: Mesh = {
 const t = (1 + Math.sqrt(5)) / 2;
 
 export const icosahedronModel: Mesh = {
-  points: [
-    { x: -1, y: t, z: 0 },
-    { x: 1, y: t, z: 0 },
-    { x: -1, y: -t, z: 0 },
-    { x: 1, y: -t, z: 0 },
+  points: (() => {
+    const raw: Vec3[] = [
+      { x: -1, y: t, z: 0 },
+      { x: 1, y: t, z: 0 },
+      { x: -1, y: -t, z: 0 },
+      { x: 1, y: -t, z: 0 },
 
-    { x: 0, y: -1, z: t },
-    { x: 0, y: 1, z: t },
-    { x: 0, y: -1, z: -t },
-    { x: 0, y: 1, z: -t },
+      { x: 0, y: -1, z: t },
+      { x: 0, y: 1, z: t },
+      { x: 0, y: -1, z: -t },
+      { x: 0, y: 1, z: -t },
 
-    { x: t, y: 0, z: -1 },
-    { x: t, y: 0, z: 1 },
-    { x: -t, y: 0, z: -1 },
-    { x: -t, y: 0, z: 1 },
-  ].map(vec3.normalize),
+      { x: t, y: 0, z: -1 },
+      { x: t, y: 0, z: 1 },
+      { x: -t, y: 0, z: -1 },
+      { x: -t, y: 0, z: 1 },
+    ];
+
+    // Normalize vertices onto the unit sphere in-place.
+    for (let i = 0; i < raw.length; i++) {
+      vec3.normalizeInto(raw[i], raw[i]);
+    }
+    return raw;
+  })(),
   faces: [
     [0, 11, 5],
     [0, 5, 1],
@@ -140,6 +148,7 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
   const e1Scratch: Vec3 = { x: 0, y: 0, z: 0 };
   const e2Scratch: Vec3 = { x: 0, y: 0, z: 0 };
   const normalScratch: Vec3 = { x: 0, y: 0, z: 0 };
+  const normalUnitScratch: Vec3 = { x: 0, y: 0, z: 0 };
 
   const getFaceNormal = (face: number[]): Vec3 => {
     const v0 = points[face[0]];
@@ -168,8 +177,13 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
       n = getFaceNormal(face);
     }
 
-    // Store a normalized copy for this face.
-    faceNormals[i] = vec3.normalize(n);
+    // Store a normalized copy for this face using a reusable scratch.
+    vec3.normalizeInto(normalUnitScratch, n);
+    faceNormals[i] = {
+      x: normalUnitScratch.x,
+      y: normalUnitScratch.y,
+      z: normalUnitScratch.z,
+    };
   }
 
   return {
