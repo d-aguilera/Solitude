@@ -55,6 +55,9 @@ export function buildGravityBindings(world: World): GravityBodyBinding[] {
   return bindings;
 }
 
+// Scratch vector for applyThrustToVelocity
+const cvScratch = vec3.zero();
+
 /**
  * Apply thrust acceleration to the controlled body's velocity when burn/brake
  * are active. Acceleration magnitude is:
@@ -70,9 +73,8 @@ function applyThrustToVelocity(
 
   const { frame, velocity } = body;
   const accelMagnitude = maxThrustAcceleration * currentThrustPercent;
-  const dv = vec3.scale(frame.forward, accelMagnitude * dtSeconds);
-
-  vec3.addInto(body.velocity, velocity, dv);
+  vec3.scaleInto(cvScratch, accelMagnitude * dtSeconds, frame.forward);
+  vec3.addInto(body.velocity, velocity, cvScratch);
 }
 
 function applyGravityPositionsToWorld(

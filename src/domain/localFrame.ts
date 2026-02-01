@@ -43,6 +43,11 @@ export function mat3FromLocalFrame(frame: LocalFrame): Mat3 {
   ];
 }
 
+// Shared scratch vectors for rotateFrameAroundAxis
+const rotateRightScratch: Vec3 = vec3.zero();
+const rotateForwardScratch: Vec3 = vec3.zero();
+const rotateUpScratch: Vec3 = vec3.zero();
+
 /** Rotate a LocalFrame about an arbitrary axis in world space. */
 export function rotateFrameAroundAxis(
   frame: LocalFrame,
@@ -51,10 +56,16 @@ export function rotateFrameAroundAxis(
 ): LocalFrame {
   const R = mat3.rotAxis(axis, angle);
 
+  // Use scratch Vec3s + mulVec3Into to avoid allocations
+  mat3.mulVec3Into(rotateRightScratch, R, frame.right);
+  mat3.mulVec3Into(rotateForwardScratch, R, frame.forward);
+  mat3.mulVec3Into(rotateUpScratch, R, frame.up);
+
+  // Return a new LocalFrame built from the rotated axes
   return makeLocalFrameFromAxes(
-    mat3.mulVec3(R, frame.right),
-    mat3.mulVec3(R, frame.forward),
-    mat3.mulVec3(R, frame.up),
+    rotateRightScratch,
+    rotateForwardScratch,
+    rotateUpScratch,
   );
 }
 
