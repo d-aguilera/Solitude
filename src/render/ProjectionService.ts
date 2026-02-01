@@ -32,6 +32,8 @@ export class ProjectionService {
   private readonly R_localFromWorld: Mat3;
   private readonly cameraPosition: Vec3;
 
+  private readonly scratchDelta: Vec3 = { x: 0, y: 0, z: 0 };
+
   constructor(
     pose: DomainCameraPose,
     canvasWidth: number,
@@ -46,31 +48,51 @@ export class ProjectionService {
     this.cameraPosition = pose.position;
   }
 
+  private readonly cameraPointScratch1: Vec3 = { x: 0, y: 0, z: 0 };
+
   /**
    * Full world-space -> NDC projection with near-plane rejection.
    *
    * Returns null when the point lies behind the near plane in camera space.
    */
   projectWorldPointToNdc(worldPoint: Vec3): NdcPoint | null {
-    const cameraPoint = this.worldPointToCameraPointNoClip(worldPoint);
-    return this.isInFrontOfNearPlane(cameraPoint)
-      ? this.projectCameraPointToNdc(cameraPoint)
+    this.worldPointToCameraPointNoClipInto(
+      this.cameraPointScratch1,
+      worldPoint,
+    );
+    return this.isInFrontOfNearPlane(this.cameraPointScratch1)
+      ? this.projectCameraPointToNdc(this.cameraPointScratch1)
       : null;
   }
 
+  private readonly cameraPointScratch2: Vec3 = { x: 0, y: 0, z: 0 };
+
   /**
    * Convert world-space points into camera space.
+   *
+   * Reuses internal scratch objects and returns a freshly sized array of
+   * Vec3 instances that are stable for the caller while this method runs.
    */
   worldPointsToCameraPointsNoClip(worldPoints: Vec3[]): Vec3[] {
     const n = worldPoints.length;
     const cameraPoints = new Array<Vec3>(n);
 
+    const R_localFromWorld = this.R_localFromWorld;
+    const position = this.cameraPosition;
+    const delta = this.scratchDelta;
+    const cameraPoint = this.cameraPointScratch2;
+
     for (let i = 0; i < n; i++) {
-      cameraPoints[i] = this.worldPointToCameraPointNoClip2(
-        worldPoints[i],
-        this.R_localFromWorld,
-        this.cameraPosition,
-      );
+      const wp = worldPoints[i];
+
+      // delta = worldPoint - cameraPosition
+      vec3.subInto(delta, wp, position);
+
+      // cameraPoint = R_localFromWorld * delta
+      mat3.mulVec3Into(cameraPoint, R_localFromWorld, delta);
+
+      // Store a stable copy for the caller
+      cameraPoints[i] = vec3.clone(cameraPoint);
     }
 
     return cameraPoints;
@@ -79,20 +101,17 @@ export class ProjectionService {
   /**
    * World-space -> camera-space for a single point, without clipping.
    */
-  private worldPointToCameraPointNoClip(worldPoint: Vec3): Vec3 {
-    return this.worldPointToCameraPointNoClip2(
-      worldPoint,
-      this.R_localFromWorld,
-      this.cameraPosition,
-    );
-  }
-
-  private worldPointToCameraPointNoClip2(
+  private worldPointToCameraPointNoClipInto(
+    into: Vec3,
     worldPoint: Vec3,
-    R_localFromWorld: Mat3,
-    position: Vec3,
-  ): Vec3 {
-    return mat3.mulVec3(R_localFromWorld, vec3.sub(worldPoint, position));
+  ): void {
+    const delta = this.scratchDelta;
+
+    // delta = worldPoint - cameraPosition
+    vec3.subInto(delta, worldPoint, this.cameraPosition);
+
+    // into (cameraPoint) = R_localFromWorld * delta
+    mat3.mulVec3Into(into, this.R_localFromWorld, delta);
   }
 
   /**
@@ -171,6 +190,9 @@ export class ProjectionService {
     ];
   }
 
+  private readonly aCamScratch: Vec3 = { x: 0, y: 0, z: 0 };
+  private readonly bCamScratch: Vec3 = { x: 0, y: 0, z: 0 };
+
   /**
    * Project a world-space segment [A, B] to one or more screen-space
    * polylines, clipping against the near plane.
@@ -186,9 +208,12 @@ export class ProjectionService {
     screenWidth: number,
     screenHeight: number,
   ): ScreenPoint[][] {
+    const aCam = this.aCamScratch;
+    const bCam = this.bCamScratch;
+
     // 1) World -> camera space
-    const aCam = this.worldPointToCameraPointNoClip(aWorld);
-    const bCam = this.worldPointToCameraPointNoClip(bWorld);
+    this.worldPointToCameraPointNoClipInto(aCam, aWorld);
+    this.worldPointToCameraPointNoClipInto(bCam, bWorld);
 
     const inA = this.isInFrontOfNearPlane(aCam);
     const inB = this.isInFrontOfNearPlane(bCam);

@@ -71,6 +71,13 @@ function sub(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
   return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
 }
 
+function subInto(into: Vec3, a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
+  into.x = a.x - b.x;
+  into.y = a.y - b.y;
+  into.z = a.z - b.z;
+  return into;
+}
+
 const zero: () => Vec3 = () => ({ x: 0, y: 0, z: 0 });
 
 export const vec3 = {
@@ -88,5 +95,6 @@ export const vec3 = {
   scaleAndAdd,
   scaleInto,
   sub,
+  subInto,
   zero,
 };
