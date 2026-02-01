@@ -18,6 +18,29 @@ const NEAR = 0.01;
 const VERTICAL_FOV = 30;
 
 /**
+ * Global pool of camera-space points reused across all ProjectionService instances.
+ * Grows on demand but never shrinks; growth allocs are paid once, not per frame.
+ */
+const GLOBAL_CAMERA_POINT_POOL: Vec3[] = [];
+
+/**
+ * Ensure the global camera-point pool can hold at least `n` Vec3s.
+ * Allocations are accounted via alloc.vec3 and only happen when capacity grows.
+ */
+function ensureGlobalCameraPointPoolCapacity(n: number): void {
+  const length = GLOBAL_CAMERA_POINT_POOL.length;
+  if (length >= n) return;
+
+  GLOBAL_CAMERA_POINT_POOL.length = n;
+
+  alloc.withName("worldPointsToCameraPointsNoClip", () => {
+    for (let i = length; i < n; i++) {
+      GLOBAL_CAMERA_POINT_POOL[i] = vec3.zero();
+    }
+  });
+}
+
+/**
  * Projection service responsible for:
  *  - Transforming world-space positions into camera space
  *  - Clipping against the near plane
@@ -66,26 +89,19 @@ export class ProjectionService {
       : null;
   }
 
-  /**
-   * Convert world-space points into camera space.
-   *
-   * Reuses internal scratch objects and returns a freshly sized array of
-   * Vec3 instances that are stable for the caller while this method runs.
-   */
-  private cameraPointScratchArray: Vec3[] = [];
-
   worldPointsToCameraPointsNoClip(worldPoints: Vec3[]): Vec3[] {
     return alloc.withName("worldPointsToCameraPointsNoClip", () => {
       const n = worldPoints.length;
-
-      if (this.cameraPointScratchArray.length < n) {
-        // Grow with stable Vec3 objects
-        for (let i = this.cameraPointScratchArray.length; i < n; i++) {
-          this.cameraPointScratchArray[i] = vec3.zero();
-        }
+      if (n === 0) {
+        return [];
       }
 
-      const cameraPoints = this.cameraPointScratchArray;
+      // 1) Ensure the global pool is large enough (allocates only when it grows).
+      ensureGlobalCameraPointPoolCapacity(n);
+
+      // 2) Use the first n entries from the global pool as our scratch array.
+      const cameraPoints = GLOBAL_CAMERA_POINT_POOL;
+
       const R_localFromWorld = this.R_localFromWorld;
       const position = this.cameraPosition;
       const delta = this.scratchDelta;
@@ -100,7 +116,7 @@ export class ProjectionService {
         mat3.mulVec3Into(cameraPoints[i], R_localFromWorld, delta);
       }
 
-      // Callers must only use first n entries.
+      // Callers must treat only the first n elements as valid for this call.
       cameraPoints.length = n;
       return cameraPoints;
     });
@@ -145,7 +161,34 @@ export class ProjectionService {
    * Clip a triangle in camera space against the near plane.
    *
    * Returns 0, 1, or 2 triangles in camera space after clipping.
+   *
+   * The returned Vec3s reference internal scratch storage that is only
+   * stable until the next call to this method. Callers must consume
+   * the result immediately.
    */
+
+  // --- begin new scratch state for triangle clipping ---
+  private readonly triScratch: Vec3[] = [
+    { x: 0, y: 0, z: 0 }, // 0
+    { x: 0, y: 0, z: 0 }, // 1
+    { x: 0, y: 0, z: 0 }, // 2
+    { x: 0, y: 0, z: 0 }, // 3
+    { x: 0, y: 0, z: 0 }, // 4
+    { x: 0, y: 0, z: 0 }, // 5
+  ];
+
+  private readonly triOut0: [Vec3, Vec3, Vec3] = [
+    this.triScratch[0],
+    this.triScratch[1],
+    this.triScratch[2],
+  ];
+  private readonly triOut1: [Vec3, Vec3, Vec3] = [
+    this.triScratch[3],
+    this.triScratch[4],
+    this.triScratch[5],
+  ];
+  // --- end new scratch state for triangle clipping ---
+
   clipTriangleAgainstNearPlaneCamera(
     a: Vec3,
     b: Vec3,
@@ -153,49 +196,94 @@ export class ProjectionService {
   ): [Vec3, Vec3, Vec3][] {
     const inside = (p: Vec3) => p.y >= NEAR;
 
-    const pts = [a, b, c];
-    const flags = pts.map(inside);
-    const insideCount = flags.filter(Boolean).length;
+    const inA = inside(a);
+    const inB = inside(b);
+    const inC = inside(c);
+    const insideCount = (inA ? 1 : 0) + (inB ? 1 : 0) + (inC ? 1 : 0);
 
     if (insideCount === 0) return [];
 
-    const intersect = (p: Vec3, q: Vec3): Vec3 => {
+    // Helper: intersect segment [p,q] with plane y = NEAR, writing into dst.
+    const intersectInto = (dst: Vec3, p: Vec3, q: Vec3): void => {
       const t = (NEAR - p.y) / (q.y - p.y);
-      return {
-        x: p.x + t * (q.x - p.x),
-        y: NEAR,
-        z: p.z + t * (q.z - p.z),
-      };
+      dst.x = p.x + t * (q.x - p.x);
+      dst.y = NEAR;
+      dst.z = p.z + t * (q.z - p.z);
     };
 
-    if (insideCount === 3) return [[a, b, c]];
+    if (insideCount === 3) {
+      // All inside: just reuse input references.
+      // We still go through triOut0 so the caller always uses the same shape.
+      this.triOut0[0] = a;
+      this.triOut0[1] = b;
+      this.triOut0[2] = c;
+      return [this.triOut0];
+    }
 
-    const [A, B, C] = pts;
-    const [inA, inB, inC] = flags;
+    const [P0, P1, P2] = [a, b, c];
 
     if (insideCount === 1) {
-      const P = inA ? A : inB ? B : C;
-      const Q = inA ? B : inB ? C : A;
-      const R = inA ? C : inB ? A : B;
+      // One inside: result is a single clipped triangle.
+      // Pick the inside vertex P and the two outside vertices Q,R.
+      let P: Vec3, Q: Vec3, R: Vec3;
+      if (inA) {
+        P = P0;
+        Q = P1;
+        R = P2;
+      } else if (inB) {
+        P = P1;
+        Q = P2;
+        R = P0;
+      } else {
+        P = P2;
+        Q = P0;
+        R = P1;
+      }
 
-      const IQ = intersect(P, Q);
-      const IR = intersect(P, R);
+      const IQ = this.triScratch[0];
+      const IR = this.triScratch[1];
+      intersectInto(IQ, P, Q);
+      intersectInto(IR, P, R);
 
-      return [[P, IQ, IR]];
+      this.triOut0[0] = P;
+      this.triOut0[1] = IQ;
+      this.triOut0[2] = IR;
+      return [this.triOut0];
     }
 
     // insideCount === 2
-    const P = inA ? A : inB ? B : C;
-    const Q = inA && inB ? B : inB && inC ? C : A;
-    const R = !inA ? A : !inB ? B : C;
+    // Two inside, one outside: result is two triangles.
+    let Pin1: Vec3, Pin2: Vec3, Pout: Vec3;
+    if (!inA) {
+      Pout = P0;
+      Pin1 = P1;
+      Pin2 = P2;
+    } else if (!inB) {
+      Pout = P1;
+      Pin1 = P2;
+      Pin2 = P0;
+    } else {
+      Pout = P2;
+      Pin1 = P0;
+      Pin2 = P1;
+    }
 
-    const IP = intersect(P, R);
-    const IQ = intersect(Q, R);
+    const IP1 = this.triScratch[2];
+    const IP2 = this.triScratch[3];
+    intersectInto(IP1, Pin1, Pout);
+    intersectInto(IP2, Pin2, Pout);
 
-    return [
-      [P, Q, IP],
-      [Q, IQ, IP],
-    ];
+    // Triangle 1: Pin1, Pin2, IP1
+    this.triOut0[0] = Pin1;
+    this.triOut0[1] = Pin2;
+    this.triOut0[2] = IP1;
+
+    // Triangle 2: Pin2, IP2, IP1
+    this.triOut1[0] = Pin2;
+    this.triOut1[1] = IP2;
+    this.triOut1[2] = IP1;
+
+    return [this.triOut0, this.triOut1];
   }
 
   private readonly aCamScratch: Vec3 = { x: 0, y: 0, z: 0 };
