@@ -89,12 +89,22 @@ export const icosahedronModel: Mesh = {
 // --- Planet / sphere-like meshes ---
 
 export function generatePlanetMesh(subdivisions = 3): Mesh {
+  // Single reusable scratch vector for midpoint computation.
+  const midpointScratch: Vec3 = { x: 0, y: 0, z: 0 };
+
   const getMidpointIndex = (i1: number, i2: number): number => {
     const cacheKey = i1 < i2 ? `${i1}_${i2}` : `${i2}_${i1}`;
     let idx = midpointCache[cacheKey];
     if (idx === undefined) {
-      const v = vec3.normalize(vec3.add(vertices[i1], vertices[i2]));
-      idx = vertices.push(v) - 1;
+      // Compute the midpoint on the unit sphere between vertices[i1] and vertices[i2]
+      const v1 = vertices[i1];
+      const v2 = vertices[i2];
+
+      // midpointScratch = v1 + v2
+      vec3.addInto(midpointScratch, v1, v2);
+      const v = vec3.normalize(midpointScratch);
+
+      idx = vertices.push({ x: v.x, y: v.y, z: v.z }) - 1;
       midpointCache[cacheKey] = idx;
     }
     return idx;
@@ -126,11 +136,24 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
   const points: Vec3[] = vertices.map(vec3.clone);
   const faceNormals: Vec3[] = new Array(faces.length);
 
+  // Reusable scratch vectors for face normal computation.
+  const e1Scratch: Vec3 = { x: 0, y: 0, z: 0 };
+  const e2Scratch: Vec3 = { x: 0, y: 0, z: 0 };
+  const normalScratch: Vec3 = { x: 0, y: 0, z: 0 };
+
   const getFaceNormal = (face: number[]): Vec3 => {
     const v0 = points[face[0]];
-    const e1 = vec3.sub(points[face[1]], v0);
-    const e2 = vec3.sub(points[face[2]], v0);
-    return vec3.cross(e1, e2);
+    const v1 = points[face[1]];
+    const v2 = points[face[2]];
+
+    // e1 = v1 - v0
+    vec3.subInto(e1Scratch, v1, v0);
+    // e2 = v2 - v0
+    vec3.subInto(e2Scratch, v2, v0);
+    // normalScratch = e1 × e2
+    vec3.crossInto(normalScratch, e1Scratch, e2Scratch);
+
+    return normalScratch;
   };
 
   // Ensure face normals point outward from the origin (unit sphere)
@@ -145,6 +168,7 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
       n = getFaceNormal(face);
     }
 
+    // Store a normalized copy for this face.
     faceNormals[i] = vec3.normalize(n);
   }
 

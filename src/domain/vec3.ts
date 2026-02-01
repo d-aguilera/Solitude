@@ -27,6 +27,13 @@ function cross(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
   };
 }
 
+function crossInto(into: Vec3, a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
+  into.x = a.y * b.z - a.z * b.y;
+  into.y = a.z * b.x - a.x * b.z;
+  into.z = a.x * b.y - a.y * b.x;
+  return into;
+}
+
 function distSq(a: Readonly<Vec3>, b: Readonly<Vec3>): number {
   const dx = a.x - b.x;
   const dy = a.y - b.y;
@@ -86,6 +93,7 @@ export const vec3 = {
   add3,
   clone,
   cross,
+  crossInto,
   distSq,
   dot,
   length,
