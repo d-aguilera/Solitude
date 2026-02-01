@@ -1,5 +1,6 @@
 import type { ShipBody, Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
+import { alloc } from "../infra/allocProfiler.js";
 import { ndcToScreen } from "./ndcToScreen.js";
 import type {
   NdcPoint,
@@ -12,27 +13,29 @@ export function renderVelocitySegments(
   ship: ShipBody,
   project: (worldPoint: Vec3) => NdcPoint | null,
 ): RenderedSegment[] {
-  const segments = getShipVelocitySegments(ship);
-  if (segments.length === 0) return [];
+  return alloc.withName("renderVelocitySegments", () => {
+    const segments = getShipVelocitySegments(ship);
+    if (segments.length === 0) return [];
 
-  const renderedSegments: RenderedSegment[] = [];
+    const renderedSegments: RenderedSegment[] = [];
 
-  for (const seg of segments) {
-    const ndcStart = project(seg.start);
-    const ndcEnd = project(seg.end);
-    if (!ndcStart || !ndcEnd) continue;
+    for (const seg of segments) {
+      const ndcStart = project(seg.start);
+      const ndcEnd = project(seg.end);
+      if (!ndcStart || !ndcEnd) continue;
 
-    const pStart = ndcToScreen(ndcStart, width, height);
-    const pEnd = ndcToScreen(ndcEnd, width, height);
+      const pStart = ndcToScreen(ndcStart, width, height);
+      const pEnd = ndcToScreen(ndcEnd, width, height);
 
-    renderedSegments.push({
-      start: pStart,
-      end: pEnd,
-      cssColor: seg.direction === "forward" ? "lime" : "red",
-    });
-  }
+      renderedSegments.push({
+        start: pStart,
+        end: pEnd,
+        cssColor: seg.direction === "forward" ? "lime" : "red",
+      });
+    }
 
-  return renderedSegments;
+    return renderedSegments;
+  });
 }
 
 /**

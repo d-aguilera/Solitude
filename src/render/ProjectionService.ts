@@ -5,6 +5,7 @@ import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import type { NdcPoint, ScreenPoint } from "./renderPorts.js";
 import { ndcToScreen } from "./ndcToScreen.js";
+import { alloc } from "../infra/allocProfiler.js";
 
 /**
  * Camera-space forward threshold.
@@ -65,37 +66,44 @@ export class ProjectionService {
       : null;
   }
 
-  private readonly cameraPointScratch2: Vec3 = { x: 0, y: 0, z: 0 };
-
   /**
    * Convert world-space points into camera space.
    *
    * Reuses internal scratch objects and returns a freshly sized array of
    * Vec3 instances that are stable for the caller while this method runs.
    */
+  private cameraPointScratchArray: Vec3[] = [];
+
   worldPointsToCameraPointsNoClip(worldPoints: Vec3[]): Vec3[] {
-    const n = worldPoints.length;
-    const cameraPoints = new Array<Vec3>(n);
+    return alloc.withName("worldPointsToCameraPointsNoClip", () => {
+      const n = worldPoints.length;
 
-    const R_localFromWorld = this.R_localFromWorld;
-    const position = this.cameraPosition;
-    const delta = this.scratchDelta;
-    const cameraPoint = this.cameraPointScratch2;
+      if (this.cameraPointScratchArray.length < n) {
+        // Grow with stable Vec3 objects
+        for (let i = this.cameraPointScratchArray.length; i < n; i++) {
+          this.cameraPointScratchArray[i] = vec3.zero();
+        }
+      }
 
-    for (let i = 0; i < n; i++) {
-      const wp = worldPoints[i];
+      const cameraPoints = this.cameraPointScratchArray;
+      const R_localFromWorld = this.R_localFromWorld;
+      const position = this.cameraPosition;
+      const delta = this.scratchDelta;
 
-      // delta = worldPoint - cameraPosition
-      vec3.subInto(delta, wp, position);
+      for (let i = 0; i < n; i++) {
+        const wp = worldPoints[i];
 
-      // cameraPoint = R_localFromWorld * delta
-      mat3.mulVec3Into(cameraPoint, R_localFromWorld, delta);
+        // delta = worldPoint - cameraPosition
+        vec3.subInto(delta, wp, position);
 
-      // Store a stable copy for the caller
-      cameraPoints[i] = vec3.clone(cameraPoint);
-    }
+        // cameraPoints[i] = R_localFromWorld * delta
+        mat3.mulVec3Into(cameraPoints[i], R_localFromWorld, delta);
+      }
 
-    return cameraPoints;
+      // Callers must only use first n entries.
+      cameraPoints.length = n;
+      return cameraPoints;
+    });
   }
 
   /**

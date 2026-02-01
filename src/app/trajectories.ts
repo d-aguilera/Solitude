@@ -1,5 +1,6 @@
 import type { BodyId, Mesh, ShipBody, Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
+import { alloc } from "../infra/allocProfiler.js";
 import type { PlanetTrajectory } from "./appInternals.js";
 import type { Scene } from "./appPorts.js";
 import { Vec3RingBuffer } from "./Vec3RingBuffer.js";
@@ -31,32 +32,34 @@ export function rebuildPlanetPathMesh(
   mesh: Mesh,
   traj: PlanetTrajectory,
 ): void {
-  const { points, faces } = mesh;
-  const count = traj.buffers.reduce((acc, buf) => acc + buf.count, 0);
-  points.length = count;
+  return alloc.withName("rebuildPlanetPathMesh", () => {
+    const { points, faces } = mesh;
+    const count = traj.buffers.reduce((acc, buf) => acc + buf.count, 0);
+    points.length = count;
 
-  // Collect points in from newest to oldest: G1 -> G2 -> ...
-  let i = 0;
-  traj.buffers.forEach((buf) => {
-    buf.forEach((p) => {
-      // Reuse existing Vec3 instances where possible.
-      let dst = points[i];
-      if (!dst) {
-        points[i] = vec3.clone(p);
-      } else {
-        vec3.copyInto(dst, p);
-      }
-      i++;
+    // Collect points in from newest to oldest: G1 -> G2 -> ...
+    let i = 0;
+    traj.buffers.forEach((buf) => {
+      buf.forEach((p) => {
+        // Reuse existing Vec3 instances where possible.
+        let dst = points[i];
+        if (!dst) {
+          points[i] = vec3.clone(p);
+        } else {
+          vec3.copyInto(dst, p);
+        }
+        i++;
+      });
     });
+
+    if (count < 2) {
+      faces.length = 0;
+      return;
+    }
+
+    faces.length = 1;
+    faces[0] = [...Array(count).keys()];
   });
-
-  if (count < 2) {
-    faces.length = 0;
-    return;
-  }
-
-  faces.length = 1;
-  faces[0] = [...Array(count).keys()];
 }
 
 export function appendPlanetTrajectories(
@@ -94,17 +97,19 @@ export function updateTrajectories(
   planetTrajectories: Record<BodyId, PlanetTrajectory>,
   trajectoryAccumTime: number,
 ): number {
-  const sampleInterval = 1.0; // seconds
+  return alloc.withName("updateTrajectories", () => {
+    const sampleInterval = 1.0; // seconds
 
-  trajectoryAccumTime += dtSeconds;
+    trajectoryAccumTime += dtSeconds;
 
-  while (trajectoryAccumTime >= sampleInterval) {
-    appendShipTrajectoryPoint(scene, mainShip);
-    appendPlanetTrajectories(scene, planetPathMappings, planetTrajectories);
-    trajectoryAccumTime -= sampleInterval;
-  }
+    while (trajectoryAccumTime >= sampleInterval) {
+      appendShipTrajectoryPoint(scene, mainShip);
+      appendPlanetTrajectories(scene, planetPathMappings, planetTrajectories);
+      trajectoryAccumTime -= sampleInterval;
+    }
 
-  return trajectoryAccumTime;
+    return trajectoryAccumTime;
+  });
 }
 
 /**

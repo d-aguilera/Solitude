@@ -1,6 +1,8 @@
 import type { Vec3 } from "./domainPorts.js";
+import { alloc } from "../infra/allocProfiler.js";
 
 function add(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
+  alloc.vec3();
   return addInto({ x: 0, y: 0, z: 0 }, a, b);
 }
 
@@ -12,10 +14,12 @@ function addInto(into: Vec3, a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
 }
 
 function add3(a: Readonly<Vec3>, b: Readonly<Vec3>, c: Readonly<Vec3>): Vec3 {
+  alloc.vec3();
   return { x: a.x + b.x + c.x, y: a.y + b.y + c.y, z: a.z + b.z + c.z };
 }
 
 function clone(v: Readonly<Vec3>): Vec3 {
+  alloc.vec3();
   return { x: v.x, y: v.y, z: v.z };
 }
 
@@ -27,6 +31,7 @@ function copyInto(into: Vec3, v: Readonly<Vec3>): Vec3 {
 }
 
 function cross(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
+  alloc.vec3();
   return {
     x: a.y * b.z - a.z * b.y,
     y: a.z * b.x - a.x * b.z,
@@ -76,6 +81,7 @@ function normalizeInto(into: Vec3): Vec3 {
 }
 
 function scale(v: Readonly<Vec3>, s: number): Vec3 {
+  alloc.vec3();
   return scaleInto({ x: 0, y: 0, z: 0 }, s, v);
 }
 
@@ -91,6 +97,7 @@ function scaleAndAdd(a: Readonly<Vec3>, b: Readonly<Vec3>, s: number): Vec3 {
 }
 
 function sub(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
+  alloc.vec3();
   return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
 }
 
@@ -101,7 +108,10 @@ function subInto(into: Vec3, a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
   return into;
 }
 
-const zero: () => Vec3 = () => ({ x: 0, y: 0, z: 0 });
+const zero: () => Vec3 = () => {
+  alloc.vec3();
+  return { x: 0, y: 0, z: 0 };
+};
 
 export const vec3 = {
   add,

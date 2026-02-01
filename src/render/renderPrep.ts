@@ -2,6 +2,7 @@ import type { SceneObject } from "../app/appPorts.js";
 import type { Vec3, Mat3 } from "../domain/domainPorts.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
+import { alloc } from "../infra/allocProfiler.js";
 import type { Renderable } from "./renderPorts.js";
 
 /**
@@ -66,11 +67,13 @@ export function toRenderable(obj: SceneObject): Renderable {
  * existing instances when possible.
  */
 function ensureScratchCapacity(dst: Vec3[], n: number): Vec3[] {
-  const current = dst.length;
-  for (let i = current; i < n; i++) {
-    dst[i] = vec3.zero();
-  }
-  return dst;
+  return alloc.withName("ensureScratchCapacity", () => {
+    const current = dst.length;
+    for (let i = current; i < n; i++) {
+      dst[i] = vec3.zero();
+    }
+    return dst;
+  });
 }
 
 /**

@@ -1,4 +1,4 @@
-import type { LocalFrame, ShipBody } from "../domain/domainPorts.js";
+import type { LocalFrame, ShipBody, Vec3 } from "../domain/domainPorts.js";
 import { rotateFrameAroundAxis } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import type { ControlledBodyState, SimControlState } from "./appInternals.js";
@@ -163,6 +163,11 @@ function updateBodyOrientationFromInput(
   updateFrameAlignToVelocity(dtSeconds, input, controlState, body);
 }
 
+const targetForwardScratch: Vec3 = vec3.zero();
+const fullAxisScratch: Vec3 = vec3.zero();
+const fallbackAxisScratch: Vec3 = vec3.zero();
+const axisScratch: Vec3 = vec3.zero();
+
 /**
  * When enabled, gradually rotate the body's frame so that its forward axis
  * aligns with the current velocity direction.
@@ -191,7 +196,9 @@ function updateFrameAlignToVelocity(
     return;
   }
 
-  const targetForward = vec3.scale(v, 1 / speed);
+  // targetForward = v / speed
+  vec3.scaleInto(targetForwardScratch, 1 / speed, v);
+  const targetForward = targetForwardScratch;
   const currentForward = body.frame.forward;
 
   // If we're already nearly aligned, do nothing.
@@ -202,8 +209,9 @@ function updateFrameAlignToVelocity(
     return;
   }
 
-  // Compute the rotation axis that would take currentForward to targetForward.
-  const fullAxis = vec3.cross(currentForward, targetForward);
+  // fullAxis = currentForward × targetForward
+  vec3.crossInto(fullAxisScratch, currentForward, targetForward);
+  const fullAxis = fullAxisScratch;
   const axisLen = vec3.length(fullAxis);
   if (axisLen < 1e-6) {
     // Parallel or anti-parallel: simple axis choice.
@@ -213,7 +221,8 @@ function updateFrameAlignToVelocity(
     }
     // Opposite direction: choose an axis orthogonal to forward.
     const up = body.frame.up;
-    const fallbackAxis = vec3.cross(currentForward, up);
+    vec3.crossInto(fallbackAxisScratch, currentForward, up);
+    const fallbackAxis = fallbackAxisScratch;
     const fallbackLen = vec3.length(fallbackAxis);
     if (fallbackLen < 1e-6) {
       // As a last resort, use the frame's right axis.
@@ -224,7 +233,8 @@ function updateFrameAlignToVelocity(
       return;
     }
 
-    const axis = vec3.scale(fallbackAxis, 1 / fallbackLen);
+    vec3.scaleInto(axisScratch, 1 / fallbackLen, fallbackAxis);
+    const axis = axisScratch;
     const maxStep = alignToVelocityMaxAngularSpeed * dtSeconds;
     const stepAngle = Math.min(Math.PI, maxStep);
     body.frame = rotateFrameAroundAxis(body.frame, axis, stepAngle);
@@ -232,7 +242,8 @@ function updateFrameAlignToVelocity(
   }
 
   // General case: rotate partially toward the target, clamped by max angular speed.
-  const axis = vec3.scale(fullAxis, 1 / axisLen);
+  vec3.scaleInto(axisScratch, 1 / axisLen, fullAxis);
+  const axis = axisScratch;
   const maxStep = alignToVelocityMaxAngularSpeed * dtSeconds;
   const stepAngle = Math.min(angle, maxStep);
 

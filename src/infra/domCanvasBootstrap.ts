@@ -9,6 +9,7 @@ import type {
   Renderer,
   RenderSurface2D,
 } from "../render/renderPorts.js";
+import { setAllocProfiler } from "./allocProfiler.js";
 import { DefaultProfiler } from "./DefaultProfiler.js";
 import { runLoop } from "./domGameLoop.js";
 import { initInput } from "./domKeyboardInput.js";
@@ -60,6 +61,8 @@ export function bootstrap(): void {
   const defaultProfiler = new DefaultProfiler();
   const profiler: Profiler = defaultProfiler;
   const profilerController: ProfilerController = defaultProfiler;
+
+  setAllocProfiler(profiler);
 
   const pilotRasterizer: Rasterizer = new CanvasRasterizer();
   const topRasterizer: Rasterizer = new CanvasRasterizer();

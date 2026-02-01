@@ -7,6 +7,24 @@ import type {
   SceneControlState,
 } from "./appPorts.js";
 
+// Reusable scratch frames to avoid per‑frame allocations
+const pilotFrameScratch: LocalFrame = {
+  right: vec3.zero(),
+  forward: vec3.zero(),
+  up: vec3.zero(),
+};
+
+const topFrameScratch: LocalFrame = {
+  right: vec3.zero(),
+  forward: vec3.zero(),
+  up: vec3.zero(),
+};
+
+const offsetRightScratch: Vec3 = vec3.zero();
+const offsetForwardScratch: Vec3 = vec3.zero();
+const offsetUpScratch: Vec3 = vec3.zero();
+const worldOffsetScratch: Vec3 = vec3.zero();
+
 /**
  * Update all camera positions / orientations.
  */
@@ -40,11 +58,12 @@ function frameFromShipForPilot(
   const base = ship.frame;
   const { azimuth, elevation } = sceneControlState.look;
 
-  let frame: LocalFrame = {
-    right: vec3.clone(base.right),
-    forward: vec3.clone(base.forward),
-    up: vec3.clone(base.up),
-  };
+  // Copy ship frame into scratch without allocating
+  vec3.copyInto(pilotFrameScratch.right, base.right);
+  vec3.copyInto(pilotFrameScratch.forward, base.forward);
+  vec3.copyInto(pilotFrameScratch.up, base.up);
+
+  let frame = pilotFrameScratch;
 
   if (azimuth !== 0) {
     frame = rotateFrameAroundAxis(frame, frame.up, azimuth);
@@ -62,14 +81,15 @@ function frameFromShipForTop(
 ): LocalFrame {
   void sceneControlState;
   const { right, forward, up } = ship.frame;
-  const rightClone = vec3.clone(right);
-  const forwardClone = vec3.clone(up);
-  const upClone = vec3.clone(forward);
-  return {
-    right: rightClone,
-    forward: vec3.scaleInto(forwardClone, -1, forwardClone),
-    up: upClone,
-  };
+
+  vec3.copyInto(topFrameScratch.right, right);
+  vec3.copyInto(topFrameScratch.forward, up);
+  vec3.copyInto(topFrameScratch.up, forward);
+
+  // forward = -up
+  vec3.scaleInto(topFrameScratch.forward, -1, topFrameScratch.forward);
+
+  return topFrameScratch;
 }
 
 function setCameraRelativeToShip(
@@ -84,13 +104,20 @@ function setCameraRelativeToShip(
 ): void {
   const { right, forward, up } = ship.frame;
 
-  const worldOffset = vec3.add3(
-    vec3.scale(right, localOffset.x),
-    vec3.scale(forward, localOffset.y),
-    vec3.scale(up, localOffset.z),
-  );
+  // offsetRightScratch = right * localOffset.x
+  vec3.scaleInto(offsetRightScratch, localOffset.x, right);
+  // offsetForwardScratch = forward * localOffset.y
+  vec3.scaleInto(offsetForwardScratch, localOffset.y, forward);
+  // offsetUpScratch = up * localOffset.z
+  vec3.scaleInto(offsetUpScratch, localOffset.z, up);
 
-  vec3.addInto(pose.position, ship.position, worldOffset);
+  // worldOffsetScratch = offsetRightScratch + offsetForwardScratch + offsetUpScratch
+  vec3.addInto(worldOffsetScratch, offsetRightScratch, offsetForwardScratch);
+  vec3.addInto(worldOffsetScratch, worldOffsetScratch, offsetUpScratch);
+
+  // pose.position = ship.position + worldOffsetScratch
+  vec3.addInto(pose.position, ship.position, worldOffsetScratch);
+
   pose.frame = frameFromShip(ship, sceneControlState);
 }
 

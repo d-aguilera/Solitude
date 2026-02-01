@@ -1,5 +1,6 @@
 import type { Mat3, Vec3 } from "./domainPorts.js";
 import { vec3 } from "./vec3.js";
+import { alloc } from "../infra/allocProfiler.js";
 
 /**
  * 3×3 rotation matrix stored in row-major order.
@@ -20,6 +21,7 @@ const identity: Mat3 = [
  *   v' = v.x * r + v.y * f + v.z * u
  */
 function mulVec3(R: Readonly<Mat3>, v: Readonly<Vec3>): Vec3 {
+  alloc.vec3();
   return mulVec3Into({ x: 0, y: 0, z: 0 }, R, v);
 }
 
@@ -45,6 +47,7 @@ function mulVec3Into(out: Vec3, R: Readonly<Mat3>, v: Readonly<Vec3>): Vec3 {
  * Both A and B are local→world rotation matrices in the same convention.
  */
 function mulMat3(A: Readonly<Mat3>, B: Readonly<Mat3>): Mat3 {
+  alloc.mat3();
   const A0 = A[0],
     A00 = A0[0],
     A01 = A0[1],
@@ -112,6 +115,7 @@ function rotAxis(axis: Readonly<Vec3>, angle: number): Mat3 {
 }
 
 function transpose(M: Readonly<Mat3>): Mat3 {
+  alloc.mat3();
   const M0 = M[0];
   const M1 = M[1];
   const M2 = M[2];
