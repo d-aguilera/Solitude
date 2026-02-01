@@ -6,11 +6,12 @@ function radialDirAtAngle(
   radialAxis1: Vec3,
   radialAxis2: Vec3,
 ): Vec3 {
-  return vec3.normalize({
+  const out: Vec3 = {
     x: radialAxis1.x * Math.cos(theta) + radialAxis2.x * Math.sin(theta),
     y: radialAxis1.y * Math.cos(theta) + radialAxis2.y * Math.sin(theta),
     z: radialAxis1.z * Math.cos(theta) + radialAxis2.z * Math.sin(theta),
-  });
+  };
+  return vec3.normalizeInto(out);
 }
 
 function tangentialDirAtAngle(
@@ -25,7 +26,7 @@ function tangentialDirAtAngle(
   const scaled2 = vec3.scale(radialAxis2, c);
   const t = vec3.add(scaled1, scaled2);
 
-  return vec3.normalize(t);
+  return vec3.normalizeInto(t);
 }
 
 export const trig = {

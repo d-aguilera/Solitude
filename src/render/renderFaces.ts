@@ -83,7 +83,7 @@ function buildFaces(
         // Fallback for meshes without precomputed normals (ship)
         const e1 = vec3.sub(v1, v0);
         const e2 = vec3.sub(v2, v0);
-        n = vec3.normalize(vec3.cross(e1, e2));
+        n = vec3.normalizeInto(vec3.cross(e1, e2));
       }
 
       if (obj.backFaceCulling) {

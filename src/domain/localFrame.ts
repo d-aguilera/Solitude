@@ -3,14 +3,15 @@ import { mat3 } from "./mat3.js";
 import { vec3 } from "./vec3.js";
 
 export function makeLocalFrameFromUp(up: Vec3): LocalFrame {
-  const u = vec3.normalize(up);
+  // Work on a normalized copy so that the caller's vector is not modified.
+  const u = vec3.normalizeInto({ x: up.x, y: up.y, z: up.z });
   const worldForward: Vec3 =
     Math.abs(u.z) < 0.9 ? { x: 0, y: 0, z: 1 } : { x: 1, y: 0, z: 0 };
 
   const dot = vec3.dot(u, worldForward);
   const forwardUnnormalized = vec3.sub(worldForward, vec3.scale(u, dot));
-  const forward = vec3.normalize(forwardUnnormalized);
-  const right = vec3.normalize(vec3.cross(forward, u));
+  const forward = vec3.normalizeInto(forwardUnnormalized);
+  const right = vec3.normalizeInto(vec3.cross(forward, u));
 
   return { right, forward, up: u };
 }
@@ -64,13 +65,13 @@ function makeLocalFrameFromAxes(
   up: Vec3,
 ): LocalFrame {
   // Gram–Schmidt to ensure orthonormal axes
-  let r = vec3.normalize(right);
+  const r = vec3.normalizeInto({ x: right.x, y: right.y, z: right.z });
   // Remove any component of forward along r, then normalize
-  let fUn = vec3.sub(forward, vec3.scale(r, vec3.dot(forward, r)));
-  let f = vec3.normalize(fUn);
+  const fUn = vec3.sub(forward, vec3.scale(r, vec3.dot(forward, r)));
+  const f = vec3.normalizeInto(fUn);
   void up;
   // up = r × f to guarantee orthogonality
-  let u = vec3.normalize(vec3.cross(r, f));
+  const u = vec3.normalizeInto(vec3.cross(r, f));
 
   return { right: r, forward: f, up: u };
 }

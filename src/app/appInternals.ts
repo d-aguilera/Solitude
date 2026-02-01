@@ -36,7 +36,7 @@ export interface CelestialBodyConfig {
    *  - rotationAxis is a unit vector in world space (e.g. approximate spin axis)
    *  - angularSpeedRadPerSec is the constant spin rate around that axis
    */
-  rotationAxis: { x: number; y: number; z: number };
+  rotationAxis: Vec3;
   angularSpeedRadPerSec: number;
 }
 

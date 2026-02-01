@@ -90,7 +90,7 @@ function mulMat3(A: Readonly<Mat3>, B: Readonly<Mat3>): Mat3 {
 }
 
 function rotAxis(axis: Readonly<Vec3>, angle: number): Mat3 {
-  const n = vec3.normalize(axis);
+  const n = vec3.normalizeInto(vec3.clone(axis));
   const len = vec3.length(n);
 
   // Degenerate axis → identity
@@ -98,16 +98,16 @@ function rotAxis(axis: Readonly<Vec3>, angle: number): Mat3 {
     return identity;
   }
 
-  const { x: nx, y: ny, z: nz } = n;
-
   const c = Math.cos(angle);
   const s = Math.sin(angle);
   const t = 1 - c;
 
+  const { x, y, z } = n;
+
   return [
-    [t * nx * nx + c, t * nx * ny - s * nz, t * nx * nz + s * ny],
-    [t * ny * nx + s * nz, t * ny * ny + c, t * ny * nz - s * nx],
-    [t * nz * nx - s * ny, t * nz * ny + s * nx, t * nz * nz + c],
+    [t * x * x + c, t * x * y - s * z, t * x * z + s * y],
+    [t * y * x + s * z, t * y * y + c, t * y * z - s * x],
+    [t * z * x - s * y, t * z * y + s * x, t * z * z + c],
   ];
 }
 

@@ -40,11 +40,11 @@ export function renderVelocitySegments(
  * a ship's velocity direction.
  */
 function getShipVelocitySegments(ship: ShipBody): VelocityDebugSegment[] {
-  const v = ship.velocity;
+  const v = vec3.clone(ship.velocity);
   const speedSq = vec3.lengthSq(v);
   if (speedSq < 1e-24) return [];
 
-  const dir = vec3.normalize(v);
+  const dir = vec3.normalizeInto(v);
   const center = ship.position;
 
   const len = 500000; // meters

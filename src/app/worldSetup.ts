@@ -41,7 +41,6 @@ import { createPlanetTrajectory } from "./trajectories.js";
 
 const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
-const initialForward: Vec3 = initialFrame.forward;
 
 function createInitialShip(
   id: string,
@@ -53,7 +52,12 @@ function createInitialShip(
   let frame: LocalFrame = initialFrame;
 
   if (speed > 0) {
-    const targetForward = vec3.normalize(initialVelocity);
+    // Work on a normalized copy so as not to modify initialVelocity.
+    const targetForward = vec3.normalizeInto({
+      x: initialVelocity.x,
+      y: initialVelocity.y,
+      z: initialVelocity.z,
+    });
 
     // Start from the canonical initialFrame
     const baseForward = initialFrame.forward;
@@ -78,7 +82,7 @@ function createInitialShip(
       }
     } else {
       // General case: rotate base frame so its forward matches targetForward.
-      const axisN = vec3.normalize(axis);
+      const axisN = vec3.normalizeInto(axis);
       const dot = Math.min(
         1,
         Math.max(-1, vec3.dot(baseForward, targetForward)),
@@ -183,8 +187,10 @@ function addPlanetsAndStarsFromConfig(
   const bodyMeshTemplate: Mesh = generatePlanetMesh(3);
 
   // Define an orbital ship via two basis vectors:
-  const radialAxis1 = vec3.normalize(initialForward);
-  const radialAxis2 = vec3.normalize(initialUp);
+  const radialAxis1: Vec3 = vec3.normalizeInto(
+    vec3.clone(initialFrame.forward),
+  );
+  const radialAxis2: Vec3 = vec3.normalizeInto(vec3.clone(initialUp));
 
   for (const cfg of configs) {
     const theta = cfg.orbit.angleRad;
@@ -202,14 +208,10 @@ function addPlanetsAndStarsFromConfig(
 
     const initialVelocity =
       cfg.orbit.radius > 0
-        ? {
-            x: tangential.x * cfg.tangentialSpeed,
-            y: tangential.y * cfg.tangentialSpeed,
-            z: tangential.z * cfg.tangentialSpeed,
-          }
+        ? vec3.scale(tangential, cfg.tangentialSpeed)
         : { x: 0, y: 0, z: 0 };
 
-    const rotationAxis = vec3.normalize(cfg.rotationAxis);
+    const rotationAxis = vec3.normalizeInto(vec3.clone(cfg.rotationAxis));
     const angularSpeedRadPerSec = cfg.angularSpeedRadPerSec;
 
     if (cfg.kind === "star") {
@@ -345,22 +347,18 @@ function computeShipInitialNearEarthOrbitVelocity(
     return vEarth;
   }
 
-  const radialDir = vec3.scale(offset, 1 / r);
+  const radialDir = vec3.scaleInto(offset, 1 / r, offset);
 
   // Local circular orbital speed around Earth at this radius.
   const vRelMag = circularSpeedAtRadius(earthPhys.mass, r);
 
   // Build a tangential direction around Earth, perpendicular to radialDir.
   // Use Earth's current orbital direction as a reference, projected to be orthogonal.
-  const earthDir = vec3.normalize(vEarth);
-  const tangentialUnnormalized = vec3.sub(
-    earthDir,
-    vec3.scale(radialDir, vec3.dot(earthDir, radialDir)),
+  const earthDir = vec3.normalizeInto(vec3.clone(vEarth));
+  const tangential = vec3.normalizeInto(
+    vec3.sub(earthDir, vec3.scale(radialDir, vec3.dot(earthDir, radialDir))),
   );
-  const tangentialDir =
-    vec3.length(tangentialUnnormalized) > 0
-      ? vec3.normalize(tangentialUnnormalized)
-      : earthDir;
+  const tangentialDir = vec3.length(tangential) > 0 ? tangential : earthDir;
 
   const vRel = vec3.scale(tangentialDir, vRelMag);
 

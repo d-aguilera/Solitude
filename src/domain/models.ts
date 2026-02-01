@@ -63,7 +63,7 @@ export const icosahedronModel: Mesh = {
 
     // Normalize vertices onto the unit sphere in-place.
     for (let i = 0; i < raw.length; i++) {
-      vec3.normalizeInto(raw[i], raw[i]);
+      vec3.normalizeInto(raw[i]);
     }
     return raw;
   })(),
@@ -110,7 +110,7 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
 
       // midpointScratch = v1 + v2
       vec3.addInto(midpointScratch, v1, v2);
-      const v = vec3.normalize(midpointScratch);
+      const v = vec3.normalizeInto(midpointScratch);
 
       idx = vertices.push({ x: v.x, y: v.y, z: v.z }) - 1;
       midpointCache[cacheKey] = idx;
@@ -148,7 +148,6 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
   const e1Scratch: Vec3 = { x: 0, y: 0, z: 0 };
   const e2Scratch: Vec3 = { x: 0, y: 0, z: 0 };
   const normalScratch: Vec3 = { x: 0, y: 0, z: 0 };
-  const normalUnitScratch: Vec3 = { x: 0, y: 0, z: 0 };
 
   const getFaceNormal = (face: number[]): Vec3 => {
     const v0 = points[face[0]];
@@ -178,12 +177,7 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
     }
 
     // Store a normalized copy for this face using a reusable scratch.
-    vec3.normalizeInto(normalUnitScratch, n);
-    faceNormals[i] = {
-      x: normalUnitScratch.x,
-      y: normalUnitScratch.y,
-      z: normalUnitScratch.z,
-    };
+    faceNormals[i] = vec3.clone(vec3.normalizeInto(n));
   }
 
   return {
