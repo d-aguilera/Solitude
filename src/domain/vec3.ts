@@ -8,11 +8,6 @@ function addInto(into: Vec3, a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
   return into;
 }
 
-function add3(a: Readonly<Vec3>, b: Readonly<Vec3>, c: Readonly<Vec3>): Vec3 {
-  alloc.vec3();
-  return { x: a.x + b.x + c.x, y: a.y + b.y + c.y, z: a.z + b.z + c.z };
-}
-
 function clone(v: Readonly<Vec3>): Vec3 {
   alloc.vec3();
   return { x: v.x, y: v.y, z: v.z };
@@ -23,6 +18,11 @@ function copyInto(into: Vec3, v: Readonly<Vec3>): Vec3 {
   into.y = v.y;
   into.z = v.z;
   return into;
+}
+
+function create(x: number, y: number, z: number): Vec3 {
+  alloc.vec3();
+  return { x, y, z };
 }
 
 function cross(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
@@ -87,10 +87,6 @@ function scaleInto(into: Vec3, s: number, v: Readonly<Vec3>): Vec3 {
   return into;
 }
 
-function scaleAndAdd(a: Readonly<Vec3>, b: Readonly<Vec3>, s: number): Vec3 {
-  return { x: a.x + b.x * s, y: a.y + b.y * s, z: a.z + b.z * s };
-}
-
 function sub(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
   alloc.vec3();
   return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
@@ -110,9 +106,9 @@ const zero: () => Vec3 = () => {
 
 export const vec3 = {
   addInto,
-  add3,
   clone,
   copyInto,
+  create,
   cross,
   crossInto,
   distSq,
@@ -121,7 +117,6 @@ export const vec3 = {
   lengthSq,
   normalizeInto,
   scale,
-  scaleAndAdd,
   scaleInto,
   sub,
   subInto,

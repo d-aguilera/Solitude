@@ -2,6 +2,7 @@ import type { StarBodyConfig } from "./appInternals.js";
 import type { PlanetBodyConfig } from "./appInternals.js";
 import { circularSpeedAtRadius } from "../domain/phys.js";
 import { colors } from "./appInternals.js";
+import { vec3 } from "../domain/vec3.js";
 
 const AU = 1.495978707e11; // m
 
@@ -86,7 +87,7 @@ export function buildDefaultSolarSystemConfigs(): (
   | PlanetBodyConfig
   | StarBodyConfig
 )[] {
-  const spinAxis = { x: 0, y: 0, z: 1 };
+  const spinAxis = vec3.create(0, 0, 1);
 
   return [
     // Sun at origin

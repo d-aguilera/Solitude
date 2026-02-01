@@ -3,20 +3,20 @@ import { vec3 } from "./vec3.js";
 
 export const shipModel: Mesh = {
   points: [
-    { x: 0, y: 0.5, z: 0 }, // 0: nose tip
-    { x: 0, y: 0.2, z: 0.1 }, // 1: fuselage top center
-    { x: -0.1, y: 0, z: 0 }, // 2: fuselage left center
-    { x: 0.1, y: 0, z: 0 }, // 3: fuselage right center
-    { x: 0, y: 0, z: -0.1 }, // 4: fuselage bottom center
-    { x: 0, y: -0.5, z: 0 }, // 5: tail tip (unused)
-    { x: -0.5, y: -0.3, z: 0 }, // 6: left wing tip
-    { x: 0.5, y: -0.3, z: 0 }, // 7: right wing tip
-    { x: 0, y: -0.5, z: 0.3 }, // 8: vertical stabilizer tip
-    { x: -0.025, y: -0.5, z: 0.025 }, // 9: tail top left
-    { x: 0.025, y: -0.5, z: 0.025 }, // 10: tail top right
-    { x: -0.025, y: -0.5, z: -0.025 }, // 11: tail bottom left
-    { x: 0.025, y: -0.5, z: -0.025 }, // 12: tail bottom right
-    { x: 0, y: 0.2, z: 0 }, // 13: fuselage top front quarter
+    vec3.create(0, 0.5, 0), // 0: nose tip
+    vec3.create(0, 0.2, 0.1), // 1: fuselage top center
+    vec3.create(-0.1, 0, 0), // 2: fuselage left center
+    vec3.create(0.1, 0, 0), // 3: fuselage right center
+    vec3.create(0, 0, -0.1), // 4: fuselage bottom center
+    vec3.create(0, -0.5, 0), // 5: tail tip (unused)
+    vec3.create(-0.5, -0.3, 0), // 6: left wing tip
+    vec3.create(0.5, -0.3, 0), // 7: right wing tip
+    vec3.create(0, -0.5, 0.3), // 8: vertical stabilizer tip
+    vec3.create(-0.025, -0.5, 0.025), // 9: tail top left
+    vec3.create(0.025, -0.5, 0.025), // 10: tail top right
+    vec3.create(-0.025, -0.5, -0.025), // 11: tail bottom left
+    vec3.create(0.025, -0.5, -0.025), // 12: tail bottom right
+    vec3.create(0, 0.2, 0), // 13: fuselage top front quarter
   ],
   faces: [
     [13, 0, 2], // front fuselage, top left face
@@ -45,20 +45,20 @@ const t = (1 + Math.sqrt(5)) / 2;
 export const icosahedronModel: Mesh = {
   points: (() => {
     const raw: Vec3[] = [
-      { x: -1, y: t, z: 0 },
-      { x: 1, y: t, z: 0 },
-      { x: -1, y: -t, z: 0 },
-      { x: 1, y: -t, z: 0 },
+      vec3.create(-1, t, 0),
+      vec3.create(1, t, 0),
+      vec3.create(-1, -t, 0),
+      vec3.create(1, -t, 0),
 
-      { x: 0, y: -1, z: t },
-      { x: 0, y: 1, z: t },
-      { x: 0, y: -1, z: -t },
-      { x: 0, y: 1, z: -t },
+      vec3.create(0, -1, t),
+      vec3.create(0, 1, t),
+      vec3.create(0, -1, -t),
+      vec3.create(0, 1, -t),
 
-      { x: t, y: 0, z: -1 },
-      { x: t, y: 0, z: 1 },
-      { x: -t, y: 0, z: -1 },
-      { x: -t, y: 0, z: 1 },
+      vec3.create(t, 0, -1),
+      vec3.create(t, 0, 1),
+      vec3.create(-t, 0, -1),
+      vec3.create(-t, 0, 1),
     ];
 
     // Normalize vertices onto the unit sphere in-place.
@@ -98,7 +98,7 @@ export const icosahedronModel: Mesh = {
 
 export function generatePlanetMesh(subdivisions = 3): Mesh {
   // Single reusable scratch vector for midpoint computation.
-  const midpointScratch: Vec3 = { x: 0, y: 0, z: 0 };
+  const midpointScratch: Vec3 = vec3.zero();
 
   const getMidpointIndex = (i1: number, i2: number): number => {
     const cacheKey = i1 < i2 ? `${i1}_${i2}` : `${i2}_${i1}`;
@@ -112,7 +112,7 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
       vec3.addInto(midpointScratch, v1, v2);
       const v = vec3.normalizeInto(midpointScratch);
 
-      idx = vertices.push({ x: v.x, y: v.y, z: v.z }) - 1;
+      idx = vertices.push(vec3.create(v.x, v.y, v.z)) - 1;
       midpointCache[cacheKey] = idx;
     }
     return idx;
@@ -145,9 +145,9 @@ export function generatePlanetMesh(subdivisions = 3): Mesh {
   const faceNormals: Vec3[] = new Array(faces.length);
 
   // Reusable scratch vectors for face normal computation.
-  const e1Scratch: Vec3 = { x: 0, y: 0, z: 0 };
-  const e2Scratch: Vec3 = { x: 0, y: 0, z: 0 };
-  const normalScratch: Vec3 = { x: 0, y: 0, z: 0 };
+  const e1Scratch: Vec3 = vec3.zero();
+  const e2Scratch: Vec3 = vec3.zero();
+  const normalScratch: Vec3 = vec3.zero();
 
   const getFaceNormal = (face: number[]): Vec3 => {
     const v0 = points[face[0]];

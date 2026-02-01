@@ -9,11 +9,11 @@ import { vec3 } from "../domain/vec3.js";
 const accelerations: Vec3[] = [];
 
 // Scratch vectors reused during force accumulation.
-const scratchD: Vec3 = { x: 0, y: 0, z: 0 };
-const scratchScaled: Vec3 = { x: 0, y: 0, z: 0 };
+const scratchD: Vec3 = vec3.zero();
+const scratchScaled: Vec3 = vec3.zero();
 
 // Scratch vector reused during position integration.
-const scratchDeltaPos: Vec3 = { x: 0, y: 0, z: 0 };
+const scratchDeltaPos: Vec3 = vec3.zero();
 
 /**
  * Concrete GravityEngine using a Newtonian N-body implementation.

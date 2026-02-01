@@ -1,5 +1,6 @@
 import type { GravityEngine, GravityState } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
+import { vec3 } from "../domain/vec3.js";
 import { getShipById } from "../domain/worldLookup.js";
 import type {
   GravityBodyBinding,
@@ -64,7 +65,7 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
       azimuth: 0,
       elevation: 0,
     },
-    pilotCameraLocalOffset: { x: 0, y: 1.7, z: 1.1 },
+    pilotCameraLocalOffset: vec3.create(0, 1.7, 1.1),
   };
 
   const sceneState: SceneState = {

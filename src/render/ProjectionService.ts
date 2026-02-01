@@ -56,7 +56,7 @@ export class ProjectionService {
   private readonly R_localFromWorld: Mat3;
   private readonly cameraPosition: Vec3;
 
-  private readonly scratchDelta: Vec3 = { x: 0, y: 0, z: 0 };
+  private readonly scratchDelta: Vec3 = vec3.zero();
 
   constructor(
     pose: DomainCameraPose,
@@ -72,7 +72,7 @@ export class ProjectionService {
     this.cameraPosition = pose.position;
   }
 
-  private readonly cameraPointScratch1: Vec3 = { x: 0, y: 0, z: 0 };
+  private readonly cameraPointScratch1: Vec3 = vec3.zero();
 
   /**
    * Full world-space -> NDC projection with near-plane rejection.
@@ -159,12 +159,12 @@ export class ProjectionService {
 
   // --- begin new scratch state for triangle clipping ---
   private readonly triScratch: Vec3[] = [
-    { x: 0, y: 0, z: 0 }, // 0
-    { x: 0, y: 0, z: 0 }, // 1
-    { x: 0, y: 0, z: 0 }, // 2
-    { x: 0, y: 0, z: 0 }, // 3
-    { x: 0, y: 0, z: 0 }, // 4
-    { x: 0, y: 0, z: 0 }, // 5
+    vec3.zero(), // 0
+    vec3.zero(), // 1
+    vec3.zero(), // 2
+    vec3.zero(), // 3
+    vec3.zero(), // 4
+    vec3.zero(), // 5
   ];
 
   private readonly triOut0: [Vec3, Vec3, Vec3] = [
@@ -276,8 +276,8 @@ export class ProjectionService {
     return [this.triOut0, this.triOut1];
   }
 
-  private readonly aCamScratch: Vec3 = { x: 0, y: 0, z: 0 };
-  private readonly bCamScratch: Vec3 = { x: 0, y: 0, z: 0 };
+  private readonly aCamScratch: Vec3 = vec3.zero();
+  private readonly bCamScratch: Vec3 = vec3.zero();
 
   /**
    * Project a world-space segment [A, B] to one or more screen-space

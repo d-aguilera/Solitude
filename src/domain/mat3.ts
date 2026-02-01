@@ -1,5 +1,6 @@
 import type { Mat3, Vec3 } from "./domainPorts.js";
 import { alloc } from "../infra/allocProfiler.js";
+import { vec3 } from "./vec3.js";
 
 /**
  * 3×3 rotation matrix stored in row-major order.
@@ -20,8 +21,7 @@ const identity: Mat3 = [
  *   v' = v.x * r + v.y * f + v.z * u
  */
 function mulVec3(R: Readonly<Mat3>, v: Readonly<Vec3>): Vec3 {
-  alloc.vec3();
-  return mulVec3Into({ x: 0, y: 0, z: 0 }, R, v);
+  return mulVec3Into(vec3.zero(), R, v);
 }
 
 /**

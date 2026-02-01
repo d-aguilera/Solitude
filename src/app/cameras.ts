@@ -25,6 +25,8 @@ const offsetForwardScratch: Vec3 = vec3.zero();
 const offsetUpScratch: Vec3 = vec3.zero();
 const worldOffsetScratch: Vec3 = vec3.zero();
 
+const topCameraLocalOffset = vec3.create(0, 0, 50);
+
 /**
  * Update all camera positions / orientations.
  */
@@ -45,7 +47,7 @@ export function updateCameras(
   setCameraRelativeToShip(
     topCamera,
     mainShip,
-    { x: 0, y: 0, z: 50 },
+    topCameraLocalOffset,
     sceneControlState,
     frameFromShipForTop,
   );

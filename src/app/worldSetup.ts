@@ -39,7 +39,7 @@ import type {
 import { buildDefaultSolarSystemConfigs } from "./solarSystem.js";
 import { createPlanetTrajectory } from "./trajectories.js";
 
-const initialUp: Vec3 = { x: 0, y: 0, z: 1 };
+const initialUp: Vec3 = vec3.create(0, 0, 1);
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
 
 function createInitialShip(
@@ -102,7 +102,7 @@ function createInitialShip(
 }
 
 function createInitialTopCamera(ship: ShipBody): DomainCameraPose {
-  const offset: Vec3 = { x: 0, y: 0, z: 50 };
+  const offset: Vec3 = vec3.create(0, 0, 50);
   const position = vec3.addInto(vec3.zero(), ship.position, offset);
   return {
     position,
@@ -148,7 +148,7 @@ function createPolylineSceneObject(
     id,
     kind: "polyline",
     mesh,
-    position: { x: 0, y: 0, z: 0 },
+    position: vec3.zero(),
     orientation: mat3.identity,
     scale: 1,
     color,
@@ -209,7 +209,7 @@ function addPlanetsAndStarsFromConfig(
     const initialVelocity =
       cfg.orbit.radius > 0
         ? vec3.scale(tangential, cfg.tangentialSpeed)
-        : { x: 0, y: 0, z: 0 };
+        : vec3.zero();
 
     const rotationAxis = vec3.normalizeInto(vec3.clone(cfg.rotationAxis));
     const angularSpeedRadPerSec = cfg.angularSpeedRadPerSec;
@@ -309,7 +309,7 @@ function computeShipStartPosFromPlanet(
   }
 
   // North pole direction: global +Z in this setup
-  const north: Vec3 = { x: 0, y: 0, z: 1 };
+  const north: Vec3 = vec3.create(0, 0, 1);
 
   // Use planet's physical radius from its scene object
   const offset = vec3.scale(

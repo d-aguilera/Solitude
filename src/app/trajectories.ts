@@ -125,8 +125,8 @@ export function appendPointToPolylineMesh(mesh: Mesh, point: Vec3): void {
   if (newIndex === 0) {
     // initialize empty mesh
     points.length = 0;
-    const dst: Vec3 = { x: 0, y: 0, z: 0 };
-    vec3.addInto(dst, point, { x: 0, y: 0, z: 0 }); // simple copy without allocating via vec3.clone
+    const dst: Vec3 = vec3.zero();
+    vec3.addInto(dst, point, vec3.zero()); // simple copy without allocating via vec3.clone
     points.push(dst);
 
     faces.length = 0;
@@ -134,8 +134,8 @@ export function appendPointToPolylineMesh(mesh: Mesh, point: Vec3): void {
   }
 
   if (newIndex === 1) {
-    const dst: Vec3 = { x: 0, y: 0, z: 0 };
-    vec3.addInto(dst, point, { x: 0, y: 0, z: 0 });
+    const dst: Vec3 = vec3.zero();
+    vec3.addInto(dst, point, vec3.zero());
     points.push(dst);
 
     faces.push([0, 1]);
@@ -143,8 +143,8 @@ export function appendPointToPolylineMesh(mesh: Mesh, point: Vec3): void {
   }
 
   // add current new point to the path
-  const dst: Vec3 = { x: 0, y: 0, z: 0 };
-  vec3.addInto(dst, point, { x: 0, y: 0, z: 0 });
+  const dst: Vec3 = vec3.zero();
+  vec3.addInto(dst, point, vec3.zero());
   points.push(dst);
   faces[0].push(newIndex);
 }
