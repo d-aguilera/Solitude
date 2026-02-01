@@ -8,6 +8,13 @@ import { vec3 } from "../domain/vec3.js";
 
 const accelerations: Vec3[] = [];
 
+// Scratch vectors reused during force accumulation.
+const scratchD: Vec3 = { x: 0, y: 0, z: 0 };
+const scratchScaled: Vec3 = { x: 0, y: 0, z: 0 };
+
+// Scratch vector reused during position integration.
+const scratchDeltaPos: Vec3 = { x: 0, y: 0, z: 0 };
+
 /**
  * Concrete GravityEngine using a Newtonian N-body implementation.
  */
@@ -65,18 +72,22 @@ export class NewtonianGravityEngine implements GravityEngine {
       for (let j = 0; j < n; j++) {
         if (i === j) continue;
 
-        const d = vec3.sub(positions[j], pi);
+        // d = positions[j] - pi
+        vec3.subInto(scratchD, positions[j], pi);
 
         const r = Math.sqrt(
-          vec3.dot(d, d) + this.softeningLength * this.softeningLength,
+          vec3.dot(scratchD, scratchD) +
+            this.softeningLength * this.softeningLength,
         );
 
         if (r === 0) continue;
 
         const invR3 = 1 / (r * r * r);
         const scale = this.G * bodies[j].mass * invR3;
-
-        vec3.addInto(a, a, vec3.scaleInto(d, scale, d));
+        // scaled = scale * d
+        vec3.scaleInto(scratchScaled, scale, scratchD);
+        // a += scaled
+        vec3.addInto(a, a, scratchScaled);
       }
     }
   }
@@ -111,7 +122,12 @@ export class NewtonianGravityEngine implements GravityEngine {
     for (let i = 0; i < n; i++) {
       const pos = positions[i];
       const v = bodies[i].velocity;
-      vec3.addInto(pos, pos, vec3.scale(v, dtSeconds));
+
+      // scratchDeltaPos = v * dtSeconds
+      vec3.scaleInto(scratchDeltaPos, dtSeconds, v);
+
+      // pos += scratchDeltaPos
+      vec3.addInto(pos, pos, scratchDeltaPos);
     }
   }
 }
