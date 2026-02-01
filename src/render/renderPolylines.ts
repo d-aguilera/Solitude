@@ -16,7 +16,7 @@ export function renderPolylines(
   objects: SceneObject[],
   projectSegment: SegmentProjector,
 ): RenderedPolyline[] {
-  return alloc.withName("renderPolylines", () => {
+  return alloc.withName(renderPolylines.name, () => {
     const renderedPolylines: RenderedPolyline[] = [];
     const { width, height } = surface;
     void width;

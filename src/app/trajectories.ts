@@ -32,7 +32,7 @@ export function rebuildPlanetPathMesh(
   mesh: Mesh,
   traj: PlanetTrajectory,
 ): void {
-  return alloc.withName("rebuildPlanetPathMesh", () => {
+  return alloc.withName(rebuildPlanetPathMesh.name, () => {
     const { points, faces } = mesh;
     const count = traj.buffers.reduce((acc, buf) => acc + buf.count, 0);
     points.length = count;
@@ -97,7 +97,7 @@ export function updateTrajectories(
   planetTrajectories: Record<BodyId, PlanetTrajectory>,
   trajectoryAccumTime: number,
 ): number {
-  return alloc.withName("updateTrajectories", () => {
+  return alloc.withName(updateTrajectories.name, () => {
     const sampleInterval = 1.0; // seconds
 
     trajectoryAccumTime += dtSeconds;

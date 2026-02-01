@@ -58,7 +58,7 @@ function buildFaces(
   canvasHeight: number,
   lights: PointLight[],
 ): FaceEntry[] {
-  return alloc.withName("buildFaces", () => {
+  return alloc.withName(buildFaces.name, () => {
     const projectionService = new ProjectionService(
       camera,
       canvasWidth,

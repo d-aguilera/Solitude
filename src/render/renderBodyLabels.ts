@@ -17,7 +17,7 @@ export function renderBodyLabels(
   referencePosition: Vec3,
   project: (worldPoint: Vec3) => NdcPoint | null,
 ): RenderedBodyLabel[] {
-  return alloc.withName("renderBodyLabels", () => {
+  return alloc.withName(renderBodyLabels.name, () => {
     const renderedBodyLabels: RenderedBodyLabel[] = [];
 
     const sorted: {

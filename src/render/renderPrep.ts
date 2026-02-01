@@ -67,7 +67,7 @@ export function toRenderable(obj: SceneObject): Renderable {
  * existing instances when possible.
  */
 function ensureScratchCapacity(dst: Vec3[], n: number): Vec3[] {
-  return alloc.withName("ensureScratchCapacity", () => {
+  return alloc.withName(ensureScratchCapacity.name, () => {
     const current = dst.length;
     for (let i = current; i < n; i++) {
       dst[i] = vec3.zero();

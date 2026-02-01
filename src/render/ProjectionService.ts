@@ -33,7 +33,7 @@ function ensureGlobalCameraPointPoolCapacity(n: number): void {
 
   GLOBAL_CAMERA_POINT_POOL.length = n;
 
-  alloc.withName("worldPointsToCameraPointsNoClip", () => {
+  alloc.withName(ensureGlobalCameraPointPoolCapacity.name, () => {
     for (let i = length; i < n; i++) {
       GLOBAL_CAMERA_POINT_POOL[i] = vec3.zero();
     }
@@ -90,18 +90,13 @@ export class ProjectionService {
   }
 
   worldPointsToCameraPointsNoClip(worldPoints: Vec3[]): Vec3[] {
-    return alloc.withName("worldPointsToCameraPointsNoClip", () => {
+    return alloc.withName(this.worldPointsToCameraPointsNoClip.name, () => {
       const n = worldPoints.length;
-      if (n === 0) {
-        return [];
-      }
 
       // 1) Ensure the global pool is large enough (allocates only when it grows).
       ensureGlobalCameraPointPoolCapacity(n);
 
       // 2) Use the first n entries from the global pool as our scratch array.
-      const cameraPoints = GLOBAL_CAMERA_POINT_POOL;
-
       const R_localFromWorld = this.R_localFromWorld;
       const position = this.cameraPosition;
       const delta = this.scratchDelta;
@@ -113,12 +108,11 @@ export class ProjectionService {
         vec3.subInto(delta, wp, position);
 
         // cameraPoints[i] = R_localFromWorld * delta
-        mat3.mulVec3Into(cameraPoints[i], R_localFromWorld, delta);
+        mat3.mulVec3Into(GLOBAL_CAMERA_POINT_POOL[i], R_localFromWorld, delta);
       }
 
       // Callers must treat only the first n elements as valid for this call.
-      cameraPoints.length = n;
-      return cameraPoints;
+      return GLOBAL_CAMERA_POINT_POOL;
     });
   }
 

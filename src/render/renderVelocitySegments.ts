@@ -13,7 +13,7 @@ export function renderVelocitySegments(
   ship: ShipBody,
   project: (worldPoint: Vec3) => NdcPoint | null,
 ): RenderedSegment[] {
-  return alloc.withName("renderVelocitySegments", () => {
+  return alloc.withName(renderVelocitySegments.name, () => {
     const segments = getShipVelocitySegments(ship);
     if (segments.length === 0) return [];
 
