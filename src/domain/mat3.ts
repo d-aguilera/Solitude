@@ -1,5 +1,4 @@
 import type { Mat3, Vec3 } from "./domainPorts.js";
-import { vec3 } from "./vec3.js";
 import { alloc } from "../infra/allocProfiler.js";
 
 /**
@@ -93,24 +92,41 @@ function mulMat3(A: Readonly<Mat3>, B: Readonly<Mat3>): Mat3 {
 }
 
 function rotAxis(axis: Readonly<Vec3>, angle: number): Mat3 {
-  const n = vec3.normalizeInto(vec3.clone(axis));
-  const len = vec3.length(n);
+  let { x, y, z } = axis;
+
+  const len = Math.hypot(x, y, z);
 
   // Degenerate axis → identity
   if (len === 0) {
     return identity;
   }
 
+  const invLen = 1 / len;
+  x *= invLen;
+  y *= invLen;
+  z *= invLen;
+
   const c = Math.cos(angle);
   const s = Math.sin(angle);
   const t = 1 - c;
 
-  const { x, y, z } = n;
+  const tx = t * x;
+  const txx = tx * x;
+  const txy = tx * y;
+  const ty = t * y;
+  const tyy = ty * y;
+  const tyz = ty * z;
+  const tz = t * z;
+  const tzz = tz * z;
+  const tzx = tz * x;
+  const xs = x * s;
+  const ys = y * s;
+  const zs = z * s;
 
   return [
-    [t * x * x + c, t * x * y - s * z, t * x * z + s * y],
-    [t * y * x + s * z, t * y * y + c, t * y * z - s * x],
-    [t * z * x - s * y, t * z * y + s * x, t * z * z + c],
+    [txx + c, txy - zs, tzx + ys],
+    [txy + zs, tyy + c, tyz - xs],
+    [tzx - ys, tyz + xs, tzz + c],
   ];
 }
 
