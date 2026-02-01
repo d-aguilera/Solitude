@@ -103,9 +103,9 @@ function createInitialShip(
 
 function createInitialTopCamera(ship: ShipBody): DomainCameraPose {
   const offset: Vec3 = { x: 0, y: 0, z: 50 };
-
+  const position = vec3.addInto(vec3.zero(), ship.position, offset);
   return {
-    position: vec3.add(ship.position, offset),
+    position,
     frame: initialFrame,
   };
 }
@@ -317,7 +317,7 @@ function computeShipStartPosFromPlanet(
     planetObj.physicalRadius + PLANE_START_ALTITUDE_M,
   );
 
-  return vec3.add(planetObj.position, offset);
+  return vec3.addInto(vec3.zero(), planetObj.position, offset);
 }
 
 /**
@@ -363,7 +363,7 @@ function computeShipInitialNearEarthOrbitVelocity(
   const vRel = vec3.scale(tangentialDir, vRelMag);
 
   // Total: Earth's heliocentric velocity + local orbital component.
-  return vec3.add(vEarth, vRel);
+  return vec3.addInto(vec3.zero(), vEarth, vRel);
 }
 
 export function createInitialSceneAndWorld(): {

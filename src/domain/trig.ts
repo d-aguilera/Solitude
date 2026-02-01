@@ -14,6 +14,9 @@ function radialDirAtAngle(
   return vec3.normalizeInto(out);
 }
 
+const scaled1Scratch = vec3.zero();
+const scaled2Scratch = vec3.zero();
+
 function tangentialDirAtAngle(
   theta: number,
   radialAxis1: Vec3,
@@ -22,9 +25,9 @@ function tangentialDirAtAngle(
   const s = Math.sin(theta);
   const c = Math.cos(theta);
 
-  const scaled1 = vec3.scale(radialAxis1, -s);
-  const scaled2 = vec3.scale(radialAxis2, c);
-  const t = vec3.add(scaled1, scaled2);
+  const scaled1 = vec3.scaleInto(scaled1Scratch, -s, radialAxis1);
+  const scaled2 = vec3.scaleInto(scaled2Scratch, c, radialAxis2);
+  const t = vec3.addInto(vec3.zero(), scaled1, scaled2);
 
   return vec3.normalizeInto(t);
 }
