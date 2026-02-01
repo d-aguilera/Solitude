@@ -40,21 +40,17 @@ export function renderVelocitySegments(
  * a ship's velocity direction.
  */
 function getShipVelocitySegments(ship: ShipBody): VelocityDebugSegment[] {
-  const v = vec3.clone(ship.velocity);
-  const speedSq = vec3.lengthSq(v);
+  // Reuse a single scratch velocity vector.
+  vec3.copyInto(velocityScratch, ship.velocity);
+
+  const speedSq = vec3.lengthSq(velocityScratch);
   if (speedSq < 1e-24) return [];
 
-  const dir = vec3.normalizeInto(v);
+  const dir = vec3.normalizeInto(velocityScratch);
   const center = ship.position;
 
   const len = 500000; // meters
   const innerRadius = 6; // meters
-
-  const scratch: Vec3 = vec3.zero();
-  const forwardInner: Vec3 = vec3.zero();
-  const forwardEnd: Vec3 = vec3.zero();
-  const backwardInner: Vec3 = vec3.zero();
-  const backwardEnd: Vec3 = vec3.zero();
 
   // forwardInner = center + dir * innerRadius
   vec3.scaleInto(scratch, innerRadius, dir);
@@ -72,11 +68,20 @@ function getShipVelocitySegments(ship: ShipBody): VelocityDebugSegment[] {
   vec3.scaleInto(scratch, -len, dir);
   vec3.addInto(backwardEnd, center, scratch);
 
+  // The returned segments reference stable, reused Vec3 instances.
   return [
     { start: forwardInner, end: forwardEnd, direction: "forward" },
     { start: backwardInner, end: backwardEnd, direction: "backward" },
   ];
 }
+
+// Shared scratch vectors for velocity debug segments.
+const velocityScratch: Vec3 = vec3.zero();
+const scratch: Vec3 = vec3.zero();
+const forwardInner: Vec3 = vec3.zero();
+const forwardEnd: Vec3 = vec3.zero();
+const backwardInner: Vec3 = vec3.zero();
+const backwardEnd: Vec3 = vec3.zero();
 
 interface VelocityDebugSegment {
   start: Vec3;
