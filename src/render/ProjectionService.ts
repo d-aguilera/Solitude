@@ -144,15 +144,11 @@ export class ProjectionService {
    */
   projectCameraPointToNdc(cameraPoint: Vec3): NdcPoint {
     const depth = cameraPoint.y;
-
-    const scaled = vec3.scale(
-      { x: cameraPoint.x * this.fX, y: cameraPoint.z * this.fY, z: 0 },
-      1 / depth,
-    );
+    const invDepth = 1 / depth;
 
     return {
-      x: scaled.x,
-      y: scaled.y,
+      x: cameraPoint.x * this.fX * invDepth,
+      y: cameraPoint.z * this.fY * invDepth,
       depth,
     };
   }
