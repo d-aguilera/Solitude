@@ -19,6 +19,13 @@ function clone(v: Readonly<Vec3>): Vec3 {
   return { x: v.x, y: v.y, z: v.z };
 }
 
+function copyInto(into: Vec3, v: Readonly<Vec3>): Vec3 {
+  into.x = v.x;
+  into.y = v.y;
+  into.z = v.z;
+  return into;
+}
+
 function cross(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
   return {
     x: a.y * b.z - a.z * b.y,
@@ -101,6 +108,7 @@ export const vec3 = {
   addInto,
   add3,
   clone,
+  copyInto,
   cross,
   crossInto,
   distSq,

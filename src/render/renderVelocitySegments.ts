@@ -50,11 +50,27 @@ function getShipVelocitySegments(ship: ShipBody): VelocityDebugSegment[] {
   const len = 500000; // meters
   const innerRadius = 6; // meters
 
-  const forwardInner: Vec3 = vec3.add(center, vec3.scale(dir, innerRadius));
-  const forwardEnd: Vec3 = vec3.add(center, vec3.scale(dir, len));
+  const scratch: Vec3 = vec3.zero();
+  const forwardInner: Vec3 = vec3.zero();
+  const forwardEnd: Vec3 = vec3.zero();
+  const backwardInner: Vec3 = vec3.zero();
+  const backwardEnd: Vec3 = vec3.zero();
 
-  const backwardInner: Vec3 = vec3.add(center, vec3.scale(dir, -innerRadius));
-  const backwardEnd: Vec3 = vec3.add(center, vec3.scale(dir, -len));
+  // forwardInner = center + dir * innerRadius
+  vec3.scaleInto(scratch, innerRadius, dir);
+  vec3.addInto(forwardInner, center, scratch);
+
+  // forwardEnd = center + dir * len
+  vec3.scaleInto(scratch, len, dir);
+  vec3.addInto(forwardEnd, center, scratch);
+
+  // backwardInner = center + dir * (-innerRadius)
+  vec3.scaleInto(scratch, -innerRadius, dir);
+  vec3.addInto(backwardInner, center, scratch);
+
+  // backwardEnd = center + dir * (-len)
+  vec3.scaleInto(scratch, -len, dir);
+  vec3.addInto(backwardEnd, center, scratch);
 
   return [
     { start: forwardInner, end: forwardEnd, direction: "forward" },

@@ -39,7 +39,14 @@ export function rebuildPlanetPathMesh(
   let i = 0;
   traj.buffers.forEach((buf) => {
     buf.forEach((p) => {
-      points[i++] = p;
+      // Reuse existing Vec3 instances where possible.
+      let dst = points[i];
+      if (!dst) {
+        points[i] = vec3.clone(p);
+      } else {
+        vec3.copyInto(dst, p);
+      }
+      i++;
     });
   });
 
@@ -108,23 +115,32 @@ export function updateTrajectories(
  */
 export function appendPointToPolylineMesh(mesh: Mesh, point: Vec3): void {
   const { faces, points } = mesh;
-  const clone = vec3.clone(point);
   const newIndex = points.length;
+
   if (newIndex === 0) {
     // initialize empty mesh
     points.length = 0;
-    points.push(clone);
+    const dst: Vec3 = { x: 0, y: 0, z: 0 };
+    vec3.addInto(dst, point, { x: 0, y: 0, z: 0 }); // simple copy without allocating via vec3.clone
+    points.push(dst);
+
     faces.length = 0;
     return;
   }
+
   if (newIndex === 1) {
-    // now that we have 2 points, add a first segment
-    points.push(clone);
+    const dst: Vec3 = { x: 0, y: 0, z: 0 };
+    vec3.addInto(dst, point, { x: 0, y: 0, z: 0 });
+    points.push(dst);
+
     faces.push([0, 1]);
     return;
   }
-  // add current new point to the the path
-  points.push(clone);
+
+  // add current new point to the path
+  const dst: Vec3 = { x: 0, y: 0, z: 0 };
+  vec3.addInto(dst, point, { x: 0, y: 0, z: 0 });
+  points.push(dst);
   faces[0].push(newIndex);
 }
 
