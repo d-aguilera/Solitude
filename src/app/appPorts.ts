@@ -162,6 +162,7 @@ export interface Scene {
 export interface SceneControlState {
   look: PilotLookState;
   pilotCameraLocalOffset: Vec3;
+  topCameraLocalOffset: Vec3;
 }
 
 /**

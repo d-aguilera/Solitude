@@ -12,7 +12,7 @@ import {
   syncStarsToSceneObjects,
 } from "./worldSetup.js";
 
-export function mutateScene(
+export function updateSceneGraph(
   dtSeconds: number,
   sceneState: SceneState,
   sceneControlState: SceneControlState,

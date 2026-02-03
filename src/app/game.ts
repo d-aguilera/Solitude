@@ -16,7 +16,7 @@ import type {
 } from "./appPorts.js";
 import { updateShipOrientationFromControls } from "./controls.js";
 import { buildGravityBindings, applyForcesAndGravity } from "./physics.js";
-import { mutateScene as updateSceneGraph } from "./scene.js";
+import { updateSceneGraph } from "./scene.js";
 import { updateControlState } from "./sim.js";
 import { createInitialSceneAndWorld } from "./worldSetup.js";
 
@@ -66,6 +66,7 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
       elevation: 0,
     },
     pilotCameraLocalOffset: vec3.create(0, 1.7, 1.1),
+    topCameraLocalOffset: vec3.create(0, 0, 50),
   };
 
   const sceneState: SceneState = {
