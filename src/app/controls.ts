@@ -105,18 +105,24 @@ export function updateThrustMagnitudeFromInput(
   input: ControlInput,
   controlState: SimControlState,
 ): void {
-  if (input.thrust6)
+  if (input.thrust9)
     controlState.thrustPercent = 1.0; // 100%
-  else if (input.thrust5)
+  else if (input.thrust8)
     controlState.thrustPercent = 0.5; // 50%
+  else if (input.thrust7)
+    controlState.thrustPercent = 0.4; // 40%
+  else if (input.thrust6)
+    controlState.thrustPercent = 0.3; // 30%
+  else if (input.thrust5)
+    controlState.thrustPercent = 0.2; // 20%
   else if (input.thrust4)
-    controlState.thrustPercent = 0.25; // 25%
+    controlState.thrustPercent = 0.1; // 10%
   else if (input.thrust3)
-    controlState.thrustPercent = 0.05; // 5%
-  else if (input.thrust2)
     controlState.thrustPercent = 0.01; // 1%
-  else if (input.thrust1)
+  else if (input.thrust2)
     controlState.thrustPercent = 0.001; // 0.1%
+  else if (input.thrust1)
+    controlState.thrustPercent = 0.0001; // 0.01%
   else if (input.thrust0) controlState.thrustPercent = 0; // 0%
 }
 
