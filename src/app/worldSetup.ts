@@ -21,6 +21,7 @@ import { circularSpeedAtRadius } from "../domain/phys.js";
 import { trig } from "../domain/trig.js";
 import { vec3 } from "../domain/vec3.js";
 import { getStarPhysicsById } from "../domain/worldLookup.js";
+import { alloc } from "../infra/allocProfiler.js";
 import type {
   PlanetBodyConfig,
   PlanetTrajectory,
@@ -557,17 +558,18 @@ function getPlanetPhysicsById(
  */
 export function rotateCelestialBodies(scene: Scene, dtSeconds: number): void {
   if (dtSeconds == 0) return;
+  alloc.withName("rotateCelestialBodies", () => {
+    for (const obj of scene.objects) {
+      if (obj.kind !== "planet" && obj.kind !== "star") continue;
 
-  for (const obj of scene.objects) {
-    if (obj.kind !== "planet" && obj.kind !== "star") continue;
+      const angle = obj.angularSpeedRadPerSec * dtSeconds;
+      if (angle === 0) continue;
 
-    const angle = obj.angularSpeedRadPerSec * dtSeconds;
-    if (angle === 0) continue;
+      const Rspin = mat3.rotAxis(obj.rotationAxis, angle);
 
-    const Rspin = mat3.rotAxis(obj.rotationAxis, angle);
-
-    // Orientation is a local→world transform. Apply spin in local space
-    // by left-multiplying the existing orientation.
-    obj.orientation = mat3.mulMat3(Rspin, obj.orientation);
-  }
+      // Orientation is a local→world transform. Apply spin in local space
+      // by left-multiplying the existing orientation.
+      obj.orientation = mat3.mulMat3(Rspin, obj.orientation);
+    }
+  });
 }

@@ -119,26 +119,28 @@ export function updateTrajectories(
  * Mesh points are assumed to be in world space (no transform applied).
  */
 export function appendPointToPolylineMesh(mesh: Mesh, point: Vec3): void {
-  const { faces, points } = mesh;
-  const newIndex = points.length;
+  return alloc.withName(appendPointToPolylineMesh.name, () => {
+    const { faces, points } = mesh;
+    const newIndex = points.length;
 
-  if (newIndex === 0) {
-    // initialize empty mesh
-    points.length = 1;
-    points[0] = vec3.clone(point);
-    faces.length = 0;
-    return;
-  }
+    if (newIndex === 0) {
+      // initialize empty mesh
+      points.length = 1;
+      points[0] = vec3.clone(point);
+      faces.length = 0;
+      return;
+    }
 
-  if (newIndex === 1) {
+    if (newIndex === 1) {
+      points.push(vec3.clone(point));
+      faces.push([0, 1]);
+      return;
+    }
+
+    // add current new point to the path
     points.push(vec3.clone(point));
-    faces.push([0, 1]);
-    return;
-  }
-
-  // add current new point to the path
-  points.push(vec3.clone(point));
-  faces[0].push(newIndex);
+    faces[0].push(newIndex);
+  });
 }
 
 export function appendShipTrajectoryPoint(

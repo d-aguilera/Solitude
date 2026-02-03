@@ -1,6 +1,6 @@
 import type { DomainCameraPose } from "../app/appPorts.js";
 import type { Mat3, Vec3 } from "../domain/domainPorts.js";
-import { mat3FromLocalFrame } from "../domain/localFrame.js";
+import { mat3FromLocalFrameInto } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import type { NdcPoint, ScreenPoint } from "./renderPorts.js";
@@ -40,6 +40,37 @@ function ensureGlobalCameraPointPoolCapacity(n: number): void {
   });
 }
 
+const deltaScratch: Vec3 = vec3.zero();
+const cameraPointScratch: Vec3 = vec3.zero();
+
+// --- begin new scratch state for triangle clipping ---
+const triScratch: Vec3[] = [
+  vec3.zero(), // 0
+  vec3.zero(), // 1
+  vec3.zero(), // 2
+  vec3.zero(), // 3
+  vec3.zero(), // 4
+  vec3.zero(), // 5
+];
+
+const triOut0: [Vec3, Vec3, Vec3] = [
+  triScratch[0],
+  triScratch[1],
+  triScratch[2],
+];
+
+const triOut1: [Vec3, Vec3, Vec3] = [
+  triScratch[3],
+  triScratch[4],
+  triScratch[5],
+];
+// --- end new scratch state for triangle clipping ---
+
+const aCamScratch: Vec3 = vec3.zero();
+const bCamScratch: Vec3 = vec3.zero();
+
+const R_worldFromLocalScratch: Mat3 = mat3.zero();
+
 /**
  * Projection service responsible for:
  *  - Transforming world-space positions into camera space
@@ -56,23 +87,31 @@ export class ProjectionService {
   private readonly R_localFromWorld: Mat3;
   private readonly cameraPosition: Vec3;
 
-  private readonly scratchDelta: Vec3 = vec3.zero();
-
   constructor(
     pose: DomainCameraPose,
     canvasWidth: number,
     canvasHeight: number,
   ) {
-    const { fX, fY } = this.getFocalLengths(canvasWidth, canvasHeight);
+    const { fX, fY, R_localFromWorld } = alloc.withName(
+      ProjectionService.name + ":ctor",
+      () => {
+        const { fX, fY } = this.getFocalLengths(canvasWidth, canvasHeight);
+
+        mat3FromLocalFrameInto(R_worldFromLocalScratch, pose.frame);
+        const R_localFromWorld = mat3.transposeInto(
+          mat3.zero(),
+          R_worldFromLocalScratch,
+        );
+
+        return { fX, fY, R_localFromWorld };
+      },
+    );
+
     this.fX = fX;
     this.fY = fY;
-
-    const R_worldFromLocal = mat3FromLocalFrame(pose.frame);
-    this.R_localFromWorld = mat3.transpose(R_worldFromLocal);
+    this.R_localFromWorld = R_localFromWorld;
     this.cameraPosition = pose.position;
   }
-
-  private readonly cameraPointScratch1: Vec3 = vec3.zero();
 
   /**
    * Full world-space -> NDC projection with near-plane rejection.
@@ -80,12 +119,9 @@ export class ProjectionService {
    * Returns null when the point lies behind the near plane in camera space.
    */
   projectWorldPointToNdc(worldPoint: Vec3): NdcPoint | null {
-    this.worldPointToCameraPointNoClipInto(
-      this.cameraPointScratch1,
-      worldPoint,
-    );
-    return this.isInFrontOfNearPlane(this.cameraPointScratch1)
-      ? this.projectCameraPointToNdc(this.cameraPointScratch1)
+    this.worldPointToCameraPointNoClipInto(cameraPointScratch, worldPoint);
+    return this.isInFrontOfNearPlane(cameraPointScratch)
+      ? this.projectCameraPointToNdc(cameraPointScratch)
       : null;
   }
 
@@ -99,16 +135,19 @@ export class ProjectionService {
       // 2) Use the first n entries from the global pool as our scratch array.
       const R_localFromWorld = this.R_localFromWorld;
       const position = this.cameraPosition;
-      const delta = this.scratchDelta;
 
       for (let i = 0; i < n; i++) {
         const wp = worldPoints[i];
 
         // delta = worldPoint - cameraPosition
-        vec3.subInto(delta, wp, position);
+        vec3.subInto(deltaScratch, wp, position);
 
         // cameraPoints[i] = R_localFromWorld * delta
-        mat3.mulVec3Into(GLOBAL_CAMERA_POINT_POOL[i], R_localFromWorld, delta);
+        mat3.mulVec3Into(
+          GLOBAL_CAMERA_POINT_POOL[i],
+          R_localFromWorld,
+          deltaScratch,
+        );
       }
 
       // Callers must treat only the first n elements as valid for this call.
@@ -123,13 +162,11 @@ export class ProjectionService {
     into: Vec3,
     worldPoint: Vec3,
   ): void {
-    const delta = this.scratchDelta;
-
     // delta = worldPoint - cameraPosition
-    vec3.subInto(delta, worldPoint, this.cameraPosition);
+    vec3.subInto(deltaScratch, worldPoint, this.cameraPosition);
 
     // into (cameraPoint) = R_localFromWorld * delta
-    mat3.mulVec3Into(into, this.R_localFromWorld, delta);
+    mat3.mulVec3Into(into, this.R_localFromWorld, deltaScratch);
   }
 
   /**
@@ -157,28 +194,6 @@ export class ProjectionService {
    * the result immediately.
    */
 
-  // --- begin new scratch state for triangle clipping ---
-  private readonly triScratch: Vec3[] = [
-    vec3.zero(), // 0
-    vec3.zero(), // 1
-    vec3.zero(), // 2
-    vec3.zero(), // 3
-    vec3.zero(), // 4
-    vec3.zero(), // 5
-  ];
-
-  private readonly triOut0: [Vec3, Vec3, Vec3] = [
-    this.triScratch[0],
-    this.triScratch[1],
-    this.triScratch[2],
-  ];
-  private readonly triOut1: [Vec3, Vec3, Vec3] = [
-    this.triScratch[3],
-    this.triScratch[4],
-    this.triScratch[5],
-  ];
-  // --- end new scratch state for triangle clipping ---
-
   clipTriangleAgainstNearPlaneCamera(
     a: Vec3,
     b: Vec3,
@@ -204,10 +219,10 @@ export class ProjectionService {
     if (insideCount === 3) {
       // All inside: just reuse input references.
       // We still go through triOut0 so the caller always uses the same shape.
-      this.triOut0[0] = a;
-      this.triOut0[1] = b;
-      this.triOut0[2] = c;
-      return [this.triOut0];
+      triOut0[0] = a;
+      triOut0[1] = b;
+      triOut0[2] = c;
+      return [triOut0];
     }
 
     const [P0, P1, P2] = [a, b, c];
@@ -230,15 +245,15 @@ export class ProjectionService {
         R = P1;
       }
 
-      const IQ = this.triScratch[0];
-      const IR = this.triScratch[1];
+      const IQ = triScratch[0];
+      const IR = triScratch[1];
       intersectInto(IQ, P, Q);
       intersectInto(IR, P, R);
 
-      this.triOut0[0] = P;
-      this.triOut0[1] = IQ;
-      this.triOut0[2] = IR;
-      return [this.triOut0];
+      triOut0[0] = P;
+      triOut0[1] = IQ;
+      triOut0[2] = IR;
+      return [triOut0];
     }
 
     // insideCount === 2
@@ -258,26 +273,23 @@ export class ProjectionService {
       Pin2 = P1;
     }
 
-    const IP1 = this.triScratch[2];
-    const IP2 = this.triScratch[3];
+    const IP1 = triScratch[2];
+    const IP2 = triScratch[3];
     intersectInto(IP1, Pin1, Pout);
     intersectInto(IP2, Pin2, Pout);
 
     // Triangle 1: Pin1, Pin2, IP1
-    this.triOut0[0] = Pin1;
-    this.triOut0[1] = Pin2;
-    this.triOut0[2] = IP1;
+    triOut0[0] = Pin1;
+    triOut0[1] = Pin2;
+    triOut0[2] = IP1;
 
     // Triangle 2: Pin2, IP2, IP1
-    this.triOut1[0] = Pin2;
-    this.triOut1[1] = IP2;
-    this.triOut1[2] = IP1;
+    triOut1[0] = Pin2;
+    triOut1[1] = IP2;
+    triOut1[2] = IP1;
 
-    return [this.triOut0, this.triOut1];
+    return [triOut0, triOut1];
   }
-
-  private readonly aCamScratch: Vec3 = vec3.zero();
-  private readonly bCamScratch: Vec3 = vec3.zero();
 
   /**
    * Project a world-space segment [A, B] to one or more screen-space
@@ -294,15 +306,12 @@ export class ProjectionService {
     screenWidth: number,
     screenHeight: number,
   ): ScreenPoint[][] {
-    const aCam = this.aCamScratch;
-    const bCam = this.bCamScratch;
-
     // 1) World -> camera space
-    this.worldPointToCameraPointNoClipInto(aCam, aWorld);
-    this.worldPointToCameraPointNoClipInto(bCam, bWorld);
+    this.worldPointToCameraPointNoClipInto(aCamScratch, aWorld);
+    this.worldPointToCameraPointNoClipInto(bCamScratch, bWorld);
 
-    const inA = this.isInFrontOfNearPlane(aCam);
-    const inB = this.isInFrontOfNearPlane(bCam);
+    const inA = this.isInFrontOfNearPlane(aCamScratch);
+    const inB = this.isInFrontOfNearPlane(bCamScratch);
 
     // Both behind near plane: discard
     if (!inA && !inB) {
@@ -321,8 +330,8 @@ export class ProjectionService {
 
     // Both in front of near plane: project as-is
     if (inA && inB) {
-      const ndcA = this.projectCameraPointToNdc(aCam);
-      const ndcB = this.projectCameraPointToNdc(bCam);
+      const ndcA = this.projectCameraPointToNdc(aCamScratch);
+      const ndcB = this.projectCameraPointToNdc(bCamScratch);
       return [
         [
           ndcToScreen(ndcA, screenWidth, screenHeight),
@@ -332,8 +341,8 @@ export class ProjectionService {
     }
 
     // One inside, one outside: clip at near plane and keep visible half
-    const insideCam = inA ? aCam : bCam;
-    const outsideCam = inA ? bCam : aCam;
+    const insideCam = inA ? aCamScratch : bCamScratch;
+    const outsideCam = inA ? bCamScratch : aCamScratch;
 
     const I = intersect(insideCam, outsideCam);
 

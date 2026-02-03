@@ -92,6 +92,7 @@ function mulMat3(A: Readonly<Mat3>, B: Readonly<Mat3>): Mat3 {
 }
 
 function rotAxis(axis: Readonly<Vec3>, angle: number): Mat3 {
+  alloc.mat3();
   let { x, y, z } = axis;
 
   const len = Math.hypot(x, y, z);
@@ -142,6 +143,34 @@ function transpose(M: Readonly<Mat3>): Mat3 {
   ];
 }
 
+function transposeInto(into: Mat3, M: Readonly<Mat3>): Mat3 {
+  const M0 = M[0];
+  const M1 = M[1];
+  const M2 = M[2];
+  const into0 = into[0];
+  into0[0] = M0[0];
+  into0[1] = M1[0];
+  into0[2] = M2[0];
+  const into1 = into[1];
+  into1[0] = M0[1];
+  into1[1] = M1[1];
+  into1[2] = M2[1];
+  const into2 = into[2];
+  into2[0] = M0[2];
+  into2[1] = M1[2];
+  into2[2] = M2[2];
+  return into;
+}
+
+function zero(): Mat3 {
+  alloc.mat3();
+  return [
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+  ];
+}
+
 export const mat3 = {
   identity,
   mulVec3,
@@ -149,4 +178,6 @@ export const mat3 = {
   mulMat3,
   rotAxis,
   transpose,
+  transposeInto,
+  zero,
 };
