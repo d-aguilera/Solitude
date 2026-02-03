@@ -340,7 +340,7 @@ function computeShipInitialNearEarthOrbitVelocity(
 
   // Radial offset Earth -> ship
   const earthCenter = earthObj.position;
-  const offset = vec3.sub(shipStartPos, earthCenter);
+  const offset = vec3.subInto(vec3.zero(), shipStartPos, earthCenter);
   const r = vec3.length(offset);
   if (r === 0) {
     // Fallback: just use Earth's velocity
@@ -349,21 +349,21 @@ function computeShipInitialNearEarthOrbitVelocity(
 
   const radialDir = vec3.scaleInto(offset, 1 / r, offset);
 
-  // Local circular orbital speed around Earth at this radius.
-  const vRelMag = circularSpeedAtRadius(earthPhys.mass, r);
-
   // Build a tangential direction around Earth, perpendicular to radialDir.
   // Use Earth's current orbital direction as a reference, projected to be orthogonal.
   const earthDir = vec3.normalizeInto(vec3.clone(vEarth));
-  const tangential = vec3.normalizeInto(
-    vec3.sub(earthDir, vec3.scale(radialDir, vec3.dot(earthDir, radialDir))),
-  );
+  const dot = vec3.dot(earthDir, radialDir);
+  vec3.scaleInto(radialDir, dot, radialDir);
+  const tangential = vec3.subInto(radialDir, earthDir, radialDir);
+  vec3.normalizeInto(tangential);
   const tangentialDir = vec3.length(tangential) > 0 ? tangential : earthDir;
 
-  const vRel = vec3.scale(tangentialDir, vRelMag);
+  // Local circular orbital speed around Earth at this radius.
+  const vRelMag = circularSpeedAtRadius(earthPhys.mass, r);
+  const vRel = vec3.scaleInto(tangentialDir, vRelMag, tangentialDir);
 
   // Total: Earth's heliocentric velocity + local orbital component.
-  return vec3.addInto(vec3.zero(), vEarth, vRel);
+  return vec3.addInto(vRel, vEarth, vRel);
 }
 
 export function createInitialSceneAndWorld(): {

@@ -3,19 +3,33 @@ import type { LocalFrame, Mat3, Vec3 } from "./domainPorts.js";
 import { mat3 } from "./mat3.js";
 import { vec3 } from "./vec3.js";
 
-export function makeLocalFrameFromUp(up: Vec3): LocalFrame {
+const worldForwardScratch = vec3.zero();
+
+export function makeLocalFrameFromUp(referenceUp: Vec3): LocalFrame {
   return alloc.withName(makeLocalFrameFromUp.name, () => {
     // Work on a normalized copy so that the caller's vector is not modified.
-    const u = vec3.normalizeInto(vec3.clone(up));
-    const worldForward: Vec3 =
-      Math.abs(u.z) < 0.9 ? vec3.create(0, 0, 1) : vec3.create(1, 0, 0);
+    const up = vec3.clone(referenceUp);
+    vec3.normalizeInto(up);
 
-    const dot = vec3.dot(u, worldForward);
-    const forwardUnnormalized = vec3.sub(worldForward, vec3.scale(u, dot));
-    const forward = vec3.normalizeInto(forwardUnnormalized);
-    const right = vec3.normalizeInto(vec3.cross(forward, u));
+    const forward = vec3.zero();
+    if (Math.abs(up.z) < 0.9) {
+      worldForwardScratch.x = 0;
+      worldForwardScratch.z = 1;
+    } else {
+      worldForwardScratch.x = 1;
+      worldForwardScratch.z = 0;
+    }
+    const dot = vec3.dot(up, worldForwardScratch);
+    vec3.scaleInto(forward, dot, up);
+    vec3.subInto(forward, worldForwardScratch, forward);
+    vec3.normalizeInto(forward);
 
-    return { right, forward, up: u };
+    const right = vec3.zero();
+    vec3.crossInto(right, forward, up);
+    vec3.normalizeInto(right);
+
+    alloc.vec3();
+    return { right, forward, up };
   });
 }
 
@@ -80,13 +94,21 @@ function makeLocalFrameFromAxes(
 ): LocalFrame {
   return alloc.withName(makeLocalFrameFromAxes.name, () => {
     // Gram–Schmidt to ensure orthonormal axes
-    const r = vec3.normalizeInto(vec3.clone(right));
+    const r = vec3.clone(right);
+    vec3.normalizeInto(r);
+
     // Remove any component of forward along r, then normalize
-    const fUn = vec3.sub(forward, vec3.scale(r, vec3.dot(forward, r)));
-    const f = vec3.normalizeInto(fUn);
-    void up;
+    const f = vec3.zero();
+    const dot = vec3.dot(forward, r);
+    vec3.scaleInto(f, dot, r);
+    vec3.subInto(f, forward, f);
+    vec3.normalizeInto(f);
+
     // up = r × f to guarantee orthogonality
-    const u = vec3.normalizeInto(vec3.cross(r, f));
+    const u = vec3.zero();
+    vec3.crossInto(u, r, f);
+    vec3.normalizeInto(u);
+    void up;
 
     return { right: r, forward: f, up: u };
   });

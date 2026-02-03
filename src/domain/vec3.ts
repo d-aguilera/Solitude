@@ -87,11 +87,6 @@ function scaleInto(into: Vec3, s: number, v: Readonly<Vec3>): Vec3 {
   return into;
 }
 
-function sub(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
-  alloc.vec3();
-  return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
-}
-
 function subInto(into: Vec3, a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
   into.x = a.x - b.x;
   into.y = a.y - b.y;
@@ -118,7 +113,6 @@ export const vec3 = {
   normalizeInto,
   scale,
   scaleInto,
-  sub,
   subInto,
   zero,
 };
