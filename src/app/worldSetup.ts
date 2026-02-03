@@ -51,7 +51,7 @@ function createInitialShip(
 ): ShipBody {
   const speed = vec3.length(initialVelocity);
 
-  let frame: LocalFrame = initialFrame;
+  let frame: LocalFrame;
 
   if (speed > 0) {
     // Work on a normalized copy so as not to modify initialVelocity.
@@ -77,8 +77,8 @@ function createInitialShip(
       } else {
         // Opposite direction: rotate 180° around "up" to flip forward.
         frame = {
-          right: vec3.scale(initialFrame.right, -1),
-          forward: vec3.scale(baseForward, -1),
+          right: vec3.scaleInto(vec3.zero(), -1, initialFrame.right),
+          forward: vec3.scaleInto(vec3.zero(), -1, baseForward),
           up: initialFrame.up,
         };
       }
@@ -93,6 +93,8 @@ function createInitialShip(
 
       frame = rotateFrameAroundAxis(initialFrame, axisN, angle);
     }
+  } else {
+    frame = initialFrame;
   }
 
   return {
@@ -204,13 +206,13 @@ function addPlanetsAndStarsFromConfig(
     );
 
     // Physical orbit radius in meters
-    const center: Vec3 = vec3.scale(radial, cfg.orbit.radius);
+    const center: Vec3 = vec3.scaleInto(vec3.zero(), cfg.orbit.radius, radial);
 
     const bodyMesh: Mesh = { ...bodyMeshTemplate };
 
     const initialVelocity =
       cfg.orbit.radius > 0
-        ? vec3.scale(tangential, cfg.tangentialSpeed)
+        ? vec3.scaleInto(vec3.zero(), cfg.tangentialSpeed, tangential)
         : vec3.zero();
 
     const rotationAxis = vec3.normalizeInto(vec3.clone(cfg.rotationAxis));
@@ -314,9 +316,10 @@ function computeShipStartPosFromPlanet(
   const north: Vec3 = vec3.create(0, 0, 1);
 
   // Use planet's physical radius from its scene object
-  const offset = vec3.scale(
-    north,
+  const offset = vec3.scaleInto(
+    vec3.zero(),
     planetObj.physicalRadius + PLANE_START_ALTITUDE_M,
+    north,
   );
 
   return vec3.addInto(vec3.zero(), planetObj.position, offset);
