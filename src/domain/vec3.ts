@@ -25,15 +25,6 @@ function create(x: number, y: number, z: number): Vec3 {
   return { x, y, z };
 }
 
-function cross(a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
-  alloc.vec3();
-  return {
-    x: a.y * b.z - a.z * b.y,
-    y: a.z * b.x - a.x * b.z,
-    z: a.x * b.y - a.y * b.x,
-  };
-}
-
 function crossInto(into: Vec3, a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
   into.x = a.y * b.z - a.z * b.y;
   into.y = a.z * b.x - a.x * b.z;
@@ -104,7 +95,6 @@ export const vec3 = {
   clone,
   copyInto,
   create,
-  cross,
   crossInto,
   distSq,
   dot,

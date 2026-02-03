@@ -42,6 +42,8 @@ import { createPlanetTrajectory } from "./trajectories.js";
 const initialUp: Vec3 = vec3.create(0, 0, 1);
 const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
 
+const axisScratch = vec3.zero();
+
 function createInitialShip(
   id: string,
   position: Vec3,
@@ -63,7 +65,7 @@ function createInitialShip(
     const baseForward = initialFrame.forward;
 
     // Compute rotation axis = baseForward × targetForward
-    const axis = vec3.cross(baseForward, targetForward);
+    const axis = vec3.crossInto(axisScratch, baseForward, targetForward);
     const axisLen = vec3.length(axis);
 
     if (axisLen < 1e-6) {
