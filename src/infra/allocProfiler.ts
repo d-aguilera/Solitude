@@ -9,8 +9,25 @@ export function setAllocProfiler(profiler: Profiler | null): void {
 }
 
 function getFullName(name: string): string {
-  if (nameStackDepth === 0) return name;
-  return name + ":" + nameStack.slice(0, nameStackDepth).join(":");
+  switch (nameStackDepth) {
+    case 0:
+      return name;
+    case 1:
+      return name.concat(":", nameStack[0]);
+    case 2:
+      return name.concat(":", nameStack[0], ":", nameStack[1]);
+    case 3:
+      return name.concat(
+        ":",
+        nameStack[0],
+        ":",
+        nameStack[1],
+        ":",
+        nameStack[2],
+      );
+    default:
+      return name.concat(":", nameStack.slice(0, nameStackDepth).join(":"));
+  }
 }
 
 export const alloc = {
