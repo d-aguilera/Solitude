@@ -6,6 +6,7 @@ import { vec3 } from "../domain/vec3.js";
 import type { NdcPoint, ScreenPoint } from "./renderPorts.js";
 import { ndcToScreen } from "./ndcToScreen.js";
 import { alloc } from "../infra/allocProfiler.js";
+import { lerpInto } from "../domain/vec3Util.js";
 
 /**
  * Camera-space forward threshold.
@@ -70,6 +71,8 @@ const aCamScratch: Vec3 = vec3.zero();
 const bCamScratch: Vec3 = vec3.zero();
 
 const R_worldFromLocalScratch: Mat3 = mat3.zero();
+
+const intersectScratch: Vec3 = vec3.zero();
 
 /**
  * Projection service responsible for:
@@ -318,16 +321,6 @@ export class ProjectionService {
       return [];
     }
 
-    // Helper for intersection with y = NEAR in camera space
-    const intersect = (p: Vec3, q: Vec3): Vec3 => {
-      const t = (NEAR - p.y) / (q.y - p.y);
-      return {
-        x: p.x + t * (q.x - p.x),
-        y: NEAR,
-        z: p.z + t * (q.z - p.z),
-      };
-    };
-
     // Both in front of near plane: project as-is
     if (inA && inB) {
       const ndcA = this.projectCameraPointToNdc(aCamScratch);
@@ -344,10 +337,13 @@ export class ProjectionService {
     const insideCam = inA ? aCamScratch : bCamScratch;
     const outsideCam = inA ? bCamScratch : aCamScratch;
 
-    const I = intersect(insideCam, outsideCam);
+    // Intersect with plane y = NEAR using lerpInto
+    const t = (NEAR - insideCam.y) / (outsideCam.y - insideCam.y);
+    lerpInto(intersectScratch, insideCam, outsideCam, t);
+    intersectScratch.y = NEAR;
 
     const ndcInside = this.projectCameraPointToNdc(insideCam);
-    const ndcI = this.projectCameraPointToNdc(I);
+    const ndcI = this.projectCameraPointToNdc(intersectScratch);
 
     const pInside = ndcToScreen(ndcInside, screenWidth, screenHeight);
     const pI = ndcToScreen(ndcI, screenWidth, screenHeight);

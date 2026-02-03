@@ -1,5 +1,6 @@
 import type { ShipBody, Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
+import { scaledAdd } from "../domain/vec3Util.js";
 import { alloc } from "../infra/allocProfiler.js";
 import { ndcToScreen } from "./ndcToScreen.js";
 import type {
@@ -55,21 +56,10 @@ function getShipVelocitySegments(ship: ShipBody): VelocityDebugSegment[] {
   const len = 500000; // meters
   const innerRadius = 6; // meters
 
-  // forwardInner = center + dir * innerRadius
-  vec3.scaleInto(scratch, innerRadius, dir);
-  vec3.addInto(forwardInner, center, scratch);
-
-  // forwardEnd = center + dir * len
-  vec3.scaleInto(scratch, len, dir);
-  vec3.addInto(forwardEnd, center, scratch);
-
-  // backwardInner = center + dir * (-innerRadius)
-  vec3.scaleInto(scratch, -innerRadius, dir);
-  vec3.addInto(backwardInner, center, scratch);
-
-  // backwardEnd = center + dir * (-len)
-  vec3.scaleInto(scratch, -len, dir);
-  vec3.addInto(backwardEnd, center, scratch);
+  scaledAdd(forwardInner, center, dir, innerRadius);
+  scaledAdd(forwardEnd, center, dir, len);
+  scaledAdd(backwardInner, center, dir, -innerRadius);
+  scaledAdd(backwardEnd, center, dir, -len);
 
   // The returned segments reference stable, reused Vec3 instances.
   return [
@@ -80,7 +70,6 @@ function getShipVelocitySegments(ship: ShipBody): VelocityDebugSegment[] {
 
 // Shared scratch vectors for velocity debug segments.
 const velocityScratch: Vec3 = vec3.zero();
-const scratch: Vec3 = vec3.zero();
 const forwardInner: Vec3 = vec3.zero();
 const forwardEnd: Vec3 = vec3.zero();
 const backwardInner: Vec3 = vec3.zero();
