@@ -122,10 +122,11 @@ export interface SceneState {
  */
 export interface SimControlState {
   alignToVelocity: boolean;
-  thrustPercent: number;
+  thrustLevel: number;
 }
 
 export interface SimulationState {
+  currentThrustLevel: number;
   currentThrustPercent: number;
   gravityBindings: GravityBodyBinding[];
   gravityEngine: GravityEngine;

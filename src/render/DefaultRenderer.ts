@@ -20,7 +20,7 @@ export class DefaultRenderer implements Renderer {
     pilotCamera,
     topCamera,
     fps,
-    currentThrustPercent,
+    currentThrustLevel,
     pilotCameraLocalOffset,
     speedMps,
     pilotSurface,
@@ -52,7 +52,7 @@ export class DefaultRenderer implements Renderer {
     );
 
     var hudData: RenderedHud = {
-      currentThrustPercent,
+      currentThrustLevel,
       fps,
       pilotCameraLocalOffset,
       profilingEnabled,

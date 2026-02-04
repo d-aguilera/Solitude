@@ -209,12 +209,12 @@ export interface TickParams {
 }
 
 export interface TickOutput {
-  scene: Scene;
+  currentThrustLevel: number;
+  fps: number;
   mainShip: ShipBody;
   pilotCamera: DomainCameraPose;
-  topCamera: DomainCameraPose;
-  fps: number;
-  currentThrustPercent: number;
   pilotCameraLocalOffset: Vec3;
+  scene: Scene;
   speedMps: number;
+  topCamera: DomainCameraPose;
 }

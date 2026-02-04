@@ -46,7 +46,7 @@ export interface RenderedFace {
 }
 
 export interface RenderedHud {
-  currentThrustPercent: number;
+  currentThrustLevel: number;
   fps: number;
   pilotCameraLocalOffset: Vec3;
   profilingEnabled: boolean;

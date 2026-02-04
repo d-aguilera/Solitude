@@ -16,6 +16,13 @@ const rotSpeedYaw = 0.5;
 // Max rate at which the ship can reorient itself toward its velocity vector.
 const alignToVelocityMaxAngularSpeed = 0.7; // rad/s
 
+const shipThrustExponent = 3; // [0..9] ^ 3
+const shipThrustMaxPow = Math.pow(9, shipThrustExponent);
+const shipThrustValues = Array.from<number, number>(
+  { length: 10 },
+  (_, i) => Math.pow(i, shipThrustExponent) / shipThrustMaxPow,
+);
+
 /**
  * Update pilot look angles in-place based on input.
  */
@@ -91,39 +98,23 @@ function yawFrame(
  * Update the persistent thrust magnitude in the given ControlState based on
  * numeric-key input.
  *
- * Mapping:
- *   0 -> 0%
- *   1 -> 1%
- *   2 -> 5%
- *   3 -> 25%
- *   4 -> 50%
- *   5 -> 100%
- *
  * If multiple keys are pressed at once, the highest level wins for this frame.
  */
-export function updateThrustMagnitudeFromInput(
+export function updateThrustLevelFromInput(
   input: ControlInput,
   controlState: SimControlState,
 ): void {
-  if (input.thrust9)
-    controlState.thrustPercent = 1.0; // 100%
-  else if (input.thrust8)
-    controlState.thrustPercent = 0.5; // 50%
-  else if (input.thrust7)
-    controlState.thrustPercent = 0.4; // 40%
-  else if (input.thrust6)
-    controlState.thrustPercent = 0.3; // 30%
-  else if (input.thrust5)
-    controlState.thrustPercent = 0.2; // 20%
-  else if (input.thrust4)
-    controlState.thrustPercent = 0.1; // 10%
-  else if (input.thrust3)
-    controlState.thrustPercent = 0.01; // 1%
-  else if (input.thrust2)
-    controlState.thrustPercent = 0.001; // 0.1%
-  else if (input.thrust1)
-    controlState.thrustPercent = 0.0001; // 0.01%
-  else if (input.thrust0) controlState.thrustPercent = 0; // 0%
+  if (false) controlState.thrustLevel = -1;
+  else if (input.thrust9) controlState.thrustLevel = 9;
+  else if (input.thrust8) controlState.thrustLevel = 8;
+  else if (input.thrust7) controlState.thrustLevel = 7;
+  else if (input.thrust6) controlState.thrustLevel = 6;
+  else if (input.thrust5) controlState.thrustLevel = 5;
+  else if (input.thrust4) controlState.thrustLevel = 4;
+  else if (input.thrust3) controlState.thrustLevel = 3;
+  else if (input.thrust2) controlState.thrustLevel = 2;
+  else if (input.thrust1) controlState.thrustLevel = 1;
+  else if (input.thrust0) controlState.thrustLevel = 0;
 }
 
 /**
@@ -135,7 +126,7 @@ export function getSignedThrustPercent(
   input: ControlInput,
   controlState: SimControlState,
 ): number {
-  const mag = controlState.thrustPercent;
+  const mag = shipThrustValues[controlState.thrustLevel];
   const forward = input.burnForward ? mag : 0;
   const backward = input.burnBackwards ? mag : 0;
 

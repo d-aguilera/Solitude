@@ -14,6 +14,10 @@ const hudWidth = 420;
 const hudHeight = 70;
 const margin = 10;
 
+let fpsWidth: number;
+let thrustWidth: number;
+let profilingWidth: number;
+
 /**
  * Canvas2D rasterizer.
  */
@@ -107,36 +111,60 @@ export class CanvasRasterizer implements Rasterizer {
     const canvasSurface = surface as CanvasSurface;
     const ctx = canvasSurface.getContext();
 
-    // HUD's top-left corner
-    const x = ctx.canvas.width - hudWidth - margin;
+    // HUD's location
+    const xMax = ctx.canvas.width - margin;
+    const xMin = xMax - hudWidth;
     const y = margin;
 
     ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-    ctx.fillRect(x, y, hudWidth, hudHeight);
+    ctx.fillRect(xMin, y, hudWidth, hudHeight);
     ctx.fillStyle = "white";
     ctx.font = "16px monospace";
 
     // Speed in km/h
     const speedKmh = hud.speedMps * 3.6;
-    ctx.fillText(`Spd: ${speedKmh.toFixed(0)} km/h`, x + 10, y + 20);
+    ctx.fillText(
+      "".concat("Spd: ", speedKmh.toFixed(0), " km/h"),
+      xMin + 10,
+      y + 20,
+    );
 
     // FPS
-    ctx.fillText(`FPS: ${hud.fps.toFixed(0)}`, x + 320, y + 20);
+    if (fpsWidth === undefined) {
+      fpsWidth = ctx.measureText("FPS: 99").width;
+    }
+    const fpsPadding = hud.fps < 10 ? " " : "";
+    ctx.fillText(
+      "".concat("FPS: ", fpsPadding, hud.fps.toFixed(0)),
+      xMax - 10 - fpsWidth,
+      y + 20,
+    );
 
     // Pilot camera local offset (right, forward, up)
     const { x: ox, y: oy, z: oz } = hud.pilotCameraLocalOffset;
     ctx.fillText(
       `Cam: x=${ox.toFixed(2)} y=${oy.toFixed(2)} z=${oz.toFixed(2)}`,
-      x + 10,
+      xMin + 10,
       y + 40,
     );
 
     // Thrust
-    const thrustDisplay = `${(hud.currentThrustPercent * 100).toFixed(0)}%`;
-    ctx.fillText(`Thrust: ${thrustDisplay}`, x + 320, y + 40);
+    if (thrustWidth === undefined) {
+      thrustWidth = ctx.measureText("Thrust: -0").width;
+    }
+    const thrustPadding = hud.currentThrustLevel < 0 ? "" : " ";
+    const thrustDisplay = "".concat(
+      "Thrust: ",
+      thrustPadding,
+      hud.currentThrustLevel.toString(),
+    );
+    ctx.fillText(thrustDisplay, xMax - 10 - thrustWidth, y + 40);
 
     if (hud.profilingEnabled) {
-      ctx.fillText("PROFILING", x + 320, y + 60);
+      if (profilingWidth === undefined) {
+        profilingWidth = ctx.measureText("PROFILING").width;
+      }
+      ctx.fillText("PROFILING", xMax - 10 - profilingWidth, y + 60);
     }
   }
 

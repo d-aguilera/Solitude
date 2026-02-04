@@ -47,10 +47,11 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
 
   const simControlState: SimControlState = {
     alignToVelocity: false,
-    thrustPercent: 0,
+    thrustLevel: 0,
   };
 
   const simState: SimulationState = {
+    currentThrustLevel: 0,
     currentThrustPercent: 0,
     gravityBindings,
     gravityEngine,
@@ -99,10 +100,19 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
     const dtSeconds = paused ? 0 : dtMs / 1000;
     lastTimeMs = nowMs;
 
-    simState.currentThrustPercent = updateControlState(
+    const currentThrustPercent = updateControlState(
       controlInput,
       simControlState,
     );
+
+    simState.currentThrustPercent = currentThrustPercent;
+
+    simState.currentThrustLevel =
+      currentThrustPercent === 0
+        ? 0
+        : currentThrustPercent > 0
+          ? simControlState.thrustLevel
+          : -simControlState.thrustLevel;
 
     updateShipOrientationFromControls(
       dtSeconds,
@@ -131,7 +141,7 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
     );
 
     return {
-      currentThrustPercent: simState.currentThrustPercent,
+      currentThrustLevel: simState.currentThrustLevel,
       fps: paused ? 0 : 1 / dtSeconds,
       mainShip,
       pilotCamera: sceneState.pilotCamera,

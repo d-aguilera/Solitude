@@ -3,14 +3,14 @@ import type { SimControlState } from "./appInternals.js";
 import {
   getSignedThrustPercent,
   updateAlignToVelocityFromInput,
-  updateThrustMagnitudeFromInput,
+  updateThrustLevelFromInput,
 } from "./controls.js";
 
 export function updateControlState(
   controlInput: ControlInput,
   controlState: SimControlState,
 ): number {
-  updateThrustMagnitudeFromInput(controlInput, controlState);
+  updateThrustLevelFromInput(controlInput, controlState);
   updateAlignToVelocityFromInput(controlInput, controlState);
   return getSignedThrustPercent(controlInput, controlState);
 }
