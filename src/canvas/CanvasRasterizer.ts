@@ -7,6 +7,7 @@ import type {
   RenderedPolyline,
   RenderedSegment,
   RenderSurface2D,
+  ScreenPoint,
 } from "../render/renderPorts.js";
 import type { CanvasSurface } from "./CanvasSurface.js";
 
@@ -36,8 +37,8 @@ export class CanvasRasterizer implements Rasterizer {
     const ctx = canvasSurface.getContext();
 
     const lineHeight = 16;
-    const offsetX = 16;
-    const offsetY = -24;
+    const offsetX = 64;
+    const offsetY = -64;
     const paddingX = 6;
     const paddingY = 4;
 
@@ -45,14 +46,18 @@ export class CanvasRasterizer implements Rasterizer {
     ctx.font = "14px monospace";
     ctx.textBaseline = "middle";
 
+    const rasterizedBodyLabels = new Array(labels.length);
+    let i = 0;
+
     for (const label of labels) {
-      const anchorX = label.anchor.x;
-      const anchorY = label.anchor.y;
+      const { anchor } = label;
+      const anchorX = anchor.x;
+      const anchorY = anchor.y;
 
       const lines = [
         label.name,
-        `d=${label.distanceKm.toFixed(0)} km`,
-        `v=${label.speedKmh.toFixed(2)} km/h`,
+        "d=".concat(label.distanceKm.toFixed(0), " km"),
+        "v=".concat(label.speedKmh.toFixed(0), " km/h"),
       ];
 
       let maxTextWidth = 0;
@@ -67,26 +72,29 @@ export class CanvasRasterizer implements Rasterizer {
       const boxX = anchorX + offsetX;
       const boxY = anchorY + offsetY;
 
-      ctx.strokeStyle = "white";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(anchorX, anchorY);
-      ctx.lineTo(boxX, boxY + boxHeight / 2);
-      ctx.stroke();
+      const rasterizedBodyLabel: RasterizedBodyLabel = {
+        anchor: { x: anchorX, y: anchorY, depth: 0 },
+        lineHeight,
+        lines,
+        padding: {
+          width: paddingX,
+          height: paddingY,
+        },
+        position: {
+          x: boxX,
+          y: boxY,
+          depth: 0,
+        },
+        size: {
+          width: boxWidth,
+          height: boxHeight,
+        },
+      };
 
-      ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-      ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
-
-      ctx.strokeStyle = "white";
-      ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
-
-      ctx.fillStyle = "white";
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const cy = boxY + paddingY + lineHeight * (i + 0.5);
-        ctx.fillText(line, boxX + paddingX, cy);
-      }
+      rasterizedBodyLabels[i++] = rasterizedBodyLabel;
     }
+
+    drawRasterizedBodyLabels(ctx, rasterizedBodyLabels);
 
     ctx.restore();
   }
@@ -124,7 +132,7 @@ export class CanvasRasterizer implements Rasterizer {
     // Speed in km/h
     const speedKmh = hud.speedMps * 3.6;
     ctx.fillText(
-      "".concat("Spd: ", speedKmh.toFixed(0), " km/h"),
+      "Spd: ".concat(speedKmh.toFixed(0), " km/h"),
       xMin + 10,
       y + 20,
     );
@@ -135,7 +143,7 @@ export class CanvasRasterizer implements Rasterizer {
     }
     const fpsPadding = hud.fps < 10 ? " " : "";
     ctx.fillText(
-      "".concat("FPS: ", fpsPadding, hud.fps.toFixed(0)),
+      "FPS: ".concat(fpsPadding, hud.fps.toFixed(0)),
       xMax - 10 - fpsWidth,
       y + 20,
     );
@@ -143,7 +151,14 @@ export class CanvasRasterizer implements Rasterizer {
     // Pilot camera local offset (right, forward, up)
     const { x: ox, y: oy, z: oz } = hud.pilotCameraLocalOffset;
     ctx.fillText(
-      `Cam: x=${ox.toFixed(2)} y=${oy.toFixed(2)} z=${oz.toFixed(2)}`,
+      "Cam:".concat(
+        " x=",
+        ox.toFixed(2),
+        " y=",
+        oy.toFixed(2),
+        " z=",
+        oz.toFixed(2),
+      ),
       xMin + 10,
       y + 40,
     );
@@ -153,8 +168,7 @@ export class CanvasRasterizer implements Rasterizer {
       thrustWidth = ctx.measureText("Thrust: -0").width;
     }
     const thrustPadding = hud.currentThrustLevel < 0 ? "" : " ";
-    const thrustDisplay = "".concat(
-      "Thrust: ",
+    const thrustDisplay = "Thrust: ".concat(
       thrustPadding,
       hud.currentThrustLevel.toString(),
     );
@@ -192,7 +206,6 @@ export class CanvasRasterizer implements Rasterizer {
     const canvasSurface = surface as CanvasSurface;
     const ctx = canvasSurface.getContext();
 
-    ctx.save();
     ctx.lineWidth = 4;
 
     for (const seg of segments) {
@@ -202,7 +215,62 @@ export class CanvasRasterizer implements Rasterizer {
       ctx.lineTo(seg.end.x, seg.end.y);
       ctx.stroke();
     }
+  }
+}
 
-    ctx.restore();
+interface RasterizedBodyLabel {
+  anchor: ScreenPoint;
+  lineHeight: number;
+  lines: string[];
+  padding: {
+    width: number;
+    height: number;
+  };
+  position: ScreenPoint;
+  size: {
+    width: number;
+    height: number;
+  };
+}
+
+function drawRasterizedBodyLabels(
+  ctx: CanvasRenderingContext2D,
+  rasterizedBodyLabels: RasterizedBodyLabel[],
+) {
+  for (const rbl of rasterizedBodyLabels) {
+    drawRasterizedBodyLabel(ctx, rbl);
+  }
+}
+
+function drawRasterizedBodyLabel(
+  ctx: CanvasRenderingContext2D,
+  rasterizedBodyLabel: RasterizedBodyLabel,
+) {
+  const { anchor, lineHeight, lines, padding, position, size } =
+    rasterizedBodyLabel;
+
+  const { x: anchorX, y: anchorY } = anchor;
+  const { width: paddingX, height: paddingY } = padding;
+  const { x: boxX, y: boxY } = position;
+  const { width: boxWidth, height: boxHeight } = size;
+
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(anchorX, anchorY);
+  ctx.lineTo(boxX, boxY + boxHeight / 2);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+  ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+
+  ctx.strokeStyle = "white";
+  ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+
+  ctx.fillStyle = "white";
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const cy = boxY + paddingY + lineHeight * (i + 0.5);
+    ctx.fillText(line, boxX + paddingX, cy);
   }
 }
