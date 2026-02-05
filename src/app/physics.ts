@@ -96,17 +96,17 @@ function applyGravityPositionsToWorld(
     switch (binding.kind) {
       case "ship": {
         const ship = world.shipBodies[binding.shipIndex];
-        ship.position = { ...pos };
+        vec3.copyInto(ship.position, pos);
         break;
       }
       case "planet": {
         const planet = world.planets[binding.planetIndex];
-        planet.position = { ...pos };
+        vec3.copyInto(planet.position, pos);
         break;
       }
       case "star": {
         const star = world.stars[binding.starIndex];
-        star.position = { ...pos };
+        vec3.copyInto(star.position, pos);
         break;
       }
     }
