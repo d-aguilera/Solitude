@@ -23,38 +23,47 @@ const shipThrustValues = Array.from<number, number>(
   (_, i) => Math.pow(i, shipThrustExponent) / shipThrustMaxPow,
 );
 
+export function updateControlState(
+  controlInput: ControlInput,
+  controlState: SimControlState,
+): number {
+  updateThrustLevelFromInput(controlInput, controlState);
+  updateAlignToVelocityFromInput(controlInput, controlState);
+  return getSignedThrustPercent(controlInput, controlState);
+}
+
 /**
  * Update pilot look angles in-place based on input.
  */
 export function updatePilotLook(
   dtSeconds: number,
-  input: ControlInput,
+  controlInput: ControlInput,
   lookState: PilotLookState,
 ): void {
-  if (input.lookReset) {
+  if (controlInput.lookReset) {
     lookState.azimuth = 0;
     lookState.elevation = 0;
   }
 
-  if (input.lookLeft) lookState.azimuth += lookSpeed * dtSeconds;
-  if (input.lookRight) lookState.azimuth -= lookSpeed * dtSeconds;
-  if (input.lookUp) lookState.elevation += lookSpeed * dtSeconds;
-  if (input.lookDown) lookState.elevation -= lookSpeed * dtSeconds;
+  if (controlInput.lookLeft) lookState.azimuth += lookSpeed * dtSeconds;
+  if (controlInput.lookRight) lookState.azimuth -= lookSpeed * dtSeconds;
+  if (controlInput.lookUp) lookState.elevation += lookSpeed * dtSeconds;
+  if (controlInput.lookDown) lookState.elevation -= lookSpeed * dtSeconds;
 }
 
 function rollFrame(
   frame: LocalFrame,
   dtSeconds: number,
-  input: ControlInput,
+  controlInput: ControlInput,
 ): LocalFrame {
   if (
-    (!input.rollLeft && !input.rollRight) ||
-    (input.rollLeft && input.rollRight)
+    (!controlInput.rollLeft && !controlInput.rollRight) ||
+    (controlInput.rollLeft && controlInput.rollRight)
   ) {
     return frame;
   }
 
-  const angle = (input.rollLeft ? -1 : 1) * rotSpeedRoll * dtSeconds;
+  const angle = (controlInput.rollLeft ? -1 : 1) * rotSpeedRoll * dtSeconds;
 
   // Roll around local forward axis (in world coords)
   return rotateFrameAroundAxis(frame, frame.forward, angle);
@@ -63,11 +72,11 @@ function rollFrame(
 function pitchFrame(
   frame: LocalFrame,
   dtSeconds: number,
-  input: ControlInput,
+  controlInput: ControlInput,
 ): LocalFrame {
   let pitchInput = 0;
-  if (input.pitchDown) pitchInput += 1;
-  if (input.pitchUp) pitchInput -= 1;
+  if (controlInput.pitchDown) pitchInput += 1;
+  if (controlInput.pitchUp) pitchInput -= 1;
   if (pitchInput === 0) return frame;
 
   const angle = pitchInput * rotSpeedPitch * dtSeconds;
@@ -79,20 +88,33 @@ function pitchFrame(
 function yawFrame(
   frame: LocalFrame,
   dtSeconds: number,
-  input: ControlInput,
+  controlInput: ControlInput,
 ): LocalFrame {
   if (
-    (!input.yawLeft && !input.yawRight) ||
-    (input.yawLeft && input.yawRight)
+    (!controlInput.yawLeft && !controlInput.yawRight) ||
+    (controlInput.yawLeft && controlInput.yawRight)
   ) {
     return frame;
   }
 
-  const angle = (input.yawLeft ? 1 : -1) * rotSpeedYaw * dtSeconds;
+  const angle = (controlInput.yawLeft ? 1 : -1) * rotSpeedYaw * dtSeconds;
 
   // Yaw around local up axis
   return rotateFrameAroundAxis(frame, frame.up, angle);
 }
+
+const thrustKeys: (keyof ControlInput)[] = [
+  "thrust0",
+  "thrust1",
+  "thrust2",
+  "thrust3",
+  "thrust4",
+  "thrust5",
+  "thrust6",
+  "thrust7",
+  "thrust8",
+  "thrust9",
+];
 
 /**
  * Update the persistent thrust magnitude in the given ControlState based on
@@ -100,21 +122,16 @@ function yawFrame(
  *
  * If multiple keys are pressed at once, the highest level wins for this frame.
  */
-export function updateThrustLevelFromInput(
-  input: ControlInput,
+function updateThrustLevelFromInput(
+  controlInput: ControlInput,
   controlState: SimControlState,
 ): void {
-  if (false) controlState.thrustLevel = -1;
-  else if (input.thrust9) controlState.thrustLevel = 9;
-  else if (input.thrust8) controlState.thrustLevel = 8;
-  else if (input.thrust7) controlState.thrustLevel = 7;
-  else if (input.thrust6) controlState.thrustLevel = 6;
-  else if (input.thrust5) controlState.thrustLevel = 5;
-  else if (input.thrust4) controlState.thrustLevel = 4;
-  else if (input.thrust3) controlState.thrustLevel = 3;
-  else if (input.thrust2) controlState.thrustLevel = 2;
-  else if (input.thrust1) controlState.thrustLevel = 1;
-  else if (input.thrust0) controlState.thrustLevel = 0;
+  for (let i = 9; i >= 0; i--) {
+    if (controlInput[thrustKeys[i]]) {
+      controlState.thrustLevel = i;
+      break;
+    }
+  }
 }
 
 /**
@@ -122,13 +139,13 @@ export function updateThrustLevelFromInput(
  *  - Sign from Space (forward) / B (backward)
  *  - Magnitude from stored thrust level (set by 0–5) in the given state.
  */
-export function getSignedThrustPercent(
-  input: ControlInput,
+function getSignedThrustPercent(
+  controlInput: ControlInput,
   controlState: SimControlState,
 ): number {
   const mag = shipThrustValues[controlState.thrustLevel];
-  const forward = input.burnForward ? mag : 0;
-  const backward = input.burnBackwards ? mag : 0;
+  const forward = controlInput.burnForward ? mag : 0;
+  const backward = controlInput.burnBackwards ? mag : 0;
 
   return forward - backward;
 }
@@ -145,19 +162,19 @@ export function getSignedThrustPercent(
  */
 function updateBodyOrientationFromInput(
   dtSeconds: number,
-  input: ControlInput,
+  controlInput: ControlInput,
   controlState: SimControlState,
   body: ControlledBodyState,
 ): void {
   let frame = body.frame;
-  frame = rollFrame(frame, dtSeconds, input);
-  frame = pitchFrame(frame, dtSeconds, input);
-  frame = yawFrame(frame, dtSeconds, input);
+  frame = rollFrame(frame, dtSeconds, controlInput);
+  frame = pitchFrame(frame, dtSeconds, controlInput);
+  frame = yawFrame(frame, dtSeconds, controlInput);
 
   body.frame = frame;
 
   // Apply alignment toward the velocity vector, if requested.
-  updateFrameAlignToVelocity(dtSeconds, input, controlState, body);
+  updateFrameAlignToVelocity(dtSeconds, controlInput, controlState, body);
 }
 
 const targetForwardScratch: Vec3 = vec3.zero();
@@ -175,13 +192,14 @@ const axisScratch: Vec3 = vec3.zero();
  */
 function updateFrameAlignToVelocity(
   dtSeconds: number,
-  input: ControlInput,
+  controlInput: ControlInput,
   controlState: SimControlState,
   body: ControlledBodyState,
 ): void {
   // Respect the high-level flag owned by the ControlState so that
   // future logic can gate alignment without depending directly on input.
-  const wantAlign = controlState.alignToVelocity && input.alignToVelocity;
+  const wantAlign =
+    controlState.alignToVelocity && controlInput.alignToVelocity;
   if (!wantAlign) {
     return;
   }
@@ -253,11 +271,11 @@ function updateFrameAlignToVelocity(
  * While the align key is held, the ship's attitude will be steered
  * toward the velocity vector.
  */
-export function updateAlignToVelocityFromInput(
-  input: ControlInput,
+function updateAlignToVelocityFromInput(
+  controlInput: ControlInput,
   controlState: SimControlState,
 ): void {
-  controlState.alignToVelocity = input.alignToVelocity;
+  controlState.alignToVelocity = controlInput.alignToVelocity;
 }
 
 /**
@@ -267,14 +285,19 @@ export function updateAlignToVelocityFromInput(
 export function updateShipOrientationFromControls(
   dtSeconds: number,
   ship: ShipBody,
-  input: ControlInput,
+  controlInput: ControlInput,
   controlState: SimControlState,
 ): void {
   const bodyState = {
     frame: ship.frame,
     velocity: ship.velocity,
   };
-  updateBodyOrientationFromInput(dtSeconds, input, controlState, bodyState);
+  updateBodyOrientationFromInput(
+    dtSeconds,
+    controlInput,
+    controlState,
+    bodyState,
+  );
   writeBackControlledBodyState(ship, bodyState);
 }
 

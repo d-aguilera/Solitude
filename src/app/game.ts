@@ -14,10 +14,12 @@ import type {
   TickOutput,
   TickParams,
 } from "./appPorts.js";
-import { updateShipOrientationFromControls } from "./controls.js";
+import {
+  updateControlState,
+  updateShipOrientationFromControls,
+} from "./controls.js";
 import { buildGravityBindings, applyForcesAndGravity } from "./physics.js";
 import { updateSceneGraph } from "./scene.js";
-import { updateControlState } from "./sim.js";
 import { createInitialSceneAndWorld } from "./worldSetup.js";
 
 /**
@@ -51,8 +53,6 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
   };
 
   const simState: SimulationState = {
-    currentThrustLevel: 0,
-    currentThrustPercent: 0,
     gravityBindings,
     gravityEngine,
     gravityState,
@@ -105,9 +105,7 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
       simControlState,
     );
 
-    simState.currentThrustPercent = currentThrustPercent;
-
-    simState.currentThrustLevel =
+    const currentThrustLevel =
       currentThrustPercent === 0
         ? 0
         : currentThrustPercent > 0
@@ -126,7 +124,7 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
       x.world,
       mainShip,
       mainShipBodyState,
-      simState.currentThrustPercent,
+      currentThrustPercent,
       gravityEngine,
       gravityState,
       gravityBindings,
@@ -141,7 +139,7 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
     );
 
     return {
-      currentThrustLevel: simState.currentThrustLevel,
+      currentThrustLevel,
       fps: paused ? 0 : 1 / dtSeconds,
       mainShip,
       pilotCamera: sceneState.pilotCamera,

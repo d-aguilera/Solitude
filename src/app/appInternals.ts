@@ -126,8 +126,6 @@ export interface SimControlState {
 }
 
 export interface SimulationState {
-  currentThrustLevel: number;
-  currentThrustPercent: number;
   gravityBindings: GravityBodyBinding[];
   gravityEngine: GravityEngine;
   gravityState: GravityState;
