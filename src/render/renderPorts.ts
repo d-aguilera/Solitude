@@ -32,10 +32,32 @@ export interface Renderable {
 }
 
 export interface RenderedBodyLabel {
+  /**
+   * Screen-space anchor for the body (projected center).
+   */
   anchor: ScreenPoint;
+
   name: string;
   distanceKm: number;
   speedKmh: number;
+
+  /**
+   * Direction index in [0, 7] selecting one of 8 angles around the
+   * body center:
+   *
+   *   0 ->   0° (top)
+   *   1 ->  45°
+   *   2 ->  90°
+   *   3 -> 135°
+   *   4 -> 180°
+   *   5 -> 225°
+   *   6 -> 270°
+   *   7 -> 315°
+   *
+   * Angles are chosen based on the vector from the body center toward
+   * the screen center, clamped to the nearest 45° step.
+   */
+  directionIndex: number;
 }
 
 export interface RenderedFace {

@@ -11,6 +11,14 @@ import type {
 
 const diffScratch: Vec3 = vec3.zero();
 
+/**
+ * Sample and prepare body labels:
+ *  - Computes distance and speed for each body.
+ *  - Projects body centers into screen space.
+ *  - Chooses an 8-way direction index for label placement based on the
+ *    vector from the body center toward the screen center, clamped to
+ *    the nearest 45° increment.
+ */
 export function renderBodyLabels(
   surface: RenderSurface2D,
   bodies: PlanetSceneObject[],
@@ -31,25 +39,51 @@ export function renderBodyLabels(
       sorted.push({ body, distance: d });
     }
 
+    // Farther to nearer so nearer labels are processed last if a
+    // rasterizer wants to do any painter's-order tricks.
     sorted.sort((a, b) => b.distance - a.distance);
+
+    const screenCenterX = surface.width * 0.5;
+    const screenCenterY = surface.height * 0.5;
+    const angleStepRad = (45 * Math.PI) / 180;
+    const twoPi = Math.PI * 2;
 
     for (const { body, distance } of sorted) {
       const ndc = project(body.position);
       if (!ndc) continue;
 
-      const screenPoint = ndcToScreen(ndc, surface.width, surface.height);
+      const anchor = ndcToScreen(ndc, surface.width, surface.height);
 
       const name = displayNameForBodyId(body.id);
 
-      const dKm = distance / 1000;
+      const distanceKm = distance / 1000;
       const speedMps = vec3.length(body.velocity);
       const speedKmh = speedMps * 3.6;
 
+      // Vector from body center to screen center in screen space.
+      const vx = screenCenterX - anchor.x;
+      const vy = screenCenterY - anchor.y;
+
+      // atan2 gives angle with 0 along +X; rotate so 0 corresponds to "up".
+      let angle = Math.atan2(vy, vx) - Math.PI / 2;
+
+      // Normalize to [0, 2π).
+      if (angle < 0) {
+        angle = (angle % twoPi) + twoPi;
+      } else if (angle >= twoPi) {
+        angle = angle % twoPi;
+      }
+
+      // Clamp to nearest 45° increment.
+      const quantized = Math.round(angle / angleStepRad);
+      const directionIndex = quantized & 7; // keep in [0,7]
+
       renderedBodyLabels.push({
-        anchor: screenPoint,
+        anchor,
         name,
-        distanceKm: dKm,
+        distanceKm,
         speedKmh,
+        directionIndex,
       });
     }
 

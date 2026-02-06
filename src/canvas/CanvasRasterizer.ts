@@ -37,8 +37,6 @@ export class CanvasRasterizer implements Rasterizer {
     const ctx = canvasSurface.getContext();
 
     const lineHeight = 16;
-    const offsetX = 64;
-    const offsetY = -64;
     const paddingX = 6;
     const paddingY = 4;
 
@@ -46,18 +44,18 @@ export class CanvasRasterizer implements Rasterizer {
     ctx.font = "14px monospace";
     ctx.textBaseline = "middle";
 
-    const rasterizedBodyLabels = new Array(labels.length);
+    const rasterizedBodyLabels = new Array<RasterizedBodyLabel>(labels.length);
     let i = 0;
 
     for (const label of labels) {
-      const { anchor } = label;
+      const { anchor, name, distanceKm, speedKmh, directionIndex } = label;
       const anchorX = anchor.x;
       const anchorY = anchor.y;
 
       const lines = [
-        label.name,
-        "d=".concat(label.distanceKm.toFixed(0), " km"),
-        "v=".concat(label.speedKmh.toFixed(0), " km/h"),
+        name,
+        "d=".concat(distanceKm.toFixed(0), " km"),
+        "v=".concat(speedKmh.toFixed(0), " km/h"),
       ];
 
       let maxTextWidth = 0;
@@ -69,8 +67,84 @@ export class CanvasRasterizer implements Rasterizer {
       const boxWidth = maxTextWidth + paddingX * 2;
       const boxHeight = lines.length * lineHeight + paddingY * 2;
 
-      const boxX = anchorX + offsetX;
-      const boxY = anchorY + offsetY;
+      // Direction index:
+      //   0 -> 0°   (top)
+      //   1 -> 45°
+      //   2 -> 90°  (right)
+      //   3 -> 135°
+      //   4 -> 180° (bottom)
+      //   5 -> 225°
+      //   6 -> 270° (left)
+      //   7 -> 315°
+      const angleRad = (directionIndex * 45 * Math.PI) / 180;
+
+      // Offset direction in screen space for the LABEL BOX CENTER.
+      const offsetRadius = 150; // pixels from anchor to box center
+      const ux = Math.sin(angleRad);
+      const uy = -Math.cos(angleRad);
+
+      // Box is placed between anchor and screen center.
+      const boxCenterX = anchorX - ux * offsetRadius;
+      const boxCenterY = anchorY - uy * offsetRadius;
+
+      const boxX = boxCenterX - boxWidth * 0.5;
+      const boxY = boxCenterY - boxHeight * 0.5;
+
+      let edgeX = boxCenterX;
+      let edgeY = boxCenterY;
+
+      switch (directionIndex) {
+        case 0: // top: box is below anchor, connect to top-middle (toward anchor)
+          edgeX = boxCenterX;
+          edgeY = boxY;
+          break;
+
+        case 1:
+          // top-right: box is below-left of anchor.
+          // Anchor is above-right of box, so use top-right corner.
+          edgeX = boxX + boxWidth;
+          edgeY = boxY;
+          break;
+
+        case 2:
+          // right: box is left of anchor, connect to right-middle (toward anchor)
+          edgeX = boxX + boxWidth;
+          edgeY = boxCenterY;
+          break;
+
+        case 3:
+          // bottom-right: box is above-left of anchor.
+          // Anchor is below-right of box, so use bottom-right corner.
+          edgeX = boxX + boxWidth;
+          edgeY = boxY + boxHeight;
+          break;
+
+        case 4:
+          // bottom: box is above anchor, connect to bottom-middle (toward anchor)
+          edgeX = boxCenterX;
+          edgeY = boxY + boxHeight;
+          break;
+
+        case 5:
+          // bottom-left: box is above-right of anchor.
+          // Anchor is below-left of box, so use bottom-left corner.
+          edgeX = boxX;
+          edgeY = boxY + boxHeight;
+          break;
+
+        case 6:
+          // left: box is right of anchor, connect to left-middle (toward anchor)
+          edgeX = boxX;
+          edgeY = boxCenterY;
+          break;
+
+        case 7:
+          // top-left: box is below-right of anchor.
+          // Anchor is above-left of box, so use top-left corner.
+          edgeX = boxX;
+          edgeY = boxY;
+          break;
+      }
 
       const rasterizedBodyLabel: RasterizedBodyLabel = {
         anchor: { x: anchorX, y: anchorY, depth: 0 },
@@ -88,6 +162,11 @@ export class CanvasRasterizer implements Rasterizer {
         size: {
           width: boxWidth,
           height: boxHeight,
+        },
+        edgePoint: {
+          x: edgeX,
+          y: edgeY,
+          depth: 0,
         },
       };
 
@@ -231,6 +310,10 @@ interface RasterizedBodyLabel {
     width: number;
     height: number;
   };
+  /**
+   * Point on the label box edge where the connector line attaches.
+   */
+  edgePoint: ScreenPoint;
 }
 
 function drawRasterizedBodyLabels(
@@ -246,7 +329,7 @@ function drawRasterizedBodyLabel(
   ctx: CanvasRenderingContext2D,
   rasterizedBodyLabel: RasterizedBodyLabel,
 ) {
-  const { anchor, lineHeight, lines, padding, position, size } =
+  const { anchor, lineHeight, lines, padding, position, size, edgePoint } =
     rasterizedBodyLabel;
 
   const { x: anchorX, y: anchorY } = anchor;
@@ -258,7 +341,7 @@ function drawRasterizedBodyLabel(
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(anchorX, anchorY);
-  ctx.lineTo(boxX, boxY + boxHeight / 2);
+  ctx.lineTo(edgePoint.x, edgePoint.y);
   ctx.stroke();
 
   ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
