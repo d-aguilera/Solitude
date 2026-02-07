@@ -25,6 +25,10 @@ const drawMode: DrawMode = "faces";
 const isNotPolylinePath = (obj: SceneObject) =>
   obj.kind !== "polyline" || !obj.id.startsWith("path:");
 
+// Per-view grow-only scratch buffers for shaded faces.
+const pilotShadedFaceBuffer: RenderedFace[] = [];
+const topShadedFaceBuffer: RenderedFace[] = [];
+
 export function renderPilotView(
   camera: DomainCameraPose,
   surface: RenderSurface2D,
@@ -50,7 +54,9 @@ export function renderPilotView(
   const pilotScene: Scene = scene; // full, unfiltered
 
   const faces: RenderedFace[] =
-    drawMode === "faces" ? renderFaces(pilotScene, camera, surface) : [];
+    drawMode === "faces"
+      ? renderFaces(pilotScene, camera, surface, pilotShadedFaceBuffer)
+      : [];
 
   const polylines: RenderedPolyline[] =
     drawMode === "faces"
@@ -111,7 +117,9 @@ export function renderTopView(
   };
 
   const faces: RenderedFace[] =
-    drawMode === "faces" ? renderFaces(topScene, camera, surface) : [];
+    drawMode === "faces"
+      ? renderFaces(topScene, camera, surface, topShadedFaceBuffer)
+      : [];
 
   const polylines: RenderedPolyline[] =
     drawMode === "faces"

@@ -28,6 +28,7 @@ export function renderFaces(
   scene: Scene,
   camera: DomainCameraPose,
   surface: RenderSurface2D,
+  shadedFaceBuffer: RenderedFace[],
 ): RenderedFace[] {
   const { width, height } = surface;
   const { objects, lights } = scene;
@@ -36,7 +37,7 @@ export function renderFaces(
 
   faceList.sort((a, b) => b.depth - a.depth);
 
-  const shadedFaces = shadeFaces(faceList);
+  const shadedFaces = shadeFaces(faceList, shadedFaceBuffer);
 
   return shadedFaces;
 }
@@ -45,7 +46,10 @@ export function renderFaces(
 const e1Scratch: Vec3 = vec3.zero();
 const e2Scratch: Vec3 = vec3.zero();
 const normalScratch: Vec3 = vec3.zero();
-const toCameraScratch: Vec3 = vec3.zero(); // NEW
+const toCameraScratch: Vec3 = vec3.zero();
+
+// Grow-only scratch buffer for face entries across frames.
+const faceEntryScratch: FaceEntry[] = [];
 
 /**
  * Build the list of shaded triangle faces (with depth and lighting information)
@@ -65,7 +69,8 @@ function buildFaces(
       canvasHeight,
     );
 
-    const faceList: FaceEntry[] = [];
+    // Reuse a grow-only scratch buffer instead of allocating a fresh array.
+    let faceCount = 0;
 
     objects.forEach((obj) => {
       if (obj.wireframeOnly) return;
@@ -134,19 +139,34 @@ function buildFaces(
             ? 1
             : toneMapIrradiance(computeIrradianceAtPoint(v0, n, lights));
 
-          faceList.push({
-            intensity,
-            depth: avgDepth,
-            p0,
-            p1,
-            p2,
-            baseColor,
-          });
+          let entry = faceEntryScratch[faceCount];
+          if (!entry) {
+            // Growing --> append a new element.
+            entry = {
+              baseColor,
+              depth: avgDepth,
+              intensity,
+              p0,
+              p1,
+              p2,
+            };
+            faceEntryScratch[faceCount] = entry;
+          } else {
+            // Reuse existing entry
+            entry.baseColor = baseColor;
+            entry.depth = avgDepth;
+            entry.intensity = intensity;
+            entry.p0 = p0;
+            entry.p1 = p1;
+            entry.p2 = p2;
+          }
+
+          faceCount++;
         }
       }
     });
 
-    return faceList;
+    return faceEntryScratch.slice(0, faceCount);
   });
 }
 
@@ -228,10 +248,20 @@ function toneMapIrradiance(E: number): number {
   return Math.max(0, Math.min(1, ldr));
 }
 
-function shadeFaces(faceList: FaceEntry[]) {
-  const shadedFaces = new Array<RenderedFace>(faceList.length);
+/**
+ * Shade the given face list into a caller-provided grow-only scratch buffer.
+ */
+function shadeFaces(
+  faceList: FaceEntry[],
+  shadedFaceScratch: RenderedFace[],
+): RenderedFace[] {
+  const n = faceList.length;
 
-  for (let i = 0; i < faceList.length; i++) {
+  if (shadedFaceScratch.length < n) {
+    shadedFaceScratch.length = n;
+  }
+
+  for (let i = 0; i < n; i++) {
     const face = faceList[i];
     const { p0, p1, p2, baseColor, intensity } = face;
     const { r: baseR, g: baseG, b: baseB } = baseColor;
@@ -239,15 +269,27 @@ function shadeFaces(faceList: FaceEntry[]) {
     const r = Math.round(baseR * k);
     const g = Math.round(baseG * k);
     const b = Math.round(baseB * k);
-    shadedFaces[i] = {
-      p0,
-      p1,
-      p2,
-      color: { r, g, b },
-    };
+
+    let shaded = shadedFaceScratch[i];
+    if (!shaded) {
+      shaded = {
+        p0,
+        p1,
+        p2,
+        color: { r, g, b },
+      };
+      shadedFaceScratch[i] = shaded;
+    } else {
+      shaded.p0 = p0;
+      shaded.p1 = p1;
+      shaded.p2 = p2;
+      shaded.color.r = r;
+      shaded.color.g = g;
+      shaded.color.b = b;
+    }
   }
 
-  return shadedFaces;
+  return shadedFaceScratch.slice(0, n);
 }
 
 interface FaceEntry {
