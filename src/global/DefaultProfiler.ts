@@ -1,12 +1,8 @@
-import type { ProfilerController } from "../app/appPorts";
-import type { Profiler } from "../domain/domainPorts";
+import type { ProfilerController } from "../infra/infraPorts.js";
+import type { Profiler } from "./globalPorts.js";
 
 /**
- * Default profiling adapter.
- *
- * Implements both measurement and control contracts so that
- * inner layers can depend on Profiler while outer layers manage it
- * through ProfilerController.
+ * Implements both measurement and control contracts.
  */
 export class DefaultProfiler implements Profiler, ProfilerController {
   // Profiler implementation
@@ -42,17 +38,21 @@ export class DefaultProfiler implements Profiler, ProfilerController {
   increment(group: string, name: string, count?: number): void {
     if (!this.doProfile) return;
 
-    if (group in this.counters) {
-      const g = this.counters[group];
-      if (name in g) {
-        g[name] += count ?? 1;
-      } else {
-        g[name] = count ?? 1;
-      }
+    const counters = this.counters;
+    const countOrOne = count ?? 1;
+
+    const g: Record<string, number> | undefined = counters[group];
+
+    if (!g) {
+      counters[group] = { [name]: countOrOne };
       return;
     }
 
-    this.counters[group] = { [name]: count ?? 1 };
+    if (name in g) {
+      g[name] += countOrOne;
+    } else {
+      g[name] = countOrOne;
+    }
   }
 
   // ProfilerController implementation
@@ -65,10 +65,6 @@ export class DefaultProfiler implements Profiler, ProfilerController {
 
   setEnabled(value: boolean): void {
     this.enabled = value;
-  }
-
-  isEnabled(): boolean {
-    return this.enabled;
   }
 
   setPaused(isPaused: boolean): void {

@@ -1,4 +1,4 @@
-import { alloc } from "../infra/allocProfiler.js";
+import { alloc } from "../global/allocProfiler.js";
 import type { LocalFrame, Mat3, Vec3 } from "./domainPorts.js";
 import { mat3 } from "./mat3.js";
 import { vec3 } from "./vec3.js";

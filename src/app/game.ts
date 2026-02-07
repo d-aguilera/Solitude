@@ -87,8 +87,8 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
    * Per‑frame update/render entry called by the outer loop.
    */
   return ({
-    nowMs,
     controlInput,
+    nowMs,
     paused,
   }: TickParams): Readonly<TickOutput> => {
     if (!initialized) {

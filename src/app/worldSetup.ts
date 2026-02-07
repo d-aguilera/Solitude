@@ -21,7 +21,7 @@ import { circularSpeedAtRadius } from "../domain/phys.js";
 import { trig } from "../domain/trig.js";
 import { vec3 } from "../domain/vec3.js";
 import { getStarPhysicsById } from "../domain/worldLookup.js";
-import { alloc } from "../infra/allocProfiler.js";
+import { alloc } from "../global/allocProfiler.js";
 import type {
   PlanetBodyConfig,
   PlanetTrajectory,

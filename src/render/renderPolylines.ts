@@ -1,6 +1,6 @@
 import type { SceneObject } from "../app/appPorts.js";
 import type { Vec3 } from "../domain/domainPorts.js";
-import { alloc } from "../infra/allocProfiler.js";
+import { alloc } from "../global/allocProfiler.js";
 import { rgbToCss } from "./color.js";
 import type {
   RenderedPolyline,

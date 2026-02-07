@@ -1,6 +1,6 @@
 import type { BodyId, Mesh, ShipBody, Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
-import { alloc } from "../infra/allocProfiler.js";
+import { alloc } from "../global/allocProfiler.js";
 import type { PlanetTrajectory } from "./appInternals.js";
 import type { Scene } from "./appPorts.js";
 import { Vec3RingBuffer } from "./Vec3RingBuffer.js";

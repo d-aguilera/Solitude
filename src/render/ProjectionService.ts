@@ -3,10 +3,10 @@ import type { Mat3, Vec3 } from "../domain/domainPorts.js";
 import { mat3FromLocalFrameInto } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
+import { lerpInto } from "../domain/vec3Util.js";
+import { alloc } from "../global/allocProfiler.js";
 import type { NdcPoint, ScreenPoint } from "./renderPorts.js";
 import { ndcToScreen } from "./ndcToScreen.js";
-import { alloc } from "../infra/allocProfiler.js";
-import { lerpInto } from "../domain/vec3Util.js";
 
 /**
  * Camera-space forward threshold.

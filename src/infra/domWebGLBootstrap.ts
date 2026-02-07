@@ -1,6 +1,6 @@
-import type { ProfilerController } from "../app/appPorts.js";
-import type { GravityEngine, Profiler } from "../domain/domainPorts.js";
+import type { GravityEngine } from "../domain/domainPorts.js";
 import { NEWTON_G, SOFTENING_LENGTH } from "../domain/domainPorts.js";
+import { profilerController } from "../global/profiling.js";
 import { DefaultRenderer } from "../render/DefaultRenderer.js";
 import type {
   Rasterizer,
@@ -9,8 +9,6 @@ import type {
 } from "../render/renderPorts.js";
 import { WebGLRasterizer } from "../webgl/WebGLRasterizer.js";
 import { WebGLSurface } from "../webgl/WebGLSurface.js";
-import { setAllocProfiler } from "./allocProfiler.js";
-import { DefaultProfiler } from "./DefaultProfiler.js";
 import { runLoop } from "./domGameLoop.js";
 import { initInput } from "./domKeyboardInput.js";
 import { initLayout } from "./domLayout.js";
@@ -58,11 +56,6 @@ export function bootstrap(): void {
     NEWTON_G,
     SOFTENING_LENGTH,
   );
-  const defaultProfiler = new DefaultProfiler();
-  const profiler: Profiler = defaultProfiler;
-  const profilerController: ProfilerController = defaultProfiler;
-
-  setAllocProfiler(profiler);
 
   const pilotRasterizer: Rasterizer = new WebGLRasterizer(pilotContext);
   const topRasterizer: Rasterizer = new WebGLRasterizer(topContext);
@@ -77,11 +70,10 @@ export function bootstrap(): void {
   runLoop(
     renderer,
     gravityEngine,
-    profiler,
-    profilerController,
     pilotSurface,
     topSurface,
     controlInput,
     envInput,
+    profilerController,
   );
 }

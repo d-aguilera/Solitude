@@ -1,5 +1,5 @@
+import { alloc } from "../global/allocProfiler.js";
 import type { Vec3 } from "./domainPorts.js";
-import { alloc } from "../infra/allocProfiler.js";
 
 function addInto(into: Vec3, a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
   into.x = a.x + b.x;

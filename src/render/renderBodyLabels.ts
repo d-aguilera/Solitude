@@ -1,7 +1,7 @@
 import type { PlanetSceneObject } from "../app/appPorts.js";
 import type { BodyId, Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
-import { alloc } from "../infra/allocProfiler.js";
+import { alloc } from "../global/allocProfiler.js";
 import { ndcToScreen } from "./ndcToScreen.js";
 import type {
   NdcPoint,

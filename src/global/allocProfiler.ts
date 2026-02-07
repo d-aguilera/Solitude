@@ -1,12 +1,10 @@
-import type { Profiler } from "../domain/domainPorts.js";
+import type { Profiler } from "./globalPorts.js";
+import { profiler } from "./profiling.js";
 
-let currentProfiler: Profiler | null = null;
+const globalProfiler: Profiler = profiler;
+
 let nameStack: string[] = [];
 let nameStackDepth = 0;
-
-export function setAllocProfiler(profiler: Profiler | null): void {
-  currentProfiler = profiler;
-}
 
 function getFullName(name: string): string {
   switch (nameStackDepth) {
@@ -46,12 +44,12 @@ export const alloc = {
     return result;
   },
   vec3(count = 1): void {
-    currentProfiler?.increment("alloc", getFullName("vec3"), count);
+    globalProfiler.increment("alloc", getFullName("vec3"), count);
   },
   mat3(count = 1): void {
-    currentProfiler?.increment("alloc", getFullName("mat3"), count);
+    globalProfiler.increment("alloc", getFullName("mat3"), count);
   },
   array(count = 1): void {
-    currentProfiler?.increment("alloc", getFullName("array"), count);
+    globalProfiler.increment("alloc", getFullName("array"), count);
   },
 };

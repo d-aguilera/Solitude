@@ -1,5 +1,5 @@
 import type { TickOutput } from "../app/appPorts.js";
-import type { Mesh, Profiler, RGB, Vec3 } from "../domain/domainPorts.js";
+import type { Mesh, RGB, Vec3 } from "../domain/domainPorts.js";
 
 /**
  * Normalized device coordinate in the projection plane:
@@ -105,7 +105,6 @@ export interface RenderParams extends TickOutput {
   pilotSurface: RenderSurface2D;
   topSurface: RenderSurface2D;
   profilingEnabled: boolean;
-  profiler: Profiler;
 }
 
 /**

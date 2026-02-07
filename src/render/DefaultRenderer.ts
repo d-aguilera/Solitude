@@ -26,10 +26,7 @@ export class DefaultRenderer implements Renderer {
     pilotSurface,
     topSurface,
     profilingEnabled,
-    profiler,
   }: RenderParams): void {
-    void profiler;
-
     const overlayBodies: PlanetSceneObject[] = scene.objects.filter(
       (obj): obj is PlanetSceneObject =>
         obj.kind === "planet" || obj.kind === "star",
