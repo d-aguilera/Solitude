@@ -3,7 +3,6 @@ import type { Mat3, Vec3 } from "../domain/domainPorts.js";
 import { mat3FromLocalFrameInto } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
-import { lerpInto } from "../domain/vec3Util.js";
 import { alloc } from "../global/allocProfiler.js";
 import type { NdcPoint, ScreenPoint } from "./renderPorts.js";
 import { ndcToScreen } from "./ndcToScreen.js";
@@ -339,7 +338,7 @@ export class ProjectionService {
 
     // Intersect with plane y = NEAR using lerpInto
     const t = (NEAR - insideCam.y) / (outsideCam.y - insideCam.y);
-    lerpInto(intersectScratch, insideCam, outsideCam, t);
+    vec3.lerpInto(intersectScratch, insideCam, outsideCam, t);
     intersectScratch.y = NEAR;
 
     const ndcInside = this.projectCameraPointToNdc(insideCam);

@@ -1,6 +1,5 @@
 import type { ShipBody, Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
-import { scaledAdd } from "../domain/vec3Util.js";
 import { alloc } from "../global/allocProfiler.js";
 import { ndcToScreen } from "./ndcToScreen.js";
 import type {
@@ -56,10 +55,10 @@ function getShipVelocitySegments(ship: ShipBody): VelocityDebugSegment[] {
   const len = 500000; // meters
   const innerRadius = 6; // meters
 
-  scaledAdd(forwardInner, center, dir, innerRadius);
-  scaledAdd(forwardEnd, center, dir, len);
-  scaledAdd(backwardInner, center, dir, -innerRadius);
-  scaledAdd(backwardEnd, center, dir, -len);
+  vec3.scaledAdd(forwardInner, center, dir, innerRadius);
+  vec3.scaledAdd(forwardEnd, center, dir, len);
+  vec3.scaledAdd(backwardInner, center, dir, -innerRadius);
+  vec3.scaledAdd(backwardEnd, center, dir, -len);
 
   // The returned segments reference stable, reused Vec3 instances.
   return [
