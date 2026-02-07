@@ -96,8 +96,8 @@ export function startGame(gravityEngine: GravityEngine): TickCallback {
       initialized = true;
     }
 
-    const dtMs = nowMs - lastTimeMs;
-    const dtSeconds = paused ? 0 : dtMs / 1000;
+    const dtMs = paused ? 0 : nowMs - lastTimeMs;
+    const dtSeconds = dtMs / 1000;
     lastTimeMs = nowMs;
 
     const currentThrustPercent = updateControlState(
