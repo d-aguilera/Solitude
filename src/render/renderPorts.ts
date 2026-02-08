@@ -1,5 +1,24 @@
-import type { TickOutput } from "../app/appPorts.js";
-import type { Mesh, RGB, Vec3 } from "../domain/domainPorts.js";
+import type { DomainCameraPose, Scene } from "../app/appPorts.js";
+import type { Mesh, RGB, ShipBody, Vec3 } from "../domain/domainPorts.js";
+
+export type DrawMode = "faces" | "lines";
+
+export const drawMode: DrawMode = "faces";
+
+/**
+ * Top-level view rendering abstraction.
+ */
+export interface HudRenderer {
+  render(renderParams: HudRenderParams): RenderedHud;
+}
+
+export interface HudRenderParams {
+  currentThrustLevel: number;
+  fps: number;
+  pilotCameraLocalOffset: Vec3;
+  profilingEnabled: boolean;
+  speedMps: number;
+}
 
 /**
  * Normalized device coordinate in the projection plane:
@@ -95,19 +114,6 @@ export interface RenderedView {
 }
 
 /**
- * Top-level rendering abstraction for the app layer.
- */
-export interface Renderer {
-  renderCurrentFrame(renderParams: RenderParams): void;
-}
-
-export interface RenderParams extends TickOutput {
-  pilotSurface: RenderSurface2D;
-  topSurface: RenderSurface2D;
-  profilingEnabled: boolean;
-}
-
-/**
  * Minimal 2D drawing surface abstraction used by renderers.
  *
  * Implementations may be backed by Canvas2D, WebGL, etc.
@@ -121,4 +127,18 @@ export interface ScreenPoint {
   x: number;
   y: number;
   depth: number; // camera-space depth (positive means in front of camera)
+}
+
+/**
+ * Top-level view rendering abstraction.
+ */
+export interface ViewRenderer {
+  render(renderParams: ViewRenderParams): RenderedView;
+}
+
+export interface ViewRenderParams {
+  camera: DomainCameraPose;
+  mainShip: ShipBody;
+  scene: Scene;
+  surface: RenderSurface2D;
 }

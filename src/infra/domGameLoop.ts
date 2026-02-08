@@ -1,16 +1,21 @@
+import { createTickHandler } from "../app/game.js";
 import type {
   ControlInput,
   EnvInput,
-  TickOutput,
+  Scene,
+  SceneObject,
   TickCallback,
+  TickOutput,
   TickParams,
 } from "../app/appPorts.js";
-import { startGame as createTickHandler } from "../app/game.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import type {
-  Renderer,
-  RenderParams,
+  HudRenderer,
+  HudRenderParams,
+  Rasterizer,
+  RenderedView,
   RenderSurface2D,
+  ViewRenderer,
 } from "../render/renderPorts.js";
 import type { ProfilerController } from "./infraPorts.js";
 import { handlePauseToggle } from "./pause.js";
@@ -20,7 +25,12 @@ import { handleProfilingToggle } from "./profilerControl.js";
  * DOM-level game loop (depends on requestAnimationFrame).
  */
 export function runLoop(
-  renderer: Renderer,
+  pilotViewRenderer: ViewRenderer,
+  pilotRasterizer: Rasterizer,
+  topViewRenderer: ViewRenderer,
+  topRasterizer: Rasterizer,
+  hudRenderer: HudRenderer,
+  hudRasterizer: Rasterizer,
   gravityEngine: GravityEngine,
   pilotSurface: RenderSurface2D,
   topSurface: RenderSurface2D,
@@ -30,6 +40,12 @@ export function runLoop(
 ): void {
   const tick: TickCallback = createTickHandler(gravityEngine);
 
+  const tickParams: TickParams = {
+    nowMs: 0,
+    controlInput,
+    paused: false,
+  };
+
   const loop = (nowMs: number) => {
     const paused = handlePauseToggle(envInput.pauseToggle);
     const profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
@@ -38,22 +54,55 @@ export function runLoop(
     profilerController.setPaused(paused);
     profilerController.check();
 
-    const tickParams: TickParams = {
-      nowMs,
-      controlInput,
-      paused,
+    tickParams.nowMs = nowMs;
+    tickParams.paused = paused;
+
+    const {
+      pilotCamera,
+      mainShip,
+      scene,
+      topCamera,
+      currentThrustLevel,
+      fps,
+      pilotCameraLocalOffset,
+      speedMps,
+    }: TickOutput = tick(tickParams);
+
+    const renderedPilotView = pilotViewRenderer.render({
+      camera: pilotCamera,
+      mainShip: mainShip,
+      scene: scene,
+      surface: pilotSurface,
+    });
+
+    // no trajectory polylines
+    const topScene: Scene = {
+      ...scene,
+      objects: scene.objects.filter(
+        (obj: SceneObject) =>
+          obj.kind !== "polyline" || !obj.id.startsWith("path:"),
+      ),
     };
 
-    const output: TickOutput = tick(tickParams);
+    const renderedTopView = topViewRenderer.render({
+      camera: topCamera,
+      mainShip: mainShip,
+      scene: topScene,
+      surface: topSurface,
+    });
 
-    const renderParams: RenderParams = {
-      ...output,
-      pilotSurface,
-      topSurface,
+    const renderedHud: HudRenderParams = hudRenderer.render({
+      currentThrustLevel,
+      fps,
+      pilotCameraLocalOffset,
       profilingEnabled,
-    };
+      speedMps,
+    });
 
-    renderer.renderCurrentFrame(renderParams);
+    rasterizeView(renderedPilotView, pilotRasterizer, pilotSurface);
+    rasterizeView(renderedTopView, topRasterizer, topSurface);
+
+    hudRasterizer.drawHud(pilotSurface, renderedHud);
 
     profilerController.flush();
 
@@ -61,4 +110,16 @@ export function runLoop(
   };
 
   requestAnimationFrame(loop);
+}
+
+function rasterizeView(
+  renderedView: RenderedView,
+  rasterizer: Rasterizer,
+  surface: RenderSurface2D,
+) {
+  rasterizer.clear(surface, "#000000");
+  rasterizer.drawFaces(surface, renderedView.faces);
+  rasterizer.drawPolylines(surface, renderedView.polylines);
+  rasterizer.drawSegments(surface, renderedView.segments);
+  rasterizer.drawBodyLabels(surface, renderedView.bodyLabels);
 }

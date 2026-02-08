@@ -25,7 +25,7 @@ import { createInitialSceneAndWorld } from "./worldSetup.js";
 /**
  * App‑core game entry.
  */
-export function startGame(gravityEngine: GravityEngine): TickCallback {
+export function createTickHandler(gravityEngine: GravityEngine): TickCallback {
   const x = createInitialSceneAndWorld();
 
   let gravityBindings: GravityBodyBinding[] = buildGravityBindings(x.world);

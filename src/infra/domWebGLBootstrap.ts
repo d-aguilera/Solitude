@@ -1,11 +1,13 @@
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { NEWTON_G, SOFTENING_LENGTH } from "../domain/domainPorts.js";
 import { profilerController } from "../global/profiling.js";
-import { DefaultRenderer } from "../render/DefaultRenderer.js";
+import { DefaultHudRenderer } from "../render/DefaultHudRenderer.js";
+import { DefaultViewRenderer } from "../render/DefaultViewRenderer.js";
 import type {
+  HudRenderer,
   Rasterizer,
-  Renderer,
   RenderSurface2D,
+  ViewRenderer,
 } from "../render/renderPorts.js";
 import { WebGLRasterizer } from "../webgl/WebGLRasterizer.js";
 import { WebGLSurface } from "../webgl/WebGLSurface.js";
@@ -60,15 +62,19 @@ export function bootstrap(): void {
   const pilotRasterizer: Rasterizer = new WebGLRasterizer(pilotContext);
   const topRasterizer: Rasterizer = new WebGLRasterizer(topContext);
 
-  const renderer: Renderer = new DefaultRenderer(
-    pilotRasterizer,
-    topRasterizer,
-  );
+  const pilotViewRenderer: ViewRenderer = new DefaultViewRenderer();
+  const topViewRenderer: ViewRenderer = new DefaultViewRenderer();
+  const hudRenderer: HudRenderer = new DefaultHudRenderer();
 
   const { controlInput, envInput } = initInput();
 
   runLoop(
-    renderer,
+    pilotViewRenderer,
+    pilotRasterizer,
+    topViewRenderer,
+    topRasterizer,
+    hudRenderer,
+    pilotRasterizer,
     gravityEngine,
     pilotSurface,
     topSurface,

@@ -83,8 +83,6 @@ export type ControlInput = Record<ControlAction, boolean>;
 export type EnvAction = (typeof ALL_ENV_ACTIONS)[number];
 export type EnvInput = Record<EnvAction, boolean>;
 
-export type DrawMode = "faces" | "lines";
-
 export interface DomainCameraPose {
   position: Vec3;
   frame: LocalFrame;

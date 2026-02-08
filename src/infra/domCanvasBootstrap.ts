@@ -3,11 +3,13 @@ import { CanvasSurface } from "../canvas/CanvasSurface.js";
 import { NEWTON_G, SOFTENING_LENGTH } from "../domain/domainPorts.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { profilerController } from "../global/profiling.js";
-import { DefaultRenderer } from "../render/DefaultRenderer.js";
+import { DefaultHudRenderer } from "../render/DefaultHudRenderer.js";
+import { DefaultViewRenderer } from "../render/DefaultViewRenderer.js";
 import type {
+  HudRenderer,
   Rasterizer,
-  Renderer,
   RenderSurface2D,
+  ViewRenderer,
 } from "../render/renderPorts.js";
 import { runLoop } from "./domGameLoop.js";
 import { initInput } from "./domKeyboardInput.js";
@@ -57,18 +59,20 @@ export function bootstrap(): void {
     SOFTENING_LENGTH,
   );
 
-  const pilotRasterizer: Rasterizer = new CanvasRasterizer();
-  const topRasterizer: Rasterizer = new CanvasRasterizer();
-
-  const renderer: Renderer = new DefaultRenderer(
-    pilotRasterizer,
-    topRasterizer,
-  );
+  const rasterizer: Rasterizer = new CanvasRasterizer();
+  const pilotViewRenderer: ViewRenderer = new DefaultViewRenderer();
+  const topViewRenderer: ViewRenderer = new DefaultViewRenderer();
+  const hudRenderer: HudRenderer = new DefaultHudRenderer();
 
   const { controlInput, envInput } = initInput();
 
   runLoop(
-    renderer,
+    pilotViewRenderer,
+    rasterizer,
+    topViewRenderer,
+    rasterizer,
+    hudRenderer,
+    rasterizer,
     gravityEngine,
     pilotSurface,
     topSurface,
