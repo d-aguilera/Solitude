@@ -10,7 +10,7 @@ import {
   syncPlanetsToSceneObjects,
   syncShipsToSceneObjects,
   syncStarsToSceneObjects,
-} from "./worldSetup.js";
+} from "./syncSceneObjects.js";
 
 export function updateSceneGraph(
   dtSeconds: number,

@@ -86,11 +86,9 @@ export function createTickHandler(gravityEngine: GravityEngine): TickCallback {
   /**
    * Per‑frame update/render entry called by the outer loop.
    */
-  return ({
-    controlInput,
-    nowMs,
-    paused,
-  }: TickParams): Readonly<TickOutput> => {
+  return (params: TickParams): Readonly<TickOutput> => {
+    const { controlInput, nowMs, paused } = params;
+
     if (!initialized) {
       lastTimeMs = nowMs - 1;
       initialized = true;

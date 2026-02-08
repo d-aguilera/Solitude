@@ -1,147 +1,35 @@
 import type {
   BodyId,
-  CelestialBody,
   LocalFrame,
   Mesh,
-  PlanetPhysics,
   RGB,
-  ShipBody,
-  StarPhysics,
   Vec3,
   World,
 } from "../domain/domainPorts.js";
-import {
-  makeLocalFrameFromUp,
-  mat3FromLocalFrame,
-  rotateFrameAroundAxis,
-} from "../domain/localFrame.js";
+import { makeLocalFrameFromUp } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
-import { shipModel, generatePlanetMesh } from "../domain/models.js";
-import { circularSpeedAtRadius } from "../domain/phys.js";
-import { trig } from "../domain/trig.js";
 import { vec3 } from "../domain/vec3.js";
-import { getStarPhysicsById } from "../domain/worldLookup.js";
-import { alloc } from "../global/allocProfiler.js";
-import type {
-  PlanetBodyConfig,
-  PlanetTrajectory,
-  StarBodyConfig,
-} from "./appInternals.js";
-import { colors } from "./appInternals.js";
+import type { PlanetTrajectory } from "./appInternals.js";
 import type {
   DomainCameraPose,
-  PlanetSceneObject,
   PolylineSceneObject,
   Scene,
   SceneObject,
-  ShipSceneObject,
-  StarSceneObject,
 } from "./appPorts.js";
+import {
+  createInitialPilotCamera,
+  createInitialTopCamera,
+} from "./setupCameras.js";
+import { addPlanetsAndStarsFromConfig } from "./setupPlanets.js";
+import { createInitialShip } from "./setupShips.js";
 import { buildDefaultSolarSystemConfigs } from "./solarSystem.js";
+import { buildLightsFromStars } from "./syncSceneObjects.js";
 import { createPlanetTrajectory } from "./trajectories.js";
 
-const initialUp: Vec3 = vec3.create(0, 0, 1);
-const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
+export const initialUp: Vec3 = vec3.create(0, 0, 1);
+export const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
 
-const axisScratch = vec3.zero();
-
-function createInitialShip(
-  id: string,
-  position: Vec3,
-  initialVelocity: Vec3,
-): ShipBody {
-  const speed = vec3.length(initialVelocity);
-
-  let frame: LocalFrame;
-
-  if (speed > 0) {
-    // Work on a normalized copy so as not to modify initialVelocity.
-    const targetForward = vec3.normalizeInto({
-      x: initialVelocity.x,
-      y: initialVelocity.y,
-      z: initialVelocity.z,
-    });
-
-    // Start from the canonical initialFrame
-    const baseForward = initialFrame.forward;
-
-    // Compute rotation axis = baseForward × targetForward
-    const axis = vec3.crossInto(axisScratch, baseForward, targetForward);
-    const axisLen = vec3.length(axis);
-
-    if (axisLen < 1e-6) {
-      // Vectors are parallel or anti-parallel.
-      const dot = vec3.dot(baseForward, targetForward);
-      if (dot > 0.999999) {
-        // Same direction: no change needed.
-        frame = initialFrame;
-      } else {
-        // Opposite direction: rotate 180° around "up" to flip forward.
-        frame = {
-          right: vec3.scaleInto(vec3.zero(), -1, initialFrame.right),
-          forward: vec3.scaleInto(vec3.zero(), -1, baseForward),
-          up: initialFrame.up,
-        };
-      }
-    } else {
-      // General case: rotate base frame so its forward matches targetForward.
-      const axisN = vec3.normalizeInto(axis);
-      const dot = Math.min(
-        1,
-        Math.max(-1, vec3.dot(baseForward, targetForward)),
-      );
-      const angle = Math.acos(dot);
-
-      frame = rotateFrameAroundAxis(initialFrame, axisN, angle);
-    }
-  } else {
-    frame = initialFrame;
-  }
-
-  return {
-    id,
-    position: { ...position },
-    frame,
-    velocity: { ...initialVelocity },
-  };
-}
-
-function createInitialTopCamera(ship: ShipBody): DomainCameraPose {
-  const offset: Vec3 = vec3.create(0, 0, 50);
-  const position = vec3.addInto(vec3.zero(), ship.position, offset);
-  return {
-    position,
-    frame: initialFrame,
-  };
-}
-
-function createInitialPilotCamera(ship: ShipBody): DomainCameraPose {
-  return {
-    position: { ...ship.position }, // will be offset in game loop
-    frame: initialFrame,
-  };
-}
-
-const SHIP_VISUAL_SCALE = 15;
-
-function addShipObject(ship: ShipBody, objects: SceneObject[]): void {
-  const obj: ShipSceneObject = {
-    id: ship.id,
-    kind: "ship",
-    mesh: shipModel,
-    position: { ...ship.position },
-    orientation: mat3FromLocalFrame(ship.frame),
-    scale: SHIP_VISUAL_SCALE,
-    color: colors.ship,
-    lineWidth: 1,
-    applyTransform: true,
-    wireframeOnly: false,
-    backFaceCulling: false,
-  };
-  objects.push(obj);
-}
-
-function createPolylineSceneObject(
+export function createPolylineSceneObject(
   id: string,
   color: RGB,
 ): PolylineSceneObject {
@@ -162,214 +50,6 @@ function createPolylineSceneObject(
     applyTransform: false, // polyline points are in world space
     backFaceCulling: false,
   };
-}
-
-/**
- * Helper: compute physical mass from radius and density.
- */
-function computePlanetMass(physicalRadius: number, density: number): number {
-  const volume =
-    (4 / 3) * Math.PI * physicalRadius * physicalRadius * physicalRadius;
-  return density * volume;
-}
-
-/**
- * Add planets + stars + their orbit paths from an arbitrary list of PlanetConfig.
- *
- * Responsibilities kept here:
- *  - Create visual PlanetSceneObject / StarSceneObject
- *  - Register corresponding CelestialBody entries in world
- *  - Register PlanetPhysics / StarPhysics entries for gravity
- */
-function addPlanetsAndStarsFromConfig(
-  configs: (PlanetBodyConfig | StarBodyConfig)[],
-  objects: SceneObject[],
-  worldPlanets: World["planets"],
-  worldPlanetPhysics: PlanetPhysics[],
-  worldStars: World["stars"],
-  worldStarPhysics: StarPhysics[],
-): void {
-  const bodyMeshTemplate: Mesh = generatePlanetMesh(3);
-
-  // Define an orbital ship via two basis vectors:
-  const radialAxis1: Vec3 = vec3.normalizeInto(
-    vec3.clone(initialFrame.forward),
-  );
-  const radialAxis2: Vec3 = vec3.normalizeInto(vec3.clone(initialUp));
-
-  for (const cfg of configs) {
-    const theta = cfg.orbit.angleRad;
-    const radial = trig.radialDirAtAngle(theta, radialAxis1, radialAxis2);
-    const tangential = trig.tangentialDirAtAngle(
-      theta,
-      radialAxis1,
-      radialAxis2,
-    );
-
-    // Physical orbit radius in meters
-    const center: Vec3 = vec3.scaleInto(vec3.zero(), cfg.orbit.radius, radial);
-
-    const bodyMesh: Mesh = { ...bodyMeshTemplate };
-
-    const initialVelocity =
-      cfg.orbit.radius > 0
-        ? vec3.scaleInto(vec3.zero(), cfg.tangentialSpeed, tangential)
-        : vec3.zero();
-
-    const rotationAxis = vec3.normalizeInto(vec3.clone(cfg.rotationAxis));
-    const angularSpeedRadPerSec = cfg.angularSpeedRadPerSec;
-
-    if (cfg.kind === "star") {
-      const starObj: StarSceneObject = {
-        id: cfg.id,
-        kind: "star",
-        mesh: bodyMesh,
-        position: center,
-        orientation: mat3.identity,
-        scale: cfg.physicalRadius,
-        color: cfg.color,
-        lineWidth: 1,
-        applyTransform: true,
-        wireframeOnly: false,
-        initialVelocity,
-        physicalRadius: cfg.physicalRadius,
-        backFaceCulling: true,
-        velocity: { ...initialVelocity },
-        luminosity: cfg.luminosity,
-        rotationAxis,
-        angularSpeedRadPerSec,
-      };
-
-      const starBody: CelestialBody = {
-        id: cfg.id,
-        position: { ...center },
-        velocity: { ...initialVelocity },
-      };
-
-      const starPhys: StarPhysics = {
-        id: cfg.id,
-        physicalRadius: cfg.physicalRadius,
-        density: cfg.density,
-        mass: computePlanetMass(cfg.physicalRadius, cfg.density),
-        luminosity: cfg.luminosity,
-      };
-
-      worldStars.push(starBody);
-      worldStarPhysics.push(starPhys);
-      objects.push(starObj);
-    } else {
-      const planetObj: PlanetSceneObject = {
-        id: cfg.id,
-        kind: "planet",
-        mesh: bodyMesh,
-        position: center,
-        orientation: mat3.identity,
-        scale: cfg.physicalRadius,
-        color: cfg.color,
-        lineWidth: 1,
-        applyTransform: true,
-        wireframeOnly: false,
-        initialVelocity,
-        physicalRadius: cfg.physicalRadius,
-        backFaceCulling: true,
-        velocity: { ...initialVelocity },
-        rotationAxis,
-        angularSpeedRadPerSec,
-      };
-
-      worldPlanets.push({
-        id: cfg.id,
-        position: { ...center },
-        velocity: { ...initialVelocity },
-      });
-
-      worldPlanetPhysics.push({
-        id: cfg.id,
-        physicalRadius: cfg.physicalRadius,
-        density: cfg.density,
-        mass: computePlanetMass(cfg.physicalRadius, cfg.density),
-      });
-
-      objects.push(planetObj);
-    }
-
-    // All get a path polyline
-    objects.push(createPolylineSceneObject(cfg.pathId, cfg.color));
-  }
-}
-
-// 100 km above Earth's north pole
-const PLANE_START_ALTITUDE_M = 10_000_000; // meters
-
-function computeShipStartPosFromPlanet(
-  objects: SceneObject[],
-  planetId: string,
-): Vec3 {
-  const planetObj = objects.find((o) => o.id === planetId);
-  if (!planetObj) {
-    throw new Error(`Home planet not found in scene objects: ${planetId}`);
-  }
-  if (planetObj.kind !== "planet") {
-    throw new Error(`Home planet is not a planet: ${planetId}`);
-  }
-
-  // North pole direction: global +Z in this setup
-  const north: Vec3 = vec3.create(0, 0, 1);
-
-  // Use planet's physical radius from its scene object
-  const offset = vec3.scaleInto(
-    vec3.zero(),
-    planetObj.physicalRadius + PLANE_START_ALTITUDE_M,
-    north,
-  );
-
-  return vec3.addInto(vec3.zero(), planetObj.position, offset);
-}
-
-/**
- * Compute an initial heliocentric velocity for the ship that corresponds
- * to a near-circular orbit around Earth at the given start position.
- *
- * The result is:
- *   v_ship = v_earth + v_rel
- *
- * where v_rel is perpendicular to the Earth→ship radial direction and
- * has the circular speed for an orbit around Earth's mass at that radius.
- */
-function computeShipInitialNearEarthOrbitVelocity(
-  shipStartPos: Vec3,
-  earthObj: PlanetSceneObject,
-  earthPhys: PlanetPhysics,
-): Vec3 {
-  // Earth heliocentric velocity: dominant motion
-  const vEarth = vec3.clone(earthObj.initialVelocity);
-
-  // Radial offset Earth -> ship
-  const earthCenter = earthObj.position;
-  const offset = vec3.subInto(vec3.zero(), shipStartPos, earthCenter);
-  const r = vec3.length(offset);
-  if (r === 0) {
-    // Fallback: just use Earth's velocity
-    return vEarth;
-  }
-
-  const radialDir = vec3.scaleInto(offset, 1 / r, offset);
-
-  // Build a tangential direction around Earth, perpendicular to radialDir.
-  // Use Earth's current orbital direction as a reference, projected to be orthogonal.
-  const earthDir = vec3.normalizeInto(vec3.clone(vEarth));
-  const dot = vec3.dot(earthDir, radialDir);
-  vec3.scaleInto(radialDir, dot, radialDir);
-  const tangential = vec3.subInto(radialDir, earthDir, radialDir);
-  vec3.normalizeInto(tangential);
-  const tangentialDir = vec3.length(tangential) > 0 ? tangential : earthDir;
-
-  // Local circular orbital speed around Earth at this radius.
-  const vRelMag = circularSpeedAtRadius(earthPhys.mass, r);
-  const vRel = vec3.scaleInto(tangentialDir, vRelMag, tangentialDir);
-
-  // Total: Earth's heliocentric velocity + local orbital component.
-  return vec3.addInto(vRel, vEarth, vRel);
 }
 
 export function createInitialSceneAndWorld(): {
@@ -393,6 +73,7 @@ export function createInitialSceneAndWorld(): {
 
   // Build the whole planetary system from config
   const planetConfigs = buildDefaultSolarSystemConfigs();
+
   addPlanetsAndStarsFromConfig(
     planetConfigs,
     objects,
@@ -402,42 +83,12 @@ export function createInitialSceneAndWorld(): {
     world.starPhysics,
   );
 
-  // Choose which planet is treated as the "home" / starting planet.
-  const homePlanetId = "planet:earth";
-  const shipStartPos = computeShipStartPosFromPlanet(objects, homePlanetId);
-
-  // Find Earth's scene object
-  const earthObj = objects.find(
-    (o): o is PlanetSceneObject => o.id === homePlanetId && o.kind === "planet",
-  );
-  if (!earthObj) {
-    throw new Error(`Home planet scene object not found: ${homePlanetId}`);
-  }
-
-  const earthPhys = getPlanetPhysicsById(world.planetPhysics, homePlanetId);
-
-  const shipInitialVelocity = computeShipInitialNearEarthOrbitVelocity(
-    shipStartPos,
-    earthObj,
-    earthPhys,
-  );
-
   const mainShip = createInitialShip(
     "ship:main",
-    shipStartPos,
-    shipInitialVelocity,
+    "planet:earth",
+    objects,
+    world,
   );
-
-  world.shipBodies.push(mainShip);
-
-  // Add the ship visual object at that position
-  addShipObject(mainShip, objects);
-
-  const mainShipPath = createPolylineSceneObject(
-    "path:ship:main",
-    colors.yellow,
-  );
-  objects.push(mainShipPath);
 
   const topCamera = createInitialTopCamera(mainShip);
   const pilotCamera = createInitialPilotCamera(mainShip);
@@ -471,105 +122,4 @@ export function createInitialSceneAndWorld(): {
     planetPathMappings,
     planetTrajectories,
   };
-}
-
-export function syncShipsToSceneObjects(
-  shipBodies: ShipBody[],
-  scene: Scene,
-): void {
-  for (const ship of shipBodies) {
-    const obj = scene.objects.find((o) => o.id === ship.id);
-    if (!obj) continue;
-
-    // Keep renderer-facing pose in sync with physics ship.
-    obj.position = ship.position;
-    obj.orientation = mat3FromLocalFrame(ship.frame);
-  }
-}
-
-export function syncPlanetsToSceneObjects(
-  planets: CelestialBody[],
-  scene: Scene,
-): void {
-  for (const body of planets) {
-    const obj = scene.objects.find(
-      (o) => o.id === body.id,
-    ) as PlanetSceneObject;
-    if (!obj) continue;
-
-    obj.position = body.position;
-    obj.velocity = body.velocity;
-  }
-}
-
-export function syncStarsToSceneObjects(
-  stars: CelestialBody[],
-  scene: Scene,
-): void {
-  for (const starBody of stars) {
-    const obj = scene.objects.find(
-      (o) => o.id === starBody.id,
-    ) as StarSceneObject;
-    if (!obj) continue;
-
-    obj.position = starBody.position;
-    obj.velocity = starBody.velocity;
-  }
-}
-
-/**
- * Internal helper: build the array of point lights from the current star bodies.
- */
-function buildLightsFromStars(world: World, scene: Scene): void {
-  const lights = [];
-
-  for (const starBody of world.stars) {
-    const phys = getStarPhysicsById(world, starBody.id);
-
-    lights.push({
-      position: { ...starBody.position },
-      intensity: phys.luminosity,
-    });
-  }
-
-  scene.lights = lights;
-}
-
-/**
- * Per‑frame adapter: keep Scene.lights in sync with the current star bodies.
- */
-export function syncLightsToStars(world: World, scene: Scene): void {
-  buildLightsFromStars(world, scene);
-}
-
-function getPlanetPhysicsById(
-  planetPhysics: PlanetPhysics[],
-  id: string,
-): PlanetPhysics {
-  const phys = planetPhysics.find((p) => p.id === id);
-  if (!phys) {
-    throw new Error(`PlanetPhysics not found: ${id}`);
-  }
-  return phys;
-}
-
-/**
- * Per-frame adapter: advance axial rotation for planets and stars.
- */
-export function rotateCelestialBodies(scene: Scene, dtSeconds: number): void {
-  if (dtSeconds == 0) return;
-  alloc.withName("rotateCelestialBodies", () => {
-    for (const obj of scene.objects) {
-      if (obj.kind !== "planet" && obj.kind !== "star") continue;
-
-      const angle = obj.angularSpeedRadPerSec * dtSeconds;
-      if (angle === 0) continue;
-
-      const Rspin = mat3.rotAxis(obj.rotationAxis, angle);
-
-      // Orientation is a local→world transform. Apply spin in local space
-      // by left-multiplying the existing orientation.
-      obj.orientation = mat3.mulMat3(Rspin, obj.orientation);
-    }
-  });
 }
