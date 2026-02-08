@@ -13,8 +13,4 @@ export class CanvasSurface implements RenderSurface2D {
   get height(): number {
     return this.ctx.canvas.height;
   }
-
-  getContext(): CanvasRenderingContext2D {
-    return this.ctx;
-  }
 }

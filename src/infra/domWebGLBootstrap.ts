@@ -62,8 +62,13 @@ export function bootstrap(): void {
   const pilotRasterizer: Rasterizer = new WebGLRasterizer(pilotContext);
   const topRasterizer: Rasterizer = new WebGLRasterizer(topContext);
 
-  const pilotViewRenderer: ViewRenderer = new DefaultViewRenderer();
-  const topViewRenderer: ViewRenderer = new DefaultViewRenderer();
+  const pilotViewRenderer: ViewRenderer = new DefaultViewRenderer(
+    pilotRasterizer.measureText,
+  );
+  const topViewRenderer: ViewRenderer = new DefaultViewRenderer(
+    topRasterizer.measureText,
+  );
+  const hudRasterizer = pilotRasterizer;
   const hudRenderer: HudRenderer = new DefaultHudRenderer();
 
   const { controlInput, envInput } = initInput();
@@ -74,7 +79,7 @@ export function bootstrap(): void {
     topViewRenderer,
     topRasterizer,
     hudRenderer,
-    pilotRasterizer,
+    hudRasterizer,
     gravityEngine,
     pilotSurface,
     topSurface,

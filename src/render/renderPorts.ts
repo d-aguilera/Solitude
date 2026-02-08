@@ -35,12 +35,13 @@ export interface NdcPoint {
  * Rasterizer abstraction.
  */
 export interface Rasterizer {
-  clear(surface: RenderSurface2D, color: string): void;
-  drawBodyLabels(surface: RenderSurface2D, labels: RenderedBodyLabel[]): void;
-  drawFaces(surface: RenderSurface2D, faces: RenderedFace[]): void;
-  drawHud(surface: RenderSurface2D, hud: RenderedHud): void;
-  drawPolylines(surface: RenderSurface2D, polylines: RenderedPolyline[]): void;
-  drawSegments(surface: RenderSurface2D, segments: RenderedSegment[]): void;
+  clear(color: string): void;
+  drawBodyLabels(labels: RenderedBodyLabel[]): void;
+  drawFaces(faces: RenderedFace[]): void;
+  drawHud(hud: RenderedHud): void;
+  drawPolylines(polylines: RenderedPolyline[]): void;
+  drawSegments(segments: RenderedSegment[]): void;
+  measureText(text: string, font: string): TextMetrics;
 }
 
 export interface Renderable {
@@ -51,32 +52,22 @@ export interface Renderable {
 }
 
 export interface RenderedBodyLabel {
-  /**
-   * Screen-space anchor for the body (projected center).
-   */
   anchor: ScreenPoint;
-
-  name: string;
   distanceKm: number;
+  edgePoint: ScreenPoint;
+  lineHeight: number;
+  lines: string[];
+  name: string;
+  padding: {
+    width: number;
+    height: number;
+  };
+  position: ScreenPoint;
+  size: {
+    width: number;
+    height: number;
+  };
   speedKmh: number;
-
-  /**
-   * Direction index in [0, 7] selecting one of 8 angles around the
-   * body center:
-   *
-   *   0 ->   0° (top)
-   *   1 ->  45°
-   *   2 ->  90°
-   *   3 -> 135°
-   *   4 -> 180°
-   *   5 -> 225°
-   *   6 -> 270°
-   *   7 -> 315°
-   *
-   * Angles are chosen based on the vector from the body center toward
-   * the screen center, clamped to the nearest 45° step.
-   */
-  directionIndex: number;
 }
 
 export interface RenderedFace {
@@ -127,6 +118,24 @@ export interface ScreenPoint {
   x: number;
   y: number;
   depth: number; // camera-space depth (positive means in front of camera)
+}
+
+/**
+ * [MDN Reference](https://developer.mozilla.org/docs/Web/API/TextMetrics)
+ */
+export interface TextMetrics {
+  readonly actualBoundingBoxAscent: number;
+  readonly actualBoundingBoxDescent: number;
+  readonly actualBoundingBoxLeft: number;
+  readonly actualBoundingBoxRight: number;
+  readonly alphabeticBaseline: number;
+  readonly emHeightAscent: number;
+  readonly emHeightDescent: number;
+  readonly fontBoundingBoxAscent: number;
+  readonly fontBoundingBoxDescent: number;
+  readonly hangingBaseline: number;
+  readonly ideographicBaseline: number;
+  readonly width: number;
 }
 
 /**

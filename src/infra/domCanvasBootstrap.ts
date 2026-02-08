@@ -59,20 +59,26 @@ export function bootstrap(): void {
     SOFTENING_LENGTH,
   );
 
-  const rasterizer: Rasterizer = new CanvasRasterizer();
-  const pilotViewRenderer: ViewRenderer = new DefaultViewRenderer();
-  const topViewRenderer: ViewRenderer = new DefaultViewRenderer();
+  const pilotRasterizer: Rasterizer = new CanvasRasterizer(pilotContext);
+  const pilotViewRenderer: ViewRenderer = new DefaultViewRenderer(
+    (text: string, font: string) => pilotRasterizer.measureText(text, font),
+  );
+  const topRasterizer: Rasterizer = new CanvasRasterizer(topContext);
+  const topViewRenderer: ViewRenderer = new DefaultViewRenderer(
+    (text: string, font: string) => topRasterizer.measureText(text, font),
+  );
+  const hudRasterizer = pilotRasterizer;
   const hudRenderer: HudRenderer = new DefaultHudRenderer();
 
   const { controlInput, envInput } = initInput();
 
   runLoop(
     pilotViewRenderer,
-    rasterizer,
+    pilotRasterizer,
     topViewRenderer,
-    rasterizer,
+    topRasterizer,
     hudRenderer,
-    rasterizer,
+    hudRasterizer,
     gravityEngine,
     pilotSurface,
     topSurface,

@@ -7,7 +7,13 @@ import type {
   NdcPoint,
   RenderSurface2D,
   RenderedBodyLabel,
+  TextMetrics,
 } from "./renderPorts.js";
+
+const sortedScratch: {
+  body: PlanetSceneObject;
+  distance: number;
+}[] = [];
 
 const diffScratch: Vec3 = vec3.zero();
 
@@ -24,67 +30,110 @@ export function renderBodyLabels(
   bodies: PlanetSceneObject[],
   referencePosition: Vec3,
   project: (worldPoint: Vec3) => NdcPoint | null,
+  measureText: (text: string, font: string) => TextMetrics,
 ): RenderedBodyLabel[] {
   return alloc.withName(renderBodyLabels.name, () => {
     const renderedBodyLabels: RenderedBodyLabel[] = [];
 
-    const sorted: {
-      body: PlanetSceneObject;
-      distance: number;
-    }[] = [];
+    const bl = bodies.length;
+    const sl = sortedScratch.length;
+    sortedScratch.length = bl;
+    for (let i = sl; i < bl; i++) {
+      sortedScratch[i] = {
+        body: bodies[i],
+        distance: 0,
+      };
+    }
 
-    for (const body of bodies) {
+    for (let i = 0; i < bl; i++) {
+      const body = bodies[i];
       vec3.subInto(diffScratch, body.position, referencePosition);
-      const d = vec3.length(diffScratch);
-      sorted.push({ body, distance: d });
+      const distance = vec3.length(diffScratch);
+      sortedScratch[i] = { body, distance };
     }
 
     // Farther to nearer so nearer labels are processed last if a
     // rasterizer wants to do any painter's-order tricks.
-    sorted.sort((a, b) => b.distance - a.distance);
+    sortedScratch.sort((a, b) => b.distance - a.distance);
 
-    const screenCenterX = surface.width * 0.5;
-    const screenCenterY = surface.height * 0.5;
-    const angleStepRad = (45 * Math.PI) / 180;
-    const twoPi = Math.PI * 2;
+    const angleStep = 45;
+    const angleStepRad = (angleStep * Math.PI) / 180;
 
-    for (const { body, distance } of sorted) {
+    const font = "14px monospace";
+    const lineHeight = 16;
+    const paddingX = 6;
+    const paddingY = 4;
+
+    for (const { body, distance } of sortedScratch) {
       const ndc = project(body.position);
-      if (!ndc) continue;
+      if (!ndc) continue; // behind the camera
 
       const anchor = ndcToScreen(ndc, surface.width, surface.height);
 
       const name = displayNameForBodyId(body.id);
-
       const distanceKm = distance / 1000;
       const speedMps = vec3.length(body.velocity);
       const speedKmh = speedMps * 3.6;
 
-      // Vector from body center to screen center in screen space.
-      const vx = screenCenterX - anchor.x;
-      const vy = screenCenterY - anchor.y;
-
-      // atan2 gives angle with 0 along +X; rotate so 0 corresponds to "up".
-      let angle = Math.atan2(vy, vx) - Math.PI / 2;
-
-      // Normalize to [0, 2π).
-      if (angle < 0) {
-        angle = (angle % twoPi) + twoPi;
-      } else if (angle >= twoPi) {
-        angle = angle % twoPi;
-      }
-
-      // Clamp to nearest 45° increment.
-      const quantized = Math.round(angle / angleStepRad);
-      const directionIndex = quantized & 7; // keep in [0,7]
-
-      renderedBodyLabels.push({
-        anchor,
+      const lines = [
         name,
-        distanceKm,
-        speedKmh,
+        "d=".concat(distanceKm.toFixed(0), " km"),
+        "v=".concat(speedKmh.toFixed(0), " km/h"),
+      ];
+
+      let maxTextWidth = getTextWidth(lines, font, measureText);
+
+      const boxWidth = maxTextWidth + paddingX * 2;
+      const boxHeight = lines.length * lineHeight + paddingY * 2;
+
+      // Vector from body center to screen center in screen space.
+      const directionIndex = getDirectionIndex(surface, anchor, angleStepRad);
+
+      // Offset direction in screen space for the LABEL BOX CENTER.
+      const { x: boxCenterX, y: boxCenterY } = getBoxCenter(
         directionIndex,
-      });
+        angleStepRad,
+        anchor,
+      );
+
+      const boxX = boxCenterX - boxWidth * 0.5;
+      const boxY = boxCenterY - boxHeight * 0.5;
+
+      const { x: edgeX, y: edgeY } = getEdgeFromDirection(
+        directionIndex,
+        { x: boxCenterX, y: boxCenterY },
+        { x: boxX, y: boxY },
+        { width: boxWidth, height: boxHeight },
+      );
+
+      const renderedBodyLabel: RenderedBodyLabel = {
+        anchor: { x: anchor.x, y: anchor.y, depth: 0 },
+        distanceKm,
+        lineHeight,
+        lines,
+        name,
+        padding: {
+          width: paddingX,
+          height: paddingY,
+        },
+        position: {
+          x: boxX,
+          y: boxY,
+          depth: 0,
+        },
+        size: {
+          width: boxWidth,
+          height: boxHeight,
+        },
+        edgePoint: {
+          x: edgeX,
+          y: edgeY,
+          depth: 0,
+        },
+        speedKmh,
+      };
+
+      renderedBodyLabels.push(renderedBodyLabel);
     }
 
     return renderedBodyLabels;
@@ -95,4 +144,136 @@ function displayNameForBodyId(id: BodyId): string {
   const parts = id.split(":");
   const raw = parts[parts.length - 1] || id;
   return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
+function getBoxCenter(
+  directionIndex: number,
+  angleStepRad: number,
+  anchor: { x: number; y: number },
+) {
+  const offsetRadius = 150; // pixels from anchor to box center
+  const angleRad = directionIndex * angleStepRad;
+  const ux = Math.sin(angleRad);
+  const uy = -Math.cos(angleRad);
+
+  // Box is placed between anchor and screen center.
+  const x = anchor.x - ux * offsetRadius;
+  const y = anchor.y - uy * offsetRadius;
+
+  return { x, y };
+}
+
+function getDirectionIndex(
+  surface: RenderSurface2D,
+  anchor: { x: number; y: number },
+  angleStepRad: number,
+) {
+  const vx = surface.width * 0.5 - anchor.x;
+  const vy = surface.height * 0.5 - anchor.y;
+
+  // atan2 gives angle with 0 along +X; rotate so 0 corresponds to "up".
+  let angle = Math.atan2(vy, vx) - Math.PI / 2;
+
+  // Normalize to [0, 2π).
+  const twoPi = Math.PI * 2;
+  if (angle < 0) {
+    angle = (angle % twoPi) + twoPi;
+  } else if (angle >= twoPi) {
+    angle = angle % twoPi;
+  }
+
+  // Clamp to nearest 45° increment.
+  const quantized = Math.round(angle / angleStepRad);
+
+  // Direction index:
+  //   0 -> 0°   (top)
+  //   1 -> 45°
+  //   2 -> 90°  (right)
+  //   3 -> 135°
+  //   4 -> 180° (bottom)
+  //   5 -> 225°
+  //   6 -> 270° (left)
+  //   7 -> 315°
+  return quantized & 7; // keep in [0,7]
+}
+
+function getEdgeFromDirection(
+  directionIndex: number,
+  boxCenter: { x: number; y: number },
+  boxTopLeft: { x: number; y: number },
+  boxSize: { width: number; height: number },
+): { x: number; y: number } {
+  const { x: boxCenterX, y: boxCenterY } = boxCenter;
+  const { x: boxX, y: boxY } = boxTopLeft;
+  const { width: boxWidth, height: boxHeight } = boxSize;
+
+  let edgeX = boxCenterX;
+  let edgeY = boxCenterY;
+
+  switch (directionIndex) {
+    case 0: // top: box is below anchor, connect to top-middle (toward anchor)
+      edgeX = boxCenterX;
+      edgeY = boxY;
+      break;
+
+    case 1:
+      // top-right: box is below-left of anchor.
+      // Anchor is above-right of box, so use top-right corner.
+      edgeX = boxX + boxWidth;
+      edgeY = boxY;
+      break;
+
+    case 2:
+      // right: box is left of anchor, connect to right-middle (toward anchor)
+      edgeX = boxX + boxWidth;
+      edgeY = boxCenterY;
+      break;
+
+    case 3:
+      // bottom-right: box is above-left of anchor.
+      // Anchor is below-right of box, so use bottom-right corner.
+      edgeX = boxX + boxWidth;
+      edgeY = boxY + boxHeight;
+      break;
+
+    case 4:
+      // bottom: box is above anchor, connect to bottom-middle (toward anchor)
+      edgeX = boxCenterX;
+      edgeY = boxY + boxHeight;
+      break;
+
+    case 5:
+      // bottom-left: box is above-right of anchor.
+      // Anchor is below-left of box, so use bottom-left corner.
+      edgeX = boxX;
+      edgeY = boxY + boxHeight;
+      break;
+
+    case 6:
+      // left: box is right of anchor, connect to left-middle (toward anchor)
+      edgeX = boxX;
+      edgeY = boxCenterY;
+      break;
+
+    case 7:
+      // top-left: box is below-right of anchor.
+      // Anchor is above-left of box, so use top-left corner.
+      edgeX = boxX;
+      edgeY = boxY;
+      break;
+  }
+  return { x: edgeX, y: edgeY };
+}
+
+function getTextWidth(
+  lines: string[],
+  font: string,
+  measureText: (text: string, font: string) => TextMetrics,
+) {
+  let maxTextWidth = 0;
+  for (const line of lines) {
+    const w = measureText(line, font).width;
+    if (w > maxTextWidth) maxTextWidth = w;
+  }
+  return maxTextWidth;
 }

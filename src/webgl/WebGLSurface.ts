@@ -10,8 +10,4 @@ export class WebGLSurface implements RenderSurface2D {
   get height(): number {
     return this.gl.drawingBufferHeight;
   }
-
-  getContext(): WebGL2RenderingContext {
-    return this.gl;
-  }
 }

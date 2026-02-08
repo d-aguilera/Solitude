@@ -5,7 +5,7 @@ import type {
   RenderedHud,
   RenderedPolyline,
   RenderedSegment,
-  RenderSurface2D,
+  TextMetrics,
 } from "../render/renderPorts.js";
 
 export class WebGLRasterizer implements Rasterizer {
@@ -247,8 +247,9 @@ export class WebGLRasterizer implements Rasterizer {
 
   // --- Rasterizer interface implementation ---
 
-  clear(surface: RenderSurface2D, color: string): void {
+  clear(color: string): void {
     const gl = this.gl;
+    const surface = gl.canvas;
 
     // Very small CSS rgb() parser for "rgb(r, g, b)"
     let r = 0,
@@ -267,10 +268,12 @@ export class WebGLRasterizer implements Rasterizer {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
 
-  drawFaces(surface: RenderSurface2D, faces: RenderedFace[]): void {
+  drawFaces(faces: RenderedFace[]): void {
     if (faces.length === 0) return;
 
     const gl = this.gl;
+    const surface = gl.canvas;
+
     gl.viewport(0, 0, surface.width, surface.height);
 
     gl.useProgram(this.faceProgram);
@@ -352,10 +355,12 @@ export class WebGLRasterizer implements Rasterizer {
     return offset;
   }
 
-  drawPolylines(surface: RenderSurface2D, polylines: RenderedPolyline[]): void {
+  drawPolylines(polylines: RenderedPolyline[]): void {
     if (polylines.length === 0) return;
 
     const gl = this.gl;
+    const surface = gl.canvas;
+
     gl.viewport(0, 0, surface.width, surface.height);
 
     gl.useProgram(this.lineProgram);
@@ -411,10 +416,12 @@ export class WebGLRasterizer implements Rasterizer {
     gl.useProgram(null);
   }
 
-  drawSegments(surface: RenderSurface2D, segments: RenderedSegment[]): void {
+  drawSegments(segments: RenderedSegment[]): void {
     if (segments.length === 0) return;
 
     const gl = this.gl;
+    const surface = gl.canvas;
+
     gl.viewport(0, 0, surface.width, surface.height);
 
     gl.useProgram(this.lineProgram);
@@ -471,16 +478,23 @@ export class WebGLRasterizer implements Rasterizer {
     gl.useProgram(null);
   }
 
-  drawBodyLabels(surface: RenderSurface2D, labels: RenderedBodyLabel[]): void {
+  drawBodyLabels(labels: RenderedBodyLabel[]): void {
     // No-op for now. You can keep using a Canvas2D overlay for labels,
     // or later implement label rendering in a separate adapter.
-    void surface;
     void labels;
   }
 
-  drawHud(surface: RenderSurface2D, hud: RenderedHud): void {
+  drawHud(hud: RenderedHud): void {
     // No-op for now. Same comment as drawBodyLabels.
-    void surface;
     void hud;
+  }
+
+  measureText(text: string, font: string): TextMetrics {
+    void text;
+    void font;
+
+    return {
+      width: 0,
+    } as TextMetrics;
   }
 }

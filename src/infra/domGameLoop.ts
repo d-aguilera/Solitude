@@ -99,10 +99,10 @@ export function runLoop(
       speedMps,
     });
 
-    rasterizeView(renderedPilotView, pilotRasterizer, pilotSurface);
-    rasterizeView(renderedTopView, topRasterizer, topSurface);
+    rasterizeView(renderedPilotView, pilotRasterizer);
+    rasterizeView(renderedTopView, topRasterizer);
 
-    hudRasterizer.drawHud(pilotSurface, renderedHud);
+    hudRasterizer.drawHud(renderedHud);
 
     profilerController.flush();
 
@@ -112,14 +112,10 @@ export function runLoop(
   requestAnimationFrame(loop);
 }
 
-function rasterizeView(
-  renderedView: RenderedView,
-  rasterizer: Rasterizer,
-  surface: RenderSurface2D,
-) {
-  rasterizer.clear(surface, "#000000");
-  rasterizer.drawFaces(surface, renderedView.faces);
-  rasterizer.drawPolylines(surface, renderedView.polylines);
-  rasterizer.drawSegments(surface, renderedView.segments);
-  rasterizer.drawBodyLabels(surface, renderedView.bodyLabels);
+function rasterizeView(renderedView: RenderedView, rasterizer: Rasterizer) {
+  rasterizer.clear("#000000");
+  rasterizer.drawFaces(renderedView.faces);
+  rasterizer.drawPolylines(renderedView.polylines);
+  rasterizer.drawSegments(renderedView.segments);
+  rasterizer.drawBodyLabels(renderedView.bodyLabels);
 }
