@@ -1,6 +1,5 @@
 import type {
   LocalFrame,
-  PlanetPhysics,
   ShipBody,
   Vec3,
   World,
@@ -19,6 +18,7 @@ import type {
   ShipSceneObject,
   StarSceneObject,
 } from "./appPorts.js";
+import { getPlanetPhysicsById } from "./worldLookup.js";
 import { initialFrame, createPolylineSceneObject } from "./worldSetup.js";
 
 const SHIP_VISUAL_SCALE = 15;
@@ -68,7 +68,7 @@ function createShipBody(
   world: World,
 ) {
   const planetObj = getPlanetObjectById(objects, homePlanetId);
-  const planetPhys = getPlanetPhysicsById(world.planetPhysics, homePlanetId);
+  const planetPhys = getPlanetPhysicsById(world, homePlanetId);
 
   const position = computeShipStartPosFromPlanet(
     planetObj.position,
@@ -213,17 +213,4 @@ function getPlanetObjectById(
   }
 
   return obj;
-}
-
-function getPlanetPhysicsById(
-  array: PlanetPhysics[],
-  id: string,
-): PlanetPhysics {
-  const phys = array.find((p) => p.id === id);
-
-  if (!phys) {
-    throw new Error(`PlanetPhysics not found: ${id}`);
-  }
-
-  return phys;
 }

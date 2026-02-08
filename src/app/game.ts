@@ -1,7 +1,6 @@
 import type { GravityEngine, GravityState } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
 import { vec3 } from "../domain/vec3.js";
-import { getShipById } from "../domain/worldLookup.js";
 import type {
   GravityBodyBinding,
   SceneState,
@@ -20,6 +19,7 @@ import {
 } from "./controls.js";
 import { buildGravityBindings, applyForcesAndGravity } from "./physics.js";
 import { updateSceneGraph } from "./scene.js";
+import { getShipById } from "./worldLookup.js";
 import { createInitialSceneAndWorld } from "./worldSetup.js";
 
 /**

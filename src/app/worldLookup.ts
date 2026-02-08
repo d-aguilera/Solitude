@@ -1,4 +1,10 @@
-import type { BodyId, ShipBody, StarPhysics, World } from "./domainPorts.js";
+import type {
+  BodyId,
+  PlanetPhysics,
+  ShipBody,
+  StarPhysics,
+  World,
+} from "../domain/domainPorts.js";
 
 function getById<T extends { id: BodyId }>(
   arr: T[],
@@ -16,4 +22,8 @@ export function getShipById(world: World, id: BodyId): ShipBody {
 
 export function getStarPhysicsById(world: World, id: BodyId): StarPhysics {
   return getById(world.starPhysics, id, "StarPhysics");
+}
+
+export function getPlanetPhysicsById(world: World, id: BodyId): PlanetPhysics {
+  return getById(world.planetPhysics, id, "PlanetPhysics");
 }

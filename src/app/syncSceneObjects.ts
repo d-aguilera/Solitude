@@ -1,9 +1,9 @@
 import type { CelestialBody, ShipBody, World } from "../domain/domainPorts.js";
 import { mat3FromLocalFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
-import { getStarPhysicsById } from "../domain/worldLookup.js";
 import { alloc } from "../global/allocProfiler.js";
 import type { PlanetSceneObject, Scene, StarSceneObject } from "./appPorts.js";
+import { getStarPhysicsById } from "./worldLookup.js";
 
 /**
  * Internal helper: build the array of point lights from the current star bodies.

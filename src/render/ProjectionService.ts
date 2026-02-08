@@ -139,10 +139,8 @@ export class ProjectionService {
       const position = this.cameraPosition;
 
       for (let i = 0; i < n; i++) {
-        const wp = worldPoints[i];
-
         // delta = worldPoint - cameraPosition
-        vec3.subInto(deltaScratch, wp, position);
+        vec3.subInto(deltaScratch, worldPoints[i], position);
 
         // cameraPoints[i] = R_localFromWorld * delta
         mat3.mulVec3Into(
@@ -227,24 +225,22 @@ export class ProjectionService {
       return [triOut0];
     }
 
-    const [P0, P1, P2] = [a, b, c];
-
     if (insideCount === 1) {
       // One inside: result is a single clipped triangle.
       // Pick the inside vertex P and the two outside vertices Q,R.
       let P: Vec3, Q: Vec3, R: Vec3;
       if (inA) {
-        P = P0;
-        Q = P1;
-        R = P2;
+        P = a;
+        Q = b;
+        R = c;
       } else if (inB) {
-        P = P1;
-        Q = P2;
-        R = P0;
+        P = b;
+        Q = c;
+        R = a;
       } else {
-        P = P2;
-        Q = P0;
-        R = P1;
+        P = c;
+        Q = a;
+        R = b;
       }
 
       const IQ = triScratch[0];
@@ -262,17 +258,17 @@ export class ProjectionService {
     // Two inside, one outside: result is two triangles.
     let Pin1: Vec3, Pin2: Vec3, Pout: Vec3;
     if (!inA) {
-      Pout = P0;
-      Pin1 = P1;
-      Pin2 = P2;
+      Pout = a;
+      Pin1 = b;
+      Pin2 = c;
     } else if (!inB) {
-      Pout = P1;
-      Pin1 = P2;
-      Pin2 = P0;
+      Pout = b;
+      Pin1 = c;
+      Pin2 = a;
     } else {
-      Pout = P2;
-      Pin1 = P0;
-      Pin2 = P1;
+      Pout = c;
+      Pin1 = a;
+      Pin2 = b;
     }
 
     const IP1 = triScratch[2];
