@@ -1,8 +1,8 @@
 import type { StarBodyConfig } from "./appInternals.js";
 import type { PlanetBodyConfig } from "./appInternals.js";
-import { circularSpeedAtRadius } from "../domain/phys.js";
 import { colors } from "./appInternals.js";
 import { vec3 } from "../domain/vec3.js";
+import type { KeplerianOrbit } from "../domain/domainPorts.js";
 
 const AU = 1.495978707e11; // m
 
@@ -24,6 +24,18 @@ const orbits = {
   saturn: 9.537 * AU,
   uranus: 19.191 * AU,
   neptune: 30.07 * AU,
+};
+
+// Approximate orbital eccentricities (dimensionless)
+const eccentricities = {
+  mercury: 0.2056,
+  venus: 0.0068,
+  earth: 0.0167,
+  mars: 0.0934,
+  jupiter: 0.0489,
+  saturn: 0.0565,
+  uranus: 0.0463,
+  neptune: 0.0095,
 };
 
 // Real planetary mean radii (meters)
@@ -70,7 +82,7 @@ const spinPeriodsSeconds = {
   neptune: 16.1 * 3600,
 };
 
-// Axial tilts (obliquity) in degrees, relative to +Z.
+// Axial tilts (obliquity) in degrees, relative to each planet's orbital normal.
 const obliquitiesDeg = {
   sun: 7.25,
   mercury: 0.03,
@@ -83,30 +95,111 @@ const obliquitiesDeg = {
   neptune: 28.32,
 };
 
+/**
+ * Approximate orbital inclinations (degrees) relative to a reference plane.
+ * Here we treat the ecliptic as the reference, and interpret these angles
+ * as inclination of each orbital plane relative to the global +Z axis.
+ */
+const inclinationsDeg = {
+  mercury: 7.0,
+  venus: 3.4,
+  earth: 0.0,
+  mars: 1.85,
+  jupiter: 1.3,
+  saturn: 2.5,
+  uranus: 0.8,
+  neptune: 1.8,
+};
+
+/**
+ * Approximate longitudes of ascending node (degrees).
+ *
+ * These angles, together with inclinations and arguments of periapsis,
+ * define the full 3D orientation of each Keplerian orbit.
+ *
+ * Values used here are rough and not tied to a particular epoch; they are
+ * intended to produce visually plausible relative orientations.
+ */
+const lonAscNodeDeg = {
+  mercury: 48.3,
+  venus: 76.7,
+  earth: 0.0,
+  mars: 49.6,
+  jupiter: 100.5,
+  saturn: 113.7,
+  uranus: 74.0,
+  neptune: 131.8,
+};
+
+/**
+ * Approximate arguments of periapsis (degrees).
+ */
+const argPeriapsisDeg = {
+  mercury: 29.1,
+  venus: 54.9,
+  earth: 102.9,
+  mars: 286.5,
+  jupiter: 275.1,
+  saturn: 336.0,
+  uranus: 96.7,
+  neptune: 265.6,
+};
+
+function degToRad(deg: number): number {
+  return (deg * Math.PI) / 180;
+}
+
 function angularSpeedFromPeriod(periodSeconds: number): number {
   if (periodSeconds === 0) return 0;
   return (2 * Math.PI) / periodSeconds;
 }
 
 /**
- * Build a unit spin axis given a tilt angle (degrees) relative to +Z.
+ * Build a unit spin axis given an obliquity (tilt) angle in degrees relative
+ * to the planet's orbital normal.
  *
- * We tilt in the XZ plane, so:
- *   tilt = 0°   -> axis = (0, 0, 1)
- *   tilt = 90°  -> axis = (1, 0, 0)
+ * The specific azimuthal orientation of the tilt within the orbital plane
+ * is not modeled here; we place the tilt in a convenient plane and rely on
+ * the orbit orientation to define the rest.
  */
 function spinAxisFromTiltDegrees(tiltDeg: number) {
-  const tiltRad = (tiltDeg * Math.PI) / 180;
+  const tiltRad = degToRad(tiltDeg);
   const x = Math.sin(tiltRad);
   const z = Math.cos(tiltRad);
   return vec3.create(x, 0, z);
 }
 
 /**
+ * Helper to build a simple KeplerianOrbit for a heliocentric planet.
+ *
+ * meanAnomalyAtEpochRad is chosen to distribute planets around the Sun
+ * without targeting a specific historical epoch.
+ */
+function buildPlanetOrbit(
+  semiMajorAxis: number,
+  eccentricity: number,
+  inclinationDeg: number,
+  lonAscNodeDegVal: number,
+  argPeriapsisDegVal: number,
+  meanAnomalyAtEpochRad: number,
+): KeplerianOrbit {
+  return {
+    semiMajorAxis,
+    eccentricity,
+    inclinationRad: degToRad(inclinationDeg),
+    lonAscNodeRad: degToRad(lonAscNodeDegVal),
+    argPeriapsisRad: degToRad(argPeriapsisDegVal),
+    meanAnomalyAtEpochRad,
+  };
+}
+
+/**
  * Build a simplified solar system.
  *
  * - Sizes are roughly proportional to real radii.
- * - Densens are near-realistic for each body class.
+ * - Densities and masses are near-realistic for each body class.
+ * - Initial positions and velocities are derived from Keplerian orbital
+ *   elements relative to a central mass using a two-body approximation.
  *
  * All distances and radii are in meters.
  */
@@ -115,16 +208,23 @@ export function buildDefaultSolarSystemConfigs(): (
   | StarBodyConfig
 )[] {
   return [
-    // Sun at origin
+    // Sun at origin; treated as central body for planetary orbits.
     {
       id: "planet:sun",
       pathId: "path:planet:sun",
       kind: "star",
-      orbit: { angleRad: 0, radius: 0 }, // at origin
+      orbit: {
+        semiMajorAxis: 0,
+        eccentricity: 0,
+        inclinationRad: 0,
+        lonAscNodeRad: 0,
+        argPeriapsisRad: 0,
+        meanAnomalyAtEpochRad: 0,
+      },
       physicalRadius: radii.sun,
-      tangentialSpeed: 0,
-      color: colors.sun,
       density: densities.sun,
+      centralMassKg: M_SUN,
+      color: colors.sun,
       luminosity: luminosities.sun,
       rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.sun),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.sun),
@@ -133,11 +233,18 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:mercury",
       pathId: "path:planet:mercury",
       kind: "planet",
-      orbit: { angleRad: 0 * (twoPi / 8), radius: orbits.mercury },
+      orbit: buildPlanetOrbit(
+        orbits.mercury,
+        eccentricities.mercury,
+        inclinationsDeg.mercury,
+        lonAscNodeDeg.mercury,
+        argPeriapsisDeg.mercury,
+        0 * (twoPi / 8),
+      ),
       physicalRadius: radii.mercury,
-      tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.mercury),
-      color: colors.mercury,
       density: densities.mercury,
+      centralMassKg: M_SUN,
+      color: colors.mercury,
       rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.mercury),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mercury),
     },
@@ -145,11 +252,18 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:venus",
       pathId: "path:planet:venus",
       kind: "planet",
-      orbit: { angleRad: 1 * (twoPi / 8), radius: orbits.venus },
+      orbit: buildPlanetOrbit(
+        orbits.venus,
+        eccentricities.venus,
+        inclinationsDeg.venus,
+        lonAscNodeDeg.venus,
+        argPeriapsisDeg.venus,
+        1 * (twoPi / 8),
+      ),
       physicalRadius: radii.venus,
-      tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.venus),
-      color: colors.venus,
       density: densities.venus,
+      centralMassKg: M_SUN,
+      color: colors.venus,
       rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.venus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.venus),
     },
@@ -157,11 +271,18 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:earth",
       pathId: "path:planet:earth",
       kind: "planet",
-      orbit: { angleRad: 2 * (twoPi / 8), radius: orbits.earth },
+      orbit: buildPlanetOrbit(
+        orbits.earth,
+        eccentricities.earth,
+        inclinationsDeg.earth,
+        lonAscNodeDeg.earth,
+        argPeriapsisDeg.earth,
+        2 * (twoPi / 8),
+      ),
       physicalRadius: radii.earth,
-      tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.earth),
-      color: colors.earth,
       density: densities.earth,
+      centralMassKg: M_SUN,
+      color: colors.earth,
       rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.earth),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.earth),
     },
@@ -169,11 +290,18 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:mars",
       pathId: "path:planet:mars",
       kind: "planet",
-      orbit: { angleRad: 3 * (twoPi / 8), radius: orbits.mars },
+      orbit: buildPlanetOrbit(
+        orbits.mars,
+        eccentricities.mars,
+        inclinationsDeg.mars,
+        lonAscNodeDeg.mars,
+        argPeriapsisDeg.mars,
+        3 * (twoPi / 8),
+      ),
       physicalRadius: radii.mars,
-      tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.mars),
-      color: colors.mars,
       density: densities.mars,
+      centralMassKg: M_SUN,
+      color: colors.mars,
       rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.mars),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mars),
     },
@@ -181,11 +309,18 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:jupiter",
       pathId: "path:planet:jupiter",
       kind: "planet",
-      orbit: { angleRad: 4 * (twoPi / 8), radius: orbits.jupiter },
+      orbit: buildPlanetOrbit(
+        orbits.jupiter,
+        eccentricities.jupiter,
+        inclinationsDeg.jupiter,
+        lonAscNodeDeg.jupiter,
+        argPeriapsisDeg.jupiter,
+        4 * (twoPi / 8),
+      ),
       physicalRadius: radii.jupiter,
-      tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.jupiter),
-      color: colors.jupiter,
       density: densities.jupiter,
+      centralMassKg: M_SUN,
+      color: colors.jupiter,
       rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.jupiter),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.jupiter),
     },
@@ -193,11 +328,18 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:saturn",
       pathId: "path:planet:saturn",
       kind: "planet",
-      orbit: { angleRad: 5 * (twoPi / 8), radius: orbits.saturn },
+      orbit: buildPlanetOrbit(
+        orbits.saturn,
+        eccentricities.saturn,
+        inclinationsDeg.saturn,
+        lonAscNodeDeg.saturn,
+        argPeriapsisDeg.saturn,
+        5 * (twoPi / 8),
+      ),
       physicalRadius: radii.saturn,
-      tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.saturn),
-      color: colors.saturn,
       density: densities.saturn,
+      centralMassKg: M_SUN,
+      color: colors.saturn,
       rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.saturn),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.saturn),
     },
@@ -205,11 +347,18 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:uranus",
       pathId: "path:planet:uranus",
       kind: "planet",
-      orbit: { angleRad: 6 * (twoPi / 8), radius: orbits.uranus },
+      orbit: buildPlanetOrbit(
+        orbits.uranus,
+        eccentricities.uranus,
+        inclinationsDeg.uranus,
+        lonAscNodeDeg.uranus,
+        argPeriapsisDeg.uranus,
+        6 * (twoPi / 8),
+      ),
       physicalRadius: radii.uranus,
-      tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.uranus),
-      color: colors.uranus,
       density: densities.uranus,
+      centralMassKg: M_SUN,
+      color: colors.uranus,
       rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.uranus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.uranus),
     },
@@ -217,11 +366,18 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:neptune",
       pathId: "path:planet:neptune",
       kind: "planet",
-      orbit: { angleRad: 7 * (twoPi / 8), radius: orbits.neptune },
+      orbit: buildPlanetOrbit(
+        orbits.neptune,
+        eccentricities.neptune,
+        inclinationsDeg.neptune,
+        lonAscNodeDeg.neptune,
+        argPeriapsisDeg.neptune,
+        7 * (twoPi / 8),
+      ),
       physicalRadius: radii.neptune,
-      tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.neptune),
-      color: colors.neptune,
       density: densities.neptune,
+      centralMassKg: M_SUN,
+      color: colors.neptune,
       rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.neptune),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.neptune),
     },

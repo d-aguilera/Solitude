@@ -6,21 +6,18 @@ import type {
   Vec3,
   CelestialBody,
 } from "../domain/domainPorts.js";
+import { NEWTON_G } from "../domain/domainPorts.js";
 import { mat3 } from "../domain/mat3.js";
 import { generatePlanetMesh } from "../domain/models.js";
-import { trig } from "../domain/trig.js";
 import { vec3 } from "../domain/vec3.js";
+import { stateVectorFromKeplerian } from "../domain/kepler.js";
 import type { PlanetBodyConfig, StarBodyConfig } from "./appInternals.js";
 import type {
   SceneObject,
   StarSceneObject,
   PlanetSceneObject,
 } from "./appPorts.js";
-import {
-  initialFrame,
-  initialUp,
-  createPolylineSceneObject,
-} from "./worldSetup.js";
+import { createPolylineSceneObject } from "./worldSetup.js";
 
 /**
  * Add planets + stars + their orbit paths from an arbitrary list of PlanetConfig.
@@ -29,6 +26,10 @@ import {
  *  - Create visual PlanetSceneObject / StarSceneObject
  *  - Register corresponding CelestialBody entries in world
  *  - Register PlanetPhysics / StarPhysics entries for gravity
+ *
+ * Orbital initial conditions are derived from Keplerian elements relative
+ * to a central mass. After initialization, positions and velocities are
+ * evolved using the gravity engine.
  */
 export function addPlanetsAndStarsFromConfig(
   configs: (PlanetBodyConfig | StarBodyConfig)[],
@@ -40,30 +41,25 @@ export function addPlanetsAndStarsFromConfig(
 ): void {
   const bodyMeshTemplate: Mesh = generatePlanetMesh(3);
 
-  // Define an orbital ship via two basis vectors:
-  const radialAxis1: Vec3 = vec3.normalizeInto(
-    vec3.clone(initialFrame.forward),
-  );
-  const radialAxis2: Vec3 = vec3.normalizeInto(vec3.clone(initialUp));
-
   for (const cfg of configs) {
-    const theta = cfg.orbit.angleRad;
-    const radial = trig.radialDirAtAngle(theta, radialAxis1, radialAxis2);
-    const tangential = trig.tangentialDirAtAngle(
-      theta,
-      radialAxis1,
-      radialAxis2,
-    );
-
-    // Physical orbit radius in meters
-    const center: Vec3 = vec3.scaleInto(vec3.zero(), cfg.orbit.radius, radial);
-
     const bodyMesh: Mesh = { ...bodyMeshTemplate };
 
-    const initialVelocity =
-      cfg.orbit.radius > 0
-        ? vec3.scaleInto(vec3.zero(), cfg.tangentialSpeed, tangential)
-        : vec3.zero();
+    let center: Vec3;
+    let initialVelocity: Vec3;
+    if (cfg.orbit.semiMajorAxis > 0) {
+      // Use two-body Keplerian elements to derive initial state.
+      const state = stateVectorFromKeplerian(
+        cfg.orbit,
+        cfg.centralMassKg,
+        NEWTON_G,
+      );
+      center = state.position;
+      initialVelocity = state.velocity;
+    } else {
+      // Central body (e.g. Sun) at origin by convention.
+      center = vec3.zero();
+      initialVelocity = vec3.zero();
+    }
 
     const rotationAxis = vec3.normalizeInto(vec3.clone(cfg.rotationAxis));
     const angularSpeedRadPerSec = cfg.angularSpeedRadPerSec;
@@ -141,8 +137,9 @@ export function addPlanetsAndStarsFromConfig(
 
       objects.push(planetObj);
     }
-
-    // All get a path polyline
+    // All get a path polyline. The path geometry is updated over time by
+    // sampling actual positions, so it reflects non-circular Keplerian-like
+    // trajectories after initialization.
     objects.push(createPolylineSceneObject(cfg.pathId, cfg.color));
   }
 }

@@ -3,9 +3,9 @@ import type {
   BodyState,
   GravityEngine,
   GravityState,
+  KeplerianOrbit,
   LocalFrame,
   PlanetKind,
-  Polar2D,
   RGB,
   ShipBody,
   Vec3,
@@ -22,13 +22,28 @@ export interface CelestialBodyConfig {
   pathId: string; // orbit path id, purely logical association
   kind: PlanetKind;
 
-  // Physical orbital elements / body properties (SI units)
-  orbit: Polar2D; // angleRad + physical radius in meters (semi-major axis, assumed circular)
+  /**
+   * Keplerian orbital elements relative to a chosen central body.
+   *
+   * All distances are in meters and all angles in radians.
+   *
+   * The application is responsible for interpreting these elements in a
+   * specific reference frame and for using them to derive initial position
+   * and velocity at the epoch.
+   */
+  orbit: KeplerianOrbit;
+
+  // Physical body properties (SI units)
   physicalRadius: number; // meters
   density: number; // kg/m^3
 
+  /**
+   * Mass of the central body that dominates this orbit.
+   * For heliocentric planetary orbits this is the Sun's mass.
+   */
+  centralMassKg: number;
+
   // Rendering / initial kinematics
-  tangentialSpeed: number; // m/s, orbital speed along local tangent
   color: RGB;
 
   /**
