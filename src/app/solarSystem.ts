@@ -70,9 +70,36 @@ const spinPeriodsSeconds = {
   neptune: 16.1 * 3600,
 };
 
+// Axial tilts (obliquity) in degrees, relative to +Z.
+const obliquitiesDeg = {
+  sun: 7.25,
+  mercury: 0.03,
+  venus: 177.4, // almost upside down, retrograde
+  earth: 23.44,
+  mars: 25.19,
+  jupiter: 3.13,
+  saturn: 26.73,
+  uranus: 97.77, // nearly on its side
+  neptune: 28.32,
+};
+
 function angularSpeedFromPeriod(periodSeconds: number): number {
   if (periodSeconds === 0) return 0;
   return (2 * Math.PI) / periodSeconds;
+}
+
+/**
+ * Build a unit spin axis given a tilt angle (degrees) relative to +Z.
+ *
+ * We tilt in the XZ plane, so:
+ *   tilt = 0°   -> axis = (0, 0, 1)
+ *   tilt = 90°  -> axis = (1, 0, 0)
+ */
+function spinAxisFromTiltDegrees(tiltDeg: number) {
+  const tiltRad = (tiltDeg * Math.PI) / 180;
+  const x = Math.sin(tiltRad);
+  const z = Math.cos(tiltRad);
+  return vec3.create(x, 0, z);
 }
 
 /**
@@ -87,8 +114,6 @@ export function buildDefaultSolarSystemConfigs(): (
   | PlanetBodyConfig
   | StarBodyConfig
 )[] {
-  const spinAxis = vec3.create(0, 0, 1);
-
   return [
     // Sun at origin
     {
@@ -101,7 +126,7 @@ export function buildDefaultSolarSystemConfigs(): (
       color: colors.sun,
       density: densities.sun,
       luminosity: luminosities.sun,
-      rotationAxis: spinAxis,
+      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.sun),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.sun),
     },
     {
@@ -113,7 +138,7 @@ export function buildDefaultSolarSystemConfigs(): (
       tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.mercury),
       color: colors.mercury,
       density: densities.mercury,
-      rotationAxis: spinAxis,
+      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.mercury),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mercury),
     },
     {
@@ -125,7 +150,7 @@ export function buildDefaultSolarSystemConfigs(): (
       tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.venus),
       color: colors.venus,
       density: densities.venus,
-      rotationAxis: spinAxis,
+      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.venus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.venus),
     },
     {
@@ -137,7 +162,7 @@ export function buildDefaultSolarSystemConfigs(): (
       tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.earth),
       color: colors.earth,
       density: densities.earth,
-      rotationAxis: spinAxis,
+      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.earth),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.earth),
     },
     {
@@ -149,7 +174,7 @@ export function buildDefaultSolarSystemConfigs(): (
       tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.mars),
       color: colors.mars,
       density: densities.mars,
-      rotationAxis: spinAxis,
+      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.mars),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mars),
     },
     {
@@ -161,7 +186,7 @@ export function buildDefaultSolarSystemConfigs(): (
       tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.jupiter),
       color: colors.jupiter,
       density: densities.jupiter,
-      rotationAxis: spinAxis,
+      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.jupiter),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.jupiter),
     },
     {
@@ -173,7 +198,7 @@ export function buildDefaultSolarSystemConfigs(): (
       tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.saturn),
       color: colors.saturn,
       density: densities.saturn,
-      rotationAxis: spinAxis,
+      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.saturn),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.saturn),
     },
     {
@@ -185,7 +210,7 @@ export function buildDefaultSolarSystemConfigs(): (
       tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.uranus),
       color: colors.uranus,
       density: densities.uranus,
-      rotationAxis: spinAxis,
+      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.uranus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.uranus),
     },
     {
@@ -197,7 +222,7 @@ export function buildDefaultSolarSystemConfigs(): (
       tangentialSpeed: circularSpeedAtRadius(M_SUN, orbits.neptune),
       color: colors.neptune,
       density: densities.neptune,
-      rotationAxis: spinAxis,
+      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.neptune),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.neptune),
     },
   ];
