@@ -1,7 +1,6 @@
 import type { StarBodyConfig } from "./appInternals.js";
 import type { PlanetBodyConfig } from "./appInternals.js";
 import { colors } from "./appInternals.js";
-import { vec3 } from "../domain/vec3.js";
 import type { KeplerianOrbit } from "../domain/domainPorts.js";
 
 const AU = 1.495978707e11; // m
@@ -155,21 +154,6 @@ function angularSpeedFromPeriod(periodSeconds: number): number {
 }
 
 /**
- * Build a unit spin axis given an obliquity (tilt) angle in degrees relative
- * to the planet's orbital normal.
- *
- * The specific azimuthal orientation of the tilt within the orbital plane
- * is not modeled here; we place the tilt in a convenient plane and rely on
- * the orbit orientation to define the rest.
- */
-function spinAxisFromTiltDegrees(tiltDeg: number) {
-  const tiltRad = degToRad(tiltDeg);
-  const x = Math.sin(tiltRad);
-  const z = Math.cos(tiltRad);
-  return vec3.create(x, 0, z);
-}
-
-/**
  * Helper to build a simple KeplerianOrbit for a heliocentric planet.
  *
  * meanAnomalyAtEpochRad is chosen to distribute planets around the Sun
@@ -226,7 +210,7 @@ export function buildDefaultSolarSystemConfigs(): (
       centralMassKg: M_SUN,
       color: colors.sun,
       luminosity: luminosities.sun,
-      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.sun),
+      obliquityRad: degToRad(obliquitiesDeg.sun),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.sun),
     },
     {
@@ -245,7 +229,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.mercury,
       centralMassKg: M_SUN,
       color: colors.mercury,
-      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.mercury),
+      obliquityRad: degToRad(obliquitiesDeg.mercury),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mercury),
     },
     {
@@ -264,7 +248,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.venus,
       centralMassKg: M_SUN,
       color: colors.venus,
-      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.venus),
+      obliquityRad: degToRad(obliquitiesDeg.venus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.venus),
     },
     {
@@ -283,7 +267,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.earth,
       centralMassKg: M_SUN,
       color: colors.earth,
-      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.earth),
+      obliquityRad: degToRad(obliquitiesDeg.earth),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.earth),
     },
     {
@@ -302,7 +286,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.mars,
       centralMassKg: M_SUN,
       color: colors.mars,
-      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.mars),
+      obliquityRad: degToRad(obliquitiesDeg.mars),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mars),
     },
     {
@@ -321,7 +305,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.jupiter,
       centralMassKg: M_SUN,
       color: colors.jupiter,
-      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.jupiter),
+      obliquityRad: degToRad(obliquitiesDeg.jupiter),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.jupiter),
     },
     {
@@ -340,7 +324,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.saturn,
       centralMassKg: M_SUN,
       color: colors.saturn,
-      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.saturn),
+      obliquityRad: degToRad(obliquitiesDeg.saturn),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.saturn),
     },
     {
@@ -359,7 +343,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.uranus,
       centralMassKg: M_SUN,
       color: colors.uranus,
-      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.uranus),
+      obliquityRad: degToRad(obliquitiesDeg.uranus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.uranus),
     },
     {
@@ -378,7 +362,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.neptune,
       centralMassKg: M_SUN,
       color: colors.neptune,
-      rotationAxis: spinAxisFromTiltDegrees(obliquitiesDeg.neptune),
+      obliquityRad: degToRad(obliquitiesDeg.neptune),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.neptune),
     },
   ];

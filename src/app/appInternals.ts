@@ -48,10 +48,14 @@ export interface CelestialBodyConfig {
 
   /**
    * Axial rotation:
-   *  - rotationAxis is a unit vector in world space (e.g. approximate spin axis)
-   *  - angularSpeedRadPerSec is the constant spin rate around that axis
+   *  - obliquityRad is the angle (in radians) between the spin axis and
+   *    the orbital plane normal.
+   *  - angularSpeedRadPerSec is the constant spin rate around that axis.
+   *
+   * The application is responsible for deriving a concrete rotation axis
+   * from the orbit geometry and this obliquity.
    */
-  rotationAxis: Vec3;
+  obliquityRad: number;
   angularSpeedRadPerSec: number;
 }
 

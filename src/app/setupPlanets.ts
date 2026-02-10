@@ -1,10 +1,12 @@
 import type {
-  World,
+  CelestialBody,
+  KeplerianOrbit,
+  Mat3,
+  Mesh,
   PlanetPhysics,
   StarPhysics,
-  Mesh,
   Vec3,
-  CelestialBody,
+  World,
 } from "../domain/domainPorts.js";
 import { NEWTON_G } from "../domain/domainPorts.js";
 import { mat3 } from "../domain/mat3.js";
@@ -46,6 +48,7 @@ export function addPlanetsAndStarsFromConfig(
 
     let center: Vec3;
     let initialVelocity: Vec3;
+
     if (cfg.orbit.semiMajorAxis > 0) {
       // Use two-body Keplerian elements to derive initial state.
       const state = stateVectorFromKeplerian(
@@ -61,7 +64,27 @@ export function addPlanetsAndStarsFromConfig(
       initialVelocity = vec3.zero();
     }
 
-    const rotationAxis = vec3.normalizeInto(vec3.clone(cfg.rotationAxis));
+    // Derive the spin axis from the orbital frame and obliquity.
+    let rotationAxis: Vec3;
+    if (cfg.orbit.semiMajorAxis > 0) {
+      const { normal, periapsisDir } = getOrbitFrameFromKepler(cfg.orbit);
+      rotationAxis = rotateVectorAroundAxis(
+        normal,
+        periapsisDir,
+        cfg.obliquityRad,
+      );
+    } else {
+      // For bodies with no defined orbit (e.g. Sun at origin), interpret
+      // obliquity relative to a global reference normal aligned with +Z.
+      const normal = vec3.create(0, 0, 1);
+      const periapsisDir = vec3.create(1, 0, 0);
+      rotationAxis = rotateVectorAroundAxis(
+        normal,
+        periapsisDir,
+        cfg.obliquityRad,
+      );
+    }
+
     const angularSpeedRadPerSec = cfg.angularSpeedRadPerSec;
 
     if (cfg.kind === "star") {
@@ -137,6 +160,7 @@ export function addPlanetsAndStarsFromConfig(
 
       objects.push(planetObj);
     }
+
     // All get a path polyline. The path geometry is updated over time by
     // sampling actual positions, so it reflects non-circular Keplerian-like
     // trajectories after initialization.
@@ -151,4 +175,89 @@ function computePlanetMass(physicalRadius: number, density: number): number {
   const volume =
     (4 / 3) * Math.PI * physicalRadius * physicalRadius * physicalRadius;
   return density * volume;
+}
+
+/**
+ * Compute the orbital plane normal and a reference direction within that plane
+ * (pointing toward periapsis) from Keplerian elements.
+ *
+ * The returned vectors are unit-length and expressed in the world frame.
+ */
+function getOrbitFrameFromKepler(orbit: KeplerianOrbit): {
+  normal: Vec3;
+  periapsisDir: Vec3;
+} {
+  const {
+    inclinationRad: i,
+    lonAscNodeRad: Omega,
+    argPeriapsisRad: omega,
+  } = orbit;
+
+  const cosO = Math.cos(Omega);
+  const sinO = Math.sin(Omega);
+  const cosI = Math.cos(i);
+  const sinI = Math.sin(i);
+  const cosw = Math.cos(omega);
+  const sinw = Math.sin(omega);
+
+  // We build the same 3-1-3 rotation used for positions/velocities:
+  //   R = Rz(Ω) * Rx(i) * Rz(ω)
+  //
+  // The orbital normal is the image of +Z under Rz(Ω) * Rx(i).
+  // The periapsis direction is the image of +X under the full R.
+  //
+  // First build the partial rotation Rz(Ω) * Rx(i).
+  const RzO_RxI: Mat3 = [
+    [cosO, -sinO * cosI, sinO * sinI],
+    [sinO, cosO * cosI, -cosO * sinI],
+    [0, sinI, cosI],
+  ];
+
+  // normal = (Rz(Ω) * Rx(i)) * [0, 0, 1] = third column of that matrix.
+  const normal: Vec3 = vec3.create(RzO_RxI[0][2], RzO_RxI[1][2], RzO_RxI[2][2]);
+  vec3.normalizeInto(normal);
+
+  // Now build Rz(ω) for the in-plane periapsis direction.
+  const RzW: Mat3 = [
+    [cosw, -sinw, 0],
+    [sinw, cosw, 0],
+    [0, 0, 1],
+  ];
+
+  // Combined full rotation R = Rz(Ω) * Rx(i) * Rz(ω)
+  const R: Mat3 = mat3.mulMat3(RzO_RxI, RzW);
+
+  // periapsisDir = R * [1, 0, 0] = first column of R.
+  const periapsisDir: Vec3 = vec3.create(R[0][0], R[1][0], R[2][0]);
+  vec3.normalizeInto(periapsisDir);
+
+  return { normal, periapsisDir };
+}
+
+/**
+ * Rotate a vector v around axis k by angle theta (Rodrigues' rotation formula).
+ * Assumes k is a unit vector.
+ */
+function rotateVectorAroundAxis(
+  v: Vec3,
+  axisUnit: Vec3,
+  angleRad: number,
+): Vec3 {
+  const c = Math.cos(angleRad);
+  const s = Math.sin(angleRad);
+
+  const kDotV = vec3.dot(axisUnit, v);
+
+  const term1 = vec3.scaleInto(vec3.zero(), c, v);
+  const term2 = vec3.scaleInto(
+    vec3.zero(),
+    s,
+    vec3.crossInto(vec3.zero(), axisUnit, v),
+  );
+  const term3 = vec3.scaleInto(vec3.zero(), (1 - c) * kDotV, axisUnit);
+
+  const out = vec3.zero();
+  vec3.addInto(out, term1, term2);
+  vec3.addInto(out, out, term3);
+  return vec3.normalizeInto(out);
 }
