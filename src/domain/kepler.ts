@@ -1,5 +1,6 @@
 import type { KeplerianOrbit, Vec3 } from "./domainPorts.js";
 import { vec3 } from "./vec3.js";
+import { mat3 } from "./mat3.js";
 
 /**
  * Solve Kepler's equation for eccentric anomaly E given mean anomaly M and
@@ -89,35 +90,16 @@ export function stateVectorFromKeplerian(
   // 4) Rotate from PQW to inertial frame.
   //
   // Standard 3-1-3 rotation: R = Rz(Ω) * Rx(i) * Rz(ω)
-  const cosO = Math.cos(Omega);
-  const sinO = Math.sin(Omega);
-  const cosI = Math.cos(i);
-  const sinI = Math.sin(i);
-  const cosw = Math.cos(omega);
-  const sinw = Math.sin(omega);
+  // Build rotation R = Rz(Ω) * Rx(i) * Rz(ω)
+  const RzOmega = mat3.rotZ(Omega);
+  const Rxi = mat3.rotX(i);
+  const Rzw = mat3.rotZ(omega);
 
-  // Precompute rotation matrix elements for position and velocity
-  const R11 = cosO * cosw - sinO * sinw * cosI;
-  const R12 = -cosO * sinw - sinO * cosw * cosI;
-  const R13 = sinO * sinI;
-  const R21 = sinO * cosw + cosO * sinw * cosI;
-  const R22 = -sinO * sinw + cosO * cosw * cosI;
-  const R23 = -cosO * sinI;
-  const R31 = sinw * sinI;
-  const R32 = cosw * sinI;
-  const R33 = cosI;
+  const Rtemp = mat3.mulMat3(RzOmega, Rxi);
+  const R = mat3.mulMat3(Rtemp, Rzw);
 
-  const position: Vec3 = vec3.create(
-    R11 * xPQW + R12 * yPQW + R13 * zPQW,
-    R21 * xPQW + R22 * yPQW + R23 * zPQW,
-    R31 * xPQW + R32 * yPQW + R33 * zPQW,
-  );
-
-  const velocity: Vec3 = vec3.create(
-    R11 * vxPQW + R12 * vyPQW + R13 * vzPQW,
-    R21 * vxPQW + R22 * vyPQW + R23 * vzPQW,
-    R31 * vxPQW + R32 * vyPQW + R33 * vzPQW,
-  );
+  const position = mat3.mulVec3(R, vec3.create(xPQW, yPQW, zPQW));
+  const velocity = mat3.mulVec3(R, vec3.create(vxPQW, vyPQW, vzPQW));
 
   return { position, velocity };
 }

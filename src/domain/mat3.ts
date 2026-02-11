@@ -131,6 +131,28 @@ function rotAxis(axis: Readonly<Vec3>, angle: number): Mat3 {
   ];
 }
 
+function rotX(angle: number): Mat3 {
+  alloc.mat3();
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  return [
+    [1, 0, 0],
+    [0, c, -s],
+    [0, s, c],
+  ];
+}
+
+function rotZ(angle: number): Mat3 {
+  alloc.mat3();
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  return [
+    [c, -s, 0],
+    [s, c, 0],
+    [0, 0, 1],
+  ];
+}
+
 function transpose(M: Readonly<Mat3>): Mat3 {
   alloc.mat3();
   const M0 = M[0];
@@ -177,6 +199,8 @@ export const mat3 = {
   mulVec3Into,
   mulMat3,
   rotAxis,
+  rotX,
+  rotZ,
   transpose,
   transposeInto,
   zero,
