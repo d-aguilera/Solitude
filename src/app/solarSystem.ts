@@ -11,30 +11,30 @@ const km = 1_000;
 // Sun mass (for heliocentric orbits)
 const M_SUN = 1.98847e30; // kg
 
-const twoPi = 2 * Math.PI;
+// --- Generated from JPL Horizons at epoch J2000.0 ---
 
 // Real(ish) semi‑major axes (meters)
 const orbits = {
-  mercury: 0.387 * AU,
-  venus: 0.723 * AU,
-  earth: 1.0 * AU,
-  mars: 1.524 * AU,
-  jupiter: 5.203 * AU,
-  saturn: 9.537 * AU,
-  uranus: 19.191 * AU,
-  neptune: 30.07 * AU,
+  mercury: 0.387098212184 * AU,
+  venus: 0.72332692748 * AU,
+  earth: 1.000448828934 * AU,
+  mars: 1.523678992939 * AU,
+  jupiter: 5.204336211826 * AU,
+  saturn: 9.581929200479 * AU,
+  uranus: 19.230147659151 * AU,
+  neptune: 30.093922090027 * AU,
 };
 
 // Approximate orbital eccentricities (dimensionless)
 const eccentricities = {
-  mercury: 0.2056,
-  venus: 0.0068,
-  earth: 0.0167,
-  mars: 0.0934,
-  jupiter: 0.0489,
-  saturn: 0.0565,
-  uranus: 0.0463,
-  neptune: 0.0095,
+  mercury: 0.20563029,
+  venus: 0.00675579,
+  earth: 0.01711863,
+  mars: 0.0933151,
+  jupiter: 0.04878759,
+  saturn: 0.05563834,
+  uranus: 0.04439277,
+  neptune: 0.01120359,
 };
 
 // Real planetary mean radii (meters)
@@ -100,14 +100,14 @@ const obliquitiesDeg = {
  * as inclination of each orbital plane relative to the global +Z axis.
  */
 const inclinationsDeg = {
-  mercury: 7.0,
-  venus: 3.4,
-  earth: 0.0,
-  mars: 1.85,
-  jupiter: 1.3,
-  saturn: 2.5,
-  uranus: 0.8,
-  neptune: 1.8,
+  mercury: 7.0050143,
+  venus: 3.39458965,
+  earth: 0.00041811,
+  mars: 1.84987648,
+  jupiter: 1.30463059,
+  saturn: 2.48425239,
+  uranus: 0.77267578,
+  neptune: 1.77021406,
 };
 
 /**
@@ -120,28 +120,40 @@ const inclinationsDeg = {
  * intended to produce visually plausible relative orientations.
  */
 const lonAscNodeDeg = {
-  mercury: 48.3,
-  venus: 76.7,
-  earth: 0.0,
-  mars: 49.6,
-  jupiter: 100.5,
-  saturn: 113.7,
-  uranus: 74.0,
-  neptune: 131.8,
+  mercury: 48.33053855,
+  venus: 76.67837412,
+  earth: 135.08071826,
+  mars: 49.56200566,
+  jupiter: 100.49114995,
+  saturn: 113.69966003,
+  uranus: 74.00474643,
+  neptune: 131.78387711,
 };
 
 /**
  * Approximate arguments of periapsis (degrees).
  */
 const argPeriapsisDeg = {
-  mercury: 29.1,
-  venus: 54.9,
-  earth: 102.9,
-  mars: 286.5,
-  jupiter: 275.1,
-  saturn: 336.0,
-  uranus: 96.7,
-  neptune: 265.6,
+  mercury: 29.12428166,
+  venus: 55.18596703,
+  earth: 326.72821886,
+  mars: 286.53738309,
+  jupiter: 275.06906661,
+  saturn: 335.86559372,
+  uranus: 96.5887248,
+  neptune: 267.31580198,
+};
+
+// mean anomaly at J2000, in radians
+const meanAnomalyAtEpochRad = {
+  mercury: 3.050763675831,
+  venus: 0.874667773088,
+  earth: 6.259051875885,
+  mars: 0.337834355546,
+  jupiter: 0.328394643849,
+  saturn: 5.592480981712,
+  uranus: 2.493893561901,
+  neptune: 4.64440886758,
 };
 
 function degToRad(deg: number): number {
@@ -223,7 +235,7 @@ export function buildDefaultSolarSystemConfigs(): (
         inclinationsDeg.mercury,
         lonAscNodeDeg.mercury,
         argPeriapsisDeg.mercury,
-        0 * (twoPi / 8),
+        meanAnomalyAtEpochRad.mercury,
       ),
       physicalRadius: radii.mercury,
       density: densities.mercury,
@@ -242,7 +254,7 @@ export function buildDefaultSolarSystemConfigs(): (
         inclinationsDeg.venus,
         lonAscNodeDeg.venus,
         argPeriapsisDeg.venus,
-        1 * (twoPi / 8),
+        meanAnomalyAtEpochRad.venus,
       ),
       physicalRadius: radii.venus,
       density: densities.venus,
@@ -261,7 +273,7 @@ export function buildDefaultSolarSystemConfigs(): (
         inclinationsDeg.earth,
         lonAscNodeDeg.earth,
         argPeriapsisDeg.earth,
-        2 * (twoPi / 8),
+        meanAnomalyAtEpochRad.earth,
       ),
       physicalRadius: radii.earth,
       density: densities.earth,
@@ -280,7 +292,7 @@ export function buildDefaultSolarSystemConfigs(): (
         inclinationsDeg.mars,
         lonAscNodeDeg.mars,
         argPeriapsisDeg.mars,
-        3 * (twoPi / 8),
+        meanAnomalyAtEpochRad.mars,
       ),
       physicalRadius: radii.mars,
       density: densities.mars,
@@ -299,7 +311,7 @@ export function buildDefaultSolarSystemConfigs(): (
         inclinationsDeg.jupiter,
         lonAscNodeDeg.jupiter,
         argPeriapsisDeg.jupiter,
-        4 * (twoPi / 8),
+        meanAnomalyAtEpochRad.jupiter,
       ),
       physicalRadius: radii.jupiter,
       density: densities.jupiter,
@@ -318,7 +330,7 @@ export function buildDefaultSolarSystemConfigs(): (
         inclinationsDeg.saturn,
         lonAscNodeDeg.saturn,
         argPeriapsisDeg.saturn,
-        5 * (twoPi / 8),
+        meanAnomalyAtEpochRad.saturn,
       ),
       physicalRadius: radii.saturn,
       density: densities.saturn,
@@ -337,7 +349,7 @@ export function buildDefaultSolarSystemConfigs(): (
         inclinationsDeg.uranus,
         lonAscNodeDeg.uranus,
         argPeriapsisDeg.uranus,
-        6 * (twoPi / 8),
+        meanAnomalyAtEpochRad.uranus,
       ),
       physicalRadius: radii.uranus,
       density: densities.uranus,
@@ -356,7 +368,7 @@ export function buildDefaultSolarSystemConfigs(): (
         inclinationsDeg.neptune,
         lonAscNodeDeg.neptune,
         argPeriapsisDeg.neptune,
-        7 * (twoPi / 8),
+        meanAnomalyAtEpochRad.neptune,
       ),
       physicalRadius: radii.neptune,
       density: densities.neptune,
