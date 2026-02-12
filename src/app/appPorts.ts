@@ -79,6 +79,10 @@ export interface PlanetSceneObject extends CelestialBodySceneObject {
   kind: "planet";
 }
 
+export interface GameplayParameters {
+  simulationTimeScale: number;
+}
+
 /**
  * Pilot's view state relative to the controlled vehicle.
  */

@@ -2,6 +2,7 @@ import { createTickHandler } from "../app/game.js";
 import type {
   ControlInput,
   EnvInput,
+  GameplayParameters,
   Scene,
   SceneObject,
   TickCallback,
@@ -25,6 +26,7 @@ import { handleProfilingToggle } from "./profilerControl.js";
  * DOM-level game loop (depends on requestAnimationFrame).
  */
 export function runLoop(
+  gameplayParameters: GameplayParameters,
   pilotViewRenderer: ViewRenderer,
   pilotRasterizer: Rasterizer,
   topViewRenderer: ViewRenderer,
@@ -38,7 +40,10 @@ export function runLoop(
   envInput: EnvInput,
   profilerController: ProfilerController,
 ): void {
-  const tick: TickCallback = createTickHandler(gravityEngine);
+  const tick: TickCallback = createTickHandler(
+    gameplayParameters,
+    gravityEngine,
+  );
 
   const tickParams: TickParams = {
     nowMs: 0,

@@ -1,3 +1,4 @@
+import type { GameplayParameters } from "../app/appPorts.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { NEWTON_G, SOFTENING_LENGTH } from "../domain/domainPorts.js";
 import { profilerController } from "../global/profiling.js";
@@ -19,7 +20,7 @@ import { NewtonianGravityEngine } from "./NewtonianGravityEngine.js";
 /**
  * WebGL DOM-level bootstrap
  */
-export function bootstrap(): void {
+export function bootstrap(gameplayParameters: GameplayParameters): void {
   const container = document.querySelector(".canvas-container");
   if (!container) {
     throw new Error("Required '.canvas-container' not found in document");
@@ -74,6 +75,7 @@ export function bootstrap(): void {
   const { controlInput, envInput } = initInput();
 
   runLoop(
+    gameplayParameters,
     pilotViewRenderer,
     pilotRasterizer,
     topViewRenderer,

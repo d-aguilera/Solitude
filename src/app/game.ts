@@ -8,6 +8,7 @@ import type {
   SimulationState,
 } from "./appInternals.js";
 import type {
+  GameplayParameters,
   SceneControlState,
   TickCallback,
   TickOutput,
@@ -25,7 +26,10 @@ import { createInitialSceneAndWorld } from "./worldSetup.js";
 /**
  * App‑core game entry.
  */
-export function createTickHandler(gravityEngine: GravityEngine): TickCallback {
+export function createTickHandler(
+  gameplayParams: GameplayParameters,
+  gravityEngine: GravityEngine,
+): TickCallback {
   const x = createInitialSceneAndWorld();
 
   let gravityBindings: GravityBodyBinding[] = buildGravityBindings(x.world);
@@ -96,6 +100,7 @@ export function createTickHandler(gravityEngine: GravityEngine): TickCallback {
 
     const dtMs = paused ? 0 : nowMs - lastTimeMs;
     const dtSeconds = dtMs / 1000;
+    const dtSecondsSim = (dtMs * gameplayParams.simulationTimeScale) / 1000;
     lastTimeMs = nowMs;
 
     const currentThrustPercent = updateControlState(
@@ -118,7 +123,7 @@ export function createTickHandler(gravityEngine: GravityEngine): TickCallback {
     );
 
     applyForcesAndGravity(
-      dtSeconds,
+      dtSecondsSim,
       x.world,
       mainShip,
       mainShipBodyState,
@@ -129,7 +134,7 @@ export function createTickHandler(gravityEngine: GravityEngine): TickCallback {
     );
 
     updateSceneGraph(
-      dtSeconds,
+      dtSecondsSim,
       sceneState,
       sceneControlState,
       simState,

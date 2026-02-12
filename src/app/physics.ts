@@ -149,10 +149,7 @@ export function applyForcesAndGravity(
   gravityState: GravityState,
   gravityBindings: GravityBodyBinding[],
 ): void {
-  const gravityTimeScale = 10;
-  const gravityDt = dtSeconds * gravityTimeScale;
-
-  if (gravityDt === 0) {
+  if (dtSeconds === 0) {
     return;
   }
 
@@ -162,12 +159,12 @@ export function applyForcesAndGravity(
     velocity: mainShipBodyState.velocity,
   };
 
-  applyThrustToVelocity(gravityDt, currentThrustPercent, shipBodyState);
+  applyThrustToVelocity(dtSeconds, currentThrustPercent, shipBodyState);
 
   mainShipBodyState.velocity = shipBodyState.velocity;
 
   // 2) Step gravity (updates velocities and positions).
-  gravityEngine.step(gravityDt, gravityState);
+  gravityEngine.step(dtSeconds, gravityState);
 
   // 3) Apply positions back into world via bindings.
   applyGravityPositionsToWorld(world, gravityState.positions, gravityBindings);
