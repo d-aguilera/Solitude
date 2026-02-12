@@ -2,15 +2,12 @@ import type { ShipBody, Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
 import { ndcToScreen } from "./ndcToScreen.js";
-import type {
-  NdcPoint,
-  RenderSurface2D,
-  RenderedSegment,
-} from "./renderPorts.js";
+import type { NdcPoint, RenderedSegment } from "./renderPorts.js";
 
 export function renderVelocitySegments(
-  { height, width }: RenderSurface2D,
   ship: ShipBody,
+  screenWidth: number,
+  screenHeight: number,
   project: (worldPoint: Vec3) => NdcPoint | null,
 ): RenderedSegment[] {
   return alloc.withName(renderVelocitySegments.name, () => {
@@ -24,8 +21,8 @@ export function renderVelocitySegments(
       const ndcEnd = project(seg.end);
       if (!ndcStart || !ndcEnd) continue;
 
-      const pStart = ndcToScreen(ndcStart, width, height);
-      const pEnd = ndcToScreen(ndcEnd, width, height);
+      const pStart = ndcToScreen(ndcStart, screenWidth, screenHeight);
+      const pEnd = ndcToScreen(ndcEnd, screenWidth, screenHeight);
 
       renderedSegments.push({
         start: pStart,

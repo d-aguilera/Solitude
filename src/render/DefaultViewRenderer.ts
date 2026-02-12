@@ -26,10 +26,12 @@ export class DefaultViewRenderer implements ViewRenderer {
   ) {}
 
   render({ mainShip, camera, surface, scene }: ViewRenderParams): RenderedView {
+    const { width: screenWidth, height: screenHeight } = surface;
+
     const projectionService = new ProjectionService(
       camera,
-      surface.width,
-      surface.height,
+      screenWidth,
+      screenHeight,
     );
 
     const project = (wp: Vec3) => projectionService.projectWorldPointToNdc(wp);
@@ -37,27 +39,33 @@ export class DefaultViewRenderer implements ViewRenderer {
       projectionService.projectWorldSegmentToScreen(
         a,
         b,
-        surface.width,
-        surface.height,
+        screenWidth,
+        screenHeight,
       );
 
     const faces: RenderedFace[] =
       drawMode === "faces"
-        ? renderFaces(scene, camera, surface, this.shadedFaceBuffer)
+        ? renderFaces(
+            scene,
+            camera,
+            screenWidth,
+            screenHeight,
+            this.shadedFaceBuffer,
+          )
         : [];
 
     const polylines: RenderedPolyline[] =
       drawMode === "faces"
         ? renderPolylines(
-            surface,
             scene.objects.filter((obj) => obj.wireframeOnly),
             projectSegment,
           )
-        : renderPolylines(surface, scene.objects, projectSegment);
+        : renderPolylines(scene.objects, projectSegment);
 
     const segments: RenderedSegment[] = renderVelocitySegments(
-      surface,
       mainShip,
+      screenWidth,
+      screenHeight,
       project,
     );
 
@@ -67,9 +75,10 @@ export class DefaultViewRenderer implements ViewRenderer {
     );
 
     const bodyLabels: RenderedBodyLabel[] = renderBodyLabels(
-      surface,
       overlayBodies,
       mainShip.position,
+      screenWidth,
+      screenHeight,
       project,
       this.measureText,
     );

@@ -2,25 +2,17 @@ import type { SceneObject } from "../app/appPorts.js";
 import type { Vec3 } from "../domain/domainPorts.js";
 import { alloc } from "../global/allocProfiler.js";
 import { rgbToCss } from "./color.js";
-import type {
-  RenderedPolyline,
-  RenderSurface2D,
-  ScreenPoint,
-} from "./renderPorts.js";
+import type { RenderedPolyline, ScreenPoint } from "./renderPorts.js";
 import { toRenderable } from "./renderPrep.js";
 
 type SegmentProjector = (aWorld: Vec3, bWorld: Vec3) => ScreenPoint[][];
 
 export function renderPolylines(
-  surface: RenderSurface2D,
   objects: SceneObject[],
   projectSegment: SegmentProjector,
 ): RenderedPolyline[] {
   return alloc.withName(renderPolylines.name, () => {
     const renderedPolylines: RenderedPolyline[] = [];
-    const { width, height } = surface;
-    void width;
-    void height;
 
     objects.forEach((obj) => {
       const { mesh, worldPoints, baseColor, lineWidth } = toRenderable(obj);

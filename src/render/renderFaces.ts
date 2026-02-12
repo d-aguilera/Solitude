@@ -10,12 +10,7 @@ import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
 import { ndcToScreen } from "./ndcToScreen.js";
 import { ProjectionService } from "./ProjectionService.js";
-import type {
-  NdcPoint,
-  RenderedFace,
-  RenderSurface2D,
-  ScreenPoint,
-} from "./renderPorts.js";
+import type { NdcPoint, RenderedFace, ScreenPoint } from "./renderPorts.js";
 import { toRenderable } from "./renderPrep.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
@@ -27,13 +22,19 @@ const E_SUN_AT_EARTH = SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS_2);
 export function renderFaces(
   scene: Scene,
   camera: DomainCameraPose,
-  surface: RenderSurface2D,
+  screenWidth: number,
+  screenHeight: number,
   shadedFaceBuffer: RenderedFace[],
 ): RenderedFace[] {
-  const { width, height } = surface;
   const { objects, lights } = scene;
 
-  const faceList = buildFaces(objects, camera, width, height, lights);
+  const faceList = buildFaces(
+    objects,
+    camera,
+    screenWidth,
+    screenHeight,
+    lights,
+  );
 
   faceList.sort((a, b) => b.depth - a.depth);
 

@@ -5,7 +5,6 @@ import { alloc } from "../global/allocProfiler.js";
 import { ndcToScreen } from "./ndcToScreen.js";
 import type {
   NdcPoint,
-  RenderSurface2D,
   RenderedBodyLabel,
   TextMetrics,
 } from "./renderPorts.js";
@@ -26,9 +25,10 @@ const diffScratch: Vec3 = vec3.zero();
  *    the nearest 45° increment.
  */
 export function renderBodyLabels(
-  surface: RenderSurface2D,
   bodies: PlanetSceneObject[],
   referencePosition: Vec3,
+  screenWidth: number,
+  screenHeight: number,
   project: (worldPoint: Vec3) => NdcPoint | null,
   measureText: (text: string, font: string) => TextMetrics,
 ): RenderedBodyLabel[] {
@@ -68,7 +68,7 @@ export function renderBodyLabels(
       const ndc = project(body.position);
       if (!ndc) continue; // behind the camera
 
-      const anchor = ndcToScreen(ndc, surface.width, surface.height);
+      const anchor = ndcToScreen(ndc, screenWidth, screenHeight);
 
       const name = displayNameForBodyId(body.id);
       const distanceKm = distance / 1000;
@@ -87,7 +87,12 @@ export function renderBodyLabels(
       const boxHeight = lines.length * lineHeight + paddingY * 2;
 
       // Vector from body center to screen center in screen space.
-      const directionIndex = getDirectionIndex(surface, anchor, angleStepRad);
+      const directionIndex = getDirectionIndex(
+        screenWidth,
+        screenHeight,
+        anchor,
+        angleStepRad,
+      );
 
       // Offset direction in screen space for the LABEL BOX CENTER.
       const { x: boxCenterX, y: boxCenterY } = getBoxCenter(
@@ -164,12 +169,13 @@ function getBoxCenter(
 }
 
 function getDirectionIndex(
-  surface: RenderSurface2D,
+  screenWidth: number,
+  screenHeight: number,
   anchor: { x: number; y: number },
   angleStepRad: number,
 ) {
-  const vx = surface.width * 0.5 - anchor.x;
-  const vy = surface.height * 0.5 - anchor.y;
+  const vx = screenWidth * 0.5 - anchor.x;
+  const vy = screenHeight * 0.5 - anchor.y;
 
   // atan2 gives angle with 0 along +X; rotate so 0 corresponds to "up".
   let angle = Math.atan2(vy, vx) - Math.PI / 2;
