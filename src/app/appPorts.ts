@@ -7,41 +7,6 @@ import type {
   Vec3,
 } from "../domain/domainPorts";
 
-export interface BaseSceneObject {
-  id: string;
-  kind: SceneObjectKind;
-  position: Vec3;
-  orientation: Mat3;
-  mesh: Mesh;
-  scale: number;
-  color: RGB;
-  lineWidth: number;
-  wireframeOnly: boolean;
-  applyTransform: boolean;
-  backFaceCulling: boolean;
-}
-
-export interface CelestialBodySceneObject extends SolidSceneObject {
-  kind: "planet" | "star";
-  initialVelocity: Vec3;
-  physicalRadius: number; // meters
-  backFaceCulling: true;
-  velocity: Vec3;
-
-  /**
-   * Constant axial rotation described by:
-   *  - rotationAxis: unit vector in world space
-   *  - angularSpeedRadPerSec: spin rate in radians per second
-   *
-   * The app layer is responsible for integrating the current spin angle
-   * and updating orientation accordingly.
-   */
-  rotationAxis: Vec3;
-  angularSpeedRadPerSec: number;
-}
-
-// --- Actions as canonical arrays ---
-
 export const ALL_CONTROL_ACTIONS = [
   "rollLeft",
   "rollRight",
@@ -75,18 +40,40 @@ export const ALL_CONTROL_ACTIONS = [
 
 export const ALL_ENV_ACTIONS = ["pauseToggle", "profilingToggle"] as const;
 
-// --- Types derived from arrays ---
+export interface BaseSceneObject {
+  id: string;
+  kind: SceneObjectKind;
+  position: Vec3;
+  orientation: Mat3;
+  mesh: Mesh;
+  scale: number;
+  color: RGB;
+  lineWidth: number;
+  wireframeOnly: boolean;
+  applyTransform: boolean;
+  backFaceCulling: boolean;
+}
+
+export interface CelestialBodySceneObject extends SolidSceneObject {
+  kind: "planet" | "star";
+  initialVelocity: Vec3;
+  physicalRadius: number; // meters
+  backFaceCulling: true;
+  velocity: Vec3;
+  rotationAxis: Vec3; // world space
+  angularSpeedRadPerSec: number; // spin rate in radians per second
+}
 
 export type ControlAction = (typeof ALL_CONTROL_ACTIONS)[number];
 export type ControlInput = Record<ControlAction, boolean>;
-
-export type EnvAction = (typeof ALL_ENV_ACTIONS)[number];
-export type EnvInput = Record<EnvAction, boolean>;
 
 export interface DomainCameraPose {
   position: Vec3;
   frame: LocalFrame;
 }
+
+export type EnvAction = (typeof ALL_ENV_ACTIONS)[number];
+export type EnvInput = Record<EnvAction, boolean>;
 
 export interface PlanetSceneObject extends CelestialBodySceneObject {
   kind: "planet";
