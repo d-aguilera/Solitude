@@ -157,19 +157,19 @@ export function applyForcesAndGravity(
   }
 
   // 1) Apply thrust to the main ship's body velocity inside gravityState.
-  const bodyState: ControlledBodyState = {
+  const shipBodyState: ControlledBodyState = {
     frame: controlledShip.frame,
     velocity: mainShipBodyState.velocity,
   };
 
-  applyThrustToVelocity(gravityDt, currentThrustPercent, bodyState);
+  applyThrustToVelocity(gravityDt, currentThrustPercent, shipBodyState);
 
-  mainShipBodyState.velocity = bodyState.velocity;
+  mainShipBodyState.velocity = shipBodyState.velocity;
 
   // 2) Step gravity (updates velocities and positions).
   gravityEngine.step(gravityDt, gravityState);
 
-  // 3) Apply positions back into AppWorld via bindings.
+  // 3) Apply positions back into world via bindings.
   applyGravityPositionsToWorld(world, gravityState.positions, gravityBindings);
 
   // 4) Sync ship velocities in WorldState from gravityState so debug & HUD see them.
