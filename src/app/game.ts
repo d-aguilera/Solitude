@@ -138,7 +138,7 @@ export function createTickHandler(gravityEngine: GravityEngine): TickCallback {
 
     return {
       currentThrustLevel,
-      fps: paused ? 0 : 1 / dtSeconds,
+      fps: paused || dtSeconds === 0 ? 0 : 1 / dtSeconds,
       mainShip,
       pilotCamera: sceneState.pilotCamera,
       pilotCameraLocalOffset: sceneControlState.pilotCameraLocalOffset,
