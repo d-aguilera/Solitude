@@ -7,6 +7,10 @@ import { toRenderable } from "./renderPrep.js";
 
 type SegmentProjector = (aWorld: Vec3, bWorld: Vec3) => ScreenPoint[][];
 
+// Grow-only scratch buffer reused across renderPolylines calls for the
+// current continuous visible stretch of a logical polyline.
+const scratchPoints: ScreenPoint[] = [];
+
 export function renderPolylines(
   objects: SceneObject[],
   projectSegment: SegmentProjector,
@@ -23,7 +27,12 @@ export function renderPolylines(
         const polyIndices = faces[i];
 
         // Accumulate continuous visible stretches for this logical polyline.
-        let currentPoints: ScreenPoint[] = [];
+        //
+        // scratchPoints is a grow-only scratch buffer; we clear its logical
+        // length for each new stretch, and clone the used prefix when
+        // emitting a RenderedPolyline so that callers do not retain the
+        // scratch storage.
+        scratchPoints.length = 0;
 
         for (let j = 0; j < polyIndices.length - 1; j++) {
           const idxA = polyIndices[j];
@@ -36,14 +45,16 @@ export function renderPolylines(
 
           if (segments.length === 0) {
             // Segment fully invisible: flush current polyline (if any).
-            if (currentPoints.length >= 2) {
+            if (scratchPoints.length >= 2) {
               renderedPolylines.push({
-                points: currentPoints,
+                // Clone only the used prefix so the result is stable and
+                // independent of the shared scratch buffer.
+                points: scratchPoints.slice(0, scratchPoints.length),
                 cssColor,
                 lineWidth,
               });
             }
-            currentPoints = [];
+            scratchPoints.length = 0;
             continue;
           }
 
@@ -52,34 +63,35 @@ export function renderPolylines(
           for (const seg of segments) {
             const [pStart, pEnd] = seg;
 
-            if (currentPoints.length === 0) {
+            if (scratchPoints.length === 0) {
               // Start a new visible polyline.
-              currentPoints.push(pStart, pEnd);
+              scratchPoints.push(pStart, pEnd);
             } else {
-              const last = currentPoints[currentPoints.length - 1];
+              const last = scratchPoints[scratchPoints.length - 1];
 
               // If the new segment starts where the last one ended, avoid
               // duplicating the vertex; otherwise, start a new polyline.
               if (last.x === pStart.x && last.y === pStart.y) {
-                currentPoints.push(pEnd);
+                scratchPoints.push(pEnd);
               } else {
-                if (currentPoints.length >= 2) {
+                if (scratchPoints.length >= 2) {
                   renderedPolylines.push({
-                    points: currentPoints,
+                    points: scratchPoints.slice(0, scratchPoints.length),
                     cssColor,
                     lineWidth,
                   });
                 }
-                currentPoints = [pStart, pEnd];
+                scratchPoints.length = 0;
+                scratchPoints.push(pStart, pEnd);
               }
             }
           }
         }
 
         // Flush any remaining visible stretch for this face.
-        if (currentPoints.length >= 2) {
+        if (scratchPoints.length >= 2) {
           renderedPolylines.push({
-            points: currentPoints,
+            points: scratchPoints.slice(0, scratchPoints.length),
             cssColor,
             lineWidth,
           });
