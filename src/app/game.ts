@@ -84,8 +84,23 @@ export function createTickHandler(
     trajectoryAccumTime: 0,
   };
 
+  let dtMs: number;
+  let dtSeconds: number;
+  let dtSecondsSim: number;
   let lastTimeMs: number;
   let initialized = false;
+  let currentThrustPercent: number;
+
+  const output: TickOutput = {
+    currentThrustLevel: 0,
+    fps: 0,
+    mainShip: simState.mainShip,
+    pilotCamera: sceneState.pilotCamera,
+    pilotCameraLocalOffset: sceneControlState.pilotCameraLocalOffset,
+    scene: sceneState.scene,
+    speedMps: 0,
+    topCamera: sceneState.topCamera,
+  };
 
   /**
    * Per‑frame update/render entry called by the game loop.
@@ -98,17 +113,16 @@ export function createTickHandler(
       initialized = true;
     }
 
-    const dtMs = paused ? 0 : nowMs - lastTimeMs;
-    const dtSeconds = dtMs / 1000;
-    const dtSecondsSim = (dtMs * gameplayParams.simulationTimeScale) / 1000;
+    dtMs = paused ? 0 : nowMs - lastTimeMs;
+    dtSeconds = dtMs / 1000;
+    dtSecondsSim = (dtMs * gameplayParams.simulationTimeScale) / 1000;
     lastTimeMs = nowMs;
 
-    const currentThrustPercent = updateControlState(
-      controlInput,
-      simControlState,
-    );
+    output.fps = paused || dtSeconds === 0 ? 0 : 1 / dtSeconds;
 
-    const currentThrustLevel =
+    currentThrustPercent = updateControlState(controlInput, simControlState);
+
+    output.currentThrustLevel =
       currentThrustPercent === 0
         ? 0
         : currentThrustPercent > 0
@@ -117,7 +131,7 @@ export function createTickHandler(
 
     updateShipOrientationFromControls(
       dtSeconds,
-      simState.mainShip,
+      mainShip,
       controlInput,
       simControlState,
     );
@@ -141,15 +155,8 @@ export function createTickHandler(
       controlInput,
     );
 
-    return {
-      currentThrustLevel,
-      fps: paused || dtSeconds === 0 ? 0 : 1 / dtSeconds,
-      mainShip,
-      pilotCamera: sceneState.pilotCamera,
-      pilotCameraLocalOffset: sceneControlState.pilotCameraLocalOffset,
-      scene: sceneState.scene,
-      speedMps: sceneState.speedMps,
-      topCamera: sceneState.topCamera,
-    };
+    output.speedMps = sceneState.speedMps;
+
+    return output;
   };
 }
