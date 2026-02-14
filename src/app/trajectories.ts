@@ -22,7 +22,9 @@ export function updatePlanetTrajectory(
   const t = trajectory;
 
   let b = 0;
-  let evicted: Vec3 | undefined = t.buffers[b].push({ ...currentPosition });
+  let evicted: Vec3 | undefined = t.buffers[b].push(
+    vec3.clone(currentPosition),
+  );
   while (evicted && t.buffers[b].tail === 0 && ++b < t.buffers.length) {
     evicted = t.buffers[b].push(evicted);
   }
@@ -32,10 +34,25 @@ export function rebuildPlanetPathMesh(
   mesh: Mesh,
   traj: PlanetTrajectory,
 ): void {
-  return alloc.withName(rebuildPlanetPathMesh.name, () => {
+  alloc.withName(rebuildPlanetPathMesh.name, () => {
     const { points, faces } = mesh;
     const count = traj.buffers.reduce((acc, buf) => acc + buf.count, 0);
     points.length = count;
+
+    if (count < 2) {
+      faces.length = 0;
+      return;
+    } else if (count === 2) {
+      faces.length = 1;
+      faces[0] = [0, 1];
+      return;
+    } else {
+      const face = faces[0];
+      if (face.length < count) {
+        face.length = count;
+        face[count - 1] = count - 1;
+      }
+    }
 
     // Collect points in from newest to oldest: G1 -> G2 -> ...
     let i = 0;
@@ -51,14 +68,6 @@ export function rebuildPlanetPathMesh(
         i++;
       });
     });
-
-    if (count < 2) {
-      faces.length = 0;
-      return;
-    }
-
-    faces.length = 1;
-    faces[0] = [...Array(count).keys()];
   });
 }
 

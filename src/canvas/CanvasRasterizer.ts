@@ -6,6 +6,7 @@ import type {
   RenderedHud,
   RenderedPolyline,
   RenderedSegment,
+  ScreenPoint,
   TextMetrics,
 } from "../render/renderPorts.js";
 
@@ -13,9 +14,36 @@ const hudWidth = 420;
 const hudHeight = 70;
 const margin = 10;
 
+// scratch
 let fpsWidth: number;
 let thrustWidth: number;
 let profilingWidth: number;
+let label: RenderedBodyLabel;
+let anchor: ScreenPoint;
+let lineHeight: number;
+let lines: string[];
+let linesLength: number;
+let padding: { width: number; height: number };
+let paddingWidth: number;
+let paddingHeight: number;
+let position: ScreenPoint;
+let boxX: number;
+let boxY: number;
+let size: { width: number; height: number };
+let boxWidth: number;
+let boxHeight: number;
+let edgePoint: ScreenPoint;
+let face: RenderedFace;
+let p0: ScreenPoint;
+let p1: ScreenPoint;
+let p2: ScreenPoint;
+let polyline: RenderedPolyline;
+let pointsLength: number;
+let points: ScreenPoint[];
+let p: ScreenPoint;
+let i: number;
+let start: ScreenPoint;
+let end: ScreenPoint;
 
 /**
  * Canvas2D rasterizer.
@@ -38,19 +66,26 @@ export class CanvasRasterizer implements Rasterizer {
     ctx.font = "14px monospace";
     ctx.textBaseline = "middle";
 
-    for (const label of labels) {
-      const { anchor, lineHeight, lines, padding, position, size, edgePoint } =
-        label;
-
-      const { x: anchorX, y: anchorY } = anchor;
-      const { width: paddingX, height: paddingY } = padding;
-      const { x: boxX, y: boxY } = position;
-      const { width: boxWidth, height: boxHeight } = size;
+    for (label of labels) {
+      anchor = label.anchor;
+      lineHeight = label.lineHeight;
+      lines = label.lines;
+      linesLength = lines.length;
+      padding = label.padding;
+      paddingWidth = padding.width;
+      paddingHeight = padding.height;
+      position = label.position;
+      boxX = position.x;
+      boxY = position.y;
+      size = label.size;
+      boxWidth = size.width;
+      boxHeight = size.height;
+      edgePoint = label.edgePoint;
 
       ctx.strokeStyle = "white";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(anchorX, anchorY);
+      ctx.moveTo(anchor.x, anchor.y);
       ctx.lineTo(edgePoint.x, edgePoint.y);
       ctx.stroke();
 
@@ -61,10 +96,12 @@ export class CanvasRasterizer implements Rasterizer {
       ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
 
       ctx.fillStyle = "white";
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const cy = boxY + paddingY + lineHeight * (i + 0.5);
-        ctx.fillText(line, boxX + paddingX, cy);
+      for (let i = 0; i < linesLength; i++) {
+        ctx.fillText(
+          lines[i],
+          boxX + paddingWidth,
+          boxY + paddingHeight + lineHeight * (i + 0.5),
+        );
       }
     }
 
@@ -74,9 +111,11 @@ export class CanvasRasterizer implements Rasterizer {
   drawFaces(faces: RenderedFace[]): void {
     const ctx = this.ctx;
 
-    for (const face of faces) {
-      const { p0, p1, p2, color } = face;
-      ctx.fillStyle = rgbToCss(color);
+    for (face of faces) {
+      p0 = face.p0;
+      p1 = face.p1;
+      p2 = face.p2;
+      ctx.fillStyle = rgbToCss(face.color);
       ctx.beginPath();
       ctx.moveTo(p0.x, p0.y);
       ctx.lineTo(p1.x, p1.y);
@@ -155,15 +194,16 @@ export class CanvasRasterizer implements Rasterizer {
   drawPolylines(polylines: RenderedPolyline[]): void {
     const ctx = this.ctx;
 
-    for (const polyline of polylines) {
-      const { points, cssColor, lineWidth } = polyline;
-      if (points.length < 2) return;
-      ctx.strokeStyle = cssColor;
-      ctx.lineWidth = lineWidth;
+    for (polyline of polylines) {
+      points = polyline.points;
+      pointsLength = points.length;
+      if (pointsLength < 2) continue;
+      ctx.strokeStyle = polyline.cssColor;
+      ctx.lineWidth = polyline.lineWidth;
       ctx.beginPath();
-      let p = points[0];
+      p = points[0];
       ctx.moveTo(p.x, p.y);
-      for (let i = 1; i < points.length; i++) {
+      for (i = 1; i < pointsLength; i++) {
         p = points[i];
         ctx.lineTo(p.x, p.y);
       }
@@ -177,10 +217,12 @@ export class CanvasRasterizer implements Rasterizer {
     ctx.lineWidth = 4;
 
     for (const seg of segments) {
+      start = seg.start;
+      end = seg.end;
       ctx.strokeStyle = seg.cssColor;
       ctx.beginPath();
-      ctx.moveTo(seg.start.x, seg.start.y);
-      ctx.lineTo(seg.end.x, seg.end.y);
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
       ctx.stroke();
     }
   }
