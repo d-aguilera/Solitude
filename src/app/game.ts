@@ -18,6 +18,7 @@ import {
   updateControlState,
   updateShipOrientationFromControls,
 } from "./controls.js";
+import { updateFps } from "./fps.js";
 import { buildGravityBindings, applyForcesAndGravity } from "./physics.js";
 import { updateSceneGraph } from "./scene.js";
 import { getShipById } from "./worldLookup.js";
@@ -118,7 +119,7 @@ export function createTickHandler(
     dtSecondsSim = (dtMs * gameplayParams.simulationTimeScale) / 1000;
     lastTimeMs = nowMs;
 
-    output.fps = paused || dtSeconds === 0 ? 0 : 1 / dtSeconds;
+    output.fps = paused || dtSeconds === 0 ? 0 : updateFps(dtSeconds);
 
     currentThrustPercent = updateControlState(controlInput, simControlState);
 
