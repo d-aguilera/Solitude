@@ -12,7 +12,7 @@ import type {
   World,
 } from "../domain/domainPorts.js";
 import type { DomainCameraPose, Scene } from "./appPorts.js";
-import type { Vec3RingBuffer } from "./Vec3RingBuffer.js";
+import type { RingBuffer } from "./RingBuffer.js";
 
 /**
  * Shared configuration for bodies that participate in orbits.
@@ -97,34 +97,8 @@ export interface PlanetBodyConfig extends CelestialBodyConfig {
 }
 
 export type PlanetTrajectory = {
-  buffers: Vec3RingBuffer[];
+  buffers: RingBuffer<Vec3>[];
 };
-
-export interface RingBuffer<T> {
-  /** Fixed capacity of the buffer. */
-  readonly capacity: number;
-
-  /** Number of elements currently in the buffer. */
-  readonly count: number;
-
-  /** Index of newest element. */
-  readonly tail: number;
-
-  /**
-   * Append a new element as the newest entry.
-   *
-   * - If buffer is not full, this increases `count`.
-   * - If buffer is full, this overwrites the oldest element.
-   *
-   * Returns the evicted element when overwriting, or `undefined` if nothing was evicted.
-   */
-  push(value: T): T | undefined;
-
-  /**
-   * Iterate from tail to head (newest → oldest).
-   */
-  forEach(fn: (value: T) => void): void;
-}
 
 export interface SceneState {
   pilotCamera: DomainCameraPose;

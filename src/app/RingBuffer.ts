@@ -1,8 +1,5 @@
-import type { Vec3 } from "../domain/domainPorts";
-import type { RingBuffer } from "./appInternals";
-
-export class Vec3RingBuffer implements RingBuffer<Vec3> {
-  private storage = new Array<Vec3>();
+export class RingBuffer<T> {
+  private storage = new Array<T>();
 
   constructor(readonly capacity: number) {}
 
@@ -16,7 +13,7 @@ export class Vec3RingBuffer implements RingBuffer<Vec3> {
     return this.t;
   }
 
-  push(value: Vec3): Vec3 | undefined {
+  push(value: T): T | undefined {
     if (this.cnt < this.capacity) {
       // Grow phase: contiguous [0..count-1]
       this.t++;
@@ -32,7 +29,7 @@ export class Vec3RingBuffer implements RingBuffer<Vec3> {
     return evicted;
   }
 
-  forEach(fn: (value: Vec3) => void): void {
+  forEach(fn: (value: T) => void): void {
     for (let i = 0; i < this.cnt; i++) {
       const idx = (this.capacity + this.t - i) % this.capacity;
       fn(this.storage[idx]);

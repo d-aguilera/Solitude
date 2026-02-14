@@ -3,14 +3,14 @@ import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
 import type { PlanetTrajectory } from "./appInternals.js";
 import type { Scene } from "./appPorts.js";
-import { Vec3RingBuffer } from "./Vec3RingBuffer.js";
+import { RingBuffer } from "./RingBuffer.js";
 
 export function createPlanetTrajectory(): PlanetTrajectory {
   return {
     buffers: [
-      new Vec3RingBuffer(20),
-      new Vec3RingBuffer(30),
-      new Vec3RingBuffer(50),
+      new RingBuffer<Vec3>(20),
+      new RingBuffer<Vec3>(30),
+      new RingBuffer<Vec3>(50),
     ],
   };
 }
