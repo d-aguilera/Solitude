@@ -303,7 +303,7 @@ export class ProjectionService {
     bWorld: Vec3,
     screenWidth: number,
     screenHeight: number,
-  ): ScreenPoint[][] {
+  ): { a: ScreenPoint; b: ScreenPoint; clipped: boolean } | undefined {
     // 1) World -> camera space
     this.worldPointToCameraPointNoClipInto(aCamScratch, aWorld);
     this.worldPointToCameraPointNoClipInto(bCamScratch, bWorld);
@@ -313,37 +313,39 @@ export class ProjectionService {
 
     // Both behind near plane: discard
     if (!inA && !inB) {
-      return [];
+      return;
     }
 
     // Both in front of near plane: project as-is
     if (inA && inB) {
       const ndcA = this.projectCameraPointToNdc(aCamScratch);
       const ndcB = this.projectCameraPointToNdc(bCamScratch);
-      return [
-        [
-          ndcToScreen(ndcA, screenWidth, screenHeight),
-          ndcToScreen(ndcB, screenWidth, screenHeight),
-        ],
-      ];
+      return {
+        a: ndcToScreen(ndcA, screenWidth, screenHeight),
+        b: ndcToScreen(ndcB, screenWidth, screenHeight),
+        clipped: false,
+      };
     }
 
-    // One inside, one outside: clip at near plane and keep visible half
-    const insideCam = inA ? aCamScratch : bCamScratch;
-    const outsideCam = inA ? bCamScratch : aCamScratch;
+    if (inA) {
+      // A inside, B outside => return { a, i }
+      const t = (NEAR - aCamScratch.y) / (bCamScratch.y - aCamScratch.y);
+      vec3.lerpInto(intersectScratch, aCamScratch, bCamScratch, t);
+      const ndcA = this.projectCameraPointToNdc(aCamScratch);
+      const ndcI = this.projectCameraPointToNdc(intersectScratch);
+      const a = ndcToScreen(ndcA, screenWidth, screenHeight);
+      const i = ndcToScreen(ndcI, screenWidth, screenHeight);
+      return { a, b: i, clipped: true };
+    }
 
-    // Intersect with plane y = NEAR using lerpInto
-    const t = (NEAR - insideCam.y) / (outsideCam.y - insideCam.y);
-    vec3.lerpInto(intersectScratch, insideCam, outsideCam, t);
-    intersectScratch.y = NEAR;
-
-    const ndcInside = this.projectCameraPointToNdc(insideCam);
+    // B inside, A outside => return { i, b }
+    const t = (NEAR - bCamScratch.y) / (aCamScratch.y - bCamScratch.y);
+    vec3.lerpInto(intersectScratch, bCamScratch, aCamScratch, t);
+    const ndcB = this.projectCameraPointToNdc(bCamScratch);
     const ndcI = this.projectCameraPointToNdc(intersectScratch);
-
-    const pInside = ndcToScreen(ndcInside, screenWidth, screenHeight);
-    const pI = ndcToScreen(ndcI, screenWidth, screenHeight);
-
-    return [[pInside, pI]];
+    const i = ndcToScreen(ndcI, screenWidth, screenHeight);
+    const b = ndcToScreen(ndcB, screenWidth, screenHeight);
+    return { a: i, b, clipped: true };
   }
 
   /**

@@ -42,8 +42,11 @@ let pointsLength: number;
 let points: ScreenPoint[];
 let p: ScreenPoint;
 let i: number;
+let seg: RenderedSegment;
 let start: ScreenPoint;
 let end: ScreenPoint;
+let width: number;
+let height: number;
 
 /**
  * Canvas2D rasterizer.
@@ -53,7 +56,7 @@ export class CanvasRasterizer implements Rasterizer {
 
   clear(color: string): void {
     const ctx = this.ctx;
-    const { width, height } = ctx.canvas;
+    ({ width, height } = ctx.canvas);
 
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, width, height);
@@ -62,25 +65,16 @@ export class CanvasRasterizer implements Rasterizer {
   drawBodyLabels(labels: RenderedBodyLabel[]): void {
     const ctx = this.ctx;
 
-    ctx.save();
     ctx.font = "14px monospace";
     ctx.textBaseline = "middle";
 
     for (label of labels) {
-      anchor = label.anchor;
-      lineHeight = label.lineHeight;
-      lines = label.lines;
+      ({ anchor, lineHeight, lines, padding, position, size, edgePoint } =
+        label);
       linesLength = lines.length;
-      padding = label.padding;
-      paddingWidth = padding.width;
-      paddingHeight = padding.height;
-      position = label.position;
-      boxX = position.x;
-      boxY = position.y;
-      size = label.size;
-      boxWidth = size.width;
-      boxHeight = size.height;
-      edgePoint = label.edgePoint;
+      ({ width: paddingWidth, height: paddingHeight } = padding);
+      ({ x: boxX, y: boxY } = position);
+      ({ width: boxWidth, height: boxHeight } = size);
 
       ctx.strokeStyle = "white";
       ctx.lineWidth = 1;
@@ -104,8 +98,6 @@ export class CanvasRasterizer implements Rasterizer {
         );
       }
     }
-
-    ctx.restore();
   }
 
   drawFaces(faces: RenderedFace[]): void {
@@ -120,7 +112,6 @@ export class CanvasRasterizer implements Rasterizer {
       ctx.moveTo(p0.x, p0.y);
       ctx.lineTo(p1.x, p1.y);
       ctx.lineTo(p2.x, p2.y);
-      ctx.closePath();
       ctx.fill();
     }
   }
@@ -216,9 +207,8 @@ export class CanvasRasterizer implements Rasterizer {
 
     ctx.lineWidth = 4;
 
-    for (const seg of segments) {
-      start = seg.start;
-      end = seg.end;
+    for (seg of segments) {
+      ({ start, end } = seg);
       ctx.strokeStyle = seg.cssColor;
       ctx.beginPath();
       ctx.moveTo(start.x, start.y);

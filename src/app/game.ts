@@ -19,7 +19,7 @@ import {
   updateShipOrientationFromControls,
 } from "./controls.js";
 import { updateFps } from "./fps.js";
-import { buildGravityBindings, applyForcesAndGravity } from "./physics.js";
+import { buildGravityBindings, applyThrust, applyGravity } from "./physics.js";
 import { updateSceneGraph } from "./scene.js";
 import { getShipById } from "./worldLookup.js";
 import { createInitialSceneAndWorld } from "./worldSetup.js";
@@ -82,7 +82,6 @@ export function createTickHandler(
     scene: x.scene,
     speedMps: 0,
     topCamera: x.topCamera,
-    trajectoryAccumTime: 0,
   };
 
   let dtMs: number;
@@ -137,12 +136,11 @@ export function createTickHandler(
       simControlState,
     );
 
-    applyForcesAndGravity(
+    applyThrust(dtSeconds, mainShip, mainShipBodyState, currentThrustPercent);
+
+    applyGravity(
       dtSecondsSim,
       x.world,
-      mainShip,
-      mainShipBodyState,
-      currentThrustPercent,
       gravityEngine,
       gravityState,
       gravityBindings,

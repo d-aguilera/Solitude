@@ -27,7 +27,6 @@ export function updateSceneGraph(
     planetPathMappings,
     planetTrajectories,
     scene,
-    trajectoryAccumTime,
   } = sceneState;
 
   syncShipsToSceneObjects(world.shipBodies, scene);
@@ -37,13 +36,12 @@ export function updateSceneGraph(
 
   rotateCelestialBodies(scene, dtSeconds);
 
-  sceneState.trajectoryAccumTime = updateTrajectories(
+  updateTrajectories(
     dtSeconds,
     scene,
     mainShip,
     planetPathMappings,
     planetTrajectories,
-    trajectoryAccumTime,
   );
 
   updatePilotLook(dtSeconds, controlInput, sceneControlState.look);

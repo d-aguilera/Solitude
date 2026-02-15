@@ -107,7 +107,6 @@ export interface SceneState {
   scene: Scene;
   speedMps: number;
   topCamera: DomainCameraPose;
-  trajectoryAccumTime: number;
 }
 
 /**

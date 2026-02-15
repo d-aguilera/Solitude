@@ -30,22 +30,28 @@ export function updatePlanetTrajectory(
   }
 }
 
+let points: Vec3[];
+let faces: number[][];
+let buf: RingBuffer<Vec3>;
+let count: number;
+
 export function rebuildPlanetPathMesh(
   mesh: Mesh,
   traj: PlanetTrajectory,
 ): void {
   alloc.withName(rebuildPlanetPathMesh.name, () => {
-    const { points, faces } = mesh;
-    const count = traj.buffers.reduce((acc, buf) => acc + buf.count, 0);
+    ({ points, faces } = mesh);
+    count = traj.buffers.reduce((acc, buf) => acc + buf.count, 0);
     points.length = count;
 
-    if (count < 2) {
+    if (count === 0) {
+      points.length = 1;
       faces.length = 0;
-      return;
+    } else if (count === 1) {
+      points.length = 2;
     } else if (count === 2) {
       faces.length = 1;
       faces[0] = [0, 1];
-      return;
     } else {
       const face = faces[0];
       if (face.length < count) {
@@ -56,7 +62,7 @@ export function rebuildPlanetPathMesh(
 
     // Collect points in from newest to oldest: G1 -> G2 -> ...
     let i = 0;
-    traj.buffers.forEach((buf) => {
+    for (buf of traj.buffers) {
       buf.forEach((p) => {
         // Reuse existing Vec3 instances where possible.
         let dst = points[i];
@@ -67,7 +73,7 @@ export function rebuildPlanetPathMesh(
         }
         i++;
       });
-    });
+    }
   });
 }
 
@@ -95,6 +101,9 @@ export function appendPlanetTrajectories(
   }
 }
 
+const sampleInterval = 3.0; // seconds
+let trajectoryAccumTime: number = 0;
+
 /**
  * Sample and update trajectory polylines for the ship and planets.
  */
@@ -104,20 +113,19 @@ export function updateTrajectories(
   mainShip: ShipBody,
   planetPathMappings: Record<BodyId, BodyId>,
   planetTrajectories: Record<BodyId, PlanetTrajectory>,
-  trajectoryAccumTime: number,
-): number {
-  return alloc.withName(updateTrajectories.name, () => {
-    const sampleInterval = 1.0; // seconds
-
+): void {
+  alloc.withName(updateTrajectories.name, () => {
     trajectoryAccumTime += dtSeconds;
-
-    while (trajectoryAccumTime >= sampleInterval) {
-      appendShipTrajectoryPoint(scene, mainShip);
-      appendPlanetTrajectories(scene, planetPathMappings, planetTrajectories);
-      trajectoryAccumTime -= sampleInterval;
+    if (trajectoryAccumTime < sampleInterval) {
+      return;
     }
 
-    return trajectoryAccumTime;
+    appendShipTrajectoryPoint(scene, mainShip);
+    appendPlanetTrajectories(scene, planetPathMappings, planetTrajectories);
+
+    do {
+      trajectoryAccumTime -= sampleInterval;
+    } while (trajectoryAccumTime >= sampleInterval);
   });
 }
 

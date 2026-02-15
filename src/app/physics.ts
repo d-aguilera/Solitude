@@ -134,26 +134,18 @@ function syncShipVelocitiesFromGravity(
 }
 
 /**
- * Handles forces and orbital physics:
- *  - Maintaining GravityState
- *  - Applying thrust into the ship's body velocity
- *  - Applying gravity and integrating positions
+ * Applies thrust into the ship's body velocity
  */
-export function applyForcesAndGravity(
+export function applyThrust(
   dtSeconds: number,
-  world: World,
   controlledShip: ShipBody,
   mainShipBodyState: BodyState,
   currentThrustPercent: number,
-  gravityEngine: GravityEngine,
-  gravityState: GravityState,
-  gravityBindings: GravityBodyBinding[],
 ): void {
   if (dtSeconds === 0) {
     return;
   }
 
-  // 1) Apply thrust to the main ship's body velocity inside gravityState.
   const shipBodyState: ControlledBodyState = {
     frame: controlledShip.frame,
     velocity: mainShipBodyState.velocity,
@@ -162,13 +154,30 @@ export function applyForcesAndGravity(
   applyThrustToVelocity(dtSeconds, currentThrustPercent, shipBodyState);
 
   mainShipBodyState.velocity = shipBodyState.velocity;
+}
 
-  // 2) Step gravity (updates velocities and positions).
+/**
+ * Handles orbital physics:
+ *  - Maintaining GravityState
+ *  - Applying gravity and integrating positions
+ */
+export function applyGravity(
+  dtSeconds: number,
+  world: World,
+  gravityEngine: GravityEngine,
+  gravityState: GravityState,
+  gravityBindings: GravityBodyBinding[],
+): void {
+  if (dtSeconds === 0) {
+    return;
+  }
+
+  // 1) Step gravity (updates velocities and positions).
   gravityEngine.step(dtSeconds, gravityState);
 
-  // 3) Apply positions back into world via bindings.
+  // 2) Apply positions back into world via bindings.
   applyGravityPositionsToWorld(world, gravityState.positions, gravityBindings);
 
-  // 4) Sync ship velocities in WorldState from gravityState so debug & HUD see them.
+  // 3) Sync ship velocities in WorldState from gravityState so debug & HUD see them.
   syncShipVelocitiesFromGravity(world, gravityState, gravityBindings);
 }
