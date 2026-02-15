@@ -3,6 +3,7 @@ import type { Vec3 } from "../domain/domainPorts.js";
 import { ProjectionService } from "./ProjectionService.js";
 import { renderBodyLabels } from "./renderBodyLabels.js";
 import { renderFaces } from "./renderFaces.js";
+import type { ProjectedSegment, SegmentProjector } from "./renderInternals.js";
 import { renderPolylines } from "./renderPolylines.js";
 import { drawMode } from "./renderPorts.js";
 import type {
@@ -38,8 +39,13 @@ export class DefaultViewRenderer implements ViewRenderer {
     const projectInto = (into: NdcPoint, wp: Vec3) =>
       projectionService.projectWorldPointToNdcInto(into, wp);
 
-    const projectSegment = (a: Vec3, b: Vec3) =>
-      projectionService.projectWorldSegmentToScreen(
+    const projectSegmentInto: SegmentProjector = (
+      into: ProjectedSegment,
+      a: Vec3,
+      b: Vec3,
+    ) =>
+      projectionService.projectWorldSegmentToScreenInto(
+        into,
         a,
         b,
         screenWidth,
@@ -61,15 +67,13 @@ export class DefaultViewRenderer implements ViewRenderer {
       drawMode === "faces"
         ? renderPolylines(
             scene.objects.filter((obj) => obj.wireframeOnly),
-            projectSegment,
+            projectSegmentInto,
           )
-        : renderPolylines(scene.objects, projectSegment);
+        : renderPolylines(scene.objects, projectSegmentInto);
 
     const segments: RenderedSegment[] = renderVelocitySegments(
       mainShip,
-      screenWidth,
-      screenHeight,
-      projectInto,
+      projectSegmentInto,
     );
 
     const overlayBodies: PlanetSceneObject[] = scene.objects.filter(

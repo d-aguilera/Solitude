@@ -4,8 +4,9 @@ import { localFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
-import type { NdcPoint, ScreenPoint } from "./renderPorts.js";
 import { ndcToScreen } from "./ndcToScreen.js";
+import type { ProjectedSegment } from "./renderInternals.js";
+import type { NdcPoint } from "./renderPorts.js";
 
 /**
  * Camera-space forward threshold.
@@ -300,12 +301,13 @@ export class ProjectionService {
    *   [[P0, P1]]        if fully in front of the near plane
    *   [[P_inside, P_I]] if crossing the near plane
    */
-  projectWorldSegmentToScreen(
+  projectWorldSegmentToScreenInto(
+    into: ProjectedSegment,
     aWorld: Vec3,
     bWorld: Vec3,
     screenWidth: number,
     screenHeight: number,
-  ): { a: ScreenPoint; b: ScreenPoint; clipped: boolean } | undefined {
+  ): boolean {
     // 1) World -> camera space
     this.worldPointToCameraPointNoClipInto(aCamScratch, aWorld);
     this.worldPointToCameraPointNoClipInto(bCamScratch, bWorld);
@@ -315,37 +317,37 @@ export class ProjectionService {
 
     // Both behind near plane: discard
     if (!inA && !inB) {
-      return;
+      return false;
     }
 
     // Both in front of near plane: project as-is
     if (inA && inB) {
       this.projectCameraPointToNdcInto(ndcAScratch, aCamScratch);
       this.projectCameraPointToNdcInto(ndcBScratch, bCamScratch);
-      const a = ndcToScreen(ndcAScratch, screenWidth, screenHeight);
-      const b = ndcToScreen(ndcBScratch, screenWidth, screenHeight);
-      return { a, b, clipped: false };
+      into.a = ndcToScreen(ndcAScratch, screenWidth, screenHeight);
+      into.b = ndcToScreen(ndcBScratch, screenWidth, screenHeight);
+      into.clipped = false;
+      return true;
     }
+
+    const t = (NEAR - aCamScratch.y) / (bCamScratch.y - aCamScratch.y);
+    vec3.lerpInto(intersectScratch, aCamScratch, bCamScratch, t);
+    this.projectCameraPointToNdcInto(ndcIScratch, intersectScratch);
 
     if (inA) {
       // A inside, B outside => return { a, i }
-      const t = (NEAR - aCamScratch.y) / (bCamScratch.y - aCamScratch.y);
-      vec3.lerpInto(intersectScratch, aCamScratch, bCamScratch, t);
       this.projectCameraPointToNdcInto(ndcAScratch, aCamScratch);
-      this.projectCameraPointToNdcInto(ndcIScratch, intersectScratch);
-      const a = ndcToScreen(ndcAScratch, screenWidth, screenHeight);
-      const i = ndcToScreen(ndcIScratch, screenWidth, screenHeight);
-      return { a, b: i, clipped: true };
+      into.a = ndcToScreen(ndcAScratch, screenWidth, screenHeight);
+      into.b = ndcToScreen(ndcIScratch, screenWidth, screenHeight);
     } else {
       // B inside, A outside => return { i, b }
-      const t = (NEAR - bCamScratch.y) / (aCamScratch.y - bCamScratch.y);
-      vec3.lerpInto(intersectScratch, bCamScratch, aCamScratch, t);
       this.projectCameraPointToNdcInto(ndcBScratch, bCamScratch);
-      this.projectCameraPointToNdcInto(ndcIScratch, intersectScratch);
-      const i = ndcToScreen(ndcIScratch, screenWidth, screenHeight);
-      const b = ndcToScreen(ndcBScratch, screenWidth, screenHeight);
-      return { a: i, b, clipped: true };
+      into.a = ndcToScreen(ndcIScratch, screenWidth, screenHeight);
+      into.b = ndcToScreen(ndcBScratch, screenWidth, screenHeight);
     }
+
+    into.clipped = true;
+    return true;
   }
 
   /**

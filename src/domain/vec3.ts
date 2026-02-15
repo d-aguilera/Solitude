@@ -91,15 +91,15 @@ function normalizeInto(into: Vec3): Vec3 {
  *
  * Common pattern for offsetting a point along a direction.
  */
-function scaledAdd(
-  out: Vec3,
+function scaledAddInto(
+  into: Vec3,
   base: Readonly<Vec3>,
   dir: Readonly<Vec3>,
   scale: number,
 ): Vec3 {
-  vec3.scaleInto(out, scale, dir);
-  vec3.addInto(out, out, base);
-  return out;
+  vec3.scaleInto(into, scale, dir);
+  vec3.addInto(into, into, base);
+  return into;
 }
 
 function scaleInto(into: Vec3, s: number, v: Readonly<Vec3>): Vec3 {
@@ -133,7 +133,7 @@ export const vec3 = {
   lengthSq,
   lerpInto,
   normalizeInto,
-  scaledAdd,
+  scaledAddInto,
   scaleInto,
   subInto,
   zero,

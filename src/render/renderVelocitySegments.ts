@@ -1,39 +1,32 @@
 import type { ShipBody, Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
-import { ndcToScreen } from "./ndcToScreen.js";
-import type { NdcPoint, RenderedSegment } from "./renderPorts.js";
+import type { ProjectedSegment, SegmentProjector } from "./renderInternals.js";
+import type { RenderedSegment } from "./renderPorts.js";
 
-const ndcStartScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
-const ndcEndScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
+const projectedScratch: ProjectedSegment = {
+  a: { x: 0, y: 0, depth: 0 },
+  b: { x: 0, y: 0, depth: 0 },
+  clipped: false,
+};
 
 export function renderVelocitySegments(
   ship: ShipBody,
-  screenWidth: number,
-  screenHeight: number,
-  projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
+  projectSegmentInto: SegmentProjector,
 ): RenderedSegment[] {
   return alloc.withName(renderVelocitySegments.name, () => {
-    const segments = getShipVelocitySegments(ship);
-    if (segments.length === 0) return [];
-
     const renderedSegments: RenderedSegment[] = [];
+    if (!mutateShipVelocitySegments(ship, segmentsScratch)) {
+      return renderedSegments;
+    }
 
-    for (const seg of segments) {
-      if (
-        !projectInto(ndcStartScratch, seg.start) ||
-        !projectInto(ndcEndScratch, seg.end)
-      )
-        continue;
-
-      const pStart = ndcToScreen(ndcStartScratch, screenWidth, screenHeight);
-      const pEnd = ndcToScreen(ndcEndScratch, screenWidth, screenHeight);
-
-      renderedSegments.push({
-        start: pStart,
-        end: pEnd,
-        cssColor: seg.direction === "forward" ? "lime" : "red",
-      });
+    for (const seg of segmentsScratch) {
+      if (!projectSegmentInto(projectedScratch, seg.start, seg.end)) continue;
+      const { a, b } = projectedScratch;
+      const start = { x: a.x, y: a.y, depth: a.depth };
+      const end = { x: b.x, y: b.y, depth: b.depth };
+      const cssColor = seg.direction === "forward" ? "lime" : "red";
+      renderedSegments.push({ start, end, cssColor });
     }
 
     return renderedSegments;
@@ -44,37 +37,51 @@ export function renderVelocitySegments(
  * Pure helper that computes the world-space line segments representing
  * a ship's velocity direction.
  */
-function getShipVelocitySegments(ship: ShipBody): VelocityDebugSegment[] {
-  // Reuse a single scratch velocity vector.
+function mutateShipVelocitySegments(
+  ship: ShipBody,
+  [forward, backward]: VelocityDebugSegment[],
+): boolean {
+  const { start: forwardStart, end: forwardEnd } = forward;
+  const { start: backwardStart, end: backwardEnd } = backward;
+
   vec3.copyInto(velocityScratch, ship.velocity);
 
   const speedSq = vec3.lengthSq(velocityScratch);
-  if (speedSq < 1e-24) return [];
+  if (speedSq < 1e-24) {
+    return false;
+  }
 
   const dir = vec3.normalizeInto(velocityScratch);
   const center = ship.position;
 
   const len = 500000; // meters
-  const innerRadius = 6; // meters
+  const innerRadius = 7; // meters
 
-  vec3.scaledAdd(forwardInner, center, dir, innerRadius);
-  vec3.scaledAdd(forwardEnd, center, dir, len);
-  vec3.scaledAdd(backwardInner, center, dir, -innerRadius);
-  vec3.scaledAdd(backwardEnd, center, dir, -len);
+  vec3.scaledAddInto(forwardStart, center, dir, innerRadius);
+  vec3.scaledAddInto(forwardEnd, center, dir, len);
+  vec3.scaledAddInto(backwardStart, center, dir, -innerRadius);
+  vec3.scaledAddInto(backwardEnd, center, dir, -len);
 
-  // The returned segments reference stable, reused Vec3 instances.
-  return [
-    { start: forwardInner, end: forwardEnd, direction: "forward" },
-    { start: backwardInner, end: backwardEnd, direction: "backward" },
-  ];
+  return true;
 }
 
 // Shared scratch vectors for velocity debug segments.
 const velocityScratch: Vec3 = vec3.zero();
-const forwardInner: Vec3 = vec3.zero();
-const forwardEnd: Vec3 = vec3.zero();
-const backwardInner: Vec3 = vec3.zero();
-const backwardEnd: Vec3 = vec3.zero();
+
+const forwardScratch: VelocityDebugSegment = {
+  start: vec3.zero(),
+  end: vec3.zero(),
+  direction: "forward",
+};
+const backwardScratch: VelocityDebugSegment = {
+  start: vec3.zero(),
+  end: vec3.zero(),
+  direction: "backward",
+};
+const segmentsScratch: VelocityDebugSegment[] = [
+  forwardScratch,
+  backwardScratch,
+];
 
 interface VelocityDebugSegment {
   start: Vec3;
