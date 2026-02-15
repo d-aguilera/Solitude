@@ -1,5 +1,5 @@
 import type { LocalFrame, ShipBody, Vec3 } from "../domain/domainPorts.js";
-import { rotateFrameAroundAxis } from "../domain/localFrame.js";
+import { localFrame } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import type {
   ControlInput,
@@ -66,10 +66,10 @@ function frameFromShipForPilot(
   let frame = pilotFrameScratch;
 
   if (azimuth !== 0) {
-    frame = rotateFrameAroundAxis(frame, frame.up, azimuth);
+    frame = localFrame.rotateAroundAxis(frame, frame.up, azimuth);
   }
   if (elevation !== 0) {
-    frame = rotateFrameAroundAxis(frame, frame.right, elevation);
+    frame = localFrame.rotateAroundAxis(frame, frame.right, elevation);
   }
 
   return frame;

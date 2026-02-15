@@ -1,5 +1,5 @@
 import type { CelestialBody, ShipBody, World } from "../domain/domainPorts.js";
-import { mat3FromLocalFrame } from "../domain/localFrame.js";
+import { localFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { alloc } from "../global/allocProfiler.js";
 import type { PlanetSceneObject, Scene, StarSceneObject } from "./appPorts.js";
@@ -78,7 +78,7 @@ export function syncShipsToSceneObjects(
 
     // Keep renderer-facing pose in sync with physics ship.
     obj.position = ship.position;
-    obj.orientation = mat3FromLocalFrame(ship.frame);
+    obj.orientation = localFrame.toMat3(ship.frame);
   }
 }
 

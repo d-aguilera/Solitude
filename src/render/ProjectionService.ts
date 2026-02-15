@@ -1,6 +1,6 @@
 import type { DomainCameraPose } from "../app/appPorts.js";
 import type { Mat3, Vec3 } from "../domain/domainPorts.js";
-import { mat3FromLocalFrameInto } from "../domain/localFrame.js";
+import { localFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
@@ -99,7 +99,7 @@ export class ProjectionService {
       () => {
         const { fX, fY } = this.getFocalLengths(canvasWidth, canvasHeight);
 
-        mat3FromLocalFrameInto(R_worldFromLocalScratch, pose.frame);
+        localFrame.intoMat3(R_worldFromLocalScratch, pose.frame);
         const R_localFromWorld = mat3.transposeInto(
           mat3.zero(),
           R_worldFromLocalScratch,

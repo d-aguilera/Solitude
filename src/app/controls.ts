@@ -1,5 +1,5 @@
 import type { LocalFrame, ShipBody, Vec3 } from "../domain/domainPorts.js";
-import { rotateFrameAroundAxis } from "../domain/localFrame.js";
+import { localFrame } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import type { ControlledBodyState, SimControlState } from "./appInternals.js";
 import type { ControlInput, PilotLookState } from "./appPorts.js";
@@ -66,7 +66,7 @@ function rollFrame(
   const angle = (controlInput.rollLeft ? -1 : 1) * rotSpeedRoll * dtSeconds;
 
   // Roll around local forward axis (in world coords)
-  return rotateFrameAroundAxis(frame, frame.forward, angle);
+  return localFrame.rotateAroundAxis(frame, frame.forward, angle);
 }
 
 function pitchFrame(
@@ -82,7 +82,7 @@ function pitchFrame(
   const angle = pitchInput * rotSpeedPitch * dtSeconds;
 
   // Pitch around local right axis
-  return rotateFrameAroundAxis(frame, frame.right, angle);
+  return localFrame.rotateAroundAxis(frame, frame.right, angle);
 }
 
 function yawFrame(
@@ -100,7 +100,7 @@ function yawFrame(
   const angle = (controlInput.yawLeft ? 1 : -1) * rotSpeedYaw * dtSeconds;
 
   // Yaw around local up axis
-  return rotateFrameAroundAxis(frame, frame.up, angle);
+  return localFrame.rotateAroundAxis(frame, frame.up, angle);
 }
 
 const thrustKeys: (keyof ControlInput)[] = [
@@ -244,7 +244,7 @@ function updateFrameAlignToVelocity(
       const axis = body.frame.right;
       const maxStep = alignToVelocityMaxAngularSpeed * dtSeconds;
       const stepAngle = Math.min(Math.PI, maxStep);
-      body.frame = rotateFrameAroundAxis(body.frame, axis, stepAngle);
+      body.frame = localFrame.rotateAroundAxis(body.frame, axis, stepAngle);
       return;
     }
 
@@ -252,7 +252,7 @@ function updateFrameAlignToVelocity(
     const axis = axisScratch;
     const maxStep = alignToVelocityMaxAngularSpeed * dtSeconds;
     const stepAngle = Math.min(Math.PI, maxStep);
-    body.frame = rotateFrameAroundAxis(body.frame, axis, stepAngle);
+    body.frame = localFrame.rotateAroundAxis(body.frame, axis, stepAngle);
     return;
   }
 
@@ -262,7 +262,7 @@ function updateFrameAlignToVelocity(
   const maxStep = alignToVelocityMaxAngularSpeed * dtSeconds;
   const stepAngle = Math.min(angle, maxStep);
 
-  body.frame = rotateFrameAroundAxis(body.frame, axis, stepAngle);
+  body.frame = localFrame.rotateAroundAxis(body.frame, axis, stepAngle);
 }
 
 /**

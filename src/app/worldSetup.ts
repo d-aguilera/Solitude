@@ -6,7 +6,7 @@ import type {
   Vec3,
   World,
 } from "../domain/domainPorts.js";
-import { makeLocalFrameFromUp } from "../domain/localFrame.js";
+import { localFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import type { PlanetTrajectory } from "./appInternals.js";
@@ -27,7 +27,7 @@ import { buildLightsFromStars } from "./syncSceneObjects.js";
 import { createPlanetTrajectory } from "./trajectories.js";
 
 export const initialUp: Vec3 = vec3.create(0, 0, 1);
-export const initialFrame: LocalFrame = makeLocalFrameFromUp(initialUp);
+export const initialFrame: LocalFrame = localFrame.fromUp(initialUp);
 
 export function createPolylineSceneObject(
   id: string,

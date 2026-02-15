@@ -4,10 +4,7 @@ import type {
   Vec3,
   World,
 } from "../domain/domainPorts.js";
-import {
-  mat3FromLocalFrame,
-  rotateFrameAroundAxis,
-} from "../domain/localFrame.js";
+import { localFrame } from "../domain/localFrame.js";
 import { shipModel } from "../domain/models.js";
 import { circularSpeedAtRadius } from "../domain/phys.js";
 import { vec3 } from "../domain/vec3.js";
@@ -40,7 +37,7 @@ export function createInitialShip(
     kind: "ship",
     mesh: shipModel,
     position: { ...shipBody.position },
-    orientation: mat3FromLocalFrame(shipBody.frame),
+    orientation: localFrame.toMat3(shipBody.frame),
     scale: SHIP_VISUAL_SCALE,
     color: colors.ship,
     lineWidth: 1,
@@ -129,7 +126,7 @@ function getFrame(initialVelocity: Vec3) {
   const dot = Math.min(1, Math.max(-1, vec3.dot(baseForward, targetForward)));
   const angle = Math.acos(dot);
 
-  return rotateFrameAroundAxis(initialFrame, axisN, angle);
+  return localFrame.rotateAroundAxis(initialFrame, axisN, angle);
 }
 
 function computeShipStartPosFromPlanet(
