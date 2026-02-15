@@ -9,15 +9,16 @@ import type {
   World,
 } from "../domain/domainPorts.js";
 import { NEWTON_G } from "../domain/domainPorts.js";
+import { mutateStateVectorFromKeplerian } from "../domain/kepler.js";
 import { mat3 } from "../domain/mat3.js";
 import { generatePlanetMesh } from "../domain/models.js";
 import { vec3 } from "../domain/vec3.js";
-import { stateVectorFromKeplerian } from "../domain/kepler.js";
 import type { PlanetBodyConfig, StarBodyConfig } from "./appInternals.js";
 import type {
+  CelestialBodySceneObject,
+  PlanetSceneObject,
   SceneObject,
   StarSceneObject,
-  PlanetSceneObject,
 } from "./appPorts.js";
 import { createPolylineSceneObject } from "./worldSetup.js";
 
@@ -51,7 +52,12 @@ export function addPlanetsAndStarsFromConfig(
 
     if (cfg.orbit.semiMajorAxis > 0) {
       // Use two-body Keplerian elements to derive initial state.
-      const state = stateVectorFromKeplerian(
+      const state = {
+        position: vec3.zero(),
+        velocity: vec3.zero(),
+      };
+      mutateStateVectorFromKeplerian(
+        state,
         cfg.orbit,
         cfg.centralMassKg,
         NEWTON_G,
@@ -87,78 +93,55 @@ export function addPlanetsAndStarsFromConfig(
 
     const angularSpeedRadPerSec = cfg.angularSpeedRadPerSec;
 
+    const sceneObj: CelestialBodySceneObject = {
+      id: cfg.id,
+      kind: cfg.kind,
+      mesh: bodyMesh,
+      position: center,
+      orientation: mat3.copy(mat3.identity, mat3.zero()),
+      scale: cfg.physicalRadius,
+      color: cfg.color,
+      lineWidth: 1,
+      applyTransform: true,
+      wireframeOnly: false,
+      initialVelocity,
+      physicalRadius: cfg.physicalRadius,
+      backFaceCulling: true,
+      velocity: vec3.clone(initialVelocity),
+      rotationAxis,
+      angularSpeedRadPerSec,
+    };
+
+    const celestialBody: CelestialBody = {
+      id: cfg.id,
+      position: vec3.clone(center),
+      velocity: vec3.clone(initialVelocity),
+    };
+
+    const planetPhysics: PlanetPhysics = {
+      id: cfg.id,
+      physicalRadius: cfg.physicalRadius,
+      density: cfg.density,
+      mass: computePlanetMass(cfg.physicalRadius, cfg.density),
+    };
+
     if (cfg.kind === "star") {
-      const starObj: StarSceneObject = {
-        id: cfg.id,
-        kind: "star",
-        mesh: bodyMesh,
-        position: center,
-        orientation: mat3.identity,
-        scale: cfg.physicalRadius,
-        color: cfg.color,
-        lineWidth: 1,
-        applyTransform: true,
-        wireframeOnly: false,
-        initialVelocity,
-        physicalRadius: cfg.physicalRadius,
-        backFaceCulling: true,
-        velocity: { ...initialVelocity },
+      worldStars.push(celestialBody);
+      worldStarPhysics.push({
+        ...planetPhysics,
         luminosity: cfg.luminosity,
-        rotationAxis,
-        angularSpeedRadPerSec,
-      };
-
-      const starBody: CelestialBody = {
-        id: cfg.id,
-        position: { ...center },
-        velocity: { ...initialVelocity },
-      };
-
-      const starPhys: StarPhysics = {
-        id: cfg.id,
-        physicalRadius: cfg.physicalRadius,
-        density: cfg.density,
-        mass: computePlanetMass(cfg.physicalRadius, cfg.density),
+      } as StarPhysics);
+      objects.push({
+        ...sceneObj,
+        kind: cfg.kind,
         luminosity: cfg.luminosity,
-      };
-
-      worldStars.push(starBody);
-      worldStarPhysics.push(starPhys);
-      objects.push(starObj);
+      } as StarSceneObject);
     } else {
-      const planetObj: PlanetSceneObject = {
-        id: cfg.id,
-        kind: "planet",
-        mesh: bodyMesh,
-        position: center,
-        orientation: mat3.identity,
-        scale: cfg.physicalRadius,
-        color: cfg.color,
-        lineWidth: 1,
-        applyTransform: true,
-        wireframeOnly: false,
-        initialVelocity,
-        physicalRadius: cfg.physicalRadius,
-        backFaceCulling: true,
-        velocity: { ...initialVelocity },
-        rotationAxis,
-        angularSpeedRadPerSec,
-      };
-
-      worldPlanets.push({
-        id: cfg.id,
-        position: { ...center },
-        velocity: { ...initialVelocity },
-      });
-
-      worldPlanetPhysics.push({
-        id: cfg.id,
-        physicalRadius: cfg.physicalRadius,
-        density: cfg.density,
-        mass: computePlanetMass(cfg.physicalRadius, cfg.density),
-      });
-
-      objects.push(planetObj);
+      worldPlanets.push(celestialBody);
+      worldPlanetPhysics.push(planetPhysics);
+      objects.push({
+        ...sceneObj,
+      } as PlanetSceneObject);
     }
 
     // All get a path polyline. The path geometry is updated over time by
@@ -176,6 +159,9 @@ function computePlanetMass(physicalRadius: number, density: number): number {
     (4 / 3) * Math.PI * physicalRadius * physicalRadius * physicalRadius;
   return density * volume;
 }
+
+// scratch
+const R = mat3.zero();
 
 /**
  * Compute the orbital plane normal and a reference direction within that plane
@@ -225,7 +211,7 @@ function getOrbitFrameFromKepler(orbit: KeplerianOrbit): {
   ];
 
   // Combined full rotation R = Rz(Ω) * Rx(i) * Rz(ω)
-  const R: Mat3 = mat3.mulMat3(RzO_RxI, RzW);
+  mat3.mulMat3Into(R, RzO_RxI, RzW);
 
   // periapsisDir = R * [1, 0, 0] = first column of R.
   const periapsisDir: Vec3 = vec3.create(R[0][0], R[1][0], R[2][0]);

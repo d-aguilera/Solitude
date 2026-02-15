@@ -23,6 +23,8 @@ export function buildLightsFromStars(world: World, scene: Scene): void {
   scene.lights = lights;
 }
 
+const Rspin = mat3.zero();
+
 /**
  * Per-frame adapter: advance axial rotation for planets and stars.
  */
@@ -35,11 +37,11 @@ export function rotateCelestialBodies(scene: Scene, dtSeconds: number): void {
       const angle = obj.angularSpeedRadPerSec * dtSeconds;
       if (angle === 0) continue;
 
-      const Rspin = mat3.rotAxis(obj.rotationAxis, angle);
+      mat3.rotAxisInto(Rspin, obj.rotationAxis, angle);
 
       // Orientation is a local→world transform. Apply spin in local space
       // by left-multiplying the existing orientation.
-      obj.orientation = mat3.mulMat3(Rspin, obj.orientation);
+      mat3.mulMat3Into(obj.orientation, Rspin, obj.orientation);
     }
   });
 }

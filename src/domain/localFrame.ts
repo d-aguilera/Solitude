@@ -76,6 +76,7 @@ export function mat3FromLocalFrameInto(into: Mat3, frame: LocalFrame): Mat3 {
 }
 
 // Shared scratch vectors for rotateFrameAroundAxis
+const R = mat3.zero();
 const rotateRightScratch: Vec3 = vec3.zero();
 const rotateForwardScratch: Vec3 = vec3.zero();
 const rotateUpScratch: Vec3 = vec3.zero();
@@ -87,7 +88,7 @@ export function rotateFrameAroundAxis(
   angle: number,
 ): LocalFrame {
   return alloc.withName(rotateFrameAroundAxis.name, () => {
-    const R = mat3.rotAxis(axis, angle);
+    mat3.rotAxisInto(R, axis, angle);
 
     // Use scratch Vec3s + mulVec3Into to avoid allocations
     mat3.mulVec3Into(rotateRightScratch, R, frame.right);

@@ -33,6 +33,12 @@ export function solveEccentricAnomaly(
   return E;
 }
 
+const RzOmega = mat3.zero();
+const Rxi = mat3.zero();
+const Rzw = mat3.zero();
+const Rtemp = mat3.zero();
+const R = mat3.zero();
+
 /**
  * Convert Keplerian elements to position and velocity in the inertial
  * reference frame at t = epoch (M = meanAnomalyAtEpochRad).
@@ -44,11 +50,12 @@ export function solveEccentricAnomaly(
  * longitude) is defined by the caller. The angles in the KeplerianOrbit
  * are interpreted relative to that frame.
  */
-export function stateVectorFromKeplerian(
+export function mutateStateVectorFromKeplerian(
+  state: { position: Vec3; velocity: Vec3 },
   orbit: KeplerianOrbit,
   centralMassKg: number,
   G: number,
-): { position: Vec3; velocity: Vec3 } {
+): void {
   const {
     semiMajorAxis: a,
     eccentricity: e,
@@ -91,15 +98,13 @@ export function stateVectorFromKeplerian(
   //
   // Standard 3-1-3 rotation: R = Rz(Ω) * Rx(i) * Rz(ω)
   // Build rotation R = Rz(Ω) * Rx(i) * Rz(ω)
-  const RzOmega = mat3.rotZ(Omega);
-  const Rxi = mat3.rotX(i);
-  const Rzw = mat3.rotZ(omega);
+  mat3.rotZInto(RzOmega, Omega);
+  mat3.rotXInto(Rxi, i);
+  mat3.rotZInto(Rzw, omega);
 
-  const Rtemp = mat3.mulMat3(RzOmega, Rxi);
-  const R = mat3.mulMat3(Rtemp, Rzw);
+  mat3.mulMat3Into(Rtemp, RzOmega, Rxi);
+  mat3.mulMat3Into(R, Rtemp, Rzw);
 
-  const position = mat3.mulVec3(R, vec3.create(xPQW, yPQW, zPQW));
-  const velocity = mat3.mulVec3(R, vec3.create(vxPQW, vyPQW, vzPQW));
-
-  return { position, velocity };
+  mat3.mulVec3Into(state.position, R, vec3.create(xPQW, yPQW, zPQW));
+  mat3.mulVec3Into(state.velocity, R, vec3.create(vxPQW, vyPQW, vzPQW));
 }
