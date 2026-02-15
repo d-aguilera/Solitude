@@ -128,8 +128,7 @@ function syncShipVelocitiesFromGravity(
 
     const body = gravityState.bodies[bodyIndex];
     const ship = world.shipBodies[binding.shipIndex];
-
-    ship.velocity = { ...body.velocity };
+    vec3.copyInto(ship.velocity, body.velocity);
   }
 }
 

@@ -9,12 +9,14 @@ import type {
   TextMetrics,
 } from "./renderPorts.js";
 
-const sortedScratch: {
+type SortedScratchItem = {
   body: PlanetSceneObject;
   distance: number;
-}[] = [];
+};
 
+const sortedScratch: SortedScratchItem[] = [];
 const diffScratch: Vec3 = vec3.zero();
+const ndcScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
 
 /**
  * Sample and prepare body labels:
@@ -29,32 +31,13 @@ export function renderBodyLabels(
   referencePosition: Vec3,
   screenWidth: number,
   screenHeight: number,
-  project: (worldPoint: Vec3) => NdcPoint | null,
+  projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
   measureText: (text: string, font: string) => TextMetrics,
 ): RenderedBodyLabel[] {
   return alloc.withName(renderBodyLabels.name, () => {
     const renderedBodyLabels: RenderedBodyLabel[] = [];
 
-    const bl = bodies.length;
-    const sl = sortedScratch.length;
-    sortedScratch.length = bl;
-    for (let i = sl; i < bl; i++) {
-      sortedScratch[i] = {
-        body: bodies[i],
-        distance: 0,
-      };
-    }
-
-    for (let i = 0; i < bl; i++) {
-      const body = bodies[i];
-      vec3.subInto(diffScratch, body.position, referencePosition);
-      const distance = vec3.length(diffScratch);
-      sortedScratch[i] = { body, distance };
-    }
-
-    // Farther to nearer so nearer labels are processed last if a
-    // rasterizer wants to do any painter's-order tricks.
-    sortedScratch.sort((a, b) => b.distance - a.distance);
+    sortBodiesInto(sortedScratch, bodies, referencePosition);
 
     const angleStep = 45;
     const angleStepRad = (angleStep * Math.PI) / 180;
@@ -65,10 +48,11 @@ export function renderBodyLabels(
     const paddingY = 4;
 
     for (const { body, distance } of sortedScratch) {
-      const ndc = project(body.position);
-      if (!ndc) continue; // behind the camera
+      if (!projectInto(ndcScratch, body.position)) {
+        continue; // behind the camera
+      }
 
-      const anchor = ndcToScreen(ndc, screenWidth, screenHeight);
+      const anchor = ndcToScreen(ndcScratch, screenWidth, screenHeight);
 
       const name = displayNameForBodyId(body.id);
       const distanceKm = distance / 1000;
@@ -143,6 +127,38 @@ export function renderBodyLabels(
 
     return renderedBodyLabels;
   });
+}
+
+function sortBodiesInto(
+  into: SortedScratchItem[],
+  bodies: PlanetSceneObject[],
+  referencePosition: Vec3,
+) {
+  const bl = bodies.length;
+  const sl = into.length;
+  into.length = bl;
+
+  // Copy bodies into scratch array without allocating memory
+  // and compute distances to reference position.
+  for (let i = 0; i < sl; i++) {
+    const entry = into[i];
+    const body = bodies[i];
+    vec3.subInto(diffScratch, body.position, referencePosition);
+    entry.body = body;
+    entry.distance = vec3.length(diffScratch);
+  }
+
+  // Grow scratch array if necessary
+  // with distances to reference position.
+  for (let i = sl; i < bl; i++) {
+    const body = bodies[i];
+    vec3.subInto(diffScratch, body.position, referencePosition);
+    const distance = vec3.length(diffScratch);
+    into[i] = { body, distance };
+  }
+
+  // Farther to nearer so nearer labels are processed last
+  into.sort((a, b) => b.distance - a.distance);
 }
 
 function displayNameForBodyId(id: BodyId): string {

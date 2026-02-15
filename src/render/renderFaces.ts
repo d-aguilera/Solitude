@@ -52,6 +52,10 @@ const toCameraScratch: Vec3 = vec3.zero();
 // Grow-only scratch buffer for face entries across frames.
 const faceEntryScratch: FaceEntry[] = [];
 
+const ndc0: NdcPoint = { x: 0, y: 0, depth: 0 };
+const ndc1: NdcPoint = { x: 0, y: 0, depth: 0 };
+const ndc2: NdcPoint = { x: 0, y: 0, depth: 0 };
+
 /**
  * Build the list of shaded triangle faces (with depth and lighting information)
  * for all non-wireframe objects in the scene.
@@ -123,18 +127,15 @@ function buildFaces(
         const isStar = obj.kind === "star";
 
         for (const [A, B, C] of clipped) {
-          const ndc0: NdcPoint = projectionService.projectCameraPointToNdc(A);
-          const ndc1: NdcPoint = projectionService.projectCameraPointToNdc(B);
-          const ndc2: NdcPoint = projectionService.projectCameraPointToNdc(C);
+          projectionService.projectCameraPointToNdcInto(ndc0, A);
+          projectionService.projectCameraPointToNdcInto(ndc1, B);
+          projectionService.projectCameraPointToNdcInto(ndc2, C);
 
           const p0: ScreenPoint = ndcToScreen(ndc0, canvasWidth, canvasHeight);
           const p1: ScreenPoint = ndcToScreen(ndc1, canvasWidth, canvasHeight);
           const p2: ScreenPoint = ndcToScreen(ndc2, canvasWidth, canvasHeight);
 
-          const d0 = p0.depth;
-          const d1 = p1.depth;
-          const d2 = p2.depth;
-          const avgDepth = (d0 + d1 + d2) / 3;
+          const avgDepth = (p0.depth + p1.depth + p2.depth) / 3;
 
           const intensity = isStar
             ? 1

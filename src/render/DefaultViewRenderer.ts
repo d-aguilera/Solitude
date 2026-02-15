@@ -6,6 +6,7 @@ import { renderFaces } from "./renderFaces.js";
 import { renderPolylines } from "./renderPolylines.js";
 import { drawMode } from "./renderPorts.js";
 import type {
+  NdcPoint,
   RenderedBodyLabel,
   RenderedFace,
   RenderedPolyline,
@@ -34,7 +35,9 @@ export class DefaultViewRenderer implements ViewRenderer {
       screenHeight,
     );
 
-    const project = (wp: Vec3) => projectionService.projectWorldPointToNdc(wp);
+    const projectInto = (into: NdcPoint, wp: Vec3) =>
+      projectionService.projectWorldPointToNdcInto(into, wp);
+
     const projectSegment = (a: Vec3, b: Vec3) =>
       projectionService.projectWorldSegmentToScreen(
         a,
@@ -66,7 +69,7 @@ export class DefaultViewRenderer implements ViewRenderer {
       mainShip,
       screenWidth,
       screenHeight,
-      project,
+      projectInto,
     );
 
     const overlayBodies: PlanetSceneObject[] = scene.objects.filter(
@@ -79,7 +82,7 @@ export class DefaultViewRenderer implements ViewRenderer {
       mainShip.position,
       screenWidth,
       screenHeight,
-      project,
+      projectInto,
       this.measureText,
     );
 

@@ -1,7 +1,6 @@
-import type { StarBodyConfig } from "./appInternals.js";
-import type { PlanetBodyConfig } from "./appInternals.js";
-import { colors } from "./appInternals.js";
 import type { KeplerianOrbit } from "../domain/domainPorts.js";
+import type { PlanetBodyConfig, StarBodyConfig } from "./appInternals.js";
+import { colors } from "./appInternals.js";
 
 const AU = 1.495978707e11; // m
 

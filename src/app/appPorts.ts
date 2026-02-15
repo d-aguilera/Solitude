@@ -153,8 +153,9 @@ export interface StarSceneObject extends CelestialBodySceneObject {
 }
 
 export type TickCallback = (
+  output: Readonly<TickOutput>,
   params: Readonly<TickParams>,
-) => Readonly<TickOutput>;
+) => void;
 
 export interface TickParams {
   nowMs: number;

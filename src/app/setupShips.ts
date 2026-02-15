@@ -36,7 +36,7 @@ export function createInitialShip(
     id: shipBody.id,
     kind: "ship",
     mesh: shipModel,
-    position: { ...shipBody.position },
+    position: vec3.clone(shipBody.position),
     orientation: localFrame.toMat3(shipBody.frame),
     scale: SHIP_VISUAL_SCALE,
     color: colors.ship,

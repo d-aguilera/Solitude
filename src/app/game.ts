@@ -91,21 +91,10 @@ export function createTickHandler(
   let initialized = false;
   let currentThrustPercent: number;
 
-  const output: TickOutput = {
-    currentThrustLevel: 0,
-    fps: 0,
-    mainShip: simState.mainShip,
-    pilotCamera: sceneState.pilotCamera,
-    pilotCameraLocalOffset: sceneControlState.pilotCameraLocalOffset,
-    scene: sceneState.scene,
-    speedMps: 0,
-    topCamera: sceneState.topCamera,
-  };
-
   /**
    * Per‑frame update/render entry called by the game loop.
    */
-  return (params: TickParams): Readonly<TickOutput> => {
+  return (output: TickOutput, params: TickParams): void => {
     const { controlInput, nowMs, paused } = params;
 
     if (!initialized) {
@@ -118,16 +107,7 @@ export function createTickHandler(
     dtSecondsSim = (dtMs * gameplayParams.simulationTimeScale) / 1000;
     lastTimeMs = nowMs;
 
-    output.fps = paused || dtSeconds === 0 ? 0 : updateFps(dtSeconds);
-
     currentThrustPercent = updateControlState(controlInput, simControlState);
-
-    output.currentThrustLevel =
-      currentThrustPercent === 0
-        ? 0
-        : currentThrustPercent > 0
-          ? simControlState.thrustLevel
-          : -simControlState.thrustLevel;
 
     updateShipOrientationFromControls(
       dtSeconds,
@@ -154,8 +134,19 @@ export function createTickHandler(
       controlInput,
     );
 
-    output.speedMps = sceneState.speedMps;
+    output.currentThrustLevel =
+      currentThrustPercent === 0
+        ? 0
+        : currentThrustPercent > 0
+          ? simControlState.thrustLevel
+          : -simControlState.thrustLevel;
 
-    return output;
+    output.fps = paused || dtSeconds === 0 ? 0 : updateFps(dtSeconds);
+    output.mainShip = mainShip;
+    output.pilotCamera = sceneState.pilotCamera;
+    output.pilotCameraLocalOffset = sceneControlState.pilotCameraLocalOffset;
+    output.scene = sceneState.scene;
+    output.speedMps = sceneState.speedMps;
+    output.topCamera = sceneState.topCamera;
   };
 }

@@ -1,4 +1,5 @@
 import type { BodyState, GravityState, Vec3, World } from "./domainPorts";
+import { vec3 } from "./vec3.js";
 
 /**
  * Create a brand-new GravityState from the current world contents.
@@ -21,9 +22,9 @@ export function buildInitialGravityState(world: World): GravityState {
     bodies.push({
       id: ship.id,
       mass: shipMass,
-      velocity: { ...ship.velocity },
+      velocity: vec3.clone(ship.velocity),
     });
-    positions.push({ ...ship.position });
+    positions.push(vec3.clone(ship.position));
   }
 
   // Planets
@@ -35,9 +36,9 @@ export function buildInitialGravityState(world: World): GravityState {
     bodies.push({
       id: body.id,
       mass: physics.mass,
-      velocity: { ...body.velocity },
+      velocity: vec3.clone(body.velocity),
     });
-    positions.push({ ...body.position });
+    positions.push(vec3.clone(body.position));
   }
 
   // Stars
@@ -49,9 +50,9 @@ export function buildInitialGravityState(world: World): GravityState {
     bodies.push({
       id: body.id,
       mass: physics.mass,
-      velocity: { ...body.velocity },
+      velocity: vec3.clone(body.velocity),
     });
-    positions.push({ ...body.position });
+    positions.push(vec3.clone(body.position));
   }
 
   return { bodies, positions };

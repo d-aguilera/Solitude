@@ -4,11 +4,14 @@ import { alloc } from "../global/allocProfiler.js";
 import { ndcToScreen } from "./ndcToScreen.js";
 import type { NdcPoint, RenderedSegment } from "./renderPorts.js";
 
+const ndcStartScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
+const ndcEndScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
+
 export function renderVelocitySegments(
   ship: ShipBody,
   screenWidth: number,
   screenHeight: number,
-  project: (worldPoint: Vec3) => NdcPoint | null,
+  projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
 ): RenderedSegment[] {
   return alloc.withName(renderVelocitySegments.name, () => {
     const segments = getShipVelocitySegments(ship);
@@ -17,12 +20,14 @@ export function renderVelocitySegments(
     const renderedSegments: RenderedSegment[] = [];
 
     for (const seg of segments) {
-      const ndcStart = project(seg.start);
-      const ndcEnd = project(seg.end);
-      if (!ndcStart || !ndcEnd) continue;
+      if (
+        !projectInto(ndcStartScratch, seg.start) ||
+        !projectInto(ndcEndScratch, seg.end)
+      )
+        continue;
 
-      const pStart = ndcToScreen(ndcStart, screenWidth, screenHeight);
-      const pEnd = ndcToScreen(ndcEnd, screenWidth, screenHeight);
+      const pStart = ndcToScreen(ndcStartScratch, screenWidth, screenHeight);
+      const pEnd = ndcToScreen(ndcEndScratch, screenWidth, screenHeight);
 
       renderedSegments.push({
         start: pStart,

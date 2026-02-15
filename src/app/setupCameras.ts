@@ -14,7 +14,7 @@ export function createInitialTopCamera(ship: ShipBody): DomainCameraPose {
 
 export function createInitialPilotCamera(ship: ShipBody): DomainCameraPose {
   return {
-    position: { ...ship.position }, // will be offset in game loop
+    position: vec3.clone(ship.position), // will be offset in game loop
     frame: initialFrame,
   };
 }

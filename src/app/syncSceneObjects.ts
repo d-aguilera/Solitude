@@ -1,6 +1,7 @@
 import type { CelestialBody, ShipBody, World } from "../domain/domainPorts.js";
 import { localFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
+import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
 import type { PlanetSceneObject, Scene, StarSceneObject } from "./appPorts.js";
 import { getStarPhysicsById } from "./worldLookup.js";
@@ -15,7 +16,7 @@ export function buildLightsFromStars(world: World, scene: Scene): void {
     const phys = getStarPhysicsById(world, starBody.id);
 
     lights.push({
-      position: { ...starBody.position },
+      position: vec3.clone(starBody.position),
       intensity: phys.luminosity,
     });
   }

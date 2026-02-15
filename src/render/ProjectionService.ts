@@ -73,6 +73,10 @@ const R_worldFromLocalScratch: Mat3 = mat3.zero();
 
 const intersectScratch: Vec3 = vec3.zero();
 
+const ndcAScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
+const ndcBScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
+const ndcIScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
+
 /**
  * Projection service responsible for:
  *  - Transforming world-space positions into camera space
@@ -120,11 +124,13 @@ export class ProjectionService {
    *
    * Returns null when the point lies behind the near plane in camera space.
    */
-  projectWorldPointToNdc(worldPoint: Vec3): NdcPoint | null {
+  projectWorldPointToNdcInto(into: NdcPoint, worldPoint: Vec3): boolean {
     this.worldPointToCameraPointNoClipInto(cameraPointScratch, worldPoint);
-    return this.isInFrontOfNearPlane(cameraPointScratch)
-      ? this.projectCameraPointToNdc(cameraPointScratch)
-      : null;
+    if (!this.isInFrontOfNearPlane(cameraPointScratch)) {
+      return false;
+    }
+    this.projectCameraPointToNdcInto(into, cameraPointScratch);
+    return true;
   }
 
   worldPointsToCameraPointsNoClip(worldPoints: Vec3[]): Vec3[] {
@@ -173,15 +179,11 @@ export class ProjectionService {
    * Core projection from camera space -> NDC using this service's
    * canvas‑specific focal lengths.
    */
-  projectCameraPointToNdc(cameraPoint: Vec3): NdcPoint {
+  projectCameraPointToNdcInto(into: NdcPoint, cameraPoint: Vec3): void {
     const depth = cameraPoint.y;
-    const invDepth = 1 / depth;
-
-    return {
-      x: cameraPoint.x * this.fX * invDepth,
-      y: cameraPoint.z * this.fY * invDepth,
-      depth,
-    };
+    into.x = (cameraPoint.x * this.fX) / depth;
+    into.y = (cameraPoint.z * this.fY) / depth;
+    into.depth = depth;
   }
 
   /**
@@ -318,34 +320,32 @@ export class ProjectionService {
 
     // Both in front of near plane: project as-is
     if (inA && inB) {
-      const ndcA = this.projectCameraPointToNdc(aCamScratch);
-      const ndcB = this.projectCameraPointToNdc(bCamScratch);
-      return {
-        a: ndcToScreen(ndcA, screenWidth, screenHeight),
-        b: ndcToScreen(ndcB, screenWidth, screenHeight),
-        clipped: false,
-      };
+      this.projectCameraPointToNdcInto(ndcAScratch, aCamScratch);
+      this.projectCameraPointToNdcInto(ndcBScratch, bCamScratch);
+      const a = ndcToScreen(ndcAScratch, screenWidth, screenHeight);
+      const b = ndcToScreen(ndcBScratch, screenWidth, screenHeight);
+      return { a, b, clipped: false };
     }
 
     if (inA) {
       // A inside, B outside => return { a, i }
       const t = (NEAR - aCamScratch.y) / (bCamScratch.y - aCamScratch.y);
       vec3.lerpInto(intersectScratch, aCamScratch, bCamScratch, t);
-      const ndcA = this.projectCameraPointToNdc(aCamScratch);
-      const ndcI = this.projectCameraPointToNdc(intersectScratch);
-      const a = ndcToScreen(ndcA, screenWidth, screenHeight);
-      const i = ndcToScreen(ndcI, screenWidth, screenHeight);
+      this.projectCameraPointToNdcInto(ndcAScratch, aCamScratch);
+      this.projectCameraPointToNdcInto(ndcIScratch, intersectScratch);
+      const a = ndcToScreen(ndcAScratch, screenWidth, screenHeight);
+      const i = ndcToScreen(ndcIScratch, screenWidth, screenHeight);
       return { a, b: i, clipped: true };
+    } else {
+      // B inside, A outside => return { i, b }
+      const t = (NEAR - bCamScratch.y) / (aCamScratch.y - bCamScratch.y);
+      vec3.lerpInto(intersectScratch, bCamScratch, aCamScratch, t);
+      this.projectCameraPointToNdcInto(ndcBScratch, bCamScratch);
+      this.projectCameraPointToNdcInto(ndcIScratch, intersectScratch);
+      const i = ndcToScreen(ndcIScratch, screenWidth, screenHeight);
+      const b = ndcToScreen(ndcBScratch, screenWidth, screenHeight);
+      return { a: i, b, clipped: true };
     }
-
-    // B inside, A outside => return { i, b }
-    const t = (NEAR - bCamScratch.y) / (aCamScratch.y - bCamScratch.y);
-    vec3.lerpInto(intersectScratch, bCamScratch, aCamScratch, t);
-    const ndcB = this.projectCameraPointToNdc(bCamScratch);
-    const ndcI = this.projectCameraPointToNdc(intersectScratch);
-    const i = ndcToScreen(ndcI, screenWidth, screenHeight);
-    const b = ndcToScreen(ndcB, screenWidth, screenHeight);
-    return { a: i, b, clipped: true };
   }
 
   /**
