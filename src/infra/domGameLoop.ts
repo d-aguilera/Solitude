@@ -1,4 +1,3 @@
-import { createTickHandler } from "../app/game.js";
 import type {
   ControlInput,
   DomainCameraPose,
@@ -10,6 +9,7 @@ import type {
   TickOutput,
   TickParams,
 } from "../app/appPorts.js";
+import { createTickHandler } from "../app/game.js";
 import type { GravityEngine, ShipBody } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import type {
@@ -20,6 +20,7 @@ import type {
   RenderSurface2D,
   ViewRenderer,
 } from "../render/renderPorts.js";
+import { updateFps } from "./fps.js";
 import type { ProfilerController } from "./infraPorts.js";
 import { handlePauseToggle } from "./pause.js";
 import { handleProfilingToggle } from "./profilerControl.js";
@@ -48,14 +49,12 @@ export function runLoop(
   );
 
   const tickParams: TickParams = {
-    nowMs: 0,
+    dtSeconds: 0,
     controlInput,
-    paused: false,
   };
 
   const tickOutput: TickOutput = {
     currentThrustLevel: 0,
-    fps: 0,
     mainShip: {} as ShipBody,
     pilotCamera: {} as DomainCameraPose,
     pilotCameraLocalOffset: vec3.zero(),
@@ -64,7 +63,16 @@ export function runLoop(
     topCamera: {} as DomainCameraPose,
   };
 
+  let lastTimeMs: number;
+  let elapsedMs: number;
+  let dtSeconds: number;
+  let fps: number;
+
   const loop = (nowMs: number) => {
+    elapsedMs = nowMs - lastTimeMs;
+    lastTimeMs = nowMs;
+    dtSeconds = elapsedMs / 1000;
+
     const paused = handlePauseToggle(envInput.pauseToggle);
     const profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
 
@@ -72,9 +80,10 @@ export function runLoop(
     profilerController.setPaused(paused);
     profilerController.check();
 
-    tickParams.nowMs = nowMs;
-    tickParams.paused = paused;
-    tickInto(tickOutput, tickParams);
+    if (!paused) {
+      tickParams.dtSeconds = dtSeconds;
+      tickInto(tickOutput, tickParams);
+    }
 
     const renderedPilotView = pilotViewRenderer.render({
       camera: tickOutput.pilotCamera,
@@ -99,9 +108,11 @@ export function runLoop(
       surface: topSurface,
     });
 
+    fps = dtSeconds === 0 ? 0 : updateFps(dtSeconds);
+
     const renderedHud: HudRenderParams = hudRenderer.render({
       currentThrustLevel: tickOutput.currentThrustLevel,
-      fps: tickOutput.fps,
+      fps,
       pilotCameraLocalOffset: tickOutput.pilotCameraLocalOffset,
       profilingEnabled,
       speedMps: tickOutput.speedMps,
@@ -117,7 +128,12 @@ export function runLoop(
     requestAnimationFrame(loop);
   };
 
-  requestAnimationFrame(loop);
+  const init = (nowMs: number) => {
+    lastTimeMs = nowMs;
+    requestAnimationFrame(loop);
+  };
+
+  requestAnimationFrame(init);
 }
 
 function rasterizeView(renderedView: RenderedView, rasterizer: Rasterizer) {

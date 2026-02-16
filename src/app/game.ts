@@ -18,7 +18,6 @@ import {
   updateControlState,
   updateShipOrientationFromControls,
 } from "./controls.js";
-import { updateFps } from "./fps.js";
 import { buildGravityBindings, applyThrust, applyGravity } from "./physics.js";
 import { updateSceneGraph } from "./scene.js";
 import { getShipById } from "./worldLookup.js";
@@ -84,28 +83,16 @@ export function createTickHandler(
     topCamera: x.topCamera,
   };
 
-  let dtMs: number;
-  let dtSeconds: number;
   let dtSecondsSim: number;
-  let lastTimeMs: number;
-  let initialized = false;
   let currentThrustPercent: number;
 
   /**
    * Per‑frame update/render entry called by the game loop.
    */
   return (output: TickOutput, params: TickParams): void => {
-    const { controlInput, nowMs, paused } = params;
+    const { controlInput, dtSeconds } = params;
 
-    if (!initialized) {
-      lastTimeMs = nowMs - 1;
-      initialized = true;
-    }
-
-    dtMs = paused ? 0 : nowMs - lastTimeMs;
-    dtSeconds = dtMs / 1000;
-    dtSecondsSim = (dtMs * gameplayParams.simulationTimeScale) / 1000;
-    lastTimeMs = nowMs;
+    dtSecondsSim = dtSeconds * gameplayParams.simulationTimeScale;
 
     currentThrustPercent = updateControlState(controlInput, simControlState);
 
@@ -141,7 +128,6 @@ export function createTickHandler(
           ? simControlState.thrustLevel
           : -simControlState.thrustLevel;
 
-    output.fps = paused || dtSeconds === 0 ? 0 : updateFps(dtSeconds);
     output.mainShip = mainShip;
     output.pilotCamera = sceneState.pilotCamera;
     output.pilotCameraLocalOffset = sceneControlState.pilotCameraLocalOffset;

@@ -158,14 +158,12 @@ export type TickCallback = (
 ) => void;
 
 export interface TickParams {
-  nowMs: number;
+  dtSeconds: number;
   controlInput: ControlInput;
-  paused: boolean;
 }
 
 export interface TickOutput {
   currentThrustLevel: number;
-  fps: number;
   mainShip: ShipBody;
   pilotCamera: DomainCameraPose;
   pilotCameraLocalOffset: Vec3;

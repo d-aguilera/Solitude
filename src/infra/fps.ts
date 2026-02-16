@@ -1,4 +1,4 @@
-import { RingBuffer } from "./RingBuffer.js";
+import { RingBuffer } from "../app/RingBuffer.js";
 
 const history = new RingBuffer<number>(300);
 let sum = 0;
