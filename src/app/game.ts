@@ -77,10 +77,10 @@ export function createTickHandler(
   const sceneState: SceneState = {
     pilotCamera: x.pilotCamera,
     planetPathMappings: x.planetPathMappings,
-    planetTrajectories: x.planetTrajectories,
     scene: x.scene,
     speedMps: 0,
     topCamera: x.topCamera,
+    trajectories: x.trajectories,
   };
 
   let dtSecondsSim: number;

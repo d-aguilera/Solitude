@@ -21,13 +21,8 @@ export function updateSceneGraph(
 ) {
   const { mainShip, world } = simState;
 
-  const {
-    pilotCamera,
-    topCamera,
-    planetPathMappings,
-    planetTrajectories,
-    scene,
-  } = sceneState;
+  const { pilotCamera, topCamera, planetPathMappings, scene, trajectories } =
+    sceneState;
 
   syncShipsToSceneObjects(world.shipBodies, scene);
   syncPlanetsToSceneObjects(world.planets, scene);
@@ -38,10 +33,9 @@ export function updateSceneGraph(
 
   updateTrajectories(
     dtSeconds,
-    scene,
-    mainShip,
+    scene.objects,
     planetPathMappings,
-    planetTrajectories,
+    trajectories,
   );
 
   updatePilotLook(dtSeconds, controlInput, sceneControlState.look);

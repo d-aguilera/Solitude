@@ -9,7 +9,7 @@ import type {
 import { localFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
-import type { PlanetTrajectory } from "./appInternals.js";
+import type { Trajectory } from "./appInternals.js";
 import type {
   DomainCameraPose,
   PolylineSceneObject,
@@ -24,7 +24,7 @@ import { addPlanetsAndStarsFromConfig } from "./setupPlanets.js";
 import { createInitialShip } from "./setupShips.js";
 import { buildDefaultSolarSystemConfigs } from "./solarSystem.js";
 import { buildLightsFromStars } from "./syncSceneObjects.js";
-import { createPlanetTrajectory } from "./trajectories.js";
+import { createTrajectory } from "./trajectories.js";
 
 export const initialUp: Vec3 = vec3.create(0, 0, 1);
 export const initialFrame: LocalFrame = localFrame.fromUp(initialUp);
@@ -59,7 +59,7 @@ export function createInitialSceneAndWorld(): {
   topCamera: DomainCameraPose;
   pilotCamera: DomainCameraPose;
   planetPathMappings: Record<BodyId, BodyId>;
-  planetTrajectories: Record<BodyId, PlanetTrajectory>;
+  trajectories: Record<BodyId, Trajectory>;
 } {
   const objects: SceneObject[] = [];
 
@@ -90,6 +90,11 @@ export function createInitialSceneAndWorld(): {
     world,
   );
 
+  const trajectories: Record<BodyId, Trajectory> = {};
+
+  // Build a trajectory for the ship
+  trajectories[mainShip.id] = createTrajectory();
+
   const topCamera = createInitialTopCamera(mainShip);
   const pilotCamera = createInitialPilotCamera(mainShip);
 
@@ -105,9 +110,8 @@ export function createInitialSceneAndWorld(): {
   }
 
   // Build a trajectory for each planet
-  const planetTrajectories: Record<BodyId, PlanetTrajectory> = {};
   for (const cfg of planetConfigs) {
-    planetTrajectories[cfg.id] = createPlanetTrajectory();
+    trajectories[cfg.id] = createTrajectory();
   }
 
   // Build initial point lights from star bodies.
@@ -120,6 +124,6 @@ export function createInitialSceneAndWorld(): {
     topCamera,
     pilotCamera,
     planetPathMappings,
-    planetTrajectories,
+    trajectories,
   };
 }

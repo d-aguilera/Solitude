@@ -96,17 +96,17 @@ export interface PlanetBodyConfig extends CelestialBodyConfig {
   kind: "planet";
 }
 
-export type PlanetTrajectory = {
+export type Trajectory = {
   buffers: RingBuffer<Vec3>[];
 };
 
 export interface SceneState {
   pilotCamera: DomainCameraPose;
   planetPathMappings: Record<BodyId, BodyId>;
-  planetTrajectories: Record<BodyId, PlanetTrajectory>;
   scene: Scene;
   speedMps: number;
   topCamera: DomainCameraPose;
+  trajectories: Record<BodyId, Trajectory>;
 }
 
 /**
