@@ -19,13 +19,14 @@ const AU = 1.495978707e11; // m
 const EARTH_ORBIT_RADIUS_2 = AU * AU;
 const E_SUN_AT_EARTH = SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS_2);
 
-export function renderFaces(
+export function renderFacesInto(
+  into: RenderedFace[],
   scene: Scene,
   camera: DomainCameraPose,
   screenWidth: number,
   screenHeight: number,
-  shadedFaceBuffer: RenderedFace[],
-): RenderedFace[] {
+  objectsFilter?: (obj: SceneObject) => boolean,
+): number {
   const { objects, lights } = scene;
 
   const faceList = buildFaces(
@@ -34,13 +35,14 @@ export function renderFaces(
     screenWidth,
     screenHeight,
     lights,
+    objectsFilter,
   );
 
   faceList.sort((a, b) => b.depth - a.depth);
 
-  const shadedFaces = shadeFaces(faceList, shadedFaceBuffer);
+  shadeFacesInto(into, faceList);
 
-  return shadedFaces;
+  return faceList.length;
 }
 
 // shared scratch for fallback normals
@@ -66,6 +68,7 @@ function buildFaces(
   canvasWidth: number,
   canvasHeight: number,
   lights: PointLight[],
+  objectsFilter?: (obj: SceneObject) => boolean,
 ): FaceEntry[] {
   return alloc.withName(buildFaces.name, () => {
     const projectionService = new ProjectionService(
@@ -79,6 +82,7 @@ function buildFaces(
 
     objects.forEach((obj) => {
       if (obj.wireframeOnly) return;
+      if (objectsFilter && !objectsFilter(obj)) return;
 
       const { mesh, worldPoints, baseColor } = toRenderable(obj);
       const cameraPoints =
@@ -253,45 +257,48 @@ function toneMapIrradiance(E: number): number {
 /**
  * Shade the given face list into a caller-provided grow-only scratch buffer.
  */
-function shadeFaces(
-  faceList: FaceEntry[],
-  shadedFaceScratch: RenderedFace[],
-): RenderedFace[] {
+function shadeFacesInto(into: RenderedFace[], faceList: FaceEntry[]): void {
   const n = faceList.length;
 
-  if (shadedFaceScratch.length < n) {
-    shadedFaceScratch.length = n;
+  if (into.length < n) {
+    into.length = n; // grow only
   }
 
   for (let i = 0; i < n; i++) {
     const face = faceList[i];
-    const { p0, p1, p2, baseColor, intensity } = face;
-    const { r: baseR, g: baseG, b: baseB } = baseColor;
-    const k = 0.2 + 0.8 * intensity;
+    const { x: x0, y: y0, depth: depth0 } = face.p0;
+    const { x: x1, y: y1, depth: depth1 } = face.p1;
+    const { x: x2, y: y2, depth: depth2 } = face.p2;
+    const { r: baseR, g: baseG, b: baseB } = face.baseColor;
+    const k = 0.2 + 0.8 * face.intensity;
     const r = Math.round(baseR * k);
     const g = Math.round(baseG * k);
     const b = Math.round(baseB * k);
 
-    let shaded = shadedFaceScratch[i];
-    if (!shaded) {
-      shaded = {
-        p0,
-        p1,
-        p2,
+    let entry = into[i];
+    if (!entry) {
+      entry = {
+        p0: { x: x0, y: y0, depth: depth0 },
+        p1: { x: x1, y: y1, depth: depth1 },
+        p2: { x: x2, y: y2, depth: depth2 },
         color: { r, g, b },
       };
-      shadedFaceScratch[i] = shaded;
+      into[i] = entry;
     } else {
-      shaded.p0 = p0;
-      shaded.p1 = p1;
-      shaded.p2 = p2;
-      shaded.color.r = r;
-      shaded.color.g = g;
-      shaded.color.b = b;
+      entry.p0.depth = depth0;
+      entry.p0.x = x0;
+      entry.p0.y = y0;
+      entry.p1.depth = depth1;
+      entry.p1.x = x1;
+      entry.p1.y = y1;
+      entry.p2.depth = depth2;
+      entry.p2.x = x2;
+      entry.p2.y = y2;
+      entry.color.r = r;
+      entry.color.g = g;
+      entry.color.b = b;
     }
   }
-
-  return shadedFaceScratch.slice(0, n);
 }
 
 interface FaceEntry {

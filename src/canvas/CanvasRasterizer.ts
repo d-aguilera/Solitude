@@ -1,3 +1,4 @@
+import type { RGB } from "../domain/domainPorts.js";
 import { rgbToCss } from "../render/color.js";
 import type {
   Rasterizer,
@@ -37,11 +38,11 @@ let face: RenderedFace;
 let p0: ScreenPoint;
 let p1: ScreenPoint;
 let p2: ScreenPoint;
+let color: RGB;
 let polyline: RenderedPolyline;
 let pointsLength: number;
 let points: ScreenPoint[];
 let p: ScreenPoint;
-let i: number;
 let seg: RenderedSegment;
 let start: ScreenPoint;
 let end: ScreenPoint;
@@ -100,14 +101,13 @@ export class CanvasRasterizer implements Rasterizer {
     }
   }
 
-  drawFaces(faces: RenderedFace[]): void {
+  drawFaces(faces: RenderedFace[], count: number): void {
     const ctx = this.ctx;
 
-    for (face of faces) {
-      p0 = face.p0;
-      p1 = face.p1;
-      p2 = face.p2;
-      ctx.fillStyle = rgbToCss(face.color);
+    for (let i = 0; i < count; i++) {
+      face = faces[i];
+      ({ p0, p1, p2, color } = face);
+      ctx.fillStyle = rgbToCss(color);
       ctx.beginPath();
       ctx.moveTo(p0.x, p0.y);
       ctx.lineTo(p1.x, p1.y);
@@ -182,10 +182,11 @@ export class CanvasRasterizer implements Rasterizer {
     }
   }
 
-  drawPolylines(polylines: RenderedPolyline[]): void {
+  drawPolylines(polylines: RenderedPolyline[], count: number): void {
     const ctx = this.ctx;
 
-    for (polyline of polylines) {
+    for (let i = 0; i < count; i++) {
+      polyline = polylines[i];
       points = polyline.points;
       pointsLength = points.length;
       if (pointsLength < 2) continue;
@@ -194,7 +195,7 @@ export class CanvasRasterizer implements Rasterizer {
       ctx.beginPath();
       p = points[0];
       ctx.moveTo(p.x, p.y);
-      for (i = 1; i < pointsLength; i++) {
+      for (let i = 1; i < pointsLength; i++) {
         p = points[i];
         ctx.lineTo(p.x, p.y);
       }

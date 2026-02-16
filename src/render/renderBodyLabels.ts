@@ -1,4 +1,8 @@
-import type { PlanetSceneObject } from "../app/appPorts.js";
+import type {
+  PlanetSceneObject,
+  SceneObject,
+  StarSceneObject,
+} from "../app/appPorts.js";
 import type { BodyId, Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
@@ -10,7 +14,7 @@ import type {
 } from "./renderPorts.js";
 
 type SortedScratchItem = {
-  body: PlanetSceneObject;
+  body: PlanetSceneObject | StarSceneObject;
   distance: number;
 };
 
@@ -27,17 +31,22 @@ const ndcScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
  *    the nearest 45° increment.
  */
 export function renderBodyLabels(
-  bodies: PlanetSceneObject[],
+  objects: SceneObject[],
   referencePosition: Vec3,
   screenWidth: number,
   screenHeight: number,
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
   measureText: (text: string, font: string) => TextMetrics,
+  objectsFilter?: (obj: SceneObject) => boolean,
 ): RenderedBodyLabel[] {
   return alloc.withName(renderBodyLabels.name, () => {
     const renderedBodyLabels: RenderedBodyLabel[] = [];
 
-    sortBodiesInto(sortedScratch, bodies, referencePosition);
+    const sorted: SortedScratchItem[] = sortBodies(
+      objects,
+      referencePosition,
+      objectsFilter,
+    );
 
     const angleStep = 45;
     const angleStepRad = (angleStep * Math.PI) / 180;
@@ -47,7 +56,7 @@ export function renderBodyLabels(
     const paddingX = 6;
     const paddingY = 4;
 
-    for (const { body, distance } of sortedScratch) {
+    for (const { body, distance } of sorted) {
       if (!projectInto(ndcScratch, body.position)) {
         continue; // behind the camera
       }
@@ -129,36 +138,36 @@ export function renderBodyLabels(
   });
 }
 
-function sortBodiesInto(
-  into: SortedScratchItem[],
-  bodies: PlanetSceneObject[],
+function sortBodies(
+  objects: SceneObject[],
   referencePosition: Vec3,
-) {
-  const bl = bodies.length;
-  const sl = into.length;
-  into.length = bl;
+  objectsFilter?: (obj: PlanetSceneObject | StarSceneObject) => boolean,
+): SortedScratchItem[] {
+  let count = 0;
 
-  // Copy bodies into scratch array without allocating memory
-  // and compute distances to reference position.
-  for (let i = 0; i < sl; i++) {
-    const entry = into[i];
-    const body = bodies[i];
-    vec3.subInto(diffScratch, body.position, referencePosition);
-    entry.body = body;
-    entry.distance = vec3.length(diffScratch);
-  }
+  for (let i = 0; i < objects.length; i++) {
+    const obj = objects[i];
+    if (obj.kind !== "planet" && obj.kind !== "star") continue;
+    const body: PlanetSceneObject | StarSceneObject = obj;
+    if (objectsFilter && !objectsFilter(body)) continue;
 
-  // Grow scratch array if necessary
-  // with distances to reference position.
-  for (let i = sl; i < bl; i++) {
-    const body = bodies[i];
     vec3.subInto(diffScratch, body.position, referencePosition);
     const distance = vec3.length(diffScratch);
-    into[i] = { body, distance };
+    if (count < sortedScratch.length) {
+      const entry = sortedScratch[count];
+      entry.body = body;
+      entry.distance = distance;
+    } else {
+      sortedScratch.push({
+        body,
+        distance,
+      });
+    }
+    count++;
   }
 
   // Farther to nearer so nearer labels are processed last
-  into.sort((a, b) => b.distance - a.distance);
+  return sortedScratch.slice(0, count).sort((a, b) => b.distance - a.distance);
 }
 
 function displayNameForBodyId(id: BodyId): string {

@@ -19,6 +19,7 @@ import type {
   RenderedView,
   RenderSurface2D,
   ViewRenderer,
+  ViewRenderParams,
 } from "../render/renderPorts.js";
 import { updateFps } from "./fps.js";
 import type { ProfilerController } from "./infraPorts.js";
@@ -63,6 +64,41 @@ export function runLoop(
     topCamera: {} as DomainCameraPose,
   };
 
+  const pilotViewRenderParams: ViewRenderParams = {
+    camera: tickOutput.pilotCamera,
+    mainShip: tickOutput.mainShip,
+    scene: tickOutput.scene,
+    surface: pilotSurface,
+  };
+
+  const renderedPilotView: RenderedView = {
+    bodyLabels: [],
+    faces: [],
+    faceCount: 0,
+    polylines: [],
+    polylineCount: 0,
+    segments: [],
+  };
+
+  const topViewRenderParams: ViewRenderParams = {
+    camera: tickOutput.topCamera,
+    mainShip: tickOutput.mainShip,
+    scene: tickOutput.scene,
+    surface: topSurface,
+    objectsFilter: (obj: SceneObject) =>
+      // no trajectory polylines in the top view
+      obj.kind !== "polyline" || !obj.id.startsWith("path:"),
+  };
+
+  const renderedTopView: RenderedView = {
+    bodyLabels: [],
+    faces: [],
+    faceCount: 0,
+    polylines: [],
+    polylineCount: 0,
+    segments: [],
+  };
+
   let lastTimeMs: number;
   let elapsedMs: number;
   let dtSeconds: number;
@@ -85,28 +121,17 @@ export function runLoop(
       tickInto(tickOutput, tickParams);
     }
 
-    const renderedPilotView = pilotViewRenderer.render({
-      camera: tickOutput.pilotCamera,
-      mainShip: tickOutput.mainShip,
-      scene: tickOutput.scene,
-      surface: pilotSurface,
-    });
+    pilotViewRenderParams.camera = tickOutput.pilotCamera;
+    pilotViewRenderParams.mainShip = tickOutput.mainShip;
+    pilotViewRenderParams.scene = tickOutput.scene;
 
-    // no trajectory polylines
-    const topScene: Scene = {
-      ...tickOutput.scene,
-      objects: tickOutput.scene.objects.filter(
-        (obj: SceneObject) =>
-          obj.kind !== "polyline" || !obj.id.startsWith("path:"),
-      ),
-    };
+    pilotViewRenderer.renderInto(renderedPilotView, pilotViewRenderParams);
 
-    const renderedTopView = topViewRenderer.render({
-      camera: tickOutput.topCamera,
-      mainShip: tickOutput.mainShip,
-      scene: topScene,
-      surface: topSurface,
-    });
+    topViewRenderParams.camera = tickOutput.topCamera;
+    topViewRenderParams.mainShip = tickOutput.mainShip;
+    topViewRenderParams.scene = tickOutput.scene;
+
+    topViewRenderer.renderInto(renderedTopView, topViewRenderParams);
 
     fps = dtSeconds === 0 ? 0 : updateFps(dtSeconds);
 
@@ -138,8 +163,8 @@ export function runLoop(
 
 function rasterizeView(renderedView: RenderedView, rasterizer: Rasterizer) {
   rasterizer.clear("#000000");
-  rasterizer.drawFaces(renderedView.faces);
-  rasterizer.drawPolylines(renderedView.polylines);
+  rasterizer.drawFaces(renderedView.faces, renderedView.faceCount);
+  rasterizer.drawPolylines(renderedView.polylines, renderedView.polylineCount);
   rasterizer.drawSegments(renderedView.segments);
   rasterizer.drawBodyLabels(renderedView.bodyLabels);
 }

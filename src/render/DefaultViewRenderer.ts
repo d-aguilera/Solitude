@@ -1,17 +1,13 @@
-import type { PlanetSceneObject } from "../app/appPorts.js";
+import type { SceneObject } from "../app/appPorts.js";
 import type { Vec3 } from "../domain/domainPorts.js";
 import { ProjectionService } from "./ProjectionService.js";
 import { renderBodyLabels } from "./renderBodyLabels.js";
-import { renderFaces } from "./renderFaces.js";
+import { renderFacesInto } from "./renderFaces.js";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals.js";
-import { renderPolylines } from "./renderPolylines.js";
+import { renderPolylinesInto } from "./renderPolylines.js";
 import { drawMode } from "./renderPorts.js";
 import type {
   NdcPoint,
-  RenderedBodyLabel,
-  RenderedFace,
-  RenderedPolyline,
-  RenderedSegment,
   RenderedView,
   TextMetrics,
   ViewRenderer,
@@ -20,14 +16,12 @@ import type {
 import { renderVelocitySegments } from "./renderVelocitySegments.js";
 
 export class DefaultViewRenderer implements ViewRenderer {
-  // Per-view grow-only scratch buffers for shaded faces.
-  private shadedFaceBuffer: RenderedFace[] = [];
-
   constructor(
     private readonly measureText: (text: string, font: string) => TextMetrics,
   ) {}
 
-  render({ mainShip, camera, surface, scene }: ViewRenderParams): RenderedView {
+  renderInto(into: RenderedView, params: ViewRenderParams): void {
+    const { mainShip, camera, objectsFilter, surface, scene } = params;
     const { width: screenWidth, height: screenHeight } = surface;
 
     const projectionService = new ProjectionService(
@@ -52,44 +46,36 @@ export class DefaultViewRenderer implements ViewRenderer {
         screenHeight,
       );
 
-    const faces: RenderedFace[] =
+    into.faceCount =
       drawMode === "faces"
-        ? renderFaces(
+        ? renderFacesInto(
+            into.faces,
             scene,
             camera,
             screenWidth,
             screenHeight,
-            this.shadedFaceBuffer,
+            objectsFilter,
           )
-        : [];
+        : 0;
 
-    const polylines: RenderedPolyline[] =
-      drawMode === "faces"
-        ? renderPolylines(
-            scene.objects.filter((obj) => obj.wireframeOnly),
-            projectSegmentInto,
-          )
-        : renderPolylines(scene.objects, projectSegmentInto);
-
-    const segments: RenderedSegment[] = renderVelocitySegments(
-      mainShip,
+    into.polylineCount = renderPolylinesInto(
+      into.polylines,
+      scene.objects,
       projectSegmentInto,
+      (obj: SceneObject) =>
+        obj.wireframeOnly && (objectsFilter ? objectsFilter(obj) : true),
     );
 
-    const overlayBodies: PlanetSceneObject[] = scene.objects.filter(
-      (obj): obj is PlanetSceneObject =>
-        obj.kind === "planet" || obj.kind === "star",
-    );
+    into.segments = renderVelocitySegments(mainShip, projectSegmentInto);
 
-    const bodyLabels: RenderedBodyLabel[] = renderBodyLabels(
-      overlayBodies,
+    into.bodyLabels = renderBodyLabels(
+      scene.objects,
       mainShip.position,
       screenWidth,
       screenHeight,
       projectInto,
       this.measureText,
+      objectsFilter,
     );
-
-    return { faces, polylines, segments, bodyLabels };
   }
 }

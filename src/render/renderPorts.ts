@@ -1,4 +1,4 @@
-import type { DomainCameraPose, Scene } from "../app/appPorts.js";
+import type { DomainCameraPose, Scene, SceneObject } from "../app/appPorts.js";
 import type { Mesh, RGB, ShipBody, Vec3 } from "../domain/domainPorts.js";
 
 export type DrawMode = "faces" | "lines";
@@ -37,9 +37,9 @@ export interface NdcPoint {
 export interface Rasterizer {
   clear(color: string): void;
   drawBodyLabels(labels: RenderedBodyLabel[]): void;
-  drawFaces(faces: RenderedFace[]): void;
+  drawFaces(faces: RenderedFace[], count: number): void;
   drawHud(hud: RenderedHud): void;
-  drawPolylines(polylines: RenderedPolyline[]): void;
+  drawPolylines(polylines: RenderedPolyline[], count: number): void;
   drawSegments(segments: RenderedSegment[]): void;
   measureText(text: string, font: string): TextMetrics;
 }
@@ -100,7 +100,9 @@ export interface RenderedSegment {
 export interface RenderedView {
   bodyLabels: RenderedBodyLabel[];
   faces: RenderedFace[];
+  faceCount: number;
   polylines: RenderedPolyline[];
+  polylineCount: number;
   segments: RenderedSegment[];
 }
 
@@ -142,12 +144,13 @@ export interface TextMetrics {
  * Top-level view rendering abstraction.
  */
 export interface ViewRenderer {
-  render(renderParams: ViewRenderParams): RenderedView;
+  renderInto(into: RenderedView, renderParams: ViewRenderParams): void;
 }
 
 export interface ViewRenderParams {
   camera: DomainCameraPose;
   mainShip: ShipBody;
+  objectsFilter?: (obj: SceneObject) => boolean;
   scene: Scene;
   surface: RenderSurface2D;
 }

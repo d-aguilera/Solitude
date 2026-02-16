@@ -268,8 +268,8 @@ export class WebGLRasterizer implements Rasterizer {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   }
 
-  drawFaces(faces: RenderedFace[]): void {
-    if (faces.length === 0) return;
+  drawFaces(faces: RenderedFace[], count: number): void {
+    if (count === 0) return;
 
     const gl = this.gl;
     const surface = gl.canvas;
@@ -283,46 +283,21 @@ export class WebGLRasterizer implements Rasterizer {
 
     // Flatten faces into an interleaved vertex array
     // 3 vertices per face; each vertex: [x, y, depth, r, g, b]
-    const vertexCount = faces.length * 3;
+    const vertexCount = count * 3;
     const data = new Float32Array(vertexCount * 6);
 
     let offset = 0;
-    for (const face of faces) {
-      const { p0, p1, p2, color } = face;
+    for (let i = 0; i < count; i++) {
+      const { p0, p1, p2, color } = faces[i];
+      const { x: x0, y: y0, depth: depth0 } = p0;
+      const { x: x1, y: y1, depth: depth1 } = p1;
+      const { x: x2, y: y2, depth: depth2 } = p2;
       const r = color.r / 255;
       const g = color.g / 255;
       const b = color.b / 255;
-
-      offset = this.writeFaceVertex(
-        data,
-        offset,
-        p0.x,
-        p0.y,
-        p0.depth,
-        r,
-        g,
-        b,
-      );
-      offset = this.writeFaceVertex(
-        data,
-        offset,
-        p1.x,
-        p1.y,
-        p1.depth,
-        r,
-        g,
-        b,
-      );
-      offset = this.writeFaceVertex(
-        data,
-        offset,
-        p2.x,
-        p2.y,
-        p2.depth,
-        r,
-        g,
-        b,
-      );
+      offset = this.writeFaceVertex(data, offset, x0, y0, depth0, r, g, b);
+      offset = this.writeFaceVertex(data, offset, x1, y1, depth1, r, g, b);
+      offset = this.writeFaceVertex(data, offset, x2, y2, depth2, r, g, b);
     }
 
     gl.bindVertexArray(this.faceVAO);
@@ -355,8 +330,8 @@ export class WebGLRasterizer implements Rasterizer {
     return offset;
   }
 
-  drawPolylines(polylines: RenderedPolyline[]): void {
-    if (polylines.length === 0) return;
+  drawPolylines(polylines: RenderedPolyline[], count: number): void {
+    if (count === 0) return;
 
     const gl = this.gl;
     const surface = gl.canvas;
@@ -372,8 +347,8 @@ export class WebGLRasterizer implements Rasterizer {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.lineVBO);
 
     // We’ll draw each polyline separately to honor lineWidth and color.
-    for (const polyline of polylines) {
-      const { points, cssColor, lineWidth } = polyline;
+    for (let i = 0; i < count; i++) {
+      const { points, cssColor, lineWidth } = polylines[i];
       if (points.length < 2) continue;
 
       // Parse cssColor "rgb(r,g,b)"

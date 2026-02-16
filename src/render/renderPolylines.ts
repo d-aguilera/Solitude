@@ -1,5 +1,4 @@
 import type { SceneObject } from "../app/appPorts.js";
-import type { Mesh, RGB, Vec3 } from "../domain/domainPorts.js";
 import { alloc } from "../global/allocProfiler.js";
 import { rgbToCss } from "./color.js";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals.js";
@@ -18,39 +17,48 @@ let segment: ProjectedSegment = {
   clipped: false,
 };
 
-export function renderPolylines(
+export function renderPolylinesInto(
+  into: RenderedPolyline[],
   objects: SceneObject[],
   projectSegmentInto: SegmentProjector,
-): RenderedPolyline[] {
-  return alloc.withName(renderPolylines.name, () => {
-    const renderedPolylines: RenderedPolyline[] = [];
-
-    let mesh: Mesh;
-    let worldPoints: Vec3[];
-    let baseColor: RGB;
+  objectsFilter?: (obj: SceneObject) => boolean,
+): number {
+  return alloc.withName(renderPolylinesInto.name, () => {
+    let intoCount = 0;
+    let cssColor = "";
     let lineWidth = 0;
     let count: number;
-    let cssColor = "";
+
     const addOrPush = (p: ScreenPoint) => {
-      if (count < scratchPoints.length) {
-        scratchPoints[count] = p;
-      } else {
-        scratchPoints.push(p);
-      }
+      if (count < scratchPoints.length) scratchPoints[count] = p;
+      else scratchPoints.push(p);
       count++;
     };
+
     const flush = () => {
-      renderedPolylines.push({
-        points: scratchPoints.slice(0, count),
-        cssColor,
-        lineWidth,
-      });
+      if (intoCount < into.length) {
+        const entry = into[intoCount];
+        entry.cssColor = cssColor;
+        entry.lineWidth = lineWidth;
+        entry.points = scratchPoints.slice(0, count);
+      } else {
+        into.push({
+          points: scratchPoints.slice(0, count),
+          cssColor,
+          lineWidth,
+        });
+      }
+      intoCount++;
       count = 0;
     };
 
     objects.forEach((obj) => {
-      ({ mesh, worldPoints, baseColor, lineWidth } = toRenderable(obj));
-      cssColor = rgbToCss(baseColor);
+      if (objectsFilter && !objectsFilter(obj)) return;
+
+      const renderable = toRenderable(obj);
+      const { mesh, worldPoints } = renderable;
+      cssColor = rgbToCss(renderable.baseColor);
+      lineWidth = renderable.lineWidth;
 
       count = 0;
       for (polyIndices of mesh.faces) {
@@ -80,6 +88,6 @@ export function renderPolylines(
       }
     });
 
-    return renderedPolylines;
+    return intoCount;
   });
 }
