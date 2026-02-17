@@ -38,10 +38,13 @@ export interface CelestialBodyConfig {
   density: number; // kg/m^3
 
   /**
-   * Mass of the central body that dominates this orbit.
-   * For heliocentric planetary orbits this is the Sun's mass.
+   * ID of the central body that dominates this orbit.
+   *
+   * For heliocentric planetary orbits this is the Sun's id.
+   * For moons this is the id of the parent planet.
+   * For a root body (e.g. Sun at origin) this should be equal to its own id.
    */
-  centralMassKg: number;
+  centralBodyId: BodyId;
 
   // Rendering / initial kinematics
   color: RGB;

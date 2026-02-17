@@ -20,8 +20,14 @@ import type {
   SceneObject,
   StarSceneObject,
 } from "./appPorts.js";
-import { moonInitialState } from "./solarSystem.js";
 import { createPolylineSceneObject } from "./worldSetup.js";
+
+// Scratch state for hierarchical initial state computation.
+const initialStatePositionScratch: Record<string, Vec3> = {};
+const initialStateVelocityScratch: Record<string, Vec3> = {};
+const massByIdScratch: Record<string, number> = {};
+const configByIdScratch: Record<string, PlanetBodyConfig | StarBodyConfig> = {};
+const computingStateScratch: Record<string, boolean> = {};
 
 /**
  * Add planets + stars + their orbit paths from an arbitrary list of PlanetConfig.
@@ -32,7 +38,7 @@ import { createPolylineSceneObject } from "./worldSetup.js";
  *  - Register PlanetPhysics / StarPhysics entries for gravity
  *
  * Orbital initial conditions are derived from Keplerian elements relative
- * to a central mass. After initialization, positions and velocities are
+ * to a central body. After initialization, positions and velocities are
  * evolved using the gravity engine.
  */
 export function addPlanetsAndStarsFromConfig(
@@ -45,36 +51,15 @@ export function addPlanetsAndStarsFromConfig(
 ): void {
   const bodyMeshTemplate: Mesh = generatePlanetMesh(3);
 
+  // Build lookup tables for configs and masses.
+  buildConfigAndMassTables(configs);
+
   for (const cfg of configs) {
     const bodyMesh: Mesh = { ...bodyMeshTemplate };
 
-    let center: Vec3;
-    let initialVelocity: Vec3;
-
-    if (cfg.id === "planet:moon") {
-      // Moon: use precomputed heliocentric initial state derived from
-      // an Earth‑centric Keplerian orbit offset by Earth's state.
-      center = vec3.clone(moonInitialState.position);
-      initialVelocity = vec3.clone(moonInitialState.velocity);
-    } else if (cfg.orbit.semiMajorAxis > 0) {
-      // Use two-body Keplerian elements to derive initial state.
-      const state = {
-        position: vec3.zero(),
-        velocity: vec3.zero(),
-      };
-      mutateStateVectorFromKeplerian(
-        state,
-        cfg.orbit,
-        cfg.centralMassKg,
-        NEWTON_G,
-      );
-      center = state.position;
-      initialVelocity = state.velocity;
-    } else {
-      // Central body (e.g. Sun) at origin by convention.
-      center = vec3.zero();
-      initialVelocity = vec3.zero();
-    }
+    // Compute initial heliocentric state for this body.
+    const center = getInitialPositionForBody(cfg.id);
+    const initialVelocity = getInitialVelocityForBody(cfg.id);
 
     // Derive the spin axis from the orbital frame and obliquity.
     let rotationAxis: Vec3;
@@ -103,14 +88,14 @@ export function addPlanetsAndStarsFromConfig(
       id: cfg.id,
       kind: cfg.kind,
       mesh: bodyMesh,
-      position: center,
+      position: vec3.clone(center),
       orientation: mat3.copy(mat3.identity, mat3.zero()),
       scale: cfg.physicalRadius,
       color: cfg.color,
       lineWidth: 1,
       applyTransform: true,
       wireframeOnly: false,
-      initialVelocity,
+      initialVelocity: vec3.clone(initialVelocity),
       physicalRadius: cfg.physicalRadius,
       backFaceCulling: true,
       velocity: vec3.clone(initialVelocity),
@@ -124,11 +109,13 @@ export function addPlanetsAndStarsFromConfig(
       velocity: vec3.clone(initialVelocity),
     };
 
+    const mass = massByIdScratch[cfg.id];
+
     const planetPhysics: PlanetPhysics = {
       id: cfg.id,
       physicalRadius: cfg.physicalRadius,
       density: cfg.density,
-      mass: computePlanetMass(cfg.physicalRadius, cfg.density),
+      mass,
     };
 
     if (cfg.kind === "star") {
@@ -164,6 +151,126 @@ function computePlanetMass(physicalRadius: number, density: number): number {
   const volume =
     (4 / 3) * Math.PI * physicalRadius * physicalRadius * physicalRadius;
   return density * volume;
+}
+
+/**
+ * Initialize lookup tables for configs and derived masses.
+ */
+function buildConfigAndMassTables(
+  configs: (PlanetBodyConfig | StarBodyConfig)[],
+): void {
+  // Reset scratch tables (keys are small; simple reassignment is fine).
+  for (const key in configByIdScratch) {
+    delete configByIdScratch[key];
+  }
+  for (const key in massByIdScratch) {
+    delete massByIdScratch[key];
+  }
+  for (const key in initialStatePositionScratch) {
+    delete initialStatePositionScratch[key];
+  }
+  for (const key in initialStateVelocityScratch) {
+    delete initialStateVelocityScratch[key];
+  }
+  for (const key in computingStateScratch) {
+    delete computingStateScratch[key];
+  }
+
+  for (let i = 0; i < configs.length; i++) {
+    const cfg = configs[i];
+    configByIdScratch[cfg.id] = cfg;
+    massByIdScratch[cfg.id] = computePlanetMass(
+      cfg.physicalRadius,
+      cfg.density,
+    );
+  }
+}
+
+/**
+ * Compute (or retrieve) the initial heliocentric position for a body.
+ */
+function getInitialPositionForBody(id: string): Vec3 {
+  let pos = initialStatePositionScratch[id];
+  if (pos) return pos;
+
+  computeInitialStateForBody(id);
+  return initialStatePositionScratch[id];
+}
+
+/**
+ * Compute (or retrieve) the initial heliocentric velocity for a body.
+ */
+function getInitialVelocityForBody(id: string): Vec3 {
+  let vel = initialStateVelocityScratch[id];
+  if (vel) return vel;
+
+  computeInitialStateForBody(id);
+  return initialStateVelocityScratch[id];
+}
+
+/**
+ * Recursively compute the initial heliocentric state for a body based on
+ * its orbit around a central body.
+ *
+ * For a root body (semiMajorAxis = 0), the state is the origin with
+ * zero velocity.
+ *
+ * For regular bodies, the state is:
+ *   state = parentState + relativeState
+ *
+ * where relativeState is derived from Keplerian elements relative to the
+ * parent's mass.
+ */
+function computeInitialStateForBody(id: string): void {
+  if (initialStatePositionScratch[id]) {
+    return;
+  }
+
+  if (computingStateScratch[id]) {
+    throw new Error(
+      `Cyclic centralBodyId relationship detected while computing initial state for ${id}`,
+    );
+  }
+
+  const cfg = configByIdScratch[id];
+  if (!cfg) {
+    throw new Error(`Config not found for body id=${id}`);
+  }
+
+  const isRoot = cfg.orbit.semiMajorAxis === 0 || cfg.centralBodyId === cfg.id;
+
+  computingStateScratch[id] = true;
+
+  let position: Vec3;
+  let velocity: Vec3;
+
+  if (isRoot) {
+    position = vec3.zero();
+    velocity = vec3.zero();
+  } else {
+    const parentId = cfg.centralBodyId;
+    // Ensure parent state is computed first.
+    computeInitialStateForBody(parentId);
+
+    const parentPos = initialStatePositionScratch[parentId];
+    const parentVel = initialStateVelocityScratch[parentId];
+
+    const relState = {
+      position: vec3.zero(),
+      velocity: vec3.zero(),
+    };
+
+    const parentMass = massByIdScratch[parentId];
+    mutateStateVectorFromKeplerian(relState, cfg.orbit, parentMass, NEWTON_G);
+
+    // Compose heliocentric state
+    position = vec3.addInto(vec3.zero(), parentPos, relState.position);
+    velocity = vec3.addInto(vec3.zero(), parentVel, relState.velocity);
+  }
+
+  initialStatePositionScratch[id] = position;
+  initialStateVelocityScratch[id] = velocity;
+  computingStateScratch[id] = false;
 }
 
 // scratch

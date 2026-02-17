@@ -1,25 +1,11 @@
-import type { KeplerianOrbit, Vec3 } from "../domain/domainPorts.js";
-import { NEWTON_G } from "../domain/domainPorts.js";
-import { mutateStateVectorFromKeplerian } from "../domain/kepler.js";
-import { vec3 } from "../domain/vec3.js";
+import type { KeplerianOrbit } from "../domain/domainPorts.js";
 import type { PlanetBodyConfig, StarBodyConfig } from "./appInternals.js";
 import { colors } from "./appInternals.js";
-
-type BodyInitialState = {
-  position: Vec3;
-  velocity: Vec3;
-};
 
 const AU = 1.495978707e11; // m
 
 // Base SI unit helpers
 const km = 1_000;
-
-// Sun mass (for heliocentric orbits)
-const M_SUN = 1.98847e30; // kg
-
-// Earth mass (central body for Moon's orbit)
-const M_EARTH = 5.9722e24; // kg
 
 // Mean distance Earth–Moon in meters
 const EARTH_MOON_DISTANCE = 384_400 * km; // m
@@ -188,12 +174,12 @@ function angularSpeedFromPeriod(periodSeconds: number): number {
 }
 
 /**
- * Helper to build a simple KeplerianOrbit for a heliocentric planet.
+ * Helper to build a simple KeplerianOrbit for an orbit relative to a central body.
  *
- * meanAnomalyAtEpochRad is chosen to distribute planets around the Sun
+ * meanAnomalyAtEpochRad is chosen to distribute bodies around their primary
  * without targeting a specific historical epoch.
  */
-function buildPlanetOrbit(
+function buildOrbit(
   semiMajorAxis: number,
   eccentricity: number,
   inclinationDeg: number,
@@ -211,25 +197,13 @@ function buildPlanetOrbit(
   };
 }
 
-function computeInitialStateForOrbit(
-  orbit: KeplerianOrbit,
-  centralMassKg: number,
-): BodyInitialState {
-  const state = {
-    position: vec3.zero(),
-    velocity: vec3.zero(),
-  };
-  mutateStateVectorFromKeplerian(state, orbit, centralMassKg, NEWTON_G);
-  return state;
-}
-
 /**
  * Build a simplified solar system.
  *
  * - Sizes are roughly proportional to real radii.
  * - Densities and masses are near-realistic for each body class.
  * - Initial positions and velocities are derived from Keplerian orbital
- *   elements relative to a central mass using a two-body approximation.
+ *   elements relative to each body's central mass.
  *
  * All distances and radii are in meters.
  */
@@ -237,10 +211,11 @@ export function buildDefaultSolarSystemConfigs(): (
   | PlanetBodyConfig
   | StarBodyConfig
 )[] {
-  // Sun and heliocentric planets first.
+  const sunId = "planet:sun";
+
   const configs: (PlanetBodyConfig | StarBodyConfig)[] = [
     {
-      id: "planet:sun",
+      id: sunId,
       pathId: "path:planet:sun",
       kind: "star",
       orbit: {
@@ -253,7 +228,7 @@ export function buildDefaultSolarSystemConfigs(): (
       },
       physicalRadius: radii.sun,
       density: densities.sun,
-      centralMassKg: M_SUN,
+      centralBodyId: sunId,
       color: colors.sun,
       luminosity: luminosities.sun,
       obliquityRad: degToRad(obliquitiesDeg.sun),
@@ -263,7 +238,7 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:mercury",
       pathId: "path:planet:mercury",
       kind: "planet",
-      orbit: buildPlanetOrbit(
+      orbit: buildOrbit(
         orbits.mercury,
         eccentricities.mercury,
         inclinationsDeg.mercury,
@@ -273,7 +248,7 @@ export function buildDefaultSolarSystemConfigs(): (
       ),
       physicalRadius: radii.mercury,
       density: densities.mercury,
-      centralMassKg: M_SUN,
+      centralBodyId: sunId,
       color: colors.mercury,
       obliquityRad: degToRad(obliquitiesDeg.mercury),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mercury),
@@ -282,7 +257,7 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:venus",
       pathId: "path:planet:venus",
       kind: "planet",
-      orbit: buildPlanetOrbit(
+      orbit: buildOrbit(
         orbits.venus,
         eccentricities.venus,
         inclinationsDeg.venus,
@@ -292,7 +267,7 @@ export function buildDefaultSolarSystemConfigs(): (
       ),
       physicalRadius: radii.venus,
       density: densities.venus,
-      centralMassKg: M_SUN,
+      centralBodyId: sunId,
       color: colors.venus,
       obliquityRad: degToRad(obliquitiesDeg.venus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.venus),
@@ -301,7 +276,7 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:earth",
       pathId: "path:planet:earth",
       kind: "planet",
-      orbit: buildPlanetOrbit(
+      orbit: buildOrbit(
         orbits.earth,
         eccentricities.earth,
         inclinationsDeg.earth,
@@ -311,7 +286,7 @@ export function buildDefaultSolarSystemConfigs(): (
       ),
       physicalRadius: radii.earth,
       density: densities.earth,
-      centralMassKg: M_SUN,
+      centralBodyId: sunId,
       color: colors.earth,
       obliquityRad: degToRad(obliquitiesDeg.earth),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.earth),
@@ -320,7 +295,7 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:mars",
       pathId: "path:planet:mars",
       kind: "planet",
-      orbit: buildPlanetOrbit(
+      orbit: buildOrbit(
         orbits.mars,
         eccentricities.mars,
         inclinationsDeg.mars,
@@ -330,7 +305,7 @@ export function buildDefaultSolarSystemConfigs(): (
       ),
       physicalRadius: radii.mars,
       density: densities.mars,
-      centralMassKg: M_SUN,
+      centralBodyId: sunId,
       color: colors.mars,
       obliquityRad: degToRad(obliquitiesDeg.mars),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mars),
@@ -339,7 +314,7 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:jupiter",
       pathId: "path:planet:jupiter",
       kind: "planet",
-      orbit: buildPlanetOrbit(
+      orbit: buildOrbit(
         orbits.jupiter,
         eccentricities.jupiter,
         inclinationsDeg.jupiter,
@@ -349,7 +324,7 @@ export function buildDefaultSolarSystemConfigs(): (
       ),
       physicalRadius: radii.jupiter,
       density: densities.jupiter,
-      centralMassKg: M_SUN,
+      centralBodyId: sunId,
       color: colors.jupiter,
       obliquityRad: degToRad(obliquitiesDeg.jupiter),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.jupiter),
@@ -358,7 +333,7 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:saturn",
       pathId: "path:planet:saturn",
       kind: "planet",
-      orbit: buildPlanetOrbit(
+      orbit: buildOrbit(
         orbits.saturn,
         eccentricities.saturn,
         inclinationsDeg.saturn,
@@ -368,7 +343,7 @@ export function buildDefaultSolarSystemConfigs(): (
       ),
       physicalRadius: radii.saturn,
       density: densities.saturn,
-      centralMassKg: M_SUN,
+      centralBodyId: sunId,
       color: colors.saturn,
       obliquityRad: degToRad(obliquitiesDeg.saturn),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.saturn),
@@ -377,7 +352,7 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:uranus",
       pathId: "path:planet:uranus",
       kind: "planet",
-      orbit: buildPlanetOrbit(
+      orbit: buildOrbit(
         orbits.uranus,
         eccentricities.uranus,
         inclinationsDeg.uranus,
@@ -387,7 +362,7 @@ export function buildDefaultSolarSystemConfigs(): (
       ),
       physicalRadius: radii.uranus,
       density: densities.uranus,
-      centralMassKg: M_SUN,
+      centralBodyId: sunId,
       color: colors.uranus,
       obliquityRad: degToRad(obliquitiesDeg.uranus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.uranus),
@@ -396,7 +371,7 @@ export function buildDefaultSolarSystemConfigs(): (
       id: "planet:neptune",
       pathId: "path:planet:neptune",
       kind: "planet",
-      orbit: buildPlanetOrbit(
+      orbit: buildOrbit(
         orbits.neptune,
         eccentricities.neptune,
         inclinationsDeg.neptune,
@@ -406,81 +381,31 @@ export function buildDefaultSolarSystemConfigs(): (
       ),
       physicalRadius: radii.neptune,
       density: densities.neptune,
-      centralMassKg: M_SUN,
+      centralBodyId: sunId,
       color: colors.neptune,
       obliquityRad: degToRad(obliquitiesDeg.neptune),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.neptune),
     },
+    {
+      id: "planet:moon",
+      pathId: "path:planet:moon",
+      kind: "planet",
+      orbit: buildOrbit(
+        EARTH_MOON_DISTANCE,
+        eccentricities.moon,
+        inclinationsDeg.moon,
+        lonAscNodeDeg.moon,
+        argPeriapsisDeg.moon,
+        meanAnomalyAtEpochRad.moon,
+      ),
+      physicalRadius: radii.moon,
+      density: densities.moon,
+      centralBodyId: "planet:earth",
+      color: colors.moon,
+      obliquityRad: degToRad(obliquitiesDeg.moon),
+      angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.moon),
+    },
   ];
-
-  // Compute initial heliocentric states for bodies defined so far.
-  const initialStates: Record<string, BodyInitialState> = {};
-  for (const cfg of configs) {
-    // Sun has semiMajorAxis = 0, handled as special case elsewhere,
-    // but we still store a zero state here.
-    if (cfg.orbit.semiMajorAxis === 0) {
-      initialStates[cfg.id] = {
-        position: vec3.zero(),
-        velocity: vec3.zero(),
-      };
-      continue;
-    }
-    initialStates[cfg.id] = computeInitialStateForOrbit(
-      cfg.orbit,
-      cfg.centralMassKg,
-    );
-  }
-
-  // Earth initial state in the heliocentric frame.
-  const earthState = initialStates["planet:earth"];
-
-  // Define Moon as an Earth‑centric orbit and then offset it
-  // by Earth's heliocentric state.
-  const moonOrbit: KeplerianOrbit = buildPlanetOrbit(
-    EARTH_MOON_DISTANCE,
-    eccentricities.moon,
-    inclinationsDeg.moon,
-    lonAscNodeDeg.moon,
-    argPeriapsisDeg.moon,
-    meanAnomalyAtEpochRad.moon,
-  );
-
-  const moonStateEarthCentric = computeInitialStateForOrbit(moonOrbit, M_EARTH);
-
-  // We return only configs; the world setup will recompute states from
-  // these orbits as before, so we do not persist initialStates.
-  configs.push({
-    id: "planet:moon",
-    pathId: "path:planet:moon",
-    kind: "planet",
-    orbit: moonOrbit,
-    physicalRadius: radii.moon,
-    density: densities.moon,
-    centralMassKg: M_EARTH,
-    color: colors.moon,
-    obliquityRad: degToRad(obliquitiesDeg.moon),
-    angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.moon),
-  });
-
-  // Store the Earth‑offset moon state for later use in setupPlanets.
-  // We encode the offset position/velocity into a side‑table keyed by id.
-  // This allows us to keep configs as pure descriptions.
-  moonInitialState.position = vec3.addInto(
-    vec3.zero(),
-    earthState.position,
-    moonStateEarthCentric.position,
-  );
-  moonInitialState.velocity = vec3.addInto(
-    vec3.zero(),
-    earthState.velocity,
-    moonStateEarthCentric.velocity,
-  );
 
   return configs;
 }
-
-// Global scratch state for Moon's initial heliocentric values.
-export const moonInitialState: BodyInitialState = {
-  position: vec3.zero(),
-  velocity: vec3.zero(),
-};
