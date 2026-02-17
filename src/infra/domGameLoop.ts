@@ -16,6 +16,7 @@ import type {
   HudRenderer,
   HudRenderParams,
   Rasterizer,
+  RenderedHud,
   RenderedView,
   RenderSurface2D,
   ViewRenderer,
@@ -99,10 +100,25 @@ export function runLoop(
     segments: [],
   };
 
+  const hudRenderParams: HudRenderParams = {
+    currentThrustLevel: tickOutput.currentThrustLevel,
+    fps: 0,
+    pilotCameraLocalOffset: tickOutput.pilotCameraLocalOffset,
+    profilingEnabled: false,
+    speedMps: tickOutput.speedMps,
+  };
+
+  const renderedHud: RenderedHud = {
+    currentThrustLevel: 0,
+    fps: 0,
+    pilotCameraLocalOffset: vec3.zero(),
+    profilingEnabled: false,
+    speed: "",
+  };
+
   let lastTimeMs: number;
   let elapsedMs: number;
   let dtSeconds: number;
-  let fps: number;
 
   const loop = (nowMs: number) => {
     elapsedMs = nowMs - lastTimeMs;
@@ -133,20 +149,17 @@ export function runLoop(
 
     topViewRenderer.renderInto(renderedTopView, topViewRenderParams);
 
-    fps = dtSeconds === 0 ? 0 : updateFps(dtSeconds);
+    hudRenderParams.currentThrustLevel = tickOutput.currentThrustLevel;
+    hudRenderParams.fps = dtSeconds === 0 ? 0 : updateFps(dtSeconds);
+    hudRenderParams.pilotCameraLocalOffset = tickOutput.pilotCameraLocalOffset;
+    hudRenderParams.profilingEnabled = profilingEnabled;
+    hudRenderParams.speedMps = tickOutput.speedMps;
 
-    const renderedHud: HudRenderParams = hudRenderer.render({
-      currentThrustLevel: tickOutput.currentThrustLevel,
-      fps,
-      pilotCameraLocalOffset: tickOutput.pilotCameraLocalOffset,
-      profilingEnabled,
-      speedMps: tickOutput.speedMps,
-    });
+    hudRenderer.renderInto(renderedHud, hudRenderParams);
 
     rasterizeView(renderedPilotView, pilotRasterizer);
     rasterizeView(renderedTopView, topRasterizer);
-
-    hudRasterizer.drawHud(renderedHud);
+    rasterizeHud(renderedHud, hudRasterizer);
 
     profilerController.flush();
 
@@ -167,4 +180,8 @@ function rasterizeView(renderedView: RenderedView, rasterizer: Rasterizer) {
   rasterizer.drawPolylines(renderedView.polylines, renderedView.polylineCount);
   rasterizer.drawSegments(renderedView.segments);
   rasterizer.drawBodyLabels(renderedView.bodyLabels);
+}
+
+function rasterizeHud(renderedHud: RenderedHud, rasterizer: Rasterizer) {
+  rasterizer.drawHud(renderedHud);
 }

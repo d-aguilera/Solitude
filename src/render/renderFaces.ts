@@ -4,6 +4,7 @@ import type {
   Scene,
   SceneObject,
 } from "../app/appPorts.js";
+import { AU } from "../app/appPorts.js";
 import type { RGB, Vec3 } from "../domain/domainPorts.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
@@ -15,7 +16,6 @@ import { toRenderable } from "./renderPrep.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
 const SUN_LUMINOSITY = 3.828e26; // W
-const AU = 1.495978707e11; // m
 const EARTH_ORBIT_RADIUS_2 = AU * AU;
 const E_SUN_AT_EARTH = SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS_2);
 

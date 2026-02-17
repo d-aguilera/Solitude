@@ -9,7 +9,7 @@ export const drawMode: DrawMode = "faces";
  * Top-level view rendering abstraction.
  */
 export interface HudRenderer {
-  render(renderParams: HudRenderParams): RenderedHud;
+  renderInto(into: RenderedHud, renderParams: HudRenderParams): void;
 }
 
 export interface HudRenderParams {
@@ -53,7 +53,6 @@ export interface Renderable {
 
 export interface RenderedBodyLabel {
   anchor: ScreenPoint;
-  distanceKm: number;
   edgePoint: ScreenPoint;
   lineHeight: number;
   lines: string[];
@@ -67,7 +66,6 @@ export interface RenderedBodyLabel {
     width: number;
     height: number;
   };
-  speedKmh: number;
 }
 
 export interface RenderedFace {
@@ -82,7 +80,7 @@ export interface RenderedHud {
   fps: number;
   pilotCameraLocalOffset: Vec3;
   profilingEnabled: boolean;
-  speedMps: number;
+  speed: string;
 }
 
 export interface RenderedPolyline {

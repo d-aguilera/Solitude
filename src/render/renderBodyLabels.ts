@@ -6,6 +6,7 @@ import type {
 import type { BodyId, Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
+import { formatDistance, formatSpeed } from "./formatters.js";
 import { ndcToScreen } from "./ndcToScreen.js";
 import type {
   NdcPoint,
@@ -64,15 +65,11 @@ export function renderBodyLabels(
       const anchor = ndcToScreen(ndcScratch, screenWidth, screenHeight);
 
       const name = displayNameForBodyId(body.id);
-      const distanceKm = distance / 1000;
+      const distanceLine = formatDistance(distance);
       const speedMps = vec3.length(body.velocity);
-      const speedKmh = speedMps * 3.6;
+      const speedLine = formatSpeed(speedMps);
 
-      const lines = [
-        name,
-        "d=".concat(distanceKm.toFixed(0), " km"),
-        "v=".concat(speedKmh.toFixed(0), " km/h"),
-      ];
+      const lines = [name, "d=".concat(distanceLine), "v=".concat(speedLine)];
 
       let maxTextWidth = getTextWidth(lines, font, measureText);
 
@@ -106,7 +103,6 @@ export function renderBodyLabels(
 
       const renderedBodyLabel: RenderedBodyLabel = {
         anchor: { x: anchor.x, y: anchor.y, depth: 0 },
-        distanceKm,
         lineHeight,
         lines,
         name,
@@ -128,7 +124,6 @@ export function renderBodyLabels(
           y: edgeY,
           depth: 0,
         },
-        speedKmh,
       };
 
       renderedBodyLabels.push(renderedBodyLabel);

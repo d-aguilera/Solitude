@@ -16,23 +16,12 @@ const hudHeight = 70;
 const margin = 10;
 
 // scratch
-let fpsWidth: number;
-let thrustWidth: number;
-let profilingWidth: number;
 let label: RenderedBodyLabel;
 let anchor: ScreenPoint;
-let lineHeight: number;
 let lines: string[];
-let linesLength: number;
 let padding: { width: number; height: number };
-let paddingWidth: number;
-let paddingHeight: number;
 let position: ScreenPoint;
-let boxX: number;
-let boxY: number;
 let size: { width: number; height: number };
-let boxWidth: number;
-let boxHeight: number;
 let edgePoint: ScreenPoint;
 let face: RenderedFace;
 let p0: ScreenPoint;
@@ -46,8 +35,6 @@ let p: ScreenPoint;
 let seg: RenderedSegment;
 let start: ScreenPoint;
 let end: ScreenPoint;
-let width: number;
-let height: number;
 
 /**
  * Canvas2D rasterizer.
@@ -57,7 +44,7 @@ export class CanvasRasterizer implements Rasterizer {
 
   clear(color: string): void {
     const ctx = this.ctx;
-    ({ width, height } = ctx.canvas);
+    const { width, height } = ctx.canvas;
 
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, width, height);
@@ -70,12 +57,11 @@ export class CanvasRasterizer implements Rasterizer {
     ctx.textBaseline = "middle";
 
     for (label of labels) {
-      ({ anchor, lineHeight, lines, padding, position, size, edgePoint } =
-        label);
-      linesLength = lines.length;
-      ({ width: paddingWidth, height: paddingHeight } = padding);
-      ({ x: boxX, y: boxY } = position);
-      ({ width: boxWidth, height: boxHeight } = size);
+      ({ anchor, lines, padding, position, size, edgePoint } = label);
+      const linesLength = lines.length;
+      const { width: paddingWidth, height: paddingHeight } = padding;
+      const { x: boxX, y: boxY } = position;
+      const { width: boxWidth, height: boxHeight } = size;
 
       ctx.strokeStyle = "white";
       ctx.lineWidth = 1;
@@ -95,7 +81,7 @@ export class CanvasRasterizer implements Rasterizer {
         ctx.fillText(
           lines[i],
           boxX + paddingWidth,
-          boxY + paddingHeight + lineHeight * (i + 0.5),
+          boxY + paddingHeight + label.lineHeight * (i + 0.5),
         );
       }
     }
@@ -129,18 +115,10 @@ export class CanvasRasterizer implements Rasterizer {
     ctx.fillStyle = "white";
     ctx.font = "16px monospace";
 
-    // Speed in km/h
-    const speedKmh = hud.speedMps * 3.6;
-    ctx.fillText(
-      "Spd: ".concat(speedKmh.toFixed(0), " km/h"),
-      xMin + 10,
-      y + 20,
-    );
+    ctx.fillText("Spd: ".concat(hud.speed), xMin + 10, y + 20);
 
     // FPS
-    if (fpsWidth === undefined) {
-      fpsWidth = ctx.measureText("FPS: 99").width;
-    }
+    const fpsWidth = ctx.measureText("FPS: 99").width;
     const fpsPadding = hud.fps < 10 ? " " : "";
     ctx.fillText(
       "FPS: ".concat(fpsPadding, hud.fps.toFixed(0)),
@@ -164,9 +142,7 @@ export class CanvasRasterizer implements Rasterizer {
     );
 
     // Thrust
-    if (thrustWidth === undefined) {
-      thrustWidth = ctx.measureText("Thrust: -0").width;
-    }
+    const thrustWidth = ctx.measureText("Thrust: -0").width;
     const thrustPadding = hud.currentThrustLevel < 0 ? "" : " ";
     const thrustDisplay = "Thrust: ".concat(
       thrustPadding,
@@ -175,9 +151,7 @@ export class CanvasRasterizer implements Rasterizer {
     ctx.fillText(thrustDisplay, xMax - 10 - thrustWidth, y + 40);
 
     if (hud.profilingEnabled) {
-      if (profilingWidth === undefined) {
-        profilingWidth = ctx.measureText("PROFILING").width;
-      }
+      const profilingWidth = ctx.measureText("PROFILING").width;
       ctx.fillText("PROFILING", xMax - 10 - profilingWidth, y + 60);
     }
   }
