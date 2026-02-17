@@ -24,12 +24,24 @@ const diffScratch: Vec3 = vec3.zero();
 const ndcScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
 
 /**
+ * Scratch structure for tracking label centers across a single render pass.
+ */
+interface LabelCenter {
+  x: number;
+  y: number;
+}
+
+const labelCentersScratch: LabelCenter[] = [];
+let labelCentersCount = 0;
+
+/**
  * Sample and prepare body labels:
  *  - Computes distance and speed for each body.
  *  - Projects body centers into screen space.
- *  - Chooses an 8-way direction index for label placement based on the
- *    vector from the body center toward the screen center, clamped to
- *    the nearest 45° increment.
+ *  * - Skips labels for bodies whose centers are off‑screen.
+ *  * - Chooses a label placement direction by probing 8 angles at 45° steps,
+ *  *   starting from 45° (up/right), and picking the first that does not
+ *  *   overlap already placed labels (using label centers + radius).
  */
 export function renderBodyLabels(
   objects: SceneObject[],
@@ -52,10 +64,18 @@ export function renderBodyLabels(
     const angleStep = 45;
     const angleStepRad = (angleStep * Math.PI) / 180;
 
+    // Label style
     const font = "14px monospace";
     const lineHeight = 16;
     const paddingX = 6;
     const paddingY = 4;
+
+    // Clear per-pass label center scratch
+    labelCentersCount = 0;
+
+    // Radius used to check overlap between label centers (in pixels).
+    const labelRadius = 80;
+    const labelRadiusSq = labelRadius * labelRadius;
 
     for (const { body, distance } of sorted) {
       if (!projectInto(ndcScratch, body.position)) {
@@ -64,6 +84,16 @@ export function renderBodyLabels(
 
       const anchor = ndcToScreen(ndcScratch, screenWidth, screenHeight);
 
+      // 1) If the body's center is off the screen, skip the label.
+      if (
+        anchor.x < 0 ||
+        anchor.x > screenWidth ||
+        anchor.y < 0 ||
+        anchor.y > screenHeight
+      ) {
+        continue;
+      }
+
       const name = displayNameForBodyId(body.id);
       const distanceLine = formatDistance(distance);
       const speedMps = vec3.length(body.velocity);
@@ -71,17 +101,16 @@ export function renderBodyLabels(
 
       const lines = [name, "d=".concat(distanceLine), "v=".concat(speedLine)];
 
-      let maxTextWidth = getTextWidth(lines, font, measureText);
+      const maxTextWidth = getTextWidth(lines, font, measureText);
 
       const boxWidth = maxTextWidth + paddingX * 2;
       const boxHeight = lines.length * lineHeight + paddingY * 2;
 
-      // Vector from body center to screen center in screen space.
-      const directionIndex = getDirectionIndex(
-        screenWidth,
-        screenHeight,
+      // 2–5) Choose a direction by probing 8 angles starting from 45°.
+      const directionIndex = pickDirectionIndexForLabel(
         anchor,
         angleStepRad,
+        labelRadiusSq,
       );
 
       // Offset direction in screen space for the LABEL BOX CENTER.
@@ -100,6 +129,9 @@ export function renderBodyLabels(
         { x: boxX, y: boxY },
         { width: boxWidth, height: boxHeight },
       );
+
+      // Register this label's center so future labels can avoid overlapping it.
+      registerLabelCenter(boxCenterX, boxCenterY);
 
       const renderedBodyLabel: RenderedBodyLabel = {
         anchor: { x: anchor.x, y: anchor.y, depth: 0 },
@@ -171,6 +203,87 @@ function displayNameForBodyId(id: BodyId): string {
   return raw.charAt(0).toUpperCase() + raw.slice(1);
 }
 
+/**
+ * Pick a direction index (0..7) in 45° steps such that the label's center
+ * does not overlap existing labels, if possible.
+ *
+ * Angles:
+ *   0 -> 0°   (up)
+ *   1 -> 45°  (up-right)
+ *   2 -> 90°  (right)
+ *   3 -> 135°
+ *   4 -> 180° (down)
+ *   5 -> 225°
+ *   6 -> 270° (left)
+ *   7 -> 315°
+ *
+ * The search always starts at index 1 (45°), then 2,3,...,7,0, and falls
+ * back to 1 if all candidate centers would overlap.
+ */
+function pickDirectionIndexForLabel(
+  anchor: { x: number; y: number },
+  angleStepRad: number,
+  labelRadiusSq: number,
+): number {
+  const startIndex = 1; // 45°
+  const maxDirs = 8;
+
+  let chosenIndex = startIndex;
+  let foundFree = false;
+
+  for (let i = 0; i < maxDirs; i++) {
+    const directionIndex = (startIndex + i) & 7;
+
+    const { x: cx, y: cy } = getBoxCenter(directionIndex, angleStepRad, anchor);
+
+    if (!overlapsExistingLabel(cx, cy, labelRadiusSq)) {
+      chosenIndex = directionIndex;
+      foundFree = true;
+      break;
+    }
+  }
+
+  if (!foundFree) {
+    chosenIndex = startIndex;
+  }
+
+  return chosenIndex;
+}
+
+/**
+ * Returns true if the proposed center overlaps any previously registered
+ * label center using a simple radius-based check.
+ */
+function overlapsExistingLabel(
+  cx: number,
+  cy: number,
+  radiusSq: number,
+): boolean {
+  for (let i = 0; i < labelCentersCount; i++) {
+    const c = labelCentersScratch[i];
+    const dx = cx - c.x;
+    const dy = cy - c.y;
+    if (dx * dx + dy * dy < radiusSq) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Register a new label center into the grow-only scratch array.
+ */
+function registerLabelCenter(cx: number, cy: number): void {
+  if (labelCentersCount < labelCentersScratch.length) {
+    const dst = labelCentersScratch[labelCentersCount];
+    dst.x = cx;
+    dst.y = cy;
+  } else {
+    labelCentersScratch.push({ x: cx, y: cy });
+  }
+  labelCentersCount++;
+}
+
 function getBoxCenter(
   directionIndex: number,
   angleStepRad: number,
@@ -181,48 +294,23 @@ function getBoxCenter(
   const ux = Math.sin(angleRad);
   const uy = -Math.cos(angleRad);
 
-  // Box is placed between anchor and screen center.
   const x = anchor.x - ux * offsetRadius;
   const y = anchor.y - uy * offsetRadius;
 
   return { x, y };
 }
 
-function getDirectionIndex(
-  screenWidth: number,
-  screenHeight: number,
-  anchor: { x: number; y: number },
-  angleStepRad: number,
-) {
-  const vx = screenWidth * 0.5 - anchor.x;
-  const vy = screenHeight * 0.5 - anchor.y;
-
-  // atan2 gives angle with 0 along +X; rotate so 0 corresponds to "up".
-  let angle = Math.atan2(vy, vx) - Math.PI / 2;
-
-  // Normalize to [0, 2π).
-  const twoPi = Math.PI * 2;
-  if (angle < 0) {
-    angle = (angle % twoPi) + twoPi;
-  } else if (angle >= twoPi) {
-    angle = angle % twoPi;
-  }
-
-  // Clamp to nearest 45° increment.
-  const quantized = Math.round(angle / angleStepRad);
-
-  // Direction index:
-  //   0 -> 0°   (top)
-  //   1 -> 45°
-  //   2 -> 90°  (right)
-  //   3 -> 135°
-  //   4 -> 180° (bottom)
-  //   5 -> 225°
-  //   6 -> 270° (left)
-  //   7 -> 315°
-  return quantized & 7; // keep in [0,7]
-}
-
+/**
+ * Direction index:
+ *   0 -> 0°   (top)
+ *   1 -> 45°
+ *   2 -> 90°  (right)
+ *   3 -> 135°
+ *   4 -> 180° (bottom)
+ *   5 -> 225°
+ *   6 -> 270° (left)
+ *   7 -> 315°
+ */
 function getEdgeFromDirection(
   directionIndex: number,
   boxCenter: { x: number; y: number },
