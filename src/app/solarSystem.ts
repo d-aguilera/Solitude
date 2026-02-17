@@ -1,6 +1,14 @@
-import type { KeplerianOrbit } from "../domain/domainPorts.js";
+import type { KeplerianOrbit, Vec3 } from "../domain/domainPorts.js";
+import { NEWTON_G } from "../domain/domainPorts.js";
+import { mutateStateVectorFromKeplerian } from "../domain/kepler.js";
+import { vec3 } from "../domain/vec3.js";
 import type { PlanetBodyConfig, StarBodyConfig } from "./appInternals.js";
 import { colors } from "./appInternals.js";
+
+type BodyInitialState = {
+  position: Vec3;
+  velocity: Vec3;
+};
 
 const AU = 1.495978707e11; // m
 
@@ -9,6 +17,12 @@ const km = 1_000;
 
 // Sun mass (for heliocentric orbits)
 const M_SUN = 1.98847e30; // kg
+
+// Earth mass (central body for Moon's orbit)
+const M_EARTH = 5.9722e24; // kg
+
+// Mean distance Earth–Moon in meters
+const EARTH_MOON_DISTANCE = 384_400 * km; // m
 
 // --- Generated from JPL Horizons at epoch J2000.0 ---
 
@@ -34,6 +48,7 @@ const eccentricities = {
   saturn: 0.05563834,
   uranus: 0.04439277,
   neptune: 0.01120359,
+  moon: 0.0549,
 };
 
 // Real planetary mean radii (meters)
@@ -47,6 +62,7 @@ const radii = {
   saturn: 58_232 * km,
   uranus: 25_362 * km,
   neptune: 24_622 * km,
+  moon: 1_737.4 * km,
 };
 
 // Approximate mean densities (kg/m^3)
@@ -60,6 +76,7 @@ const densities = {
   saturn: 687,
   uranus: 1_270,
   neptune: 1_638,
+  moon: 3_344,
 };
 
 // Bolometric luminosities (W)
@@ -78,6 +95,7 @@ const spinPeriodsSeconds = {
   saturn: 10.7 * 3600,
   uranus: -17.2 * 3600, // retrograde
   neptune: 16.1 * 3600,
+  moon: 27.321661 * 24 * 3600,
 };
 
 // Axial tilts (obliquity) in degrees, relative to each planet's orbital normal.
@@ -91,6 +109,7 @@ const obliquitiesDeg = {
   saturn: 26.73,
   uranus: 97.77, // nearly on its side
   neptune: 28.32,
+  moon: 6.68,
 };
 
 /**
@@ -107,6 +126,7 @@ const inclinationsDeg = {
   saturn: 2.48425239,
   uranus: 0.77267578,
   neptune: 1.77021406,
+  moon: 5.145, // relative to ecliptic
 };
 
 /**
@@ -127,6 +147,7 @@ const lonAscNodeDeg = {
   saturn: 113.69966003,
   uranus: 74.00474643,
   neptune: 131.78387711,
+  moon: 125.08,
 };
 
 /**
@@ -141,6 +162,7 @@ const argPeriapsisDeg = {
   saturn: 335.86559372,
   uranus: 96.5887248,
   neptune: 267.31580198,
+  moon: 318.15,
 };
 
 // mean anomaly at J2000, in radians
@@ -153,6 +175,7 @@ const meanAnomalyAtEpochRad = {
   saturn: 5.592480981712,
   uranus: 2.493893561901,
   neptune: 4.64440886758,
+  moon: 2.5,
 };
 
 function degToRad(deg: number): number {
@@ -188,6 +211,18 @@ function buildPlanetOrbit(
   };
 }
 
+function computeInitialStateForOrbit(
+  orbit: KeplerianOrbit,
+  centralMassKg: number,
+): BodyInitialState {
+  const state = {
+    position: vec3.zero(),
+    velocity: vec3.zero(),
+  };
+  mutateStateVectorFromKeplerian(state, orbit, centralMassKg, NEWTON_G);
+  return state;
+}
+
 /**
  * Build a simplified solar system.
  *
@@ -202,8 +237,8 @@ export function buildDefaultSolarSystemConfigs(): (
   | PlanetBodyConfig
   | StarBodyConfig
 )[] {
-  return [
-    // Sun at origin; treated as central body for planetary orbits.
+  // Sun and heliocentric planets first.
+  const configs: (PlanetBodyConfig | StarBodyConfig)[] = [
     {
       id: "planet:sun",
       pathId: "path:planet:sun",
@@ -377,4 +412,75 @@ export function buildDefaultSolarSystemConfigs(): (
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.neptune),
     },
   ];
+
+  // Compute initial heliocentric states for bodies defined so far.
+  const initialStates: Record<string, BodyInitialState> = {};
+  for (const cfg of configs) {
+    // Sun has semiMajorAxis = 0, handled as special case elsewhere,
+    // but we still store a zero state here.
+    if (cfg.orbit.semiMajorAxis === 0) {
+      initialStates[cfg.id] = {
+        position: vec3.zero(),
+        velocity: vec3.zero(),
+      };
+      continue;
+    }
+    initialStates[cfg.id] = computeInitialStateForOrbit(
+      cfg.orbit,
+      cfg.centralMassKg,
+    );
+  }
+
+  // Earth initial state in the heliocentric frame.
+  const earthState = initialStates["planet:earth"];
+
+  // Define Moon as an Earth‑centric orbit and then offset it
+  // by Earth's heliocentric state.
+  const moonOrbit: KeplerianOrbit = buildPlanetOrbit(
+    EARTH_MOON_DISTANCE,
+    eccentricities.moon,
+    inclinationsDeg.moon,
+    lonAscNodeDeg.moon,
+    argPeriapsisDeg.moon,
+    meanAnomalyAtEpochRad.moon,
+  );
+
+  const moonStateEarthCentric = computeInitialStateForOrbit(moonOrbit, M_EARTH);
+
+  // We return only configs; the world setup will recompute states from
+  // these orbits as before, so we do not persist initialStates.
+  configs.push({
+    id: "planet:moon",
+    pathId: "path:planet:moon",
+    kind: "planet",
+    orbit: moonOrbit,
+    physicalRadius: radii.moon,
+    density: densities.moon,
+    centralMassKg: M_EARTH,
+    color: colors.moon,
+    obliquityRad: degToRad(obliquitiesDeg.moon),
+    angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.moon),
+  });
+
+  // Store the Earth‑offset moon state for later use in setupPlanets.
+  // We encode the offset position/velocity into a side‑table keyed by id.
+  // This allows us to keep configs as pure descriptions.
+  moonInitialState.position = vec3.addInto(
+    vec3.zero(),
+    earthState.position,
+    moonStateEarthCentric.position,
+  );
+  moonInitialState.velocity = vec3.addInto(
+    vec3.zero(),
+    earthState.velocity,
+    moonStateEarthCentric.velocity,
+  );
+
+  return configs;
 }
+
+// Global scratch state for Moon's initial heliocentric values.
+export const moonInitialState: BodyInitialState = {
+  position: vec3.zero(),
+  velocity: vec3.zero(),
+};

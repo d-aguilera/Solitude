@@ -71,6 +71,7 @@ export const colors: { [key: string]: RGB } = {
   uranus: { r: 160, g: 220, b: 240 },
   venus: { r: 255, g: 220, b: 160 },
   yellow: { r: 255, g: 255, b: 0 },
+  moon: { r: 210, g: 210, b: 210 },
 };
 
 /**

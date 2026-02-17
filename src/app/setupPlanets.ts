@@ -20,6 +20,7 @@ import type {
   SceneObject,
   StarSceneObject,
 } from "./appPorts.js";
+import { moonInitialState } from "./solarSystem.js";
 import { createPolylineSceneObject } from "./worldSetup.js";
 
 /**
@@ -50,7 +51,12 @@ export function addPlanetsAndStarsFromConfig(
     let center: Vec3;
     let initialVelocity: Vec3;
 
-    if (cfg.orbit.semiMajorAxis > 0) {
+    if (cfg.id === "planet:moon") {
+      // Moon: use precomputed heliocentric initial state derived from
+      // an Earth‑centric Keplerian orbit offset by Earth's state.
+      center = vec3.clone(moonInitialState.position);
+      initialVelocity = vec3.clone(moonInitialState.velocity);
+    } else if (cfg.orbit.semiMajorAxis > 0) {
       // Use two-body Keplerian elements to derive initial state.
       const state = {
         position: vec3.zero(),
