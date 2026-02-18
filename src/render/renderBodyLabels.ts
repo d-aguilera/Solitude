@@ -24,24 +24,41 @@ const diffScratch: Vec3 = vec3.zero();
 const ndcScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
 
 /**
- * Scratch structure for tracking label centers across a single render pass.
+ * Scratch structure for tracking placed label rectangles across a single render pass.
  */
-interface LabelCenter {
+interface LabelRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+const placedLabelRectsScratch: LabelRect[] = [];
+let placedLabelCount = 0;
+
+/**
+ * Scratch structure for tracking all projected planet/star centers that are
+ * in front of the camera and on-screen during a single render pass.
+ */
+interface BodyCenter {
   x: number;
   y: number;
 }
 
-const labelCentersScratch: LabelCenter[] = [];
-let labelCentersCount = 0;
+const allBodyCentersScratch: BodyCenter[] = [];
+let allBodyCentersCount = 0;
 
 /**
  * Sample and prepare body labels:
  *  - Computes distance and speed for each body.
  *  - Projects body centers into screen space.
- *  * - Skips labels for bodies whose centers are off‑screen.
- *  * - Chooses a label placement direction by probing 8 angles at 45° steps,
- *  *   starting from 45° (up/right), and picking the first that does not
- *  *   overlap already placed labels (using label centers + radius).
+ *  - Skips labels for bodies whose centers are off‑screen.
+ *  - Chooses a label placement direction by probing 8 angles at 45° steps,
+ *    starting from 45° (up/right).
+ *  - A candidate label rectangle is considered free iff:
+ *      * it does not overlap any previously placed label rectangle, and
+ *      * it does not contain the center of any planet/star that is
+ *        in front of the camera and on-screen.
  */
 export function renderBodyLabels(
   objects: SceneObject[],
@@ -54,6 +71,16 @@ export function renderBodyLabels(
 ): RenderedBodyLabel[] {
   return alloc.withName(renderBodyLabels.name, () => {
     const renderedBodyLabels: RenderedBodyLabel[] = [];
+
+    // Pre-pass: collect all visible, on-screen body centers so that
+    // label placement can avoid covering *any* planet/star center.
+    allBodyCentersCount = collectVisibleBodyCenters(
+      objects,
+      projectInto,
+      screenWidth,
+      screenHeight,
+      objectsFilter,
+    );
 
     const sorted: SortedScratchItem[] = sortBodies(
       objects,
@@ -70,12 +97,8 @@ export function renderBodyLabels(
     const paddingX = 6;
     const paddingY = 4;
 
-    // Clear per-pass label center scratch
-    labelCentersCount = 0;
-
-    // Radius used to check overlap between label centers (in pixels).
-    const labelRadius = 80;
-    const labelRadiusSq = labelRadius * labelRadius;
+    // Clear per-pass label-rectangle scratch state
+    placedLabelCount = 0;
 
     for (const { body, distance } of sorted) {
       if (!projectInto(ndcScratch, body.position)) {
@@ -109,11 +132,11 @@ export function renderBodyLabels(
       // 2–5) Choose a direction by probing 8 angles starting from 45°.
       const directionIndex = pickDirectionIndexForLabel(
         anchor,
+        boxWidth,
+        boxHeight,
         angleStepRad,
-        labelRadiusSq,
       );
 
-      // Offset direction in screen space for the LABEL BOX CENTER.
       const { x: boxCenterX, y: boxCenterY } = getBoxCenter(
         directionIndex,
         angleStepRad,
@@ -130,8 +153,8 @@ export function renderBodyLabels(
         { width: boxWidth, height: boxHeight },
       );
 
-      // Register this label's center so future labels can avoid overlapping it.
-      registerLabelCenter(boxCenterX, boxCenterY);
+      // Register this label's rectangle so future labels can avoid overlapping it.
+      registerPlacedLabel(boxX, boxY, boxWidth, boxHeight);
 
       const renderedBodyLabel: RenderedBodyLabel = {
         anchor: { x: anchor.x, y: anchor.y, depth: 0 },
@@ -163,6 +186,55 @@ export function renderBodyLabels(
 
     return renderedBodyLabels;
   });
+}
+
+/**
+ * Collect all planet/star centers that are:
+ *  - in front of the camera, and
+ *  - inside the screen rectangle.
+ *
+ * Returns the number of centers stored in allBodyCentersScratch.
+ */
+function collectVisibleBodyCenters(
+  objects: SceneObject[],
+  projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
+  screenWidth: number,
+  screenHeight: number,
+  objectsFilter?: (obj: SceneObject) => boolean,
+): number {
+  let count = 0;
+
+  for (let i = 0; i < objects.length; i++) {
+    const obj = objects[i];
+    if (obj.kind !== "planet" && obj.kind !== "star") continue;
+    if (objectsFilter && !objectsFilter(obj)) continue;
+
+    if (!projectInto(ndcScratch, obj.position)) {
+      continue; // behind the camera
+    }
+
+    const anchor = ndcToScreen(ndcScratch, screenWidth, screenHeight);
+
+    if (
+      anchor.x < 0 ||
+      anchor.x > screenWidth ||
+      anchor.y < 0 ||
+      anchor.y > screenHeight
+    ) {
+      continue;
+    }
+
+    if (count < allBodyCentersScratch.length) {
+      const dst = allBodyCentersScratch[count];
+      dst.x = anchor.x;
+      dst.y = anchor.y;
+    } else {
+      allBodyCentersScratch.push({ x: anchor.x, y: anchor.y });
+    }
+    count++;
+  }
+
+  return count;
 }
 
 function sortBodies(
@@ -204,8 +276,9 @@ function displayNameForBodyId(id: BodyId): string {
 }
 
 /**
- * Pick a direction index (0..7) in 45° steps such that the label's center
- * does not overlap existing labels, if possible.
+ * Pick a direction index (0..7) in 45° steps such that the label's rectangle
+ * neither overlaps existing label rectangles nor contains any visible
+ * planet/star center, if possible.
  *
  * Angles:
  *   0 -> 0°   (up)
@@ -218,12 +291,13 @@ function displayNameForBodyId(id: BodyId): string {
  *   7 -> 315°
  *
  * The search always starts at index 1 (45°), then 2,3,...,7,0, and falls
- * back to 1 if all candidate centers would overlap.
+ * back to 1 if all candidate rectangles would be occupied.
  */
 function pickDirectionIndexForLabel(
   anchor: { x: number; y: number },
+  boxWidth: number,
+  boxHeight: number,
   angleStepRad: number,
-  labelRadiusSq: number,
 ): number {
   const startIndex = 1; // 45°
   const maxDirs = 8;
@@ -236,7 +310,10 @@ function pickDirectionIndexForLabel(
 
     const { x: cx, y: cy } = getBoxCenter(directionIndex, angleStepRad, anchor);
 
-    if (!overlapsExistingLabel(cx, cy, labelRadiusSq)) {
+    const candidateX = cx - boxWidth * 0.5;
+    const candidateY = cy - boxHeight * 0.5;
+
+    if (!candidateRectOccupied(candidateX, candidateY, boxWidth, boxHeight)) {
       chosenIndex = directionIndex;
       foundFree = true;
       break;
@@ -251,37 +328,63 @@ function pickDirectionIndexForLabel(
 }
 
 /**
- * Returns true if the proposed center overlaps any previously registered
- * label center using a simple radius-based check.
+ * Returns true if the candidate rectangle:
+ *  - overlaps any previously placed label rectangle, or
+ *  - contains the projected center of any visible planet/star.
  */
-function overlapsExistingLabel(
-  cx: number,
-  cy: number,
-  radiusSq: number,
+function candidateRectOccupied(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
 ): boolean {
-  for (let i = 0; i < labelCentersCount; i++) {
-    const c = labelCentersScratch[i];
-    const dx = cx - c.x;
-    const dy = cy - c.y;
-    if (dx * dx + dy * dy < radiusSq) {
+  const x2 = x + width;
+  const y2 = y + height;
+
+  // 1) Check overlap with already placed label rectangles.
+  for (let i = 0; i < placedLabelCount; i++) {
+    const rect = placedLabelRectsScratch[i];
+    const rx2 = rect.x + rect.width;
+    const ry2 = rect.y + rect.height;
+
+    const overlap = x < rx2 && x2 > rect.x && y < ry2 && y2 > rect.y;
+
+    if (overlap) {
       return true;
     }
   }
+
+  // 2) Check if this candidate contains any visible planet/star center.
+  for (let i = 0; i < allBodyCentersCount; i++) {
+    const c = allBodyCentersScratch[i];
+    if (c.x >= x && c.x <= x2 && c.y >= y && c.y <= y2) {
+      return true;
+    }
+  }
+
   return false;
 }
 
 /**
- * Register a new label center into the grow-only scratch array.
+ * Register a new placed label rectangle into a grow-only scratch array.
  */
-function registerLabelCenter(cx: number, cy: number): void {
-  if (labelCentersCount < labelCentersScratch.length) {
-    const dst = labelCentersScratch[labelCentersCount];
-    dst.x = cx;
-    dst.y = cy;
+function registerPlacedLabel(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): void {
+  if (placedLabelCount < placedLabelRectsScratch.length) {
+    const r = placedLabelRectsScratch[placedLabelCount];
+    r.x = x;
+    r.y = y;
+    r.width = width;
+    r.height = height;
   } else {
-    labelCentersScratch.push({ x: cx, y: cy });
+    placedLabelRectsScratch.push({ x, y, width, height });
   }
-  labelCentersCount++;
+
+  placedLabelCount++;
 }
 
 function getBoxCenter(
@@ -294,6 +397,7 @@ function getBoxCenter(
   const ux = Math.sin(angleRad);
   const uy = -Math.cos(angleRad);
 
+  // Box is placed at a fixed offset from the anchor.
   const x = anchor.x - ux * offsetRadius;
   const y = anchor.y - uy * offsetRadius;
 
