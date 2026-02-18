@@ -103,6 +103,7 @@ export function runLoop(
 
   const hudRenderParams: HudRenderParams = {
     currentThrustLevel: tickOutput.currentThrustLevel,
+    currentTimeScale: gameplayParameters.simulationTimeScale,
     fps: 0,
     pilotCameraLocalOffset: tickOutput.pilotCameraLocalOffset,
     profilingEnabled: false,
@@ -111,6 +112,7 @@ export function runLoop(
   };
 
   const renderedHud: RenderedHud = [
+    ["", ""],
     ["", ""],
     ["", ""],
     ["", ""],

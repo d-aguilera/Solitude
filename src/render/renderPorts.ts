@@ -14,6 +14,7 @@ export interface HudRenderer {
 
 export interface HudRenderParams {
   currentThrustLevel: number;
+  currentTimeScale: number;
   fps: number;
   pilotCameraLocalOffset: Vec3;
   profilingEnabled: boolean;
@@ -77,6 +78,7 @@ export interface RenderedFace {
 }
 
 export type RenderedHud = [
+  [string, string],
   [string, string],
   [string, string],
   [string, string],

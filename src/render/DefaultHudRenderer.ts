@@ -10,6 +10,7 @@ export class DefaultHudRenderer implements HudRenderer {
     into: RenderedHud,
     {
       currentThrustLevel,
+      currentTimeScale,
       fps,
       pilotCameraLocalOffset,
       profilingEnabled,
@@ -20,6 +21,7 @@ export class DefaultHudRenderer implements HudRenderer {
     const hudRow0 = into[0];
     const hudRow1 = into[1];
     const hudRow2 = into[2];
+    const hudRow3 = into[3];
 
     // Speed
     hudRow0[0] = "Speed: ".concat(formatSpeed(speedMps));
@@ -49,7 +51,10 @@ export class DefaultHudRenderer implements HudRenderer {
     // Simulation time
     hudRow2[0] = "Sim: ".concat(formatSimTime(simTimeSeconds));
 
+    // Time scale
+    hudRow2[1] = "Time scale: ".concat(currentTimeScale.toString());
+
     // Profiling
-    hudRow2[1] = profilingEnabled ? "PROFILING" : "";
+    hudRow3[1] = profilingEnabled ? "PROFILING" : "";
   }
 }
