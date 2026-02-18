@@ -8,7 +8,6 @@ import type {
   SimulationState,
 } from "./appInternals.js";
 import type {
-  GameplayParameters,
   SceneControlState,
   TickCallback,
   TickOutput,
@@ -26,10 +25,7 @@ import { createInitialSceneAndWorld } from "./worldSetup.js";
 /**
  * App‑core game entry.
  */
-export function createTickHandler(
-  gameplayParams: GameplayParameters,
-  gravityEngine: GravityEngine,
-): TickCallback {
+export function createTickHandler(gravityEngine: GravityEngine): TickCallback {
   const x = createInitialSceneAndWorld();
 
   let gravityBindings: GravityBodyBinding[] = buildGravityBindings(x.world);
@@ -84,16 +80,13 @@ export function createTickHandler(
     trajectories: x.trajectories,
   };
 
-  let dtSecondsSim: number;
   let currentThrustPercent: number;
 
   /**
    * Per‑frame update/render entry called by the game loop.
    */
   return (output: TickOutput, params: TickParams): void => {
-    const { controlInput, dtSeconds } = params;
-
-    dtSecondsSim = dtSeconds * gameplayParams.simulationTimeScale;
+    const { controlInput, dtSeconds, dtSecondsSim } = params;
 
     // Accumulate simulation time.
     simState.simTimeSeconds += dtSecondsSim;

@@ -66,6 +66,8 @@ const keyMap: Record<string, ControlAction | EnvAction> = {
   ArrowLeft: "lookLeft",
   ArrowRight: "lookRight",
   ArrowUp: "lookUp",
+  BracketLeft: "decreaseTimeScale",
+  BracketRight: "increaseTimeScale",
   Digit0: "thrust0",
   Digit1: "thrust1",
   Digit2: "thrust2",

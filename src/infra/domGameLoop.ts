@@ -26,6 +26,7 @@ import { updateFps } from "./fps.js";
 import type { ProfilerController } from "./infraPorts.js";
 import { handlePauseToggle } from "./pause.js";
 import { handleProfilingToggle } from "./profilerControl.js";
+import { handleTimeScaleChange } from "./timeScale.js";
 
 /**
  * DOM-level game loop (depends on requestAnimationFrame).
@@ -45,13 +46,11 @@ export function runLoop(
   envInput: EnvInput,
   profilerController: ProfilerController,
 ): void {
-  const tickInto: TickCallback = createTickHandler(
-    gameplayParameters,
-    gravityEngine,
-  );
+  const tickInto: TickCallback = createTickHandler(gravityEngine);
 
   const tickParams: TickParams = {
     dtSeconds: 0,
+    dtSecondsSim: 0,
     controlInput,
   };
 
@@ -102,8 +101,8 @@ export function runLoop(
   };
 
   const hudRenderParams: HudRenderParams = {
-    currentThrustLevel: tickOutput.currentThrustLevel,
-    currentTimeScale: gameplayParameters.simulationTimeScale,
+    currentThrustLevel: 0,
+    currentTimeScale: 0,
     fps: 0,
     pilotCameraLocalOffset: tickOutput.pilotCameraLocalOffset,
     profilingEnabled: false,
@@ -122,14 +121,22 @@ export function runLoop(
   let lastHudTimeMs: number;
   let elapsedMs: number;
   let dtSeconds: number;
+  let paused: boolean;
+  let profilingEnabled: boolean;
+  let timeScale = gameplayParameters.timeScale;
 
   const loop = (nowMs: number) => {
     elapsedMs = nowMs - lastTimeMs;
     lastTimeMs = nowMs;
     dtSeconds = elapsedMs / 1000;
 
-    const paused = handlePauseToggle(envInput.pauseToggle);
-    const profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
+    paused = handlePauseToggle(envInput.pauseToggle);
+    profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
+    timeScale = handleTimeScaleChange(
+      envInput.decreaseTimeScale,
+      envInput.increaseTimeScale,
+      timeScale,
+    );
 
     profilerController.setEnabled(profilingEnabled);
     profilerController.setPaused(paused);
@@ -137,6 +144,7 @@ export function runLoop(
 
     if (!paused) {
       tickParams.dtSeconds = dtSeconds;
+      tickParams.dtSecondsSim = dtSeconds * timeScale;
       tickInto(tickOutput, tickParams);
     }
 
@@ -156,6 +164,7 @@ export function runLoop(
 
     if (shouldRenderHud) {
       hudRenderParams.currentThrustLevel = tickOutput.currentThrustLevel;
+      hudRenderParams.currentTimeScale = timeScale;
       hudRenderParams.fps = dtSeconds === 0 ? 0 : updateFps(dtSeconds);
       hudRenderParams.pilotCameraLocalOffset =
         tickOutput.pilotCameraLocalOffset;

@@ -42,7 +42,12 @@ export const ALL_CONTROL_ACTIONS = [
   "alignToVelocity",
 ] as const;
 
-export const ALL_ENV_ACTIONS = ["pauseToggle", "profilingToggle"] as const;
+export const ALL_ENV_ACTIONS = [
+  "pauseToggle",
+  "profilingToggle",
+  "increaseTimeScale",
+  "decreaseTimeScale",
+] as const;
 
 export interface BaseSceneObject {
   id: string;
@@ -84,7 +89,7 @@ export interface PlanetSceneObject extends CelestialBodySceneObject {
 }
 
 export interface GameplayParameters {
-  simulationTimeScale: number;
+  timeScale: number;
 }
 
 /**
@@ -163,6 +168,7 @@ export type TickCallback = (
 
 export interface TickParams {
   dtSeconds: number;
+  dtSecondsSim: number;
   controlInput: ControlInput;
 }
 
