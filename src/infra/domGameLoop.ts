@@ -119,6 +119,7 @@ export function runLoop(
   ];
 
   let lastTimeMs: number;
+  let lastHudTimeMs: number;
   let elapsedMs: number;
   let dtSeconds: number;
 
@@ -151,14 +152,20 @@ export function runLoop(
 
     topViewRenderer.renderInto(renderedTopView, topViewRenderParams);
 
-    hudRenderParams.currentThrustLevel = tickOutput.currentThrustLevel;
-    hudRenderParams.fps = dtSeconds === 0 ? 0 : updateFps(dtSeconds);
-    hudRenderParams.pilotCameraLocalOffset = tickOutput.pilotCameraLocalOffset;
-    hudRenderParams.profilingEnabled = profilingEnabled;
-    hudRenderParams.simTimeSeconds = tickOutput.simTimeSeconds;
-    hudRenderParams.speedMps = tickOutput.speedMps;
+    const shouldRenderHud = nowMs - lastHudTimeMs > 100;
 
-    hudRenderer.renderInto(renderedHud, hudRenderParams);
+    if (shouldRenderHud) {
+      hudRenderParams.currentThrustLevel = tickOutput.currentThrustLevel;
+      hudRenderParams.fps = dtSeconds === 0 ? 0 : updateFps(dtSeconds);
+      hudRenderParams.pilotCameraLocalOffset =
+        tickOutput.pilotCameraLocalOffset;
+      hudRenderParams.profilingEnabled = profilingEnabled;
+      hudRenderParams.simTimeSeconds = tickOutput.simTimeSeconds;
+      hudRenderParams.speedMps = tickOutput.speedMps;
+
+      hudRenderer.renderInto(renderedHud, hudRenderParams);
+      lastHudTimeMs = nowMs;
+    }
 
     rasterizeView(renderedPilotView, pilotRasterizer);
     rasterizeView(renderedTopView, topRasterizer);
@@ -169,12 +176,13 @@ export function runLoop(
     requestAnimationFrame(loop);
   };
 
-  const init = (nowMs: number) => {
+  const first = (nowMs: number) => {
     lastTimeMs = nowMs;
+    lastHudTimeMs = nowMs;
     requestAnimationFrame(loop);
   };
 
-  requestAnimationFrame(init);
+  requestAnimationFrame(first);
 }
 
 function rasterizeView(renderedView: RenderedView, rasterizer: Rasterizer) {
