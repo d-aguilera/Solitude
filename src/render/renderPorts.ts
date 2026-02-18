@@ -76,14 +76,11 @@ export interface RenderedFace {
   color: RGB;
 }
 
-export interface RenderedHud {
-  currentThrustLevel: number;
-  fps: number;
-  pilotCameraLocalOffset: Vec3;
-  profilingEnabled: boolean;
-  simTime: string; // human-readable simulation time (e.g., "1y 3d 04:12:05").
-  speed: string;
-}
+export type RenderedHud = [
+  [string, string],
+  [string, string],
+  [string, string],
+];
 
 export interface RenderedPolyline {
   points: ScreenPoint[];

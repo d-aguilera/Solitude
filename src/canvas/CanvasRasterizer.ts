@@ -12,8 +12,8 @@ import type {
 } from "../render/renderPorts.js";
 
 const hudWidth = 420;
-const hudHeight = 70;
-const margin = 10;
+const hudMargin = 10;
+const hudPadding = 10;
 
 // scratch
 let label: RenderedBodyLabel;
@@ -105,57 +105,44 @@ export class CanvasRasterizer implements Rasterizer {
   drawHud(hud: RenderedHud): void {
     const ctx = this.ctx;
 
-    // HUD's location
-    const xMax = ctx.canvas.width - margin;
-    const xMin = xMax - hudWidth;
-    const y = margin;
+    const hudLength = hud.length;
 
-    ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-    ctx.fillRect(xMin, y, hudWidth, hudHeight);
-    ctx.fillStyle = "white";
     ctx.font = "16px monospace";
+    const { actualBoundingBoxAscent, actualBoundingBoxDescent }: TextMetrics =
+      ctx.measureText("█");
+    const lineHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
 
-    ctx.fillText("Spd: ".concat(hud.speed), xMin + 10, y + 20);
+    // HUD's location
+    const hudRight = ctx.canvas.width - hudMargin;
+    const hudInnerRight = hudRight - hudPadding;
+    const hudLeft = hudRight - hudWidth;
+    const hudInnerLeft = hudLeft + hudPadding;
+    const hudTop = hudMargin;
+    const hudInnerTop = hudTop + hudPadding;
+    const hudHeight = 2 * hudPadding + hudLength * lineHeight;
 
-    // FPS
-    const fpsWidth = ctx.measureText("FPS: 99").width;
-    const fpsPadding = hud.fps < 10 ? " " : "";
-    ctx.fillText(
-      "FPS: ".concat(fpsPadding, hud.fps.toFixed(0)),
-      xMax - 10 - fpsWidth,
-      y + 20,
-    );
+    // Row vertical positions
+    const rows: number[] = hud.map((_, rowIndex) => {
+      return hudInnerTop + rowIndex * lineHeight + actualBoundingBoxAscent;
+    });
 
-    // Pilot camera local offset (right, forward, up)
-    const { x: ox, y: oy, z: oz } = hud.pilotCameraLocalOffset;
-    ctx.fillText(
-      "Cam:".concat(
-        " x=",
-        ox.toFixed(2),
-        " y=",
-        oy.toFixed(2),
-        " z=",
-        oz.toFixed(2),
-      ),
-      xMin + 10,
-      y + 40,
-    );
+    // Clear background
+    ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+    ctx.fillRect(hudLeft, hudTop, hudWidth, hudHeight);
 
-    // Thrust
-    const thrustWidth = ctx.measureText("Thrust: -0").width;
-    const thrustPadding = hud.currentThrustLevel < 0 ? "" : " ";
-    const thrustDisplay = "Thrust: ".concat(
-      thrustPadding,
-      hud.currentThrustLevel.toString(),
-    );
-    ctx.fillText(thrustDisplay, xMax - 10 - thrustWidth, y + 40);
+    // Set text color
+    ctx.fillStyle = "white";
 
-    // Simulation time
-    ctx.fillText("Sim: ".concat(hud.simTime), xMin + 10, y + 60);
+    // Draw right-aligned text
+    ctx.textAlign = "right";
+    for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
+      ctx.fillText(hud[rowIndex][1], hudInnerRight, rows[rowIndex]);
+    }
 
-    if (hud.profilingEnabled) {
-      const profilingWidth = ctx.measureText("PROFILING").width;
-      ctx.fillText("PROFILING", xMax - 10 - profilingWidth, y + 60);
+    // Draw left-aligned text
+    ctx.textAlign = "left";
+    for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
+      ctx.fillText(hud[rowIndex][0], hudInnerLeft, rows[rowIndex]);
     }
   }
 

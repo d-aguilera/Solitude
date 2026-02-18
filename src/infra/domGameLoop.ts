@@ -110,14 +110,11 @@ export function runLoop(
     speedMps: tickOutput.speedMps,
   };
 
-  const renderedHud: RenderedHud = {
-    currentThrustLevel: 0,
-    fps: 0,
-    pilotCameraLocalOffset: vec3.zero(),
-    profilingEnabled: false,
-    simTime: "",
-    speed: "",
-  };
+  const renderedHud: RenderedHud = [
+    ["", ""],
+    ["", ""],
+    ["", ""],
+  ];
 
   let lastTimeMs: number;
   let elapsedMs: number;

@@ -11,19 +11,23 @@ const SECONDS_PER_YEAR = 365 * SECONDS_PER_DAY;
 
 export function formatDistance(distanceMeters: number): string {
   if (distanceMeters >= AU) {
-    return `${(distanceMeters / AU).toFixed(2)} AU`;
+    return (distanceMeters / AU).toFixed(2).concat(" AU");
   }
   if (distanceMeters >= 1000) {
-    return `${Math.round(distanceMeters / km)} km`;
+    return Math.round(distanceMeters / km)
+      .toString()
+      .concat(" km");
   }
-  return `${distanceMeters}`;
+  return distanceMeters.toString();
 }
 
 export function formatSpeed(speedMps: number): string {
   if (speedMps >= onePercentC) {
-    return `${(speedMps / onePercentC).toFixed(2)}% C`;
+    return (speedMps / onePercentC).toFixed(2).concat("% C");
   }
-  return `${(speedMps * 3.6).toFixed(2)} km/h`;
+  return Math.round(speedMps * 3.6)
+    .toString()
+    .concat(" km/h");
 }
 
 // Scratch array reused by formatSimTime to avoid per-call allocations.
