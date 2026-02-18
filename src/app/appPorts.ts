@@ -172,6 +172,7 @@ export interface TickOutput {
   pilotCamera: DomainCameraPose;
   pilotCameraLocalOffset: Vec3;
   scene: Scene;
+  simTimeSeconds: number; // accumulated simulation time in seconds.
   speedMps: number;
   topCamera: DomainCameraPose;
 }

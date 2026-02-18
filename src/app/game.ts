@@ -62,6 +62,7 @@ export function createTickHandler(
     gravityState,
     mainShip,
     mainShipBodyState,
+    simTimeSeconds: 0,
     world: x.world,
   };
 
@@ -93,6 +94,9 @@ export function createTickHandler(
     const { controlInput, dtSeconds } = params;
 
     dtSecondsSim = dtSeconds * gameplayParams.simulationTimeScale;
+
+    // Accumulate simulation time.
+    simState.simTimeSeconds += dtSecondsSim;
 
     currentThrustPercent = updateControlState(controlInput, simControlState);
 
@@ -133,6 +137,7 @@ export function createTickHandler(
     output.pilotCameraLocalOffset = sceneControlState.pilotCameraLocalOffset;
     output.scene = sceneState.scene;
     output.speedMps = sceneState.speedMps;
+    output.simTimeSeconds = simState.simTimeSeconds;
     output.topCamera = sceneState.topCamera;
   };
 }

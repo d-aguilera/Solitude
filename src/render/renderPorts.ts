@@ -17,6 +17,7 @@ export interface HudRenderParams {
   fps: number;
   pilotCameraLocalOffset: Vec3;
   profilingEnabled: boolean;
+  simTimeSeconds: number; // accumulated simulation time in seconds.
   speedMps: number;
 }
 
@@ -80,6 +81,7 @@ export interface RenderedHud {
   fps: number;
   pilotCameraLocalOffset: Vec3;
   profilingEnabled: boolean;
+  simTime: string; // human-readable simulation time (e.g., "1y 3d 04:12:05").
   speed: string;
 }
 

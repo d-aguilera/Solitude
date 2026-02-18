@@ -1,4 +1,4 @@
-import { formatSpeed } from "./formatters.js";
+import { formatSimTime, formatSpeed } from "./formatters.js";
 import type {
   HudRenderer,
   HudRenderParams,
@@ -13,6 +13,7 @@ export class DefaultHudRenderer implements HudRenderer {
       fps,
       pilotCameraLocalOffset,
       profilingEnabled,
+      simTimeSeconds,
       speedMps,
     }: HudRenderParams,
   ): void {
@@ -20,6 +21,7 @@ export class DefaultHudRenderer implements HudRenderer {
     into.fps = fps;
     into.pilotCameraLocalOffset = pilotCameraLocalOffset;
     into.profilingEnabled = profilingEnabled;
+    into.simTime = formatSimTime(simTimeSeconds);
     into.speed = formatSpeed(speedMps);
   }
 }

@@ -150,6 +150,9 @@ export class CanvasRasterizer implements Rasterizer {
     );
     ctx.fillText(thrustDisplay, xMax - 10 - thrustWidth, y + 40);
 
+    // Simulation time
+    ctx.fillText("Sim: ".concat(hud.simTime), xMin + 10, y + 60);
+
     if (hud.profilingEnabled) {
       const profilingWidth = ctx.measureText("PROFILING").width;
       ctx.fillText("PROFILING", xMax - 10 - profilingWidth, y + 60);

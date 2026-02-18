@@ -61,6 +61,7 @@ export function runLoop(
     pilotCamera: {} as DomainCameraPose,
     pilotCameraLocalOffset: vec3.zero(),
     scene: {} as Scene,
+    simTimeSeconds: 0,
     speedMps: 0,
     topCamera: {} as DomainCameraPose,
   };
@@ -105,6 +106,7 @@ export function runLoop(
     fps: 0,
     pilotCameraLocalOffset: tickOutput.pilotCameraLocalOffset,
     profilingEnabled: false,
+    simTimeSeconds: 0,
     speedMps: tickOutput.speedMps,
   };
 
@@ -113,6 +115,7 @@ export function runLoop(
     fps: 0,
     pilotCameraLocalOffset: vec3.zero(),
     profilingEnabled: false,
+    simTime: "",
     speed: "",
   };
 
@@ -153,6 +156,7 @@ export function runLoop(
     hudRenderParams.fps = dtSeconds === 0 ? 0 : updateFps(dtSeconds);
     hudRenderParams.pilotCameraLocalOffset = tickOutput.pilotCameraLocalOffset;
     hudRenderParams.profilingEnabled = profilingEnabled;
+    hudRenderParams.simTimeSeconds = tickOutput.simTimeSeconds;
     hudRenderParams.speedMps = tickOutput.speedMps;
 
     hudRenderer.renderInto(renderedHud, hudRenderParams);

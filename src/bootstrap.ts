@@ -6,7 +6,7 @@ import { bootstrap } from "./infra/domCanvasBootstrap.js";
  */
 function main(): void {
   const gameplayParameters: GameplayParameters = {
-    simulationTimeScale: 1000, // 16' 40" per real second
+    simulationTimeScale: 1, // real time
   };
 
   bootstrap(gameplayParameters);
