@@ -8,13 +8,13 @@ import type { ControlInput, PilotLookState } from "./appPorts.js";
 export const maxThrustAcceleration = 1_000_000; // ~ 100_000 G
 
 // Rates in radians per second
-const lookSpeed = 1.5;
-const rotSpeedRoll = 1.0;
-const rotSpeedPitch = 0.8;
-const rotSpeedYaw = 0.5;
+const lookSpeed = 0.0015;
+const rotSpeedRoll = 0.001;
+const rotSpeedPitch = 0.0008;
+const rotSpeedYaw = 0.0005;
 
 // Max rate at which the ship can reorient itself toward its velocity vector.
-const alignToVelocityMaxAngularSpeed = 0.7; // rad/s
+const alignToVelocityMaxAngularSpeed = 0.0007; // rad/ms
 
 const shipThrustExponent = 3; // [0..9] ^ 3
 const shipThrustMaxPow = Math.pow(9, shipThrustExponent);
@@ -36,7 +36,7 @@ export function updateControlState(
  * Update pilot look angles in-place based on input.
  */
 export function updatePilotLook(
-  dtSeconds: number,
+  dtMillis: number,
   controlInput: ControlInput,
   lookState: PilotLookState,
 ): void {
@@ -45,15 +45,15 @@ export function updatePilotLook(
     lookState.elevation = 0;
   }
 
-  if (controlInput.lookLeft) lookState.azimuth += lookSpeed * dtSeconds;
-  if (controlInput.lookRight) lookState.azimuth -= lookSpeed * dtSeconds;
-  if (controlInput.lookUp) lookState.elevation += lookSpeed * dtSeconds;
-  if (controlInput.lookDown) lookState.elevation -= lookSpeed * dtSeconds;
+  if (controlInput.lookLeft) lookState.azimuth += lookSpeed * dtMillis;
+  if (controlInput.lookRight) lookState.azimuth -= lookSpeed * dtMillis;
+  if (controlInput.lookUp) lookState.elevation += lookSpeed * dtMillis;
+  if (controlInput.lookDown) lookState.elevation -= lookSpeed * dtMillis;
 }
 
 function rollFrame(
   frame: LocalFrame,
-  dtSeconds: number,
+  dtMillis: number,
   controlInput: ControlInput,
 ): LocalFrame {
   if (
@@ -63,7 +63,7 @@ function rollFrame(
     return frame;
   }
 
-  const angle = (controlInput.rollLeft ? -1 : 1) * rotSpeedRoll * dtSeconds;
+  const angle = (controlInput.rollLeft ? -1 : 1) * rotSpeedRoll * dtMillis;
 
   // Roll around local forward axis (in world coords)
   return localFrame.rotateAroundAxis(frame, frame.forward, angle);
@@ -71,7 +71,7 @@ function rollFrame(
 
 function pitchFrame(
   frame: LocalFrame,
-  dtSeconds: number,
+  dtMillis: number,
   controlInput: ControlInput,
 ): LocalFrame {
   let pitchInput = 0;
@@ -79,7 +79,7 @@ function pitchFrame(
   if (controlInput.pitchUp) pitchInput -= 1;
   if (pitchInput === 0) return frame;
 
-  const angle = pitchInput * rotSpeedPitch * dtSeconds;
+  const angle = pitchInput * rotSpeedPitch * dtMillis;
 
   // Pitch around local right axis
   return localFrame.rotateAroundAxis(frame, frame.right, angle);
@@ -87,7 +87,7 @@ function pitchFrame(
 
 function yawFrame(
   frame: LocalFrame,
-  dtSeconds: number,
+  dtMillis: number,
   controlInput: ControlInput,
 ): LocalFrame {
   if (
@@ -97,7 +97,7 @@ function yawFrame(
     return frame;
   }
 
-  const angle = (controlInput.yawLeft ? 1 : -1) * rotSpeedYaw * dtSeconds;
+  const angle = (controlInput.yawLeft ? 1 : -1) * rotSpeedYaw * dtMillis;
 
   // Yaw around local up axis
   return localFrame.rotateAroundAxis(frame, frame.up, angle);
@@ -161,20 +161,20 @@ function getSignedThrustPercent(
  *  - the body's LocalFrame when aligning to velocity is requested
  */
 function updateBodyOrientationFromInput(
-  dtSeconds: number,
+  dtMillis: number,
   controlInput: ControlInput,
   controlState: SimControlState,
   body: ControlledBodyState,
 ): void {
   let frame = body.frame;
-  frame = rollFrame(frame, dtSeconds, controlInput);
-  frame = pitchFrame(frame, dtSeconds, controlInput);
-  frame = yawFrame(frame, dtSeconds, controlInput);
+  frame = rollFrame(frame, dtMillis, controlInput);
+  frame = pitchFrame(frame, dtMillis, controlInput);
+  frame = yawFrame(frame, dtMillis, controlInput);
 
   body.frame = frame;
 
   // Apply alignment toward the velocity vector, if requested.
-  updateFrameAlignToVelocity(dtSeconds, controlInput, controlState, body);
+  updateFrameAlignToVelocity(dtMillis, controlInput, controlState, body);
 }
 
 const targetForwardScratch: Vec3 = vec3.zero();
@@ -191,7 +191,7 @@ const axisScratch: Vec3 = vec3.zero();
  * instantaneous snap.
  */
 function updateFrameAlignToVelocity(
-  dtSeconds: number,
+  dtMillis: number,
   controlInput: ControlInput,
   controlState: SimControlState,
   body: ControlledBodyState,
@@ -242,7 +242,7 @@ function updateFrameAlignToVelocity(
     if (fallbackLen < 1e-6) {
       // As a last resort, use the frame's right axis.
       const axis = body.frame.right;
-      const maxStep = alignToVelocityMaxAngularSpeed * dtSeconds;
+      const maxStep = alignToVelocityMaxAngularSpeed * dtMillis;
       const stepAngle = Math.min(Math.PI, maxStep);
       body.frame = localFrame.rotateAroundAxis(body.frame, axis, stepAngle);
       return;
@@ -250,7 +250,7 @@ function updateFrameAlignToVelocity(
 
     vec3.scaleInto(axisScratch, 1 / fallbackLen, fallbackAxis);
     const axis = axisScratch;
-    const maxStep = alignToVelocityMaxAngularSpeed * dtSeconds;
+    const maxStep = alignToVelocityMaxAngularSpeed * dtMillis;
     const stepAngle = Math.min(Math.PI, maxStep);
     body.frame = localFrame.rotateAroundAxis(body.frame, axis, stepAngle);
     return;
@@ -259,7 +259,7 @@ function updateFrameAlignToVelocity(
   // General case: rotate partially toward the target, clamped by max angular speed.
   vec3.scaleInto(axisScratch, 1 / axisLen, fullAxis);
   const axis = axisScratch;
-  const maxStep = alignToVelocityMaxAngularSpeed * dtSeconds;
+  const maxStep = alignToVelocityMaxAngularSpeed * dtMillis;
   const stepAngle = Math.min(angle, maxStep);
 
   body.frame = localFrame.rotateAroundAxis(body.frame, axis, stepAngle);
@@ -283,7 +283,7 @@ function updateAlignToVelocityFromInput(
  * Also updates the persistent control state and pilot view look state.
  */
 export function updateShipOrientationFromControls(
-  dtSeconds: number,
+  dtMillis: number,
   ship: ShipBody,
   controlInput: ControlInput,
   controlState: SimControlState,
@@ -293,7 +293,7 @@ export function updateShipOrientationFromControls(
     velocity: ship.velocity,
   };
   updateBodyOrientationFromInput(
-    dtSeconds,
+    dtMillis,
     controlInput,
     controlState,
     bodyState,

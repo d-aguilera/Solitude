@@ -127,7 +127,7 @@ export interface SimulationState {
   gravityState: GravityState;
   mainShip: ShipBody;
   mainShipBodyState: BodyState;
-  simTimeSeconds: number; // accumulated simulation time in seconds.
+  simTimeMillis: number; // accumulated simulation time.
   world: World;
 }
 

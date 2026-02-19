@@ -14,7 +14,7 @@ export class DefaultHudRenderer implements HudRenderer {
       fps,
       pilotCameraLocalOffset,
       profilingEnabled,
-      simTimeSeconds,
+      simTimeMillis,
       speedMps,
     }: HudRenderParams,
   ): void {
@@ -49,7 +49,7 @@ export class DefaultHudRenderer implements HudRenderer {
     );
 
     // Simulation time
-    hudRow2[0] = "Sim: ".concat(formatSimTime(simTimeSeconds));
+    hudRow2[0] = "Sim: ".concat(formatSimTime(simTimeMillis / 1000));
 
     // Time scale
     hudRow2[1] = "Time scale: ".concat(currentTimeScale.toString());

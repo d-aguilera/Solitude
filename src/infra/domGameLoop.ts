@@ -49,8 +49,8 @@ export function runLoop(
   const tickInto: TickCallback = createTickHandler(gravityEngine);
 
   const tickParams: TickParams = {
-    dtSeconds: 0,
-    dtSecondsSim: 0,
+    dtMillis: 0,
+    dtMillisSim: 0,
     controlInput,
   };
 
@@ -60,7 +60,7 @@ export function runLoop(
     pilotCamera: {} as DomainCameraPose,
     pilotCameraLocalOffset: vec3.zero(),
     scene: {} as Scene,
-    simTimeSeconds: 0,
+    simTimeMillis: 0,
     speedMps: 0,
     topCamera: {} as DomainCameraPose,
   };
@@ -106,7 +106,7 @@ export function runLoop(
     fps: 0,
     pilotCameraLocalOffset: tickOutput.pilotCameraLocalOffset,
     profilingEnabled: false,
-    simTimeSeconds: 0,
+    simTimeMillis: 0,
     speedMps: tickOutput.speedMps,
   };
 
@@ -119,16 +119,15 @@ export function runLoop(
 
   let lastTimeMs: number;
   let lastHudTimeMs: number;
-  let elapsedMs: number;
-  let dtSeconds: number;
+  let dtMillis: number;
   let paused: boolean;
   let profilingEnabled: boolean;
+  let fps: number;
   let timeScale = gameplayParameters.timeScale;
 
   const loop = (nowMs: number) => {
-    elapsedMs = nowMs - lastTimeMs;
+    dtMillis = nowMs - lastTimeMs;
     lastTimeMs = nowMs;
-    dtSeconds = elapsedMs / 1000;
 
     paused = handlePauseToggle(envInput.pauseToggle);
     profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
@@ -143,8 +142,8 @@ export function runLoop(
     profilerController.check();
 
     if (!paused) {
-      tickParams.dtSeconds = dtSeconds;
-      tickParams.dtSecondsSim = dtSeconds * timeScale;
+      tickParams.dtMillis = dtMillis;
+      tickParams.dtMillisSim = dtMillis * timeScale;
       tickInto(tickOutput, tickParams);
     }
 
@@ -160,16 +159,18 @@ export function runLoop(
 
     topViewRenderer.renderInto(renderedTopView, topViewRenderParams);
 
+    fps = updateFps(dtMillis);
+
     const shouldRenderHud = nowMs - lastHudTimeMs > 100;
 
     if (shouldRenderHud) {
       hudRenderParams.currentThrustLevel = tickOutput.currentThrustLevel;
       hudRenderParams.currentTimeScale = timeScale;
-      hudRenderParams.fps = dtSeconds === 0 ? 0 : updateFps(dtSeconds);
+      hudRenderParams.fps = fps;
       hudRenderParams.pilotCameraLocalOffset =
         tickOutput.pilotCameraLocalOffset;
       hudRenderParams.profilingEnabled = profilingEnabled;
-      hudRenderParams.simTimeSeconds = tickOutput.simTimeSeconds;
+      hudRenderParams.simTimeMillis = tickOutput.simTimeMillis;
       hudRenderParams.speedMps = tickOutput.speedMps;
 
       hudRenderer.renderInto(renderedHud, hudRenderParams);

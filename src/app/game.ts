@@ -58,7 +58,7 @@ export function createTickHandler(gravityEngine: GravityEngine): TickCallback {
     gravityState,
     mainShip,
     mainShipBodyState,
-    simTimeSeconds: 0,
+    simTimeMillis: 0,
     world: x.world,
   };
 
@@ -86,24 +86,24 @@ export function createTickHandler(gravityEngine: GravityEngine): TickCallback {
    * Per‑frame update/render entry called by the game loop.
    */
   return (output: TickOutput, params: TickParams): void => {
-    const { controlInput, dtSeconds, dtSecondsSim } = params;
+    const { controlInput, dtMillis, dtMillisSim } = params;
 
     // Accumulate simulation time.
-    simState.simTimeSeconds += dtSecondsSim;
+    simState.simTimeMillis += dtMillisSim;
 
     currentThrustPercent = updateControlState(controlInput, simControlState);
 
     updateShipOrientationFromControls(
-      dtSeconds,
+      dtMillis,
       mainShip,
       controlInput,
       simControlState,
     );
 
-    applyThrust(dtSeconds, mainShip, mainShipBodyState, currentThrustPercent);
+    applyThrust(dtMillis, mainShip, mainShipBodyState, currentThrustPercent);
 
     applyGravity(
-      dtSecondsSim,
+      dtMillisSim,
       x.world,
       gravityEngine,
       gravityState,
@@ -111,7 +111,7 @@ export function createTickHandler(gravityEngine: GravityEngine): TickCallback {
     );
 
     updateSceneGraph(
-      dtSecondsSim,
+      dtMillisSim,
       sceneState,
       sceneControlState,
       simState,
@@ -130,7 +130,7 @@ export function createTickHandler(gravityEngine: GravityEngine): TickCallback {
     output.pilotCameraLocalOffset = sceneControlState.pilotCameraLocalOffset;
     output.scene = sceneState.scene;
     output.speedMps = sceneState.speedMps;
-    output.simTimeSeconds = simState.simTimeSeconds;
+    output.simTimeMillis = simState.simTimeMillis;
     output.topCamera = sceneState.topCamera;
   };
 }

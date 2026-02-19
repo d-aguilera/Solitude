@@ -58,20 +58,20 @@ function rebuildPathMesh(mesh: Mesh, { buffers }: Trajectory): void {
   });
 }
 
-const sampleInterval = 3.0; // seconds
+const sampleInterval = 3000; // millis
 let trajectoryAccumTime: number = 0;
 
 /**
  * Sample and update trajectory polylines for the ship and planets.
  */
 export function updateTrajectories(
-  dtSeconds: number,
+  dtMillis: number,
   objects: SceneObject[],
   planetPathMappings: Record<BodyId, BodyId>,
   trajectories: Record<BodyId, Trajectory>,
 ): void {
   alloc.withName(updateTrajectories.name, () => {
-    trajectoryAccumTime += dtSeconds;
+    trajectoryAccumTime += dtMillis;
     if (trajectoryAccumTime < sampleInterval) {
       return;
     }

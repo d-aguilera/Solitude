@@ -122,13 +122,13 @@ function setCameraRelativeToShip(
 }
 
 export function updatePilotCameraOffset(
-  dtSeconds: number,
+  dtMillis: number,
   controlInput: ControlInput,
   pilotCameraLocalOffset: Vec3,
 ): void {
-  if (dtSeconds <= 0) return;
+  if (dtMillis === 0) return;
 
-  const moveSpeed = 0.5;
+  const moveSpeed = 0.0005;
 
   let dx = 0;
   let dy = 0;
@@ -141,7 +141,7 @@ export function updatePilotCameraOffset(
 
   if (dx === 0 && dy === 0 && dz === 0) return;
 
-  pilotCameraLocalOffset.x += dx * dtSeconds;
-  pilotCameraLocalOffset.y += dy * dtSeconds;
-  pilotCameraLocalOffset.z += dz * dtSeconds;
+  pilotCameraLocalOffset.x += dx * dtMillis;
+  pilotCameraLocalOffset.y += dy * dtMillis;
+  pilotCameraLocalOffset.z += dz * dtMillis;
 }

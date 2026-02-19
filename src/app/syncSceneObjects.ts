@@ -29,13 +29,13 @@ const Rspin = mat3.zero();
 /**
  * Per-frame adapter: advance axial rotation for planets and stars.
  */
-export function rotateCelestialBodies(scene: Scene, dtSeconds: number): void {
-  if (dtSeconds === 0) return;
+export function rotateCelestialBodies(scene: Scene, dtMillis: number): void {
+  if (dtMillis === 0) return;
   alloc.withName("rotateCelestialBodies", () => {
     for (const obj of scene.objects) {
       if (obj.kind !== "planet" && obj.kind !== "star") continue;
 
-      const angle = obj.angularSpeedRadPerSec * dtSeconds;
+      const angle = (obj.angularSpeedRadPerSec * dtMillis) / 1000;
       if (angle === 0) continue;
 
       mat3.rotAxisInto(Rspin, obj.rotationAxis, angle);

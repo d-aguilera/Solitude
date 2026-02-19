@@ -65,15 +65,15 @@ const cvScratch = vec3.zero();
  *   a = maxThrustAcceleration * currentThrustPercent
  */
 function applyThrustToVelocity(
-  dtSeconds: number,
+  dtMillis: number,
   currentThrustPercent: number,
   body: ControlledBodyState,
 ): void {
-  if (dtSeconds === 0 || currentThrustPercent === 0) return;
+  if (dtMillis === 0 || currentThrustPercent === 0) return;
 
   const { frame, velocity } = body;
   const accelMagnitude = maxThrustAcceleration * currentThrustPercent;
-  vec3.scaleInto(cvScratch, accelMagnitude * dtSeconds, frame.forward);
+  vec3.scaleInto(cvScratch, (accelMagnitude * dtMillis) / 1000, frame.forward);
   vec3.addInto(body.velocity, velocity, cvScratch);
 }
 
@@ -136,12 +136,12 @@ function syncShipVelocitiesFromGravity(
  * Applies thrust into the ship's body velocity
  */
 export function applyThrust(
-  dtSeconds: number,
+  dtMillis: number,
   controlledShip: ShipBody,
   mainShipBodyState: BodyState,
   currentThrustPercent: number,
 ): void {
-  if (dtSeconds === 0) {
+  if (dtMillis === 0) {
     return;
   }
 
@@ -150,7 +150,7 @@ export function applyThrust(
     velocity: mainShipBodyState.velocity,
   };
 
-  applyThrustToVelocity(dtSeconds, currentThrustPercent, shipBodyState);
+  applyThrustToVelocity(dtMillis, currentThrustPercent, shipBodyState);
 
   mainShipBodyState.velocity = shipBodyState.velocity;
 }
@@ -161,18 +161,18 @@ export function applyThrust(
  *  - Applying gravity and integrating positions
  */
 export function applyGravity(
-  dtSeconds: number,
+  dtMillis: number,
   world: World,
   gravityEngine: GravityEngine,
   gravityState: GravityState,
   gravityBindings: GravityBodyBinding[],
 ): void {
-  if (dtSeconds === 0) {
+  if (dtMillis === 0) {
     return;
   }
 
   // 1) Step gravity (updates velocities and positions).
-  gravityEngine.step(dtSeconds, gravityState);
+  gravityEngine.step(dtMillis / 1000, gravityState);
 
   // 2) Apply positions back into world via bindings.
   applyGravityPositionsToWorld(world, gravityState.positions, gravityBindings);

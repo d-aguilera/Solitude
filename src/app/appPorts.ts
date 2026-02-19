@@ -167,8 +167,8 @@ export type TickCallback = (
 ) => void;
 
 export interface TickParams {
-  dtSeconds: number;
-  dtSecondsSim: number;
+  dtMillis: number;
+  dtMillisSim: number;
   controlInput: ControlInput;
 }
 
@@ -178,7 +178,7 @@ export interface TickOutput {
   pilotCamera: DomainCameraPose;
   pilotCameraLocalOffset: Vec3;
   scene: Scene;
-  simTimeSeconds: number; // accumulated simulation time in seconds.
+  simTimeMillis: number; // accumulated simulation time.
   speedMps: number;
   topCamera: DomainCameraPose;
 }

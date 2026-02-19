@@ -13,7 +13,7 @@ import {
 } from "./syncSceneObjects.js";
 
 export function updateSceneGraph(
-  dtSeconds: number,
+  dtMillis: number,
   sceneState: SceneState,
   sceneControlState: SceneControlState,
   simState: SimulationState,
@@ -29,19 +29,14 @@ export function updateSceneGraph(
   syncStarsToSceneObjects(world.stars, scene);
   syncLightsToStars(world, scene);
 
-  rotateCelestialBodies(scene, dtSeconds);
+  rotateCelestialBodies(scene, dtMillis);
 
-  updateTrajectories(
-    dtSeconds,
-    scene.objects,
-    planetPathMappings,
-    trajectories,
-  );
+  updateTrajectories(dtMillis, scene.objects, planetPathMappings, trajectories);
 
-  updatePilotLook(dtSeconds, controlInput, sceneControlState.look);
+  updatePilotLook(dtMillis, controlInput, sceneControlState.look);
 
   updatePilotCameraOffset(
-    dtSeconds,
+    dtMillis,
     controlInput,
     sceneControlState.pilotCameraLocalOffset,
   );
