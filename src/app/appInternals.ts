@@ -19,7 +19,6 @@ import type { RingBuffer } from "./RingBuffer.js";
  */
 export interface CelestialBodyConfig {
   id: string; // domain id, e.g. "planet:earth"
-  pathId: string; // orbit path id, purely logical association
   kind: PlanetKind;
 
   /**
@@ -98,10 +97,13 @@ export interface GravityBodyBinding {
 
 export interface PlanetBodyConfig extends CelestialBodyConfig {
   kind: "planet";
+  pathId: string; // orbit path id, purely logical association
 }
 
 export type Trajectory = {
-  buffers: RingBuffer<Vec3>[];
+  intervalMillis: number;
+  remainingMillis: number;
+  buffer: RingBuffer<Vec3>;
 };
 
 export interface SceneState {

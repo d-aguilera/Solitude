@@ -1,31 +1,25 @@
-import type { BodyId, Mesh, Vec3 } from "../domain/domainPorts.js";
+import type { BodyId, Mesh } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
 import type { Trajectory } from "./appInternals.js";
 import type { SceneObject } from "./appPorts.js";
 import { RingBuffer } from "./RingBuffer.js";
 
-export function createTrajectory(): Trajectory {
+export function createTrajectory(
+  capacity: number,
+  intervalMillis: number,
+): Trajectory {
   return {
-    buffers: [
-      new RingBuffer<Vec3>(20),
-      new RingBuffer<Vec3>(30),
-      new RingBuffer<Vec3>(50),
-    ],
+    intervalMillis: intervalMillis,
+    remainingMillis: 0,
+    buffer: new RingBuffer(capacity),
   };
 }
 
-function updateTrajectory({ buffers }: Trajectory, position: Vec3): void {
-  let b = 0;
-  let evicted: Vec3 | undefined = buffers[b].push(vec3.clone(position));
-  while (evicted && buffers[b].tail === 0 && ++b < buffers.length)
-    evicted = buffers[b].push(evicted);
-}
-
-function rebuildPathMesh(mesh: Mesh, { buffers }: Trajectory): void {
+function rebuildPathMesh(mesh: Mesh, { buffer }: Trajectory): void {
   alloc.withName(rebuildPathMesh.name, () => {
     const { points, faces } = mesh;
-    const count = buffers.reduce((acc, buffer) => acc + buffer.count, 0);
+    const count = buffer.count;
 
     // update single face
     if (count < 2) {
@@ -41,25 +35,20 @@ function rebuildPathMesh(mesh: Mesh, { buffers }: Trajectory): void {
       }
     }
 
-    // Collect points in from newest to oldest: G1 -> G2 -> ...
+    // update points
     points.length = count;
     let i = 0;
-    for (let buffer of buffers) {
-      buffer.forEach((p) => {
-        let dst = points[i];
-        if (dst) {
-          vec3.copyInto(dst, p);
-        } else {
-          points[i] = vec3.clone(p);
-        }
-        i++;
-      });
-    }
+    buffer.forEach((p) => {
+      let dst = points[i];
+      if (dst) {
+        vec3.copyInto(dst, p);
+      } else {
+        points[i] = vec3.clone(p);
+      }
+      i++;
+    });
   });
 }
-
-const sampleInterval = 3000; // millis
-let trajectoryAccumTime: number = 0;
 
 /**
  * Sample and update trajectory polylines for the ship and planets.
@@ -71,15 +60,10 @@ export function updateTrajectories(
   trajectories: Record<BodyId, Trajectory>,
 ): void {
   alloc.withName(updateTrajectories.name, () => {
-    trajectoryAccumTime += dtMillis;
-    if (trajectoryAccumTime < sampleInterval) {
-      return;
-    }
-
     // build a scene objects lookup index
-    const lookup: Record<BodyId, number> = {};
+    const getIndex: Record<BodyId, number> = {};
     for (let i = 0; i < objects.length; i++) {
-      lookup[objects[i].id] = i;
+      getIndex[objects[i].id] = i;
     }
 
     let pathId: BodyId;
@@ -91,15 +75,18 @@ export function updateTrajectories(
       } else {
         continue;
       }
-      const pathMesh: Mesh = objects[lookup[pathId]].mesh;
+      if (!pathId) continue;
+
+      const pathIndex = getIndex[pathId];
+      const pathMesh: Mesh = objects[pathIndex].mesh;
       const trajectory = trajectories[obj.id];
 
-      updateTrajectory(trajectory, obj.position);
-      rebuildPathMesh(pathMesh, trajectory);
+      trajectory.remainingMillis -= dtMillis;
+      if (trajectory.remainingMillis <= 0) {
+        trajectory.buffer.push(vec3.clone(obj.position));
+        trajectory.remainingMillis += trajectory.intervalMillis;
+        rebuildPathMesh(pathMesh, trajectory);
+      }
     }
-
-    do {
-      trajectoryAccumTime -= sampleInterval;
-    } while (trajectoryAccumTime >= sampleInterval);
   });
 }

@@ -212,7 +212,6 @@ export function buildDefaultSolarSystemConfigs(): (
   const configs: (PlanetBodyConfig | StarBodyConfig)[] = [
     {
       id: sunId,
-      pathId: "path:planet:sun",
       kind: "star",
       orbit: {
         semiMajorAxis: 0,

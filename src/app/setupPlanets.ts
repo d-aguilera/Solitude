@@ -135,12 +135,11 @@ export function addPlanetsAndStarsFromConfig(
       objects.push({
         ...sceneObj,
       } as PlanetSceneObject);
+      // Planets get a path polyline. The path geometry is updated over time by
+      // sampling actual positions, so it reflects non-circular Keplerian-like
+      // trajectories after initialization.
+      objects.push(createPolylineSceneObject(cfg.pathId, cfg.color));
     }
-
-    // All get a path polyline. The path geometry is updated over time by
-    // sampling actual positions, so it reflects non-circular Keplerian-like
-    // trajectories after initialization.
-    objects.push(createPolylineSceneObject(cfg.pathId, cfg.color));
   }
 }
 

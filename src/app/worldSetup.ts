@@ -1,5 +1,6 @@
 import type {
   BodyId,
+  KeplerianOrbit,
   LocalFrame,
   Mesh,
   RGB,
@@ -93,7 +94,7 @@ export function createInitialSceneAndWorld(): {
   const trajectories: Record<BodyId, Trajectory> = {};
 
   // Build a trajectory for the ship
-  trajectories[mainShip.id] = createTrajectory();
+  trajectories[mainShip.id] = createTrajectory(60 * 24, 20 * 60 * 1000);
 
   const topCamera = createInitialTopCamera(mainShip);
   const pilotCamera = createInitialPilotCamera(mainShip);
@@ -106,12 +107,33 @@ export function createInitialSceneAndWorld(): {
   // Derive planet–path relationships once from the configs we just used.
   const planetPathMappings: Record<BodyId, BodyId> = {};
   for (const cfg of planetConfigs) {
+    if (cfg.kind !== "planet") continue;
     planetPathMappings[cfg.id] = cfg.pathId;
   }
 
   // Build a trajectory for each planet
+  const capacity = 360;
   for (const cfg of planetConfigs) {
-    trajectories[cfg.id] = createTrajectory();
+    if (cfg.kind !== "planet") continue;
+    const body = world.planets.find((body) => body.id === cfg.id);
+    if (!body) {
+      throw new Error(`No body found for config: ${cfg.id}`);
+    }
+    const speedMps = vec3.length(body.velocity);
+    const speedMpMs = speedMps / 1000;
+    const orbitLengthMeters = orbitalEllipseLength(cfg.orbit);
+    const intervalLengthMeters = orbitLengthMeters / capacity;
+    const intervalMillis = intervalLengthMeters / speedMpMs;
+    trajectories[cfg.id] = createTrajectory(capacity, intervalMillis);
+    console.log({
+      id: cfg.id,
+      capacity,
+      intervalMillis,
+      intervalLengthMeters,
+      orbitLengthMeters,
+      speedMpMs,
+      speedMps,
+    });
   }
 
   // Build initial point lights from star bodies.
@@ -126,4 +148,28 @@ export function createInitialSceneAndWorld(): {
     planetPathMappings,
     trajectories,
   };
+}
+
+/**
+ * Approximate circumference (length) of the orbital ellipse in meters,
+ * using Ramanujan's second approximation.
+ *
+ * Only depends on semi-major axis and eccentricity.
+ */
+function orbitalEllipseLength(orbit: KeplerianOrbit): number {
+  const a = orbit.semiMajorAxis;
+  const e = orbit.eccentricity;
+
+  if (e < 0 || e >= 1) {
+    throw new Error(
+      "Eccentricity must be in [0, 1) for a bound elliptical orbit.",
+    );
+  }
+
+  const b = a * Math.sqrt(1 - e * e);
+  const aMinusB = a - b;
+  const aPlusB = a + b;
+  const hTimes3 = (3 * (aMinusB * aMinusB)) / (aPlusB * aPlusB);
+
+  return Math.PI * aPlusB * (1 + hTimes3 / (10 + Math.sqrt(4 - hTimes3)));
 }
