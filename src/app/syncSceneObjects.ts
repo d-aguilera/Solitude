@@ -3,7 +3,12 @@ import { localFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
-import type { PlanetSceneObject, Scene, StarSceneObject } from "./appPorts.js";
+import type {
+  PlanetSceneObject,
+  PointLight,
+  Scene,
+  StarSceneObject,
+} from "./appPorts.js";
 import { getStarPhysicsById } from "./worldLookup.js";
 
 /**
@@ -47,11 +52,26 @@ export function rotateCelestialBodies(scene: Scene, dtMillis: number): void {
   });
 }
 
+// scratch
+let star: CelestialBody;
+let light: PointLight;
+
 /**
- * Per‑frame adapter: keep Scene.lights in sync with the current star bodies.
+ * Keep scene lights in sync with the current stars.
  */
 export function syncLightsToStars(world: World, scene: Scene): void {
-  buildLightsFromStars(world, scene);
+  const stars = world.stars;
+  const length = stars.length;
+  const lights = scene.lights;
+
+  lights.length = length;
+
+  for (let i = 0; i < length; i++) {
+    star = stars[i];
+    light = lights[i];
+    light.intensity = getStarPhysicsById(world, star.id).luminosity;
+    vec3.copyInto(light.position, star.position);
+  }
 }
 
 export function syncPlanetsToSceneObjects(
