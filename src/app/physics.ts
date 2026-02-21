@@ -161,18 +161,25 @@ export function applyThrust(
  *  - Applying gravity and integrating positions
  */
 export function applyGravity(
-  dtMillis: number,
+  dtMillisSim: number,
   world: World,
   gravityEngine: GravityEngine,
   gravityState: GravityState,
   gravityBindings: GravityBodyBinding[],
 ): void {
-  if (dtMillis === 0) {
-    return;
-  }
+  if (dtMillisSim <= 0) return;
 
   // 1) Step gravity (updates velocities and positions).
-  gravityEngine.step(dtMillis / 1000, gravityState);
+  // if time scale is too high, gravity integration becomes unstable.
+  // we mitigate this by splitting the simulated time delta into 5 substeps.
+  // this is a trade-off between CPU and stability.
+  const stepMillis = dtMillisSim / 5.0;
+  let remaining = dtMillisSim;
+  for (let i = 0; i < 4; i++) {
+    gravityEngine.step(stepMillis / 1000, gravityState);
+    remaining -= stepMillis;
+  }
+  gravityEngine.step(remaining / 1000, gravityState);
 
   // 2) Apply positions back into world via bindings.
   applyGravityPositionsToWorld(world, gravityState.positions, gravityBindings);
