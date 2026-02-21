@@ -5,12 +5,7 @@ import type { ProjectedSegment, SegmentProjector } from "./renderInternals.js";
 import type { RenderedPolyline, ScreenPoint } from "./renderPorts.js";
 import { toRenderable } from "./renderPrep.js";
 
-// Grow-only scratch buffer reused across renderPolylines calls for the
-// current continuous visible stretch of a logical polyline.
-const scratchPoints: ScreenPoint[] = [];
-
 // scratch
-let polyIndices: number[];
 let segment: ProjectedSegment = {
   a: { x: 0, y: 0, depth: 0 },
   b: { x: 0, y: 0, depth: 0 },
@@ -25,56 +20,66 @@ export function renderPolylinesInto(
 ): number {
   return alloc.withName(renderPolylinesInto.name, () => {
     let intoCount = 0;
-    let cssColor = "";
-    let lineWidth = 0;
-    let count: number;
+    let pointCount = 0;
+    let current: RenderedPolyline;
 
-    const addOrPush = (p: ScreenPoint) => {
-      if (count < scratchPoints.length) scratchPoints[count] = p;
-      else scratchPoints.push(p);
-      count++;
+    const updateOrPush = (p: ScreenPoint) => {
+      const { points } = current;
+      if (pointCount < points.length) {
+        const point = points[pointCount];
+        point.depth = p.depth;
+        point.x = p.x;
+        point.y = p.y;
+      } else {
+        points.push({
+          depth: p.depth,
+          x: p.x,
+          y: p.y,
+        });
+      }
+      pointCount++;
     };
 
     const flush = () => {
-      if (intoCount < into.length) {
-        const entry = into[intoCount];
-        entry.cssColor = cssColor;
-        entry.lineWidth = lineWidth;
-        entry.points = scratchPoints.slice(0, count);
-      } else {
-        into.push({
-          points: scratchPoints.slice(0, count),
-          cssColor,
-          lineWidth,
-        });
-      }
+      current.pointCount = pointCount;
       intoCount++;
-      count = 0;
+      pointCount = 0;
     };
 
     objects.forEach((obj) => {
       if (objectsFilter && !objectsFilter(obj)) return;
 
-      const renderable = toRenderable(obj);
-      const { mesh, worldPoints } = renderable;
-      cssColor = rgbToCss(renderable.baseColor);
-      lineWidth = renderable.lineWidth;
+      const { baseColor, lineWidth, mesh, worldPoints } = toRenderable(obj);
 
-      count = 0;
-      for (polyIndices of mesh.faces) {
+      for (let polyIndices of mesh.faces) {
         const length = polyIndices.length;
         // Accumulate continuous visible segments for this logical polyline.
         for (let j = 1; j < length; j++) {
           const a = worldPoints[polyIndices[j - 1]];
           const b = worldPoints[polyIndices[j]];
           if (projectSegmentInto(segment, a, b)) {
-            if (count === 0) {
+            // Handle initial point
+            if (pointCount === 0) {
+              // Grow output array if necessary
+              if (intoCount === into.length) {
+                current = {
+                  cssColor: rgbToCss(baseColor),
+                  lineWidth,
+                  pointCount: 0,
+                  points: [],
+                };
+                into.push(current);
+              } else {
+                current = into[intoCount];
+                current.cssColor = rgbToCss(baseColor);
+                current.lineWidth = lineWidth;
+              }
               // Add initial point
-              addOrPush(segment.a);
+              updateOrPush(segment.a);
             }
-            // Extend the current polyline
-            addOrPush(segment.b);
-            if (segment.clipped && count > 2) {
+            // Extend current polyline
+            updateOrPush(segment.b);
+            if (segment.clipped && pointCount > 2) {
               // Was fully visible but now it's not => flush
               flush();
             }
@@ -82,7 +87,7 @@ export function renderPolylinesInto(
         }
 
         // Flush last polyline (if any)
-        if (count > 0) {
+        if (pointCount > 0) {
           flush();
         }
       }

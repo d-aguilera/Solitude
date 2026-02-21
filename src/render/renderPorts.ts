@@ -91,6 +91,7 @@ export type RenderedHud = [
 
 export interface RenderedPolyline {
   points: ScreenPoint[];
+  pointCount: number;
   cssColor: string;
   lineWidth: number;
 }

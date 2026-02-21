@@ -28,9 +28,6 @@ let p0: ScreenPoint;
 let p1: ScreenPoint;
 let p2: ScreenPoint;
 let color: RGB;
-let polyline: RenderedPolyline;
-let pointsLength: number;
-let points: ScreenPoint[];
 let p: ScreenPoint;
 let seg: RenderedSegment;
 let start: ScreenPoint;
@@ -150,16 +147,14 @@ export class CanvasRasterizer implements Rasterizer {
     const ctx = this.ctx;
 
     for (let i = 0; i < count; i++) {
-      polyline = polylines[i];
-      points = polyline.points;
-      pointsLength = points.length;
-      if (pointsLength < 2) continue;
-      ctx.strokeStyle = polyline.cssColor;
-      ctx.lineWidth = polyline.lineWidth;
+      const { cssColor, lineWidth, pointCount, points } = polylines[i];
+      if (pointCount < 2) continue;
+      ctx.strokeStyle = cssColor;
+      ctx.lineWidth = lineWidth;
       ctx.beginPath();
       p = points[0];
       ctx.moveTo(p.x, p.y);
-      for (let i = 1; i < pointsLength; i++) {
+      for (let i = 1; i < pointCount; i++) {
         p = points[i];
         ctx.lineTo(p.x, p.y);
       }

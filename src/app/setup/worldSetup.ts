@@ -18,7 +18,7 @@ import type {
   SceneObject,
 } from "../appPorts.js";
 import { buildLightsFromStars } from "../syncSceneObjects.js";
-import { createTrajectory } from "../trajectories.js";
+import { createTrajectory, updateTrajectories } from "../trajectories.js";
 import {
   createInitialPilotCamera,
   createInitialTopCamera,
@@ -94,7 +94,9 @@ export function createInitialSceneAndWorld(): {
   const trajectories: Record<BodyId, Trajectory> = {};
 
   // Build a trajectory for the ship
-  trajectories[mainShip.id] = createTrajectory(60 * 24, 20 * 60 * 1000);
+  const threePerHour = 20 * 60 * 1000; // 20-minute interval
+  const tenDays = 3 * 24 * 10; // 720 point capacity
+  trajectories[mainShip.id] = createTrajectory(tenDays, threePerHour);
 
   const topCamera = createInitialTopCamera(mainShip);
   const pilotCamera = createInitialPilotCamera(mainShip);
@@ -107,14 +109,14 @@ export function createInitialSceneAndWorld(): {
   // Derive planet–path relationships once from the configs we just used.
   const planetPathMappings: Record<BodyId, BodyId> = {};
   for (const cfg of planetConfigs) {
-    if (cfg.kind !== "planet") continue;
+    if (cfg.kind !== "planet" || cfg.centralBodyId !== "planet:sun") continue;
     planetPathMappings[cfg.id] = cfg.pathId;
   }
 
-  // Build a trajectory for each planet
+  // Build a trajectory for each planet (not moons)
   const capacity = 360;
   for (const cfg of planetConfigs) {
-    if (cfg.kind !== "planet") continue;
+    if (cfg.kind !== "planet" || cfg.centralBodyId !== "planet:sun") continue;
     const body = world.planets.find((body) => body.id === cfg.id);
     if (!body) {
       throw new Error(`No body found for config: ${cfg.id}`);
@@ -125,16 +127,9 @@ export function createInitialSceneAndWorld(): {
     const intervalLengthMeters = orbitLengthMeters / capacity;
     const intervalMillis = intervalLengthMeters / speedMpMs;
     trajectories[cfg.id] = createTrajectory(capacity, intervalMillis);
-    console.log({
-      id: cfg.id,
-      capacity,
-      intervalMillis,
-      intervalLengthMeters,
-      orbitLengthMeters,
-      speedMpMs,
-      speedMps,
-    });
   }
+
+  updateTrajectories(0, objects, planetPathMappings, trajectories);
 
   // Build initial point lights from star bodies.
   buildLightsFromStars(world, scene);

@@ -138,7 +138,9 @@ export function addPlanetsAndStarsFromConfig(
       // Planets get a path polyline. The path geometry is updated over time by
       // sampling actual positions, so it reflects non-circular Keplerian-like
       // trajectories after initialization.
-      objects.push(createPolylineSceneObject(cfg.pathId, cfg.color));
+      const pathObject = createPolylineSceneObject(cfg.pathId, cfg.color);
+      pathObject.mesh.points.push(celestialBody.position);
+      objects.push(pathObject);
     }
   }
 }

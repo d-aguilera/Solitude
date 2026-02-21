@@ -11,7 +11,7 @@ import type {
   Vec3,
   World,
 } from "../domain/domainPorts.js";
-import type { DomainCameraPose, Scene } from "./appPorts.js";
+import type { DomainCameraPose, Mesh, Scene } from "./appPorts.js";
 import type { RingBuffer } from "./RingBuffer.js";
 
 /**
@@ -101,9 +101,18 @@ export interface PlanetBodyConfig extends CelestialBodyConfig {
 }
 
 export type Trajectory = {
+  buffer: RingBuffer<Vec3>;
   intervalMillis: number;
   remainingMillis: number;
-  buffer: RingBuffer<Vec3>;
+  state: TrajectoryState;
+};
+
+export type TrajectoryState = {
+  update: (
+    currentPosition: Vec3,
+    mesh: Mesh,
+    trajectory: Trajectory,
+  ) => TrajectoryState;
 };
 
 export interface SceneState {
