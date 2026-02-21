@@ -1,8 +1,8 @@
-import type { BodyId, Mesh } from "../domain/domainPorts.js";
+import type { BodyId } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
 import type { Trajectory } from "./appInternals.js";
-import type { SceneObject } from "./appPorts.js";
+import type { Mesh, SceneObject } from "./appPorts.js";
 import { RingBuffer } from "./RingBuffer.js";
 
 export function createTrajectory(

@@ -2,7 +2,6 @@ import type {
   CelestialBody,
   KeplerianOrbit,
   Mat3,
-  Mesh,
   PlanetPhysics,
   StarPhysics,
   Vec3,
@@ -11,15 +10,16 @@ import type {
 import { NEWTON_G } from "../domain/domainPorts.js";
 import { mutateStateVectorFromKeplerian } from "../domain/kepler.js";
 import { mat3 } from "../domain/mat3.js";
-import { generatePlanetMesh } from "../domain/models.js";
 import { vec3 } from "../domain/vec3.js";
 import type { PlanetBodyConfig, StarBodyConfig } from "./appInternals.js";
 import type {
   CelestialBodySceneObject,
+  Mesh,
   PlanetSceneObject,
   SceneObject,
   StarSceneObject,
 } from "./appPorts.js";
+import { generatePlanetMesh } from "./models.js";
 import { createPolylineSceneObject } from "./worldSetup.js";
 
 // Scratch state for hierarchical initial state computation.

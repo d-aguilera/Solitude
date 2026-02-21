@@ -2,7 +2,6 @@ import type {
   BodyId,
   KeplerianOrbit,
   LocalFrame,
-  Mesh,
   RGB,
   Vec3,
   World,
@@ -13,6 +12,7 @@ import { vec3 } from "../domain/vec3.js";
 import type { Trajectory } from "./appInternals.js";
 import type {
   DomainCameraPose,
+  Mesh,
   PolylineSceneObject,
   Scene,
   SceneObject,

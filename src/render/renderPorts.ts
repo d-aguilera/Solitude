@@ -1,5 +1,10 @@
-import type { DomainCameraPose, Scene, SceneObject } from "../app/appPorts.js";
-import type { Mesh, RGB, ShipBody, Vec3 } from "../domain/domainPorts.js";
+import type {
+  DomainCameraPose,
+  Mesh,
+  Scene,
+  SceneObject,
+} from "../app/appPorts.js";
+import type { RGB, ShipBody, Vec3 } from "../domain/domainPorts.js";
 
 export type DrawMode = "faces" | "lines";
 

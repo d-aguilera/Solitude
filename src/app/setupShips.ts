@@ -5,7 +5,6 @@ import type {
   World,
 } from "../domain/domainPorts.js";
 import { localFrame } from "../domain/localFrame.js";
-import { shipModel } from "../domain/models.js";
 import { circularSpeedAtRadius } from "../domain/phys.js";
 import { vec3 } from "../domain/vec3.js";
 import { colors } from "./appInternals.js";
@@ -15,6 +14,7 @@ import type {
   ShipSceneObject,
   StarSceneObject,
 } from "./appPorts.js";
+import { shipModel } from "./models.js";
 import { getPlanetPhysicsById } from "./worldLookup.js";
 import { initialFrame, createPolylineSceneObject } from "./worldSetup.js";
 

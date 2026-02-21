@@ -1,7 +1,6 @@
 import type {
   LocalFrame,
   Mat3,
-  Mesh,
   RGB,
   ShipBody,
   Vec3,
@@ -90,6 +89,12 @@ export interface PlanetSceneObject extends CelestialBodySceneObject {
 
 export interface GameplayParameters {
   timeScale: number;
+}
+
+export interface Mesh {
+  points: Vec3[];
+  faces: number[][];
+  faceNormals?: Vec3[];
 }
 
 /**

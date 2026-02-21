@@ -56,12 +56,6 @@ export type Mat3 = [
   [number, number, number],
 ];
 
-export interface Mesh {
-  points: Vec3[];
-  faces: number[][];
-  faceNormals?: Vec3[];
-}
-
 /**
  * Domain-level ship body.
  */
