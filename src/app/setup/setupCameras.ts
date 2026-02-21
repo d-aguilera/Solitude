@@ -1,6 +1,6 @@
-import type { ShipBody, Vec3 } from "../domain/domainPorts.js";
-import { vec3 } from "../domain/vec3.js";
-import type { DomainCameraPose } from "./appPorts.js";
+import type { ShipBody, Vec3 } from "../../domain/domainPorts.js";
+import { vec3 } from "../../domain/vec3.js";
+import type { DomainCameraPose } from "../appPorts.js";
 import { initialFrame } from "./worldSetup.js";
 
 export function createInitialTopCamera(ship: ShipBody): DomainCameraPose {

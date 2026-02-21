@@ -9,7 +9,7 @@ import { mat3 } from "./mat3.js";
  * Uses a simple Newton–Raphson iteration, which converges quickly for
  * the small eccentricities typical of solar system planets.
  */
-export function solveEccentricAnomaly(
+function solveEccentricAnomaly(
   meanAnomalyRad: number,
   eccentricity: number,
   tol = 1e-10,

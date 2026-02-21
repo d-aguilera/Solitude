@@ -1,7 +1,7 @@
-import type { KeplerianOrbit } from "../domain/domainPorts.js";
-import type { PlanetBodyConfig, StarBodyConfig } from "./appInternals.js";
-import { colors } from "./appInternals.js";
-import { AU, km } from "./appPorts.js";
+import type { KeplerianOrbit } from "../../domain/domainPorts.js";
+import type { PlanetBodyConfig, StarBodyConfig } from "../appInternals.js";
+import { colors } from "../appInternals.js";
+import { AU, km } from "../appPorts.js";
 
 // Mean distance Earth–Moon in meters
 const EARTH_MOON_DISTANCE = 384_400 * km; // m

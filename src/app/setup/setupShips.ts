@@ -3,20 +3,20 @@ import type {
   ShipBody,
   Vec3,
   World,
-} from "../domain/domainPorts.js";
-import { localFrame } from "../domain/localFrame.js";
-import { circularSpeedAtRadius } from "../domain/phys.js";
-import { vec3 } from "../domain/vec3.js";
-import { colors } from "./appInternals.js";
+} from "../../domain/domainPorts.js";
+import { localFrame } from "../../domain/localFrame.js";
+import { circularSpeedAtRadius } from "../../domain/phys.js";
+import { vec3 } from "../../domain/vec3.js";
+import { colors } from "../appInternals.js";
 import type {
   PlanetSceneObject,
   SceneObject,
   ShipSceneObject,
   StarSceneObject,
-} from "./appPorts.js";
-import { shipModel } from "./models.js";
-import { getPlanetPhysicsById } from "./worldLookup.js";
-import { initialFrame, createPolylineSceneObject } from "./worldSetup.js";
+} from "../appPorts.js";
+import { shipModel } from "../models.js";
+import { getPlanetPhysicsById } from "../worldLookup.js";
+import { createPolylineSceneObject, initialFrame } from "./worldSetup.js";
 
 const SHIP_VISUAL_SCALE = 15;
 

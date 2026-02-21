@@ -5,18 +5,20 @@ import type {
   RGB,
   Vec3,
   World,
-} from "../domain/domainPorts.js";
-import { localFrame } from "../domain/localFrame.js";
-import { mat3 } from "../domain/mat3.js";
-import { vec3 } from "../domain/vec3.js";
-import type { Trajectory } from "./appInternals.js";
+} from "../../domain/domainPorts.js";
+import { localFrame } from "../../domain/localFrame.js";
+import { mat3 } from "../../domain/mat3.js";
+import { vec3 } from "../../domain/vec3.js";
+import type { Trajectory } from "../appInternals.js";
 import type {
   DomainCameraPose,
   Mesh,
   PolylineSceneObject,
   Scene,
   SceneObject,
-} from "./appPorts.js";
+} from "../appPorts.js";
+import { buildLightsFromStars } from "../syncSceneObjects.js";
+import { createTrajectory } from "../trajectories.js";
 import {
   createInitialPilotCamera,
   createInitialTopCamera,
@@ -24,8 +26,6 @@ import {
 import { addPlanetsAndStarsFromConfig } from "./setupPlanets.js";
 import { createInitialShip } from "./setupShips.js";
 import { buildDefaultSolarSystemConfigs } from "./solarSystem.js";
-import { buildLightsFromStars } from "./syncSceneObjects.js";
-import { createTrajectory } from "./trajectories.js";
 
 export const initialUp: Vec3 = vec3.create(0, 0, 1);
 export const initialFrame: LocalFrame = localFrame.fromUp(initialUp);
