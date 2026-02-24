@@ -4,37 +4,23 @@ import type { ControlInput, SceneControlState } from "./appPorts.js";
 import { updatePilotCameraOffset, updateCameras } from "./cameras.js";
 import { updatePilotLook } from "./controls.js";
 import { updateTrajectories } from "./trajectories.js";
-import {
-  rotateCelestialBodies,
-  syncLightsToStars,
-  syncPlanetsToSceneObjects,
-  syncShipsToSceneObjects,
-  syncStarsToSceneObjects,
-} from "./syncSceneObjects.js";
+import { rotateCelestialBodies } from "./syncSceneObjects.js";
 
 export function updateSceneGraph(
   dtMillis: number,
+  dtSimMillis: number,
   sceneState: SceneState,
   sceneControlState: SceneControlState,
   simState: SimulationState,
   controlInput: ControlInput,
 ) {
-  const { mainShip, world } = simState;
+  const { mainShip } = simState;
+  const { pilotCamera, topCamera, scene, trajectories } = sceneState;
 
-  const { pilotCamera, topCamera, planetPathMappings, scene, trajectories } =
-    sceneState;
-
-  syncShipsToSceneObjects(world.shipBodies, scene);
-  syncPlanetsToSceneObjects(world.planets, scene);
-  syncStarsToSceneObjects(world.stars, scene);
-  syncLightsToStars(world, scene);
-
-  rotateCelestialBodies(scene, dtMillis);
-
-  updateTrajectories(dtMillis, scene.objects, planetPathMappings, trajectories);
+  rotateCelestialBodies(dtSimMillis, scene.objects);
+  updateTrajectories(dtSimMillis, trajectories);
 
   updatePilotLook(dtMillis, controlInput, sceneControlState.look);
-
   updatePilotCameraOffset(
     dtMillis,
     controlInput,

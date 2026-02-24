@@ -31,17 +31,17 @@ export class NewtonianGravityEngine implements GravityEngine {
       return;
     }
 
-    const { bodies, positions } = state;
+    const { bodyStates, positions } = state;
 
-    if (bodies.length === 0) {
+    if (bodyStates.length === 0) {
       return;
     }
 
-    this.computeGravityAccelerations(bodies, positions);
+    this.computeGravityAccelerations(bodyStates, positions);
 
-    this.integrateBodyVelocities(bodies, dtSeconds);
+    this.integrateBodyVelocities(bodyStates, dtSeconds);
 
-    this.integrateBodyPositions(bodies, positions, dtSeconds);
+    this.integrateBodyPositions(bodyStates, positions, dtSeconds);
   }
 
   /**
@@ -117,7 +117,6 @@ export class NewtonianGravityEngine implements GravityEngine {
     dtSeconds: number,
   ): void {
     const n = bodies.length;
-    positions.length = n;
 
     for (let i = 0; i < n; i++) {
       const pos = positions[i];

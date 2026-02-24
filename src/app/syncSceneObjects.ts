@@ -1,14 +1,8 @@
-import type { CelestialBody, ShipBody, World } from "../domain/domainPorts.js";
-import { localFrame } from "../domain/localFrame.js";
+import type { World } from "../domain/domainPorts.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
-import type {
-  PlanetSceneObject,
-  PointLight,
-  Scene,
-  StarSceneObject,
-} from "./appPorts.js";
+import type { Scene, SceneObject } from "./appPorts.js";
 import { getStarPhysicsById } from "./worldLookup.js";
 
 /**
@@ -34,10 +28,13 @@ const Rspin = mat3.zero();
 /**
  * Per-frame adapter: advance axial rotation for planets and stars.
  */
-export function rotateCelestialBodies(scene: Scene, dtMillis: number): void {
+export function rotateCelestialBodies(
+  dtMillis: number,
+  sceneObjects: SceneObject[],
+): void {
   if (dtMillis === 0) return;
   alloc.withName("rotateCelestialBodies", () => {
-    for (const obj of scene.objects) {
+    for (const obj of sceneObjects) {
       if (obj.kind !== "planet" && obj.kind !== "star") continue;
 
       const angle = (obj.angularSpeedRadPerSec * dtMillis) / 1000;
@@ -50,70 +47,4 @@ export function rotateCelestialBodies(scene: Scene, dtMillis: number): void {
       mat3.mulMat3Into(obj.orientation, Rspin, obj.orientation);
     }
   });
-}
-
-// scratch
-let star: CelestialBody;
-let light: PointLight;
-
-/**
- * Keep scene lights in sync with the current stars.
- */
-export function syncLightsToStars(world: World, scene: Scene): void {
-  const stars = world.stars;
-  const length = stars.length;
-  const lights = scene.lights;
-
-  lights.length = length;
-
-  for (let i = 0; i < length; i++) {
-    star = stars[i];
-    light = lights[i];
-    light.intensity = getStarPhysicsById(world, star.id).luminosity;
-    vec3.copyInto(light.position, star.position);
-  }
-}
-
-export function syncPlanetsToSceneObjects(
-  planets: CelestialBody[],
-  scene: Scene,
-): void {
-  for (const body of planets) {
-    const obj = scene.objects.find(
-      (o) => o.id === body.id,
-    ) as PlanetSceneObject;
-    if (!obj) continue;
-
-    obj.position = body.position;
-    obj.velocity = body.velocity;
-  }
-}
-
-export function syncShipsToSceneObjects(
-  shipBodies: ShipBody[],
-  scene: Scene,
-): void {
-  for (const ship of shipBodies) {
-    const obj = scene.objects.find((o) => o.id === ship.id);
-    if (!obj) continue;
-
-    // Keep renderer-facing pose in sync with physics ship.
-    obj.position = ship.position;
-    obj.orientation = localFrame.toMat3(ship.frame);
-  }
-}
-
-export function syncStarsToSceneObjects(
-  stars: CelestialBody[],
-  scene: Scene,
-): void {
-  for (const starBody of stars) {
-    const obj = scene.objects.find(
-      (o) => o.id === starBody.id,
-    ) as StarSceneObject;
-    if (!obj) continue;
-
-    obj.position = starBody.position;
-    obj.velocity = starBody.velocity;
-  }
 }

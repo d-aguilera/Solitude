@@ -40,7 +40,7 @@ export interface GravityEngine {
  * Container for all gravitational bodies in the domain.
  */
 export interface GravityState {
-  bodies: BodyState[];
+  bodyStates: BodyState[];
   positions: Vec3[];
 }
 
@@ -61,6 +61,7 @@ export type Mat3 = [
  */
 export interface ShipBody extends CelestialBody {
   frame: LocalFrame;
+  orientation: Mat3;
 }
 
 /**

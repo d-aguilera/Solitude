@@ -2,7 +2,6 @@ import type { GravityEngine, GravityState } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
 import { vec3 } from "../domain/vec3.js";
 import type {
-  GravityBodyBinding,
   SceneState,
   SimControlState,
   SimulationState,
@@ -17,31 +16,16 @@ import {
   updateControlState,
   updateShipOrientationFromControls,
 } from "./controls.js";
-import { buildGravityBindings, applyThrust, applyGravity } from "./physics.js";
+import { applyThrust, applyGravity } from "./physics.js";
 import { updateSceneGraph } from "./scene.js";
 import { createInitialSceneAndWorld } from "./setup/worldSetup.js";
 import { getShipById } from "./worldLookup.js";
 
 const x = createInitialSceneAndWorld();
 
-const gravityBindings: GravityBodyBinding[] = buildGravityBindings(x.world);
-
-// Determine which gravity body corresponds to the main ship.
-let mainShipBodyIndex: number = gravityBindings.findIndex(
-  (b) => b.kind === "ship" && b.id === x.mainShipId,
-);
-
-if (mainShipBodyIndex === -1) {
-  throw new Error(
-    `startGame: main ship body not found in gravity bindings for id=${x.mainShipId}`,
-  );
-}
-
 const mainShip = getShipById(x.world, x.mainShipId);
 
 const gravityState: GravityState = buildInitialGravityState(x.world);
-
-const mainShipBodyState = gravityState.bodies[mainShipBodyIndex];
 
 const simControlState: SimControlState = {
   alignToVelocity: false,
@@ -73,11 +57,9 @@ let currentThrustPercent: number;
  */
 export function createTickHandler(gravityEngine: GravityEngine): TickCallback {
   const simState: SimulationState = {
-    gravityBindings,
     gravityEngine,
     gravityState,
     mainShip,
-    mainShipBodyState,
     simTimeMillis: 0,
     world: x.world,
   };
@@ -100,17 +82,12 @@ export function createTickHandler(gravityEngine: GravityEngine): TickCallback {
       simControlState,
     );
 
-    applyThrust(dtMillis, mainShip, mainShipBodyState, currentThrustPercent);
+    applyThrust(dtMillis, mainShip, currentThrustPercent);
 
-    applyGravity(
-      dtMillisSim,
-      x.world,
-      gravityEngine,
-      gravityState,
-      gravityBindings,
-    );
+    applyGravity(dtMillisSim, gravityEngine, gravityState);
 
     updateSceneGraph(
+      dtMillis,
       dtMillisSim,
       sceneState,
       sceneControlState,

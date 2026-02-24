@@ -1,4 +1,4 @@
-import type { SceneObject } from "../app/appPorts.js";
+import type { PolylineSceneObject, SceneObject } from "../app/appPorts.js";
 import type { Vec3 } from "../domain/domainPorts.js";
 import { ProjectionService } from "./ProjectionService.js";
 import { renderBodyLabels } from "./renderBodyLabels.js";
@@ -62,8 +62,8 @@ export class DefaultViewRenderer implements ViewRenderer {
       into.polylines,
       scene.objects,
       projectSegmentInto,
-      (obj: SceneObject) =>
-        obj.wireframeOnly && (objectsFilter ? objectsFilter(obj) : true),
+      (obj: SceneObject): obj is PolylineSceneObject =>
+        obj.kind === "polyline" && (objectsFilter ? objectsFilter(obj) : true),
     );
 
     into.segments = renderVelocitySegments(mainShip, projectSegmentInto);

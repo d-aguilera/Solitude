@@ -1,18 +1,21 @@
 import type {
   BodyId,
-  BodyState,
   GravityEngine,
   GravityState,
   KeplerianOrbit,
   LocalFrame,
+  Mat3,
   PlanetKind,
   RGB,
   ShipBody,
   Vec3,
   World,
 } from "../domain/domainPorts.js";
-import type { DomainCameraPose, Mesh, Scene } from "./appPorts.js";
-import type { RingBuffer } from "./RingBuffer.js";
+import type {
+  DomainCameraPose,
+  PolylineSceneObject,
+  Scene,
+} from "./appPorts.js";
 
 /**
  * Shared configuration for bodies that participate in orbits.
@@ -81,18 +84,8 @@ export const colors: { [key: string]: RGB } = {
  */
 export interface ControlledBodyState {
   frame: LocalFrame;
+  orientation: Mat3;
   velocity: Vec3;
-}
-
-/**
- * Binding between domain bodies and indices in the DomainWorld.
- */
-export interface GravityBodyBinding {
-  id: BodyId;
-  kind: "ship" | "planet" | "star";
-  shipIndex: number;
-  planetIndex: number;
-  starIndex: number;
 }
 
 export interface PlanetBodyConfig extends CelestialBodyConfig {
@@ -101,18 +94,9 @@ export interface PlanetBodyConfig extends CelestialBodyConfig {
 }
 
 export type Trajectory = {
-  buffer: RingBuffer<Vec3>;
   intervalMillis: number;
   remainingMillis: number;
-  state: TrajectoryState;
-};
-
-export type TrajectoryState = {
-  update: (
-    currentPosition: Vec3,
-    mesh: Mesh,
-    trajectory: Trajectory,
-  ) => TrajectoryState;
+  sceneObject: PolylineSceneObject;
 };
 
 export interface SceneState {
@@ -133,11 +117,9 @@ export interface SimControlState {
 }
 
 export interface SimulationState {
-  gravityBindings: GravityBodyBinding[];
   gravityEngine: GravityEngine;
   gravityState: GravityState;
   mainShip: ShipBody;
-  mainShipBodyState: BodyState;
   simTimeMillis: number; // accumulated simulation time.
   world: World;
 }

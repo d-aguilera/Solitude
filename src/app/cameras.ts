@@ -7,19 +7,7 @@ import type {
   SceneControlState,
 } from "./appPorts.js";
 
-// Reusable scratch frames to avoid per‑frame allocations
-const pilotFrameScratch: LocalFrame = {
-  right: vec3.zero(),
-  forward: vec3.zero(),
-  up: vec3.zero(),
-};
-
-const topFrameScratch: LocalFrame = {
-  right: vec3.zero(),
-  forward: vec3.zero(),
-  up: vec3.zero(),
-};
-
+// Scratch
 const offsetRightScratch: Vec3 = vec3.zero();
 const offsetForwardScratch: Vec3 = vec3.zero();
 const offsetUpScratch: Vec3 = vec3.zero();
@@ -38,77 +26,39 @@ export function updateCameras(
     pilotCamera,
     mainShip,
     sceneControlState.pilotCameraLocalOffset,
-    sceneControlState,
-    frameFromShipForPilot,
+    (frame) => {
+      localFrame.copyInto(frame, mainShip.frame);
+      const { azimuth, elevation } = sceneControlState.look;
+      if (azimuth !== 0)
+        localFrame.rotateAroundAxisInPlace(frame, frame.up, azimuth);
+      if (elevation !== 0)
+        localFrame.rotateAroundAxisInPlace(frame, frame.right, elevation);
+    },
   );
 
   setCameraRelativeToShip(
     topCamera,
     mainShip,
     sceneControlState.topCameraLocalOffset,
-    sceneControlState,
-    frameFromShipForTop,
+    (frame) => {
+      const { right, forward, up } = mainShip.frame;
+      vec3.copyInto(frame.right, right);
+      vec3.scaleInto(frame.forward, -1, up); // forward = -up
+      vec3.copyInto(frame.up, forward); // up = forward
+    },
   );
-}
-
-function frameFromShipForPilot(
-  ship: ShipBody,
-  sceneControlState: SceneControlState,
-): LocalFrame {
-  const base = ship.frame;
-  const { azimuth, elevation } = sceneControlState.look;
-
-  // Copy ship frame into scratch without allocating
-  vec3.copyInto(pilotFrameScratch.right, base.right);
-  vec3.copyInto(pilotFrameScratch.forward, base.forward);
-  vec3.copyInto(pilotFrameScratch.up, base.up);
-
-  let frame = pilotFrameScratch;
-
-  if (azimuth !== 0) {
-    frame = localFrame.rotateAroundAxis(frame, frame.up, azimuth);
-  }
-  if (elevation !== 0) {
-    frame = localFrame.rotateAroundAxis(frame, frame.right, elevation);
-  }
-
-  return frame;
-}
-
-function frameFromShipForTop(
-  ship: ShipBody,
-  sceneControlState: SceneControlState,
-): LocalFrame {
-  void sceneControlState;
-  const { right, forward, up } = ship.frame;
-
-  vec3.copyInto(topFrameScratch.right, right);
-  vec3.copyInto(topFrameScratch.forward, up);
-  vec3.copyInto(topFrameScratch.up, forward);
-
-  // forward = -up
-  vec3.scaleInto(topFrameScratch.forward, -1, topFrameScratch.forward);
-
-  return topFrameScratch;
 }
 
 function setCameraRelativeToShip(
   pose: DomainCameraPose,
   ship: ShipBody,
   localOffset: Vec3,
-  sceneControlState: SceneControlState,
-  frameFromShip: (
-    ship: ShipBody,
-    controlState: SceneControlState,
-  ) => LocalFrame,
+  updateFrameFromShip: (frame: LocalFrame) => void,
 ): void {
   const { right, forward, up } = ship.frame;
 
-  // offsetRightScratch = right * localOffset.x
   vec3.scaleInto(offsetRightScratch, localOffset.x, right);
-  // offsetForwardScratch = forward * localOffset.y
   vec3.scaleInto(offsetForwardScratch, localOffset.y, forward);
-  // offsetUpScratch = up * localOffset.z
   vec3.scaleInto(offsetUpScratch, localOffset.z, up);
 
   // worldOffsetScratch = offsetRightScratch + offsetForwardScratch + offsetUpScratch
@@ -118,7 +68,7 @@ function setCameraRelativeToShip(
   // pose.position = ship.position + worldOffsetScratch
   vec3.addInto(pose.position, ship.position, worldOffsetScratch);
 
-  pose.frame = frameFromShip(ship, sceneControlState);
+  updateFrameFromShip(pose.frame);
 }
 
 export function updatePilotCameraOffset(

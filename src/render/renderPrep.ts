@@ -1,4 +1,9 @@
-import type { SceneObject } from "../app/appPorts.js";
+import type {
+  PlanetSceneObject,
+  SceneObject,
+  ShipSceneObject,
+  StarSceneObject,
+} from "../app/appPorts.js";
 import type { Vec3, Mat3 } from "../domain/domainPorts.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
@@ -23,7 +28,9 @@ let sharedWorldPointScratch: Vec3[] = [];
 /**
  * Convert a SceneObject into a Renderable with world-space points.
  */
-export function toRenderable(obj: SceneObject): Renderable {
+export function toRenderable(
+  obj: ShipSceneObject | PlanetSceneObject | StarSceneObject,
+): Renderable {
   if (!obj.applyTransform) {
     // Polyline or other world-space-only geometry: no transform, no copies.
     return {

@@ -5,6 +5,7 @@ import type {
   World,
 } from "../../domain/domainPorts.js";
 import { localFrame } from "../../domain/localFrame.js";
+import { mat3 } from "../../domain/mat3.js";
 import { circularSpeedAtRadius } from "../../domain/phys.js";
 import { vec3 } from "../../domain/vec3.js";
 import { colors } from "../appInternals.js";
@@ -32,12 +33,12 @@ export function createInitialShip(
 
   world.shipBodies.push(shipBody);
 
-  const shipObject: ShipSceneObject = {
+  const sceneObject: ShipSceneObject = {
     id: shipBody.id,
     kind: "ship",
     mesh: shipModel,
-    position: vec3.clone(shipBody.position),
-    orientation: localFrame.toMat3(shipBody.frame),
+    position: shipBody.position, // alias
+    orientation: shipBody.orientation, // alias
     scale: SHIP_VISUAL_SCALE,
     color: colors.ship,
     lineWidth: 1,
@@ -46,13 +47,13 @@ export function createInitialShip(
     backFaceCulling: false,
   };
 
-  objects.push(shipObject);
+  objects.push(sceneObject);
 
   const mainShipPath = createPolylineSceneObject(
     "path:ship:main",
     colors.yellow,
   );
-
+  mainShipPath.position = shipBody.position; // alias
   objects.push(mainShipPath);
 
   return shipBody;
@@ -72,32 +73,34 @@ function createShipBody(
     planetObj.physicalRadius,
   );
 
-  const initialVelocity = computeOrbitVelocity(
+  const velocity = computeOrbitVelocity(
     position,
     planetObj.position,
-    planetObj.initialVelocity,
+    planetObj.velocity,
     planetPhys.mass,
   );
 
-  const frame: LocalFrame = getFrame(initialVelocity);
+  const frame: LocalFrame = getFrameFromVelocity(velocity);
+  const orientation = localFrame.intoMat3(mat3.zero(), frame);
 
-  const mainShip: ShipBody = {
+  const shipBody: ShipBody = {
     id,
-    position,
     frame,
-    velocity: initialVelocity,
+    orientation,
+    position,
+    velocity,
   };
 
-  return mainShip;
+  return shipBody;
 }
 
-function getFrame(initialVelocity: Vec3) {
-  const speed = vec3.length(initialVelocity);
+function getFrameFromVelocity(velocity: Vec3): LocalFrame {
+  const speed = vec3.length(velocity);
   if (speed === 0) {
-    return initialFrame;
+    return localFrame.clone(initialFrame);
   }
 
-  const targetForward = vec3.normalizeInto(vec3.clone(initialVelocity));
+  const targetForward = vec3.normalizeInto(vec3.clone(velocity));
 
   // Start from the canonical initialFrame
   const baseForward = initialFrame.forward;
@@ -111,13 +114,13 @@ function getFrame(initialVelocity: Vec3) {
     const dot = vec3.dot(baseForward, targetForward);
     if (dot > 0.999999) {
       // Same direction: no change needed.
-      return initialFrame;
+      return localFrame.clone(initialFrame);
     }
     // Opposite direction: rotate 180° around "up" to flip forward.
     return {
       right: vec3.scaleInto(vec3.zero(), -1, initialFrame.right),
       forward: vec3.scaleInto(vec3.zero(), -1, baseForward),
-      up: initialFrame.up,
+      up: vec3.clone(initialFrame.up),
     };
   }
 
@@ -126,7 +129,10 @@ function getFrame(initialVelocity: Vec3) {
   const dot = Math.min(1, Math.max(-1, vec3.dot(baseForward, targetForward)));
   const angle = Math.acos(dot);
 
-  return localFrame.rotateAroundAxis(initialFrame, axisN, angle);
+  const frame = localFrame.clone(initialFrame);
+  localFrame.rotateAroundAxisInPlace(frame, axisN, angle);
+
+  return frame;
 }
 
 function computeShipStartPosFromPlanet(

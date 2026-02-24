@@ -50,6 +50,8 @@ export function createPolylineSceneObject(
     wireframeOnly: true,
     applyTransform: false, // polyline points are in world space
     backFaceCulling: false,
+    count: 0,
+    tail: -1,
   };
 }
 
@@ -62,7 +64,7 @@ export function createInitialSceneAndWorld(): {
   planetPathMappings: Record<BodyId, BodyId>;
   trajectories: Record<BodyId, Trajectory>;
 } {
-  const objects: SceneObject[] = [];
+  const sceneObjects: SceneObject[] = [];
 
   const world: World = {
     shipBodies: [],
@@ -77,7 +79,7 @@ export function createInitialSceneAndWorld(): {
 
   addPlanetsAndStarsFromConfig(
     planetConfigs,
-    objects,
+    sceneObjects,
     world.planets,
     world.planetPhysics,
     world.stars,
@@ -87,36 +89,43 @@ export function createInitialSceneAndWorld(): {
   const mainShip = createInitialShip(
     "ship:main",
     "planet:earth",
-    objects,
+    sceneObjects,
     world,
   );
+
+  // build a scene objects lookup index
+  const sceneObjectIndex: Record<BodyId, number> = {};
+  for (let i = 0; i < sceneObjects.length; i++) {
+    sceneObjectIndex[sceneObjects[i].id] = i;
+  }
 
   const trajectories: Record<BodyId, Trajectory> = {};
 
   // Build a trajectory for the ship
-  const threePerHour = 20 * 60 * 1000; // 20-minute interval
-  const tenDays = 3 * 24 * 10; // 720 point capacity
-  trajectories[mainShip.id] = createTrajectory(tenDays, threePerHour);
+  trajectories[mainShip.id] = createTrajectory(
+    3 * 24 * 10, // 720 point capacity = 10 days
+    20 * 60 * 1000, // 20-minute interval = 72 samples per day
+    sceneObjects[sceneObjectIndex["path:ship:main"]] as PolylineSceneObject,
+  );
 
   const topCamera = createInitialTopCamera(mainShip);
   const pilotCamera = createInitialPilotCamera(mainShip);
 
   const scene: Scene = {
-    objects,
+    objects: sceneObjects,
     lights: [],
   };
 
-  // Derive planet–path relationships once from the configs we just used.
   const planetPathMappings: Record<BodyId, BodyId> = {};
-  for (const cfg of planetConfigs) {
-    if (cfg.kind !== "planet" || cfg.centralBodyId !== "planet:sun") continue;
-    planetPathMappings[cfg.id] = cfg.pathId;
-  }
 
-  // Build a trajectory for each planet (not moons)
-  const capacity = 360;
+  // Derive planet–path relationships
   for (const cfg of planetConfigs) {
     if (cfg.kind !== "planet" || cfg.centralBodyId !== "planet:sun") continue;
+
+    // register in the planet–path mappings
+    planetPathMappings[cfg.id] = cfg.pathId;
+
+    // Build a trajectory for each planet (not moons)
     const body = world.planets.find((body) => body.id === cfg.id);
     if (!body) {
       throw new Error(`No body found for config: ${cfg.id}`);
@@ -124,12 +133,20 @@ export function createInitialSceneAndWorld(): {
     const speedMps = vec3.length(body.velocity);
     const speedMpMs = speedMps / 1000;
     const orbitLengthMeters = orbitalEllipseLength(cfg.orbit);
+    const capacity = 360;
     const intervalLengthMeters = orbitLengthMeters / capacity;
     const intervalMillis = intervalLengthMeters / speedMpMs;
-    trajectories[cfg.id] = createTrajectory(capacity, intervalMillis);
+    const sceneObject = sceneObjects[
+      sceneObjectIndex[planetPathMappings[cfg.id]]
+    ] as PolylineSceneObject;
+    trajectories[cfg.id] = createTrajectory(
+      capacity,
+      intervalMillis,
+      sceneObject,
+    );
   }
 
-  updateTrajectories(0, objects, planetPathMappings, trajectories);
+  updateTrajectories(0, trajectories);
 
   // Build initial point lights from star bodies.
   buildLightsFromStars(world, scene);

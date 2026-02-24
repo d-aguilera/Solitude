@@ -1,4 +1,4 @@
-import type { LocalFrame, ShipBody, Vec3 } from "../domain/domainPorts.js";
+import type { LocalFrame, Vec3 } from "../domain/domainPorts.js";
 import { localFrame } from "../domain/localFrame.js";
 import { vec3 } from "../domain/vec3.js";
 import type { ControlledBodyState, SimControlState } from "./appInternals.js";
@@ -55,52 +55,52 @@ function rollFrame(
   frame: LocalFrame,
   dtMillis: number,
   controlInput: ControlInput,
-): LocalFrame {
+): void {
   if (
     (!controlInput.rollLeft && !controlInput.rollRight) ||
     (controlInput.rollLeft && controlInput.rollRight)
   ) {
-    return frame;
+    return;
   }
 
   const angle = (controlInput.rollLeft ? -1 : 1) * rotSpeedRoll * dtMillis;
 
   // Roll around local forward axis (in world coords)
-  return localFrame.rotateAroundAxis(frame, frame.forward, angle);
+  localFrame.rotateAroundAxisInPlace(frame, frame.forward, angle);
 }
 
 function pitchFrame(
   frame: LocalFrame,
   dtMillis: number,
   controlInput: ControlInput,
-): LocalFrame {
+): void {
   let pitchInput = 0;
   if (controlInput.pitchDown) pitchInput += 1;
   if (controlInput.pitchUp) pitchInput -= 1;
-  if (pitchInput === 0) return frame;
+  if (pitchInput === 0) return;
 
   const angle = pitchInput * rotSpeedPitch * dtMillis;
 
   // Pitch around local right axis
-  return localFrame.rotateAroundAxis(frame, frame.right, angle);
+  localFrame.rotateAroundAxisInPlace(frame, frame.right, angle);
 }
 
 function yawFrame(
   frame: LocalFrame,
   dtMillis: number,
   controlInput: ControlInput,
-): LocalFrame {
+): void {
   if (
     (!controlInput.yawLeft && !controlInput.yawRight) ||
     (controlInput.yawLeft && controlInput.yawRight)
   ) {
-    return frame;
+    return;
   }
 
   const angle = (controlInput.yawLeft ? 1 : -1) * rotSpeedYaw * dtMillis;
 
   // Yaw around local up axis
-  return localFrame.rotateAroundAxis(frame, frame.up, angle);
+  localFrame.rotateAroundAxisInPlace(frame, frame.up, angle);
 }
 
 const thrustKeys: (keyof ControlInput)[] = [
@@ -160,21 +160,22 @@ function getSignedThrustPercent(
  *  - the body's LocalFrame based on roll/pitch/yaw input
  *  - the body's LocalFrame when aligning to velocity is requested
  */
-function updateBodyOrientationFromInput(
+export function updateShipOrientationFromControls(
   dtMillis: number,
+  ship: ControlledBodyState,
   controlInput: ControlInput,
   controlState: SimControlState,
-  body: ControlledBodyState,
 ): void {
-  let frame = body.frame;
-  frame = rollFrame(frame, dtMillis, controlInput);
-  frame = pitchFrame(frame, dtMillis, controlInput);
-  frame = yawFrame(frame, dtMillis, controlInput);
+  const { frame, orientation } = ship;
+  rollFrame(frame, dtMillis, controlInput);
+  pitchFrame(frame, dtMillis, controlInput);
+  yawFrame(frame, dtMillis, controlInput);
 
-  body.frame = frame;
+  // Update the body's orientation based on the new frame.
+  localFrame.intoMat3(orientation, frame);
 
   // Apply alignment toward the velocity vector, if requested.
-  updateFrameAlignToVelocity(dtMillis, controlInput, controlState, body);
+  updateFrameAlignToVelocity(dtMillis, controlInput, controlState, ship);
 }
 
 const targetForwardScratch: Vec3 = vec3.zero();
@@ -244,7 +245,7 @@ function updateFrameAlignToVelocity(
       const axis = body.frame.right;
       const maxStep = alignToVelocityMaxAngularSpeed * dtMillis;
       const stepAngle = Math.min(Math.PI, maxStep);
-      body.frame = localFrame.rotateAroundAxis(body.frame, axis, stepAngle);
+      localFrame.rotateAroundAxisInPlace(body.frame, axis, stepAngle);
       return;
     }
 
@@ -252,7 +253,7 @@ function updateFrameAlignToVelocity(
     const axis = axisScratch;
     const maxStep = alignToVelocityMaxAngularSpeed * dtMillis;
     const stepAngle = Math.min(Math.PI, maxStep);
-    body.frame = localFrame.rotateAroundAxis(body.frame, axis, stepAngle);
+    localFrame.rotateAroundAxisInPlace(body.frame, axis, stepAngle);
     return;
   }
 
@@ -261,8 +262,7 @@ function updateFrameAlignToVelocity(
   const axis = axisScratch;
   const maxStep = alignToVelocityMaxAngularSpeed * dtMillis;
   const stepAngle = Math.min(angle, maxStep);
-
-  body.frame = localFrame.rotateAroundAxis(body.frame, axis, stepAngle);
+  localFrame.rotateAroundAxisInPlace(body.frame, axis, stepAngle);
 }
 
 /**
@@ -276,35 +276,4 @@ function updateAlignToVelocityFromInput(
   controlState: SimControlState,
 ): void {
   controlState.alignToVelocity = controlInput.alignToVelocity;
-}
-
-/**
- * Handles control-input-based orientation updates for the controlled ship.
- * Also updates the persistent control state and pilot view look state.
- */
-export function updateShipOrientationFromControls(
-  dtMillis: number,
-  ship: ShipBody,
-  controlInput: ControlInput,
-  controlState: SimControlState,
-): void {
-  const bodyState = {
-    frame: ship.frame,
-    velocity: ship.velocity,
-  };
-  updateBodyOrientationFromInput(
-    dtMillis,
-    controlInput,
-    controlState,
-    bodyState,
-  );
-  writeBackControlledBodyState(ship, bodyState);
-}
-
-function writeBackControlledBodyState(
-  ship: ShipBody,
-  body: ControlledBodyState,
-): void {
-  ship.frame = body.frame;
-  ship.velocity = body.velocity;
 }

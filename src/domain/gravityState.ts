@@ -1,30 +1,26 @@
 import type { BodyState, GravityState, Vec3, World } from "./domainPorts";
-import { vec3 } from "./vec3.js";
 
 /**
  * Create a brand-new GravityState from the current world contents.
  * Call this once at setup time, or if entities are added/removed.
  *
  * The resulting GravityState contains:
- *  - bindings that associate each gravity body with a world entity
  *  - bodies with mass and velocity
  *  - positions array with the current world positions
  */
 export function buildInitialGravityState(world: World): GravityState {
-  const bodies: BodyState[] = [];
+  const bodyStates: BodyState[] = [];
   const positions: Vec3[] = [];
-
-  const shipMass = 5e4;
 
   // Ships
   for (let i = 0; i < world.shipBodies.length; i++) {
     const ship = world.shipBodies[i];
-    bodies.push({
+    bodyStates.push({
       id: ship.id,
-      mass: shipMass,
-      velocity: vec3.clone(ship.velocity),
+      mass: 5e4, // arbitrary
+      velocity: ship.velocity, // alias for performance
     });
-    positions.push(vec3.clone(ship.position));
+    positions.push(ship.position); // alias for performance
   }
 
   // Planets
@@ -33,12 +29,12 @@ export function buildInitialGravityState(world: World): GravityState {
     const physics = world.planetPhysics.find((p) => p.id === body.id);
     if (!physics) continue;
 
-    bodies.push({
+    bodyStates.push({
       id: body.id,
       mass: physics.mass,
-      velocity: vec3.clone(body.velocity),
+      velocity: body.velocity, // alias for performance
     });
-    positions.push(vec3.clone(body.position));
+    positions.push(body.position); // alias for performance
   }
 
   // Stars
@@ -47,13 +43,13 @@ export function buildInitialGravityState(world: World): GravityState {
     const physics = world.starPhysics.find((p) => p.id === body.id);
     if (!physics) continue;
 
-    bodies.push({
+    bodyStates.push({
       id: body.id,
       mass: physics.mass,
-      velocity: vec3.clone(body.velocity),
+      velocity: body.velocity, // alias for performance
     });
-    positions.push(vec3.clone(body.position));
+    positions.push(body.position); // alias for performance
   }
 
-  return { bodies, positions };
+  return { bodyStates, positions };
 }

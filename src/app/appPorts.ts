@@ -64,7 +64,6 @@ export interface BaseSceneObject {
 
 export interface CelestialBodySceneObject extends SolidSceneObject {
   kind: "planet" | "star";
-  initialVelocity: Vec3;
   physicalRadius: number; // meters
   backFaceCulling: true;
   velocity: Vec3;
@@ -118,6 +117,8 @@ export interface PolylineSceneObject extends BaseSceneObject {
   applyTransform: false;
   wireframeOnly: true;
   backFaceCulling: false;
+  count: number;
+  tail: number;
 }
 
 /**
