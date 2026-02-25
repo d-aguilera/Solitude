@@ -9,7 +9,7 @@ import type { RGB, Vec3 } from "../domain/domainPorts.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
-import { ndcToScreen } from "./ndcToScreen.js";
+import { ndcToScreenInto, ndcZero } from "./ndc.js";
 import { ProjectionService } from "./ProjectionService.js";
 import type { NdcPoint, RenderedFace, ScreenPoint } from "./renderPorts.js";
 import { toRenderable } from "./renderPrep.js";
@@ -54,9 +54,13 @@ const toCameraScratch: Vec3 = vec3.zero();
 // Grow-only scratch buffer for face entries across frames.
 const faceEntryScratch: FaceEntry[] = [];
 
-const ndc0: NdcPoint = { x: 0, y: 0, depth: 0 };
-const ndc1: NdcPoint = { x: 0, y: 0, depth: 0 };
-const ndc2: NdcPoint = { x: 0, y: 0, depth: 0 };
+const p0: ScreenPoint = { x: 0, y: 0, depth: 0 };
+const p1: ScreenPoint = { x: 0, y: 0, depth: 0 };
+const p2: ScreenPoint = { x: 0, y: 0, depth: 0 };
+
+const ndc0: NdcPoint = ndcZero();
+const ndc1: NdcPoint = ndcZero();
+const ndc2: NdcPoint = ndcZero();
 
 /**
  * Build the list of shaded triangle faces (with depth and lighting information)
@@ -121,23 +125,29 @@ function buildFaces(
         const c1 = cameraPoints[i1];
         const c2 = cameraPoints[i2];
 
-        const clipped = projectionService.clipTriangleAgainstNearPlaneCamera(
+        const clipped: [[Vec3, Vec3, Vec3], [Vec3, Vec3, Vec3]] = [
+          [vec3.zero(), vec3.zero(), vec3.zero()],
+          [vec3.zero(), vec3.zero(), vec3.zero()],
+        ];
+        const clipCount = projectionService.clipTriangleAgainstNearPlaneCamera(
+          clipped,
           c0,
           c1,
           c2,
         );
-        if (clipped.length === 0) continue;
+        if (clipCount === 0) continue;
 
         const isStar = obj.kind === "star";
 
-        for (const [A, B, C] of clipped) {
+        for (let i = 0; i < clipCount; i++) {
+          const [A, B, C] = clipped[i];
           projectionService.projectCameraPointToNdcInto(ndc0, A);
           projectionService.projectCameraPointToNdcInto(ndc1, B);
           projectionService.projectCameraPointToNdcInto(ndc2, C);
 
-          const p0: ScreenPoint = ndcToScreen(ndc0, canvasWidth, canvasHeight);
-          const p1: ScreenPoint = ndcToScreen(ndc1, canvasWidth, canvasHeight);
-          const p2: ScreenPoint = ndcToScreen(ndc2, canvasWidth, canvasHeight);
+          ndcToScreenInto(p0, ndc0, canvasWidth, canvasHeight);
+          ndcToScreenInto(p1, ndc1, canvasWidth, canvasHeight);
+          ndcToScreenInto(p2, ndc2, canvasWidth, canvasHeight);
 
           const avgDepth = (p0.depth + p1.depth + p2.depth) / 3;
 
@@ -152,9 +162,9 @@ function buildFaces(
               baseColor,
               depth: avgDepth,
               intensity,
-              p0,
-              p1,
-              p2,
+              p0: { x: p0.x, y: p0.y, depth: p0.depth },
+              p1: { x: p1.x, y: p1.y, depth: p1.depth },
+              p2: { x: p2.x, y: p2.y, depth: p2.depth },
             };
             faceEntryScratch[faceCount] = entry;
           } else {
@@ -162,9 +172,15 @@ function buildFaces(
             entry.baseColor = baseColor;
             entry.depth = avgDepth;
             entry.intensity = intensity;
-            entry.p0 = p0;
-            entry.p1 = p1;
-            entry.p2 = p2;
+            entry.p0.x = p0.x;
+            entry.p0.y = p0.y;
+            entry.p0.depth = p0.depth;
+            entry.p1.x = p1.x;
+            entry.p1.y = p1.y;
+            entry.p1.depth = p1.depth;
+            entry.p2.x = p2.x;
+            entry.p2.y = p2.y;
+            entry.p2.depth = p2.depth;
           }
 
           faceCount++;

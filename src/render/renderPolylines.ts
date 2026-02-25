@@ -2,13 +2,14 @@ import type { SceneObject } from "../app/appPorts.js";
 import type { Vec3 } from "../domain/domainPorts.js";
 import { alloc } from "../global/allocProfiler.js";
 import { rgbToCss } from "./color.js";
+import { ndcZero } from "./ndc.js";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals.js";
 import type { RenderedPolyline, ScreenPoint } from "./renderPorts.js";
 
 // scratch
 let segment: ProjectedSegment = {
-  a: { x: 0, y: 0, depth: 0 },
-  b: { x: 0, y: 0, depth: 0 },
+  a: ndcZero(),
+  b: ndcZero(),
   clipped: false,
 };
 

@@ -4,7 +4,7 @@ import { localFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
-import { ndcToScreen } from "./ndcToScreen.js";
+import { ndcToScreenInto, ndcZero } from "./ndc.js";
 import type { ProjectedSegment } from "./renderInternals.js";
 import type { NdcPoint } from "./renderPorts.js";
 
@@ -15,8 +15,13 @@ const NEAR = 0.01;
 
 /**
  * Vertical field of view in degrees.
+ * The camera is parameterized in terms of a vertical field of view
+ * and a “circle condition” so that a sphere centered on the view axis
+ * appears circular in screen space, even when canvasWidth != canvasHeight.
  */
 const VERTICAL_FOV = 30;
+const vFovRad = (VERTICAL_FOV * Math.PI) / 180;
+const focalLengthY = 1 / Math.tan(vFovRad / 2);
 
 /**
  * Global pool of camera-space points reused across all ProjectionService instances.
@@ -41,42 +46,32 @@ function ensureGlobalCameraPointPoolCapacity(n: number): void {
   });
 }
 
+// scratch
 const deltaScratch: Vec3 = vec3.zero();
 const cameraPointScratch: Vec3 = vec3.zero();
 
-// --- begin new scratch state for triangle clipping ---
-const triScratch: Vec3[] = [
-  vec3.zero(), // 0
-  vec3.zero(), // 1
-  vec3.zero(), // 2
-  vec3.zero(), // 3
-  vec3.zero(), // 4
-  vec3.zero(), // 5
-];
-
-const triOut0: [Vec3, Vec3, Vec3] = [
-  triScratch[0],
-  triScratch[1],
-  triScratch[2],
-];
-
-const triOut1: [Vec3, Vec3, Vec3] = [
-  triScratch[3],
-  triScratch[4],
-  triScratch[5],
-];
-// --- end new scratch state for triangle clipping ---
+let A = vec3.zero();
+let B = vec3.zero();
+let C = vec3.zero();
+let P = vec3.zero();
+let Q = vec3.zero();
+let R = vec3.zero();
+let IQ = vec3.zero();
+let IR = vec3.zero();
+let Pin1 = vec3.zero();
+let Pin2 = vec3.zero();
+let Pout = vec3.zero();
+let IP1 = vec3.zero();
+let IP2 = vec3.zero();
 
 const aCamScratch: Vec3 = vec3.zero();
 const bCamScratch: Vec3 = vec3.zero();
 
-const R_worldFromLocalScratch: Mat3 = mat3.zero();
-
 const intersectScratch: Vec3 = vec3.zero();
 
-const ndcAScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
-const ndcBScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
-const ndcIScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
+const ndcAScratch: NdcPoint = ndcZero();
+const ndcBScratch: NdcPoint = ndcZero();
+const ndcIScratch: NdcPoint = ndcZero();
 
 /**
  * Projection service responsible for:
@@ -87,8 +82,7 @@ const ndcIScratch: NdcPoint = { x: 0, y: 0, depth: 0 };
  * The service is parameterized by a camera pose and canvas size.
  */
 export class ProjectionService {
-  private readonly fX: number;
-  private readonly fY: number;
+  private readonly focalLengthX: number;
 
   // Precomputed camera transform helpers for segment/point projection.
   private readonly R_localFromWorld: Mat3;
@@ -99,24 +93,12 @@ export class ProjectionService {
     canvasWidth: number,
     canvasHeight: number,
   ) {
-    const { fX, fY, R_localFromWorld } = alloc.withName(
-      ProjectionService.name + ":ctor",
-      () => {
-        const { fX, fY } = this.getFocalLengths(canvasWidth, canvasHeight);
+    this.focalLengthX = focalLengthY * (canvasHeight / canvasWidth);
 
-        localFrame.intoMat3(R_worldFromLocalScratch, pose.frame);
-        const R_localFromWorld = mat3.transposeInto(
-          mat3.zero(),
-          R_worldFromLocalScratch,
-        );
+    this.R_localFromWorld = mat3.zero();
+    localFrame.intoMat3(this.R_localFromWorld, pose.frame);
+    mat3.transposeInto(this.R_localFromWorld, this.R_localFromWorld);
 
-        return { fX, fY, R_localFromWorld };
-      },
-    );
-
-    this.fX = fX;
-    this.fY = fY;
-    this.R_localFromWorld = R_localFromWorld;
     this.cameraPosition = pose.position;
   }
 
@@ -182,8 +164,8 @@ export class ProjectionService {
    */
   projectCameraPointToNdcInto(into: NdcPoint, cameraPoint: Vec3): void {
     const depth = cameraPoint.y;
-    into.x = (cameraPoint.x * this.fX) / depth;
-    into.y = (cameraPoint.z * this.fY) / depth;
+    into.x = (cameraPoint.x * this.focalLengthX) / depth;
+    into.y = (cameraPoint.z * focalLengthY) / depth;
     into.depth = depth;
   }
 
@@ -198,40 +180,31 @@ export class ProjectionService {
    */
 
   clipTriangleAgainstNearPlaneCamera(
+    into: [[Vec3, Vec3, Vec3], [Vec3, Vec3, Vec3]],
     a: Vec3,
     b: Vec3,
     c: Vec3,
-  ): [Vec3, Vec3, Vec3][] {
-    const inside = (p: Vec3) => p.y >= NEAR;
-
-    const inA = inside(a);
-    const inB = inside(b);
-    const inC = inside(c);
+  ): number {
+    const inA = this.isInFrontOfNearPlane(a);
+    const inB = this.isInFrontOfNearPlane(b);
+    const inC = this.isInFrontOfNearPlane(c);
     const insideCount = (inA ? 1 : 0) + (inB ? 1 : 0) + (inC ? 1 : 0);
 
-    if (insideCount === 0) return [];
+    // None inside: return empty array.
+    if (insideCount === 0) return 0;
 
-    // Helper: intersect segment [p,q] with plane y = NEAR, writing into dst.
-    const intersectInto = (dst: Vec3, p: Vec3, q: Vec3): void => {
-      const t = (NEAR - p.y) / (q.y - p.y);
-      dst.x = p.x + t * (q.x - p.x);
-      dst.y = NEAR;
-      dst.z = p.z + t * (q.z - p.z);
-    };
-
+    // All inside: return input references.
     if (insideCount === 3) {
-      // All inside: just reuse input references.
-      // We still go through triOut0 so the caller always uses the same shape.
-      triOut0[0] = a;
-      triOut0[1] = b;
-      triOut0[2] = c;
-      return [triOut0];
+      [A, B, C] = into[0];
+      vec3.copyInto(A, a);
+      vec3.copyInto(B, b);
+      vec3.copyInto(C, c);
+      return 1;
     }
 
+    // One inside: return a single clipped triangle.
     if (insideCount === 1) {
-      // One inside: result is a single clipped triangle.
-      // Pick the inside vertex P and the two outside vertices Q,R.
-      let P: Vec3, Q: Vec3, R: Vec3;
+      // P inside; Q, R outside.
       if (inA) {
         P = a;
         Q = b;
@@ -246,20 +219,20 @@ export class ProjectionService {
         R = b;
       }
 
-      const IQ = triScratch[0];
-      const IR = triScratch[1];
-      intersectInto(IQ, P, Q);
-      intersectInto(IR, P, R);
+      this.intersectInto(IQ, P, Q);
+      this.intersectInto(IR, P, R);
 
-      triOut0[0] = P;
-      triOut0[1] = IQ;
-      triOut0[2] = IR;
-      return [triOut0];
+      const [A, B, C] = into[0];
+      vec3.copyInto(A, P);
+      vec3.copyInto(B, IQ);
+      vec3.copyInto(C, IR);
+
+      return 1;
     }
 
     // insideCount === 2
     // Two inside, one outside: result is two triangles.
-    let Pin1: Vec3, Pin2: Vec3, Pout: Vec3;
+    // Pin1, Pin2 inside; Pout outside.
     if (!inA) {
       Pout = a;
       Pin1 = b;
@@ -274,32 +247,35 @@ export class ProjectionService {
       Pin2 = b;
     }
 
-    const IP1 = triScratch[2];
-    const IP2 = triScratch[3];
-    intersectInto(IP1, Pin1, Pout);
-    intersectInto(IP2, Pin2, Pout);
+    this.intersectInto(IP1, Pin1, Pout);
+    this.intersectInto(IP2, Pin2, Pout);
 
     // Triangle 1: Pin1, Pin2, IP1
-    triOut0[0] = Pin1;
-    triOut0[1] = Pin2;
-    triOut0[2] = IP1;
+    [A, B, C] = into[0];
+    vec3.copyInto(A, Pin1);
+    vec3.copyInto(B, Pin2);
+    vec3.copyInto(C, IP1);
 
     // Triangle 2: Pin2, IP2, IP1
-    triOut1[0] = Pin2;
-    triOut1[1] = IP2;
-    triOut1[2] = IP1;
+    [A, B, C] = into[1];
+    vec3.copyInto(A, Pin2);
+    vec3.copyInto(B, IP2);
+    vec3.copyInto(C, IP1);
 
-    return [triOut0, triOut1];
+    return 2;
   }
 
   /**
    * Project a world-space segment [A, B] to one or more screen-space
    * polylines, clipping against the near plane.
-   *
-   * Returns:
-   *   []                if fully behind the near plane
-   *   [[P0, P1]]        if fully in front of the near plane
-   *   [[P_inside, P_I]] if crossing the near plane
+   * It returns `false` if the segment is fully behind the near plane.
+   * Otherwise, it returns `true` and sets `into` as following:
+   *   { A', B', false } if both A and B are front of the near plane.
+   * If either A or B is not in front of the near plane, then I is the
+   * intersection point between the segment and the near plane and the
+   * function returns `true` and sets `into` as follows:
+   *   { A', I,  true  } if A in front of the near plane
+   *   { I,  B', true  } if B in front of the near plane
    */
   projectWorldSegmentToScreenInto(
     into: ProjectedSegment,
@@ -324,26 +300,27 @@ export class ProjectionService {
     if (inA && inB) {
       this.projectCameraPointToNdcInto(ndcAScratch, aCamScratch);
       this.projectCameraPointToNdcInto(ndcBScratch, bCamScratch);
-      into.a = ndcToScreen(ndcAScratch, screenWidth, screenHeight);
-      into.b = ndcToScreen(ndcBScratch, screenWidth, screenHeight);
+      ndcToScreenInto(into.a, ndcAScratch, screenWidth, screenHeight);
+      ndcToScreenInto(into.b, ndcBScratch, screenWidth, screenHeight);
       into.clipped = false;
       return true;
     }
 
-    const t = (NEAR - aCamScratch.y) / (bCamScratch.y - aCamScratch.y);
-    vec3.lerpInto(intersectScratch, aCamScratch, bCamScratch, t);
+    // this section (clipped = true) produces rasterization anomalies
+
+    this.intersectInto(intersectScratch, aCamScratch, bCamScratch);
     this.projectCameraPointToNdcInto(ndcIScratch, intersectScratch);
 
     if (inA) {
       // A inside, B outside => return { a, i }
       this.projectCameraPointToNdcInto(ndcAScratch, aCamScratch);
-      into.a = ndcToScreen(ndcAScratch, screenWidth, screenHeight);
-      into.b = ndcToScreen(ndcIScratch, screenWidth, screenHeight);
+      ndcToScreenInto(into.a, ndcAScratch, screenWidth, screenHeight);
+      ndcToScreenInto(into.b, ndcIScratch, screenWidth, screenHeight);
     } else {
       // B inside, A outside => return { i, b }
       this.projectCameraPointToNdcInto(ndcBScratch, bCamScratch);
-      into.a = ndcToScreen(ndcIScratch, screenWidth, screenHeight);
-      into.b = ndcToScreen(ndcBScratch, screenWidth, screenHeight);
+      ndcToScreenInto(into.a, ndcIScratch, screenWidth, screenHeight);
+      ndcToScreenInto(into.b, ndcBScratch, screenWidth, screenHeight);
     }
 
     into.clipped = true;
@@ -351,23 +328,13 @@ export class ProjectionService {
   }
 
   /**
-   * Compute focal lengths (fX, fY) for a perspective projection.
-   *
-   * The camera is parameterized in terms of a vertical field of view
-   * and a “circle condition” so that a sphere centered on the view axis
-   * appears circular in screen space, even when canvasWidth != canvasHeight.
+   * Intersect segment [p,q] with plane y = NEAR, writing into dst.
    */
-  private getFocalLengths(
-    canvasWidth: number,
-    canvasHeight: number,
-  ): { fX: number; fY: number } {
-    const vFovRad = (VERTICAL_FOV * Math.PI) / 180;
-
-    const fY = 1 / Math.tan(vFovRad / 2);
-    const fX = fY * (canvasHeight / canvasWidth);
-
-    return { fX, fY };
-  }
+  private intersectInto = (dst: Vec3, p: Vec3, q: Vec3): void => {
+    const t = (NEAR - p.y) / (q.y - p.y);
+    vec3.lerpInto(dst, p, q, t);
+    dst.y = NEAR; // clamp to avoid floating point drift
+  };
 
   /**
    * True if a camera-space point is in front of the near plane.
