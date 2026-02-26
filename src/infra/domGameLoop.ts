@@ -106,6 +106,7 @@ export function runLoop(
     currentThrustLevel: 0,
     currentTimeScale: 0,
     fps: 0,
+    paused: false,
     pilotCameraLocalOffset: tickOutput.pilotCameraLocalOffset,
     profilingEnabled: false,
     simTimeMillis: 0,
@@ -169,6 +170,7 @@ export function runLoop(
       hudRenderParams.currentThrustLevel = tickOutput.currentThrustLevel;
       hudRenderParams.currentTimeScale = timeScale;
       hudRenderParams.fps = fps;
+      hudRenderParams.paused = paused;
       hudRenderParams.pilotCameraLocalOffset =
         tickOutput.pilotCameraLocalOffset;
       hudRenderParams.profilingEnabled = profilingEnabled;

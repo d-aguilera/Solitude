@@ -12,6 +12,7 @@ export class DefaultHudRenderer implements HudRenderer {
       currentThrustLevel,
       currentTimeScale,
       fps,
+      paused,
       pilotCameraLocalOffset,
       profilingEnabled,
       simTimeMillis,
@@ -53,6 +54,9 @@ export class DefaultHudRenderer implements HudRenderer {
 
     // Time scale
     hudRow2[1] = "Time scale: ".concat(currentTimeScale.toString());
+
+    // Pause status
+    hudRow3[0] = paused ? "PAUSED" : "";
 
     // Profiling
     hudRow3[1] = profilingEnabled ? "PROFILING" : "";

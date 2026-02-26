@@ -22,6 +22,7 @@ export interface HudRenderParams {
   currentThrustLevel: number;
   currentTimeScale: number;
   fps: number;
+  paused: boolean;
   pilotCameraLocalOffset: Vec3;
   profilingEnabled: boolean;
   simTimeMillis: number; // accumulated simulation time.

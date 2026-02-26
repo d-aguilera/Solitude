@@ -42,10 +42,10 @@ export const ALL_CONTROL_ACTIONS = [
 ] as const;
 
 export const ALL_ENV_ACTIONS = [
+  "decreaseTimeScale",
+  "increaseTimeScale",
   "pauseToggle",
   "profilingToggle",
-  "increaseTimeScale",
-  "decreaseTimeScale",
 ] as const;
 
 export interface BaseSceneObject {

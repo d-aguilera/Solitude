@@ -14,6 +14,7 @@ import { runLoop } from "./domGameLoop.js";
 import { initInput } from "./domKeyboardInput.js";
 import { initLayout } from "./domLayout.js";
 import { NewtonianGravityEngine } from "./NewtonianGravityEngine.js";
+import { initPause } from "./pause.js";
 
 /**
  * DOM-level bootstrap
@@ -66,6 +67,8 @@ export function bootstrapWith(
   const hudRenderer: HudRenderer = new DefaultHudRenderer();
 
   const { controlInput, envInput } = initInput();
+
+  initPause();
 
   runLoop(
     gameplayParameters,

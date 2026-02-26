@@ -24,3 +24,16 @@ export function handlePauseToggle(pauseKeyPressed: boolean): boolean {
 
   return paused;
 }
+
+export function initPause(): void {
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === "hidden") {
+      paused = true;
+    }
+  };
+
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+
+  // Initialize once so that starting in a hidden state also pauses.
+  handleVisibilityChange();
+}
