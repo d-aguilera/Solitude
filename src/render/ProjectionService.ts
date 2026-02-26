@@ -11,6 +11,7 @@ import type { ProjectedSegment } from "./renderInternals.js";
  * Camera-space forward threshold.
  */
 const NEAR = 0.01;
+const FAR = Number.POSITIVE_INFINITY;
 
 /**
  * Vertical field of view in degrees.
@@ -66,22 +67,41 @@ let IP2 = vec3.zero();
 const aCamScratch: Vec3 = vec3.zero();
 const bCamScratch: Vec3 = vec3.zero();
 
-const intersectScratch: Vec3 = vec3.zero();
-
 const ndcAScratch: NdcPoint = ndc.zero();
 const ndcBScratch: NdcPoint = ndc.zero();
-const ndcIScratch: NdcPoint = ndc.zero();
+
+const clipChangedScratch = { value: false };
+
+/**
+ * Per-point frustum outcode bits in camera space.
+ *
+ * Planes:
+ *  - NEAR:    y >= NEAR
+ *  - FAR:     y <= FAR
+ *  - LEFT:    x >= -y * tanHalfFovX
+ *  - RIGHT:   x <=  y * tanHalfFovX
+ *  - TOP:     z >= -y * tanHalfFovY
+ *  - BOTTOM:  z <=  y * tanHalfFovY
+ */
+const OUT_NEAR = 1 << 0; // behind near (y < NEAR)
+const OUT_FAR = 1 << 1; // beyond far (y > FAR)
+const OUT_LEFT = 1 << 2;
+const OUT_RIGHT = 1 << 3;
+const OUT_TOP = 1 << 4;
+const OUT_BOTTOM = 1 << 5;
 
 /**
  * Projection service responsible for:
  *  - Transforming world-space positions into camera space
- *  - Clipping against the near plane
+ *  - Clipping against the camera frustum
  *  - Mapping camera-space positions into NDC
  *
  * The service is parameterized by a camera pose and canvas size.
  */
 export class ProjectionService {
   private readonly focalLengthX: number;
+  private readonly tanHalfFovX: number;
+  private readonly tanHalfFovY: number;
 
   // Precomputed camera transform helpers for segment/point projection.
   private readonly R_localFromWorld: Mat3;
@@ -93,6 +113,8 @@ export class ProjectionService {
     canvasHeight: number,
   ) {
     this.focalLengthX = focalLengthY * (canvasHeight / canvasWidth);
+    this.tanHalfFovY = 1 / focalLengthY;
+    this.tanHalfFovX = 1 / this.focalLengthX;
 
     this.R_localFromWorld = mat3.zero();
     localFrame.intoMat3(this.R_localFromWorld, pose.frame);
@@ -104,11 +126,11 @@ export class ProjectionService {
   /**
    * Full world-space -> NDC projection with near-plane rejection.
    *
-   * Returns null when the point lies behind the near plane in camera space.
+   * Returns false when the point lies outside the camera frustum.
    */
   projectWorldPointToNdcInto(into: NdcPoint, worldPoint: Vec3): boolean {
     this.worldPointToCameraPointNoClipInto(cameraPointScratch, worldPoint);
-    if (!this.isInFrontOfNearPlane(cameraPointScratch)) {
+    if (!this.isInsideFrustum(cameraPointScratch)) {
       return false;
     }
     this.projectCameraPointToNdcInto(into, cameraPointScratch);
@@ -177,7 +199,6 @@ export class ProjectionService {
    * stable until the next call to this method. Callers must consume
    * the result immediately.
    */
-
   clipTriangleAgainstNearPlaneCamera(
     into: [[Vec3, Vec3, Vec3], [Vec3, Vec3, Vec3]],
     a: Vec3,
@@ -266,15 +287,17 @@ export class ProjectionService {
 
   /**
    * Project a world-space segment [A, B] to one or more screen-space
-   * polylines, clipping against the near plane.
-   * It returns `false` if the segment is fully behind the near plane.
+   * polylines, clipping against the camera frustum.
+   * It returns `false` if the segment is fully outside the frustum.
    * Otherwise, it returns `true` and sets `into` as following:
-   *   { A', B', false } if both A and B are front of the near plane.
-   * If either A or B is not in front of the near plane, then I is the
-   * intersection point between the segment and the near plane and the
-   * function returns `true` and sets `into` as follows:
-   *   { A', I,  true  } if A in front of the near plane
-   *   { I,  B', true  } if B in front of the near plane
+   *   { A', B', false } if both A and B are fully inside the frustum.
+   * If either A or B is not inside the frustum, then I is an intersection
+   * point between the segment and a frustum plane and the function returns
+   * `true` and sets `into` as follows:
+   *   { A', I,  true  } if A is inside and B is outside
+   *   { I,  B', true  } if B is inside and A is outside
+   * When both endpoints lie outside but the segment crosses the frustum,
+   * A' and B' are the two intersection points on the frustum boundary.
    */
   projectWorldSegmentToScreenInto(
     into: ProjectedSegment,
@@ -287,42 +310,30 @@ export class ProjectionService {
     this.worldPointToCameraPointNoClipInto(aCamScratch, aWorld);
     this.worldPointToCameraPointNoClipInto(bCamScratch, bWorld);
 
-    const inA = this.isInFrontOfNearPlane(aCamScratch);
-    const inB = this.isInFrontOfNearPlane(bCamScratch);
-
-    // Both behind near plane: discard
-    if (!inA && !inB) {
+    // 2) Clip segment in camera space against full frustum.
+    clipChangedScratch.value = false;
+    if (
+      !this.clipSegmentCameraFrustum(
+        aCamScratch,
+        bCamScratch,
+        clipChangedScratch,
+      )
+    ) {
       return false;
     }
 
-    // Both in front of near plane: project as-is
-    if (inA && inB) {
-      this.projectCameraPointToNdcInto(ndcAScratch, aCamScratch);
-      this.projectCameraPointToNdcInto(ndcBScratch, bCamScratch);
-      ndc.toScreenInto(into.a, ndcAScratch, screenWidth, screenHeight);
-      ndc.toScreenInto(into.b, ndcBScratch, screenWidth, screenHeight);
-      into.clipped = false;
-      return true;
-    }
+    // 3) Project the resulting camera-space points to screen space.
+    this.projectCameraPointToNdcInto(ndcAScratch, aCamScratch);
+    this.projectCameraPointToNdcInto(ndcBScratch, bCamScratch);
+    ndc.toScreenInto(into.a, ndcAScratch, screenWidth, screenHeight);
+    ndc.toScreenInto(into.b, ndcBScratch, screenWidth, screenHeight);
 
-    // this section (clipped = true) produces rasterization anomalies
+    // 4) Mark whether we had to clip at least one endpoint.
+    //
+    // We consider the segment "clipped" whenever the clipping step
+    // moved at least one endpoint onto a frustum plane.
+    into.clipped = clipChangedScratch.value;
 
-    this.intersectInto(intersectScratch, aCamScratch, bCamScratch);
-    this.projectCameraPointToNdcInto(ndcIScratch, intersectScratch);
-
-    if (inA) {
-      // A inside, B outside => return { a, i }
-      this.projectCameraPointToNdcInto(ndcAScratch, aCamScratch);
-      ndc.toScreenInto(into.a, ndcAScratch, screenWidth, screenHeight);
-      ndc.toScreenInto(into.b, ndcIScratch, screenWidth, screenHeight);
-    } else {
-      // B inside, A outside => return { i, b }
-      this.projectCameraPointToNdcInto(ndcBScratch, bCamScratch);
-      ndc.toScreenInto(into.a, ndcIScratch, screenWidth, screenHeight);
-      ndc.toScreenInto(into.b, ndcBScratch, screenWidth, screenHeight);
-    }
-
-    into.clipped = true;
     return true;
   }
 
@@ -340,5 +351,168 @@ export class ProjectionService {
    */
   private isInFrontOfNearPlane(p: Vec3): boolean {
     return p.y >= NEAR;
+  }
+
+  /**
+   * True if a camera-space point lies inside the view frustum
+   * (between near/far planes and inside the horizontal/vertical FOV).
+   */
+  private isInsideFrustum(p: Vec3): boolean {
+    const y = p.y;
+    if (y < NEAR || y > FAR) return false;
+
+    const limitX = y * this.tanHalfFovX;
+    const limitZ = y * this.tanHalfFovY;
+
+    const x = p.x;
+    const z = p.z;
+
+    if (x < -limitX || x > limitX) return false;
+    if (z < -limitZ || z > limitZ) return false;
+
+    return true;
+  }
+
+  /**
+   * Compute a 6-bit outcode for a camera-space point against the frustum.
+   */
+  private computeOutCode(p: Vec3): number {
+    const y = p.y;
+    let code = 0;
+
+    if (y < NEAR) code |= OUT_NEAR;
+    if (y > FAR) code |= OUT_FAR;
+
+    if (y > 0 && Number.isFinite(y)) {
+      const limitX = y * this.tanHalfFovX;
+      const limitZ = y * this.tanHalfFovY;
+      const x = p.x;
+      const z = p.z;
+
+      if (x < -limitX) code |= OUT_LEFT;
+      if (x > limitX) code |= OUT_RIGHT;
+      if (z < -limitZ) code |= OUT_TOP;
+      if (z > limitZ) code |= OUT_BOTTOM;
+    }
+
+    return code;
+  }
+
+  /**
+   * Clip a camera-space segment [a,b] against the view frustum in camera space.
+   *
+   * On success, `a` and `b` are mutated in-place to the clipped endpoints.
+   * Returns true if the segment has any portion inside the frustum, false if it
+   * lies entirely outside.
+   *
+   * The `changed` flag is set to true when at least one endpoint was moved
+   * during clipping, i.e. the segment touched the frustum boundary.
+   */
+  private clipSegmentCameraFrustum(
+    a: Vec3,
+    b: Vec3,
+    changed: { value: boolean },
+  ): boolean {
+    let codeA = this.computeOutCode(a);
+    let codeB = this.computeOutCode(b);
+
+    // Trivial accept: both endpoints already inside.
+    if ((codeA | codeB) === 0) {
+      return true;
+    }
+
+    // Trivial reject: segment is fully outside at least one shared half-space.
+    if ((codeA & codeB) !== 0) {
+      return false;
+    }
+
+    for (let iter = 0; iter < 8; iter++) {
+      if ((codeA | codeB) === 0) {
+        return true;
+      }
+      if ((codeA & codeB) !== 0) {
+        return false;
+      }
+
+      const useA = codeA !== 0;
+      const outCode = useA ? codeA : codeB;
+      const p = useA ? a : b;
+      const q = useA ? b : a;
+      const { x: x1, y: y1, z: z1 } = p;
+      const { x: x2, y: y2, z: z2 } = q;
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const dz = z2 - z1;
+
+      let t = 0;
+      if (outCode & OUT_NEAR) {
+        const denom = dy;
+        if (denom === 0) return false;
+        t = (NEAR - y1) / denom;
+        if (t < 0 || t > 1 || !Number.isFinite(t)) return false;
+        p.x = x1 + dx * t;
+        p.y = NEAR;
+        p.z = z1 + dz * t;
+      } else if (outCode & OUT_FAR) {
+        const denom = dy;
+        if (denom === 0) return false;
+        t = (FAR - y1) / denom;
+        if (t < 0 || t > 1 || !Number.isFinite(t)) return false;
+        p.x = x1 + dx * t;
+        p.y = FAR;
+        p.z = z1 + dz * t;
+      } else if (outCode & OUT_LEFT) {
+        const tx = this.tanHalfFovX;
+        const denom = dx + dy * tx;
+        if (denom === 0) return false;
+        t = -(x1 + y1 * tx) / denom;
+        if (t < 0 || t > 1 || !Number.isFinite(t)) return false;
+        const y = y1 + dy * t;
+        p.y = y;
+        p.x = -y * tx;
+        p.z = z1 + dz * t;
+      } else if (outCode & OUT_RIGHT) {
+        const tx = this.tanHalfFovX;
+        const denom = dx - dy * tx;
+        if (denom === 0) return false;
+        t = (y1 * tx - x1) / denom;
+        if (t < 0 || t > 1 || !Number.isFinite(t)) return false;
+        const y = y1 + dy * t;
+        p.y = y;
+        p.x = y * tx;
+        p.z = z1 + dz * t;
+      } else if (outCode & OUT_TOP) {
+        const tz = this.tanHalfFovY;
+        const denom = dz + dy * tz;
+        if (denom === 0) return false;
+        t = -(z1 + y1 * tz) / denom;
+        if (t < 0 || t > 1 || !Number.isFinite(t)) return false;
+        const y = y1 + dy * t;
+        p.y = y;
+        p.x = x1 + dx * t;
+        p.z = -y * tz;
+      } else if (outCode & OUT_BOTTOM) {
+        const tz = this.tanHalfFovY;
+        const denom = dz - dy * tz;
+        if (denom === 0) return false;
+        t = (y1 * tz - z1) / denom;
+        if (t < 0 || t > 1 || !Number.isFinite(t)) return false;
+        const y = y1 + dy * t;
+        p.y = y;
+        p.x = x1 + dx * t;
+        p.z = y * tz;
+      }
+
+      // If we reached here and actually moved p, mark the segment as changed.
+      changed.value = true;
+
+      if (useA) {
+        codeA = this.computeOutCode(a);
+      } else {
+        codeB = this.computeOutCode(b);
+      }
+    }
+
+    return (this.computeOutCode(a) | this.computeOutCode(b)) === 0;
   }
 }

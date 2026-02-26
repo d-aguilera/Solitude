@@ -42,10 +42,11 @@ export function renderPolylinesInto(
     for (obj of objects) {
       if (obj.kind !== "polyline") continue;
       if (objectsFilter && !objectsFilter(obj)) continue;
-      if (obj.mesh.points.length === 0) continue;
-
       const { count, mesh, tail } = obj;
+
       meshPoints = mesh.points;
+      if (meshPoints.length === 0) continue;
+
       head = (tail - count + meshPoints.length) % meshPoints.length;
 
       // Start a new polyline
@@ -54,7 +55,7 @@ export function renderPolylinesInto(
       curr = tail;
       processSegment(obj.position, meshPoints[curr]);
 
-      // continue to walk the mesh points up to the head
+      // continue to walk the mesh towards the head
       while (curr !== head) {
         processSegment(meshPoints[prev], meshPoints[curr]);
       }
@@ -74,8 +75,8 @@ export function renderPolylinesInto(
           addPointToCurrent(segment.a);
         }
         addPointToCurrent(segment.b);
-        if (segment.clipped && pointCount > 2) {
-          // Polyline crossed the camera plane => flush it
+        if (segment.clipped) {
+          // Polyline went off the camera frustum => flush it
           flushCurrent();
         }
       }
