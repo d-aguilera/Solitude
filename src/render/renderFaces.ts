@@ -52,6 +52,11 @@ const e2Scratch: Vec3 = vec3.zero();
 const normalScratch: Vec3 = vec3.zero();
 const toCameraScratch: Vec3 = vec3.zero();
 
+const clipped: [[Vec3, Vec3, Vec3], [Vec3, Vec3, Vec3]] = [
+  [vec3.zero(), vec3.zero(), vec3.zero()],
+  [vec3.zero(), vec3.zero(), vec3.zero()],
+];
+
 // Grow-only scratch buffer for face entries across frames.
 const faceEntryScratch: FaceEntry[] = [];
 
@@ -126,10 +131,6 @@ function buildFaces(
         const c1 = cameraPoints[i1];
         const c2 = cameraPoints[i2];
 
-        const clipped: [[Vec3, Vec3, Vec3], [Vec3, Vec3, Vec3]] = [
-          [vec3.zero(), vec3.zero(), vec3.zero()],
-          [vec3.zero(), vec3.zero(), vec3.zero()],
-        ];
         const clipCount = projectionService.clipTriangleAgainstNearPlaneCamera(
           clipped,
           c0,
