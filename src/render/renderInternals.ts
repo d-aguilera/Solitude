@@ -1,5 +1,5 @@
 import type { Vec3 } from "../domain/domainPorts";
-import type { ScreenPoint } from "./renderPorts";
+import type { ScreenPoint } from "./scrn";
 
 export type ProjectedSegment = {
   a: ScreenPoint;

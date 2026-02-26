@@ -4,9 +4,8 @@ import { localFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
-import { ndcToScreenInto, ndcZero } from "./ndc.js";
+import { type NdcPoint, ndc } from "./ndc.js";
 import type { ProjectedSegment } from "./renderInternals.js";
-import type { NdcPoint } from "./renderPorts.js";
 
 /**
  * Camera-space forward threshold.
@@ -69,9 +68,9 @@ const bCamScratch: Vec3 = vec3.zero();
 
 const intersectScratch: Vec3 = vec3.zero();
 
-const ndcAScratch: NdcPoint = ndcZero();
-const ndcBScratch: NdcPoint = ndcZero();
-const ndcIScratch: NdcPoint = ndcZero();
+const ndcAScratch: NdcPoint = ndc.zero();
+const ndcBScratch: NdcPoint = ndc.zero();
+const ndcIScratch: NdcPoint = ndc.zero();
 
 /**
  * Projection service responsible for:
@@ -300,8 +299,8 @@ export class ProjectionService {
     if (inA && inB) {
       this.projectCameraPointToNdcInto(ndcAScratch, aCamScratch);
       this.projectCameraPointToNdcInto(ndcBScratch, bCamScratch);
-      ndcToScreenInto(into.a, ndcAScratch, screenWidth, screenHeight);
-      ndcToScreenInto(into.b, ndcBScratch, screenWidth, screenHeight);
+      ndc.toScreenInto(into.a, ndcAScratch, screenWidth, screenHeight);
+      ndc.toScreenInto(into.b, ndcBScratch, screenWidth, screenHeight);
       into.clipped = false;
       return true;
     }
@@ -314,13 +313,13 @@ export class ProjectionService {
     if (inA) {
       // A inside, B outside => return { a, i }
       this.projectCameraPointToNdcInto(ndcAScratch, aCamScratch);
-      ndcToScreenInto(into.a, ndcAScratch, screenWidth, screenHeight);
-      ndcToScreenInto(into.b, ndcIScratch, screenWidth, screenHeight);
+      ndc.toScreenInto(into.a, ndcAScratch, screenWidth, screenHeight);
+      ndc.toScreenInto(into.b, ndcIScratch, screenWidth, screenHeight);
     } else {
       // B inside, A outside => return { i, b }
       this.projectCameraPointToNdcInto(ndcBScratch, bCamScratch);
-      ndcToScreenInto(into.a, ndcIScratch, screenWidth, screenHeight);
-      ndcToScreenInto(into.b, ndcBScratch, screenWidth, screenHeight);
+      ndc.toScreenInto(into.a, ndcIScratch, screenWidth, screenHeight);
+      ndc.toScreenInto(into.b, ndcBScratch, screenWidth, screenHeight);
     }
 
     into.clipped = true;

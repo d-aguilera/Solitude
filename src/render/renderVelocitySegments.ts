@@ -1,37 +1,45 @@
 import type { ShipBody, Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
-import { alloc } from "../global/allocProfiler.js";
-import { ndcZero } from "./ndc.js";
+import { ndc } from "./ndc.js";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals.js";
 import type { RenderedSegment } from "./renderPorts.js";
+import { scrn } from "./scrn.js";
 
 const projectedScratch: ProjectedSegment = {
-  a: ndcZero(),
-  b: ndcZero(),
+  a: ndc.zero(),
+  b: ndc.zero(),
   clipped: false,
 };
 
-export function renderVelocitySegments(
+export function renderVelocitySegmentsInto(
+  into: RenderedSegment[],
   ship: ShipBody,
   projectSegmentInto: SegmentProjector,
-): RenderedSegment[] {
-  return alloc.withName(renderVelocitySegments.name, () => {
-    const renderedSegments: RenderedSegment[] = [];
-    if (!mutateShipVelocitySegments(ship, segmentsScratch)) {
-      return renderedSegments;
-    }
+): number {
+  if (!mutateShipVelocitySegments(ship, segmentsScratch)) {
+    return 0;
+  }
 
-    for (const seg of segmentsScratch) {
-      if (!projectSegmentInto(projectedScratch, seg.start, seg.end)) continue;
-      const { a, b } = projectedScratch;
-      const start = { x: a.x, y: a.y, depth: a.depth };
-      const end = { x: b.x, y: b.y, depth: b.depth };
-      const cssColor = seg.direction === "forward" ? "lime" : "red";
-      renderedSegments.push({ start, end, cssColor });
+  let count = 0;
+  for (const seg of segmentsScratch) {
+    if (!projectSegmentInto(projectedScratch, seg.start, seg.end)) continue;
+    const cssColor = seg.direction === "forward" ? "lime" : "red";
+    let entry = into[count];
+    if (entry) {
+      scrn.copy(projectedScratch.a, entry.start);
+      scrn.copy(projectedScratch.b, entry.end);
+      entry.cssColor = cssColor;
+    } else {
+      entry = into[count] = {
+        start: scrn.copy(projectedScratch.a, scrn.zero()),
+        end: scrn.copy(projectedScratch.b, scrn.zero()),
+        cssColor,
+      };
     }
+    count++;
+  }
 
-    return renderedSegments;
-  });
+  return count;
 }
 
 /**

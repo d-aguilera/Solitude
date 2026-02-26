@@ -1,13 +1,17 @@
-import type { NdcPoint, ScreenPoint } from "./renderPorts.js";
-
-export function ndcZero(): NdcPoint {
-  return { x: 0, y: 0, depth: 0 };
-}
+import type { ScreenPoint } from "./scrn.js";
 
 /**
- * Map NDC coordinates into pixel space for a given screen size.
+ * Normalized device coordinate in the projection plane:
+ *   - x, y in [-1, 1] after perspective divide
+ *   - depth is camera-space Y (forward distance)
  */
-export function ndcToScreenInto(
+export interface NdcPoint {
+  x: number;
+  y: number;
+  depth: number;
+}
+
+function toScreenInto(
   into: ScreenPoint,
   ndc: NdcPoint,
   screenWidth: number,
@@ -17,3 +21,15 @@ export function ndcToScreenInto(
   into.y = (1 - ndc.y) * 0.5 * screenHeight;
   into.depth = ndc.depth;
 }
+
+function zero(): NdcPoint {
+  return { x: 0, y: 0, depth: 0 };
+}
+
+export const ndc = {
+  /**
+   * Map NDC coordinates into pixel space for a given screen size.
+   */
+  toScreenInto,
+  zero,
+};

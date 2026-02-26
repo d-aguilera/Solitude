@@ -2,14 +2,15 @@ import type { SceneObject } from "../app/appPorts.js";
 import type { Vec3 } from "../domain/domainPorts.js";
 import { alloc } from "../global/allocProfiler.js";
 import { rgbToCss } from "./color.js";
-import { ndcZero } from "./ndc.js";
+import { ndc } from "./ndc.js";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals.js";
-import type { RenderedPolyline, ScreenPoint } from "./renderPorts.js";
+import type { RenderedPolyline } from "./renderPorts.js";
+import { type ScreenPoint, scrn } from "./scrn.js";
 
 // scratch
 let segment: ProjectedSegment = {
-  a: ndcZero(),
-  b: ndcZero(),
+  a: ndc.zero(),
+  b: ndc.zero(),
   clipped: false,
 };
 
@@ -110,11 +111,7 @@ export function renderPolylinesInto(
         point.x = p.x;
         point.y = p.y;
       } else {
-        screenPoints[pointCount] = {
-          depth: p.depth,
-          x: p.x,
-          y: p.y,
-        };
+        screenPoints[pointCount] = scrn.copy(p, scrn.zero());
       }
       pointCount++;
     }

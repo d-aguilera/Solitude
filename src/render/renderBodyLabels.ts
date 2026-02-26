@@ -7,13 +7,9 @@ import type { BodyId, Vec3 } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
 import { formatDistance, formatSpeed } from "./formatters.js";
-import { ndcToScreenInto, ndcZero } from "./ndc.js";
-import type {
-  NdcPoint,
-  RenderedBodyLabel,
-  ScreenPoint,
-  TextMetrics,
-} from "./renderPorts.js";
+import { type NdcPoint, ndc } from "./ndc.js";
+import type { RenderedBodyLabel, TextMetrics } from "./renderPorts.js";
+import { scrn } from "./scrn.js";
 
 type SortedScratchItem = {
   body: PlanetSceneObject | StarSceneObject;
@@ -22,7 +18,7 @@ type SortedScratchItem = {
 
 const sortedScratch: SortedScratchItem[] = [];
 const diffScratch: Vec3 = vec3.zero();
-const ndcScratch: NdcPoint = ndcZero();
+const ndcScratch: NdcPoint = ndc.zero();
 
 /**
  * Scratch structure for tracking placed label rectangles across a single render pass.
@@ -46,7 +42,7 @@ interface BodyCenter {
   y: number;
 }
 
-const anchor: ScreenPoint = { x: 0, y: 0, depth: 0 };
+const anchor = scrn.zero();
 const allBodyCentersScratch: BodyCenter[] = [];
 let allBodyCentersCount = 0;
 
@@ -107,7 +103,7 @@ export function renderBodyLabels(
         continue; // behind the camera
       }
 
-      ndcToScreenInto(anchor, ndcScratch, screenWidth, screenHeight);
+      ndc.toScreenInto(anchor, ndcScratch, screenWidth, screenHeight);
 
       // 1) If the body's center is off the screen, skip the label.
       if (
@@ -215,7 +211,7 @@ function collectVisibleBodyCenters(
       continue; // behind the camera
     }
 
-    ndcToScreenInto(anchor, ndcScratch, screenWidth, screenHeight);
+    ndc.toScreenInto(anchor, ndcScratch, screenWidth, screenHeight);
 
     if (
       anchor.x < 0 ||

@@ -1,5 +1,6 @@
 import type { PolylineSceneObject, SceneObject } from "../app/appPorts.js";
 import type { Vec3 } from "../domain/domainPorts.js";
+import type { NdcPoint } from "./ndc.js";
 import { ProjectionService } from "./ProjectionService.js";
 import { renderBodyLabels } from "./renderBodyLabels.js";
 import { renderFacesInto } from "./renderFaces.js";
@@ -7,13 +8,12 @@ import type { ProjectedSegment, SegmentProjector } from "./renderInternals.js";
 import { renderPolylinesInto } from "./renderPolylines.js";
 import { drawMode } from "./renderPorts.js";
 import type {
-  NdcPoint,
   RenderedView,
   TextMetrics,
   ViewRenderer,
   ViewRenderParams,
 } from "./renderPorts.js";
-import { renderVelocitySegments } from "./renderVelocitySegments.js";
+import { renderVelocitySegmentsInto } from "./renderVelocitySegments.js";
 
 export class DefaultViewRenderer implements ViewRenderer {
   constructor(
@@ -66,7 +66,11 @@ export class DefaultViewRenderer implements ViewRenderer {
         obj.kind === "polyline" && (objectsFilter ? objectsFilter(obj) : true),
     );
 
-    into.segments = renderVelocitySegments(mainShip, projectSegmentInto);
+    into.segmentCount = renderVelocitySegmentsInto(
+      into.segments,
+      mainShip,
+      projectSegmentInto,
+    );
 
     into.bodyLabels = renderBodyLabels(
       scene.objects,

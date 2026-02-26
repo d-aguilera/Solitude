@@ -7,9 +7,9 @@ import type {
   RenderedHud,
   RenderedPolyline,
   RenderedSegment,
-  ScreenPoint,
   TextMetrics,
 } from "../render/renderPorts.js";
+import type { ScreenPoint } from "../render/scrn.js";
 
 const hudWidth = 420;
 const hudMargin = 10;
@@ -29,9 +29,6 @@ let p1: ScreenPoint;
 let p2: ScreenPoint;
 let color: RGB;
 let p: ScreenPoint;
-let seg: RenderedSegment;
-let start: ScreenPoint;
-let end: ScreenPoint;
 
 /**
  * Canvas2D rasterizer.
@@ -162,14 +159,14 @@ export class CanvasRasterizer implements Rasterizer {
     }
   }
 
-  drawSegments(segments: RenderedSegment[]): void {
+  drawSegments(segments: RenderedSegment[], count: number): void {
     const ctx = this.ctx;
 
     ctx.lineWidth = 4;
 
-    for (seg of segments) {
-      ({ start, end } = seg);
-      ctx.strokeStyle = seg.cssColor;
+    for (let i = 0; i < count; i++) {
+      const { cssColor, start, end } = segments[i];
+      ctx.strokeStyle = cssColor;
       ctx.beginPath();
       ctx.moveTo(start.x, start.y);
       ctx.lineTo(end.x, end.y);

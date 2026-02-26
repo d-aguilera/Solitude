@@ -79,6 +79,7 @@ export function runLoop(
     polylines: [],
     polylineCount: 0,
     segments: [],
+    segmentCount: 0,
   };
 
   const topViewRenderParams: ViewRenderParams = {
@@ -98,6 +99,7 @@ export function runLoop(
     polylines: [],
     polylineCount: 0,
     segments: [],
+    segmentCount: 0,
   };
 
   const hudRenderParams: HudRenderParams = {
@@ -199,7 +201,7 @@ function rasterizeView(renderedView: RenderedView, rasterizer: Rasterizer) {
   rasterizer.clear("#000000");
   rasterizer.drawFaces(renderedView.faces, renderedView.faceCount);
   rasterizer.drawPolylines(renderedView.polylines, renderedView.polylineCount);
-  rasterizer.drawSegments(renderedView.segments);
+  rasterizer.drawSegments(renderedView.segments, renderedView.segmentCount);
   rasterizer.drawBodyLabels(renderedView.bodyLabels);
 }
 

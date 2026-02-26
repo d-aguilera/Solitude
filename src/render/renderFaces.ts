@@ -9,10 +9,11 @@ import type { RGB, Vec3 } from "../domain/domainPorts.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
-import { ndcToScreenInto, ndcZero } from "./ndc.js";
+import { type NdcPoint, ndc } from "./ndc.js";
 import { ProjectionService } from "./ProjectionService.js";
-import type { NdcPoint, RenderedFace, ScreenPoint } from "./renderPorts.js";
+import type { RenderedFace } from "./renderPorts.js";
 import { toRenderable } from "./renderPrep.js";
+import { type ScreenPoint, scrn } from "./scrn.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
 const SUN_LUMINOSITY = 3.828e26; // W
@@ -54,13 +55,13 @@ const toCameraScratch: Vec3 = vec3.zero();
 // Grow-only scratch buffer for face entries across frames.
 const faceEntryScratch: FaceEntry[] = [];
 
-const p0: ScreenPoint = { x: 0, y: 0, depth: 0 };
-const p1: ScreenPoint = { x: 0, y: 0, depth: 0 };
-const p2: ScreenPoint = { x: 0, y: 0, depth: 0 };
+const p0 = scrn.zero();
+const p1 = scrn.zero();
+const p2 = scrn.zero();
 
-const ndc0: NdcPoint = ndcZero();
-const ndc1: NdcPoint = ndcZero();
-const ndc2: NdcPoint = ndcZero();
+const ndc0: NdcPoint = ndc.zero();
+const ndc1: NdcPoint = ndc.zero();
+const ndc2: NdcPoint = ndc.zero();
 
 /**
  * Build the list of shaded triangle faces (with depth and lighting information)
@@ -145,9 +146,9 @@ function buildFaces(
           projectionService.projectCameraPointToNdcInto(ndc1, B);
           projectionService.projectCameraPointToNdcInto(ndc2, C);
 
-          ndcToScreenInto(p0, ndc0, canvasWidth, canvasHeight);
-          ndcToScreenInto(p1, ndc1, canvasWidth, canvasHeight);
-          ndcToScreenInto(p2, ndc2, canvasWidth, canvasHeight);
+          ndc.toScreenInto(p0, ndc0, canvasWidth, canvasHeight);
+          ndc.toScreenInto(p1, ndc1, canvasWidth, canvasHeight);
+          ndc.toScreenInto(p2, ndc2, canvasWidth, canvasHeight);
 
           const avgDepth = (p0.depth + p1.depth + p2.depth) / 3;
 
@@ -162,9 +163,9 @@ function buildFaces(
               baseColor,
               depth: avgDepth,
               intensity,
-              p0: { x: p0.x, y: p0.y, depth: p0.depth },
-              p1: { x: p1.x, y: p1.y, depth: p1.depth },
-              p2: { x: p2.x, y: p2.y, depth: p2.depth },
+              p0: scrn.copy(p0, scrn.zero()),
+              p1: scrn.copy(p1, scrn.zero()),
+              p2: scrn.copy(p2, scrn.zero()),
             };
             faceEntryScratch[faceCount] = entry;
           } else {
@@ -172,15 +173,9 @@ function buildFaces(
             entry.baseColor = baseColor;
             entry.depth = avgDepth;
             entry.intensity = intensity;
-            entry.p0.x = p0.x;
-            entry.p0.y = p0.y;
-            entry.p0.depth = p0.depth;
-            entry.p1.x = p1.x;
-            entry.p1.y = p1.y;
-            entry.p1.depth = p1.depth;
-            entry.p2.x = p2.x;
-            entry.p2.y = p2.y;
-            entry.p2.depth = p2.depth;
+            scrn.copy(p0, entry.p0);
+            scrn.copy(p1, entry.p1);
+            scrn.copy(p2, entry.p2);
           }
 
           faceCount++;
@@ -282,9 +277,6 @@ function shadeFacesInto(into: RenderedFace[], faceList: FaceEntry[]): void {
 
   for (let i = 0; i < n; i++) {
     const face = faceList[i];
-    const { x: x0, y: y0, depth: depth0 } = face.p0;
-    const { x: x1, y: y1, depth: depth1 } = face.p1;
-    const { x: x2, y: y2, depth: depth2 } = face.p2;
     const { r: baseR, g: baseG, b: baseB } = face.baseColor;
     const k = 0.2 + 0.8 * face.intensity;
     const r = Math.round(baseR * k);
@@ -294,22 +286,16 @@ function shadeFacesInto(into: RenderedFace[], faceList: FaceEntry[]): void {
     let entry = into[i];
     if (!entry) {
       entry = {
-        p0: { x: x0, y: y0, depth: depth0 },
-        p1: { x: x1, y: y1, depth: depth1 },
-        p2: { x: x2, y: y2, depth: depth2 },
+        p0: scrn.copy(face.p0, scrn.zero()),
+        p1: scrn.copy(face.p1, scrn.zero()),
+        p2: scrn.copy(face.p2, scrn.zero()),
         color: { r, g, b },
       };
       into[i] = entry;
     } else {
-      entry.p0.depth = depth0;
-      entry.p0.x = x0;
-      entry.p0.y = y0;
-      entry.p1.depth = depth1;
-      entry.p1.x = x1;
-      entry.p1.y = y1;
-      entry.p2.depth = depth2;
-      entry.p2.x = x2;
-      entry.p2.y = y2;
+      scrn.copy(face.p0, entry.p0);
+      scrn.copy(face.p1, entry.p1);
+      scrn.copy(face.p2, entry.p2);
       entry.color.r = r;
       entry.color.g = g;
       entry.color.b = b;

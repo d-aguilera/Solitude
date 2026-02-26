@@ -5,6 +5,7 @@ import type {
   SceneObject,
 } from "../app/appPorts.js";
 import type { RGB, ShipBody, Vec3 } from "../domain/domainPorts.js";
+import type { ScreenPoint } from "./scrn.js";
 
 export type DrawMode = "faces" | "lines";
 
@@ -28,17 +29,6 @@ export interface HudRenderParams {
 }
 
 /**
- * Normalized device coordinate in the projection plane:
- *   - x, y in [-1, 1] after perspective divide
- *   - depth is camera-space Y (forward distance)
- */
-export interface NdcPoint {
-  x: number;
-  y: number;
-  depth: number;
-}
-
-/**
  * Rasterizer abstraction.
  */
 export interface Rasterizer {
@@ -47,7 +37,7 @@ export interface Rasterizer {
   drawFaces(faces: RenderedFace[], count: number): void;
   drawHud(hud: RenderedHud): void;
   drawPolylines(polylines: RenderedPolyline[], count: number): void;
-  drawSegments(segments: RenderedSegment[]): void;
+  drawSegments(segments: RenderedSegment[], count: number): void;
   measureText(text: string, font: string): TextMetrics;
 }
 
@@ -109,6 +99,7 @@ export interface RenderedView {
   polylines: RenderedPolyline[];
   polylineCount: number;
   segments: RenderedSegment[];
+  segmentCount: number;
 }
 
 /**
@@ -119,12 +110,6 @@ export interface RenderedView {
 export interface RenderSurface2D {
   readonly width: number;
   readonly height: number;
-}
-
-export interface ScreenPoint {
-  x: number;
-  y: number;
-  depth: number; // camera-space depth (positive means in front of camera)
 }
 
 /**
