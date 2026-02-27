@@ -1,5 +1,5 @@
 import { alloc } from "../global/allocProfiler.js";
-import type { Mat3, Vec3 } from "./domainPorts.js";
+import type { Vec3 } from "./vec3.js";
 
 /**
  * 3×3 rotation matrix stored in row-major order.
@@ -187,3 +187,8 @@ export const mat3 = {
   transposeInto,
   zero,
 };
+export type Mat3 = [
+  [number, number, number],
+  [number, number, number],
+  [number, number, number],
+];

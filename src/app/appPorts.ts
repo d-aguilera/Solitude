@@ -1,10 +1,7 @@
-import type {
-  LocalFrame,
-  Mat3,
-  RGB,
-  ShipBody,
-  Vec3,
-} from "../domain/domainPorts";
+import type { RGB, ShipBody } from "../domain/domainPorts";
+import type { LocalFrame } from "../domain/localFrame";
+import type { Mat3 } from "../domain/mat3";
+import type { Vec3 } from "../domain/vec3";
 
 export const AU = 1.495978707e11; // m
 export const C = 299_792_458; // m/s

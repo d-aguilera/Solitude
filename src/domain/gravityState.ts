@@ -1,4 +1,5 @@
-import type { BodyState, GravityState, Vec3, World } from "./domainPorts";
+import type { BodyState, GravityState, World } from "./domainPorts";
+import type { Vec3 } from "./vec3";
 
 /**
  * Create a brand-new GravityState from the current world contents.

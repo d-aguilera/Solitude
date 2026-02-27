@@ -1,7 +1,6 @@
 import { alloc } from "../global/allocProfiler.js";
-import type { LocalFrame, Mat3, Vec3 } from "./domainPorts.js";
-import { mat3 } from "./mat3.js";
-import { vec3 } from "./vec3.js";
+import { type Mat3, mat3 } from "./mat3.js";
+import { type Vec3, vec3 } from "./vec3.js";
 
 const worldForwardScratch = vec3.zero();
 
@@ -105,3 +104,8 @@ export const localFrame = {
   intoMat3,
   rotateAroundAxisInPlace,
 };
+export interface LocalFrame {
+  right: Vec3;
+  forward: Vec3;
+  up: Vec3;
+}

@@ -1,5 +1,5 @@
 import type { SceneObject } from "../app/appPorts.js";
-import type { Vec3 } from "../domain/domainPorts.js";
+import type { Vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
 import { rgbToCss } from "./color.js";
 import { ndc } from "./ndc.js";

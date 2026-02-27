@@ -3,14 +3,14 @@ import type {
   GravityEngine,
   GravityState,
   KeplerianOrbit,
-  LocalFrame,
-  Mat3,
   PlanetKind,
   RGB,
   ShipBody,
-  Vec3,
   World,
 } from "../domain/domainPorts.js";
+import type { LocalFrame } from "../domain/localFrame.js";
+import type { Mat3 } from "../domain/mat3.js";
+import type { Vec3 } from "../domain/vec3.js";
 import type {
   DomainCameraPose,
   PolylineSceneObject,

@@ -1,6 +1,5 @@
-import type { LocalFrame, Vec3 } from "../domain/domainPorts.js";
-import { localFrame } from "../domain/localFrame.js";
-import { vec3 } from "../domain/vec3.js";
+import { type LocalFrame, localFrame } from "../domain/localFrame.js";
+import { type Vec3, vec3 } from "../domain/vec3.js";
 import type { ControlledBodyState, SimControlState } from "./appInternals.js";
 import type { ControlInput, PilotLookState } from "./appPorts.js";
 

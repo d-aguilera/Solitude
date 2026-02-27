@@ -4,7 +4,8 @@ import type {
   Scene,
   SceneObject,
 } from "../app/appPorts.js";
-import type { RGB, ShipBody, Vec3 } from "../domain/domainPorts.js";
+import type { RGB, ShipBody } from "../domain/domainPorts.js";
+import type { Vec3 } from "../domain/vec3.js";
 import type { ScreenPoint } from "./scrn.js";
 
 export type DrawMode = "faces" | "lines";

@@ -1,6 +1,6 @@
-import type { ShipBody, Vec3 } from "../../domain/domainPorts.js";
+import type { ShipBody } from "../../domain/domainPorts.js";
 import { localFrame } from "../../domain/localFrame.js";
-import { vec3 } from "../../domain/vec3.js";
+import { type Vec3, vec3 } from "../../domain/vec3.js";
 import type { DomainCameraPose } from "../appPorts.js";
 import { initialFrame } from "./worldSetup.js";
 

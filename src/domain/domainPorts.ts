@@ -1,3 +1,7 @@
+import type { LocalFrame } from "./localFrame";
+import type { Mat3 } from "./mat3";
+import type { Vec3 } from "./vec3";
+
 // Gravitational constant in m^3 / (kg * s^2).
 export const NEWTON_G = 6.6743e-11;
 
@@ -43,18 +47,6 @@ export interface GravityState {
   bodyStates: BodyState[];
   positions: Vec3[];
 }
-
-export interface LocalFrame {
-  right: Vec3;
-  forward: Vec3;
-  up: Vec3;
-}
-
-export type Mat3 = [
-  [number, number, number],
-  [number, number, number],
-  [number, number, number],
-];
 
 /**
  * Domain-level ship body.
@@ -114,12 +106,6 @@ export interface RGB {
  */
 export interface StarPhysics extends PlanetPhysics {
   luminosity: number; // W or scaled units for lighting
-}
-
-export interface Vec3 {
-  x: number;
-  y: number;
-  z: number;
 }
 
 /**

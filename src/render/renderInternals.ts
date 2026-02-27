@@ -1,4 +1,4 @@
-import type { Vec3 } from "../domain/domainPorts";
+import type { Vec3 } from "../domain/vec3";
 import type { ScreenPoint } from "./scrn";
 
 export type ProjectedSegment = {

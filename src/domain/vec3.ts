@@ -1,5 +1,4 @@
 import { alloc } from "../global/allocProfiler.js";
-import type { Vec3 } from "./domainPorts.js";
 
 function addInto(into: Vec3, a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
   into.x = a.x + b.x;
@@ -120,6 +119,12 @@ const zero: () => Vec3 = () => {
   alloc.vec3();
   return { x: 0, y: 0, z: 0 };
 };
+
+export interface Vec3 {
+  x: number;
+  y: number;
+  z: number;
+}
 
 export const vec3 = {
   addInto,

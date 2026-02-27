@@ -1,13 +1,8 @@
-import type {
-  LocalFrame,
-  ShipBody,
-  Vec3,
-  World,
-} from "../../domain/domainPorts.js";
-import { localFrame } from "../../domain/localFrame.js";
+import type { ShipBody, World } from "../../domain/domainPorts.js";
+import { type LocalFrame, localFrame } from "../../domain/localFrame.js";
 import { mat3 } from "../../domain/mat3.js";
 import { circularSpeedAtRadius } from "../../domain/phys.js";
-import { vec3 } from "../../domain/vec3.js";
+import { type Vec3, vec3 } from "../../domain/vec3.js";
 import { colors } from "../appInternals.js";
 import type {
   PlanetSceneObject,

@@ -1,8 +1,7 @@
 import type { DomainCameraPose } from "../app/appPorts.js";
-import type { Mat3, Vec3 } from "../domain/domainPorts.js";
 import { localFrame } from "../domain/localFrame.js";
-import { mat3 } from "../domain/mat3.js";
-import { vec3 } from "../domain/vec3.js";
+import { type Mat3, mat3 } from "../domain/mat3.js";
+import { type Vec3, vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
 import { type NdcPoint, ndc } from "./ndc.js";
 import type { ProjectedSegment } from "./renderInternals.js";

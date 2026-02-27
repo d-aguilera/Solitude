@@ -1,16 +1,14 @@
 import type {
   CelestialBody,
   KeplerianOrbit,
-  Mat3,
   PlanetPhysics,
   StarPhysics,
-  Vec3,
   World,
 } from "../../domain/domainPorts.js";
 import { NEWTON_G } from "../../domain/domainPorts.js";
 import { mutateStateVectorFromKeplerian } from "../../domain/kepler.js";
-import { mat3 } from "../../domain/mat3.js";
-import { vec3 } from "../../domain/vec3.js";
+import { type Mat3, mat3 } from "../../domain/mat3.js";
+import { type Vec3, vec3 } from "../../domain/vec3.js";
 import type { PlanetBodyConfig, StarBodyConfig } from "../appInternals.js";
 import type {
   CelestialBodySceneObject,

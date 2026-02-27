@@ -1,5 +1,4 @@
-import type { Vec3 } from "../../domain/domainPorts.js";
-import { vec3 } from "../../domain/vec3.js";
+import { type Vec3, vec3 } from "../../domain/vec3.js";
 import type { Mesh } from "../appPorts.js";
 
 export const shipModel: Mesh = {

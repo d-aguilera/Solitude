@@ -1,5 +1,4 @@
-import type { Vec3 } from "./domainPorts.js";
-import { vec3 } from "./vec3.js";
+import { type Vec3, vec3 } from "./vec3.js";
 
 function radialDirAtAngle(
   theta: number,

@@ -1,5 +1,5 @@
 import type { PolylineSceneObject, SceneObject } from "../app/appPorts.js";
-import type { Vec3 } from "../domain/domainPorts.js";
+import type { Vec3 } from "../domain/vec3.js";
 import type { NdcPoint } from "./ndc.js";
 import { ProjectionService } from "./ProjectionService.js";
 import { renderBodyLabels } from "./renderBodyLabels.js";

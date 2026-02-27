@@ -2,9 +2,8 @@ import type {
   BodyState,
   GravityEngine,
   GravityState,
-  Vec3,
 } from "../domain/domainPorts.js";
-import { vec3 } from "../domain/vec3.js";
+import { type Vec3, vec3 } from "../domain/vec3.js";
 
 const accelerations: Vec3[] = [];
 

@@ -3,8 +3,8 @@ import type {
   SceneObject,
   StarSceneObject,
 } from "../app/appPorts.js";
-import type { BodyId, Vec3 } from "../domain/domainPorts.js";
-import { vec3 } from "../domain/vec3.js";
+import type { BodyId } from "../domain/domainPorts.js";
+import { type Vec3, vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
 import { formatDistance, formatSpeed } from "./formatters.js";
 import { type NdcPoint, ndc } from "./ndc.js";
