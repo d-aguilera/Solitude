@@ -21,9 +21,6 @@ import type { Renderable } from "./renderPorts.js";
 // Per-object scratch arrays keyed by the SceneObject instance.
 const objectWorldPointScratch = new WeakMap<SceneObject, Vec3[]>();
 
-// Shared scratch array used when no per-object mapping is desired.
-let sharedWorldPointScratch: Vec3[] = [];
-
 /**
  * Convert a SceneObject into a Renderable with world-space points.
  */
@@ -52,13 +49,7 @@ export function toRenderable(
     objectWorldPointScratch.set(obj, dst);
   }
 
-  transformPointsToWorldInPlace(
-    srcPoints,
-    dst,
-    obj.orientation,
-    obj.scale,
-    obj.position,
-  );
+  localToWorldInPlace(srcPoints, dst, obj.orientation, obj.scale, obj.position);
 
   return {
     mesh: obj.mesh,
@@ -89,14 +80,13 @@ function ensureScratchCapacity(dst: Vec3[], n: number): Vec3[] {
  * src and dst may be distinct arrays; dst will be resized if necessary
  * but existing Vec3 instances will be reused where possible.
  */
-function transformPointsToWorldInPlace(
+function localToWorldInPlace(
   src: Vec3[],
   dst: Vec3[],
   R: Readonly<Mat3>,
   s: number,
   position: Readonly<Vec3>,
 ): void {
-  const pos = position;
   const n = src.length;
   if (dst.length < n) {
     ensureScratchCapacity(dst, n);
@@ -111,36 +101,6 @@ function transformPointsToWorldInPlace(
     // Rotate by orientation matrix
     mat3.mulVec3Into(wp, R, wp);
     // Translate by world position
-    vec3.addInto(wp, wp, pos);
+    vec3.addInto(wp, wp, position);
   }
-
-  // If dst was previously longer, we do not shrink it here; callers
-  // should use only the first `src.length` elements.
 }
-
-/**
- * Helper for callers that want a single shared scratch array instead of
- * a per-object mapping.
- *
- * Not currently used by the rest of the render pipeline but kept here
- * as a building block for future batching.
- */
-function getSharedWorldPoints(
-  src: Vec3[],
-  R: Readonly<Mat3>,
-  s: number,
-  position: Readonly<Vec3>,
-): Vec3[] {
-  const n = src.length;
-
-  if (sharedWorldPointScratch.length < n) {
-    sharedWorldPointScratch = ensureScratchCapacity(sharedWorldPointScratch, n);
-  }
-
-  transformPointsToWorldInPlace(src, sharedWorldPointScratch, R, s, position);
-
-  // Callers must treat only the first n entries as valid.
-  return sharedWorldPointScratch;
-}
-
-void getSharedWorldPoints; // delete me if the function is ever used

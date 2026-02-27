@@ -16,6 +16,9 @@ import { createPolylineSceneObject, initialFrame } from "./worldSetup.js";
 
 const SHIP_VISUAL_SCALE = 15;
 
+// 100 km above Earth's north pole
+const SHIP_START_ALTITUDE_M = 10000000; // meters
+
 const axisScratch = vec3.zero();
 
 export function createInitialShip(
@@ -45,10 +48,11 @@ export function createInitialShip(
   objects.push(sceneObject);
 
   const mainShipPath = createPolylineSceneObject(
-    "path:ship:main",
+    "path:" + shipBody.id,
     colors.yellow,
   );
   mainShipPath.position = shipBody.position; // alias
+
   objects.push(mainShipPath);
 
   return shipBody;
@@ -66,6 +70,7 @@ function createShipBody(
   const position = computeShipStartPosFromPlanet(
     planetObj.position,
     planetObj.physicalRadius,
+    SHIP_START_ALTITUDE_M,
   );
 
   const velocity = computeOrbitVelocity(
@@ -133,22 +138,15 @@ function getFrameFromVelocity(velocity: Vec3): LocalFrame {
 function computeShipStartPosFromPlanet(
   planetPosition: Vec3,
   planetRadius: number,
+  altitude: number,
 ): Vec3 {
   // North pole direction: global +Z in this setup
   const north: Vec3 = vec3.create(0, 0, 1);
 
-  // Use planet's physical radius from its scene object
-  const offset = vec3.scaleInto(
-    vec3.zero(),
-    planetRadius + PLANE_START_ALTITUDE_M,
-    north,
-  );
+  const offset = vec3.scaleInto(vec3.zero(), planetRadius + altitude, north);
 
   return vec3.addInto(vec3.zero(), planetPosition, offset);
 }
-
-// 100 km above Earth's north pole
-const PLANE_START_ALTITUDE_M = 10000000; // meters
 
 /**
  * Compute an initial heliocentric velocity for the ship that corresponds

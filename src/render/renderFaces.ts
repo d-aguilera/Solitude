@@ -205,7 +205,6 @@ function getWorldFaceNormalsForObject(
 
   const R = obj.orientation;
   for (let i = 0; i < nFaces; i++) {
-    // reuse Vec3 slots
     mat3.mulVec3Into(dst[i], R, meshFaceNormals[i]);
   }
 
