@@ -1,6 +1,6 @@
-import type { Vec3 } from "../domain/domainPorts.js";
-import { vec3 } from "../domain/vec3.js";
-import type { Mesh } from "./appPorts.js";
+import type { Vec3 } from "../../domain/domainPorts.js";
+import { vec3 } from "../../domain/vec3.js";
+import type { Mesh } from "../appPorts.js";
 
 export const shipModel: Mesh = {
   points: [
@@ -43,7 +43,7 @@ export const shipModel: Mesh = {
 
 const t = (1 + Math.sqrt(5)) / 2;
 
-export const icosahedronModel: Mesh = {
+const icosahedronModel: Mesh = {
   points: (() => {
     const raw: Vec3[] = [
       vec3.create(-1, t, 0),

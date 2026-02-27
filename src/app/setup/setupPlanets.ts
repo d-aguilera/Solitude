@@ -19,7 +19,7 @@ import type {
   SceneObject,
   StarSceneObject,
 } from "../appPorts.js";
-import { generatePlanetMesh } from "../models.js";
+import { generatePlanetMesh } from "./models.js";
 import { createPolylineSceneObject } from "./worldSetup.js";
 
 // Scratch state for hierarchical initial state computation.

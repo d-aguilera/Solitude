@@ -15,8 +15,8 @@ import type {
   ShipSceneObject,
   StarSceneObject,
 } from "../appPorts.js";
-import { shipModel } from "../models.js";
 import { getPlanetPhysicsById } from "../worldLookup.js";
+import { shipModel } from "./models.js";
 import { createPolylineSceneObject, initialFrame } from "./worldSetup.js";
 
 const SHIP_VISUAL_SCALE = 15;
