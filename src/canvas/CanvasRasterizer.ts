@@ -1,4 +1,4 @@
-import type { RGB } from "../domain/domainPorts.js";
+import type { RGB } from "../app/appPorts.js";
 import { rgbToCss } from "../render/color.js";
 import type {
   Rasterizer,

@@ -2,18 +2,10 @@ import type { LocalFrame } from "./localFrame";
 import type { Mat3 } from "./mat3";
 import type { Vec3 } from "./vec3";
 
-// Gravitational constant in m^3 / (kg * s^2).
-export const NEWTON_G = 6.6743e-11;
-
-// Small softening term to avoid singularities when bodies get very close.
-export const SOFTENING_LENGTH = 1.0;
-
 /**
  * ID of a logical body participating in gravity.
  */
 export type BodyId = string;
-
-export type PlanetKind = "planet" | "star";
 
 export interface BodyState {
   id: BodyId;
@@ -88,17 +80,6 @@ export interface KeplerianOrbit {
   argPeriapsisRad: number;
   /** Mean anomaly at the chosen epoch (radians). */
   meanAnomalyAtEpochRad: number;
-}
-
-export interface Polar2D {
-  angleRad: number;
-  radius: number;
-}
-
-export interface RGB {
-  r: number;
-  g: number;
-  b: number;
 }
 
 /**

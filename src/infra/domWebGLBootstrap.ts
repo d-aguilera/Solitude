@@ -1,4 +1,3 @@
-import type { GameplayParameters } from "../app/appPorts.js";
 import type { Rasterizer, RenderSurface2D } from "../render/renderPorts.js";
 import { WebGLRasterizer } from "../webgl/WebGLRasterizer.js";
 import { WebGLSurface } from "../webgl/WebGLSurface.js";
@@ -7,8 +6,8 @@ import { bootstrapWith } from "./domBootstrap.js";
 /**
  * WebGL DOM-level bootstrap
  */
-export function bootstrap(gameplayParameters: GameplayParameters): void {
-  bootstrapWith(gameplayParameters, makeSurface, makeRasterizer);
+export function bootstrap(): void {
+  bootstrapWith(makeSurface, makeRasterizer);
 }
 
 function getContext(canvas: HTMLCanvasElement): WebGL2RenderingContext {

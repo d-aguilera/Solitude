@@ -1,4 +1,4 @@
-import type { RGB, ShipBody } from "../domain/domainPorts";
+import type { ShipBody } from "../domain/domainPorts";
 import type { LocalFrame } from "../domain/localFrame";
 import type { Mat3 } from "../domain/mat3";
 import type { Vec3 } from "../domain/vec3";
@@ -83,10 +83,6 @@ export interface PlanetSceneObject extends CelestialBodySceneObject {
   kind: "planet";
 }
 
-export interface GameplayParameters {
-  timeScale: number;
-}
-
 export interface Mesh {
   points: Vec3[];
   faces: number[][];
@@ -116,6 +112,12 @@ export interface PolylineSceneObject extends BaseSceneObject {
   backFaceCulling: false;
   count: number;
   tail: number;
+}
+
+export interface RGB {
+  r: number;
+  g: number;
+  b: number;
 }
 
 /**

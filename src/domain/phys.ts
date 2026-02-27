@@ -1,6 +1,6 @@
-import { NEWTON_G } from "./domainPorts.js";
+import { parameters } from "../global/parameters.js";
 
 export function circularSpeedAtRadius(mass: number, r: number): number {
   // v = sqrt(G * M / r)
-  return Math.sqrt((NEWTON_G * mass) / r);
+  return Math.sqrt((parameters.newtonG * mass) / r);
 }

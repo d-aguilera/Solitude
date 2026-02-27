@@ -1,10 +1,11 @@
 import type {
   DomainCameraPose,
   Mesh,
+  RGB,
   Scene,
   SceneObject,
 } from "../app/appPorts.js";
-import type { RGB, ShipBody } from "../domain/domainPorts.js";
+import type { ShipBody } from "../domain/domainPorts.js";
 import type { Vec3 } from "../domain/vec3.js";
 import type { ScreenPoint } from "./scrn.js";
 

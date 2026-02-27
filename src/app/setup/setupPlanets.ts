@@ -5,10 +5,10 @@ import type {
   StarPhysics,
   World,
 } from "../../domain/domainPorts.js";
-import { NEWTON_G } from "../../domain/domainPorts.js";
 import { mutateStateVectorFromKeplerian } from "../../domain/kepler.js";
 import { type Mat3, mat3 } from "../../domain/mat3.js";
 import { type Vec3, vec3 } from "../../domain/vec3.js";
+import { parameters } from "../../global/parameters.js";
 import type { PlanetBodyConfig, StarBodyConfig } from "../appInternals.js";
 import type {
   CelestialBodySceneObject,
@@ -260,7 +260,12 @@ function computeInitialStateForBody(id: string): void {
     };
 
     const parentMass = massByIdScratch[parentId];
-    mutateStateVectorFromKeplerian(relState, cfg.orbit, parentMass, NEWTON_G);
+    mutateStateVectorFromKeplerian(
+      relState,
+      cfg.orbit,
+      parentMass,
+      parameters.newtonG,
+    );
 
     // Compose heliocentric state
     position = vec3.addInto(vec3.zero(), parentPos, relState.position);

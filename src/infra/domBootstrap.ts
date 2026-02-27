@@ -1,6 +1,5 @@
-import type { GameplayParameters } from "../app/appPorts.js";
-import { NEWTON_G, SOFTENING_LENGTH } from "../domain/domainPorts.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
+import { parameters } from "../global/parameters.js";
 import { profilerController } from "../global/profiling.js";
 import { DefaultHudRenderer } from "../render/DefaultHudRenderer.js";
 import { DefaultViewRenderer } from "../render/DefaultViewRenderer.js";
@@ -20,7 +19,6 @@ import { initPause } from "./pause.js";
  * DOM-level bootstrap
  */
 export function bootstrapWith(
-  gameplayParameters: GameplayParameters,
   makeSurface: (canvas: HTMLCanvasElement) => RenderSurface2D,
   makeRasterizer: (canvas: HTMLCanvasElement) => Rasterizer,
 ): void {
@@ -49,8 +47,8 @@ export function bootstrapWith(
   const topSurface: RenderSurface2D = makeSurface(topCanvas);
 
   const gravityEngine: GravityEngine = new NewtonianGravityEngine(
-    NEWTON_G,
-    SOFTENING_LENGTH,
+    parameters.newtonG,
+    parameters.softeningLength,
   );
 
   const pilotRasterizer: Rasterizer = makeRasterizer(pilotCanvas);
@@ -71,7 +69,6 @@ export function bootstrapWith(
   initPause();
 
   runLoop(
-    gameplayParameters,
     pilotViewRenderer,
     pilotRasterizer,
     topViewRenderer,

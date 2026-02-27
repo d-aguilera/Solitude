@@ -3,8 +3,6 @@ import type {
   GravityEngine,
   GravityState,
   KeplerianOrbit,
-  PlanetKind,
-  RGB,
   ShipBody,
   World,
 } from "../domain/domainPorts.js";
@@ -14,8 +12,11 @@ import type { Vec3 } from "../domain/vec3.js";
 import type {
   DomainCameraPose,
   PolylineSceneObject,
+  RGB,
   Scene,
 } from "./appPorts.js";
+
+export type PlanetKind = "planet" | "star";
 
 /**
  * Shared configuration for bodies that participate in orbits.

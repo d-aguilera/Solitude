@@ -2,7 +2,6 @@ import type {
   ControlInput,
   DomainCameraPose,
   EnvInput,
-  GameplayParameters,
   Scene,
   SceneObject,
   TickCallback,
@@ -12,6 +11,7 @@ import type {
 import { createTickHandler } from "../app/game.js";
 import type { GravityEngine, ShipBody } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
+import { parameters } from "../global/parameters.js";
 import type {
   HudRenderer,
   HudRenderParams,
@@ -32,7 +32,6 @@ import { handleTimeScaleChange } from "./timeScale.js";
  * DOM-level game loop (depends on requestAnimationFrame).
  */
 export function runLoop(
-  gameplayParameters: GameplayParameters,
   pilotViewRenderer: ViewRenderer,
   pilotRasterizer: Rasterizer,
   topViewRenderer: ViewRenderer,
@@ -126,7 +125,7 @@ export function runLoop(
   let paused: boolean;
   let profilingEnabled: boolean;
   let fps: number;
-  let timeScale = gameplayParameters.timeScale;
+  let timeScale = parameters.timeScale;
 
   const loop = (nowMs: number) => {
     dtMillis = nowMs - lastTimeMs;

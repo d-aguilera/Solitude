@@ -1,7 +1,6 @@
 import type {
   BodyId,
   KeplerianOrbit,
-  RGB,
   World,
 } from "../../domain/domainPorts.js";
 import { type LocalFrame, localFrame } from "../../domain/localFrame.js";
@@ -12,6 +11,7 @@ import type {
   DomainCameraPose,
   Mesh,
   PolylineSceneObject,
+  RGB,
   Scene,
   SceneObject,
 } from "../appPorts.js";

@@ -1,4 +1,3 @@
-import type { GameplayParameters } from "../app/appPorts.js";
 import { CanvasRasterizer } from "../canvas/CanvasRasterizer.js";
 import { CanvasSurface } from "../canvas/CanvasSurface.js";
 import type { Rasterizer, RenderSurface2D } from "../render/renderPorts.js";
@@ -7,8 +6,8 @@ import { bootstrapWith } from "./domBootstrap.js";
 /**
  * Canvas 2D DOM-level bootstrap
  */
-export function bootstrap(gameplayParameters: GameplayParameters): void {
-  bootstrapWith(gameplayParameters, makeSurface, makeRasterizer);
+export function bootstrap(): void {
+  bootstrapWith(makeSurface, makeRasterizer);
 }
 
 function getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
