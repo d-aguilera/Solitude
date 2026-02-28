@@ -40,8 +40,8 @@ const computingStateScratch: Record<string, boolean> = {};
  */
 export function addPlanetsAndStarsFromConfig(
   configs: (PlanetBodyConfig | StarBodyConfig)[],
-  scene: Scene,
   world: World,
+  scene: Scene,
 ): void {
   // Build lookup tables for configs and masses.
   buildConfigAndMassTables(configs);

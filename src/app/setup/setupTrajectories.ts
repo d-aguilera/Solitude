@@ -1,4 +1,8 @@
-import type { World, BodyId } from "../../domain/domainPorts.js";
+import type {
+  BodyId,
+  KeplerianOrbit,
+  World,
+} from "../../domain/domainPorts.js";
 import { vec3 } from "../../domain/vec3.js";
 import type { Trajectory } from "../appInternals.js";
 import type {
@@ -8,7 +12,6 @@ import type {
   StarBodyConfig,
 } from "../appPorts.js";
 import { getPlanetBodyById } from "../worldLookup.js";
-import { orbitalEllipseLength } from "./worldSetup.js";
 
 export function createTrajectories(
   world: World,
@@ -73,4 +76,28 @@ function createTrajectory(
     remainingMillis: 0,
     sceneObject,
   };
+}
+
+/**
+ * Approximate circumference (length) of the orbital ellipse in meters,
+ * using Ramanujan's second approximation.
+ *
+ * Only depends on semi-major axis and eccentricity.
+ */
+function orbitalEllipseLength(orbit: KeplerianOrbit): number {
+  const a = orbit.semiMajorAxis;
+  const e = orbit.eccentricity;
+
+  if (e < 0 || e >= 1) {
+    throw new Error(
+      "Eccentricity must be in [0, 1) for a bound elliptical orbit.",
+    );
+  }
+
+  const b = a * Math.sqrt(1 - e * e);
+  const aMinusB = a - b;
+  const aPlusB = a + b;
+  const hTimes3 = (3 * (aMinusB * aMinusB)) / (aPlusB * aPlusB);
+
+  return Math.PI * aPlusB * (1 + hTimes3 / (10 + Math.sqrt(4 - hTimes3)));
 }

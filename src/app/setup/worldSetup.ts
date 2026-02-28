@@ -1,8 +1,4 @@
-import type {
-  BodyId,
-  KeplerianOrbit,
-  World,
-} from "../../domain/domainPorts.js";
+import type { BodyId, World } from "../../domain/domainPorts.js";
 import { type LocalFrame, localFrame } from "../../domain/localFrame.js";
 import { mat3 } from "../../domain/mat3.js";
 import { vec3 } from "../../domain/vec3.js";
@@ -14,8 +10,7 @@ import type {
   Scene,
   WorldAndSceneConfig,
 } from "../appPorts.js";
-import { buildLightsFromStars } from "../syncSceneObjects.js";
-import { getShipById } from "../worldLookup.js";
+import { getShipById, getStarPhysicsById } from "../worldLookup.js";
 import {
   createInitialPilotCamera,
   createInitialTopCamera,
@@ -44,8 +39,8 @@ export function createWorldAndScene({
     lights: [],
   };
 
-  addPlanetsAndStarsFromConfig(planetConfigs, scene, world);
-  addShipsFromConfig(shipConfigs, scene, world);
+  addPlanetsAndStarsFromConfig(planetConfigs, world, scene);
+  addShipsFromConfig(shipConfigs, world, scene);
 
   const mainShip = getShipById(world, mainShipId);
   const topCamera = createInitialTopCamera(mainShip);
@@ -66,7 +61,7 @@ export function createWorldAndScene({
   );
 
   // Build initial point lights from star bodies.
-  buildLightsFromStars(world, scene);
+  addLightsFromStars(world, scene);
 
   return {
     scene,
@@ -76,30 +71,6 @@ export function createWorldAndScene({
     planetPathMappings,
     trajectories,
   };
-}
-
-/**
- * Approximate circumference (length) of the orbital ellipse in meters,
- * using Ramanujan's second approximation.
- *
- * Only depends on semi-major axis and eccentricity.
- */
-export function orbitalEllipseLength(orbit: KeplerianOrbit): number {
-  const a = orbit.semiMajorAxis;
-  const e = orbit.eccentricity;
-
-  if (e < 0 || e >= 1) {
-    throw new Error(
-      "Eccentricity must be in [0, 1) for a bound elliptical orbit.",
-    );
-  }
-
-  const b = a * Math.sqrt(1 - e * e);
-  const aMinusB = a - b;
-  const aPlusB = a + b;
-  const hTimes3 = (3 * (aMinusB * aMinusB)) / (aPlusB * aPlusB);
-
-  return Math.PI * aPlusB * (1 + hTimes3 / (10 + Math.sqrt(4 - hTimes3)));
 }
 
 export function createPolylineSceneObject(
@@ -124,4 +95,16 @@ export function createPolylineSceneObject(
     count: 0,
     tail: -1,
   };
+}
+
+/**
+ * Build the array of point lights from the current star bodies.
+ */
+function addLightsFromStars(world: World, scene: Scene): void {
+  scene.lights = world.stars.map((starBody) => {
+    return {
+      position: vec3.clone(starBody.position),
+      intensity: getStarPhysicsById(world, starBody.id).luminosity,
+    };
+  });
 }

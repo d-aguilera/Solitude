@@ -11,8 +11,8 @@ const axisScratch = vec3.zero();
 
 export function addShipsFromConfig(
   configs: ShipBodyConfig[],
-  scene: Scene,
   world: World,
+  scene: Scene,
 ) {
   for (let config of configs) {
     const shipBody: ShipBody = createShipBody(config, world);
