@@ -15,7 +15,6 @@ import type {
   WorldAndSceneConfig,
 } from "../appPorts.js";
 import { buildLightsFromStars } from "../syncSceneObjects.js";
-import { updateTrajectories } from "../trajectories.js";
 import { getShipById } from "../worldLookup.js";
 import {
   createInitialPilotCamera,
@@ -65,8 +64,6 @@ export function createWorldAndScene({
     planetConfigs,
     planetPathMappings,
   );
-
-  updateTrajectories(0, trajectories);
 
   // Build initial point lights from star bodies.
   buildLightsFromStars(world, scene);

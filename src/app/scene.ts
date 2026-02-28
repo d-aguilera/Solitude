@@ -4,8 +4,8 @@ import type { SceneState } from "./appInternals.js";
 import type { ControlInput, SceneControlState } from "./appPorts.js";
 import { updatePilotCameraOffset, updateCameras } from "./cameras.js";
 import { updatePilotLook } from "./controls.js";
-import { updateTrajectories } from "./trajectories.js";
 import { rotateCelestialBodies } from "./syncSceneObjects.js";
+import { updateTrajectories } from "./trajectories.js";
 
 export function updateSceneGraph(
   dtMillis: number,

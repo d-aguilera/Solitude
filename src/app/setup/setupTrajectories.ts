@@ -7,7 +7,6 @@ import type {
   Scene,
   StarBodyConfig,
 } from "../appPorts.js";
-import { createTrajectory } from "../trajectories.js";
 import { getPlanetBodyById } from "../worldLookup.js";
 import { orbitalEllipseLength } from "./worldSetup.js";
 
@@ -27,10 +26,15 @@ export function createTrajectories(
 
   // Build trajectories for ships
   for (let ship of world.shipBodies) {
+    const capacity = 3 * 24 * 10; // 720 point capacity = 10 days
+    const intervalMillis = 20 * 60 * 1000; // 20-minute interval = 72 samples per day
+    const sceneObject = sceneObjects[
+      sceneObjectIndex["path:" + ship.id]
+    ] as PolylineSceneObject;
     trajectories[ship.id] = createTrajectory(
-      3 * 24 * 10, // 720 point capacity = 10 days
-      20 * 60 * 1000, // 20-minute interval = 72 samples per day
-      sceneObjects[sceneObjectIndex["path:" + ship.id]] as PolylineSceneObject,
+      capacity,
+      intervalMillis,
+      sceneObject,
     );
   }
 
@@ -55,4 +59,18 @@ export function createTrajectories(
   }
 
   return trajectories;
+}
+
+function createTrajectory(
+  capacity: number,
+  intervalMillis: number,
+  sceneObject: PolylineSceneObject,
+): Trajectory {
+  const mesh = sceneObject.mesh;
+  mesh.points = Array.from({ length: capacity }).map(() => vec3.zero());
+  return {
+    intervalMillis,
+    remainingMillis: 0,
+    sceneObject,
+  };
 }
