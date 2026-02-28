@@ -1,7 +1,12 @@
-import type { KeplerianOrbit } from "../../domain/domainPorts.js";
-import type { PlanetBodyConfig, StarBodyConfig } from "../appInternals.js";
-import { colors } from "../appInternals.js";
-import { AU, km } from "../appPorts.js";
+import type {
+  Mesh,
+  PlanetBodyConfig,
+  StarBodyConfig,
+} from "../app/appPorts.js";
+import { AU, km } from "../app/appPorts.js";
+import type { KeplerianOrbit } from "../domain/domainPorts.js";
+import { vec3, type Vec3 } from "../domain/vec3.js";
+import { colors } from "./colors.js";
 
 // Mean distance Earth–Moon in meters
 const EARTH_MOON_DISTANCE = 384_400 * km; // m
@@ -225,6 +230,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.sun,
       centralBodyId: sunId,
       color: colors.sun,
+      mesh: cloneAndScalePrototype(radii.sun),
       luminosity: luminosities.sun,
       obliquityRad: degToRad(obliquitiesDeg.sun),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.sun),
@@ -245,6 +251,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.mercury,
       centralBodyId: sunId,
       color: colors.mercury,
+      mesh: cloneAndScalePrototype(radii.mercury),
       obliquityRad: degToRad(obliquitiesDeg.mercury),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mercury),
     },
@@ -264,6 +271,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.venus,
       centralBodyId: sunId,
       color: colors.venus,
+      mesh: cloneAndScalePrototype(radii.venus),
       obliquityRad: degToRad(obliquitiesDeg.venus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.venus),
     },
@@ -283,6 +291,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.earth,
       centralBodyId: sunId,
       color: colors.earth,
+      mesh: cloneAndScalePrototype(radii.earth),
       obliquityRad: degToRad(obliquitiesDeg.earth),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.earth),
     },
@@ -302,6 +311,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.mars,
       centralBodyId: sunId,
       color: colors.mars,
+      mesh: cloneAndScalePrototype(radii.mars),
       obliquityRad: degToRad(obliquitiesDeg.mars),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mars),
     },
@@ -321,6 +331,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.jupiter,
       centralBodyId: sunId,
       color: colors.jupiter,
+      mesh: cloneAndScalePrototype(radii.jupiter),
       obliquityRad: degToRad(obliquitiesDeg.jupiter),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.jupiter),
     },
@@ -340,6 +351,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.saturn,
       centralBodyId: sunId,
       color: colors.saturn,
+      mesh: cloneAndScalePrototype(radii.saturn),
       obliquityRad: degToRad(obliquitiesDeg.saturn),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.saturn),
     },
@@ -359,6 +371,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.uranus,
       centralBodyId: sunId,
       color: colors.uranus,
+      mesh: cloneAndScalePrototype(radii.uranus),
       obliquityRad: degToRad(obliquitiesDeg.uranus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.uranus),
     },
@@ -378,6 +391,7 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.neptune,
       centralBodyId: sunId,
       color: colors.neptune,
+      mesh: cloneAndScalePrototype(radii.neptune),
       obliquityRad: degToRad(obliquitiesDeg.neptune),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.neptune),
     },
@@ -397,10 +411,171 @@ export function buildDefaultSolarSystemConfigs(): (
       density: densities.moon,
       centralBodyId: "planet:earth",
       color: colors.moon,
+      mesh: cloneAndScalePrototype(radii.moon),
       obliquityRad: degToRad(obliquitiesDeg.moon),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.moon),
     },
   ];
 
   return configs;
+}
+
+const t = (1 + Math.sqrt(5)) / 2;
+
+const icosahedronModel = {
+  points: (() => {
+    const raw: Vec3[] = [
+      vec3.create(-1, t, 0),
+      vec3.create(1, t, 0),
+      vec3.create(-1, -t, 0),
+      vec3.create(1, -t, 0),
+
+      vec3.create(0, -1, t),
+      vec3.create(0, 1, t),
+      vec3.create(0, -1, -t),
+      vec3.create(0, 1, -t),
+
+      vec3.create(t, 0, -1),
+      vec3.create(t, 0, 1),
+      vec3.create(-t, 0, -1),
+      vec3.create(-t, 0, 1),
+    ];
+
+    // Normalize vertices onto the unit sphere in-place.
+    for (let i = 0; i < raw.length; i++) {
+      vec3.normalizeInto(raw[i]);
+    }
+    return raw;
+  })(),
+  faces: [
+    [0, 11, 5],
+    [0, 5, 1],
+    [0, 1, 7],
+    [0, 7, 10],
+    [0, 10, 11],
+
+    [1, 5, 9],
+    [5, 11, 4],
+    [11, 10, 2],
+    [10, 7, 6],
+    [7, 1, 8],
+
+    [3, 9, 4],
+    [3, 4, 2],
+    [3, 2, 6],
+    [3, 6, 8],
+    [3, 8, 9],
+
+    [4, 9, 5],
+    [2, 4, 11],
+    [6, 2, 10],
+    [8, 6, 7],
+    [9, 8, 1],
+  ],
+};
+
+const planetPrototype: Mesh = generatePlanetMesh();
+
+function cloneAndScalePrototype(radius: number): Mesh {
+  const points = planetPrototype.points.map(vec3.clone);
+  const clone: Mesh = {
+    faces: planetPrototype.faces, // safe to alias here
+    points,
+    faceNormals: planetPrototype.faceNormals?.map(vec3.clone),
+  };
+  for (let p of points) {
+    vec3.scaleInto(p, radius, p);
+  }
+  return clone;
+}
+
+function generatePlanetMesh(subdivisions = 3): Mesh {
+  // Single reusable scratch vector for midpoint computation.
+  const midpointScratch: Vec3 = vec3.zero();
+
+  const getMidpointIndex = (i1: number, i2: number): number => {
+    const cacheKey = i1 < i2 ? `${i1}_${i2}` : `${i2}_${i1}`;
+    let idx = midpointCache[cacheKey];
+    if (idx === undefined) {
+      // Compute the midpoint on the unit sphere between vertices[i1] and vertices[i2]
+      const v1 = vertices[i1];
+      const v2 = vertices[i2];
+
+      // midpointScratch = v1 + v2
+      vec3.addInto(midpointScratch, v1, v2);
+      const v = vec3.normalizeInto(midpointScratch);
+
+      idx = vertices.push(vec3.create(v.x, v.y, v.z)) - 1;
+      midpointCache[cacheKey] = idx;
+    }
+    return idx;
+  };
+
+  // Start from a deep clone of the base icosahedron mesh
+  let vertices: Vec3[] = icosahedronModel.points.map(vec3.clone);
+  let faces: number[][] = icosahedronModel.faces.map((f) => [...f]);
+  let midpointCache: { [key: string]: number } = {};
+
+  for (let s = 0; s < subdivisions; s++) {
+    const newFaces: number[][] = [];
+    for (const [a, b, c] of faces) {
+      // split each side of the triangle in 2 halfs
+      const ab = getMidpointIndex(a, b);
+      const bc = getMidpointIndex(b, c);
+      const ca = getMidpointIndex(c, a);
+      // and create 4 smaller triangles
+      newFaces.push([a, ab, ca]);
+      newFaces.push([b, bc, ab]);
+      newFaces.push([c, ca, bc]);
+      newFaces.push([ab, bc, ca]);
+    }
+
+    midpointCache = {};
+    faces = newFaces;
+  }
+
+  const points: Vec3[] = vertices.map(vec3.clone);
+  const faceNormals: Vec3[] = new Array(faces.length);
+
+  // Reusable scratch vectors for face normal computation.
+  const e1Scratch: Vec3 = vec3.zero();
+  const e2Scratch: Vec3 = vec3.zero();
+  const normalScratch: Vec3 = vec3.zero();
+
+  const getFaceNormal = (face: number[]): Vec3 => {
+    const v0 = points[face[0]];
+    const v1 = points[face[1]];
+    const v2 = points[face[2]];
+
+    // e1 = v1 - v0
+    vec3.subInto(e1Scratch, v1, v0);
+    // e2 = v2 - v0
+    vec3.subInto(e2Scratch, v2, v0);
+    // normalScratch = e1 × e2
+    vec3.crossInto(normalScratch, e1Scratch, e2Scratch);
+
+    return normalScratch;
+  };
+
+  // Ensure face normals point outward from the origin (unit sphere)
+  for (let i = 0; i < faces.length; i++) {
+    const face = faces[i];
+    let n = getFaceNormal(face);
+    if (vec3.dot(n, points[face[0]]) < 0) {
+      // if not, flip winding
+      const aux = face[1];
+      face[1] = face[2];
+      face[2] = aux;
+      n = getFaceNormal(face);
+    }
+
+    // Store a normalized copy for this face using a reusable scratch.
+    faceNormals[i] = vec3.clone(vec3.normalizeInto(n));
+  }
+
+  return {
+    points,
+    faces,
+    faceNormals,
+  };
 }

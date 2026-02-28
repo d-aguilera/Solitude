@@ -1,3 +1,4 @@
+import type { WorldAndSceneConfig } from "../app/appPorts.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { parameters } from "../global/parameters.js";
 import { profilerController } from "../global/profiling.js";
@@ -19,6 +20,7 @@ import { initPause } from "./pause.js";
  * DOM-level bootstrap
  */
 export function bootstrapWith(
+  config: WorldAndSceneConfig,
   makeSurface: (canvas: HTMLCanvasElement) => RenderSurface2D,
   makeRasterizer: (canvas: HTMLCanvasElement) => Rasterizer,
 ): void {
@@ -69,6 +71,7 @@ export function bootstrapWith(
   initPause();
 
   runLoop(
+    config,
     pilotViewRenderer,
     pilotRasterizer,
     topViewRenderer,

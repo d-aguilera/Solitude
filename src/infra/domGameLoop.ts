@@ -7,6 +7,7 @@ import type {
   TickCallback,
   TickOutput,
   TickParams,
+  WorldAndSceneConfig,
 } from "../app/appPorts.js";
 import { createTickHandler } from "../app/game.js";
 import type { GravityEngine, ShipBody } from "../domain/domainPorts.js";
@@ -32,6 +33,7 @@ import { handleTimeScaleChange } from "./timeScale.js";
  * DOM-level game loop (depends on requestAnimationFrame).
  */
 export function runLoop(
+  config: WorldAndSceneConfig,
   pilotViewRenderer: ViewRenderer,
   pilotRasterizer: Rasterizer,
   topViewRenderer: ViewRenderer,
@@ -45,7 +47,7 @@ export function runLoop(
   envInput: EnvInput,
   profilerController: ProfilerController,
 ): void {
-  const tickInto: TickCallback = createTickHandler(gravityEngine);
+  const tickInto: TickCallback = createTickHandler(config, gravityEngine);
 
   const tickParams: TickParams = {
     dtMillis: 0,

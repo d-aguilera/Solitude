@@ -49,7 +49,7 @@ export function toRenderable(
     objectWorldPointScratch.set(obj, dst);
   }
 
-  localToWorldInPlace(srcPoints, dst, obj.orientation, obj.scale, obj.position);
+  localToWorldInPlace(srcPoints, dst, obj.orientation, obj.position);
 
   return {
     mesh: obj.mesh,
@@ -84,7 +84,6 @@ function localToWorldInPlace(
   src: Vec3[],
   dst: Vec3[],
   R: Readonly<Mat3>,
-  s: number,
   position: Readonly<Vec3>,
 ): void {
   const n = src.length;
@@ -96,10 +95,8 @@ function localToWorldInPlace(
     const local = src[i];
     const wp = dst[i];
 
-    // Scale local point
-    vec3.scaleInto(wp, s, local);
     // Rotate by orientation matrix
-    mat3.mulVec3Into(wp, R, wp);
+    mat3.mulVec3Into(wp, R, local);
     // Translate by world position
     vec3.addInto(wp, wp, position);
   }

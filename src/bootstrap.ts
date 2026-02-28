@@ -1,10 +1,12 @@
+import { buildWorldAndSceneConfig } from "./config/worldAndSceneConfig.js";
 import { bootstrap } from "./infra/domCanvasBootstrap.js";
 
 /**
  * Top‑level composition entry for the browser runtime.
  */
 function main(): void {
-  bootstrap();
+  const config = buildWorldAndSceneConfig();
+  bootstrap(config);
 }
 
 main();

@@ -1,76 +1,65 @@
 import type { ShipBody, World } from "../../domain/domainPorts.js";
-import { type LocalFrame, localFrame } from "../../domain/localFrame.js";
+import { localFrame, type LocalFrame } from "../../domain/localFrame.js";
 import { mat3 } from "../../domain/mat3.js";
 import { circularSpeedAtRadius } from "../../domain/phys.js";
-import { type Vec3, vec3 } from "../../domain/vec3.js";
-import { colors } from "../appInternals.js";
-import type {
-  PlanetSceneObject,
-  SceneObject,
-  ShipSceneObject,
-  StarSceneObject,
-} from "../appPorts.js";
-import { getPlanetPhysicsById } from "../worldLookup.js";
-import { shipModel } from "./models.js";
+import { vec3, type Vec3 } from "../../domain/vec3.js";
+import type { Scene, ShipBodyConfig, ShipSceneObject } from "../appPorts.js";
+import { getPlanetBodyById, getPlanetPhysicsById } from "../worldLookup.js";
 import { createPolylineSceneObject, initialFrame } from "./worldSetup.js";
-
-const SHIP_VISUAL_SCALE = 15;
-
-// 100 km above Earth's north pole
-const SHIP_START_ALTITUDE_M = 10000000; // meters
 
 const axisScratch = vec3.zero();
 
-export function createInitialShip(
-  id: string,
-  homePlanetId: string,
-  objects: SceneObject[],
+export function addShipsFromConfig(
+  configs: ShipBodyConfig[],
+  scene: Scene,
   world: World,
-): ShipBody {
-  const shipBody: ShipBody = createShipBody(id, homePlanetId, objects, world);
+) {
+  for (let config of configs) {
+    const shipBody: ShipBody = createShipBody(config, world);
+    world.shipBodies.push(shipBody);
 
-  world.shipBodies.push(shipBody);
+    const sceneObject: ShipSceneObject = createSceneObject(config, shipBody);
+    scene.objects.push(sceneObject);
 
-  const sceneObject: ShipSceneObject = {
+    const shipPath = createPolylineSceneObject(
+      "path:" + shipBody.id,
+      config.color,
+    );
+    shipPath.position = shipBody.position; // alias
+
+    scene.objects.push(shipPath);
+  }
+}
+
+function createSceneObject(
+  { color, mesh }: ShipBodyConfig,
+  shipBody: ShipBody,
+): ShipSceneObject {
+  return {
     id: shipBody.id,
     kind: "ship",
-    mesh: shipModel,
+    mesh,
     position: shipBody.position, // alias
     orientation: shipBody.orientation, // alias
-    scale: SHIP_VISUAL_SCALE,
-    color: colors.ship,
+    color,
     lineWidth: 1,
     applyTransform: true,
     wireframeOnly: false,
     backFaceCulling: false,
   };
-
-  objects.push(sceneObject);
-
-  const mainShipPath = createPolylineSceneObject(
-    "path:" + shipBody.id,
-    colors.yellow,
-  );
-  mainShipPath.position = shipBody.position; // alias
-
-  objects.push(mainShipPath);
-
-  return shipBody;
 }
 
 function createShipBody(
-  id: string,
-  homePlanetId: string,
-  objects: SceneObject[],
+  { altitude, homePlanetId, id }: ShipBodyConfig,
   world: World,
 ) {
-  const planetObj = getPlanetObjectById(objects, homePlanetId);
+  const planetObj = getPlanetBodyById(world, homePlanetId);
   const planetPhys = getPlanetPhysicsById(world, homePlanetId);
 
   const position = computeShipStartPosFromPlanet(
     planetObj.position,
-    planetObj.physicalRadius,
-    SHIP_START_ALTITUDE_M,
+    planetPhys.physicalRadius,
+    altitude,
   );
 
   const velocity = computeOrbitVelocity(
@@ -193,20 +182,4 @@ function computeOrbitVelocity(
 
   // Total: planet's heliocentric velocity + local orbital component.
   return vec3.addInto(vRel, vPlanet, vRel);
-}
-
-function getPlanetObjectById(
-  array: SceneObject[],
-  id: string,
-): PlanetSceneObject | StarSceneObject {
-  const obj = array.find(
-    (o): o is PlanetSceneObject | StarSceneObject =>
-      o.id === id && (o.kind === "planet" || o.kind === "star"),
-  );
-
-  if (!obj) {
-    throw new Error(`Planet or star object not found: ${id}`);
-  }
-
-  return obj;
 }

@@ -9,15 +9,14 @@ import { mutateStateVectorFromKeplerian } from "../../domain/kepler.js";
 import { type Mat3, mat3 } from "../../domain/mat3.js";
 import { type Vec3, vec3 } from "../../domain/vec3.js";
 import { parameters } from "../../global/parameters.js";
-import type { PlanetBodyConfig, StarBodyConfig } from "../appInternals.js";
 import type {
   CelestialBodySceneObject,
-  Mesh,
+  PlanetBodyConfig,
   PlanetSceneObject,
-  SceneObject,
+  Scene,
+  StarBodyConfig,
   StarSceneObject,
 } from "../appPorts.js";
-import { generatePlanetMesh } from "./models.js";
 import { createPolylineSceneObject } from "./worldSetup.js";
 
 // Scratch state for hierarchical initial state computation.
@@ -41,20 +40,13 @@ const computingStateScratch: Record<string, boolean> = {};
  */
 export function addPlanetsAndStarsFromConfig(
   configs: (PlanetBodyConfig | StarBodyConfig)[],
-  sceneObjects: SceneObject[],
-  worldPlanets: World["planets"],
-  worldPlanetPhysics: PlanetPhysics[],
-  worldStars: World["stars"],
-  worldStarPhysics: StarPhysics[],
+  scene: Scene,
+  world: World,
 ): void {
-  const bodyMeshTemplate: Mesh = generatePlanetMesh(3);
-
   // Build lookup tables for configs and masses.
   buildConfigAndMassTables(configs);
 
   for (const cfg of configs) {
-    const bodyMesh: Mesh = { ...bodyMeshTemplate };
-
     // Compute initial heliocentric state for this body.
     const center = getInitialPositionForBody(cfg.id);
     const initialVelocity = getInitialVelocityForBody(cfg.id);
@@ -91,15 +83,13 @@ export function addPlanetsAndStarsFromConfig(
     const sceneObj: CelestialBodySceneObject = {
       id: cfg.id,
       kind: cfg.kind,
-      mesh: bodyMesh,
+      mesh: cfg.mesh,
       position: celestialBody.position, // alias
       orientation: mat3.copy(mat3.identity, mat3.zero()),
-      scale: cfg.physicalRadius,
       color: cfg.color,
       lineWidth: 1,
       applyTransform: true,
       wireframeOnly: false,
-      physicalRadius: cfg.physicalRadius,
       backFaceCulling: true,
       velocity: celestialBody.velocity, // alias
       rotationAxis,
@@ -114,19 +104,19 @@ export function addPlanetsAndStarsFromConfig(
     };
 
     if (cfg.kind === "star") {
-      worldStars.push(celestialBody);
-      worldStarPhysics.push({
+      world.stars.push(celestialBody);
+      world.starPhysics.push({
         ...planetPhysics,
         luminosity: cfg.luminosity,
       } as StarPhysics);
-      sceneObjects.push({
+      scene.objects.push({
         ...sceneObj,
         luminosity: cfg.luminosity,
       } as StarSceneObject);
     } else {
-      worldPlanets.push(celestialBody);
-      worldPlanetPhysics.push({ ...planetPhysics });
-      sceneObjects.push({
+      world.planets.push(celestialBody);
+      world.planetPhysics.push({ ...planetPhysics });
+      scene.objects.push({
         ...sceneObj,
       } as PlanetSceneObject);
 
@@ -137,7 +127,7 @@ export function addPlanetsAndStarsFromConfig(
         const pathObject = createPolylineSceneObject(cfg.pathId, cfg.color);
         pathObject.position = celestialBody.position; // alias
         pathObject.mesh.points.push(celestialBody.position); // alias
-        sceneObjects.push(pathObject);
+        scene.objects.push(pathObject);
       }
     }
   }
