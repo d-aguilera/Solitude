@@ -52,7 +52,18 @@ const e2Scratch: Vec3 = vec3.zero();
 const normalScratch: Vec3 = vec3.zero();
 const toCameraScratch: Vec3 = vec3.zero();
 
-const clipped: [[Vec3, Vec3, Vec3], [Vec3, Vec3, Vec3]] = [
+const clipped: [
+  [Vec3, Vec3, Vec3],
+  [Vec3, Vec3, Vec3],
+  [Vec3, Vec3, Vec3],
+  [Vec3, Vec3, Vec3],
+  [Vec3, Vec3, Vec3],
+  [Vec3, Vec3, Vec3],
+] = [
+  [vec3.zero(), vec3.zero(), vec3.zero()],
+  [vec3.zero(), vec3.zero(), vec3.zero()],
+  [vec3.zero(), vec3.zero(), vec3.zero()],
+  [vec3.zero(), vec3.zero(), vec3.zero()],
   [vec3.zero(), vec3.zero(), vec3.zero()],
   [vec3.zero(), vec3.zero(), vec3.zero()],
 ];
@@ -131,7 +142,7 @@ function buildFaces(
         const c1 = cameraPoints[i1];
         const c2 = cameraPoints[i2];
 
-        const clipCount = projectionService.clipTriangleAgainstNearPlaneCamera(
+        const clipCount = projectionService.clipTriangleAgainstFrustumCamera(
           clipped,
           c0,
           c1,

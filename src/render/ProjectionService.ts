@@ -49,20 +49,6 @@ function ensureGlobalCameraPointPoolCapacity(n: number): void {
 const deltaScratch: Vec3 = vec3.zero();
 const cameraPointScratch: Vec3 = vec3.zero();
 
-let A = vec3.zero();
-let B = vec3.zero();
-let C = vec3.zero();
-let P = vec3.zero();
-let Q = vec3.zero();
-let R = vec3.zero();
-let IQ = vec3.zero();
-let IR = vec3.zero();
-let Pin1 = vec3.zero();
-let Pin2 = vec3.zero();
-let Pout = vec3.zero();
-let IP1 = vec3.zero();
-let IP2 = vec3.zero();
-
 const aCamScratch: Vec3 = vec3.zero();
 const bCamScratch: Vec3 = vec3.zero();
 
@@ -70,6 +56,28 @@ const ndcAScratch: NdcPoint = ndc.zero();
 const ndcBScratch: NdcPoint = ndc.zero();
 
 const clipChangedScratch = { value: false };
+
+/**
+ * Scratch polygons used during triangle clipping.
+ */
+const MAX_CLIPPED_VERTS = 9;
+const polyInScratch: Vec3[] = [];
+const polyOutScratch: Vec3[] = [];
+for (let i = 0; i < MAX_CLIPPED_VERTS; i++) {
+  polyInScratch.push(vec3.zero());
+  polyOutScratch.push(vec3.zero());
+}
+
+type FrustumPlane = "NEAR" | "FAR" | "LEFT" | "RIGHT" | "TOP" | "BOTTOM";
+
+const planes: FrustumPlane[] = [
+  "NEAR",
+  "FAR",
+  "LEFT",
+  "RIGHT",
+  "TOP",
+  "BOTTOM",
+];
 
 /**
  * Per-point frustum outcode bits in camera space.
@@ -129,7 +137,7 @@ export class ProjectionService {
    */
   projectWorldPointToNdcInto(into: NdcPoint, worldPoint: Vec3): boolean {
     this.worldPointToCameraPointNoClipInto(cameraPointScratch, worldPoint);
-    if (!this.isInsideFrustum(cameraPointScratch)) {
+    if (this.computeOutCode(cameraPointScratch)) {
       return false;
     }
     this.projectCameraPointToNdcInto(into, cameraPointScratch);
@@ -190,98 +198,274 @@ export class ProjectionService {
   }
 
   /**
-   * Clip a triangle in camera space against the near plane.
-   *
-   * Returns 0, 1, or 2 triangles in camera space after clipping.
-   *
-   * The returned Vec3s reference internal scratch storage that is only
-   * stable until the next call to this method. Callers must consume
-   * the result immediately.
+   * Return true if a camera-space point is inside the half-space of a given plane.
    */
-  clipTriangleAgainstNearPlaneCamera(
-    into: [[Vec3, Vec3, Vec3], [Vec3, Vec3, Vec3]],
+  private isInsidePlane(p: Vec3, plane: FrustumPlane): boolean {
+    const { x, y, z } = p;
+    let limitX: number;
+    let limitY: number;
+    let limitZ: number;
+
+    switch (plane) {
+      case "NEAR":
+        limitY = NEAR;
+        return y >= limitY;
+      case "FAR":
+        limitY = FAR;
+        return y <= limitY;
+      case "LEFT": {
+        if (y <= 0 || !Number.isFinite(y)) return false;
+        limitX = y * this.tanHalfFovX;
+        return x >= -limitX;
+      }
+      case "RIGHT": {
+        if (y <= 0 || !Number.isFinite(y)) return false;
+        limitX = y * this.tanHalfFovX;
+        return x <= limitX;
+      }
+      case "TOP": {
+        if (y <= 0 || !Number.isFinite(y)) return false;
+        limitZ = y * this.tanHalfFovY;
+        return z >= -limitZ;
+      }
+      case "BOTTOM": {
+        if (y <= 0 || !Number.isFinite(y)) return false;
+        limitZ = y * this.tanHalfFovY;
+        return z <= limitZ;
+      }
+    }
+  }
+
+  /**
+   * Intersect segment [p,q] with a given frustum plane, writing into dst.
+   * Assumes p and q are not both on the same side of the plane.
+   */
+  private intersectWithPlane(
+    dst: Vec3,
+    p: Vec3,
+    q: Vec3,
+    plane: FrustumPlane,
+  ): void {
+    const { x: x1, y: y1, z: z1 } = p;
+    const { x: x2, y: y2, z: z2 } = q;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const dz = z2 - z1;
+
+    let denom: number;
+    let t = 0;
+
+    switch (plane) {
+      case "NEAR": {
+        denom = dy;
+        if (denom === 0) {
+          // Degenerate: just clamp to plane
+          dst.x = x1;
+          dst.y = NEAR;
+          dst.z = z1;
+          return;
+        }
+        t = (NEAR - y1) / denom;
+        break;
+      }
+      case "FAR": {
+        denom = dy;
+        if (denom === 0) {
+          dst.x = x1;
+          dst.y = FAR;
+          dst.z = z1;
+          return;
+        }
+        t = (FAR - y1) / denom;
+        break;
+      }
+      case "LEFT": {
+        const tx = this.tanHalfFovX;
+        denom = dx + dy * tx;
+        if (denom === 0) {
+          dst.x = -y1 * tx;
+          dst.y = y1;
+          dst.z = z1;
+          return;
+        }
+        t = -(x1 + y1 * tx) / denom;
+        break;
+      }
+      case "RIGHT": {
+        const tx = this.tanHalfFovX;
+        denom = dx - dy * tx;
+        if (denom === 0) {
+          dst.x = y1 * tx;
+          dst.y = y1;
+          dst.z = z1;
+          return;
+        }
+        t = (y1 * tx - x1) / denom;
+        break;
+      }
+      case "TOP": {
+        const tz = this.tanHalfFovY;
+        denom = dz + dy * tz;
+        if (denom === 0) {
+          dst.x = x1;
+          dst.y = y1;
+          dst.z = -y1 * tz;
+          return;
+        }
+        t = -(z1 + y1 * tz) / denom;
+        break;
+      }
+      case "BOTTOM": {
+        const tz = this.tanHalfFovY;
+        denom = dz - dy * tz;
+        if (denom === 0) {
+          dst.x = x1;
+          dst.y = y1;
+          dst.z = y1 * tz;
+          return;
+        }
+        t = (y1 * tz - z1) / denom;
+        break;
+      }
+    }
+
+    // Clamp t to [0,1] defensively.
+    if (!Number.isFinite(t) || t < 0) {
+      t = 0;
+    } else if (t > 1) {
+      t = 1;
+    }
+
+    dst.x = x1 + dx * t;
+    dst.y = y1 + dy * t;
+    dst.z = z1 + dz * t;
+  }
+
+  /**
+   * Clip a convex polygon (triangle) in camera space against a single frustum plane.
+   *
+   * inVerts:  array of vertices
+   * inCount:  number of valid vertices in inVerts (<= inVerts.length)
+   * outVerts: destination array; may alias inVerts (we still use indices)
+   *
+   * Returns new vertex count.
+   */
+  private clipPolygonAgainstPlane(
+    inVerts: Vec3[],
+    inCount: number,
+    outVerts: Vec3[],
+    plane: FrustumPlane,
+  ): number {
+    if (inCount === 0) return 0;
+
+    let curr: Vec3;
+    let currInside: boolean;
+    const check = () => {
+      if (currInside) {
+        if (prevInside) {
+          // in -> in : keep curr
+          vec3.copyInto(outVerts[outCount], curr);
+          outCount++;
+        } else {
+          // out -> in : emit intersection, then curr
+          this.intersectWithPlane(outVerts[outCount], prev, curr, plane);
+          outCount++;
+          vec3.copyInto(outVerts[outCount], curr);
+          outCount++;
+        }
+      } else {
+        if (prevInside) {
+          // in -> out : emit intersection
+          this.intersectWithPlane(outVerts[outCount], prev, curr, plane);
+          outCount++;
+        } else {
+          // out -> out : emit nothing
+        }
+      }
+    };
+
+    let outCount = 0;
+
+    let third = inVerts[inCount - 1];
+    let thirdInside = this.isInsidePlane(third, plane);
+    let prev = third;
+    let prevInside = thirdInside;
+    for (let i = 0; i < inCount - 1; i++) {
+      curr = inVerts[i];
+      currInside = this.isInsidePlane(curr, plane);
+      check();
+      prev = curr;
+      prevInside = currInside;
+    }
+    curr = third;
+    currInside = thirdInside;
+    check();
+
+    return outCount;
+  }
+
+  /**
+   * Clip a camera-space triangle against the full view frustum (6 planes).
+   *
+   * into: up to 6 resulting triangles in camera space. It would be 7 if
+   * the FAR plane was not set at infinity.
+   * Returns 0..5 (number of triangles written).
+   *
+   * The Vec3s in `into` refer to internal scratch storage that is only valid
+   * until the next call. Callers must consume immediately.
+   */
+  clipTriangleAgainstFrustumCamera(
+    into: [
+      [Vec3, Vec3, Vec3],
+      [Vec3, Vec3, Vec3],
+      [Vec3, Vec3, Vec3],
+      [Vec3, Vec3, Vec3],
+      [Vec3, Vec3, Vec3],
+      [Vec3, Vec3, Vec3],
+    ],
     a: Vec3,
     b: Vec3,
     c: Vec3,
   ): number {
-    const inA = this.isInFrontOfNearPlane(a);
-    const inB = this.isInFrontOfNearPlane(b);
-    const inC = this.isInFrontOfNearPlane(c);
-    const insideCount = (inA ? 1 : 0) + (inB ? 1 : 0) + (inC ? 1 : 0);
+    // Initialize polygon with original triangle
+    const inVerts = polyInScratch;
+    const outVerts = polyOutScratch;
 
-    // None inside: return empty array.
-    if (insideCount === 0) return 0;
+    vec3.copyInto(inVerts[0], a);
+    vec3.copyInto(inVerts[1], b);
+    vec3.copyInto(inVerts[2], c);
+    let count = 3;
 
-    // All inside: return input references.
-    if (insideCount === 3) {
-      [A, B, C] = into[0];
-      vec3.copyInto(A, a);
-      vec3.copyInto(B, b);
-      vec3.copyInto(C, c);
-      return 1;
-    }
+    let src = inVerts;
+    let dst = outVerts;
 
-    // One inside: return a single clipped triangle.
-    if (insideCount === 1) {
-      // P inside; Q, R outside.
-      if (inA) {
-        P = a;
-        Q = b;
-        R = c;
-      } else if (inB) {
-        P = b;
-        Q = c;
-        R = a;
-      } else {
-        P = c;
-        Q = a;
-        R = b;
+    for (let i = 0; i < planes.length; i++) {
+      const plane = planes[i];
+      count = this.clipPolygonAgainstPlane(src, count, dst, plane);
+      if (count === 0) {
+        return 0;
       }
-
-      this.intersectInto(IQ, P, Q);
-      this.intersectInto(IR, P, R);
-
-      const [A, B, C] = into[0];
-      vec3.copyInto(A, P);
-      vec3.copyInto(B, IQ);
-      vec3.copyInto(C, IR);
-
-      return 1;
+      const tmp = src;
+      src = dst;
+      dst = tmp;
     }
 
-    // insideCount === 2
-    // Two inside, one outside: result is two triangles.
-    // Pin1, Pin2 inside; Pout outside.
-    if (!inA) {
-      Pout = a;
-      Pin1 = b;
-      Pin2 = c;
-    } else if (!inB) {
-      Pout = b;
-      Pin1 = c;
-      Pin2 = a;
-    } else {
-      Pout = c;
-      Pin1 = a;
-      Pin2 = b;
+    // Now src[0..count-1] is the final polygon
+    const triangles = count - 2;
+    const v0 = src[0];
+
+    for (let t = 0; t < triangles; t++) {
+      const [T0, T1, T2] = into[t];
+      vec3.copyInto(T0, v0);
+      vec3.copyInto(T1, src[t + 1]);
+      vec3.copyInto(T2, src[t + 2]);
     }
 
-    this.intersectInto(IP1, Pin1, Pout);
-    this.intersectInto(IP2, Pin2, Pout);
+    if (triangles === 6) {
+      console.log({ a, b, c });
+    }
 
-    // Triangle 1: Pin1, Pin2, IP1
-    [A, B, C] = into[0];
-    vec3.copyInto(A, Pin1);
-    vec3.copyInto(B, Pin2);
-    vec3.copyInto(C, IP1);
-
-    // Triangle 2: Pin2, IP2, IP1
-    [A, B, C] = into[1];
-    vec3.copyInto(A, Pin2);
-    vec3.copyInto(B, IP2);
-    vec3.copyInto(C, IP1);
-
-    return 2;
+    return triangles;
   }
 
   /**
@@ -337,42 +521,6 @@ export class ProjectionService {
   }
 
   /**
-   * Intersect segment [p,q] with plane y = NEAR, writing into dst.
-   */
-  private intersectInto = (dst: Vec3, p: Vec3, q: Vec3): void => {
-    const t = (NEAR - p.y) / (q.y - p.y);
-    vec3.lerpInto(dst, p, q, t);
-    dst.y = NEAR; // clamp to avoid floating point drift
-  };
-
-  /**
-   * True if a camera-space point is in front of the near plane.
-   */
-  private isInFrontOfNearPlane(p: Vec3): boolean {
-    return p.y >= NEAR;
-  }
-
-  /**
-   * True if a camera-space point lies inside the view frustum
-   * (between near/far planes and inside the horizontal/vertical FOV).
-   */
-  private isInsideFrustum(p: Vec3): boolean {
-    const y = p.y;
-    if (y < NEAR || y > FAR) return false;
-
-    const limitX = y * this.tanHalfFovX;
-    const limitZ = y * this.tanHalfFovY;
-
-    const x = p.x;
-    const z = p.z;
-
-    if (x < -limitX || x > limitX) return false;
-    if (z < -limitZ || z > limitZ) return false;
-
-    return true;
-  }
-
-  /**
    * Compute a 6-bit outcode for a camera-space point against the frustum.
    */
   private computeOutCode(p: Vec3): number {
@@ -384,12 +532,12 @@ export class ProjectionService {
 
     if (y > 0 && Number.isFinite(y)) {
       const limitX = y * this.tanHalfFovX;
-      const limitZ = y * this.tanHalfFovY;
       const x = p.x;
-      const z = p.z;
-
       if (x < -limitX) code |= OUT_LEFT;
       if (x > limitX) code |= OUT_RIGHT;
+
+      const limitZ = y * this.tanHalfFovY;
+      const z = p.z;
       if (z < -limitZ) code |= OUT_TOP;
       if (z > limitZ) code |= OUT_BOTTOM;
     }
