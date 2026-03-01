@@ -174,7 +174,11 @@ export function updateShipOrientationFromControls(
   localFrame.intoMat3(orientation, frame);
 
   // Apply alignment toward the velocity vector, if requested.
-  updateFrameAlignToVelocity(dtMillis, controlInput, controlState, ship);
+  // Respect the high-level flag owned by the ControlState so that
+  // future logic can gate alignment without depending directly on input.
+  if (controlState.alignToVelocity && controlInput.alignToVelocity) {
+    updateFrameAlignToVelocity(dtMillis, ship);
+  }
 }
 
 const targetForwardScratch: Vec3 = vec3.zero();
@@ -183,27 +187,17 @@ const fallbackAxisScratch: Vec3 = vec3.zero();
 const axisScratch: Vec3 = vec3.zero();
 
 /**
- * When enabled, gradually rotate the body's frame so that its forward axis
+ * Gradually rotate the body's frame so that its forward axis
  * aligns with the current velocity direction.
  *
  * Rotation is rate-limited to alignToVelocityMaxAngularSpeed so that the
  * effect feels like small attitude-control thrusters rather than an
  * instantaneous snap.
  */
-function updateFrameAlignToVelocity(
+export function updateFrameAlignToVelocity(
   dtMillis: number,
-  controlInput: ControlInput,
-  controlState: SimControlState,
   body: ControlledBodyState,
 ): void {
-  // Respect the high-level flag owned by the ControlState so that
-  // future logic can gate alignment without depending directly on input.
-  const wantAlign =
-    controlState.alignToVelocity && controlInput.alignToVelocity;
-  if (!wantAlign) {
-    return;
-  }
-
   const v = body.velocity;
   const speed = vec3.length(v);
   if (speed === 0) {

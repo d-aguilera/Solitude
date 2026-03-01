@@ -252,7 +252,8 @@ export interface TickOutput {
 }
 
 export interface WorldAndSceneConfig {
+  enemyyShipId: string;
+  mainShipId: string;
   planets: (PlanetBodyConfig | StarBodyConfig)[];
   ships: ShipBodyConfig[];
-  mainShipId: string;
 }

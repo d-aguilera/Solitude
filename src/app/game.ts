@@ -11,6 +11,7 @@ import type {
 } from "./appPorts.js";
 import {
   updateControlState,
+  updateFrameAlignToVelocity,
   updateShipOrientationFromControls,
 } from "./controls.js";
 import { applyThrust, applyGravity } from "./physics.js";
@@ -53,6 +54,7 @@ export function createTickHandler(
   let currentThrustPercent: number;
   const gravityState = buildInitialGravityState(x.world);
   const mainShip = getShipById(x.world, config.mainShipId);
+  const enemyShip = getShipById(x.world, config.enemyyShipId);
   let simTimeMillis = 0;
 
   /**
@@ -74,6 +76,8 @@ export function createTickHandler(
     );
 
     applyThrust(dtMillis, mainShip, currentThrustPercent);
+
+    updateFrameAlignToVelocity(dtMillis, enemyShip);
 
     applyGravity(dtMillisSim, gravityEngine, gravityState);
 

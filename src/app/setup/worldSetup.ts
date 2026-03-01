@@ -22,9 +22,9 @@ import { createTrajectories } from "./setupTrajectories.js";
 export const initialFrame: LocalFrame = localFrame.fromUp(vec3.create(0, 0, 1));
 
 export function createWorldAndScene({
+  mainShipId,
   planets: planetConfigs,
   ships: shipConfigs,
-  mainShipId,
 }: WorldAndSceneConfig): WorldAndScene {
   const world: World = {
     shipBodies: [],
