@@ -1,3 +1,4 @@
+import { resolveCollisions } from "../domain/collisions.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
 import { vec3 } from "../domain/vec3.js";
@@ -74,12 +75,11 @@ export function createTickHandler(
       controlInput,
       simControlState,
     );
-
     applyThrust(dtMillis, mainShip, currentThrustPercent);
-
     updateFrameAlignToVelocity(dtMillis, enemyShip);
 
     applyGravity(dtMillisSim, gravityEngine, gravityState);
+    resolveCollisions(x.world);
 
     updateSceneGraph(
       dtMillis,
