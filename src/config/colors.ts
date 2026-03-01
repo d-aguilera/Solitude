@@ -1,6 +1,23 @@
 import type { RGB } from "../app/appPorts.js";
 
-export const colors: { [key: string]: RGB } = {
+export const ALL_COLORS = [
+  "ship",
+  "earth",
+  "jupiter",
+  "mars",
+  "mercury",
+  "neptune",
+  "saturn",
+  "sun",
+  "uranus",
+  "venus",
+  "yellow",
+  "moon",
+] as const;
+export type ColorName = (typeof ALL_COLORS)[number];
+export type Colors = Record<ColorName, RGB>;
+
+export const colors: Colors = {
   ship: { r: 0, g: 255, b: 255 },
   earth: { r: 80, g: 120, b: 255 },
   jupiter: { r: 220, g: 180, b: 120 },
