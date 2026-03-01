@@ -21,13 +21,10 @@ export function addShipsFromConfig(
     const sceneObject: ShipSceneObject = createSceneObject(config, shipBody);
     scene.objects.push(sceneObject);
 
-    const shipPath = createPolylineSceneObject(
-      "path:" + shipBody.id,
-      config.color,
+    const id = "path:" + shipBody.id;
+    scene.objects.push(
+      createPolylineSceneObject(id, shipBody.position, config.color),
     );
-    shipPath.position = shipBody.position; // alias
-
-    scene.objects.push(shipPath);
   }
 }
 

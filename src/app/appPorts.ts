@@ -170,9 +170,6 @@ export interface RGB {
   b: number;
 }
 
-/**
- * Adapter-level scene used by renderers.
- */
 export interface Scene {
   objects: SceneObject[];
   lights: PointLight[];
@@ -211,9 +208,6 @@ export interface ShipBodyConfig {
   mesh: Mesh;
 }
 
-/**
- * Base properties common to all scene objects used by renderers.
- */
 export interface ShipSceneObject extends SolidSceneObject {
   kind: "ship";
   backFaceCulling: false;

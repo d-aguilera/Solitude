@@ -2,7 +2,6 @@ import type {
   CelestialBody,
   KeplerianOrbit,
   PlanetPhysics,
-  StarPhysics,
   World,
 } from "../../domain/domainPorts.js";
 import { type Mat3, mat3 } from "../../domain/mat3.js";
@@ -14,7 +13,6 @@ import type {
   PlanetSceneObject,
   Scene,
   StarBodyConfig,
-  StarSceneObject,
 } from "../appPorts.js";
 import { mutateStateVectorFromKeplerian } from "./kepler.js";
 import { createPolylineSceneObject } from "./worldSetup.js";
@@ -72,8 +70,6 @@ export function addPlanetsAndStarsFromConfig(
       );
     }
 
-    const angularSpeedRadPerSec = cfg.angularSpeedRadPerSec;
-
     const celestialBody: CelestialBody = {
       id: cfg.id,
       position: vec3.clone(center),
@@ -93,7 +89,7 @@ export function addPlanetsAndStarsFromConfig(
       backFaceCulling: true,
       velocity: celestialBody.velocity, // alias
       rotationAxis,
-      angularSpeedRadPerSec,
+      angularSpeedRadPerSec: cfg.angularSpeedRadPerSec,
     };
 
     const planetPhysics: PlanetPhysics = {
@@ -108,12 +104,12 @@ export function addPlanetsAndStarsFromConfig(
       world.starPhysics.push({
         ...planetPhysics,
         luminosity: cfg.luminosity,
-      } as StarPhysics);
+      });
       scene.objects.push({
         ...sceneObj,
         luminosity: cfg.luminosity,
-      } as StarSceneObject);
-    } else {
+      });
+    } else if (cfg.kind === "planet") {
       world.planets.push(celestialBody);
       world.planetPhysics.push({ ...planetPhysics });
       scene.objects.push({
@@ -124,10 +120,13 @@ export function addPlanetsAndStarsFromConfig(
       // is updated over time by sampling actual positions, so it reflects
       // non-circular Keplerian-like trajectories after initialization.
       if (cfg.centralBodyId === "planet:sun") {
-        const pathObject = createPolylineSceneObject(cfg.pathId, cfg.color);
-        pathObject.position = celestialBody.position; // alias
-        pathObject.mesh.points.push(celestialBody.position); // alias
-        scene.objects.push(pathObject);
+        scene.objects.push(
+          createPolylineSceneObject(
+            cfg.pathId,
+            celestialBody.position,
+            cfg.color,
+          ),
+        );
       }
     }
   }

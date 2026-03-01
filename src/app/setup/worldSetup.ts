@@ -1,10 +1,9 @@
 import type { BodyId, World } from "../../domain/domainPorts.js";
 import { type LocalFrame, localFrame } from "../../domain/localFrame.js";
 import { mat3 } from "../../domain/mat3.js";
-import { vec3 } from "../../domain/vec3.js";
+import { vec3, type Vec3 } from "../../domain/vec3.js";
 import type { Trajectory, WorldAndScene } from "../appInternals.js";
 import type {
-  Mesh,
   PolylineSceneObject,
   RGB,
   Scene,
@@ -75,22 +74,19 @@ export function createWorldAndScene({
 
 export function createPolylineSceneObject(
   id: string,
+  position: Vec3,
   color: RGB,
 ): PolylineSceneObject {
-  const mesh: Mesh = {
-    points: [],
-    faces: [],
-  };
   return {
     id,
     kind: "polyline",
-    mesh,
-    position: vec3.zero(),
+    mesh: { points: [], faces: [] },
+    position, // alias
     orientation: mat3.identity,
     color,
     lineWidth: 2,
     wireframeOnly: true,
-    applyTransform: false, // polyline points are in world space
+    applyTransform: false, // polylines are already in world space
     backFaceCulling: false,
     count: 0,
     tail: -1,
@@ -98,13 +94,13 @@ export function createPolylineSceneObject(
 }
 
 /**
- * Build the array of point lights from the current star bodies.
+ * Add point lights on current star bodies.
  */
 function addLightsFromStars(world: World, scene: Scene): void {
-  scene.lights = world.stars.map((starBody) => {
-    return {
-      position: vec3.clone(starBody.position),
+  for (let starBody of world.stars) {
+    scene.lights.push({
+      position: starBody.position, // alias
       intensity: getStarPhysicsById(world, starBody.id).luminosity,
-    };
-  });
+    });
+  }
 }
