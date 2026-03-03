@@ -1,6 +1,6 @@
-import type { KeplerianOrbit } from "../../domain/domainPorts.js";
-import { mat3 } from "../../domain/mat3.js";
-import { vec3, type Vec3 } from "../../domain/vec3.js";
+import type { KeplerianOrbit } from "../app/appPorts.js";
+import { mat3 } from "../domain/mat3.js";
+import { vec3, type Vec3 } from "../domain/vec3.js";
 
 /**
  * Solve Kepler's equation for eccentric anomaly E given mean anomaly M and

@@ -41,14 +41,6 @@ export interface GravityState {
 }
 
 /**
- * Domain-level ship body.
- */
-export interface ShipBody extends CelestialBody {
-  frame: LocalFrame;
-  orientation: Mat3;
-}
-
-/**
  * Physical properties of a planet / star body.
  */
 export interface PlanetPhysics {
@@ -59,27 +51,11 @@ export interface PlanetPhysics {
 }
 
 /**
- * Keplerian orbital elements for a body orbiting a central mass.
- *
- * All angles are in radians.
- *
- * Frame:
- *  - The reference plane and direction are defined by the application.
- *  - a, e, i, Ω, ω, and M0 follow the standard orbital mechanics convention.
+ * Domain-level ship body.
  */
-export interface KeplerianOrbit {
-  /** Semi-major axis (meters). */
-  semiMajorAxis: number;
-  /** Eccentricity in [0, 1). */
-  eccentricity: number;
-  /** Inclination relative to the reference plane (radians). */
-  inclinationRad: number;
-  /** Longitude of ascending node (radians). */
-  lonAscNodeRad: number;
-  /** Argument of periapsis (radians). */
-  argPeriapsisRad: number;
-  /** Mean anomaly at the chosen epoch (radians). */
-  meanAnomalyAtEpochRad: number;
+export interface ShipBody extends CelestialBody {
+  frame: LocalFrame;
+  orientation: Mat3;
 }
 
 /**

@@ -1,21 +1,21 @@
 import type {
-  CelestialBody,
-  KeplerianOrbit,
-  PlanetPhysics,
-  World,
-} from "../../domain/domainPorts.js";
-import { type Mat3, mat3 } from "../../domain/mat3.js";
-import { type Vec3, vec3 } from "../../domain/vec3.js";
-import { parameters } from "../../global/parameters.js";
-import type {
   CelestialBodySceneObject,
+  KeplerianOrbit,
   PlanetBodyConfig,
   PlanetSceneObject,
   Scene,
   StarBodyConfig,
-} from "../appPorts.js";
-import { mutateStateVectorFromKeplerian } from "./kepler.js";
-import { createPolylineSceneObject } from "./worldSetup.js";
+} from "../app/appPorts";
+import type {
+  CelestialBody,
+  PlanetPhysics,
+  World,
+} from "../domain/domainPorts";
+import { mat3, type Mat3 } from "../domain/mat3";
+import { vec3, type Vec3 } from "../domain/vec3";
+import { parameters } from "../global/parameters";
+import { mutateStateVectorFromKeplerian } from "./kepler";
+import { createPolylineSceneObject } from "./setup";
 
 // Scratch state for hierarchical initial state computation.
 const initialStatePositionScratch: Record<string, Vec3> = {};

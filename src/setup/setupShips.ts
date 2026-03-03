@@ -1,11 +1,11 @@
-import type { ShipBody, World } from "../../domain/domainPorts.js";
-import { localFrame, type LocalFrame } from "../../domain/localFrame.js";
-import { mat3 } from "../../domain/mat3.js";
-import { circularSpeedAtRadius } from "../../domain/phys.js";
-import { vec3, type Vec3 } from "../../domain/vec3.js";
-import type { Scene, ShipBodyConfig, ShipSceneObject } from "../appPorts.js";
-import { getPlanetBodyById, getPlanetPhysicsById } from "../worldLookup.js";
-import { createPolylineSceneObject, initialFrame } from "./worldSetup.js";
+import type { Scene, ShipBodyConfig, ShipSceneObject } from "../app/appPorts";
+import { getPlanetBodyById, getPlanetPhysicsById } from "../app/worldLookup";
+import type { ShipBody, World } from "../domain/domainPorts";
+import { localFrame, type LocalFrame } from "../domain/localFrame";
+import { mat3 } from "../domain/mat3";
+import { circularSpeedAtRadius } from "../domain/phys";
+import { vec3, type Vec3 } from "../domain/vec3";
+import { createPolylineSceneObject, initialFrame } from "./setup";
 
 const axisScratch = vec3.zero();
 

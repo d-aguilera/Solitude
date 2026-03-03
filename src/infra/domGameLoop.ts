@@ -1,8 +1,6 @@
 import type {
   ControlInput,
-  DomainCameraPose,
   EnvInput,
-  Scene,
   SceneObject,
   TickCallback,
   TickOutput,
@@ -10,7 +8,7 @@ import type {
   WorldAndSceneConfig,
 } from "../app/appPorts.js";
 import { createTickHandler } from "../app/game.js";
-import type { GravityEngine, ShipBody } from "../domain/domainPorts.js";
+import type { GravityEngine } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { parameters } from "../global/parameters.js";
 import type {
@@ -23,6 +21,7 @@ import type {
   ViewRenderer,
   ViewRenderParams,
 } from "../render/renderPorts.js";
+import { createWorldAndScene } from "../setup/setup.js";
 import { updateFps } from "./fps.js";
 import type { ProfilerController } from "./infraPorts.js";
 import { handlePauseToggle } from "./pause.js";
@@ -47,7 +46,8 @@ export function runLoop(
   envInput: EnvInput,
   profilerController: ProfilerController,
 ): void {
-  const tickInto: TickCallback = createTickHandler(config, gravityEngine);
+  const w = createWorldAndScene(config);
+  const tickInto: TickCallback = createTickHandler(gravityEngine, w);
 
   const tickParams: TickParams = {
     dtMillis: 0,
@@ -57,19 +57,15 @@ export function runLoop(
 
   const tickOutput: TickOutput = {
     currentThrustLevel: 0,
-    mainShip: {} as ShipBody,
-    pilotCamera: {} as DomainCameraPose,
     pilotCameraLocalOffset: vec3.zero(),
-    scene: {} as Scene,
     simTimeMillis: 0,
     speedMps: 0,
-    topCamera: {} as DomainCameraPose,
   };
 
   const pilotViewRenderParams: ViewRenderParams = {
-    camera: tickOutput.pilotCamera,
-    mainShip: tickOutput.mainShip,
-    scene: tickOutput.scene,
+    camera: w.pilotCamera,
+    mainShip: w.mainShip,
+    scene: w.scene,
     surface: pilotSurface,
   };
 
@@ -84,9 +80,9 @@ export function runLoop(
   };
 
   const topViewRenderParams: ViewRenderParams = {
-    camera: tickOutput.topCamera,
-    mainShip: tickOutput.mainShip,
-    scene: tickOutput.scene,
+    camera: w.topCamera,
+    mainShip: w.mainShip,
+    scene: w.scene,
     surface: topSurface,
     objectsFilter: (obj: SceneObject) =>
       // no trajectory polylines in the top view
@@ -151,16 +147,7 @@ export function runLoop(
       tickInto(tickOutput, tickParams);
     }
 
-    pilotViewRenderParams.camera = tickOutput.pilotCamera;
-    pilotViewRenderParams.mainShip = tickOutput.mainShip;
-    pilotViewRenderParams.scene = tickOutput.scene;
-
     pilotViewRenderer.renderInto(renderedPilotView, pilotViewRenderParams);
-
-    topViewRenderParams.camera = tickOutput.topCamera;
-    topViewRenderParams.mainShip = tickOutput.mainShip;
-    topViewRenderParams.scene = tickOutput.scene;
-
     topViewRenderer.renderInto(renderedTopView, topViewRenderParams);
 
     fps = updateFps(dtMillis);

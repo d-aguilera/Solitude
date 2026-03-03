@@ -1,4 +1,4 @@
-import type { BodyId, KeplerianOrbit, ShipBody } from "../domain/domainPorts";
+import type { BodyId, ShipBody, World } from "../domain/domainPorts";
 import type { LocalFrame } from "../domain/localFrame";
 import type { Mat3 } from "../domain/mat3";
 import type { Vec3 } from "../domain/vec3";
@@ -124,6 +124,30 @@ export interface DomainCameraPose {
 export type EnvAction = (typeof ALL_ENV_ACTIONS)[number];
 export type EnvInput = Record<EnvAction, boolean>;
 
+/**
+ * Keplerian orbital elements for a body orbiting a central mass.
+ *
+ * All angles are in radians.
+ *
+ * Frame:
+ *  - The reference plane and direction are defined by the application.
+ *  - a, e, i, Ω, ω, and M0 follow the standard orbital mechanics convention.
+ */
+export interface KeplerianOrbit {
+  /** Semi-major axis (meters). */
+  semiMajorAxis: number;
+  /** Eccentricity in [0, 1). */
+  eccentricity: number;
+  /** Inclination relative to the reference plane (radians). */
+  inclinationRad: number;
+  /** Longitude of ascending node (radians). */
+  lonAscNodeRad: number;
+  /** Argument of periapsis (radians). */
+  argPeriapsisRad: number;
+  /** Mean anomaly at the chosen epoch (radians). */
+  meanAnomalyAtEpochRad: number;
+}
+
 export interface PlanetSceneObject extends CelestialBodySceneObject {
   kind: "planet";
 }
@@ -236,17 +260,30 @@ export interface TickParams {
 
 export interface TickOutput {
   currentThrustLevel: number;
-  mainShip: ShipBody;
-  pilotCamera: DomainCameraPose;
   pilotCameraLocalOffset: Vec3;
-  scene: Scene;
   simTimeMillis: number; // accumulated simulation time.
   speedMps: number;
+}
+
+export type Trajectory = {
+  intervalMillis: number;
+  remainingMillis: number;
+  sceneObject: PolylineSceneObject;
+};
+
+export interface WorldAndScene {
+  enemyShip: ShipBody;
+  mainShip: ShipBody;
+  pilotCamera: DomainCameraPose;
+  planetPathMappings: Record<BodyId, BodyId>;
+  scene: Scene;
   topCamera: DomainCameraPose;
+  trajectories: Record<BodyId, Trajectory>;
+  world: World;
 }
 
 export interface WorldAndSceneConfig {
-  enemyyShipId: string;
+  enemyShipId: string;
   mainShipId: string;
   planets: (PlanetBodyConfig | StarBodyConfig)[];
   ships: ShipBodyConfig[];

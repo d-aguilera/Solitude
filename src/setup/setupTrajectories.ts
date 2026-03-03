@@ -1,17 +1,14 @@
 import type {
-  BodyId,
   KeplerianOrbit,
-  World,
-} from "../../domain/domainPorts.js";
-import { vec3 } from "../../domain/vec3.js";
-import type { Trajectory } from "../appInternals.js";
-import type {
   PlanetBodyConfig,
   PolylineSceneObject,
   Scene,
   StarBodyConfig,
-} from "../appPorts.js";
-import { getPlanetBodyById } from "../worldLookup.js";
+  Trajectory,
+} from "../app/appPorts";
+import { getPlanetBodyById } from "../app/worldLookup";
+import type { BodyId, World } from "../domain/domainPorts";
+import { vec3 } from "../domain/vec3";
 
 export function createTrajectories(
   world: World,

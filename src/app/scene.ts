@@ -1,13 +1,14 @@
 import type { BodyId, ShipBody } from "../domain/domainPorts.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
-import type { SceneState, Trajectory } from "./appInternals.js";
+import type { SceneState } from "./appInternals.js";
 import type {
   ControlInput,
   SceneControlState,
   SceneObject,
+  Trajectory,
 } from "./appPorts.js";
-import { updatePilotCameraOffset, updateCameras } from "./cameras.js";
+import { updateCameras, updatePilotCameraOffset } from "./cameras.js";
 import { updatePilotLook } from "./controls.js";
 
 export function updateSceneGraph(

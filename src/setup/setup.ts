@@ -1,15 +1,16 @@
-import type { BodyId, World } from "../../domain/domainPorts.js";
-import { type LocalFrame, localFrame } from "../../domain/localFrame.js";
-import { mat3 } from "../../domain/mat3.js";
-import { vec3, type Vec3 } from "../../domain/vec3.js";
-import type { Trajectory, WorldAndScene } from "../appInternals.js";
 import type {
   PolylineSceneObject,
   RGB,
   Scene,
+  Trajectory,
+  WorldAndScene,
   WorldAndSceneConfig,
-} from "../appPorts.js";
-import { getShipById, getStarPhysicsById } from "../worldLookup.js";
+} from "../app/appPorts.js";
+import { getShipById, getStarPhysicsById } from "../app/worldLookup.js";
+import type { BodyId, World } from "../domain/domainPorts.js";
+import { type LocalFrame, localFrame } from "../domain/localFrame.js";
+import { mat3 } from "../domain/mat3.js";
+import { vec3, type Vec3 } from "../domain/vec3.js";
 import {
   createInitialPilotCamera,
   createInitialTopCamera,
@@ -21,6 +22,7 @@ import { createTrajectories } from "./setupTrajectories.js";
 export const initialFrame: LocalFrame = localFrame.fromUp(vec3.create(0, 0, 1));
 
 export function createWorldAndScene({
+  enemyShipId,
   mainShipId,
   planets: planetConfigs,
   ships: shipConfigs,
@@ -41,6 +43,7 @@ export function createWorldAndScene({
   addPlanetsAndStarsFromConfig(planetConfigs, world, scene);
   addShipsFromConfig(shipConfigs, world, scene);
 
+  const enemyShip = getShipById(world, enemyShipId);
   const mainShip = getShipById(world, mainShipId);
   const topCamera = createInitialTopCamera(mainShip);
   const pilotCamera = createInitialPilotCamera(mainShip);
@@ -63,12 +66,14 @@ export function createWorldAndScene({
   addLightsFromStars(world, scene);
 
   return {
-    scene,
-    world,
-    topCamera,
+    enemyShip,
+    mainShip,
     pilotCamera,
     planetPathMappings,
+    scene,
+    topCamera,
     trajectories,
+    world,
   };
 }
 

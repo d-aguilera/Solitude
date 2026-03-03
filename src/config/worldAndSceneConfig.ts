@@ -4,7 +4,7 @@ import { buildDefaultSolarSystemConfigs } from "./solarSystem.js";
 
 export function buildWorldAndSceneConfig() {
   const config: WorldAndSceneConfig = {
-    enemyyShipId: "ship:enemy",
+    enemyShipId: "ship:enemy",
     mainShipId: "ship:main",
     planets: buildDefaultSolarSystemConfigs(),
     ships: buildDefaultShipConfigs(),

@@ -3,32 +3,28 @@ import type { GravityEngine } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
 import { vec3 } from "../domain/vec3.js";
 import type { SceneState, SimControlState } from "./appInternals.js";
+import type { WorldAndScene } from "./appPorts.js";
 import type {
   SceneControlState,
   TickCallback,
   TickOutput,
   TickParams,
-  WorldAndSceneConfig,
 } from "./appPorts.js";
 import {
   updateControlState,
   updateFrameAlignToVelocity,
   updateShipOrientationFromControls,
 } from "./controls.js";
-import { applyThrust, applyGravity } from "./physics.js";
+import { applyGravity, applyThrust } from "./physics.js";
 import { updateSceneGraph } from "./scene.js";
-import { createWorldAndScene } from "./setup/worldSetup.js";
-import { getShipById } from "./worldLookup.js";
 
 /**
  * App‑core game entry.
  */
 export function createTickHandler(
-  config: WorldAndSceneConfig,
   gravityEngine: GravityEngine,
+  x: WorldAndScene,
 ): TickCallback {
-  const x = createWorldAndScene(config);
-
   const simControlState: SimControlState = {
     alignToVelocity: false,
     thrustLevel: 0,
@@ -54,8 +50,6 @@ export function createTickHandler(
 
   let currentThrustPercent: number;
   const gravityState = buildInitialGravityState(x.world);
-  const mainShip = getShipById(x.world, config.mainShipId);
-  const enemyShip = getShipById(x.world, config.enemyyShipId);
   let simTimeMillis = 0;
 
   /**
@@ -71,12 +65,12 @@ export function createTickHandler(
 
     updateShipOrientationFromControls(
       dtMillis,
-      mainShip,
+      x.mainShip,
       controlInput,
       simControlState,
     );
-    applyThrust(dtMillis, mainShip, currentThrustPercent);
-    updateFrameAlignToVelocity(dtMillis, enemyShip);
+    applyThrust(dtMillis, x.mainShip, currentThrustPercent);
+    updateFrameAlignToVelocity(dtMillis, x.enemyShip);
 
     applyGravity(dtMillisSim, gravityEngine, gravityState);
     resolveCollisions(x.world);
@@ -86,7 +80,7 @@ export function createTickHandler(
       dtMillisSim,
       sceneState,
       sceneControlState,
-      mainShip,
+      x.mainShip,
       controlInput,
     );
 
@@ -97,12 +91,8 @@ export function createTickHandler(
           ? simControlState.thrustLevel
           : -simControlState.thrustLevel;
 
-    output.mainShip = mainShip;
-    output.pilotCamera = sceneState.pilotCamera;
     output.pilotCameraLocalOffset = sceneControlState.pilotCameraLocalOffset;
-    output.scene = sceneState.scene;
     output.speedMps = sceneState.speedMps;
     output.simTimeMillis = simTimeMillis;
-    output.topCamera = sceneState.topCamera;
   };
 }
