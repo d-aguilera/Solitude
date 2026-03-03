@@ -2,6 +2,12 @@ import { alloc } from "../global/allocProfiler.js";
 import { type Mat3, mat3 } from "./mat3.js";
 import { type Vec3, vec3 } from "./vec3.js";
 
+export interface LocalFrame {
+  right: Vec3;
+  forward: Vec3;
+  up: Vec3;
+}
+
 const worldForwardScratch = vec3.zero();
 
 function clone(frame: Readonly<LocalFrame>): LocalFrame {
@@ -104,8 +110,3 @@ export const localFrame = {
   intoMat3,
   rotateAroundAxisInPlace,
 };
-export interface LocalFrame {
-  right: Vec3;
-  forward: Vec3;
-  up: Vec3;
-}
