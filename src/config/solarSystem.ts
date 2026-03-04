@@ -8,9 +8,6 @@ import { AU, km } from "../app/appPorts.js";
 import { vec3, type Vec3 } from "../domain/vec3.js";
 import { colors } from "./colors.js";
 
-// Mean distance Earth–Moon in meters
-const EARTH_MOON_DISTANCE = 384_400 * km; // m
-
 // --- Generated from JPL Horizons at epoch J2000.0 ---
 
 // Real(ish) semi‑major axes (meters)
@@ -23,6 +20,7 @@ const orbits = {
   saturn: 9.581929200479 * AU,
   uranus: 19.230147659151 * AU,
   neptune: 30.093922090027 * AU,
+  moon: 384_400 * km, // relative to Earth
 };
 
 // Approximate orbital eccentricities (dimensionless)
@@ -400,7 +398,7 @@ export function buildDefaultSolarSystemConfigs(): (
       pathId: "path:planet:moon",
       kind: "planet",
       orbit: buildOrbit(
-        EARTH_MOON_DISTANCE,
+        orbits.moon,
         eccentricities.moon,
         inclinationsDeg.moon,
         lonAscNodeDeg.moon,
