@@ -4,7 +4,7 @@ import type {
   ShipSceneObject,
   StarSceneObject,
 } from "../app/appPorts.js";
-import { type Mat3, mat3 } from "../domain/mat3.js";
+import { mat3 } from "../domain/mat3.js";
 import { type Vec3, vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
 import type { Renderable } from "./renderPorts.js";
@@ -17,87 +17,57 @@ import type { Renderable } from "./renderPorts.js";
  * Vec3 elements are stable only for the duration of the current render
  * pass, not across frames.
  */
+export function toRenderable(
+  obj: ShipSceneObject | PlanetSceneObject | StarSceneObject,
+): Renderable {
+  const { applyTransform, color: baseColor, lineWidth, mesh } = obj;
+  let worldPoints: Vec3[];
+
+  if (applyTransform) {
+    // Transformable object: compute world-space points in-place into
+    // a reusable scratch array.
+    const { orientation, position } = obj;
+    const srcPoints = mesh.points;
+    const n = srcPoints.length;
+    worldPoints = getScratchArrayForObject(obj, n);
+    for (let i = 0; i < n; i++) {
+      const wp = worldPoints[i];
+      // Rotate by orientation matrix
+      mat3.mulVec3Into(wp, orientation, srcPoints[i]);
+      // Translate by world position
+      vec3.addInto(wp, wp, position);
+    }
+  } else {
+    // Polyline or other world-space-only geometry: no transform, no copies.
+    worldPoints = mesh.points;
+  }
+
+  return {
+    mesh,
+    worldPoints,
+    lineWidth,
+    baseColor,
+  };
+}
 
 // Per-object scratch arrays keyed by the SceneObject instance.
 const objectWorldPointScratch = new WeakMap<SceneObject, Vec3[]>();
 
-/**
- * Convert a SceneObject into a Renderable with world-space points.
- */
-export function toRenderable(
+/** Get or create a scratch array for a given object. */
+function getScratchArrayForObject(
   obj: ShipSceneObject | PlanetSceneObject | StarSceneObject,
-): Renderable {
-  if (!obj.applyTransform) {
-    // Polyline or other world-space-only geometry: no transform, no copies.
-    return {
-      mesh: obj.mesh,
-      worldPoints: obj.mesh.points,
-      lineWidth: obj.lineWidth,
-      baseColor: obj.color,
-    };
-  }
-
-  // Transformable object: compute world-space points in-place into
-  // a reusable scratch array.
-  const srcPoints = obj.mesh.points;
-  const n = srcPoints.length;
-
-  // Get or create a scratch array for this object.
-  let dst = objectWorldPointScratch.get(obj);
-  if (!dst || dst.length < n) {
-    dst = ensureScratchCapacity(dst ?? [], n);
-    objectWorldPointScratch.set(obj, dst);
-  }
-
-  localToWorldInPlace(srcPoints, dst, obj.orientation, obj.position);
-
-  return {
-    mesh: obj.mesh,
-    worldPoints: dst,
-    lineWidth: obj.lineWidth,
-    baseColor: obj.color,
-  };
-}
-
-/**
- * Ensure the given scratch array has at least `n` Vec3 entries, reusing
- * existing instances when possible.
- */
-function ensureScratchCapacity(dst: Vec3[], n: number): Vec3[] {
-  return alloc.withName(ensureScratchCapacity.name, () => {
-    const current = dst.length;
-    for (let i = current; i < n; i++) {
-      dst[i] = vec3.zero();
+  n: number,
+): Vec3[] {
+  return alloc.withName(getScratchArrayForObject.name, () => {
+    let dst = objectWorldPointScratch.get(obj);
+    if (!dst) {
+      dst = [];
+      objectWorldPointScratch.set(obj, dst);
+    }
+    const length = dst.length;
+    for (let i = length; i < n; i++) {
+      dst.push(vec3.zero());
     }
     return dst;
   });
-}
-
-/**
- * Transform an array of local-space points into world space in-place,
- * writing results into the provided destination array.
- *
- * src and dst may be distinct arrays; dst will be resized if necessary
- * but existing Vec3 instances will be reused where possible.
- */
-function localToWorldInPlace(
-  src: Vec3[],
-  dst: Vec3[],
-  R: Readonly<Mat3>,
-  position: Readonly<Vec3>,
-): void {
-  const n = src.length;
-  if (dst.length < n) {
-    ensureScratchCapacity(dst, n);
-  }
-
-  for (let i = 0; i < n; i++) {
-    const local = src[i];
-    const wp = dst[i];
-
-    // Rotate by orientation matrix
-    mat3.mulVec3Into(wp, R, local);
-    // Translate by world position
-    vec3.addInto(wp, wp, position);
-  }
 }
