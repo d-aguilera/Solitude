@@ -14,6 +14,8 @@ export const ALL_COLORS = [
   "venus",
   "yellow",
   "moon",
+  "phobos",
+  "deimos",
 ] as const;
 export type ColorName = (typeof ALL_COLORS)[number];
 export type Colors = Record<ColorName, RGB>;
@@ -32,4 +34,6 @@ export const colors: Colors = {
   venus: { r: 255, g: 220, b: 160 },
   yellow: { r: 255, g: 255, b: 0 },
   moon: { r: 210, g: 210, b: 210 },
+  phobos: { r: 200, g: 140, b: 120 },
+  deimos: { r: 190, g: 160, b: 140 },
 };

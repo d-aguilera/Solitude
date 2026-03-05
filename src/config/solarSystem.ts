@@ -21,6 +21,8 @@ const orbits = {
   uranus: 19.230147659151 * AU,
   neptune: 30.093922090027 * AU,
   moon: 384_400 * km, // relative to Earth
+  phobos: 9_376 * km, // relative to Mars
+  deimos: 23_463 * km, // relative to Mars
 };
 
 // Approximate orbital eccentricities (dimensionless)
@@ -34,6 +36,8 @@ const eccentricities = {
   uranus: 0.04439277,
   neptune: 0.01120359,
   moon: 0.0549,
+  phobos: 0.0151,
+  deimos: 0.00033,
 };
 
 // Real planetary mean radii (meters)
@@ -48,6 +52,8 @@ const radii = {
   uranus: 25_362 * km,
   neptune: 24_622 * km,
   moon: 1_737.4 * km,
+  phobos: 11_266, // ~11 km effective radius
+  deimos: 6_200, // ~6 km effective radius
 };
 
 // Approximate mean densities (kg/m^3)
@@ -62,6 +68,8 @@ const densities = {
   uranus: 1_270,
   neptune: 1_638,
   moon: 3_344,
+  phobos: 1_900,
+  deimos: 1_500,
 };
 
 // Bolometric luminosities (W)
@@ -81,6 +89,8 @@ const spinPeriodsSeconds = {
   uranus: -17.2 * 3600, // retrograde
   neptune: 16.1 * 3600,
   moon: 27.321661 * 24 * 3600,
+  phobos: 7.66 * 3600, // tidally locked, ~7.66h orbit/spin
+  deimos: 30.35 * 3600, // ~30.35h
 };
 
 // Axial tilts (obliquity) in degrees, relative to each planet's orbital normal.
@@ -95,6 +105,8 @@ const obliquitiesDeg = {
   uranus: 97.77, // nearly on its side
   neptune: 28.32,
   moon: 6.68,
+  phobos: 0, // approximate
+  deimos: 0, // approximate
 };
 
 /**
@@ -112,6 +124,8 @@ const inclinationsDeg = {
   uranus: 0.77267578,
   neptune: 1.77021406,
   moon: 5.145, // relative to ecliptic
+  phobos: 1.1, // ~1° to Mars equator; we approximate against ecliptic
+  deimos: 1.8,
 };
 
 /**
@@ -133,6 +147,8 @@ const lonAscNodeDeg = {
   uranus: 74.00474643,
   neptune: 131.78387711,
   moon: 125.08,
+  phobos: 45.0,
+  deimos: 60.0,
 };
 
 /**
@@ -148,6 +164,8 @@ const argPeriapsisDeg = {
   uranus: 96.5887248,
   neptune: 267.31580198,
   moon: 318.15,
+  phobos: 150.0,
+  deimos: 250.0,
 };
 
 // mean anomaly at J2000, in radians
@@ -161,6 +179,8 @@ const meanAnomalyAtEpochRad = {
   uranus: 2.493893561901,
   neptune: 4.64440886758,
   moon: 2.5,
+  phobos: 1.0,
+  deimos: 3.5,
 };
 
 function degToRad(deg: number): number {
@@ -412,6 +432,46 @@ export function buildDefaultSolarSystemConfigs(): (
       mesh: cloneAndScalePrototype(radii.moon),
       obliquityRad: degToRad(obliquitiesDeg.moon),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.moon),
+    },
+    {
+      id: "planet:phobos",
+      pathId: "path:planet:phobos",
+      kind: "planet",
+      orbit: buildOrbit(
+        orbits.phobos,
+        eccentricities.phobos,
+        inclinationsDeg.phobos,
+        lonAscNodeDeg.phobos,
+        argPeriapsisDeg.phobos,
+        meanAnomalyAtEpochRad.phobos,
+      ),
+      physicalRadius: radii.phobos,
+      density: densities.phobos,
+      centralBodyId: "planet:mars",
+      color: colors.phobos,
+      mesh: cloneAndScalePrototype(radii.phobos),
+      obliquityRad: degToRad(obliquitiesDeg.phobos),
+      angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.phobos),
+    },
+    {
+      id: "planet:deimos",
+      pathId: "path:planet:deimos",
+      kind: "planet",
+      orbit: buildOrbit(
+        orbits.deimos,
+        eccentricities.deimos,
+        inclinationsDeg.deimos,
+        lonAscNodeDeg.deimos,
+        argPeriapsisDeg.deimos,
+        meanAnomalyAtEpochRad.deimos,
+      ),
+      physicalRadius: radii.deimos,
+      density: densities.deimos,
+      centralBodyId: "planet:mars",
+      color: colors.deimos,
+      mesh: cloneAndScalePrototype(radii.deimos),
+      obliquityRad: degToRad(obliquitiesDeg.deimos),
+      angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.deimos),
     },
   ];
 
