@@ -3,12 +3,12 @@ import type { GravityEngine } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
 import { vec3 } from "../domain/vec3.js";
 import type { SceneState, SimControlState } from "./appInternals.js";
-import type { WorldAndScene } from "./appPorts.js";
 import type {
   SceneControlState,
   TickCallback,
   TickOutput,
   TickParams,
+  WorldAndScene,
 } from "./appPorts.js";
 import {
   updateControlState,
@@ -23,8 +23,11 @@ import { updateSceneGraph } from "./scene.js";
  */
 export function createTickHandler(
   gravityEngine: GravityEngine,
-  x: WorldAndScene,
+  worldAndScene: WorldAndScene,
 ): TickCallback {
+  let currentThrustPercent: number;
+  let simTimeMillis = 0;
+
   const simControlState: SimControlState = {
     alignToVelocity: false,
     thrustLevel: 0,
@@ -40,17 +43,15 @@ export function createTickHandler(
   };
 
   const sceneState: SceneState = {
-    pilotCamera: x.pilotCamera,
-    planetPathMappings: x.planetPathMappings,
-    scene: x.scene,
+    pilotCamera: worldAndScene.pilotCamera,
+    planetPathMappings: worldAndScene.planetPathMappings,
+    scene: worldAndScene.scene,
     speedMps: 0,
-    topCamera: x.topCamera,
-    trajectories: x.trajectories,
+    topCamera: worldAndScene.topCamera,
+    trajectories: worldAndScene.trajectories,
   };
 
-  let currentThrustPercent: number;
-  const gravityState = buildInitialGravityState(x.world);
-  let simTimeMillis = 0;
+  const gravityState = buildInitialGravityState(worldAndScene.world);
 
   /**
    * Per‑frame update/render entry called by the game loop.
@@ -65,22 +66,22 @@ export function createTickHandler(
 
     updateShipOrientationFromControls(
       dtMillis,
-      x.mainShip,
+      worldAndScene.mainShip,
       controlInput,
       simControlState,
     );
-    applyThrust(dtMillis, x.mainShip, currentThrustPercent);
-    updateFrameAlignToVelocity(dtMillis, x.enemyShip);
+    applyThrust(dtMillis, worldAndScene.mainShip, currentThrustPercent);
+    updateFrameAlignToVelocity(dtMillis, worldAndScene.enemyShip);
 
     applyGravity(dtMillisSim, gravityEngine, gravityState);
-    resolveCollisions(x.world);
+    resolveCollisions(worldAndScene.world);
 
     updateSceneGraph(
       dtMillis,
       dtMillisSim,
       sceneState,
       sceneControlState,
-      x.mainShip,
+      worldAndScene.mainShip,
       controlInput,
     );
 

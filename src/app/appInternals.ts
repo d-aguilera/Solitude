@@ -1,9 +1,8 @@
 import type { BodyId } from "../domain/domainPorts.js";
-import type { Trajectory } from "./appPorts.js";
 import type { LocalFrame } from "../domain/localFrame.js";
 import type { Mat3 } from "../domain/mat3.js";
 import type { Vec3 } from "../domain/vec3.js";
-import type { DomainCameraPose, Scene } from "./appPorts.js";
+import type { DomainCameraPose, Scene, Trajectory } from "./appPorts.js";
 
 /**
  * Simple container for the controlled body's pose and velocity.

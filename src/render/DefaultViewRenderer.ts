@@ -6,13 +6,13 @@ import { renderBodyLabels } from "./renderBodyLabels.js";
 import { renderFacesInto } from "./renderFaces.js";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals.js";
 import { renderPolylinesInto } from "./renderPolylines.js";
-import { drawMode } from "./renderPorts.js";
 import type {
   RenderedView,
   TextMetrics,
   ViewRenderer,
   ViewRenderParams,
 } from "./renderPorts.js";
+import { drawMode } from "./renderPorts.js";
 import { renderVelocitySegmentsInto } from "./renderVelocitySegments.js";
 
 export class DefaultViewRenderer implements ViewRenderer {
