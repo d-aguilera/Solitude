@@ -31,12 +31,17 @@ export interface HudRenderParams {
   speedMps: number;
 }
 
+export interface Point {
+  x: number;
+  y: number;
+}
+
 /**
  * Rasterizer abstraction.
  */
 export interface Rasterizer {
   clear(color: string): void;
-  drawBodyLabels(labels: RenderedBodyLabel[]): void;
+  drawBodyLabels(labels: RenderedBodyLabel[], count: number): void;
   drawFaces(faces: RenderedFace[], count: number): void;
   drawHud(hud: RenderedHud): void;
   drawPolylines(polylines: RenderedPolyline[], count: number): void;
@@ -52,20 +57,14 @@ export interface Renderable {
 }
 
 export interface RenderedBodyLabel {
-  anchor: ScreenPoint;
-  edgePoint: ScreenPoint;
+  anchor: Point;
+  edgePoint: Point;
   lineHeight: number;
   lines: string[];
   name: string;
-  padding: {
-    width: number;
-    height: number;
-  };
-  position: ScreenPoint;
-  size: {
-    width: number;
-    height: number;
-  };
+  padding: Size;
+  position: Point;
+  size: Size;
 }
 
 export interface RenderedFace {
@@ -97,6 +96,7 @@ export interface RenderedSegment {
 
 export interface RenderedView {
   bodyLabels: RenderedBodyLabel[];
+  bodyLabelCount: number;
   faces: RenderedFace[];
   faceCount: number;
   polylines: RenderedPolyline[];
@@ -113,6 +113,11 @@ export interface RenderedView {
 export interface RenderSurface2D {
   readonly width: number;
   readonly height: number;
+}
+
+export interface Size {
+  width: number;
+  height: number;
 }
 
 /**

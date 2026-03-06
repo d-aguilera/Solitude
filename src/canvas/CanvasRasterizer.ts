@@ -1,6 +1,6 @@
-import type { RGB } from "../app/appPorts.js";
 import { rgbToCss } from "../render/color.js";
 import type {
+  Point,
   Rasterizer,
   RenderedBodyLabel,
   RenderedFace,
@@ -9,26 +9,13 @@ import type {
   RenderedSegment,
   TextMetrics,
 } from "../render/renderPorts.js";
-import type { ScreenPoint } from "../render/scrn.js";
 
 const hudWidth = 420;
 const hudMargin = 10;
 const hudPadding = 10;
 
 // scratch
-let label: RenderedBodyLabel;
-let anchor: ScreenPoint;
-let lines: string[];
-let padding: { width: number; height: number };
-let position: ScreenPoint;
-let size: { width: number; height: number };
-let edgePoint: ScreenPoint;
-let face: RenderedFace;
-let p0: ScreenPoint;
-let p1: ScreenPoint;
-let p2: ScreenPoint;
-let color: RGB;
-let p: ScreenPoint;
+let p: Point;
 
 /**
  * Canvas2D rasterizer.
@@ -44,18 +31,18 @@ export class CanvasRasterizer implements Rasterizer {
     ctx.fillRect(0, 0, width, height);
   }
 
-  drawBodyLabels(labels: RenderedBodyLabel[]): void {
+  drawBodyLabels(labels: RenderedBodyLabel[], count: number): void {
     const ctx = this.ctx;
 
     ctx.font = "14px monospace";
     ctx.textBaseline = "middle";
 
-    for (label of labels) {
-      ({ anchor, lines, padding, position, size, edgePoint } = label);
+    for (let i = 0; i < count; i++) {
+      const { anchor, lineHeight, lines, padding, position, size, edgePoint } =
+        labels[i];
       const linesLength = lines.length;
-      const { width: paddingWidth, height: paddingHeight } = padding;
-      const { x: boxX, y: boxY } = position;
-      const { width: boxWidth, height: boxHeight } = size;
+      const { x: positionX, y: positionY } = position;
+      const { width: sizeWidth, height: sizeHeight } = size;
 
       ctx.strokeStyle = "white";
       ctx.lineWidth = 1;
@@ -65,17 +52,17 @@ export class CanvasRasterizer implements Rasterizer {
       ctx.stroke();
 
       ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
-      ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+      ctx.fillRect(positionX, positionY, sizeWidth, sizeHeight);
 
       ctx.strokeStyle = "white";
-      ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+      ctx.strokeRect(positionX, positionY, sizeWidth, sizeHeight);
 
       ctx.fillStyle = "white";
       for (let i = 0; i < linesLength; i++) {
         ctx.fillText(
           lines[i],
-          boxX + paddingWidth,
-          boxY + paddingHeight + label.lineHeight * (i + 0.5),
+          positionX + padding.width,
+          positionY + padding.height + lineHeight * (i + 0.5),
         );
       }
     }
@@ -85,8 +72,8 @@ export class CanvasRasterizer implements Rasterizer {
     const ctx = this.ctx;
 
     for (let i = 0; i < count; i++) {
-      face = faces[i];
-      ({ p0, p1, p2, color } = face);
+      const face = faces[i];
+      const { p0, p1, p2, color } = face;
       ctx.fillStyle = rgbToCss(color);
       ctx.beginPath();
       ctx.moveTo(p0.x, p0.y);

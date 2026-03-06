@@ -28,21 +28,16 @@ const focalLengthY = 1 / Math.tan(vFovRad / 2);
  */
 const GLOBAL_CAMERA_POINT_POOL: Vec3[] = [];
 
-/**
- * Ensure the global camera-point pool can hold at least `n` Vec3s.
- * Allocations are accounted via alloc.vec3 and only happen when capacity grows.
- */
+/** Ensure the global camera-point pool can hold at least `n` Vec3s. */
 function ensureGlobalCameraPointPoolCapacity(n: number): void {
   const length = GLOBAL_CAMERA_POINT_POOL.length;
-  if (length >= n) return;
-
-  GLOBAL_CAMERA_POINT_POOL.length = n;
-
-  alloc.withName(ensureGlobalCameraPointPoolCapacity.name, () => {
-    for (let i = length; i < n; i++) {
-      GLOBAL_CAMERA_POINT_POOL[i] = vec3.zero();
-    }
-  });
+  if (length < n) {
+    alloc.withName(ensureGlobalCameraPointPoolCapacity.name, () => {
+      for (let i = length; i < n; i++) {
+        GLOBAL_CAMERA_POINT_POOL.push(vec3.zero());
+      }
+    });
+  }
 }
 
 // scratch
@@ -145,31 +140,29 @@ export class ProjectionService {
   }
 
   worldPointsToCameraPointsNoClip(worldPoints: Vec3[]): Vec3[] {
-    return alloc.withName(this.worldPointsToCameraPointsNoClip.name, () => {
-      const n = worldPoints.length;
+    const n = worldPoints.length;
 
-      // 1) Ensure the global pool is large enough (allocates only when it grows).
-      ensureGlobalCameraPointPoolCapacity(n);
+    // 1) Ensure the global pool is large enough (allocates only when it grows).
+    ensureGlobalCameraPointPoolCapacity(n);
 
-      // 2) Use the first n entries from the global pool as our scratch array.
-      const R_localFromWorld = this.R_localFromWorld;
-      const position = this.cameraPosition;
+    // 2) Use the first n entries from the global pool as our scratch array.
+    const R_localFromWorld = this.R_localFromWorld;
+    const position = this.cameraPosition;
 
-      for (let i = 0; i < n; i++) {
-        // delta = worldPoint - cameraPosition
-        vec3.subInto(deltaScratch, worldPoints[i], position);
+    for (let i = 0; i < n; i++) {
+      // delta = worldPoint - cameraPosition
+      vec3.subInto(deltaScratch, worldPoints[i], position);
 
-        // cameraPoints[i] = R_localFromWorld * delta
-        mat3.mulVec3Into(
-          GLOBAL_CAMERA_POINT_POOL[i],
-          R_localFromWorld,
-          deltaScratch,
-        );
-      }
+      // cameraPoints[i] = R_localFromWorld * delta
+      mat3.mulVec3Into(
+        GLOBAL_CAMERA_POINT_POOL[i],
+        R_localFromWorld,
+        deltaScratch,
+      );
+    }
 
-      // Callers must treat only the first n elements as valid for this call.
-      return GLOBAL_CAMERA_POINT_POOL;
-    });
+    // Callers must treat only the first n elements as valid for this call.
+    return GLOBAL_CAMERA_POINT_POOL;
   }
 
   /**

@@ -8,7 +8,12 @@ import { type Vec3, vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
 import { formatDistance, formatSpeed } from "./formatters.js";
 import { type NdcPoint, ndc } from "./ndc.js";
-import type { RenderedBodyLabel, TextMetrics } from "./renderPorts.js";
+import type {
+  Point,
+  RenderedBodyLabel,
+  Size,
+  TextMetrics,
+} from "./renderPorts.js";
 import { scrn } from "./scrn.js";
 
 type SortedScratchItem = {
@@ -37,14 +42,23 @@ let placedLabelCount = 0;
  * Scratch structure for tracking all projected planet/star centers that are
  * in front of the camera and on-screen during a single render pass.
  */
-interface BodyCenter {
-  x: number;
-  y: number;
-}
-
-const anchor = scrn.zero();
-const allBodyCentersScratch: BodyCenter[] = [];
 let allBodyCentersCount = 0;
+const allBodyCentersScratch: Point[] = [];
+const anchor = scrn.zero();
+const boxCenter: Point = { x: 0, y: 0 };
+const boxSize: Size = { width: 0, height: 0 };
+const candidate: Point = { x: 0, y: 0 };
+const center: Point = { x: 0, y: 0 };
+const edgePoint: Point = { x: 0, y: 0 };
+const lines = ["", "", ""];
+const position: Point = { x: 0, y: 0 };
+
+// Label style
+const angleStep = 45;
+const angleStepRad = (angleStep * Math.PI) / 180;
+const font = "14px monospace";
+const lineHeight = 16;
+const padding: Size = { width: 6, height: 4 };
 
 /**
  * Sample and prepare body labels:
@@ -58,7 +72,8 @@ let allBodyCentersCount = 0;
  *      * it does not contain the center of any planet/star that is
  *        in front of the camera and on-screen.
  */
-export function renderBodyLabels(
+export function renderBodyLabelsInto(
+  into: RenderedBodyLabel[],
   objects: SceneObject[],
   referencePosition: Vec3,
   screenWidth: number,
@@ -66,10 +81,8 @@ export function renderBodyLabels(
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
   measureText: (text: string, font: string) => TextMetrics,
   objectsFilter?: (obj: SceneObject) => boolean,
-): RenderedBodyLabel[] {
-  return alloc.withName(renderBodyLabels.name, () => {
-    const renderedBodyLabels: RenderedBodyLabel[] = [];
-
+): number {
+  return alloc.withName(renderBodyLabelsInto.name, () => {
     // Pre-pass: collect all visible, on-screen body centers so that
     // label placement can avoid covering *any* planet/star center.
     allBodyCentersCount = collectVisibleBodyCenters(
@@ -86,18 +99,10 @@ export function renderBodyLabels(
       objectsFilter,
     );
 
-    const angleStep = 45;
-    const angleStepRad = (angleStep * Math.PI) / 180;
-
-    // Label style
-    const font = "14px monospace";
-    const lineHeight = 16;
-    const paddingX = 6;
-    const paddingY = 4;
-
     // Clear per-pass label-rectangle scratch state
     placedLabelCount = 0;
 
+    let count = 0;
     for (const { body, distance } of sorted) {
       if (!projectInto(ndcScratch, body.position)) {
         continue; // behind the camera
@@ -115,74 +120,71 @@ export function renderBodyLabels(
         continue;
       }
 
-      const name = displayNameForBodyId(body.id);
-      const distanceLine = formatDistance(distance);
-      const speedMps = vec3.length(body.velocity);
-      const speedLine = formatSpeed(speedMps);
-
-      const lines = [name, "d=".concat(distanceLine), "v=".concat(speedLine)];
+      lines[0] = displayNameForBodyId(body.id);
+      lines[1] = "d=".concat(formatDistance(distance));
+      lines[2] = "v=".concat(formatSpeed(vec3.length(body.velocity)));
 
       const maxTextWidth = getTextWidth(lines, font, measureText);
 
-      const boxWidth = maxTextWidth + paddingX * 2;
-      const boxHeight = lines.length * lineHeight + paddingY * 2;
+      boxSize.width = maxTextWidth + padding.width * 2;
+      boxSize.height = lines.length * lineHeight + padding.height * 2;
 
       // 2–5) Choose a direction by probing 8 angles starting from 45°.
       const directionIndex = pickDirectionIndexForLabel(
         anchor,
-        boxWidth,
-        boxHeight,
+        boxSize,
         angleStepRad,
       );
 
-      const { x: boxCenterX, y: boxCenterY } = getBoxCenter(
-        directionIndex,
-        angleStepRad,
-        anchor,
-      );
+      getBoxCenterInto(boxCenter, directionIndex, angleStepRad, anchor);
 
-      const boxX = boxCenterX - boxWidth * 0.5;
-      const boxY = boxCenterY - boxHeight * 0.5;
+      position.x = boxCenter.x - boxSize.width * 0.5;
+      position.y = boxCenter.y - boxSize.height * 0.5;
 
-      const { x: edgeX, y: edgeY } = getEdgeFromDirection(
+      getEdgeFromDirectionInto(
+        edgePoint,
         directionIndex,
-        { x: boxCenterX, y: boxCenterY },
-        { x: boxX, y: boxY },
-        { width: boxWidth, height: boxHeight },
+        boxCenter,
+        position,
+        boxSize,
       );
 
       // Register this label's rectangle so future labels can avoid overlapping it.
-      registerPlacedLabel(boxX, boxY, boxWidth, boxHeight);
+      registerPlacedLabel(position, boxSize);
 
-      const renderedBodyLabel: RenderedBodyLabel = {
-        anchor: { x: anchor.x, y: anchor.y, depth: 0 },
-        lineHeight,
-        lines,
-        name,
-        padding: {
-          width: paddingX,
-          height: paddingY,
-        },
-        position: {
-          x: boxX,
-          y: boxY,
-          depth: 0,
-        },
-        size: {
-          width: boxWidth,
-          height: boxHeight,
-        },
-        edgePoint: {
-          x: edgeX,
-          y: edgeY,
-          depth: 0,
-        },
-      };
-
-      renderedBodyLabels.push(renderedBodyLabel);
+      let current = into[count];
+      if (current) {
+        current.anchor.x = anchor.x;
+        current.anchor.y = anchor.y;
+        current.edgePoint.x = edgePoint.x;
+        current.edgePoint.y = edgePoint.y;
+        current.lineHeight = lineHeight;
+        current.lines[0] = lines[0];
+        current.lines[1] = lines[1];
+        current.lines[2] = lines[2];
+        current.name = lines[0];
+        current.padding.height = padding.height;
+        current.padding.width = padding.width;
+        current.position.x = position.x;
+        current.position.y = position.y;
+        current.size.width = boxSize.width;
+        current.size.height = boxSize.height;
+      } else {
+        current = into[count] = {
+          anchor: { x: anchor.x, y: anchor.y },
+          edgePoint: { x: edgePoint.x, y: edgePoint.y },
+          lineHeight,
+          lines: [lines[0], lines[1], lines[2]],
+          name: lines[0],
+          padding: { height: padding.height, width: padding.width },
+          position: { x: position.x, y: position.y },
+          size: { height: boxSize.height, width: boxSize.width },
+        };
+      }
+      count++;
     }
 
-    return renderedBodyLabels;
+    return count;
   });
 }
 
@@ -292,9 +294,8 @@ function displayNameForBodyId(id: BodyId): string {
  * back to 1 if all candidate rectangles would be occupied.
  */
 function pickDirectionIndexForLabel(
-  anchor: { x: number; y: number },
-  boxWidth: number,
-  boxHeight: number,
+  anchor: Point,
+  size: Size,
   angleStepRad: number,
 ): number {
   const startIndex = 1; // 45°
@@ -306,12 +307,12 @@ function pickDirectionIndexForLabel(
   for (let i = 0; i < maxDirs; i++) {
     const directionIndex = (startIndex + i) & 7;
 
-    const { x: cx, y: cy } = getBoxCenter(directionIndex, angleStepRad, anchor);
+    getBoxCenterInto(center, directionIndex, angleStepRad, anchor);
 
-    const candidateX = cx - boxWidth * 0.5;
-    const candidateY = cy - boxHeight * 0.5;
+    candidate.x = center.x - size.width * 0.5;
+    candidate.y = center.y - size.height * 0.5;
 
-    if (!candidateRectOccupied(candidateX, candidateY, boxWidth, boxHeight)) {
+    if (!candidateRectOccupied(candidate, size)) {
       chosenIndex = directionIndex;
       foundFree = true;
       break;
@@ -331,10 +332,8 @@ function pickDirectionIndexForLabel(
  *  - contains the projected center of any visible planet/star.
  */
 function candidateRectOccupied(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
+  { x, y }: Point,
+  { width, height }: Size,
 ): boolean {
   const x2 = x + width;
   const y2 = y + height;
@@ -366,12 +365,7 @@ function candidateRectOccupied(
 /**
  * Register a new placed label rectangle into a grow-only scratch array.
  */
-function registerPlacedLabel(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-): void {
+function registerPlacedLabel({ x, y }: Point, { width, height }: Size): void {
   if (placedLabelCount < placedLabelRectsScratch.length) {
     const r = placedLabelRectsScratch[placedLabelCount];
     r.x = x;
@@ -385,21 +379,20 @@ function registerPlacedLabel(
   placedLabelCount++;
 }
 
-function getBoxCenter(
+function getBoxCenterInto(
+  boxCenter: Point,
   directionIndex: number,
   angleStepRad: number,
-  anchor: { x: number; y: number },
-) {
+  anchor: Point,
+): void {
   const offsetRadius = 150; // pixels from anchor to box center
   const angleRad = directionIndex * angleStepRad;
   const ux = Math.sin(angleRad);
   const uy = -Math.cos(angleRad);
 
   // Box is placed at a fixed offset from the anchor.
-  const x = anchor.x - ux * offsetRadius;
-  const y = anchor.y - uy * offsetRadius;
-
-  return { x, y };
+  boxCenter.x = anchor.x - ux * offsetRadius;
+  boxCenter.y = anchor.y - uy * offsetRadius;
 }
 
 /**
@@ -413,72 +406,68 @@ function getBoxCenter(
  *   6 -> 270° (left)
  *   7 -> 315°
  */
-function getEdgeFromDirection(
+function getEdgeFromDirectionInto(
+  into: Point,
   directionIndex: number,
-  boxCenter: { x: number; y: number },
-  boxTopLeft: { x: number; y: number },
-  boxSize: { width: number; height: number },
-): { x: number; y: number } {
-  const { x: boxCenterX, y: boxCenterY } = boxCenter;
-  const { x: boxX, y: boxY } = boxTopLeft;
-  const { width: boxWidth, height: boxHeight } = boxSize;
-
-  let edgeX = boxCenterX;
-  let edgeY = boxCenterY;
+  { x: boxCenterX, y: boxCenterY }: Point,
+  { x: boxX, y: boxY }: Point,
+  { width: boxWidth, height: boxHeight }: Size,
+): void {
+  into.x = boxCenterX;
+  into.y = boxCenterY;
 
   switch (directionIndex) {
     case 0: // top: box is below anchor, connect to top-middle (toward anchor)
-      edgeX = boxCenterX;
-      edgeY = boxY;
+      into.x = boxCenterX;
+      into.y = boxY;
       break;
 
     case 1:
       // top-right: box is below-left of anchor.
       // Anchor is above-right of box, so use top-right corner.
-      edgeX = boxX + boxWidth;
-      edgeY = boxY;
+      into.x = boxX + boxWidth;
+      into.y = boxY;
       break;
 
     case 2:
       // right: box is left of anchor, connect to right-middle (toward anchor)
-      edgeX = boxX + boxWidth;
-      edgeY = boxCenterY;
+      into.x = boxX + boxWidth;
+      into.y = boxCenterY;
       break;
 
     case 3:
       // bottom-right: box is above-left of anchor.
       // Anchor is below-right of box, so use bottom-right corner.
-      edgeX = boxX + boxWidth;
-      edgeY = boxY + boxHeight;
+      into.x = boxX + boxWidth;
+      into.y = boxY + boxHeight;
       break;
 
     case 4:
       // bottom: box is above anchor, connect to bottom-middle (toward anchor)
-      edgeX = boxCenterX;
-      edgeY = boxY + boxHeight;
+      into.x = boxCenterX;
+      into.y = boxY + boxHeight;
       break;
 
     case 5:
       // bottom-left: box is above-right of anchor.
       // Anchor is below-left of box, so use bottom-left corner.
-      edgeX = boxX;
-      edgeY = boxY + boxHeight;
+      into.x = boxX;
+      into.y = boxY + boxHeight;
       break;
 
     case 6:
       // left: box is right of anchor, connect to left-middle (toward anchor)
-      edgeX = boxX;
-      edgeY = boxCenterY;
+      into.x = boxX;
+      into.y = boxCenterY;
       break;
 
     case 7:
       // top-left: box is below-right of anchor.
       // Anchor is above-left of box, so use top-left corner.
-      edgeX = boxX;
-      edgeY = boxY;
+      into.x = boxX;
+      into.y = boxY;
       break;
   }
-  return { x: edgeX, y: edgeY };
 }
 
 function getTextWidth(

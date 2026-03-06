@@ -71,6 +71,7 @@ export function runLoop(
 
   const renderedPilotView: RenderedView = {
     bodyLabels: [],
+    bodyLabelCount: 0,
     faces: [],
     faceCount: 0,
     polylines: [],
@@ -91,6 +92,7 @@ export function runLoop(
 
   const renderedTopView: RenderedView = {
     bodyLabels: [],
+    bodyLabelCount: 0,
     faces: [],
     faceCount: 0,
     polylines: [],
@@ -187,14 +189,14 @@ export function runLoop(
   requestAnimationFrame(first);
 }
 
-function rasterizeView(renderedView: RenderedView, rasterizer: Rasterizer) {
+function rasterizeView(view: RenderedView, rasterizer: Rasterizer) {
   rasterizer.clear("#000000");
-  rasterizer.drawFaces(renderedView.faces, renderedView.faceCount);
-  rasterizer.drawPolylines(renderedView.polylines, renderedView.polylineCount);
-  rasterizer.drawSegments(renderedView.segments, renderedView.segmentCount);
-  rasterizer.drawBodyLabels(renderedView.bodyLabels);
+  rasterizer.drawFaces(view.faces, view.faceCount);
+  rasterizer.drawPolylines(view.polylines, view.polylineCount);
+  rasterizer.drawSegments(view.segments, view.segmentCount);
+  rasterizer.drawBodyLabels(view.bodyLabels, view.bodyLabelCount);
 }
 
-function rasterizeHud(renderedHud: RenderedHud, rasterizer: Rasterizer) {
-  rasterizer.drawHud(renderedHud);
+function rasterizeHud(hud: RenderedHud, rasterizer: Rasterizer) {
+  rasterizer.drawHud(hud);
 }

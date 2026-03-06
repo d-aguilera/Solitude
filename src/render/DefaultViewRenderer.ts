@@ -2,7 +2,7 @@ import type { PolylineSceneObject, SceneObject } from "../app/appPorts.js";
 import type { Vec3 } from "../domain/vec3.js";
 import type { NdcPoint } from "./ndc.js";
 import { ProjectionService } from "./ProjectionService.js";
-import { renderBodyLabels } from "./renderBodyLabels.js";
+import { renderBodyLabelsInto } from "./renderBodyLabels.js";
 import { renderFacesInto } from "./renderFaces.js";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals.js";
 import { renderPolylinesInto } from "./renderPolylines.js";
@@ -72,7 +72,8 @@ export class DefaultViewRenderer implements ViewRenderer {
       projectSegmentInto,
     );
 
-    into.bodyLabels = renderBodyLabels(
+    into.bodyLabelCount = renderBodyLabelsInto(
+      into.bodyLabels,
       scene.objects,
       mainShip.position,
       screenWidth,
