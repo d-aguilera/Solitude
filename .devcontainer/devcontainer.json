@@ -1,0 +1,12 @@
+{
+  "name": "Solitude",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:4-24-trixie",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "mhutchie.git-graph",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}
