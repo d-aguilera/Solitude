@@ -5,8 +5,8 @@ import type {
   Scene,
   SceneObject,
 } from "../app/appPorts.js";
-import { AU } from "../app/appPorts.js";
 import { mat3 } from "../domain/mat3.js";
+import { AU } from "../domain/units.js";
 import { type Vec3, vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
 import { type NdcPoint, ndc } from "./ndc.js";
