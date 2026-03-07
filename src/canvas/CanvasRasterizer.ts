@@ -1,3 +1,4 @@
+import type { RGB } from "../app/appPorts.js";
 import { rgbToCss } from "../render/color.js";
 import type {
   Point,
@@ -15,7 +16,14 @@ const hudMargin = 10;
 const hudPadding = 10;
 
 // scratch
+let ctx: CanvasRenderingContext2D;
 let p: Point;
+let p0: Point;
+let p1: Point;
+let p2: Point;
+let color: RGB;
+let cssColor: string;
+let textMetrics: TextMetrics;
 
 /**
  * Canvas2D rasterizer.
@@ -24,7 +32,7 @@ export class CanvasRasterizer implements Rasterizer {
   constructor(private readonly ctx: CanvasRenderingContext2D) {}
 
   clear(color: string): void {
-    const ctx = this.ctx;
+    ctx = this.ctx;
     const { width, height } = ctx.canvas;
 
     ctx.fillStyle = color;
@@ -32,7 +40,7 @@ export class CanvasRasterizer implements Rasterizer {
   }
 
   drawBodyLabels(labels: RenderedBodyLabel[], count: number): void {
-    const ctx = this.ctx;
+    ctx = this.ctx;
 
     ctx.font = "14px monospace";
     ctx.textBaseline = "middle";
@@ -69,22 +77,25 @@ export class CanvasRasterizer implements Rasterizer {
   }
 
   drawFaces(faces: RenderedFace[], count: number): void {
-    const ctx = this.ctx;
+    ctx = this.ctx;
 
     for (let i = 0; i < count; i++) {
-      const face = faces[i];
-      const { p0, p1, p2, color } = face;
-      ctx.fillStyle = rgbToCss(color);
+      ({ color, p0, p1, p2 } = faces[i]);
+      cssColor = rgbToCss(color);
+      ctx.fillStyle = cssColor;
+      ctx.strokeStyle = cssColor;
       ctx.beginPath();
       ctx.moveTo(p0.x, p0.y);
       ctx.lineTo(p1.x, p1.y);
       ctx.lineTo(p2.x, p2.y);
       ctx.fill();
+      // solves the gaps between triangles but it's slow
+      // ctx.stroke();
     }
   }
 
   drawHud(hud: RenderedHud): void {
-    const ctx = this.ctx;
+    ctx = this.ctx;
 
     const hudLength = hud.length;
 
@@ -128,7 +139,7 @@ export class CanvasRasterizer implements Rasterizer {
   }
 
   drawPolylines(polylines: RenderedPolyline[], count: number): void {
-    const ctx = this.ctx;
+    ctx = this.ctx;
 
     for (let i = 0; i < count; i++) {
       const { cssColor, lineWidth, pointCount, points } = polylines[i];
@@ -147,7 +158,7 @@ export class CanvasRasterizer implements Rasterizer {
   }
 
   drawSegments(segments: RenderedSegment[], count: number): void {
-    const ctx = this.ctx;
+    ctx = this.ctx;
 
     ctx.lineWidth = 4;
 
@@ -162,11 +173,11 @@ export class CanvasRasterizer implements Rasterizer {
   }
 
   measureText(text: string, font: string): TextMetrics {
-    const ctx = this.ctx;
+    ctx = this.ctx;
 
     ctx.save();
     ctx.font = font;
-    const textMetrics: TextMetrics = ctx.measureText(text);
+    textMetrics = ctx.measureText(text);
     ctx.restore();
 
     return textMetrics;
