@@ -13,6 +13,7 @@ import { type NdcPoint, ndc } from "./ndc.js";
 import { ProjectionService } from "./ProjectionService.js";
 import type { RenderedFace } from "./renderPorts.js";
 import { toRenderable } from "./renderPrep.js";
+import { sortRangeInPlace } from "./sortRange.js";
 import { type ScreenPoint, scrn } from "./scrn.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
@@ -39,11 +40,11 @@ export function renderFacesInto(
     objectsFilter,
   );
 
-  faceList.sort((a, b) => b.depth - a.depth);
+  sortRangeInPlace(faceEntryScratch, faceList, compareFaceDepthDesc);
 
   shadeFacesInto(into, faceList);
 
-  return faceList.length;
+  return faceList;
 }
 
 // shared scratch for fallback normals
@@ -90,7 +91,7 @@ function buildFaces(
   canvasHeight: number,
   lights: PointLight[],
   objectsFilter?: (obj: SceneObject) => boolean,
-): FaceEntry[] {
+): number {
   return alloc.withName(buildFaces.name, () => {
     const projectionService = new ProjectionService(
       camera,
@@ -195,7 +196,7 @@ function buildFaces(
       }
     });
 
-    return faceEntryScratch.slice(0, faceCount);
+    return faceCount;
   });
 }
 
@@ -279,15 +280,15 @@ function toneMapIrradiance(E: number): number {
 /**
  * Shade the given face list into a caller-provided grow-only scratch buffer.
  */
-function shadeFacesInto(into: RenderedFace[], faceList: FaceEntry[]): void {
-  const n = faceList.length;
+function shadeFacesInto(into: RenderedFace[], count: number): void {
+  const n = count;
 
   if (into.length < n) {
     into.length = n; // grow only
   }
 
   for (let i = 0; i < n; i++) {
-    const face = faceList[i];
+    const face = faceEntryScratch[i];
     const { r: baseR, g: baseG, b: baseB } = face.baseColor;
     const k = 0.2 + 0.8 * face.intensity;
     const r = Math.round(baseR * k);
@@ -312,6 +313,10 @@ function shadeFacesInto(into: RenderedFace[], faceList: FaceEntry[]): void {
       entry.color.b = b;
     }
   }
+}
+
+function compareFaceDepthDesc(a: FaceEntry, b: FaceEntry): number {
+  return b.depth - a.depth;
 }
 
 interface FaceEntry {

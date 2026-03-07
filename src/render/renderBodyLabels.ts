@@ -14,6 +14,7 @@ import type {
   Size,
   TextMetrics,
 } from "./renderPorts.js";
+import { sortRangeInPlace } from "./sortRange.js";
 import { scrn } from "./scrn.js";
 
 type SortedScratchItem = {
@@ -93,7 +94,7 @@ export function renderBodyLabelsInto(
       objectsFilter,
     );
 
-    const sorted: SortedScratchItem[] = sortBodies(
+    const sortedCount = sortBodies(
       objects,
       referencePosition,
       objectsFilter,
@@ -103,7 +104,8 @@ export function renderBodyLabelsInto(
     placedLabelCount = 0;
 
     let count = 0;
-    for (const { body, distance } of sorted) {
+    for (let i = 0; i < sortedCount; i++) {
+      const { body, distance } = sortedScratch[i];
       if (!projectInto(ndcScratch, body.position)) {
         continue; // behind the camera
       }
@@ -241,7 +243,7 @@ function sortBodies(
   objects: SceneObject[],
   referencePosition: Vec3,
   objectsFilter?: (obj: PlanetSceneObject | StarSceneObject) => boolean,
-): SortedScratchItem[] {
+): number {
   let count = 0;
 
   for (let i = 0; i < objects.length; i++) {
@@ -265,8 +267,13 @@ function sortBodies(
     count++;
   }
 
-  // Farther to nearer so nearer labels are processed last
-  return sortedScratch.slice(0, count).sort((a, b) => b.distance - a.distance);
+  // Farther to nearer so nearer labels are processed last.
+  sortRangeInPlace(sortedScratch, count, compareByDistanceDesc);
+  return count;
+}
+
+function compareByDistanceDesc(a: SortedScratchItem, b: SortedScratchItem) {
+  return b.distance - a.distance;
 }
 
 function displayNameForBodyId(id: BodyId): string {
