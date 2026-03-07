@@ -60,33 +60,41 @@ export class NewtonianGravityEngine implements GravityEngine {
       accelerations.length = n;
     }
 
+    // Reset all accelerations once, then accumulate pair interactions.
     for (let i = 0; i < n; i++) {
-      const pi = positions[i];
-
-      const a: Vec3 = accelerations[i];
+      const a = accelerations[i];
       a.x = 0;
       a.y = 0;
       a.z = 0;
+    }
 
-      for (let j = 0; j < n; j++) {
-        if (i === j) continue;
+    const softeningLengthSq = this.softeningLength * this.softeningLength;
 
-        // d = positions[j] - pi
+    // Compute each pair (i, j) exactly once and update both bodies.
+    for (let i = 0; i < n; i++) {
+      const pi = positions[i];
+      const ai = accelerations[i];
+      const mi = bodies[i].mass;
+
+      for (let j = i + 1; j < n; j++) {
         vec3.subInto(scratchD, positions[j], pi);
 
-        const r = Math.sqrt(
-          vec3.dot(scratchD, scratchD) +
-            this.softeningLength * this.softeningLength,
-        );
+        const r2 = vec3.dot(scratchD, scratchD) + softeningLengthSq;
+        if (r2 === 0) continue;
 
-        if (r === 0) continue;
+        const invR = 1 / Math.sqrt(r2);
+        const invR3 = invR * invR * invR;
 
-        const invR3 = 1 / (r * r * r);
-        const scale = this.G * bodies[j].mass * invR3;
-        // scaled = scale * d
-        vec3.scaleInto(scratchScaled, scale, scratchD);
-        // a += scaled
-        vec3.addInto(a, a, scratchScaled);
+        // a_i += G * m_j / r^3 * d
+        const scaleI = this.G * bodies[j].mass * invR3;
+        vec3.scaleInto(scratchScaled, scaleI, scratchD);
+        vec3.addInto(ai, ai, scratchScaled);
+
+        // a_j -= G * m_i / r^3 * d
+        const aj = accelerations[j];
+        const scaleJ = this.G * mi * invR3;
+        vec3.scaleInto(scratchScaled, scaleJ, scratchD);
+        vec3.subInto(aj, aj, scratchScaled);
       }
     }
   }
