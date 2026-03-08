@@ -1,6 +1,7 @@
 {
   "type": "module",
   "scripts": {
+    "predev": "npm run typecheck && vitest run",
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
