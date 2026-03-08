@@ -191,6 +191,31 @@ export class ProjectionService {
   }
 
   /**
+   * Camera-space forward depth (y) for a world-space point.
+   */
+  getCameraDepthForWorldPoint(worldPoint: Vec3): number {
+    this.worldPointToCameraPointNoClipInto(cameraPointScratch, worldPoint);
+    return cameraPointScratch.y;
+  }
+
+  /**
+   * Camera-space depth where a world-space diameter projects to a target number
+   * of screen pixels in the vertical axis.
+   */
+  depthForProjectedDiameterPixels(
+    diameterWorld: number,
+    diameterPixels: number,
+    screenHeight: number,
+  ): number {
+    if (diameterWorld <= 0 || diameterPixels <= 0 || screenHeight <= 0) {
+      return Number.POSITIVE_INFINITY;
+    }
+
+    // pixelDiameter = diameterWorld * focalLengthY * screenHeight / depth
+    return (diameterWorld * focalLengthY * screenHeight) / diameterPixels;
+  }
+
+  /**
    * Return true if a camera-space point is inside the half-space of a given plane.
    */
   private isInsidePlane(p: Vec3, plane: FrustumPlane): boolean {
