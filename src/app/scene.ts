@@ -24,11 +24,11 @@ export function updateSceneGraph(
   rotateCelestialBodies(dtSimMillis, scene.objects);
   updateTrajectories(dtSimMillis, trajectories);
 
-  updatePilotLook(dtMillis, controlInput, sceneControlState.look);
+  updatePilotLook(dtMillis, controlInput, sceneControlState.pilotLookState);
   updatePilotCameraOffset(
     dtMillis,
     controlInput,
-    sceneControlState.pilotCameraLocalOffset,
+    sceneControlState.pilotCameraOffset,
   );
 
   updateCameras(mainShip, pilotCamera, topCamera, sceneControlState);

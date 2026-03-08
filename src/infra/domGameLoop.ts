@@ -5,6 +5,7 @@ import type {
   TickCallback,
   TickOutput,
   TickParams,
+  WorldAndScene,
   WorldAndSceneConfig,
 } from "../app/appPorts.js";
 import { createTickHandler } from "../app/game.js";
@@ -46,8 +47,15 @@ export function runLoop(
   envInput: EnvInput,
   profilerController: ProfilerController,
 ): void {
-  const w = createWorldAndScene(config);
-  const tickInto: TickCallback = createTickHandler(gravityEngine, w);
+  const worldAndScene: WorldAndScene = createWorldAndScene(config);
+  const tickInto: TickCallback = createTickHandler(
+    gravityEngine,
+    config.pilotCameraOffset,
+    config.pilotLookState,
+    config.thrustLevel,
+    config.topCameraOffset,
+    worldAndScene,
+  );
 
   const tickParams: TickParams = {
     dtMillis: 0,
@@ -63,9 +71,9 @@ export function runLoop(
   };
 
   const pilotViewRenderParams: ViewRenderParams = {
-    camera: w.pilotCamera,
-    mainShip: w.mainShip,
-    scene: w.scene,
+    camera: worldAndScene.pilotCamera,
+    mainShip: worldAndScene.mainShip,
+    scene: worldAndScene.scene,
     surface: pilotSurface,
   };
 
@@ -81,9 +89,9 @@ export function runLoop(
   };
 
   const topViewRenderParams: ViewRenderParams = {
-    camera: w.topCamera,
-    mainShip: w.mainShip,
-    scene: w.scene,
+    camera: worldAndScene.topCamera,
+    mainShip: worldAndScene.mainShip,
+    scene: worldAndScene.scene,
     surface: topSurface,
     objectsFilter: (obj: SceneObject) =>
       // no trajectory polylines in the top view

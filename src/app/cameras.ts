@@ -25,10 +25,10 @@ export function updateCameras(
   setCameraRelativeToShip(
     pilotCamera,
     mainShip,
-    sceneControlState.pilotCameraLocalOffset,
+    sceneControlState.pilotCameraOffset,
     (frame) => {
       localFrame.copyInto(frame, mainShip.frame);
-      const { azimuth, elevation } = sceneControlState.look;
+      const { azimuth, elevation } = sceneControlState.pilotLookState;
       if (azimuth !== 0)
         localFrame.rotateAroundAxisInPlace(frame, frame.up, azimuth);
       if (elevation !== 0)
@@ -39,7 +39,7 @@ export function updateCameras(
   setCameraRelativeToShip(
     topCamera,
     mainShip,
-    sceneControlState.topCameraLocalOffset,
+    sceneControlState.topCameraOffset,
     (frame) => {
       const { right, forward, up } = mainShip.frame;
       vec3.copyInto(frame.right, right);
@@ -78,7 +78,7 @@ export function updatePilotCameraOffset(
 ): void {
   if (dtMillis === 0) return;
 
-  const moveSpeed = 0.0005;
+  const moveSpeed = 5;
 
   let dx = 0;
   let dy = 0;

@@ -11,10 +11,6 @@ import type { BodyId, World } from "../domain/domainPorts.js";
 import { type LocalFrame, localFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3, type Vec3 } from "../domain/vec3.js";
-import {
-  createInitialPilotCamera,
-  createInitialTopCamera,
-} from "./setupCameras.js";
 import { addPlanetsAndStarsFromConfig } from "./setupPlanets.js";
 import { addShipsFromConfig } from "./setupShips.js";
 import { createTrajectories } from "./setupTrajectories.js";
@@ -45,8 +41,8 @@ export function createWorldAndScene({
 
   const enemyShip = getShipById(world, enemyShipId);
   const mainShip = getShipById(world, mainShipId);
-  const topCamera = createInitialTopCamera(mainShip);
-  const pilotCamera = createInitialPilotCamera(mainShip);
+  const topCamera = { position: vec3.zero(), frame: localFrame.zero() };
+  const pilotCamera = { position: vec3.zero(), frame: localFrame.zero() };
 
   // Derive planet–path relationships
   const planetPathMappings: Record<BodyId, BodyId> = {};

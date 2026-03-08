@@ -1,15 +1,15 @@
 import type { ShipBodyConfig } from "../app/appPorts.js";
+import { km } from "../domain/units.js";
 import { vec3 } from "../domain/vec3.js";
 import { colors } from "./colors.js";
 
-// 100 km above Earth's north pole
-const SHIP_START_ALTITUDE_M = 10000000; // meters
-const EARTH_RADIUS = 6_371_000; // meters
+const SHIP_START_ALTITUDE_M = 100 * km; // above Earth's north pole
+const EARTH_RADIUS = 6_371 * km;
 
 export function buildDefaultShipConfigs(): ShipBodyConfig[] {
   const shipPoints = shipModel.points.map(vec3.clone);
   for (let p of shipPoints) {
-    vec3.scaleInto(p, 15, p);
+    vec3.scaleInto(p, 150_000, p);
   }
 
   const enemyPoints = shipModel.points.map(vec3.clone);
@@ -29,7 +29,7 @@ export function buildDefaultShipConfigs(): ShipBodyConfig[] {
       },
     },
     {
-      altitude: -EARTH_RADIUS - SHIP_START_ALTITUDE_M, // opposite side
+      altitude: -2 * EARTH_RADIUS - SHIP_START_ALTITUDE_M, // opposite side
       color: colors.enemyShip,
       homePlanetId: "planet:earth",
       id: "ship:enemy",

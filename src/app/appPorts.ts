@@ -199,9 +199,9 @@ export interface Scene {
  * Per-player scene control state that must persist across frames.
  */
 export interface SceneControlState {
-  look: PilotLookState;
-  pilotCameraLocalOffset: Vec3;
-  topCameraLocalOffset: Vec3;
+  pilotLookState: PilotLookState;
+  pilotCameraOffset: Vec3;
+  topCameraOffset: Vec3;
 }
 
 /**
@@ -281,6 +281,10 @@ export interface WorldAndScene {
 export interface WorldAndSceneConfig {
   enemyShipId: string;
   mainShipId: string;
+  pilotCameraOffset: Vec3;
+  pilotLookState: PilotLookState;
   planets: (PlanetBodyConfig | StarBodyConfig)[];
   ships: ShipBodyConfig[];
+  thrustLevel: number;
+  topCameraOffset: Vec3;
 }

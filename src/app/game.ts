@@ -1,9 +1,10 @@
 import { resolveCollisions } from "../domain/collisions.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
-import { vec3 } from "../domain/vec3.js";
+import type { Vec3 } from "../domain/vec3.js";
 import type { SceneState, SimControlState } from "./appInternals.js";
 import type {
+  PilotLookState,
   SceneControlState,
   TickCallback,
   TickOutput,
@@ -23,6 +24,10 @@ import { updateSceneGraph } from "./scene.js";
  */
 export function createTickHandler(
   gravityEngine: GravityEngine,
+  pilotCameraOffset: Vec3,
+  pilotLookState: PilotLookState,
+  thrustLevel: number,
+  topCameraOffset: Vec3,
   worldAndScene: WorldAndScene,
 ): TickCallback {
   let currentThrustPercent: number;
@@ -30,16 +35,13 @@ export function createTickHandler(
 
   const simControlState: SimControlState = {
     alignToVelocity: false,
-    thrustLevel: 0,
+    thrustLevel,
   };
 
   const sceneControlState: SceneControlState = {
-    look: {
-      azimuth: 0,
-      elevation: 0,
-    },
-    pilotCameraLocalOffset: vec3.create(0, 1.7, 1.1),
-    topCameraLocalOffset: vec3.create(0, 0, 50),
+    pilotLookState,
+    pilotCameraOffset,
+    topCameraOffset,
   };
 
   const sceneState: SceneState = {
@@ -92,7 +94,7 @@ export function createTickHandler(
           ? simControlState.thrustLevel
           : -simControlState.thrustLevel;
 
-    output.pilotCameraLocalOffset = sceneControlState.pilotCameraLocalOffset;
+    output.pilotCameraLocalOffset = sceneControlState.pilotCameraOffset;
     output.speedMps = sceneState.speedMps;
     output.simTimeMillis = simTimeMillis;
   };

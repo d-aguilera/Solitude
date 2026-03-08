@@ -103,10 +103,19 @@ function rotateAroundAxisInPlace(
   vec3.normalizeInto(frame.up);
 }
 
+function zero(): LocalFrame {
+  return {
+    right: vec3.zero(),
+    forward: vec3.zero(),
+    up: vec3.zero(),
+  };
+}
+
 export const localFrame = {
   clone,
   copyInto,
   fromUp,
   intoMat3,
   rotateAroundAxisInPlace,
+  zero,
 };
