@@ -6,10 +6,8 @@ import type {
 import type { BodyId } from "../domain/domainPorts.js";
 import { type Vec3, vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
-import { isBodyAtOrBeyondOnePixelThreshold } from "./bodyLod.js";
 import { formatDistance, formatSpeed } from "./formatters.js";
 import { type NdcPoint, ndc } from "./ndc.js";
-import { ProjectionService } from "./ProjectionService.js";
 import type {
   Point,
   RenderedBodyLabel,
@@ -53,7 +51,7 @@ const boxSize: Size = { width: 0, height: 0 };
 const candidate: Point = { x: 0, y: 0 };
 const center: Point = { x: 0, y: 0 };
 const edgePoint: Point = { x: 0, y: 0 };
-const lines = ["", "", "", ""];
+const lines = ["", "", ""];
 const position: Point = { x: 0, y: 0 };
 
 // Label style
@@ -83,7 +81,6 @@ export function renderBodyLabelsInto(
   screenHeight: number,
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
   measureText: (text: string, font: string) => TextMetrics,
-  projectionService?: ProjectionService,
   objectsFilter?: (obj: SceneObject) => boolean,
 ): number {
   return alloc.withName(renderBodyLabelsInto.name, () => {
@@ -97,11 +94,7 @@ export function renderBodyLabelsInto(
       objectsFilter,
     );
 
-    const sortedCount = sortBodies(
-      objects,
-      referencePosition,
-      objectsFilter,
-    );
+    const sortedCount = sortBodies(objects, referencePosition, objectsFilter);
 
     // Clear per-pass label-rectangle scratch state
     placedLabelCount = 0;
@@ -128,19 +121,11 @@ export function renderBodyLabelsInto(
       lines[0] = displayNameForBodyId(body.id);
       lines[1] = "d=".concat(formatDistance(distance));
       lines[2] = "v=".concat(formatSpeed(vec3.length(body.velocity)));
-      let lineCount = 3;
-      if (
-        projectionService &&
-        isBodyAtOrBeyondOnePixelThreshold(body, projectionService, screenHeight)
-      ) {
-        lines[3] = "DISTANT";
-        lineCount = 4;
-      }
 
-      const maxTextWidth = getTextWidth(lines, font, measureText, lineCount);
+      const maxTextWidth = getTextWidth(lines, font, measureText);
 
       boxSize.width = maxTextWidth + padding.width * 2;
-      boxSize.height = lineCount * lineHeight + padding.height * 2;
+      boxSize.height = lines.length * lineHeight + padding.height * 2;
 
       // 2–5) Choose a direction by probing 8 angles starting from 45°.
       const directionIndex = pickDirectionIndexForLabel(
@@ -172,10 +157,9 @@ export function renderBodyLabelsInto(
         current.edgePoint.x = edgePoint.x;
         current.edgePoint.y = edgePoint.y;
         current.lineHeight = lineHeight;
-        current.lines.length = lineCount;
-        for (let i = 0; i < lineCount; i++) {
-          current.lines[i] = lines[i];
-        }
+        current.lines[0] = lines[0];
+        current.lines[1] = lines[1];
+        current.lines[2] = lines[2];
         current.name = lines[0];
         current.padding.height = padding.height;
         current.padding.width = padding.width;
@@ -188,7 +172,7 @@ export function renderBodyLabelsInto(
           anchor: { x: anchor.x, y: anchor.y },
           edgePoint: { x: edgePoint.x, y: edgePoint.y },
           lineHeight,
-          lines: lines.slice(0, lineCount),
+          lines: [lines[0], lines[1], lines[2]],
           name: lines[0],
           padding: { height: padding.height, width: padding.width },
           position: { x: position.x, y: position.y },
@@ -493,11 +477,10 @@ function getTextWidth(
   lines: string[],
   font: string,
   measureText: (text: string, font: string) => TextMetrics,
-  count: number,
 ) {
   let maxTextWidth = 0;
-  for (let i = 0; i < count; i++) {
-    const w = measureText(lines[i], font).width;
+  for (const line of lines) {
+    const w = measureText(line, font).width;
     if (w > maxTextWidth) maxTextWidth = w;
   }
   return maxTextWidth;

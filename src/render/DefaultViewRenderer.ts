@@ -80,7 +80,6 @@ export class DefaultViewRenderer implements ViewRenderer {
       screenHeight,
       projectInto,
       this.measureText,
-      projectionService,
       objectsFilter,
     );
   }
