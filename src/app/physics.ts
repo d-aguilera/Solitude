@@ -1,14 +1,18 @@
 import type {
   GravityEngine,
   GravityState,
+  RotatingBody,
   ShipBody,
+  World,
 } from "../domain/domainPorts.js";
+import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import type { ControlledBodyState } from "./appInternals.js";
 import { maxThrustAcceleration } from "./controls.js";
 
 // Scratch vector for applyThrustToVelocity
 const cvScratch = vec3.zero();
+const Rspin = mat3.zero();
 
 /**
  * Apply thrust acceleration to the controlled body's velocity when burn/brake
@@ -67,4 +71,27 @@ export function applyGravity(
     remaining -= stepMillis;
   }
   gravityEngine.step(remaining / 1000, gravityState);
+}
+
+function applySpinForBodies(
+  dtMillisSim: number,
+  bodies: RotatingBody[],
+): void {
+  for (let i = 0; i < bodies.length; i++) {
+    const body = bodies[i];
+    const angle = (body.angularSpeedRadPerSec * dtMillisSim) / 1000;
+    if (angle === 0) continue;
+    mat3.rotAxisInto(Rspin, body.rotationAxis, angle);
+    mat3.mulMat3Into(body.orientation, Rspin, body.orientation);
+  }
+}
+
+/**
+ * Advance axial spin for planets and stars as a simulation concern.
+ */
+export function applyCelestialSpin(dtMillisSim: number, world: World): void {
+  if (dtMillisSim <= 0) return;
+
+  applySpinForBodies(dtMillisSim, world.planets);
+  applySpinForBodies(dtMillisSim, world.stars);
 }

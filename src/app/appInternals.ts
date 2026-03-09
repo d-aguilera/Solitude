@@ -2,7 +2,7 @@ import type { BodyId } from "../domain/domainPorts.js";
 import type { LocalFrame } from "../domain/localFrame.js";
 import type { Mat3 } from "../domain/mat3.js";
 import type { Vec3 } from "../domain/vec3.js";
-import type { DomainCameraPose, Scene, Trajectory } from "./appPorts.js";
+import type { DomainCameraPose, Trajectory } from "./appPorts.js";
 
 /**
  * Simple container for the controlled body's pose and velocity.
@@ -15,9 +15,6 @@ export interface ControlledBodyState {
 
 export interface SceneState {
   pilotCamera: DomainCameraPose;
-  planetPathMappings: Record<BodyId, BodyId>;
-  scene: Scene;
-  speedMps: number;
   topCamera: DomainCameraPose;
   trajectories: Record<BodyId, Trajectory>;
 }

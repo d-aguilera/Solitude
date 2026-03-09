@@ -105,8 +105,6 @@ export interface CelestialBodySceneObject extends SolidSceneObject {
   kind: "planet" | "star";
   backFaceCulling: true;
   velocity: Vec3;
-  rotationAxis: Vec3; // world space
-  angularSpeedRadPerSec: number; // spin rate in radians per second
 }
 
 export type ControlAction = (typeof ALL_CONTROL_ACTIONS)[number];
@@ -256,9 +254,6 @@ export interface TickParams {
 
 export interface TickOutput {
   currentThrustLevel: number;
-  pilotCameraLocalOffset: Vec3;
-  simTimeMillis: number; // accumulated simulation time.
-  speedMps: number;
 }
 
 export type Trajectory = {

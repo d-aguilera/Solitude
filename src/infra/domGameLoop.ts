@@ -1,6 +1,7 @@
 import type {
   ControlInput,
   EnvInput,
+  SceneControlState,
   SceneObject,
   TickCallback,
   TickOutput,
@@ -8,7 +9,9 @@ import type {
   WorldAndScene,
   WorldAndSceneConfig,
 } from "../app/appPorts.js";
+import type { SceneState } from "../app/appInternals.js";
 import { createTickHandler } from "../app/game.js";
+import { updateSceneGraph } from "../app/scene.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { parameters } from "../global/parameters.js";
@@ -50,12 +53,21 @@ export function runLoop(
   const worldAndScene: WorldAndScene = createWorldAndScene(config);
   const tickInto: TickCallback = createTickHandler(
     gravityEngine,
-    config.pilotCameraOffset,
-    config.pilotLookState,
     config.thrustLevel,
-    config.topCameraOffset,
     worldAndScene,
   );
+
+  const sceneControlState: SceneControlState = {
+    pilotLookState: config.pilotLookState,
+    pilotCameraOffset: config.pilotCameraOffset,
+    topCameraOffset: config.topCameraOffset,
+  };
+
+  const sceneState: SceneState = {
+    pilotCamera: worldAndScene.pilotCamera,
+    topCamera: worldAndScene.topCamera,
+    trajectories: worldAndScene.trajectories,
+  };
 
   const tickParams: TickParams = {
     dtMillis: 0,
@@ -65,9 +77,6 @@ export function runLoop(
 
   const tickOutput: TickOutput = {
     currentThrustLevel: 0,
-    pilotCameraLocalOffset: vec3.zero(),
-    simTimeMillis: 0,
-    speedMps: 0,
   };
 
   const pilotViewRenderParams: ViewRenderParams = {
@@ -114,10 +123,10 @@ export function runLoop(
     currentTimeScale: 0,
     fps: 0,
     paused: false,
-    pilotCameraLocalOffset: tickOutput.pilotCameraLocalOffset,
+    pilotCameraLocalOffset: sceneControlState.pilotCameraOffset,
     profilingEnabled: false,
     simTimeMillis: 0,
-    speedMps: tickOutput.speedMps,
+    speedMps: 0,
   };
 
   const renderedHud: RenderedHud = [
@@ -133,6 +142,7 @@ export function runLoop(
   let paused: boolean;
   let profilingEnabled: boolean;
   let fps: number;
+  let simTimeMillis = 0;
   let timeScale = parameters.timeScale;
 
   const loop = (nowMs: number) => {
@@ -155,6 +165,16 @@ export function runLoop(
       tickParams.dtMillis = dtMillis;
       tickParams.dtMillisSim = dtMillis * timeScale;
       tickInto(tickOutput, tickParams);
+      simTimeMillis += tickParams.dtMillisSim;
+
+      updateSceneGraph(
+        dtMillis,
+        tickParams.dtMillisSim,
+        sceneState,
+        sceneControlState,
+        worldAndScene.mainShip,
+        controlInput,
+      );
     }
 
     pilotViewRenderer.renderInto(renderedPilotView, pilotViewRenderParams);
@@ -170,10 +190,10 @@ export function runLoop(
       hudRenderParams.fps = fps;
       hudRenderParams.paused = paused;
       hudRenderParams.pilotCameraLocalOffset =
-        tickOutput.pilotCameraLocalOffset;
+        sceneControlState.pilotCameraOffset;
       hudRenderParams.profilingEnabled = profilingEnabled;
-      hudRenderParams.simTimeMillis = tickOutput.simTimeMillis;
-      hudRenderParams.speedMps = tickOutput.speedMps;
+      hudRenderParams.simTimeMillis = simTimeMillis;
+      hudRenderParams.speedMps = vec3.length(worldAndScene.mainShip.velocity);
 
       hudRenderer.renderInto(renderedHud, hudRenderParams);
       lastHudTimeMs = nowMs;

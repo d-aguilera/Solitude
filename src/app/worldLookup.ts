@@ -1,7 +1,7 @@
 import type {
   BodyId,
-  CelestialBody,
   PlanetPhysics,
+  RotatingBody,
   ShipBody,
   StarPhysics,
   World,
@@ -17,7 +17,7 @@ function getById<T extends { id: BodyId }>(
   return obj;
 }
 
-export function getPlanetBodyById(world: World, id: BodyId): CelestialBody {
+export function getPlanetBodyById(world: World, id: BodyId): RotatingBody {
   return getById(world.planets, id, "Planets");
 }
 

@@ -23,6 +23,15 @@ export interface CelestialBody {
 }
 
 /**
+ * Celestial body with persistent axial spin state.
+ */
+export interface RotatingBody extends CelestialBody {
+  orientation: Mat3;
+  rotationAxis: Vec3;
+  angularSpeedRadPerSec: number;
+}
+
+/**
  * Domain-level abstraction for gravitational integration.
  */
 export interface GravityEngine {
@@ -71,8 +80,8 @@ export interface StarPhysics extends PlanetPhysics {
  */
 export interface World {
   shipBodies: ShipBody[];
-  planets: CelestialBody[];
+  planets: RotatingBody[];
   planetPhysics: PlanetPhysics[];
-  stars: CelestialBody[];
+  stars: RotatingBody[];
   starPhysics: StarPhysics[];
 }

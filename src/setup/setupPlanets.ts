@@ -7,8 +7,8 @@ import type {
   StarBodyConfig,
 } from "../app/appPorts";
 import type {
-  CelestialBody,
   PlanetPhysics,
+  RotatingBody,
   World,
 } from "../domain/domainPorts";
 import { mat3, type Mat3 } from "../domain/mat3";
@@ -70,10 +70,15 @@ export function addPlanetsAndStarsFromConfig(
       );
     }
 
-    const celestialBody: CelestialBody = {
+    const orientation = mat3.copy(mat3.identity, mat3.zero());
+
+    const celestialBody: RotatingBody = {
       id: cfg.id,
       position: vec3.clone(center),
       velocity: vec3.clone(initialVelocity),
+      orientation,
+      rotationAxis,
+      angularSpeedRadPerSec: cfg.angularSpeedRadPerSec,
     };
 
     const sceneObj: CelestialBodySceneObject = {
@@ -81,15 +86,13 @@ export function addPlanetsAndStarsFromConfig(
       kind: cfg.kind,
       mesh: cfg.mesh,
       position: celestialBody.position, // alias
-      orientation: mat3.copy(mat3.identity, mat3.zero()),
+      orientation: celestialBody.orientation, // alias
       color: cfg.color,
       lineWidth: 1,
       applyTransform: true,
       wireframeOnly: false,
       backFaceCulling: true,
       velocity: celestialBody.velocity, // alias
-      rotationAxis,
-      angularSpeedRadPerSec: cfg.angularSpeedRadPerSec,
     };
 
     const planetPhysics: PlanetPhysics = {
