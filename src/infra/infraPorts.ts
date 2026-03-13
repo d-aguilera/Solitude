@@ -1,3 +1,16 @@
+import type {
+  ControlInput,
+  EnvInput,
+  WorldAndSceneConfig,
+} from "../app/appPorts";
+import type { GravityEngine } from "../domain/domainPorts";
+import type {
+  HudRenderer,
+  Rasterizer,
+  RenderSurface2D,
+  ViewRenderer,
+} from "../render/renderPorts";
+
 /**
  * Control-side profiling interface.
  */
@@ -21,4 +34,20 @@ export interface ProfilerController {
    * Flush accumulated counters and timing data, if enabled.
    */
   flush(): void;
+}
+
+export interface RunLoopParams {
+  config: WorldAndSceneConfig;
+  pilotViewRenderer: ViewRenderer;
+  pilotRasterizer: Rasterizer;
+  topViewRenderer: ViewRenderer;
+  topRasterizer: Rasterizer;
+  hudRenderer: HudRenderer;
+  hudRasterizer: Rasterizer;
+  gravityEngine: GravityEngine;
+  pilotSurface: RenderSurface2D;
+  topSurface: RenderSurface2D;
+  controlInput: ControlInput;
+  envInput: EnvInput;
+  profilerController: ProfilerController;
 }

@@ -1,33 +1,26 @@
+import type { SceneState } from "../app/appInternals.js";
 import type {
-  ControlInput,
-  EnvInput,
   SceneControlState,
   SceneObject,
   TickCallback,
   TickOutput,
   TickParams,
   WorldAndScene,
-  WorldAndSceneConfig,
 } from "../app/appPorts.js";
-import type { SceneState } from "../app/appInternals.js";
 import { createTickHandler } from "../app/game.js";
 import { updateSceneGraph } from "../app/scene.js";
-import type { GravityEngine } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { parameters } from "../global/parameters.js";
 import type {
-  HudRenderer,
   HudRenderParams,
   Rasterizer,
   RenderedHud,
   RenderedView,
-  RenderSurface2D,
-  ViewRenderer,
   ViewRenderParams,
 } from "../render/renderPorts.js";
 import { createWorldAndScene } from "../setup/setup.js";
 import { updateFps } from "./fps.js";
-import type { ProfilerController } from "./infraPorts.js";
+import type { RunLoopParams } from "./infraPorts.js";
 import { handlePauseToggle } from "./pause.js";
 import { handleProfilingToggle } from "./profilerControl.js";
 import { handleTimeScaleChange } from "./timeScale.js";
@@ -35,21 +28,21 @@ import { handleTimeScaleChange } from "./timeScale.js";
 /**
  * DOM-level game loop (depends on requestAnimationFrame).
  */
-export function runLoop(
-  config: WorldAndSceneConfig,
-  pilotViewRenderer: ViewRenderer,
-  pilotRasterizer: Rasterizer,
-  topViewRenderer: ViewRenderer,
-  topRasterizer: Rasterizer,
-  hudRenderer: HudRenderer,
-  hudRasterizer: Rasterizer,
-  gravityEngine: GravityEngine,
-  pilotSurface: RenderSurface2D,
-  topSurface: RenderSurface2D,
-  controlInput: ControlInput,
-  envInput: EnvInput,
-  profilerController: ProfilerController,
-): void {
+export function runLoop({
+  config,
+  pilotViewRenderer,
+  pilotRasterizer,
+  topViewRenderer,
+  topRasterizer,
+  hudRenderer,
+  hudRasterizer,
+  gravityEngine,
+  pilotSurface,
+  topSurface,
+  controlInput,
+  envInput,
+  profilerController,
+}: RunLoopParams): void {
   const worldAndScene: WorldAndScene = createWorldAndScene(config);
   const tickInto: TickCallback = createTickHandler(
     gravityEngine,
@@ -151,15 +144,15 @@ export function runLoop(
 
     paused = handlePauseToggle(envInput.pauseToggle);
     profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
+    profilerController.setEnabled(profilingEnabled);
+    profilerController.setPaused(paused);
+    profilerController.check();
+
     timeScale = handleTimeScaleChange(
       envInput.decreaseTimeScale,
       envInput.increaseTimeScale,
       timeScale,
     );
-
-    profilerController.setEnabled(profilingEnabled);
-    profilerController.setPaused(paused);
-    profilerController.check();
 
     if (!paused) {
       tickParams.dtMillis = dtMillis;

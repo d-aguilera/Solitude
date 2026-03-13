@@ -70,7 +70,7 @@ export function bootstrapWith(
 
   initPause();
 
-  runLoop(
+  runLoop({
     config,
     pilotViewRenderer,
     pilotRasterizer,
@@ -84,5 +84,5 @@ export function bootstrapWith(
     controlInput,
     envInput,
     profilerController,
-  );
+  });
 }
