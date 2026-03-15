@@ -7,6 +7,8 @@ import type {
 import { AU, km } from "../domain/units.js";
 import { vec3, type Vec3 } from "../domain/vec3.js";
 import { colors } from "./colors.js";
+import icoObjText from "./ico.obj?raw";
+import { parseObjMesh } from "./obj.js";
 
 // --- Generated from JPL Horizons at epoch J2000.0 ---
 
@@ -478,59 +480,7 @@ export function buildDefaultSolarSystemConfigs(): (
   return configs;
 }
 
-const t = (1 + Math.sqrt(5)) / 2;
-
-const icosahedronModel = {
-  points: (() => {
-    const raw: Vec3[] = [
-      vec3.create(-1, t, 0),
-      vec3.create(1, t, 0),
-      vec3.create(-1, -t, 0),
-      vec3.create(1, -t, 0),
-
-      vec3.create(0, -1, t),
-      vec3.create(0, 1, t),
-      vec3.create(0, -1, -t),
-      vec3.create(0, 1, -t),
-
-      vec3.create(t, 0, -1),
-      vec3.create(t, 0, 1),
-      vec3.create(-t, 0, -1),
-      vec3.create(-t, 0, 1),
-    ];
-
-    // Normalize vertices onto the unit sphere in-place.
-    for (let i = 0; i < raw.length; i++) {
-      vec3.normalizeInto(raw[i]);
-    }
-    return raw;
-  })(),
-  faces: [
-    [0, 11, 5],
-    [0, 5, 1],
-    [0, 1, 7],
-    [0, 7, 10],
-    [0, 10, 11],
-
-    [1, 5, 9],
-    [5, 11, 4],
-    [11, 10, 2],
-    [10, 7, 6],
-    [7, 1, 8],
-
-    [3, 9, 4],
-    [3, 4, 2],
-    [3, 2, 6],
-    [3, 6, 8],
-    [3, 8, 9],
-
-    [4, 9, 5],
-    [2, 4, 11],
-    [6, 2, 10],
-    [8, 6, 7],
-    [9, 8, 1],
-  ],
-};
+const icosahedronModel = parseObjMesh(icoObjText);
 
 const planetPrototype: Mesh = generatePlanetMesh();
 
