@@ -79,7 +79,7 @@ export interface StarPhysics extends PlanetPhysics {
  * the domain logic.
  */
 export interface World {
-  shipBodies: ShipBody[];
+  ships: ShipBody[];
   planets: RotatingBody[];
   planetPhysics: PlanetPhysics[];
   stars: RotatingBody[];

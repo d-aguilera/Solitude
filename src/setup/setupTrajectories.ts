@@ -25,7 +25,7 @@ export function createTrajectories(
   }
 
   // Build trajectories for ships
-  for (let ship of world.shipBodies) {
+  for (let ship of world.ships) {
     const capacity = 3 * 24 * 10; // 720 point capacity = 10 days
     const intervalMillis = 20 * 60 * 1000; // 20-minute interval = 72 samples per day
     const sceneObject = sceneObjects[

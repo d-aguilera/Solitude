@@ -24,7 +24,7 @@ export function createWorldAndScene({
   ships: shipConfigs,
 }: WorldAndSceneConfig): WorldAndScene {
   const world: World = {
-    shipBodies: [],
+    ships: [],
     planets: [],
     planetPhysics: [],
     stars: [],

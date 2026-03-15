@@ -14,8 +14,8 @@ export function buildInitialGravityState(world: World): GravityState {
   const positions: Vec3[] = [];
 
   // Ships
-  for (let i = 0; i < world.shipBodies.length; i++) {
-    const ship = world.shipBodies[i];
+  for (let i = 0; i < world.ships.length; i++) {
+    const ship = world.ships[i];
     bodyStates.push({
       id: ship.id,
       mass: 5e4, // arbitrary

@@ -26,13 +26,13 @@ const vNormalScratch: Vec3 = vec3.zero();
  *    where n is the outward normal from body center to ship.
  */
 export function resolveCollisions(world: World): void {
-  const { shipBodies, planets, planetPhysics, stars, starPhysics } = world;
+  const { ships, planets, planetPhysics, stars, starPhysics } = world;
 
   const nPlanets = planets.length;
   const nStars = stars.length;
 
-  for (let si = 0; si < shipBodies.length; si++) {
-    const ship = shipBodies[si];
+  for (let si = 0; si < ships.length; si++) {
+    const ship = ships[si];
     const shipPos = ship.position;
     const shipVel = ship.velocity;
 

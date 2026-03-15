@@ -16,7 +16,7 @@ export function addShipsFromConfig(
 ) {
   for (let config of configs) {
     const shipBody: ShipBody = createShipBody(config, world);
-    world.shipBodies.push(shipBody);
+    world.ships.push(shipBody);
 
     const sceneObject: ShipSceneObject = createSceneObject(config, shipBody);
     scene.objects.push(sceneObject);
