@@ -7,7 +7,7 @@ export function buildWorldAndSceneConfig() {
   const config: WorldAndSceneConfig = {
     enemyShipId: "ship:enemy",
     mainShipId: "ship:main",
-    pilotCameraOffset: vec3.create(0, 21000, 12000),
+    pilotCameraOffset: vec3.create(0, 51000, 4850),
     pilotLookState: { azimuth: 0, elevation: 0 },
     planets: buildDefaultSolarSystemConfigs(),
     ships: buildDefaultShipConfigs(),
