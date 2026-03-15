@@ -5,6 +5,7 @@ import { colors } from "./colors.js";
 import { parseObjMesh } from "./obj.js";
 import shipObjText from "./ship.obj?raw";
 
+const SHIP_DENSITY_KG_PER_M3 = 2700; // used for mass calculation
 const SHIP_START_ALTITUDE_M = 100 * km; // above Earth's north pole
 const EARTH_RADIUS = 6_371 * km;
 
@@ -25,6 +26,7 @@ export function buildDefaultShipConfigs(): ShipBodyConfig[] {
       color: colors.ship,
       homePlanetId: "planet:earth",
       id: "ship:main",
+      density: SHIP_DENSITY_KG_PER_M3,
       mesh: {
         faces: shipModel.faces, // safe to alias here
         points: shipPoints,
@@ -35,6 +37,7 @@ export function buildDefaultShipConfigs(): ShipBodyConfig[] {
       color: colors.enemyShip,
       homePlanetId: "planet:earth",
       id: "ship:enemy",
+      density: SHIP_DENSITY_KG_PER_M3,
       mesh: {
         faces: shipModel.faces, // safe to alias here
         points: enemyPoints,

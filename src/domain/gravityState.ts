@@ -16,9 +16,12 @@ export function buildInitialGravityState(world: World): GravityState {
   // Ships
   for (let i = 0; i < world.ships.length; i++) {
     const ship = world.ships[i];
+    const physics = world.shipPhysics.find((p) => p.id === ship.id);
+    if (!physics) continue;
+
     bodyStates.push({
       id: ship.id,
-      mass: 5e4, // arbitrary
+      mass: physics.mass,
       velocity: ship.velocity, // alias for performance
     });
     positions.push(ship.position); // alias for performance

@@ -50,13 +50,19 @@ export interface GravityState {
 }
 
 /**
+ * Physical properties for gravitational bodies.
+ */
+export interface PhysicsBody {
+  id: string;
+  density: number; // kg/m^3
+  mass: number; // kg
+}
+
+/**
  * Physical properties of a planet / star body.
  */
-export interface PlanetPhysics {
-  id: string;
+export interface PlanetPhysics extends PhysicsBody {
   physicalRadius: number; // meters
-  density: number; // kg/m^3
-  mass: number; // kg (derived from radius and density)
 }
 
 /**
@@ -66,6 +72,11 @@ export interface ShipBody extends CelestialBody {
   frame: LocalFrame;
   orientation: Mat3;
 }
+
+/**
+ * Physical properties of a ship body.
+ */
+export interface ShipPhysics extends PhysicsBody {}
 
 /**
  * Physical properties of a star body.
@@ -80,6 +91,7 @@ export interface StarPhysics extends PlanetPhysics {
  */
 export interface World {
   ships: ShipBody[];
+  shipPhysics: ShipPhysics[];
   planets: RotatingBody[];
   planetPhysics: PlanetPhysics[];
   stars: RotatingBody[];

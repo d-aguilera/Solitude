@@ -1,8 +1,9 @@
 import type { Scene, ShipBodyConfig, ShipSceneObject } from "../app/appPorts";
 import { getPlanetBodyById, getPlanetPhysicsById } from "../app/worldLookup";
-import type { ShipBody, World } from "../domain/domainPorts";
+import type { ShipBody, ShipPhysics, World } from "../domain/domainPorts";
 import { localFrame, type LocalFrame } from "../domain/localFrame";
 import { mat3 } from "../domain/mat3";
+import { computeVolumeOfTriangleMesh } from "../domain/meshVolume";
 import { circularSpeedAtRadius } from "../domain/phys";
 import { vec3, type Vec3 } from "../domain/vec3";
 import { createPolylineSceneObject, initialFrame } from "./setup";
@@ -15,8 +16,9 @@ export function addShipsFromConfig(
   scene: Scene,
 ) {
   for (let config of configs) {
-    const shipBody: ShipBody = createShipBody(config, world);
+    const { shipBody, shipPhysics } = createShip(config, world);
     world.ships.push(shipBody);
+    world.shipPhysics.push(shipPhysics);
 
     const sceneObject: ShipSceneObject = createSceneObject(config, shipBody);
     scene.objects.push(sceneObject);
@@ -46,12 +48,19 @@ function createSceneObject(
   };
 }
 
-function createShipBody(
-  { altitude, homePlanetId, id }: ShipBodyConfig,
+function createShip(
+  { altitude, homePlanetId, id, density, mesh }: ShipBodyConfig,
   world: World,
-) {
+): { shipBody: ShipBody; shipPhysics: ShipPhysics } {
   const planetObj = getPlanetBodyById(world, homePlanetId);
   const planetPhys = getPlanetPhysicsById(world, homePlanetId);
+  const volume = computeVolumeOfTriangleMesh(mesh.points, mesh.faces);
+
+  const shipPhysics: ShipPhysics = {
+    id,
+    density,
+    mass: density * volume,
+  };
 
   const position = computeShipStartPosFromPlanet(
     planetObj.position,
@@ -64,6 +73,7 @@ function createShipBody(
     planetObj.position,
     planetObj.velocity,
     planetPhys.mass,
+    shipPhysics.mass,
   );
 
   const frame: LocalFrame = getFrameFromVelocity(velocity);
@@ -77,7 +87,7 @@ function createShipBody(
     velocity,
   };
 
-  return shipBody;
+  return { shipBody, shipPhysics };
 }
 
 function getFrameFromVelocity(velocity: Vec3): LocalFrame {
@@ -142,13 +152,14 @@ function computeShipStartPosFromPlanet(
  *   v_ship = v_earth + v_rel
  *
  * where v_rel is perpendicular to the Earth→ship radial direction and
- * has the circular speed for an orbit around Earth's mass at that radius.
+ * has the circular relative-orbit speed for the planet+ship system at that separation.
  */
 function computeOrbitVelocity(
   objectPosition: Vec3,
   planetPosition: Vec3,
   planetVelocity: Vec3,
   planetMass: number,
+  shipMass: number,
 ): Vec3 {
   // Planet's heliocentric velocity: dominant motion
   const vPlanet = vec3.clone(planetVelocity);
@@ -173,8 +184,12 @@ function computeOrbitVelocity(
   vec3.normalizeInto(tangential);
   const tangentialDir = vec3.length(tangential) > 0 ? tangential : planetDir;
 
-  // Local circular orbital speed around planet at this radius.
-  const vRelMag = circularSpeedAtRadius(planetMass, r);
+  // Local circular orbital speed around the planet at this separation.
+  // In the test-particle approximation, the ship's mass cancels out and this
+  // would be circularSpeedAtRadius(planetMass, r). Since our gravity integrator
+  // moves *both* bodies, incorporate ship mass for a better 2-body circular
+  // relative-orbit approximation.
+  const vRelMag = circularSpeedAtRadius(planetMass + shipMass, r);
   const vRel = vec3.scaleInto(tangentialDir, vRelMag, tangentialDir);
 
   // Total: planet's heliocentric velocity + local orbital component.

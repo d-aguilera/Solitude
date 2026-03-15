@@ -223,6 +223,7 @@ export interface ShipBodyConfig {
   color: RGB;
   homePlanetId: string;
   id: string;
+  density: number; // kg/m^3
   mesh: Mesh;
 }
 
