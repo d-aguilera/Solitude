@@ -23,7 +23,7 @@ export class NewtonianGravityEngine implements GravityEngine {
     private softeningLength: number,
   ) {}
   /**
-   * Advance gravity simulation by dtSeconds, returning a new GravityState.
+   * Advance gravity simulation by dtSeconds.
    */
   step(dtSeconds: number, state: GravityState): void {
     if (dtSeconds == 0) {
