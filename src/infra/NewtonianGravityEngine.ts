@@ -11,8 +11,9 @@ const accelerations: Vec3[] = [];
 const scratchD: Vec3 = vec3.zero();
 const scratchScaled: Vec3 = vec3.zero();
 
-// Scratch vector reused during position integration.
+// Scratch vectors reused during integration.
 const scratchDeltaPos: Vec3 = vec3.zero();
+const scratchDeltaVel: Vec3 = vec3.zero();
 
 /**
  * Concrete GravityEngine using a Newtonian N-body implementation.
@@ -23,7 +24,8 @@ export class NewtonianGravityEngine implements GravityEngine {
     private softeningLength: number,
   ) {}
   /**
-   * Advance gravity simulation by dtSeconds.
+   * Advance gravity simulation by dtSeconds using a leapfrog
+   * (kick-drift-kick) integrator for better orbital stability.
    */
   step(dtSeconds: number, state: GravityState): void {
     if (dtSeconds == 0) {
@@ -36,11 +38,16 @@ export class NewtonianGravityEngine implements GravityEngine {
       return;
     }
 
+    // Kick (half step)
     this.computeGravityAccelerations(bodyStates, positions);
+    this.kickBodyVelocities(bodyStates, dtSeconds * 0.5);
 
-    this.integrateBodyVelocities(bodyStates, dtSeconds);
+    // Drift (full step) using half-step velocities
+    this.driftBodyPositions(bodyStates, positions, dtSeconds);
 
-    this.integrateBodyPositions(bodyStates, positions, dtSeconds);
+    // Kick (half step) with updated accelerations
+    this.computeGravityAccelerations(bodyStates, positions);
+    this.kickBodyVelocities(bodyStates, dtSeconds * 0.5);
   }
 
   /**
@@ -100,9 +107,9 @@ export class NewtonianGravityEngine implements GravityEngine {
   }
 
   /**
-   * Integrate velocities using accelerations over dtSeconds.
+   * Kick velocities using accelerations over dtSeconds.
    */
-  private integrateBodyVelocities(
+  private kickBodyVelocities(
     bodies: BodyState[],
     dtSeconds: number,
   ): void {
@@ -111,14 +118,15 @@ export class NewtonianGravityEngine implements GravityEngine {
     for (let i = 0; i < n; i++) {
       const a = accelerations[i];
       const v = bodies[i].velocity;
-      vec3.addInto(v, v, vec3.scaleInto(a, dtSeconds, a));
+      vec3.scaleInto(scratchDeltaVel, dtSeconds, a);
+      vec3.addInto(v, v, scratchDeltaVel);
     }
   }
 
   /**
-   * Integrate positions using velocities over dtSeconds.
+   * Drift positions using current velocities over dtSeconds.
    */
-  private integrateBodyPositions(
+  private driftBodyPositions(
     bodies: BodyState[],
     positions: Vec3[],
     dtSeconds: number,
