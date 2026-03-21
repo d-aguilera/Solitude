@@ -1,4 +1,4 @@
-import { formatSimTime, formatSpeed } from "./formatters.js";
+import { formatDistance, formatSimTime, formatSpeed } from "./formatters.js";
 import type {
   HudRenderer,
   HudRenderParams,
@@ -12,8 +12,8 @@ export class DefaultHudRenderer implements HudRenderer {
       currentThrustLevel,
       currentTimeScale,
       fps,
+      orbitReadout,
       paused,
-      pilotCameraLocalOffset,
       profilingEnabled,
       simTimeMillis,
       speedMps,
@@ -31,34 +31,64 @@ export class DefaultHudRenderer implements HudRenderer {
     const fpsPadding = fps < 10 ? " " : "";
     hudRow0[1] = "FPS: ".concat(fpsPadding, fps.toFixed(0));
 
-    // Pilot camera local offset (right, forward, up)
-    const { x: ox, y: oy, z: oz } = pilotCameraLocalOffset;
-    hudRow1[0] = "Cam:".concat(
-      " x=",
-      ox.toFixed(2),
-      " y=",
-      oy.toFixed(2),
-      " z=",
-      oz.toFixed(2),
-    );
-
     // Thrust
     const thrustPadding = currentThrustLevel < 0 ? "" : " ";
-    hudRow1[1] = "Thrust: ".concat(
+    hudRow1[0] = "Thrust: ".concat(
       thrustPadding,
       currentThrustLevel.toString(),
     );
 
-    // Simulation time
-    hudRow2[0] = "Sim: ".concat(formatSimTime(simTimeMillis / 1000));
-
     // Time scale
-    hudRow2[1] = "Time scale: ".concat(currentTimeScale.toString());
+    hudRow1[1] = "Time scale: ".concat(currentTimeScale.toString());
 
-    // Pause status
-    hudRow3[0] = paused ? "PAUSED" : "";
+    // Orbit readout
+    if (orbitReadout) {
+      const primaryName = displayNameFromId(orbitReadout.primaryId);
+      const orbitStatus = orbitReadout.isBound ? "bound" : "escape";
+      const pe = orbitReadout.periapsis;
+      const ap = orbitReadout.apoapsis;
+      const ecc = orbitReadout.eccentricity;
+      const incDeg = (orbitReadout.inclinationRad * 180) / Math.PI;
+      const peAlt = pe - orbitReadout.primaryRadius;
+      const apAlt = ap - orbitReadout.primaryRadius;
 
-    // Profiling
-    hudRow3[1] = profilingEnabled ? "PROFILING" : "";
+      hudRow2[0] = "Orbit: ".concat(primaryName, " (", orbitStatus, ")");
+      hudRow2[1] = orbitReadout.isBound
+        ? "Pe/Ap: ".concat(
+            formatSignedDistance(peAlt),
+            " / ",
+            formatSignedDistance(apAlt),
+          )
+        : "Pe/Ap: --";
+
+      hudRow3[0] = "e=".concat(ecc.toFixed(3), " i=")
+        .concat(incDeg.toFixed(1), "°");
+    } else {
+      hudRow3[0] = "";
+    }
+
+    // Status flags
+    const simLabel = "Sim: ".concat(formatSimTime(simTimeMillis / 1000));
+    if (paused && profilingEnabled) {
+      hudRow3[1] = simLabel.concat(" PAUSED PROFILING");
+    } else if (paused) {
+      hudRow3[1] = simLabel.concat(" PAUSED");
+    } else if (profilingEnabled) {
+      hudRow3[1] = simLabel.concat(" PROFILING");
+    } else {
+      hudRow3[1] = simLabel;
+    }
   }
+}
+
+function displayNameFromId(id: string): string {
+  const parts = id.split(":");
+  const raw = parts[parts.length - 1] || id;
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
+function formatSignedDistance(distanceMeters: number): string {
+  return distanceMeters < 0
+    ? "-".concat(formatDistance(-distanceMeters))
+    : formatDistance(distanceMeters);
 }

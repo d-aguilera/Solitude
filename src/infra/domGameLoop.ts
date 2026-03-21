@@ -9,6 +9,7 @@ import type {
 } from "../app/appPorts.js";
 import { createTickHandler } from "../app/game.js";
 import { updateSceneGraph } from "../app/scene.js";
+import { computeShipOrbitReadout } from "../domain/orbit.js";
 import { vec3 } from "../domain/vec3.js";
 import { parameters } from "../global/parameters.js";
 import type {
@@ -115,6 +116,7 @@ export function runLoop({
     currentThrustLevel: 0,
     currentTimeScale: 0,
     fps: 0,
+    orbitReadout: null,
     paused: false,
     pilotCameraLocalOffset: sceneControlState.pilotCameraOffset,
     profilingEnabled: false,
@@ -181,6 +183,10 @@ export function runLoop({
       hudRenderParams.currentThrustLevel = tickOutput.currentThrustLevel;
       hudRenderParams.currentTimeScale = timeScale;
       hudRenderParams.fps = fps;
+      hudRenderParams.orbitReadout = computeShipOrbitReadout(
+        worldAndScene.world,
+        worldAndScene.mainShip,
+      );
       hudRenderParams.paused = paused;
       hudRenderParams.pilotCameraLocalOffset =
         sceneControlState.pilotCameraOffset;

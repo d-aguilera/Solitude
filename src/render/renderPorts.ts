@@ -6,6 +6,7 @@ import type {
   SceneObject,
 } from "../app/appPorts.js";
 import type { ShipBody } from "../domain/domainPorts.js";
+import type { OrbitReadout } from "../domain/orbit.js";
 import type { Vec3 } from "../domain/vec3.js";
 import type { ScreenPoint } from "./scrn.js";
 
@@ -24,6 +25,7 @@ export interface HudRenderParams {
   currentThrustLevel: number;
   currentTimeScale: number;
   fps: number;
+  orbitReadout?: OrbitReadout | null;
   paused: boolean;
   pilotCameraLocalOffset: Vec3;
   profilingEnabled: boolean;

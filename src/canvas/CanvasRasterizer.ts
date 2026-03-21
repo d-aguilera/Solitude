@@ -11,7 +11,6 @@ import type {
   TextMetrics,
 } from "../render/renderPorts.js";
 
-const hudWidth = 420;
 const hudMargin = 10;
 const hudPadding = 10;
 
@@ -105,10 +104,10 @@ export class CanvasRasterizer implements Rasterizer {
     const lineHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
 
     // HUD's location
+    const hudLeft = hudMargin;
     const hudRight = ctx.canvas.width - hudMargin;
-    const hudInnerRight = hudRight - hudPadding;
-    const hudLeft = hudRight - hudWidth;
     const hudInnerLeft = hudLeft + hudPadding;
+    const hudInnerRight = hudRight - hudPadding;
     const hudTop = hudMargin;
     const hudInnerTop = hudTop + hudPadding;
     const hudHeight = 2 * hudPadding + hudLength * lineHeight;
@@ -120,7 +119,7 @@ export class CanvasRasterizer implements Rasterizer {
 
     // Clear background
     ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-    ctx.fillRect(hudLeft, hudTop, hudWidth, hudHeight);
+    ctx.fillRect(hudLeft, hudTop, hudRight - hudLeft, hudHeight);
 
     // Set text color
     ctx.fillStyle = "white";
