@@ -176,13 +176,33 @@ function computeOrbitVelocity(
   const radialDir = vec3.scaleInto(offset, 1 / r, offset);
 
   // Build a tangential direction around planet, perpendicular to radialDir.
-  // Use planet's current orbital direction as a reference, projected to be orthogonal.
-  const planetDir = vec3.normalizeInto(vec3.clone(vPlanet));
-  const dot = vec3.dot(planetDir, radialDir);
-  vec3.scaleInto(radialDir, dot, radialDir);
-  const tangential = vec3.subInto(radialDir, planetDir, radialDir);
-  vec3.normalizeInto(tangential);
-  const tangentialDir = vec3.length(tangential) > 0 ? tangential : planetDir;
+  // Prefer projecting the planet's velocity, but fall back to a fixed axis
+  // if the planet is nearly stationary or the projection is degenerate.
+  let tangentialDir = vec3.zero();
+  let hasTangential = false;
+
+  const planetSpeed = vec3.length(vPlanet);
+  if (planetSpeed > 0) {
+    const planetDir = vec3.scaleInto(vec3.zero(), 1 / planetSpeed, vPlanet);
+    const projMag = vec3.dot(planetDir, radialDir);
+    const proj = vec3.scaleInto(vec3.zero(), projMag, radialDir);
+    const tangential = vec3.subInto(vec3.zero(), planetDir, proj);
+    if (vec3.length(tangential) > 1e-8) {
+      vec3.normalizeInto(tangential);
+      tangentialDir = tangential;
+      hasTangential = true;
+    }
+  }
+
+  if (!hasTangential) {
+    const fallbackAxis =
+      Math.abs(radialDir.z) < 0.9
+        ? vec3.create(0, 0, 1)
+        : vec3.create(1, 0, 0);
+    const tangential = vec3.crossInto(vec3.zero(), fallbackAxis, radialDir);
+    vec3.normalizeInto(tangential);
+    tangentialDir = tangential;
+  }
 
   // Local circular orbital speed around the planet at this separation.
   // In the test-particle approximation, the ship's mass cancels out and this
