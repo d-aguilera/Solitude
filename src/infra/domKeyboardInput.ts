@@ -80,6 +80,7 @@ const keyMap: Record<string, ControlAction | EnvAction> = {
   Digit9: "thrust9",
   KeyA: "rollLeft",
   KeyB: "burnBackwards",
+  KeyC: "alignToBody",
   KeyD: "rollRight",
   KeyE: "yawRight",
   KeyI: "camUp",

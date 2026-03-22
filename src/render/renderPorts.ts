@@ -76,12 +76,7 @@ export interface RenderedFace {
   color: RGB;
 }
 
-export type RenderedHud = [
-  [string, string],
-  [string, string],
-  [string, string],
-  [string, string],
-];
+export type RenderedHud = [string, string, string, string][];
 
 export interface RenderedPolyline {
   points: ScreenPoint[];

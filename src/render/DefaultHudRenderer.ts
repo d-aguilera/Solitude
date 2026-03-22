@@ -11,7 +11,6 @@ export class DefaultHudRenderer implements HudRenderer {
     {
       currentThrustLevel,
       currentTimeScale,
-      fps,
       orbitReadout,
       paused,
       profilingEnabled,
@@ -24,59 +23,81 @@ export class DefaultHudRenderer implements HudRenderer {
     const hudRow2 = into[2];
     const hudRow3 = into[3];
 
-    // Speed
-    hudRow0[0] = "Speed: ".concat(formatSpeed(speedMps));
-
-    // FPS
-    const fpsPadding = fps < 10 ? " " : "";
-    hudRow0[1] = "FPS: ".concat(fpsPadding, fps.toFixed(0));
-
-    // Thrust
+    // Fourth column: general flight info (right-aligned)
+    hudRow0[3] = "Speed: ".concat(formatSpeed(speedMps));
     const thrustPadding = currentThrustLevel < 0 ? "" : " ";
-    hudRow1[0] = "Thrust: ".concat(
+    hudRow1[3] = "Thrust: ".concat(
       thrustPadding,
       currentThrustLevel.toString(),
     );
+    hudRow2[3] = "Time scale: ".concat(currentTimeScale.toString());
+    hudRow3[3] = "Sim: ".concat(formatSimTime(simTimeMillis / 1000));
 
-    // Time scale
-    hudRow1[1] = "Time scale: ".concat(currentTimeScale.toString());
-
-    // Orbit readout
+    // Left column: orbit aids
     if (orbitReadout) {
-      const primaryName = displayNameFromId(orbitReadout.primaryId);
-      const orbitStatus = orbitReadout.isBound ? "bound" : "escape";
-      const pe = orbitReadout.periapsis;
-      const ap = orbitReadout.apoapsis;
-      const ecc = orbitReadout.eccentricity;
-      const incDeg = (orbitReadout.inclinationRad * 180) / Math.PI;
-      const peAlt = pe - orbitReadout.primaryRadius;
-      const apAlt = ap - orbitReadout.primaryRadius;
+      const radDv = orbitReadout.deltaVCircularRadial;
+      const tanDv = orbitReadout.deltaVCircularTangential;
+      const timeToPe = orbitReadout.timeToPeriapsisSec;
+      const timeToAp = orbitReadout.timeToApoapsisSec;
 
-      hudRow2[0] = "Orbit: ".concat(primaryName, " (", orbitStatus, ")");
-      hudRow2[1] = orbitReadout.isBound
+      // Left panel: orbit info
+      hudRow0[0] = "Orbit: ".concat(
+        displayNameFromId(orbitReadout.primaryId),
+        " (",
+        orbitReadout.isBound ? "bound" : "escape",
+        ")",
+      );
+      hudRow1[0] = orbitReadout.isBound
         ? "Pe/Ap: ".concat(
-            formatSignedDistance(peAlt),
+            formatSignedDistance(
+              orbitReadout.periapsis - orbitReadout.primaryRadius,
+            ),
             " / ",
-            formatSignedDistance(apAlt),
+            formatSignedDistance(
+              orbitReadout.apoapsis - orbitReadout.primaryRadius,
+            ),
           )
         : "Pe/Ap: --";
+      hudRow2[0] = "e: ".concat(orbitReadout.eccentricity.toFixed(3));
+      hudRow3[0] = "i: ".concat(
+        ((orbitReadout.inclinationRad * 180) / Math.PI).toFixed(1),
+        "°",
+      );
 
-      hudRow3[0] = "e=".concat(ecc.toFixed(3), " i=")
-        .concat(incDeg.toFixed(1), "°");
+      // Second column: delta-v
+      hudRow0[1] = "Δv Rad: "
+        .concat(formatDeltaV(Math.abs(radDv)), " ")
+        .concat(radDv >= 0 ? "out" : "in");
+      hudRow1[1] = "Δv Tan: "
+        .concat(formatDeltaV(Math.abs(tanDv)), " ")
+        .concat(tanDv >= 0 ? "pro" : "retro");
+      hudRow2[1] = paused ? "PAUSED" : "";
+      hudRow3[1] = "";
+
+      // Third column: apsis timers + profiling
+      hudRow0[2] =
+        timeToPe == null
+          ? "Pe in: --"
+          : "Pe in: ".concat(formatSimTime(timeToPe));
+      hudRow1[2] =
+        timeToAp == null
+          ? "Ap in: --"
+          : "Ap in: ".concat(formatSimTime(timeToAp));
+      hudRow2[2] = profilingEnabled ? "PROFILING" : "";
+      hudRow3[2] = "";
     } else {
+      hudRow0[0] = "";
+      hudRow1[0] = "";
+      hudRow2[0] = "";
       hudRow3[0] = "";
-    }
-
-    // Status flags
-    const simLabel = "Sim: ".concat(formatSimTime(simTimeMillis / 1000));
-    if (paused && profilingEnabled) {
-      hudRow3[1] = simLabel.concat(" PAUSED PROFILING");
-    } else if (paused) {
-      hudRow3[1] = simLabel.concat(" PAUSED");
-    } else if (profilingEnabled) {
-      hudRow3[1] = simLabel.concat(" PROFILING");
-    } else {
-      hudRow3[1] = simLabel;
+      hudRow0[1] = "";
+      hudRow1[1] = "";
+      hudRow2[1] = "";
+      hudRow3[1] = "";
+      hudRow0[2] = "";
+      hudRow1[2] = "";
+      hudRow2[2] = "";
+      hudRow3[2] = "";
     }
   }
 }
@@ -91,4 +112,11 @@ function formatSignedDistance(distanceMeters: number): string {
   return distanceMeters < 0
     ? "-".concat(formatDistance(-distanceMeters))
     : formatDistance(distanceMeters);
+}
+
+function formatDeltaV(speedMps: number): string {
+  if (speedMps >= 1000) {
+    return (speedMps / 1000).toFixed(2).concat(" km/s");
+  }
+  return speedMps.toFixed(2).concat(" m/s");
 }

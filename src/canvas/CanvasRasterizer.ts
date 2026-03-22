@@ -124,10 +124,26 @@ export class CanvasRasterizer implements Rasterizer {
     // Set text color
     ctx.fillStyle = "white";
 
+    const hudCenterLeft = hudInnerLeft + (hudInnerRight - hudInnerLeft) * 0.33;
+    const hudCenterRight =
+      hudInnerLeft + (hudInnerRight - hudInnerLeft) * 0.66;
+
     // Draw right-aligned text
     ctx.textAlign = "right";
     for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
-      ctx.fillText(hud[rowIndex][1], hudInnerRight, rows[rowIndex]);
+      ctx.fillText(hud[rowIndex][3], hudInnerRight, rows[rowIndex]);
+    }
+
+    // Draw 66% centered text
+    ctx.textAlign = "center";
+    for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
+      ctx.fillText(hud[rowIndex][2], hudCenterRight, rows[rowIndex]);
+    }
+
+    // Draw 33% centered text
+    ctx.textAlign = "center";
+    for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
+      ctx.fillText(hud[rowIndex][1], hudCenterLeft, rows[rowIndex]);
     }
 
     // Draw left-aligned text

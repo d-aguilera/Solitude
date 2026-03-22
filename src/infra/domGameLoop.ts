@@ -124,12 +124,12 @@ export function runLoop({
     speedMps: 0,
   };
 
-  const renderedHud: RenderedHud = [
-    ["", ""],
-    ["", ""],
-    ["", ""],
-    ["", ""],
-  ];
+  const renderedHud: RenderedHud = Array.from({ length: 4 }, () => [
+    "",
+    "",
+    "",
+    "",
+  ]);
 
   let lastTimeMs: number;
   let lastHudTimeMs: number;

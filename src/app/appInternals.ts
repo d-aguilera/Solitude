@@ -24,5 +24,6 @@ export interface SceneState {
  */
 export interface SimControlState {
   alignToVelocity: boolean;
+  alignToBody: boolean;
   thrustLevel: number;
 }

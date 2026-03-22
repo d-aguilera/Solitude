@@ -13,6 +13,13 @@ export interface OrbitReadout {
   periapsis: number;
   apoapsis: number;
   isBound: boolean;
+  radialSpeed: number;
+  tangentialSpeed: number;
+  circularSpeed: number;
+  deltaVCircularRadial: number;
+  deltaVCircularTangential: number;
+  timeToPeriapsisSec: number | null;
+  timeToApoapsisSec: number | null;
 }
 
 type GravityPrimary = {
@@ -47,6 +54,13 @@ export function computeShipOrbitReadout(
   const mu = parameters.newtonG * primary.mass;
   if (mu === 0) return null;
 
+  const rHat = vec3.scaleInto(rHatScratch, 1 / r, rScratch);
+  const radialSpeed = vec3.dot(rHat, vScratch);
+  const tangentialSpeed = Math.sqrt(Math.max(0, v2 - radialSpeed * radialSpeed));
+  const circularSpeed = Math.sqrt(mu / r);
+  const deltaVCircularRadial = -radialSpeed;
+  const deltaVCircularTangential = circularSpeed - tangentialSpeed;
+
   // Specific angular momentum h = r x v
   vec3.crossInto(hScratch, rScratch, vScratch);
   const h = vec3.length(hScratch);
@@ -58,8 +72,7 @@ export function computeShipOrbitReadout(
   // Eccentricity vector: e = (v x h)/mu - r_hat
   vec3.crossInto(tempScratch, vScratch, hScratch);
   vec3.scaleInto(tempScratch, 1 / mu, tempScratch);
-  vec3.scaleInto(rHatScratch, 1 / r, rScratch);
-  vec3.subInto(eVecScratch, tempScratch, rHatScratch);
+  vec3.subInto(eVecScratch, tempScratch, rHat);
   const eccentricity = vec3.length(eVecScratch);
 
   // Inclination from angular momentum
@@ -72,6 +85,14 @@ export function computeShipOrbitReadout(
   const isBound = eccentricity < 1 && energy < 0;
   const periapsis = isBound ? semiMajorAxis * (1 - eccentricity) : NaN;
   const apoapsis = isBound ? semiMajorAxis * (1 + eccentricity) : NaN;
+  const { timeToPeriapsisSec, timeToApoapsisSec } = computeApsisTimers(
+    isBound,
+    eccentricity,
+    semiMajorAxis,
+    r,
+    radialSpeed,
+    mu,
+  );
 
   return {
     primaryId: primary.id,
@@ -84,7 +105,22 @@ export function computeShipOrbitReadout(
     periapsis,
     apoapsis,
     isBound,
+    radialSpeed,
+    tangentialSpeed,
+    circularSpeed,
+    deltaVCircularRadial,
+    deltaVCircularTangential,
+    timeToPeriapsisSec,
+    timeToApoapsisSec,
   };
+}
+
+export function getDominantBody(
+  world: World,
+  position: Vec3,
+): RotatingBody | null {
+  const primary = findDominantBody(world, position);
+  return primary ? primary.body : null;
 }
 
 function findDominantBody(
@@ -140,4 +176,49 @@ function accelMagnitudeAtPosition(
   const r2 = vec3.distSq(body.position, position);
   if (r2 === 0) return 0;
   return (parameters.newtonG * mass) / r2;
+}
+
+function computeApsisTimers(
+  isBound: boolean,
+  eccentricity: number,
+  semiMajorAxis: number,
+  r: number,
+  radialSpeed: number,
+  mu: number,
+): { timeToPeriapsisSec: number | null; timeToApoapsisSec: number | null } {
+  const eps = 1e-5;
+  if (!isBound || !Number.isFinite(semiMajorAxis) || eccentricity < eps) {
+    return { timeToPeriapsisSec: null, timeToApoapsisSec: null };
+  }
+
+  const meanMotion = Math.sqrt(mu / (semiMajorAxis * semiMajorAxis * semiMajorAxis));
+  if (meanMotion === 0) {
+    return { timeToPeriapsisSec: null, timeToApoapsisSec: null };
+  }
+
+  const cosE = clamp((1 - r / semiMajorAxis) / eccentricity, -1, 1);
+  const sinE = clamp(
+    (radialSpeed * r) / (Math.sqrt(mu * semiMajorAxis) * eccentricity),
+    -1,
+    1,
+  );
+
+  let E = Math.atan2(sinE, cosE);
+  if (E < 0) E += Math.PI * 2;
+
+  let M = E - eccentricity * sinE;
+  if (M < 0) M += Math.PI * 2;
+
+  const twoPi = Math.PI * 2;
+  let timeToPeriapsisSec = (twoPi - M) / meanMotion;
+  if (timeToPeriapsisSec < 1e-6) timeToPeriapsisSec = 0;
+
+  const timeToApoapsisSec =
+    M <= Math.PI ? (Math.PI - M) / meanMotion : (3 * Math.PI - M) / meanMotion;
+
+  return { timeToPeriapsisSec, timeToApoapsisSec };
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
 }

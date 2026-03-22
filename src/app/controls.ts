@@ -28,6 +28,7 @@ export function updateControlState(
 ): number {
   updateThrustLevelFromInput(controlInput, controlState);
   updateAlignToVelocityFromInput(controlInput, controlState);
+  updateAlignToBodyFromInput(controlInput, controlState);
   return getSignedThrustPercent(controlInput, controlState);
 }
 
@@ -164,6 +165,7 @@ export function updateShipOrientationFromControls(
   ship: ControlledBodyState,
   controlInput: ControlInput,
   controlState: SimControlState,
+  alignTargetDirection: Vec3 | null,
 ): void {
   const { frame, orientation } = ship;
   rollFrame(frame, dtMillis, controlInput);
@@ -173,10 +175,14 @@ export function updateShipOrientationFromControls(
   // Update the body's orientation based on the new frame.
   localFrame.intoMat3(orientation, frame);
 
-  // Apply alignment toward the velocity vector, if requested.
-  // Respect the high-level flag owned by the ControlState so that
-  // future logic can gate alignment without depending directly on input.
-  if (controlState.alignToVelocity && controlInput.alignToVelocity) {
+  // Apply alignment if requested.
+  if (
+    controlState.alignToBody &&
+    controlInput.alignToBody &&
+    alignTargetDirection
+  ) {
+    updateFrameAlignToDirection(dtMillis, ship, alignTargetDirection);
+  } else if (controlState.alignToVelocity && controlInput.alignToVelocity) {
     updateFrameAlignToVelocity(dtMillis, ship);
   }
 }
@@ -207,6 +213,18 @@ export function updateFrameAlignToVelocity(
 
   // targetForward = v / speed
   vec3.scaleInto(targetForwardScratch, 1 / speed, v);
+  updateFrameAlignToDirection(dtMillis, body, targetForwardScratch);
+}
+
+export function updateFrameAlignToDirection(
+  dtMillis: number,
+  body: ControlledBodyState,
+  targetDirection: Vec3,
+): void {
+  const len = vec3.length(targetDirection);
+  if (len === 0) return;
+
+  vec3.scaleInto(targetForwardScratch, 1 / len, targetDirection);
   const targetForward = targetForwardScratch;
   const currentForward = body.frame.forward;
 
@@ -269,4 +287,11 @@ function updateAlignToVelocityFromInput(
   controlState: SimControlState,
 ): void {
   controlState.alignToVelocity = controlInput.alignToVelocity;
+}
+
+function updateAlignToBodyFromInput(
+  controlInput: ControlInput,
+  controlState: SimControlState,
+): void {
+  controlState.alignToBody = controlInput.alignToBody;
 }

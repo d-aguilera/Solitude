@@ -31,6 +31,7 @@ export const ALL_CONTROL_ACTIONS = [
   "thrust7",
   "thrust8",
   "thrust9",
+  "alignToBody",
   "alignToVelocity",
 ] as const;
 

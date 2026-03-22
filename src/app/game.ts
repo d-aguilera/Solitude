@@ -1,6 +1,8 @@
 import { resolveCollisions } from "../domain/collisions.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
+import { getDominantBody } from "../domain/orbit.js";
+import { type Vec3, vec3 } from "../domain/vec3.js";
 import type { SimControlState } from "./appInternals.js";
 import type {
   TickCallback,
@@ -24,9 +26,12 @@ export function createTickHandler(
   worldAndScene: WorldAndScene,
 ): TickCallback {
   let currentThrustPercent: number;
+  let alignTargetDirection: Vec3 | null = null;
+  const alignTargetScratch = vec3.zero();
 
   const simControlState: SimControlState = {
     alignToVelocity: false,
+    alignToBody: false,
     thrustLevel,
   };
 
@@ -40,11 +45,30 @@ export function createTickHandler(
 
     currentThrustPercent = updateControlState(controlInput, simControlState);
 
+    alignTargetDirection = null;
+    if (controlInput.alignToBody) {
+      const primary = getDominantBody(
+        worldAndScene.world,
+        worldAndScene.mainShip.position,
+      );
+      if (primary) {
+        vec3.subInto(
+          alignTargetScratch,
+          primary.position,
+          worldAndScene.mainShip.position,
+        );
+        if (vec3.lengthSq(alignTargetScratch) > 0) {
+          alignTargetDirection = alignTargetScratch;
+        }
+      }
+    }
+
     updateShipOrientationFromControls(
       dtMillis,
       worldAndScene.mainShip,
       controlInput,
       simControlState,
+      alignTargetDirection,
     );
     applyThrust(dtMillis, worldAndScene.mainShip, currentThrustPercent);
     updateFrameAlignToVelocity(dtMillis, worldAndScene.enemyShip);
