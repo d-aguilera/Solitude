@@ -10,6 +10,7 @@ import type {
   TickParams,
   WorldAndScene,
 } from "./appPorts.js";
+import type { ThrustCommand } from "./controls.js";
 import {
   updateControlState,
   updateFrameAlignToVelocity,
@@ -25,7 +26,7 @@ export function createTickHandler(
   thrustLevel: number,
   worldAndScene: WorldAndScene,
 ): TickCallback {
-  let currentThrustPercent: number;
+  let thrustCommand: ThrustCommand;
   let alignTargetDirection: Vec3 | null = null;
   const alignTargetScratch = vec3.zero();
 
@@ -43,7 +44,7 @@ export function createTickHandler(
   return (output: TickOutput, params: TickParams): void => {
     const { controlInput, dtMillis, dtMillisSim } = params;
 
-    currentThrustPercent = updateControlState(controlInput, simControlState);
+    thrustCommand = updateControlState(controlInput, simControlState);
 
     alignTargetDirection = null;
     if (controlInput.alignToBody) {
@@ -70,18 +71,23 @@ export function createTickHandler(
       simControlState,
       alignTargetDirection,
     );
-    applyThrust(dtMillis, worldAndScene.mainShip, currentThrustPercent);
+    applyThrust(dtMillis, worldAndScene.mainShip, thrustCommand);
     updateFrameAlignToVelocity(dtMillis, worldAndScene.enemyShip);
 
     applyGravity(dtMillisSim, gravityEngine, gravityState);
     resolveCollisions(worldAndScene.world);
     applyCelestialSpin(dtMillisSim, worldAndScene.world);
 
+    const { forward, right } = thrustCommand;
     output.currentThrustLevel =
-      currentThrustPercent === 0
+      forward === 0 && right === 0
         ? 0
-        : currentThrustPercent > 0
-          ? simControlState.thrustLevel
-          : -simControlState.thrustLevel;
+        : forward !== 0
+          ? forward > 0
+            ? simControlState.thrustLevel
+            : -simControlState.thrustLevel
+          : right > 0
+            ? simControlState.thrustLevel
+            : -simControlState.thrustLevel;
   };
 }

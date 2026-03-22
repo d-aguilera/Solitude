@@ -86,6 +86,8 @@ const keyMap: Record<string, ControlAction | EnvAction> = {
   KeyI: "camUp",
   KeyJ: "camBackward",
   KeyK: "camDown",
+  KeyM: "burnRight",
+  KeyN: "burnLeft",
   KeyO: "profilingToggle",
   KeyP: "pauseToggle",
   KeyQ: "yawLeft",

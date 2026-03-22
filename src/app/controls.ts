@@ -22,14 +22,19 @@ const shipThrustValues = Array.from<number, number>(
   (_, i) => Math.pow(i, shipThrustExponent) / shipThrustMaxPow,
 );
 
+export interface ThrustCommand {
+  forward: number;
+  right: number;
+}
+
 export function updateControlState(
   controlInput: ControlInput,
   controlState: SimControlState,
-): number {
+): ThrustCommand {
   updateThrustLevelFromInput(controlInput, controlState);
   updateAlignToVelocityFromInput(controlInput, controlState);
   updateAlignToBodyFromInput(controlInput, controlState);
-  return getSignedThrustPercent(controlInput, controlState);
+  return getThrustCommand(controlInput, controlState);
 }
 
 /**
@@ -139,15 +144,20 @@ function updateThrustLevelFromInput(
  *  - Sign from Space (forward) / B (backward)
  *  - Magnitude from stored thrust level (set by 0–5) in the given state.
  */
-function getSignedThrustPercent(
+function getThrustCommand(
   controlInput: ControlInput,
   controlState: SimControlState,
-): number {
+): ThrustCommand {
   const mag = shipThrustValues[controlState.thrustLevel];
   const forward = controlInput.burnForward ? mag : 0;
   const backward = controlInput.burnBackwards ? mag : 0;
+  const left = controlInput.burnLeft ? mag : 0;
+  const right = controlInput.burnRight ? mag : 0;
 
-  return forward - backward;
+  return {
+    forward: forward - backward,
+    right: right - left,
+  };
 }
 
 /**

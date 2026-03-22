@@ -21,6 +21,8 @@ export const ALL_CONTROL_ACTIONS = [
   "camDown",
   "burnForward",
   "burnBackwards",
+  "burnLeft",
+  "burnRight",
   "thrust0",
   "thrust1",
   "thrust2",

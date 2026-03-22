@@ -8,6 +8,7 @@ import type {
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import type { ControlledBodyState } from "./appInternals.js";
+import type { ThrustCommand } from "./controls.js";
 import { maxThrustAcceleration } from "./controls.js";
 
 // Scratch vector for applyThrustToVelocity
@@ -22,15 +23,27 @@ const Rspin = mat3.zero();
  */
 function applyThrustToVelocity(
   dtMillis: number,
-  currentThrustPercent: number,
+  thrust: ThrustCommand,
   body: ControlledBodyState,
 ): void {
-  if (dtMillis === 0 || currentThrustPercent === 0) return;
+  if (dtMillis === 0) return;
+  if (thrust.forward === 0 && thrust.right === 0) return;
 
   const { frame, velocity } = body;
-  const accelMagnitude = maxThrustAcceleration * currentThrustPercent;
-  vec3.scaleInto(cvScratch, (accelMagnitude * dtMillis) / 1000, frame.forward);
-  vec3.addInto(body.velocity, velocity, cvScratch);
+  const accelScale = (maxThrustAcceleration * dtMillis) / 1000;
+
+  if (thrust.forward !== 0) {
+    vec3.scaleInto(
+      cvScratch,
+      accelScale * thrust.forward,
+      frame.forward,
+    );
+    vec3.addInto(body.velocity, velocity, cvScratch);
+  }
+  if (thrust.right !== 0) {
+    vec3.scaleInto(cvScratch, accelScale * thrust.right, frame.right);
+    vec3.addInto(body.velocity, body.velocity, cvScratch);
+  }
 }
 
 /**
@@ -39,13 +52,13 @@ function applyThrustToVelocity(
 export function applyThrust(
   dtMillis: number,
   controlledShip: ShipBody,
-  currentThrustPercent: number,
+  thrust: ThrustCommand,
 ): void {
   if (dtMillis === 0) {
     return;
   }
 
-  applyThrustToVelocity(dtMillis, currentThrustPercent, controlledShip);
+  applyThrustToVelocity(dtMillis, thrust, controlledShip);
 }
 
 /**
