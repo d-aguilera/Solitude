@@ -1,4 +1,4 @@
-import type { RenderSurface2D } from "../render/renderPorts.js";
+import type { RenderSurface2D } from "../../render/renderPorts.js";
 
 export class WebGLSurface implements RenderSurface2D {
   constructor(private readonly gl: WebGL2RenderingContext) {}

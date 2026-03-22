@@ -1,5 +1,5 @@
-import type { RGB } from "../app/appPorts.js";
-import { rgbToCss } from "../render/color.js";
+import type { RGB } from "../../app/appPorts.js";
+import { rgbToCss } from "../../render/color.js";
 import type {
   Point,
   Rasterizer,
@@ -9,7 +9,7 @@ import type {
   RenderedPolyline,
   RenderedSegment,
   TextMetrics,
-} from "../render/renderPorts.js";
+} from "../../render/renderPorts.js";
 
 const hudMargin = 10;
 const hudPadding = 10;
