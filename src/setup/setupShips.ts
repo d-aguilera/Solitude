@@ -1,5 +1,4 @@
 import type { Scene, ShipBodyConfig, ShipSceneObject } from "../app/appPorts";
-import { getPlanetBodyById, getPlanetPhysicsById } from "../app/worldLookup";
 import type { ShipBody, ShipPhysics, World } from "../domain/domainPorts";
 import { localFrame, type LocalFrame } from "../domain/localFrame";
 import { mat3 } from "../domain/mat3";
@@ -52,8 +51,14 @@ function createShip(
   { altitude, homePlanetId, id, density, mesh }: ShipBodyConfig,
   world: World,
 ): { shipBody: ShipBody; shipPhysics: ShipPhysics } {
-  const planetObj = getPlanetBodyById(world, homePlanetId);
-  const planetPhys = getPlanetPhysicsById(world, homePlanetId);
+  const planetIndex = world.planets.findIndex(
+    (planet) => planet.id === homePlanetId,
+  );
+  if (planetIndex < 0) {
+    throw new Error(`Planet not found: ${homePlanetId}`);
+  }
+  const planetObj = world.planets[planetIndex];
+  const planetPhys = world.planetPhysics[planetIndex];
   const volume = computeVolumeOfTriangleMesh(mesh.points, mesh.faces);
 
   const shipPhysics: ShipPhysics = {

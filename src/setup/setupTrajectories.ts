@@ -14,9 +14,8 @@ export function createTrajectories(
   world: World,
   { objects: sceneObjects }: Scene,
   planetConfigs: (PlanetBodyConfig | StarBodyConfig)[],
-  planetPathMappings: Record<string, string>,
 ) {
-  const trajectories: Record<BodyId, Trajectory> = {};
+  const trajectoryList: Trajectory[] = [];
 
   // build a scene objects lookup index
   const sceneObjectIndex: Record<BodyId, number> = {};
@@ -31,11 +30,12 @@ export function createTrajectories(
     const sceneObject = sceneObjects[
       sceneObjectIndex["path:" + ship.id]
     ] as PolylineSceneObject;
-    trajectories[ship.id] = createTrajectory(
+    const trajectory = createTrajectory(
       capacity,
       intervalMillis,
       sceneObject,
     );
+    trajectoryList.push(trajectory);
   }
 
   // Build trajectories planets (skip moons)
@@ -49,16 +49,17 @@ export function createTrajectories(
     const intervalLengthMeters = orbitLengthMeters / capacity;
     const intervalMillis = intervalLengthMeters / speedMpMs;
     const sceneObject = sceneObjects[
-      sceneObjectIndex[planetPathMappings[cfg.id]]
+      sceneObjectIndex[cfg.pathId]
     ] as PolylineSceneObject;
-    trajectories[cfg.id] = createTrajectory(
+    const trajectory = createTrajectory(
       capacity,
       intervalMillis,
       sceneObject,
     );
+    trajectoryList.push(trajectory);
   }
 
-  return trajectories;
+  return trajectoryList;
 }
 
 function createTrajectory(

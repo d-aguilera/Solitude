@@ -23,6 +23,13 @@ let p2: Point;
 let color: RGB;
 let cssColor: string;
 let textMetrics: TextMetrics;
+let hudLineHeight = 0;
+let hudLineAscent = 0;
+let hudLineDescent = 0;
+let hudLineCount = -1;
+let hudCanvasWidth = -1;
+let hudCanvasHeight = -1;
+const hudRowsScratch: number[] = [];
 
 /**
  * Canvas2D rasterizer.
@@ -95,13 +102,23 @@ export class CanvasRasterizer implements Rasterizer {
 
   drawHud(hud: RenderedHud): void {
     ctx = this.ctx;
-
+    const { width: canvasWidth, height: canvasHeight } = ctx.canvas;
     const hudLength = hud.length;
 
     ctx.font = "16px monospace";
-    const { actualBoundingBoxAscent, actualBoundingBoxDescent }: TextMetrics =
-      ctx.measureText("█");
-    const lineHeight = actualBoundingBoxAscent + actualBoundingBoxDescent;
+    if (
+      hudLineCount !== hudLength ||
+      hudCanvasWidth !== canvasWidth ||
+      hudCanvasHeight !== canvasHeight
+    ) {
+      const metrics = ctx.measureText("█");
+      hudLineAscent = metrics.actualBoundingBoxAscent;
+      hudLineDescent = metrics.actualBoundingBoxDescent;
+      hudLineHeight = hudLineAscent + hudLineDescent;
+      hudLineCount = hudLength;
+      hudCanvasWidth = canvasWidth;
+      hudCanvasHeight = canvasHeight;
+    }
 
     // HUD's location
     const hudLeft = hudMargin;
@@ -110,12 +127,16 @@ export class CanvasRasterizer implements Rasterizer {
     const hudInnerRight = hudRight - hudPadding;
     const hudTop = hudMargin;
     const hudInnerTop = hudTop + hudPadding;
-    const hudHeight = 2 * hudPadding + hudLength * lineHeight;
+    const hudHeight = 2 * hudPadding + hudLength * hudLineHeight;
 
     // Row vertical positions
-    const rows: number[] = hud.map((_, rowIndex) => {
-      return hudInnerTop + rowIndex * lineHeight + actualBoundingBoxAscent;
-    });
+    if (hudRowsScratch.length < hudLength) {
+      hudRowsScratch.length = hudLength;
+    }
+    for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
+      hudRowsScratch[rowIndex] =
+        hudInnerTop + rowIndex * hudLineHeight + hudLineAscent;
+    }
 
     // Clear background
     ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
@@ -125,31 +146,34 @@ export class CanvasRasterizer implements Rasterizer {
     ctx.fillStyle = "white";
 
     const hudCenterLeft = hudInnerLeft + (hudInnerRight - hudInnerLeft) * 0.33;
-    const hudCenterRight =
-      hudInnerLeft + (hudInnerRight - hudInnerLeft) * 0.66;
+    const hudCenterRight = hudInnerLeft + (hudInnerRight - hudInnerLeft) * 0.66;
 
     // Draw right-aligned text
     ctx.textAlign = "right";
     for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
-      ctx.fillText(hud[rowIndex][3], hudInnerRight, rows[rowIndex]);
+      const text = hud[rowIndex][3];
+      if (text) ctx.fillText(text, hudInnerRight, hudRowsScratch[rowIndex]);
     }
 
     // Draw 66% centered text
     ctx.textAlign = "center";
     for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
-      ctx.fillText(hud[rowIndex][2], hudCenterRight, rows[rowIndex]);
+      const text = hud[rowIndex][2];
+      if (text) ctx.fillText(text, hudCenterRight, hudRowsScratch[rowIndex]);
     }
 
     // Draw 33% centered text
     ctx.textAlign = "center";
     for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
-      ctx.fillText(hud[rowIndex][1], hudCenterLeft, rows[rowIndex]);
+      const text = hud[rowIndex][1];
+      if (text) ctx.fillText(text, hudCenterLeft, hudRowsScratch[rowIndex]);
     }
 
     // Draw left-aligned text
     ctx.textAlign = "left";
     for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
-      ctx.fillText(hud[rowIndex][0], hudInnerLeft, rows[rowIndex]);
+      const text = hud[rowIndex][0];
+      if (text) ctx.fillText(text, hudInnerLeft, hudRowsScratch[rowIndex]);
     }
   }
 

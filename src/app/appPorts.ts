@@ -270,10 +270,9 @@ export interface WorldAndScene {
   enemyShip: ShipBody;
   mainShip: ShipBody;
   pilotCamera: DomainCameraPose;
-  planetPathMappings: Record<BodyId, BodyId>;
   scene: Scene;
   topCamera: DomainCameraPose;
-  trajectories: Record<BodyId, Trajectory>;
+  trajectoryList: Trajectory[];
   world: World;
 }
 

@@ -1,4 +1,4 @@
-import type { BodyId, ShipBody } from "../domain/domainPorts.js";
+import type { ShipBody } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import type { SceneState } from "./appInternals.js";
 import type { ControlInput, SceneControlState, Trajectory } from "./appPorts.js";
@@ -13,8 +13,8 @@ export function updateSceneGraph(
   mainShip: ShipBody,
   controlInput: ControlInput,
 ) {
-  const { pilotCamera, topCamera, trajectories } = sceneState;
-  updateTrajectories(dtSimMillis, trajectories);
+  const { pilotCamera, topCamera, trajectoryList } = sceneState;
+  updateTrajectories(dtSimMillis, trajectoryList);
 
   updatePilotLook(dtMillis, controlInput, sceneControlState.pilotLookState);
   updatePilotCameraOffset(
@@ -31,10 +31,10 @@ export function updateSceneGraph(
  */
 function updateTrajectories(
   dtMillis: number,
-  trajectories: Record<BodyId, Trajectory>,
+  trajectoryList: Trajectory[],
 ): void {
-  for (const key of Object.keys(trajectories)) {
-    const trajectory = trajectories[key];
+  for (let i = 0; i < trajectoryList.length; i++) {
+    const trajectory = trajectoryList[i];
     if (trajectory.remainingMillis <= 0) {
       const obj = trajectory.sceneObject;
       const points = obj.mesh.points;

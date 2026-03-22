@@ -1,4 +1,3 @@
-import type { BodyId } from "../domain/domainPorts.js";
 import type { LocalFrame } from "../domain/localFrame.js";
 import type { Mat3 } from "../domain/mat3.js";
 import type { Vec3 } from "../domain/vec3.js";
@@ -16,7 +15,7 @@ export interface ControlledBodyState {
 export interface SceneState {
   pilotCamera: DomainCameraPose;
   topCamera: DomainCameraPose;
-  trajectories: Record<BodyId, Trajectory>;
+  trajectoryList: Trajectory[];
 }
 
 /**

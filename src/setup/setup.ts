@@ -2,12 +2,11 @@ import type {
   PolylineSceneObject,
   RGB,
   Scene,
-  Trajectory,
   WorldAndScene,
   WorldAndSceneConfig,
 } from "../app/appPorts.js";
-import { getShipById, getStarPhysicsById } from "../app/worldLookup.js";
-import type { BodyId, World } from "../domain/domainPorts.js";
+import { getShipById } from "../app/worldLookup.js";
+import type { World } from "../domain/domainPorts.js";
 import { type LocalFrame, localFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3, type Vec3 } from "../domain/vec3.js";
@@ -45,19 +44,7 @@ export function createWorldAndScene({
   const topCamera = { position: vec3.zero(), frame: localFrame.zero() };
   const pilotCamera = { position: vec3.zero(), frame: localFrame.zero() };
 
-  // Derive planet–path relationships
-  const planetPathMappings: Record<BodyId, BodyId> = {};
-  for (const cfg of planetConfigs) {
-    if (cfg.kind !== "planet" || cfg.centralBodyId !== "planet:sun") continue;
-    planetPathMappings[cfg.id] = cfg.pathId;
-  }
-
-  const trajectories: Record<BodyId, Trajectory> = createTrajectories(
-    world,
-    scene,
-    planetConfigs,
-    planetPathMappings,
-  );
+  const trajectoryList = createTrajectories(world, scene, planetConfigs);
 
   // Build initial point lights from star bodies.
   addLightsFromStars(world, scene);
@@ -66,10 +53,9 @@ export function createWorldAndScene({
     enemyShip,
     mainShip,
     pilotCamera,
-    planetPathMappings,
     scene,
     topCamera,
-    trajectories,
+    trajectoryList,
     world,
   };
 }
@@ -99,10 +85,13 @@ export function createPolylineSceneObject(
  * Add point lights on current star bodies.
  */
 function addLightsFromStars(world: World, scene: Scene): void {
-  for (let starBody of world.stars) {
+  const count = world.stars.length;
+  for (let i = 0; i < count; i++) {
+    const starBody = world.stars[i];
+    const starPhysics = world.starPhysics[i];
     scene.lights.push({
       position: starBody.position, // alias
-      intensity: getStarPhysicsById(world, starBody.id).luminosity,
+      intensity: starPhysics.luminosity,
     });
   }
 }

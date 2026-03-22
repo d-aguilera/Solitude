@@ -60,7 +60,7 @@ export function runLoop({
   const sceneState: SceneState = {
     pilotCamera: worldAndScene.pilotCamera,
     topCamera: worldAndScene.topCamera,
-    trajectories: worldAndScene.trajectories,
+    trajectoryList: worldAndScene.trajectoryList,
   };
 
   const tickParams: TickParams = {
