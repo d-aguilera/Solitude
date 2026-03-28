@@ -1,8 +1,8 @@
 import type {
   KeplerianOrbit,
-  PlanetBodyConfig,
-  StarBodyConfig,
-} from "../app/configPorts";
+  PlanetPhysicsConfig,
+  StarPhysicsConfig,
+} from "../app/physicsConfigPorts";
 import type { PlanetPhysics, RotatingBody, World } from "../domain/domainPorts";
 import { mat3, type Mat3 } from "../domain/mat3";
 import { vec3, type Vec3 } from "../domain/vec3";
@@ -13,7 +13,10 @@ import { mutateStateVectorFromKeplerian } from "./kepler";
 const initialStatePositionScratch: Record<string, Vec3> = {};
 const initialStateVelocityScratch: Record<string, Vec3> = {};
 const massByIdScratch: Record<string, number> = {};
-const configByIdScratch: Record<string, PlanetBodyConfig | StarBodyConfig> = {};
+const configByIdScratch: Record<
+  string,
+  PlanetPhysicsConfig | StarPhysicsConfig
+> = {};
 const computingStateScratch: Record<string, boolean> = {};
 
 /**
@@ -28,7 +31,7 @@ const computingStateScratch: Record<string, boolean> = {};
  * evolved using the gravity engine.
  */
 export function addPlanetsAndStarsFromConfig(
-  configs: (PlanetBodyConfig | StarBodyConfig)[],
+  configs: (PlanetPhysicsConfig | StarPhysicsConfig)[],
   world: World,
 ): void {
   // Build lookup tables for configs and masses.
@@ -104,7 +107,7 @@ function computePlanetMass(physicalRadius: number, density: number): number {
  * Initialize lookup tables for configs and derived masses.
  */
 function buildConfigAndMassTables(
-  configs: (PlanetBodyConfig | StarBodyConfig)[],
+  configs: (PlanetPhysicsConfig | StarPhysicsConfig)[],
 ): void {
   // Reset scratch tables (keys are small; simple reassignment is fine).
   for (const key in configByIdScratch) {

@@ -51,9 +51,9 @@ export function runLoop({
   );
 
   const sceneControlState: SceneControlState = {
-    pilotLookState: config.pilotLookState,
-    pilotCameraOffset: config.pilotCameraOffset,
-    topCameraOffset: config.topCameraOffset,
+    pilotLookState: config.render.pilotLookState,
+    pilotCameraOffset: config.render.pilotCameraOffset,
+    topCameraOffset: config.render.topCameraOffset,
   };
 
   const sceneState: SceneState = {

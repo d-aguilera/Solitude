@@ -1,8 +1,12 @@
 import type {
   KeplerianOrbit,
-  PlanetBodyConfig,
-  StarBodyConfig,
-} from "../app/configPorts";
+  PlanetPhysicsConfig,
+  StarPhysicsConfig,
+} from "../app/physicsConfigPorts";
+import type {
+  PlanetRenderConfig,
+  StarRenderConfig,
+} from "../app/renderConfigPorts";
 import type { Trajectory } from "../app/runtimePorts";
 import type { PolylineSceneObject, Scene } from "../app/scenePorts";
 import { getPlanetBodyById } from "../app/worldLookup";
@@ -12,9 +16,18 @@ import { vec3 } from "../domain/vec3";
 export function createTrajectories(
   world: World,
   { objects: sceneObjects }: Scene,
-  planetConfigs: (PlanetBodyConfig | StarBodyConfig)[],
+  planetPhysicsConfigs: (PlanetPhysicsConfig | StarPhysicsConfig)[],
+  planetRenderConfigs: (PlanetRenderConfig | StarRenderConfig)[],
 ) {
   const trajectoryList: Trajectory[] = [];
+
+  const planetPathIdById: Record<string, string> = {};
+  for (let i = 0; i < planetRenderConfigs.length; i++) {
+    const cfg = planetRenderConfigs[i];
+    if (cfg.kind === "planet" && cfg.pathId) {
+      planetPathIdById[cfg.id] = cfg.pathId;
+    }
+  }
 
   // build a scene objects lookup index
   const sceneObjectIndex: Record<BodyId, number> = {};
@@ -34,8 +47,12 @@ export function createTrajectories(
   }
 
   // Build trajectories planets (skip moons)
-  for (const cfg of planetConfigs) {
+  for (const cfg of planetPhysicsConfigs) {
     if (cfg.kind !== "planet" || cfg.centralBodyId !== "planet:sun") continue;
+    const pathId = planetPathIdById[cfg.id];
+    if (!pathId) {
+      throw new Error(`Missing pathId for planet render config: ${cfg.id}`);
+    }
     const body = getPlanetBodyById(world, cfg.id);
     const speedMps = vec3.length(body.velocity);
     const speedMpMs = speedMps / 1000;
@@ -43,9 +60,12 @@ export function createTrajectories(
     const capacity = 360;
     const intervalLengthMeters = orbitLengthMeters / capacity;
     const intervalMillis = intervalLengthMeters / speedMpMs;
-    const sceneObject = sceneObjects[
-      sceneObjectIndex[cfg.pathId]
-    ] as PolylineSceneObject;
+    const sceneObject = sceneObjects[sceneObjectIndex[pathId]] as
+      | PolylineSceneObject
+      | undefined;
+    if (!sceneObject) {
+      throw new Error(`Trajectory scene object not found: ${pathId}`);
+    }
     const trajectory = createTrajectory(capacity, intervalMillis, sceneObject);
     trajectoryList.push(trajectory);
   }

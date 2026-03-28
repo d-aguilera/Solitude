@@ -1,8 +1,8 @@
 import type {
-  PlanetBodyConfig,
-  ShipBodyConfig,
-  StarBodyConfig,
-} from "../app/configPorts.js";
+  PlanetRenderConfig,
+  ShipRenderConfig,
+  StarRenderConfig,
+} from "../app/renderConfigPorts.js";
 import type {
   PlanetSceneObject,
   PolylineSceneObject,
@@ -17,8 +17,8 @@ import type { Vec3 } from "../domain/vec3.js";
 
 export function createSceneFromWorld(
   world: World,
-  planetConfigs: (PlanetBodyConfig | StarBodyConfig)[],
-  shipConfigs: ShipBodyConfig[],
+  planetConfigs: (PlanetRenderConfig | StarRenderConfig)[],
+  shipConfigs: ShipRenderConfig[],
 ): Scene {
   const scene: Scene = {
     objects: [],
@@ -35,11 +35,12 @@ export function createSceneFromWorld(
 function addPlanetsAndStarsSceneObjects(
   scene: Scene,
   world: World,
-  configs: (PlanetBodyConfig | StarBodyConfig)[],
+  configs: (PlanetRenderConfig | StarRenderConfig)[],
 ): void {
   for (const cfg of configs) {
     if (cfg.kind === "star") {
       const starBody = getById(world.stars, cfg.id, "Star");
+      const starPhysics = getById(world.starPhysics, cfg.id, "Star physics");
       const sceneObj: StarSceneObject = {
         id: cfg.id,
         kind: "star",
@@ -52,7 +53,7 @@ function addPlanetsAndStarsSceneObjects(
         wireframeOnly: false,
         backFaceCulling: true,
         velocity: starBody.velocity, // alias
-        luminosity: cfg.luminosity,
+        luminosity: starPhysics.luminosity,
       };
       scene.objects.push(sceneObj);
     } else {
@@ -72,7 +73,7 @@ function addPlanetsAndStarsSceneObjects(
       };
       scene.objects.push(sceneObj);
 
-      if (cfg.centralBodyId === "planet:sun") {
+      if (cfg.pathId) {
         scene.objects.push(
           createPolylineSceneObject(cfg.pathId, planetBody.position, cfg.color),
         );
@@ -84,7 +85,7 @@ function addPlanetsAndStarsSceneObjects(
 function addShipSceneObjects(
   scene: Scene,
   world: World,
-  configs: ShipBodyConfig[],
+  configs: ShipRenderConfig[],
 ): void {
   for (const cfg of configs) {
     const shipBody = getById(world.ships, cfg.id, "Ship");

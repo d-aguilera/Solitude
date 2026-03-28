@@ -1,4 +1,8 @@
-import type { ShipBodyConfig } from "../app/configPorts.js";
+import type {
+  ShipPhysicsConfig,
+  ShipRenderConfig,
+} from "../app/configPorts.js";
+import { computeVolumeOfTriangleMesh } from "../domain/meshVolume.js";
 import { km } from "../domain/units.js";
 import { vec3 } from "../domain/vec3.js";
 import { colors } from "./colors.js";
@@ -9,7 +13,10 @@ const SHIP_DENSITY_KG_PER_M3 = 2700; // used for mass calculation
 const SHIP_START_ALTITUDE_M = 100 * km; // above Earth's north pole
 const EARTH_RADIUS = 6_371 * km;
 
-export function buildDefaultShipConfigs(): ShipBodyConfig[] {
+export function buildDefaultShipConfigs(): {
+  physics: ShipPhysicsConfig[];
+  render: ShipRenderConfig[];
+} {
   const shipPoints = shipModel.points.map(vec3.clone);
   for (let p of shipPoints) {
     vec3.scaleInto(p, 150_000, p);
@@ -20,30 +27,46 @@ export function buildDefaultShipConfigs(): ShipBodyConfig[] {
     vec3.scaleInto(p, 150_000, p);
   }
 
-  return [
+  const shipMesh = {
+    faces: shipModel.faces, // safe to alias here
+    points: shipPoints,
+  };
+  const enemyMesh = {
+    faces: shipModel.faces, // safe to alias here
+    points: enemyPoints,
+  };
+
+  const physics: ShipPhysicsConfig[] = [
     {
       altitude: SHIP_START_ALTITUDE_M,
-      color: colors.ship,
       homePlanetId: "planet:earth",
       id: "ship:main",
       density: SHIP_DENSITY_KG_PER_M3,
-      mesh: {
-        faces: shipModel.faces, // safe to alias here
-        points: shipPoints,
-      },
+      volume: computeVolumeOfTriangleMesh(shipMesh.points, shipMesh.faces),
     },
     {
       altitude: -2 * EARTH_RADIUS - SHIP_START_ALTITUDE_M, // opposite side
-      color: colors.enemyShip,
       homePlanetId: "planet:earth",
       id: "ship:enemy",
       density: SHIP_DENSITY_KG_PER_M3,
-      mesh: {
-        faces: shipModel.faces, // safe to alias here
-        points: enemyPoints,
-      },
+      volume: computeVolumeOfTriangleMesh(enemyMesh.points, enemyMesh.faces),
     },
   ];
+
+  const render: ShipRenderConfig[] = [
+    {
+      id: "ship:main",
+      color: colors.ship,
+      mesh: shipMesh,
+    },
+    {
+      id: "ship:enemy",
+      color: colors.enemyShip,
+      mesh: enemyMesh,
+    },
+  ];
+
+  return { physics, render };
 }
 
 const shipModel = parseObjMesh(shipObjText);

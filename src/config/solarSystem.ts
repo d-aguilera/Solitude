@@ -1,8 +1,12 @@
 import type {
   KeplerianOrbit,
-  PlanetBodyConfig,
-  StarBodyConfig,
-} from "../app/configPorts.js";
+  PlanetPhysicsConfig,
+  StarPhysicsConfig,
+} from "../app/physicsConfigPorts.js";
+import type {
+  PlanetRenderConfig,
+  StarRenderConfig,
+} from "../app/renderConfigPorts.js";
 import type { Mesh } from "../app/scenePorts.js";
 import { AU, km } from "../domain/units.js";
 import { vec3, type Vec3 } from "../domain/vec3.js";
@@ -228,13 +232,17 @@ function buildOrbit(
  *
  * All distances and radii are in meters.
  */
-export function buildDefaultSolarSystemConfigs(): (
-  | PlanetBodyConfig
-  | StarBodyConfig
-)[] {
+type SolarBodyConfig =
+  | (PlanetPhysicsConfig & PlanetRenderConfig)
+  | (StarPhysicsConfig & StarRenderConfig);
+
+export function buildDefaultSolarSystemConfigs(): {
+  physics: (PlanetPhysicsConfig | StarPhysicsConfig)[];
+  render: (PlanetRenderConfig | StarRenderConfig)[];
+} {
   const sunId = "planet:sun";
 
-  const configs: (PlanetBodyConfig | StarBodyConfig)[] = [
+  const configs: SolarBodyConfig[] = [
     {
       id: sunId,
       kind: "star",
@@ -477,7 +485,50 @@ export function buildDefaultSolarSystemConfigs(): (
     },
   ];
 
-  return configs;
+  const physics: (PlanetPhysicsConfig | StarPhysicsConfig)[] = [];
+  const render: (PlanetRenderConfig | StarRenderConfig)[] = [];
+
+  for (const cfg of configs) {
+    if (cfg.kind === "star") {
+      physics.push({
+        id: cfg.id,
+        kind: "star",
+        orbit: cfg.orbit,
+        physicalRadius: cfg.physicalRadius,
+        density: cfg.density,
+        centralBodyId: cfg.centralBodyId,
+        obliquityRad: cfg.obliquityRad,
+        angularSpeedRadPerSec: cfg.angularSpeedRadPerSec,
+        luminosity: cfg.luminosity,
+      });
+      render.push({
+        id: cfg.id,
+        kind: "star",
+        color: cfg.color,
+        mesh: cfg.mesh,
+      });
+    } else {
+      physics.push({
+        id: cfg.id,
+        kind: "planet",
+        orbit: cfg.orbit,
+        physicalRadius: cfg.physicalRadius,
+        density: cfg.density,
+        centralBodyId: cfg.centralBodyId,
+        obliquityRad: cfg.obliquityRad,
+        angularSpeedRadPerSec: cfg.angularSpeedRadPerSec,
+      });
+      render.push({
+        id: cfg.id,
+        kind: "planet",
+        pathId: cfg.centralBodyId === sunId ? cfg.pathId : undefined,
+        color: cfg.color,
+        mesh: cfg.mesh,
+      });
+    }
+  }
+
+  return { physics, render };
 }
 
 const icosahedronModel = parseObjMesh(icoObjText);

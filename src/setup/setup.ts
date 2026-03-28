@@ -15,8 +15,8 @@ export const initialFrame: LocalFrame = localFrame.fromUp(vec3.create(0, 0, 1));
 export function createWorldAndScene({
   enemyShipId,
   mainShipId,
-  planets: planetConfigs,
-  ships: shipConfigs,
+  physics,
+  render,
 }: WorldAndSceneConfig): WorldAndScene {
   const world: World = {
     ships: [],
@@ -27,17 +27,26 @@ export function createWorldAndScene({
     starPhysics: [],
   };
 
-  addPlanetsAndStarsFromConfig(planetConfigs, world);
-  addShipsFromConfig(shipConfigs, world);
+  addPlanetsAndStarsFromConfig(physics.planets, world);
+  addShipsFromConfig(physics.ships, world);
 
-  const scene: Scene = createSceneFromWorld(world, planetConfigs, shipConfigs);
+  const scene: Scene = createSceneFromWorld(
+    world,
+    render.planets,
+    render.ships,
+  );
 
   const enemyShip = getShipById(world, enemyShipId);
   const mainShip = getShipById(world, mainShipId);
   const topCamera = { position: vec3.zero(), frame: localFrame.zero() };
   const pilotCamera = { position: vec3.zero(), frame: localFrame.zero() };
 
-  const trajectoryList = createTrajectories(world, scene, planetConfigs);
+  const trajectoryList = createTrajectories(
+    world,
+    scene,
+    physics.planets,
+    render.planets,
+  );
 
   return {
     enemyShip,

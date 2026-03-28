@@ -1,15 +1,14 @@
-import type { ShipBodyConfig } from "../app/configPorts";
+import type { ShipPhysicsConfig } from "../app/physicsConfigPorts";
 import type { ShipBody, ShipPhysics, World } from "../domain/domainPorts";
 import { localFrame, type LocalFrame } from "../domain/localFrame";
 import { mat3 } from "../domain/mat3";
-import { computeVolumeOfTriangleMesh } from "../domain/meshVolume";
 import { circularSpeedAtRadius } from "../domain/phys";
 import { vec3, type Vec3 } from "../domain/vec3";
 import { initialFrame } from "./setup";
 
 const axisScratch = vec3.zero();
 
-export function addShipsFromConfig(configs: ShipBodyConfig[], world: World) {
+export function addShipsFromConfig(configs: ShipPhysicsConfig[], world: World) {
   for (let config of configs) {
     const { shipBody, shipPhysics } = createShip(config, world);
     world.ships.push(shipBody);
@@ -18,7 +17,7 @@ export function addShipsFromConfig(configs: ShipBodyConfig[], world: World) {
 }
 
 function createShip(
-  { altitude, homePlanetId, id, density, mesh }: ShipBodyConfig,
+  { altitude, homePlanetId, id, density, volume }: ShipPhysicsConfig,
   world: World,
 ): { shipBody: ShipBody; shipPhysics: ShipPhysics } {
   const planetIndex = world.planets.findIndex(
@@ -29,8 +28,6 @@ function createShip(
   }
   const planetObj = world.planets[planetIndex];
   const planetPhys = world.planetPhysics[planetIndex];
-  const volume = computeVolumeOfTriangleMesh(mesh.points, mesh.faces);
-
   const shipPhysics: ShipPhysics = {
     id,
     density,
