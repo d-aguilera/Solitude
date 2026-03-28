@@ -20,6 +20,7 @@ import type {
 } from "../render/renderPorts.js";
 import { createSceneAndTrajectories } from "../setup/sceneSetup.js";
 import { createWorld } from "../setup/setup.js";
+import { buildTrajectoryPlan } from "../setup/trajectoryPlan.js";
 import { updateFps } from "./fps.js";
 import type { RunLoopParams } from "./infraPorts.js";
 import { handlePauseToggle } from "./pause.js";
@@ -45,9 +46,15 @@ export function runLoop({
   profilerController,
 }: RunLoopParams): void {
   const worldSetup = createWorld(config);
+  const trajectoryPlan = buildTrajectoryPlan(
+    worldSetup.world,
+    config.physics.planets,
+    config.render.planets,
+  );
   const { scene, trajectoryList } = createSceneAndTrajectories(
     worldSetup.world,
     config,
+    trajectoryPlan,
   );
   const worldAndScene: WorldAndScene = {
     ...worldSetup,

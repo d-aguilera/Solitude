@@ -3,7 +3,8 @@ import type { Trajectory } from "../app/runtimePorts.js";
 import type { Scene } from "../app/scenePorts.js";
 import type { World } from "../domain/domainPorts.js";
 import { createSceneFromWorld } from "../render/sceneAdapter.js";
-import { createTrajectories } from "./setupTrajectories.js";
+import { bindTrajectoryPlanToScene } from "./trajectoryBind.js";
+import type { TrajectoryPlan } from "./trajectoryPlan.js";
 
 export interface SceneSetup {
   scene: Scene;
@@ -13,6 +14,7 @@ export interface SceneSetup {
 export function createSceneAndTrajectories(
   world: World,
   config: WorldAndSceneConfig,
+  trajectoryPlan: TrajectoryPlan[],
 ): SceneSetup {
   const scene: Scene = createSceneFromWorld(
     world,
@@ -20,12 +22,7 @@ export function createSceneAndTrajectories(
     config.render.ships,
   );
 
-  const trajectoryList = createTrajectories(
-    world,
-    scene,
-    config.physics.planets,
-    config.render.planets,
-  );
+  const trajectoryList = bindTrajectoryPlanToScene(scene, trajectoryPlan);
 
   return { scene, trajectoryList };
 }
