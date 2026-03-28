@@ -4,7 +4,7 @@ import type {
   RGB,
   Scene,
   SceneObject,
-} from "../app/appPorts.js";
+} from "../app/scenePorts.js";
 import type { ShipBody } from "../domain/domainPorts.js";
 import type { OrbitReadout } from "../domain/orbit.js";
 import type { Vec3 } from "../domain/vec3.js";

@@ -3,8 +3,8 @@ import type {
   ControlInput,
   EnvAction,
   EnvInput,
-} from "../app/appPorts.js";
-import { ALL_CONTROL_ACTIONS, ALL_ENV_ACTIONS } from "../app/appPorts.js";
+} from "../app/controlPorts.js";
+import { ALL_CONTROL_ACTIONS, ALL_ENV_ACTIONS } from "../app/controlPorts.js";
 
 /**
  * Initialize keyboard listeners and keep the actions state updated.

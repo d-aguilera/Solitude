@@ -1,16 +1,14 @@
 import type {
-  CelestialBodySceneObject,
   KeplerianOrbit,
   PlanetBodyConfig,
+  StarBodyConfig,
+} from "../app/configPorts";
+import type {
+  CelestialBodySceneObject,
   PlanetSceneObject,
   Scene,
-  StarBodyConfig,
-} from "../app/appPorts";
-import type {
-  PlanetPhysics,
-  RotatingBody,
-  World,
-} from "../domain/domainPorts";
+} from "../app/scenePorts";
+import type { PlanetPhysics, RotatingBody, World } from "../domain/domainPorts";
 import { mat3, type Mat3 } from "../domain/mat3";
 import { vec3, type Vec3 } from "../domain/vec3";
 import { parameters } from "../global/parameters";

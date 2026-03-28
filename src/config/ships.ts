@@ -1,4 +1,4 @@
-import type { ShipBodyConfig } from "../app/appPorts.js";
+import type { ShipBodyConfig } from "../app/configPorts.js";
 import { km } from "../domain/units.js";
 import { vec3 } from "../domain/vec3.js";
 import { colors } from "./colors.js";

@@ -1,4 +1,4 @@
-import type { WorldAndSceneConfig } from "../app/appPorts.js";
+import type { WorldAndSceneConfig } from "../app/configPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import { buildDefaultShipConfigs } from "./ships.js";
 import { buildDefaultSolarSystemConfigs } from "./solarSystem.js";

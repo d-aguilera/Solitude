@@ -1,4 +1,4 @@
-import type { WorldAndSceneConfig } from "../app/appPorts.js";
+import type { WorldAndSceneConfig } from "../app/configPorts.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { parameters } from "../global/parameters.js";
 import { profilerController } from "../global/profiling.js";

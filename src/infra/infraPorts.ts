@@ -1,8 +1,5 @@
-import type {
-  ControlInput,
-  EnvInput,
-  WorldAndSceneConfig,
-} from "../app/appPorts";
+import type { WorldAndSceneConfig } from "../app/configPorts";
+import type { ControlInput, EnvInput } from "../app/controlPorts";
 import type { GravityEngine } from "../domain/domainPorts";
 import type {
   HudRenderer,

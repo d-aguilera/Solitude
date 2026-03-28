@@ -1,12 +1,13 @@
 import type { World } from "../domain/domainPorts.js";
 import { type LocalFrame, localFrame } from "../domain/localFrame.js";
 import type { ControlledBodyState, SimControlState } from "./appInternals.js";
-import type { ControlInput, PilotLookState } from "./appPorts.js";
 import {
+  alignFrameToDirection,
   getDominantBodyDirection,
   getVelocityDirection,
-  alignFrameToDirection,
 } from "./autoPilot.js";
+import type { ControlInput } from "./controlPorts.js";
+import type { PilotLookState } from "./scenePorts.js";
 
 // Max thrust acceleration in m/s^2 at 100% thrust
 export const maxThrustAcceleration = 1_000_000; // ~ 100_000 G

@@ -1,9 +1,11 @@
 import type { ShipBody } from "../domain/domainPorts.js";
 import { vec3 } from "../domain/vec3.js";
 import type { SceneState } from "./appInternals.js";
-import type { ControlInput, SceneControlState, Trajectory } from "./appPorts.js";
 import { updateCameras, updatePilotCameraOffset } from "./cameras.js";
+import type { ControlInput } from "./controlPorts.js";
 import { updatePilotLook } from "./controls.js";
+import type { Trajectory } from "./runtimePorts.js";
+import type { SceneControlState } from "./scenePorts.js";
 
 export function updateSceneGraph(
   dtMillis: number,

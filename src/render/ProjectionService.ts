@@ -1,4 +1,4 @@
-import type { DomainCameraPose } from "../app/appPorts.js";
+import type { DomainCameraPose } from "../app/scenePorts.js";
 import { localFrame } from "../domain/localFrame.js";
 import { type Mat3, mat3 } from "../domain/mat3.js";
 import { type Vec3, vec3 } from "../domain/vec3.js";

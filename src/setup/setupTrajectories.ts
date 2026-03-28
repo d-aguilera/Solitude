@@ -1,11 +1,10 @@
 import type {
   KeplerianOrbit,
   PlanetBodyConfig,
-  PolylineSceneObject,
-  Scene,
   StarBodyConfig,
-  Trajectory,
-} from "../app/appPorts";
+} from "../app/configPorts";
+import type { Trajectory } from "../app/runtimePorts";
+import type { PolylineSceneObject, Scene } from "../app/scenePorts";
 import { getPlanetBodyById } from "../app/worldLookup";
 import type { BodyId, World } from "../domain/domainPorts";
 import { vec3 } from "../domain/vec3";
@@ -30,11 +29,7 @@ export function createTrajectories(
     const sceneObject = sceneObjects[
       sceneObjectIndex["path:" + ship.id]
     ] as PolylineSceneObject;
-    const trajectory = createTrajectory(
-      capacity,
-      intervalMillis,
-      sceneObject,
-    );
+    const trajectory = createTrajectory(capacity, intervalMillis, sceneObject);
     trajectoryList.push(trajectory);
   }
 
@@ -51,11 +46,7 @@ export function createTrajectories(
     const sceneObject = sceneObjects[
       sceneObjectIndex[cfg.pathId]
     ] as PolylineSceneObject;
-    const trajectory = createTrajectory(
-      capacity,
-      intervalMillis,
-      sceneObject,
-    );
+    const trajectory = createTrajectory(capacity, intervalMillis, sceneObject);
     trajectoryList.push(trajectory);
   }
 

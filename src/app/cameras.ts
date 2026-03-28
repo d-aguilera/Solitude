@@ -1,11 +1,8 @@
 import type { ShipBody } from "../domain/domainPorts.js";
 import { type LocalFrame, localFrame } from "../domain/localFrame.js";
 import { type Vec3, vec3 } from "../domain/vec3.js";
-import type {
-  ControlInput,
-  DomainCameraPose,
-  SceneControlState,
-} from "./appPorts.js";
+import type { ControlInput } from "./controlPorts.js";
+import type { DomainCameraPose, SceneControlState } from "./scenePorts.js";
 
 // Scratch
 const offsetRightScratch: Vec3 = vec3.zero();

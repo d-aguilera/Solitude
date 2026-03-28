@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { DomainCameraPose } from "../../app/appPorts.js";
+import type { DomainCameraPose } from "../../app/scenePorts.js";
 import { vec3, type Vec3 } from "../../domain/vec3.js";
 import { ProjectionService } from "../ProjectionService.js";
 

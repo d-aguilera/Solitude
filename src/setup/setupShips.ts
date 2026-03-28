@@ -1,4 +1,5 @@
-import type { Scene, ShipBodyConfig, ShipSceneObject } from "../app/appPorts";
+import type { ShipBodyConfig } from "../app/configPorts";
+import type { Scene, ShipSceneObject } from "../app/scenePorts";
 import type { ShipBody, ShipPhysics, World } from "../domain/domainPorts";
 import { localFrame, type LocalFrame } from "../domain/localFrame";
 import { mat3 } from "../domain/mat3";
@@ -201,9 +202,7 @@ function computeOrbitVelocity(
 
   if (!hasTangential) {
     const fallbackAxis =
-      Math.abs(radialDir.z) < 0.9
-        ? vec3.create(0, 0, 1)
-        : vec3.create(1, 0, 0);
+      Math.abs(radialDir.z) < 0.9 ? vec3.create(0, 0, 1) : vec3.create(1, 0, 0);
     const tangential = vec3.crossInto(vec3.zero(), fallbackAxis, radialDir);
     vec3.normalizeInto(tangential);
     tangentialDir = tangential;

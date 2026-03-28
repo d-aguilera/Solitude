@@ -1,4 +1,4 @@
-import type { PolylineSceneObject, SceneObject } from "../app/appPorts.js";
+import type { PolylineSceneObject, SceneObject } from "../app/scenePorts.js";
 import type { Vec3 } from "../domain/vec3.js";
 import type { NdcPoint } from "./ndc.js";
 import { ProjectionService } from "./ProjectionService.js";

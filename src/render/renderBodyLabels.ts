@@ -2,7 +2,7 @@ import type {
   PlanetSceneObject,
   SceneObject,
   StarSceneObject,
-} from "../app/appPorts.js";
+} from "../app/scenePorts.js";
 import type { BodyId } from "../domain/domainPorts.js";
 import { type Vec3, vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
@@ -14,8 +14,8 @@ import type {
   Size,
   TextMetrics,
 } from "./renderPorts.js";
-import { sortRangeInPlace } from "./sortRange.js";
 import { scrn } from "./scrn.js";
+import { sortRangeInPlace } from "./sortRange.js";
 
 type SortedScratchItem = {
   body: PlanetSceneObject | StarSceneObject;

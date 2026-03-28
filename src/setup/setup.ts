@@ -1,10 +1,6 @@
-import type {
-  PolylineSceneObject,
-  RGB,
-  Scene,
-  WorldAndScene,
-  WorldAndSceneConfig,
-} from "../app/appPorts.js";
+import type { WorldAndSceneConfig } from "../app/configPorts.js";
+import type { WorldAndScene } from "../app/runtimePorts.js";
+import type { PolylineSceneObject, RGB, Scene } from "../app/scenePorts.js";
 import { getShipById } from "../app/worldLookup.js";
 import type { World } from "../domain/domainPorts.js";
 import { type LocalFrame, localFrame } from "../domain/localFrame.js";

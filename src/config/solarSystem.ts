@@ -1,9 +1,9 @@
 import type {
   KeplerianOrbit,
-  Mesh,
   PlanetBodyConfig,
   StarBodyConfig,
-} from "../app/appPorts.js";
+} from "../app/configPorts.js";
+import type { Mesh } from "../app/scenePorts.js";
 import { AU, km } from "../domain/units.js";
 import { vec3, type Vec3 } from "../domain/vec3.js";
 import { colors } from "./colors.js";

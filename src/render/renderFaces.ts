@@ -4,18 +4,18 @@ import type {
   RGB,
   Scene,
   SceneObject,
-} from "../app/appPorts.js";
+} from "../app/scenePorts.js";
 import { mat3 } from "../domain/mat3.js";
 import { AU } from "../domain/units.js";
 import { type Vec3, vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";
+import { isBodyAtOrBeyondOnePixelThreshold } from "./bodyLod.js";
 import { type NdcPoint, ndc } from "./ndc.js";
 import { ProjectionService } from "./ProjectionService.js";
-import { isBodyAtOrBeyondOnePixelThreshold } from "./bodyLod.js";
 import type { RenderedFace } from "./renderPorts.js";
 import { toRenderable } from "./renderPrep.js";
-import { sortRangeInPlace } from "./sortRange.js";
 import { type ScreenPoint, scrn } from "./scrn.js";
+import { sortRangeInPlace } from "./sortRange.js";
 
 // E = I / (4π r²) at 1 AU from the Sun.
 const SUN_LUMINOSITY = 3.828e26; // W
@@ -106,7 +106,9 @@ function buildFaces(
     objects.forEach((obj) => {
       if (obj.wireframeOnly) return;
       if (objectsFilter && !objectsFilter(obj)) return;
-      if (isBodyAtOrBeyondOnePixelThreshold(obj, projectionService, canvasHeight))
+      if (
+        isBodyAtOrBeyondOnePixelThreshold(obj, projectionService, canvasHeight)
+      )
         return;
 
       const { mesh, worldPoints, baseColor } = toRenderable(obj);

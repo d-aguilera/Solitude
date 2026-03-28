@@ -1,4 +1,4 @@
-import type { RGB } from "../../app/appPorts.js";
+import type { RGB } from "../../app/scenePorts.js";
 import { rgbToCss } from "../../render/color.js";
 import type {
   Point,

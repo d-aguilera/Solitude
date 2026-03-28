@@ -1,14 +1,13 @@
 import type { SceneState } from "../app/appInternals.js";
+import { createTickHandler } from "../app/game.js";
 import type {
-  SceneControlState,
-  SceneObject,
   TickCallback,
   TickOutput,
   TickParams,
   WorldAndScene,
-} from "../app/appPorts.js";
-import { createTickHandler } from "../app/game.js";
+} from "../app/runtimePorts.js";
 import { updateSceneGraph } from "../app/scene.js";
+import type { SceneControlState, SceneObject } from "../app/scenePorts.js";
 import { computeShipOrbitReadout } from "../domain/orbit.js";
 import { vec3 } from "../domain/vec3.js";
 import { parameters } from "../global/parameters.js";

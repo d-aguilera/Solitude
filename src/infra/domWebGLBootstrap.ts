@@ -1,4 +1,4 @@
-import type { WorldAndSceneConfig } from "../app/appPorts.js";
+import type { WorldAndSceneConfig } from "../app/configPorts.js";
 import { WebGLRasterizer } from "../rasterize/webgl/WebGLRasterizer.js";
 import { WebGLSurface } from "../rasterize/webgl/WebGLSurface.js";
 import type { Rasterizer, RenderSurface2D } from "../render/renderPorts.js";

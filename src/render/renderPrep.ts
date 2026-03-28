@@ -3,7 +3,7 @@ import type {
   SceneObject,
   ShipSceneObject,
   StarSceneObject,
-} from "../app/appPorts.js";
+} from "../app/scenePorts.js";
 import { mat3 } from "../domain/mat3.js";
 import { type Vec3, vec3 } from "../domain/vec3.js";
 import { alloc } from "../global/allocProfiler.js";

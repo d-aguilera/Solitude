@@ -2,7 +2,7 @@ import type {
   PlanetSceneObject,
   SceneObject,
   StarSceneObject,
-} from "../app/appPorts.js";
+} from "../app/scenePorts.js";
 import { ProjectionService } from "./ProjectionService.js";
 import { getBodyDiameterWorld } from "./bodyDiameterCache.js";
 
@@ -18,10 +18,15 @@ export function isBodyAtOrBeyondOnePixelThreshold(
 ): boolean {
   if (obj.kind !== "planet" && obj.kind !== "star") return false;
 
-  const centerDepth = projectionService.getCameraDepthForWorldPoint(obj.position);
+  const centerDepth = projectionService.getCameraDepthForWorldPoint(
+    obj.position,
+  );
   if (!Number.isFinite(centerDepth) || centerDepth <= 0) return false;
 
-  return centerDepth >= getOnePixelDepthForObject(obj, projectionService, screenHeight);
+  return (
+    centerDepth >=
+    getOnePixelDepthForObject(obj, projectionService, screenHeight)
+  );
 }
 
 function getOnePixelDepthForObject(
