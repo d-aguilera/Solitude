@@ -17,11 +17,16 @@ export interface WorldSetup {
   world: World;
 }
 
+export type WorldConfigBase = Pick<
+  WorldAndSceneConfig,
+  "enemyShipId" | "mainShipId" | "physics"
+>;
+
 export function createWorld({
   enemyShipId,
   mainShipId,
   physics,
-}: WorldAndSceneConfig): WorldSetup {
+}: WorldConfigBase): WorldSetup {
   const world: World = {
     ships: [],
     shipPhysics: [],
@@ -46,4 +51,11 @@ export function createWorld({
     topCamera,
     world,
   };
+}
+
+/**
+ * Headless world constructor intended for tests and non-rendered runs.
+ */
+export function createHeadlessWorld(config: WorldConfigBase): WorldSetup {
+  return createWorld(config);
 }
