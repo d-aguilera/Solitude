@@ -18,7 +18,8 @@ import type {
   RenderedView,
   ViewRenderParams,
 } from "../render/renderPorts.js";
-import { createWorldAndScene } from "../setup/setup.js";
+import { createSceneAndTrajectories } from "../setup/sceneSetup.js";
+import { createWorld } from "../setup/setup.js";
 import { updateFps } from "./fps.js";
 import type { RunLoopParams } from "./infraPorts.js";
 import { handlePauseToggle } from "./pause.js";
@@ -43,7 +44,16 @@ export function runLoop({
   envInput,
   profilerController,
 }: RunLoopParams): void {
-  const worldAndScene: WorldAndScene = createWorldAndScene(config);
+  const worldSetup = createWorld(config);
+  const { scene, trajectoryList } = createSceneAndTrajectories(
+    worldSetup.world,
+    config,
+  );
+  const worldAndScene: WorldAndScene = {
+    ...worldSetup,
+    scene,
+    trajectoryList,
+  };
   const tickInto: TickCallback = createTickHandler(
     gravityEngine,
     config.thrustLevel,

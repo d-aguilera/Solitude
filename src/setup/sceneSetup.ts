@@ -1,0 +1,31 @@
+import type { WorldAndSceneConfig } from "../app/configPorts.js";
+import type { Trajectory } from "../app/runtimePorts.js";
+import type { Scene } from "../app/scenePorts.js";
+import type { World } from "../domain/domainPorts.js";
+import { createSceneFromWorld } from "../render/sceneAdapter.js";
+import { createTrajectories } from "./setupTrajectories.js";
+
+export interface SceneSetup {
+  scene: Scene;
+  trajectoryList: Trajectory[];
+}
+
+export function createSceneAndTrajectories(
+  world: World,
+  config: WorldAndSceneConfig,
+): SceneSetup {
+  const scene: Scene = createSceneFromWorld(
+    world,
+    config.render.planets,
+    config.render.ships,
+  );
+
+  const trajectoryList = createTrajectories(
+    world,
+    scene,
+    config.physics.planets,
+    config.render.planets,
+  );
+
+  return { scene, trajectoryList };
+}
