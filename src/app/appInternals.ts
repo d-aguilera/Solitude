@@ -9,6 +9,7 @@ import type { DomainCameraPose, Trajectory } from "./appPorts.js";
 export interface ControlledBodyState {
   frame: LocalFrame;
   orientation: Mat3;
+  position: Vec3;
   velocity: Vec3;
 }
 

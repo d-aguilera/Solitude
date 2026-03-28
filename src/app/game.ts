@@ -1,8 +1,6 @@
 import { resolveCollisions } from "../domain/collisions.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
-import { getDominantBody } from "../domain/orbit.js";
-import { type Vec3, vec3 } from "../domain/vec3.js";
 import type { SimControlState } from "./appInternals.js";
 import type {
   TickCallback,
@@ -13,8 +11,7 @@ import type {
 import type { ThrustCommand } from "./controls.js";
 import {
   updateControlState,
-  updateFrameAlignToVelocity,
-  updateShipOrientationFromControls,
+  updateShipOrientationFromInput,
 } from "./controls.js";
 import { applyCelestialSpin, applyGravity, applyThrust } from "./physics.js";
 
@@ -27,8 +24,6 @@ export function createTickHandler(
   worldAndScene: WorldAndScene,
 ): TickCallback {
   let thrustCommand: ThrustCommand;
-  let alignTargetDirection: Vec3 | null = null;
-  const alignTargetScratch = vec3.zero();
 
   const simControlState: SimControlState = {
     alignToVelocity: false,
@@ -46,34 +41,14 @@ export function createTickHandler(
 
     thrustCommand = updateControlState(controlInput, simControlState);
 
-    alignTargetDirection = null;
-    if (controlInput.alignToBody) {
-      const primary = getDominantBody(
-        worldAndScene.world,
-        worldAndScene.mainShip.position,
-      );
-      if (primary) {
-        vec3.subInto(
-          alignTargetScratch,
-          primary.position,
-          worldAndScene.mainShip.position,
-        );
-        if (vec3.lengthSq(alignTargetScratch) > 0) {
-          alignTargetDirection = alignTargetScratch;
-        }
-      }
-    }
-
-    updateShipOrientationFromControls(
+    updateShipOrientationFromInput(
       dtMillis,
       worldAndScene.mainShip,
       controlInput,
       simControlState,
-      alignTargetDirection,
+      worldAndScene.world,
     );
     applyThrust(dtMillis, worldAndScene.mainShip, thrustCommand);
-    updateFrameAlignToVelocity(dtMillis, worldAndScene.enemyShip);
-
     applyGravity(dtMillisSim, gravityEngine, gravityState);
     resolveCollisions(worldAndScene.world);
     applyCelestialSpin(dtMillisSim, worldAndScene.world);

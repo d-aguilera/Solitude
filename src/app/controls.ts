@@ -1,7 +1,12 @@
+import type { World } from "../domain/domainPorts.js";
 import { type LocalFrame, localFrame } from "../domain/localFrame.js";
-import { type Vec3, vec3 } from "../domain/vec3.js";
 import type { ControlledBodyState, SimControlState } from "./appInternals.js";
 import type { ControlInput, PilotLookState } from "./appPorts.js";
+import {
+  getDominantBodyDirection,
+  getVelocityDirection,
+  alignFrameToDirection,
+} from "./autoPilot.js";
 
 // Max thrust acceleration in m/s^2 at 100% thrust
 export const maxThrustAcceleration = 1_000_000; // ~ 100_000 G
@@ -11,9 +16,6 @@ const lookSpeed = 0.0015;
 const rotSpeedRoll = 0.001;
 const rotSpeedPitch = 0.0008;
 const rotSpeedYaw = 0.0005;
-
-// Max rate at which the ship can reorient itself toward its velocity vector.
-const alignToVelocityMaxAngularSpeed = 0.0007; // rad/ms
 
 const shipThrustExponent = 3; // [0..9] ^ 3
 const shipThrustMaxPow = Math.pow(9, shipThrustExponent);
@@ -32,8 +34,8 @@ export function updateControlState(
   controlState: SimControlState,
 ): ThrustCommand {
   updateThrustLevelFromInput(controlInput, controlState);
-  updateAlignToVelocityFromInput(controlInput, controlState);
-  updateAlignToBodyFromInput(controlInput, controlState);
+  controlState.alignToVelocity = controlInput.alignToVelocity;
+  controlState.alignToBody = controlInput.alignToBody;
   return getThrustCommand(controlInput, controlState);
 }
 
@@ -148,11 +150,12 @@ function getThrustCommand(
   controlInput: ControlInput,
   controlState: SimControlState,
 ): ThrustCommand {
+  const { burnBackwards, burnForward, burnLeft, burnRight } = controlInput;
   const mag = shipThrustValues[controlState.thrustLevel];
-  const forward = controlInput.burnForward ? mag : 0;
-  const backward = controlInput.burnBackwards ? mag : 0;
-  const left = controlInput.burnLeft ? mag : 0;
-  const right = controlInput.burnRight ? mag : 0;
+  const forward = burnForward ? mag : 0;
+  const backward = burnBackwards ? mag : 0;
+  const left = burnLeft ? mag : 0;
+  const right = burnRight ? mag : 0;
 
   return {
     forward: forward - backward,
@@ -170,12 +173,12 @@ function getThrustCommand(
  *  - the body's LocalFrame based on roll/pitch/yaw input
  *  - the body's LocalFrame when aligning to velocity is requested
  */
-export function updateShipOrientationFromControls(
+export function updateShipOrientationFromInput(
   dtMillis: number,
   ship: ControlledBodyState,
   controlInput: ControlInput,
   controlState: SimControlState,
-  alignTargetDirection: Vec3 | null,
+  world: World,
 ): void {
   const { frame, orientation } = ship;
   rollFrame(frame, dtMillis, controlInput);
@@ -186,122 +189,15 @@ export function updateShipOrientationFromControls(
   localFrame.intoMat3(orientation, frame);
 
   // Apply alignment if requested.
-  if (
-    controlState.alignToBody &&
-    controlInput.alignToBody &&
-    alignTargetDirection
-  ) {
-    updateFrameAlignToDirection(dtMillis, ship, alignTargetDirection);
+  if (controlState.alignToBody && controlInput.alignToBody) {
+    const direction = getDominantBodyDirection(ship, world);
+    if (direction) {
+      alignFrameToDirection(dtMillis, ship, direction);
+    }
   } else if (controlState.alignToVelocity && controlInput.alignToVelocity) {
-    updateFrameAlignToVelocity(dtMillis, ship);
-  }
-}
-
-const targetForwardScratch: Vec3 = vec3.zero();
-const fullAxisScratch: Vec3 = vec3.zero();
-const fallbackAxisScratch: Vec3 = vec3.zero();
-const axisScratch: Vec3 = vec3.zero();
-
-/**
- * Gradually rotate the body's frame so that its forward axis
- * aligns with the current velocity direction.
- *
- * Rotation is rate-limited to alignToVelocityMaxAngularSpeed so that the
- * effect feels like small attitude-control thrusters rather than an
- * instantaneous snap.
- */
-export function updateFrameAlignToVelocity(
-  dtMillis: number,
-  body: ControlledBodyState,
-): void {
-  const v = body.velocity;
-  const speed = vec3.length(v);
-  if (speed === 0) {
-    // No meaningful velocity direction to align to.
-    return;
-  }
-
-  // targetForward = v / speed
-  vec3.scaleInto(targetForwardScratch, 1 / speed, v);
-  updateFrameAlignToDirection(dtMillis, body, targetForwardScratch);
-}
-
-export function updateFrameAlignToDirection(
-  dtMillis: number,
-  body: ControlledBodyState,
-  targetDirection: Vec3,
-): void {
-  const len = vec3.length(targetDirection);
-  if (len === 0) return;
-
-  vec3.scaleInto(targetForwardScratch, 1 / len, targetDirection);
-  const targetForward = targetForwardScratch;
-  const currentForward = body.frame.forward;
-
-  // If we're already nearly aligned, do nothing.
-  const dot = vec3.dot(currentForward, targetForward);
-  const clampedDot = Math.min(1, Math.max(-1, dot));
-  const angle = Math.acos(clampedDot);
-  if (angle < 1e-4) {
-    return;
-  }
-
-  // fullAxis = currentForward × targetForward
-  vec3.crossInto(fullAxisScratch, currentForward, targetForward);
-  const fullAxis = fullAxisScratch;
-  const axisLen = vec3.length(fullAxis);
-  if (axisLen < 1e-6) {
-    // Parallel or anti-parallel: simple axis choice.
-    if (clampedDot > 0) {
-      // Same direction: nothing to do.
-      return;
+    const direction = getVelocityDirection(ship);
+    if (direction) {
+      alignFrameToDirection(dtMillis, ship, direction);
     }
-    // Opposite direction: choose an axis orthogonal to forward.
-    const up = body.frame.up;
-    vec3.crossInto(fallbackAxisScratch, currentForward, up);
-    const fallbackAxis = fallbackAxisScratch;
-    const fallbackLen = vec3.length(fallbackAxis);
-    if (fallbackLen < 1e-6) {
-      // As a last resort, use the frame's right axis.
-      const axis = body.frame.right;
-      const maxStep = alignToVelocityMaxAngularSpeed * dtMillis;
-      const stepAngle = Math.min(Math.PI, maxStep);
-      localFrame.rotateAroundAxisInPlace(body.frame, axis, stepAngle);
-      return;
-    }
-
-    vec3.scaleInto(axisScratch, 1 / fallbackLen, fallbackAxis);
-    const axis = axisScratch;
-    const maxStep = alignToVelocityMaxAngularSpeed * dtMillis;
-    const stepAngle = Math.min(Math.PI, maxStep);
-    localFrame.rotateAroundAxisInPlace(body.frame, axis, stepAngle);
-    return;
   }
-
-  // General case: rotate partially toward the target, clamped by max angular speed.
-  vec3.scaleInto(axisScratch, 1 / axisLen, fullAxis);
-  const axis = axisScratch;
-  const maxStep = alignToVelocityMaxAngularSpeed * dtMillis;
-  const stepAngle = Math.min(angle, maxStep);
-  localFrame.rotateAroundAxisInPlace(body.frame, axis, stepAngle);
-}
-
-/**
- * Update the persistent "align to velocity" intent in the given ControlState.
- *
- * While the align key is held, the ship's attitude will be steered
- * toward the velocity vector.
- */
-function updateAlignToVelocityFromInput(
-  controlInput: ControlInput,
-  controlState: SimControlState,
-): void {
-  controlState.alignToVelocity = controlInput.alignToVelocity;
-}
-
-function updateAlignToBodyFromInput(
-  controlInput: ControlInput,
-  controlState: SimControlState,
-): void {
-  controlState.alignToBody = controlInput.alignToBody;
 }
