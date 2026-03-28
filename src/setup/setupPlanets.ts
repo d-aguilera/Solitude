@@ -3,17 +3,11 @@ import type {
   PlanetBodyConfig,
   StarBodyConfig,
 } from "../app/configPorts";
-import type {
-  CelestialBodySceneObject,
-  PlanetSceneObject,
-  Scene,
-} from "../app/scenePorts";
 import type { PlanetPhysics, RotatingBody, World } from "../domain/domainPorts";
 import { mat3, type Mat3 } from "../domain/mat3";
 import { vec3, type Vec3 } from "../domain/vec3";
 import { parameters } from "../global/parameters";
 import { mutateStateVectorFromKeplerian } from "./kepler";
-import { createPolylineSceneObject } from "./setup";
 
 // Scratch state for hierarchical initial state computation.
 const initialStatePositionScratch: Record<string, Vec3> = {};
@@ -23,10 +17,9 @@ const configByIdScratch: Record<string, PlanetBodyConfig | StarBodyConfig> = {};
 const computingStateScratch: Record<string, boolean> = {};
 
 /**
- * Add planets + stars + their orbit paths from an arbitrary list of PlanetConfig.
+ * Add planets + stars from an arbitrary list of PlanetConfig.
  *
  * Responsibilities kept here:
- *  - Create visual PlanetSceneObject / StarSceneObject
  *  - Register corresponding CelestialBody entries in world
  *  - Register PlanetPhysics / StarPhysics entries for gravity
  *
@@ -37,7 +30,6 @@ const computingStateScratch: Record<string, boolean> = {};
 export function addPlanetsAndStarsFromConfig(
   configs: (PlanetBodyConfig | StarBodyConfig)[],
   world: World,
-  scene: Scene,
 ): void {
   // Build lookup tables for configs and masses.
   buildConfigAndMassTables(configs);
@@ -79,20 +71,6 @@ export function addPlanetsAndStarsFromConfig(
       angularSpeedRadPerSec: cfg.angularSpeedRadPerSec,
     };
 
-    const sceneObj: CelestialBodySceneObject = {
-      id: cfg.id,
-      kind: cfg.kind,
-      mesh: cfg.mesh,
-      position: celestialBody.position, // alias
-      orientation: celestialBody.orientation, // alias
-      color: cfg.color,
-      lineWidth: 1,
-      applyTransform: true,
-      wireframeOnly: false,
-      backFaceCulling: true,
-      velocity: celestialBody.velocity, // alias
-    };
-
     const planetPhysics: PlanetPhysics = {
       id: cfg.id,
       physicalRadius: cfg.physicalRadius,
@@ -106,29 +84,9 @@ export function addPlanetsAndStarsFromConfig(
         ...planetPhysics,
         luminosity: cfg.luminosity,
       });
-      scene.objects.push({
-        ...sceneObj,
-        luminosity: cfg.luminosity,
-      });
     } else if (cfg.kind === "planet") {
       world.planets.push(celestialBody);
       world.planetPhysics.push({ ...planetPhysics });
-      scene.objects.push({
-        ...sceneObj,
-      } as PlanetSceneObject);
-
-      // Planets (not moons) get a path polyline. The path geometry
-      // is updated over time by sampling actual positions, so it reflects
-      // non-circular Keplerian-like trajectories after initialization.
-      if (cfg.centralBodyId === "planet:sun") {
-        scene.objects.push(
-          createPolylineSceneObject(
-            cfg.pathId,
-            celestialBody.position,
-            cfg.color,
-          ),
-        );
-      }
     }
   }
 }

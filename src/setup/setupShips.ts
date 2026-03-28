@@ -1,51 +1,20 @@
 import type { ShipBodyConfig } from "../app/configPorts";
-import type { Scene, ShipSceneObject } from "../app/scenePorts";
 import type { ShipBody, ShipPhysics, World } from "../domain/domainPorts";
 import { localFrame, type LocalFrame } from "../domain/localFrame";
 import { mat3 } from "../domain/mat3";
 import { computeVolumeOfTriangleMesh } from "../domain/meshVolume";
 import { circularSpeedAtRadius } from "../domain/phys";
 import { vec3, type Vec3 } from "../domain/vec3";
-import { createPolylineSceneObject, initialFrame } from "./setup";
+import { initialFrame } from "./setup";
 
 const axisScratch = vec3.zero();
 
-export function addShipsFromConfig(
-  configs: ShipBodyConfig[],
-  world: World,
-  scene: Scene,
-) {
+export function addShipsFromConfig(configs: ShipBodyConfig[], world: World) {
   for (let config of configs) {
     const { shipBody, shipPhysics } = createShip(config, world);
     world.ships.push(shipBody);
     world.shipPhysics.push(shipPhysics);
-
-    const sceneObject: ShipSceneObject = createSceneObject(config, shipBody);
-    scene.objects.push(sceneObject);
-
-    const id = "path:" + shipBody.id;
-    scene.objects.push(
-      createPolylineSceneObject(id, shipBody.position, config.color),
-    );
   }
-}
-
-function createSceneObject(
-  { color, mesh }: ShipBodyConfig,
-  shipBody: ShipBody,
-): ShipSceneObject {
-  return {
-    id: shipBody.id,
-    kind: "ship",
-    mesh,
-    position: shipBody.position, // alias
-    orientation: shipBody.orientation, // alias
-    color,
-    lineWidth: 1,
-    applyTransform: true,
-    wireframeOnly: false,
-    backFaceCulling: false,
-  };
 }
 
 function createShip(
