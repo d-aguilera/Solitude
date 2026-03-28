@@ -22,7 +22,7 @@ export interface OrbitReadout {
   timeToApoapsisSec: number | null;
 }
 
-type GravityPrimary = {
+export type GravityPrimary = {
   id: BodyId;
   body: RotatingBody;
   mass: number;
@@ -40,7 +40,7 @@ export function computeShipOrbitReadout(
   world: World,
   ship: ShipBody,
 ): OrbitReadout | null {
-  const primary = findDominantBody(world, ship.position);
+  const primary = getDominantBodyPrimary(world, ship.position);
   if (!primary) return null;
 
   vec3.subInto(rScratch, ship.position, primary.body.position);
@@ -119,8 +119,15 @@ export function getDominantBody(
   world: World,
   position: Vec3,
 ): RotatingBody | null {
-  const primary = findDominantBody(world, position);
+  const primary = getDominantBodyPrimary(world, position);
   return primary ? primary.body : null;
+}
+
+export function getDominantBodyPrimary(
+  world: World,
+  position: Vec3,
+): GravityPrimary | null {
+  return findDominantBody(world, position);
 }
 
 function findDominantBody(

@@ -3,6 +3,7 @@ import { type LocalFrame, localFrame } from "../domain/localFrame.js";
 import type { ControlledBodyState, SimControlState } from "./appInternals.js";
 import {
   alignFrameToDirection,
+  applyCircleNowOrientation,
   getDominantBodyDirection,
   getVelocityDirection,
 } from "./autoPilot.js";
@@ -24,6 +25,11 @@ const shipThrustValues = Array.from<number, number>(
   { length: 10 },
   (_, i) => Math.pow(i, shipThrustExponent) / shipThrustMaxPow,
 );
+
+export function getThrustPercentForLevel(thrustLevel: number): number {
+  const clamped = Math.min(9, Math.max(0, Math.floor(thrustLevel)));
+  return shipThrustValues[clamped];
+}
 
 export interface ThrustCommand {
   forward: number;
@@ -199,6 +205,12 @@ export function updateShipOrientationFromInput(
     const direction = getVelocityDirection(ship);
     if (direction) {
       alignFrameToDirection(dtMillis, ship, direction);
+    }
+  }
+
+  if (controlInput.circleNow) {
+    if (applyCircleNowOrientation(dtMillis, ship, world)) {
+      localFrame.intoMat3(orientation, frame);
     }
   }
 }

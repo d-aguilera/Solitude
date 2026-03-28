@@ -2,8 +2,11 @@ import { resolveCollisions } from "../domain/collisions.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
 import type { SimControlState } from "./appInternals.js";
+import { computeCircleNowThrust } from "./autoPilot.js";
 import type { ThrustCommand } from "./controls.js";
 import {
+  getThrustPercentForLevel,
+  maxThrustAcceleration,
   updateControlState,
   updateShipOrientationFromInput,
 } from "./controls.js";
@@ -39,7 +42,17 @@ export function createTickHandler(
   return (output: TickOutput, params: TickParams): void => {
     const { controlInput, dtMillis, dtMillisSim } = params;
 
-    thrustCommand = updateControlState(controlInput, simControlState);
+    const manualThrust = updateControlState(controlInput, simControlState);
+    const thrustPercent = getThrustPercentForLevel(simControlState.thrustLevel);
+    thrustCommand = controlInput.circleNow
+      ? computeCircleNowThrust(
+          dtMillis,
+          worldAndScene.mainShip,
+          worldAndScene.world,
+          thrustPercent,
+          maxThrustAcceleration,
+        )
+      : manualThrust;
 
     updateShipOrientationFromInput(
       dtMillis,

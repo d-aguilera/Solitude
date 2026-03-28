@@ -30,6 +30,7 @@ export const ALL_CONTROL_ACTIONS = [
   "thrust9",
   "alignToBody",
   "alignToVelocity",
+  "circleNow",
 ] as const;
 
 export const ALL_ENV_ACTIONS = [

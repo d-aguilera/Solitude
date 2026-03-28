@@ -96,5 +96,6 @@ const keyMap: Record<string, ControlAction | EnvAction> = {
   KeyU: "camForward",
   KeyV: "alignToVelocity",
   KeyW: "pitchUp",
+  KeyX: "circleNow",
   Space: "burnForward",
 };
