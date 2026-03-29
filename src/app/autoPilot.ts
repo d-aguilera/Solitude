@@ -1,13 +1,15 @@
 import type { World } from "../domain/domainPorts";
-import { localFrame } from "../domain/localFrame";
 import { getDominantBody, getDominantBodyPrimary } from "../domain/orbit";
 import { type Vec3, vec3 } from "../domain/vec3";
 import { parameters } from "../global/parameters";
-import type { ControlledBodyState } from "./appInternals";
+import type { AttitudeCommand, ControlledBodyState } from "./appInternals";
 import type { ThrustCommand } from "./controls";
 
 // Max rate at which the ship can reorient itself toward its velocity vector.
-const alignToVelocityMaxAngularSpeed = 0.0007; // rad/ms
+const alignToVelocityMaxAngularSpeed = 2.0; // rad/s
+// PD gains for alignment (rate command = Kp * angle - Kd * omegaAlongAxis).
+const alignToVelocityKp = 4.0;
+const alignToVelocityKd = 1.6;
 
 // Scratch vectors
 const dominantBodyScratch = vec3.zero();
@@ -28,9 +30,12 @@ const circleVRelScratch: Vec3 = vec3.zero();
 const circleTScratch: Vec3 = vec3.zero();
 const circleDeltaVScratch: Vec3 = vec3.zero();
 const circleAccelScratch: Vec3 = vec3.zero();
+const omegaWorldScratch: Vec3 = vec3.zero();
 
 // Max rate at which the ship can roll to align with a tangential direction.
-const alignToTangentMaxAngularSpeed = 0.001; // rad/ms
+const alignToTangentMaxAngularSpeed = 1.6; // rad/s
+const alignToTangentKp = 3.0;
+const alignToTangentKd = 1.0;
 
 const circleZeroThrust: ThrustCommand = { forward: 0, right: 0 };
 
@@ -102,16 +107,18 @@ export function getTangentialDirection(
 }
 
 /**
- * Roll-only alignment: rotate around forward axis so the ship's right axis
- * aligns with the target direction projected onto the roll plane.
+ * Roll-only alignment: command a roll rate so the ship's right axis aligns with
+ * the target direction projected onto the roll plane.
  */
-export function alignFrameRollToDirection(
+export function computeRollToDirectionCommand(
   dtMillis: number,
   state: ControlledBodyState,
   targetDirection: Vec3,
-): void {
+): AttitudeCommand | null {
   const len = vec3.length(targetDirection);
-  if (len === 0) return;
+  if (len === 0) return null;
+
+  if (dtMillis <= 0) return null;
 
   const forward = state.frame.forward;
 
@@ -122,61 +129,87 @@ export function alignFrameRollToDirection(
   rollProjectedScratch.z -= proj * forward.z;
 
   const projLen = vec3.length(rollProjectedScratch);
-  if (projLen < 1e-6) return;
+  if (projLen < 1e-6) return null;
   vec3.scaleInto(rollProjectedScratch, 1 / projLen, rollProjectedScratch);
 
   const currentRight = state.frame.right;
   const dot = vec3.dot(currentRight, rollProjectedScratch);
   const clampedDot = Math.min(1, Math.max(-1, dot));
   const angle = Math.acos(clampedDot);
-  if (angle < 1e-4) return;
+  if (angle < 1e-4) return null;
 
   vec3.crossInto(rollAxisScratch, currentRight, rollProjectedScratch);
   const sign = vec3.dot(rollAxisScratch, forward) >= 0 ? 1 : -1;
-
-  const maxStep = alignToTangentMaxAngularSpeed * dtMillis;
-  const stepAngle = Math.min(angle, maxStep) * sign;
-  localFrame.rotateAroundAxisInPlace(state.frame, forward, stepAngle);
+  const signedAngle = angle * sign;
+  const omegaRoll = state.angularVelocity.roll;
+  const rawSpeed =
+    alignToTangentKp * signedAngle - alignToTangentKd * omegaRoll;
+  const speed = Math.max(
+    -alignToTangentMaxAngularSpeed,
+    Math.min(alignToTangentMaxAngularSpeed, rawSpeed),
+  );
+  return { roll: speed, pitch: 0, yaw: 0 };
 }
 
-export function applyCircleNowOrientation(
+export function computeCircleNowAttitudeCommand(
   dtMillis: number,
   ship: ControlledBodyState,
   world: World,
-): boolean {
-  let didAlign = false;
+): AttitudeCommand | null {
+  let command: AttitudeCommand | null = null;
 
   const inward = getDominantBodyDirection(ship, world);
   if (inward) {
-    alignFrameToDirection(dtMillis, ship, inward);
-    didAlign = true;
+    command = computeAlignToDirectionCommand(dtMillis, ship, inward);
   }
 
   const tangential = getTangentialDirection(ship, world);
   if (tangential) {
-    alignFrameRollToDirection(dtMillis, ship, tangential);
-    didAlign = true;
+    const rollCommand = computeRollToDirectionCommand(
+      dtMillis,
+      ship,
+      tangential,
+    );
+    if (rollCommand) {
+      command = command
+        ? {
+            roll: command.roll + rollCommand.roll,
+            pitch: command.pitch,
+            yaw: command.yaw,
+          }
+        : rollCommand;
+    }
   }
 
-  return didAlign;
+  return command;
+}
+
+function commandFromWorldAxis(
+  state: ControlledBodyState,
+  axisWorld: Vec3,
+  speed: number,
+): AttitudeCommand {
+  const { forward, right, up } = state.frame;
+  return {
+    roll: vec3.dot(axisWorld, forward) * speed,
+    pitch: vec3.dot(axisWorld, right) * speed,
+    yaw: vec3.dot(axisWorld, up) * speed,
+  };
 }
 
 /**
- * Gradually rotate the body's frame so that its forward axis aligns with the
- * specified target direction.
- *
- * Rotation is rate-limited to {@link alignToVelocityMaxAngularSpeed} so that the
- * effect feels like small attitude-control thrusters rather than an instantaneous snap.
- * The function handles edge cases including when the target direction is zero-length,
- * when vectors are parallel/anti-parallel, or when they are nearly aligned.
+ * Compute an attitude command that aligns the body's forward axis with the
+ * specified target direction, rate-limited by {@link alignToVelocityMaxAngularSpeed}.
  */
-export function alignFrameToDirection(
+export function computeAlignToDirectionCommand(
   dtMillis: number,
   state: ControlledBodyState,
   targetDirection: Vec3,
-): void {
+): AttitudeCommand | null {
   const len = vec3.length(targetDirection);
-  if (len === 0) return;
+  if (len === 0) return null;
+
+  if (dtMillis <= 0) return null;
 
   vec3.scaleInto(targetForwardScratch, 1 / len, targetDirection);
   const targetForward = targetForwardScratch;
@@ -187,45 +220,52 @@ export function alignFrameToDirection(
   const clampedDot = Math.min(1, Math.max(-1, dot));
   const angle = Math.acos(clampedDot);
   if (angle < 1e-4) {
-    return;
+    return null;
   }
 
   // fullAxis = currentForward × targetForward
   vec3.crossInto(fullAxisScratch, currentForward, targetForward);
-  const fullAxis = fullAxisScratch;
-  const axisLen = vec3.length(fullAxis);
+  const axisLen = vec3.length(fullAxisScratch);
+
   if (axisLen < 1e-6) {
-    // Parallel or anti-parallel: simple axis choice.
+    // Parallel or anti-parallel: choose an arbitrary axis orthogonal to forward.
     if (clampedDot > 0) {
-      // Same direction: nothing to do.
-      return;
+      return null;
     }
-    // Opposite direction: choose an axis orthogonal to forward.
     const up = state.frame.up;
     vec3.crossInto(fallbackAxisScratch, currentForward, up);
-    const fallbackAxis = fallbackAxisScratch;
-    const fallbackLen = vec3.length(fallbackAxis);
+    const fallbackLen = vec3.length(fallbackAxisScratch);
     if (fallbackLen < 1e-6) {
-      // As a last resort, use the frame's right axis.
-      const axis = state.frame.right;
-      const maxStep = alignToVelocityMaxAngularSpeed * dtMillis;
-      const stepAngle = Math.min(Math.PI, maxStep);
-      localFrame.rotateAroundAxisInPlace(state.frame, axis, stepAngle);
-      return;
+      vec3.copyInto(axisScratch, state.frame.right);
+    } else {
+      vec3.scaleInto(axisScratch, 1 / fallbackLen, fallbackAxisScratch);
     }
-
-    vec3.scaleInto(axisScratch, 1 / fallbackLen, fallbackAxis);
-    const maxStep = alignToVelocityMaxAngularSpeed * dtMillis;
-    const stepAngle = Math.min(Math.PI, maxStep);
-    localFrame.rotateAroundAxisInPlace(state.frame, axisScratch, stepAngle);
-    return;
+  } else {
+    vec3.scaleInto(axisScratch, 1 / axisLen, fullAxisScratch);
   }
 
-  // General case: rotate partially toward the target, clamped by max angular speed.
-  vec3.scaleInto(axisScratch, 1 / axisLen, fullAxis);
-  const maxStep = alignToVelocityMaxAngularSpeed * dtMillis;
-  const stepAngle = Math.min(angle, maxStep);
-  localFrame.rotateAroundAxisInPlace(state.frame, axisScratch, stepAngle);
+  const omega = state.angularVelocity;
+  omegaWorldScratch.x =
+    state.frame.forward.x * omega.roll +
+    state.frame.right.x * omega.pitch +
+    state.frame.up.x * omega.yaw;
+  omegaWorldScratch.y =
+    state.frame.forward.y * omega.roll +
+    state.frame.right.y * omega.pitch +
+    state.frame.up.y * omega.yaw;
+  omegaWorldScratch.z =
+    state.frame.forward.z * omega.roll +
+    state.frame.right.z * omega.pitch +
+    state.frame.up.z * omega.yaw;
+
+  const omegaAlongAxis = vec3.dot(omegaWorldScratch, axisScratch);
+  const rawSpeed =
+    alignToVelocityKp * angle - alignToVelocityKd * omegaAlongAxis;
+  const speed = Math.max(
+    -alignToVelocityMaxAngularSpeed,
+    Math.min(alignToVelocityMaxAngularSpeed, rawSpeed),
+  );
+  return commandFromWorldAxis(state, axisScratch, speed);
 }
 
 export function computeCircleNowThrust(

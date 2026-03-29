@@ -1,3 +1,4 @@
+import type { AngularVelocity } from "../domain/domainPorts.js";
 import type { LocalFrame } from "../domain/localFrame.js";
 import type { Mat3 } from "../domain/mat3.js";
 import type { Vec3 } from "../domain/vec3.js";
@@ -12,6 +13,16 @@ export interface ControlledBodyState {
   orientation: Mat3;
   position: Vec3;
   velocity: Vec3;
+  angularVelocity: AngularVelocity;
+}
+
+/**
+ * Desired angular velocity in roll/pitch/yaw (rad/s).
+ */
+export interface AttitudeCommand {
+  roll: number;
+  pitch: number;
+  yaw: number;
 }
 
 export interface SceneState {

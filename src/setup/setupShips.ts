@@ -50,6 +50,7 @@ function createShip(
 
   const frame: LocalFrame = getFrameFromVelocity(velocity);
   const orientation = localFrame.intoMat3(mat3.zero(), frame);
+  const angularVelocity = { roll: 0, pitch: 0, yaw: 0 };
 
   const shipBody: ShipBody = {
     id,
@@ -57,6 +58,7 @@ function createShip(
     orientation,
     position,
     velocity,
+    angularVelocity,
   };
 
   return { shipBody, shipPhysics };

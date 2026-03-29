@@ -14,6 +14,16 @@ export interface BodyState {
 }
 
 /**
+ * Angular velocity expressed as roll/pitch/yaw rates (rad/s).
+ * Roll is about the ship's forward axis, pitch about right, yaw about up.
+ */
+export interface AngularVelocity {
+  roll: number;
+  pitch: number;
+  yaw: number;
+}
+
+/**
  * Logical celestial body that participates in physics / gravity.
  */
 export interface CelestialBody {
@@ -71,6 +81,7 @@ export interface PlanetPhysics extends PhysicsBody {
 export interface ShipBody extends CelestialBody {
   frame: LocalFrame;
   orientation: Mat3;
+  angularVelocity: AngularVelocity;
 }
 
 /**

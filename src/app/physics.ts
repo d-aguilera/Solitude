@@ -5,6 +5,7 @@ import type {
   ShipBody,
   World,
 } from "../domain/domainPorts.js";
+import { localFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import type { ControlledBodyState } from "./appInternals.js";
@@ -14,6 +15,8 @@ import { maxThrustAcceleration } from "./controls.js";
 // Scratch vector for applyThrustToVelocity
 const cvScratch = vec3.zero();
 const Rspin = mat3.zero();
+const omegaWorldScratch = vec3.zero();
+const omegaAxisScratch = vec3.zero();
 
 /**
  * Apply thrust acceleration to the controlled body's velocity when burn/brake
@@ -33,11 +36,7 @@ function applyThrustToVelocity(
   const accelScale = (maxThrustAcceleration * dtMillis) / 1000;
 
   if (thrust.forward !== 0) {
-    vec3.scaleInto(
-      cvScratch,
-      accelScale * thrust.forward,
-      frame.forward,
-    );
+    vec3.scaleInto(cvScratch, accelScale * thrust.forward, frame.forward);
     vec3.addInto(body.velocity, velocity, cvScratch);
   }
   if (thrust.right !== 0) {
@@ -59,6 +58,43 @@ export function applyThrust(
   }
 
   applyThrustToVelocity(dtMillis, thrust, controlledShip);
+}
+
+/**
+ * Integrate ship attitude by applying its angular velocity to the local frame.
+ */
+export function applyShipRotation(
+  dtMillis: number,
+  ship: ControlledBodyState,
+): void {
+  const dtSec = dtMillis / 1000;
+  if (dtSec <= 0) return;
+
+  const omega = ship.angularVelocity;
+  if (omega.roll === 0 && omega.pitch === 0 && omega.yaw === 0) return;
+
+  const { frame } = ship;
+  // Convert roll/pitch/yaw rates into a world-space angular velocity vector.
+  omegaWorldScratch.x =
+    frame.forward.x * omega.roll +
+    frame.right.x * omega.pitch +
+    frame.up.x * omega.yaw;
+  omegaWorldScratch.y =
+    frame.forward.y * omega.roll +
+    frame.right.y * omega.pitch +
+    frame.up.y * omega.yaw;
+  omegaWorldScratch.z =
+    frame.forward.z * omega.roll +
+    frame.right.z * omega.pitch +
+    frame.up.z * omega.yaw;
+
+  const omegaMag = vec3.length(omegaWorldScratch);
+  if (omegaMag === 0) return;
+
+  const angle = omegaMag * dtSec;
+  vec3.scaleInto(omegaAxisScratch, 1 / omegaMag, omegaWorldScratch);
+  localFrame.rotateAroundAxisInPlace(frame, omegaAxisScratch, angle);
+  localFrame.intoMat3(ship.orientation, frame);
 }
 
 /**
@@ -86,10 +122,7 @@ export function applyGravity(
   gravityEngine.step(remaining / 1000, gravityState);
 }
 
-function applySpinForBodies(
-  dtMillisSim: number,
-  bodies: RotatingBody[],
-): void {
+function applySpinForBodies(dtMillisSim: number, bodies: RotatingBody[]): void {
   for (let i = 0; i < bodies.length; i++) {
     const body = bodies[i];
     const angle = (body.angularSpeedRadPerSec * dtMillisSim) / 1000;

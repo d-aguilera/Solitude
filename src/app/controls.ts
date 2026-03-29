@@ -1,9 +1,12 @@
 import type { World } from "../domain/domainPorts.js";
-import { type LocalFrame, localFrame } from "../domain/localFrame.js";
-import type { ControlledBodyState, SimControlState } from "./appInternals.js";
+import type {
+  AttitudeCommand,
+  ControlledBodyState,
+  SimControlState,
+} from "./appInternals.js";
 import {
-  alignFrameToDirection,
-  applyCircleNowOrientation,
+  computeAlignToDirectionCommand,
+  computeCircleNowAttitudeCommand,
   getDominantBodyDirection,
   getVelocityDirection,
 } from "./autoPilot.js";
@@ -13,11 +16,14 @@ import type { PilotLookState } from "./scenePorts.js";
 // Max thrust acceleration in m/s^2 at 100% thrust
 export const maxThrustAcceleration = 1_000_000; // ~ 100_000 G
 
-// Rates in radians per second
+// Pilot look rates are in radians per millisecond.
 const lookSpeed = 0.0015;
-const rotSpeedRoll = 0.001;
-const rotSpeedPitch = 0.0008;
-const rotSpeedYaw = 0.0005;
+
+// Ship attitude rates (rad/s) and acceleration (rad/s^2).
+const maxRollRate = 1.0;
+const maxPitchRate = 0.8;
+const maxYawRate = 0.5;
+const maxAngularAccel = 4.0;
 
 const shipThrustExponent = 3; // [0..9] ^ 3
 const shipThrustMaxPow = Math.pow(9, shipThrustExponent);
@@ -65,56 +71,48 @@ export function updatePilotLook(
   if (controlInput.lookDown) lookState.elevation -= lookSpeed * dtMillis;
 }
 
-function rollFrame(
-  frame: LocalFrame,
-  dtMillis: number,
-  controlInput: ControlInput,
-): void {
-  if (
-    (!controlInput.rollLeft && !controlInput.rollRight) ||
-    (controlInput.rollLeft && controlInput.rollRight)
-  ) {
-    return;
+function getManualAttitudeCommand(controlInput: ControlInput): AttitudeCommand {
+  let rollInput = 0;
+  if (controlInput.rollLeft !== controlInput.rollRight) {
+    rollInput = controlInput.rollLeft ? -1 : 1;
   }
 
-  const angle = (controlInput.rollLeft ? -1 : 1) * rotSpeedRoll * dtMillis;
-
-  // Roll around local forward axis (in world coords)
-  localFrame.rotateAroundAxisInPlace(frame, frame.forward, angle);
-}
-
-function pitchFrame(
-  frame: LocalFrame,
-  dtMillis: number,
-  controlInput: ControlInput,
-): void {
   let pitchInput = 0;
   if (controlInput.pitchDown) pitchInput += 1;
   if (controlInput.pitchUp) pitchInput -= 1;
-  if (pitchInput === 0) return;
 
-  const angle = pitchInput * rotSpeedPitch * dtMillis;
-
-  // Pitch around local right axis
-  localFrame.rotateAroundAxisInPlace(frame, frame.right, angle);
-}
-
-function yawFrame(
-  frame: LocalFrame,
-  dtMillis: number,
-  controlInput: ControlInput,
-): void {
-  if (
-    (!controlInput.yawLeft && !controlInput.yawRight) ||
-    (controlInput.yawLeft && controlInput.yawRight)
-  ) {
-    return;
+  let yawInput = 0;
+  if (controlInput.yawLeft !== controlInput.yawRight) {
+    yawInput = controlInput.yawLeft ? 1 : -1;
   }
 
-  const angle = (controlInput.yawLeft ? 1 : -1) * rotSpeedYaw * dtMillis;
+  return {
+    roll: rollInput * maxRollRate,
+    pitch: pitchInput * maxPitchRate,
+    yaw: yawInput * maxYawRate,
+  };
+}
 
-  // Yaw around local up axis
-  localFrame.rotateAroundAxisInPlace(frame, frame.up, angle);
+function stepToward(current: number, target: number, maxDelta: number): number {
+  const delta = target - current;
+  if (delta > maxDelta) return current + maxDelta;
+  if (delta < -maxDelta) return current - maxDelta;
+  return target;
+}
+
+function applyAttitudeCommand(
+  dtMillis: number,
+  ship: ControlledBodyState,
+  command: AttitudeCommand,
+): void {
+  const dtSec = dtMillis / 1000;
+  if (dtSec <= 0) return;
+
+  const maxDelta = maxAngularAccel * dtSec;
+  const omega = ship.angularVelocity;
+  omega.roll = stepToward(omega.roll, command.roll, maxDelta);
+  omega.pitch = stepToward(omega.pitch, command.pitch, maxDelta);
+  omega.yaw = stepToward(omega.yaw, command.yaw, maxDelta);
 }
 
 const thrustKeys: (keyof ControlInput)[] = [
@@ -171,46 +169,40 @@ function getThrustCommand(
 }
 
 /**
- * Top-level update for orientation only; does NOT move the body forward.
- * Position integration is handled by gravity/thrust integration.
+ * Top-level update for attitude control only; does NOT rotate the body.
+ * Rotation integration is handled separately via angular velocity.
  *
- * This function updates:
- *  - persistent pilot look angles inside ControlState.look
- *  - alignToVelocity flag inside the ControlState
- *  - the body's LocalFrame based on roll/pitch/yaw input
- *  - the body's LocalFrame when aligning to velocity is requested
+ * This function updates the ship's angular velocity based on:
+ *  - roll/pitch/yaw input, or
+ *  - autopilot alignment commands
  */
-export function updateShipOrientationFromInput(
+export function updateShipAngularVelocityFromInput(
   dtMillis: number,
   ship: ControlledBodyState,
   controlInput: ControlInput,
   controlState: SimControlState,
   world: World,
 ): void {
-  const { frame, orientation } = ship;
-  rollFrame(frame, dtMillis, controlInput);
-  pitchFrame(frame, dtMillis, controlInput);
-  yawFrame(frame, dtMillis, controlInput);
-
-  // Update the body's orientation based on the new frame.
-  localFrame.intoMat3(orientation, frame);
-
-  // Apply alignment if requested.
-  if (controlState.alignToBody && controlInput.alignToBody) {
-    const direction = getDominantBodyDirection(ship, world);
-    if (direction) {
-      alignFrameToDirection(dtMillis, ship, direction);
-    }
-  } else if (controlState.alignToVelocity && controlInput.alignToVelocity) {
-    const direction = getVelocityDirection(ship);
-    if (direction) {
-      alignFrameToDirection(dtMillis, ship, direction);
-    }
-  }
+  const manualCommand = getManualAttitudeCommand(controlInput);
+  let command: AttitudeCommand | null = null;
 
   if (controlInput.circleNow) {
-    if (applyCircleNowOrientation(dtMillis, ship, world)) {
-      localFrame.intoMat3(orientation, frame);
+    command = computeCircleNowAttitudeCommand(dtMillis, ship, world);
+  }
+
+  if (!command) {
+    if (controlState.alignToBody && controlInput.alignToBody) {
+      const direction = getDominantBodyDirection(ship, world);
+      if (direction) {
+        command = computeAlignToDirectionCommand(dtMillis, ship, direction);
+      }
+    } else if (controlState.alignToVelocity && controlInput.alignToVelocity) {
+      const direction = getVelocityDirection(ship);
+      if (direction) {
+        command = computeAlignToDirectionCommand(dtMillis, ship, direction);
+      }
     }
   }
+
+  applyAttitudeCommand(dtMillis, ship, command ?? manualCommand);
 }
