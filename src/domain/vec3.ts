@@ -50,24 +50,16 @@ function lengthSq(v: Readonly<Vec3>): number {
   return v.x * v.x + v.y * v.y + v.z * v.z;
 }
 
-/**
- * out = a + t * (b - a)
- *
- * Linear interpolation between a and b.
- */
 function lerpInto(
-  out: Vec3,
+  into: Vec3,
   a: Readonly<Vec3>,
   b: Readonly<Vec3>,
   t: number,
 ): Vec3 {
-  // out = b - a
-  vec3.subInto(out, b, a);
-  // out = out * t
-  vec3.scaleInto(out, t, out);
-  // out = a + out
-  vec3.addInto(out, out, a);
-  return out;
+  vec3.subInto(into, b, a);
+  vec3.scaleInto(into, t, into);
+  vec3.addInto(into, into, a);
+  return into;
 }
 
 function normalizeInto(into: Vec3): Vec3 {
@@ -85,11 +77,6 @@ function normalizeInto(into: Vec3): Vec3 {
   return into;
 }
 
-/**
- * out = base + dir * scale
- *
- * Common pattern for offsetting a point along a direction.
- */
 function scaledAddInto(
   into: Vec3,
   base: Readonly<Vec3>,
@@ -101,7 +88,7 @@ function scaledAddInto(
   return into;
 }
 
-function scaleInto(into: Vec3, s: number, v: Readonly<Vec3>): Vec3 {
+function scaleInto(into: Vec3, s: Readonly<number>, v: Readonly<Vec3>): Vec3 {
   into.x = v.x * s;
   into.y = v.y * s;
   into.z = v.z * s;
@@ -127,19 +114,38 @@ export interface Vec3 {
 }
 
 export const vec3 = {
+  /** `into` = `a` + `b` */
   addInto,
+  /** Returns a copy of `v` */
   clone,
+  /** Sets each component of `into` equal to the corresponding component of `v` */
   copyInto,
+  /** Returns a new vector with the given components. */
   create,
+  /** Sets `into` = `a` × `b` */
   crossInto,
+  /** Returns the square of the distance between `a` and `b` */
   distSq,
+  /** Returns `a` ⋅ `b` */
   dot,
+  /** Returns the length of `v` */
   length,
+  /** Returns the square of the length of `v` */
   lengthSq,
+  /**
+   * Sets `into` = `a` + `t` * (`b` - `a`)
+   *
+   * Linear interpolation between a and b.
+   */
   lerpInto,
+  /** Sets `into` = the normalized version of `into` */
   normalizeInto,
+  /** Sets `into` = `base` + `dir` * `scale` */
   scaledAddInto,
+  /** Sets `into` = `s` * `v` */
   scaleInto,
+  /** Sets `into` = `a` - `b` */
   subInto,
+  /** Returns a new vector with all components set to zero. */
   zero,
 };
