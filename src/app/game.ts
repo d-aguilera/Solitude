@@ -4,9 +4,12 @@ import { buildInitialGravityState } from "../domain/gravityState.js";
 import type { ControlledBodyState, SimControlState } from "./appInternals.js";
 import { computeCircleNowThrust } from "./autoPilot.js";
 import type { ControlInput } from "./controlPorts.js";
-import type { ThrustCommand } from "./controls.js";
+import type { PropulsionCommand, RcsCommand, ThrustCommand } from "./controls.js";
 import {
   getThrustPercentForLevel,
+  getMainThrustCommand,
+  getRcsCommand,
+  maxRcsTranslationAcceleration,
   maxThrustAcceleration,
   updateControlState,
   updateShipAngularVelocityFromInput,
@@ -15,6 +18,7 @@ import {
   applyCelestialSpin,
   applyGravity,
   applyShipRotation,
+  applyRcsTranslation,
   applyThrust,
 } from "./physics.js";
 import type {
@@ -32,7 +36,7 @@ export function createTickHandler(
   thrustLevel: number,
   worldAndScene: WorldAndScene,
 ): TickCallback {
-  let thrustCommand: ThrustCommand;
+  let propulsionCommand: PropulsionCommand;
 
   const simControlState: SimControlState = {
     alignToVelocity: false,
@@ -48,7 +52,7 @@ export function createTickHandler(
   return (output: TickOutput, params: TickParams): void => {
     const { controlInput, dtMillis, dtMillisSim } = params;
 
-    thrustCommand = getThrustCommandForTick(
+    propulsionCommand = getPropulsionCommandForTick(
       dtMillis,
       controlInput,
       simControlState,
@@ -64,28 +68,32 @@ export function createTickHandler(
       worldAndScene.world,
     );
     applyShipRotation(dtMillis, worldAndScene.mainShip);
-    applyThrust(dtMillis, worldAndScene.mainShip, thrustCommand);
+    applyThrust(dtMillis, worldAndScene.mainShip, propulsionCommand.main);
+    applyRcsTranslation(dtMillis, worldAndScene.mainShip, propulsionCommand.rcs);
     applyGravity(dtMillisSim, gravityEngine, gravityState);
     resolveCollisions(worldAndScene.world);
     applyCelestialSpin(dtMillisSim, worldAndScene.world);
 
     output.currentThrustLevel = getRenderedThrustLevel(
-      thrustCommand,
+      propulsionCommand.main,
       simControlState,
     );
+    output.currentRcsLevel = getRenderedRcsLevel(propulsionCommand.rcs);
   };
 }
 
-function getThrustCommandForTick(
+function getPropulsionCommandForTick(
   dtMillis: number,
   controlInput: ControlInput,
   controlState: SimControlState,
   ship: ControlledBodyState,
   world: World,
-): ThrustCommand {
-  const manualThrust = updateControlState(controlInput, controlState);
+): PropulsionCommand {
+  updateControlState(controlInput, controlState);
+  const manualMain = getMainThrustCommand(controlInput, controlState);
+  const manualRcs = getRcsCommand(controlInput);
   if (!controlInput.circleNow) {
-    return manualThrust;
+    return { main: manualMain, rcs: manualRcs };
   }
 
   const thrustPercent = getThrustPercentForLevel(controlState.thrustLevel);
@@ -95,6 +103,7 @@ function getThrustCommandForTick(
     world,
     thrustPercent,
     maxThrustAcceleration,
+    maxRcsTranslationAcceleration,
   );
 }
 
@@ -102,12 +111,17 @@ function getRenderedThrustLevel(
   thrustCommand: ThrustCommand,
   controlState: SimControlState,
 ): number {
-  const { forward, right } = thrustCommand;
-  if (forward === 0 && right === 0) {
+  const { forward } = thrustCommand;
+  if (forward === 0) {
     return 0;
   }
-  if (forward !== 0) {
-    return forward > 0 ? controlState.thrustLevel : -controlState.thrustLevel;
+  return forward > 0 ? controlState.thrustLevel : -controlState.thrustLevel;
+}
+
+function getRenderedRcsLevel(rcsCommand: RcsCommand): number {
+  const { right } = rcsCommand;
+  if (right === 0) {
+    return 0;
   }
-  return right > 0 ? controlState.thrustLevel : -controlState.thrustLevel;
+  return right;
 }

@@ -9,8 +9,11 @@ import { localFrame } from "../domain/localFrame.js";
 import { mat3 } from "../domain/mat3.js";
 import { vec3 } from "../domain/vec3.js";
 import type { ControlledBodyState } from "./appInternals.js";
-import type { ThrustCommand } from "./controls.js";
-import { maxThrustAcceleration } from "./controls.js";
+import type { RcsCommand, ThrustCommand } from "./controls.js";
+import {
+  maxRcsTranslationAcceleration,
+  maxThrustAcceleration,
+} from "./controls.js";
 
 // Scratch vector for applyThrustToVelocity
 const cvScratch = vec3.zero();
@@ -30,7 +33,7 @@ function applyThrustToVelocity(
   body: ControlledBodyState,
 ): void {
   if (dtMillis === 0) return;
-  if (thrust.forward === 0 && thrust.right === 0) return;
+  if (thrust.forward === 0) return;
 
   const { frame, velocity } = body;
   const accelScale = (maxThrustAcceleration * dtMillis) / 1000;
@@ -38,10 +41,6 @@ function applyThrustToVelocity(
   if (thrust.forward !== 0) {
     vec3.scaleInto(cvScratch, accelScale * thrust.forward, frame.forward);
     vec3.addInto(body.velocity, velocity, cvScratch);
-  }
-  if (thrust.right !== 0) {
-    vec3.scaleInto(cvScratch, accelScale * thrust.right, frame.right);
-    vec3.addInto(body.velocity, body.velocity, cvScratch);
   }
 }
 
@@ -58,6 +57,24 @@ export function applyThrust(
   }
 
   applyThrustToVelocity(dtMillis, thrust, controlledShip);
+}
+
+/**
+ * Applies RCS translation jets into the ship's body velocity (lateral only).
+ */
+export function applyRcsTranslation(
+  dtMillis: number,
+  controlledShip: ShipBody,
+  rcs: RcsCommand,
+): void {
+  if (dtMillis === 0) {
+    return;
+  }
+  if (rcs.right === 0) return;
+
+  const accelScale = (maxRcsTranslationAcceleration * dtMillis) / 1000;
+  vec3.scaleInto(cvScratch, accelScale * rcs.right, controlledShip.frame.right);
+  vec3.addInto(controlledShip.velocity, controlledShip.velocity, cvScratch);
 }
 
 /**

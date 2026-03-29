@@ -70,6 +70,7 @@ export function createHeadlessLoop(
 
   const tickOutput: TickOutput = {
     currentThrustLevel: 0,
+    currentRcsLevel: 0,
   };
 
   const step = (

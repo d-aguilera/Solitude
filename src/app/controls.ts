@@ -13,8 +13,10 @@ import {
 import type { ControlInput } from "./controlPorts.js";
 import type { PilotLookState } from "./scenePorts.js";
 
-// Max thrust acceleration in m/s^2 at 100% thrust
+// Max main-engine thrust acceleration in m/s^2 at 100% thrust
 export const maxThrustAcceleration = 1_000_000; // ~ 100_000 G
+// Max RCS translation acceleration in m/s^2 (independent of thrust level).
+export const maxRcsTranslationAcceleration = 20_000; // ~ 2_000 G
 
 // Pilot look rates are in radians per millisecond.
 const lookSpeed = 0.0015;
@@ -38,18 +40,27 @@ export function getThrustPercentForLevel(thrustLevel: number): number {
 }
 
 export interface ThrustCommand {
+  /** Signed main-engine thrust percent in [-1, 1]. */
   forward: number;
+}
+
+export interface RcsCommand {
+  /** Signed RCS translation command in [-1, 1] along the ship-right axis. */
   right: number;
+}
+
+export interface PropulsionCommand {
+  main: ThrustCommand;
+  rcs: RcsCommand;
 }
 
 export function updateControlState(
   controlInput: ControlInput,
   controlState: SimControlState,
-): ThrustCommand {
+): void {
   updateThrustLevelFromInput(controlInput, controlState);
   controlState.alignToVelocity = controlInput.alignToVelocity;
   controlState.alignToBody = controlInput.alignToBody;
-  return getThrustCommand(controlInput, controlState);
 }
 
 /**
@@ -147,25 +158,31 @@ function updateThrustLevelFromInput(
 }
 
 /**
- * Signed thrust percent in [-1, 1]:
+ * Signed main-engine thrust percent in [-1, 1]:
  *  - Sign from Space (forward) / B (backward)
- *  - Magnitude from stored thrust level (set by 0–5) in the given state.
+ *  - Magnitude from stored thrust level (set by 0–9) in the given state.
  */
-function getThrustCommand(
+export function getMainThrustCommand(
   controlInput: ControlInput,
   controlState: SimControlState,
 ): ThrustCommand {
-  const { burnBackwards, burnForward, burnLeft, burnRight } = controlInput;
+  const { burnBackwards, burnForward } = controlInput;
   const mag = shipThrustValues[controlState.thrustLevel];
   const forward = burnForward ? mag : 0;
   const backward = burnBackwards ? mag : 0;
-  const left = burnLeft ? mag : 0;
-  const right = burnRight ? mag : 0;
 
-  return {
-    forward: forward - backward,
-    right: right - left,
-  };
+  return { forward: forward - backward };
+}
+
+/**
+ * Signed RCS translation command in [-1, 1] for N/M lateral burns.
+ */
+export function getRcsCommand(controlInput: ControlInput): RcsCommand {
+  const { burnLeft, burnRight } = controlInput;
+  if (burnLeft === burnRight) {
+    return { right: 0 };
+  }
+  return { right: burnRight ? 1 : -1 };
 }
 
 /**

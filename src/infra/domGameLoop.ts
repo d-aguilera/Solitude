@@ -87,6 +87,7 @@ export function runLoop({
 
   const tickOutput: TickOutput = {
     currentThrustLevel: 0,
+    currentRcsLevel: 0,
   };
 
   const pilotViewRenderParams: ViewRenderParams = {
@@ -130,6 +131,7 @@ export function runLoop({
 
   const hudRenderParams: HudRenderParams = {
     currentThrustLevel: 0,
+    currentRcsLevel: 0,
     currentTimeScale: 0,
     fps: 0,
     orbitReadout: null,
@@ -197,6 +199,7 @@ export function runLoop({
 
     if (shouldRenderHud) {
       hudRenderParams.currentThrustLevel = tickOutput.currentThrustLevel;
+      hudRenderParams.currentRcsLevel = tickOutput.currentRcsLevel;
       hudRenderParams.currentTimeScale = timeScale;
       hudRenderParams.fps = fps;
       hudRenderParams.orbitReadout = computeShipOrbitReadout(

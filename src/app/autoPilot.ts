@@ -3,7 +3,7 @@ import { getDominantBody, getDominantBodyPrimary } from "../domain/orbit";
 import { type Vec3, vec3 } from "../domain/vec3";
 import { parameters } from "../global/parameters";
 import type { AttitudeCommand, ControlledBodyState } from "./appInternals";
-import type { ThrustCommand } from "./controls";
+import type { PropulsionCommand, RcsCommand, ThrustCommand } from "./controls";
 
 // Max rate at which the ship can reorient itself toward its velocity vector.
 const alignToVelocityMaxAngularSpeed = 2.0; // rad/s
@@ -37,7 +37,12 @@ const alignToTangentMaxAngularSpeed = 1.6; // rad/s
 const alignToTangentKp = 3.0;
 const alignToTangentKd = 1.0;
 
-const circleZeroThrust: ThrustCommand = { forward: 0, right: 0 };
+const circleZeroThrust: ThrustCommand = { forward: 0 };
+const circleZeroRcs: RcsCommand = { right: 0 };
+const circleZeroPropulsion: PropulsionCommand = {
+  main: circleZeroThrust,
+  rcs: circleZeroRcs,
+};
 
 export function getDominantBodyDirection(
   { position }: ControlledBodyState,
@@ -274,19 +279,20 @@ export function computeCircleNowThrust(
   world: World,
   maxThrustPercent: number,
   maxThrustAcceleration: number,
-): ThrustCommand {
+  maxRcsTranslationAcceleration: number,
+): PropulsionCommand {
   if (maxThrustPercent <= 0 || maxThrustAcceleration <= 0) {
-    return circleZeroThrust;
+    return circleZeroPropulsion;
   }
   const dtSec = dtMillis / 1000;
-  if (dtSec <= 0) return circleZeroThrust;
+  if (dtSec <= 0) return circleZeroPropulsion;
 
   const primary = getDominantBodyPrimary(world, ship.position);
-  if (!primary) return circleZeroThrust;
+  if (!primary) return circleZeroPropulsion;
 
   vec3.subInto(circleRScratch, ship.position, primary.body.position);
   const r2 = vec3.lengthSq(circleRScratch);
-  if (r2 === 0) return circleZeroThrust;
+  if (r2 === 0) return circleZeroPropulsion;
   const r = Math.sqrt(r2);
   vec3.scaleInto(circleRHatScratch, 1 / r, circleRScratch);
 
@@ -314,7 +320,7 @@ export function computeCircleNowThrust(
   }
 
   const mu = parameters.newtonG * primary.mass;
-  if (mu === 0) return circleZeroThrust;
+  if (mu === 0) return circleZeroPropulsion;
 
   const circularSpeed = Math.sqrt(mu / r);
   const deltaVRadial = -radialSpeed;
@@ -331,11 +337,11 @@ export function computeCircleNowThrust(
   }
 
   const deltaVMag = vec3.length(circleDeltaVScratch);
-  if (deltaVMag < 1e-9) return circleZeroThrust;
+  if (deltaVMag < 1e-9) return circleZeroPropulsion;
 
   const maxAccel = maxThrustAcceleration * clamp(maxThrustPercent, 0, 1);
   const maxDeltaV = maxAccel * dtSec;
-  if (maxDeltaV <= 0) return circleZeroThrust;
+  if (maxDeltaV <= 0) return circleZeroPropulsion;
 
   let scale = 1;
   if (deltaVMag > maxDeltaV) {
@@ -348,11 +354,18 @@ export function computeCircleNowThrust(
   const forwardCmd =
     vec3.dot(circleAccelScratch, ship.frame.forward) / maxThrustAcceleration;
   const rightCmd =
-    vec3.dot(circleAccelScratch, ship.frame.right) / maxThrustAcceleration;
+    maxRcsTranslationAcceleration > 0
+      ? vec3.dot(circleAccelScratch, ship.frame.right) /
+        maxRcsTranslationAcceleration
+      : 0;
 
   return {
-    forward: clamp(forwardCmd, -maxThrustPercent, maxThrustPercent),
-    right: clamp(rightCmd, -maxThrustPercent, maxThrustPercent),
+    main: {
+      forward: clamp(forwardCmd, -maxThrustPercent, maxThrustPercent),
+    },
+    rcs: {
+      right: clamp(rightCmd, -1, 1),
+    },
   };
 }
 

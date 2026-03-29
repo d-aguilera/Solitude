@@ -9,6 +9,7 @@ export class DefaultHudRenderer implements HudRenderer {
   renderInto(
     into: RenderedHud,
     {
+      currentRcsLevel,
       currentThrustLevel,
       currentTimeScale,
       orbitReadout,
@@ -30,8 +31,16 @@ export class DefaultHudRenderer implements HudRenderer {
       thrustPadding,
       currentThrustLevel.toString(),
     );
-    hudRow2[3] = "Time scale: ".concat(currentTimeScale.toString());
-    hudRow3[3] = "Sim: ".concat(formatSimTime(simTimeMillis / 1000));
+    const rcsPadding = currentRcsLevel < 0 ? "" : " ";
+    hudRow2[3] = "RCS: ".concat(
+      rcsPadding,
+      currentRcsLevel.toFixed(2),
+    );
+    hudRow3[3] = "Time: ".concat(
+      formatSimTime(simTimeMillis / 1000),
+      " x",
+      currentTimeScale.toString(),
+    );
 
     // Left column: orbit aids
     if (orbitReadout) {

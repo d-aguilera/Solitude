@@ -19,6 +19,7 @@ export interface TickParams {
 
 export interface TickOutput {
   currentThrustLevel: number;
+  currentRcsLevel: number;
 }
 
 export type Trajectory = {
