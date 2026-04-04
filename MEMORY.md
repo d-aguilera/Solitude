@@ -21,6 +21,7 @@
 - **Physics**: Newtonian N-body with leapfrog integration for stability.
 - **Solar system data**: use real-ish values (AU, km, approximate J2000 elements) for plausibility.
 - **Rendering**: default Canvas 2D for portability; WebGL path exists if needed.
+- **Math helpers**: always use math helpers when available for vector/matrix/trig instead of inlining the math.
 
 ## Architecture map
 - `src/domain/`: math + physics primitives (vec/mat, orbit, collisions, gravity state).

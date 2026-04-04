@@ -34,11 +34,6 @@ const shipThrustValues = Array.from<number, number>(
   (_, i) => Math.pow(i, shipThrustExponent) / shipThrustMaxPow,
 );
 
-export function getThrustPercentForLevel(thrustLevel: number): number {
-  const clamped = Math.min(9, Math.max(0, Math.floor(thrustLevel)));
-  return shipThrustValues[clamped];
-}
-
 export interface ThrustCommand {
   /** Signed main-engine thrust percent in [-1, 1]. */
   forward: number;

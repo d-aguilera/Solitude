@@ -101,9 +101,8 @@ export function getTangentialDirection(
   // Fallback: use ship-right projected onto the orbital plane.
   vec3.copyInto(tangentialScratch, ship.frame.right);
   const proj = vec3.dot(tangentialScratch, rHatScratch);
-  tangentialScratch.x -= proj * rHatScratch.x;
-  tangentialScratch.y -= proj * rHatScratch.y;
-  tangentialScratch.z -= proj * rHatScratch.z;
+  vec3.scaleInto(vRelScratch, proj, rHatScratch);
+  vec3.subInto(tangentialScratch, tangentialScratch, vRelScratch);
   const projLen = vec3.length(tangentialScratch);
   if (projLen <= 1e-4) return null;
 
@@ -129,9 +128,8 @@ export function computeRollToDirectionCommand(
 
   vec3.scaleInto(rollProjectedScratch, 1 / len, targetDirection);
   const proj = vec3.dot(rollProjectedScratch, forward);
-  rollProjectedScratch.x -= proj * forward.x;
-  rollProjectedScratch.y -= proj * forward.y;
-  rollProjectedScratch.z -= proj * forward.z;
+  vec3.scaleInto(rollAxisScratch, proj, forward);
+  vec3.subInto(rollProjectedScratch, rollProjectedScratch, rollAxisScratch);
 
   const projLen = vec3.length(rollProjectedScratch);
   if (projLen < 1e-6) return null;
@@ -139,7 +137,7 @@ export function computeRollToDirectionCommand(
 
   const currentRight = state.frame.right;
   const dot = vec3.dot(currentRight, rollProjectedScratch);
-  const clampedDot = Math.min(1, Math.max(-1, dot));
+  const clampedDot = clamp(dot, -1, 1);
   const angle = Math.acos(clampedDot);
   if (angle < 1e-4) return null;
 
@@ -149,9 +147,10 @@ export function computeRollToDirectionCommand(
   const omegaRoll = state.angularVelocity.roll;
   const rawSpeed =
     alignToTangentKp * signedAngle - alignToTangentKd * omegaRoll;
-  const speed = Math.max(
+  const speed = clamp(
+    rawSpeed,
     -alignToTangentMaxAngularSpeed,
-    Math.min(alignToTangentMaxAngularSpeed, rawSpeed),
+    alignToTangentMaxAngularSpeed,
   );
   return { roll: speed, pitch: 0, yaw: 0 };
 }
@@ -222,7 +221,7 @@ export function computeAlignToDirectionCommand(
 
   // If we're already nearly aligned, do nothing.
   const dot = vec3.dot(currentForward, targetForward);
-  const clampedDot = Math.min(1, Math.max(-1, dot));
+  const clampedDot = clamp(dot, -1, 1);
   const angle = Math.acos(clampedDot);
   if (angle < 1e-4) {
     return null;
@@ -250,25 +249,19 @@ export function computeAlignToDirectionCommand(
   }
 
   const omega = state.angularVelocity;
-  omegaWorldScratch.x =
-    state.frame.forward.x * omega.roll +
-    state.frame.right.x * omega.pitch +
-    state.frame.up.x * omega.yaw;
-  omegaWorldScratch.y =
-    state.frame.forward.y * omega.roll +
-    state.frame.right.y * omega.pitch +
-    state.frame.up.y * omega.yaw;
-  omegaWorldScratch.z =
-    state.frame.forward.z * omega.roll +
-    state.frame.right.z * omega.pitch +
-    state.frame.up.z * omega.yaw;
+  vec3.scaleInto(omegaWorldScratch, omega.roll, state.frame.forward);
+  vec3.scaleInto(fullAxisScratch, omega.pitch, state.frame.right);
+  vec3.addInto(omegaWorldScratch, omegaWorldScratch, fullAxisScratch);
+  vec3.scaleInto(fullAxisScratch, omega.yaw, state.frame.up);
+  vec3.addInto(omegaWorldScratch, omegaWorldScratch, fullAxisScratch);
 
   const omegaAlongAxis = vec3.dot(omegaWorldScratch, axisScratch);
   const rawSpeed =
     alignToVelocityKp * angle - alignToVelocityKd * omegaAlongAxis;
-  const speed = Math.max(
+  const speed = clamp(
+    rawSpeed,
     -alignToVelocityMaxAngularSpeed,
-    Math.min(alignToVelocityMaxAngularSpeed, rawSpeed),
+    alignToVelocityMaxAngularSpeed,
   );
   return commandFromWorldAxis(state, axisScratch, speed);
 }
@@ -277,15 +270,14 @@ export function computeCircleNowThrust(
   dtMillis: number,
   ship: ControlledBodyState,
   world: World,
-  maxThrustPercent: number,
   maxThrustAcceleration: number,
   maxRcsTranslationAcceleration: number,
 ): PropulsionCommand {
-  if (maxThrustPercent <= 0 || maxThrustAcceleration <= 0) {
+  if (maxThrustAcceleration === 0) {
     return circleZeroPropulsion;
   }
   const dtSec = dtMillis / 1000;
-  if (dtSec <= 0) return circleZeroPropulsion;
+  if (dtSec === 0) return circleZeroPropulsion;
 
   const primary = getDominantBodyPrimary(world, ship.position);
   if (!primary) return circleZeroPropulsion;
@@ -309,9 +301,8 @@ export function computeCircleNowThrust(
   } else {
     vec3.copyInto(circleTScratch, ship.frame.right);
     const proj = vec3.dot(circleTScratch, circleRHatScratch);
-    circleTScratch.x -= proj * circleRHatScratch.x;
-    circleTScratch.y -= proj * circleRHatScratch.y;
-    circleTScratch.z -= proj * circleRHatScratch.z;
+    vec3.scaleInto(circleVRelScratch, proj, circleRHatScratch);
+    vec3.subInto(circleTScratch, circleTScratch, circleVRelScratch);
     const projLen = vec3.length(circleTScratch);
     if (projLen > 1e-6) {
       vec3.scaleInto(circleTScratch, 1 / projLen, circleTScratch);
@@ -326,33 +317,28 @@ export function computeCircleNowThrust(
   const deltaVRadial = -radialSpeed;
   const deltaVTangential = circularSpeed - tangentialSpeed;
 
-  circleDeltaVScratch.x = circleRHatScratch.x * deltaVRadial;
-  circleDeltaVScratch.y = circleRHatScratch.y * deltaVRadial;
-  circleDeltaVScratch.z = circleRHatScratch.z * deltaVRadial;
+  vec3.scaleInto(circleDeltaVScratch, deltaVRadial, circleRHatScratch);
 
   if (hasTangentialDir) {
-    circleDeltaVScratch.x += circleTScratch.x * deltaVTangential;
-    circleDeltaVScratch.y += circleTScratch.y * deltaVTangential;
-    circleDeltaVScratch.z += circleTScratch.z * deltaVTangential;
+    vec3.scaleInto(circleAccelScratch, deltaVTangential, circleTScratch);
+    vec3.addInto(circleDeltaVScratch, circleDeltaVScratch, circleAccelScratch);
   }
 
   const deltaVMag = vec3.length(circleDeltaVScratch);
   if (deltaVMag < 1e-9) return circleZeroPropulsion;
 
-  const maxAccel = maxThrustAcceleration * clamp(maxThrustPercent, 0, 1);
-  const maxDeltaV = maxAccel * dtSec;
+  const maxDeltaV = maxThrustAcceleration * dtSec;
   if (maxDeltaV <= 0) return circleZeroPropulsion;
 
   let scale = 1;
   if (deltaVMag > maxDeltaV) {
     scale = maxDeltaV / deltaVMag;
   }
-  circleAccelScratch.x = (circleDeltaVScratch.x * scale) / dtSec;
-  circleAccelScratch.y = (circleDeltaVScratch.y * scale) / dtSec;
-  circleAccelScratch.z = (circleDeltaVScratch.z * scale) / dtSec;
+  vec3.scaleInto(circleAccelScratch, scale / dtSec, circleDeltaVScratch);
 
   const forwardCmd =
     vec3.dot(circleAccelScratch, ship.frame.forward) / maxThrustAcceleration;
+
   const rightCmd =
     maxRcsTranslationAcceleration > 0
       ? vec3.dot(circleAccelScratch, ship.frame.right) /
@@ -361,7 +347,7 @@ export function computeCircleNowThrust(
 
   return {
     main: {
-      forward: clamp(forwardCmd, -maxThrustPercent, maxThrustPercent),
+      forward: clamp(forwardCmd, -1, 1),
     },
     rcs: {
       right: clamp(rightCmd, -1, 1),

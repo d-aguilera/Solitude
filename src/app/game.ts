@@ -4,9 +4,12 @@ import { buildInitialGravityState } from "../domain/gravityState.js";
 import type { ControlledBodyState, SimControlState } from "./appInternals.js";
 import { computeCircleNowThrust } from "./autoPilot.js";
 import type { ControlInput } from "./controlPorts.js";
-import type { PropulsionCommand, RcsCommand, ThrustCommand } from "./controls.js";
+import type {
+  PropulsionCommand,
+  RcsCommand,
+  ThrustCommand,
+} from "./controls.js";
 import {
-  getThrustPercentForLevel,
   getMainThrustCommand,
   getRcsCommand,
   maxRcsTranslationAcceleration,
@@ -69,7 +72,11 @@ export function createTickHandler(
     );
     applyShipRotation(dtMillis, worldAndScene.mainShip);
     applyThrust(dtMillis, worldAndScene.mainShip, propulsionCommand.main);
-    applyRcsTranslation(dtMillis, worldAndScene.mainShip, propulsionCommand.rcs);
+    applyRcsTranslation(
+      dtMillis,
+      worldAndScene.mainShip,
+      propulsionCommand.rcs,
+    );
     applyGravity(dtMillisSim, gravityEngine, gravityState);
     resolveCollisions(worldAndScene.world);
     applyCelestialSpin(dtMillisSim, worldAndScene.world);
@@ -96,12 +103,10 @@ function getPropulsionCommandForTick(
     return { main: manualMain, rcs: manualRcs };
   }
 
-  const thrustPercent = 1.0;
   return computeCircleNowThrust(
     dtMillis,
     ship,
     world,
-    thrustPercent,
     maxThrustAcceleration,
     maxRcsTranslationAcceleration,
   );
