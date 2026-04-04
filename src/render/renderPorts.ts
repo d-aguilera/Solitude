@@ -25,6 +25,7 @@ export interface HudRenderParams {
   currentThrustLevel: number;
   currentRcsLevel: number;
   currentTimeScale: number;
+  circleNowDebug?: CircleNowHudDebug | null;
   fps: number;
   orbitReadout?: OrbitReadout | null;
   paused: boolean;
@@ -32,6 +33,18 @@ export interface HudRenderParams {
   profilingEnabled: boolean;
   simTimeMillis: number; // accumulated simulation time.
   speedMps: number;
+}
+
+export type CircleNowHudDebugSource = "velocity" | "fallback" | "none";
+
+export interface CircleNowHudDebug {
+  active: boolean;
+  radialSpeed: number;
+  tangentialSpeed: number;
+  tangentialSource: CircleNowHudDebugSource;
+  tangentialDirDot: number | null;
+  tangentialDirDeltaDeg: number | null;
+  tangentialDirRateDegPerSec: number | null;
 }
 
 export interface Point {

@@ -9,6 +9,7 @@ export class DefaultHudRenderer implements HudRenderer {
   renderInto(
     into: RenderedHud,
     {
+      circleNowDebug,
       currentRcsLevel,
       currentThrustLevel,
       currentTimeScale,
@@ -23,6 +24,7 @@ export class DefaultHudRenderer implements HudRenderer {
     const hudRow1 = into[1];
     const hudRow2 = into[2];
     const hudRow3 = into[3];
+    const hudRow4 = into[4];
 
     // Fourth column: general flight info (right-aligned)
     hudRow0[3] = "Speed: ".concat(formatSpeed(speedMps));
@@ -107,6 +109,53 @@ export class DefaultHudRenderer implements HudRenderer {
       hudRow1[2] = "";
       hudRow2[2] = "";
       hudRow3[2] = "";
+    }
+
+    if (hudRow4) {
+      hudRow4[0] = "";
+      hudRow4[1] = "";
+      hudRow4[2] = "";
+      hudRow4[3] = "";
+
+      if (circleNowDebug?.active) {
+        const warnings: string[] = [];
+        if (circleNowDebug.tangentialSource === "none") {
+          warnings.push("NO TAN");
+        } else {
+          if (circleNowDebug.tangentialSpeed < 1) {
+            warnings.push("TAN LOW");
+          }
+          if (circleNowDebug.tangentialSource === "fallback") {
+            warnings.push("FALLBACK");
+          }
+        }
+        if (
+          circleNowDebug.tangentialDirDot != null &&
+          circleNowDebug.tangentialDirDot < -0.2
+        ) {
+          warnings.push("TAN FLIP");
+        } else if (
+          circleNowDebug.tangentialDirDeltaDeg != null &&
+          circleNowDebug.tangentialDirDeltaDeg > 45
+        ) {
+          warnings.push("TAN SWING");
+        }
+        if (
+          circleNowDebug.tangentialDirRateDegPerSec != null &&
+          circleNowDebug.tangentialDirRateDegPerSec > 20
+        ) {
+          warnings.push(
+            "TAN RATE "
+              .concat(
+                circleNowDebug.tangentialDirRateDegPerSec.toFixed(0),
+                "°/s",
+              ),
+          );
+        }
+        hudRow4[2] = warnings.length
+          ? "!! CN WARN: ".concat(warnings.join(" | "))
+          : "";
+      }
     }
   }
 }

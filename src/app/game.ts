@@ -96,7 +96,7 @@ function getPropulsionCommandForTick(
     return { main: manualMain, rcs: manualRcs };
   }
 
-  const thrustPercent = getThrustPercentForLevel(controlState.thrustLevel);
+  const thrustPercent = 1.0;
   return computeCircleNowThrust(
     dtMillis,
     ship,

@@ -5,6 +5,10 @@
 - **Core value**: real-ish Newtonian gravity and a controllable ship, rendered in 2D/3D projections.
 - **Primary user**: someone exploring orbital dynamics and spacecraft controls.
 
+## Spin-off memory docs
+- `MEMORY_CIRCLE_NOW.md`: dedicated context for the "circle now" autopilot and its rolling bug.
+- **Note**: See the troubleshooting discipline section in `MEMORY_CIRCLE_NOW.md` and keep it updated after every iteration.
+
 ## Current focus
 - Split the architecture to support a future headless simulation server.
 
