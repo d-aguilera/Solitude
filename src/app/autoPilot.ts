@@ -211,10 +211,10 @@ export function computeAlignToDirectionCommand(
   state: ControlledBodyState,
   targetDirection: Vec3,
 ): AttitudeCommand | null {
+  if (dtMillis === 0) return null;
+
   const len = vec3.length(targetDirection);
   if (len === 0) return null;
-
-  if (dtMillis <= 0) return null;
 
   vec3.scaleInto(targetForwardScratch, 1 / len, targetDirection);
   const targetForward = targetForwardScratch;
