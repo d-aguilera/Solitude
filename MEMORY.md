@@ -48,7 +48,7 @@
 - Thrust level: `0–9` set magnitude (used by `Space`/`B`).
 - Main engine: `Space` forward, `B` backward.
 - RCS translation: `N` left, `M` right.
-- Attitude: `W/S` pitch, `A/D` roll, `Q/E` yaw.
+- Attitude: `W/S` pitch, `Q/E` roll, `A/D` yaw.
 - Autopilot: `V` align to velocity, `C` align to dominant body, `X` circle now.
 - Camera offset: `U/J` forward/back, `I/K` up/down.
 - Time scale: `[` decrease, `]` increase.
