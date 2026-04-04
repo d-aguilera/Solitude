@@ -8,6 +8,7 @@ import type {
 } from "../app/runtimePorts.js";
 import { updateSceneGraph } from "../app/scene.js";
 import type { SceneControlState, SceneObject } from "../app/scenePorts.js";
+import { EPS_LEN_COARSE, EPS_SPEED_COARSE } from "../domain/epsilon.js";
 import { computeShipOrbitReadout, getDominantBodyPrimary } from "../domain/orbit.js";
 import { vec3 } from "../domain/vec3.js";
 import { parameters } from "../global/parameters.js";
@@ -327,7 +328,7 @@ export function runLoop({
     debug.tangentialSpeed = tangentialSpeed;
 
     let directionValid = false;
-    if (tangentialSpeed > 1e-4) {
+    if (tangentialSpeed > EPS_SPEED_COARSE) {
       vec3.scaleInto(debugTScratch, 1 / tangentialSpeed, debugTScratch);
       debug.tangentialSource = "velocity";
       directionValid = true;
@@ -338,7 +339,7 @@ export function runLoop({
       debugTScratch.y -= proj * debugRHatScratch.y;
       debugTScratch.z -= proj * debugRHatScratch.z;
       const projLen = vec3.length(debugTScratch);
-      if (projLen > 1e-4) {
+      if (projLen > EPS_LEN_COARSE) {
         vec3.scaleInto(debugTScratch, 1 / projLen, debugTScratch);
         debug.tangentialSource = "fallback";
         directionValid = true;

@@ -22,6 +22,7 @@
 - **Solar system data**: use real-ish values (AU, km, approximate J2000 elements) for plausibility.
 - **Rendering**: default Canvas 2D for portability; WebGL path exists if needed.
 - **Math helpers**: always use math helpers when available for vector/matrix/trig instead of inlining the math.
+- **Epsilons**: use the shared constants in `src/domain/epsilon.ts` instead of inline literals.
 
 ## Architecture map
 - `src/domain/`: math + physics primitives (vec/mat, orbit, collisions, gravity state).

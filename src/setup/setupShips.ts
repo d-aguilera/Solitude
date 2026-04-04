@@ -1,5 +1,6 @@
 import type { ShipPhysicsConfig } from "../app/physicsConfigPorts";
 import type { ShipBody, ShipPhysics, World } from "../domain/domainPorts";
+import { DOT_PARALLEL_COS, EPS_LEN, EPS_LEN_STRICT } from "../domain/epsilon";
 import { localFrame, type LocalFrame } from "../domain/localFrame";
 import { mat3 } from "../domain/mat3";
 import { circularSpeedAtRadius } from "../domain/phys";
@@ -79,10 +80,10 @@ function getFrameFromVelocity(velocity: Vec3): LocalFrame {
   const axis = vec3.crossInto(axisScratch, baseForward, targetForward);
   const axisLen = vec3.length(axis);
 
-  if (axisLen < 1e-6) {
+  if (axisLen < EPS_LEN) {
     // Vectors are parallel or anti-parallel.
     const dot = vec3.dot(baseForward, targetForward);
-    if (dot > 0.999999) {
+    if (dot > DOT_PARALLEL_COS) {
       // Same direction: no change needed.
       return localFrame.clone(initialFrame);
     }
@@ -161,7 +162,7 @@ function computeOrbitVelocity(
     const projMag = vec3.dot(planetDir, radialDir);
     const proj = vec3.scaleInto(vec3.zero(), projMag, radialDir);
     const tangential = vec3.subInto(vec3.zero(), planetDir, proj);
-    if (vec3.length(tangential) > 1e-8) {
+    if (vec3.length(tangential) > EPS_LEN_STRICT) {
       vec3.normalizeInto(tangential);
       tangentialDir = tangential;
       hasTangential = true;

@@ -1,5 +1,6 @@
-import type { BodyId, RotatingBody, ShipBody, World } from "./domainPorts.js";
 import { parameters } from "../global/parameters.js";
+import type { BodyId, RotatingBody, ShipBody, World } from "./domainPorts.js";
+import { EPS_ECCENTRICITY, EPS_TIME_SEC } from "./epsilon.js";
 import { type Vec3, vec3 } from "./vec3.js";
 
 export interface OrbitReadout {
@@ -56,7 +57,9 @@ export function computeShipOrbitReadout(
 
   const rHat = vec3.scaleInto(rHatScratch, 1 / r, rScratch);
   const radialSpeed = vec3.dot(rHat, vScratch);
-  const tangentialSpeed = Math.sqrt(Math.max(0, v2 - radialSpeed * radialSpeed));
+  const tangentialSpeed = Math.sqrt(
+    Math.max(0, v2 - radialSpeed * radialSpeed),
+  );
   const circularSpeed = Math.sqrt(mu / r);
   const deltaVCircularRadial = -radialSpeed;
   const deltaVCircularTangential = circularSpeed - tangentialSpeed;
@@ -130,10 +133,7 @@ export function getDominantBodyPrimary(
   return findDominantBody(world, position);
 }
 
-function findDominantBody(
-  world: World,
-  position: Vec3,
-): GravityPrimary | null {
+function findDominantBody(world: World, position: Vec3): GravityPrimary | null {
   let best: GravityPrimary | null = null;
   let bestAccel = -Infinity;
 
@@ -193,12 +193,17 @@ function computeApsisTimers(
   radialSpeed: number,
   mu: number,
 ): { timeToPeriapsisSec: number | null; timeToApoapsisSec: number | null } {
-  const eps = 1e-5;
-  if (!isBound || !Number.isFinite(semiMajorAxis) || eccentricity < eps) {
+  if (
+    !isBound ||
+    !Number.isFinite(semiMajorAxis) ||
+    eccentricity < EPS_ECCENTRICITY
+  ) {
     return { timeToPeriapsisSec: null, timeToApoapsisSec: null };
   }
 
-  const meanMotion = Math.sqrt(mu / (semiMajorAxis * semiMajorAxis * semiMajorAxis));
+  const meanMotion = Math.sqrt(
+    mu / (semiMajorAxis * semiMajorAxis * semiMajorAxis),
+  );
   if (meanMotion === 0) {
     return { timeToPeriapsisSec: null, timeToApoapsisSec: null };
   }
@@ -218,7 +223,7 @@ function computeApsisTimers(
 
   const twoPi = Math.PI * 2;
   let timeToPeriapsisSec = (twoPi - M) / meanMotion;
-  if (timeToPeriapsisSec < 1e-6) timeToPeriapsisSec = 0;
+  if (timeToPeriapsisSec < EPS_TIME_SEC) timeToPeriapsisSec = 0;
 
   const timeToApoapsisSec =
     M <= Math.PI ? (Math.PI - M) / meanMotion : (3 * Math.PI - M) / meanMotion;

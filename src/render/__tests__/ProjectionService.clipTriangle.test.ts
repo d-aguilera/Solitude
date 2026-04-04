@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { DomainCameraPose } from "../../app/scenePorts.js";
+import { EPS_LEN } from "../../domain/epsilon.js";
 import { vec3, type Vec3 } from "../../domain/vec3.js";
 import { ProjectionService } from "../ProjectionService.js";
 
@@ -97,7 +98,7 @@ describe("ProjectionService.clipTriangleAgainstFrustumCamera", () => {
     for (let i = 0; i < triCount; i++) {
       const [T0, T1, T2] = into[i];
       [T0, T1, T2].forEach((p) => {
-        expect(p.y).toBeGreaterThanOrEqual(0.01 - 1e-6);
+        expect(p.y).toBeGreaterThanOrEqual(0.01 - EPS_LEN);
       });
     }
   });

@@ -1,4 +1,12 @@
 import type { World } from "../domain/domainPorts";
+import {
+  EPS_ANGLE_RAD,
+  EPS_DELTA_V,
+  EPS_LEN,
+  EPS_LEN_COARSE,
+  EPS_SPEED_COARSE,
+  EPS_SPEED_FINE,
+} from "../domain/epsilon";
 import { getDominantBody, getDominantBodyPrimary } from "../domain/orbit";
 import { type Vec3, vec3 } from "../domain/vec3";
 import { parameters } from "../global/parameters";
@@ -31,6 +39,21 @@ const circleTScratch: Vec3 = vec3.zero();
 const circleDeltaVScratch: Vec3 = vec3.zero();
 const circleAccelScratch: Vec3 = vec3.zero();
 const omegaWorldScratch: Vec3 = vec3.zero();
+const circleProjScratch: Vec3 = vec3.zero();
+
+type DominantPrimary = NonNullable<ReturnType<typeof getDominantBodyPrimary>>;
+type CircleNowState = {
+  r: number;
+  radialSpeed: number;
+  tangentialSpeed: number;
+  hasTangentialDir: boolean;
+};
+const circleStateScratch: CircleNowState = {
+  r: 0,
+  radialSpeed: 0,
+  tangentialSpeed: 0,
+  hasTangentialDir: false,
+};
 
 // Max rate at which the ship can roll to align with a tangential direction.
 const alignToTangentMaxAngularSpeed = 1.6; // rad/s
@@ -93,7 +116,7 @@ export function getTangentialDirection(
   vec3.subInto(tangentialScratch, vRelScratch, tangentialScratch);
 
   const tLen = vec3.length(tangentialScratch);
-  if (tLen > 1e-4) {
+  if (tLen > EPS_SPEED_COARSE) {
     vec3.scaleInto(tangentialScratch, 1 / tLen, tangentialScratch);
     return tangentialScratch;
   }
@@ -104,7 +127,7 @@ export function getTangentialDirection(
   vec3.scaleInto(vRelScratch, proj, rHatScratch);
   vec3.subInto(tangentialScratch, tangentialScratch, vRelScratch);
   const projLen = vec3.length(tangentialScratch);
-  if (projLen <= 1e-4) return null;
+  if (projLen <= EPS_LEN_COARSE) return null;
 
   vec3.scaleInto(tangentialScratch, 1 / projLen, tangentialScratch);
   return tangentialScratch;
@@ -132,14 +155,14 @@ export function computeRollToDirectionCommand(
   vec3.subInto(rollProjectedScratch, rollProjectedScratch, rollAxisScratch);
 
   const projLen = vec3.length(rollProjectedScratch);
-  if (projLen < 1e-6) return null;
+  if (projLen < EPS_LEN) return null;
   vec3.scaleInto(rollProjectedScratch, 1 / projLen, rollProjectedScratch);
 
   const currentRight = state.frame.right;
   const dot = vec3.dot(currentRight, rollProjectedScratch);
   const clampedDot = clamp(dot, -1, 1);
   const angle = Math.acos(clampedDot);
-  if (angle < 1e-4) return null;
+  if (angle < EPS_ANGLE_RAD) return null;
 
   vec3.crossInto(rollAxisScratch, currentRight, rollProjectedScratch);
   const sign = vec3.dot(rollAxisScratch, forward) >= 0 ? 1 : -1;
@@ -223,7 +246,7 @@ export function computeAlignToDirectionCommand(
   const dot = vec3.dot(currentForward, targetForward);
   const clampedDot = clamp(dot, -1, 1);
   const angle = Math.acos(clampedDot);
-  if (angle < 1e-4) {
+  if (angle < EPS_ANGLE_RAD) {
     return null;
   }
 
@@ -231,7 +254,7 @@ export function computeAlignToDirectionCommand(
   vec3.crossInto(fullAxisScratch, currentForward, targetForward);
   const axisLen = vec3.length(fullAxisScratch);
 
-  if (axisLen < 1e-6) {
+  if (axisLen < EPS_LEN) {
     // Parallel or anti-parallel: choose an arbitrary axis orthogonal to forward.
     if (clampedDot > 0) {
       return null;
@@ -239,7 +262,7 @@ export function computeAlignToDirectionCommand(
     const up = state.frame.up;
     vec3.crossInto(fallbackAxisScratch, currentForward, up);
     const fallbackLen = vec3.length(fallbackAxisScratch);
-    if (fallbackLen < 1e-6) {
+    if (fallbackLen < EPS_LEN) {
       vec3.copyInto(axisScratch, state.frame.right);
     } else {
       vec3.scaleInto(axisScratch, 1 / fallbackLen, fallbackAxisScratch);
@@ -266,6 +289,98 @@ export function computeAlignToDirectionCommand(
   return commandFromWorldAxis(state, axisScratch, speed);
 }
 
+function computeCircleNowState(
+  ship: ControlledBodyState,
+  primary: DominantPrimary,
+): CircleNowState | null {
+  vec3.subInto(circleRScratch, ship.position, primary.body.position);
+  const r2 = vec3.lengthSq(circleRScratch);
+  if (r2 === 0) return null;
+  const r = Math.sqrt(r2);
+  vec3.scaleInto(circleRHatScratch, 1 / r, circleRScratch);
+
+  vec3.subInto(circleVRelScratch, ship.velocity, primary.body.velocity);
+  const radialSpeed = vec3.dot(circleRHatScratch, circleVRelScratch);
+
+  const { tangentialSpeed, hasTangentialDir } = computeCircleTangentialDirection(
+    ship,
+    circleRHatScratch,
+    circleVRelScratch,
+    radialSpeed,
+    circleTScratch,
+  );
+
+  circleStateScratch.r = r;
+  circleStateScratch.radialSpeed = radialSpeed;
+  circleStateScratch.tangentialSpeed = tangentialSpeed;
+  circleStateScratch.hasTangentialDir = hasTangentialDir;
+  return circleStateScratch;
+}
+
+function computeCircleTangentialDirection(
+  ship: ControlledBodyState,
+  rHat: Vec3,
+  vRel: Vec3,
+  radialSpeed: number,
+  outT: Vec3,
+): { tangentialSpeed: number; hasTangentialDir: boolean } {
+  vec3.scaleInto(outT, radialSpeed, rHat);
+  vec3.subInto(outT, vRel, outT);
+  const tangentialSpeed = vec3.length(outT);
+  if (tangentialSpeed > EPS_SPEED_FINE) {
+    vec3.scaleInto(outT, 1 / tangentialSpeed, outT);
+    return { tangentialSpeed, hasTangentialDir: true };
+  }
+
+  vec3.copyInto(outT, ship.frame.right);
+  const proj = vec3.dot(outT, rHat);
+  vec3.scaleInto(circleProjScratch, proj, rHat);
+  vec3.subInto(outT, outT, circleProjScratch);
+  const projLen = vec3.length(outT);
+  if (projLen > EPS_LEN) {
+    vec3.scaleInto(outT, 1 / projLen, outT);
+    return { tangentialSpeed: 0, hasTangentialDir: true };
+  }
+
+  return { tangentialSpeed: 0, hasTangentialDir: false };
+}
+
+function computeCircleDeltaV(
+  radialSpeed: number,
+  tangentialSpeed: number,
+  hasTangentialDir: boolean,
+  circularSpeed: number,
+  rHat: Vec3,
+  tangentialDir: Vec3,
+  outDeltaV: Vec3,
+): number {
+  const deltaVRadial = -radialSpeed;
+  const deltaVTangential = circularSpeed - tangentialSpeed;
+
+  vec3.scaleInto(outDeltaV, deltaVRadial, rHat);
+  if (hasTangentialDir) {
+    vec3.scaleInto(circleAccelScratch, deltaVTangential, tangentialDir);
+    vec3.addInto(outDeltaV, outDeltaV, circleAccelScratch);
+  }
+
+  return vec3.length(outDeltaV);
+}
+
+function computeCircleAcceleration(
+  deltaV: Vec3,
+  deltaVMag: number,
+  maxThrustAcceleration: number,
+  dtSec: number,
+  outAccel: Vec3,
+): boolean {
+  const maxDeltaV = maxThrustAcceleration * dtSec;
+  if (maxDeltaV <= 0) return false;
+
+  const scale = deltaVMag > maxDeltaV ? maxDeltaV / deltaVMag : 1;
+  vec3.scaleInto(outAccel, scale / dtSec, deltaV);
+  return true;
+}
+
 export function computeCircleNowThrust(
   dtMillis: number,
   ship: ControlledBodyState,
@@ -282,59 +397,32 @@ export function computeCircleNowThrust(
   const primary = getDominantBodyPrimary(world, ship.position);
   if (!primary) return circleZeroPropulsion;
 
-  vec3.subInto(circleRScratch, ship.position, primary.body.position);
-  const r2 = vec3.lengthSq(circleRScratch);
-  if (r2 === 0) return circleZeroPropulsion;
-  const r = Math.sqrt(r2);
-  vec3.scaleInto(circleRHatScratch, 1 / r, circleRScratch);
-
-  vec3.subInto(circleVRelScratch, ship.velocity, primary.body.velocity);
-  const radialSpeed = vec3.dot(circleRHatScratch, circleVRelScratch);
-
-  vec3.scaleInto(circleTScratch, radialSpeed, circleRHatScratch);
-  vec3.subInto(circleTScratch, circleVRelScratch, circleTScratch);
-  const tangentialSpeed = vec3.length(circleTScratch);
-  let hasTangentialDir = false;
-  if (tangentialSpeed > 1e-6) {
-    vec3.scaleInto(circleTScratch, 1 / tangentialSpeed, circleTScratch);
-    hasTangentialDir = true;
-  } else {
-    vec3.copyInto(circleTScratch, ship.frame.right);
-    const proj = vec3.dot(circleTScratch, circleRHatScratch);
-    vec3.scaleInto(circleVRelScratch, proj, circleRHatScratch);
-    vec3.subInto(circleTScratch, circleTScratch, circleVRelScratch);
-    const projLen = vec3.length(circleTScratch);
-    if (projLen > 1e-6) {
-      vec3.scaleInto(circleTScratch, 1 / projLen, circleTScratch);
-      hasTangentialDir = true;
-    }
-  }
+  const state = computeCircleNowState(ship, primary);
+  if (!state) return circleZeroPropulsion;
 
   const mu = parameters.newtonG * primary.mass;
   if (mu === 0) return circleZeroPropulsion;
 
-  const circularSpeed = Math.sqrt(mu / r);
-  const deltaVRadial = -radialSpeed;
-  const deltaVTangential = circularSpeed - tangentialSpeed;
+  const circularSpeed = Math.sqrt(mu / state.r);
+  const deltaVMag = computeCircleDeltaV(
+    state.radialSpeed,
+    state.tangentialSpeed,
+    state.hasTangentialDir,
+    circularSpeed,
+    circleRHatScratch,
+    circleTScratch,
+    circleDeltaVScratch,
+  );
+  if (deltaVMag < EPS_DELTA_V) return circleZeroPropulsion;
 
-  vec3.scaleInto(circleDeltaVScratch, deltaVRadial, circleRHatScratch);
-
-  if (hasTangentialDir) {
-    vec3.scaleInto(circleAccelScratch, deltaVTangential, circleTScratch);
-    vec3.addInto(circleDeltaVScratch, circleDeltaVScratch, circleAccelScratch);
-  }
-
-  const deltaVMag = vec3.length(circleDeltaVScratch);
-  if (deltaVMag < 1e-9) return circleZeroPropulsion;
-
-  const maxDeltaV = maxThrustAcceleration * dtSec;
-  if (maxDeltaV <= 0) return circleZeroPropulsion;
-
-  let scale = 1;
-  if (deltaVMag > maxDeltaV) {
-    scale = maxDeltaV / deltaVMag;
-  }
-  vec3.scaleInto(circleAccelScratch, scale / dtSec, circleDeltaVScratch);
+  const hasAcceleration = computeCircleAcceleration(
+    circleDeltaVScratch,
+    deltaVMag,
+    maxThrustAcceleration,
+    dtSec,
+    circleAccelScratch,
+  );
+  if (!hasAcceleration) return circleZeroPropulsion;
 
   const forwardCmd =
     vec3.dot(circleAccelScratch, ship.frame.forward) / maxThrustAcceleration;
