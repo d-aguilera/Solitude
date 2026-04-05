@@ -1,4 +1,4 @@
-import { parameters } from "../global/parameters.js";
+import { parameters } from "../global/parameters";
 
 export function circularSpeedAtRadius(mass: number, r: number): number {
   // v = sqrt(G * M / r)

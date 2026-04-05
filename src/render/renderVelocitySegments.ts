@@ -1,10 +1,10 @@
-import type { ShipBody } from "../domain/domainPorts.js";
-import { EPS_SPEED_SQ } from "../domain/epsilon.js";
-import { type Vec3, vec3 } from "../domain/vec3.js";
-import { ndc } from "./ndc.js";
-import type { ProjectedSegment, SegmentProjector } from "./renderInternals.js";
-import type { RenderedSegment } from "./renderPorts.js";
-import { scrn } from "./scrn.js";
+import type { ShipBody } from "../domain/domainPorts";
+import { EPS_SPEED_SQ } from "../domain/epsilon";
+import { type Vec3, vec3 } from "../domain/vec3";
+import { ndc } from "./ndc";
+import type { ProjectedSegment, SegmentProjector } from "./renderInternals";
+import type { RenderedSegment } from "./renderPorts";
+import { scrn } from "./scrn";
 
 const projectedScratch: ProjectedSegment = {
   a: ndc.zero(),

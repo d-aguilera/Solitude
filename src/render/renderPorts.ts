@@ -1,14 +1,14 @@
-import type { HudRenderParams } from "../app/hudPorts.js";
+import type { HudRenderParams } from "../app/hudPorts";
 import type {
   DomainCameraPose,
   Mesh,
   RGB,
   Scene,
   SceneObject,
-} from "../app/scenePorts.js";
-import type { ShipBody } from "../domain/domainPorts.js";
-import type { Vec3 } from "../domain/vec3.js";
-import type { ScreenPoint } from "./scrn.js";
+} from "../app/scenePorts";
+import type { ShipBody } from "../domain/domainPorts";
+import type { Vec3 } from "../domain/vec3";
+import type { ScreenPoint } from "./scrn";
 
 export type DrawMode = "faces" | "lines";
 

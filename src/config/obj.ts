@@ -1,4 +1,4 @@
-import { vec3, type Vec3 } from "../domain/vec3.js";
+import { vec3, type Vec3 } from "../domain/vec3";
 
 export interface ObjMesh {
   points: Vec3[];
@@ -51,7 +51,9 @@ export function parseObjMesh(objText: string): ObjMesh {
         }
         const idx = idxRaw < 0 ? points.length + idxRaw : idxRaw - 1;
         if (idx < 0 || idx >= points.length) {
-          throw new Error(`OBJ parse error on line ${lineNo}: face index out of bounds`);
+          throw new Error(
+            `OBJ parse error on line ${lineNo}: face index out of bounds`,
+          );
         }
         poly[i] = idx;
       }
@@ -66,4 +68,3 @@ export function parseObjMesh(objText: string): ObjMesh {
 
   return { points, faces };
 }
-

@@ -3,13 +3,9 @@ import type {
   ControlInput,
   EnvAction,
   EnvInput,
-} from "../app/controlPorts.js";
-import { ALL_ENV_ACTIONS, createControlInput } from "../app/controlPorts.js";
-import type {
-  GamePlugin,
-  InputPlugin,
-  KeyHandler,
-} from "../app/pluginPorts.js";
+} from "../app/controlPorts";
+import { ALL_ENV_ACTIONS, createControlInput } from "../app/controlPorts";
+import type { GamePlugin, InputPlugin, KeyHandler } from "../app/pluginPorts";
 
 /**
  * Initialize keyboard listeners and keep the actions state updated.

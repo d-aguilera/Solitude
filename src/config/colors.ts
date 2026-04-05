@@ -1,4 +1,4 @@
-import type { RGB } from "../app/scenePorts.js";
+import type { RGB } from "../app/scenePorts";
 
 export const ALL_COLORS = [
   "ship",

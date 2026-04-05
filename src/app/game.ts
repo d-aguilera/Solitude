@@ -1,13 +1,9 @@
-import { resolveCollisions } from "../domain/collisions.js";
-import type { GravityEngine, World } from "../domain/domainPorts.js";
-import { buildInitialGravityState } from "../domain/gravityState.js";
-import type { ControlledBodyState, SimControlState } from "./appInternals.js";
-import type { ControlInput } from "./controlPorts.js";
-import type {
-  PropulsionCommand,
-  RcsCommand,
-  ThrustCommand,
-} from "./controls.js";
+import { resolveCollisions } from "../domain/collisions";
+import type { GravityEngine, World } from "../domain/domainPorts";
+import { buildInitialGravityState } from "../domain/gravityState";
+import type { ControlledBodyState, SimControlState } from "./appInternals";
+import type { ControlInput } from "./controlPorts";
+import type { PropulsionCommand, RcsCommand, ThrustCommand } from "./controls";
 import {
   getMainThrustCommand,
   getRcsCommand,
@@ -16,21 +12,21 @@ import {
   resolvePropulsionCommandWithPlugins,
   updateControlState,
   updateShipAngularVelocityFromInput,
-} from "./controls.js";
+} from "./controls";
 import {
   applyCelestialSpin,
   applyGravity,
   applyRcsTranslation,
   applyShipRotation,
   applyThrust,
-} from "./physics.js";
-import type { ControlPlugin } from "./pluginPorts.js";
+} from "./physics";
+import type { ControlPlugin } from "./pluginPorts";
 import type {
   TickCallback,
   TickOutput,
   TickParams,
   WorldAndScene,
-} from "./runtimePorts.js";
+} from "./runtimePorts";
 
 /**
  * App‑core game entry.

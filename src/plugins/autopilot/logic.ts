@@ -1,14 +1,14 @@
 import type {
   AttitudeCommand,
   ControlledBodyState,
-} from "../../app/appInternals.js";
-import type { ControlInput } from "../../app/controlPorts.js";
+} from "../../app/appInternals";
+import type { ControlInput } from "../../app/controlPorts";
 import type {
   PropulsionCommand,
   RcsCommand,
   ThrustCommand,
-} from "../../app/controls.js";
-import type { World } from "../../domain/domainPorts.js";
+} from "../../app/controls";
+import type { World } from "../../domain/domainPorts";
 import {
   EPS_ANGLE_RAD,
   EPS_DELTA_V,
@@ -16,10 +16,10 @@ import {
   EPS_LEN_COARSE,
   EPS_SPEED_COARSE,
   EPS_SPEED_FINE,
-} from "../../domain/epsilon.js";
-import { getDominantBody, getDominantBodyPrimary } from "../../domain/orbit.js";
-import { type Vec3, vec3 } from "../../domain/vec3.js";
-import { parameters } from "../../global/parameters.js";
+} from "../../domain/epsilon";
+import { getDominantBody, getDominantBodyPrimary } from "../../domain/orbit";
+import { type Vec3, vec3 } from "../../domain/vec3";
+import { parameters } from "../../global/parameters";
 
 // Max rate at which the ship can reorient itself toward its velocity vector.
 const alignToVelocityMaxAngularSpeed = 2.0; // rad/s

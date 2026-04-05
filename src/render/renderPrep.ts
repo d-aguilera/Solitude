@@ -3,11 +3,11 @@ import type {
   SceneObject,
   ShipSceneObject,
   StarSceneObject,
-} from "../app/scenePorts.js";
-import { mat3 } from "../domain/mat3.js";
-import { type Vec3, vec3 } from "../domain/vec3.js";
-import { alloc } from "../global/allocProfiler.js";
-import type { Renderable } from "./renderPorts.js";
+} from "../app/scenePorts";
+import { mat3 } from "../domain/mat3";
+import { type Vec3, vec3 } from "../domain/vec3";
+import { alloc } from "../global/allocProfiler";
+import type { Renderable } from "./renderPorts";
 
 /**
  * Convert a SceneObject into a Renderable with world-space points.

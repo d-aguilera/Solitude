@@ -1,8 +1,8 @@
-import type { WorldPhysicsConfig } from "./physicsConfigPorts.js";
-import type { WorldRenderConfig } from "./renderConfigPorts.js";
+import type { WorldPhysicsConfig } from "./physicsConfigPorts";
+import type { WorldRenderConfig } from "./renderConfigPorts";
 
-export * from "./physicsConfigPorts.js";
-export * from "./renderConfigPorts.js";
+export * from "./physicsConfigPorts";
+export * from "./renderConfigPorts";
 
 export interface WorldAndSceneConfig {
   enemyShipId: string;

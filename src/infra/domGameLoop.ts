@@ -1,37 +1,37 @@
-import type { SceneState } from "../app/appInternals.js";
-import { createTickHandler } from "../app/game.js";
-import type { HudRenderParams } from "../app/hudPorts.js";
+import type { SceneState } from "../app/appInternals";
+import { createTickHandler } from "../app/game";
+import type { HudRenderParams } from "../app/hudPorts";
 import type {
   ControlPlugin,
   GamePlugin,
   HudContext,
   HudPlugin,
-} from "../app/pluginPorts.js";
+} from "../app/pluginPorts";
 import type {
   TickCallback,
   TickOutput,
   TickParams,
   WorldAndScene,
-} from "../app/runtimePorts.js";
-import { updateSceneGraph } from "../app/scene.js";
-import type { SceneControlState, SceneObject } from "../app/scenePorts.js";
-import { computeShipOrbitReadout } from "../domain/orbit.js";
-import { vec3 } from "../domain/vec3.js";
-import { parameters } from "../global/parameters.js";
+} from "../app/runtimePorts";
+import { updateSceneGraph } from "../app/scene";
+import type { SceneControlState, SceneObject } from "../app/scenePorts";
+import { computeShipOrbitReadout } from "../domain/orbit";
+import { vec3 } from "../domain/vec3";
+import { parameters } from "../global/parameters";
 import type {
   Rasterizer,
   RenderedHud,
   RenderedView,
   ViewRenderParams,
-} from "../render/renderPorts.js";
-import { createSceneAndTrajectories } from "../setup/sceneSetup.js";
-import { createWorld } from "../setup/setup.js";
-import { buildTrajectoryPlan } from "../setup/trajectoryPlan.js";
-import { updateFps } from "./fps.js";
-import type { RunLoopParams } from "./infraPorts.js";
-import { handlePauseToggle } from "./pause.js";
-import { handleProfilingToggle } from "./profilerControl.js";
-import { handleTimeScaleChange } from "./timeScale.js";
+} from "../render/renderPorts";
+import { createSceneAndTrajectories } from "../setup/sceneSetup";
+import { createWorld } from "../setup/setup";
+import { buildTrajectoryPlan } from "../setup/trajectoryPlan";
+import { updateFps } from "./fps";
+import type { RunLoopParams } from "./infraPorts";
+import { handlePauseToggle } from "./pause";
+import { handleProfilingToggle } from "./profilerControl";
+import { handleTimeScaleChange } from "./timeScale";
 
 /**
  * DOM-level game loop (depends on requestAnimationFrame).

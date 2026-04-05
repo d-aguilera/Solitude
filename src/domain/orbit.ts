@@ -1,7 +1,7 @@
-import { parameters } from "../global/parameters.js";
-import type { BodyId, RotatingBody, ShipBody, World } from "./domainPorts.js";
-import { EPS_ECCENTRICITY, EPS_TIME_SEC } from "./epsilon.js";
-import { type Vec3, vec3 } from "./vec3.js";
+import { parameters } from "../global/parameters";
+import type { BodyId, RotatingBody, ShipBody, World } from "./domainPorts";
+import { EPS_ECCENTRICITY, EPS_TIME_SEC } from "./epsilon";
+import { type Vec3, vec3 } from "./vec3";
 
 export interface OrbitReadout {
   primaryId: BodyId;

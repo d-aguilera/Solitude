@@ -1,4 +1,4 @@
-import { vec3, type Vec3 } from "./vec3.js";
+import { vec3, type Vec3 } from "./vec3";
 
 const aScratch: Vec3 = vec3.zero();
 const bScratch: Vec3 = vec3.zero();

@@ -1,10 +1,10 @@
-import type { WorldAndSceneConfig } from "../app/configPorts.js";
-import type { Trajectory } from "../app/runtimePorts.js";
-import type { Scene } from "../app/scenePorts.js";
-import type { World } from "../domain/domainPorts.js";
-import { createSceneFromWorld } from "../render/sceneAdapter.js";
-import { bindTrajectoryPlanToScene } from "./trajectoryBind.js";
-import type { TrajectoryPlan } from "./trajectoryPlan.js";
+import type { WorldAndSceneConfig } from "../app/configPorts";
+import type { Trajectory } from "../app/runtimePorts";
+import type { Scene } from "../app/scenePorts";
+import type { World } from "../domain/domainPorts";
+import { createSceneFromWorld } from "../render/sceneAdapter";
+import { bindTrajectoryPlanToScene } from "./trajectoryBind";
+import type { TrajectoryPlan } from "./trajectoryPlan";
 
 export interface SceneSetup {
   scene: Scene;

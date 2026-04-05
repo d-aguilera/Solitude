@@ -1,4 +1,4 @@
-import type { ScreenPoint } from "./scrn.js";
+import type { ScreenPoint } from "./scrn";
 
 /**
  * Normalized device coordinate in the projection plane:

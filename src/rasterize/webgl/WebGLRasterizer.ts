@@ -6,7 +6,7 @@ import type {
   RenderedPolyline,
   RenderedSegment,
   TextMetrics,
-} from "../../render/renderPorts.js";
+} from "../../render/renderPorts";
 
 export class WebGLRasterizer implements Rasterizer {
   private gl: WebGL2RenderingContext;

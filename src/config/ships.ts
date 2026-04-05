@@ -1,12 +1,9 @@
-import type {
-  ShipPhysicsConfig,
-  ShipRenderConfig,
-} from "../app/configPorts.js";
-import { computeVolumeOfTriangleMesh } from "../domain/meshVolume.js";
-import { km } from "../domain/units.js";
-import { vec3 } from "../domain/vec3.js";
-import { colors } from "./colors.js";
-import { parseObjMesh } from "./obj.js";
+import type { ShipPhysicsConfig, ShipRenderConfig } from "../app/configPorts";
+import { computeVolumeOfTriangleMesh } from "../domain/meshVolume";
+import { km } from "../domain/units";
+import { vec3 } from "../domain/vec3";
+import { colors } from "./colors";
+import { parseObjMesh } from "./obj";
 import shipObjText from "./ship.obj?raw";
 
 const SHIP_DENSITY_KG_PER_M3 = 2700; // used for mass calculation

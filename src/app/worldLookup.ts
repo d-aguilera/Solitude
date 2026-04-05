@@ -3,7 +3,7 @@ import type {
   RotatingBody,
   ShipBody,
   World,
-} from "../domain/domainPorts.js";
+} from "../domain/domainPorts";
 
 function getById<T extends { id: BodyId }>(
   arr: T[],

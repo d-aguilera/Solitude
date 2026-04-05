@@ -1,6 +1,6 @@
-import type { LocalFrame } from "../domain/localFrame.js";
-import type { Mat3 } from "../domain/mat3.js";
-import type { Vec3 } from "../domain/vec3.js";
+import type { LocalFrame } from "../domain/localFrame";
+import type { Mat3 } from "../domain/mat3";
+import type { Vec3 } from "../domain/vec3";
 
 export interface BaseSceneObject {
   id: string;

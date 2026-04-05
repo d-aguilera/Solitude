@@ -1,5 +1,5 @@
-import type { OrbitReadout } from "../domain/orbit.js";
-import type { Vec3 } from "../domain/vec3.js";
+import type { OrbitReadout } from "../domain/orbit";
+import type { Vec3 } from "../domain/vec3";
 
 export interface HudCell {
   row: number;

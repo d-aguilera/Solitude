@@ -1,6 +1,6 @@
-import type { HudCell, HudRenderParams } from "../app/hudPorts.js";
-import { formatDistance, formatSimTime, formatSpeed } from "./formatters.js";
-import type { HudRenderer, RenderedHud } from "./renderPorts.js";
+import type { HudCell, HudRenderParams } from "../app/hudPorts";
+import { formatDistance, formatSimTime, formatSpeed } from "./formatters";
+import type { HudRenderer, RenderedHud } from "./renderPorts";
 
 export class DefaultHudRenderer implements HudRenderer {
   renderInto(

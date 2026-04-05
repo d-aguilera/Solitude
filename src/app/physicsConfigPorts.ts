@@ -1,4 +1,4 @@
-import type { BodyId } from "../domain/domainPorts.js";
+import type { BodyId } from "../domain/domainPorts";
 
 export type CelestialBodyKind = "planet" | "star";
 

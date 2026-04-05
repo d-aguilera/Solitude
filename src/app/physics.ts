@@ -4,16 +4,16 @@ import type {
   RotatingBody,
   ShipBody,
   World,
-} from "../domain/domainPorts.js";
-import { localFrame } from "../domain/localFrame.js";
-import { mat3 } from "../domain/mat3.js";
-import { vec3 } from "../domain/vec3.js";
-import type { ControlledBodyState } from "./appInternals.js";
-import type { RcsCommand, ThrustCommand } from "./controls.js";
+} from "../domain/domainPorts";
+import { localFrame } from "../domain/localFrame";
+import { mat3 } from "../domain/mat3";
+import { vec3 } from "../domain/vec3";
+import type { ControlledBodyState } from "./appInternals";
+import type { RcsCommand, ThrustCommand } from "./controls";
 import {
   maxRcsTranslationAcceleration,
   maxThrustAcceleration,
-} from "./controls.js";
+} from "./controls";
 
 // Scratch vector for applyThrustToVelocity
 const cvScratch = vec3.zero();

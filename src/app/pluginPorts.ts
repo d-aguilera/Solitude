@@ -1,17 +1,17 @@
-import type { ShipBody, World } from "../domain/domainPorts.js";
+import type { ShipBody, World } from "../domain/domainPorts";
 import type {
   AttitudeCommand,
   ControlledBodyState,
   SimControlState,
-} from "./appInternals.js";
+} from "./appInternals";
 import type {
   ControlAction,
   ControlInput,
   EnvAction,
   EnvInput,
-} from "./controlPorts.js";
-import type { PropulsionCommand } from "./controls.js";
-import type { HudRenderParams } from "./hudPorts.js";
+} from "./controlPorts";
+import type { PropulsionCommand } from "./controls";
+import type { HudRenderParams } from "./hudPorts";
 
 export interface KeyHandler {
   handleKeyDown: (

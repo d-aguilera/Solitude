@@ -1,7 +1,7 @@
-import type { GamePlugin } from "../../app/pluginPorts.js";
-import { createControlPlugin } from "./core.js";
-import { createHudPlugin } from "./hud.js";
-import { createInputPlugin } from "./input.js";
+import type { GamePlugin } from "../../app/pluginPorts";
+import { createControlPlugin } from "./core";
+import { createHudPlugin } from "./hud";
+import { createInputPlugin } from "./input";
 
 export function createAutopilotPlugin(): GamePlugin {
   return {

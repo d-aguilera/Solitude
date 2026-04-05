@@ -1,4 +1,4 @@
-import { AU, C, km } from "../domain/units.js";
+import { AU, C, km } from "../domain/units";
 
 const onePercentC = C / 100.0;
 

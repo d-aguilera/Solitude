@@ -2,14 +2,14 @@ import type {
   KeplerianOrbit,
   PlanetPhysicsConfig,
   StarPhysicsConfig,
-} from "../app/physicsConfigPorts.js";
+} from "../app/physicsConfigPorts";
 import type {
   PlanetRenderConfig,
   StarRenderConfig,
-} from "../app/renderConfigPorts.js";
-import { getPlanetBodyById } from "../app/worldLookup.js";
-import type { World } from "../domain/domainPorts.js";
-import { vec3 } from "../domain/vec3.js";
+} from "../app/renderConfigPorts";
+import { getPlanetBodyById } from "../app/worldLookup";
+import type { World } from "../domain/domainPorts";
+import { vec3 } from "../domain/vec3";
 
 export interface TrajectoryPlan {
   pathId: string;

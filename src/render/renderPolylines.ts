@@ -1,11 +1,11 @@
-import type { SceneObject } from "../app/scenePorts.js";
-import type { Vec3 } from "../domain/vec3.js";
-import { alloc } from "../global/allocProfiler.js";
-import { rgbToCss } from "./color.js";
-import { ndc } from "./ndc.js";
-import type { ProjectedSegment, SegmentProjector } from "./renderInternals.js";
-import type { RenderedPolyline } from "./renderPorts.js";
-import { type ScreenPoint, scrn } from "./scrn.js";
+import type { SceneObject } from "../app/scenePorts";
+import type { Vec3 } from "../domain/vec3";
+import { alloc } from "../global/allocProfiler";
+import { rgbToCss } from "./color";
+import { ndc } from "./ndc";
+import type { ProjectedSegment, SegmentProjector } from "./renderInternals";
+import type { RenderedPolyline } from "./renderPorts";
+import { type ScreenPoint, scrn } from "./scrn";
 
 // scratch
 let segment: ProjectedSegment = {

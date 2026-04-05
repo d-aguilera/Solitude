@@ -1,10 +1,10 @@
-import type { ShipBody, World } from "../domain/domainPorts.js";
-import type { ControlInput } from "./controlPorts.js";
+import type { ShipBody, World } from "../domain/domainPorts";
+import type { ControlInput } from "./controlPorts";
 import type {
   DomainCameraPose,
   PolylineSceneObject,
   Scene,
-} from "./scenePorts.js";
+} from "./scenePorts";
 
 export type TickCallback = (
   output: Readonly<TickOutput>,

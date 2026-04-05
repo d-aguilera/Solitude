@@ -1,9 +1,9 @@
-import type { ControlPlugin } from "../../app/pluginPorts.js";
+import type { ControlPlugin } from "../../app/pluginPorts";
 import {
   disengageOnManualActuation,
   getAutopilotAttitudeCommand,
   resolveAutopilotPropulsionCommand,
-} from "./logic.js";
+} from "./logic";
 
 export function createControlPlugin(): ControlPlugin {
   return {

@@ -1,9 +1,9 @@
-import type { AngularVelocity } from "../domain/domainPorts.js";
-import type { LocalFrame } from "../domain/localFrame.js";
-import type { Mat3 } from "../domain/mat3.js";
-import type { Vec3 } from "../domain/vec3.js";
-import type { Trajectory } from "./runtimePorts.js";
-import type { DomainCameraPose } from "./scenePorts.js";
+import type { AngularVelocity } from "../domain/domainPorts";
+import type { LocalFrame } from "../domain/localFrame";
+import type { Mat3 } from "../domain/mat3";
+import type { Vec3 } from "../domain/vec3";
+import type { Trajectory } from "./runtimePorts";
+import type { DomainCameraPose } from "./scenePorts";
 
 /**
  * Simple container for the controlled body's pose and velocity.

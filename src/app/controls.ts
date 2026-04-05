@@ -1,12 +1,12 @@
-import type { World } from "../domain/domainPorts.js";
+import type { World } from "../domain/domainPorts";
 import type {
   AttitudeCommand,
   ControlledBodyState,
   SimControlState,
-} from "./appInternals.js";
-import type { ControlInput } from "./controlPorts.js";
-import type { ControlPlugin } from "./pluginPorts.js";
-import type { PilotLookState } from "./scenePorts.js";
+} from "./appInternals";
+import type { ControlInput } from "./controlPorts";
+import type { ControlPlugin } from "./pluginPorts";
+import type { PilotLookState } from "./scenePorts";
 
 // Max main-engine thrust acceleration in m/s^2 at 100% thrust
 export const maxThrustAcceleration = 1_000_000; // ~ 100_000 G

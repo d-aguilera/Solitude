@@ -1,7 +1,7 @@
-import type { WorldAndSceneConfig } from "../app/configPorts.js";
-import { vec3 } from "../domain/vec3.js";
-import { buildDefaultShipConfigs } from "./ships.js";
-import { buildDefaultSolarSystemConfigs } from "./solarSystem.js";
+import type { WorldAndSceneConfig } from "../app/configPorts";
+import { vec3 } from "../domain/vec3";
+import { buildDefaultShipConfigs } from "./ships";
+import { buildDefaultSolarSystemConfigs } from "./solarSystem";
 
 export function buildWorldAndSceneConfig() {
   const solar = buildDefaultSolarSystemConfigs();

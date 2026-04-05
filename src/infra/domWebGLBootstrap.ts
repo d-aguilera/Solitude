@@ -1,8 +1,8 @@
-import type { WorldAndSceneConfig } from "../app/configPorts.js";
-import { WebGLRasterizer } from "../rasterize/webgl/WebGLRasterizer.js";
-import { WebGLSurface } from "../rasterize/webgl/WebGLSurface.js";
-import type { Rasterizer, RenderSurface2D } from "../render/renderPorts.js";
-import { bootstrapWith } from "./domBootstrap.js";
+import type { WorldAndSceneConfig } from "../app/configPorts";
+import { WebGLRasterizer } from "../rasterize/webgl/WebGLRasterizer";
+import { WebGLSurface } from "../rasterize/webgl/WebGLSurface";
+import type { Rasterizer, RenderSurface2D } from "../render/renderPorts";
+import { bootstrapWith } from "./domBootstrap";
 
 /**
  * WebGL DOM-level bootstrap

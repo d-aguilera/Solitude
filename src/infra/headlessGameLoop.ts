@@ -1,16 +1,16 @@
-import { createControlInput, type ControlInput } from "../app/controlPorts.js";
-import { createTickHandler } from "../app/game.js";
-import type { ControlPlugin } from "../app/pluginPorts.js";
+import { createControlInput, type ControlInput } from "../app/controlPorts";
+import { createTickHandler } from "../app/game";
+import type { ControlPlugin } from "../app/pluginPorts";
 import type {
   TickOutput,
   TickParams,
   WorldAndScene,
-} from "../app/runtimePorts.js";
-import type { Scene } from "../app/scenePorts.js";
-import type { GravityEngine } from "../domain/domainPorts.js";
-import { parameters } from "../global/parameters.js";
-import { createHeadlessWorld, type WorldConfigBase } from "../setup/setup.js";
-import { NewtonianGravityEngine } from "./NewtonianGravityEngine.js";
+} from "../app/runtimePorts";
+import type { Scene } from "../app/scenePorts";
+import type { GravityEngine } from "../domain/domainPorts";
+import { parameters } from "../global/parameters";
+import { createHeadlessWorld, type WorldConfigBase } from "../setup/setup";
+import { NewtonianGravityEngine } from "./NewtonianGravityEngine";
 
 export interface HeadlessLoopOptions {
   gravityEngine?: GravityEngine;

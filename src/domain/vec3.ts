@@ -1,4 +1,4 @@
-import { alloc } from "../global/allocProfiler.js";
+import { alloc } from "../global/allocProfiler";
 
 function addInto(into: Vec3, a: Readonly<Vec3>, b: Readonly<Vec3>): Vec3 {
   into.x = a.x + b.x;

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { parseObjMesh } from "../obj.js";
+import { parseObjMesh } from "../obj";
 
 describe(parseObjMesh.name, () => {
   test("parses vertices and triangulates faces", () => {
@@ -34,4 +34,3 @@ f 1/1/1 2/2/2 3/3/3
     expect(mesh.faces).toEqual([[0, 1, 2]]);
   });
 });
-

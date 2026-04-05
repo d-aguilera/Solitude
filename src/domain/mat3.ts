@@ -1,5 +1,5 @@
-import { alloc } from "../global/allocProfiler.js";
-import type { Vec3 } from "./vec3.js";
+import { alloc } from "../global/allocProfiler";
+import type { Vec3 } from "./vec3";
 
 /**
  * 3×3 rotation matrix stored in row-major order.

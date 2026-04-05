@@ -1,5 +1,5 @@
-import type { Vec3 } from "../domain/vec3.js";
-import type { Mesh, PilotLookState, RGB } from "./scenePorts.js";
+import type { Vec3 } from "../domain/vec3";
+import type { Mesh, PilotLookState, RGB } from "./scenePorts";
 
 export interface PlanetRenderConfig {
   id: string;

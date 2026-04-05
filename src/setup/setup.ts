@@ -1,11 +1,11 @@
-import type { WorldAndSceneConfig } from "../app/configPorts.js";
-import type { DomainCameraPose } from "../app/scenePorts.js";
-import { getShipById } from "../app/worldLookup.js";
-import type { ShipBody, World } from "../domain/domainPorts.js";
-import { type LocalFrame, localFrame } from "../domain/localFrame.js";
-import { vec3 } from "../domain/vec3.js";
-import { addPlanetsAndStarsFromConfig } from "./setupPlanets.js";
-import { addShipsFromConfig } from "./setupShips.js";
+import type { WorldAndSceneConfig } from "../app/configPorts";
+import type { DomainCameraPose } from "../app/scenePorts";
+import { getShipById } from "../app/worldLookup";
+import type { ShipBody, World } from "../domain/domainPorts";
+import { type LocalFrame, localFrame } from "../domain/localFrame";
+import { vec3 } from "../domain/vec3";
+import { addPlanetsAndStarsFromConfig } from "./setupPlanets";
+import { addShipsFromConfig } from "./setupShips";
 
 export const initialFrame: LocalFrame = localFrame.fromUp(vec3.create(0, 0, 1));
 

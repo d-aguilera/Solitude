@@ -3,8 +3,8 @@ import type {
   ControlInput,
   EnvAction,
   EnvInput,
-} from "../../app/controlPorts.js";
-import type { InputPlugin, KeyHandler } from "../../app/pluginPorts.js";
+} from "../../app/controlPorts";
+import type { InputPlugin, KeyHandler } from "../../app/pluginPorts";
 
 const autopilotToggleActions: Set<ControlAction> = new Set([
   "alignToBody",

@@ -1,5 +1,5 @@
-import type { PlanetSceneObject, StarSceneObject } from "../app/scenePorts.js";
-import { vec3 } from "../domain/vec3.js";
+import type { PlanetSceneObject, StarSceneObject } from "../app/scenePorts";
+import { vec3 } from "../domain/vec3";
 
 const objectDiameterWorldScratch = new WeakMap<
   PlanetSceneObject | StarSceneObject,

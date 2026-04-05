@@ -1,9 +1,9 @@
-import type { HudPlugin } from "../../app/pluginPorts.js";
-import type { ShipBody, World } from "../../domain/domainPorts.js";
-import { EPS_LEN_COARSE, EPS_SPEED_COARSE } from "../../domain/epsilon.js";
-import { getDominantBodyPrimary } from "../../domain/orbit.js";
-import { vec3 } from "../../domain/vec3.js";
-import { getAutopilotMode } from "./logic.js";
+import type { HudPlugin } from "../../app/pluginPorts";
+import type { ShipBody, World } from "../../domain/domainPorts";
+import { EPS_LEN_COARSE, EPS_SPEED_COARSE } from "../../domain/epsilon";
+import { getDominantBodyPrimary } from "../../domain/orbit";
+import { vec3 } from "../../domain/vec3";
+import { getAutopilotMode } from "./logic";
 
 export function createHudPlugin(): HudPlugin {
   const circleNowTracker = createCircleNowDebugTracker();

@@ -1,21 +1,21 @@
-import type { WorldAndSceneConfig } from "../app/configPorts.js";
-import type { GravityEngine } from "../domain/domainPorts.js";
-import { parameters } from "../global/parameters.js";
-import { profilerController } from "../global/profiling.js";
-import { loadPlugins } from "../plugins/index.js";
-import { DefaultHudRenderer } from "../render/DefaultHudRenderer.js";
-import { DefaultViewRenderer } from "../render/DefaultViewRenderer.js";
+import type { WorldAndSceneConfig } from "../app/configPorts";
+import type { GravityEngine } from "../domain/domainPorts";
+import { parameters } from "../global/parameters";
+import { profilerController } from "../global/profiling";
+import { loadPlugins } from "../plugins/index";
+import { DefaultHudRenderer } from "../render/DefaultHudRenderer";
+import { DefaultViewRenderer } from "../render/DefaultViewRenderer";
 import type {
   HudRenderer,
   Rasterizer,
   RenderSurface2D,
   ViewRenderer,
-} from "../render/renderPorts.js";
-import { runLoop } from "./domGameLoop.js";
-import { initInput } from "./domKeyboardInput.js";
-import { initLayout } from "./domLayout.js";
-import { NewtonianGravityEngine } from "./NewtonianGravityEngine.js";
-import { initPause } from "./pause.js";
+} from "../render/renderPorts";
+import { runLoop } from "./domGameLoop";
+import { initInput } from "./domKeyboardInput";
+import { initLayout } from "./domLayout";
+import { NewtonianGravityEngine } from "./NewtonianGravityEngine";
+import { initPause } from "./pause";
 
 /**
  * DOM-level bootstrap

@@ -2,8 +2,8 @@ import type {
   BodyState,
   GravityEngine,
   GravityState,
-} from "../domain/domainPorts.js";
-import { type Vec3, vec3 } from "../domain/vec3.js";
+} from "../domain/domainPorts";
+import { type Vec3, vec3 } from "../domain/vec3";
 
 const accelerations: Vec3[] = [];
 
@@ -109,10 +109,7 @@ export class NewtonianGravityEngine implements GravityEngine {
   /**
    * Kick velocities using accelerations over dtSeconds.
    */
-  private kickBodyVelocities(
-    bodies: BodyState[],
-    dtSeconds: number,
-  ): void {
+  private kickBodyVelocities(bodies: BodyState[], dtSeconds: number): void {
     const n = bodies.length;
 
     for (let i = 0; i < n; i++) {

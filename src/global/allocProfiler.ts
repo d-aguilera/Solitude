@@ -1,5 +1,5 @@
-import type { Profiler } from "./globalPorts.js";
-import { profiler } from "./profiling.js";
+import type { Profiler } from "./globalPorts";
+import { profiler } from "./profiling";
 
 const globalProfiler: Profiler = profiler;
 

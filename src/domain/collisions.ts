@@ -1,5 +1,5 @@
-import type { World } from "./domainPorts.js";
-import { type Vec3, vec3 } from "./vec3.js";
+import type { World } from "./domainPorts";
+import { type Vec3, vec3 } from "./vec3";
 
 // Tunable bounce factor (0 = no bounce, 1 = perfectly elastic).
 const restitution = 0.2;

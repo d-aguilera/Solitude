@@ -1,7 +1,7 @@
-import type { Trajectory } from "../app/runtimePorts.js";
-import type { PolylineSceneObject, Scene } from "../app/scenePorts.js";
-import { vec3 } from "../domain/vec3.js";
-import type { TrajectoryPlan } from "./trajectoryPlan.js";
+import type { Trajectory } from "../app/runtimePorts";
+import type { PolylineSceneObject, Scene } from "../app/scenePorts";
+import { vec3 } from "../domain/vec3";
+import type { TrajectoryPlan } from "./trajectoryPlan";
 
 export function bindTrajectoryPlanToScene(
   scene: Scene,

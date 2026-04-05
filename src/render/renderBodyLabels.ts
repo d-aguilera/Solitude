@@ -2,20 +2,20 @@ import type {
   PlanetSceneObject,
   SceneObject,
   StarSceneObject,
-} from "../app/scenePorts.js";
-import type { BodyId } from "../domain/domainPorts.js";
-import { type Vec3, vec3 } from "../domain/vec3.js";
-import { alloc } from "../global/allocProfiler.js";
-import { formatDistance, formatSpeed } from "./formatters.js";
-import { type NdcPoint, ndc } from "./ndc.js";
+} from "../app/scenePorts";
+import type { BodyId } from "../domain/domainPorts";
+import { type Vec3, vec3 } from "../domain/vec3";
+import { alloc } from "../global/allocProfiler";
+import { formatDistance, formatSpeed } from "./formatters";
+import { type NdcPoint, ndc } from "./ndc";
 import type {
   Point,
   RenderedBodyLabel,
   Size,
   TextMetrics,
-} from "./renderPorts.js";
-import { scrn } from "./scrn.js";
-import { sortRangeInPlace } from "./sortRange.js";
+} from "./renderPorts";
+import { scrn } from "./scrn";
+import { sortRangeInPlace } from "./sortRange";
 
 type SortedScratchItem = {
   body: PlanetSceneObject | StarSceneObject;

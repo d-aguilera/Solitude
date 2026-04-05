@@ -2,9 +2,9 @@ import type {
   PlanetSceneObject,
   SceneObject,
   StarSceneObject,
-} from "../app/scenePorts.js";
-import { ProjectionService } from "./ProjectionService.js";
-import { getBodyDiameterWorld } from "./bodyDiameterCache.js";
+} from "../app/scenePorts";
+import { ProjectionService } from "./ProjectionService";
+import { getBodyDiameterWorld } from "./bodyDiameterCache";
 
 const onePixelDepthScratch = new WeakMap<
   PlanetSceneObject | StarSceneObject,

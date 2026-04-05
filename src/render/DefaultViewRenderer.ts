@@ -1,19 +1,19 @@
-import type { PolylineSceneObject, SceneObject } from "../app/scenePorts.js";
-import type { Vec3 } from "../domain/vec3.js";
-import type { NdcPoint } from "./ndc.js";
-import { ProjectionService } from "./ProjectionService.js";
-import { renderBodyLabelsInto } from "./renderBodyLabels.js";
-import { renderFacesInto } from "./renderFaces.js";
-import type { ProjectedSegment, SegmentProjector } from "./renderInternals.js";
-import { renderPolylinesInto } from "./renderPolylines.js";
+import type { PolylineSceneObject, SceneObject } from "../app/scenePorts";
+import type { Vec3 } from "../domain/vec3";
+import type { NdcPoint } from "./ndc";
+import { ProjectionService } from "./ProjectionService";
+import { renderBodyLabelsInto } from "./renderBodyLabels";
+import { renderFacesInto } from "./renderFaces";
+import type { ProjectedSegment, SegmentProjector } from "./renderInternals";
+import { renderPolylinesInto } from "./renderPolylines";
 import type {
   RenderedView,
   TextMetrics,
   ViewRenderer,
   ViewRenderParams,
-} from "./renderPorts.js";
-import { drawMode } from "./renderPorts.js";
-import { renderVelocitySegmentsInto } from "./renderVelocitySegments.js";
+} from "./renderPorts";
+import { drawMode } from "./renderPorts";
+import { renderVelocitySegmentsInto } from "./renderVelocitySegments";
 
 export class DefaultViewRenderer implements ViewRenderer {
   constructor(

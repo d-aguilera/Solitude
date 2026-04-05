@@ -2,17 +2,17 @@ import type {
   KeplerianOrbit,
   PlanetPhysicsConfig,
   StarPhysicsConfig,
-} from "../app/physicsConfigPorts.js";
+} from "../app/physicsConfigPorts";
 import type {
   PlanetRenderConfig,
   StarRenderConfig,
-} from "../app/renderConfigPorts.js";
-import type { Mesh } from "../app/scenePorts.js";
-import { AU, km } from "../domain/units.js";
-import { vec3, type Vec3 } from "../domain/vec3.js";
-import { colors } from "./colors.js";
+} from "../app/renderConfigPorts";
+import type { Mesh } from "../app/scenePorts";
+import { AU, km } from "../domain/units";
+import { vec3, type Vec3 } from "../domain/vec3";
+import { colors } from "./colors";
 import icoObjText from "./ico.obj?raw";
-import { parseObjMesh } from "./obj.js";
+import { parseObjMesh } from "./obj";
 
 // --- Generated from JPL Horizons at epoch J2000.0 ---
 

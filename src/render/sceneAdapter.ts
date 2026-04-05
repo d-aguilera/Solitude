@@ -2,7 +2,7 @@ import type {
   PlanetRenderConfig,
   ShipRenderConfig,
   StarRenderConfig,
-} from "../app/renderConfigPorts.js";
+} from "../app/renderConfigPorts";
 import type {
   PlanetSceneObject,
   PolylineSceneObject,
@@ -10,10 +10,10 @@ import type {
   Scene,
   ShipSceneObject,
   StarSceneObject,
-} from "../app/scenePorts.js";
-import type { World } from "../domain/domainPorts.js";
-import { mat3 } from "../domain/mat3.js";
-import type { Vec3 } from "../domain/vec3.js";
+} from "../app/scenePorts";
+import type { World } from "../domain/domainPorts";
+import { mat3 } from "../domain/mat3";
+import type { Vec3 } from "../domain/vec3";
 
 export function createSceneFromWorld(
   world: World,

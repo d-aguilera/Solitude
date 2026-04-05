@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { computeVolumeOfTriangleMesh } from "../meshVolume.js";
-import { vec3 } from "../vec3.js";
+import { computeVolumeOfTriangleMesh } from "../meshVolume";
+import { vec3 } from "../vec3";
 
 describe(computeVolumeOfTriangleMesh.name, () => {
   it("computes tetrahedron volume (and is translation-invariant)", () => {

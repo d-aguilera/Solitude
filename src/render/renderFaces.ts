@@ -4,18 +4,18 @@ import type {
   RGB,
   Scene,
   SceneObject,
-} from "../app/scenePorts.js";
-import { mat3 } from "../domain/mat3.js";
-import { AU } from "../domain/units.js";
-import { type Vec3, vec3 } from "../domain/vec3.js";
-import { alloc } from "../global/allocProfiler.js";
-import { isBodyAtOrBeyondOnePixelThreshold } from "./bodyLod.js";
-import { type NdcPoint, ndc } from "./ndc.js";
-import { ProjectionService } from "./ProjectionService.js";
-import type { RenderedFace } from "./renderPorts.js";
-import { toRenderable } from "./renderPrep.js";
-import { type ScreenPoint, scrn } from "./scrn.js";
-import { sortRangeInPlace } from "./sortRange.js";
+} from "../app/scenePorts";
+import { mat3 } from "../domain/mat3";
+import { AU } from "../domain/units";
+import { type Vec3, vec3 } from "../domain/vec3";
+import { alloc } from "../global/allocProfiler";
+import { isBodyAtOrBeyondOnePixelThreshold } from "./bodyLod";
+import { type NdcPoint, ndc } from "./ndc";
+import { ProjectionService } from "./ProjectionService";
+import type { RenderedFace } from "./renderPorts";
+import { toRenderable } from "./renderPrep";
+import { type ScreenPoint, scrn } from "./scrn";
+import { sortRangeInPlace } from "./sortRange";
 
 // E = I / (4π r²) at 1 AU from the Sun.
 const SUN_LUMINOSITY = 3.828e26; // W

@@ -1,6 +1,6 @@
-import { alloc } from "../global/allocProfiler.js";
-import { type Mat3, mat3 } from "./mat3.js";
-import { type Vec3, vec3 } from "./vec3.js";
+import { alloc } from "../global/allocProfiler";
+import { type Mat3, mat3 } from "./mat3";
+import { type Vec3, vec3 } from "./vec3";
 
 export interface LocalFrame {
   right: Vec3;

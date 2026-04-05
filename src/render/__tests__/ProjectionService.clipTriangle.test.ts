@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { DomainCameraPose } from "../../app/scenePorts.js";
-import { EPS_LEN } from "../../domain/epsilon.js";
-import { vec3, type Vec3 } from "../../domain/vec3.js";
-import { ProjectionService } from "../ProjectionService.js";
+import type { DomainCameraPose } from "../../app/scenePorts";
+import { EPS_LEN } from "../../domain/epsilon";
+import { vec3, type Vec3 } from "../../domain/vec3";
+import { ProjectionService } from "../ProjectionService";
 
 function makeTestPose(): DomainCameraPose {
   return {

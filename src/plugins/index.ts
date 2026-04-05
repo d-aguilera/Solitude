@@ -1,5 +1,5 @@
-import type { GamePlugin } from "../app/pluginPorts.js";
-import { createAutopilotPlugin } from "./autopilot/index.js";
+import type { GamePlugin } from "../app/pluginPorts";
+import { createAutopilotPlugin } from "./autopilot/index";
 
 export type PluginFactory = () => GamePlugin;
 

@@ -1,8 +1,8 @@
-import type { WorldAndSceneConfig } from "../app/configPorts.js";
-import { CanvasRasterizer } from "../rasterize/canvas/CanvasRasterizer.js";
-import { CanvasSurface } from "../rasterize/canvas/CanvasSurface.js";
-import type { Rasterizer, RenderSurface2D } from "../render/renderPorts.js";
-import { bootstrapWith } from "./domBootstrap.js";
+import type { WorldAndSceneConfig } from "../app/configPorts";
+import { CanvasRasterizer } from "../rasterize/canvas/CanvasRasterizer";
+import { CanvasSurface } from "../rasterize/canvas/CanvasSurface";
+import type { Rasterizer, RenderSurface2D } from "../render/renderPorts";
+import { bootstrapWith } from "./domBootstrap";
 
 /**
  * Canvas 2D DOM-level bootstrap
