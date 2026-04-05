@@ -1,8 +1,8 @@
 import type {
   AttitudeCommand,
+  ControlInput,
   ControlledBodyState,
-} from "../../app/appInternals";
-import type { ControlInput } from "../../app/controlPorts";
+} from "../../app/controlPorts";
 import type {
   PropulsionCommand,
   RcsCommand,

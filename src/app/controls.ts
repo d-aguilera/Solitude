@@ -1,10 +1,10 @@
 import type { World } from "../domain/domainPorts";
 import type {
   AttitudeCommand,
+  ControlInput,
   ControlledBodyState,
   SimControlState,
-} from "./appInternals";
-import type { ControlInput } from "./controlPorts";
+} from "./controlPorts";
 import type { ControlPlugin } from "./pluginPorts";
 import type { PilotLookState } from "./scenePorts";
 

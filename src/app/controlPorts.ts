@@ -1,3 +1,8 @@
+import type { AngularVelocity } from "../domain/domainPorts";
+import type { LocalFrame } from "../domain/localFrame";
+import type { Mat3 } from "../domain/mat3";
+import type { Vec3 } from "../domain/vec3";
+
 export const BASE_CONTROL_ACTIONS = [
   "rollLeft",
   "rollRight",
@@ -56,4 +61,31 @@ export function createControlInput(
     result[action] = false;
   }
   return result as ControlInput;
+}
+
+/**
+ * Desired angular velocity in roll/pitch/yaw (rad/s).
+ */
+export interface AttitudeCommand {
+  roll: number;
+  pitch: number;
+  yaw: number;
+}
+
+/**
+ * Simple container for the controlled body's pose and velocity.
+ */
+export interface ControlledBodyState {
+  frame: LocalFrame;
+  orientation: Mat3;
+  position: Vec3;
+  velocity: Vec3;
+  angularVelocity: AngularVelocity;
+}
+
+/**
+ * Per-player simulation control state that must persist across frames.
+ */
+export interface SimControlState {
+  thrustLevel: number;
 }

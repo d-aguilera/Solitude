@@ -1,8 +1,11 @@
 import { resolveCollisions } from "../domain/collisions";
 import type { GravityEngine, World } from "../domain/domainPorts";
 import { buildInitialGravityState } from "../domain/gravityState";
-import type { ControlledBodyState, SimControlState } from "./appInternals";
-import type { ControlInput } from "./controlPorts";
+import type {
+  ControlInput,
+  ControlledBodyState,
+  SimControlState,
+} from "./controlPorts";
 import type { PropulsionCommand, RcsCommand, ThrustCommand } from "./controls";
 import {
   getMainThrustCommand,

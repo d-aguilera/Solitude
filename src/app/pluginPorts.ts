@@ -1,14 +1,12 @@
 import type { ShipBody, World } from "../domain/domainPorts";
 import type {
   AttitudeCommand,
-  ControlledBodyState,
-  SimControlState,
-} from "./appInternals";
-import type {
   ControlAction,
   ControlInput,
+  ControlledBodyState,
   EnvAction,
   EnvInput,
+  SimControlState,
 } from "./controlPorts";
 import type { PropulsionCommand } from "./controls";
 import type { HudRenderParams } from "./hudPorts";

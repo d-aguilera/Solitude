@@ -1,6 +1,7 @@
 import type { LocalFrame } from "../domain/localFrame";
 import type { Mat3 } from "../domain/mat3";
 import type { Vec3 } from "../domain/vec3";
+import type { Trajectory } from "./runtimePorts";
 
 export interface BaseSceneObject {
   id: string;
@@ -91,6 +92,12 @@ export type SceneObject =
   | PolylineSceneObject;
 
 export type SceneObjectKind = "ship" | "planet" | "polyline" | "star";
+
+export interface SceneState {
+  pilotCamera: DomainCameraPose;
+  topCamera: DomainCameraPose;
+  trajectoryList: Trajectory[];
+}
 
 export interface SolidSceneObject extends BaseSceneObject {
   applyTransform: true;

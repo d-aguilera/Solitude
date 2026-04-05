@@ -8,7 +8,7 @@ import type {
 import { localFrame } from "../domain/localFrame";
 import { mat3 } from "../domain/mat3";
 import { vec3 } from "../domain/vec3";
-import type { ControlledBodyState } from "./appInternals";
+import type { ControlledBodyState } from "./controlPorts";
 import type { RcsCommand, ThrustCommand } from "./controls";
 import {
   maxRcsTranslationAcceleration,

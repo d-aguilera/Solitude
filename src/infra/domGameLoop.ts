@@ -1,4 +1,3 @@
-import type { SceneState } from "../app/appInternals";
 import { createTickHandler } from "../app/game";
 import type { HudRenderParams } from "../app/hudPorts";
 import type {
@@ -14,7 +13,11 @@ import type {
   WorldAndScene,
 } from "../app/runtimePorts";
 import { updateSceneGraph } from "../app/scene";
-import type { SceneControlState, SceneObject } from "../app/scenePorts";
+import type {
+  SceneControlState,
+  SceneObject,
+  SceneState,
+} from "../app/scenePorts";
 import { computeShipOrbitReadout } from "../domain/orbit";
 import { vec3 } from "../domain/vec3";
 import { parameters } from "../global/parameters";
