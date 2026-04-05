@@ -15,20 +15,67 @@ export function initInput(): {
 } {
   const controlInput = makeDefaultControlInput();
   const envInput = makeDefaultEnvInput();
+  let pendingAutopilotRelease: ControlAction | null = null;
 
   window.addEventListener("keydown", (e: KeyboardEvent) => {
     if (e.code in keyMap) {
-      updateInputs(controlInput, envInput, keyMap[e.code], true);
+      const action = keyMap[e.code];
+      if (isAutopilotToggle(action)) {
+        if (!e.repeat) {
+          if (controlInput[action]) {
+            pendingAutopilotRelease = action;
+          } else {
+            activateAutopilot(controlInput, action);
+            pendingAutopilotRelease = null;
+          }
+        }
+        return;
+      }
+      updateInputs(controlInput, envInput, action, true);
     }
   });
 
   window.addEventListener("keyup", (e: KeyboardEvent) => {
     if (e.code in keyMap) {
-      updateInputs(controlInput, envInput, keyMap[e.code], false);
+      const action = keyMap[e.code];
+      if (isAutopilotToggle(action)) {
+        if (pendingAutopilotRelease === action) {
+          clearAutopilot(controlInput);
+          pendingAutopilotRelease = null;
+        }
+        return;
+      }
+      updateInputs(controlInput, envInput, action, false);
     }
   });
 
   return { controlInput, envInput };
+}
+
+const autopilotToggleActions: Set<ControlAction> = new Set([
+  "alignToBody",
+  "alignToVelocity",
+  "circleNow",
+]);
+
+function isAutopilotToggle(
+  action: ControlAction | EnvAction,
+): action is ControlAction {
+  return autopilotToggleActions.has(action as ControlAction);
+}
+
+function clearAutopilot(controlInput: ControlInput): void {
+  controlInput.alignToBody = false;
+  controlInput.alignToVelocity = false;
+  controlInput.circleNow = false;
+}
+
+function activateAutopilot(
+  controlInput: ControlInput,
+  action: ControlAction,
+): void {
+  clearAutopilot(controlInput);
+  controlInput[action] = true;
 }
 
 function makeDefaultControlInput(): ControlInput {

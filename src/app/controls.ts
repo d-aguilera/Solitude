@@ -54,6 +54,11 @@ export function updateControlState(
   controlState: SimControlState,
 ): void {
   updateThrustLevelFromInput(controlInput, controlState);
+  if (hasManualActuatorInput(controlInput)) {
+    controlInput.alignToVelocity = false;
+    controlInput.alignToBody = false;
+    controlInput.circleNow = false;
+  }
   controlState.alignToVelocity = controlInput.alignToVelocity;
   controlState.alignToBody = controlInput.alignToBody;
 }
@@ -150,6 +155,21 @@ function updateThrustLevelFromInput(
       break;
     }
   }
+}
+
+function hasManualActuatorInput(controlInput: ControlInput): boolean {
+  return (
+    controlInput.burnForward ||
+    controlInput.burnBackwards ||
+    controlInput.burnLeft ||
+    controlInput.burnRight ||
+    controlInput.rollLeft ||
+    controlInput.rollRight ||
+    controlInput.pitchUp ||
+    controlInput.pitchDown ||
+    controlInput.yawLeft ||
+    controlInput.yawRight
+  );
 }
 
 /**

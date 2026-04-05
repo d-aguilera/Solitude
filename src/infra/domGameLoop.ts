@@ -1,4 +1,5 @@
 import type { SceneState } from "../app/appInternals.js";
+import type { ControlInput } from "../app/controlPorts.js";
 import { createTickHandler } from "../app/game.js";
 import type {
   TickCallback,
@@ -132,6 +133,7 @@ export function runLoop({
   };
 
   const hudRenderParams: HudRenderParams = {
+    autopilotMode: "none",
     circleNowDebug: null,
     currentThrustLevel: 0,
     currentRcsLevel: 0,
@@ -146,6 +148,7 @@ export function runLoop({
   };
 
   const renderedHud: RenderedHud = Array.from({ length: 5 }, () => [
+    "",
     "",
     "",
     "",
@@ -232,6 +235,7 @@ export function runLoop({
       hudRenderParams.profilingEnabled = profilingEnabled;
       hudRenderParams.simTimeMillis = simTimeMillis;
       hudRenderParams.speedMps = vec3.length(worldAndScene.mainShip.velocity);
+      hudRenderParams.autopilotMode = getAutopilotMode(controlInput);
       hudRenderParams.circleNowDebug = circleNowDebug;
 
       updateCircleNowDebug(
@@ -372,6 +376,13 @@ export function runLoop({
       prevTangentialTimeMs = 0;
     }
   }
+}
+
+function getAutopilotMode(controlInput: ControlInput): HudRenderParams["autopilotMode"] {
+  if (controlInput.circleNow) return "circleNow";
+  if (controlInput.alignToBody) return "alignToBody";
+  if (controlInput.alignToVelocity) return "alignToVelocity";
+  return "none";
 }
 
 function rasterizeView(view: RenderedView, rasterizer: Rasterizer) {

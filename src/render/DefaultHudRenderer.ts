@@ -1,5 +1,6 @@
 import { formatDistance, formatSimTime, formatSpeed } from "./formatters.js";
 import type {
+  AutopilotMode,
   HudRenderer,
   HudRenderParams,
   RenderedHud,
@@ -10,6 +11,7 @@ export class DefaultHudRenderer implements HudRenderer {
     into: RenderedHud,
     {
       circleNowDebug,
+      autopilotMode,
       currentRcsLevel,
       currentThrustLevel,
       currentTimeScale,
@@ -26,23 +28,26 @@ export class DefaultHudRenderer implements HudRenderer {
     const hudRow3 = into[3];
     const hudRow4 = into[4];
 
-    // Fourth column: general flight info (right-aligned)
-    hudRow0[3] = "Speed: ".concat(formatSpeed(speedMps));
+    // Fifth column: general flight info (right-aligned)
+    hudRow0[4] = "Speed: ".concat(formatSpeed(speedMps));
     const thrustPadding = currentThrustLevel < 0 ? "" : " ";
-    hudRow1[3] = "Thrust: ".concat(
+    hudRow1[4] = "Thrust: ".concat(
       thrustPadding,
       currentThrustLevel.toString(),
     );
     const rcsPadding = currentRcsLevel < 0 ? "" : " ";
-    hudRow2[3] = "RCS: ".concat(
-      rcsPadding,
-      currentRcsLevel.toFixed(2),
-    );
-    hudRow3[3] = "Time: ".concat(
+    hudRow2[4] = "RCS: ".concat(rcsPadding, currentRcsLevel.toFixed(2));
+    hudRow3[4] = "Time: ".concat(
       formatSimTime(simTimeMillis / 1000),
       " x",
       currentTimeScale.toString(),
     );
+
+    // Fourth column: autopilot status
+    hudRow0[3] = "AP: ".concat(formatAutopilotMode(autopilotMode));
+    hudRow1[3] = "";
+    hudRow2[3] = "";
+    hudRow3[3] = "";
 
     // Left column: orbit aids
     if (orbitReadout) {
@@ -116,6 +121,7 @@ export class DefaultHudRenderer implements HudRenderer {
       hudRow4[1] = "";
       hudRow4[2] = "";
       hudRow4[3] = "";
+      hudRow4[4] = "";
 
       if (circleNowDebug?.active) {
         const warnings: string[] = [];
@@ -158,6 +164,13 @@ export class DefaultHudRenderer implements HudRenderer {
       }
     }
   }
+}
+
+function formatAutopilotMode(mode: AutopilotMode): string {
+  const vel = mode === "alignToVelocity" ? "[VEL]" : "VEL";
+  const body = mode === "alignToBody" ? "[BODY]" : "BODY";
+  const circle = mode === "circleNow" ? "[CN]" : "CN";
+  return "".concat(vel, " ", body, " ", circle);
 }
 
 function displayNameFromId(id: string): string {

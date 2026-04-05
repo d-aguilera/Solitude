@@ -146,20 +146,28 @@ export class CanvasRasterizer implements Rasterizer {
     ctx.fillStyle = "white";
 
     const hudCenterLeft = hudInnerLeft + (hudInnerRight - hudInnerLeft) * 0.33;
-    const hudCenterRight = hudInnerLeft + (hudInnerRight - hudInnerLeft) * 0.66;
+    const hudCenterMid = hudInnerLeft + (hudInnerRight - hudInnerLeft) * 0.66;
+    const hudCenterRight = hudInnerLeft + (hudInnerRight - hudInnerLeft) * 0.83;
 
-    // Draw right-aligned text
+    // Draw right-aligned text (fifth column)
     ctx.textAlign = "right";
     for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
-      const text = hud[rowIndex][3];
+      const text = hud[rowIndex][4];
       if (text) ctx.fillText(text, hudInnerRight, hudRowsScratch[rowIndex]);
     }
 
-    // Draw 66% centered text
+    // Draw ~83% centered text (fourth column)
+    ctx.textAlign = "center";
+    for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
+      const text = hud[rowIndex][3];
+      if (text) ctx.fillText(text, hudCenterRight, hudRowsScratch[rowIndex]);
+    }
+
+    // Draw 66% centered text (third column)
     ctx.textAlign = "center";
     for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
       const text = hud[rowIndex][2];
-      if (text) ctx.fillText(text, hudCenterRight, hudRowsScratch[rowIndex]);
+      if (text) ctx.fillText(text, hudCenterMid, hudRowsScratch[rowIndex]);
     }
 
     // Draw 33% centered text

@@ -22,6 +22,7 @@ export interface HudRenderer {
 }
 
 export interface HudRenderParams {
+  autopilotMode: AutopilotMode;
   currentThrustLevel: number;
   currentRcsLevel: number;
   currentTimeScale: number;
@@ -34,6 +35,12 @@ export interface HudRenderParams {
   simTimeMillis: number; // accumulated simulation time.
   speedMps: number;
 }
+
+export type AutopilotMode =
+  | "none"
+  | "alignToVelocity"
+  | "alignToBody"
+  | "circleNow";
 
 export type CircleNowHudDebugSource = "velocity" | "fallback" | "none";
 
@@ -90,7 +97,7 @@ export interface RenderedFace {
   color: RGB;
 }
 
-export type RenderedHud = [string, string, string, string][];
+export type RenderedHud = [string, string, string, string, string][];
 
 export interface RenderedPolyline {
   points: ScreenPoint[];
