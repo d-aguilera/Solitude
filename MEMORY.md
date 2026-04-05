@@ -12,6 +12,11 @@
 ## Current focus
 - Split the architecture to support a future headless simulation server.
 
+## Must-Do After Code Changes (Do Not Skip)
+- Run: `npm run typecheck`
+- Run: `npm run test`
+- If you did not run them, explicitly say “Not run” in your response.
+
 ## Next steps
 - Not specified yet. Add 3–7 concrete tasks once a goal is set.
 
