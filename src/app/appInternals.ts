@@ -35,7 +35,5 @@ export interface SceneState {
  * Per-player simulation control state that must persist across frames.
  */
 export interface SimControlState {
-  alignToVelocity: boolean;
-  alignToBody: boolean;
   thrustLevel: number;
 }

@@ -1,4 +1,4 @@
-import type { AutopilotMode } from "../app/autoPilot.js";
+import type { HudRenderParams } from "../app/hudPorts.js";
 import type {
   DomainCameraPose,
   Mesh,
@@ -7,7 +7,6 @@ import type {
   SceneObject,
 } from "../app/scenePorts.js";
 import type { ShipBody } from "../domain/domainPorts.js";
-import type { OrbitReadout } from "../domain/orbit.js";
 import type { Vec3 } from "../domain/vec3.js";
 import type { ScreenPoint } from "./scrn.js";
 
@@ -20,34 +19,6 @@ export const drawMode: DrawMode = "faces";
  */
 export interface HudRenderer {
   renderInto(into: RenderedHud, renderParams: HudRenderParams): void;
-}
-
-export interface HudRenderParams {
-  autopilotMode: AutopilotMode;
-  currentThrustLevel: number;
-  currentRcsLevel: number;
-  currentTimeScale: number;
-  circleNowDebug?: CircleNowHudDebug | null;
-  fps: number;
-  orbitReadout?: OrbitReadout | null;
-  paused: boolean;
-  pilotCameraLocalOffset: Vec3;
-  profilingEnabled: boolean;
-  simTimeMillis: number; // accumulated simulation time.
-  speedMps: number;
-}
-
-
-export type CircleNowHudDebugSource = "velocity" | "fallback" | "none";
-
-export interface CircleNowHudDebug {
-  active: boolean;
-  radialSpeed: number;
-  tangentialSpeed: number;
-  tangentialSource: CircleNowHudDebugSource;
-  tangentialDirDot: number | null;
-  tangentialDirDeltaDeg: number | null;
-  tangentialDirRateDegPerSec: number | null;
 }
 
 export interface Point {

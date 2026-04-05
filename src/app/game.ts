@@ -2,7 +2,6 @@ import { resolveCollisions } from "../domain/collisions.js";
 import type { GravityEngine, World } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
 import type { ControlledBodyState, SimControlState } from "./appInternals.js";
-import { resolveAutopilotPropulsionCommand } from "./autoPilot.js";
 import type { ControlInput } from "./controlPorts.js";
 import type {
   PropulsionCommand,
@@ -14,16 +13,18 @@ import {
   getRcsCommand,
   maxRcsTranslationAcceleration,
   maxThrustAcceleration,
+  resolvePropulsionCommandWithPlugins,
   updateControlState,
   updateShipAngularVelocityFromInput,
 } from "./controls.js";
 import {
   applyCelestialSpin,
   applyGravity,
-  applyShipRotation,
   applyRcsTranslation,
+  applyShipRotation,
   applyThrust,
 } from "./physics.js";
+import type { ControlPlugin } from "./pluginPorts.js";
 import type {
   TickCallback,
   TickOutput,
@@ -38,12 +39,11 @@ export function createTickHandler(
   gravityEngine: GravityEngine,
   thrustLevel: number,
   worldAndScene: WorldAndScene,
+  controlPlugins: ControlPlugin[] = [],
 ): TickCallback {
   let propulsionCommand: PropulsionCommand;
 
   const simControlState: SimControlState = {
-    alignToVelocity: false,
-    alignToBody: false,
     thrustLevel,
   };
 
@@ -61,6 +61,7 @@ export function createTickHandler(
       simControlState,
       worldAndScene.mainShip,
       worldAndScene.world,
+      controlPlugins,
     );
 
     updateShipAngularVelocityFromInput(
@@ -69,6 +70,7 @@ export function createTickHandler(
       controlInput,
       simControlState,
       worldAndScene.world,
+      controlPlugins,
     );
     applyShipRotation(dtMillis, worldAndScene.mainShip);
     applyThrust(dtMillis, worldAndScene.mainShip, propulsionCommand.main);
@@ -95,11 +97,12 @@ function getPropulsionCommandForTick(
   controlState: SimControlState,
   ship: ControlledBodyState,
   world: World,
+  controlPlugins: ControlPlugin[],
 ): PropulsionCommand {
-  updateControlState(controlInput, controlState);
+  updateControlState(controlInput, controlState, controlPlugins);
   const manualMain = getMainThrustCommand(controlInput, controlState);
   const manualRcs = getRcsCommand(controlInput);
-  return resolveAutopilotPropulsionCommand(
+  return resolvePropulsionCommandWithPlugins(
     dtMillis,
     controlInput,
     ship,
@@ -107,6 +110,7 @@ function getPropulsionCommandForTick(
     { main: manualMain, rcs: manualRcs },
     maxThrustAcceleration,
     maxRcsTranslationAcceleration,
+    controlPlugins,
   );
 }
 

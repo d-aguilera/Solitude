@@ -1,58 +1,32 @@
-import type {
-  ControlAction,
-  ControlInput,
-  EnvAction,
-} from "../app/controlPorts.js";
-import type { ShipBody, World } from "../domain/domainPorts.js";
-import { EPS_LEN_COARSE, EPS_SPEED_COARSE } from "../domain/epsilon.js";
-import { getDominantBodyPrimary } from "../domain/orbit.js";
-import { vec3 } from "../domain/vec3.js";
-import type { CircleNowHudDebug } from "../render/renderPorts.js";
+import type { HudPlugin } from "../../app/pluginPorts.js";
+import type { ShipBody, World } from "../../domain/domainPorts.js";
+import { EPS_LEN_COARSE, EPS_SPEED_COARSE } from "../../domain/epsilon.js";
+import { getDominantBodyPrimary } from "../../domain/orbit.js";
+import { vec3 } from "../../domain/vec3.js";
+import { getAutopilotMode } from "./logic.js";
 
-const autopilotToggleActions: Set<ControlAction> = new Set([
-  "alignToBody",
-  "alignToVelocity",
-  "circleNow",
-]);
+export function createHudPlugin(): HudPlugin {
+  const circleNowTracker = createCircleNowDebugTracker();
 
-export function createAutopilotKeyHandler(controlInput: ControlInput): {
-  handleKeyDown: (
-    action: ControlAction | EnvAction,
-    isRepeat: boolean,
-  ) => boolean;
-  handleKeyUp: (action: ControlAction | EnvAction) => boolean;
-} {
-  let pendingAutopilotRelease: ControlAction | null = null;
+  return {
+    updateHudParams: (params, { controlInput, mainShip, nowMs, world }) => {
+      circleNowTracker.update(world, mainShip, controlInput.circleNow, nowMs);
+      const autopilotMode = getAutopilotMode(controlInput);
+      params.hudCells.push({
+        row: 0,
+        col: 3,
+        text: formatAutopilotStatus(autopilotMode),
+      });
 
-  const handleKeyDown = (
-    action: ControlAction | EnvAction,
-    isRepeat: boolean,
-  ): boolean => {
-    if (!isAutopilotToggle(action)) return false;
-    if (!isRepeat) {
-      if (controlInput[action]) {
-        pendingAutopilotRelease = action;
-      } else {
-        activateAutopilot(controlInput, action);
-        pendingAutopilotRelease = null;
+      const warning = formatCircleNowWarnings(circleNowTracker.debug);
+      if (warning) {
+        params.hudCells.push({ row: 4, col: 2, text: warning });
       }
-    }
-    return true;
+    },
   };
-
-  const handleKeyUp = (action: ControlAction | EnvAction): boolean => {
-    if (!isAutopilotToggle(action)) return false;
-    if (pendingAutopilotRelease === action) {
-      clearAutopilot(controlInput);
-      pendingAutopilotRelease = null;
-    }
-    return true;
-  };
-
-  return { handleKeyDown, handleKeyUp };
 }
 
-export interface CircleNowDebugTracker {
+interface CircleNowDebugTracker {
   debug: CircleNowHudDebug;
   update: (
     world: World,
@@ -62,7 +36,7 @@ export interface CircleNowDebugTracker {
   ) => void;
 }
 
-export function createCircleNowDebugTracker(): CircleNowDebugTracker {
+function createCircleNowDebugTracker(): CircleNowDebugTracker {
   const prevTangentialDir = vec3.zero();
   const debugRScratch = vec3.zero();
   const debugRHatScratch = vec3.zero();
@@ -193,22 +167,65 @@ export function createCircleNowDebugTracker(): CircleNowDebugTracker {
   return { debug, update };
 }
 
-function isAutopilotToggle(
-  action: ControlAction | EnvAction,
-): action is ControlAction {
-  return autopilotToggleActions.has(action as ControlAction);
+type CircleNowHudDebugSource = "velocity" | "fallback" | "none";
+
+interface CircleNowHudDebug {
+  active: boolean;
+  radialSpeed: number;
+  tangentialSpeed: number;
+  tangentialSource: CircleNowHudDebugSource;
+  tangentialDirDot: number | null;
+  tangentialDirDeltaDeg: number | null;
+  tangentialDirRateDegPerSec: number | null;
 }
 
-function clearAutopilot(controlInput: ControlInput): void {
-  controlInput.alignToBody = false;
-  controlInput.alignToVelocity = false;
-  controlInput.circleNow = false;
+function formatAutopilotStatus(
+  mode: ReturnType<typeof getAutopilotMode>,
+): string {
+  const vel = mode === "alignToVelocity" ? "[VEL]" : "VEL";
+  const body = mode === "alignToBody" ? "[BODY]" : "BODY";
+  const circle = mode === "circleNow" ? "[CN]" : "CN";
+  return "AP: ".concat(vel, " ", body, " ", circle);
 }
 
-function activateAutopilot(
-  controlInput: ControlInput,
-  action: ControlAction,
-): void {
-  clearAutopilot(controlInput);
-  controlInput[action] = true;
+function formatCircleNowWarnings(
+  circleNowDebug: CircleNowHudDebug | null | undefined,
+): string {
+  if (!circleNowDebug?.active) return "";
+
+  const warnings: string[] = [];
+  if (circleNowDebug.tangentialSource === "none") {
+    warnings.push("NO TAN");
+  } else {
+    if (circleNowDebug.tangentialSpeed < 1) {
+      warnings.push("TAN LOW");
+    }
+    if (circleNowDebug.tangentialSource === "fallback") {
+      warnings.push("FALLBACK");
+    }
+  }
+  if (
+    circleNowDebug.tangentialDirDot != null &&
+    circleNowDebug.tangentialDirDot < -0.2
+  ) {
+    warnings.push("TAN FLIP");
+  } else if (
+    circleNowDebug.tangentialDirDeltaDeg != null &&
+    circleNowDebug.tangentialDirDeltaDeg > 45
+  ) {
+    warnings.push("TAN SWING");
+  }
+  if (
+    circleNowDebug.tangentialDirRateDegPerSec != null &&
+    circleNowDebug.tangentialDirRateDegPerSec > 20
+  ) {
+    warnings.push(
+      "TAN RATE ".concat(
+        circleNowDebug.tangentialDirRateDegPerSec.toFixed(0),
+        "°/s",
+      ),
+    );
+  }
+
+  return warnings.length ? "!! CN WARN: ".concat(warnings.join(" | ")) : "";
 }

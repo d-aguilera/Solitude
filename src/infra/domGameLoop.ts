@@ -1,6 +1,12 @@
 import type { SceneState } from "../app/appInternals.js";
-import { getAutopilotMode } from "../app/autoPilot.js";
 import { createTickHandler } from "../app/game.js";
+import type { HudRenderParams } from "../app/hudPorts.js";
+import type {
+  ControlPlugin,
+  GamePlugin,
+  HudContext,
+  HudPlugin,
+} from "../app/pluginPorts.js";
 import type {
   TickCallback,
   TickOutput,
@@ -13,8 +19,6 @@ import { computeShipOrbitReadout } from "../domain/orbit.js";
 import { vec3 } from "../domain/vec3.js";
 import { parameters } from "../global/parameters.js";
 import type {
-  CircleNowHudDebug,
-  HudRenderParams,
   Rasterizer,
   RenderedHud,
   RenderedView,
@@ -23,7 +27,6 @@ import type {
 import { createSceneAndTrajectories } from "../setup/sceneSetup.js";
 import { createWorld } from "../setup/setup.js";
 import { buildTrajectoryPlan } from "../setup/trajectoryPlan.js";
-import { createCircleNowDebugTracker } from "./autoPilot.js";
 import { updateFps } from "./fps.js";
 import type { RunLoopParams } from "./infraPorts.js";
 import { handlePauseToggle } from "./pause.js";
@@ -47,7 +50,10 @@ export function runLoop({
   controlInput,
   envInput,
   profilerController,
+  plugins,
 }: RunLoopParams): void {
+  const controlPlugins = collectControlPlugins(plugins);
+  const hudPlugins = collectHudPlugins(plugins);
   const worldSetup = createWorld(config);
   const trajectoryPlan = buildTrajectoryPlan(
     worldSetup.world,
@@ -68,6 +74,7 @@ export function runLoop({
     gravityEngine,
     config.thrustLevel,
     worldAndScene,
+    controlPlugins,
   );
 
   const sceneControlState: SceneControlState = {
@@ -133,12 +140,11 @@ export function runLoop({
   };
 
   const hudRenderParams: HudRenderParams = {
-    autopilotMode: "none",
-    circleNowDebug: null,
     currentThrustLevel: 0,
     currentRcsLevel: 0,
     currentTimeScale: 0,
     fps: 0,
+    hudCells: [],
     orbitReadout: null,
     paused: false,
     pilotCameraLocalOffset: sceneControlState.pilotCameraOffset,
@@ -163,8 +169,6 @@ export function runLoop({
   let fps: number;
   let simTimeMillis = 0;
   let timeScale = parameters.timeScale;
-  const circleNowTracker = createCircleNowDebugTracker();
-  const circleNowDebug: CircleNowHudDebug = circleNowTracker.debug;
 
   const loop = (nowMs: number) => {
     dtMillis = nowMs - lastTimeMs;
@@ -220,15 +224,13 @@ export function runLoop({
       hudRenderParams.profilingEnabled = profilingEnabled;
       hudRenderParams.simTimeMillis = simTimeMillis;
       hudRenderParams.speedMps = vec3.length(worldAndScene.mainShip.velocity);
-      hudRenderParams.autopilotMode = getAutopilotMode(controlInput);
-      hudRenderParams.circleNowDebug = circleNowDebug;
-
-      circleNowTracker.update(
-        worldAndScene.world,
-        worldAndScene.mainShip,
-        controlInput.circleNow,
+      hudRenderParams.hudCells.length = 0;
+      applyHudPlugins(hudPlugins, hudRenderParams, {
+        controlInput,
+        mainShip: worldAndScene.mainShip,
         nowMs,
-      );
+        world: worldAndScene.world,
+      });
 
       hudRenderer.renderInto(renderedHud, hudRenderParams);
       lastHudTimeMs = nowMs;
@@ -262,4 +264,34 @@ function rasterizeView(view: RenderedView, rasterizer: Rasterizer) {
 
 function rasterizeHud(hud: RenderedHud, rasterizer: Rasterizer) {
   rasterizer.drawHud(hud);
+}
+
+function collectHudPlugins(plugins: GamePlugin[]): HudPlugin[] {
+  const hudPlugins: HudPlugin[] = [];
+  for (const plugin of plugins) {
+    if (plugin.hud) {
+      hudPlugins.push(plugin.hud);
+    }
+  }
+  return hudPlugins;
+}
+
+function collectControlPlugins(plugins: GamePlugin[]): ControlPlugin[] {
+  const controlPlugins: ControlPlugin[] = [];
+  for (const plugin of plugins) {
+    if (plugin.controls) {
+      controlPlugins.push(plugin.controls);
+    }
+  }
+  return controlPlugins;
+}
+
+function applyHudPlugins(
+  plugins: HudPlugin[],
+  hudParams: HudRenderParams,
+  context: HudContext,
+): void {
+  for (const plugin of plugins) {
+    plugin.updateHudParams?.(hudParams, context);
+  }
 }

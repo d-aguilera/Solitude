@@ -1,4 +1,14 @@
-import type { World } from "../domain/domainPorts";
+import type {
+  AttitudeCommand,
+  ControlledBodyState,
+} from "../../app/appInternals.js";
+import type { ControlInput } from "../../app/controlPorts.js";
+import type {
+  PropulsionCommand,
+  RcsCommand,
+  ThrustCommand,
+} from "../../app/controls.js";
+import type { World } from "../../domain/domainPorts.js";
 import {
   EPS_ANGLE_RAD,
   EPS_DELTA_V,
@@ -6,13 +16,10 @@ import {
   EPS_LEN_COARSE,
   EPS_SPEED_COARSE,
   EPS_SPEED_FINE,
-} from "../domain/epsilon";
-import { getDominantBody, getDominantBodyPrimary } from "../domain/orbit";
-import { type Vec3, vec3 } from "../domain/vec3";
-import { parameters } from "../global/parameters";
-import type { AttitudeCommand, ControlledBodyState, SimControlState } from "./appInternals";
-import type { ControlInput } from "./controlPorts";
-import type { PropulsionCommand, RcsCommand, ThrustCommand } from "./controls";
+} from "../../domain/epsilon.js";
+import { getDominantBody, getDominantBodyPrimary } from "../../domain/orbit.js";
+import { type Vec3, vec3 } from "../../domain/vec3.js";
+import { parameters } from "../../global/parameters.js";
 
 // Max rate at which the ship can reorient itself toward its velocity vector.
 const alignToVelocityMaxAngularSpeed = 2.0; // rad/s
@@ -216,19 +223,18 @@ export function getAutopilotAttitudeCommand(
   dtMillis: number,
   ship: ControlledBodyState,
   controlInput: ControlInput,
-  controlState: SimControlState,
   world: World,
 ): AttitudeCommand | null {
   if (controlInput.circleNow) {
     return computeCircleNowAttitudeCommand(dtMillis, ship, world);
   }
 
-  if (controlState.alignToBody && controlInput.alignToBody) {
+  if (controlInput.alignToBody) {
     const direction = getDominantBodyDirection(ship, world);
     if (direction) {
       return computeAlignToDirectionCommand(dtMillis, ship, direction);
     }
-  } else if (controlState.alignToVelocity && controlInput.alignToVelocity) {
+  } else if (controlInput.alignToVelocity) {
     const direction = getVelocityDirection(ship);
     if (direction) {
       return computeAlignToDirectionCommand(dtMillis, ship, direction);
@@ -329,13 +335,14 @@ function computeCircleNowState(
   vec3.subInto(circleVRelScratch, ship.velocity, primary.body.velocity);
   const radialSpeed = vec3.dot(circleRHatScratch, circleVRelScratch);
 
-  const { tangentialSpeed, hasTangentialDir } = computeCircleTangentialDirection(
-    ship,
-    circleRHatScratch,
-    circleVRelScratch,
-    radialSpeed,
-    circleTScratch,
-  );
+  const { tangentialSpeed, hasTangentialDir } =
+    computeCircleTangentialDirection(
+      ship,
+      circleRHatScratch,
+      circleVRelScratch,
+      radialSpeed,
+      circleTScratch,
+    );
 
   circleStateScratch.r = r;
   circleStateScratch.radialSpeed = radialSpeed;
@@ -505,9 +512,7 @@ export function getAutopilotMode(controlInput: ControlInput): AutopilotMode {
   return "none";
 }
 
-export function disengageAutopilotOnManualActuation(
-  controlInput: ControlInput,
-): void {
+export function disengageOnManualActuation(controlInput: ControlInput): void {
   if (!hasManualActuatorInput(controlInput)) {
     return;
   }

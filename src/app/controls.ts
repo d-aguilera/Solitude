@@ -4,11 +4,8 @@ import type {
   ControlledBodyState,
   SimControlState,
 } from "./appInternals.js";
-import {
-  disengageAutopilotOnManualActuation,
-  getAutopilotAttitudeCommand,
-} from "./autoPilot.js";
 import type { ControlInput } from "./controlPorts.js";
+import type { ControlPlugin } from "./pluginPorts.js";
 import type { PilotLookState } from "./scenePorts.js";
 
 // Max main-engine thrust acceleration in m/s^2 at 100% thrust
@@ -50,11 +47,12 @@ export interface PropulsionCommand {
 export function updateControlState(
   controlInput: ControlInput,
   controlState: SimControlState,
+  controlPlugins: ControlPlugin[] = [],
 ): void {
   updateThrustLevelFromInput(controlInput, controlState);
-  disengageAutopilotOnManualActuation(controlInput);
-  controlState.alignToVelocity = controlInput.alignToVelocity;
-  controlState.alignToBody = controlInput.alignToBody;
+  for (const plugin of controlPlugins) {
+    plugin.updateControlState?.({ controlInput, controlState });
+  }
 }
 
 /**
@@ -185,7 +183,7 @@ export function getRcsCommand(controlInput: ControlInput): RcsCommand {
  *
  * This function updates the ship's angular velocity based on:
  *  - roll/pitch/yaw input, or
- *  - autopilot alignment commands
+ *  - plugin-provided attitude commands
  */
 export function updateShipAngularVelocityFromInput(
   dtMillis: number,
@@ -193,15 +191,67 @@ export function updateShipAngularVelocityFromInput(
   controlInput: ControlInput,
   controlState: SimControlState,
   world: World,
+  controlPlugins: ControlPlugin[] = [],
 ): void {
   const manualCommand = getManualAttitudeCommand(controlInput);
-  const command = getAutopilotAttitudeCommand(
+  const command = getPluginAttitudeCommand(
     dtMillis,
     ship,
     controlInput,
     controlState,
     world,
+    controlPlugins,
   );
 
   applyAttitudeCommand(dtMillis, ship, command ?? manualCommand);
+}
+
+export function resolvePropulsionCommandWithPlugins(
+  dtMillis: number,
+  controlInput: ControlInput,
+  ship: ControlledBodyState,
+  world: World,
+  manualPropulsion: PropulsionCommand,
+  maxThrustAcceleration: number,
+  maxRcsTranslationAcceleration: number,
+  controlPlugins: ControlPlugin[] = [],
+): PropulsionCommand {
+  let command = manualPropulsion;
+  for (const plugin of controlPlugins) {
+    if (!plugin.resolvePropulsionCommand) continue;
+    command = plugin.resolvePropulsionCommand({
+      dtMillis,
+      controlInput,
+      ship,
+      world,
+      manualPropulsion: command,
+      maxThrustAcceleration,
+      maxRcsTranslationAcceleration,
+    });
+  }
+  return command;
+}
+
+function getPluginAttitudeCommand(
+  dtMillis: number,
+  ship: ControlledBodyState,
+  controlInput: ControlInput,
+  controlState: SimControlState,
+  world: World,
+  controlPlugins: ControlPlugin[],
+): AttitudeCommand | null {
+  for (const plugin of controlPlugins) {
+    if (!plugin.getAttitudeCommand) continue;
+    const command = plugin.getAttitudeCommand({
+      dtMillis,
+      ship,
+      controlInput,
+      controlState,
+      world,
+    });
+    if (command) {
+      return command;
+    }
+  }
+  return null;
 }

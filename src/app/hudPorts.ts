@@ -1,0 +1,22 @@
+import type { OrbitReadout } from "../domain/orbit.js";
+import type { Vec3 } from "../domain/vec3.js";
+
+export interface HudCell {
+  row: number;
+  col: number;
+  text: string;
+}
+
+export interface HudRenderParams {
+  currentThrustLevel: number;
+  currentRcsLevel: number;
+  currentTimeScale: number;
+  fps: number;
+  orbitReadout?: OrbitReadout | null;
+  paused: boolean;
+  pilotCameraLocalOffset: Vec3;
+  profilingEnabled: boolean;
+  simTimeMillis: number; // accumulated simulation time.
+  speedMps: number;
+  hudCells: HudCell[];
+}

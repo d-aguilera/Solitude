@@ -1,5 +1,6 @@
-import { ALL_CONTROL_ACTIONS, type ControlInput } from "../app/controlPorts.js";
+import { createControlInput, type ControlInput } from "../app/controlPorts.js";
 import { createTickHandler } from "../app/game.js";
+import type { ControlPlugin } from "../app/pluginPorts.js";
 import type {
   TickOutput,
   TickParams,
@@ -15,6 +16,8 @@ export interface HeadlessLoopOptions {
   gravityEngine?: GravityEngine;
   thrustLevel?: number;
   timeScale?: number;
+  controlPlugins?: ControlPlugin[];
+  controlActions?: string[];
 }
 
 export interface HeadlessLoop {
@@ -24,17 +27,18 @@ export interface HeadlessLoop {
 
 const EMPTY_SCENE: Scene = { objects: [], lights: [] };
 
-const EMPTY_CONTROL_INPUT: ControlInput = ALL_CONTROL_ACTIONS.reduce(
-  (acc, action) => {
-    acc[action] = false;
-    return acc;
-  },
-  {} as ControlInput,
-);
-
-function mergeControlInput(overrides?: Partial<ControlInput>): ControlInput {
-  if (!overrides) return EMPTY_CONTROL_INPUT;
-  return { ...EMPTY_CONTROL_INPUT, ...overrides };
+function mergeControlInput(
+  base: ControlInput,
+  overrides?: Partial<ControlInput>,
+): ControlInput {
+  if (!overrides) return base;
+  const merged: Record<string, boolean> = { ...base };
+  for (const [key, value] of Object.entries(overrides)) {
+    if (value !== undefined) {
+      merged[key] = value;
+    }
+  }
+  return merged as ControlInput;
 }
 
 /**
@@ -60,12 +64,20 @@ export function createHeadlessLoop(
   const thrustLevel = options.thrustLevel ?? 1;
   const timeScale = options.timeScale ?? 1;
 
-  const tickInto = createTickHandler(gravityEngine, thrustLevel, worldAndScene);
+  const tickInto = createTickHandler(
+    gravityEngine,
+    thrustLevel,
+    worldAndScene,
+    options.controlPlugins ?? [],
+  );
+
+  const extraActions = options.controlActions ?? [];
+  const baseControlInput = createControlInput(extraActions);
 
   const tickParams: TickParams = {
     dtMillis: 0,
     dtMillisSim: 0,
-    controlInput: EMPTY_CONTROL_INPUT,
+    controlInput: baseControlInput,
   };
 
   const tickOutput: TickOutput = {
@@ -79,7 +91,7 @@ export function createHeadlessLoop(
   ): TickOutput => {
     tickParams.dtMillis = dtMillis;
     tickParams.dtMillisSim = dtMillis * timeScale;
-    tickParams.controlInput = mergeControlInput(controlInput);
+    tickParams.controlInput = mergeControlInput(baseControlInput, controlInput);
 
     tickInto(tickOutput, tickParams);
 

@@ -2,6 +2,7 @@ import type { WorldAndSceneConfig } from "../app/configPorts.js";
 import type { GravityEngine } from "../domain/domainPorts.js";
 import { parameters } from "../global/parameters.js";
 import { profilerController } from "../global/profiling.js";
+import { loadPlugins } from "../plugins/index.js";
 import { DefaultHudRenderer } from "../render/DefaultHudRenderer.js";
 import { DefaultViewRenderer } from "../render/DefaultViewRenderer.js";
 import type {
@@ -24,6 +25,7 @@ export function bootstrapWith(
   makeSurface: (canvas: HTMLCanvasElement) => RenderSurface2D,
   makeRasterizer: (canvas: HTMLCanvasElement) => Rasterizer,
 ): void {
+  const plugins = loadPlugins(["autopilot"]);
   const container = document.querySelector(".canvas-container");
   if (!container) {
     throw new Error("Required '.canvas-container' not found in document");
@@ -66,7 +68,7 @@ export function bootstrapWith(
   const hudRasterizer = pilotRasterizer;
   const hudRenderer: HudRenderer = new DefaultHudRenderer();
 
-  const { controlInput, envInput } = initInput();
+  const { controlInput, envInput } = initInput(plugins);
 
   initPause();
 
@@ -84,5 +86,6 @@ export function bootstrapWith(
     controlInput,
     envInput,
     profilerController,
+    plugins,
   });
 }

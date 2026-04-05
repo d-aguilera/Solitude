@@ -1,20 +1,15 @@
-import { formatAutopilotStatus, formatCircleNowWarnings } from "./autoPilot.js";
+import type { HudCell, HudRenderParams } from "../app/hudPorts.js";
 import { formatDistance, formatSimTime, formatSpeed } from "./formatters.js";
-import type {
-  HudRenderer,
-  HudRenderParams,
-  RenderedHud,
-} from "./renderPorts.js";
+import type { HudRenderer, RenderedHud } from "./renderPorts.js";
 
 export class DefaultHudRenderer implements HudRenderer {
   renderInto(
     into: RenderedHud,
     {
-      circleNowDebug,
-      autopilotMode,
       currentRcsLevel,
       currentThrustLevel,
       currentTimeScale,
+      hudCells,
       orbitReadout,
       paused,
       profilingEnabled,
@@ -43,8 +38,8 @@ export class DefaultHudRenderer implements HudRenderer {
       currentTimeScale.toString(),
     );
 
-    // Fourth column: autopilot status
-    hudRow0[3] = formatAutopilotStatus(autopilotMode);
+    // Fourth column: reserved for plugins
+    hudRow0[3] = "";
     hudRow1[3] = "";
     hudRow2[3] = "";
     hudRow3[3] = "";
@@ -122,8 +117,10 @@ export class DefaultHudRenderer implements HudRenderer {
       hudRow4[2] = "";
       hudRow4[3] = "";
       hudRow4[4] = "";
+    }
 
-      hudRow4[2] = formatCircleNowWarnings(circleNowDebug);
+    if (hudCells.length) {
+      applyHudCells(into, hudCells);
     }
   }
 }
@@ -145,4 +142,13 @@ function formatDeltaV(speedMps: number): string {
     return (speedMps / 1000).toFixed(2).concat(" km/s");
   }
   return speedMps.toFixed(2).concat(" m/s");
+}
+
+function applyHudCells(into: RenderedHud, cells: HudCell[]): void {
+  for (const cell of cells) {
+    const row = into[cell.row];
+    if (!row) continue;
+    if (cell.col < 0 || cell.col >= row.length) continue;
+    row[cell.col] = cell.text;
+  }
 }

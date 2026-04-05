@@ -1,4 +1,4 @@
-export const ALL_CONTROL_ACTIONS = [
+export const BASE_CONTROL_ACTIONS = [
   "rollLeft",
   "rollRight",
   "pitchUp",
@@ -28,9 +28,6 @@ export const ALL_CONTROL_ACTIONS = [
   "thrust7",
   "thrust8",
   "thrust9",
-  "alignToBody",
-  "alignToVelocity",
-  "circleNow",
 ] as const;
 
 export const ALL_ENV_ACTIONS = [
@@ -40,8 +37,23 @@ export const ALL_ENV_ACTIONS = [
   "profilingToggle",
 ] as const;
 
-export type ControlAction = (typeof ALL_CONTROL_ACTIONS)[number];
-export type ControlInput = Record<ControlAction, boolean>;
+export type BaseControlAction = (typeof BASE_CONTROL_ACTIONS)[number];
+export type ControlAction = string;
+export type ControlInput = Record<string, boolean> &
+  Record<BaseControlAction, boolean>;
 
 export type EnvAction = (typeof ALL_ENV_ACTIONS)[number];
 export type EnvInput = Record<EnvAction, boolean>;
+
+export function createControlInput(
+  extraActions: readonly string[] = [],
+): ControlInput {
+  const result: Record<string, boolean> = {};
+  for (const action of BASE_CONTROL_ACTIONS) {
+    result[action] = false;
+  }
+  for (const action of extraActions) {
+    result[action] = false;
+  }
+  return result as ControlInput;
+}

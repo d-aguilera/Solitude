@@ -1,5 +1,6 @@
 import type { WorldAndSceneConfig } from "../app/configPorts";
 import type { ControlInput, EnvInput } from "../app/controlPorts";
+import type { GamePlugin } from "../app/pluginPorts";
 import type { GravityEngine } from "../domain/domainPorts";
 import type {
   HudRenderer,
@@ -47,4 +48,5 @@ export interface RunLoopParams {
   controlInput: ControlInput;
   envInput: EnvInput;
   profilerController: ProfilerController;
+  plugins: GamePlugin[];
 }
