@@ -5,10 +5,8 @@ import type {
   SimControlState,
 } from "./appInternals.js";
 import {
-  computeAlignToDirectionCommand,
-  computeCircleNowAttitudeCommand,
-  getDominantBodyDirection,
-  getVelocityDirection,
+  disengageAutopilotOnManualActuation,
+  getAutopilotAttitudeCommand,
 } from "./autoPilot.js";
 import type { ControlInput } from "./controlPorts.js";
 import type { PilotLookState } from "./scenePorts.js";
@@ -54,11 +52,7 @@ export function updateControlState(
   controlState: SimControlState,
 ): void {
   updateThrustLevelFromInput(controlInput, controlState);
-  if (hasManualActuatorInput(controlInput)) {
-    controlInput.alignToVelocity = false;
-    controlInput.alignToBody = false;
-    controlInput.circleNow = false;
-  }
+  disengageAutopilotOnManualActuation(controlInput);
   controlState.alignToVelocity = controlInput.alignToVelocity;
   controlState.alignToBody = controlInput.alignToBody;
 }
@@ -157,21 +151,6 @@ function updateThrustLevelFromInput(
   }
 }
 
-function hasManualActuatorInput(controlInput: ControlInput): boolean {
-  return (
-    controlInput.burnForward ||
-    controlInput.burnBackwards ||
-    controlInput.burnLeft ||
-    controlInput.burnRight ||
-    controlInput.rollLeft ||
-    controlInput.rollRight ||
-    controlInput.pitchUp ||
-    controlInput.pitchDown ||
-    controlInput.yawLeft ||
-    controlInput.yawRight
-  );
-}
-
 /**
  * Signed main-engine thrust percent in [-1, 1]:
  *  - Sign from Space (forward) / B (backward)
@@ -216,25 +195,13 @@ export function updateShipAngularVelocityFromInput(
   world: World,
 ): void {
   const manualCommand = getManualAttitudeCommand(controlInput);
-  let command: AttitudeCommand | null = null;
-
-  if (controlInput.circleNow) {
-    command = computeCircleNowAttitudeCommand(dtMillis, ship, world);
-  }
-
-  if (!command) {
-    if (controlState.alignToBody && controlInput.alignToBody) {
-      const direction = getDominantBodyDirection(ship, world);
-      if (direction) {
-        command = computeAlignToDirectionCommand(dtMillis, ship, direction);
-      }
-    } else if (controlState.alignToVelocity && controlInput.alignToVelocity) {
-      const direction = getVelocityDirection(ship);
-      if (direction) {
-        command = computeAlignToDirectionCommand(dtMillis, ship, direction);
-      }
-    }
-  }
+  const command = getAutopilotAttitudeCommand(
+    dtMillis,
+    ship,
+    controlInput,
+    controlState,
+    world,
+  );
 
   applyAttitudeCommand(dtMillis, ship, command ?? manualCommand);
 }

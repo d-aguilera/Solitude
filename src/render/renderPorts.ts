@@ -1,3 +1,4 @@
+import type { AutopilotMode } from "../app/autoPilot.js";
 import type {
   DomainCameraPose,
   Mesh,
@@ -36,11 +37,6 @@ export interface HudRenderParams {
   speedMps: number;
 }
 
-export type AutopilotMode =
-  | "none"
-  | "alignToVelocity"
-  | "alignToBody"
-  | "circleNow";
 
 export type CircleNowHudDebugSource = "velocity" | "fallback" | "none";
 

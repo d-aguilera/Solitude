@@ -10,7 +10,8 @@ import {
 import { getDominantBody, getDominantBodyPrimary } from "../domain/orbit";
 import { type Vec3, vec3 } from "../domain/vec3";
 import { parameters } from "../global/parameters";
-import type { AttitudeCommand, ControlledBodyState } from "./appInternals";
+import type { AttitudeCommand, ControlledBodyState, SimControlState } from "./appInternals";
+import type { ControlInput } from "./controlPorts";
 import type { PropulsionCommand, RcsCommand, ThrustCommand } from "./controls";
 
 // Max rate at which the ship can reorient itself toward its velocity vector.
@@ -211,6 +212,32 @@ export function computeCircleNowAttitudeCommand(
   return command;
 }
 
+export function getAutopilotAttitudeCommand(
+  dtMillis: number,
+  ship: ControlledBodyState,
+  controlInput: ControlInput,
+  controlState: SimControlState,
+  world: World,
+): AttitudeCommand | null {
+  if (controlInput.circleNow) {
+    return computeCircleNowAttitudeCommand(dtMillis, ship, world);
+  }
+
+  if (controlState.alignToBody && controlInput.alignToBody) {
+    const direction = getDominantBodyDirection(ship, world);
+    if (direction) {
+      return computeAlignToDirectionCommand(dtMillis, ship, direction);
+    }
+  } else if (controlState.alignToVelocity && controlInput.alignToVelocity) {
+    const direction = getVelocityDirection(ship);
+    if (direction) {
+      return computeAlignToDirectionCommand(dtMillis, ship, direction);
+    }
+  }
+
+  return null;
+}
+
 function commandFromWorldAxis(
   state: ControlledBodyState,
   axisWorld: Vec3,
@@ -381,7 +408,7 @@ function computeCircleAcceleration(
   return true;
 }
 
-export function computeCircleNowThrust(
+function computeCircleNowThrust(
   dtMillis: number,
   ship: ControlledBodyState,
   world: World,
@@ -441,6 +468,67 @@ export function computeCircleNowThrust(
       right: clamp(rightCmd, -1, 1),
     },
   };
+}
+
+export function resolveAutopilotPropulsionCommand(
+  dtMillis: number,
+  controlInput: ControlInput,
+  ship: ControlledBodyState,
+  world: World,
+  manualPropulsion: PropulsionCommand,
+  maxThrustAcceleration: number,
+  maxRcsTranslationAcceleration: number,
+): PropulsionCommand {
+  if (!controlInput.circleNow) {
+    return manualPropulsion;
+  }
+
+  return computeCircleNowThrust(
+    dtMillis,
+    ship,
+    world,
+    maxThrustAcceleration,
+    maxRcsTranslationAcceleration,
+  );
+}
+
+export type AutopilotMode =
+  | "none"
+  | "alignToVelocity"
+  | "alignToBody"
+  | "circleNow";
+
+export function getAutopilotMode(controlInput: ControlInput): AutopilotMode {
+  if (controlInput.circleNow) return "circleNow";
+  if (controlInput.alignToBody) return "alignToBody";
+  if (controlInput.alignToVelocity) return "alignToVelocity";
+  return "none";
+}
+
+export function disengageAutopilotOnManualActuation(
+  controlInput: ControlInput,
+): void {
+  if (!hasManualActuatorInput(controlInput)) {
+    return;
+  }
+  controlInput.alignToVelocity = false;
+  controlInput.alignToBody = false;
+  controlInput.circleNow = false;
+}
+
+function hasManualActuatorInput(controlInput: ControlInput): boolean {
+  return (
+    controlInput.burnForward ||
+    controlInput.burnBackwards ||
+    controlInput.burnLeft ||
+    controlInput.burnRight ||
+    controlInput.rollLeft ||
+    controlInput.rollRight ||
+    controlInput.pitchUp ||
+    controlInput.pitchDown ||
+    controlInput.yawLeft ||
+    controlInput.yawRight
+  );
 }
 
 function clamp(value: number, min: number, max: number): number {

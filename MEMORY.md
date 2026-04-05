@@ -80,7 +80,7 @@
 - Tests cover geometry/mesh parsing and projection clipping.
 
 ## Recent changes (last 1–2 weeks)
-- Not specified yet. Add notable edits here to help re-orient quickly.
+- Autopilot refactor: introduced layer-specific `autoPilot.ts` modules, and kept render ports local (no re-export of autopilot types).
 
 ## Open questions / risks
 - Gravity uses fixed sub-steps for stability; high time scales can still destabilize.

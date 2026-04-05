@@ -5,6 +5,7 @@ import type {
   EnvInput,
 } from "../app/controlPorts.js";
 import { ALL_CONTROL_ACTIONS, ALL_ENV_ACTIONS } from "../app/controlPorts.js";
+import { createAutopilotKeyHandler } from "./autoPilot.js";
 
 /**
  * Initialize keyboard listeners and keep the actions state updated.
@@ -15,20 +16,12 @@ export function initInput(): {
 } {
   const controlInput = makeDefaultControlInput();
   const envInput = makeDefaultEnvInput();
-  let pendingAutopilotRelease: ControlAction | null = null;
+  const autopilotKeyHandler = createAutopilotKeyHandler(controlInput);
 
   window.addEventListener("keydown", (e: KeyboardEvent) => {
     if (e.code in keyMap) {
       const action = keyMap[e.code];
-      if (isAutopilotToggle(action)) {
-        if (!e.repeat) {
-          if (controlInput[action]) {
-            pendingAutopilotRelease = action;
-          } else {
-            activateAutopilot(controlInput, action);
-            pendingAutopilotRelease = null;
-          }
-        }
+      if (autopilotKeyHandler.handleKeyDown(action, e.repeat)) {
         return;
       }
       updateInputs(controlInput, envInput, action, true);
@@ -38,11 +31,7 @@ export function initInput(): {
   window.addEventListener("keyup", (e: KeyboardEvent) => {
     if (e.code in keyMap) {
       const action = keyMap[e.code];
-      if (isAutopilotToggle(action)) {
-        if (pendingAutopilotRelease === action) {
-          clearAutopilot(controlInput);
-          pendingAutopilotRelease = null;
-        }
+      if (autopilotKeyHandler.handleKeyUp(action)) {
         return;
       }
       updateInputs(controlInput, envInput, action, false);
@@ -50,32 +39,6 @@ export function initInput(): {
   });
 
   return { controlInput, envInput };
-}
-
-const autopilotToggleActions: Set<ControlAction> = new Set([
-  "alignToBody",
-  "alignToVelocity",
-  "circleNow",
-]);
-
-function isAutopilotToggle(
-  action: ControlAction | EnvAction,
-): action is ControlAction {
-  return autopilotToggleActions.has(action as ControlAction);
-}
-
-function clearAutopilot(controlInput: ControlInput): void {
-  controlInput.alignToBody = false;
-  controlInput.alignToVelocity = false;
-  controlInput.circleNow = false;
-}
-
-function activateAutopilot(
-  controlInput: ControlInput,
-  action: ControlAction,
-): void {
-  clearAutopilot(controlInput);
-  controlInput[action] = true;
 }
 
 function makeDefaultControlInput(): ControlInput {

@@ -2,7 +2,7 @@ import { resolveCollisions } from "../domain/collisions.js";
 import type { GravityEngine, World } from "../domain/domainPorts.js";
 import { buildInitialGravityState } from "../domain/gravityState.js";
 import type { ControlledBodyState, SimControlState } from "./appInternals.js";
-import { computeCircleNowThrust } from "./autoPilot.js";
+import { resolveAutopilotPropulsionCommand } from "./autoPilot.js";
 import type { ControlInput } from "./controlPorts.js";
 import type {
   PropulsionCommand,
@@ -99,14 +99,12 @@ function getPropulsionCommandForTick(
   updateControlState(controlInput, controlState);
   const manualMain = getMainThrustCommand(controlInput, controlState);
   const manualRcs = getRcsCommand(controlInput);
-  if (!controlInput.circleNow) {
-    return { main: manualMain, rcs: manualRcs };
-  }
-
-  return computeCircleNowThrust(
+  return resolveAutopilotPropulsionCommand(
     dtMillis,
+    controlInput,
     ship,
     world,
+    { main: manualMain, rcs: manualRcs },
     maxThrustAcceleration,
     maxRcsTranslationAcceleration,
   );

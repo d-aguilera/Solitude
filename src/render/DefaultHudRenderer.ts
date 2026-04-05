@@ -1,6 +1,6 @@
+import { formatAutopilotStatus, formatCircleNowWarnings } from "./autoPilot.js";
 import { formatDistance, formatSimTime, formatSpeed } from "./formatters.js";
 import type {
-  AutopilotMode,
   HudRenderer,
   HudRenderParams,
   RenderedHud,
@@ -44,7 +44,7 @@ export class DefaultHudRenderer implements HudRenderer {
     );
 
     // Fourth column: autopilot status
-    hudRow0[3] = "AP: ".concat(formatAutopilotMode(autopilotMode));
+    hudRow0[3] = formatAutopilotStatus(autopilotMode);
     hudRow1[3] = "";
     hudRow2[3] = "";
     hudRow3[3] = "";
@@ -123,54 +123,9 @@ export class DefaultHudRenderer implements HudRenderer {
       hudRow4[3] = "";
       hudRow4[4] = "";
 
-      if (circleNowDebug?.active) {
-        const warnings: string[] = [];
-        if (circleNowDebug.tangentialSource === "none") {
-          warnings.push("NO TAN");
-        } else {
-          if (circleNowDebug.tangentialSpeed < 1) {
-            warnings.push("TAN LOW");
-          }
-          if (circleNowDebug.tangentialSource === "fallback") {
-            warnings.push("FALLBACK");
-          }
-        }
-        if (
-          circleNowDebug.tangentialDirDot != null &&
-          circleNowDebug.tangentialDirDot < -0.2
-        ) {
-          warnings.push("TAN FLIP");
-        } else if (
-          circleNowDebug.tangentialDirDeltaDeg != null &&
-          circleNowDebug.tangentialDirDeltaDeg > 45
-        ) {
-          warnings.push("TAN SWING");
-        }
-        if (
-          circleNowDebug.tangentialDirRateDegPerSec != null &&
-          circleNowDebug.tangentialDirRateDegPerSec > 20
-        ) {
-          warnings.push(
-            "TAN RATE "
-              .concat(
-                circleNowDebug.tangentialDirRateDegPerSec.toFixed(0),
-                "°/s",
-              ),
-          );
-        }
-        hudRow4[2] = warnings.length
-          ? "!! CN WARN: ".concat(warnings.join(" | "))
-          : "";
-      }
+      hudRow4[2] = formatCircleNowWarnings(circleNowDebug);
     }
   }
-}
-
-function formatAutopilotMode(mode: AutopilotMode): string {
-  const vel = mode === "alignToVelocity" ? "[VEL]" : "VEL";
-  const body = mode === "alignToBody" ? "[BODY]" : "BODY";
-  const circle = mode === "circleNow" ? "[CN]" : "CN";
-  return "".concat(vel, " ", body, " ", circle);
 }
 
 function displayNameFromId(id: string): string {
