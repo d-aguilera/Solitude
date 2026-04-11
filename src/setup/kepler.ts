@@ -1,4 +1,4 @@
-import type { KeplerianOrbit } from "../app/physicsConfigPorts";
+import type { KeplerianOrbit } from "../app/configPorts";
 import { EPS_KEPLER_SOLVE } from "../domain/epsilon";
 import { mat3 } from "../domain/mat3";
 import { vec3, type Vec3 } from "../domain/vec3";

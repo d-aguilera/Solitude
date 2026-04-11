@@ -1,9 +1,9 @@
-import type { ScenePlugin } from "../../app/pluginPorts";
 import type {
   PlanetRenderConfig,
   ShipRenderConfig,
   StarRenderConfig,
-} from "../../app/renderConfigPorts";
+} from "../../app/configPorts";
+import type { ScenePlugin } from "../../app/pluginPorts";
 import type { Trajectory } from "../../app/runtimePorts";
 import type { PolylineSceneObject, RGB, Scene } from "../../app/scenePorts";
 import type { World } from "../../domain/domainPorts";

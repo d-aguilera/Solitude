@@ -2,7 +2,7 @@ import type {
   PlanetRenderConfig,
   ShipRenderConfig,
   StarRenderConfig,
-} from "../app/renderConfigPorts";
+} from "../app/configPorts";
 import type {
   PlanetSceneObject,
   Scene,

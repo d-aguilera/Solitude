@@ -1,12 +1,10 @@
 import type {
   KeplerianOrbit,
   PlanetPhysicsConfig,
-  StarPhysicsConfig,
-} from "../app/physicsConfigPorts";
-import type {
   PlanetRenderConfig,
+  StarPhysicsConfig,
   StarRenderConfig,
-} from "../app/renderConfigPorts";
+} from "../app/configPorts";
 import type { Mesh } from "../app/scenePorts";
 import { AU, km } from "../domain/units";
 import { vec3, type Vec3 } from "../domain/vec3";

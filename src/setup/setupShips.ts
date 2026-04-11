@@ -1,4 +1,4 @@
-import type { ShipPhysicsConfig } from "../app/physicsConfigPorts";
+import type { ShipPhysicsConfig } from "../app/configPorts";
 import type { ShipBody, ShipPhysics, World } from "../domain/domainPorts";
 import { DOT_PARALLEL_COS, EPS_LEN, EPS_LEN_STRICT } from "../domain/epsilon";
 import { localFrame, type LocalFrame } from "../domain/localFrame";

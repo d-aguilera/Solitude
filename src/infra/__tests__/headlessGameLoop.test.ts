@@ -4,10 +4,10 @@ import type {
   ShipPhysicsConfig,
   StarPhysicsConfig,
   WorldPhysicsConfig,
-} from "../../app/physicsConfigPorts";
+} from "../../app/configPorts";
 import { vec3 } from "../../domain/vec3";
-import { createHeadlessLoop } from "../headlessGameLoop";
 import type { WorldConfigBase } from "../../setup/setup";
+import { createHeadlessLoop } from "../headlessGameLoop";
 
 function buildHeadlessConfig(): WorldConfigBase {
   const sunId = "planet:sun";

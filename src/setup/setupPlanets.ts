@@ -2,7 +2,7 @@ import type {
   KeplerianOrbit,
   PlanetPhysicsConfig,
   StarPhysicsConfig,
-} from "../app/physicsConfigPorts";
+} from "../app/configPorts";
 import type { PlanetPhysics, RotatingBody, World } from "../domain/domainPorts";
 import { mat3, type Mat3 } from "../domain/mat3";
 import { vec3, type Vec3 } from "../domain/vec3";
