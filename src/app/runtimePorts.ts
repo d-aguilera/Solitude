@@ -34,6 +34,5 @@ export interface WorldAndScene {
   pilotCamera: DomainCameraPose;
   scene: Scene;
   topCamera: DomainCameraPose;
-  trajectoryList: Trajectory[];
   world: World;
 }

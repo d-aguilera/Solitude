@@ -54,7 +54,6 @@ export function createHeadlessLoop(
   const worldAndScene: WorldAndScene = {
     ...worldSetup,
     scene: EMPTY_SCENE,
-    trajectoryList: [],
   };
 
   const gravityEngine: GravityEngine =

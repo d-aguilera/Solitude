@@ -4,7 +4,6 @@ import type { Mesh, PilotLookState, RGB } from "./scenePorts";
 export interface PlanetRenderConfig {
   id: string;
   kind: "planet";
-  pathId?: string; // orbit path id, purely logical association
   color: RGB;
   mesh: Mesh;
 }

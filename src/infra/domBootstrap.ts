@@ -25,7 +25,7 @@ export function bootstrapWith(
   makeSurface: (canvas: HTMLCanvasElement) => RenderSurface2D,
   makeRasterizer: (canvas: HTMLCanvasElement) => Rasterizer,
 ): void {
-  const plugins = loadPlugins(["autopilot"]);
+  const plugins = loadPlugins(["autopilot", "trajectories"]);
   const container = document.querySelector(".canvas-container");
   if (!container) {
     throw new Error("Required '.canvas-container' not found in document");

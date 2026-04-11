@@ -5,6 +5,10 @@ import type {
   GamePlugin,
   HudContext,
   HudPlugin,
+  SceneObjectFilter,
+  ScenePlugin,
+  SceneViewFilterParams,
+  SceneViewId,
 } from "../app/pluginPorts";
 import type {
   TickCallback,
@@ -13,11 +17,7 @@ import type {
   WorldAndScene,
 } from "../app/runtimePorts";
 import { updateSceneGraph } from "../app/scene";
-import type {
-  SceneControlState,
-  SceneObject,
-  SceneState,
-} from "../app/scenePorts";
+import type { SceneControlState, SceneState } from "../app/scenePorts";
 import { computeShipOrbitReadout } from "../domain/orbit";
 import { vec3 } from "../domain/vec3";
 import { parameters } from "../global/parameters";
@@ -27,9 +27,8 @@ import type {
   RenderedView,
   ViewRenderParams,
 } from "../render/renderPorts";
-import { createSceneAndTrajectories } from "../setup/sceneSetup";
+import { createScene } from "../setup/sceneSetup";
 import { createWorld } from "../setup/setup";
-import { buildTrajectoryPlan } from "../setup/trajectoryPlan";
 import { updateFps } from "./fps";
 import type { RunLoopParams } from "./infraPorts";
 import { handlePauseToggle } from "./pause";
@@ -57,21 +56,35 @@ export function runLoop({
 }: RunLoopParams): void {
   const controlPlugins = collectControlPlugins(plugins);
   const hudPlugins = collectHudPlugins(plugins);
+  const scenePlugins = collectScenePlugins(plugins);
+
   const worldSetup = createWorld(config);
-  const trajectoryPlan = buildTrajectoryPlan(
-    worldSetup.world,
-    config.physics.planets,
-    config.render.planets,
-  );
-  const { scene, trajectoryList } = createSceneAndTrajectories(
-    worldSetup.world,
+  const { scene } = createScene(worldSetup.world, config);
+  applySceneInitPlugins(scenePlugins, {
+    scene,
+    world: worldSetup.world,
+    mainShip: worldSetup.mainShip,
     config,
-    trajectoryPlan,
-  );
+  });
+  const pilotViewId: SceneViewId = "pilot";
+  const topViewId: SceneViewId = "top";
+  const pilotObjectsFilter = buildSceneObjectsFilter(scenePlugins, {
+    viewId: pilotViewId,
+    scene,
+    world: worldSetup.world,
+    mainShip: worldSetup.mainShip,
+    config,
+  });
+  const topObjectsFilter = buildSceneObjectsFilter(scenePlugins, {
+    viewId: topViewId,
+    scene,
+    world: worldSetup.world,
+    mainShip: worldSetup.mainShip,
+    config,
+  });
   const worldAndScene: WorldAndScene = {
     ...worldSetup,
     scene,
-    trajectoryList,
   };
   const tickInto: TickCallback = createTickHandler(
     gravityEngine,
@@ -89,7 +102,6 @@ export function runLoop({
   const sceneState: SceneState = {
     pilotCamera: worldAndScene.pilotCamera,
     topCamera: worldAndScene.topCamera,
-    trajectoryList: worldAndScene.trajectoryList,
   };
 
   const tickParams: TickParams = {
@@ -108,6 +120,7 @@ export function runLoop({
     mainShip: worldAndScene.mainShip,
     scene: worldAndScene.scene,
     surface: pilotSurface,
+    objectsFilter: pilotObjectsFilter,
   };
 
   const renderedPilotView: RenderedView = {
@@ -126,9 +139,7 @@ export function runLoop({
     mainShip: worldAndScene.mainShip,
     scene: worldAndScene.scene,
     surface: topSurface,
-    objectsFilter: (obj: SceneObject) =>
-      // no trajectory polylines in the top view
-      obj.kind !== "polyline" || !obj.id.startsWith("path:"),
+    objectsFilter: topObjectsFilter,
   };
 
   const renderedTopView: RenderedView = {
@@ -197,12 +208,18 @@ export function runLoop({
 
       updateSceneGraph(
         dtMillis,
-        tickParams.dtMillisSim,
         sceneState,
         sceneControlState,
         worldAndScene.mainShip,
         controlInput,
       );
+      applyScenePlugins(scenePlugins, {
+        dtMillis,
+        dtSimMillis: tickParams.dtMillisSim,
+        scene: worldAndScene.scene,
+        world: worldAndScene.world,
+        mainShip: worldAndScene.mainShip,
+      });
     }
 
     pilotViewRenderer.renderInto(renderedPilotView, pilotViewRenderParams);
@@ -279,6 +296,16 @@ function collectHudPlugins(plugins: GamePlugin[]): HudPlugin[] {
   return hudPlugins;
 }
 
+function collectScenePlugins(plugins: GamePlugin[]): ScenePlugin[] {
+  const scenePlugins: ScenePlugin[] = [];
+  for (const plugin of plugins) {
+    if (plugin.scene) {
+      scenePlugins.push(plugin.scene);
+    }
+  }
+  return scenePlugins;
+}
+
 function collectControlPlugins(plugins: GamePlugin[]): ControlPlugin[] {
   const controlPlugins: ControlPlugin[] = [];
   for (const plugin of plugins) {
@@ -287,6 +314,44 @@ function collectControlPlugins(plugins: GamePlugin[]): ControlPlugin[] {
     }
   }
   return controlPlugins;
+}
+
+function applySceneInitPlugins(
+  plugins: ScenePlugin[],
+  params: Parameters<NonNullable<ScenePlugin["initScene"]>>[0],
+): void {
+  for (const plugin of plugins) {
+    plugin.initScene?.(params);
+  }
+}
+
+function buildSceneObjectsFilter(
+  plugins: ScenePlugin[],
+  params: SceneViewFilterParams,
+): SceneObjectFilter | undefined {
+  const filters: SceneObjectFilter[] = [];
+  for (const plugin of plugins) {
+    const filter = plugin.getViewObjectsFilter?.(params);
+    if (filter) {
+      filters.push(filter);
+    }
+  }
+  if (!filters.length) return undefined;
+  return (obj) => {
+    for (const filter of filters) {
+      if (!filter(obj)) return false;
+    }
+    return true;
+  };
+}
+
+function applyScenePlugins(
+  plugins: ScenePlugin[],
+  params: Parameters<NonNullable<ScenePlugin["updateScene"]>>[0],
+): void {
+  for (const plugin of plugins) {
+    plugin.updateScene?.(params);
+  }
 }
 
 function applyHudPlugins(

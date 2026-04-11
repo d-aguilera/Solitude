@@ -2,14 +2,10 @@ import type {
   KeplerianOrbit,
   PlanetPhysicsConfig,
   StarPhysicsConfig,
-} from "../app/physicsConfigPorts";
-import type {
-  PlanetRenderConfig,
-  StarRenderConfig,
-} from "../app/renderConfigPorts";
-import { getPlanetBodyById } from "../app/worldLookup";
-import type { World } from "../domain/domainPorts";
-import { vec3 } from "../domain/vec3";
+} from "../../app/physicsConfigPorts";
+import { getPlanetBodyById } from "../../app/worldLookup";
+import type { World } from "../../domain/domainPorts";
+import { vec3 } from "../../domain/vec3";
 
 export interface TrajectoryPlan {
   pathId: string;
@@ -17,25 +13,44 @@ export interface TrajectoryPlan {
   intervalMillis: number;
 }
 
+export const TRAJECTORY_ID_PREFIX = "traj:";
+
+const SHIP_TRAJECTORY_PREFIX = `${TRAJECTORY_ID_PREFIX}ship:`;
+const PLANET_TRAJECTORY_PREFIX = `${TRAJECTORY_ID_PREFIX}planet:`;
+
+export function trajectoryIdForShip(shipId: string): string {
+  return `${SHIP_TRAJECTORY_PREFIX}${shipId}`;
+}
+
+export function trajectoryIdForPlanet(planetId: string): string {
+  return `${PLANET_TRAJECTORY_PREFIX}${planetId}`;
+}
+
+export function parseTrajectoryId(
+  id: string,
+): { kind: "ship" | "planet"; targetId: string } | null {
+  if (id.startsWith(SHIP_TRAJECTORY_PREFIX)) {
+    return { kind: "ship", targetId: id.slice(SHIP_TRAJECTORY_PREFIX.length) };
+  }
+  if (id.startsWith(PLANET_TRAJECTORY_PREFIX)) {
+    return {
+      kind: "planet",
+      targetId: id.slice(PLANET_TRAJECTORY_PREFIX.length),
+    };
+  }
+  return null;
+}
+
 export function buildTrajectoryPlan(
   world: World,
   planetPhysicsConfigs: (PlanetPhysicsConfig | StarPhysicsConfig)[],
-  planetRenderConfigs: (PlanetRenderConfig | StarRenderConfig)[],
 ): TrajectoryPlan[] {
   const plan: TrajectoryPlan[] = [];
-
-  const planetPathIdById: Record<string, string> = {};
-  for (let i = 0; i < planetRenderConfigs.length; i++) {
-    const cfg = planetRenderConfigs[i];
-    if (cfg.kind === "planet" && cfg.pathId) {
-      planetPathIdById[cfg.id] = cfg.pathId;
-    }
-  }
 
   // Build trajectories for ships
   for (const ship of world.ships) {
     plan.push({
-      pathId: "path:" + ship.id,
+      pathId: trajectoryIdForShip(ship.id),
       capacity: 3 * 24 * 10, // 720 point capacity = 10 days
       intervalMillis: 20 * 60 * 1000, // 20-minute interval = 72 samples per day
     });
@@ -44,10 +59,6 @@ export function buildTrajectoryPlan(
   // Build trajectories for planets (skip moons)
   for (const cfg of planetPhysicsConfigs) {
     if (cfg.kind !== "planet" || cfg.centralBodyId !== "planet:sun") continue;
-    const pathId = planetPathIdById[cfg.id];
-    if (!pathId) {
-      throw new Error(`Missing pathId for planet render config: ${cfg.id}`);
-    }
     const body = getPlanetBodyById(world, cfg.id);
     const speedMps = vec3.length(body.velocity);
     const speedMpMs = speedMps / 1000;
@@ -56,7 +67,7 @@ export function buildTrajectoryPlan(
     const intervalLengthMeters = orbitLengthMeters / capacity;
     const intervalMillis = intervalLengthMeters / speedMpMs;
     plan.push({
-      pathId,
+      pathId: trajectoryIdForPlanet(cfg.id),
       capacity,
       intervalMillis,
     });

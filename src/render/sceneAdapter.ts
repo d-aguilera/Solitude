@@ -5,15 +5,11 @@ import type {
 } from "../app/renderConfigPorts";
 import type {
   PlanetSceneObject,
-  PolylineSceneObject,
-  RGB,
   Scene,
   ShipSceneObject,
   StarSceneObject,
 } from "../app/scenePorts";
 import type { World } from "../domain/domainPorts";
-import { mat3 } from "../domain/mat3";
-import type { Vec3 } from "../domain/vec3";
 
 export function createSceneFromWorld(
   world: World,
@@ -72,12 +68,6 @@ function addPlanetsAndStarsSceneObjects(
         velocity: planetBody.velocity, // alias
       };
       scene.objects.push(sceneObj);
-
-      if (cfg.pathId) {
-        scene.objects.push(
-          createPolylineSceneObject(cfg.pathId, planetBody.position, cfg.color),
-        );
-      }
     }
   }
 }
@@ -102,33 +92,7 @@ function addShipSceneObjects(
       backFaceCulling: false,
     };
     scene.objects.push(sceneObj);
-
-    const pathId = "path:" + shipBody.id;
-    scene.objects.push(
-      createPolylineSceneObject(pathId, shipBody.position, cfg.color),
-    );
   }
-}
-
-function createPolylineSceneObject(
-  id: string,
-  position: Vec3,
-  color: RGB,
-): PolylineSceneObject {
-  return {
-    id,
-    kind: "polyline",
-    mesh: { points: [], faces: [] },
-    position, // alias
-    orientation: mat3.identity,
-    color,
-    lineWidth: 2,
-    wireframeOnly: true,
-    applyTransform: false, // polylines are already in world space
-    backFaceCulling: false,
-    count: 0,
-    tail: -1,
-  };
 }
 
 function addLightsFromStars(scene: Scene, world: World): void {

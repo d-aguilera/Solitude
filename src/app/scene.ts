@@ -1,21 +1,17 @@
 import type { ShipBody } from "../domain/domainPorts";
-import { vec3 } from "../domain/vec3";
 import { updateCameras, updatePilotCameraOffset } from "./cameras";
 import type { ControlInput } from "./controlPorts";
 import { updatePilotLook } from "./controls";
-import type { Trajectory } from "./runtimePorts";
 import type { SceneControlState, SceneState } from "./scenePorts";
 
 export function updateSceneGraph(
   dtMillis: number,
-  dtSimMillis: number,
   sceneState: SceneState,
   sceneControlState: SceneControlState,
   mainShip: ShipBody,
   controlInput: ControlInput,
 ) {
-  const { pilotCamera, topCamera, trajectoryList } = sceneState;
-  updateTrajectories(dtSimMillis, trajectoryList);
+  const { pilotCamera, topCamera } = sceneState;
 
   updatePilotLook(dtMillis, controlInput, sceneControlState.pilotLookState);
   updatePilotCameraOffset(
@@ -25,25 +21,4 @@ export function updateSceneGraph(
   );
 
   updateCameras(mainShip, pilotCamera, topCamera, sceneControlState);
-}
-
-/**
- * Sample and update trajectory polylines for the ship and planets.
- */
-function updateTrajectories(
-  dtMillis: number,
-  trajectoryList: Trajectory[],
-): void {
-  for (let i = 0; i < trajectoryList.length; i++) {
-    const trajectory = trajectoryList[i];
-    if (trajectory.remainingMillis <= 0) {
-      const obj = trajectory.sceneObject;
-      const points = obj.mesh.points;
-      if (obj.count < points.length) obj.count++;
-      obj.tail = (obj.tail + 1) % points.length;
-      vec3.copyInto(points[obj.tail], obj.position);
-      trajectory.remainingMillis += trajectory.intervalMillis;
-    }
-    trajectory.remainingMillis -= dtMillis;
-  }
 }

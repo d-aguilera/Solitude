@@ -1,4 +1,5 @@
 import type { ShipBody, World } from "../domain/domainPorts";
+import type { WorldAndSceneConfig } from "./configPorts";
 import type {
   AttitudeCommand,
   ControlAction,
@@ -10,6 +11,7 @@ import type {
 } from "./controlPorts";
 import type { PropulsionCommand } from "./controls";
 import type { HudRenderParams } from "./hudPorts";
+import type { Scene, SceneObject } from "./scenePorts";
 
 export interface KeyHandler {
   handleKeyDown: (
@@ -72,9 +74,45 @@ export interface HudPlugin {
   updateHudParams?: (params: HudRenderParams, context: HudContext) => void;
 }
 
+export interface SceneInitParams {
+  scene: Scene;
+  world: World;
+  mainShip: ShipBody;
+  config: WorldAndSceneConfig;
+}
+
+export interface SceneUpdateParams {
+  dtMillis: number;
+  dtSimMillis: number;
+  scene: Scene;
+  world: World;
+  mainShip: ShipBody;
+}
+
+export type SceneObjectFilter = (obj: SceneObject) => boolean;
+
+export type SceneViewId = "pilot" | "top";
+
+export interface SceneViewFilterParams {
+  viewId: SceneViewId;
+  scene: Scene;
+  world: World;
+  mainShip: ShipBody;
+  config: WorldAndSceneConfig;
+}
+
+export interface ScenePlugin {
+  initScene?: (params: SceneInitParams) => void;
+  updateScene?: (params: SceneUpdateParams) => void;
+  getViewObjectsFilter?: (
+    params: SceneViewFilterParams,
+  ) => SceneObjectFilter | null;
+}
+
 export interface GamePlugin {
   id: string;
   input?: InputPlugin;
   controls?: ControlPlugin;
   hud?: HudPlugin;
+  scene?: ScenePlugin;
 }

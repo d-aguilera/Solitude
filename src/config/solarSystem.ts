@@ -265,7 +265,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:mercury",
-      pathId: "path:planet:mercury",
       kind: "planet",
       orbit: buildOrbit(
         orbits.mercury,
@@ -285,7 +284,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:venus",
-      pathId: "path:planet:venus",
       kind: "planet",
       orbit: buildOrbit(
         orbits.venus,
@@ -305,7 +303,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:earth",
-      pathId: "path:planet:earth",
       kind: "planet",
       orbit: buildOrbit(
         orbits.earth,
@@ -325,7 +322,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:mars",
-      pathId: "path:planet:mars",
       kind: "planet",
       orbit: buildOrbit(
         orbits.mars,
@@ -345,7 +341,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:jupiter",
-      pathId: "path:planet:jupiter",
       kind: "planet",
       orbit: buildOrbit(
         orbits.jupiter,
@@ -365,7 +360,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:saturn",
-      pathId: "path:planet:saturn",
       kind: "planet",
       orbit: buildOrbit(
         orbits.saturn,
@@ -385,7 +379,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:uranus",
-      pathId: "path:planet:uranus",
       kind: "planet",
       orbit: buildOrbit(
         orbits.uranus,
@@ -405,7 +398,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:neptune",
-      pathId: "path:planet:neptune",
       kind: "planet",
       orbit: buildOrbit(
         orbits.neptune,
@@ -425,7 +417,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:moon",
-      pathId: "path:planet:moon",
       kind: "planet",
       orbit: buildOrbit(
         orbits.moon,
@@ -445,7 +436,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:phobos",
-      pathId: "path:planet:phobos",
       kind: "planet",
       orbit: buildOrbit(
         orbits.phobos,
@@ -465,7 +455,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:deimos",
-      pathId: "path:planet:deimos",
       kind: "planet",
       orbit: buildOrbit(
         orbits.deimos,
@@ -521,7 +510,6 @@ export function buildDefaultSolarSystemConfigs(): {
       render.push({
         id: cfg.id,
         kind: "planet",
-        pathId: cfg.centralBodyId === sunId ? cfg.pathId : undefined,
         color: cfg.color,
         mesh: cfg.mesh,
       });
