@@ -10,7 +10,6 @@ export interface HudCell {
 export interface HudRenderParams {
   currentThrustLevel: number;
   currentRcsLevel: number;
-  currentTimeScale: number;
   fps: number;
   orbitReadout?: OrbitReadout | null;
   pilotCameraLocalOffset: Vec3;

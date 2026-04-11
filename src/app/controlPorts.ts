@@ -35,11 +35,7 @@ export const BASE_CONTROL_ACTIONS = [
   "thrust9",
 ] as const;
 
-export const ALL_ENV_ACTIONS = [
-  "decreaseTimeScale",
-  "increaseTimeScale",
-  "profilingToggle",
-] as const;
+export const ALL_ENV_ACTIONS = ["profilingToggle"] as const;
 
 export type BaseControlAction = (typeof BASE_CONTROL_ACTIONS)[number];
 export type ControlAction = string;

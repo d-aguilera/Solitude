@@ -8,7 +8,6 @@ export class DefaultHudRenderer implements HudRenderer {
     {
       currentRcsLevel,
       currentThrustLevel,
-      currentTimeScale,
       hudCells,
       orbitReadout,
       profilingEnabled,
@@ -31,11 +30,7 @@ export class DefaultHudRenderer implements HudRenderer {
     );
     const rcsPadding = currentRcsLevel < 0 ? "" : " ";
     hudRow2[4] = "RCS: ".concat(rcsPadding, currentRcsLevel.toFixed(2));
-    hudRow3[4] = "Time: ".concat(
-      formatSimTime(simTimeMillis / 1000),
-      " x",
-      currentTimeScale.toString(),
-    );
+    hudRow3[4] = "Time: ".concat(formatSimTime(simTimeMillis / 1000));
 
     // Fourth column: reserved for plugins
     hudRow0[3] = "";

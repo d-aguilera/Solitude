@@ -105,10 +105,10 @@ export interface FramePolicy {
   advanceSim: boolean;
   advanceScene: boolean;
   advanceHud: boolean;
+  simDtMillis?: number;
 }
 
 export interface LoopState {
-  timeScale: number;
   framePolicy: FramePolicy;
 }
 
@@ -124,6 +124,10 @@ export interface LoopUpdateParams {
   state: LoopState;
 }
 
+export interface LoopUpdateResult {
+  framePolicy?: Partial<FramePolicy>;
+}
+
 export interface ScenePlugin {
   initScene?: (params: SceneInitParams) => void;
   updateScene?: (params: SceneUpdateParams) => void;
@@ -134,7 +138,7 @@ export interface ScenePlugin {
 
 export interface LoopPlugin {
   initLoop?: (params: LoopInitParams) => void;
-  updateLoopState?: (params: LoopUpdateParams) => Partial<LoopState> | null;
+  updateLoopState?: (params: LoopUpdateParams) => LoopUpdateResult | null;
 }
 
 export interface GamePlugin {

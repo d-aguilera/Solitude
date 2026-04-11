@@ -23,7 +23,6 @@ import { updateSceneGraph } from "../app/scene";
 import type { SceneControlState, SceneState } from "../app/scenePorts";
 import { computeShipOrbitReadout } from "../domain/orbit";
 import { vec3 } from "../domain/vec3";
-import { parameters } from "../global/parameters";
 import type {
   Rasterizer,
   RenderedHud,
@@ -35,7 +34,6 @@ import { createWorld } from "../setup/setup";
 import { updateFps } from "./fps";
 import type { RunLoopParams } from "./infraPorts";
 import { handleProfilingToggle } from "./profilerControl";
-import { handleTimeScaleChange } from "./timeScale";
 
 /**
  * DOM-level game loop (depends on requestAnimationFrame).
@@ -161,7 +159,6 @@ export function runLoop({
   const hudRenderParams: HudRenderParams = {
     currentThrustLevel: 0,
     currentRcsLevel: 0,
-    currentTimeScale: 0,
     fps: 0,
     hudCells: [],
     orbitReadout: null,
@@ -185,9 +182,7 @@ export function runLoop({
   let profilingEnabled: boolean;
   let fps: number;
   let simTimeMillis = 0;
-  let timeScale: number;
   const loopState: LoopState = {
-    timeScale: parameters.timeScale,
     framePolicy: createDefaultFramePolicy(),
   };
   const loopUpdateParams: Parameters<
@@ -204,23 +199,16 @@ export function runLoop({
     dtMillis = nowMs - lastTimeMs;
     lastTimeMs = nowMs;
 
-    loopState.timeScale = handleTimeScaleChange(
-      envInput.decreaseTimeScale,
-      envInput.increaseTimeScale,
-      loopState.timeScale,
-    );
     loopUpdateParams.dtMillis = dtMillis;
     loopUpdateParams.nowMs = nowMs;
     applyLoopPlugins(loopPlugins, loopUpdateParams);
-    timeScale = loopState.timeScale;
-
     profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
     profilerController.setEnabled(profilingEnabled);
     profilerController.setPaused(!loopState.framePolicy.advanceSim);
     profilerController.check();
 
     const framePolicy = loopState.framePolicy;
-    const dtSimMillis = dtMillis * timeScale;
+    const dtSimMillis = framePolicy.simDtMillis ?? dtMillis;
 
     if (framePolicy.advanceSim) {
       tickParams.dtMillis = dtMillis;
@@ -256,7 +244,6 @@ export function runLoop({
     if (shouldRenderHud && framePolicy.advanceHud) {
       hudRenderParams.currentThrustLevel = tickOutput.currentThrustLevel;
       hudRenderParams.currentRcsLevel = tickOutput.currentRcsLevel;
-      hudRenderParams.currentTimeScale = timeScale;
       hudRenderParams.fps = fps;
       hudRenderParams.orbitReadout = computeShipOrbitReadout(
         worldAndScene.world,
@@ -395,9 +382,6 @@ function applyLoopPlugins(
   for (const plugin of plugins) {
     const next = plugin.updateLoopState?.(params);
     if (!next) continue;
-    if (next.timeScale !== undefined) {
-      state.timeScale = next.timeScale;
-    }
     if (next.framePolicy) {
       const policy = next.framePolicy;
       if (policy.advanceSim !== undefined) {
@@ -408,6 +392,9 @@ function applyLoopPlugins(
       }
       if (policy.advanceHud !== undefined) {
         state.framePolicy.advanceHud = policy.advanceHud;
+      }
+      if (policy.simDtMillis !== undefined) {
+        state.framePolicy.simDtMillis = policy.simDtMillis;
       }
     }
   }
