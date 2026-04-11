@@ -2,9 +2,12 @@ import { createTickHandler } from "../app/game";
 import type { HudRenderParams } from "../app/hudPorts";
 import type {
   ControlPlugin,
+  FramePolicy,
   GamePlugin,
   HudContext,
   HudPlugin,
+  LoopPlugin,
+  LoopState,
   SceneObjectFilter,
   ScenePlugin,
   SceneViewFilterParams,
@@ -31,7 +34,6 @@ import { createScene } from "../setup/sceneSetup";
 import { createWorld } from "../setup/setup";
 import { updateFps } from "./fps";
 import type { RunLoopParams } from "./infraPorts";
-import { handlePauseToggle } from "./pause";
 import { handleProfilingToggle } from "./profilerControl";
 import { handleTimeScaleChange } from "./timeScale";
 
@@ -56,7 +58,10 @@ export function runLoop({
 }: RunLoopParams): void {
   const controlPlugins = collectControlPlugins(plugins);
   const hudPlugins = collectHudPlugins(plugins);
+  const loopPlugins = collectLoopPlugins(plugins);
   const scenePlugins = collectScenePlugins(plugins);
+
+  applyLoopInitPlugins(loopPlugins, { config });
 
   const worldSetup = createWorld(config);
   const { scene } = createScene(worldSetup.world, config);
@@ -160,7 +165,6 @@ export function runLoop({
     fps: 0,
     hudCells: [],
     orbitReadout: null,
-    paused: false,
     pilotCameraLocalOffset: sceneControlState.pilotCameraOffset,
     profilingEnabled: false,
     simTimeMillis: 0,
@@ -178,34 +182,54 @@ export function runLoop({
   let lastTimeMs: number;
   let lastHudTimeMs: number;
   let dtMillis: number;
-  let paused: boolean;
   let profilingEnabled: boolean;
   let fps: number;
   let simTimeMillis = 0;
-  let timeScale = parameters.timeScale;
+  let timeScale: number;
+  const loopState: LoopState = {
+    timeScale: parameters.timeScale,
+    framePolicy: createDefaultFramePolicy(),
+  };
+  const loopUpdateParams: Parameters<
+    NonNullable<LoopPlugin["updateLoopState"]>
+  >[0] = {
+    envInput,
+    controlInput,
+    dtMillis: 0,
+    nowMs: 0,
+    state: loopState,
+  };
 
   const loop = (nowMs: number) => {
     dtMillis = nowMs - lastTimeMs;
     lastTimeMs = nowMs;
 
-    paused = handlePauseToggle(envInput.pauseToggle);
-    profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
-    profilerController.setEnabled(profilingEnabled);
-    profilerController.setPaused(paused);
-    profilerController.check();
-
-    timeScale = handleTimeScaleChange(
+    loopState.timeScale = handleTimeScaleChange(
       envInput.decreaseTimeScale,
       envInput.increaseTimeScale,
-      timeScale,
+      loopState.timeScale,
     );
+    loopUpdateParams.dtMillis = dtMillis;
+    loopUpdateParams.nowMs = nowMs;
+    applyLoopPlugins(loopPlugins, loopUpdateParams);
+    timeScale = loopState.timeScale;
 
-    if (!paused) {
+    profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
+    profilerController.setEnabled(profilingEnabled);
+    profilerController.setPaused(!loopState.framePolicy.advanceSim);
+    profilerController.check();
+
+    const framePolicy = loopState.framePolicy;
+    const dtSimMillis = dtMillis * timeScale;
+
+    if (framePolicy.advanceSim) {
       tickParams.dtMillis = dtMillis;
-      tickParams.dtMillisSim = dtMillis * timeScale;
+      tickParams.dtMillisSim = dtSimMillis;
       tickInto(tickOutput, tickParams);
       simTimeMillis += tickParams.dtMillisSim;
+    }
 
+    if (framePolicy.advanceScene) {
       updateSceneGraph(
         dtMillis,
         sceneState,
@@ -215,7 +239,7 @@ export function runLoop({
       );
       applyScenePlugins(scenePlugins, {
         dtMillis,
-        dtSimMillis: tickParams.dtMillisSim,
+        dtSimMillis,
         scene: worldAndScene.scene,
         world: worldAndScene.world,
         mainShip: worldAndScene.mainShip,
@@ -229,7 +253,7 @@ export function runLoop({
 
     const shouldRenderHud = nowMs - lastHudTimeMs > 100;
 
-    if (shouldRenderHud) {
+    if (shouldRenderHud && framePolicy.advanceHud) {
       hudRenderParams.currentThrustLevel = tickOutput.currentThrustLevel;
       hudRenderParams.currentRcsLevel = tickOutput.currentRcsLevel;
       hudRenderParams.currentTimeScale = timeScale;
@@ -238,7 +262,6 @@ export function runLoop({
         worldAndScene.world,
         worldAndScene.mainShip,
       );
-      hudRenderParams.paused = paused;
       hudRenderParams.pilotCameraLocalOffset =
         sceneControlState.pilotCameraOffset;
       hudRenderParams.profilingEnabled = profilingEnabled;
@@ -306,6 +329,16 @@ function collectScenePlugins(plugins: GamePlugin[]): ScenePlugin[] {
   return scenePlugins;
 }
 
+function collectLoopPlugins(plugins: GamePlugin[]): LoopPlugin[] {
+  const loopPlugins: LoopPlugin[] = [];
+  for (const plugin of plugins) {
+    if (plugin.loop) {
+      loopPlugins.push(plugin.loop);
+    }
+  }
+  return loopPlugins;
+}
+
 function collectControlPlugins(plugins: GamePlugin[]): ControlPlugin[] {
   const controlPlugins: ControlPlugin[] = [];
   for (const plugin of plugins) {
@@ -314,6 +347,15 @@ function collectControlPlugins(plugins: GamePlugin[]): ControlPlugin[] {
     }
   }
   return controlPlugins;
+}
+
+function applyLoopInitPlugins(
+  plugins: LoopPlugin[],
+  params: Parameters<NonNullable<LoopPlugin["initLoop"]>>[0],
+): void {
+  for (const plugin of plugins) {
+    plugin.initLoop?.(params);
+  }
 }
 
 function applySceneInitPlugins(
@@ -342,6 +384,40 @@ function buildSceneObjectsFilter(
       if (!filter(obj)) return false;
     }
     return true;
+  };
+}
+
+function applyLoopPlugins(
+  plugins: LoopPlugin[],
+  params: Parameters<NonNullable<LoopPlugin["updateLoopState"]>>[0],
+): void {
+  const state = params.state;
+  for (const plugin of plugins) {
+    const next = plugin.updateLoopState?.(params);
+    if (!next) continue;
+    if (next.timeScale !== undefined) {
+      state.timeScale = next.timeScale;
+    }
+    if (next.framePolicy) {
+      const policy = next.framePolicy;
+      if (policy.advanceSim !== undefined) {
+        state.framePolicy.advanceSim = policy.advanceSim;
+      }
+      if (policy.advanceScene !== undefined) {
+        state.framePolicy.advanceScene = policy.advanceScene;
+      }
+      if (policy.advanceHud !== undefined) {
+        state.framePolicy.advanceHud = policy.advanceHud;
+      }
+    }
+  }
+}
+
+function createDefaultFramePolicy(): FramePolicy {
+  return {
+    advanceSim: true,
+    advanceScene: true,
+    advanceHud: true,
   };
 }
 

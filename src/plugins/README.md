@@ -14,9 +14,13 @@ Each plugin lives in its own folder. A typical split is:
 
 - `core.ts`: control/logic hooks (app + domain dependencies)
 - `input.ts`: input bindings or DOM adapters (infra dependencies)
+- `loop.ts`: loop state hooks (infra dependencies)
 - `hud.ts`: HUD overlays or render-specific formatting (render dependencies)
 - `scene.ts`: scene init/update hooks and view filters (app + setup dependencies)
 - `index.ts`: composes the above into a `GamePlugin`
+
+Loop plugins can also influence per-frame policies such as whether the sim,
+scene, or HUD advance for a given tick.
 
 ## Registration
 

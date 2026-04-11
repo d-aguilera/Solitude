@@ -101,6 +101,29 @@ export interface SceneViewFilterParams {
   config: WorldAndSceneConfig;
 }
 
+export interface FramePolicy {
+  advanceSim: boolean;
+  advanceScene: boolean;
+  advanceHud: boolean;
+}
+
+export interface LoopState {
+  timeScale: number;
+  framePolicy: FramePolicy;
+}
+
+export interface LoopInitParams {
+  config: WorldAndSceneConfig;
+}
+
+export interface LoopUpdateParams {
+  envInput: EnvInput;
+  controlInput: ControlInput;
+  dtMillis: number;
+  nowMs: number;
+  state: LoopState;
+}
+
 export interface ScenePlugin {
   initScene?: (params: SceneInitParams) => void;
   updateScene?: (params: SceneUpdateParams) => void;
@@ -109,10 +132,16 @@ export interface ScenePlugin {
   ) => SceneObjectFilter | null;
 }
 
+export interface LoopPlugin {
+  initLoop?: (params: LoopInitParams) => void;
+  updateLoopState?: (params: LoopUpdateParams) => Partial<LoopState> | null;
+}
+
 export interface GamePlugin {
   id: string;
-  input?: InputPlugin;
   controls?: ControlPlugin;
   hud?: HudPlugin;
+  input?: InputPlugin;
+  loop?: LoopPlugin;
   scene?: ScenePlugin;
 }

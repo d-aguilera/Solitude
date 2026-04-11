@@ -38,7 +38,6 @@ export const BASE_CONTROL_ACTIONS = [
 export const ALL_ENV_ACTIONS = [
   "decreaseTimeScale",
   "increaseTimeScale",
-  "pauseToggle",
   "profilingToggle",
 ] as const;
 

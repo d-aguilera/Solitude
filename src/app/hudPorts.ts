@@ -13,7 +13,6 @@ export interface HudRenderParams {
   currentTimeScale: number;
   fps: number;
   orbitReadout?: OrbitReadout | null;
-  paused: boolean;
   pilotCameraLocalOffset: Vec3;
   profilingEnabled: boolean;
   simTimeMillis: number; // accumulated simulation time.

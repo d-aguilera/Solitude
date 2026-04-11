@@ -11,7 +11,6 @@ export class DefaultHudRenderer implements HudRenderer {
       currentTimeScale,
       hudCells,
       orbitReadout,
-      paused,
       profilingEnabled,
       simTimeMillis,
       speedMps,
@@ -82,7 +81,7 @@ export class DefaultHudRenderer implements HudRenderer {
       hudRow1[1] = "Δv Tan: "
         .concat(formatDeltaV(Math.abs(tanDv)), " ")
         .concat(tanDv >= 0 ? "pro" : "retro");
-      hudRow2[1] = paused ? "PAUSED" : "";
+      hudRow2[1] = "";
       hudRow3[1] = "";
 
       // Third column: apsis timers + profiling
