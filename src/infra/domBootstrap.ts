@@ -1,7 +1,6 @@
 import type { WorldAndSceneConfig } from "../app/configPorts";
 import type { GravityEngine } from "../domain/domainPorts";
 import { parameters } from "../global/parameters";
-import { profilerController } from "../global/profiling";
 import { loadPlugins } from "../plugins/index";
 import { DefaultHudRenderer } from "../render/DefaultHudRenderer";
 import { DefaultViewRenderer } from "../render/DefaultViewRenderer";
@@ -27,6 +26,7 @@ export function bootstrapWith(
   const plugins = loadPlugins([
     "autopilot",
     "pause",
+    "profiling",
     "timeScale",
     "trajectories",
   ]);
@@ -87,7 +87,6 @@ export function bootstrapWith(
     topSurface,
     controlInput,
     envInput,
-    profilerController,
     plugins,
   });
 }

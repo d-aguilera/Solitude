@@ -10,7 +10,6 @@ export class DefaultHudRenderer implements HudRenderer {
       currentThrustLevel,
       hudCells,
       orbitReadout,
-      profilingEnabled,
       simTimeMillis,
       speedMps,
     }: HudRenderParams,
@@ -79,7 +78,7 @@ export class DefaultHudRenderer implements HudRenderer {
       hudRow2[1] = "";
       hudRow3[1] = "";
 
-      // Third column: apsis timers + profiling
+      // Third column: apsis timers
       hudRow0[2] =
         timeToPe == null
           ? "Pe in: --"
@@ -88,7 +87,7 @@ export class DefaultHudRenderer implements HudRenderer {
         timeToAp == null
           ? "Ap in: --"
           : "Ap in: ".concat(formatSimTime(timeToAp));
-      hudRow2[2] = profilingEnabled ? "PROFILING" : "";
+      hudRow2[2] = "";
       hudRow3[2] = "";
     } else {
       hudRow0[0] = "";

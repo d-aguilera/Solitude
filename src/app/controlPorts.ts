@@ -35,14 +35,17 @@ export const BASE_CONTROL_ACTIONS = [
   "thrust9",
 ] as const;
 
-export const ALL_ENV_ACTIONS = ["profilingToggle"] as const;
+export const ALL_ENV_ACTIONS = [] as const;
 
 export type BaseControlAction = (typeof BASE_CONTROL_ACTIONS)[number];
 export type ControlAction = string;
 export type ControlInput = Record<string, boolean> &
   Record<BaseControlAction, boolean>;
 
-export type EnvAction = (typeof ALL_ENV_ACTIONS)[number];
+type EnvActionBase = (typeof ALL_ENV_ACTIONS)[number];
+export type EnvAction = [EnvActionBase] extends [never]
+  ? string
+  : EnvActionBase;
 export type EnvInput = Record<EnvAction, boolean>;
 
 export function createControlInput(

@@ -92,7 +92,6 @@ const baseKeyMap: Record<string, ControlAction | EnvAction> = {
   KeyK: "camDown",
   KeyM: "burnRight",
   KeyN: "burnLeft",
-  KeyO: "profilingToggle",
   KeyQ: "rollLeft",
   KeyR: "lookReset",
   KeyS: "pitchDown",

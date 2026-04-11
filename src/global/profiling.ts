@@ -1,6 +1,5 @@
-import type { ProfilerController } from "../infra/infraPorts";
 import { DefaultProfiler } from "./DefaultProfiler";
-import type { Profiler } from "./globalPorts";
+import type { Profiler, ProfilerController } from "./globalPorts";
 
 const defaultProfiler = new DefaultProfiler();
 export const profiler: Profiler = defaultProfiler;

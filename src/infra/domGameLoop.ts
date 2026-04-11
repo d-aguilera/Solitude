@@ -33,7 +33,6 @@ import { createScene } from "../setup/sceneSetup";
 import { createWorld } from "../setup/setup";
 import { updateFps } from "./fps";
 import type { RunLoopParams } from "./infraPorts";
-import { handleProfilingToggle } from "./profilerControl";
 
 /**
  * DOM-level game loop (depends on requestAnimationFrame).
@@ -51,7 +50,6 @@ export function runLoop({
   topSurface,
   controlInput,
   envInput,
-  profilerController,
   plugins,
 }: RunLoopParams): void {
   const controlPlugins = collectControlPlugins(plugins);
@@ -163,7 +161,6 @@ export function runLoop({
     hudCells: [],
     orbitReadout: null,
     pilotCameraLocalOffset: sceneControlState.pilotCameraOffset,
-    profilingEnabled: false,
     simTimeMillis: 0,
     speedMps: 0,
   };
@@ -179,7 +176,6 @@ export function runLoop({
   let lastTimeMs: number;
   let lastHudTimeMs: number;
   let dtMillis: number;
-  let profilingEnabled: boolean;
   let fps: number;
   let simTimeMillis = 0;
   const loopState: LoopState = {
@@ -202,11 +198,6 @@ export function runLoop({
     loopUpdateParams.dtMillis = dtMillis;
     loopUpdateParams.nowMs = nowMs;
     applyLoopPlugins(loopPlugins, loopUpdateParams);
-    profilingEnabled = handleProfilingToggle(envInput.profilingToggle);
-    profilerController.setEnabled(profilingEnabled);
-    profilerController.setPaused(!loopState.framePolicy.advanceSim);
-    profilerController.check();
-
     const framePolicy = loopState.framePolicy;
     const dtSimMillis = framePolicy.simDtMillis ?? dtMillis;
 
@@ -251,7 +242,6 @@ export function runLoop({
       );
       hudRenderParams.pilotCameraLocalOffset =
         sceneControlState.pilotCameraOffset;
-      hudRenderParams.profilingEnabled = profilingEnabled;
       hudRenderParams.simTimeMillis = simTimeMillis;
       hudRenderParams.speedMps = vec3.length(worldAndScene.mainShip.velocity);
       hudRenderParams.hudCells.length = 0;
@@ -269,8 +259,7 @@ export function runLoop({
     rasterizeView(renderedPilotView, pilotRasterizer);
     rasterizeView(renderedTopView, topRasterizer);
     rasterizeHud(renderedHud, hudRasterizer);
-
-    profilerController.flush();
+    applyLoopPostPlugins(loopPlugins, loopUpdateParams);
 
     requestAnimationFrame(loop);
   };
@@ -397,6 +386,15 @@ function applyLoopPlugins(
         state.framePolicy.simDtMillis = policy.simDtMillis;
       }
     }
+  }
+}
+
+function applyLoopPostPlugins(
+  plugins: LoopPlugin[],
+  params: Parameters<NonNullable<LoopPlugin["updateLoopState"]>>[0],
+): void {
+  for (const plugin of plugins) {
+    plugin.afterFrame?.(params);
   }
 }
 

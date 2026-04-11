@@ -1,5 +1,4 @@
-import type { ProfilerController } from "../infra/infraPorts";
-import type { Profiler } from "./globalPorts";
+import type { Profiler, ProfilerController } from "./globalPorts";
 
 /**
  * Implements both measurement and control contracts.

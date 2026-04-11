@@ -13,7 +13,6 @@ export interface HudRenderParams {
   fps: number;
   orbitReadout?: OrbitReadout | null;
   pilotCameraLocalOffset: Vec3;
-  profilingEnabled: boolean;
   simTimeMillis: number; // accumulated simulation time.
   speedMps: number;
   hudCells: HudCell[];

@@ -20,7 +20,7 @@ Each plugin lives in its own folder. A typical split is:
 - `index.ts`: composes the above into a `GamePlugin`
 
 Loop plugins can also influence per-frame policies such as whether the sim,
-scene, or HUD advance for a given tick.
+scene, or HUD advance for a given tick, and may run post-frame cleanup.
 
 ## Registration
 

@@ -139,6 +139,7 @@ export interface ScenePlugin {
 export interface LoopPlugin {
   initLoop?: (params: LoopInitParams) => void;
   updateLoopState?: (params: LoopUpdateParams) => LoopUpdateResult | null;
+  afterFrame?: (params: LoopUpdateParams) => void;
 }
 
 export interface GamePlugin {
