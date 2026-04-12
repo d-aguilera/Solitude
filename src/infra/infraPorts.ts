@@ -1,5 +1,5 @@
 import type { WorldAndSceneConfig } from "../app/configPorts";
-import type { ControlInput, EnvInput } from "../app/controlPorts";
+import type { ControlInput } from "../app/controlPorts";
 import type { GamePlugin } from "../app/pluginPorts";
 import type { GravityEngine } from "../domain/domainPorts";
 import type {
@@ -21,6 +21,5 @@ export interface RunLoopParams {
   pilotSurface: RenderSurface2D;
   topSurface: RenderSurface2D;
   controlInput: ControlInput;
-  envInput: EnvInput;
   plugins: GamePlugin[];
 }

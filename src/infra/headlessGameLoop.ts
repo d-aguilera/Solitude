@@ -17,7 +17,6 @@ export interface HeadlessLoopOptions {
   thrustLevel?: number;
   timeScale?: number;
   controlPlugins?: ControlPlugin[];
-  controlActions?: string[];
 }
 
 export interface HeadlessLoop {
@@ -70,8 +69,7 @@ export function createHeadlessLoop(
     options.controlPlugins ?? [],
   );
 
-  const extraActions = options.controlActions ?? [];
-  const baseControlInput = createControlInput(extraActions);
+  const baseControlInput = createControlInput();
 
   const tickParams: TickParams = {
     dtMillis: 0,

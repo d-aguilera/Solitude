@@ -49,7 +49,6 @@ export function runLoop({
   pilotSurface,
   topSurface,
   controlInput,
-  envInput,
   plugins,
 }: RunLoopParams): void {
   const controlPlugins = collectControlPlugins(plugins);
@@ -184,7 +183,6 @@ export function runLoop({
   const loopUpdateParams: Parameters<
     NonNullable<LoopPlugin["updateLoopState"]>
   >[0] = {
-    envInput,
     controlInput,
     dtMillis: 0,
     nowMs: 0,

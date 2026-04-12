@@ -5,8 +5,6 @@ import type {
   ControlAction,
   ControlInput,
   ControlledBodyState,
-  EnvAction,
-  EnvInput,
   SimControlState,
 } from "./controlPorts";
 import type { PropulsionCommand } from "./controls";
@@ -14,20 +12,14 @@ import type { HudRenderParams } from "./hudPorts";
 import type { Scene, SceneObject } from "./scenePorts";
 
 export interface KeyHandler {
-  handleKeyDown: (
-    action: ControlAction | EnvAction,
-    isRepeat: boolean,
-  ) => boolean;
-  handleKeyUp: (action: ControlAction | EnvAction) => boolean;
+  handleKeyDown: (action: ControlAction, isRepeat: boolean) => boolean;
+  handleKeyUp: (action: ControlAction) => boolean;
 }
 
 export interface InputPlugin {
   actions?: ControlAction[];
-  keyMap?: Record<string, ControlAction | EnvAction>;
-  createKeyHandler?: (
-    controlInput: ControlInput,
-    envInput: EnvInput,
-  ) => KeyHandler;
+  keyMap?: Record<string, ControlAction>;
+  createKeyHandler?: (controlInput: ControlInput) => KeyHandler;
 }
 
 export interface ControlStateUpdateParams {
@@ -117,7 +109,6 @@ export interface LoopInitParams {
 }
 
 export interface LoopUpdateParams {
-  envInput: EnvInput;
   controlInput: ControlInput;
   dtMillis: number;
   nowMs: number;

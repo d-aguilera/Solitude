@@ -72,7 +72,7 @@ export function bootstrapWith(
   const hudRasterizer = pilotRasterizer;
   const hudRenderer: HudRenderer = new DefaultHudRenderer();
 
-  const { controlInput, envInput } = initInput(plugins);
+  const { controlInput } = initInput(plugins);
 
   runLoop({
     config,
@@ -86,7 +86,6 @@ export function bootstrapWith(
     pilotSurface,
     topSurface,
     controlInput,
-    envInput,
     plugins,
   });
 }

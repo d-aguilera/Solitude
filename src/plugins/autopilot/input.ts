@@ -1,9 +1,4 @@
-import type {
-  ControlAction,
-  ControlInput,
-  EnvAction,
-  EnvInput,
-} from "../../app/controlPorts";
+import type { ControlAction, ControlInput } from "../../app/controlPorts";
 import type { InputPlugin, KeyHandler } from "../../app/pluginPorts";
 
 const autopilotToggleActions: Set<ControlAction> = new Set([
@@ -21,20 +16,14 @@ const autopilotKeyMap: Record<string, ControlAction> = {
 export function createInputPlugin(): InputPlugin {
   return {
     keyMap: autopilotKeyMap,
-    createKeyHandler: (controlInput: ControlInput, _envInput: EnvInput) => {
-      void _envInput;
-      return createKeyHandler(controlInput);
-    },
+    createKeyHandler,
   };
 }
 
 function createKeyHandler(controlInput: ControlInput): KeyHandler {
   let pendingAutopilotRelease: ControlAction | null = null;
 
-  const handleKeyDown = (
-    action: ControlAction | EnvAction,
-    isRepeat: boolean,
-  ): boolean => {
+  const handleKeyDown = (action: ControlAction, isRepeat: boolean): boolean => {
     if (!isAutopilotToggle(action)) return false;
     if (!isRepeat) {
       if (controlInput[action]) {
@@ -47,7 +36,7 @@ function createKeyHandler(controlInput: ControlInput): KeyHandler {
     return true;
   };
 
-  const handleKeyUp = (action: ControlAction | EnvAction): boolean => {
+  const handleKeyUp = (action: ControlAction): boolean => {
     if (!isAutopilotToggle(action)) return false;
     if (pendingAutopilotRelease === action) {
       clearAutopilot(controlInput);
@@ -59,9 +48,7 @@ function createKeyHandler(controlInput: ControlInput): KeyHandler {
   return { handleKeyDown, handleKeyUp };
 }
 
-function isAutopilotToggle(
-  action: ControlAction | EnvAction,
-): action is ControlAction {
+function isAutopilotToggle(action: ControlAction): action is ControlAction {
   return autopilotToggleActions.has(action as ControlAction);
 }
 

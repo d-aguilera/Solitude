@@ -1,10 +1,5 @@
-import type {
-  ControlAction,
-  ControlInput,
-  EnvAction,
-  EnvInput,
-} from "../app/controlPorts";
-import { ALL_ENV_ACTIONS, createControlInput } from "../app/controlPorts";
+import type { ControlAction, ControlInput } from "../app/controlPorts";
+import { BASE_CONTROL_ACTIONS, createControlInput } from "../app/controlPorts";
 import type { GamePlugin, InputPlugin, KeyHandler } from "../app/pluginPorts";
 
 /**
@@ -12,13 +7,11 @@ import type { GamePlugin, InputPlugin, KeyHandler } from "../app/pluginPorts";
  */
 export function initInput(plugins: GamePlugin[] = []): {
   controlInput: ControlInput;
-  envInput: EnvInput;
 } {
-  const envInput = makeDefaultEnvInput();
   const inputPlugins = collectInputPlugins(plugins);
   const pluginActions = collectControlActions(inputPlugins);
   const controlInput = createControlInput(pluginActions);
-  const keyHandlers = collectKeyHandlers(inputPlugins, controlInput, envInput);
+  const keyHandlers = collectKeyHandlers(inputPlugins, controlInput);
   const keyMap = buildKeyMap(inputPlugins);
 
   window.addEventListener("keydown", (e: KeyboardEvent) => {
@@ -29,7 +22,7 @@ export function initInput(plugins: GamePlugin[] = []): {
         return;
       }
     }
-    updateInputs(controlInput, envInput, action, true);
+    updateInputs(controlInput, action, true);
   });
 
   window.addEventListener("keyup", (e: KeyboardEvent) => {
@@ -40,35 +33,23 @@ export function initInput(plugins: GamePlugin[] = []): {
         return;
       }
     }
-    updateInputs(controlInput, envInput, action, false);
+    updateInputs(controlInput, action, false);
   });
 
-  return { controlInput, envInput };
-}
-
-function makeDefaultEnvInput(): EnvInput {
-  const result: Partial<EnvInput> = {};
-  for (const action of ALL_ENV_ACTIONS) {
-    result[action] = false;
-  }
-  return result as EnvInput;
+  return { controlInput };
 }
 
 function updateInputs(
   controlInput: ControlInput,
-  envInput: EnvInput,
-  action: ControlAction | EnvAction,
+  action: ControlAction,
   isDown: boolean,
 ) {
   if (action in controlInput) {
     controlInput[action as ControlAction] = isDown;
   }
-  if (action in envInput) {
-    envInput[action as EnvAction] = isDown;
-  }
 }
 
-const baseKeyMap: Record<string, ControlAction | EnvAction> = {
+const baseKeyMap: Record<string, ControlAction> = {
   ArrowDown: "lookDown",
   ArrowLeft: "lookLeft",
   ArrowRight: "lookRight",
@@ -111,19 +92,19 @@ function collectInputPlugins(plugins: GamePlugin[]): InputPlugin[] {
 }
 
 function collectControlActions(plugins: InputPlugin[]): string[] {
-  const envActions = new Set<EnvAction>(ALL_ENV_ACTIONS);
+  const envActions = new Set<ControlAction>(BASE_CONTROL_ACTIONS);
   const actions = new Set<string>();
   for (const plugin of plugins) {
     if (plugin.actions) {
       for (const action of plugin.actions) {
-        if (!envActions.has(action as EnvAction)) {
+        if (!envActions.has(action)) {
           actions.add(action);
         }
       }
     }
     if (plugin.keyMap) {
       for (const action of Object.values(plugin.keyMap)) {
-        if (!envActions.has(action as EnvAction)) {
+        if (!envActions.has(action)) {
           actions.add(action);
         }
       }
@@ -135,11 +116,10 @@ function collectControlActions(plugins: InputPlugin[]): string[] {
 function collectKeyHandlers(
   plugins: InputPlugin[],
   controlInput: ControlInput,
-  envInput: EnvInput,
 ): KeyHandler[] {
   const handlers: KeyHandler[] = [];
   for (const plugin of plugins) {
-    const handler = plugin.createKeyHandler?.(controlInput, envInput);
+    const handler = plugin.createKeyHandler?.(controlInput);
     if (handler) {
       handlers.push(handler);
     }
@@ -147,10 +127,8 @@ function collectKeyHandlers(
   return handlers;
 }
 
-function buildKeyMap(
-  plugins: InputPlugin[],
-): Record<string, ControlAction | EnvAction> {
-  const keyMap: Record<string, ControlAction | EnvAction> = { ...baseKeyMap };
+function buildKeyMap(plugins: InputPlugin[]): Record<string, ControlAction> {
+  const keyMap: Record<string, ControlAction> = { ...baseKeyMap };
   for (const plugin of plugins) {
     if (!plugin.keyMap) continue;
     for (const [key, action] of Object.entries(plugin.keyMap)) {
