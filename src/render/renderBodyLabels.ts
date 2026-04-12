@@ -7,6 +7,7 @@ import type { BodyId } from "../domain/domainPorts";
 import { type Vec3, vec3 } from "../domain/vec3";
 import { alloc } from "../global/allocProfiler";
 import { formatDistance, formatSpeed } from "./formatters";
+import { LABEL_FONT } from "./labelStyle";
 import { type NdcPoint, ndc } from "./ndc";
 import type {
   Point,
@@ -25,6 +26,60 @@ type SortedScratchItem = {
 const sortedScratch: SortedScratchItem[] = [];
 const diffScratch: Vec3 = vec3.zero();
 const ndcScratch: NdcPoint = ndc.zero();
+
+export interface LabelLayoutCache {
+  font: string;
+  charWidth: number;
+  lastLayoutTimeMs: number;
+  lastScreenWidth: number;
+  lastScreenHeight: number;
+  lastBodyCount: number;
+  needsRelayout: boolean;
+  sortedBodies: (PlanetSceneObject | StarSceneObject)[];
+  entries: Map<string, LabelLayoutEntry>;
+  grid: LabelSpatialGrid;
+}
+
+interface LabelLayoutEntry {
+  directionIndex: number;
+  size: Size;
+}
+
+interface LabelSpatialGrid {
+  cellSize: number;
+  cells: Map<string, LabelGridCell>;
+}
+
+interface LabelGridCell {
+  labels: number[];
+  centers: number[];
+}
+
+const LABEL_LAYOUT_INTERVAL_MS = 150;
+const LABEL_GRID_CELL_SIZE = 128;
+
+export function createLabelLayoutCache(
+  measureText: (text: string, font: string) => TextMetrics,
+  font: string = LABEL_FONT,
+): LabelLayoutCache {
+  const metrics = measureText("M", font);
+  const charWidth = metrics.width || 8;
+  return {
+    font,
+    charWidth,
+    lastLayoutTimeMs: -Infinity,
+    lastScreenWidth: -1,
+    lastScreenHeight: -1,
+    lastBodyCount: -1,
+    needsRelayout: true,
+    sortedBodies: [],
+    entries: new Map(),
+    grid: {
+      cellSize: LABEL_GRID_CELL_SIZE,
+      cells: new Map(),
+    },
+  };
+}
 
 /**
  * Scratch structure for tracking placed label rectangles across a single render pass.
@@ -57,21 +112,16 @@ const position: Point = { x: 0, y: 0 };
 // Label style
 const angleStep = 45;
 const angleStepRad = (angleStep * Math.PI) / 180;
-const font = "14px monospace";
 const lineHeight = 16;
 const padding: Size = { width: 6, height: 4 };
 
 /**
- * Sample and prepare body labels:
- *  - Computes distance and speed for each body.
- *  - Projects body centers into screen space.
- *  - Skips labels for bodies whose centers are off‑screen.
- *  - Chooses a label placement direction by probing 8 angles at 45° steps,
- *    starting from 45° (up/right).
- *  - A candidate label rectangle is considered free iff:
- *      * it does not overlap any previously placed label rectangle, and
- *      * it does not contain the center of any planet/star that is
- *        in front of the camera and on-screen.
+ * Render body labels with a cached layout:
+ *  - Fast path every frame: project anchors, use cached placement direction,
+ *    and render labels.
+ *  - Slow path on a throttled interval: recompute layout by probing 8 angles
+ *    at 45° steps (starting from 45°) while avoiding overlaps and visible
+ *    body centers using a spatial grid.
  */
 export function renderBodyLabelsInto(
   into: RenderedBodyLabel[],
@@ -80,110 +130,371 @@ export function renderBodyLabelsInto(
   screenWidth: number,
   screenHeight: number,
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
-  measureText: (text: string, font: string) => TextMetrics,
+  layoutCache: LabelLayoutCache,
+  nowMs: number,
   objectsFilter?: (obj: SceneObject) => boolean,
 ): number {
   return alloc.withName(renderBodyLabelsInto.name, () => {
-    // Pre-pass: collect all visible, on-screen body centers so that
-    // label placement can avoid covering *any* planet/star center.
-    allBodyCentersCount = collectVisibleBodyCenters(
-      objects,
-      projectInto,
-      screenWidth,
-      screenHeight,
-      objectsFilter,
-    );
-
-    const sortedCount = sortBodies(objects, referencePosition, objectsFilter);
-
-    // Clear per-pass label-rectangle scratch state
-    placedLabelCount = 0;
-
-    let count = 0;
-    for (let i = 0; i < sortedCount; i++) {
-      const { body, distance } = sortedScratch[i];
-      if (!projectInto(ndcScratch, body.position)) {
-        continue; // behind the camera
-      }
-
-      ndc.toScreenInto(anchor, ndcScratch, screenWidth, screenHeight);
-
-      // 1) If the body's center is off the screen, skip the label.
-      if (
-        anchor.x < 0 ||
-        anchor.x > screenWidth ||
-        anchor.y < 0 ||
-        anchor.y > screenHeight
-      ) {
-        continue;
-      }
-
-      lines[0] = displayNameForBodyId(body.id);
-      lines[1] = "d=".concat(formatDistance(distance));
-      lines[2] = "v=".concat(formatSpeed(vec3.length(body.velocity)));
-
-      const maxTextWidth = getTextWidth(lines, font, measureText);
-
-      boxSize.width = maxTextWidth + padding.width * 2;
-      boxSize.height = lines.length * lineHeight + padding.height * 2;
-
-      // 2–5) Choose a direction by probing 8 angles starting from 45°.
-      const directionIndex = pickDirectionIndexForLabel(
-        anchor,
-        boxSize,
-        angleStepRad,
+    const bodyCount = countLabelBodies(objects, objectsFilter);
+    if (
+      shouldRelayout(layoutCache, nowMs, screenWidth, screenHeight, bodyCount)
+    ) {
+      layoutLabels(
+        layoutCache,
+        objects,
+        referencePosition,
+        screenWidth,
+        screenHeight,
+        projectInto,
+        objectsFilter,
       );
-
-      getBoxCenterInto(boxCenter, directionIndex, angleStepRad, anchor);
-
-      position.x = boxCenter.x - boxSize.width * 0.5;
-      position.y = boxCenter.y - boxSize.height * 0.5;
-
-      getEdgeFromDirectionInto(
-        edgePoint,
-        directionIndex,
-        boxCenter,
-        position,
-        boxSize,
-      );
-
-      // Register this label's rectangle so future labels can avoid overlapping it.
-      registerPlacedLabel(position, boxSize);
-
-      let current = into[count];
-      if (current) {
-        current.anchor.x = anchor.x;
-        current.anchor.y = anchor.y;
-        current.edgePoint.x = edgePoint.x;
-        current.edgePoint.y = edgePoint.y;
-        current.lineHeight = lineHeight;
-        current.lines[0] = lines[0];
-        current.lines[1] = lines[1];
-        current.lines[2] = lines[2];
-        current.name = lines[0];
-        current.padding.height = padding.height;
-        current.padding.width = padding.width;
-        current.position.x = position.x;
-        current.position.y = position.y;
-        current.size.width = boxSize.width;
-        current.size.height = boxSize.height;
-      } else {
-        current = into[count] = {
-          anchor: { x: anchor.x, y: anchor.y },
-          edgePoint: { x: edgePoint.x, y: edgePoint.y },
-          lineHeight,
-          lines: [lines[0], lines[1], lines[2]],
-          name: lines[0],
-          padding: { height: padding.height, width: padding.width },
-          position: { x: position.x, y: position.y },
-          size: { height: boxSize.height, width: boxSize.width },
-        };
-      }
-      count++;
+      layoutCache.lastLayoutTimeMs = nowMs;
+      layoutCache.lastScreenWidth = screenWidth;
+      layoutCache.lastScreenHeight = screenHeight;
+      layoutCache.lastBodyCount = bodyCount;
+      layoutCache.needsRelayout = false;
     }
 
-    return count;
+    return renderLabelsFromCache(
+      into,
+      layoutCache,
+      referencePosition,
+      screenWidth,
+      screenHeight,
+      projectInto,
+      objectsFilter,
+    );
   });
+}
+
+function countLabelBodies(
+  objects: SceneObject[],
+  objectsFilter?: (obj: SceneObject) => boolean,
+): number {
+  let count = 0;
+  for (let i = 0; i < objects.length; i++) {
+    const obj = objects[i];
+    if (obj.kind !== "planet" && obj.kind !== "star") continue;
+    if (objectsFilter && !objectsFilter(obj)) continue;
+    count++;
+  }
+  return count;
+}
+
+function shouldRelayout(
+  cache: LabelLayoutCache,
+  nowMs: number,
+  screenWidth: number,
+  screenHeight: number,
+  bodyCount: number,
+): boolean {
+  if (cache.needsRelayout) return true;
+  if (screenWidth !== cache.lastScreenWidth) return true;
+  if (screenHeight !== cache.lastScreenHeight) return true;
+  if (bodyCount !== cache.lastBodyCount) return true;
+  return nowMs - cache.lastLayoutTimeMs >= LABEL_LAYOUT_INTERVAL_MS;
+}
+
+function layoutLabels(
+  cache: LabelLayoutCache,
+  objects: SceneObject[],
+  referencePosition: Vec3,
+  screenWidth: number,
+  screenHeight: number,
+  projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
+  objectsFilter?: (obj: SceneObject) => boolean,
+): void {
+  clearSpatialGrid(cache.grid);
+
+  allBodyCentersCount = collectVisibleBodyCenters(
+    cache.grid,
+    objects,
+    projectInto,
+    screenWidth,
+    screenHeight,
+    objectsFilter,
+  );
+
+  const sortedCount = sortBodies(objects, referencePosition, objectsFilter);
+
+  if (cache.sortedBodies.length < sortedCount) {
+    cache.sortedBodies.length = sortedCount;
+  }
+  for (let i = 0; i < sortedCount; i++) {
+    cache.sortedBodies[i] = sortedScratch[i].body;
+  }
+  cache.sortedBodies.length = sortedCount;
+
+  placedLabelCount = 0;
+
+  for (let i = 0; i < sortedCount; i++) {
+    const { body, distance } = sortedScratch[i];
+    if (!projectInto(ndcScratch, body.position)) {
+      continue;
+    }
+
+    ndc.toScreenInto(anchor, ndcScratch, screenWidth, screenHeight);
+    if (
+      anchor.x < 0 ||
+      anchor.x > screenWidth ||
+      anchor.y < 0 ||
+      anchor.y > screenHeight
+    ) {
+      continue;
+    }
+
+    lines[0] = displayNameForBodyId(body.id);
+    lines[1] = "d=".concat(formatDistance(distance));
+    lines[2] = "v=".concat(formatSpeed(vec3.length(body.velocity)));
+
+    const maxTextWidth = getTextWidth(lines, cache.charWidth);
+    boxSize.width = maxTextWidth + padding.width * 2;
+    boxSize.height = lines.length * lineHeight + padding.height * 2;
+
+    const directionIndex = pickDirectionIndexForLabel(
+      cache.grid,
+      anchor,
+      boxSize,
+      angleStepRad,
+    );
+
+    getBoxCenterInto(boxCenter, directionIndex, angleStepRad, anchor);
+    position.x = boxCenter.x - boxSize.width * 0.5;
+    position.y = boxCenter.y - boxSize.height * 0.5;
+
+    getEdgeFromDirectionInto(
+      edgePoint,
+      directionIndex,
+      boxCenter,
+      position,
+      boxSize,
+    );
+
+    registerPlacedLabel(cache.grid, position, boxSize);
+    updateCacheEntry(cache, body.id, directionIndex, boxSize);
+  }
+}
+
+function renderLabelsFromCache(
+  into: RenderedBodyLabel[],
+  cache: LabelLayoutCache,
+  referencePosition: Vec3,
+  screenWidth: number,
+  screenHeight: number,
+  projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
+  objectsFilter?: (obj: SceneObject) => boolean,
+): number {
+  let count = 0;
+  const sortedBodies = cache.sortedBodies;
+  for (let i = 0; i < sortedBodies.length; i++) {
+    const body = sortedBodies[i];
+    if (!body) continue;
+    if (objectsFilter && !objectsFilter(body)) continue;
+    if (!projectInto(ndcScratch, body.position)) {
+      continue;
+    }
+
+    ndc.toScreenInto(anchor, ndcScratch, screenWidth, screenHeight);
+    if (
+      anchor.x < 0 ||
+      anchor.x > screenWidth ||
+      anchor.y < 0 ||
+      anchor.y > screenHeight
+    ) {
+      continue;
+    }
+
+    vec3.subInto(diffScratch, body.position, referencePosition);
+    const distance = vec3.length(diffScratch);
+
+    lines[0] = displayNameForBodyId(body.id);
+    lines[1] = "d=".concat(formatDistance(distance));
+    lines[2] = "v=".concat(formatSpeed(vec3.length(body.velocity)));
+
+    const maxTextWidth = getTextWidth(lines, cache.charWidth);
+    boxSize.width = maxTextWidth + padding.width * 2;
+    boxSize.height = lines.length * lineHeight + padding.height * 2;
+
+    let entry = cache.entries.get(body.id);
+    if (!entry) {
+      entry = createCacheEntry(body.id, cache);
+      cache.needsRelayout = true;
+    }
+
+    if (
+      Math.abs(entry.size.width - boxSize.width) > 8 ||
+      Math.abs(entry.size.height - boxSize.height) > 8
+    ) {
+      entry.size.width = boxSize.width;
+      entry.size.height = boxSize.height;
+      cache.needsRelayout = true;
+    }
+
+    const directionIndex = entry.directionIndex;
+    getBoxCenterInto(boxCenter, directionIndex, angleStepRad, anchor);
+    position.x = boxCenter.x - boxSize.width * 0.5;
+    position.y = boxCenter.y - boxSize.height * 0.5;
+
+    getEdgeFromDirectionInto(
+      edgePoint,
+      directionIndex,
+      boxCenter,
+      position,
+      boxSize,
+    );
+
+    let current = into[count];
+    if (current) {
+      current.anchor.x = anchor.x;
+      current.anchor.y = anchor.y;
+      current.edgePoint.x = edgePoint.x;
+      current.edgePoint.y = edgePoint.y;
+      current.lineHeight = lineHeight;
+      current.lines[0] = lines[0];
+      current.lines[1] = lines[1];
+      current.lines[2] = lines[2];
+      current.name = lines[0];
+      current.padding.height = padding.height;
+      current.padding.width = padding.width;
+      current.position.x = position.x;
+      current.position.y = position.y;
+      current.size.width = boxSize.width;
+      current.size.height = boxSize.height;
+    } else {
+      current = into[count] = {
+        anchor: { x: anchor.x, y: anchor.y },
+        edgePoint: { x: edgePoint.x, y: edgePoint.y },
+        lineHeight,
+        lines: [lines[0], lines[1], lines[2]],
+        name: lines[0],
+        padding: { height: padding.height, width: padding.width },
+        position: { x: position.x, y: position.y },
+        size: { height: boxSize.height, width: boxSize.width },
+      };
+    }
+    count++;
+  }
+
+  return count;
+}
+
+function updateCacheEntry(
+  cache: LabelLayoutCache,
+  id: string,
+  directionIndex: number,
+  size: Size,
+): void {
+  let entry = cache.entries.get(id);
+  if (!entry) {
+    entry = {
+      directionIndex,
+      size: { width: size.width, height: size.height },
+    };
+    cache.entries.set(id, entry);
+    return;
+  }
+  entry.directionIndex = directionIndex;
+  entry.size.width = size.width;
+  entry.size.height = size.height;
+}
+
+function createCacheEntry(
+  id: string,
+  cache: LabelLayoutCache,
+): LabelLayoutEntry {
+  const entry = {
+    directionIndex: 1,
+    size: { width: 0, height: 0 },
+  };
+  cache.entries.set(id, entry);
+  return entry;
+}
+
+function clearSpatialGrid(grid: LabelSpatialGrid): void {
+  grid.cells.clear();
+}
+
+function registerPlacedLabel(
+  grid: LabelSpatialGrid,
+  { x, y }: Point,
+  { width, height }: Size,
+): void {
+  let rect: LabelRect;
+  if (placedLabelCount < placedLabelRectsScratch.length) {
+    rect = placedLabelRectsScratch[placedLabelCount];
+    rect.x = x;
+    rect.y = y;
+    rect.width = width;
+    rect.height = height;
+  } else {
+    rect = { x, y, width, height };
+    placedLabelRectsScratch.push(rect);
+  }
+
+  addRectToGrid(grid, placedLabelCount, rect);
+  placedLabelCount++;
+}
+
+function registerBodyCenter(grid: LabelSpatialGrid, { x, y }: Point): void {
+  if (allBodyCentersCount < allBodyCentersScratch.length) {
+    const dst = allBodyCentersScratch[allBodyCentersCount];
+    dst.x = x;
+    dst.y = y;
+  } else {
+    allBodyCentersScratch.push({ x, y });
+  }
+
+  addCenterToGrid(
+    grid,
+    allBodyCentersCount,
+    allBodyCentersScratch[allBodyCentersCount],
+  );
+  allBodyCentersCount++;
+}
+
+function addRectToGrid(
+  grid: LabelSpatialGrid,
+  index: number,
+  rect: LabelRect,
+): void {
+  const cellSize = grid.cellSize;
+  const minCx = Math.floor(rect.x / cellSize);
+  const maxCx = Math.floor((rect.x + rect.width) / cellSize);
+  const minCy = Math.floor(rect.y / cellSize);
+  const maxCy = Math.floor((rect.y + rect.height) / cellSize);
+
+  for (let cx = minCx; cx <= maxCx; cx++) {
+    for (let cy = minCy; cy <= maxCy; cy++) {
+      const cell = getGridCell(grid, cx, cy);
+      cell.labels.push(index);
+    }
+  }
+}
+
+function addCenterToGrid(
+  grid: LabelSpatialGrid,
+  index: number,
+  center: Point,
+): void {
+  const cellSize = grid.cellSize;
+  const cx = Math.floor(center.x / cellSize);
+  const cy = Math.floor(center.y / cellSize);
+  const cell = getGridCell(grid, cx, cy);
+  cell.centers.push(index);
+}
+
+function getGridCell(
+  grid: LabelSpatialGrid,
+  cx: number,
+  cy: number,
+): LabelGridCell {
+  const key = `${cx},${cy}`;
+  let cell = grid.cells.get(key);
+  if (!cell) {
+    cell = { labels: [], centers: [] };
+    grid.cells.set(key, cell);
+  }
+  return cell;
 }
 
 /**
@@ -194,13 +505,14 @@ export function renderBodyLabelsInto(
  * Returns the number of centers stored in allBodyCentersScratch.
  */
 function collectVisibleBodyCenters(
+  grid: LabelSpatialGrid,
   objects: SceneObject[],
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
   screenWidth: number,
   screenHeight: number,
   objectsFilter?: (obj: SceneObject) => boolean,
 ): number {
-  let count = 0;
+  allBodyCentersCount = 0;
 
   for (let i = 0; i < objects.length; i++) {
     const obj = objects[i];
@@ -222,17 +534,10 @@ function collectVisibleBodyCenters(
       continue;
     }
 
-    if (count < allBodyCentersScratch.length) {
-      const dst = allBodyCentersScratch[count];
-      dst.x = anchor.x;
-      dst.y = anchor.y;
-    } else {
-      allBodyCentersScratch.push({ x: anchor.x, y: anchor.y });
-    }
-    count++;
+    registerBodyCenter(grid, anchor);
   }
 
-  return count;
+  return allBodyCentersCount;
 }
 
 function sortBodies(
@@ -297,6 +602,7 @@ function displayNameForBodyId(id: BodyId): string {
  * back to 1 if all candidate rectangles would be occupied.
  */
 function pickDirectionIndexForLabel(
+  grid: LabelSpatialGrid,
   anchor: Point,
   size: Size,
   angleStepRad: number,
@@ -315,7 +621,7 @@ function pickDirectionIndexForLabel(
     candidate.x = center.x - size.width * 0.5;
     candidate.y = center.y - size.height * 0.5;
 
-    if (!candidateRectOccupied(candidate, size)) {
+    if (!candidateRectOccupied(grid, candidate, size)) {
       chosenIndex = directionIndex;
       foundFree = true;
       break;
@@ -335,51 +641,46 @@ function pickDirectionIndexForLabel(
  *  - contains the projected center of any visible planet/star.
  */
 function candidateRectOccupied(
+  grid: LabelSpatialGrid,
   { x, y }: Point,
   { width, height }: Size,
 ): boolean {
   const x2 = x + width;
   const y2 = y + height;
+  const cellSize = grid.cellSize;
+  const minCx = Math.floor(x / cellSize);
+  const maxCx = Math.floor(x2 / cellSize);
+  const minCy = Math.floor(y / cellSize);
+  const maxCy = Math.floor(y2 / cellSize);
 
-  // 1) Check overlap with already placed label rectangles.
-  for (let i = 0; i < placedLabelCount; i++) {
-    const rect = placedLabelRectsScratch[i];
-    const rx2 = rect.x + rect.width;
-    const ry2 = rect.y + rect.height;
+  for (let cx = minCx; cx <= maxCx; cx++) {
+    for (let cy = minCy; cy <= maxCy; cy++) {
+      const cell = grid.cells.get(`${cx},${cy}`);
+      if (!cell) continue;
 
-    const overlap = x < rx2 && x2 > rect.x && y < ry2 && y2 > rect.y;
+      // 1) Check overlap with already placed label rectangles.
+      for (let i = 0; i < cell.labels.length; i++) {
+        const rect = placedLabelRectsScratch[cell.labels[i]];
+        const rx2 = rect.x + rect.width;
+        const ry2 = rect.y + rect.height;
 
-    if (overlap) {
-      return true;
-    }
-  }
+        const overlap = x < rx2 && x2 > rect.x && y < ry2 && y2 > rect.y;
+        if (overlap) {
+          return true;
+        }
+      }
 
-  // 2) Check if this candidate contains any visible planet/star center.
-  for (let i = 0; i < allBodyCentersCount; i++) {
-    const c = allBodyCentersScratch[i];
-    if (c.x >= x && c.x <= x2 && c.y >= y && c.y <= y2) {
-      return true;
+      // 2) Check if this candidate contains any visible planet/star center.
+      for (let i = 0; i < cell.centers.length; i++) {
+        const c = allBodyCentersScratch[cell.centers[i]];
+        if (c.x >= x && c.x <= x2 && c.y >= y && c.y <= y2) {
+          return true;
+        }
+      }
     }
   }
 
   return false;
-}
-
-/**
- * Register a new placed label rectangle into a grow-only scratch array.
- */
-function registerPlacedLabel({ x, y }: Point, { width, height }: Size): void {
-  if (placedLabelCount < placedLabelRectsScratch.length) {
-    const r = placedLabelRectsScratch[placedLabelCount];
-    r.x = x;
-    r.y = y;
-    r.width = width;
-    r.height = height;
-  } else {
-    placedLabelRectsScratch.push({ x, y, width, height });
-  }
-
-  placedLabelCount++;
 }
 
 function getBoxCenterInto(
@@ -473,14 +774,10 @@ function getEdgeFromDirectionInto(
   }
 }
 
-function getTextWidth(
-  lines: string[],
-  font: string,
-  measureText: (text: string, font: string) => TextMetrics,
-) {
+function getTextWidth(lines: string[], charWidth: number) {
   let maxTextWidth = 0;
   for (const line of lines) {
-    const w = measureText(line, font).width;
+    const w = line.length * charWidth;
     if (w > maxTextWidth) maxTextWidth = w;
   }
   return maxTextWidth;

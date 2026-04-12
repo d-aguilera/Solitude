@@ -1,5 +1,6 @@
 import type { RGB } from "../../app/scenePorts";
 import { rgbToCss } from "../../render/color";
+import { LABEL_FONT } from "../../render/labelStyle";
 import type {
   Point,
   Rasterizer,
@@ -48,7 +49,7 @@ export class CanvasRasterizer implements Rasterizer {
   drawBodyLabels(labels: RenderedBodyLabel[], count: number): void {
     ctx = this.ctx;
 
-    ctx.font = "14px monospace";
+    ctx.font = LABEL_FONT;
     ctx.textBaseline = "middle";
 
     for (let i = 0; i < count; i++) {

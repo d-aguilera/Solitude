@@ -2,7 +2,11 @@ import type { PolylineSceneObject, SceneObject } from "../app/scenePorts";
 import type { Vec3 } from "../domain/vec3";
 import type { NdcPoint } from "./ndc";
 import { ProjectionService } from "./ProjectionService";
-import { renderBodyLabelsInto } from "./renderBodyLabels";
+import type { LabelLayoutCache } from "./renderBodyLabels";
+import {
+  createLabelLayoutCache,
+  renderBodyLabelsInto,
+} from "./renderBodyLabels";
 import { renderFacesInto } from "./renderFaces";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals";
 import { renderPolylinesInto } from "./renderPolylines";
@@ -16,9 +20,13 @@ import { drawMode } from "./renderPorts";
 import { renderVelocitySegmentsInto } from "./renderVelocitySegments";
 
 export class DefaultViewRenderer implements ViewRenderer {
+  private readonly labelLayoutCache: LabelLayoutCache;
+
   constructor(
     private readonly measureText: (text: string, font: string) => TextMetrics,
-  ) {}
+  ) {
+    this.labelLayoutCache = createLabelLayoutCache(this.measureText);
+  }
 
   renderInto(into: RenderedView, params: ViewRenderParams): void {
     const { mainShip, camera, objectsFilter, surface, scene } = params;
@@ -79,8 +87,18 @@ export class DefaultViewRenderer implements ViewRenderer {
       screenWidth,
       screenHeight,
       projectInto,
-      this.measureText,
+      this.labelLayoutCache,
+      nowMs(),
       objectsFilter,
     );
   }
+}
+
+const nowMs = createNowMs();
+
+function createNowMs(): () => number {
+  if (typeof performance !== "undefined" && performance.now) {
+    return () => performance.now();
+  }
+  return () => Date.now();
 }
