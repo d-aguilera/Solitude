@@ -1,5 +1,5 @@
 import type { RGB } from "../../app/scenePorts";
-import { rgbToCss } from "../../render/color";
+import { rgbToQuantizedCss } from "../../render/color";
 import { LABEL_FONT } from "../../render/labelStyle";
 import type {
   Point,
@@ -88,7 +88,7 @@ export class CanvasRasterizer implements Rasterizer {
 
     for (let i = 0; i < count; i++) {
       ({ color, p0, p1, p2 } = faces[i]);
-      cssColor = rgbToCss(color);
+      cssColor = rgbToQuantizedCss(color);
       ctx.fillStyle = cssColor;
       ctx.strokeStyle = cssColor;
       ctx.beginPath();

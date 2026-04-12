@@ -1,7 +1,7 @@
 import type { SceneObject } from "../app/scenePorts";
 import type { Vec3 } from "../domain/vec3";
 import { alloc } from "../global/allocProfiler";
-import { rgbToCss } from "./color";
+import { rgbToQuantizedCss } from "./color";
 import { ndc } from "./ndc";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals";
 import type { RenderedPolyline } from "./renderPorts";
@@ -89,12 +89,12 @@ export function renderPolylinesInto(
       const { color, lineWidth } = obj;
       current = into[intoCount];
       if (current) {
-        current.cssColor = rgbToCss(color);
+        current.cssColor = rgbToQuantizedCss(color);
         current.lineWidth = lineWidth;
         current.pointCount = pointCount;
       } else {
         current = {
-          cssColor: rgbToCss(color),
+          cssColor: rgbToQuantizedCss(color),
           lineWidth,
           pointCount,
           points: [],
