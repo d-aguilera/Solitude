@@ -2,7 +2,7 @@
 
 ## At-a-glance
 
-- **App**: Solitude — browser-based spaceflight + orbital mechanics sandbox with pilot and top-down views.
+- **App**: Solitude — browser-based spaceflight + orbital mechanics sandbox with pilot and picture-in-picture axial views.
 - **Core value**: real-ish Newtonian gravity and a controllable ship, rendered in 2D/3D projections.
 - **Primary user**: someone exploring orbital dynamics and spacecraft controls.
 
@@ -13,17 +13,13 @@
 
 ## Current focus
 
-- Split the architecture to support a future headless simulation server.
+- Convert non-core logic to plugins.
 
 ## Must-Do After Code Changes (Do Not Skip)
 
 - Run: `npm run typecheck`
 - Run: `npm run test`
 - If you did not run them, explicitly say “Not run” in your response.
-
-## Next steps
-
-- Not specified yet. Add 3–7 concrete tasks once a goal is set.
 
 ## Non-negotiables and exceptions
 
@@ -45,6 +41,14 @@
 - `src/setup/`: world/scene construction + trajectories.
 - `src/config/`: solar system and ship configs (OBJ meshes, colors, constants).
 - `src/global/`: cross-cutting globals (allowed onion exception).
+- `src/plugins/`: plugin catalog/composition layer (outer layer).
+
+## Plugins
+
+- **Role**: plugins are the outermost layer that compose input, control, loop, HUD, scene, and segment hooks around the core game.
+- **Layering rule**: inner layers (`domain`, `app`, `render`) must never import from `src/plugins`; infra/bootstrap decides what to load.
+- **Registration**: `src/plugins/index.ts` exports `availablePlugins` and `loadPlugins`; infra (e.g. `src/infra/domBootstrap.ts`) chooses plugin IDs.
+- **Single source of truth**: plugin list, structure, and behavior live in `src/plugins/README.md`.
 
 ## Runtime flow
 
