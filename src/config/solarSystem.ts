@@ -491,6 +491,7 @@ export function buildDefaultSolarSystemConfigs(): {
       render.push({
         id: cfg.id,
         kind: "star",
+        centralBodyId: cfg.centralBodyId,
         color: cfg.color,
         mesh: cfg.mesh,
       });
@@ -508,6 +509,7 @@ export function buildDefaultSolarSystemConfigs(): {
       render.push({
         id: cfg.id,
         kind: "planet",
+        centralBodyId: cfg.centralBodyId,
         color: cfg.color,
         mesh: cfg.mesh,
       });

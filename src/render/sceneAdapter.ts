@@ -40,6 +40,7 @@ function addPlanetsAndStarsSceneObjects(
       const sceneObj: StarSceneObject = {
         id: cfg.id,
         kind: "star",
+        centralBodyId: cfg.centralBodyId,
         mesh: cfg.mesh,
         position: starBody.position, // alias
         orientation: starBody.orientation, // alias
@@ -57,6 +58,7 @@ function addPlanetsAndStarsSceneObjects(
       const sceneObj: PlanetSceneObject = {
         id: cfg.id,
         kind: "planet",
+        centralBodyId: cfg.centralBodyId,
         mesh: cfg.mesh,
         position: planetBody.position, // alias
         orientation: planetBody.orientation, // alias

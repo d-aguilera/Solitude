@@ -18,6 +18,7 @@ export interface BaseSceneObject {
 export interface CelestialBodySceneObject extends SolidSceneObject {
   kind: "planet" | "star";
   backFaceCulling: true;
+  centralBodyId?: string;
   velocity: Vec3;
 }
 

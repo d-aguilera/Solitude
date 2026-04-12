@@ -26,6 +26,7 @@ type SortedScratchItem = {
 const sortedScratch: SortedScratchItem[] = [];
 const diffScratch: Vec3 = vec3.zero();
 const ndcScratch: NdcPoint = ndc.zero();
+const parentNdcScratch: NdcPoint = ndc.zero();
 
 export interface LabelLayoutCache {
   font: string;
@@ -37,6 +38,7 @@ export interface LabelLayoutCache {
   needsRelayout: boolean;
   sortedBodies: (PlanetSceneObject | StarSceneObject)[];
   entries: Map<string, LabelLayoutEntry>;
+  objectById: Map<string, SceneObject>;
   grid: LabelSpatialGrid;
 }
 
@@ -74,6 +76,7 @@ export function createLabelLayoutCache(
     needsRelayout: true,
     sortedBodies: [],
     entries: new Map(),
+    objectById: new Map(),
     grid: {
       cellSize: LABEL_GRID_CELL_SIZE,
       cells: new Map(),
@@ -101,6 +104,7 @@ let placedLabelCount = 0;
 let allBodyCentersCount = 0;
 const allBodyCentersScratch: Point[] = [];
 const anchor = scrn.zero();
+const parentAnchor = scrn.zero();
 const boxCenter: Point = { x: 0, y: 0 };
 const boxSize: Size = { width: 0, height: 0 };
 const candidate: Point = { x: 0, y: 0 };
@@ -204,6 +208,11 @@ function layoutLabels(
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
   objectsFilter?: (obj: SceneObject) => boolean,
 ): void {
+  cache.objectById.clear();
+  for (let i = 0; i < objects.length; i++) {
+    cache.objectById.set(objects[i].id, objects[i]);
+  }
+
   clearSpatialGrid(cache.grid);
 
   allBodyCentersCount = collectVisibleBodyCenters(
@@ -239,6 +248,20 @@ function layoutLabels(
       anchor.x > screenWidth ||
       anchor.y < 0 ||
       anchor.y > screenHeight
+    ) {
+      continue;
+    }
+
+    if (
+      body.kind === "planet" &&
+      !isMoonLabelSeparated(
+        body,
+        cache,
+        anchor,
+        screenWidth,
+        screenHeight,
+        projectInto,
+      )
     ) {
       continue;
     }
@@ -300,6 +323,20 @@ function renderLabelsFromCache(
       anchor.x > screenWidth ||
       anchor.y < 0 ||
       anchor.y > screenHeight
+    ) {
+      continue;
+    }
+
+    if (
+      body.kind === "planet" &&
+      !isMoonLabelSeparated(
+        body,
+        cache,
+        anchor,
+        screenWidth,
+        screenHeight,
+        projectInto,
+      )
     ) {
       continue;
     }
@@ -376,6 +413,41 @@ function renderLabelsFromCache(
   }
 
   return count;
+}
+
+function isMoonLabelSeparated(
+  body: PlanetSceneObject,
+  cache: LabelLayoutCache,
+  anchor: Point,
+  screenWidth: number,
+  screenHeight: number,
+  projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
+): boolean {
+  const parentId = body.centralBodyId;
+  if (!parentId || parentId === body.id) return true;
+
+  const parent = cache.objectById.get(parentId);
+  if (!parent || parent.kind !== "planet") {
+    return true;
+  }
+
+  if (!projectInto(parentNdcScratch, parent.position)) {
+    return true;
+  }
+
+  ndc.toScreenInto(parentAnchor, parentNdcScratch, screenWidth, screenHeight);
+  if (
+    parentAnchor.x < 0 ||
+    parentAnchor.x > screenWidth ||
+    parentAnchor.y < 0 ||
+    parentAnchor.y > screenHeight
+  ) {
+    return true;
+  }
+
+  const dx = Math.abs(parentAnchor.x - anchor.x);
+  const dy = Math.abs(parentAnchor.y - anchor.y);
+  return dx >= 1 || dy >= 1;
 }
 
 function updateCacheEntry(

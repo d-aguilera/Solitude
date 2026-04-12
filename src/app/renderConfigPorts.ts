@@ -4,6 +4,7 @@ import type { Mesh, PilotLookState, RGB } from "./scenePorts";
 export interface PlanetRenderConfig {
   id: string;
   kind: "planet";
+  centralBodyId?: string;
   color: RGB;
   mesh: Mesh;
 }
@@ -11,6 +12,7 @@ export interface PlanetRenderConfig {
 export interface StarRenderConfig {
   id: string;
   kind: "star";
+  centralBodyId?: string;
   color: RGB;
   mesh: Mesh;
 }
