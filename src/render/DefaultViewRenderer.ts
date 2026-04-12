@@ -29,7 +29,8 @@ export class DefaultViewRenderer implements ViewRenderer {
   }
 
   renderInto(into: RenderedView, params: ViewRenderParams): void {
-    const { mainShip, camera, objectsFilter, surface, scene } = params;
+    const { mainShip, camera, objectsFilter, surface, scene, renderCache } =
+      params;
     const { width: screenWidth, height: screenHeight } = surface;
 
     const projectionService = new ProjectionService(
@@ -62,6 +63,7 @@ export class DefaultViewRenderer implements ViewRenderer {
             camera,
             screenWidth,
             screenHeight,
+            renderCache,
             objectsFilter,
           )
         : 0;

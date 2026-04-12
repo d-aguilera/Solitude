@@ -23,6 +23,10 @@ import { updateSceneGraph } from "../app/scene";
 import type { SceneControlState, SceneState } from "../app/scenePorts";
 import { computeShipOrbitReadout } from "../domain/orbit";
 import { vec3 } from "../domain/vec3";
+import {
+  createRenderFrameCache,
+  updateRenderFrameCache,
+} from "../render/renderFrameCache";
 import type {
   Rasterizer,
   RenderedHud,
@@ -154,12 +158,15 @@ export function runLoop({
     currentRcsLevel: 0,
   };
 
+  const renderCache = createRenderFrameCache();
+
   const pilotViewRenderParams: ViewRenderParams = {
     camera: worldAndScene.pilotCamera,
     mainShip: worldAndScene.mainShip,
+    objectsFilter: pilotObjectsFilter,
+    renderCache,
     scene: worldAndScene.scene,
     surface: pilotSurface,
-    objectsFilter: pilotObjectsFilter,
   };
 
   const renderedPilotView: RenderedView = {
@@ -176,9 +183,10 @@ export function runLoop({
   const topViewRenderParams: ViewRenderParams = {
     camera: worldAndScene.topCamera,
     mainShip: worldAndScene.mainShip,
+    objectsFilter: topObjectsFilter,
+    renderCache,
     scene: worldAndScene.scene,
     surface: topSurface,
-    objectsFilter: topObjectsFilter,
   };
 
   const renderedTopView: RenderedView = {
@@ -195,9 +203,10 @@ export function runLoop({
   const leftViewRenderParams: ViewRenderParams = {
     camera: worldAndScene.leftCamera,
     mainShip: worldAndScene.mainShip,
+    objectsFilter: leftObjectsFilter,
+    renderCache,
     scene: worldAndScene.scene,
     surface: leftSurface,
-    objectsFilter: leftObjectsFilter,
   };
 
   const renderedLeftView: RenderedView = {
@@ -214,9 +223,10 @@ export function runLoop({
   const rightViewRenderParams: ViewRenderParams = {
     camera: worldAndScene.rightCamera,
     mainShip: worldAndScene.mainShip,
+    objectsFilter: rightObjectsFilter,
+    renderCache,
     scene: worldAndScene.scene,
     surface: rightSurface,
-    objectsFilter: rightObjectsFilter,
   };
 
   const renderedRightView: RenderedView = {
@@ -233,9 +243,10 @@ export function runLoop({
   const rearViewRenderParams: ViewRenderParams = {
     camera: worldAndScene.rearCamera,
     mainShip: worldAndScene.mainShip,
+    objectsFilter: rearObjectsFilter,
+    renderCache,
     scene: worldAndScene.scene,
     surface: rearSurface,
-    objectsFilter: rearObjectsFilter,
   };
 
   const renderedRearView: RenderedView = {
@@ -317,6 +328,10 @@ export function runLoop({
         world: worldAndScene.world,
         mainShip: worldAndScene.mainShip,
       });
+    }
+
+    if (framePolicy.advanceSim || framePolicy.advanceScene) {
+      updateRenderFrameCache(renderCache, worldAndScene.scene);
     }
 
     pilotViewRenderer.renderInto(renderedPilotView, pilotViewRenderParams);

@@ -5,13 +5,14 @@ import type {
   Scene,
   SceneObject,
 } from "../app/scenePorts";
-import { mat3 } from "../domain/mat3";
 import { AU } from "../domain/units";
 import { type Vec3, vec3 } from "../domain/vec3";
 import { alloc } from "../global/allocProfiler";
 import { isBodyAtOrBeyondOnePixelThreshold } from "./bodyLod";
 import { type NdcPoint, ndc } from "./ndc";
 import { ProjectionService } from "./ProjectionService";
+import type { RenderFrameCache } from "./renderFrameCache";
+import { getCachedWorldFaceNormals } from "./renderFrameCache";
 import type { RenderedFace } from "./renderPorts";
 import { toRenderable } from "./renderPrep";
 import { type ScreenPoint, scrn } from "./scrn";
@@ -28,6 +29,7 @@ export function renderFacesInto(
   camera: DomainCameraPose,
   screenWidth: number,
   screenHeight: number,
+  renderCache: RenderFrameCache,
   objectsFilter?: (obj: SceneObject) => boolean,
 ): number {
   const { objects, lights } = scene;
@@ -38,6 +40,7 @@ export function renderFacesInto(
     screenWidth,
     screenHeight,
     lights,
+    renderCache,
     objectsFilter,
   );
 
@@ -91,6 +94,7 @@ function buildFaces(
   canvasWidth: number,
   canvasHeight: number,
   lights: PointLight[],
+  renderCache: RenderFrameCache,
   objectsFilter?: (obj: SceneObject) => boolean,
 ): number {
   return alloc.withName(buildFaces.name, () => {
@@ -111,11 +115,11 @@ function buildFaces(
       )
         return;
 
-      const { mesh, worldPoints, baseColor } = toRenderable(obj);
+      const { mesh, worldPoints, baseColor } = toRenderable(obj, renderCache);
       const cameraPoints =
         projectionService.worldPointsToCameraPointsNoClip(worldPoints);
-      const { faces, faceNormals } = mesh;
-      const worldFaceNormals = getWorldFaceNormalsForObject(obj, faceNormals);
+      const { faces } = mesh;
+      const worldFaceNormals = getCachedWorldFaceNormals(renderCache, obj);
 
       for (let fi = 0; fi < faces.length; fi++) {
         const [i0, i1, i2] = faces[fi];
@@ -203,36 +207,6 @@ function buildFaces(
 
     return faceCount;
   });
-}
-
-const objectWorldNormalScratch = new WeakMap<SceneObject, Vec3[]>();
-
-function getWorldFaceNormalsForObject(
-  obj: SceneObject,
-  meshFaceNormals: Vec3[] | undefined,
-): Vec3[] | undefined {
-  if (!meshFaceNormals) return undefined;
-
-  const nFaces = meshFaceNormals.length;
-  let dst = objectWorldNormalScratch.get(obj);
-  if (!dst || dst.length < nFaces) {
-    dst = ensureNormalScratchCapacity(dst ?? [], nFaces);
-    objectWorldNormalScratch.set(obj, dst);
-  }
-
-  const R = obj.orientation;
-  for (let i = 0; i < nFaces; i++) {
-    mat3.mulVec3Into(dst[i], R, meshFaceNormals[i]);
-  }
-
-  return dst;
-}
-
-function ensureNormalScratchCapacity(dst: Vec3[], n: number): Vec3[] {
-  for (let i = dst.length; i < n; i++) {
-    dst[i] = vec3.zero();
-  }
-  return dst;
 }
 
 const toLightScratch: Vec3 = vec3.zero();

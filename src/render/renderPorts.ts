@@ -8,6 +8,7 @@ import type {
 } from "../app/scenePorts";
 import type { ShipBody } from "../domain/domainPorts";
 import type { Vec3 } from "../domain/vec3";
+import type { RenderFrameCache } from "./renderFrameCache";
 import type { ScreenPoint } from "./scrn";
 
 export type DrawMode = "faces" | "lines";
@@ -134,6 +135,7 @@ export interface ViewRenderParams {
   camera: DomainCameraPose;
   mainShip: ShipBody;
   objectsFilter?: (obj: SceneObject) => boolean;
+  renderCache: RenderFrameCache;
   scene: Scene;
   surface: RenderSurface2D;
 }
