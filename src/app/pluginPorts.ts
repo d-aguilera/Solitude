@@ -1,4 +1,5 @@
 import type { ShipBody, World } from "../domain/domainPorts";
+import type { Vec3 } from "../domain/vec3";
 import type { WorldAndSceneConfig } from "./configPorts";
 import type {
   AttitudeCommand,
@@ -64,6 +65,28 @@ export interface HudContext {
 
 export interface HudPlugin {
   updateHudParams?: (params: HudRenderParams, context: HudContext) => void;
+}
+
+export interface WorldSegment {
+  start: Vec3;
+  end: Vec3;
+  cssColor: string;
+  lineWidth: number;
+}
+
+export interface SegmentProviderParams {
+  viewId: SceneViewId;
+  scene: Scene;
+  world: World;
+  mainShip: ShipBody;
+  config: WorldAndSceneConfig;
+}
+
+export interface SegmentPlugin {
+  appendSegments?: (
+    into: WorldSegment[],
+    params: SegmentProviderParams,
+  ) => void;
 }
 
 export interface SceneInitParams {
@@ -139,5 +162,6 @@ export interface GamePlugin {
   hud?: HudPlugin;
   input?: InputPlugin;
   loop?: LoopPlugin;
+  segments?: SegmentPlugin;
   scene?: ScenePlugin;
 }

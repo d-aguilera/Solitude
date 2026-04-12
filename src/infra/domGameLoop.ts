@@ -12,6 +12,9 @@ import type {
   ScenePlugin,
   SceneViewFilterParams,
   SceneViewId,
+  SegmentPlugin,
+  SegmentProviderParams,
+  WorldSegment,
 } from "../app/pluginPorts";
 import type {
   TickCallback,
@@ -68,6 +71,7 @@ export function runLoop({
   const hudPlugins = collectHudPlugins(plugins);
   const loopPlugins = collectLoopPlugins(plugins);
   const scenePlugins = collectScenePlugins(plugins);
+  const segmentPlugins = collectSegmentPlugins(plugins);
 
   applyLoopInitPlugins(loopPlugins, { config });
 
@@ -123,6 +127,41 @@ export function runLoop({
     ...worldSetup,
     scene,
   };
+  const pilotSegmentParams: SegmentProviderParams = {
+    viewId: pilotViewId,
+    scene: worldAndScene.scene,
+    world: worldAndScene.world,
+    mainShip: worldAndScene.mainShip,
+    config,
+  };
+  const topSegmentParams: SegmentProviderParams = {
+    viewId: topViewId,
+    scene: worldAndScene.scene,
+    world: worldAndScene.world,
+    mainShip: worldAndScene.mainShip,
+    config,
+  };
+  const leftSegmentParams: SegmentProviderParams = {
+    viewId: leftViewId,
+    scene: worldAndScene.scene,
+    world: worldAndScene.world,
+    mainShip: worldAndScene.mainShip,
+    config,
+  };
+  const rightSegmentParams: SegmentProviderParams = {
+    viewId: rightViewId,
+    scene: worldAndScene.scene,
+    world: worldAndScene.world,
+    mainShip: worldAndScene.mainShip,
+    config,
+  };
+  const rearSegmentParams: SegmentProviderParams = {
+    viewId: rearViewId,
+    scene: worldAndScene.scene,
+    world: worldAndScene.world,
+    mainShip: worldAndScene.mainShip,
+    config,
+  };
   const tickInto: TickCallback = createTickHandler(
     gravityEngine,
     config.thrustLevel,
@@ -159,6 +198,11 @@ export function runLoop({
   };
 
   const renderCache = createRenderFrameCache();
+  const pilotWorldSegments: WorldSegment[] = [];
+  const topWorldSegments: WorldSegment[] = [];
+  const leftWorldSegments: WorldSegment[] = [];
+  const rightWorldSegments: WorldSegment[] = [];
+  const rearWorldSegments: WorldSegment[] = [];
 
   const pilotViewRenderParams: ViewRenderParams = {
     camera: worldAndScene.pilotCamera,
@@ -167,6 +211,7 @@ export function runLoop({
     renderCache,
     scene: worldAndScene.scene,
     surface: pilotSurface,
+    worldSegments: pilotWorldSegments,
   };
 
   const renderedPilotView: RenderedView = {
@@ -187,6 +232,7 @@ export function runLoop({
     renderCache,
     scene: worldAndScene.scene,
     surface: topSurface,
+    worldSegments: topWorldSegments,
   };
 
   const renderedTopView: RenderedView = {
@@ -207,6 +253,7 @@ export function runLoop({
     renderCache,
     scene: worldAndScene.scene,
     surface: leftSurface,
+    worldSegments: leftWorldSegments,
   };
 
   const renderedLeftView: RenderedView = {
@@ -227,6 +274,7 @@ export function runLoop({
     renderCache,
     scene: worldAndScene.scene,
     surface: rightSurface,
+    worldSegments: rightWorldSegments,
   };
 
   const renderedRightView: RenderedView = {
@@ -247,6 +295,7 @@ export function runLoop({
     renderCache,
     scene: worldAndScene.scene,
     surface: rearSurface,
+    worldSegments: rearWorldSegments,
   };
 
   const renderedRearView: RenderedView = {
@@ -334,10 +383,19 @@ export function runLoop({
       updateRenderFrameCache(renderCache, worldAndScene.scene);
     }
 
+    applySegmentPlugins(segmentPlugins, pilotWorldSegments, pilotSegmentParams);
     pilotViewRenderer.renderInto(renderedPilotView, pilotViewRenderParams);
+
+    applySegmentPlugins(segmentPlugins, topWorldSegments, topSegmentParams);
     topViewRenderer.renderInto(renderedTopView, topViewRenderParams);
+
+    applySegmentPlugins(segmentPlugins, leftWorldSegments, leftSegmentParams);
     leftViewRenderer.renderInto(renderedLeftView, leftViewRenderParams);
+
+    applySegmentPlugins(segmentPlugins, rightWorldSegments, rightSegmentParams);
     rightViewRenderer.renderInto(renderedRightView, rightViewRenderParams);
+
+    applySegmentPlugins(segmentPlugins, rearWorldSegments, rearSegmentParams);
     rearViewRenderer.renderInto(renderedRearView, rearViewRenderParams);
 
     fps = updateFps(dtMillis);
@@ -440,6 +498,16 @@ function collectControlPlugins(plugins: GamePlugin[]): ControlPlugin[] {
   return controlPlugins;
 }
 
+function collectSegmentPlugins(plugins: GamePlugin[]): SegmentPlugin[] {
+  const segmentPlugins: SegmentPlugin[] = [];
+  for (const plugin of plugins) {
+    if (plugin.segments) {
+      segmentPlugins.push(plugin.segments);
+    }
+  }
+  return segmentPlugins;
+}
+
 function applyLoopInitPlugins(
   plugins: LoopPlugin[],
   params: Parameters<NonNullable<LoopPlugin["initLoop"]>>[0],
@@ -537,5 +605,16 @@ function applyHudPlugins(
 ): void {
   for (const plugin of plugins) {
     plugin.updateHudParams?.(hudParams, context);
+  }
+}
+
+function applySegmentPlugins(
+  plugins: SegmentPlugin[],
+  segments: WorldSegment[],
+  params: SegmentProviderParams,
+): void {
+  segments.length = 0;
+  for (const plugin of plugins) {
+    plugin.appendSegments?.(segments, params);
   }
 }

@@ -29,6 +29,7 @@ export function bootstrapWith(
     "profiling",
     "timeScale",
     "trajectories",
+    "velocitySegments",
   ]);
   const container = document.querySelector(".canvas-container");
   if (!container) {

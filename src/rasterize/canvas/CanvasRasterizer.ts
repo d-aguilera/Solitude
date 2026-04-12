@@ -208,11 +208,10 @@ export class CanvasRasterizer implements Rasterizer {
   drawSegments(segments: RenderedSegment[], count: number): void {
     ctx = this.ctx;
 
-    ctx.lineWidth = 4;
-
     for (let i = 0; i < count; i++) {
-      const { cssColor, start, end } = segments[i];
+      const { cssColor, lineWidth, start, end } = segments[i];
       ctx.strokeStyle = cssColor;
+      ctx.lineWidth = lineWidth;
       ctx.beginPath();
       ctx.moveTo(start.x, start.y);
       ctx.lineTo(end.x, end.y);

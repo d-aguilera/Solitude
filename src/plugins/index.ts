@@ -4,6 +4,7 @@ import { createPausePlugin } from "./pause/index";
 import { createProfilingPlugin } from "./profiling/index";
 import { createTimeScalePlugin } from "./timeScale/index";
 import { createTrajectoriesPlugin } from "./trajectories/index";
+import { createVelocitySegmentsPlugin } from "./velocitySegments/index";
 
 export type PluginFactory = () => GamePlugin;
 
@@ -13,6 +14,7 @@ export const availablePlugins: Record<string, PluginFactory> = {
   profiling: createProfilingPlugin,
   timeScale: createTimeScalePlugin,
   trajectories: createTrajectoriesPlugin,
+  velocitySegments: createVelocitySegmentsPlugin,
 };
 
 export function loadPlugins(ids: string[]): GamePlugin[] {

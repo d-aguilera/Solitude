@@ -1,4 +1,5 @@
 import type { HudRenderParams } from "../app/hudPorts";
+import type { WorldSegment } from "../app/pluginPorts";
 import type {
   DomainCameraPose,
   Mesh,
@@ -78,6 +79,7 @@ export interface RenderedSegment {
   start: ScreenPoint;
   end: ScreenPoint;
   cssColor: string;
+  lineWidth: number;
 }
 
 export interface RenderedView {
@@ -138,4 +140,5 @@ export interface ViewRenderParams {
   renderCache: RenderFrameCache;
   scene: Scene;
   surface: RenderSurface2D;
+  worldSegments: WorldSegment[];
 }

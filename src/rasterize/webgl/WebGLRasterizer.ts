@@ -178,7 +178,7 @@ export class WebGLRasterizer implements Rasterizer {
     return vao;
   }
 
-  // --- Line pipeline: polylines & velocity segments ---
+  // --- Line pipeline: polylines & segments ---
 
   private createLineProgram(): WebGLProgram {
     const vsSource = `#version 300 es
@@ -391,8 +391,8 @@ export class WebGLRasterizer implements Rasterizer {
     gl.useProgram(null);
   }
 
-  drawSegments(segments: RenderedSegment[]): void {
-    if (segments.length === 0) return;
+  drawSegments(segments: RenderedSegment[], count: number): void {
+    if (count === 0) return;
 
     const gl = this.gl;
     const surface = gl.canvas;
@@ -407,13 +407,10 @@ export class WebGLRasterizer implements Rasterizer {
     gl.bindVertexArray(this.lineVAO);
     gl.bindBuffer(gl.ARRAY_BUFFER, this.lineVBO);
 
-    // Each segment is 2 vertices.
-    const n = segments.length * 2;
-    const data = new Float32Array(n * 6);
-    let offset = 0;
+    const data = new Float32Array(2 * 6);
 
-    for (const seg of segments) {
-      const { start, end, cssColor } = seg;
+    for (let i = 0; i < count; i++) {
+      const { start, end, cssColor, lineWidth } = segments[i];
 
       let rr = 1,
         gg = 1,
@@ -426,27 +423,28 @@ export class WebGLRasterizer implements Rasterizer {
       }
 
       // start vertex
-      data[offset++] = start.x;
-      data[offset++] = start.y;
-      data[offset++] = start.depth;
-      data[offset++] = rr;
-      data[offset++] = gg;
-      data[offset++] = bb;
+      data[0] = start.x;
+      data[1] = start.y;
+      data[2] = start.depth;
+      data[3] = rr;
+      data[4] = gg;
+      data[5] = bb;
 
       // end vertex
-      data[offset++] = end.x;
-      data[offset++] = end.y;
-      data[offset++] = end.depth;
-      data[offset++] = rr;
-      data[offset++] = gg;
-      data[offset++] = bb;
+      data[6] = end.x;
+      data[7] = end.y;
+      data[8] = end.depth;
+      data[9] = rr;
+      data[10] = gg;
+      data[11] = bb;
+
+      gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+
+      // WebGL2 core line width is effectively 1 on most platforms;
+      // setting gl.lineWidth may not have visible effect, but we call it anyway.
+      gl.lineWidth(lineWidth);
+      gl.drawArrays(gl.LINES, 0, 2);
     }
-
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
-
-    gl.lineWidth(4); // matches CanvasRasterizer
-
-    gl.drawArrays(gl.LINES, 0, n);
 
     gl.bindVertexArray(null);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);

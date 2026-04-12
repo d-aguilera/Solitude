@@ -17,7 +17,7 @@ import type {
   ViewRenderParams,
 } from "./renderPorts";
 import { drawMode } from "./renderPorts";
-import { renderVelocitySegmentsInto } from "./renderVelocitySegments";
+import { renderWorldSegmentsInto } from "./renderSegments";
 
 export class DefaultViewRenderer implements ViewRenderer {
   private readonly labelLayoutCache: LabelLayoutCache;
@@ -79,9 +79,9 @@ export class DefaultViewRenderer implements ViewRenderer {
         obj.kind === "polyline" && (objectsFilter ? objectsFilter(obj) : true),
     );
 
-    into.segmentCount = renderVelocitySegmentsInto(
+    into.segmentCount = renderWorldSegmentsInto(
       into.segments,
-      mainShip,
+      params.worldSegments,
       projectSegmentInto,
     );
 
