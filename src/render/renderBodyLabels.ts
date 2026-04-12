@@ -31,6 +31,7 @@ const parentNdcScratch: NdcPoint = ndc.zero();
 export interface LabelLayoutCache {
   font: string;
   charWidth: number;
+  labelMode: BodyLabelContent;
   lastLayoutTimeMs: number;
   lastScreenWidth: number;
   lastScreenHeight: number;
@@ -60,6 +61,8 @@ interface LabelGridCell {
 const LABEL_LAYOUT_INTERVAL_MS = 150;
 const LABEL_GRID_CELL_SIZE = 128;
 
+export type BodyLabelContent = "full" | "nameOnly";
+
 export function createLabelLayoutCache(
   measureText: (text: string, font: string) => TextMetrics,
   font: string = LABEL_FONT,
@@ -69,6 +72,7 @@ export function createLabelLayoutCache(
   return {
     font,
     charWidth,
+    labelMode: "full",
     lastLayoutTimeMs: -Infinity,
     lastScreenWidth: -1,
     lastScreenHeight: -1,
@@ -137,8 +141,13 @@ export function renderBodyLabelsInto(
   layoutCache: LabelLayoutCache,
   nowMs: number,
   objectsFilter?: (obj: SceneObject) => boolean,
+  labelMode: BodyLabelContent = "full",
 ): number {
   return alloc.withName(renderBodyLabelsInto.name, () => {
+    if (layoutCache.labelMode !== labelMode) {
+      layoutCache.labelMode = labelMode;
+      layoutCache.needsRelayout = true;
+    }
     const bodyCount = countLabelBodies(objects, objectsFilter);
     if (
       shouldRelayout(layoutCache, nowMs, screenWidth, screenHeight, bodyCount)
@@ -151,6 +160,7 @@ export function renderBodyLabelsInto(
         screenHeight,
         projectInto,
         objectsFilter,
+        labelMode,
       );
       layoutCache.lastLayoutTimeMs = nowMs;
       layoutCache.lastScreenWidth = screenWidth;
@@ -167,6 +177,7 @@ export function renderBodyLabelsInto(
       screenHeight,
       projectInto,
       objectsFilter,
+      labelMode,
     );
   });
 }
@@ -207,6 +218,7 @@ function layoutLabels(
   screenHeight: number,
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
   objectsFilter?: (obj: SceneObject) => boolean,
+  labelMode: BodyLabelContent = "full",
 ): void {
   cache.objectById.clear();
   for (let i = 0; i < objects.length; i++) {
@@ -266,13 +278,17 @@ function layoutLabels(
       continue;
     }
 
-    lines[0] = displayNameForBodyId(body.id);
-    lines[1] = "d=".concat(formatDistance(distance));
-    lines[2] = "v=".concat(formatSpeed(vec3.length(body.velocity)));
+    const lineCount = fillLabelLines(
+      lines,
+      labelMode,
+      body.id,
+      distance,
+      vec3.length(body.velocity),
+    );
 
-    const maxTextWidth = getTextWidth(lines, cache.charWidth);
+    const maxTextWidth = getTextWidth(lines, lineCount, cache.charWidth);
     boxSize.width = maxTextWidth + padding.width * 2;
-    boxSize.height = lines.length * lineHeight + padding.height * 2;
+    boxSize.height = lineCount * lineHeight + padding.height * 2;
 
     const directionIndex = pickDirectionIndexForLabel(
       cache.grid,
@@ -306,6 +322,7 @@ function renderLabelsFromCache(
   screenHeight: number,
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
   objectsFilter?: (obj: SceneObject) => boolean,
+  labelMode: BodyLabelContent = "full",
 ): number {
   let count = 0;
   const sortedBodies = cache.sortedBodies;
@@ -344,13 +361,17 @@ function renderLabelsFromCache(
     vec3.subInto(diffScratch, body.position, referencePosition);
     const distance = vec3.length(diffScratch);
 
-    lines[0] = displayNameForBodyId(body.id);
-    lines[1] = "d=".concat(formatDistance(distance));
-    lines[2] = "v=".concat(formatSpeed(vec3.length(body.velocity)));
+    const lineCount = fillLabelLines(
+      lines,
+      labelMode,
+      body.id,
+      distance,
+      vec3.length(body.velocity),
+    );
 
-    const maxTextWidth = getTextWidth(lines, cache.charWidth);
+    const maxTextWidth = getTextWidth(lines, lineCount, cache.charWidth);
     boxSize.width = maxTextWidth + padding.width * 2;
-    boxSize.height = lines.length * lineHeight + padding.height * 2;
+    boxSize.height = lineCount * lineHeight + padding.height * 2;
 
     let entry = cache.entries.get(body.id);
     if (!entry) {
@@ -387,9 +408,10 @@ function renderLabelsFromCache(
       current.edgePoint.x = edgePoint.x;
       current.edgePoint.y = edgePoint.y;
       current.lineHeight = lineHeight;
-      current.lines[0] = lines[0];
-      current.lines[1] = lines[1];
-      current.lines[2] = lines[2];
+      current.lines.length = lineCount;
+      for (let i = 0; i < lineCount; i++) {
+        current.lines[i] = lines[i];
+      }
       current.name = lines[0];
       current.padding.height = padding.height;
       current.padding.width = padding.width;
@@ -398,11 +420,15 @@ function renderLabelsFromCache(
       current.size.width = boxSize.width;
       current.size.height = boxSize.height;
     } else {
+      const labelLines = new Array<string>(lineCount);
+      for (let i = 0; i < lineCount; i++) {
+        labelLines[i] = lines[i];
+      }
       current = into[count] = {
         anchor: { x: anchor.x, y: anchor.y },
         edgePoint: { x: edgePoint.x, y: edgePoint.y },
         lineHeight,
-        lines: [lines[0], lines[1], lines[2]],
+        lines: labelLines,
         name: lines[0],
         padding: { height: padding.height, width: padding.width },
         position: { x: position.x, y: position.y },
@@ -655,6 +681,22 @@ function displayNameForBodyId(id: BodyId): string {
   return raw.charAt(0).toUpperCase() + raw.slice(1);
 }
 
+function fillLabelLines(
+  into: string[],
+  labelMode: BodyLabelContent,
+  bodyId: BodyId,
+  distance: number,
+  speed: number,
+): number {
+  into[0] = displayNameForBodyId(bodyId);
+  if (labelMode === "nameOnly") {
+    return 1;
+  }
+  into[1] = "d=".concat(formatDistance(distance));
+  into[2] = "v=".concat(formatSpeed(speed));
+  return 3;
+}
+
 /**
  * Pick a direction index (0..7) in 45° steps such that the label's rectangle
  * neither overlaps existing label rectangles nor contains any visible
@@ -846,10 +888,10 @@ function getEdgeFromDirectionInto(
   }
 }
 
-function getTextWidth(lines: string[], charWidth: number) {
+function getTextWidth(lines: string[], lineCount: number, charWidth: number) {
   let maxTextWidth = 0;
-  for (const line of lines) {
-    const w = line.length * charWidth;
+  for (let i = 0; i < lineCount; i++) {
+    const w = lines[i].length * charWidth;
     if (w > maxTextWidth) maxTextWidth = w;
   }
   return maxTextWidth;

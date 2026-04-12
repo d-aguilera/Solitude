@@ -98,21 +98,25 @@ export function bootstrapWith(
   const topRasterizer: Rasterizer = makeRasterizer(topCanvas);
   const topViewRenderer: ViewRenderer = new DefaultViewRenderer(
     (text: string, font: string) => topRasterizer.measureText(text, font),
+    "nameOnly",
   );
 
   const leftRasterizer: Rasterizer = makeRasterizer(leftCanvas);
   const leftViewRenderer: ViewRenderer = new DefaultViewRenderer(
     (text: string, font: string) => leftRasterizer.measureText(text, font),
+    "nameOnly",
   );
 
   const rightRasterizer: Rasterizer = makeRasterizer(rightCanvas);
   const rightViewRenderer: ViewRenderer = new DefaultViewRenderer(
     (text: string, font: string) => rightRasterizer.measureText(text, font),
+    "nameOnly",
   );
 
   const rearRasterizer: Rasterizer = makeRasterizer(rearCanvas);
   const rearViewRenderer: ViewRenderer = new DefaultViewRenderer(
     (text: string, font: string) => rearRasterizer.measureText(text, font),
+    "nameOnly",
   );
 
   const hudRasterizer = pilotRasterizer;
