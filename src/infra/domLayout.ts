@@ -4,11 +4,28 @@ export function initLayout(
   container: Element,
   pilotCanvas: HTMLCanvasElement,
   topCanvas: HTMLCanvasElement,
+  leftCanvas: HTMLCanvasElement,
+  rightCanvas: HTMLCanvasElement,
+  rearCanvas: HTMLCanvasElement,
 ) {
-  updatePixelRatio(container, pilotCanvas, topCanvas);
+  updatePixelRatio(
+    container,
+    pilotCanvas,
+    topCanvas,
+    leftCanvas,
+    rightCanvas,
+    rearCanvas,
+  );
 
   window.addEventListener("resize", () => {
-    resizeCanvases(container, pilotCanvas, topCanvas);
+    resizeCanvases(
+      container,
+      pilotCanvas,
+      topCanvas,
+      leftCanvas,
+      rightCanvas,
+      rearCanvas,
+    );
   });
 }
 
@@ -34,6 +51,9 @@ function resizeCanvases(
   container: Element,
   pilotCanvas: HTMLCanvasElement,
   topCanvas: HTMLCanvasElement,
+  leftCanvas: HTMLCanvasElement,
+  rightCanvas: HTMLCanvasElement,
+  rearCanvas: HTMLCanvasElement,
 ): void {
   if (!container) return;
 
@@ -51,31 +71,66 @@ function resizeCanvases(
 
   resizeCanvasToCssBox(pilotCanvas, pilotWidth, pilotHeight);
 
-  // Top view: 20% of container width, fixed aspect ratio, overlay bottom-right
-  const topWidth = containerWidth * 0.2;
-  const topHeight = topWidth / aspectRatio;
+  // PiP views: 20% of container width, fixed aspect ratio.
+  const pipWidth = containerWidth * 0.2;
+  const pipHeight = pipWidth / aspectRatio;
+  const pipMargin = 16;
+  // Reserve vertical space so top PiP views sit below the HUD block.
+  const hudTopInset = 130;
 
-  // Position via style so it stays in bottom-right
-  topCanvas.style.right = "16px";
-  topCanvas.style.bottom = "16px";
+  // bottom-right (top view)
+  topCanvas.style.right = `${pipMargin}px`;
+  topCanvas.style.bottom = `${pipMargin}px`;
+  resizeCanvasToCssBox(topCanvas, pipWidth, pipHeight);
 
-  resizeCanvasToCssBox(topCanvas, topWidth, topHeight);
+  // bottom-left (rear view)
+  rearCanvas.style.left = `${pipMargin}px`;
+  rearCanvas.style.bottom = `${pipMargin}px`;
+  resizeCanvasToCssBox(rearCanvas, pipWidth, pipHeight);
+
+  // top-left (left view), leave room for HUD
+  leftCanvas.style.left = `${pipMargin}px`;
+  leftCanvas.style.top = `${hudTopInset + pipMargin}px`;
+  resizeCanvasToCssBox(leftCanvas, pipWidth, pipHeight);
+
+  // top-right (right view), leave room for HUD
+  rightCanvas.style.right = `${pipMargin}px`;
+  rightCanvas.style.top = `${hudTopInset + pipMargin}px`;
+  resizeCanvasToCssBox(rightCanvas, pipWidth, pipHeight);
 }
 
 function updatePixelRatio(
   container: Element,
   pilotCanvas: HTMLCanvasElement,
   topCanvas: HTMLCanvasElement,
+  leftCanvas: HTMLCanvasElement,
+  rightCanvas: HTMLCanvasElement,
+  rearCanvas: HTMLCanvasElement,
 ) {
   // Remove current DPR listener
   remove?.();
 
-  resizeCanvases(container, pilotCanvas, topCanvas);
+  resizeCanvases(
+    container,
+    pilotCanvas,
+    topCanvas,
+    leftCanvas,
+    rightCanvas,
+    rearCanvas,
+  );
 
   // Add new DPR listener
   const mqString = `(resolution: ${window.devicePixelRatio}dppx)`;
   const media = matchMedia(mqString);
-  const listener = () => updatePixelRatio(container, pilotCanvas, topCanvas);
+  const listener = () =>
+    updatePixelRatio(
+      container,
+      pilotCanvas,
+      topCanvas,
+      leftCanvas,
+      rightCanvas,
+      rearCanvas,
+    );
   media.addEventListener("change", listener);
   remove = () => {
     media.removeEventListener("change", listener);

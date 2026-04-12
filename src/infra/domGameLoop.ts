@@ -43,11 +43,20 @@ export function runLoop({
   pilotRasterizer,
   topViewRenderer,
   topRasterizer,
+  leftViewRenderer,
+  leftRasterizer,
+  rightViewRenderer,
+  rightRasterizer,
+  rearViewRenderer,
+  rearRasterizer,
   hudRenderer,
   hudRasterizer,
   gravityEngine,
   pilotSurface,
   topSurface,
+  leftSurface,
+  rightSurface,
+  rearSurface,
   controlInput,
   plugins,
 }: RunLoopParams): void {
@@ -68,6 +77,9 @@ export function runLoop({
   });
   const pilotViewId: SceneViewId = "pilot";
   const topViewId: SceneViewId = "top";
+  const leftViewId: SceneViewId = "left";
+  const rightViewId: SceneViewId = "right";
+  const rearViewId: SceneViewId = "rear";
   const pilotObjectsFilter = buildSceneObjectsFilter(scenePlugins, {
     viewId: pilotViewId,
     scene,
@@ -77,6 +89,27 @@ export function runLoop({
   });
   const topObjectsFilter = buildSceneObjectsFilter(scenePlugins, {
     viewId: topViewId,
+    scene,
+    world: worldSetup.world,
+    mainShip: worldSetup.mainShip,
+    config,
+  });
+  const leftObjectsFilter = buildSceneObjectsFilter(scenePlugins, {
+    viewId: leftViewId,
+    scene,
+    world: worldSetup.world,
+    mainShip: worldSetup.mainShip,
+    config,
+  });
+  const rightObjectsFilter = buildSceneObjectsFilter(scenePlugins, {
+    viewId: rightViewId,
+    scene,
+    world: worldSetup.world,
+    mainShip: worldSetup.mainShip,
+    config,
+  });
+  const rearObjectsFilter = buildSceneObjectsFilter(scenePlugins, {
+    viewId: rearViewId,
     scene,
     world: worldSetup.world,
     mainShip: worldSetup.mainShip,
@@ -97,11 +130,17 @@ export function runLoop({
     pilotLookState: config.render.pilotLookState,
     pilotCameraOffset: config.render.pilotCameraOffset,
     topCameraOffset: config.render.topCameraOffset,
+    leftCameraOffset: config.render.leftCameraOffset,
+    rightCameraOffset: config.render.rightCameraOffset,
+    rearCameraOffset: config.render.rearCameraOffset,
   };
 
   const sceneState: SceneState = {
     pilotCamera: worldAndScene.pilotCamera,
     topCamera: worldAndScene.topCamera,
+    leftCamera: worldAndScene.leftCamera,
+    rightCamera: worldAndScene.rightCamera,
+    rearCamera: worldAndScene.rearCamera,
   };
 
   const tickParams: TickParams = {
@@ -143,6 +182,63 @@ export function runLoop({
   };
 
   const renderedTopView: RenderedView = {
+    bodyLabels: [],
+    bodyLabelCount: 0,
+    faces: [],
+    faceCount: 0,
+    polylines: [],
+    polylineCount: 0,
+    segments: [],
+    segmentCount: 0,
+  };
+
+  const leftViewRenderParams: ViewRenderParams = {
+    camera: worldAndScene.leftCamera,
+    mainShip: worldAndScene.mainShip,
+    scene: worldAndScene.scene,
+    surface: leftSurface,
+    objectsFilter: leftObjectsFilter,
+  };
+
+  const renderedLeftView: RenderedView = {
+    bodyLabels: [],
+    bodyLabelCount: 0,
+    faces: [],
+    faceCount: 0,
+    polylines: [],
+    polylineCount: 0,
+    segments: [],
+    segmentCount: 0,
+  };
+
+  const rightViewRenderParams: ViewRenderParams = {
+    camera: worldAndScene.rightCamera,
+    mainShip: worldAndScene.mainShip,
+    scene: worldAndScene.scene,
+    surface: rightSurface,
+    objectsFilter: rightObjectsFilter,
+  };
+
+  const renderedRightView: RenderedView = {
+    bodyLabels: [],
+    bodyLabelCount: 0,
+    faces: [],
+    faceCount: 0,
+    polylines: [],
+    polylineCount: 0,
+    segments: [],
+    segmentCount: 0,
+  };
+
+  const rearViewRenderParams: ViewRenderParams = {
+    camera: worldAndScene.rearCamera,
+    mainShip: worldAndScene.mainShip,
+    scene: worldAndScene.scene,
+    surface: rearSurface,
+    objectsFilter: rearObjectsFilter,
+  };
+
+  const renderedRearView: RenderedView = {
     bodyLabels: [],
     bodyLabelCount: 0,
     faces: [],
@@ -225,6 +321,9 @@ export function runLoop({
 
     pilotViewRenderer.renderInto(renderedPilotView, pilotViewRenderParams);
     topViewRenderer.renderInto(renderedTopView, topViewRenderParams);
+    leftViewRenderer.renderInto(renderedLeftView, leftViewRenderParams);
+    rightViewRenderer.renderInto(renderedRightView, rightViewRenderParams);
+    rearViewRenderer.renderInto(renderedRearView, rearViewRenderParams);
 
     fps = updateFps(dtMillis);
 
@@ -256,6 +355,9 @@ export function runLoop({
 
     rasterizeView(renderedPilotView, pilotRasterizer);
     rasterizeView(renderedTopView, topRasterizer);
+    rasterizeView(renderedLeftView, leftRasterizer);
+    rasterizeView(renderedRightView, rightRasterizer);
+    rasterizeView(renderedRearView, rearRasterizer);
     rasterizeHud(renderedHud, hudRasterizer);
     applyLoopPostPlugins(loopPlugins, loopUpdateParams);
 

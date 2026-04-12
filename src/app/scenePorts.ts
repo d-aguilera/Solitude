@@ -80,6 +80,9 @@ export interface SceneControlState {
   pilotLookState: PilotLookState;
   pilotCameraOffset: Vec3;
   topCameraOffset: Vec3;
+  leftCameraOffset: Vec3;
+  rightCameraOffset: Vec3;
+  rearCameraOffset: Vec3;
 }
 
 /**
@@ -96,6 +99,9 @@ export type SceneObjectKind = "ship" | "planet" | "polyline" | "star";
 export interface SceneState {
   pilotCamera: DomainCameraPose;
   topCamera: DomainCameraPose;
+  leftCamera: DomainCameraPose;
+  rightCamera: DomainCameraPose;
+  rearCamera: DomainCameraPose;
 }
 
 export interface SolidSceneObject extends BaseSceneObject {

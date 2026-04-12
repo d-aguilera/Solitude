@@ -49,10 +49,41 @@ export function bootstrapWith(
     throw new Error("Required 'topViewCanvas' not found in document");
   }
 
-  initLayout(container, pilotCanvas, topCanvas);
+  const leftCanvas = document.getElementById(
+    "leftViewCanvas",
+  ) as HTMLCanvasElement | null;
+  if (!leftCanvas) {
+    throw new Error("Required 'leftViewCanvas' not found in document");
+  }
+
+  const rightCanvas = document.getElementById(
+    "rightViewCanvas",
+  ) as HTMLCanvasElement | null;
+  if (!rightCanvas) {
+    throw new Error("Required 'rightViewCanvas' not found in document");
+  }
+
+  const rearCanvas = document.getElementById(
+    "rearViewCanvas",
+  ) as HTMLCanvasElement | null;
+  if (!rearCanvas) {
+    throw new Error("Required 'rearViewCanvas' not found in document");
+  }
+
+  initLayout(
+    container,
+    pilotCanvas,
+    topCanvas,
+    leftCanvas,
+    rightCanvas,
+    rearCanvas,
+  );
 
   const pilotSurface: RenderSurface2D = makeSurface(pilotCanvas);
   const topSurface: RenderSurface2D = makeSurface(topCanvas);
+  const leftSurface: RenderSurface2D = makeSurface(leftCanvas);
+  const rightSurface: RenderSurface2D = makeSurface(rightCanvas);
+  const rearSurface: RenderSurface2D = makeSurface(rearCanvas);
 
   const gravityEngine: GravityEngine = new NewtonianGravityEngine(
     parameters.newtonG,
@@ -69,6 +100,21 @@ export function bootstrapWith(
     (text: string, font: string) => topRasterizer.measureText(text, font),
   );
 
+  const leftRasterizer: Rasterizer = makeRasterizer(leftCanvas);
+  const leftViewRenderer: ViewRenderer = new DefaultViewRenderer(
+    (text: string, font: string) => leftRasterizer.measureText(text, font),
+  );
+
+  const rightRasterizer: Rasterizer = makeRasterizer(rightCanvas);
+  const rightViewRenderer: ViewRenderer = new DefaultViewRenderer(
+    (text: string, font: string) => rightRasterizer.measureText(text, font),
+  );
+
+  const rearRasterizer: Rasterizer = makeRasterizer(rearCanvas);
+  const rearViewRenderer: ViewRenderer = new DefaultViewRenderer(
+    (text: string, font: string) => rearRasterizer.measureText(text, font),
+  );
+
   const hudRasterizer = pilotRasterizer;
   const hudRenderer: HudRenderer = new DefaultHudRenderer();
 
@@ -80,11 +126,20 @@ export function bootstrapWith(
     pilotRasterizer,
     topViewRenderer,
     topRasterizer,
+    leftViewRenderer,
+    leftRasterizer,
+    rightViewRenderer,
+    rightRasterizer,
+    rearViewRenderer,
+    rearRasterizer,
     hudRenderer,
     hudRasterizer,
     gravityEngine,
     pilotSurface,
     topSurface,
+    leftSurface,
+    rightSurface,
+    rearSurface,
     controlInput,
     plugins,
   });

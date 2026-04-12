@@ -34,5 +34,8 @@ export interface WorldAndScene {
   pilotCamera: DomainCameraPose;
   scene: Scene;
   topCamera: DomainCameraPose;
+  leftCamera: DomainCameraPose;
+  rightCamera: DomainCameraPose;
+  rearCamera: DomainCameraPose;
   world: World;
 }

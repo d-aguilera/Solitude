@@ -83,7 +83,7 @@ export interface SceneUpdateParams {
 
 export type SceneObjectFilter = (obj: SceneObject) => boolean;
 
-export type SceneViewId = "pilot" | "top";
+export type SceneViewId = "pilot" | "top" | "left" | "right" | "rear";
 
 export interface SceneViewFilterParams {
   viewId: SceneViewId;

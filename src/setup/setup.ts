@@ -14,6 +14,9 @@ export interface WorldSetup {
   mainShip: ShipBody;
   pilotCamera: DomainCameraPose;
   topCamera: DomainCameraPose;
+  leftCamera: DomainCameraPose;
+  rightCamera: DomainCameraPose;
+  rearCamera: DomainCameraPose;
   world: World;
 }
 
@@ -43,12 +46,18 @@ export function createWorld({
   const mainShip = getShipById(world, mainShipId);
   const topCamera = { position: vec3.zero(), frame: localFrame.zero() };
   const pilotCamera = { position: vec3.zero(), frame: localFrame.zero() };
+  const leftCamera = { position: vec3.zero(), frame: localFrame.zero() };
+  const rightCamera = { position: vec3.zero(), frame: localFrame.zero() };
+  const rearCamera = { position: vec3.zero(), frame: localFrame.zero() };
 
   return {
     enemyShip,
     mainShip,
     pilotCamera,
     topCamera,
+    leftCamera,
+    rightCamera,
+    rearCamera,
     world,
   };
 }

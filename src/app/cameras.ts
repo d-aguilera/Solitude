@@ -17,6 +17,9 @@ export function updateCameras(
   mainShip: ShipBody,
   pilotCamera: DomainCameraPose,
   topCamera: DomainCameraPose,
+  leftCamera: DomainCameraPose,
+  rightCamera: DomainCameraPose,
+  rearCamera: DomainCameraPose,
   sceneControlState: SceneControlState,
 ): void {
   setCameraRelativeToShip(
@@ -42,6 +45,45 @@ export function updateCameras(
       vec3.copyInto(frame.right, right);
       vec3.scaleInto(frame.forward, -1, up); // forward = -up
       vec3.copyInto(frame.up, forward); // up = forward
+    },
+  );
+
+  setCameraRelativeToShip(
+    leftCamera,
+    mainShip,
+    sceneControlState.leftCameraOffset,
+    (frame) => {
+      const { right, forward, up } = mainShip.frame;
+      vec3.copyInto(frame.up, up);
+      vec3.copyInto(frame.forward, right);
+      vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -right
+      vec3.copyInto(frame.right, forward);
+    },
+  );
+
+  setCameraRelativeToShip(
+    rightCamera,
+    mainShip,
+    sceneControlState.rightCameraOffset,
+    (frame) => {
+      const { right, forward, up } = mainShip.frame;
+      vec3.copyInto(frame.up, up);
+      vec3.copyInto(frame.forward, right); // forward = right
+      vec3.copyInto(frame.right, forward);
+      vec3.scaleInto(frame.right, -1, frame.right); // right = -forward
+    },
+  );
+
+  setCameraRelativeToShip(
+    rearCamera,
+    mainShip,
+    sceneControlState.rearCameraOffset,
+    (frame) => {
+      const { right, forward, up } = mainShip.frame;
+      vec3.copyInto(frame.up, up);
+      vec3.copyInto(frame.right, right);
+      vec3.copyInto(frame.forward, forward);
+      vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -forward
     },
   );
 }
