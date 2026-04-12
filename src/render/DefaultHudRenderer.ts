@@ -9,6 +9,7 @@ export class DefaultHudRenderer implements HudRenderer {
       currentRcsLevel,
       currentThrustLevel,
       hudCells,
+      fps,
       orbitReadout,
       simTimeMillis,
       speedMps,
@@ -109,7 +110,7 @@ export class DefaultHudRenderer implements HudRenderer {
       hudRow4[1] = "";
       hudRow4[2] = "";
       hudRow4[3] = "";
-      hudRow4[4] = "";
+      hudRow4[4] = "FPS: ".concat(fps.toFixed(1));
     }
 
     if (hudCells.length) {
