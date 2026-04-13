@@ -12,9 +12,11 @@ import { isBodyAtOrBeyondOnePixelThreshold } from "./bodyLod";
 import { type NdcPoint, ndc } from "./ndc";
 import { ProjectionService } from "./ProjectionService";
 import type { RenderFrameCache } from "./renderFrameCache";
-import { getCachedWorldFaceNormals } from "./renderFrameCache";
+import {
+  getCachedWorldFaceNormals,
+  getCachedWorldPoints,
+} from "./renderFrameCache";
 import type { RenderedFace } from "./renderPorts";
-import { getCachedWorldPoints } from "./renderFrameCache";
 import { type ScreenPoint, scrn } from "./scrn";
 import { sortRangeInPlace } from "./sortRange";
 
