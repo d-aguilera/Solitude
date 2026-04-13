@@ -10,8 +10,12 @@ export function sortRangeInPlace<T>(
   if (count <= 1) return;
 
   const hi = count - 1;
-  const stackLo: number[] = [0];
-  const stackHi: number[] = [hi];
+  const stackLo = stackLoScratch;
+  const stackHi = stackHiScratch;
+  stackLo.length = 0;
+  stackHi.length = 0;
+  stackLo.push(0);
+  stackHi.push(hi);
   const insertionThreshold = 16;
 
   while (stackLo.length > 0) {
@@ -55,3 +59,7 @@ export function sortRangeInPlace<T>(
     array[j + 1] = item;
   }
 }
+
+// Shared stacks to avoid per-call allocations (not reentrant).
+const stackLoScratch: number[] = [];
+const stackHiScratch: number[] = [];

@@ -14,7 +14,7 @@ import { ProjectionService } from "./ProjectionService";
 import type { RenderFrameCache } from "./renderFrameCache";
 import { getCachedWorldFaceNormals } from "./renderFrameCache";
 import type { RenderedFace } from "./renderPorts";
-import { toRenderable } from "./renderPrep";
+import { getCachedWorldPoints } from "./renderFrameCache";
 import { type ScreenPoint, scrn } from "./scrn";
 import { sortRangeInPlace } from "./sortRange";
 
@@ -119,7 +119,11 @@ function buildFaces(
       )
         continue;
 
-      const { mesh, worldPoints, baseColor } = toRenderable(obj, renderCache);
+      const mesh = obj.mesh;
+      const baseColor = obj.color;
+      const worldPoints = obj.applyTransform
+        ? getCachedWorldPoints(renderCache, obj)
+        : mesh.points;
       const cameraPoints =
         projectionService.worldPointsToCameraPointsNoClip(worldPoints);
       const { faces } = mesh;
