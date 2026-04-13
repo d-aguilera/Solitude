@@ -32,8 +32,13 @@ export function renderFacesInto(
   renderCache: RenderFrameCache,
   objectsFilter?: (obj: SceneObject) => boolean,
   sortFaces: boolean = true,
+  projectionService?: ProjectionService,
 ): number {
   const { objects, lights } = scene;
+
+  const projection =
+    projectionService ??
+    new ProjectionService(camera, screenWidth, screenHeight);
 
   const faceList = buildFaces(
     objects,
@@ -42,6 +47,7 @@ export function renderFacesInto(
     screenHeight,
     lights,
     renderCache,
+    projection,
     objectsFilter,
   );
 
@@ -98,15 +104,10 @@ function buildFaces(
   canvasHeight: number,
   lights: PointLight[],
   renderCache: RenderFrameCache,
+  projectionService: ProjectionService,
   objectsFilter?: (obj: SceneObject) => boolean,
 ): number {
   return alloc.withName(buildFaces.name, () => {
-    const projectionService = new ProjectionService(
-      camera,
-      canvasWidth,
-      canvasHeight,
-    );
-
     // Reuse a grow-only scratch buffer instead of allocating a fresh array.
     let faceCount = 0;
 
@@ -163,34 +164,28 @@ function buildFaces(
         const c1 = cameraPoints[i1];
         const c2 = cameraPoints[i2];
 
-        const clipCount = projectionService.clipTriangleAgainstFrustumCamera(
-          clipped,
-          c0,
-          c1,
-          c2,
-        );
-        if (clipCount === 0) continue;
+        const code0 = projectionService.computeOutCode(c0);
+        const code1 = projectionService.computeOutCode(c1);
+        const code2 = projectionService.computeOutCode(c2);
+        if ((code0 & code1 & code2) !== 0) {
+          continue;
+        }
 
-        const isStar = obj.kind === "star";
+        const intensity =
+          obj.kind === "star"
+            ? 1
+            : toneMapIrradiance(computeIrradianceAtPoint(v0, n, lights));
 
-        for (let i = 0; i < clipCount; i++) {
-          const tri = clipped[i];
-          const A = tri[0];
-          const B = tri[1];
-          const C = tri[2];
-          projectionService.projectCameraPointToNdcInto(ndc0, A);
-          projectionService.projectCameraPointToNdcInto(ndc1, B);
-          projectionService.projectCameraPointToNdcInto(ndc2, C);
+        if ((code0 | code1 | code2) === 0) {
+          projectionService.projectCameraPointToNdcInto(ndc0, c0);
+          projectionService.projectCameraPointToNdcInto(ndc1, c1);
+          projectionService.projectCameraPointToNdcInto(ndc2, c2);
 
           ndc.toScreenInto(p0, ndc0, canvasWidth, canvasHeight);
           ndc.toScreenInto(p1, ndc1, canvasWidth, canvasHeight);
           ndc.toScreenInto(p2, ndc2, canvasWidth, canvasHeight);
 
           const avgDepth = (p0.depth + p1.depth + p2.depth) / 3;
-
-          const intensity = isStar
-            ? 1
-            : toneMapIrradiance(computeIrradianceAtPoint(v0, n, lights));
 
           let entry = faceEntryScratch[faceCount];
           if (!entry) {
@@ -215,6 +210,54 @@ function buildFaces(
           }
 
           faceCount++;
+        } else {
+          const clipCount = projectionService.clipTriangleAgainstFrustumCamera(
+            clipped,
+            c0,
+            c1,
+            c2,
+          );
+          if (clipCount === 0) continue;
+
+          for (let i = 0; i < clipCount; i++) {
+            const tri = clipped[i];
+            const A = tri[0];
+            const B = tri[1];
+            const C = tri[2];
+            projectionService.projectCameraPointToNdcInto(ndc0, A);
+            projectionService.projectCameraPointToNdcInto(ndc1, B);
+            projectionService.projectCameraPointToNdcInto(ndc2, C);
+
+            ndc.toScreenInto(p0, ndc0, canvasWidth, canvasHeight);
+            ndc.toScreenInto(p1, ndc1, canvasWidth, canvasHeight);
+            ndc.toScreenInto(p2, ndc2, canvasWidth, canvasHeight);
+
+            const avgDepth = (p0.depth + p1.depth + p2.depth) / 3;
+
+            let entry = faceEntryScratch[faceCount];
+            if (!entry) {
+              // Growing --> append a new element.
+              entry = {
+                baseColor,
+                depth: avgDepth,
+                intensity,
+                p0: scrn.copy(p0, scrn.zero()),
+                p1: scrn.copy(p1, scrn.zero()),
+                p2: scrn.copy(p2, scrn.zero()),
+              };
+              faceEntryScratch[faceCount] = entry;
+            } else {
+              // Reuse existing entry
+              entry.baseColor = baseColor;
+              entry.depth = avgDepth;
+              entry.intensity = intensity;
+              scrn.copy(p0, entry.p0);
+              scrn.copy(p1, entry.p1);
+              scrn.copy(p2, entry.p2);
+            }
+
+            faceCount++;
+          }
         }
       }
     }

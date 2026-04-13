@@ -101,13 +101,13 @@ const OUT_BOTTOM = 1 << 5;
  * The service is parameterized by a camera pose and canvas size.
  */
 export class ProjectionService {
-  private readonly focalLengthX: number;
-  private readonly tanHalfFovX: number;
-  private readonly tanHalfFovY: number;
+  private focalLengthX: number;
+  private tanHalfFovX: number;
+  private tanHalfFovY: number;
 
   // Precomputed camera transform helpers for segment/point projection.
   private readonly R_localFromWorld: Mat3;
-  private readonly cameraPosition: Vec3;
+  private cameraPosition: Vec3;
 
   constructor(
     pose: DomainCameraPose,
@@ -119,6 +119,21 @@ export class ProjectionService {
     this.tanHalfFovX = 1 / this.focalLengthX;
 
     this.R_localFromWorld = mat3.zero();
+    localFrame.intoMat3(this.R_localFromWorld, pose.frame);
+    mat3.transposeInto(this.R_localFromWorld, this.R_localFromWorld);
+
+    this.cameraPosition = pose.position;
+  }
+
+  reset(
+    pose: DomainCameraPose,
+    canvasWidth: number,
+    canvasHeight: number,
+  ): void {
+    this.focalLengthX = focalLengthY * (canvasHeight / canvasWidth);
+    this.tanHalfFovY = 1 / focalLengthY;
+    this.tanHalfFovX = 1 / this.focalLengthX;
+
     localFrame.intoMat3(this.R_localFromWorld, pose.frame);
     mat3.transposeInto(this.R_localFromWorld, this.R_localFromWorld);
 
@@ -533,7 +548,7 @@ export class ProjectionService {
   /**
    * Compute a 6-bit outcode for a camera-space point against the frustum.
    */
-  private computeOutCode(p: Vec3): number {
+  computeOutCode(p: Vec3): number {
     const y = p.y;
     let code = 0;
 

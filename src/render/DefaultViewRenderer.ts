@@ -22,6 +22,7 @@ import { renderWorldSegmentsInto } from "./renderSegments";
 export class DefaultViewRenderer implements ViewRenderer {
   private readonly labelLayoutCache: LabelLayoutCache;
   private readonly labelMode: BodyLabelContent;
+  private projectionService?: ProjectionService;
 
   constructor(
     private readonly measureText: (text: string, font: string) => TextMetrics,
@@ -47,11 +48,16 @@ export class DefaultViewRenderer implements ViewRenderer {
     } = params;
     const { width: screenWidth, height: screenHeight } = surface;
 
-    const projectionService = new ProjectionService(
-      camera,
-      screenWidth,
-      screenHeight,
-    );
+    if (this.projectionService) {
+      this.projectionService.reset(camera, screenWidth, screenHeight);
+    } else {
+      this.projectionService = new ProjectionService(
+        camera,
+        screenWidth,
+        screenHeight,
+      );
+    }
+    const projectionService = this.projectionService;
 
     const projectInto = (into: NdcPoint, wp: Vec3) =>
       projectionService.projectWorldPointToNdcInto(into, wp);
@@ -80,6 +86,7 @@ export class DefaultViewRenderer implements ViewRenderer {
             renderCache,
             objectsFilter,
             sortFaces,
+            projectionService,
           )
         : 0;
 
