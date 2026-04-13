@@ -126,7 +126,10 @@ function buildFaces(
       const worldFaceNormals = getCachedWorldFaceNormals(renderCache, obj);
 
       for (let fi = 0; fi < faces.length; fi++) {
-        const [i0, i1, i2] = faces[fi];
+        const face = faces[fi];
+        const i0 = face[0];
+        const i1 = face[1];
+        const i2 = face[2];
         const v0 = worldPoints[i0];
         const v1 = worldPoints[i1];
         const v2 = worldPoints[i2];
@@ -167,7 +170,10 @@ function buildFaces(
         const isStar = obj.kind === "star";
 
         for (let i = 0; i < clipCount; i++) {
-          const [A, B, C] = clipped[i];
+          const tri = clipped[i];
+          const A = tri[0];
+          const B = tri[1];
+          const C = tri[2];
           projectionService.projectCameraPointToNdcInto(ndc0, A);
           projectionService.projectCameraPointToNdcInto(ndc1, B);
           projectionService.projectCameraPointToNdcInto(ndc2, C);

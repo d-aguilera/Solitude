@@ -462,7 +462,10 @@ export class ProjectionService {
     const v0 = src[0];
 
     for (let t = 0; t < triangles; t++) {
-      const [T0, T1, T2] = into[t];
+      const tri = into[t];
+      const T0 = tri[0];
+      const T1 = tri[1];
+      const T2 = tri[2];
       vec3.copyInto(T0, v0);
       vec3.copyInto(T1, src[t + 1]);
       vec3.copyInto(T2, src[t + 2]);
