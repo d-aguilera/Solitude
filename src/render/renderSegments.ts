@@ -16,7 +16,8 @@ export function renderWorldSegmentsInto(
   projectSegmentInto: SegmentProjector,
 ): number {
   let count = 0;
-  for (const seg of segments) {
+  for (let i = 0; i < segments.length; i++) {
+    const seg = segments[i];
     if (!projectSegmentInto(projectedScratch, seg.start, seg.end)) continue;
     let entry = into[count];
     if (entry) {

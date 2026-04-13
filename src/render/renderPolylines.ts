@@ -39,7 +39,8 @@ export function renderPolylinesInto(
       curr: number,
       head: number;
 
-    for (obj of objects) {
+    for (let oi = 0; oi < objects.length; oi++) {
+      obj = objects[oi];
       if (obj.kind !== "polyline") continue;
       if (objectsFilter && !objectsFilter(obj)) continue;
       const { count, mesh, tail } = obj;

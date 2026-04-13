@@ -110,13 +110,14 @@ function buildFaces(
     // Reuse a grow-only scratch buffer instead of allocating a fresh array.
     let faceCount = 0;
 
-    objects.forEach((obj) => {
-      if (obj.wireframeOnly) return;
-      if (objectsFilter && !objectsFilter(obj)) return;
+    for (let oi = 0; oi < objects.length; oi++) {
+      const obj = objects[oi];
+      if (obj.wireframeOnly) continue;
+      if (objectsFilter && !objectsFilter(obj)) continue;
       if (
         isBodyAtOrBeyondOnePixelThreshold(obj, projectionService, canvasHeight)
       )
-        return;
+        continue;
 
       const { mesh, worldPoints, baseColor } = toRenderable(obj, renderCache);
       const cameraPoints =
@@ -206,7 +207,7 @@ function buildFaces(
           faceCount++;
         }
       }
-    });
+    }
 
     return faceCount;
   });
@@ -224,7 +225,8 @@ function computeIrradianceAtPoint(
 
   let E = 0;
 
-  for (const light of lights) {
+  for (let i = 0; i < lights.length; i++) {
+    const light = lights[i];
     // toLight = light.position - p
     vec3.subInto(toLightScratch, light.position, p);
     const r2 = vec3.dot(toLightScratch, toLightScratch);

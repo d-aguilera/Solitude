@@ -376,9 +376,16 @@ export class ProjectionService {
   ): number {
     if (inCount === 0) return 0;
 
-    let curr: Vec3;
-    let currInside: boolean;
-    const check = () => {
+    let outCount = 0;
+
+    // Start with the last vertex as the "previous" one to close the polygon.
+    let prev = inVerts[inCount - 1];
+    let prevInside = this.isInsidePlane(prev, plane);
+
+    for (let i = 0; i < inCount; i++) {
+      const curr = inVerts[i];
+      const currInside = this.isInsidePlane(curr, plane);
+
       if (currInside) {
         if (prevInside) {
           // in -> in : keep curr
@@ -391,33 +398,15 @@ export class ProjectionService {
           vec3.copyInto(outVerts[outCount], curr);
           outCount++;
         }
-      } else {
-        if (prevInside) {
-          // in -> out : emit intersection
-          this.intersectWithPlane(outVerts[outCount], prev, curr, plane);
-          outCount++;
-        } else {
-          // out -> out : emit nothing
-        }
+      } else if (prevInside) {
+        // in -> out : emit intersection
+        this.intersectWithPlane(outVerts[outCount], prev, curr, plane);
+        outCount++;
       }
-    };
 
-    let outCount = 0;
-
-    let third = inVerts[inCount - 1];
-    let thirdInside = this.isInsidePlane(third, plane);
-    let prev = third;
-    let prevInside = thirdInside;
-    for (let i = 0; i < inCount - 1; i++) {
-      curr = inVerts[i];
-      currInside = this.isInsidePlane(curr, plane);
-      check();
       prev = curr;
       prevInside = currInside;
     }
-    curr = third;
-    currInside = thirdInside;
-    check();
 
     return outCount;
   }
