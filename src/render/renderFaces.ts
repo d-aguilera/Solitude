@@ -31,6 +31,7 @@ export function renderFacesInto(
   screenHeight: number,
   renderCache: RenderFrameCache,
   objectsFilter?: (obj: SceneObject) => boolean,
+  sortFaces: boolean = true,
 ): number {
   const { objects, lights } = scene;
 
@@ -44,7 +45,9 @@ export function renderFacesInto(
     objectsFilter,
   );
 
-  sortRangeInPlace(faceEntryScratch, faceList, compareFaceDepthDesc);
+  if (sortFaces) {
+    sortRangeInPlace(faceEntryScratch, faceList, compareFaceDepthDesc);
+  }
 
   shadeFacesInto(into, faceList);
 

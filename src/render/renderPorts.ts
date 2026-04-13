@@ -137,6 +137,11 @@ export interface ViewRenderParams {
   camera: DomainCameraPose;
   mainShip: ShipBody;
   objectsFilter?: (obj: SceneObject) => boolean;
+  renderFaces?: boolean;
+  sortFaces?: boolean;
+  renderPolylines?: boolean;
+  renderSegments?: boolean;
+  renderBodyLabels?: boolean;
   renderCache: RenderFrameCache;
   scene: Scene;
   surface: RenderSurface2D;

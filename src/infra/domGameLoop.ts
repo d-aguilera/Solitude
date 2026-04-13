@@ -41,6 +41,68 @@ import { createWorld } from "../setup/setup";
 import { updateFps } from "./fps";
 import type { RunLoopParams } from "./infraPorts";
 
+type RenderDebug = {
+  views: {
+    pilot: boolean;
+    top: boolean;
+    left: boolean;
+    right: boolean;
+    rear: boolean;
+  };
+  passes: {
+    faces: boolean;
+    facesBuild: boolean;
+    facesRaster: boolean;
+    facesSort: boolean;
+    polylines: boolean;
+    segments: boolean;
+    bodyLabels: boolean;
+  };
+  hud: boolean;
+};
+
+const defaultRenderDebug: RenderDebug = {
+  views: {
+    pilot: true,
+    top: true,
+    left: true,
+    right: true,
+    rear: true,
+  },
+  passes: {
+    faces: true,
+    facesBuild: true,
+    facesRaster: true,
+    facesSort: true,
+    polylines: true,
+    segments: true,
+    bodyLabels: true,
+  },
+  hud: true,
+};
+
+function getRenderDebug(): RenderDebug {
+  const root = globalThis as typeof globalThis & {
+    __solitudeRenderDebug?: RenderDebug;
+  };
+  if (!root.__solitudeRenderDebug) {
+    root.__solitudeRenderDebug = {
+      views: { ...defaultRenderDebug.views },
+      passes: { ...defaultRenderDebug.passes },
+      hud: defaultRenderDebug.hud,
+    };
+    return root.__solitudeRenderDebug;
+  }
+
+  const existing = root.__solitudeRenderDebug;
+  existing.views = { ...defaultRenderDebug.views, ...existing.views };
+  existing.passes = { ...defaultRenderDebug.passes, ...existing.passes };
+  if (existing.hud === undefined) {
+    existing.hud = defaultRenderDebug.hud;
+  }
+  return existing;
+}
+
 /**
  * DOM-level game loop (depends on requestAnimationFrame).
  */
@@ -344,6 +406,7 @@ export function runLoop({
     nowMs: 0,
     state: loopState,
   };
+  const renderDebug = getRenderDebug();
 
   const loop = (nowMs: number) => {
     dtMillis = nowMs - lastTimeMs;
@@ -383,26 +446,105 @@ export function runLoop({
       updateRenderFrameCache(renderCache, worldAndScene.scene);
     }
 
-    applySegmentPlugins(segmentPlugins, pilotWorldSegments, pilotSegmentParams);
-    pilotViewRenderer.renderInto(renderedPilotView, pilotViewRenderParams);
+    const { passes, views } = renderDebug;
+    const facesBuild = passes.faces && passes.facesBuild;
+    const facesRaster = passes.faces && passes.facesRaster;
+    const facesSort = passes.faces && passes.facesSort;
+    const polylines = passes.polylines;
+    const segments = passes.segments;
+    const bodyLabels = passes.bodyLabels;
+    pilotViewRenderParams.renderFaces = facesBuild;
+    pilotViewRenderParams.sortFaces = facesSort;
+    pilotViewRenderParams.renderPolylines = polylines;
+    pilotViewRenderParams.renderSegments = segments;
+    pilotViewRenderParams.renderBodyLabels = bodyLabels;
+    topViewRenderParams.renderFaces = facesBuild;
+    topViewRenderParams.sortFaces = facesSort;
+    topViewRenderParams.renderPolylines = polylines;
+    topViewRenderParams.renderSegments = segments;
+    topViewRenderParams.renderBodyLabels = bodyLabels;
+    leftViewRenderParams.renderFaces = facesBuild;
+    leftViewRenderParams.sortFaces = facesSort;
+    leftViewRenderParams.renderPolylines = polylines;
+    leftViewRenderParams.renderSegments = segments;
+    leftViewRenderParams.renderBodyLabels = bodyLabels;
+    rightViewRenderParams.renderFaces = facesBuild;
+    rightViewRenderParams.sortFaces = facesSort;
+    rightViewRenderParams.renderPolylines = polylines;
+    rightViewRenderParams.renderSegments = segments;
+    rightViewRenderParams.renderBodyLabels = bodyLabels;
+    rearViewRenderParams.renderFaces = facesBuild;
+    rearViewRenderParams.sortFaces = facesSort;
+    rearViewRenderParams.renderPolylines = polylines;
+    rearViewRenderParams.renderSegments = segments;
+    rearViewRenderParams.renderBodyLabels = bodyLabels;
 
-    applySegmentPlugins(segmentPlugins, topWorldSegments, topSegmentParams);
-    topViewRenderer.renderInto(renderedTopView, topViewRenderParams);
+    if (views.pilot) {
+      if (segments) {
+        applySegmentPlugins(
+          segmentPlugins,
+          pilotWorldSegments,
+          pilotSegmentParams,
+        );
+      } else {
+        pilotWorldSegments.length = 0;
+      }
+      pilotViewRenderer.renderInto(renderedPilotView, pilotViewRenderParams);
+    }
 
-    applySegmentPlugins(segmentPlugins, leftWorldSegments, leftSegmentParams);
-    leftViewRenderer.renderInto(renderedLeftView, leftViewRenderParams);
+    if (views.top) {
+      if (segments) {
+        applySegmentPlugins(segmentPlugins, topWorldSegments, topSegmentParams);
+      } else {
+        topWorldSegments.length = 0;
+      }
+      topViewRenderer.renderInto(renderedTopView, topViewRenderParams);
+    }
 
-    applySegmentPlugins(segmentPlugins, rightWorldSegments, rightSegmentParams);
-    rightViewRenderer.renderInto(renderedRightView, rightViewRenderParams);
+    if (views.left) {
+      if (segments) {
+        applySegmentPlugins(
+          segmentPlugins,
+          leftWorldSegments,
+          leftSegmentParams,
+        );
+      } else {
+        leftWorldSegments.length = 0;
+      }
+      leftViewRenderer.renderInto(renderedLeftView, leftViewRenderParams);
+    }
 
-    applySegmentPlugins(segmentPlugins, rearWorldSegments, rearSegmentParams);
-    rearViewRenderer.renderInto(renderedRearView, rearViewRenderParams);
+    if (views.right) {
+      if (segments) {
+        applySegmentPlugins(
+          segmentPlugins,
+          rightWorldSegments,
+          rightSegmentParams,
+        );
+      } else {
+        rightWorldSegments.length = 0;
+      }
+      rightViewRenderer.renderInto(renderedRightView, rightViewRenderParams);
+    }
+
+    if (views.rear) {
+      if (segments) {
+        applySegmentPlugins(
+          segmentPlugins,
+          rearWorldSegments,
+          rearSegmentParams,
+        );
+      } else {
+        rearWorldSegments.length = 0;
+      }
+      rearViewRenderer.renderInto(renderedRearView, rearViewRenderParams);
+    }
 
     fps = updateFps(dtMillis);
 
     const shouldRenderHud = nowMs - lastHudTimeMs > 100;
 
-    if (shouldRenderHud && framePolicy.advanceHud) {
+    if (shouldRenderHud && framePolicy.advanceHud && renderDebug.hud) {
       hudRenderParams.currentThrustLevel = tickOutput.currentThrustLevel;
       hudRenderParams.currentRcsLevel = tickOutput.currentRcsLevel;
       hudRenderParams.fps = fps;
@@ -426,12 +568,16 @@ export function runLoop({
       lastHudTimeMs = nowMs;
     }
 
-    rasterizeView(renderedPilotView, pilotRasterizer);
-    rasterizeView(renderedTopView, topRasterizer);
-    rasterizeView(renderedLeftView, leftRasterizer);
-    rasterizeView(renderedRightView, rightRasterizer);
-    rasterizeView(renderedRearView, rearRasterizer);
-    rasterizeHud(renderedHud, hudRasterizer);
+    if (views.pilot)
+      rasterizeView(renderedPilotView, pilotRasterizer, facesRaster);
+    if (views.top) rasterizeView(renderedTopView, topRasterizer, facesRaster);
+    if (views.left)
+      rasterizeView(renderedLeftView, leftRasterizer, facesRaster);
+    if (views.right)
+      rasterizeView(renderedRightView, rightRasterizer, facesRaster);
+    if (views.rear)
+      rasterizeView(renderedRearView, rearRasterizer, facesRaster);
+    if (renderDebug.hud) rasterizeHud(renderedHud, hudRasterizer);
     applyLoopPostPlugins(loopPlugins, loopUpdateParams);
 
     requestAnimationFrame(loop);
@@ -446,9 +592,15 @@ export function runLoop({
   requestAnimationFrame(first);
 }
 
-function rasterizeView(view: RenderedView, rasterizer: Rasterizer) {
+function rasterizeView(
+  view: RenderedView,
+  rasterizer: Rasterizer,
+  drawFaces: boolean,
+) {
   rasterizer.clear("#000000");
-  rasterizer.drawFaces(view.faces, view.faceCount);
+  if (drawFaces) {
+    rasterizer.drawFaces(view.faces, view.faceCount);
+  }
   rasterizer.drawPolylines(view.polylines, view.polylineCount);
   rasterizer.drawSegments(view.segments, view.segmentCount);
   rasterizer.drawBodyLabels(view.bodyLabels, view.bodyLabelCount);

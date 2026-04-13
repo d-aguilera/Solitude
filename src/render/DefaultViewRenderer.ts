@@ -32,8 +32,19 @@ export class DefaultViewRenderer implements ViewRenderer {
   }
 
   renderInto(into: RenderedView, params: ViewRenderParams): void {
-    const { mainShip, camera, objectsFilter, surface, scene, renderCache } =
-      params;
+    const {
+      mainShip,
+      camera,
+      objectsFilter,
+      surface,
+      scene,
+      renderCache,
+      renderFaces = true,
+      sortFaces = true,
+      renderPolylines = true,
+      renderSegments = true,
+      renderBodyLabels = true,
+    } = params;
     const { width: screenWidth, height: screenHeight } = surface;
 
     const projectionService = new ProjectionService(
@@ -59,7 +70,7 @@ export class DefaultViewRenderer implements ViewRenderer {
       );
 
     into.faceCount =
-      drawMode === "faces"
+      renderFaces && drawMode === "faces"
         ? renderFacesInto(
             into.faces,
             scene,
@@ -68,35 +79,43 @@ export class DefaultViewRenderer implements ViewRenderer {
             screenHeight,
             renderCache,
             objectsFilter,
+            sortFaces,
           )
         : 0;
 
-    into.polylineCount = renderPolylinesInto(
-      into.polylines,
-      scene.objects,
-      projectSegmentInto,
-      (obj: SceneObject): obj is PolylineSceneObject =>
-        obj.kind === "polyline" && (objectsFilter ? objectsFilter(obj) : true),
-    );
+    into.polylineCount = renderPolylines
+      ? renderPolylinesInto(
+          into.polylines,
+          scene.objects,
+          projectSegmentInto,
+          (obj: SceneObject): obj is PolylineSceneObject =>
+            obj.kind === "polyline" &&
+            (objectsFilter ? objectsFilter(obj) : true),
+        )
+      : 0;
 
-    into.segmentCount = renderWorldSegmentsInto(
-      into.segments,
-      params.worldSegments,
-      projectSegmentInto,
-    );
+    into.segmentCount = renderSegments
+      ? renderWorldSegmentsInto(
+          into.segments,
+          params.worldSegments,
+          projectSegmentInto,
+        )
+      : 0;
 
-    into.bodyLabelCount = renderBodyLabelsInto(
-      into.bodyLabels,
-      scene.objects,
-      mainShip.position,
-      screenWidth,
-      screenHeight,
-      projectInto,
-      this.labelLayoutCache,
-      nowMs(),
-      objectsFilter,
-      this.labelMode,
-    );
+    into.bodyLabelCount = renderBodyLabels
+      ? renderBodyLabelsInto(
+          into.bodyLabels,
+          scene.objects,
+          mainShip.position,
+          screenWidth,
+          screenHeight,
+          projectInto,
+          this.labelLayoutCache,
+          nowMs(),
+          objectsFilter,
+          this.labelMode,
+        )
+      : 0;
   }
 }
 
