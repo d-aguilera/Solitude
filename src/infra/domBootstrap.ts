@@ -25,6 +25,7 @@ export function bootstrapWith(
 ): void {
   const plugins = loadPlugins([
     "autopilot",
+    "memory",
     "pause",
     "profiling",
     "timeScale",

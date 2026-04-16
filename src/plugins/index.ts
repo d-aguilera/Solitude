@@ -1,5 +1,6 @@
 import type { GamePlugin } from "../app/pluginPorts";
 import { createAutopilotPlugin } from "./autopilot/index";
+import { createMemoryPlugin } from "./memory/index";
 import { createPausePlugin } from "./pause/index";
 import { createProfilingPlugin } from "./profiling/index";
 import { createTimeScalePlugin } from "./timeScale/index";
@@ -10,6 +11,7 @@ export type PluginFactory = () => GamePlugin;
 
 export const availablePlugins: Record<string, PluginFactory> = {
   autopilot: createAutopilotPlugin,
+  memory: createMemoryPlugin,
   pause: createPausePlugin,
   profiling: createProfilingPlugin,
   timeScale: createTimeScalePlugin,
