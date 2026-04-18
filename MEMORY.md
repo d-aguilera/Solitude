@@ -9,7 +9,9 @@
 ## Spin-off memory docs
 
 - `MEMORY_CIRCLE_NOW.md`: dedicated context for the "circle now" autopilot and its rolling bug.
+- `MEMORY_PLUGIN_EXTRACTION.md`: audit notes and candidate list for moving non-core code into plugins.
 - **Note**: See the troubleshooting discipline section in `MEMORY_CIRCLE_NOW.md` and keep it updated after every iteration.
+- **Note**: Keep `MEMORY_PLUGIN_EXTRACTION.md` updated after each plugin extraction decision.
 
 ## Current focus
 

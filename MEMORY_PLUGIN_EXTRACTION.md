@@ -1,0 +1,187 @@
+# Plugin Extraction Memory
+
+## Purpose
+
+- Dedicated context for identifying non-core Solitude code that should move into plugins.
+- Use this before choosing the next extraction target.
+- Keep this document current after each extraction decision so we do not repeat the same audit.
+
+## Current Goal
+
+- Move optional scenario, telemetry, or UX behavior out of core layers.
+- Preserve the onion rule: inner layers (`domain`, `app`, `render`) must not import from `src/plugins`.
+- Plugins remain the outermost composition layer for input, controls, loop policy, HUD, scene hooks, and segment overlays.
+
+## Out Of Scope
+
+- Debugging and profiling candidates are removed from the plugin-extraction list by decision.
+- Reason: debug/profiling code needs to be intrusive to do its work effectively, without plugin restrictions.
+- Debugging/profiling code still visible in core should be treated as a temporary measure for troubleshooting bugs and memory issues, not as plugin-extraction debt.
+
+## Current Plugin Surface
+
+Existing plugin types live in `src/app/pluginPorts.ts`:
+
+- `input`: actions, key maps, and custom key handlers.
+- `controls`: control-state updates, attitude commands, propulsion command resolution.
+- `loop`: frame policy, loop init, loop update, post-frame cleanup.
+- `hud`: HUD grid writers.
+- `scene`: scene init/update hooks and per-view object filters.
+- `segments`: world-space overlay segment providers.
+
+Existing plugins already cover:
+
+- Autopilot: `src/plugins/autopilot/`
+- Memory telemetry: `src/plugins/memory/`
+- Orbit telemetry: `src/plugins/orbitTelemetry/`
+- Pause: `src/plugins/pause/`
+- Profiling toggle/HUD: `src/plugins/profiling/`
+- Runtime telemetry: `src/plugins/runtimeTelemetry/`
+- Ship telemetry: `src/plugins/shipTelemetry/`
+- Time scale: `src/plugins/timeScale/`
+- Trajectories: `src/plugins/trajectories/`
+- Velocity segments: `src/plugins/velocitySegments/`
+
+## Strongest Remaining Candidates
+
+### 1. Auxiliary PiP / Axial Views
+
+Status: high-value but larger extraction candidate.
+
+Why it is non-core:
+
+- The pilot view is the primary experience.
+- The top/left/right/rear picture-in-picture views are optional instrumentation/navigation aids.
+- The fixed five-view structure makes the runtime and scene state less general than the plugin direction wants.
+
+Current touch points:
+
+- `index.html`: hard-coded canvases for `topViewCanvas`, `leftViewCanvas`, `rightViewCanvas`, `rearViewCanvas`.
+- `index.css`: `.pip-canvas` presentation.
+- `src/infra/domBootstrap.ts`: hard-coded DOM lookup and renderer/rasterizer/surface construction for all five views.
+- `src/infra/domLayout.ts`: hard-coded PiP sizes and positions.
+- `src/infra/domGameLoop.ts`: duplicated view IDs, filters, segment params, render params, rendered buffers, render calls, and rasterization calls.
+- `src/app/scenePorts.ts`: fixed `SceneState` and `SceneControlState` fields for top/left/right/rear cameras.
+- `src/app/cameras.ts`: fixed camera orientations for top/left/right/rear views.
+- `src/config/worldAndSceneConfig.ts`: fixed camera offsets for all auxiliary views.
+
+Likely extraction shape:
+
+- First introduce a view registry or view descriptor model in infra/app ports.
+- Keep `pilot` as the required default view.
+- Let a plugin register axial PiP views with:
+  - DOM/canvas or view descriptor metadata.
+  - Camera pose/update strategy.
+  - Label mode (`nameOnly` for PiP).
+  - Optional object filter.
+  - Layout hints.
+- Then create an `axialViews` or `pipViews` plugin.
+
+Watch-outs:
+
+- This is not just moving files. The fixed shape is encoded in types, setup, runtime params, layout, and loop logic.
+- Do this after a small dynamic-view refactor, not as a direct copy-paste extraction.
+
+### 2. Enemy Ship / Demo Scenario Content
+
+Status: good content/scenario extraction candidate.
+
+Why it is non-core:
+
+- `enemyShip` is constructed and carried through runtime state, but no behavior appears to use it.
+- It looks like default scenario content, not a core requirement for physics, controls, or rendering.
+- A core sandbox should support zero or many secondary ships without a special `enemyShip` slot.
+
+Current touch points:
+
+- `src/app/configPorts.ts`: `enemyShipId` is required.
+- `src/setup/setup.ts`: `WorldSetup` requires `enemyShip`, and `createWorld` looks it up.
+- `src/app/runtimePorts.ts`: `WorldAndScene` requires `enemyShip`.
+- `src/config/worldAndSceneConfig.ts`: selects `"ship:enemy"`.
+- `src/config/ships.ts`: creates `"ship:enemy"` and its render config.
+- `src/config/colors.ts`: includes `enemyShip`.
+
+Likely extraction shape:
+
+- Remove the special `enemyShip` field from required core runtime state.
+- Treat extra ships as scenario data in `physics.ships` / `render.ships`.
+- If plugin-driven scenarios are desired, create a scenario/default-content plugin that contributes ship configs.
+
+Watch-outs:
+
+- Tests currently use the same ship ID for `mainShipId` and `enemyShipId`; update tests if `enemyShipId` goes away.
+- A data-only cleanup may be enough before introducing a full scenario plugin API.
+
+### 3. Orbit Readout Helpers In Domain
+
+Status: medium-priority extraction/split candidate.
+
+Why it is non-core:
+
+- `src/domain/orbit.ts` is currently imported only by plugins.
+- `OrbitReadout`, apsis timers, and circularization delta-v readout serve HUD/autopilot behavior more than core physics integration.
+- Keeping telemetry readout in domain makes plugin-specific concepts look core.
+
+Current touch points:
+
+- `src/domain/orbit.ts`: `OrbitReadout`, `createOrbitReadout`, `computeShipOrbitReadoutInto`.
+- `src/domain/orbit.ts`: `getDominantBody` and `getDominantBodyPrimary`.
+- `src/plugins/orbitTelemetry/hud.ts`: consumes `computeShipOrbitReadoutInto`.
+- `src/plugins/autopilot/logic.ts`: consumes `getDominantBody` and `getDominantBodyPrimary`.
+- `src/plugins/autopilot/hud.ts`: consumes `getDominantBodyPrimary`.
+
+Likely extraction shape:
+
+- Split `src/domain/orbit.ts` into smaller pieces.
+- Move HUD readout construction into `src/plugins/orbitTelemetry/`.
+- Keep or relocate shared gravitational-primary math depending on desired ownership:
+  - Keep a tiny domain helper if "dominant gravitational body" is considered domain vocabulary.
+  - Or move it to plugin-local helpers if it remains used only by autopilot/telemetry plugins.
+
+Watch-outs:
+
+- The dominant-body helper is useful beyond HUD. Do not bury it too deeply if future app behavior will need it.
+- Keep numerical/orbital math testable after the move.
+
+## Smaller Candidate: Pilot Look / Camera Offset Controls
+
+Status: possible, but not obviously worth extracting first.
+
+Why it might be non-core:
+
+- Arrow-key look and `U/J/I/K` camera offset are camera UX, not simulation physics.
+- They live in base control actions and the base key map.
+
+Current touch points:
+
+- `src/app/controlPorts.ts`: `look*` and `cam*` base actions.
+- `src/infra/domKeyboardInput.ts`: base key bindings.
+- `src/app/controls.ts`: `updatePilotLook`.
+- `src/app/cameras.ts`: `updatePilotCameraOffset`.
+- `src/app/scene.ts`: calls both before updating cameras.
+
+Why it may stay core:
+
+- Pilot camera control is part of the primary playable experience.
+- Extracting it before dynamic view/camera support may make the scene update path more awkward.
+
+## Recommended Order
+
+1. Enemy ship / special scenario field cleanup.
+2. Dynamic view registry groundwork.
+3. Axial PiP views plugin.
+4. Orbit readout/domain split.
+5. Pilot look / camera offset controls, only if the camera/view refactor makes it natural.
+
+## Documentation Notes
+
+- `MEMORY_CIRCLE_NOW.md` is stale after autopilot extraction:
+  - It still points at `src/app/autoPilot.ts` and old wiring.
+  - Actual code is now in `src/plugins/autopilot/`.
+- Update `MEMORY_CIRCLE_NOW.md` before the next circle-now troubleshooting pass.
+
+## Verification Notes
+
+- This document was created from a read-only audit on 2026-04-18.
+- No extraction has been performed yet.
+- After future code changes, follow `MEMORY.md`: run `npm run typecheck` and `npm run test`.
