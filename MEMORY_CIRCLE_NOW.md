@@ -20,14 +20,15 @@
 
 ## Entry points and wiring
 
-- Input mapping: `KeyX` → `circleNow` in `src/infra/domKeyboardInput.ts`.
-- Control flag: `circleNow` lives in `src/app/controlPorts.ts`.
-- Tick flow: `getPropulsionCommandForTick` in `src/app/game.ts` switches to circle-now thrust when the flag is held.
-- Attitude flow: `updateShipAngularVelocityFromInput` in `src/app/controls.ts` uses circle-now attitude when the flag is held.
+- Input plugin mapping: `KeyX` → `circleNow` in `src/plugins/autopilot/input.ts`.
+- Control flag: `circleNow` is a plugin-provided dynamic control input key; base control input shape lives in `src/app/controlPorts.ts`.
+- Plugin registration: `createAutopilotPlugin` in `src/plugins/autopilot/index.ts` wires input, controls, and HUD.
+- Tick flow: `getPropulsionCommandForTick` in `src/app/game.ts` asks control plugins to resolve propulsion; the autopilot plugin switches to circle-now thrust when the flag is active.
+- Attitude flow: `updateShipAngularVelocityFromInput` in `src/app/controls.ts` asks control plugins for attitude commands; the autopilot plugin returns circle-now attitude when the flag is active.
 
 ## Attitude algorithm (orientation + roll)
 
-- Implemented in `computeCircleNowAttitudeCommand` in `src/app/autoPilot.ts`.
+- Implemented in `computeCircleNowAttitudeCommand` in `src/plugins/autopilot/logic.ts`.
 - Steps:
   - Align forward axis toward the dominant body ("inward") via `computeAlignToDirectionCommand`.
   - Roll-only alignment so the ship's right axis matches the tangential direction via `computeRollToDirectionCommand`.
@@ -37,7 +38,7 @@
 
 ## Thrust algorithm (delta-v toward circular orbit)
 
-- Implemented in `computeCircleNowThrust` in `src/app/autoPilot.ts`.
+- Implemented in `computeCircleNowThrust` in `src/plugins/autopilot/logic.ts`.
 - Uses the dominant body's primary (`getDominantBodyPrimary`) and mu = `G * mass`.
 - Computes:
   - `r` from primary to ship and unit radial direction `rHat`.
@@ -54,7 +55,22 @@
 
 - Symptom: the ship rolls repeatedly (often ~20+ full rotations) while the orbit eccentricity very slowly decreases to zero.
 - We have attempted to fix this several times and failed so far.
-- Status: unresolved; keep this doc updated with new findings and attempts.
+- Status: unresolved; the 2026-04-18 sim-time-control fix candidate was reverted because ship maneuverability must remain tied to real frame time.
+
+## Relevance after autopilot plugin extraction (2026-04-18)
+
+- Still relevant:
+  - User-facing behavior and repro notes.
+  - The target-motion-rate hypothesis.
+  - The failed experiment history: forward-first gating, roll suspension, warning-only HUD, and full-authority circle-now thrust.
+  - HUD warning semantics, especially `TAN RATE`.
+- Stale but mapped:
+  - Old `src/app/autoPilot.ts` references now map to `src/plugins/autopilot/logic.ts`.
+  - Old input wiring references now map to `src/plugins/autopilot/input.ts` plus the generic plugin-aware DOM input path.
+  - Old HUD/render references now map to `src/plugins/autopilot/hud.ts`.
+- Start-fresh guidance:
+  - Do not restart the investigation from zero; preserve the behavioral history.
+  - Do restart from the current plugin code paths and simulation-time boundary, because the old file map was pre-extraction.
 
 ## Session findings (2026-04-04)
 
@@ -78,13 +94,13 @@
   - `FALLBACK` (tangential direction from fallback projection),
   - `TAN FLIP` (direction flips between frames),
   - `TAN SWING` (direction swings > 45°),
-  - `TAN RATE <value>` (tangential direction rotates too fast; warning threshold ~60°/s).
+  - `TAN RATE <value>` (tangential direction rotates too fast; current HUD warning threshold is 20°/s).
 - The `TAN RATE` warning is the one that showed up at time scale x32 and correlated with the runaway roll.
 
 ## Behavioral changes attempted
 
 - **Forward-first roll gating**: previously tried rolling only after forward axis is aligned inward. Did not resolve; reverted.
-- **Roll suspension based on target rate** (current):
+- **Roll suspension based on target rate** (previously tried):
   - In `computeCircleNowAttitudeCommand`, roll alignment is skipped if the tangential direction rotates faster than a limit.
   - Limits tried:
     - `circleNowMaxTangentialRate = 1.0 rad/s (~57°/s)`; warning threshold ~60°/s.
@@ -99,22 +115,38 @@
 
 ## Current hypothesis
 
-- The issue is not just invalid tangential direction or primary changes; it is primarily **target motion rate** vs. controller capability at high time scales.
-- Roll is still trying to chase a plane that is moving faster than the roll controller can track.
+- The issue is not just invalid tangential direction or primary changes.
+- Rejected theory after 2026-04-18: making ship attitude, rotation, thrust, and RCS advance with `dtMillisSim` would match gravity/orbit target motion.
+- Reason rejected: ship maneuverability is intentionally bound to real frame `dtMillis`; controlling the ship at sim time makes high-time-scale flight unusable and prevents even approaching the Moon at x32.
+- Remaining problem: circle-now still needs a strategy for target-plane motion at high time scale while preserving real-time maneuverability.
 
 ## Code touch points (updated during this session)
 
-- `src/app/autoPilot.ts`
-  - Added rate-based roll suspension when tangential direction rotates too fast.
-  - Skipped roll command calculation if roll is suspended (perf).
+- `src/plugins/autopilot/logic.ts`
+  - Circle-now attitude, thrust, autopilot mode, and manual-actuation disengage logic.
+- `src/plugins/autopilot/input.ts`
+  - `KeyX` mapping and autopilot toggle semantics.
+- `src/plugins/autopilot/hud.ts`
+  - Autopilot HUD status and circle-now warning tracker.
+- `src/app/game.ts`
+  - Tick orchestration; ship controls/physics use real frame time while gravity/celestial spin use simulation time.
 - `src/app/controls.ts`
-  - Resets circle-now attitude state when `X` is released.
-- `src/infra/domGameLoop.ts`
-  - Added circle-now debug state tracking for HUD warnings.
-- `src/render/DefaultHudRenderer.ts`
-  - Displays only warnings for circle-now (no CN telemetry).
-- `src/render/renderPorts.ts`
-  - Added circle-now debug fields for HUD warnings.
+  - Generic plugin control hooks and attitude command application.
+
+## Troubleshooting iteration (2026-04-18)
+
+- Hypothesis:
+  - The x32 roll bug is caused by a split time base: gravity advances with scaled simulation time, but ship attitude, rotation, thrust, and RCS use unscaled real frame time.
+  - This makes circle-now chase a target plane that is moving up to 32x faster than the controller can physically follow.
+- Attempted change:
+  - In `src/app/game.ts`, pass `dtMillisSim` to propulsion resolution, attitude update, ship rotation, main thrust, and RCS translation.
+  - Scene/camera/HUD timing remains on real `dtMillis`.
+- Temporary tests:
+  - Added headless tests proving thrust delta-v and attitude acceleration scaled with simulation time.
+  - Ran `npx vitest run src/infra/__tests__/headlessGameLoop.test.ts`.
+- Result:
+  - Rejected and reverted, including the temporary tests, before interactive x32 confirmation.
+  - User clarified that ship maneuverability must remain on real frame time; otherwise high-time-scale approach is uncontrollable.
 
 ## Timeline of key steps (2026-04-04)
 
