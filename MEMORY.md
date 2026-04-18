@@ -19,12 +19,15 @@
 
 ## Must-Do After Code Changes (Do Not Skip)
 
+- Run Prettier on modified files (or the whole codebase if easier).
+- Organize imports at the top of modified source files. Prettier may not do this; use the TypeScript/VS Code "Organize Imports" source action or an equivalent tool when available.
 - Run: `npm run typecheck`
 - Run: `npm run test`
 - If you did not run them, explicitly say “Not run” in your response.
 
 ## Non-negotiables and exceptions
 
+- **Performance is paramount**: CPU time, memory consumption, and garbage collection pressure come before everything else.
 - **Onion layering**: domain core → app logic → infra adapters. Outer layers depend inward, even if it costs performance.
 - **Known exception**: `src/global/` is a deliberate carve-out and may violate onion rules. Do not treat it as a layering issue.
 - **Physics**: Newtonian N-body with leapfrog integration for stability.
