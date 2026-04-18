@@ -20,11 +20,11 @@ export function createHudPlugin(): HudPlugin {
   let primaryDisplayName = "";
 
   return {
-    updateHudParams: (grid, { mainShip, world }) => {
+    updateHudParams: (grid, context) => {
       const hasOrbit = computeShipOrbitReadoutInto(
         orbitReadout,
-        world,
-        mainShip,
+        context.world,
+        context.mainShip,
       );
       if (!hasOrbit) return;
 

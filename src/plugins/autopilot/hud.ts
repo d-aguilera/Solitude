@@ -9,9 +9,14 @@ export function createHudPlugin(): HudPlugin {
   const circleNowTracker = createCircleNowDebugTracker();
 
   return {
-    updateHudParams: (grid, { controlInput, mainShip, nowMs, world }) => {
-      circleNowTracker.update(world, mainShip, controlInput.circleNow, nowMs);
-      const autopilotMode = getAutopilotMode(controlInput);
+    updateHudParams: (grid, context) => {
+      circleNowTracker.update(
+        context.world,
+        context.mainShip,
+        context.controlInput.circleNow,
+        context.nowMs,
+      );
+      const autopilotMode = getAutopilotMode(context.controlInput);
       grid[0][3] = formatAutopilotStatus(autopilotMode);
 
       const warning = formatCircleNowWarnings(circleNowTracker.debug);
