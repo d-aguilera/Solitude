@@ -24,6 +24,9 @@ export function bootstrapWith(
   makeRasterizer: (canvas: HTMLCanvasElement) => Rasterizer,
 ): void {
   const plugins = loadPlugins([
+    "orbitTelemetry",
+    "runtimeTelemetry",
+    "shipTelemetry",
     "autopilot",
     "memory",
     "pause",

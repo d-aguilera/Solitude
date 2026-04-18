@@ -1,4 +1,4 @@
-import type { HudRenderParams } from "../app/hudPorts";
+import type { HudGrid } from "../app/hudPorts";
 import type { WorldSegment } from "../app/pluginPorts";
 import type {
   DomainCameraPose,
@@ -20,7 +20,7 @@ export const drawMode: DrawMode = "faces";
  * Top-level view rendering abstraction.
  */
 export interface HudRenderer {
-  renderInto(into: RenderedHud, renderParams: HudRenderParams): void;
+  renderInto(into: HudGrid, grid: HudGrid): void;
 }
 
 export interface Point {
@@ -35,7 +35,7 @@ export interface Rasterizer {
   clear(color: string): void;
   drawBodyLabels(labels: RenderedBodyLabel[], count: number): void;
   drawFaces(faces: RenderedFace[], count: number): void;
-  drawHud(hud: RenderedHud): void;
+  drawHud(hud: HudGrid): void;
   drawPolylines(polylines: RenderedPolyline[], count: number): void;
   drawSegments(segments: RenderedSegment[], count: number): void;
   measureText(text: string, font: string): TextMetrics;
@@ -65,8 +65,6 @@ export interface RenderedFace {
   p2: ScreenPoint;
   color: RGB;
 }
-
-export type RenderedHud = [string, string, string, string, string][];
 
 export interface RenderedPolyline {
   points: ScreenPoint[];

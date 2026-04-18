@@ -9,18 +9,14 @@ export function createHudPlugin(): HudPlugin {
   const circleNowTracker = createCircleNowDebugTracker();
 
   return {
-    updateHudParams: (params, { controlInput, mainShip, nowMs, world }) => {
+    updateHudParams: (grid, { controlInput, mainShip, nowMs, world }) => {
       circleNowTracker.update(world, mainShip, controlInput.circleNow, nowMs);
       const autopilotMode = getAutopilotMode(controlInput);
-      params.hudCells.push({
-        row: 0,
-        col: 3,
-        text: formatAutopilotStatus(autopilotMode),
-      });
+      grid[0][3] = formatAutopilotStatus(autopilotMode);
 
       const warning = formatCircleNowWarnings(circleNowTracker.debug);
       if (warning) {
-        params.hudCells.push({ row: 4, col: 2, text: warning });
+        grid[4][2] = warning;
       }
     },
   };
@@ -193,33 +189,34 @@ function formatCircleNowWarnings(
 ): string {
   if (!circleNowDebug?.active) return "";
 
-  const warnings: string[] = [];
+  let warnings = "";
   if (circleNowDebug.tangentialSource === "none") {
-    warnings.push("NO TAN");
+    warnings = appendWarning(warnings, "NO TAN");
   } else {
     if (circleNowDebug.tangentialSpeed < 1) {
-      warnings.push("TAN LOW");
+      warnings = appendWarning(warnings, "TAN LOW");
     }
     if (circleNowDebug.tangentialSource === "fallback") {
-      warnings.push("FALLBACK");
+      warnings = appendWarning(warnings, "FALLBACK");
     }
   }
   if (
     circleNowDebug.tangentialDirDot != null &&
     circleNowDebug.tangentialDirDot < -0.2
   ) {
-    warnings.push("TAN FLIP");
+    warnings = appendWarning(warnings, "TAN FLIP");
   } else if (
     circleNowDebug.tangentialDirDeltaDeg != null &&
     circleNowDebug.tangentialDirDeltaDeg > 45
   ) {
-    warnings.push("TAN SWING");
+    warnings = appendWarning(warnings, "TAN SWING");
   }
   if (
     circleNowDebug.tangentialDirRateDegPerSec != null &&
     circleNowDebug.tangentialDirRateDegPerSec > 20
   ) {
-    warnings.push(
+    warnings = appendWarning(
+      warnings,
       "TAN RATE ".concat(
         circleNowDebug.tangentialDirRateDegPerSec.toFixed(0),
         "°/s",
@@ -227,5 +224,9 @@ function formatCircleNowWarnings(
     );
   }
 
-  return warnings.length ? "!! CN WARN: ".concat(warnings.join(" | ")) : "";
+  return warnings ? "!! CN WARN: ".concat(warnings) : "";
+}
+
+function appendWarning(current: string, next: string): string {
+  return current ? current.concat(" | ", next) : next;
 }

@@ -1,19 +1,9 @@
-import type { OrbitReadout } from "../domain/orbit";
-import type { Vec3 } from "../domain/vec3";
+export type HudGridRow = [string, string, string, string, string];
 
-export interface HudCell {
-  row: number;
-  col: number;
-  text: string;
-}
-
-export interface HudRenderParams {
-  currentThrustLevel: number;
-  currentRcsLevel: number;
-  fps: number;
-  orbitReadout?: OrbitReadout | null;
-  pilotCameraLocalOffset: Vec3;
-  simTimeMillis: number; // accumulated simulation time.
-  speedMps: number;
-  hudCells: HudCell[];
-}
+export type HudGrid = [
+  HudGridRow,
+  HudGridRow,
+  HudGridRow,
+  HudGridRow,
+  HudGridRow,
+];

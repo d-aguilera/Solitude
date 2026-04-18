@@ -1,11 +1,13 @@
 import type { HudPlugin } from "../../app/pluginPorts";
 import type { ProfilingController } from "./logic";
 
+const profilingText = "PROFILING";
+
 export function createHudPlugin(controller: ProfilingController): HudPlugin {
   return {
-    updateHudParams: (params) => {
+    updateHudParams: (grid) => {
       if (!controller.isEnabled()) return;
-      params.hudCells.push({ row: 2, col: 2, text: "PROFILING" });
+      grid[2][2] = profilingText;
     },
   };
 }

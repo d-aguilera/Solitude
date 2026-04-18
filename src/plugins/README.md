@@ -23,6 +23,10 @@ Each plugin lives in its own folder. A typical split is:
 Loop plugins can also influence per-frame policies such as whether the sim,
 scene, or HUD advance for a given tick, and may run post-frame cleanup.
 
+HUD plugins write directly into a preallocated HUD grid. Keep each plugin
+focused on one telemetry group, and avoid allocating per-cell objects in the
+HUD refresh path.
+
 ## Registration
 
 Available plugins are exported from `src/plugins/index.ts`.

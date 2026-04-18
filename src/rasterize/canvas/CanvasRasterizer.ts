@@ -1,3 +1,4 @@
+import type { HudGrid } from "../../app/hudPorts";
 import type { RGB } from "../../app/scenePorts";
 import { rgbToQuantizedCss } from "../../render/color";
 import { LABEL_FONT } from "../../render/labelStyle";
@@ -6,7 +7,6 @@ import type {
   Rasterizer,
   RenderedBodyLabel,
   RenderedFace,
-  RenderedHud,
   RenderedPolyline,
   RenderedSegment,
   TextMetrics,
@@ -101,7 +101,7 @@ export class CanvasRasterizer implements Rasterizer {
     }
   }
 
-  drawHud(hud: RenderedHud): void {
+  drawHud(hud: HudGrid): void {
     ctx = this.ctx;
     const { width: canvasWidth, height: canvasHeight } = ctx.canvas;
     const hudLength = hud.length;

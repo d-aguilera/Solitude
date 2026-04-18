@@ -37,23 +37,46 @@ const rHatScratch: Vec3 = vec3.zero();
 const tempScratch: Vec3 = vec3.zero();
 const eVecScratch: Vec3 = vec3.zero();
 
-export function computeShipOrbitReadout(
+export function createOrbitReadout(): OrbitReadout {
+  return {
+    primaryId: "",
+    primaryRadius: 0,
+    distance: 0,
+    speed: 0,
+    semiMajorAxis: 0,
+    eccentricity: 0,
+    inclinationRad: 0,
+    periapsis: 0,
+    apoapsis: 0,
+    isBound: false,
+    radialSpeed: 0,
+    tangentialSpeed: 0,
+    circularSpeed: 0,
+    deltaVCircularRadial: 0,
+    deltaVCircularTangential: 0,
+    timeToPeriapsisSec: null,
+    timeToApoapsisSec: null,
+  };
+}
+
+export function computeShipOrbitReadoutInto(
+  out: OrbitReadout,
   world: World,
   ship: ShipBody,
-): OrbitReadout | null {
+): boolean {
   const primary = getDominantBodyPrimary(world, ship.position);
-  if (!primary) return null;
+  if (!primary) return false;
 
   vec3.subInto(rScratch, ship.position, primary.body.position);
   vec3.subInto(vScratch, ship.velocity, primary.body.velocity);
 
   const r = vec3.length(rScratch);
-  if (r === 0) return null;
+  if (r === 0) return false;
 
   const v2 = vec3.lengthSq(vScratch);
   const v = Math.sqrt(v2);
   const mu = parameters.newtonG * primary.mass;
-  if (mu === 0) return null;
+  if (mu === 0) return false;
 
   const rHat = vec3.scaleInto(rHatScratch, 1 / r, rScratch);
   const radialSpeed = vec3.dot(rHat, vScratch);
@@ -88,7 +111,25 @@ export function computeShipOrbitReadout(
   const isBound = eccentricity < 1 && energy < 0;
   const periapsis = isBound ? semiMajorAxis * (1 - eccentricity) : NaN;
   const apoapsis = isBound ? semiMajorAxis * (1 + eccentricity) : NaN;
-  const { timeToPeriapsisSec, timeToApoapsisSec } = computeApsisTimers(
+
+  out.primaryId = primary.id;
+  out.primaryRadius = primary.radius;
+  out.distance = r;
+  out.speed = v;
+  out.semiMajorAxis = semiMajorAxis;
+  out.eccentricity = eccentricity;
+  out.inclinationRad = inclinationRad;
+  out.periapsis = periapsis;
+  out.apoapsis = apoapsis;
+  out.isBound = isBound;
+  out.radialSpeed = radialSpeed;
+  out.tangentialSpeed = tangentialSpeed;
+  out.circularSpeed = circularSpeed;
+  out.deltaVCircularRadial = deltaVCircularRadial;
+  out.deltaVCircularTangential = deltaVCircularTangential;
+
+  computeApsisTimersInto(
+    out,
     isBound,
     eccentricity,
     semiMajorAxis,
@@ -97,25 +138,7 @@ export function computeShipOrbitReadout(
     mu,
   );
 
-  return {
-    primaryId: primary.id,
-    primaryRadius: primary.radius,
-    distance: r,
-    speed: v,
-    semiMajorAxis,
-    eccentricity,
-    inclinationRad,
-    periapsis,
-    apoapsis,
-    isBound,
-    radialSpeed,
-    tangentialSpeed,
-    circularSpeed,
-    deltaVCircularRadial,
-    deltaVCircularTangential,
-    timeToPeriapsisSec,
-    timeToApoapsisSec,
-  };
+  return true;
 }
 
 export function getDominantBody(
@@ -185,27 +208,32 @@ function accelMagnitudeAtPosition(
   return (parameters.newtonG * mass) / r2;
 }
 
-function computeApsisTimers(
+function computeApsisTimersInto(
+  out: OrbitReadout,
   isBound: boolean,
   eccentricity: number,
   semiMajorAxis: number,
   r: number,
   radialSpeed: number,
   mu: number,
-): { timeToPeriapsisSec: number | null; timeToApoapsisSec: number | null } {
+): void {
   if (
     !isBound ||
     !Number.isFinite(semiMajorAxis) ||
     eccentricity < EPS_ECCENTRICITY
   ) {
-    return { timeToPeriapsisSec: null, timeToApoapsisSec: null };
+    out.timeToPeriapsisSec = null;
+    out.timeToApoapsisSec = null;
+    return;
   }
 
   const meanMotion = Math.sqrt(
     mu / (semiMajorAxis * semiMajorAxis * semiMajorAxis),
   );
   if (meanMotion === 0) {
-    return { timeToPeriapsisSec: null, timeToApoapsisSec: null };
+    out.timeToPeriapsisSec = null;
+    out.timeToApoapsisSec = null;
+    return;
   }
 
   const cosE = clamp((1 - r / semiMajorAxis) / eccentricity, -1, 1);
@@ -228,7 +256,8 @@ function computeApsisTimers(
   const timeToApoapsisSec =
     M <= Math.PI ? (Math.PI - M) / meanMotion : (3 * Math.PI - M) / meanMotion;
 
-  return { timeToPeriapsisSec, timeToApoapsisSec };
+  out.timeToPeriapsisSec = timeToPeriapsisSec;
+  out.timeToApoapsisSec = timeToApoapsisSec;
 }
 
 function clamp(value: number, min: number, max: number): number {

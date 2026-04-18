@@ -9,7 +9,7 @@ import type {
   SimControlState,
 } from "./controlPorts";
 import type { PropulsionCommand } from "./controls";
-import type { HudRenderParams } from "./hudPorts";
+import type { HudGrid } from "./hudPorts";
 import type { Scene, SceneObject } from "./scenePorts";
 
 export interface KeyHandler {
@@ -61,10 +61,14 @@ export interface HudContext {
   world: World;
   mainShip: ShipBody;
   controlInput: ControlInput;
+  currentThrustLevel: number;
+  currentRcsLevel: number;
+  fps: number;
+  simTimeMillis: number;
 }
 
 export interface HudPlugin {
-  updateHudParams?: (params: HudRenderParams, context: HudContext) => void;
+  updateHudParams: (grid: HudGrid, context: HudContext) => void;
 }
 
 export interface WorldSegment {

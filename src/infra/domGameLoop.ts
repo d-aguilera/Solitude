@@ -1,5 +1,5 @@
 import { createTickHandler } from "../app/game";
-import type { HudRenderParams } from "../app/hudPorts";
+import type { HudGrid } from "../app/hudPorts";
 import type {
   ControlPlugin,
   FramePolicy,
@@ -24,15 +24,12 @@ import type {
 } from "../app/runtimePorts";
 import { updateSceneGraph } from "../app/scene";
 import type { SceneControlState, SceneState } from "../app/scenePorts";
-import { computeShipOrbitReadout } from "../domain/orbit";
-import { vec3 } from "../domain/vec3";
 import {
   createRenderFrameCache,
   updateRenderFrameCache,
 } from "../render/renderFrameCache";
 import type {
   Rasterizer,
-  RenderedHud,
   RenderedView,
   ViewRenderParams,
 } from "../render/renderPorts";
@@ -371,24 +368,7 @@ export function runLoop({
     segmentCount: 0,
   };
 
-  const hudRenderParams: HudRenderParams = {
-    currentThrustLevel: 0,
-    currentRcsLevel: 0,
-    fps: 0,
-    hudCells: [],
-    orbitReadout: null,
-    pilotCameraLocalOffset: sceneControlState.pilotCameraOffset,
-    simTimeMillis: 0,
-    speedMps: 0,
-  };
-
-  const renderedHud: RenderedHud = Array.from({ length: 5 }, () => [
-    "",
-    "",
-    "",
-    "",
-    "",
-  ]);
+  const renderedHud: HudGrid = createHudGrid();
 
   let lastTimeMs: number;
   let lastHudTimeMs: number;
@@ -453,26 +433,31 @@ export function runLoop({
     const polylines = passes.polylines;
     const segments = passes.segments;
     const bodyLabels = passes.bodyLabels;
+
     pilotViewRenderParams.renderFaces = facesBuild;
     pilotViewRenderParams.sortFaces = facesSort;
     pilotViewRenderParams.renderPolylines = polylines;
     pilotViewRenderParams.renderSegments = segments;
     pilotViewRenderParams.renderBodyLabels = bodyLabels;
+
     topViewRenderParams.renderFaces = facesBuild;
     topViewRenderParams.sortFaces = facesSort;
     topViewRenderParams.renderPolylines = polylines;
     topViewRenderParams.renderSegments = segments;
     topViewRenderParams.renderBodyLabels = bodyLabels;
+
     leftViewRenderParams.renderFaces = facesBuild;
     leftViewRenderParams.sortFaces = facesSort;
     leftViewRenderParams.renderPolylines = polylines;
     leftViewRenderParams.renderSegments = segments;
     leftViewRenderParams.renderBodyLabels = bodyLabels;
+
     rightViewRenderParams.renderFaces = facesBuild;
     rightViewRenderParams.sortFaces = facesSort;
     rightViewRenderParams.renderPolylines = polylines;
     rightViewRenderParams.renderSegments = segments;
     rightViewRenderParams.renderBodyLabels = bodyLabels;
+
     rearViewRenderParams.renderFaces = facesBuild;
     rearViewRenderParams.sortFaces = facesSort;
     rearViewRenderParams.renderPolylines = polylines;
@@ -545,26 +530,19 @@ export function runLoop({
     const shouldRenderHud = nowMs - lastHudTimeMs > 100;
 
     if (shouldRenderHud && framePolicy.advanceHud && renderDebug.hud) {
-      hudRenderParams.currentThrustLevel = tickOutput.currentThrustLevel;
-      hudRenderParams.currentRcsLevel = tickOutput.currentRcsLevel;
-      hudRenderParams.fps = fps;
-      hudRenderParams.orbitReadout = computeShipOrbitReadout(
-        worldAndScene.world,
-        worldAndScene.mainShip,
-      );
-      hudRenderParams.pilotCameraLocalOffset =
-        sceneControlState.pilotCameraOffset;
-      hudRenderParams.simTimeMillis = simTimeMillis;
-      hudRenderParams.speedMps = vec3.length(worldAndScene.mainShip.velocity);
-      hudRenderParams.hudCells.length = 0;
-      applyHudPlugins(hudPlugins, hudRenderParams, {
+      clearHudGrid(renderedHud);
+      applyHudPlugins(hudPlugins, renderedHud, {
         controlInput,
+        currentRcsLevel: tickOutput.currentRcsLevel,
+        currentThrustLevel: tickOutput.currentThrustLevel,
+        fps,
         mainShip: worldAndScene.mainShip,
         nowMs,
+        simTimeMillis,
         world: worldAndScene.world,
       });
 
-      hudRenderer.renderInto(renderedHud, hudRenderParams);
+      hudRenderer.renderInto(renderedHud, renderedHud);
       lastHudTimeMs = nowMs;
     }
 
@@ -606,8 +584,29 @@ function rasterizeView(
   rasterizer.drawBodyLabels(view.bodyLabels, view.bodyLabelCount);
 }
 
-function rasterizeHud(hud: RenderedHud, rasterizer: Rasterizer) {
+function rasterizeHud(hud: HudGrid, rasterizer: Rasterizer) {
   rasterizer.drawHud(hud);
+}
+
+function createHudGrid(): HudGrid {
+  return [
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+  ];
+}
+
+function clearHudGrid(grid: HudGrid): void {
+  for (let rowIndex = 0; rowIndex < grid.length; rowIndex++) {
+    const row = grid[rowIndex];
+    row[0] = "";
+    row[1] = "";
+    row[2] = "";
+    row[3] = "";
+    row[4] = "";
+  }
 }
 
 function collectHudPlugins(plugins: GamePlugin[]): HudPlugin[] {
@@ -752,11 +751,11 @@ function applyScenePlugins(
 
 function applyHudPlugins(
   plugins: HudPlugin[],
-  hudParams: HudRenderParams,
+  grid: HudGrid,
   context: HudContext,
 ): void {
   for (const plugin of plugins) {
-    plugin.updateHudParams?.(hudParams, context);
+    plugin.updateHudParams(grid, context);
   }
 }
 

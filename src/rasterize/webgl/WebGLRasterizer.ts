@@ -1,8 +1,8 @@
+import type { HudGrid } from "../../app/hudPorts";
 import type {
   Rasterizer,
   RenderedBodyLabel,
   RenderedFace,
-  RenderedHud,
   RenderedPolyline,
   RenderedSegment,
   TextMetrics,
@@ -457,7 +457,7 @@ export class WebGLRasterizer implements Rasterizer {
     void labels;
   }
 
-  drawHud(hud: RenderedHud): void {
+  drawHud(hud: HudGrid): void {
     // No-op for now. Same comment as drawBodyLabels.
     void hud;
   }
