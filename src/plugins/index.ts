@@ -1,5 +1,6 @@
 import type { GamePlugin } from "../app/pluginPorts";
 import { createAutopilotPlugin } from "./autopilot/index";
+import { createAxialViewsPlugin } from "./axialViews/index";
 import { createMemoryPlugin } from "./memory/index";
 import { createOrbitTelemetryPlugin } from "./orbitTelemetry/index";
 import { createPausePlugin } from "./pause/index";
@@ -14,6 +15,7 @@ export type PluginFactory = () => GamePlugin;
 
 export const availablePlugins: Record<string, PluginFactory> = {
   autopilot: createAutopilotPlugin,
+  axialViews: createAxialViewsPlugin,
   memory: createMemoryPlugin,
   orbitTelemetry: createOrbitTelemetryPlugin,
   pause: createPausePlugin,

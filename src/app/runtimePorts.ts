@@ -1,10 +1,6 @@
 import type { ShipBody, World } from "../domain/domainPorts";
 import type { ControlInput } from "./controlPorts";
-import type {
-  DomainCameraPose,
-  PolylineSceneObject,
-  Scene,
-} from "./scenePorts";
+import type { PolylineSceneObject, Scene } from "./scenePorts";
 
 export type TickCallback = (
   output: Readonly<TickOutput>,
@@ -31,11 +27,6 @@ export type Trajectory = {
 export interface WorldAndScene {
   enemyShip: ShipBody;
   mainShip: ShipBody;
-  pilotCamera: DomainCameraPose;
   scene: Scene;
-  topCamera: DomainCameraPose;
-  leftCamera: DomainCameraPose;
-  rightCamera: DomainCameraPose;
-  rearCamera: DomainCameraPose;
   world: World;
 }

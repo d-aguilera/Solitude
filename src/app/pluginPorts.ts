@@ -11,6 +11,7 @@ import type {
 import type { PropulsionCommand } from "./controls";
 import type { HudGrid } from "./hudPorts";
 import type { Scene, SceneObject } from "./scenePorts";
+import type { SceneViewId, ViewDefinition } from "./viewPorts";
 
 export interface KeyHandler {
   handleKeyDown: (action: ControlAction, isRepeat: boolean) => boolean;
@@ -110,8 +111,6 @@ export interface SceneUpdateParams {
 
 export type SceneObjectFilter = (obj: SceneObject) => boolean;
 
-export type SceneViewId = "pilot" | "top" | "left" | "right" | "rear";
-
 export interface SceneViewFilterParams {
   viewId: SceneViewId;
   scene: Scene;
@@ -160,6 +159,21 @@ export interface LoopPlugin {
   afterFrame?: (params: LoopUpdateParams) => void;
 }
 
+export interface ViewRegistry {
+  addView: (view: ViewDefinition) => void;
+}
+
+export interface ViewRegistrationParams {
+  config: WorldAndSceneConfig;
+}
+
+export interface ViewPlugin {
+  registerViews: (
+    registry: ViewRegistry,
+    params: ViewRegistrationParams,
+  ) => void;
+}
+
 export interface GamePlugin {
   id: string;
   controls?: ControlPlugin;
@@ -168,4 +182,5 @@ export interface GamePlugin {
   loop?: LoopPlugin;
   segments?: SegmentPlugin;
   scene?: ScenePlugin;
+  views?: ViewPlugin;
 }

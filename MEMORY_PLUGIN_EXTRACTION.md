@@ -32,6 +32,7 @@ Existing plugin types live in `src/app/pluginPorts.ts`:
 Existing plugins already cover:
 
 - Autopilot: `src/plugins/autopilot/`
+- Axial views: `src/plugins/axialViews/`
 - Memory telemetry: `src/plugins/memory/`
 - Orbit telemetry: `src/plugins/orbitTelemetry/`
 - Pause: `src/plugins/pause/`
@@ -42,47 +43,32 @@ Existing plugins already cover:
 - Trajectories: `src/plugins/trajectories/`
 - Velocity segments: `src/plugins/velocitySegments/`
 
+## Completed Decisions
+
+### Auxiliary PiP / Axial Views
+
+Status: first extraction pass implemented on 2026-04-18.
+
+What changed:
+
+- Added a view descriptor/registry path.
+- Kept the primary view as the built-in core view.
+- Added `src/plugins/axialViews/` to register `top`, `rear`, `left`, and `right` PiP views.
+- Moved auxiliary camera offsets out of `src/config/worldAndSceneConfig.ts` into the axial views plugin.
+- Changed `src/infra/domBootstrap.ts` and `src/infra/domGameLoop.ts` to operate over registered view arrays instead of fixed per-view fields.
+- Changed `src/infra/domBootstrap.ts` to create canvases for registered views on demand.
+- Kept canvas element IDs owned by bootstrap instead of plugin view definitions.
+- Removed hard-coded view canvases from `index.html`; it now only contains the canvas container.
+- Removed top/left/right/rear camera fields from `WorldSetup`, `WorldAndScene`, `SceneState`, and `SceneControlState`.
+
+Known remaining static pieces:
+
+- `src/infra/domLayout.ts` still contains the generic primary/PiP layout policy.
+- Core camera helpers still expose the frame-update strategies that the plugin uses.
+
 ## Strongest Remaining Candidates
 
-### 1. Auxiliary PiP / Axial Views
-
-Status: high-value but larger extraction candidate.
-
-Why it is non-core:
-
-- The pilot view is the primary experience.
-- The top/left/right/rear picture-in-picture views are optional instrumentation/navigation aids.
-- The fixed five-view structure makes the runtime and scene state less general than the plugin direction wants.
-
-Current touch points:
-
-- `index.html`: hard-coded canvases for `topViewCanvas`, `leftViewCanvas`, `rightViewCanvas`, `rearViewCanvas`.
-- `index.css`: `.pip-canvas` presentation.
-- `src/infra/domBootstrap.ts`: hard-coded DOM lookup and renderer/rasterizer/surface construction for all five views.
-- `src/infra/domLayout.ts`: hard-coded PiP sizes and positions.
-- `src/infra/domGameLoop.ts`: duplicated view IDs, filters, segment params, render params, rendered buffers, render calls, and rasterization calls.
-- `src/app/scenePorts.ts`: fixed `SceneState` and `SceneControlState` fields for top/left/right/rear cameras.
-- `src/app/cameras.ts`: fixed camera orientations for top/left/right/rear views.
-- `src/config/worldAndSceneConfig.ts`: fixed camera offsets for all auxiliary views.
-
-Likely extraction shape:
-
-- First introduce a view registry or view descriptor model in infra/app ports.
-- Keep `pilot` as the required default view.
-- Let a plugin register axial PiP views with:
-  - DOM/canvas or view descriptor metadata.
-  - Camera pose/update strategy.
-  - Label mode (`nameOnly` for PiP).
-  - Optional object filter.
-  - Layout hints.
-- Then create an `axialViews` or `pipViews` plugin.
-
-Watch-outs:
-
-- This is not just moving files. The fixed shape is encoded in types, setup, runtime params, layout, and loop logic.
-- Do this after a small dynamic-view refactor, not as a direct copy-paste extraction.
-
-### 2. Enemy Ship / Demo Scenario Content
+### 1. Enemy Ship / Demo Scenario Content
 
 Status: good content/scenario extraction candidate.
 
@@ -112,7 +98,7 @@ Watch-outs:
 - Tests currently use the same ship ID for `mainShipId` and `enemyShipId`; update tests if `enemyShipId` goes away.
 - A data-only cleanup may be enough before introducing a full scenario plugin API.
 
-### 3. Orbit Readout Helpers In Domain
+### 2. Orbit Readout Helpers In Domain
 
 Status: medium-priority extraction/split candidate.
 
@@ -168,10 +154,8 @@ Why it may stay core:
 ## Recommended Order
 
 1. Enemy ship / special scenario field cleanup.
-2. Dynamic view registry groundwork.
-3. Axial PiP views plugin.
-4. Orbit readout/domain split.
-5. Pilot look / camera offset controls, only if the camera/view refactor makes it natural.
+2. Orbit readout/domain split.
+3. Pilot look / camera offset controls, only if the camera/view refactor makes it natural.
 
 ## Documentation Notes
 

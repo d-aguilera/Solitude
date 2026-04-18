@@ -1,5 +1,4 @@
 import type { WorldAndSceneConfig } from "../app/configPorts";
-import type { DomainCameraPose } from "../app/scenePorts";
 import { getShipById } from "../app/worldLookup";
 import type { ShipBody, World } from "../domain/domainPorts";
 import { type LocalFrame, localFrame } from "../domain/localFrame";
@@ -12,11 +11,6 @@ export const initialFrame: LocalFrame = localFrame.fromUp(vec3.create(0, 0, 1));
 export interface WorldSetup {
   enemyShip: ShipBody;
   mainShip: ShipBody;
-  pilotCamera: DomainCameraPose;
-  topCamera: DomainCameraPose;
-  leftCamera: DomainCameraPose;
-  rightCamera: DomainCameraPose;
-  rearCamera: DomainCameraPose;
   world: World;
 }
 
@@ -44,20 +38,10 @@ export function createWorld({
 
   const enemyShip = getShipById(world, enemyShipId);
   const mainShip = getShipById(world, mainShipId);
-  const topCamera = { position: vec3.zero(), frame: localFrame.zero() };
-  const pilotCamera = { position: vec3.zero(), frame: localFrame.zero() };
-  const leftCamera = { position: vec3.zero(), frame: localFrame.zero() };
-  const rightCamera = { position: vec3.zero(), frame: localFrame.zero() };
-  const rearCamera = { position: vec3.zero(), frame: localFrame.zero() };
 
   return {
     enemyShip,
     mainShip,
-    pilotCamera,
-    topCamera,
-    leftCamera,
-    rightCamera,
-    rearCamera,
     world,
   };
 }

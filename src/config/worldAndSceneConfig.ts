@@ -18,10 +18,6 @@ export function buildWorldAndSceneConfig() {
     render: {
       pilotCameraOffset: vec3.create(0, 51000, 4850),
       pilotLookState: { azimuth: 0, elevation: 0 },
-      topCameraOffset: vec3.create(0, 0, 500_000),
-      leftCameraOffset: vec3.create(500_000, 51_000, 4_850),
-      rightCameraOffset: vec3.create(-500_000, 51_000, 4_850),
-      rearCameraOffset: vec3.create(0, 500_000, 4_850),
       planets: solar.render,
       ships: ships.render,
     },

@@ -14,15 +14,11 @@ body {
   overflow: hidden;
 }
 
-#pilotViewCanvas {
+.canvas-container canvas {
   position: absolute;
-  left: 0;
-  top: 0;
   display: block;
 }
 
 .pip-canvas {
-  position: absolute;
-  display: block;
   border: 1px solid #555;
 }

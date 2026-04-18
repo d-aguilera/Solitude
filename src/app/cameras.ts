@@ -2,97 +2,125 @@ import type { ShipBody } from "../domain/domainPorts";
 import { type LocalFrame, localFrame } from "../domain/localFrame";
 import { type Vec3, vec3 } from "../domain/vec3";
 import type { ControlInput } from "./controlPorts";
-import type { DomainCameraPose, SceneControlState } from "./scenePorts";
+import type { DomainCameraPose, PilotLookState } from "./scenePorts";
+import type {
+  SceneViewState,
+  ViewDefinition,
+  ViewFrameUpdateParams,
+} from "./viewPorts";
 
 // Scratch
 const offsetRightScratch: Vec3 = vec3.zero();
 const offsetForwardScratch: Vec3 = vec3.zero();
 const offsetUpScratch: Vec3 = vec3.zero();
 const worldOffsetScratch: Vec3 = vec3.zero();
+const viewFrameUpdateParamsScratch = {} as ViewFrameUpdateParams;
 
 /**
  * Update all camera positions / orientations.
  */
 export function updateCameras(
   mainShip: ShipBody,
-  pilotCamera: DomainCameraPose,
-  topCamera: DomainCameraPose,
-  leftCamera: DomainCameraPose,
-  rightCamera: DomainCameraPose,
-  rearCamera: DomainCameraPose,
-  sceneControlState: SceneControlState,
+  views: SceneViewState[],
+  pilotLookState: PilotLookState,
 ): void {
-  setCameraRelativeToShip(
-    pilotCamera,
-    mainShip,
-    sceneControlState.pilotCameraOffset,
-    (frame) => {
-      localFrame.copyInto(frame, mainShip.frame);
-      const { azimuth, elevation } = sceneControlState.pilotLookState;
-      if (azimuth !== 0)
-        localFrame.rotateAroundAxisInPlace(frame, frame.up, azimuth);
-      if (elevation !== 0)
-        localFrame.rotateAroundAxisInPlace(frame, frame.right, elevation);
-    },
-  );
+  viewFrameUpdateParamsScratch.mainShip = mainShip;
+  viewFrameUpdateParamsScratch.pilotLookState = pilotLookState;
+  for (const view of views) {
+    setCameraRelativeToShip(view.camera, mainShip, view.cameraOffset);
+    viewFrameUpdateParamsScratch.frame = view.camera.frame;
+    view.definition.updateFrame(viewFrameUpdateParamsScratch);
+  }
+}
 
-  setCameraRelativeToShip(
-    topCamera,
-    mainShip,
-    sceneControlState.topCameraOffset,
-    (frame) => {
-      const { right, forward, up } = mainShip.frame;
-      vec3.copyInto(frame.right, right);
-      vec3.scaleInto(frame.forward, -1, up); // forward = -up
-      vec3.copyInto(frame.up, forward); // up = forward
-    },
-  );
+export function createPrimaryViewDefinition(
+  initialCameraOffset: Vec3,
+): ViewDefinition {
+  return {
+    id: "primary",
+    labelMode: "full",
+    initialCameraOffset,
+    layout: { kind: "primary" },
+    updateFrame: updatePilotViewFrame,
+  };
+}
 
-  setCameraRelativeToShip(
-    leftCamera,
-    mainShip,
-    sceneControlState.leftCameraOffset,
-    (frame) => {
-      const { right, forward, up } = mainShip.frame;
-      vec3.copyInto(frame.up, up);
-      vec3.copyInto(frame.forward, right);
-      vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -right
-      vec3.copyInto(frame.right, forward);
-    },
-  );
+export function updatePilotViewFrame({
+  frame,
+  mainShip,
+  pilotLookState,
+}: {
+  frame: LocalFrame;
+  mainShip: ShipBody;
+  pilotLookState: PilotLookState;
+}): void {
+  localFrame.copyInto(frame, mainShip.frame);
+  const { azimuth, elevation } = pilotLookState;
+  if (azimuth !== 0)
+    localFrame.rotateAroundAxisInPlace(frame, frame.up, azimuth);
+  if (elevation !== 0)
+    localFrame.rotateAroundAxisInPlace(frame, frame.right, elevation);
+}
 
-  setCameraRelativeToShip(
-    rightCamera,
-    mainShip,
-    sceneControlState.rightCameraOffset,
-    (frame) => {
-      const { right, forward, up } = mainShip.frame;
-      vec3.copyInto(frame.up, up);
-      vec3.copyInto(frame.forward, right); // forward = right
-      vec3.copyInto(frame.right, forward);
-      vec3.scaleInto(frame.right, -1, frame.right); // right = -forward
-    },
-  );
+export function updateTopViewFrame({
+  frame,
+  mainShip,
+}: {
+  frame: LocalFrame;
+  mainShip: ShipBody;
+}): void {
+  const { right, forward, up } = mainShip.frame;
+  vec3.copyInto(frame.right, right);
+  vec3.scaleInto(frame.forward, -1, up); // forward = -up
+  vec3.copyInto(frame.up, forward); // up = forward
+}
 
-  setCameraRelativeToShip(
-    rearCamera,
-    mainShip,
-    sceneControlState.rearCameraOffset,
-    (frame) => {
-      const { right, forward, up } = mainShip.frame;
-      vec3.copyInto(frame.up, up);
-      vec3.copyInto(frame.right, right);
-      vec3.copyInto(frame.forward, forward);
-      vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -forward
-    },
-  );
+export function updateLeftViewFrame({
+  frame,
+  mainShip,
+}: {
+  frame: LocalFrame;
+  mainShip: ShipBody;
+}): void {
+  const { right, forward, up } = mainShip.frame;
+  vec3.copyInto(frame.up, up);
+  vec3.copyInto(frame.forward, right);
+  vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -right
+  vec3.copyInto(frame.right, forward);
+}
+
+export function updateRightViewFrame({
+  frame,
+  mainShip,
+}: {
+  frame: LocalFrame;
+  mainShip: ShipBody;
+}): void {
+  const { right, forward, up } = mainShip.frame;
+  vec3.copyInto(frame.up, up);
+  vec3.copyInto(frame.forward, right); // forward = right
+  vec3.copyInto(frame.right, forward);
+  vec3.scaleInto(frame.right, -1, frame.right); // right = -forward
+}
+
+export function updateRearViewFrame({
+  frame,
+  mainShip,
+}: {
+  frame: LocalFrame;
+  mainShip: ShipBody;
+}): void {
+  const { right, forward, up } = mainShip.frame;
+  vec3.copyInto(frame.up, up);
+  vec3.copyInto(frame.right, right);
+  vec3.copyInto(frame.forward, forward);
+  vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -forward
 }
 
 function setCameraRelativeToShip(
   pose: DomainCameraPose,
   ship: ShipBody,
   localOffset: Vec3,
-  updateFrameFromShip: (frame: LocalFrame) => void,
 ): void {
   const { right, forward, up } = ship.frame;
 
@@ -106,8 +134,6 @@ function setCameraRelativeToShip(
 
   // pose.position = ship.position + worldOffsetScratch
   vec3.addInto(pose.position, ship.position, worldOffsetScratch);
-
-  updateFrameFromShip(pose.frame);
 }
 
 export function updatePilotCameraOffset(

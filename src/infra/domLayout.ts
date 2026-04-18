@@ -1,31 +1,17 @@
+import type { ViewLayout } from "../app/viewPorts";
+
 let remove: (() => void) | null = null;
 
-export function initLayout(
-  container: Element,
-  pilotCanvas: HTMLCanvasElement,
-  topCanvas: HTMLCanvasElement,
-  leftCanvas: HTMLCanvasElement,
-  rightCanvas: HTMLCanvasElement,
-  rearCanvas: HTMLCanvasElement,
-) {
-  updatePixelRatio(
-    container,
-    pilotCanvas,
-    topCanvas,
-    leftCanvas,
-    rightCanvas,
-    rearCanvas,
-  );
+export interface LayoutView {
+  canvas: HTMLCanvasElement;
+  layout: ViewLayout;
+}
+
+export function initLayout(container: Element, views: LayoutView[]) {
+  updatePixelRatio(container, views);
 
   window.addEventListener("resize", () => {
-    resizeCanvases(
-      container,
-      pilotCanvas,
-      topCanvas,
-      leftCanvas,
-      rightCanvas,
-      rearCanvas,
-    );
+    resizeCanvases(container, views);
   });
 }
 
@@ -47,14 +33,7 @@ function resizeCanvasToCssBox(
   canvas.height = deviceHeight;
 }
 
-function resizeCanvases(
-  container: Element,
-  pilotCanvas: HTMLCanvasElement,
-  topCanvas: HTMLCanvasElement,
-  leftCanvas: HTMLCanvasElement,
-  rightCanvas: HTMLCanvasElement,
-  rearCanvas: HTMLCanvasElement,
-): void {
+function resizeCanvases(container: Element, views: LayoutView[]): void {
   if (!container) return;
 
   const containerWidth = container.clientWidth;
@@ -69,7 +48,14 @@ function resizeCanvases(
   //   pilotWidth = pilotHeight * aspectRatio;
   // }
 
-  resizeCanvasToCssBox(pilotCanvas, pilotWidth, pilotHeight);
+  const primaryView = views.find((view) => view.layout.kind === "primary");
+  if (primaryView) {
+    primaryView.canvas.style.left = "0";
+    primaryView.canvas.style.right = "auto";
+    primaryView.canvas.style.top = "0";
+    primaryView.canvas.style.bottom = "auto";
+    resizeCanvasToCssBox(primaryView.canvas, pilotWidth, pilotHeight);
+  }
 
   // PiP views: 20% of container width, fixed aspect ratio.
   const pipWidth = containerWidth * 0.2;
@@ -78,59 +64,45 @@ function resizeCanvases(
   // Reserve vertical space so top PiP views sit below the HUD block.
   const hudTopInset = 130;
 
-  // bottom-right (top view)
-  topCanvas.style.right = `${pipMargin}px`;
-  topCanvas.style.bottom = `${pipMargin}px`;
-  resizeCanvasToCssBox(topCanvas, pipWidth, pipHeight);
+  for (const view of views) {
+    if (view.layout.kind !== "pip") continue;
+    const { canvas, layout } = view;
+    canvas.style.left = "auto";
+    canvas.style.right = "auto";
+    canvas.style.top = "auto";
+    canvas.style.bottom = "auto";
 
-  // bottom-left (rear view)
-  rearCanvas.style.left = `${pipMargin}px`;
-  rearCanvas.style.bottom = `${pipMargin}px`;
-  resizeCanvasToCssBox(rearCanvas, pipWidth, pipHeight);
+    const verticalInset =
+      layout.vertical === "top" && layout.avoidHud
+        ? hudTopInset + pipMargin
+        : pipMargin;
 
-  // top-left (left view), leave room for HUD
-  leftCanvas.style.left = `${pipMargin}px`;
-  leftCanvas.style.top = `${hudTopInset + pipMargin}px`;
-  resizeCanvasToCssBox(leftCanvas, pipWidth, pipHeight);
+    if (layout.horizontal === "left") {
+      canvas.style.left = `${pipMargin}px`;
+    } else {
+      canvas.style.right = `${pipMargin}px`;
+    }
 
-  // top-right (right view), leave room for HUD
-  rightCanvas.style.right = `${pipMargin}px`;
-  rightCanvas.style.top = `${hudTopInset + pipMargin}px`;
-  resizeCanvasToCssBox(rightCanvas, pipWidth, pipHeight);
+    if (layout.vertical === "top") {
+      canvas.style.top = `${verticalInset}px`;
+    } else {
+      canvas.style.bottom = `${verticalInset}px`;
+    }
+
+    resizeCanvasToCssBox(canvas, pipWidth, pipHeight);
+  }
 }
 
-function updatePixelRatio(
-  container: Element,
-  pilotCanvas: HTMLCanvasElement,
-  topCanvas: HTMLCanvasElement,
-  leftCanvas: HTMLCanvasElement,
-  rightCanvas: HTMLCanvasElement,
-  rearCanvas: HTMLCanvasElement,
-) {
+function updatePixelRatio(container: Element, views: LayoutView[]) {
   // Remove current DPR listener
   remove?.();
 
-  resizeCanvases(
-    container,
-    pilotCanvas,
-    topCanvas,
-    leftCanvas,
-    rightCanvas,
-    rearCanvas,
-  );
+  resizeCanvases(container, views);
 
   // Add new DPR listener
   const mqString = `(resolution: ${window.devicePixelRatio}dppx)`;
   const media = matchMedia(mqString);
-  const listener = () =>
-    updatePixelRatio(
-      container,
-      pilotCanvas,
-      topCanvas,
-      leftCanvas,
-      rightCanvas,
-      rearCanvas,
-    );
+  const listener = () => updatePixelRatio(container, views);
   media.addEventListener("change", listener);
   remove = () => {
     media.removeEventListener("change", listener);

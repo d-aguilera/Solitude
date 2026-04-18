@@ -1,4 +1,6 @@
 import type { WorldAndSceneConfig } from "../app/configPorts";
+import type { ViewDefinition } from "../app/viewPorts";
+import { buildViewDefinitions } from "../app/viewRegistry";
 import type { GravityEngine } from "../domain/domainPorts";
 import { parameters } from "../global/parameters";
 import { loadPlugins } from "../plugins/index";
@@ -8,11 +10,11 @@ import type {
   HudRenderer,
   Rasterizer,
   RenderSurface2D,
-  ViewRenderer,
 } from "../render/renderPorts";
 import { runLoop } from "./domGameLoop";
 import { initInput } from "./domKeyboardInput";
-import { initLayout } from "./domLayout";
+import { initLayout, type LayoutView } from "./domLayout";
+import type { RunLoopView } from "./infraPorts";
 import { NewtonianGravityEngine } from "./NewtonianGravityEngine";
 
 /**
@@ -24,6 +26,7 @@ export function bootstrapWith(
   makeRasterizer: (canvas: HTMLCanvasElement) => Rasterizer,
 ): void {
   const plugins = loadPlugins([
+    "axialViews",
     "orbitTelemetry",
     "runtimeTelemetry",
     "shipTelemetry",
@@ -35,121 +38,118 @@ export function bootstrapWith(
     "trajectories",
     "velocitySegments",
   ]);
+
   const container = document.querySelector(".canvas-container");
   if (!container) {
     throw new Error("Required '.canvas-container' not found in document");
   }
 
-  const pilotCanvas = document.getElementById(
-    "pilotViewCanvas",
-  ) as HTMLCanvasElement | null;
-  if (!pilotCanvas) {
-    throw new Error("Required 'pilotViewCanvas' not found in document");
-  }
-
-  const topCanvas = document.getElementById(
-    "topViewCanvas",
-  ) as HTMLCanvasElement | null;
-  if (!topCanvas) {
-    throw new Error("Required 'topViewCanvas' not found in document");
-  }
-
-  const leftCanvas = document.getElementById(
-    "leftViewCanvas",
-  ) as HTMLCanvasElement | null;
-  if (!leftCanvas) {
-    throw new Error("Required 'leftViewCanvas' not found in document");
-  }
-
-  const rightCanvas = document.getElementById(
-    "rightViewCanvas",
-  ) as HTMLCanvasElement | null;
-  if (!rightCanvas) {
-    throw new Error("Required 'rightViewCanvas' not found in document");
-  }
-
-  const rearCanvas = document.getElementById(
-    "rearViewCanvas",
-  ) as HTMLCanvasElement | null;
-  if (!rearCanvas) {
-    throw new Error("Required 'rearViewCanvas' not found in document");
-  }
-
-  initLayout(
-    container,
-    pilotCanvas,
-    topCanvas,
-    leftCanvas,
-    rightCanvas,
-    rearCanvas,
-  );
-
-  const pilotSurface: RenderSurface2D = makeSurface(pilotCanvas);
-  const topSurface: RenderSurface2D = makeSurface(topCanvas);
-  const leftSurface: RenderSurface2D = makeSurface(leftCanvas);
-  const rightSurface: RenderSurface2D = makeSurface(rightCanvas);
-  const rearSurface: RenderSurface2D = makeSurface(rearCanvas);
+  const viewDefinitions = buildViewDefinitions(config, plugins);
+  const viewCanvases = createViewCanvases(container, viewDefinitions);
+  initLayout(container, viewCanvases);
 
   const gravityEngine: GravityEngine = new NewtonianGravityEngine(
     parameters.newtonG,
     parameters.softeningLength,
   );
 
-  const pilotRasterizer: Rasterizer = makeRasterizer(pilotCanvas);
-  const pilotViewRenderer: ViewRenderer = new DefaultViewRenderer(
-    (text: string, font: string) => pilotRasterizer.measureText(text, font),
-  );
-
-  const topRasterizer: Rasterizer = makeRasterizer(topCanvas);
-  const topViewRenderer: ViewRenderer = new DefaultViewRenderer(
-    (text: string, font: string) => topRasterizer.measureText(text, font),
-    "nameOnly",
-  );
-
-  const leftRasterizer: Rasterizer = makeRasterizer(leftCanvas);
-  const leftViewRenderer: ViewRenderer = new DefaultViewRenderer(
-    (text: string, font: string) => leftRasterizer.measureText(text, font),
-    "nameOnly",
-  );
-
-  const rightRasterizer: Rasterizer = makeRasterizer(rightCanvas);
-  const rightViewRenderer: ViewRenderer = new DefaultViewRenderer(
-    (text: string, font: string) => rightRasterizer.measureText(text, font),
-    "nameOnly",
-  );
-
-  const rearRasterizer: Rasterizer = makeRasterizer(rearCanvas);
-  const rearViewRenderer: ViewRenderer = new DefaultViewRenderer(
-    (text: string, font: string) => rearRasterizer.measureText(text, font),
-    "nameOnly",
-  );
-
-  const hudRasterizer = pilotRasterizer;
+  const views = createRunLoopViews(viewCanvases, makeSurface, makeRasterizer);
+  const primaryView = getRequiredPrimaryRunLoopView(views);
+  const hudRasterizer = primaryView.rasterizer;
   const hudRenderer: HudRenderer = new DefaultHudRenderer();
 
   const { controlInput } = initInput(plugins);
 
   runLoop({
     config,
-    pilotViewRenderer,
-    pilotRasterizer,
-    topViewRenderer,
-    topRasterizer,
-    leftViewRenderer,
-    leftRasterizer,
-    rightViewRenderer,
-    rightRasterizer,
-    rearViewRenderer,
-    rearRasterizer,
+    views,
     hudRenderer,
     hudRasterizer,
     gravityEngine,
-    pilotSurface,
-    topSurface,
-    leftSurface,
-    rightSurface,
-    rearSurface,
     controlInput,
     plugins,
   });
+}
+
+type LayoutViewPlusDefinition = LayoutView & { definition: ViewDefinition };
+
+function createViewCanvases(
+  container: Element,
+  definitions: ViewDefinition[],
+): LayoutViewPlusDefinition[] {
+  const views: LayoutViewPlusDefinition[] = [];
+  let index = 0;
+  for (const definition of definitions) {
+    const canvas = getOrCreateViewCanvas(
+      container,
+      createViewCanvasId(index),
+      definition,
+    );
+    views.push({
+      canvas,
+      definition,
+      layout: definition.layout,
+    });
+    index++;
+  }
+  return views;
+}
+
+function getOrCreateViewCanvas(
+  container: Element,
+  elementId: string,
+  definition: ViewDefinition,
+): HTMLCanvasElement {
+  let canvas = document.getElementById(elementId) as HTMLCanvasElement | null;
+  if (!canvas) {
+    canvas = document.createElement("canvas");
+    canvas.id = elementId;
+  }
+
+  canvas.classList.toggle("pip-canvas", definition.layout.kind === "pip");
+  if (canvas.parentElement !== container) {
+    container.appendChild(canvas);
+  }
+
+  return canvas;
+}
+
+function createViewCanvasId(index: number): string {
+  return `sceneViewCanvas-${index}`;
+}
+
+function getRequiredPrimaryRunLoopView(views: RunLoopView[]): RunLoopView {
+  let primaryView: RunLoopView | null = null;
+  for (const view of views) {
+    if (view.definition.layout.kind !== "primary") continue;
+    if (primaryView) {
+      throw new Error("Multiple primary views registered");
+    }
+    primaryView = view;
+  }
+  if (!primaryView) {
+    throw new Error("Required primary view not registered");
+  }
+  return primaryView;
+}
+
+function createRunLoopViews(
+  views: LayoutViewPlusDefinition[],
+  makeSurface: (canvas: HTMLCanvasElement) => RenderSurface2D,
+  makeRasterizer: (canvas: HTMLCanvasElement) => Rasterizer,
+): RunLoopView[] {
+  const result: RunLoopView[] = [];
+  for (const view of views) {
+    const rasterizer = makeRasterizer(view.canvas);
+    result.push({
+      definition: view.definition,
+      rasterizer,
+      renderer: new DefaultViewRenderer(
+        (text: string, font: string) => rasterizer.measureText(text, font),
+        view.definition.labelMode,
+      ),
+      surface: makeSurface(view.canvas),
+    });
+  }
+  return result;
 }

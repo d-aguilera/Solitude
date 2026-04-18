@@ -11,7 +11,6 @@ import type {
   SceneObjectFilter,
   ScenePlugin,
   SceneViewFilterParams,
-  SceneViewId,
   SegmentPlugin,
   SegmentProviderParams,
   WorldSegment,
@@ -24,6 +23,11 @@ import type {
 } from "../app/runtimePorts";
 import { updateSceneGraph } from "../app/scene";
 import type { SceneControlState, SceneState } from "../app/scenePorts";
+import type { SceneViewState } from "../app/viewPorts";
+import {
+  createSceneViewStates,
+  getRequiredPrimaryViewState,
+} from "../app/viewRegistry";
 import {
   createRenderFrameCache,
   updateRenderFrameCache,
@@ -36,16 +40,10 @@ import type {
 import { createScene } from "../setup/sceneSetup";
 import { createWorld } from "../setup/setup";
 import { updateFps } from "./fps";
-import type { RunLoopParams } from "./infraPorts";
+import type { RunLoopParams, RunLoopView } from "./infraPorts";
 
 type RenderDebug = {
-  views: {
-    pilot: boolean;
-    top: boolean;
-    left: boolean;
-    right: boolean;
-    rear: boolean;
-  };
+  views: Record<string, boolean | undefined>;
   passes: {
     faces: boolean;
     facesBuild: boolean;
@@ -59,13 +57,7 @@ type RenderDebug = {
 };
 
 const defaultRenderDebug: RenderDebug = {
-  views: {
-    pilot: true,
-    top: true,
-    left: true,
-    right: true,
-    rear: true,
-  },
+  views: {},
   passes: {
     faces: true,
     facesBuild: true,
@@ -76,6 +68,14 @@ const defaultRenderDebug: RenderDebug = {
     bodyLabels: true,
   },
   hud: true,
+};
+
+type LoopView = RunLoopView & {
+  objectsFilter?: SceneObjectFilter;
+  renderedView: RenderedView;
+  renderParams: ViewRenderParams;
+  segmentParams: SegmentProviderParams;
+  worldSegments: WorldSegment[];
 };
 
 function getRenderDebug(): RenderDebug {
@@ -105,24 +105,10 @@ function getRenderDebug(): RenderDebug {
  */
 export function runLoop({
   config,
-  pilotViewRenderer,
-  pilotRasterizer,
-  topViewRenderer,
-  topRasterizer,
-  leftViewRenderer,
-  leftRasterizer,
-  rightViewRenderer,
-  rightRasterizer,
-  rearViewRenderer,
-  rearRasterizer,
+  views,
   hudRenderer,
   hudRasterizer,
   gravityEngine,
-  pilotSurface,
-  topSurface,
-  leftSurface,
-  rightSurface,
-  rearSurface,
   controlInput,
   plugins,
 }: RunLoopParams): void {
@@ -142,84 +128,9 @@ export function runLoop({
     mainShip: worldSetup.mainShip,
     config,
   });
-  const pilotViewId: SceneViewId = "pilot";
-  const topViewId: SceneViewId = "top";
-  const leftViewId: SceneViewId = "left";
-  const rightViewId: SceneViewId = "right";
-  const rearViewId: SceneViewId = "rear";
-  const pilotObjectsFilter = buildSceneObjectsFilter(scenePlugins, {
-    viewId: pilotViewId,
-    scene,
-    world: worldSetup.world,
-    mainShip: worldSetup.mainShip,
-    config,
-  });
-  const topObjectsFilter = buildSceneObjectsFilter(scenePlugins, {
-    viewId: topViewId,
-    scene,
-    world: worldSetup.world,
-    mainShip: worldSetup.mainShip,
-    config,
-  });
-  const leftObjectsFilter = buildSceneObjectsFilter(scenePlugins, {
-    viewId: leftViewId,
-    scene,
-    world: worldSetup.world,
-    mainShip: worldSetup.mainShip,
-    config,
-  });
-  const rightObjectsFilter = buildSceneObjectsFilter(scenePlugins, {
-    viewId: rightViewId,
-    scene,
-    world: worldSetup.world,
-    mainShip: worldSetup.mainShip,
-    config,
-  });
-  const rearObjectsFilter = buildSceneObjectsFilter(scenePlugins, {
-    viewId: rearViewId,
-    scene,
-    world: worldSetup.world,
-    mainShip: worldSetup.mainShip,
-    config,
-  });
   const worldAndScene: WorldAndScene = {
     ...worldSetup,
     scene,
-  };
-  const pilotSegmentParams: SegmentProviderParams = {
-    viewId: pilotViewId,
-    scene: worldAndScene.scene,
-    world: worldAndScene.world,
-    mainShip: worldAndScene.mainShip,
-    config,
-  };
-  const topSegmentParams: SegmentProviderParams = {
-    viewId: topViewId,
-    scene: worldAndScene.scene,
-    world: worldAndScene.world,
-    mainShip: worldAndScene.mainShip,
-    config,
-  };
-  const leftSegmentParams: SegmentProviderParams = {
-    viewId: leftViewId,
-    scene: worldAndScene.scene,
-    world: worldAndScene.world,
-    mainShip: worldAndScene.mainShip,
-    config,
-  };
-  const rightSegmentParams: SegmentProviderParams = {
-    viewId: rightViewId,
-    scene: worldAndScene.scene,
-    world: worldAndScene.world,
-    mainShip: worldAndScene.mainShip,
-    config,
-  };
-  const rearSegmentParams: SegmentProviderParams = {
-    viewId: rearViewId,
-    scene: worldAndScene.scene,
-    world: worldAndScene.world,
-    mainShip: worldAndScene.mainShip,
-    config,
   };
   const tickInto: TickCallback = createTickHandler(
     gravityEngine,
@@ -230,19 +141,14 @@ export function runLoop({
 
   const sceneControlState: SceneControlState = {
     pilotLookState: config.render.pilotLookState,
-    pilotCameraOffset: config.render.pilotCameraOffset,
-    topCameraOffset: config.render.topCameraOffset,
-    leftCameraOffset: config.render.leftCameraOffset,
-    rightCameraOffset: config.render.rightCameraOffset,
-    rearCameraOffset: config.render.rearCameraOffset,
   };
+  const sceneViews = createSceneViewStates(
+    views.map((view) => view.definition),
+  );
 
   const sceneState: SceneState = {
-    pilotCamera: worldAndScene.pilotCamera,
-    topCamera: worldAndScene.topCamera,
-    leftCamera: worldAndScene.leftCamera,
-    rightCamera: worldAndScene.rightCamera,
-    rearCamera: worldAndScene.rearCamera,
+    primaryView: getRequiredPrimaryViewState(sceneViews),
+    views: sceneViews,
   };
 
   const tickParams: TickParams = {
@@ -257,116 +163,14 @@ export function runLoop({
   };
 
   const renderCache = createRenderFrameCache();
-  const pilotWorldSegments: WorldSegment[] = [];
-  const topWorldSegments: WorldSegment[] = [];
-  const leftWorldSegments: WorldSegment[] = [];
-  const rightWorldSegments: WorldSegment[] = [];
-  const rearWorldSegments: WorldSegment[] = [];
-
-  const pilotViewRenderParams: ViewRenderParams = {
-    camera: worldAndScene.pilotCamera,
-    mainShip: worldAndScene.mainShip,
-    objectsFilter: pilotObjectsFilter,
+  const loopViews = createLoopViews(
+    views,
+    sceneViews,
+    scenePlugins,
     renderCache,
-    scene: worldAndScene.scene,
-    surface: pilotSurface,
-    worldSegments: pilotWorldSegments,
-  };
-
-  const renderedPilotView: RenderedView = {
-    bodyLabels: [],
-    bodyLabelCount: 0,
-    faces: [],
-    faceCount: 0,
-    polylines: [],
-    polylineCount: 0,
-    segments: [],
-    segmentCount: 0,
-  };
-
-  const topViewRenderParams: ViewRenderParams = {
-    camera: worldAndScene.topCamera,
-    mainShip: worldAndScene.mainShip,
-    objectsFilter: topObjectsFilter,
-    renderCache,
-    scene: worldAndScene.scene,
-    surface: topSurface,
-    worldSegments: topWorldSegments,
-  };
-
-  const renderedTopView: RenderedView = {
-    bodyLabels: [],
-    bodyLabelCount: 0,
-    faces: [],
-    faceCount: 0,
-    polylines: [],
-    polylineCount: 0,
-    segments: [],
-    segmentCount: 0,
-  };
-
-  const leftViewRenderParams: ViewRenderParams = {
-    camera: worldAndScene.leftCamera,
-    mainShip: worldAndScene.mainShip,
-    objectsFilter: leftObjectsFilter,
-    renderCache,
-    scene: worldAndScene.scene,
-    surface: leftSurface,
-    worldSegments: leftWorldSegments,
-  };
-
-  const renderedLeftView: RenderedView = {
-    bodyLabels: [],
-    bodyLabelCount: 0,
-    faces: [],
-    faceCount: 0,
-    polylines: [],
-    polylineCount: 0,
-    segments: [],
-    segmentCount: 0,
-  };
-
-  const rightViewRenderParams: ViewRenderParams = {
-    camera: worldAndScene.rightCamera,
-    mainShip: worldAndScene.mainShip,
-    objectsFilter: rightObjectsFilter,
-    renderCache,
-    scene: worldAndScene.scene,
-    surface: rightSurface,
-    worldSegments: rightWorldSegments,
-  };
-
-  const renderedRightView: RenderedView = {
-    bodyLabels: [],
-    bodyLabelCount: 0,
-    faces: [],
-    faceCount: 0,
-    polylines: [],
-    polylineCount: 0,
-    segments: [],
-    segmentCount: 0,
-  };
-
-  const rearViewRenderParams: ViewRenderParams = {
-    camera: worldAndScene.rearCamera,
-    mainShip: worldAndScene.mainShip,
-    objectsFilter: rearObjectsFilter,
-    renderCache,
-    scene: worldAndScene.scene,
-    surface: rearSurface,
-    worldSegments: rearWorldSegments,
-  };
-
-  const renderedRearView: RenderedView = {
-    bodyLabels: [],
-    bodyLabelCount: 0,
-    faces: [],
-    faceCount: 0,
-    polylines: [],
-    polylineCount: 0,
-    segments: [],
-    segmentCount: 0,
-  };
+    worldAndScene,
+    config,
+  );
 
   const renderedHud: HudGrid = createHudGrid();
 
@@ -426,7 +230,7 @@ export function runLoop({
       updateRenderFrameCache(renderCache, worldAndScene.scene);
     }
 
-    const { passes, views } = renderDebug;
+    const { passes } = renderDebug;
     const facesBuild = passes.faces && passes.facesBuild;
     const facesRaster = passes.faces && passes.facesRaster;
     const facesSort = passes.faces && passes.facesSort;
@@ -434,95 +238,26 @@ export function runLoop({
     const segments = passes.segments;
     const bodyLabels = passes.bodyLabels;
 
-    pilotViewRenderParams.renderFaces = facesBuild;
-    pilotViewRenderParams.sortFaces = facesSort;
-    pilotViewRenderParams.renderPolylines = polylines;
-    pilotViewRenderParams.renderSegments = segments;
-    pilotViewRenderParams.renderBodyLabels = bodyLabels;
+    for (const view of loopViews) {
+      const renderParams = view.renderParams;
+      renderParams.renderFaces = facesBuild;
+      renderParams.sortFaces = facesSort;
+      renderParams.renderPolylines = polylines;
+      renderParams.renderSegments = segments;
+      renderParams.renderBodyLabels = bodyLabels;
 
-    topViewRenderParams.renderFaces = facesBuild;
-    topViewRenderParams.sortFaces = facesSort;
-    topViewRenderParams.renderPolylines = polylines;
-    topViewRenderParams.renderSegments = segments;
-    topViewRenderParams.renderBodyLabels = bodyLabels;
+      if (!isViewEnabled(renderDebug, view.definition.id)) continue;
 
-    leftViewRenderParams.renderFaces = facesBuild;
-    leftViewRenderParams.sortFaces = facesSort;
-    leftViewRenderParams.renderPolylines = polylines;
-    leftViewRenderParams.renderSegments = segments;
-    leftViewRenderParams.renderBodyLabels = bodyLabels;
-
-    rightViewRenderParams.renderFaces = facesBuild;
-    rightViewRenderParams.sortFaces = facesSort;
-    rightViewRenderParams.renderPolylines = polylines;
-    rightViewRenderParams.renderSegments = segments;
-    rightViewRenderParams.renderBodyLabels = bodyLabels;
-
-    rearViewRenderParams.renderFaces = facesBuild;
-    rearViewRenderParams.sortFaces = facesSort;
-    rearViewRenderParams.renderPolylines = polylines;
-    rearViewRenderParams.renderSegments = segments;
-    rearViewRenderParams.renderBodyLabels = bodyLabels;
-
-    if (views.pilot) {
       if (segments) {
         applySegmentPlugins(
           segmentPlugins,
-          pilotWorldSegments,
-          pilotSegmentParams,
+          view.worldSegments,
+          view.segmentParams,
         );
       } else {
-        pilotWorldSegments.length = 0;
+        view.worldSegments.length = 0;
       }
-      pilotViewRenderer.renderInto(renderedPilotView, pilotViewRenderParams);
-    }
-
-    if (views.top) {
-      if (segments) {
-        applySegmentPlugins(segmentPlugins, topWorldSegments, topSegmentParams);
-      } else {
-        topWorldSegments.length = 0;
-      }
-      topViewRenderer.renderInto(renderedTopView, topViewRenderParams);
-    }
-
-    if (views.left) {
-      if (segments) {
-        applySegmentPlugins(
-          segmentPlugins,
-          leftWorldSegments,
-          leftSegmentParams,
-        );
-      } else {
-        leftWorldSegments.length = 0;
-      }
-      leftViewRenderer.renderInto(renderedLeftView, leftViewRenderParams);
-    }
-
-    if (views.right) {
-      if (segments) {
-        applySegmentPlugins(
-          segmentPlugins,
-          rightWorldSegments,
-          rightSegmentParams,
-        );
-      } else {
-        rightWorldSegments.length = 0;
-      }
-      rightViewRenderer.renderInto(renderedRightView, rightViewRenderParams);
-    }
-
-    if (views.rear) {
-      if (segments) {
-        applySegmentPlugins(
-          segmentPlugins,
-          rearWorldSegments,
-          rearSegmentParams,
-        );
-      } else {
-        rearWorldSegments.length = 0;
-      }
-      rearViewRenderer.renderInto(renderedRearView, rearViewRenderParams);
+      view.renderer.renderInto(view.renderedView, renderParams);
     }
 
     fps = updateFps(dtMillis);
@@ -546,15 +281,10 @@ export function runLoop({
       lastHudTimeMs = nowMs;
     }
 
-    if (views.pilot)
-      rasterizeView(renderedPilotView, pilotRasterizer, facesRaster);
-    if (views.top) rasterizeView(renderedTopView, topRasterizer, facesRaster);
-    if (views.left)
-      rasterizeView(renderedLeftView, leftRasterizer, facesRaster);
-    if (views.right)
-      rasterizeView(renderedRightView, rightRasterizer, facesRaster);
-    if (views.rear)
-      rasterizeView(renderedRearView, rearRasterizer, facesRaster);
+    for (const view of loopViews) {
+      if (!isViewEnabled(renderDebug, view.definition.id)) continue;
+      rasterizeView(view.renderedView, view.rasterizer, facesRaster);
+    }
     if (renderDebug.hud) rasterizeHud(renderedHud, hudRasterizer);
     applyLoopPostPlugins(loopPlugins, loopUpdateParams);
 
@@ -582,6 +312,71 @@ function rasterizeView(
   rasterizer.drawPolylines(view.polylines, view.polylineCount);
   rasterizer.drawSegments(view.segments, view.segmentCount);
   rasterizer.drawBodyLabels(view.bodyLabels, view.bodyLabelCount);
+}
+
+function createLoopViews(
+  views: RunLoopView[],
+  sceneViews: SceneViewState[],
+  scenePlugins: ScenePlugin[],
+  renderCache: ReturnType<typeof createRenderFrameCache>,
+  worldAndScene: WorldAndScene,
+  config: RunLoopParams["config"],
+): LoopView[] {
+  const result: LoopView[] = [];
+  for (let i = 0; i < views.length; i++) {
+    const view = views[i];
+    const sceneView = sceneViews[i];
+    const viewId = view.definition.id;
+    const objectsFilter = buildSceneObjectsFilter(scenePlugins, {
+      viewId,
+      scene: worldAndScene.scene,
+      world: worldAndScene.world,
+      mainShip: worldAndScene.mainShip,
+      config,
+    });
+    const worldSegments: WorldSegment[] = [];
+
+    result.push({
+      ...view,
+      objectsFilter,
+      renderedView: createRenderedView(),
+      renderParams: {
+        camera: sceneView.camera,
+        mainShip: worldAndScene.mainShip,
+        objectsFilter,
+        renderCache,
+        scene: worldAndScene.scene,
+        surface: view.surface,
+        worldSegments,
+      },
+      segmentParams: {
+        viewId,
+        scene: worldAndScene.scene,
+        world: worldAndScene.world,
+        mainShip: worldAndScene.mainShip,
+        config,
+      },
+      worldSegments,
+    });
+  }
+  return result;
+}
+
+function createRenderedView(): RenderedView {
+  return {
+    bodyLabels: [],
+    bodyLabelCount: 0,
+    faces: [],
+    faceCount: 0,
+    polylines: [],
+    polylineCount: 0,
+    segments: [],
+    segmentCount: 0,
+  };
+}
+
+function isViewEnabled(renderDebug: RenderDebug, viewId: string): boolean {
+  return renderDebug.views[viewId] !== false;
 }
 
 function rasterizeHud(hud: HudGrid, rasterizer: Rasterizer) {

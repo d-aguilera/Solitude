@@ -1,6 +1,7 @@
 import type { LocalFrame } from "../domain/localFrame";
 import type { Mat3 } from "../domain/mat3";
 import type { Vec3 } from "../domain/vec3";
+import type { SceneViewState } from "./viewPorts";
 
 export interface BaseSceneObject {
   id: string;
@@ -78,11 +79,6 @@ export interface Scene {
  */
 export interface SceneControlState {
   pilotLookState: PilotLookState;
-  pilotCameraOffset: Vec3;
-  topCameraOffset: Vec3;
-  leftCameraOffset: Vec3;
-  rightCameraOffset: Vec3;
-  rearCameraOffset: Vec3;
 }
 
 /**
@@ -97,11 +93,8 @@ export type SceneObject =
 export type SceneObjectKind = "ship" | "planet" | "polyline" | "star";
 
 export interface SceneState {
-  pilotCamera: DomainCameraPose;
-  topCamera: DomainCameraPose;
-  leftCamera: DomainCameraPose;
-  rightCamera: DomainCameraPose;
-  rearCamera: DomainCameraPose;
+  primaryView: SceneViewState;
+  views: SceneViewState[];
 }
 
 export interface SolidSceneObject extends BaseSceneObject {

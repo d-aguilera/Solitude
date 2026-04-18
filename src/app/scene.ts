@@ -11,23 +11,12 @@ export function updateSceneGraph(
   mainShip: ShipBody,
   controlInput: ControlInput,
 ) {
-  const { pilotCamera, topCamera, leftCamera, rightCamera, rearCamera } =
-    sceneState;
-
   updatePilotLook(dtMillis, controlInput, sceneControlState.pilotLookState);
   updatePilotCameraOffset(
     dtMillis,
     controlInput,
-    sceneControlState.pilotCameraOffset,
+    sceneState.primaryView.cameraOffset,
   );
 
-  updateCameras(
-    mainShip,
-    pilotCamera,
-    topCamera,
-    leftCamera,
-    rightCamera,
-    rearCamera,
-    sceneControlState,
-  );
+  updateCameras(mainShip, sceneState.views, sceneControlState.pilotLookState);
 }
