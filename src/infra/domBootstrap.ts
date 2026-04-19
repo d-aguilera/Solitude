@@ -1,4 +1,5 @@
 import type { WorldAndSceneConfig } from "../app/configPorts";
+import type { RuntimeOptions } from "../app/runtimeOptions";
 import type { ViewDefinition } from "../app/viewPorts";
 import { buildViewDefinitions } from "../app/viewRegistry";
 import type { GravityEngine } from "../domain/domainPorts";
@@ -24,20 +25,25 @@ export function bootstrapWith(
   config: WorldAndSceneConfig,
   makeSurface: (canvas: HTMLCanvasElement) => RenderSurface2D,
   makeRasterizer: (canvas: HTMLCanvasElement) => Rasterizer,
+  runtimeOptions: RuntimeOptions = {},
 ): void {
-  const plugins = loadPlugins([
-    "axialViews",
-    "orbitTelemetry",
-    "runtimeTelemetry",
-    "shipTelemetry",
-    "autopilot",
-    "memory",
-    "pause",
-    "profiling",
-    "timeScale",
-    "trajectories",
-    "velocitySegments",
-  ]);
+  const plugins = loadPlugins(
+    [
+      "axialViews",
+      "orbitTelemetry",
+      "runtimeTelemetry",
+      "shipTelemetry",
+      "autopilot",
+      "memory",
+      "pause",
+      "profiling",
+      "timeScale",
+      "playback",
+      "trajectories",
+      "velocitySegments",
+    ],
+    runtimeOptions,
+  );
 
   const container = document.querySelector(".canvas-container");
   if (!container) {

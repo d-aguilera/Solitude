@@ -47,6 +47,7 @@ export function renderPolylinesInto(
 
       meshPoints = mesh.points;
       if (meshPoints.length === 0) continue;
+      if (count <= 0 || tail < 0 || tail >= meshPoints.length) continue;
 
       head = (tail - count + meshPoints.length) % meshPoints.length;
 

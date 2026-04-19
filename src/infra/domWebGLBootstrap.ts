@@ -1,4 +1,5 @@
 import type { WorldAndSceneConfig } from "../app/configPorts";
+import type { RuntimeOptions } from "../app/runtimeOptions";
 import { WebGLRasterizer } from "../rasterize/webgl/WebGLRasterizer";
 import { WebGLSurface } from "../rasterize/webgl/WebGLSurface";
 import type { Rasterizer, RenderSurface2D } from "../render/renderPorts";
@@ -7,8 +8,11 @@ import { bootstrapWith } from "./domBootstrap";
 /**
  * WebGL DOM-level bootstrap
  */
-export function bootstrap(config: WorldAndSceneConfig): void {
-  bootstrapWith(config, makeSurface, makeRasterizer);
+export function bootstrap(
+  config: WorldAndSceneConfig,
+  runtimeOptions: RuntimeOptions = {},
+): void {
+  bootstrapWith(config, makeSurface, makeRasterizer, runtimeOptions);
 }
 
 function getContext(canvas: HTMLCanvasElement): WebGL2RenderingContext {

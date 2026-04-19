@@ -1,0 +1,63 @@
+import { describe, expect, it } from "vitest";
+import type { ShipBody, World } from "../../domain/domainPorts";
+import { localFrame } from "../../domain/localFrame";
+import { mat3 } from "../../domain/mat3";
+import { vec3 } from "../../domain/vec3";
+import { applyPlaybackSnapshot, capturePlaybackSnapshot } from "./snapshot";
+
+function createWorld(): { world: World; ship: ShipBody } {
+  const ship: ShipBody = {
+    id: "ship:test",
+    position: vec3.create(1, 2, 3),
+    velocity: vec3.create(4, 5, 6),
+    frame: localFrame.fromUp(vec3.create(0, 0, 1)),
+    orientation: mat3.zero(),
+    angularVelocity: { roll: 1, pitch: 2, yaw: 3 },
+  };
+  localFrame.intoMat3(ship.orientation, ship.frame);
+
+  const world: World = {
+    ships: [ship],
+    shipPhysics: [{ id: ship.id, density: 1, mass: 1 }],
+    planets: [
+      {
+        id: "planet:test",
+        position: vec3.create(10, 0, 0),
+        velocity: vec3.create(0, 10, 0),
+        orientation: mat3.zero(),
+        rotationAxis: vec3.create(0, 0, 1),
+        angularSpeedRadPerSec: 0,
+      },
+    ],
+    planetPhysics: [
+      {
+        id: "planet:test",
+        density: 1,
+        mass: 10,
+        physicalRadius: 1,
+      },
+    ],
+    stars: [],
+    starPhysics: [],
+  };
+  mat3.copy(mat3.identity, world.planets[0].orientation);
+  return { world, ship };
+}
+
+describe("playback snapshots", () => {
+  it("applies snapshots in place", () => {
+    const { world, ship } = createWorld();
+    const positionAlias = ship.position;
+    const orientationAlias = ship.orientation;
+    const snapshot = capturePlaybackSnapshot(world, ship, "moon-circle", 123);
+
+    ship.position.x = 99;
+    ship.orientation[0][0] = 42;
+
+    expect(applyPlaybackSnapshot(snapshot, world)).toBe(true);
+    expect(ship.position).toBe(positionAlias);
+    expect(ship.orientation).toBe(orientationAlias);
+    expect(ship.position.x).toBe(1);
+    expect(ship.orientation[0][0]).toBe(snapshot.ships[0].orientation[0][0]);
+  });
+});

@@ -163,6 +163,14 @@ export function runLoop({
   };
 
   const renderCache = createRenderFrameCache();
+  updateSceneGraph(
+    0,
+    sceneState,
+    sceneControlState,
+    worldAndScene.mainShip,
+    controlInput,
+  );
+  updateRenderFrameCache(renderCache, worldAndScene.scene);
   const loopViews = createLoopViews(
     views,
     sceneViews,
@@ -178,7 +186,7 @@ export function runLoop({
   let lastHudTimeMs: number;
   let dtMillis: number;
   let fps: number;
-  let simTimeMillis = 0;
+  let simTimeMillis = getInitialSimTimeMillis(loopPlugins);
   const loopState: LoopState = {
     framePolicy: createDefaultFramePolicy(),
   };
@@ -187,8 +195,11 @@ export function runLoop({
   >[0] = {
     controlInput,
     dtMillis: 0,
+    mainShip: worldAndScene.mainShip,
     nowMs: 0,
+    simTimeMillis: 0,
     state: loopState,
+    world: worldAndScene.world,
   };
   const renderDebug = getRenderDebug();
 
@@ -196,14 +207,17 @@ export function runLoop({
     dtMillis = nowMs - lastTimeMs;
     lastTimeMs = nowMs;
 
+    resetFramePolicy(loopState.framePolicy);
     loopUpdateParams.dtMillis = dtMillis;
     loopUpdateParams.nowMs = nowMs;
+    loopUpdateParams.simTimeMillis = simTimeMillis;
     applyLoopPlugins(loopPlugins, loopUpdateParams);
     const framePolicy = loopState.framePolicy;
-    const dtSimMillis = framePolicy.simDtMillis ?? dtMillis;
+    const dtTickMillis = framePolicy.tickDtMillis ?? dtMillis;
+    const dtSimMillis = framePolicy.simDtMillis ?? dtTickMillis;
 
     if (framePolicy.advanceSim) {
-      tickParams.dtMillis = dtMillis;
+      tickParams.dtMillis = dtTickMillis;
       tickParams.dtMillisSim = dtSimMillis;
       tickInto(tickOutput, tickParams);
       simTimeMillis += tickParams.dtMillisSim;
@@ -211,14 +225,14 @@ export function runLoop({
 
     if (framePolicy.advanceScene) {
       updateSceneGraph(
-        dtMillis,
+        dtTickMillis,
         sceneState,
         sceneControlState,
         worldAndScene.mainShip,
         controlInput,
       );
       applyScenePlugins(scenePlugins, {
-        dtMillis,
+        dtMillis: dtTickMillis,
         dtSimMillis,
         scene: worldAndScene.scene,
         world: worldAndScene.world,
@@ -286,6 +300,7 @@ export function runLoop({
       rasterizeView(view.renderedView, view.rasterizer, facesRaster);
     }
     if (renderDebug.hud) rasterizeHud(renderedHud, hudRasterizer);
+    loopUpdateParams.simTimeMillis = simTimeMillis;
     applyLoopPostPlugins(loopPlugins, loopUpdateParams);
 
     requestAnimationFrame(loop);
@@ -463,6 +478,14 @@ function applyLoopInitPlugins(
   }
 }
 
+function getInitialSimTimeMillis(plugins: LoopPlugin[]): number {
+  for (const plugin of plugins) {
+    const simTimeMillis = plugin.getInitialSimTimeMillis?.();
+    if (simTimeMillis != null) return simTimeMillis;
+  }
+  return 0;
+}
+
 function applySceneInitPlugins(
   plugins: ScenePlugin[],
   params: Parameters<NonNullable<ScenePlugin["initScene"]>>[0],
@@ -511,6 +534,9 @@ function applyLoopPlugins(
       if (policy.advanceHud !== undefined) {
         state.framePolicy.advanceHud = policy.advanceHud;
       }
+      if (policy.tickDtMillis !== undefined) {
+        state.framePolicy.tickDtMillis = policy.tickDtMillis;
+      }
       if (policy.simDtMillis !== undefined) {
         state.framePolicy.simDtMillis = policy.simDtMillis;
       }
@@ -533,6 +559,14 @@ function createDefaultFramePolicy(): FramePolicy {
     advanceScene: true,
     advanceHud: true,
   };
+}
+
+function resetFramePolicy(policy: FramePolicy): void {
+  policy.advanceSim = true;
+  policy.advanceScene = true;
+  policy.advanceHud = true;
+  policy.tickDtMillis = undefined;
+  policy.simDtMillis = undefined;
 }
 
 function applyScenePlugins(

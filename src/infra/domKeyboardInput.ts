@@ -118,7 +118,8 @@ function collectKeyHandlers(
   controlInput: ControlInput,
 ): KeyHandler[] {
   const handlers: KeyHandler[] = [];
-  for (const plugin of plugins) {
+  for (let i = plugins.length - 1; i >= 0; i--) {
+    const plugin = plugins[i];
     const handler = plugin.createKeyHandler?.(controlInput);
     if (handler) {
       handlers.push(handler);

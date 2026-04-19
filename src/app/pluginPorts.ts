@@ -123,6 +123,7 @@ export interface FramePolicy {
   advanceSim: boolean;
   advanceScene: boolean;
   advanceHud: boolean;
+  tickDtMillis?: number;
   simDtMillis?: number;
 }
 
@@ -137,8 +138,11 @@ export interface LoopInitParams {
 export interface LoopUpdateParams {
   controlInput: ControlInput;
   dtMillis: number;
+  mainShip?: ShipBody;
   nowMs: number;
+  simTimeMillis?: number;
   state: LoopState;
+  world?: World;
 }
 
 export interface LoopUpdateResult {
@@ -155,6 +159,7 @@ export interface ScenePlugin {
 
 export interface LoopPlugin {
   initLoop?: (params: LoopInitParams) => void;
+  getInitialSimTimeMillis?: () => number | null;
   updateLoopState?: (params: LoopUpdateParams) => LoopUpdateResult | null;
   afterFrame?: (params: LoopUpdateParams) => void;
 }

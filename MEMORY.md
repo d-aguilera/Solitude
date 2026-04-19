@@ -66,7 +66,8 @@
 
 - `src/infra/NewtonianGravityEngine.ts`: N-body gravity (leapfrog).
 - `src/app/controls.ts`: input mapping to thrust/attitude/autopilot.
-- `src/app/autoPilot.ts`: align-to-velocity/body and “circle now”.
+- `src/plugins/autopilot/logic.ts`: align-to-velocity/body and “circle now”.
+- `src/plugins/playback/`: diagnostic capture/playback for repeatable circle-now repros.
 - `src/setup/sceneSetup.ts`: scene graph + trajectory setup.
 - `src/config/solarSystem.ts`: solar system data and Keplerian elements.
 - `src/config/ships.ts`: ship geometry, mass, and initial placement.
@@ -84,6 +85,7 @@
 - Time scale: `[` decrease, `]` increase.
 - Pause: `P`.
 - Profiling HUD toggle: `O`.
+- Diagnostic capture: with `?mode=capture&scenario=moon-circle`, press `L` to start/stop script recording.
 
 ## Local dev workflow
 
@@ -103,6 +105,7 @@
 ## Recent changes (last 1–2 weeks)
 
 - Autopilot refactor: introduced layer-specific `autoPilot.ts` modules, and kept render ports local (no re-export of autopilot types).
+- Diagnostic playback: added capture/playback plugin for repeatable circle-now repro scripts.
 
 ## Open questions / risks
 

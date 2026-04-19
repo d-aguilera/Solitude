@@ -36,6 +36,7 @@ Existing plugins already cover:
 - Memory telemetry: `src/plugins/memory/`
 - Orbit telemetry: `src/plugins/orbitTelemetry/`
 - Pause: `src/plugins/pause/`
+- Playback/capture diagnostics: `src/plugins/playback/`
 - Profiling toggle/HUD: `src/plugins/profiling/`
 - Runtime telemetry: `src/plugins/runtimeTelemetry/`
 - Ship telemetry: `src/plugins/shipTelemetry/`
