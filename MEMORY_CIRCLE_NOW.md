@@ -131,23 +131,29 @@
   - The dumped script stores the effective time scale from recording start; changing time scale while recording is currently warned about but not faithfully represented by the v1 script contract.
   - Press `L` again to dump a paste-ready TypeScript script module to the console.
 - Playback:
-  - Save the dumped script into `src/plugins/playback/scripts/moonCircle.ts`.
-  - Open `?mode=playback&scenario=moon-circle`.
+  - Save the dumped script into a registered module under `src/plugins/playback/scripts/`.
+  - Open `?mode=playback&scenario=<script-id>`.
   - The plugin applies the snapshot before gravity state is built, starts paused, and waits for `P`.
   - Playback runs with the script's fixed real tick and time scale; ship maneuverability still uses the fixed real tick, not raw sim-time authority.
   - At script end, playback pauses; pressing `P` after done releases normal control.
-- First captured `moonCircle.ts` playback run:
+- First captured playback run:
   - Initial playback render exposed an empty-trajectory polyline bug; fixed by making the renderer skip preallocated polylines with no valid samples.
   - Paused/waiting playback initially showed HUD but blank views because camera poses were not initialized until scene advance; fixed by initializing camera poses/render cache during loop setup.
   - The saved snapshot is Earth-adjacent (`dominantBodyId: planet:earth`, roughly 6,471 km from Earth center and 401,111 km from the Moon), so this capture includes the transfer approach rather than starting at the Moon diagnostic state.
   - The run also showed why time-scale changes during capture matter: the current v1 script has one top-level time scale, not a time-scale timeline.
-- Milestone playback repro (2026-04-19):
-  - User captured and embedded a new `moonCircle.ts` script after the playback fixes.
+- Milestone playback repro: long case (2026-04-19):
+  - User captured and embedded a new script after the playback fixes; it is now registered as `moon-circle-long` in `src/plugins/playback/scripts/moonCircleLong.ts`.
   - Playback sanity checks passed: time-scale HUD shows the script scale correctly and the initial paused frame renders before pressing `P`.
   - The script records `timeScale: 32` and a final `circleNow: true` phase lasting `28540.5 ms` (~28.5 s real time, ~15.2 min sim time at x32).
   - User confirmed the long circle-now maneuver reproduces the problem we need to solve: the autopilot eventually works, but takes about 29 seconds and feels pathologically slow for the available thrust authority.
-  - The new script's snapshot still reports `dominantBodyId: planet:earth`; measured from the snapshot, the ship starts roughly 106,807 km from Earth center and 295,108 km from the Moon. Treat this as an approach+diagnostic script rather than a snapshot already inside the Moon's dominance region.
-  - This is now the investigation baseline. Future autopilot changes should be tested against this playback before judging behavior.
+  - The script's snapshot reports `dominantBodyId: planet:earth`; measured from the snapshot, the ship starts roughly 106,807 km from Earth center and 295,108 km from the Moon. This is expected because `dominantBodyId` is a derived capture-start breadcrumb only; it is not restored state and belongs in the future measurement log.
+- Comparison playback repro: ok case (2026-04-19):
+  - User recorded another Moon trip and registered it as `moon-circle-ok` in `src/plugins/playback/scripts/moonCircleOK.ts`.
+  - The script records `timeScale: 32` and a final recorded `circleNow: true` hold lasting `13263.3 ms`; user did not release `X` immediately, so the script duration overstates the actual circularization time.
+  - User measured the effective circularization time after the fact as roughly `8.6 s` real time.
+  - Qualitative difference: the OK run took only about half a roll to reach tangent alignment, then eccentricity rapidly reached zero.
+  - We now have a paired comparison: `moon-circle-long` (~29 s, many-roll/slow-feeling circularization) vs `moon-circle-ok` (~8.6 s measured, quick tangent acquisition).
+  - Future autopilot fixes and diagnostics should compare both scripts before judging behavior.
 
 ## Next investigation plan
 
@@ -162,7 +168,7 @@
   - desired acceleration,
   - actual main/RCS projection,
   - attitude error to inward and tangential targets.
-- First question to answer: is ~29 s physically required by available acceleration and current attitude, or is the controller wasting time by chasing geometry, saturating on the wrong axis, or repeatedly rolling through a moving target plane?
+- First question to answer: why does `moon-circle-long` need ~29 s while `moon-circle-ok` circularizes in ~8.6 s? Is the long case physically required by available acceleration and current attitude, or is the controller wasting time by chasing geometry, saturating on the wrong axis, or repeatedly rolling through a moving target plane?
 - Keep the rejected boundary intact: ship maneuverability remains based on real fixed tick time; gravity/celestial motion remains based on scaled sim time.
 
 ## Code touch points (updated during this session)

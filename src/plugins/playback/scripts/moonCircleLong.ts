@@ -1,10 +1,10 @@
 import type { PlaybackScript } from "../types";
 
 export const playbackScript = {
-  id: "moon-circle",
+  id: "moon-circle-long",
   snapshot: {
     metadata: {
-      label: "moon-circle",
+      label: "moon-circle-long",
       capturedSimTimeMillis: 84238.39999999982,
       dominantBodyId: "planet:earth",
     },
