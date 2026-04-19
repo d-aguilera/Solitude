@@ -86,6 +86,7 @@
 - Pause: `P`.
 - Profiling HUD toggle: `O`.
 - Diagnostic capture: with `?mode=capture&scenario=moon-circle`, press `L` to start/stop script recording.
+- Diagnostic playback logging: add `&log=circle-now` to playback URLs to dump circle-now comparison JSON at playback end.
 
 ## Local dev workflow
 
@@ -105,7 +106,7 @@
 ## Recent changes (last 1–2 weeks)
 
 - Autopilot refactor: introduced layer-specific `autoPilot.ts` modules, and kept render ports local (no re-export of autopilot types).
-- Diagnostic playback: added capture/playback plugin for repeatable circle-now repro scripts.
+- Diagnostic playback: added capture/playback plugin and optional `circle-now` logger for repeatable circle-now repro scripts.
 
 ## Open questions / risks
 

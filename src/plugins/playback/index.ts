@@ -11,6 +11,9 @@ export function createPlaybackPlugin(
     runtimeOptions.diagnostic,
     runtimeOptions.diagnosticWarning,
   );
+  if (runtimeOptions.diagnosticLogWarning) {
+    console.warn(runtimeOptions.diagnosticLogWarning);
+  }
 
   return {
     id: "playback",
@@ -40,8 +43,8 @@ export function createPlaybackPlugin(
           simTimeMillis ?? 0,
           getEffectiveTimeScale(dtMillis, state.framePolicy.simDtMillis),
         ),
-      afterFrame: () => {
-        controller.afterFrame();
+      afterFrame: (params) => {
+        controller.afterFrame(params);
       },
     },
     scene: {

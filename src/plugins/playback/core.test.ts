@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createControlInput } from "../../app/controlPorts";
+import type { LoopUpdateParams } from "../../app/pluginPorts";
 import type { ShipBody, World } from "../../domain/domainPorts";
 import { localFrame } from "../../domain/localFrame";
 import { mat3 } from "../../domain/mat3";
@@ -129,11 +130,58 @@ describe("playback controller", () => {
     expect(result?.framePolicy?.simDtMillis).toBe(140);
     expect(controlInput.circleNow).toBe(true);
   });
+
+  it("emits a requested diagnostic log at playback end", () => {
+    const { world, ship } = createWorldAndShip();
+    const script = createPlaybackScript(20, 1, 20);
+    const controller = createPlaybackController(
+      {
+        log: "circle-now",
+        mode: "playback",
+        scenario: script.id,
+      },
+      undefined,
+      () => script,
+    );
+    const controlInput = createControlInput(["pauseToggle", "circleNow"]);
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    const params: LoopUpdateParams = {
+      controlInput,
+      dtMillis: 20,
+      mainShip: ship,
+      nowMs: 20,
+      simTimeMillis: 20,
+      state: {
+        framePolicy: {
+          advanceHud: true,
+          advanceScene: true,
+          advanceSim: true,
+          simDtMillis: 20,
+          tickDtMillis: 20,
+        },
+      },
+      world,
+    };
+
+    controller.handlePause();
+    controller.updateLoop(controlInput, world, ship, 0, 0);
+    controller.afterFrame(params);
+    controller.updateLoop(controlInput, world, ship, 20, 20);
+    controller.afterFrame(params);
+
+    expect(info).toHaveBeenCalledTimes(1);
+    expect(String(info.mock.calls[0][0])).toContain(
+      "Solitude diagnostic log: circle-now custom-playback",
+    );
+
+    info.mockRestore();
+  });
 });
 
 function createPlaybackScript(
   fixedDtMillis: number,
   timeScale: number,
+  durationMs = 100,
 ): PlaybackScript {
   return {
     id: "custom-playback",
@@ -149,7 +197,7 @@ function createPlaybackScript(
     },
     fixedDtMillis,
     timeScale,
-    phases: [{ durationMs: 100, controls: { circleNow: true } }],
+    phases: [{ durationMs, controls: { circleNow: true } }],
     endBehavior: "pause",
     metadata: {
       capturedSimTimeMillis: 0,

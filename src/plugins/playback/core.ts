@@ -1,7 +1,8 @@
 import type { ControlInput, SimControlState } from "../../app/controlPorts";
-import type { LoopPlugin } from "../../app/pluginPorts";
+import type { LoopPlugin, LoopUpdateParams } from "../../app/pluginPorts";
 import type { DiagnosticRuntimeOptions } from "../../app/runtimeOptions";
 import type { ShipBody, World } from "../../domain/domainPorts";
+import { createPlaybackLogger, type PlaybackLogger } from "./loggers/index";
 import {
   applyCompiledPhaseControls,
   clearPlaybackControls,
@@ -40,7 +41,7 @@ interface RecorderState {
 }
 
 export interface PlaybackController {
-  afterFrame: () => void;
+  afterFrame: (params?: LoopUpdateParams) => void;
   applySceneSnapshot: (world: World) => void;
   getEffectiveTimeScale: () => number | null;
   getInitialSimTimeMillis: () => number | null;
@@ -75,6 +76,10 @@ export function createPlaybackController(
     diagnostic?.mode === "playback"
       ? compileConfiguredScript(scenario, scriptProvider)
       : null;
+  const logger =
+    diagnostic?.mode === "playback" && script
+      ? createPlaybackLogger(diagnostic.log, script)
+      : null;
 
   let status: PlaybackStatus = getInitialStatus(diagnostic, warning, script);
   let statusText = getInitialStatusText(diagnostic, warning, script);
@@ -86,6 +91,7 @@ export function createPlaybackController(
   let latestThrustLevel = 1;
   let recorder: RecorderState | null = null;
   let sceneSnapshotApplied = false;
+  let playbackHasStarted = false;
 
   if (statusText && (status === "warning" || status === "missing")) {
     console.warn(statusText);
@@ -116,6 +122,20 @@ export function createPlaybackController(
     );
     processPause(controlInput);
     updateRecording(controlInput, nowMs, effectiveTimeScale);
+
+    if (status === "playing" && script && !playbackHasStarted) {
+      playbackHasStarted = true;
+      logger?.onPlaybackStart?.(
+        createLoggerLifecycleContext(
+          controlInput,
+          world,
+          mainShip,
+          scriptTimeMs,
+          simTimeMillis,
+          script,
+        ),
+      );
+    }
 
     if (status === "playing" && script) {
       if (scriptTimeMs >= script.totalDurationMs) {
@@ -152,9 +172,29 @@ export function createPlaybackController(
     return null;
   };
 
-  const afterFrame = (): void => {
+  const afterFrame = (params?: LoopUpdateParams): void => {
     if (status === "playing" && script) {
+      sampleLoggerAfterTick(
+        logger,
+        params,
+        script,
+        scriptTimeMs + script.fixedDtMillis,
+      );
       scriptTimeMs += script.fixedDtMillis;
+      return;
+    }
+
+    if (status === "done" && script) {
+      logger?.onPlaybackEnd?.(
+        createLoggerLifecycleContext(
+          params?.controlInput,
+          params?.world,
+          params?.mainShip,
+          scriptTimeMs,
+          params?.simTimeMillis ?? 0,
+          script,
+        ),
+      );
     }
   };
 
@@ -419,4 +459,44 @@ function getInitialStatusText(
   if (!diagnostic) return "";
   if (diagnostic.mode === "capture") return "CAPTURE: idle";
   return script ? "PLAYBACK: waiting" : "PLAYBACK: missing script";
+}
+
+function sampleLoggerAfterTick(
+  logger: PlaybackLogger | null,
+  params: LoopUpdateParams | undefined,
+  script: CompiledPlaybackScript,
+  playbackElapsedMs: number,
+): void {
+  if (!logger?.sampleAfterTick || !params) return;
+
+  const dtTickMillis = params.state.framePolicy.tickDtMillis ?? params.dtMillis;
+  const dtSimMillis = params.state.framePolicy.simDtMillis ?? dtTickMillis;
+  logger.sampleAfterTick({
+    controlInput: params.controlInput,
+    dtSimMillis,
+    dtTickMillis,
+    mainShip: params.mainShip,
+    playbackElapsedMs,
+    script,
+    simTimeMillis: params.simTimeMillis ?? 0,
+    world: params.world,
+  });
+}
+
+function createLoggerLifecycleContext(
+  controlInput: ControlInput | undefined,
+  world: World | undefined,
+  mainShip: ShipBody | undefined,
+  playbackElapsedMs: number,
+  simTimeMillis: number,
+  script: CompiledPlaybackScript,
+) {
+  return {
+    controlInput: controlInput ?? ({} as ControlInput),
+    mainShip,
+    playbackElapsedMs,
+    script,
+    simTimeMillis,
+    world,
+  };
 }

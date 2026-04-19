@@ -49,6 +49,10 @@ The playback plugin is enabled by runtime options parsed by infra:
 - `?mode=playback&scenario=moon-circle`: apply the saved script snapshot,
   start paused, use `P` to start/pause/resume playback, pause at the end, then
   press `P` once more to release normal control.
+- `?mode=playback&scenario=moon-circle-long&log=circle-now`: enable the
+  circle-now measurement logger for that playback run. The logger samples only
+  while `circleNow` is active and dumps console JSON at playback end, including
+  `schemaVersion: 2` and active-relative eccentricity threshold timings.
 
 Playback is intentionally a control-state recorder/player, not a raw keyboard
 event macro. It owns only flight/autopilot controls and uses a fixed real tick
@@ -59,3 +63,5 @@ time scale, not a time-scale timeline.
 The `scenario` query value is a script id. Capture accepts any non-empty id;
 playback succeeds once that id is registered in `playback/scripts/index.ts`,
 otherwise it fails closed with a missing-script status.
+Diagnostic loggers are optional and routed by `log=<mode>`; v1 includes only
+`circle-now`. When no log is requested, playback does not create a logger.

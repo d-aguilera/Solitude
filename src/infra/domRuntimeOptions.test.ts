@@ -18,6 +18,20 @@ describe("dom runtime options", () => {
     });
   });
 
+  it("parses diagnostic playback logging", () => {
+    expect(
+      parseRuntimeOptionsFromSearch(
+        "?mode=playback&scenario=moon-circle-long&log=circle-now",
+      ),
+    ).toEqual({
+      diagnostic: {
+        log: "circle-now",
+        mode: "playback",
+        scenario: "moon-circle-long",
+      },
+    });
+  });
+
   it("fails closed for invalid diagnostics", () => {
     expect(parseRuntimeOptionsFromSearch("?mode=bogus&scenario=nope")).toEqual({
       diagnosticWarning: "Invalid diagnostic mode; expected capture/playback.",
@@ -35,6 +49,17 @@ describe("dom runtime options", () => {
   it("fails closed for missing scenario ids", () => {
     expect(parseRuntimeOptionsFromSearch("?mode=playback")).toEqual({
       diagnosticWarning: "Invalid diagnostic scenario; expected a value.",
+    });
+  });
+
+  it("ignores unknown diagnostic logs without blocking playback", () => {
+    expect(
+      parseRuntimeOptionsFromSearch(
+        "?mode=playback&scenario=moon-circle-long&log=full",
+      ),
+    ).toEqual({
+      diagnostic: { mode: "playback", scenario: "moon-circle-long" },
+      diagnosticLogWarning: "Invalid diagnostic log; expected circle-now.",
     });
   });
 });

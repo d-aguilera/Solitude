@@ -133,6 +133,7 @@
 - Playback:
   - Save the dumped script into a registered module under `src/plugins/playback/scripts/`.
   - Open `?mode=playback&scenario=<script-id>`.
+  - Add `&log=circle-now` to enable the circle-now measurement logger for that playback run.
   - The plugin applies the snapshot before gravity state is built, starts paused, and waits for `P`.
   - Playback runs with the script's fixed real tick and time scale; ship maneuverability still uses the fixed real tick, not raw sim-time authority.
   - At script end, playback pauses; pressing `P` after done releases normal control.
@@ -154,20 +155,17 @@
   - Qualitative difference: the OK run took only about half a roll to reach tangent alignment, then eccentricity rapidly reached zero.
   - We now have a paired comparison: `moon-circle-long` (~29 s, many-roll/slow-feeling circularization) vs `moon-circle-ok` (~8.6 s measured, quick tangent acquisition).
   - Future autopilot fixes and diagnostics should compare both scripts before judging behavior.
+- Circle-now measurement logger (2026-04-19):
+  - Added optional `?mode=playback&scenario=<script-id>&log=circle-now`.
+  - V1 samples only while `circleNow` is active and emits console JSON once at playback end.
+  - Logs include top-level `schemaVersion: 2`.
+  - Samples are stored as a flat numeric array with `sampleFields`, `sampleStride`, `primaryIds`, and `tangentialSources` lookup tables for lower runtime overhead.
+  - The summary reports active real/sim duration, active start playback time, eccentricity start/final/min, absolute and active-relative threshold-crossing times, total absolute roll estimate, primary transitions, acceleration-efficiency min/max/average, and final radius/altitude/radial/tangential values.
+  - Run both `moon-circle-long` and `moon-circle-ok` with `&log=circle-now` to compare the long and OK cases.
 
 ## Next investigation plan
 
-- Add circle-now diagnostics that run during playback and summarize the final `circleNow` phase.
-- Measure, per fixed tick:
-  - dominant primary id,
-  - radius from primary,
-  - radial speed,
-  - tangential speed,
-  - circular speed,
-  - delta-v magnitude,
-  - desired acceleration,
-  - actual main/RCS projection,
-  - attitude error to inward and tangential targets.
+- Use the circle-now measurement logger on both comparison scripts.
 - First question to answer: why does `moon-circle-long` need ~29 s while `moon-circle-ok` circularizes in ~8.6 s? Is the long case physically required by available acceleration and current attitude, or is the controller wasting time by chasing geometry, saturating on the wrong axis, or repeatedly rolling through a moving target plane?
 - Keep the rejected boundary intact: ship maneuverability remains based on real fixed tick time; gravity/celestial motion remains based on scaled sim time.
 
@@ -221,8 +219,6 @@
 
 ## What to log next time
 
-- Initial orbit parameters (r, speed, eccentricity).
-- Tangential direction calculation path (velocity-derived vs fallback).
-- Attitude command outputs per tick (roll rate, pitch, yaw).
-- Delta-v magnitude before/after clamping and the chosen accel axes.
-- Whether the dominant body primary changes during the maneuver.
+- Use `&log=circle-now` in playback mode.
+- Compare summaries first: active duration, active-relative eccentricity threshold times, total absolute roll estimate, acceleration efficiency, and primary transitions.
+- Then inspect flat samples around major differences, especially tangent roll alignment angle, inward alignment angle, delta-v magnitude, main/RCS command fractions, and tangential source.
