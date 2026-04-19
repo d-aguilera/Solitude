@@ -1,6 +1,6 @@
 import type { ControlAction } from "../../app/controlPorts";
-import type { DiagnosticRuntimeOptions } from "../../app/runtimeOptions";
 import type { InputPlugin, KeyHandler } from "../../app/pluginPorts";
+import type { DiagnosticRuntimeOptions } from "../../app/runtimeOptions";
 import type { PlaybackController } from "./core";
 
 const captureToggleAction: ControlAction = "playbackCaptureToggle";
