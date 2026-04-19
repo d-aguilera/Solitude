@@ -76,9 +76,10 @@ const circleZeroPropulsion: PropulsionCommand = {
 };
 
 export function getDominantBodyDirection(
-  { position }: ControlledBodyState,
+  state: ControlledBodyState,
   world: World,
 ): Vec3 | null {
+  const position = state.position;
   const body = getDominantBody(world, position);
   if (!body) {
     return null;
@@ -92,9 +93,8 @@ export function getDominantBodyDirection(
   return dominantBodyScratch;
 }
 
-export function getVelocityDirection({
-  velocity,
-}: ControlledBodyState): Vec3 | null {
+export function getVelocityDirection(state: ControlledBodyState): Vec3 | null {
+  const velocity = state.velocity;
   const speed = vec3.length(velocity);
   if (speed === 0) {
     // No meaningful velocity direction to align to.

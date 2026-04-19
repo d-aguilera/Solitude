@@ -1,4 +1,4 @@
-import type { LoopPlugin } from "../../app/pluginPorts";
+import type { LoopPlugin, LoopUpdateResult } from "../../app/pluginPorts";
 import { parameters } from "../../global/parameters";
 import { createTimeScaleController } from "./logic";
 
@@ -8,15 +8,16 @@ export function createLoopPlugin(): {
 } {
   const controller = createTimeScaleController(parameters.timeScale);
   const framePolicy = { simDtMillis: 0 };
+  const updateResult: LoopUpdateResult = { framePolicy };
 
   const plugin: LoopPlugin = {
-    updateLoopState: ({ controlInput, dtMillis }) => {
+    updateLoopState: (params) => {
       const nextTimeScale = controller.update(
-        controlInput.decreaseTimeScale,
-        controlInput.increaseTimeScale,
+        params.controlInput.decreaseTimeScale,
+        params.controlInput.increaseTimeScale,
       );
-      framePolicy.simDtMillis = dtMillis * nextTimeScale;
-      return { framePolicy };
+      framePolicy.simDtMillis = params.dtMillis * nextTimeScale;
+      return updateResult;
     },
   };
 

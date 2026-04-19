@@ -22,22 +22,25 @@ export function createScenePlugin(): ScenePlugin {
   let trajectoryList: Trajectory[] = [];
 
   return {
-    initScene: ({ scene, world, config }) => {
-      const trajectoryPlan = buildTrajectoryPlan(world, config.physics.planets);
+    initScene: (params) => {
+      const trajectoryPlan = buildTrajectoryPlan(
+        params.world,
+        params.config.physics.planets,
+      );
       addTrajectorySceneObjects(
-        scene,
-        world,
-        config.render.planets,
-        config.render.ships,
+        params.scene,
+        params.world,
+        params.config.render.planets,
+        params.config.render.ships,
         trajectoryPlan,
       );
-      trajectoryList = bindTrajectoryPlanToScene(scene, trajectoryPlan);
+      trajectoryList = bindTrajectoryPlanToScene(params.scene, trajectoryPlan);
     },
-    updateScene: ({ dtSimMillis }) => {
-      updateTrajectories(dtSimMillis, trajectoryList);
+    updateScene: (params) => {
+      updateTrajectories(params.dtSimMillis, trajectoryList);
     },
-    getViewObjectsFilter: ({ viewId }) => {
-      if (viewId !== "top") return null;
+    getViewObjectsFilter: (params) => {
+      if (params.viewId !== "top") return null;
       return (obj) =>
         obj.kind !== "polyline" || !obj.id.startsWith(TRAJECTORY_ID_PREFIX);
     },

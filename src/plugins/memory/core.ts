@@ -8,9 +8,9 @@ export function createLoopPlugin(): {
   const controller = createMemoryTelemetryController();
 
   const plugin: LoopPlugin = {
-    updateLoopState: ({ controlInput, nowMs }) => {
-      controller.updateEnabled(controlInput.profilingToggle);
-      controller.update(nowMs);
+    updateLoopState: (params) => {
+      controller.updateEnabled(params.controlInput.profilingToggle);
+      controller.update(params.nowMs);
       return null;
     },
   };

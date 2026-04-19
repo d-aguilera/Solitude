@@ -7,28 +7,25 @@ import {
 
 export function createControlPlugin(): ControlPlugin {
   return {
-    updateControlState: ({ controlInput }) => {
-      disengageOnManualActuation(controlInput);
+    updateControlState: (params) => {
+      disengageOnManualActuation(params.controlInput);
     },
-    getAttitudeCommand: ({ dtMillis, ship, controlInput, world }) =>
-      getAutopilotAttitudeCommand(dtMillis, ship, controlInput, world),
-    resolvePropulsionCommand: ({
-      dtMillis,
-      controlInput,
-      ship,
-      world,
-      manualPropulsion,
-      maxThrustAcceleration,
-      maxRcsTranslationAcceleration,
-    }) =>
+    getAttitudeCommand: (params) =>
+      getAutopilotAttitudeCommand(
+        params.dtMillis,
+        params.ship,
+        params.controlInput,
+        params.world,
+      ),
+    resolvePropulsionCommand: (params) =>
       resolveAutopilotPropulsionCommand(
-        dtMillis,
-        controlInput,
-        ship,
-        world,
-        manualPropulsion,
-        maxThrustAcceleration,
-        maxRcsTranslationAcceleration,
+        params.dtMillis,
+        params.controlInput,
+        params.ship,
+        params.world,
+        params.manualPropulsion,
+        params.maxThrustAcceleration,
+        params.maxRcsTranslationAcceleration,
       ),
   };
 }

@@ -1,5 +1,21 @@
-import type { LoopPlugin } from "../../app/pluginPorts";
+import type { LoopPlugin, LoopUpdateResult } from "../../app/pluginPorts";
 import { createPauseController } from "./logic";
+
+const RUNNING_LOOP_UPDATE: LoopUpdateResult = {
+  framePolicy: {
+    advanceSim: true,
+    advanceScene: true,
+    advanceHud: true,
+  },
+};
+
+const PAUSED_LOOP_UPDATE: LoopUpdateResult = {
+  framePolicy: {
+    advanceSim: false,
+    advanceScene: false,
+    advanceHud: true,
+  },
+};
 
 export function createLoopPlugin(): {
   loop: LoopPlugin;
@@ -11,15 +27,9 @@ export function createLoopPlugin(): {
     initLoop: () => {
       controller.init();
     },
-    updateLoopState: ({ controlInput }) => {
-      const paused = controller.updatePaused(controlInput.pauseToggle);
-      return {
-        framePolicy: {
-          advanceSim: !paused,
-          advanceScene: !paused,
-          advanceHud: true,
-        },
-      };
+    updateLoopState: (params) => {
+      const paused = controller.updatePaused(params.controlInput.pauseToggle);
+      return paused ? PAUSED_LOOP_UPDATE : RUNNING_LOOP_UPDATE;
     },
   };
 

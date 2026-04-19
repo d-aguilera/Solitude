@@ -9,10 +9,12 @@ export function createLoopPlugin(): {
   const controller = createProfilingController();
 
   const plugin: LoopPlugin = {
-    updateLoopState: ({ controlInput, state }) => {
-      const enabled = controller.updateEnabled(controlInput.profilingToggle);
+    updateLoopState: (params) => {
+      const enabled = controller.updateEnabled(
+        params.controlInput.profilingToggle,
+      );
       profilerController.setEnabled(enabled);
-      profilerController.setPaused(!state.framePolicy.advanceSim);
+      profilerController.setPaused(!params.state.framePolicy.advanceSim);
       profilerController.check();
       return null;
     },
