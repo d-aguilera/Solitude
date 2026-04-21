@@ -18,6 +18,28 @@
 - Goal: drive the ship toward a circular orbit around the dominant body.
 - Implementation is split into attitude control (orientation/roll) and propulsion (thrust + RCS).
 
+## Manual Procedure That Inspired Circle-Now
+
+- Circle-now was originally based on the empirical manual procedure used before the autopilot existed.
+- Manual procedure:
+  - Approach the target planet/moon until it becomes the dominant gravity source.
+  - Press `C` to align the ship's nose to the dominant body.
+  - With the nose pointing at the body, roll until the body's apparent trajectory looks horizontal in the view.
+  - Momentarily release/re-engage `C` as needed to check or refresh the visual alignment to the body.
+  - If relative speed is too high, burn while pointing at the body to get closer or stabilize apparent distance.
+  - Once visually "horizontal" and at a relatively stable apparent distance, use RCS guided by HUD in/out and prograde/retrograde cues until eccentricity is low enough.
+- Current circle-now implementation mirrors this recipe:
+  - Keep the forward axis pointed inward at the dominant body.
+  - Roll until the right axis lines up with the tangential direction.
+  - Compute circularization delta-v and project it onto the available forward main thrust and right-axis RCS controls.
+- This means the current algorithm automates a pilot-facing visual maneuver, not a pure orbital optimal-control solution. That is intentional and user-valuable: it keeps the target body centered so the pilot can witness and understand the maneuver.
+- `C` / align-to-body is non-propulsive but not an instant snap: it computes an attitude command, updates angular velocity through the normal acceleration-limited control path, and rotates the ship frame from angular velocity. It does not consume modeled thrust/RCS/fuel.
+- Potential implementation inefficiency:
+  - The inward-pointing attitude and tangential-roll alignment are coupled. If the roll target is hard to acquire or moves quickly, the useful thrust/RCS projection can remain poor even when the desired circularization delta-v is known.
+  - In those cases, circle-now may spend most of its time rotating toward a visual frame instead of applying acceleration in the most useful direction.
+  - The saved long/OK logs support this concern: the long case has the correct Moon primary and a valid velocity-derived tangent, but remains near-perpendicular to useful tangent alignment for much of the maneuver.
+  - This does not prove the manual procedure is wrong. It may mean the implementation is too literal and lacks the human pilot's judgment: tolerate good-enough alignment, stop chasing small target-frame changes, wait for geometry to settle, and apply correction only when the available axes are useful.
+
 ## Entry points and wiring
 
 - Input plugin mapping: `KeyX` → `circleNow` in `src/plugins/autopilot/input.ts`.
@@ -158,16 +180,43 @@
 - Circle-now measurement logger (2026-04-19):
   - Added optional `?mode=playback&scenario=<script-id>&log=circle-now`.
   - V1 samples only while `circleNow` is active and emits console JSON once at playback end.
-  - Logs include top-level `schemaVersion: 2`.
+  - Newly emitted logs include top-level `schemaVersion: 2`; the first saved comparison logs were backfilled as historical `schemaVersion: 1`.
   - Samples are stored as a flat numeric array with `sampleFields`, `sampleStride`, `primaryIds`, and `tangentialSources` lookup tables for lower runtime overhead.
   - The summary reports active real/sim duration, active start playback time, eccentricity start/final/min, absolute and active-relative threshold-crossing times, total absolute roll estimate, primary transitions, acceleration-efficiency min/max/average, and final radius/altitude/radial/tangential values.
   - Run both `moon-circle-long` and `moon-circle-ok` with `&log=circle-now` to compare the long and OK cases.
+- Saved comparison logs (schema v1, committed baseline):
+  - Long case: `src/plugins/playback/logs/circleNow/moon-circle-long-20260419-2022.json`.
+  - OK case: `src/plugins/playback/logs/circleNow/moon-circle-ok-20260419-2010.json`.
+  - Both logs use `primaryIds: ["planet:moon"]`, report no primary transitions, and use the velocity-derived tangential source for every sample.
+  - Long case summary: 1712 samples, active duration ~28.53 s real / ~913.07 s sim, `e < 0.001` at ~18.05 s after circle-now became active, total absolute roll ~1692°, median absolute tangential roll alignment ~86.7°, median acceleration efficiency ~0.0037.
+  - OK case summary: 796 samples, active duration ~13.27 s real / ~424.53 s sim, `e < 0.001` at ~8.67 s after circle-now became active, total absolute roll ~163°, median absolute tangential roll alignment ~0.05°, median acceleration efficiency ~0.0208.
+  - Key comparison result: the long case is not explained by primary switching or missing tangential direction. The standout difference is tangent-roll acquisition: long spends most of the maneuver roughly perpendicular to useful tangent alignment, while OK reaches useful tangent alignment within a few seconds and eccentricity collapses quickly.
 
 ## Next investigation plan
 
-- Use the circle-now measurement logger on both comparison scripts.
-- First question to answer: why does `moon-circle-long` need ~29 s while `moon-circle-ok` circularizes in ~8.6 s? Is the long case physically required by available acceleration and current attitude, or is the controller wasting time by chasing geometry, saturating on the wrong axis, or repeatedly rolling through a moving target plane?
+- Use the saved logs above as the baseline comparison before changing autopilot behavior.
+- First question to answer: why does `moon-circle-long` fail to acquire useful tangent roll alignment for ~18 s while `moon-circle-ok` gets under 30° tangent-roll error after ~1.7 s and under 10° after ~2.5 s?
+- Focus on `computeCircleNowAttitudeCommand`, `computeRollToDirectionCommand`, and the interaction between inward alignment, tangent roll alignment, and thrust projection.
 - Keep the rejected boundary intact: ship maneuverability remains based on real fixed tick time; gravity/celestial motion remains based on scaled sim time.
+
+## Candidate Courses Of Action
+
+- Course A: preserve the manual-inspired visual mode and fix controller quality.
+  - Keep the target body centered as the defining circle-now UX.
+  - Improve roll acquisition with damping, hysteresis, "good enough" tangent thresholds, target smoothing, or staged behavior.
+  - Avoid blindly chasing instantaneous tangent changes when the available thrust/RCS axes are not yet useful.
+  - This is the preferred first course because it keeps the feature aligned with the proven manual procedure.
+- Course B: make the current implementation less literal.
+  - Still point mostly inward, but allow temporary deviation or relaxed inward alignment when doing so improves circularization authority.
+  - Treat inward pointing as a visual/comfort goal, not an absolute constraint on every tick.
+  - Measure whether this reduces total roll and improves acceleration efficiency without making the maneuver feel confusing.
+- Course C: add or prototype a delta-v-first circularizer.
+  - Orient the ship to maximize useful projection of the desired circularization delta-v, then use main thrust/RCS accordingly.
+  - This may be faster, but it changes the spirit of circle-now because the planet may no longer stay centered.
+  - Consider this a separate mode or later comparison target rather than the immediate fix.
+- Course D: improve diagnostics before changing control behavior.
+  - Add logger fields for desired delta-v direction versus ship forward/right axes, and possibly target tangent angular rate during playback.
+  - Use this if the current logs are insufficient to distinguish poor roll control from bad thrust projection.
 
 ## Code touch points (updated during this session)
 
