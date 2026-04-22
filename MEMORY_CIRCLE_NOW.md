@@ -182,6 +182,7 @@
   - V1 samples only while `circleNow` is active and emits console JSON once at playback end.
   - Newly emitted logs include top-level `schemaVersion: 2`; the first saved comparison logs were backfilled as historical `schemaVersion: 1`.
   - Samples are stored as a flat numeric array with `sampleFields`, `sampleStride`, `primaryIds`, and `tangentialSources` lookup tables for lower runtime overhead.
+  - 2026-04-22 schema-v2 expansion added per-sample target-rate and projection diagnostics: tangent-roll error rate, projected tangent-bearing rate, raw tangential direction rate, ship-forward direction rate, tangential projection quality, and desired-acceleration axis dots.
   - The summary reports active real/sim duration, active start playback time, eccentricity start/final/min, absolute and active-relative threshold-crossing times, total absolute roll estimate, primary transitions, acceleration-efficiency min/max/average, and final radius/altitude/radial/tangential values.
   - Run both `moon-circle-long` and `moon-circle-ok` with `&log=circle-now` to compare the long and OK cases.
 - Saved comparison logs (schema v1, committed baseline):
@@ -196,6 +197,12 @@
 
 - Use the saved logs above as the baseline comparison before changing autopilot behavior.
 - First question to answer: why does `moon-circle-long` fail to acquire useful tangent roll alignment for ~18 s while `moon-circle-ok` gets under 30° tangent-roll error after ~1.7 s and under 10° after ~2.5 s?
+- 2026-04-22 log comparison answered the first question more narrowly:
+  - Long case rolls immediately and hard, then gets phase-locked near `-88°` tangent-roll error from ~0.5 s to ~17 s while roll angular velocity is clamped at `-1.6 rad/s` (~`-91.7°/s`).
+  - Estimated target bearing rate around the ship-forward roll axis is also ~`-91.6°/s` during that plateau, so the roll controller is chasing a moving target at essentially its own max speed and cannot close the remaining error.
+  - OK case has estimated target bearing near stationary during acquisition: median roughly `+8°/s` in the first 0.5 s, `-5°/s` from 0.5-2 s, and ~`0°/s` afterward; the same roll authority closes the error quickly.
+  - Long case crosses `|roll error| <= 90°` at ~0.52 s, but does not reach `<= 60°` until ~17.95 s or `<= 30°` until ~18.42 s. OK case reaches `<= 60°` at ~1.20 s, `<= 30°` at ~1.70 s, and `<= 10°` at ~2.52 s.
+  - Practical conclusion: the trip point is the instantaneous tangent-roll target bearing moving at/near max roll authority after inward alignment, producing a long phase lock near perpendicular thrust/RCS projection. It is not a failure to command roll.
 - Focus on `computeCircleNowAttitudeCommand`, `computeRollToDirectionCommand`, and the interaction between inward alignment, tangent roll alignment, and thrust projection.
 - Keep the rejected boundary intact: ship maneuverability remains based on real fixed tick time; gravity/celestial motion remains based on scaled sim time.
 
@@ -251,6 +258,54 @@
 - Result:
   - Rejected and reverted, including the temporary tests, before interactive x32 confirmation.
   - User clarified that ship maneuverability must remain on real frame time; otherwise high-time-scale approach is uncontrollable.
+
+## Troubleshooting iteration (2026-04-22)
+
+- Hypothesis:
+  - The paired saved logs may be sufficient to identify what trips circle-now without adding new logger fields.
+- Exact test:
+  - Decoded the flat sample arrays in:
+    - `src/plugins/playback/logs/circleNow/moon-circle-long-20260419-2022.json`
+    - `src/plugins/playback/logs/circleNow/moon-circle-ok-20260419-2010.json`
+  - Compared active-relative milestones, signed tangent-roll error, roll angular velocity, inward alignment, acceleration efficiency, commands, and eccentricity.
+  - Estimated target-bearing rate around the roll axis using `errorDot + angularVelocityRoll` from the signed tangent-roll error series.
+- Result:
+  - Confirmed enough data to pinpoint the tripping mechanism.
+  - Long case:
+    - Starts rolling immediately and reaches `|roll error| <= 90°` at ~0.52 s.
+    - Then stays near `-88°` roll error from ~0.5 s to ~17 s while `angularVelocityRollRadps` is clamped at `-1.6 rad/s`.
+    - Estimated target-bearing rate during that plateau is ~`-91.6°/s`, matching max roll speed, so the controller is phase-locked and cannot close tangent alignment.
+    - Acceleration efficiency remains near zero during the plateau because the available forward/right axes are nearly perpendicular to the desired delta-v projection.
+  - OK case:
+    - The target bearing is nearly stationary during acquisition, so the same roll controller closes error normally (`<=30°` by ~1.70 s and `<=10°` by ~2.52 s).
+  - Confirmed/reframed theory:
+    - The bug is target-bearing motion at the visual/inward-pointing roll frame, not bad primary selection, missing tangent direction, or lack of roll command.
+    - Next fix should avoid chasing the instantaneous tangent bearing when it moves at/near roll authority. Candidate fixes should preserve real-time ship maneuverability and likely use smoothing, lead/lag compensation, hysteresis/staging, or an alternate good-enough target instead of raw instantaneous roll alignment.
+
+## Troubleshooting iteration (2026-04-22, schema-v2 replay pair)
+
+- New logs:
+  - `src/plugins/playback/logs/circleNow/moon-circle-long-20260422-1925.json`
+  - `src/plugins/playback/logs/circleNow/moon-circle-ok-20260422-1928.json`
+- Hypothesis:
+  - The new schema-v2 rate/projection fields should reveal whether the moving target comes from raw tangential-vector motion, ship-forward/inward frame motion, or projection degeneracy.
+- Exact test:
+  - Decoded both flat sample arrays and compared tangent-roll error, tangent-roll error rate, projected tangent-bearing rate, raw tangential direction rate, ship-forward direction rate, tangential projection quality, desired-acceleration axis dots, and acceleration efficiency.
+- Result:
+  - Confirmed: the long-case moving target is primarily the raw velocity-derived tangential direction rotating in world space.
+  - Long case summary:
+    - `schemaVersion: 2`, 1687 samples, active duration ~28.12 s real / ~899.73 s sim.
+    - `e < 0.001` at ~24.27 s active, total absolute roll ~2225.8 deg, average acceleration efficiency ~0.151.
+    - From ~2 s to ~23 s, tangent-roll error sits near `-88°`, roll velocity is clamped near `-91.7°/s`, projected tangent-bearing rate is near `-91.6°/s`, and raw tangential direction rate is near `+91.6°/s`.
+    - During the plateau, ship-forward direction rate is only ~2-3°/s, `tangentialForwardDot` is near zero, and `tangentialProjectionLength` is ~1.0. This rejects projection degeneracy and rejects inward-frame motion as the main source.
+    - Desired acceleration is almost entirely along ship `-up` during the plateau (`desiredAccelerationUpDot` near `-0.999`, forward dot near 0, right dot near a few hundredths), so the available forward/right actuators have near-zero authority and acceleration efficiency stays near ~0.001.
+  - OK case summary:
+    - `schemaVersion: 2`, 729 samples, active duration ~12.15 s real / ~388.8 s sim.
+    - `e < 0.001` at ~9.57 s active, total absolute roll ~158.8 deg, average acceleration efficiency ~0.269.
+    - Raw tangential direction and ship-forward direction both move quickly during early acquisition, but their projected bearing remains modest: median projected tangent-bearing rate ~+27.7°/s in the first 0.5 s, ~-5.8°/s from 0.5-2 s, and ~0°/s after 2 s.
+    - By ~2 s the desired acceleration is mostly along ship right (`desiredAccelerationRightDot` around `-0.94` to `-1.0`) instead of ship up, so RCS can act usefully while roll settles.
+- Practical conclusion:
+  - Circle-now sometimes has to chase a moving target because the velocity-derived tangent can precess around the inward-pointing roll axis at roughly max roll speed. In the long geometry, that leaves the desired circularization acceleration in the ship-up axis, which circle-now cannot actuate. The fix should not focus on projection quality; it should change how circle-now handles high raw tangent-bearing rates and unavailable actuator authority.
 
 ## Timeline of key steps (2026-04-04)
 

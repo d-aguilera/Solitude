@@ -52,7 +52,8 @@ The playback plugin is enabled by runtime options parsed by infra:
 - `?mode=playback&scenario=moon-circle-long&log=circle-now`: enable the
   circle-now measurement logger for that playback run. The logger samples only
   while `circleNow` is active and dumps console JSON at playback end, including
-  `schemaVersion: 2` and active-relative eccentricity threshold timings.
+  `schemaVersion: 2`, active-relative eccentricity threshold timings, and
+  per-sample target-bearing diagnostics.
 
 Playback is intentionally a control-state recorder/player, not a raw keyboard
 event macro. It owns only flight/autopilot controls and uses a fixed real tick

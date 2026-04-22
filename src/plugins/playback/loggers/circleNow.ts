@@ -32,8 +32,17 @@ export const circleNowSampleFields = [
   "deltaVMagnitudeMps",
   "inwardAlignmentDeg",
   "tangentialRollAlignmentDeg",
+  "tangentialRollAlignmentRateDegPerSec",
+  "projectedTangentBearingRateDegPerSec",
+  "tangentialDirectionRateDegPerSec",
+  "shipForwardDirectionRateDegPerSec",
+  "tangentialForwardDot",
+  "tangentialProjectionLength",
   "tangentialSourceIndex",
   "desiredAccelerationMps2",
+  "desiredAccelerationForwardDot",
+  "desiredAccelerationRightDot",
+  "desiredAccelerationUpDot",
   "mainCommand",
   "rcsCommand",
   "accelerationEfficiency",
@@ -126,6 +135,12 @@ interface CircleNowSummaryState {
   totalAbsRollDeg: number;
 }
 
+interface CircleNowRollDiagnostics {
+  alignmentDeg: number;
+  tangentialForwardDot: number;
+  tangentialProjectionLength: number;
+}
+
 export function createCircleNowLogger(
   script: CompiledPlaybackScript,
 ): CircleNowLogger {
@@ -148,6 +163,14 @@ export function createCircleNowLogger(
   const desiredAccelScratch = vec3.zero();
   const actualAccelScratch = vec3.zero();
   const actualRcsScratch = vec3.zero();
+  const previousTangentialScratch = vec3.zero();
+  const previousForwardScratch = vec3.zero();
+
+  const rollDiagnosticsScratch: CircleNowRollDiagnostics = {
+    alignmentDeg: NaN,
+    tangentialForwardDot: NaN,
+    tangentialProjectionLength: NaN,
+  };
 
   let primaryBodyScratch: RotatingBody | null = null;
   let primaryIdScratch = "";
@@ -156,6 +179,9 @@ export function createCircleNowLogger(
 
   let sampleCount = 0;
   let previousPrimaryIndex = NO_PREVIOUS_PRIMARY_INDEX;
+  let hasPreviousDiagnostics = false;
+  let previousTangentialRollAlignmentDeg = NaN;
+  let previousAngularVelocityRollRadps = NaN;
   let emitted = false;
 
   const summary: CircleNowSummaryState = {
@@ -236,6 +262,7 @@ export function createCircleNowLogger(
     }
     sampleCount = 0;
     previousPrimaryIndex = NO_PREVIOUS_PRIMARY_INDEX;
+    resetPreviousDiagnostics();
     emitted = false;
     summary.activeDurationMs = 0;
     summary.activeStartPlaybackElapsedMs = NaN;
@@ -258,6 +285,7 @@ export function createCircleNowLogger(
   }
 
   function pushMissingSample(context: PlaybackLoggerTickContext): void {
+    resetPreviousDiagnostics();
     const accumulatedAbsRollDeg = summary.totalAbsRollDeg;
     pushSample(
       context,
@@ -273,7 +301,16 @@ export function createCircleNowLogger(
       NaN,
       NaN,
       NaN,
+      NaN,
+      NaN,
+      NaN,
+      NaN,
+      NaN,
+      NaN,
       0,
+      NaN,
+      NaN,
+      NaN,
       NaN,
       0,
       0,
@@ -339,10 +376,37 @@ export function createCircleNowLogger(
     const deltaVMagnitudeMps = vec3.length(deltaVScratch);
 
     const inwardAlignmentDeg = computeInwardAlignmentDeg(ship);
-    const tangentialRollAlignmentDeg =
+    const rawRollDiagnostics =
       tangentialSourceIndex === 0
+        ? null
+        : computeTangentialRollDiagnostics(ship);
+    const rollDiagnostics =
+      rawRollDiagnostics && Number.isFinite(rawRollDiagnostics.alignmentDeg)
+        ? rawRollDiagnostics
+        : null;
+    const tangentialRollAlignmentDeg = rollDiagnostics?.alignmentDeg ?? NaN;
+    const dtSec = context.dtTickMillis / 1000;
+    const rollRates = computeRollRates(
+      dtSec,
+      tangentialRollAlignmentDeg,
+      ship.angularVelocity.roll,
+    );
+    const tangentialDirectionRateDegPerSec =
+      !rollDiagnostics || dtSec <= 0 || !hasPreviousDiagnostics
         ? NaN
-        : computeTangentialRollAlignmentDeg(ship);
+        : directionRateDegPerSec(
+            previousTangentialScratch,
+            tangentialScratch,
+            dtSec,
+          );
+    const shipForwardDirectionRateDegPerSec =
+      !rollDiagnostics || dtSec <= 0 || !hasPreviousDiagnostics
+        ? NaN
+        : directionRateDegPerSec(
+            previousForwardScratch,
+            ship.frame.forward,
+            dtSec,
+          );
 
     const command = computeAccelerationCommand(
       ship,
@@ -370,8 +434,17 @@ export function createCircleNowLogger(
       deltaVMagnitudeMps,
       inwardAlignmentDeg,
       tangentialRollAlignmentDeg,
+      rollRates.tangentialRollAlignmentRateDegPerSec,
+      rollRates.projectedTangentBearingRateDegPerSec,
+      tangentialDirectionRateDegPerSec,
+      shipForwardDirectionRateDegPerSec,
+      rollDiagnostics?.tangentialForwardDot ?? NaN,
+      rollDiagnostics?.tangentialProjectionLength ?? NaN,
       tangentialSourceIndex,
       command.desiredAccelerationMps2,
+      command.desiredAccelerationForwardDot,
+      command.desiredAccelerationRightDot,
+      command.desiredAccelerationUpDot,
       command.mainCommand,
       command.rcsCommand,
       command.accelerationEfficiency,
@@ -380,6 +453,17 @@ export function createCircleNowLogger(
       ship.angularVelocity.yaw,
       accumulatedAbsRollDeg,
     );
+
+    if (rollDiagnostics) {
+      updatePreviousDiagnostics(
+        tangentialRollAlignmentDeg,
+        ship.angularVelocity.roll,
+        tangentialScratch,
+        ship.frame.forward,
+      );
+    } else {
+      resetPreviousDiagnostics();
+    }
   }
 
   function computeTangentialDirectionIndex(
@@ -416,9 +500,12 @@ export function createCircleNowLogger(
     return angleDeg(ship.frame.forward, inwardScratch);
   }
 
-  function computeTangentialRollAlignmentDeg(ship: ShipBody): number {
+  function computeTangentialRollDiagnostics(
+    ship: ShipBody,
+  ): CircleNowRollDiagnostics {
     const forward = ship.frame.forward;
     const proj = vec3.dot(tangentialScratch, forward);
+    rollDiagnosticsScratch.tangentialForwardDot = proj;
     vec3.scaleInto(projectedTangentialScratch, proj, forward);
     vec3.subInto(
       projectedTangentialScratch,
@@ -426,7 +513,11 @@ export function createCircleNowLogger(
       projectedTangentialScratch,
     );
     const projectedLength = vec3.length(projectedTangentialScratch);
-    if (projectedLength < EPS_LEN) return NaN;
+    rollDiagnosticsScratch.tangentialProjectionLength = projectedLength;
+    if (projectedLength < EPS_LEN) {
+      rollDiagnosticsScratch.alignmentDeg = NaN;
+      return rollDiagnosticsScratch;
+    }
     vec3.scaleInto(
       projectedTangentialScratch,
       1 / projectedLength,
@@ -440,7 +531,43 @@ export function createCircleNowLogger(
       projectedTangentialScratch,
     );
     const sign = vec3.dot(rollCrossScratch, forward) >= 0 ? 1 : -1;
-    return angle * sign;
+    rollDiagnosticsScratch.alignmentDeg = angle * sign;
+    return rollDiagnosticsScratch;
+  }
+
+  function computeRollRates(
+    dtSec: number,
+    tangentialRollAlignmentDeg: number,
+    angularVelocityRollRadps: number,
+  ): {
+    projectedTangentBearingRateDegPerSec: number;
+    tangentialRollAlignmentRateDegPerSec: number;
+  } {
+    if (
+      dtSec <= 0 ||
+      !hasPreviousDiagnostics ||
+      !Number.isFinite(tangentialRollAlignmentDeg)
+    ) {
+      return {
+        projectedTangentBearingRateDegPerSec: NaN,
+        tangentialRollAlignmentRateDegPerSec: NaN,
+      };
+    }
+
+    const tangentialRollAlignmentRateDegPerSec =
+      shortestDeltaDeg(
+        previousTangentialRollAlignmentDeg,
+        tangentialRollAlignmentDeg,
+      ) / dtSec;
+    const averageRollDegPerSec =
+      ((previousAngularVelocityRollRadps + angularVelocityRollRadps) / 2) *
+      DEG_PER_RAD;
+
+    return {
+      projectedTangentBearingRateDegPerSec:
+        tangentialRollAlignmentRateDegPerSec + averageRollDegPerSec,
+      tangentialRollAlignmentRateDegPerSec,
+    };
   }
 
   function computeAccelerationCommand(
@@ -450,6 +577,9 @@ export function createCircleNowLogger(
   ): {
     accelerationEfficiency: number;
     desiredAccelerationMps2: number;
+    desiredAccelerationForwardDot: number;
+    desiredAccelerationRightDot: number;
+    desiredAccelerationUpDot: number;
     mainCommand: number;
     rcsCommand: number;
   } {
@@ -457,7 +587,10 @@ export function createCircleNowLogger(
     if (dtSec <= 0 || deltaVMagnitudeMps < EPS_DELTA_V) {
       return {
         accelerationEfficiency: NaN,
+        desiredAccelerationForwardDot: NaN,
         desiredAccelerationMps2: 0,
+        desiredAccelerationRightDot: NaN,
+        desiredAccelerationUpDot: NaN,
         mainCommand: 0,
         rcsCommand: 0,
       };
@@ -468,6 +601,20 @@ export function createCircleNowLogger(
       deltaVMagnitudeMps > maxDeltaV ? maxDeltaV / deltaVMagnitudeMps : 1;
     vec3.scaleInto(desiredAccelScratch, scale / dtSec, deltaVScratch);
     const desiredAccelerationMps2 = vec3.length(desiredAccelScratch);
+    const desiredAccelerationForwardDot =
+      desiredAccelerationMps2 > 0
+        ? vec3.dot(desiredAccelScratch, ship.frame.forward) /
+          desiredAccelerationMps2
+        : NaN;
+    const desiredAccelerationRightDot =
+      desiredAccelerationMps2 > 0
+        ? vec3.dot(desiredAccelScratch, ship.frame.right) /
+          desiredAccelerationMps2
+        : NaN;
+    const desiredAccelerationUpDot =
+      desiredAccelerationMps2 > 0
+        ? vec3.dot(desiredAccelScratch, ship.frame.up) / desiredAccelerationMps2
+        : NaN;
 
     const mainCommand = clamp(
       vec3.dot(desiredAccelScratch, ship.frame.forward) / maxThrustAcceleration,
@@ -505,10 +652,37 @@ export function createCircleNowLogger(
 
     return {
       accelerationEfficiency,
+      desiredAccelerationForwardDot,
       desiredAccelerationMps2,
+      desiredAccelerationRightDot,
+      desiredAccelerationUpDot,
       mainCommand,
       rcsCommand,
     };
+  }
+
+  function updatePreviousDiagnostics(
+    tangentialRollAlignmentDeg: number,
+    angularVelocityRollRadps: number,
+    tangentialDirection: Vec3,
+    forwardDirection: Vec3,
+  ): void {
+    if (!Number.isFinite(tangentialRollAlignmentDeg)) {
+      resetPreviousDiagnostics();
+      return;
+    }
+
+    hasPreviousDiagnostics = true;
+    previousTangentialRollAlignmentDeg = tangentialRollAlignmentDeg;
+    previousAngularVelocityRollRadps = angularVelocityRollRadps;
+    vec3.copyInto(previousTangentialScratch, tangentialDirection);
+    vec3.copyInto(previousForwardScratch, forwardDirection);
+  }
+
+  function resetPreviousDiagnostics(): void {
+    hasPreviousDiagnostics = false;
+    previousTangentialRollAlignmentDeg = NaN;
+    previousAngularVelocityRollRadps = NaN;
   }
 
   function pushSample(
@@ -525,8 +699,17 @@ export function createCircleNowLogger(
     deltaVMagnitudeMps: number,
     inwardAlignmentDeg: number,
     tangentialRollAlignmentDeg: number,
+    tangentialRollAlignmentRateDegPerSec: number,
+    projectedTangentBearingRateDegPerSec: number,
+    tangentialDirectionRateDegPerSec: number,
+    shipForwardDirectionRateDegPerSec: number,
+    tangentialForwardDot: number,
+    tangentialProjectionLength: number,
     tangentialSourceIndex: number,
     desiredAccelerationMps2: number,
+    desiredAccelerationForwardDot: number,
+    desiredAccelerationRightDot: number,
+    desiredAccelerationUpDot: number,
     mainCommand: number,
     rcsCommand: number,
     accelerationEfficiency: number,
@@ -550,8 +733,17 @@ export function createCircleNowLogger(
       deltaVMagnitudeMps,
       inwardAlignmentDeg,
       tangentialRollAlignmentDeg,
+      tangentialRollAlignmentRateDegPerSec,
+      projectedTangentBearingRateDegPerSec,
+      tangentialDirectionRateDegPerSec,
+      shipForwardDirectionRateDegPerSec,
+      tangentialForwardDot,
+      tangentialProjectionLength,
       tangentialSourceIndex,
       desiredAccelerationMps2,
+      desiredAccelerationForwardDot,
+      desiredAccelerationRightDot,
+      desiredAccelerationUpDot,
       mainCommand,
       rcsCommand,
       accelerationEfficiency,
@@ -795,6 +987,26 @@ function angleDeg(a: Vec3, b: Vec3): number {
   if (aLen === 0 || bLen === 0) return NaN;
   const dot = vec3.dot(a, b) / (aLen * bLen);
   return Math.acos(clamp(dot, -1, 1)) * DEG_PER_RAD;
+}
+
+function directionRateDegPerSec(
+  previousDirection: Vec3,
+  currentDirection: Vec3,
+  dtSec: number,
+): number {
+  if (dtSec <= 0) return NaN;
+  return angleDeg(previousDirection, currentDirection) / dtSec;
+}
+
+function shortestDeltaDeg(previousDeg: number, currentDeg: number): number {
+  if (!Number.isFinite(previousDeg) || !Number.isFinite(currentDeg)) {
+    return NaN;
+  }
+
+  let delta = currentDeg - previousDeg;
+  while (delta > 180) delta -= 360;
+  while (delta < -180) delta += 360;
+  return delta;
 }
 
 function finiteOrNull(value: number): number | null {

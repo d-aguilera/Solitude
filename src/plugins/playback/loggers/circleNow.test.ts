@@ -6,7 +6,11 @@ import { vec3 } from "../../../domain/vec3";
 import { parameters } from "../../../global/parameters";
 import { compilePlaybackScript } from "../logic";
 import type { PlaybackScript } from "../types";
-import { circleNowSampleFields, createCircleNowLogger } from "./circleNow";
+import {
+  circleNowSampleFields,
+  createCircleNowLogger,
+  type CircleNowLogReport,
+} from "./circleNow";
 import { createPlaybackLogger } from "./index";
 
 function createScript(): ReturnType<typeof compilePlaybackScript> {
@@ -80,6 +84,16 @@ function createWorld(): { ship: ShipBody; world: World } {
   };
 }
 
+function sampleValue(
+  report: CircleNowLogReport,
+  sampleIndex: number,
+  field: (typeof circleNowSampleFields)[number],
+): number {
+  const fieldIndex = circleNowSampleFields.indexOf(field);
+  expect(fieldIndex).toBeGreaterThanOrEqual(0);
+  return report.samples[sampleIndex * report.sampleStride + fieldIndex];
+}
+
 describe("playback diagnostic loggers", () => {
   it("routes circle-now logging only when requested", () => {
     const script = createScript();
@@ -131,17 +145,126 @@ describe("circle-now playback logger", () => {
 
     const report = logger.getReport();
     const primaryIndexOffset = circleNowSampleFields.indexOf("primaryIndex");
+    const newFields = [
+      "tangentialRollAlignmentRateDegPerSec",
+      "projectedTangentBearingRateDegPerSec",
+      "tangentialDirectionRateDegPerSec",
+      "shipForwardDirectionRateDegPerSec",
+      "tangentialForwardDot",
+      "tangentialProjectionLength",
+      "desiredAccelerationForwardDot",
+      "desiredAccelerationRightDot",
+      "desiredAccelerationUpDot",
+    ] as const;
 
     expect(report.schemaVersion).toBe(2);
     expect(report.sampleCount).toBe(1);
     expect(report.samples.length).toBe(report.sampleStride);
+    expect(report.sampleStride).toBe(circleNowSampleFields.length);
+    for (const field of newFields) {
+      expect(circleNowSampleFields).toContain(field);
+    }
     expect(report.samples[primaryIndexOffset]).toBe(0);
     expect(report.primaryIds).toEqual(["planet:moon"]);
+    expect(
+      sampleValue(report, 0, "tangentialRollAlignmentRateDegPerSec"),
+    ).toBeNaN();
+    expect(
+      sampleValue(report, 0, "projectedTangentBearingRateDegPerSec"),
+    ).toBeNaN();
+    expect(
+      sampleValue(report, 0, "tangentialDirectionRateDegPerSec"),
+    ).toBeNaN();
+    expect(
+      sampleValue(report, 0, "shipForwardDirectionRateDegPerSec"),
+    ).toBeNaN();
+    expect(sampleValue(report, 0, "tangentialForwardDot")).toBeCloseTo(0);
+    expect(sampleValue(report, 0, "tangentialProjectionLength")).toBeCloseTo(1);
+    expect(
+      sampleValue(report, 0, "desiredAccelerationForwardDot"),
+    ).toBeGreaterThanOrEqual(-1);
+    expect(
+      sampleValue(report, 0, "desiredAccelerationRightDot"),
+    ).toBeGreaterThanOrEqual(-1);
+    expect(
+      sampleValue(report, 0, "desiredAccelerationUpDot"),
+    ).toBeGreaterThanOrEqual(-1);
     expect(report.summary.activeDurationMs).toBeCloseTo(script.fixedDtMillis);
     expect(report.summary.activeSimDurationMs).toBeCloseTo(
       script.fixedDtMillis * script.timeScale,
     );
     expect(report.summary.totalAbsRollDeg).toBeGreaterThan(0);
+  });
+
+  it("records finite target-rate diagnostics after a previous valid sample", () => {
+    const script = createScript();
+    const logger = createCircleNowLogger(script);
+    const { ship, world } = createWorld();
+    const controlInput = createControlInput(["circleNow"]);
+    controlInput.circleNow = true;
+
+    logger.onPlaybackStart?.({
+      controlInput,
+      mainShip: ship,
+      playbackElapsedMs: 0,
+      script,
+      simTimeMillis: 0,
+      world,
+    });
+
+    logger.sampleAfterTick?.({
+      controlInput,
+      dtSimMillis: script.fixedDtMillis * script.timeScale,
+      dtTickMillis: script.fixedDtMillis,
+      mainShip: ship,
+      playbackElapsedMs: script.fixedDtMillis,
+      script,
+      simTimeMillis: 100,
+      world,
+    });
+    logger.sampleAfterTick?.({
+      controlInput,
+      dtSimMillis: script.fixedDtMillis * script.timeScale,
+      dtTickMillis: script.fixedDtMillis,
+      mainShip: ship,
+      playbackElapsedMs: script.fixedDtMillis * 2,
+      script,
+      simTimeMillis: 200,
+      world,
+    });
+
+    const report = logger.getReport();
+
+    expect(report.sampleCount).toBe(2);
+    expect(
+      Number.isFinite(
+        sampleValue(report, 1, "tangentialRollAlignmentRateDegPerSec"),
+      ),
+    ).toBe(true);
+    expect(
+      Number.isFinite(
+        sampleValue(report, 1, "projectedTangentBearingRateDegPerSec"),
+      ),
+    ).toBe(true);
+    expect(
+      Number.isFinite(
+        sampleValue(report, 1, "tangentialDirectionRateDegPerSec"),
+      ),
+    ).toBe(true);
+    expect(
+      Number.isFinite(
+        sampleValue(report, 1, "shipForwardDirectionRateDegPerSec"),
+      ),
+    ).toBe(true);
+    expect(
+      Number.isFinite(sampleValue(report, 1, "desiredAccelerationForwardDot")),
+    ).toBe(true);
+    expect(
+      Number.isFinite(sampleValue(report, 1, "desiredAccelerationRightDot")),
+    ).toBe(true);
+    expect(
+      Number.isFinite(sampleValue(report, 1, "desiredAccelerationUpDot")),
+    ).toBe(true);
   });
 
   it("reports eccentricity threshold crossings relative to active start", () => {
@@ -249,5 +372,22 @@ describe("circle-now playback logger", () => {
     const report = logger.getReport();
     expect(report.sampleCount).toBe(1);
     expect(report.summary.initialEccentricity).toBeNull();
+    expect(sampleValue(report, 0, "tangentialForwardDot")).toBeNaN();
+    expect(sampleValue(report, 0, "tangentialProjectionLength")).toBeNaN();
+    expect(
+      sampleValue(report, 0, "tangentialRollAlignmentRateDegPerSec"),
+    ).toBeNaN();
+    expect(
+      sampleValue(report, 0, "projectedTangentBearingRateDegPerSec"),
+    ).toBeNaN();
+    expect(
+      sampleValue(report, 0, "tangentialDirectionRateDegPerSec"),
+    ).toBeNaN();
+    expect(
+      sampleValue(report, 0, "shipForwardDirectionRateDegPerSec"),
+    ).toBeNaN();
+    expect(sampleValue(report, 0, "desiredAccelerationForwardDot")).toBeNaN();
+    expect(sampleValue(report, 0, "desiredAccelerationRightDot")).toBeNaN();
+    expect(sampleValue(report, 0, "desiredAccelerationUpDot")).toBeNaN();
   });
 });
