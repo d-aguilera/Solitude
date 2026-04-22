@@ -33,7 +33,7 @@
   - Roll until the right axis lines up with the tangential direction.
   - Compute circularization delta-v and project it onto the available forward main thrust and right-axis RCS controls.
 - This means the current algorithm automates a pilot-facing visual maneuver, not a pure orbital optimal-control solution. That is intentional and user-valuable: it keeps the target body centered so the pilot can witness and understand the maneuver.
-- `C` / align-to-body is non-propulsive but not an instant snap: it computes an attitude command, updates angular velocity through the normal acceleration-limited control path, and rotates the ship frame from angular velocity. It does not consume modeled thrust/RCS/fuel.
+- `C` / align-to-body is non-propulsive but not an instant snap: it computes an attitude command, updates angular velocity through the normal acceleration-limited control path, and rotates the ship frame from angular velocity. It does not consume modeled thrust/RCS/fuel. See `MEMORY_ATTITUDE_AUTOPILOT.md` for the dedicated attitude-control interpretation.
 - Potential implementation inefficiency:
   - The inward-pointing attitude and tangential-roll alignment are coupled. If the roll target is hard to acquire or moves quickly, the useful thrust/RCS projection can remain poor even when the desired circularization delta-v is known.
   - In those cases, circle-now may spend most of its time rotating toward a visual frame instead of applying acceleration in the most useful direction.
