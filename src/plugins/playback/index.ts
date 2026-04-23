@@ -1,18 +1,21 @@
-import type { GamePlugin } from "../../app/pluginPorts";
-import type { RuntimeOptions } from "../../app/runtimeOptions";
+import type { GamePlugin, RuntimeOptions } from "../../app/pluginPorts";
 import { createPlaybackController } from "./core";
 import { createHudPlugin } from "./hud";
 import { createInputPlugin } from "./input";
+import { parsePlaybackRuntimeOptions } from "./options";
 
 export function createPlaybackPlugin(
   runtimeOptions: RuntimeOptions = {},
 ): GamePlugin {
+  const options = parsePlaybackRuntimeOptions(runtimeOptions);
   const controller = createPlaybackController(
-    runtimeOptions.diagnostic,
-    runtimeOptions.diagnosticWarning,
+    options.diagnostic,
+    options.diagnosticWarning ?? undefined,
+    undefined,
+    runtimeOptions,
   );
-  if (runtimeOptions.diagnosticLogWarning) {
-    console.warn(runtimeOptions.diagnosticLogWarning);
+  if (options.diagnosticLogWarning) {
+    console.warn(options.diagnosticLogWarning);
   }
 
   return {
@@ -23,7 +26,7 @@ export function createPlaybackPlugin(
       },
     },
     hud: createHudPlugin(controller),
-    input: createInputPlugin(runtimeOptions.diagnostic, controller),
+    input: createInputPlugin(options.diagnostic, controller),
     loop: {
       getInitialSimTimeMillis: () => controller.getInitialSimTimeMillis(),
       updateLoopState: ({

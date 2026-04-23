@@ -13,6 +13,8 @@ import type { HudGrid } from "./hudPorts";
 import type { Scene, SceneObject } from "./scenePorts";
 import type { SceneViewId, ViewDefinition } from "./viewPorts";
 
+export type RuntimeOptions = Readonly<Record<string, string>>;
+
 export interface KeyHandler {
   handleKeyDown: (action: ControlAction, isRepeat: boolean) => boolean;
   handleKeyUp: (action: ControlAction) => boolean;

@@ -180,9 +180,11 @@
 - Circle-now measurement logger (2026-04-19):
   - Added optional `?mode=playback&scenario=<script-id>&log=circle-now`.
   - V1 samples only while `circleNow` is active and emits console JSON once at playback end.
-  - Newly emitted logs include top-level `schemaVersion: 2`; the first saved comparison logs were backfilled as historical `schemaVersion: 1`.
+  - Newly emitted logs include top-level `schemaVersion: 3` and `circleNowAlgorithmVersion`.
+  - The first saved comparison logs were backfilled as historical `schemaVersion: 1`; the 2026-04-22 target-rate/projection logs before algorithm versioning are historical `schemaVersion: 2`.
   - Samples are stored as a flat numeric array with `sampleFields`, `sampleStride`, `primaryIds`, and `tangentialSources` lookup tables for lower runtime overhead.
   - 2026-04-22 schema-v2 expansion added per-sample target-rate and projection diagnostics: tangent-roll error rate, projected tangent-bearing rate, raw tangential direction rate, ship-forward direction rate, tangential projection quality, and desired-acceleration axis dots.
+  - 2026-04-23 schema-v3 expansion added `circleNowAlgorithmVersion` without changing the sample fields.
   - The summary reports active real/sim duration, active start playback time, eccentricity start/final/min, absolute and active-relative threshold-crossing times, total absolute roll estimate, primary transitions, acceleration-efficiency min/max/average, and final radius/altitude/radial/tangential values.
   - Run both `moon-circle-long` and `moon-circle-ok` with `&log=circle-now` to compare the long and OK cases.
 - Saved comparison logs (schema v1, committed baseline):
@@ -306,6 +308,62 @@
     - By ~2 s the desired acceleration is mostly along ship right (`desiredAccelerationRightDot` around `-0.94` to `-1.0`) instead of ship up, so RCS can act usefully while roll settles.
 - Practical conclusion:
   - Circle-now sometimes has to chase a moving target because the velocity-derived tangent can precess around the inward-pointing roll axis at roughly max roll speed. In the long geometry, that leaves the desired circularization acceleration in the ship-up axis, which circle-now cannot actuate. The fix should not focus on projection quality; it should change how circle-now handles high raw tangent-bearing rates and unavailable actuator authority.
+
+## Implementation iteration (2026-04-22, phased circle-now)
+
+- Change:
+  - This implementation is now recorded as circle-now algorithm version `v2`.
+  - Runtime selection supports `?autopilot=v1` for the previous stateless/immediate circle-now algorithm and `?autopilot=v2` for the phased algorithm. Default is `v2`.
+  - Added a private circle-now controller state in the autopilot control plugin with phases: `acquireNose`, `acquirePlane`, `circularize`.
+  - `acquireNose`: inward attitude only, roll damped to zero, propulsion disabled.
+  - `acquirePlane`: inward attitude plus full tangent roll acquisition, propulsion disabled.
+  - `circularize`: inward attitude plus minor roll corrections; propulsion is gated/scaled by how much desired circularization acceleration lies in the ship forward/right actuator plane.
+- Thresholds:
+  - Nose phase exits at inward alignment `<= 8°` and pitch/yaw angular rate `<= 0.3 rad/s`, or after `1500 ms` if inward alignment is `<= 15°`.
+  - Plane phase exits at `|roll error| <= 30°`, or `|roll error| <= 60°` with actuator-plane score `>= 0.35`, or after `2500 ms` with actuator-plane score `>= 0.25`.
+  - Circularize suppresses propulsion below actuator-plane score `0.25`, linearly scales from `0.25` to `0.5`, and uses full computed propulsion at `>= 0.5`.
+  - Circularize applies full roll correction above `45°`, half correction from `15°` to `45°`, and no roll correction below `15°`.
+- Tests:
+  - Added `src/plugins/autopilot/logic.test.ts`.
+  - Covered nose-only attitude/zero propulsion, nose-to-plane transition, plane roll/zero propulsion, ship-up suppression, ship-right allowance, and reset when circle-now is inactive.
+  - `npm run typecheck` passed.
+  - `npm run test` passed: 14 files / 43 tests.
+- Next validation:
+  - Re-run the schema-v2 playback pair (`moon-circle-long-2`, `moon-circle-ok-2`) and compare active time to `e < 0.001`, total roll, acceleration efficiency, and whether the long case avoids the ship-up dead zone.
+
+## Validation iteration (2026-04-22, phased circle-now replay)
+
+- Log:
+  - `src/plugins/playback/logs/circleNow/moon-circle-long-20260422-2054.json`
+  - Patched on 2026-04-23 to `schemaVersion: 3` with `circleNowAlgorithmVersion: "v2"`.
+- User result:
+  - Runaway rolling appears fixed in manual testing; no repeated uncontrollable roll was observed across many circle-now attempts.
+  - New failure: the sequential procedure is slower, so the ship often escapes the intended planet/moon before circularization and the autopilot switches primary, usually to the Sun. User had to slow down substantially before pressing `X`.
+- Replay result:
+  - `moon-circle-long-2` after phased controller: `schemaVersion: 2`, 1687 samples, active duration ~28.12 s real / ~899.73 s sim.
+  - Total absolute roll dropped to ~203.9° versus ~2225.8° before the phased change, confirming the runaway roll symptom is fixed.
+  - Primary transitions from Moon to Sun at sample 266 / playback elapsed ~8583.33 ms, which is ~4.43 s after circle-now became active.
+  - Eccentricity relative to the Moon stays essentially flat around ~202245 through the Moon-primary window, showing the phased controller is not applying useful early Moon capture correction before the primary switch.
+  - The logger's `mainCommand`/`rcsCommand` fields are theoretical diagnostic commands, not the actual phase-gated propulsion output. Do not interpret nonzero command fields during acquisition phases as applied thrust.
+- Diagnosis:
+  - The phase split removed the roll chase, but disabling propulsion during `acquireNose` / `acquirePlane` also removed the original algorithm's immediate radial braking.
+  - In the long replay, initial Moon radial speed is extremely high and inward alignment starts near the fallback threshold, then worsens during the pass. Waiting for nose/plane acquisition lets the ship leave the Moon-dominant region.
+  - Manual procedure did allow thrust while pointing at the body if relative speed was too high; the phased implementation was too strict by making early phases non-propulsive.
+- Next candidate fix:
+  - Keep roll/RCS circularization gated, but allow early **radial-only main thrust** during `acquireNose` and `acquirePlane` when the nose is sufficiently aligned inward.
+  - Early radial braking should project only the radial delta-v onto the forward main engine; it should not use tangential RCS or chase the moving tangent plane.
+  - This preserves the runaway-roll fix while restoring the manual procedure's "slow down while pointing at the body" behavior.
+
+## Versioning update (2026-04-23)
+
+- The autopilot/circle-now algorithm is now runtime-selectable:
+  - `?autopilot=v1`: old stateless/immediate circle-now behavior.
+  - `?autopilot=v2`: phased circle-now behavior. This is the default.
+- Runtime options are now passed from infra as a raw string map. Autopilot validates `autopilot`; playback validates `mode`, `scenario`, and `log`. Infra no longer knows plugin-specific option values.
+- Circle-now logs now use `schemaVersion: 3` and include top-level `circleNowAlgorithmVersion`.
+- Latest phased replay log patched:
+  - `src/plugins/playback/logs/circleNow/moon-circle-long-20260422-2054.json`
+  - Patched to `schemaVersion: 3` and `circleNowAlgorithmVersion: "v2"`.
 
 ## Timeline of key steps (2026-04-04)
 

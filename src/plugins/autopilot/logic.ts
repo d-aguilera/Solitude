@@ -20,6 +20,7 @@ import {
 import { getDominantBody, getDominantBodyPrimary } from "../../domain/orbit";
 import { type Vec3, vec3 } from "../../domain/vec3";
 import { parameters } from "../../global/parameters";
+import type { AutopilotAlgorithmVersion } from "./version";
 
 // Max rate at which the ship can reorient itself toward its velocity vector.
 const alignToVelocityMaxAngularSpeed = 2.0; // rad/s
@@ -68,12 +69,65 @@ const alignToTangentMaxAngularSpeed = 1.6; // rad/s
 const alignToTangentKp = 3.0;
 const alignToTangentKd = 1.0;
 
+const circleNowNoseAlignedDeg = 8;
+const circleNowNoseFallbackAlignedDeg = 15;
+const circleNowNosePitchYawRateMax = 0.3; // rad/s
+const circleNowNoseFallbackMs = 1500;
+const circleNowRollAlignedDeg = 30;
+const circleNowRollGoodEnoughDeg = 60;
+const circleNowPlaneGoodEnoughScore = 0.35;
+const circleNowPlaneTimeoutScore = 0.25;
+const circleNowPlaneTimeoutMs = 2500;
+const circleNowPropulsionMinScore = 0.25;
+const circleNowPropulsionFullScore = 0.5;
+const circleNowMinorRollDeg = 15;
+const circleNowFullRollDeg = 45;
+const RAD_TO_DEG = 180 / Math.PI;
+
 const circleZeroThrust: ThrustCommand = { forward: 0 };
 const circleZeroRcs: RcsCommand = { right: 0 };
 const circleZeroPropulsion: PropulsionCommand = {
   main: circleZeroThrust,
   rcs: circleZeroRcs,
 };
+
+export type CircleNowPhase = "acquireNose" | "acquirePlane" | "circularize";
+
+export interface CircleNowControllerState {
+  phase: CircleNowPhase;
+  phaseElapsedMs: number;
+  primaryId: string | null;
+}
+
+interface CircleNowGuidance {
+  actuatorPlaneScore: number;
+  inwardAlignmentDeg: number;
+  primaryId: string;
+  tangentialRollAlignmentDeg: number;
+}
+
+const circleGuidanceScratch: CircleNowGuidance = {
+  actuatorPlaneScore: NaN,
+  inwardAlignmentDeg: NaN,
+  primaryId: "",
+  tangentialRollAlignmentDeg: NaN,
+};
+
+export function createCircleNowControllerState(): CircleNowControllerState {
+  return {
+    phase: "acquireNose",
+    phaseElapsedMs: 0,
+    primaryId: null,
+  };
+}
+
+export function resetCircleNowControllerState(
+  state: CircleNowControllerState,
+): void {
+  state.phase = "acquireNose";
+  state.phaseElapsedMs = 0;
+  state.primaryId = null;
+}
 
 export function getDominantBodyDirection(
   state: ControlledBodyState,
@@ -190,25 +244,42 @@ export function computeCircleNowAttitudeCommand(
   dtMillis: number,
   ship: ControlledBodyState,
   world: World,
+  algorithmVersion: AutopilotAlgorithmVersion = "v2",
+  controllerState?: CircleNowControllerState,
 ): AttitudeCommand | null {
-  let command: AttitudeCommand | null = null;
+  const phase =
+    algorithmVersion === "v2"
+      ? (controllerState?.phase ?? "acquireNose")
+      : "circularize";
 
   const inward = getDominantBodyDirection(ship, world);
+  let command: AttitudeCommand | null = null;
   if (inward) {
     command = computeAlignToDirectionCommand(dtMillis, ship, inward);
   }
 
+  if (phase === "acquireNose") {
+    return {
+      roll: 0,
+      pitch: command?.pitch ?? 0,
+      yaw: command?.yaw ?? 0,
+    };
+  }
+
   const tangential = getTangentialDirection(ship, world);
   if (tangential) {
-    const rollCommand = computeRollToDirectionCommand(
-      dtMillis,
-      ship,
-      tangential,
-    );
+    const rollScale =
+      phase === "circularize"
+        ? getCircleNowRollCorrectionScale(ship, tangential)
+        : 1;
+    const rollCommand =
+      rollScale > 0
+        ? computeRollToDirectionCommand(dtMillis, ship, tangential)
+        : null;
     if (rollCommand) {
       command = command
         ? {
-            roll: command.roll + rollCommand.roll,
+            roll: command.roll + rollCommand.roll * rollScale,
             pitch: command.pitch,
             yaw: command.yaw,
           }
@@ -219,14 +290,64 @@ export function computeCircleNowAttitudeCommand(
   return command;
 }
 
+export function updateCircleNowControllerState(
+  dtMillis: number,
+  controlInput: ControlInput,
+  ship: ControlledBodyState,
+  world: World,
+  state: CircleNowControllerState,
+): void {
+  if (!controlInput.circleNow) {
+    resetCircleNowControllerState(state);
+    return;
+  }
+
+  const guidance = computeCircleNowGuidance(ship, world);
+  if (!guidance) {
+    resetCircleNowControllerState(state);
+    return;
+  }
+
+  if (state.primaryId !== guidance.primaryId) {
+    state.phase = "acquireNose";
+    state.phaseElapsedMs = 0;
+    state.primaryId = guidance.primaryId;
+  }
+
+  state.phaseElapsedMs += Math.max(0, dtMillis);
+
+  if (state.phase === "acquireNose") {
+    if (isCircleNowNoseAcquired(ship, guidance, state.phaseElapsedMs)) {
+      state.phase = "acquirePlane";
+      state.phaseElapsedMs = 0;
+    }
+    return;
+  }
+
+  if (state.phase === "acquirePlane") {
+    if (isCircleNowPlaneAcquired(guidance, state.phaseElapsedMs)) {
+      state.phase = "circularize";
+      state.phaseElapsedMs = 0;
+    }
+  }
+}
+
 export function getAutopilotAttitudeCommand(
   dtMillis: number,
   ship: ControlledBodyState,
   controlInput: ControlInput,
   world: World,
+  algorithmVersion: AutopilotAlgorithmVersion = "v2",
+  controllerState?: CircleNowControllerState,
 ): AttitudeCommand | null {
   if (controlInput.circleNow) {
-    return computeCircleNowAttitudeCommand(dtMillis, ship, world);
+    return computeCircleNowAttitudeCommand(
+      dtMillis,
+      ship,
+      world,
+      algorithmVersion,
+      controllerState,
+    );
   }
 
   if (controlInput.alignToBody) {
@@ -320,6 +441,136 @@ export function computeAlignToDirectionCommand(
     alignToVelocityMaxAngularSpeed,
   );
   return commandFromWorldAxis(state, axisScratch, speed);
+}
+
+function computeCircleNowGuidance(
+  ship: ControlledBodyState,
+  world: World,
+): CircleNowGuidance | null {
+  const primary = getDominantBodyPrimary(world, ship.position);
+  if (!primary) return null;
+
+  const state = computeCircleNowState(ship, primary);
+  if (!state) return null;
+
+  const mu = parameters.newtonG * primary.mass;
+  if (mu === 0) return null;
+
+  const circularSpeed = Math.sqrt(mu / state.r);
+  const deltaVMag = computeCircleDeltaV(
+    state.radialSpeed,
+    state.tangentialSpeed,
+    state.hasTangentialDir,
+    circularSpeed,
+    circleRHatScratch,
+    circleTScratch,
+    circleDeltaVScratch,
+  );
+
+  circleGuidanceScratch.primaryId = primary.id;
+  circleGuidanceScratch.inwardAlignmentDeg = computeInwardAlignmentDeg(ship);
+  circleGuidanceScratch.tangentialRollAlignmentDeg = state.hasTangentialDir
+    ? computeRollAlignmentDeg(ship, circleTScratch)
+    : NaN;
+  circleGuidanceScratch.actuatorPlaneScore =
+    deltaVMag >= EPS_DELTA_V
+      ? computeActuatorPlaneScore(ship, circleDeltaVScratch, deltaVMag)
+      : 1;
+  return circleGuidanceScratch;
+}
+
+function computeInwardAlignmentDeg(ship: ControlledBodyState): number {
+  const dot = -vec3.dot(ship.frame.forward, circleRHatScratch);
+  return Math.acos(clamp(dot, -1, 1)) * RAD_TO_DEG;
+}
+
+function computeRollAlignmentDeg(
+  state: ControlledBodyState,
+  targetDirection: Vec3,
+): number {
+  const len = vec3.length(targetDirection);
+  if (len === 0) return NaN;
+
+  const forward = state.frame.forward;
+  vec3.scaleInto(rollProjectedScratch, 1 / len, targetDirection);
+  const proj = vec3.dot(rollProjectedScratch, forward);
+  vec3.scaleInto(rollAxisScratch, proj, forward);
+  vec3.subInto(rollProjectedScratch, rollProjectedScratch, rollAxisScratch);
+
+  const projLen = vec3.length(rollProjectedScratch);
+  if (projLen < EPS_LEN) return NaN;
+  vec3.scaleInto(rollProjectedScratch, 1 / projLen, rollProjectedScratch);
+
+  const currentRight = state.frame.right;
+  const dot = vec3.dot(currentRight, rollProjectedScratch);
+  const angle = Math.acos(clamp(dot, -1, 1));
+  vec3.crossInto(rollAxisScratch, currentRight, rollProjectedScratch);
+  const sign = vec3.dot(rollAxisScratch, forward) >= 0 ? 1 : -1;
+  return angle * sign * RAD_TO_DEG;
+}
+
+function computeActuatorPlaneScore(
+  ship: ControlledBodyState,
+  deltaV: Vec3,
+  deltaVMag: number,
+): number {
+  const forwardDot = vec3.dot(deltaV, ship.frame.forward) / deltaVMag;
+  const rightDot = vec3.dot(deltaV, ship.frame.right) / deltaVMag;
+  return Math.hypot(forwardDot, rightDot);
+}
+
+function isCircleNowNoseAcquired(
+  ship: ControlledBodyState,
+  guidance: CircleNowGuidance,
+  phaseElapsedMs: number,
+): boolean {
+  const pitchYawRate = Math.hypot(
+    ship.angularVelocity.pitch,
+    ship.angularVelocity.yaw,
+  );
+  if (
+    guidance.inwardAlignmentDeg <= circleNowNoseAlignedDeg &&
+    pitchYawRate <= circleNowNosePitchYawRateMax
+  ) {
+    return true;
+  }
+
+  return (
+    phaseElapsedMs >= circleNowNoseFallbackMs &&
+    guidance.inwardAlignmentDeg <= circleNowNoseFallbackAlignedDeg
+  );
+}
+
+function isCircleNowPlaneAcquired(
+  guidance: CircleNowGuidance,
+  phaseElapsedMs: number,
+): boolean {
+  const rollError = Math.abs(guidance.tangentialRollAlignmentDeg);
+  if (!Number.isFinite(rollError)) return false;
+
+  if (rollError <= circleNowRollAlignedDeg) return true;
+  if (
+    rollError <= circleNowRollGoodEnoughDeg &&
+    guidance.actuatorPlaneScore >= circleNowPlaneGoodEnoughScore
+  ) {
+    return true;
+  }
+
+  return (
+    phaseElapsedMs >= circleNowPlaneTimeoutMs &&
+    guidance.actuatorPlaneScore >= circleNowPlaneTimeoutScore
+  );
+}
+
+function getCircleNowRollCorrectionScale(
+  ship: ControlledBodyState,
+  tangential: Vec3,
+): number {
+  const rollError = Math.abs(computeRollAlignmentDeg(ship, tangential));
+  if (!Number.isFinite(rollError) || rollError <= circleNowMinorRollDeg) {
+    return 0;
+  }
+  return rollError <= circleNowFullRollDeg ? 0.5 : 1;
 }
 
 function computeCircleNowState(
@@ -421,6 +672,7 @@ function computeCircleNowThrust(
   world: World,
   maxThrustAcceleration: number,
   maxRcsTranslationAcceleration: number,
+  algorithmVersion: AutopilotAlgorithmVersion,
 ): PropulsionCommand {
   if (maxThrustAcceleration === 0) {
     return circleZeroPropulsion;
@@ -458,13 +710,27 @@ function computeCircleNowThrust(
   );
   if (!hasAcceleration) return circleZeroPropulsion;
 
+  const authorityScale =
+    algorithmVersion === "v2"
+      ? getCircleNowPropulsionAuthorityScale(
+          computeActuatorPlaneScore(
+            ship,
+            circleAccelScratch,
+            vec3.length(circleAccelScratch),
+          ),
+        )
+      : 1;
+  if (authorityScale <= 0) return circleZeroPropulsion;
+
   const forwardCmd =
-    vec3.dot(circleAccelScratch, ship.frame.forward) / maxThrustAcceleration;
+    (vec3.dot(circleAccelScratch, ship.frame.forward) / maxThrustAcceleration) *
+    authorityScale;
 
   const rightCmd =
     maxRcsTranslationAcceleration > 0
-      ? vec3.dot(circleAccelScratch, ship.frame.right) /
-        maxRcsTranslationAcceleration
+      ? (vec3.dot(circleAccelScratch, ship.frame.right) /
+          maxRcsTranslationAcceleration) *
+        authorityScale
       : 0;
 
   return {
@@ -477,6 +743,24 @@ function computeCircleNowThrust(
   };
 }
 
+function getCircleNowPropulsionAuthorityScale(
+  actuatorPlaneScore: number,
+): number {
+  if (
+    !Number.isFinite(actuatorPlaneScore) ||
+    actuatorPlaneScore < circleNowPropulsionMinScore
+  ) {
+    return 0;
+  }
+  if (actuatorPlaneScore >= circleNowPropulsionFullScore) {
+    return 1;
+  }
+  return (
+    (actuatorPlaneScore - circleNowPropulsionMinScore) /
+    (circleNowPropulsionFullScore - circleNowPropulsionMinScore)
+  );
+}
+
 export function resolveAutopilotPropulsionCommand(
   dtMillis: number,
   controlInput: ControlInput,
@@ -485,9 +769,20 @@ export function resolveAutopilotPropulsionCommand(
   manualPropulsion: PropulsionCommand,
   maxThrustAcceleration: number,
   maxRcsTranslationAcceleration: number,
+  algorithmVersion: AutopilotAlgorithmVersion = "v2",
+  controllerState?: CircleNowControllerState,
 ): PropulsionCommand {
   if (!controlInput.circleNow) {
     return manualPropulsion;
+  }
+
+  if (
+    algorithmVersion === "v2" &&
+    controllerState &&
+    (controllerState.phase === "acquireNose" ||
+      controllerState.phase === "acquirePlane")
+  ) {
+    return circleZeroPropulsion;
   }
 
   return computeCircleNowThrust(
@@ -496,6 +791,7 @@ export function resolveAutopilotPropulsionCommand(
     world,
     maxThrustAcceleration,
     maxRcsTranslationAcceleration,
+    algorithmVersion,
   );
 }
 
@@ -512,13 +808,16 @@ export function getAutopilotMode(controlInput: ControlInput): AutopilotMode {
   return "none";
 }
 
-export function disengageOnManualActuation(controlInput: ControlInput): void {
+export function disengageOnManualActuation(
+  controlInput: ControlInput,
+): boolean {
   if (!hasManualActuatorInput(controlInput)) {
-    return;
+    return false;
   }
   controlInput.alignToVelocity = false;
   controlInput.alignToBody = false;
   controlInput.circleNow = false;
+  return true;
 }
 
 function hasManualActuatorInput(controlInput: ControlInput): boolean {

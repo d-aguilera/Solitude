@@ -1,5 +1,5 @@
 import type { WorldAndSceneConfig } from "../app/configPorts";
-import type { RuntimeOptions } from "../app/runtimeOptions";
+import type { RuntimeOptions } from "../app/pluginPorts";
 import { WebGLRasterizer } from "../rasterize/webgl/WebGLRasterizer";
 import { WebGLSurface } from "../rasterize/webgl/WebGLSurface";
 import type { Rasterizer, RenderSurface2D } from "../render/renderPorts";

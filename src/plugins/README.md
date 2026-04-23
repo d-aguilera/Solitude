@@ -38,6 +38,8 @@ HUD refresh path.
 
 Available plugins are exported from `src/plugins/index.ts`.
 Infra/bootstrap chooses which plugins to enable via `loadPlugins` (e.g. `src/infra/domBootstrap.ts`).
+Infra passes runtime URL options to plugins as a raw string map; each plugin
+owns validation and interpretation of its own option keys.
 
 ## Diagnostic playback
 
@@ -52,8 +54,10 @@ The playback plugin is enabled by runtime options parsed by infra:
 - `?mode=playback&scenario=moon-circle-long&log=circle-now`: enable the
   circle-now measurement logger for that playback run. The logger samples only
   while `circleNow` is active and dumps console JSON at playback end, including
-  `schemaVersion: 2`, active-relative eccentricity threshold timings, and
-  per-sample target-bearing diagnostics.
+  `schemaVersion: 3`, the circle-now algorithm version, active-relative
+  eccentricity threshold timings, and per-sample target-bearing diagnostics.
+- Add `&autopilot=v1` or `&autopilot=v2` to select the circle-now/autopilot
+  algorithm for interactive or playback runs. The default is `v2`.
 
 Playback is intentionally a control-state recorder/player, not a raw keyboard
 event macro. It owns only flight/autopilot controls and uses a fixed real tick

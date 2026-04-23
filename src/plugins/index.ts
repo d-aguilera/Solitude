@@ -1,5 +1,4 @@
-import type { GamePlugin } from "../app/pluginPorts";
-import type { RuntimeOptions } from "../app/runtimeOptions";
+import type { GamePlugin, RuntimeOptions } from "../app/pluginPorts";
 import { createAutopilotPlugin } from "./autopilot/index";
 import { createAxialViewsPlugin } from "./axialViews/index";
 import { createMemoryPlugin } from "./memory/index";

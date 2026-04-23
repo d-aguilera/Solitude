@@ -2,6 +2,7 @@ import {
   maxRcsTranslationAcceleration,
   maxThrustAcceleration,
 } from "../../../app/controls";
+import type { RuntimeOptions } from "../../../app/pluginPorts";
 import type {
   RotatingBody,
   ShipBody,
@@ -10,6 +11,7 @@ import type {
 import { EPS_DELTA_V, EPS_LEN, EPS_SPEED_FINE } from "../../../domain/epsilon";
 import { type Vec3, vec3 } from "../../../domain/vec3";
 import { parameters } from "../../../global/parameters";
+import { parseAutopilotRuntimeOptions } from "../../autopilot/options";
 import type { CompiledPlaybackScript } from "../types";
 import type {
   PlaybackLogger,
@@ -63,11 +65,14 @@ const DEG_PER_RAD = 180 / Math.PI;
 const NO_PRIMARY_INDEX = -1;
 const NO_PREVIOUS_PRIMARY_INDEX = -2;
 const eccentricityThresholds = [0.1, 0.01, 0.001] as const;
-const circleNowLogSchemaVersion = 2;
+const circleNowLogSchemaVersion = 3;
 
 export interface CircleNowLogReport {
   kind: "circle-now";
   schemaVersion: typeof circleNowLogSchemaVersion;
+  circleNowAlgorithmVersion: ReturnType<
+    typeof parseAutopilotRuntimeOptions
+  >["algorithmVersion"];
   scenario: string;
   timeScale: number;
   fixedDtMillis: number;
@@ -143,7 +148,10 @@ interface CircleNowRollDiagnostics {
 
 export function createCircleNowLogger(
   script: CompiledPlaybackScript,
+  runtimeOptions: RuntimeOptions = {},
 ): CircleNowLogger {
+  const circleNowAlgorithmVersion =
+    parseAutopilotRuntimeOptions(runtimeOptions).algorithmVersion;
   const samples: number[] = [];
   const primaryIds: string[] = [];
   const primaryIndexById: Record<string, number> = {};
@@ -234,6 +242,7 @@ export function createCircleNowLogger(
   const getReport = (): CircleNowLogReport => ({
     kind: "circle-now",
     schemaVersion: circleNowLogSchemaVersion,
+    circleNowAlgorithmVersion,
     scenario: script.id,
     timeScale: script.timeScale,
     fixedDtMillis: script.fixedDtMillis,

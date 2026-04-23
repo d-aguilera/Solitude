@@ -1,5 +1,5 @@
 import type { WorldAndSceneConfig } from "../app/configPorts";
-import type { RuntimeOptions } from "../app/runtimeOptions";
+import type { RuntimeOptions } from "../app/pluginPorts";
 import { CanvasRasterizer } from "../rasterize/canvas/CanvasRasterizer";
 import { CanvasSurface } from "../rasterize/canvas/CanvasSurface";
 import type { Rasterizer, RenderSurface2D } from "../render/renderPorts";

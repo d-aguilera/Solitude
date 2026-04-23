@@ -1,5 +1,5 @@
 import type { WorldAndSceneConfig } from "../app/configPorts";
-import type { RuntimeOptions } from "../app/runtimeOptions";
+import type { RuntimeOptions } from "../app/pluginPorts";
 import type { ViewDefinition } from "../app/viewPorts";
 import { buildViewDefinitions } from "../app/viewRegistry";
 import type { GravityEngine } from "../domain/domainPorts";
