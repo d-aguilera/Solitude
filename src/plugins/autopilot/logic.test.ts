@@ -71,7 +71,7 @@ function resolveCircleNowPropulsion(
   ship: ShipBody,
   world: World,
   phase: "acquireNose" | "acquirePlane" | "circularize",
-  algorithmVersion: "v1" | "v2" = "v2",
+  algorithmVersion: "v1" | "v2" | "v3" = "v2",
 ) {
   const controlInput = circleNowInput();
   const state = createCircleNowControllerState();
@@ -113,6 +113,47 @@ describe("circle-now phased controller", () => {
     expect(
       Math.abs(attitude?.pitch ?? 0) + Math.abs(attitude?.yaw ?? 0),
     ).toBeGreaterThan(0);
+    expect(propulsion).toEqual(zeroPropulsion);
+  });
+
+  it("uses v3 radial main thrust while acquiring with the nose aligned inward", () => {
+    const { ship, world } = createWorld(
+      {
+        right: vec3.create(0, 1, 0),
+        forward: vec3.create(-1, 0, 0),
+        up: vec3.create(0, 0, 1),
+      },
+      vec3.create(-2000, 1500, 0),
+    );
+
+    const propulsion = resolveCircleNowPropulsion(
+      ship,
+      world,
+      "acquireNose",
+      "v3",
+    );
+
+    expect(propulsion.main.forward).toBeLessThan(0);
+    expect(propulsion.rcs.right).toBe(0);
+  });
+
+  it("keeps v3 acquisition radial thrust gated until the nose is near inward", () => {
+    const { ship, world } = createWorld(
+      {
+        right: vec3.create(0, 0, 1),
+        forward: vec3.create(0, 1, 0),
+        up: vec3.create(1, 0, 0),
+      },
+      vec3.create(-2000, 1500, 0),
+    );
+
+    const propulsion = resolveCircleNowPropulsion(
+      ship,
+      world,
+      "acquireNose",
+      "v3",
+    );
+
     expect(propulsion).toEqual(zeroPropulsion);
   });
 

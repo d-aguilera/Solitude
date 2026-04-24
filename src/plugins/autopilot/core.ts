@@ -17,7 +17,7 @@ export function createControlPlugin(
 ): ControlPlugin {
   const circleNowState = createCircleNowControllerState();
   const resolvePropulsionCommand =
-    algorithmVersion === "v2"
+    algorithmVersion === "v2" || algorithmVersion === "v3"
       ? createPhasedPropulsionResolver(algorithmVersion, circleNowState)
       : createImmediatePropulsionResolver(algorithmVersion, circleNowState);
 

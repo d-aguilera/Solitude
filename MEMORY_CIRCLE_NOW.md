@@ -365,6 +365,40 @@
   - `src/plugins/playback/logs/circleNow/moon-circle-long-20260422-2054.json`
   - Patched to `schemaVersion: 3` and `circleNowAlgorithmVersion: "v2"`.
 
+## Implementation iteration (2026-04-24, radial acquisition assist)
+
+- Hypothesis:
+  - The `v2` phased controller fixed runaway roll, but it waits too long to apply useful capture correction. Allowing radial-only main thrust during acquisition should slow high-radial-speed passes without reintroducing tangential-plane chase.
+- Exact change:
+  - Added circle-now algorithm `v3` and made it the default.
+  - `v3` keeps the `v2` phased attitude controller and full circularization gating.
+  - During `acquireNose` and `acquirePlane`, `v3` applies only signed main-engine radial delta-v when the nose is within `20 deg` of inward alignment.
+  - Acquisition assist never commands RCS or tangential circularization thrust.
+  - `v2` remains selectable with `?autopilot=v2`; `v1` remains the old immediate behavior.
+- Expected validation:
+  - Replay `moon-circle-long-2` and compare primary transitions, active-relative eccentricity timing, total roll, and acceleration efficiency against the latest `v2` log.
+  - Watch specifically for whether Moon primary survives longer than ~4.43 s after circle-now activation without total roll regressing toward the old multi-roll behavior.
+
+## Validation iteration (2026-04-24, v3 radial acquisition assist replay)
+
+- Log:
+  - `src/plugins/playback/logs/circleNow/moon-circle-long-20260424-1903.json`
+- User result:
+  - The maneuver still took a few spins, but acquired circular orbit much faster.
+- Exact comparison:
+  - `v3` long-2 replay stayed on `planet:moon` for the full logged circle-now run; no primary transitions.
+  - `v3` reached `e < 0.001` at ~`8.80 s` active time.
+  - Latest `v2` replay for the same script switched from Moon to Sun at ~`4.43 s` active time and did not meaningfully circularize around the Moon before the switch.
+  - Pre-v2 immediate/old behavior for long-2 reached `e < 0.001` at ~`24.27 s` active time with ~`2225.8 deg` total roll.
+  - `v3` total absolute roll was ~`661.9 deg`; roll at `e < 0.001` was ~`627.1 deg`.
+  - `v3` average acceleration efficiency was ~`0.687`, versus ~`0.151` for the old long-2 immediate behavior and ~`0.359` for `v2` after it escaped to Sun-primary circularization.
+- Result:
+  - Confirmed that early radial-only acquisition thrust fixes the `v2` Moon-escape regression and dramatically improves the long-case circularization time.
+  - Partially unresolved: `v3` still rolls roughly 1.8 full rotations before settling, so there may still be room to reduce roll work without sacrificing early radial braking.
+- Next candidate:
+  - Keep `v3` as the current best default.
+  - If improving further, compare whether roll acquisition should be softened after radial braking begins, or whether circularize can tolerate larger roll error once actuator-plane score is high enough.
+
 ## Timeline of key steps (2026-04-04)
 
 - Verified geometric plane alignment idea and built a vector diagram of the orbit plane vs. tangential direction.

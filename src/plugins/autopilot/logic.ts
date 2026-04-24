@@ -18,9 +18,12 @@ import {
   EPS_SPEED_FINE,
 } from "../../domain/epsilon";
 import { getDominantBody, getDominantBodyPrimary } from "../../domain/orbit";
-import { type Vec3, vec3 } from "../../domain/vec3";
+import { vec3, type Vec3 } from "../../domain/vec3";
 import { parameters } from "../../global/parameters";
-import type { AutopilotAlgorithmVersion } from "./version";
+import {
+  defaultAutopilotAlgorithmVersion,
+  type AutopilotAlgorithmVersion,
+} from "./version";
 
 // Max rate at which the ship can reorient itself toward its velocity vector.
 const alignToVelocityMaxAngularSpeed = 2.0; // rad/s
@@ -71,6 +74,7 @@ const alignToTangentKd = 1.0;
 
 const circleNowNoseAlignedDeg = 8;
 const circleNowNoseFallbackAlignedDeg = 15;
+const circleNowRadialBrakingAlignedDeg = 20;
 const circleNowNosePitchYawRateMax = 0.3; // rad/s
 const circleNowNoseFallbackMs = 1500;
 const circleNowRollAlignedDeg = 30;
@@ -244,13 +248,12 @@ export function computeCircleNowAttitudeCommand(
   dtMillis: number,
   ship: ControlledBodyState,
   world: World,
-  algorithmVersion: AutopilotAlgorithmVersion = "v2",
+  algorithmVersion: AutopilotAlgorithmVersion = defaultAutopilotAlgorithmVersion,
   controllerState?: CircleNowControllerState,
 ): AttitudeCommand | null {
-  const phase =
-    algorithmVersion === "v2"
-      ? (controllerState?.phase ?? "acquireNose")
-      : "circularize";
+  const phase = isPhasedCircleNowVersion(algorithmVersion)
+    ? (controllerState?.phase ?? "acquireNose")
+    : "circularize";
 
   const inward = getDominantBodyDirection(ship, world);
   let command: AttitudeCommand | null = null;
@@ -337,7 +340,7 @@ export function getAutopilotAttitudeCommand(
   ship: ControlledBodyState,
   controlInput: ControlInput,
   world: World,
-  algorithmVersion: AutopilotAlgorithmVersion = "v2",
+  algorithmVersion: AutopilotAlgorithmVersion = defaultAutopilotAlgorithmVersion,
   controllerState?: CircleNowControllerState,
 ): AttitudeCommand | null {
   if (controlInput.circleNow) {
@@ -710,16 +713,15 @@ function computeCircleNowThrust(
   );
   if (!hasAcceleration) return circleZeroPropulsion;
 
-  const authorityScale =
-    algorithmVersion === "v2"
-      ? getCircleNowPropulsionAuthorityScale(
-          computeActuatorPlaneScore(
-            ship,
-            circleAccelScratch,
-            vec3.length(circleAccelScratch),
-          ),
-        )
-      : 1;
+  const authorityScale = isPhasedCircleNowVersion(algorithmVersion)
+    ? getCircleNowPropulsionAuthorityScale(
+        computeActuatorPlaneScore(
+          ship,
+          circleAccelScratch,
+          vec3.length(circleAccelScratch),
+        ),
+      )
+    : 1;
   if (authorityScale <= 0) return circleZeroPropulsion;
 
   const forwardCmd =
@@ -740,6 +742,60 @@ function computeCircleNowThrust(
     rcs: {
       right: clamp(rightCmd, -1, 1),
     },
+  };
+}
+
+function computeCircleNowRadialThrust(
+  dtMillis: number,
+  ship: ControlledBodyState,
+  world: World,
+  maxThrustAcceleration: number,
+): PropulsionCommand {
+  if (maxThrustAcceleration === 0) {
+    return circleZeroPropulsion;
+  }
+  const dtSec = dtMillis / 1000;
+  if (dtSec === 0) return circleZeroPropulsion;
+
+  const primary = getDominantBodyPrimary(world, ship.position);
+  if (!primary) return circleZeroPropulsion;
+
+  const state = computeCircleNowState(ship, primary);
+  if (!state) return circleZeroPropulsion;
+
+  const inwardAlignmentDeg = computeInwardAlignmentDeg(ship);
+  if (
+    !Number.isFinite(inwardAlignmentDeg) ||
+    inwardAlignmentDeg > circleNowRadialBrakingAlignedDeg
+  ) {
+    return circleZeroPropulsion;
+  }
+
+  const radialDeltaV = -state.radialSpeed;
+  if (Math.abs(radialDeltaV) < EPS_DELTA_V) {
+    return circleZeroPropulsion;
+  }
+
+  vec3.scaleInto(circleDeltaVScratch, radialDeltaV, circleRHatScratch);
+  const hasAcceleration = computeCircleAcceleration(
+    circleDeltaVScratch,
+    Math.abs(radialDeltaV),
+    maxThrustAcceleration,
+    dtSec,
+    circleAccelScratch,
+  );
+  if (!hasAcceleration) return circleZeroPropulsion;
+
+  return {
+    main: {
+      forward: clamp(
+        vec3.dot(circleAccelScratch, ship.frame.forward) /
+          maxThrustAcceleration,
+        -1,
+        1,
+      ),
+    },
+    rcs: circleZeroRcs,
   };
 }
 
@@ -769,7 +825,7 @@ export function resolveAutopilotPropulsionCommand(
   manualPropulsion: PropulsionCommand,
   maxThrustAcceleration: number,
   maxRcsTranslationAcceleration: number,
-  algorithmVersion: AutopilotAlgorithmVersion = "v2",
+  algorithmVersion: AutopilotAlgorithmVersion = defaultAutopilotAlgorithmVersion,
   controllerState?: CircleNowControllerState,
 ): PropulsionCommand {
   if (!controlInput.circleNow) {
@@ -783,6 +839,20 @@ export function resolveAutopilotPropulsionCommand(
       controllerState.phase === "acquirePlane")
   ) {
     return circleZeroPropulsion;
+  }
+
+  if (
+    algorithmVersion === "v3" &&
+    controllerState &&
+    (controllerState.phase === "acquireNose" ||
+      controllerState.phase === "acquirePlane")
+  ) {
+    return computeCircleNowRadialThrust(
+      dtMillis,
+      ship,
+      world,
+      maxThrustAcceleration,
+    );
   }
 
   return computeCircleNowThrust(
@@ -833,6 +903,12 @@ function hasManualActuatorInput(controlInput: ControlInput): boolean {
     controlInput.yawLeft ||
     controlInput.yawRight
   );
+}
+
+function isPhasedCircleNowVersion(
+  algorithmVersion: AutopilotAlgorithmVersion,
+): boolean {
+  return algorithmVersion === "v2" || algorithmVersion === "v3";
 }
 
 function clamp(value: number, min: number, max: number): number {
