@@ -13,7 +13,6 @@ import { bindTrajectoryPlanToScene } from "./trajectoryBind";
 import {
   buildTrajectoryPlan,
   parseTrajectoryId,
-  TRAJECTORY_ID_PREFIX,
   type TrajectoryPlan,
 } from "./trajectoryPlan";
 import type { Trajectory } from "./types";
@@ -38,11 +37,6 @@ export function createScenePlugin(): ScenePlugin {
     },
     updateScene: (params) => {
       updateTrajectories(params.dtSimMillis, trajectoryList);
-    },
-    getViewObjectsFilter: (params) => {
-      if (params.viewId !== "top") return null;
-      return (obj) =>
-        obj.kind !== "polyline" || !obj.id.startsWith(TRAJECTORY_ID_PREFIX);
     },
   };
 }
