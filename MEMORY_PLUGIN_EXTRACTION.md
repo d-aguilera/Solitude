@@ -48,7 +48,8 @@ Existing plugins already cover:
 
 ### Auxiliary PiP / Axial Views
 
-Status: first extraction pass implemented on 2026-04-18.
+Status: extraction implemented. First pass landed on 2026-04-18; leftover
+frame-update helpers were moved into `src/plugins/axialViews/` on 2026-04-25.
 
 What changed:
 
@@ -61,11 +62,11 @@ What changed:
 - Kept canvas element IDs owned by bootstrap instead of plugin view definitions.
 - Removed hard-coded view canvases from `index.html`; it now only contains the canvas container.
 - Removed top/left/right/rear camera fields from `WorldSetup`, `WorldAndScene`, `SceneState`, and `SceneControlState`.
+- Moved top/left/right/rear frame-update strategies out of core camera helpers and into the axial views plugin.
 
 Known remaining static pieces:
 
 - `src/infra/domLayout.ts` still contains the generic primary/PiP layout policy.
-- Core camera helpers still expose the frame-update strategies that the plugin uses.
 
 ## Strongest Remaining Candidates
 

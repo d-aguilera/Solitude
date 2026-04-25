@@ -1,11 +1,8 @@
-import {
-  updateLeftViewFrame,
-  updateRearViewFrame,
-  updateRightViewFrame,
-  updateTopViewFrame,
-} from "../../app/cameras";
 import type { GamePlugin } from "../../app/pluginPorts";
-import type { ViewDefinition } from "../../app/viewPorts";
+import type {
+  ViewDefinition,
+  ViewFrameUpdateParams,
+} from "../../app/viewPorts";
 import { vec3 } from "../../domain/vec3";
 
 export function createAxialViewsPlugin(): GamePlugin {
@@ -70,4 +67,38 @@ function createAxialViewDefinitions(): ViewDefinition[] {
       updateFrame: updateRightViewFrame,
     },
   ];
+}
+
+function updateTopViewFrame({ frame, mainShip }: ViewFrameUpdateParams): void {
+  const { right, forward, up } = mainShip.frame;
+  vec3.copyInto(frame.right, right);
+  vec3.scaleInto(frame.forward, -1, up); // forward = -up
+  vec3.copyInto(frame.up, forward); // up = forward
+}
+
+function updateLeftViewFrame({ frame, mainShip }: ViewFrameUpdateParams): void {
+  const { right, forward, up } = mainShip.frame;
+  vec3.copyInto(frame.up, up);
+  vec3.copyInto(frame.forward, right);
+  vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -right
+  vec3.copyInto(frame.right, forward);
+}
+
+function updateRightViewFrame({
+  frame,
+  mainShip,
+}: ViewFrameUpdateParams): void {
+  const { right, forward, up } = mainShip.frame;
+  vec3.copyInto(frame.up, up);
+  vec3.copyInto(frame.forward, right); // forward = right
+  vec3.copyInto(frame.right, forward);
+  vec3.scaleInto(frame.right, -1, frame.right); // right = -forward
+}
+
+function updateRearViewFrame({ frame, mainShip }: ViewFrameUpdateParams): void {
+  const { right, forward, up } = mainShip.frame;
+  vec3.copyInto(frame.up, up);
+  vec3.copyInto(frame.right, right);
+  vec3.copyInto(frame.forward, forward);
+  vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -forward
 }

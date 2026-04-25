@@ -62,61 +62,6 @@ export function updatePilotViewFrame({
     localFrame.rotateAroundAxisInPlace(frame, frame.right, elevation);
 }
 
-export function updateTopViewFrame({
-  frame,
-  mainShip,
-}: {
-  frame: LocalFrame;
-  mainShip: ShipBody;
-}): void {
-  const { right, forward, up } = mainShip.frame;
-  vec3.copyInto(frame.right, right);
-  vec3.scaleInto(frame.forward, -1, up); // forward = -up
-  vec3.copyInto(frame.up, forward); // up = forward
-}
-
-export function updateLeftViewFrame({
-  frame,
-  mainShip,
-}: {
-  frame: LocalFrame;
-  mainShip: ShipBody;
-}): void {
-  const { right, forward, up } = mainShip.frame;
-  vec3.copyInto(frame.up, up);
-  vec3.copyInto(frame.forward, right);
-  vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -right
-  vec3.copyInto(frame.right, forward);
-}
-
-export function updateRightViewFrame({
-  frame,
-  mainShip,
-}: {
-  frame: LocalFrame;
-  mainShip: ShipBody;
-}): void {
-  const { right, forward, up } = mainShip.frame;
-  vec3.copyInto(frame.up, up);
-  vec3.copyInto(frame.forward, right); // forward = right
-  vec3.copyInto(frame.right, forward);
-  vec3.scaleInto(frame.right, -1, frame.right); // right = -forward
-}
-
-export function updateRearViewFrame({
-  frame,
-  mainShip,
-}: {
-  frame: LocalFrame;
-  mainShip: ShipBody;
-}): void {
-  const { right, forward, up } = mainShip.frame;
-  vec3.copyInto(frame.up, up);
-  vec3.copyInto(frame.right, right);
-  vec3.copyInto(frame.forward, forward);
-  vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -forward
-}
-
 function setCameraRelativeToShip(
   pose: DomainCameraPose,
   ship: ShipBody,
