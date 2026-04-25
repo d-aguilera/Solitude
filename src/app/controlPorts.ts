@@ -62,6 +62,21 @@ export interface AttitudeCommand {
   yaw: number;
 }
 
+export interface ThrustCommand {
+  /** Signed main-engine thrust percent in [-1, 1]. */
+  forward: number;
+}
+
+export interface RcsCommand {
+  /** Signed RCS translation command in [-1, 1] along the ship-right axis. */
+  right: number;
+}
+
+export interface PropulsionCommand {
+  main: ThrustCommand;
+  rcs: RcsCommand;
+}
+
 /**
  * Simple container for the controlled body's pose and velocity.
  */

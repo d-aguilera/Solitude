@@ -6,9 +6,9 @@ import type {
   ControlAction,
   ControlInput,
   ControlledBodyState,
+  PropulsionCommand,
   SimControlState,
 } from "./controlPorts";
-import type { PropulsionCommand } from "./controls";
 import type { HudGrid } from "./hudPorts";
 import type {
   PlanetPhysicsConfig,

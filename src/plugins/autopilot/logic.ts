@@ -2,12 +2,10 @@ import type {
   AttitudeCommand,
   ControlInput,
   ControlledBodyState,
-} from "../../app/controlPorts";
-import type {
   PropulsionCommand,
   RcsCommand,
   ThrustCommand,
-} from "../../app/controls";
+} from "../../app/controlPorts";
 import type { World } from "../../domain/domainPorts";
 import {
   EPS_ANGLE_RAD,

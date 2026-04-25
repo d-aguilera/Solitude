@@ -32,6 +32,11 @@ export interface ViewDefinition {
   updateFrame: (params: ViewFrameUpdateParams) => void;
 }
 
+export interface SceneState {
+  primaryView: SceneViewState;
+  views: SceneViewState[];
+}
+
 export interface SceneViewState {
   definition: ViewDefinition;
   camera: DomainCameraPose;

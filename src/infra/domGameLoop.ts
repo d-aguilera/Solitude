@@ -22,8 +22,8 @@ import type {
   WorldAndScene,
 } from "../app/runtimePorts";
 import { updateSceneGraph } from "../app/scene";
-import type { SceneControlState, SceneState } from "../app/scenePorts";
-import type { SceneViewState } from "../app/viewPorts";
+import type { SceneControlState } from "../app/scenePorts";
+import type { SceneState, SceneViewState } from "../app/viewPorts";
 import {
   createSceneViewStates,
   getRequiredPrimaryViewState,

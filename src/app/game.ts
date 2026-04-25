@@ -4,9 +4,11 @@ import { buildInitialGravityState } from "../domain/gravityState";
 import type {
   ControlInput,
   ControlledBodyState,
+  PropulsionCommand,
+  RcsCommand,
   SimControlState,
+  ThrustCommand,
 } from "./controlPorts";
-import type { PropulsionCommand, RcsCommand, ThrustCommand } from "./controls";
 import {
   getMainThrustCommand,
   getRcsCommand,

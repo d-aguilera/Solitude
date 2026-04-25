@@ -1,7 +1,6 @@
 import type { LocalFrame } from "../domain/localFrame";
 import type { Mat3 } from "../domain/mat3";
 import type { Vec3 } from "../domain/vec3";
-import type { SceneViewState } from "./viewPorts";
 
 export interface BaseSceneObject {
   id: string;
@@ -91,11 +90,6 @@ export type SceneObject =
   | PolylineSceneObject;
 
 export type SceneObjectKind = "ship" | "planet" | "polyline" | "star";
-
-export interface SceneState {
-  primaryView: SceneViewState;
-  views: SceneViewState[];
-}
 
 export interface SolidSceneObject extends BaseSceneObject {
   applyTransform: true;
