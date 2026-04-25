@@ -28,6 +28,7 @@ import {
   createSceneViewStates,
   getRequiredPrimaryViewState,
 } from "../app/viewRegistry";
+import { profiler } from "../global/profiling";
 import {
   createRenderFrameCache,
   updateRenderFrameCache,
@@ -246,7 +247,9 @@ export function runLoop({
     }
 
     if (framePolicy.advanceSim || framePolicy.advanceScene) {
-      updateRenderFrameCache(renderCache, worldAndScene.scene);
+      profiler.run("render", "frameCacheUpdate", () => {
+        updateRenderFrameCache(renderCache, worldAndScene.scene);
+      });
     }
 
     const { passes } = renderDebug;
@@ -276,7 +279,9 @@ export function runLoop({
       } else {
         view.worldSegments.length = 0;
       }
-      view.renderer.renderInto(view.renderedView, renderParams);
+      profiler.run("viewRender", view.definition.id, () => {
+        view.renderer.renderInto(view.renderedView, renderParams);
+      });
     }
 
     const shouldRenderHud = nowMs - lastHudTimeMs > 100;

@@ -1,6 +1,7 @@
 import type { Scene, SceneObject } from "../app/scenePorts";
 import { mat3 } from "../domain/mat3";
 import { type Vec3, vec3 } from "../domain/vec3";
+import { profiler } from "../global/profiling";
 
 export interface RenderFrameCache {
   frameId: number;
@@ -23,17 +24,10 @@ export function createRenderFrameCache(): RenderFrameCache {
 
 export function updateRenderFrameCache(
   cache: RenderFrameCache,
-  scene: Scene,
+  _scene: Scene,
 ): void {
+  // Transform caches are populated lazily by render passes after this frame tick.
   cache.frameId++;
-  const objects = scene.objects;
-
-  for (let i = 0; i < objects.length; i++) {
-    const obj = objects[i];
-    if (!obj.applyTransform) continue;
-    ensureWorldPoints(cache, obj);
-    ensureWorldFaceNormals(cache, obj);
-  }
 }
 
 export function getCachedWorldPoints(
@@ -70,6 +64,9 @@ function ensureWorldPoints(cache: RenderFrameCache, obj: SceneObject): Vec3[] {
     vec3.addInto(wp, wp, position);
   }
 
+  profiler.increment("renderCache", "objectsTransformed");
+  profiler.increment("renderCache", "worldPointTransforms", srcPoints.length);
+
   entry.pointsFrameId = cache.frameId;
   return dst;
 }
@@ -94,6 +91,8 @@ function ensureWorldFaceNormals(
   for (let i = 0; i < srcNormals.length; i++) {
     mat3.mulVec3Into(dst[i], R, srcNormals[i]);
   }
+
+  profiler.increment("renderCache", "worldNormalTransforms", srcNormals.length);
 
   entry.worldFaceNormals = dst;
   entry.normalsFrameId = cache.frameId;
