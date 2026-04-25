@@ -121,16 +121,19 @@ export function runLoop({
 
   const worldSetup = createWorld(config);
   const { scene } = createScene(worldSetup.world, config);
+
   applySceneInitPlugins(scenePlugins, {
     scene,
     world: worldSetup.world,
     mainShip: worldSetup.mainShip,
     config,
   });
+
   const worldAndScene: WorldAndScene = {
     ...worldSetup,
     scene,
   };
+
   const tickInto: TickCallback = createTickHandler(
     gravityEngine,
     config.thrustLevel,
@@ -141,6 +144,7 @@ export function runLoop({
   const sceneControlState: SceneControlState = {
     pilotLookState: config.render.pilotLookState,
   };
+
   const sceneViews = createSceneViewStates(
     views.map((view) => view.definition),
   );
@@ -162,6 +166,7 @@ export function runLoop({
   };
 
   const renderCache = createRenderFrameCache();
+
   updateSceneGraph(
     0,
     sceneState,
@@ -169,7 +174,9 @@ export function runLoop({
     worldAndScene.mainShip,
     controlInput,
   );
+
   updateRenderFrameCache(renderCache, worldAndScene.scene);
+
   const loopViews = createLoopViews(
     views,
     sceneViews,

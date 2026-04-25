@@ -10,8 +10,8 @@ import type {
   ThrustCommand,
 } from "./controlPorts";
 import {
-  getMainThrustCommand,
-  getRcsCommand,
+  getMainThrustCommandInto,
+  getRcsCommandInto,
   maxRcsTranslationAcceleration,
   maxThrustAcceleration,
   resolvePropulsionCommandWithPlugins,
@@ -64,7 +64,6 @@ export function createTickHandler(
       worldAndScene.world,
       controlPlugins,
     );
-
     updateShipAngularVelocityFromInput(
       dtMillis,
       worldAndScene.mainShip,
@@ -80,17 +79,26 @@ export function createTickHandler(
       worldAndScene.mainShip,
       propulsionCommand.rcs,
     );
+
     applyGravity(dtMillisSim, gravityEngine, gravityState);
+
     resolveCollisions(worldAndScene.world);
+
     applyCelestialSpin(dtMillisSim, worldAndScene.world);
 
     output.currentThrustLevel = getRenderedThrustLevel(
       propulsionCommand.main,
       simControlState,
     );
+
     output.currentRcsLevel = getRenderedRcsLevel(propulsionCommand.rcs);
   };
 }
+
+let manualPropulsionCommand: PropulsionCommand = {
+  main: { forward: 0 },
+  rcs: { right: 0 },
+};
 
 function getPropulsionCommandForTick(
   dtMillis: number,
@@ -101,14 +109,18 @@ function getPropulsionCommandForTick(
   controlPlugins: ControlPlugin[],
 ): PropulsionCommand {
   updateControlState(controlInput, controlState, controlPlugins);
-  const manualMain = getMainThrustCommand(controlInput, controlState);
-  const manualRcs = getRcsCommand(controlInput);
+  getMainThrustCommandInto(
+    manualPropulsionCommand.main,
+    controlInput,
+    controlState,
+  );
+  getRcsCommandInto(manualPropulsionCommand.rcs, controlInput);
   return resolvePropulsionCommandWithPlugins(
     dtMillis,
     controlInput,
     ship,
     world,
-    { main: manualMain, rcs: manualRcs },
+    manualPropulsionCommand,
     maxThrustAcceleration,
     maxRcsTranslationAcceleration,
     controlPlugins,
@@ -119,17 +131,17 @@ function getRenderedThrustLevel(
   thrustCommand: ThrustCommand,
   controlState: SimControlState,
 ): number {
-  const { forward } = thrustCommand;
-  if (forward === 0) {
+  if (thrustCommand.forward === 0) {
     return 0;
   }
-  return forward > 0 ? controlState.thrustLevel : -controlState.thrustLevel;
+  return thrustCommand.forward > 0
+    ? controlState.thrustLevel
+    : -controlState.thrustLevel;
 }
 
 function getRenderedRcsLevel(rcsCommand: RcsCommand): number {
-  const { right } = rcsCommand;
-  if (right === 0) {
+  if (rcsCommand.right === 0) {
     return 0;
   }
-  return right;
+  return rcsCommand.right;
 }

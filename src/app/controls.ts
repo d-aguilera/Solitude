@@ -142,27 +142,29 @@ function updateThrustLevelFromInput(
  *  - Sign from Space (forward) / B (backward)
  *  - Magnitude from stored thrust level (set by 0–9) in the given state.
  */
-export function getMainThrustCommand(
+export function getMainThrustCommandInto(
+  into: ThrustCommand,
   controlInput: ControlInput,
   controlState: SimControlState,
-): ThrustCommand {
-  const { burnBackwards, burnForward } = controlInput;
+): void {
   const mag = shipThrustValues[controlState.thrustLevel];
-  const forward = burnForward ? mag : 0;
-  const backward = burnBackwards ? mag : 0;
-
-  return { forward: forward - backward };
+  const forward = controlInput.burnForward ? mag : 0;
+  const backward = controlInput.burnBackwards ? mag : 0;
+  into.forward = forward - backward;
 }
 
 /**
  * Signed RCS translation command in [-1, 1] for N/M lateral burns.
  */
-export function getRcsCommand(controlInput: ControlInput): RcsCommand {
-  const { burnLeft, burnRight } = controlInput;
-  if (burnLeft === burnRight) {
-    return { right: 0 };
+export function getRcsCommandInto(
+  into: RcsCommand,
+  controlInput: ControlInput,
+): void {
+  if (controlInput.burnLeft === controlInput.burnRight) {
+    into.right = 0;
+  } else {
+    into.right = controlInput.burnRight ? 1 : -1;
   }
-  return { right: burnRight ? 1 : -1 };
 }
 
 /**
