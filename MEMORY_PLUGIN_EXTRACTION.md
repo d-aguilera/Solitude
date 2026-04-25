@@ -78,6 +78,15 @@ What changed:
 - Removed `fps` from the generic `HudContext`; runtime telemetry now passes FPS through its own loop/HUD controller.
 - Removed the now-unused `src/infra/fps.ts` helper and `src/app/RingBuffer.ts`.
 
+### Trajectory Runtime Type
+
+Status: cleanup implemented on 2026-04-25.
+
+What changed:
+
+- Moved the trajectory state type out of `src/app/runtimePorts.ts` into `src/plugins/trajectories/types.ts`.
+- Core runtime ports now contain only tick/world-and-scene runtime contracts.
+
 ## Strongest Remaining Candidates
 
 ### 1. Enemy Ship / Demo Scenario Content

@@ -1,5 +1,5 @@
-import type { Trajectory } from "../../app/runtimePorts";
 import { vec3 } from "../../domain/vec3";
+import type { Trajectory } from "./types";
 
 /**
  * Sample and update trajectory polylines for the ship and planets.

@@ -4,7 +4,6 @@ import type {
   StarRenderConfig,
 } from "../../app/configPorts";
 import type { ScenePlugin } from "../../app/pluginPorts";
-import type { Trajectory } from "../../app/runtimePorts";
 import type { PolylineSceneObject, RGB, Scene } from "../../app/scenePorts";
 import type { World } from "../../domain/domainPorts";
 import { mat3 } from "../../domain/mat3";
@@ -17,6 +16,7 @@ import {
   TRAJECTORY_ID_PREFIX,
   type TrajectoryPlan,
 } from "./trajectoryPlan";
+import type { Trajectory } from "./types";
 
 export function createScenePlugin(): ScenePlugin {
   let trajectoryList: Trajectory[] = [];

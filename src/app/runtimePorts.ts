@@ -1,6 +1,6 @@
 import type { ShipBody, World } from "../domain/domainPorts";
 import type { ControlInput } from "./controlPorts";
-import type { PolylineSceneObject, Scene } from "./scenePorts";
+import type { Scene } from "./scenePorts";
 
 export type TickCallback = (
   output: Readonly<TickOutput>,
@@ -17,12 +17,6 @@ export interface TickOutput {
   currentThrustLevel: number;
   currentRcsLevel: number;
 }
-
-export type Trajectory = {
-  intervalMillis: number;
-  remainingMillis: number;
-  sceneObject: PolylineSceneObject;
-};
 
 export interface WorldAndScene {
   enemyShip: ShipBody;
