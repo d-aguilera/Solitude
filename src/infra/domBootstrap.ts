@@ -1,10 +1,9 @@
 import type { WorldAndSceneConfig } from "../app/configPorts";
-import type { RuntimeOptions } from "../app/pluginPorts";
+import type { GamePlugin } from "../app/pluginPorts";
 import type { ViewDefinition } from "../app/viewPorts";
 import { buildViewDefinitions } from "../app/viewRegistry";
 import type { GravityEngine } from "../domain/domainPorts";
 import { parameters } from "../global/parameters";
-import { loadPlugins } from "../plugins/index";
 import { DefaultHudRenderer } from "../render/DefaultHudRenderer";
 import { DefaultViewRenderer } from "../render/DefaultViewRenderer";
 import type {
@@ -25,26 +24,8 @@ export function bootstrapWith(
   config: WorldAndSceneConfig,
   makeSurface: (canvas: HTMLCanvasElement) => RenderSurface2D,
   makeRasterizer: (canvas: HTMLCanvasElement) => Rasterizer,
-  runtimeOptions: RuntimeOptions = {},
+  plugins: GamePlugin[],
 ): void {
-  const plugins = loadPlugins(
-    [
-      "axialViews",
-      "orbitTelemetry",
-      "runtimeTelemetry",
-      "shipTelemetry",
-      "autopilot",
-      "memory",
-      "pause",
-      "profiling",
-      "timeScale",
-      "playback",
-      "trajectories",
-      "velocitySegments",
-    ],
-    runtimeOptions,
-  );
-
   const container = document.querySelector(".canvas-container");
   if (!container) {
     throw new Error("Required '.canvas-container' not found in document");

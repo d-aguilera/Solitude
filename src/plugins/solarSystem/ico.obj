@@ -1,4 +1,4 @@
-# Normalized icosahedron mesh used by src/config/solarSystem.ts
+# Normalized icosahedron mesh used by src/plugins/solarSystem/solarSystem.ts
 v -0.525731112119134 0.85065080835204 0
 v 0.525731112119134 0.85065080835204 0
 v -0.525731112119134 -0.85065080835204 0

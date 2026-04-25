@@ -1,4 +1,7 @@
-import type { BodyId } from "../domain/domainPorts";
+import type { AngularVelocity, BodyId } from "../domain/domainPorts";
+import type { LocalFrame } from "../domain/localFrame";
+import type { Mat3 } from "../domain/mat3";
+import type { Vec3 } from "../domain/vec3";
 
 export type CelestialBodyKind = "planet" | "star";
 
@@ -77,14 +80,22 @@ export interface StarPhysicsConfig extends CelestialBodyPhysicsConfig {
 }
 
 export interface ShipPhysicsConfig {
-  altitude: number;
   density: number; // kg/m^3
-  homePlanetId: string;
   id: string;
   volume: number; // m^3, derived from hull mesh
 }
 
+export interface ShipInitialStateConfig {
+  angularVelocity: AngularVelocity;
+  frame: LocalFrame;
+  id: string;
+  orientation: Mat3;
+  position: Vec3;
+  velocity: Vec3;
+}
+
 export interface WorldPhysicsConfig {
   planets: (PlanetPhysicsConfig | StarPhysicsConfig)[];
+  shipInitialStates: ShipInitialStateConfig[];
   ships: ShipPhysicsConfig[];
 }

@@ -9,21 +9,21 @@ import { addShipsFromConfig } from "./setupShips";
 export const initialFrame: LocalFrame = localFrame.fromUp(vec3.create(0, 0, 1));
 
 export interface WorldSetup {
-  enemyShip: ShipBody;
   mainShip: ShipBody;
   world: World;
 }
 
 export type WorldConfigBase = Pick<
   WorldAndSceneConfig,
-  "enemyShipId" | "mainShipId" | "physics"
+  "mainShipId" | "physics"
 >;
 
 export function createWorld({
-  enemyShipId,
   mainShipId,
   physics,
 }: WorldConfigBase): WorldSetup {
+  validateWorldConfig({ mainShipId, physics });
+
   const world: World = {
     ships: [],
     shipPhysics: [],
@@ -34,13 +34,11 @@ export function createWorld({
   };
 
   addPlanetsAndStarsFromConfig(physics.planets, world);
-  addShipsFromConfig(physics.ships, world);
+  addShipsFromConfig(physics.ships, physics.shipInitialStates, world);
 
-  const enemyShip = getShipById(world, enemyShipId);
   const mainShip = getShipById(world, mainShipId);
 
   return {
-    enemyShip,
     mainShip,
     world,
   };
@@ -51,4 +49,32 @@ export function createWorld({
  */
 export function createHeadlessWorld(config: WorldConfigBase): WorldSetup {
   return createWorld(config);
+}
+
+function validateWorldConfig({ mainShipId, physics }: WorldConfigBase): void {
+  if (!mainShipId) {
+    throw new Error("World config is missing mainShipId");
+  }
+
+  const shipIds = new Set<string>();
+  for (const ship of physics.ships) {
+    if (!ship.id) throw new Error("Ship physics config is missing id");
+    shipIds.add(ship.id);
+  }
+
+  if (!shipIds.has(mainShipId)) {
+    throw new Error(`Main ship physics config not found: ${mainShipId}`);
+  }
+
+  const initialStateIds = new Set<string>();
+  for (const state of physics.shipInitialStates) {
+    if (!state.id) throw new Error("Ship initial state is missing id");
+    initialStateIds.add(state.id);
+  }
+
+  for (const shipId of shipIds) {
+    if (!initialStateIds.has(shipId)) {
+      throw new Error(`Ship initial state not found: ${shipId}`);
+    }
+  }
 }

@@ -10,6 +10,17 @@ import type {
 } from "./controlPorts";
 import type { PropulsionCommand } from "./controls";
 import type { HudGrid } from "./hudPorts";
+import type {
+  PlanetPhysicsConfig,
+  ShipInitialStateConfig,
+  ShipPhysicsConfig,
+  StarPhysicsConfig,
+} from "./physicsConfigPorts";
+import type {
+  PlanetRenderConfig,
+  ShipRenderConfig,
+  StarRenderConfig,
+} from "./renderConfigPorts";
 import type { Scene, SceneObject } from "./scenePorts";
 import type { SceneViewId, ViewDefinition } from "./viewPorts";
 
@@ -180,6 +191,34 @@ export interface ViewPlugin {
   ) => void;
 }
 
+export interface CelestialBodyContribution {
+  physics: (PlanetPhysicsConfig | StarPhysicsConfig)[];
+  render: (PlanetRenderConfig | StarRenderConfig)[];
+}
+
+export interface ShipContribution {
+  initialStates: ShipInitialStateConfig[];
+  physics: ShipPhysicsConfig[];
+  render: ShipRenderConfig[];
+}
+
+export interface WorldModelRegistry {
+  addCelestialBodies: (contribution: CelestialBodyContribution) => void;
+  addShips: (contribution: ShipContribution) => void;
+  setMainShipId: (id: string) => void;
+}
+
+export interface WorldModelContributionParams {
+  config: WorldAndSceneConfig;
+}
+
+export interface WorldModelPlugin {
+  contributeWorldModel: (
+    registry: WorldModelRegistry,
+    params: WorldModelContributionParams,
+  ) => void;
+}
+
 export interface GamePlugin {
   id: string;
   controls?: ControlPlugin;
@@ -189,4 +228,5 @@ export interface GamePlugin {
   segments?: SegmentPlugin;
   scene?: ScenePlugin;
   views?: ViewPlugin;
+  worldModel?: WorldModelPlugin;
 }

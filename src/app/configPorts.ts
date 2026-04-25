@@ -5,7 +5,6 @@ export * from "./physicsConfigPorts";
 export * from "./renderConfigPorts";
 
 export interface WorldAndSceneConfig {
-  enemyShipId: string;
   mainShipId: string;
   thrustLevel: number;
   physics: WorldPhysicsConfig;

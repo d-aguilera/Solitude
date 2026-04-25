@@ -4,13 +4,13 @@ import type {
   PlanetRenderConfig,
   StarPhysicsConfig,
   StarRenderConfig,
-} from "../app/configPorts";
-import type { Mesh } from "../app/scenePorts";
-import { AU, km } from "../domain/units";
-import { vec3, type Vec3 } from "../domain/vec3";
-import { colors } from "./colors";
+} from "../../app/configPorts";
+import type { Mesh } from "../../app/scenePorts";
+import { colors } from "../../config/colors";
+import { parseObjMesh } from "../../config/obj";
+import { AU, km } from "../../domain/units";
+import { vec3, type Vec3 } from "../../domain/vec3";
 import icoObjText from "./ico.obj?raw";
-import { parseObjMesh } from "./obj";
 
 // --- Generated from JPL Horizons at epoch J2000.0 ---
 

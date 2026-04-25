@@ -1,14 +1,18 @@
+import { applyWorldModelPlugins } from "./app/worldModelConfig";
 import { buildWorldAndSceneConfig } from "./config/worldAndSceneConfig";
 import { bootstrap } from "./infra/domCanvasBootstrap";
 import { parseRuntimeOptionsFromSearch } from "./infra/domRuntimeOptions";
+import { defaultPluginIds, loadPlugins } from "./plugins/index";
 
 /**
  * Top‑level composition entry for the browser runtime.
  */
 function main(): void {
-  const config = buildWorldAndSceneConfig();
   const runtimeOptions = parseRuntimeOptionsFromSearch(window.location.search);
-  bootstrap(config, runtimeOptions);
+  const plugins = loadPlugins(defaultPluginIds, runtimeOptions);
+  const config = buildWorldAndSceneConfig();
+  applyWorldModelPlugins(config, plugins);
+  bootstrap(config, plugins);
 }
 
 main();

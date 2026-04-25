@@ -11,10 +11,30 @@ export function createScene(
   world: World,
   config: WorldAndSceneConfig,
 ): SceneSetup {
+  validateRenderedWorldConfig(config);
+
   const scene: Scene = createSceneFromWorld(
     world,
     config.render.planets,
     config.render.ships,
   );
   return { scene };
+}
+
+function validateRenderedWorldConfig(config: WorldAndSceneConfig): void {
+  const renderedShipIds = new Set<string>();
+  for (const ship of config.render.ships) {
+    if (!ship.id) throw new Error("Ship render config is missing id");
+    renderedShipIds.add(ship.id);
+  }
+
+  for (const ship of config.physics.ships) {
+    if (!renderedShipIds.has(ship.id)) {
+      throw new Error(`Ship render config not found: ${ship.id}`);
+    }
+  }
+
+  if (!renderedShipIds.has(config.mainShipId)) {
+    throw new Error(`Main ship render config not found: ${config.mainShipId}`);
+  }
 }

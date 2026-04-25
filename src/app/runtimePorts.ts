@@ -19,7 +19,6 @@ export interface TickOutput {
 }
 
 export interface WorldAndScene {
-  enemyShip: ShipBody;
   mainShip: ShipBody;
   scene: Scene;
   world: World;

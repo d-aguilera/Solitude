@@ -8,11 +8,28 @@ import { createPlaybackPlugin } from "./playback/index";
 import { createProfilingPlugin } from "./profiling/index";
 import { createRuntimeTelemetryPlugin } from "./runtimeTelemetry/index";
 import { createShipTelemetryPlugin } from "./shipTelemetry/index";
+import { createSolarSystemPlugin } from "./solarSystem/index";
 import { createTimeScalePlugin } from "./timeScale/index";
 import { createTrajectoriesPlugin } from "./trajectories/index";
 import { createVelocitySegmentsPlugin } from "./velocitySegments/index";
 
 export type PluginFactory = (runtimeOptions: RuntimeOptions) => GamePlugin;
+
+export const defaultPluginIds = [
+  "solarSystem",
+  "axialViews",
+  "orbitTelemetry",
+  "runtimeTelemetry",
+  "shipTelemetry",
+  "autopilot",
+  "memory",
+  "pause",
+  "profiling",
+  "timeScale",
+  "playback",
+  "trajectories",
+  "velocitySegments",
+];
 
 export const availablePlugins: Record<string, PluginFactory> = {
   autopilot: createAutopilotPlugin,
@@ -24,6 +41,7 @@ export const availablePlugins: Record<string, PluginFactory> = {
   profiling: createProfilingPlugin,
   runtimeTelemetry: createRuntimeTelemetryPlugin,
   shipTelemetry: createShipTelemetryPlugin,
+  solarSystem: createSolarSystemPlugin,
   timeScale: createTimeScalePlugin,
   trajectories: createTrajectoriesPlugin,
   velocitySegments: createVelocitySegmentsPlugin,

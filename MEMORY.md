@@ -42,9 +42,9 @@
 - `src/render/`: projection + render staging (faces, polylines, HUD).
 - `src/rasterize/`: Canvas2D + WebGL rasterizers.
 - `src/setup/`: world/scene construction + trajectories.
-- `src/config/`: solar system and ship configs (OBJ meshes, colors, constants).
+- `src/config/`: shared assets/colors and base runtime config.
 - `src/global/`: cross-cutting globals (allowed onion exception).
-- `src/plugins/`: plugin catalog/composition layer (outer layer).
+- `src/plugins/`: plugin catalog/composition layer (outer layer), including default world-model content.
 
 ## Plugins
 
@@ -67,8 +67,7 @@
 - `src/plugins/autopilot/logic.ts`: align-to-velocity/body and “circle now”.
 - `src/plugins/playback/`: diagnostic capture/playback for repeatable circle-now repros.
 - `src/setup/sceneSetup.ts`: scene graph + trajectory setup.
-- `src/config/solarSystem.ts`: solar system data and Keplerian elements.
-- `src/config/ships.ts`: ship geometry, mass, and initial placement.
+- `src/plugins/solarSystem/`: solar system data, default ships, and Earth-bound initial ship states.
 - `src/render/DefaultViewRenderer.ts`: projection + draw list assembly.
 
 ## Controls quick reference
@@ -95,7 +94,7 @@
 ## Current state
 
 - Core loop is working: input → physics → scene update → render → HUD.
-- Ships, planets, and stars are configured from static config data.
+- Ships, planets, and stars are contributed by world-model plugins.
 - Default runtime uses Canvas 2D; WebGL renderer exists but is not wired by default.
 - Tests cover geometry/mesh parsing and projection clipping.
 

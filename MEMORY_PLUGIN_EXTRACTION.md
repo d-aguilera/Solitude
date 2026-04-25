@@ -28,6 +28,7 @@ Existing plugin types live in `src/app/pluginPorts.ts`:
 - `hud`: HUD grid writers.
 - `scene`: scene init/update hooks and per-view object filters.
 - `segments`: world-space overlay segment providers.
+- `worldModel`: pre-runtime contribution of celestial bodies, ships, render config, initial ship states, and the main ship ID.
 
 Existing plugins already cover:
 
@@ -43,6 +44,7 @@ Existing plugins already cover:
 - Time scale: `src/plugins/timeScale/`
 - Trajectories: `src/plugins/trajectories/`
 - Velocity segments: `src/plugins/velocitySegments/`
+- Solar system world model: `src/plugins/solarSystem/`
 
 ## Completed Decisions
 
@@ -87,39 +89,21 @@ What changed:
 - Moved the trajectory state type out of `src/app/runtimePorts.ts` into `src/plugins/trajectories/types.ts`.
 - Core runtime ports now contain only tick/world-and-scene runtime contracts.
 
+### Solar System World Model
+
+Status: extraction implemented on 2026-04-25.
+
+What changed:
+
+- Added a world-model plugin hook for contributing celestial bodies, ships, initial ship states, and `mainShipId`.
+- Moved solar-system data from `src/config/solarSystem.ts` to `src/plugins/solarSystem/`.
+- Moved default `ship:main` and `ship:enemy` config and Earth-bound placement into the solar-system plugin.
+- Removed the special `enemyShip` / `enemyShipId` runtime field; secondary ships live in `world.ships`.
+- Core setup now requires plugin-contributed main ship config and initial state.
+
 ## Strongest Remaining Candidates
 
-### 1. Enemy Ship / Demo Scenario Content
-
-Status: good content/scenario extraction candidate.
-
-Why it is non-core:
-
-- `enemyShip` is constructed and carried through runtime state, but no behavior appears to use it.
-- It looks like default scenario content, not a core requirement for physics, controls, or rendering.
-- A core sandbox should support zero or many secondary ships without a special `enemyShip` slot.
-
-Current touch points:
-
-- `src/app/configPorts.ts`: `enemyShipId` is required.
-- `src/setup/setup.ts`: `WorldSetup` requires `enemyShip`, and `createWorld` looks it up.
-- `src/app/runtimePorts.ts`: `WorldAndScene` requires `enemyShip`.
-- `src/config/worldAndSceneConfig.ts`: selects `"ship:enemy"`.
-- `src/config/ships.ts`: creates `"ship:enemy"` and its render config.
-- `src/config/colors.ts`: includes `enemyShip`.
-
-Likely extraction shape:
-
-- Remove the special `enemyShip` field from required core runtime state.
-- Treat extra ships as scenario data in `physics.ships` / `render.ships`.
-- If plugin-driven scenarios are desired, create a scenario/default-content plugin that contributes ship configs.
-
-Watch-outs:
-
-- Tests currently use the same ship ID for `mainShipId` and `enemyShipId`; update tests if `enemyShipId` goes away.
-- A data-only cleanup may be enough before introducing a full scenario plugin API.
-
-### 2. Orbit Readout Helpers In Domain
+### 1. Orbit Readout Helpers In Domain
 
 Status: medium-priority extraction/split candidate.
 
@@ -174,9 +158,8 @@ Why it may stay core:
 
 ## Recommended Order
 
-1. Enemy ship / special scenario field cleanup.
-2. Orbit readout/domain split.
-3. Pilot look / camera offset controls, only if the camera/view refactor makes it natural.
+1. Orbit readout/domain split.
+2. Pilot look / camera offset controls, only if the camera/view refactor makes it natural.
 
 ## Documentation Notes
 

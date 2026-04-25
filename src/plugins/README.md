@@ -19,6 +19,7 @@ Each plugin lives in its own folder. A typical split is:
 - `scene.ts`: scene init/update hooks and view filters (app + setup dependencies)
 - `segments.ts`: view overlay segment providers (app + domain dependencies)
 - `views.ts`: view registration, camera offsets, and camera frame strategies
+- `worldModel.ts`: pre-runtime world/scenario model contribution
 - `index.ts`: composes the above into a `GamePlugin`
 
 Loop plugins can also influence per-frame policies such as whether the sim,
@@ -40,6 +41,20 @@ Available plugins are exported from `src/plugins/index.ts`.
 Infra/bootstrap chooses which plugins to enable via `loadPlugins` (e.g. `src/infra/domBootstrap.ts`).
 Infra passes runtime URL options to plugins as a raw string map; each plugin
 owns validation and interpretation of its own option keys.
+
+## World model
+
+World-model plugins contribute scenario objects before world setup runs. They
+may add celestial body physics/render config, complete ship physics/render
+config, complete ship initial states, and the required `mainShipId`.
+
+Core setup requires a plugin-contributed main ship. Ship mass is derived from
+mandatory `density * volume`; ship initial state must include position,
+velocity, frame, orientation, and angular velocity. Scenario-specific placement
+logic belongs in the contributing plugin.
+
+The default browser runtime enables the `solarSystem` plugin, which contributes
+the solar bodies plus the default main and enemy ships.
 
 ## Diagnostic playback
 

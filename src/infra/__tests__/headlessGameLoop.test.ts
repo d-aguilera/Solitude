@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type {
   PlanetPhysicsConfig,
+  ShipInitialStateConfig,
   ShipPhysicsConfig,
   StarPhysicsConfig,
   WorldPhysicsConfig,
 } from "../../app/configPorts";
+import { localFrame } from "../../domain/localFrame";
+import { mat3 } from "../../domain/mat3";
 import { vec3 } from "../../domain/vec3";
 import type { WorldConfigBase } from "../../setup/setup";
 import { createHeadlessLoop } from "../headlessGameLoop";
@@ -53,19 +56,27 @@ function buildHeadlessConfig(): WorldConfigBase {
 
   const ship: ShipPhysicsConfig = {
     id: shipId,
-    homePlanetId: earthId,
-    altitude: 1_000,
     density: 1,
     volume: 1,
   };
 
+  const frame = localFrame.fromUp(vec3.create(0, 0, 1));
+  const shipInitialState: ShipInitialStateConfig = {
+    angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
+    frame,
+    id: shipId,
+    orientation: localFrame.intoMat3(mat3.zero(), frame),
+    position: vec3.create(0, 0, 12_000_000),
+    velocity: vec3.create(0, 1_000, 0),
+  };
+
   const physics: WorldPhysicsConfig = {
     planets: [sun, earth],
+    shipInitialStates: [shipInitialState],
     ships: [ship],
   };
 
   return {
-    enemyShipId: shipId,
     mainShipId: shipId,
     physics,
   };
