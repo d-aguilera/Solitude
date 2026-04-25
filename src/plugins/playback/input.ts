@@ -5,6 +5,7 @@ import type { DiagnosticRuntimeOptions } from "./options";
 
 const captureToggleAction: ControlAction = "playbackCaptureToggle";
 const pauseToggleAction: ControlAction = "pauseToggle";
+const profilingToggleAction: ControlAction = "profilingToggle";
 
 export function createInputPlugin(
   diagnostic: DiagnosticRuntimeOptions | undefined,
@@ -42,12 +43,16 @@ function createCaptureKeyHandler(controller: PlaybackController): KeyHandler {
 function createPlaybackKeyHandler(controller: PlaybackController): KeyHandler {
   return {
     handleKeyDown: (action, isRepeat) => {
+      if (action === profilingToggleAction) return false;
       if (!controller.isInputLocked()) return false;
       if (action === pauseToggleAction && !isRepeat) {
         controller.handlePause();
       }
       return true;
     },
-    handleKeyUp: () => controller.isInputLocked(),
+    handleKeyUp: (action) => {
+      if (action === profilingToggleAction) return false;
+      return controller.isInputLocked();
+    },
   };
 }
