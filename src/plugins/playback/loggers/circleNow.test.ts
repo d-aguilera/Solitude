@@ -158,7 +158,7 @@ describe("circle-now playback logger", () => {
     ] as const;
 
     expect(report.schemaVersion).toBe(3);
-    expect(report.circleNowAlgorithmVersion).toBe("v3");
+    expect(report.circleNowAlgorithmVersion).toBe("v5");
     expect(report.sampleCount).toBe(1);
     expect(report.samples.length).toBe(report.sampleStride);
     expect(report.sampleStride).toBe(circleNowSampleFields.length);

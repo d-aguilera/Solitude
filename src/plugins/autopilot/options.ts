@@ -8,6 +8,8 @@ const autopilotAlgorithmVersions: readonly AutopilotAlgorithmVersion[] = [
   "v1",
   "v2",
   "v3",
+  "v4",
+  "v5",
 ];
 
 export interface AutopilotRuntimeOptions {
@@ -35,7 +37,7 @@ export function parseAutopilotRuntimeOptions(
 
   return {
     algorithmVersion: defaultAutopilotAlgorithmVersion,
-    warning: "Invalid autopilot; expected v1/v2/v3.",
+    warning: "Invalid autopilot; expected v1/v2/v3/v4/v5.",
   };
 }
 

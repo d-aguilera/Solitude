@@ -17,7 +17,10 @@ export function createControlPlugin(
 ): ControlPlugin {
   const circleNowState = createCircleNowControllerState();
   const resolvePropulsionCommand =
-    algorithmVersion === "v2" || algorithmVersion === "v3"
+    algorithmVersion === "v2" ||
+    algorithmVersion === "v3" ||
+    algorithmVersion === "v4" ||
+    algorithmVersion === "v5"
       ? createPhasedPropulsionResolver(algorithmVersion, circleNowState)
       : createImmediatePropulsionResolver(algorithmVersion, circleNowState);
 
@@ -76,6 +79,7 @@ function createPhasedPropulsionResolver(
       params.ship,
       params.world,
       circleNowState,
+      algorithmVersion,
     );
     return resolveAutopilotPropulsionCommand(
       params.dtMillis,

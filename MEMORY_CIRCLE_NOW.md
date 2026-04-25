@@ -399,6 +399,158 @@
   - Keep `v3` as the current best default.
   - If improving further, compare whether roll acquisition should be softened after radial braking begins, or whether circularize can tolerate larger roll error once actuator-plane score is high enough.
 
+## Implementation iteration (2026-04-24, v4 velocity-speed preconditioner)
+
+- Hypothesis:
+  - The old v1 rolling pathology may occur because v1 starts when speed/energy is too far from circular. If circle-now first brings raw ship speed near the circular speed for the current radius, then v1-style full-control circularization may avoid the neverending roll.
+- Exact change:
+  - Added circle-now algorithm `v4` and made it the default.
+  - `v4` starts in a new `calibrateSpeed` phase.
+  - `calibrateSpeed` intentionally uses the existing `V` concept of raw ship velocity, not primary-relative velocity, per the experiment design.
+  - Because the ship can retro-burn, `calibrateSpeed` aligns the nose to whichever velocity-line direction is closer: `velocity` or `-velocity`.
+  - Main thrust is the only actuator during `calibrateSpeed`; RCS is disabled.
+  - If raw ship speed is above circular speed at the current primary radius, the main engine commands deceleration along the velocity line. If raw ship speed is below circular speed, it commands acceleration along the velocity line.
+  - Thrust is gated until the forward axis is within `20 deg` of either velocity-line direction.
+  - The speed phase exits when raw ship speed is within `5 m/s` of `sqrt(mu / r)`.
+  - After speed calibration, `v4` enters `circularize` and runs v1-style circle-now: inward nose, tangent roll, full main/RCS projection, no v2/v3 circularize authority gating.
+- Tests:
+  - Added coverage that v4 uses forward thrust to slow down when the tail is closer to velocity, backward thrust to slow down when the nose is closer to velocity, disables RCS during speed calibration, and transitions from `calibrateSpeed` to `circularize`.
+- Expected validation:
+  - Replay `moon-circle-long-2` with default `v4` and compare against the `v3` log `moon-circle-long-20260424-1903.json`.
+  - Key metrics: active time to `e < 0.001`, total absolute roll, primary transitions, acceleration efficiency, and whether speed calibration prevents or reintroduces v1's long phase-locked roll.
+
+## Validation iteration (2026-04-24, v4 velocity-speed preconditioner replay)
+
+- Log:
+  - `src/plugins/playback/logs/circleNow/moon-circle-long-20260424-2013.json`
+- Exact comparison:
+  - `v4` long-2 replay stayed on `planet:moon` for the full logged circle-now run; no primary transitions.
+  - `v4` reached `e < 0.001` at ~`3.63 s` active time.
+  - `v4` total absolute roll was ~`73.2 deg`; roll at `e < 0.001` was ~`27.9 deg`.
+  - `v4` average acceleration efficiency was ~`0.938`.
+  - At ~`4.0 s` active time, `v4` was already near circular: eccentricity ~`3.36e-7`, radial speed ~`0.00014 m/s`, tangential speed ~`444.606 m/s`, circular speed ~`444.606 m/s`, accumulated roll ~`46.0 deg`.
+  - Prior `v3` long-2 replay reached `e < 0.001` at ~`8.80 s`, total roll ~`661.9 deg`, and average acceleration efficiency ~`0.687`.
+  - Pre-v2 immediate/old behavior reached `e < 0.001` at ~`24.27 s`, total roll ~`2225.8 deg`, and average acceleration efficiency ~`0.151`.
+- Result:
+  - Confirmed: raw-velocity speed preconditioning before v1-style circularization is the best tested approach so far for `moon-circle-long-2`.
+  - The hypothesis held for this replay: once speed was preconditioned, v1-style full-control circularization did not re-enter the long phase-locked rolling failure.
+  - Remaining caveat: validation is still one saved long-case replay. Next compare `moon-circle-ok-2` and a few manual Moon approaches before treating `v4` as broadly solved.
+
+## Manual retest update (2026-04-24, v4 unreliable)
+
+- User result:
+  - The successful `v4` playback log appears to have been luck.
+  - Additional manual `v4` attempts went back to uncontrollable v1-like spinning, possibly worse.
+- Result:
+  - `v4` is rejected as a broadly reliable fix despite the strong saved replay result.
+  - Keep the log as a useful data point, but do not treat it as proof that raw-velocity speed preconditioning solves the circle-now bug.
+
+## Implementation iteration (2026-04-24, v5 vector circularizer)
+
+- Hypothesis:
+  - The root failure is coupling useful burn direction to inward visual pointing and tangent roll. A reliable circularizer should directly chase the desired orbital delta-v vector with the signed main engine, using RCS only for residual trim.
+- Exact change:
+  - Added circle-now algorithm `v5` and made it the default.
+  - `v5` locks the dominant primary and target orbit plane when circle-now activates.
+  - The target plane is the current primary-relative orbital plane from `r x vRel`; if that is degenerate, it falls back to ship-right projected perpendicular to `r`, then ship-up projected perpendicular to `r`.
+  - Each tick, `v5` computes `targetVRel = tHat * sqrt(mu / r)` from the locked plane and current radius, then `deltaV = targetVRel - vRel`.
+  - Attitude aligns the forward axis to the closer side of the `deltaV` line, allowing either forward or retro main burn.
+  - Propulsion is gated until the main axis is within `20 deg` of the `deltaV` line and reaches full authority by `8 deg`.
+  - Main thrust is signed from the desired acceleration projected onto ship-forward. RCS uses only the residual acceleration after main projection, projected onto ship-right.
+  - When `|deltaV| <= 0.5 m/s`, `v5` commands zero propulsion and damps roll to zero.
+- Tests:
+  - Added coverage for primary/plane locking, radial fallback plane, nearest delta-v-line attitude, nose/tail main thrust signs, poor-alignment propulsion gating, and RCS residual trim.
+- Expected validation:
+  - Replay `moon-circle-long-2` and `moon-circle-ok-2` with default `v5` and `&log=circle-now`.
+  - Acceptance target for long-2: no primary transition, `e < 0.001` within `10 s` active time, total roll below `360 deg`, and no sustained phase-locked roll plateau.
+
+## Validation iteration (2026-04-24, v5 long-2 replay)
+
+- Log:
+  - `src/plugins/playback/logs/circleNow/moon-circle-long-20260424-2100.json`
+- Exact comparison:
+  - `v5` long-2 replay stayed on `planet:moon`; no primary transitions.
+  - `v5` reached `e < 0.1` at ~`2.27 s` active, `e < 0.01` at ~`4.00 s`, and `e < 0.001` at ~`11.78 s`.
+  - `v5` total absolute roll was ~`336.4 deg`, just under the original `360 deg` acceptance target.
+  - `v5` final eccentricity was ~`0.000616`; final radial speed ~`0.0082 m/s`; final tangential speed ~`465.684 m/s`.
+  - Average acceleration efficiency was ~`0.896`.
+  - Compared with `v3`, `v5` used far less roll (~`336 deg` vs ~`662 deg`) and much higher average efficiency (~`0.896` vs ~`0.687`), but crossed `e < 0.001` later (~`11.78 s` vs ~`8.80 s`).
+  - Compared with the lucky `v4` replay, `v5` is slower and rolls more, but `v4` has been rejected by manual retest as unreliable.
+- Sample-level observation:
+  - `v5` performs the large correction quickly: by ~`2 s`, eccentricity is down to ~`0.218`.
+  - By ~`4 s`, eccentricity is ~`0.00977`, radial speed is only ~`-4.55 m/s`, and tangential speed is near circular.
+  - From ~`8 s` onward, `v5` is trimming a small remaining tangential surplus with tiny main/RCS commands while tangent-roll alignment sits near `180 deg`; roll has already stopped accumulating at ~`336 deg`.
+- Result:
+  - `v5` is a solid improvement and avoids the catastrophic phase-locked multi-roll behavior in this replay.
+  - It narrowly misses the original `10 s` long-2 time target but meets no-primary-transition and roll targets.
+  - Next tuning target: improve the low-error finishing phase so small tangential surplus is cleaned up faster without chasing a 180-degree roll alignment.
+
+## Implementation iteration (2026-04-24, v5 finish threshold + nose handoff)
+
+- Hypothesis:
+  - The slow `v5` finish happens because `v5` stops active circularization at `|deltaV| <= 0.5 m/s`, while the long-2 replay still has enough residual velocity error to keep eccentricity just above `0.001`.
+  - Once `v5` is genuinely finished, the cosmetic/UX behavior should hand off to locked-primary nose alignment only, without roll chasing or propulsion.
+- Exact change:
+  - Lowered the `v5` done threshold from `0.5 m/s` to `0.05 m/s`.
+  - When `v5` is below the done threshold, propulsion remains zero and attitude aligns the nose to the locked primary with roll commanded to zero.
+  - Added a focused test proving finished `v5` commands locked-primary nose alignment only and zero propulsion.
+- Expected validation:
+  - Re-run `moon-circle-long-2` with `&log=circle-now`.
+  - Check whether `e < 0.001` moves earlier than ~`11.78 s` active time without increasing total roll above `360 deg`.
+
+## Validation iteration (2026-04-24, v5 tighter threshold replay)
+
+- Log:
+  - `src/plugins/playback/logs/circleNow/moon-circle-long-20260424-2123.json`
+- User result:
+  - No perceived improvement.
+  - After circularization stabilized with the nose already pointing at the Moon, the Moon would periodically snap out of view as if circle-now disengaged, then the autopilot would reacquire it.
+- Exact comparison:
+  - `e < 0.001` improved from ~`11.78 s` active time to ~`5.57 s`.
+  - Final eccentricity improved from ~`0.000616` to ~`0.000127`; min eccentricity reached ~`0.00000367`.
+  - Total absolute roll worsened from ~`336.4 deg` to ~`477.0 deg`.
+  - No primary transitions.
+- Diagnosis:
+  - The tighter `0.05 m/s` finish threshold improved numerical circularization, but introduced finished/vector mode chatter.
+  - When residual delta-v fell below the threshold, v5 switched to locked-primary nose alignment. Then residual error grew above the threshold again, v5 snapped back to delta-v alignment, and later returned to nose alignment. This matches the observed Moon snapping out of view and being reacquired.
+  - v5 roll correction toward the residual trim vector also added unnecessary roll work. Main-engine vector pursuit is the core behavior; RCS trim should not require attitude roll chasing.
+
+## Implementation iteration (2026-04-24, v5 sticky finish + no roll chase)
+
+- Hypothesis:
+  - Once v5 reaches its done threshold, it should stay in a finished/nose-align mode for the rest of the current `X` hold instead of toggling back to delta-v pursuit.
+  - Removing v5's residual roll command should reduce roll accumulation without preventing main-engine delta-v pursuit or RCS residual trim.
+- Exact change:
+  - Added sticky `vectorFinished` phase for v5.
+  - When `vectorCircularize` reaches `|deltaV| <= 0.05 m/s`, v5 enters `vectorFinished`.
+  - `vectorFinished` commands locked-primary nose alignment with roll `0` and zero propulsion until circle-now is released/reset.
+  - During active `vectorCircularize`, v5 now commands roll `0`; RCS still trims the residual acceleration after main projection.
+  - Added a focused test proving `vectorFinished` remains sticky and propulsion stays zero even if the ship velocity later drifts away from circular.
+- Expected validation:
+  - Re-run `moon-circle-long-2` with `&log=circle-now`.
+  - Confirm the snap/reacquire behavior disappears, total roll drops versus ~`477 deg`, and `e < 0.001` remains materially earlier than the original v5 ~`11.78 s`.
+
+## Validation iteration (2026-04-24, v5 sticky finish + no roll replay)
+
+- Log:
+  - `src/plugins/playback/logs/circleNow/moon-circle-long-20260424-2205.json`
+- User result:
+  - "No improvement" in perceived outcome.
+- Exact comparison:
+  - `v5` stayed on `planet:moon`; no primary transitions.
+  - Total absolute roll dropped to `0 deg`, confirming active roll chasing was eliminated.
+  - `e < 0.001` occurred at ~`6.20 s` active time.
+  - Minimum eccentricity was ~`0.0001309` at ~`7.43 s` active time.
+  - Final eccentricity drifted back up to ~`0.000685`.
+  - Average acceleration efficiency dropped to ~`0.637`.
+- Result:
+  - Confirmed: removing roll chase fixes roll accumulation.
+  - Confirmed/likely: sticky finish should prevent the prior threshold chatter / snap-reacquire loop, although visual validation is still user-observed rather than directly logged.
+  - New issue: sticky finish hands off too early for long-term polish. Once nose alignment takes over, no active circularization correction remains, and eccentricity drifts upward across the rest of the hold.
+- Next candidate:
+  - Replace the delta-v-only finish condition with an orbit-quality finish condition, e.g. require both small `|deltaV|` and eccentricity below a tighter threshold before sticky handoff.
+  - Consider a "maintenance" mode after finish: keep nose aligned to the locked primary for UX, but allow tiny non-visual RCS/main corrections only if eccentricity drifts back above a guard band.
+
 ## Timeline of key steps (2026-04-04)
 
 - Verified geometric plane alignment idea and built a vector diagram of the orbit plane vs. tangential direction.
