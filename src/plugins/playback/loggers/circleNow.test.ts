@@ -158,7 +158,6 @@ describe("circle-now playback logger", () => {
     ] as const;
 
     expect(report.schemaVersion).toBe(3);
-    expect(report.circleNowAlgorithmVersion).toBe("v5");
     expect(report.sampleCount).toBe(1);
     expect(report.samples.length).toBe(report.sampleStride);
     expect(report.sampleStride).toBe(circleNowSampleFields.length);
@@ -199,12 +198,9 @@ describe("circle-now playback logger", () => {
 
   it("records the selected circle-now algorithm version", () => {
     const script = createScript();
-    const logger = createCircleNowLogger(script, {
-      autopilot: "v1",
-    });
+    const logger = createCircleNowLogger(script);
 
     expect(logger.getReport().schemaVersion).toBe(3);
-    expect(logger.getReport().circleNowAlgorithmVersion).toBe("v1");
   });
 
   it("records finite target-rate diagnostics after a previous valid sample", () => {

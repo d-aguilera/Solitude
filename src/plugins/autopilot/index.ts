@@ -1,21 +1,13 @@
-import type { GamePlugin, RuntimeOptions } from "../../app/pluginPorts";
+import type { GamePlugin } from "../../app/pluginPorts";
 import { createControlPlugin } from "./core";
 import { createHudPlugin } from "./hud";
 import { createInputPlugin } from "./input";
-import { parseAutopilotRuntimeOptions } from "./options";
 
-export function createAutopilotPlugin(
-  runtimeOptions: RuntimeOptions = {},
-): GamePlugin {
-  const options = parseAutopilotRuntimeOptions(runtimeOptions);
-  if (options.warning) {
-    console.warn(options.warning);
-  }
-
+export function createAutopilotPlugin(): GamePlugin {
   return {
     id: "autopilot",
     input: createInputPlugin(),
-    controls: createControlPlugin(options.algorithmVersion),
+    controls: createControlPlugin(),
     hud: createHudPlugin(),
   };
 }

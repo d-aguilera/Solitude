@@ -1,9 +1,5 @@
 import type { ControlInput, SimControlState } from "../../app/controlPorts";
-import type {
-  LoopPlugin,
-  LoopUpdateParams,
-  RuntimeOptions,
-} from "../../app/pluginPorts";
+import type { LoopPlugin, LoopUpdateParams } from "../../app/pluginPorts";
 import type { ShipBody, World } from "../../domain/domainPorts";
 import { createPlaybackLogger, type PlaybackLogger } from "./loggers/index";
 import {
@@ -74,7 +70,6 @@ export function createPlaybackController(
   scriptProvider: (
     scenario: PlaybackScenarioId,
   ) => PlaybackScript | null = getPlaybackScript,
-  runtimeOptions: RuntimeOptions = {},
 ): PlaybackController {
   const scenario = diagnostic?.scenario ?? "moon-circle";
   const script =
@@ -83,7 +78,7 @@ export function createPlaybackController(
       : null;
   const logger =
     diagnostic?.mode === "playback" && script
-      ? createPlaybackLogger(diagnostic.log, script, runtimeOptions)
+      ? createPlaybackLogger(diagnostic.log, script)
       : null;
 
   let status: PlaybackStatus = getInitialStatus(diagnostic, warning, script);

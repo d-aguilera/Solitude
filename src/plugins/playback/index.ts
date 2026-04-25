@@ -12,7 +12,6 @@ export function createPlaybackPlugin(
     options.diagnostic,
     options.diagnosticWarning ?? undefined,
     undefined,
-    runtimeOptions,
   );
   if (options.diagnosticLogWarning) {
     console.warn(options.diagnosticLogWarning);
