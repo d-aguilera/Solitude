@@ -39,7 +39,6 @@ import type {
 } from "../render/renderPorts";
 import { createScene } from "../setup/sceneSetup";
 import { createWorld } from "../setup/setup";
-import { updateFps } from "./fps";
 import type { RunLoopParams, RunLoopView } from "./infraPorts";
 
 type RenderDebug = {
@@ -185,7 +184,6 @@ export function runLoop({
   let lastTimeMs: number;
   let lastHudTimeMs: number;
   let dtMillis: number;
-  let fps: number;
   let simTimeMillis = getInitialSimTimeMillis(loopPlugins);
   const loopState: LoopState = {
     framePolicy: createDefaultFramePolicy(),
@@ -274,8 +272,6 @@ export function runLoop({
       view.renderer.renderInto(view.renderedView, renderParams);
     }
 
-    fps = updateFps(dtMillis);
-
     const shouldRenderHud = nowMs - lastHudTimeMs > 100;
 
     if (shouldRenderHud && framePolicy.advanceHud && renderDebug.hud) {
@@ -284,7 +280,6 @@ export function runLoop({
         controlInput,
         currentRcsLevel: tickOutput.currentRcsLevel,
         currentThrustLevel: tickOutput.currentThrustLevel,
-        fps,
         mainShip: worldAndScene.mainShip,
         nowMs,
         simTimeMillis,

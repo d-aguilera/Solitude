@@ -68,6 +68,16 @@ Known remaining static pieces:
 
 - `src/infra/domLayout.ts` still contains the generic primary/PiP layout policy.
 
+### Runtime Telemetry FPS
+
+Status: cleanup implemented on 2026-04-25.
+
+What changed:
+
+- Moved FPS averaging/storage out of `src/infra/domGameLoop.ts` and into `src/plugins/runtimeTelemetry/`.
+- Removed `fps` from the generic `HudContext`; runtime telemetry now passes FPS through its own loop/HUD controller.
+- Removed the now-unused `src/infra/fps.ts` helper and `src/app/RingBuffer.ts`.
+
 ## Strongest Remaining Candidates
 
 ### 1. Enemy Ship / Demo Scenario Content

@@ -66,7 +66,6 @@ export interface HudContext {
   controlInput: ControlInput;
   currentThrustLevel: number;
   currentRcsLevel: number;
-  fps: number;
   simTimeMillis: number;
 }
 

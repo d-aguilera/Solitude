@@ -9,6 +9,7 @@ import { circularSpeedAtRadius } from "../../domain/phys";
 import { vec3 } from "../../domain/vec3";
 import { createHudPlugin as createOrbitTelemetryHudPlugin } from "../orbitTelemetry/hud";
 import { createHudPlugin as createRuntimeTelemetryHudPlugin } from "../runtimeTelemetry/hud";
+import { createRuntimeTelemetryController } from "../runtimeTelemetry/logic";
 import { createHudPlugin as createShipTelemetryHudPlugin } from "../shipTelemetry/hud";
 
 function createHudGrid(): HudGrid {
@@ -71,7 +72,6 @@ function createHudContext(world: World, mainShip: ShipBody): HudContext {
     controlInput: createControlInput(),
     currentRcsLevel: -1,
     currentThrustLevel: 5,
-    fps: 59.95,
     mainShip,
     nowMs: 1234,
     simTimeMillis: 65_000,
@@ -97,8 +97,10 @@ describe("telemetry HUD plugins", () => {
     const { world, ship } = createWorldAndShip();
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
+    const controller = createRuntimeTelemetryController();
 
-    createRuntimeTelemetryHudPlugin().updateHudParams(grid, context);
+    controller.updateFps(1000 / 60);
+    createRuntimeTelemetryHudPlugin(controller).updateHudParams(grid, context);
 
     expect(grid[3][4]).toBe("Time: 01m 05s");
     expect(grid[4][4]).toBe("FPS: 60.0");
