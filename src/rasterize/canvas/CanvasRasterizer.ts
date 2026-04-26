@@ -9,6 +9,7 @@ import type {
   RenderedFace,
   RenderedPolyline,
   RenderedSegment,
+  Size,
   TextMetrics,
 } from "../../render/renderPorts";
 
@@ -32,6 +33,22 @@ let hudCanvasWidth = -1;
 let hudCanvasHeight = -1;
 const hudRowsScratch: number[] = [];
 
+let label: RenderedBodyLabel;
+let anchor: Point;
+let lineHeight: number;
+let lines: string[];
+let linesLength: number;
+let padding: Size;
+let position: Point;
+let positionX: number;
+let positionY: number;
+let size: Size;
+let sizeWidth: number;
+let sizeHeight: number;
+let edgePoint: Point;
+let textX: number;
+let textY: number;
+
 /**
  * Canvas2D rasterizer.
  */
@@ -40,10 +57,10 @@ export class CanvasRasterizer implements Rasterizer {
 
   clear(color: string): void {
     ctx = this.ctx;
-    const { width, height } = ctx.canvas;
+    const canvas = ctx.canvas;
 
     ctx.fillStyle = color;
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
   drawBodyLabels(labels: RenderedBodyLabel[], count: number): void {
@@ -53,11 +70,21 @@ export class CanvasRasterizer implements Rasterizer {
     ctx.textBaseline = "middle";
 
     for (let i = 0; i < count; i++) {
-      const { anchor, lineHeight, lines, padding, position, size, edgePoint } =
-        labels[i];
-      const linesLength = lines.length;
-      const { x: positionX, y: positionY } = position;
-      const { width: sizeWidth, height: sizeHeight } = size;
+      label = labels[i];
+      lines = label.lines;
+      linesLength = lines.length;
+      anchor = label.anchor;
+      edgePoint = label.edgePoint;
+      lineHeight = label.lineHeight;
+      padding = label.padding;
+      position = label.position;
+      positionX = position.x;
+      positionY = position.y;
+      size = label.size;
+      sizeWidth = size.width;
+      sizeHeight = size.height;
+      textX = positionX + padding.width;
+      textY = positionY + padding.height;
 
       ctx.strokeStyle = "white";
       ctx.lineWidth = 1;
@@ -74,11 +101,7 @@ export class CanvasRasterizer implements Rasterizer {
 
       ctx.fillStyle = "white";
       for (let i = 0; i < linesLength; i++) {
-        ctx.fillText(
-          lines[i],
-          positionX + padding.width,
-          positionY + padding.height + lineHeight * (i + 0.5),
-        );
+        ctx.fillText(lines[i], textX, textY + lineHeight * (i + 0.5));
       }
     }
   }
