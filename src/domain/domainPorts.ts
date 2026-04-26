@@ -46,22 +46,27 @@ export interface EntityMotionState extends CelestialBody {
   orientation: Mat3;
 }
 
-export interface EntityGravityMass extends PhysicsBody {}
+export interface EntityGravityMass extends PhysicsBody {
+  state: EntityMotionState;
+}
 
 export interface EntityCollisionSphere {
   id: EntityId;
   radius: number;
+  state: EntityMotionState;
 }
 
 export interface EntityAxialSpin {
   id: EntityId;
   angularSpeedRadPerSec: number;
   rotationAxis: Vec3;
+  state: EntityMotionState;
 }
 
 export interface EntityLightEmitter {
   id: EntityId;
   luminosity: number;
+  state: EntityMotionState;
 }
 
 export interface ControlledBody extends EntityMotionState {

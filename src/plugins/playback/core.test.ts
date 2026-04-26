@@ -26,7 +26,7 @@ function createWorldAndShip(): { world: World; ship: ShipBody } {
     entities: [{ id: ship.id }],
     entityIndex: new Map([[ship.id, { id: ship.id }]]),
     entityStates: [ship],
-    gravityMasses: [{ id: ship.id, density: 1, mass: 1 }],
+    gravityMasses: [{ id: ship.id, density: 1, mass: 1, state: ship }],
     lightEmitters: [],
     ships: [ship],
     shipPhysics: [{ id: ship.id, density: 1, mass: 1 }],

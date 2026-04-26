@@ -41,7 +41,7 @@ function createWorldAndShip(): { world: World; ship: ShipBody } {
 
   const world: World = {
     axialSpins: [],
-    collisionSpheres: [{ id: planetId, radius: planetRadius }],
+    collisionSpheres: [],
     controllableBodies: [ship],
     entities: [{ id: shipId }, { id: planetId }],
     entityIndex: new Map(),
@@ -74,9 +74,14 @@ function createWorldAndShip(): { world: World; ship: ShipBody } {
   world.entityIndex.set(shipId, world.entities[0]);
   world.entityIndex.set(planetId, world.entities[1]);
   world.entityStates.push(ship, world.planets[0]);
+  world.collisionSpheres.push({
+    id: planetId,
+    radius: planetRadius,
+    state: world.planets[0],
+  });
   world.gravityMasses.push(
-    { id: shipId, density: 1, mass: 1 },
-    { id: planetId, density: 5_500, mass: planetMass },
+    { id: shipId, density: 1, mass: 1, state: ship },
+    { id: planetId, density: 5_500, mass: planetMass, state: world.planets[0] },
   );
 
   return { world, ship };

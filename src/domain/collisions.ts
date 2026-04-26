@@ -26,13 +26,12 @@ const vNormalScratch: Vec3 = vec3.zero();
  *    where n is the outward normal from body center to ship.
  */
 export function resolveCollisions(world: World): void {
-  const { ships, planets, planetPhysics, stars, starPhysics } = world;
+  const { collisionSpheres, controllableBodies } = world;
 
-  const nPlanets = planets.length;
-  const nStars = stars.length;
+  const sphereCount = collisionSpheres.length;
 
-  for (let si = 0; si < ships.length; si++) {
-    const ship = ships[si];
+  for (let si = 0; si < controllableBodies.length; si++) {
+    const ship = controllableBodies[si];
     const shipPos = ship.position;
     const shipVel = ship.velocity;
 
@@ -42,40 +41,12 @@ export function resolveCollisions(world: World): void {
     let bestVelocity: Vec3 | null = null;
     let bestRadius = 0;
 
-    // Check against planets (index-aligned with planetPhysics).
-    for (let i = 0; i < nPlanets; i++) {
-      const body = planets[i];
-      const phys = planetPhysics[i];
-      if (!phys) continue;
+    for (let i = 0; i < sphereCount; i++) {
+      const sphere = collisionSpheres[i];
+      if (sphere.id === ship.id) continue;
 
-      const radius = phys.physicalRadius;
-
-      // delta = shipPos - body.position
-      vec3.subInto(deltaScratch, shipPos, body.position);
-      const distSq = vec3.lengthSq(deltaScratch);
-      const radiusSq = radius * radius;
-
-      if (distSq >= radiusSq) continue;
-
-      const dist = Math.sqrt(distSq);
-      const penetration = radius - dist;
-
-      if (!collided || penetration > bestPenetration) {
-        collided = true;
-        bestPenetration = penetration;
-        bestCenter = body.position;
-        bestVelocity = body.velocity;
-        bestRadius = radius;
-      }
-    }
-
-    // Check against stars (index-aligned with starPhysics).
-    for (let i = 0; i < nStars; i++) {
-      const body = stars[i];
-      const phys = starPhysics[i];
-      if (!phys) continue;
-
-      const radius = phys.physicalRadius;
+      const body = sphere.state;
+      const radius = sphere.radius;
 
       // delta = shipPos - body.position
       vec3.subInto(deltaScratch, shipPos, body.position);

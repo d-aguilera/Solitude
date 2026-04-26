@@ -1,7 +1,7 @@
 import type {
+  EntityAxialSpin,
   GravityEngine,
   GravityState,
-  RotatingBody,
   ShipBody,
   World,
 } from "../domain/domainPorts";
@@ -142,13 +142,16 @@ export function applyGravity(
   gravityEngine.step(remaining / 1000, gravityState);
 }
 
-function applySpinForBodies(dtMillisSim: number, bodies: RotatingBody[]): void {
+function applySpinForBodies(
+  dtMillisSim: number,
+  bodies: EntityAxialSpin[],
+): void {
   for (let i = 0; i < bodies.length; i++) {
     const body = bodies[i];
     const angle = (body.angularSpeedRadPerSec * dtMillisSim) / 1000;
     if (angle === 0) continue;
     mat3.rotAxisInto(Rspin, body.rotationAxis, angle);
-    mat3.mulMat3Into(body.orientation, Rspin, body.orientation);
+    mat3.mulMat3Into(body.state.orientation, Rspin, body.state.orientation);
   }
 }
 
@@ -158,6 +161,5 @@ function applySpinForBodies(dtMillisSim: number, bodies: RotatingBody[]): void {
 export function applyCelestialSpin(dtMillisSim: number, world: World): void {
   if (dtMillisSim <= 0) return;
 
-  applySpinForBodies(dtMillisSim, world.planets);
-  applySpinForBodies(dtMillisSim, world.stars);
+  applySpinForBodies(dtMillisSim, world.axialSpins);
 }

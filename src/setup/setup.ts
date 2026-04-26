@@ -189,6 +189,7 @@ function addShipEntity(world: World, index: number): void {
       density: physics.density,
       id: ship.id,
       mass: physics.mass,
+      state: ship,
     });
   }
 }
@@ -201,6 +202,7 @@ function addPlanetEntity(world: World, index: number): void {
     angularSpeedRadPerSec: planet.angularSpeedRadPerSec,
     id: planet.id,
     rotationAxis: planet.rotationAxis,
+    state: planet,
   });
   const physics = world.planetPhysics[index];
   if (physics) {
@@ -208,10 +210,12 @@ function addPlanetEntity(world: World, index: number): void {
       density: physics.density,
       id: planet.id,
       mass: physics.mass,
+      state: planet,
     });
     world.collisionSpheres.push({
       id: planet.id,
       radius: physics.physicalRadius,
+      state: planet,
     });
   }
 }
@@ -224,6 +228,7 @@ function addStarEntity(world: World, index: number): void {
     angularSpeedRadPerSec: star.angularSpeedRadPerSec,
     id: star.id,
     rotationAxis: star.rotationAxis,
+    state: star,
   });
   const physics = world.starPhysics[index];
   if (physics) {
@@ -231,14 +236,17 @@ function addStarEntity(world: World, index: number): void {
       density: physics.density,
       id: star.id,
       mass: physics.mass,
+      state: star,
     });
     world.collisionSpheres.push({
       id: star.id,
       radius: physics.physicalRadius,
+      state: star,
     });
     world.lightEmitters.push({
       id: star.id,
       luminosity: physics.luminosity,
+      state: star,
     });
   }
 }

@@ -68,7 +68,7 @@ function createWorld(): { ship: ShipBody; world: World } {
     ship,
     world: {
       axialSpins: [],
-      collisionSpheres: [{ id: planet.id, radius: 1_737_400 }],
+      collisionSpheres: [{ id: planet.id, radius: 1_737_400, state: planet }],
       controllableBodies: [ship],
       entities: [{ id: ship.id }, { id: planet.id }],
       entityIndex: new Map([
@@ -77,8 +77,8 @@ function createWorld(): { ship: ShipBody; world: World } {
       ]),
       entityStates: [ship, planet],
       gravityMasses: [
-        { id: ship.id, density: 1, mass: 1 },
-        { id: planet.id, density: 1, mass: 7.342e22 },
+        { id: ship.id, density: 1, mass: 1, state: ship },
+        { id: planet.id, density: 1, mass: 7.342e22, state: planet },
       ],
       lightEmitters: [],
       ships: [ship],

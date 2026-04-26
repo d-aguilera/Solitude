@@ -13,46 +13,14 @@ export function buildInitialGravityState(world: World): GravityState {
   const bodyStates: BodyState[] = [];
   const positions: Vec3[] = [];
 
-  // Ships
-  for (let i = 0; i < world.ships.length; i++) {
-    const ship = world.ships[i];
-    const physics = world.shipPhysics.find((p) => p.id === ship.id);
-    if (!physics) continue;
-
-    bodyStates.push({
-      id: ship.id,
-      mass: physics.mass,
-      velocity: ship.velocity, // alias for performance
-    });
-    positions.push(ship.position); // alias for performance
-  }
-
-  // Planets
-  for (let i = 0; i < world.planets.length; i++) {
-    const body = world.planets[i];
-    const physics = world.planetPhysics.find((p) => p.id === body.id);
-    if (!physics) continue;
-
+  for (let i = 0; i < world.gravityMasses.length; i++) {
+    const body = world.gravityMasses[i];
     bodyStates.push({
       id: body.id,
-      mass: physics.mass,
-      velocity: body.velocity, // alias for performance
+      mass: body.mass,
+      velocity: body.state.velocity, // alias for performance
     });
-    positions.push(body.position); // alias for performance
-  }
-
-  // Stars
-  for (let i = 0; i < world.stars.length; i++) {
-    const body = world.stars[i];
-    const physics = world.starPhysics.find((p) => p.id === body.id);
-    if (!physics) continue;
-
-    bodyStates.push({
-      id: body.id,
-      mass: physics.mass,
-      velocity: body.velocity, // alias for performance
-    });
-    positions.push(body.position); // alias for performance
+    positions.push(body.state.position); // alias for performance
   }
 
   return { bodyStates, positions };

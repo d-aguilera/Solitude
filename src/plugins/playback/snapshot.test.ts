@@ -52,10 +52,14 @@ function createWorld(): { world: World; ship: ShipBody } {
   world.entityIndex.set("planet:test", world.entities[1]);
   world.entityStates.push(ship, world.planets[0]);
   world.gravityMasses.push(
-    { id: ship.id, density: 1, mass: 1 },
-    { id: "planet:test", density: 1, mass: 10 },
+    { id: ship.id, density: 1, mass: 1, state: ship },
+    { id: "planet:test", density: 1, mass: 10, state: world.planets[0] },
   );
-  world.collisionSpheres.push({ id: "planet:test", radius: 1 });
+  world.collisionSpheres.push({
+    id: "planet:test",
+    radius: 1,
+    state: world.planets[0],
+  });
   mat3.copy(mat3.identity, world.planets[0].orientation);
   return { world, ship };
 }
