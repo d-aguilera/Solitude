@@ -96,7 +96,7 @@ Status: extraction implemented on 2026-04-25.
 What changed:
 
 - Added a world-model plugin hook for contributing celestial bodies, ships, initial ship states, and `mainShipId`.
-- Moved solar-system data from `src/config/solarSystem.ts` to `src/plugins/solarSystem/`.
+- Moved solar-system data, colors, and mesh assets from `src/config/` to `src/plugins/solarSystem/`.
 - Moved default `ship:main` and `ship:enemy` config and Earth-bound placement into the solar-system plugin.
 - Removed the special `enemyShip` / `enemyShipId` runtime field; secondary ships live in `world.ships`.
 - Core setup now requires plugin-contributed main ship config and initial state.

@@ -42,7 +42,7 @@
 - `src/render/`: projection + render staging (faces, polylines, HUD).
 - `src/rasterize/`: Canvas2D + WebGL rasterizers.
 - `src/setup/`: world/scene construction + trajectories.
-- `src/config/`: shared assets/colors and base runtime config.
+- `src/config/`: generic config helpers and base runtime config.
 - `src/global/`: cross-cutting globals (allowed onion exception).
 - `src/plugins/`: plugin catalog/composition layer (outer layer), including default world-model content.
 
@@ -67,7 +67,7 @@
 - `src/plugins/autopilot/logic.ts`: align-to-velocity/body and “circle now”.
 - `src/plugins/playback/`: diagnostic capture/playback for repeatable circle-now repros.
 - `src/setup/sceneSetup.ts`: scene graph + trajectory setup.
-- `src/plugins/solarSystem/`: solar system data, default ships, and Earth-bound initial ship states.
+- `src/plugins/solarSystem/`: solar system data, colors, meshes, default ships, and Earth-bound initial ship states.
 - `src/render/DefaultViewRenderer.ts`: projection + draw list assembly.
 
 ## Controls quick reference

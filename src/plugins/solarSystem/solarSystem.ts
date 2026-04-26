@@ -6,10 +6,10 @@ import type {
   StarRenderConfig,
 } from "../../app/configPorts";
 import type { Mesh } from "../../app/scenePorts";
-import { colors } from "../../config/colors";
 import { parseObjMesh } from "../../config/obj";
 import { AU, km } from "../../domain/units";
 import { vec3, type Vec3 } from "../../domain/vec3";
+import { colors } from "./colors";
 import icoObjText from "./ico.obj?raw";
 
 // --- Generated from JPL Horizons at epoch J2000.0 ---

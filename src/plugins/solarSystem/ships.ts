@@ -6,7 +6,6 @@ import type {
   StarPhysicsConfig,
 } from "../../app/configPorts";
 import type { Mesh } from "../../app/scenePorts";
-import { colors } from "../../config/colors";
 import { parseObjMesh } from "../../config/obj";
 import type {
   PlanetPhysics,
@@ -26,6 +25,7 @@ import { km } from "../../domain/units";
 import { vec3, type Vec3 } from "../../domain/vec3";
 import { initialFrame } from "../../setup/setup";
 import { addPlanetsAndStarsFromConfig } from "../../setup/setupPlanets";
+import { colors } from "./colors";
 import shipObjText from "./ship.obj?raw";
 
 const SHIP_DENSITY_KG_PER_M3 = 2700;
