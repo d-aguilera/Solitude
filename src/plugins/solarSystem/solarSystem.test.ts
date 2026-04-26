@@ -13,6 +13,7 @@ describe("solarSystem plugin", () => {
     applyWorldModelPlugins(config, [createSolarSystemPlugin()]);
 
     expect(config.mainShipId).toBe("ship:main");
+    expect(config.mainControlledEntityId).toBe("ship:main");
     expect(config.physics.planets.map((body) => body.id)).toEqual([
       "planet:sun",
       "planet:mercury",
@@ -39,6 +40,27 @@ describe("solarSystem plugin", () => {
       "ship:main",
       "ship:enemy",
     ]);
+    expect(config.entities.map((entity) => entity.id)).toEqual([
+      "planet:sun",
+      "planet:mercury",
+      "planet:venus",
+      "planet:earth",
+      "planet:mars",
+      "planet:jupiter",
+      "planet:saturn",
+      "planet:uranus",
+      "planet:neptune",
+      "planet:moon",
+      "planet:phobos",
+      "planet:deimos",
+      "ship:main",
+      "ship:enemy",
+    ]);
+    expect(config.entities[0].components.lightEmitter?.luminosity).toBeTruthy();
+    expect(
+      config.entities.find((entity) => entity.id === "ship:main")?.components
+        .controllable?.enabled,
+    ).toBe(true);
   });
 
   it("places both default ships relative to Earth and renders the scene", () => {

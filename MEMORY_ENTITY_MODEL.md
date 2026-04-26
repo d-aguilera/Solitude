@@ -50,6 +50,44 @@ Systems should query capabilities rather than categories:
 4. Move plugin APIs from contributing `planets` / `stars` / `ships` arrays to contributing generic entity definitions.
 5. Delete fixed `ships` / `planets` / `stars` buckets once no core system depends on them.
 
+## Phased Migration Plan
+
+1. **Foundation and parity**
+   - Introduce generic entity/config/world types alongside current `World`.
+   - Build id indexes once during setup; hot systems should iterate capability arrays directly.
+   - Add adapters from current celestial/ship config into generic entity configs, then into both generic arrays and legacy buckets.
+   - Add parity tests proving solar-system ids, masses, positions, velocities, main controlled body, scene objects, and lights match current behavior.
+
+2. **Generic setup path**
+   - Make `createWorld` build generic capability arrays as the primary setup output.
+   - Keep legacy buckets populated from the generic world for callers not yet migrated.
+   - Extract pure celestial initial-state derivation from `setupPlanets.ts` so the solar-system plugin no longer creates a temporary legacy `World` just to place ships.
+   - Update validation to require a main controllable entity, gravity bodies with mass where needed, and render configs for renderable entities.
+
+3. **Move core simulation systems**
+   - Change gravity state construction to read generic gravity/body-state capabilities instead of scanning ships/planets/stars.
+   - Change collision resolution to check controllable/dynamic bodies against collision sphere entities.
+   - Change axial spin to iterate spin capability arrays.
+   - Change control, thrust, RCS, attitude, camera, and view params to consume the main controlled body type while preserving old aliases for plugins.
+
+4. **Move scene and render assembly**
+   - Build scene objects from renderable/light capabilities instead of planet/star/ship render arrays.
+   - Keep transitional scene object roles only where render code still needs them for labels, culling, LOD, or visual treatment.
+   - Replace star-specific light extraction with light-emitter capability queries.
+   - Update trajectory scene setup to target generic entities; solar-system orbit/trajectory metadata stays plugin-owned.
+
+5. **Move plugin and diagnostic consumers**
+   - Update the solar-system plugin to contribute generic entities through the generic registry API.
+   - Migrate telemetry, autopilot, velocity segments, axial views, trajectories, and HUD contexts to generic controlled-body/world queries.
+   - Update orbit helpers so dominant-primary lookup accepts generic gravity/collision/body capabilities rather than `world.planets` and `world.stars`.
+   - Add playback snapshot schema v2 using generic entity snapshots; keep v1 read/apply compatibility until existing scripts are migrated.
+
+6. **Remove legacy buckets**
+   - Delete `World.ships`, `World.planets`, `World.stars`, and matching physics arrays after production code no longer depends on them.
+   - Remove legacy world-model registry methods and legacy config arrays.
+   - Rename remaining public `ship` terminology only where it describes core architecture; plugin or scenario names may remain ship-specific when they truly mean spacecraft.
+   - Update `MEMORY.md`, this file, and `src/plugins/README.md`.
+
 ## Important Constraints
 
 - Preserve performance: avoid allocation-heavy ECS patterns in hot loops.

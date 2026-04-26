@@ -3,6 +3,8 @@ import { vec3 } from "../domain/vec3";
 
 export function buildWorldAndSceneConfig() {
   const config: WorldAndSceneConfig = {
+    entities: [],
+    mainControlledEntityId: "",
     mainShipId: "",
     thrustLevel: 1,
     physics: {

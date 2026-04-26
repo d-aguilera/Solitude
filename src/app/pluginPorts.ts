@@ -9,6 +9,7 @@ import type {
   PropulsionCommand,
   SimControlState,
 } from "./controlPorts";
+import type { EntityConfig, EntityId } from "./entityConfigPorts";
 import type { HudGrid } from "./hudPorts";
 import type {
   PlanetPhysicsConfig,
@@ -203,8 +204,10 @@ export interface ShipContribution {
 }
 
 export interface WorldModelRegistry {
+  addEntities: (entities: EntityConfig[]) => void;
   addCelestialBodies: (contribution: CelestialBodyContribution) => void;
   addShips: (contribution: ShipContribution) => void;
+  setMainControlledEntityId: (id: EntityId) => void;
   setMainShipId: (id: string) => void;
 }
 

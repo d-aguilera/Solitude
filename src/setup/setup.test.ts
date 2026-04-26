@@ -113,6 +113,8 @@ describe("createWorld", () => {
 
   it("fails clearly when rendered ship config is missing", () => {
     const config: WorldAndSceneConfig = {
+      entities: [],
+      mainControlledEntityId: "ship:main",
       mainShipId: "ship:main",
       physics: {
         planets: [createSun()],
