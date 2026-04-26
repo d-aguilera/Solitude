@@ -9,11 +9,12 @@
 ## Spin-off memory docs
 
 - `MEMORY_PLUGIN_EXTRACTION.md`: audit notes and candidate list for moving non-core code into plugins.
-- **Note**: Keep `MEMORY_PLUGIN_EXTRACTION.md` updated after each plugin extraction decision.
+- `MEMORY_ENTITY_MODEL.md`: dedicated strategy/context for replacing ships/planets/stars core buckets with generic entities/components.
+- **Note**: Plugin extraction is still useful history, but the strategic direction has shifted to entity model generalization.
 
 ## Current focus
 
-- Convert non-core logic to plugins.
+- Generalize the core world/entity model so scenario plugins define content and core systems operate on generic capabilities rather than solar-system-shaped categories like ships, planets, and stars.
 
 ## Must-Do After Code Changes (Do Not Skip)
 
@@ -30,6 +31,7 @@
 - **Known exception**: `src/global/` is a deliberate carve-out and may violate onion rules. Do not treat it as a layering issue.
 - **Physics**: Newtonian N-body with leapfrog integration for stability.
 - **Solar system data**: use real-ish values (AU, km, approximate J2000 elements) for plausibility.
+- **Entity model direction**: core should not know about scenario categories such as planet/star/ship except where still transitional. Prefer generic bodies/components/capabilities.
 - **Rendering**: default Canvas 2D for portability; WebGL path exists if needed.
 - **Math helpers**: always use math helpers when available for vector/matrix/trig instead of inlining the math.
 - **Epsilons**: use the shared constants in `src/domain/epsilon.ts` instead of inline literals.
@@ -41,17 +43,35 @@
 - `src/infra/`: DOM input, layout, game loop, gravity engine.
 - `src/render/`: projection + render staging (faces, polylines, HUD).
 - `src/rasterize/`: Canvas2D + WebGL rasterizers.
-- `src/setup/`: world/scene construction + trajectories.
+- `src/setup/`: transitional world/scene construction; target is generic entity assembly from plugin-contributed components.
 - `src/config/`: generic config helpers and base runtime config.
 - `src/global/`: cross-cutting globals (allowed onion exception).
 - `src/plugins/`: plugin catalog/composition layer (outer layer), including default world-model content.
 
 ## Plugins
 
-- **Role**: plugins are the outermost layer that compose input, control, loop, HUD, scene, and segment hooks around the core game.
+- **Role**: plugins are the outermost layer that compose input, control, loop, HUD, scene, segment hooks, and world-model content around the core game.
 - **Layering rule**: inner layers (`domain`, `app`, `render`) must never import from `src/plugins`; infra/bootstrap decides what to load.
 - **Registration**: `src/plugins/index.ts` exports `availablePlugins` and `loadPlugins`; infra (e.g. `src/infra/domBootstrap.ts`) chooses plugin IDs.
 - **Single source of truth**: plugin list, structure, and behavior live in `src/plugins/README.md`.
+- **World-model goal**: scenario plugins should contribute generic entities/components. Core should validate required capabilities (e.g. main controllable body) rather than requiring fixed categories.
+
+## Entity Model Strategy
+
+- **Problem**: solar-system content has moved to a plugin, but core still has a fixed world schema: `ships`, `planets`, `stars`, plus setup/render/physics paths that branch on those categories.
+- **Target model**: core stores generic entities with capability-style components, such as transform/state, gravity mass, collision sphere, render mesh/color, light emitter, axial spin, controllable body, and main controlled body marker.
+- **System rule**: systems should query capabilities instead of categories:
+  - gravity integrates entities with mass + position + velocity.
+  - collision checks controllable/dynamic bodies against collision spheres.
+  - rendering draws renderable mesh entities and light emitters.
+  - controls operate on the configured main controllable entity.
+  - telemetry/autopilot plugins can define their own higher-level concepts, such as dominant gravitational primary, without forcing those concepts into core.
+- **Migration strategy**:
+  1. Add generic entity/component types alongside current `World` buckets.
+  2. Adapt current planet/star/ship plugin contributions into generic entities while preserving existing behavior.
+  3. Move gravity, collision, render scene assembly, and control targeting one system at a time to capability queries.
+  4. Delete the fixed `ships` / `planets` / `stars` buckets once no core system depends on them.
+- **Compatibility approach**: keep changes incremental and test-backed. Use adapters during the transition rather than doing a full rewrite.
 
 ## Runtime flow
 
@@ -94,16 +114,19 @@
 ## Current state
 
 - Core loop is working: input → physics → scene update → render → HUD.
-- Ships, planets, and stars are contributed by world-model plugins.
+- Solar-system content is contributed by a plugin, but core still models it through transitional `ships`, `planets`, and `stars` buckets.
 - Default runtime uses Canvas 2D; WebGL renderer exists but is not wired by default.
 - Tests cover geometry/mesh parsing and projection clipping.
 
 ## Recent changes (last 1–2 weeks)
 
 - Autopilot refactor: introduced layer-specific `autoPilot.ts` modules, and kept render ports local (no re-export of autopilot types).
+- Solar-system scenario extraction: moved solar bodies, colors, meshes, and default ships into `src/plugins/solarSystem/`; introduced world-model plugin contributions.
 
 ## Open questions / risks
 
+- Entity generalization touches physics, rendering, controls, collision, and plugin APIs; keep each migration step small and reversible.
+- Some plugin features currently assume planets/stars/ships; expect temporary adapters while the generic model lands.
 - Gravity uses fixed sub-steps for stability; high time scales can still destabilize.
 - WebGL path is present but not wired in the default entry; decide if/when to switch.
 - Controls are keyboard-only with no in-app help; consider a help overlay or onboarding prompt.
