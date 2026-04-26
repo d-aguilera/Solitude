@@ -7,6 +7,12 @@ import type { Vec3 } from "./vec3";
  */
 export type BodyId = string;
 
+/**
+ * ID of a generic world entity. Scenario-specific prefixes such as
+ * "ship:" or "planet:" are naming conventions, not core categories.
+ */
+export type EntityId = BodyId;
+
 export interface BodyState {
   id: BodyId;
   mass: number;
@@ -30,6 +36,37 @@ export interface CelestialBody {
   id: string;
   position: Vec3;
   velocity: Vec3;
+}
+
+export interface EntityRecord {
+  id: EntityId;
+}
+
+export interface EntityMotionState extends CelestialBody {
+  orientation: Mat3;
+}
+
+export interface EntityGravityMass extends PhysicsBody {}
+
+export interface EntityCollisionSphere {
+  id: EntityId;
+  radius: number;
+}
+
+export interface EntityAxialSpin {
+  id: EntityId;
+  angularSpeedRadPerSec: number;
+  rotationAxis: Vec3;
+}
+
+export interface EntityLightEmitter {
+  id: EntityId;
+  luminosity: number;
+}
+
+export interface ControlledBody extends EntityMotionState {
+  angularVelocity: AngularVelocity;
+  frame: LocalFrame;
 }
 
 /**
@@ -101,6 +138,14 @@ export interface StarPhysics extends PlanetPhysics {
  * the domain logic.
  */
 export interface World {
+  entities: EntityRecord[];
+  entityIndex: Map<EntityId, EntityRecord>;
+  entityStates: EntityMotionState[];
+  gravityMasses: EntityGravityMass[];
+  collisionSpheres: EntityCollisionSphere[];
+  axialSpins: EntityAxialSpin[];
+  controllableBodies: ControlledBody[];
+  lightEmitters: EntityLightEmitter[];
   ships: ShipBody[];
   shipPhysics: ShipPhysics[];
   planets: RotatingBody[];

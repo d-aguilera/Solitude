@@ -67,6 +67,20 @@ function createWorld(): { ship: ShipBody; world: World } {
   return {
     ship,
     world: {
+      axialSpins: [],
+      collisionSpheres: [{ id: planet.id, radius: 1_737_400 }],
+      controllableBodies: [ship],
+      entities: [{ id: ship.id }, { id: planet.id }],
+      entityIndex: new Map([
+        [ship.id, { id: ship.id }],
+        [planet.id, { id: planet.id }],
+      ]),
+      entityStates: [ship, planet],
+      gravityMasses: [
+        { id: ship.id, density: 1, mass: 1 },
+        { id: planet.id, density: 1, mass: 7.342e22 },
+      ],
+      lightEmitters: [],
       ships: [ship],
       shipPhysics: [{ id: ship.id, density: 1, mass: 1 }],
       planets: [planet],
@@ -366,6 +380,14 @@ describe("circle-now playback logger", () => {
         script,
         simTimeMillis: 100,
         world: {
+          axialSpins: [],
+          collisionSpheres: [],
+          controllableBodies: [],
+          entities: [],
+          entityIndex: new Map(),
+          entityStates: [],
+          gravityMasses: [],
+          lightEmitters: [],
           ships: [],
           shipPhysics: [],
           planets: [],

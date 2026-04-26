@@ -79,6 +79,25 @@ describe("solarSystem plugin", () => {
       (ship) => ship.id === "ship:enemy",
     );
 
+    expect(worldSetup.mainControlledBody).toBe(mainShip);
+    expect(worldSetup.world.entities.map((entity) => entity.id)).toEqual(
+      config.entities.map((entity) => entity.id),
+    );
+    expect(worldSetup.world.controllableBodies.map((body) => body.id)).toEqual([
+      "ship:main",
+      "ship:enemy",
+    ]);
+    expect(worldSetup.world.gravityMasses.map((mass) => mass.id)).toEqual(
+      config.entities.map((entity) => entity.id),
+    );
+    expect(
+      worldSetup.world.collisionSpheres.some(
+        (sphere) => sphere.id === "planet:earth",
+      ),
+    ).toBe(true);
+    expect(
+      worldSetup.world.lightEmitters.some((light) => light.id === "planet:sun"),
+    ).toBe(true);
     expect(earth).toBeDefined();
     expect(enemyShip).toBeDefined();
     expect(sceneSetup.scene.objects.some((obj) => obj.id === "ship:main")).toBe(

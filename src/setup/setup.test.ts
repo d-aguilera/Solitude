@@ -111,6 +111,28 @@ describe("createWorld", () => {
     );
   });
 
+  it("fails clearly when the configured main controlled entity is not controllable", () => {
+    const config: WorldConfigBase = {
+      ...createConfig({
+        planets: [createSun()],
+        shipInitialStates: [createShipInitialState("ship:main")],
+        ships: [createShipPhysics("ship:main")],
+      }),
+      entities: [
+        { id: "planet:sun", components: {} },
+        {
+          id: "ship:main",
+          components: { controllable: { enabled: true } },
+        },
+      ],
+      mainControlledEntityId: "planet:sun",
+    };
+
+    expect(() => createWorld(config)).toThrow(
+      "Main controlled entity is not controllable: planet:sun",
+    );
+  });
+
   it("fails clearly when rendered ship config is missing", () => {
     const config: WorldAndSceneConfig = {
       entities: [],

@@ -20,6 +20,14 @@ function createWorldAndShip(): { world: World; ship: ShipBody } {
   localFrame.intoMat3(ship.orientation, ship.frame);
 
   const world: World = {
+    axialSpins: [],
+    collisionSpheres: [],
+    controllableBodies: [ship],
+    entities: [{ id: ship.id }],
+    entityIndex: new Map([[ship.id, { id: ship.id }]]),
+    entityStates: [ship],
+    gravityMasses: [{ id: ship.id, density: 1, mass: 1 }],
+    lightEmitters: [],
     ships: [ship],
     shipPhysics: [{ id: ship.id, density: 1, mass: 1 }],
     planets: [],

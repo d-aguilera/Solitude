@@ -7,11 +7,7 @@ import type {
 } from "../../app/configPorts";
 import type { Mesh } from "../../app/scenePorts";
 import { parseObjMesh } from "../../config/obj";
-import type {
-  PlanetPhysics,
-  RotatingBody,
-  World,
-} from "../../domain/domainPorts";
+import type { PlanetPhysics, RotatingBody } from "../../domain/domainPorts";
 import {
   DOT_PARALLEL_COS,
   EPS_LEN,
@@ -24,7 +20,7 @@ import { circularSpeedAtRadius } from "../../domain/phys";
 import { km } from "../../domain/units";
 import { vec3, type Vec3 } from "../../domain/vec3";
 import { initialFrame } from "../../setup/setup";
-import { addPlanetsAndStarsFromConfig } from "../../setup/setupPlanets";
+import { createPlanetsAndStarsFromConfig } from "../../setup/setupPlanets";
 import { colors } from "./colors";
 import shipObjText from "./ship.obj?raw";
 
@@ -102,24 +98,16 @@ export function buildDefaultSolarSystemShipConfigs(
 function createEarthState(
   celestialPhysics: (PlanetPhysicsConfig | StarPhysicsConfig)[],
 ): { earthBody: RotatingBody; earthPhysics: PlanetPhysics } {
-  const world: World = {
-    planetPhysics: [],
-    planets: [],
-    shipPhysics: [],
-    ships: [],
-    starPhysics: [],
-    stars: [],
-  };
-  addPlanetsAndStarsFromConfig(celestialPhysics, world);
+  const setup = createPlanetsAndStarsFromConfig(celestialPhysics);
 
-  const earthIndex = world.planets.findIndex((body) => body.id === EARTH_ID);
+  const earthIndex = setup.planets.findIndex((body) => body.id === EARTH_ID);
   if (earthIndex < 0) {
     throw new Error(`Solar system plugin requires body: ${EARTH_ID}`);
   }
 
   return {
-    earthBody: world.planets[earthIndex],
-    earthPhysics: world.planetPhysics[earthIndex],
+    earthBody: setup.planets[earthIndex],
+    earthPhysics: setup.planetPhysics[earthIndex],
   };
 }
 

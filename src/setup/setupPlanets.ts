@@ -3,7 +3,12 @@ import type {
   PlanetPhysicsConfig,
   StarPhysicsConfig,
 } from "../app/configPorts";
-import type { PlanetPhysics, RotatingBody, World } from "../domain/domainPorts";
+import type {
+  PlanetPhysics,
+  RotatingBody,
+  StarPhysics,
+  World,
+} from "../domain/domainPorts";
 import { mat3, type Mat3 } from "../domain/mat3";
 import { vec3, type Vec3 } from "../domain/vec3";
 import { parameters } from "../global/parameters";
@@ -18,6 +23,13 @@ const configByIdScratch: Record<
   PlanetPhysicsConfig | StarPhysicsConfig
 > = {};
 const computingStateScratch: Record<string, boolean> = {};
+
+export interface PlanetsAndStarsSetup {
+  planetPhysics: PlanetPhysics[];
+  planets: RotatingBody[];
+  starPhysics: StarPhysics[];
+  stars: RotatingBody[];
+}
 
 /**
  * Add planets + stars from an arbitrary list of PlanetConfig.
@@ -34,6 +46,23 @@ export function addPlanetsAndStarsFromConfig(
   configs: (PlanetPhysicsConfig | StarPhysicsConfig)[],
   world: World,
 ): void {
+  const setup = createPlanetsAndStarsFromConfig(configs);
+  world.planets.push(...setup.planets);
+  world.planetPhysics.push(...setup.planetPhysics);
+  world.stars.push(...setup.stars);
+  world.starPhysics.push(...setup.starPhysics);
+}
+
+export function createPlanetsAndStarsFromConfig(
+  configs: (PlanetPhysicsConfig | StarPhysicsConfig)[],
+): PlanetsAndStarsSetup {
+  const setup: PlanetsAndStarsSetup = {
+    planetPhysics: [],
+    planets: [],
+    starPhysics: [],
+    stars: [],
+  };
+
   // Build lookup tables for configs and masses.
   buildConfigAndMassTables(configs);
 
@@ -82,16 +111,18 @@ export function addPlanetsAndStarsFromConfig(
     };
 
     if (cfg.kind === "star") {
-      world.stars.push(celestialBody);
-      world.starPhysics.push({
+      setup.stars.push(celestialBody);
+      setup.starPhysics.push({
         ...planetPhysics,
         luminosity: cfg.luminosity,
       });
     } else if (cfg.kind === "planet") {
-      world.planets.push(celestialBody);
-      world.planetPhysics.push({ ...planetPhysics });
+      setup.planets.push(celestialBody);
+      setup.planetPhysics.push({ ...planetPhysics });
     }
   }
+
+  return setup;
 }
 
 /**

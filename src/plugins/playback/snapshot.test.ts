@@ -17,6 +17,14 @@ function createWorld(): { world: World; ship: ShipBody } {
   localFrame.intoMat3(ship.orientation, ship.frame);
 
   const world: World = {
+    axialSpins: [],
+    collisionSpheres: [],
+    controllableBodies: [ship],
+    entities: [{ id: ship.id }, { id: "planet:test" }],
+    entityIndex: new Map(),
+    entityStates: [],
+    gravityMasses: [],
+    lightEmitters: [],
     ships: [ship],
     shipPhysics: [{ id: ship.id, density: 1, mass: 1 }],
     planets: [
@@ -40,6 +48,14 @@ function createWorld(): { world: World; ship: ShipBody } {
     stars: [],
     starPhysics: [],
   };
+  world.entityIndex.set(ship.id, world.entities[0]);
+  world.entityIndex.set("planet:test", world.entities[1]);
+  world.entityStates.push(ship, world.planets[0]);
+  world.gravityMasses.push(
+    { id: ship.id, density: 1, mass: 1 },
+    { id: "planet:test", density: 1, mass: 10 },
+  );
+  world.collisionSpheres.push({ id: "planet:test", radius: 1 });
   mat3.copy(mat3.identity, world.planets[0].orientation);
   return { world, ship };
 }
