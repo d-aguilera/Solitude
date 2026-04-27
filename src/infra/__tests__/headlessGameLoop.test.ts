@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type {
-  PlanetPhysicsConfig,
-  ShipInitialStateConfig,
-  ShipPhysicsConfig,
-  StarPhysicsConfig,
-  WorldPhysicsConfig,
-} from "../../app/configPorts";
+import type { EntityConfig } from "../../app/configPorts";
 import { localFrame } from "../../domain/localFrame";
 import { mat3 } from "../../domain/mat3";
 import { vec3 } from "../../domain/vec3";
@@ -17,68 +11,73 @@ function buildHeadlessConfig(): WorldConfigBase {
   const earthId = "planet:earth";
   const shipId = "ship:test";
 
-  const sun: StarPhysicsConfig = {
+  const sun: EntityConfig = {
     id: sunId,
-    kind: "star",
-    orbit: {
-      semiMajorAxis: 0,
-      eccentricity: 0,
-      inclinationRad: 0,
-      lonAscNodeRad: 0,
-      argPeriapsisRad: 0,
-      meanAnomalyAtEpochRad: 0,
+    metadata: { legacyKind: "star" },
+    components: {
+      axialSpin: { angularSpeedRadPerSec: 0, obliquityRad: 0 },
+      collisionSphere: { radius: 1_000_000 },
+      gravityMass: { density: 1_000, physicalRadius: 1_000_000 },
+      lightEmitter: { luminosity: 1 },
+      state: {
+        centralBodyId: sunId,
+        kind: "keplerian",
+        orbit: {
+          semiMajorAxis: 0,
+          eccentricity: 0,
+          inclinationRad: 0,
+          lonAscNodeRad: 0,
+          argPeriapsisRad: 0,
+          meanAnomalyAtEpochRad: 0,
+        },
+      },
     },
-    physicalRadius: 1_000_000,
-    density: 1_000,
-    centralBodyId: sunId,
-    obliquityRad: 0,
-    angularSpeedRadPerSec: 0,
-    luminosity: 1,
   };
 
-  const earth: PlanetPhysicsConfig = {
+  const earth: EntityConfig = {
     id: earthId,
-    kind: "planet",
-    orbit: {
-      semiMajorAxis: 10_000_000,
-      eccentricity: 0,
-      inclinationRad: 0,
-      lonAscNodeRad: 0,
-      argPeriapsisRad: 0,
-      meanAnomalyAtEpochRad: 0,
+    metadata: { legacyKind: "planet" },
+    components: {
+      axialSpin: { angularSpeedRadPerSec: 0, obliquityRad: 0 },
+      collisionSphere: { radius: 1_000_000 },
+      gravityMass: { density: 5_000, physicalRadius: 1_000_000 },
+      state: {
+        centralBodyId: sunId,
+        kind: "keplerian",
+        orbit: {
+          semiMajorAxis: 10_000_000,
+          eccentricity: 0,
+          inclinationRad: 0,
+          lonAscNodeRad: 0,
+          argPeriapsisRad: 0,
+          meanAnomalyAtEpochRad: 0,
+        },
+      },
     },
-    physicalRadius: 1_000_000,
-    density: 5_000,
-    centralBodyId: sunId,
-    obliquityRad: 0,
-    angularSpeedRadPerSec: 0,
-  };
-
-  const ship: ShipPhysicsConfig = {
-    id: shipId,
-    density: 1,
-    volume: 1,
   };
 
   const frame = localFrame.fromUp(vec3.create(0, 0, 1));
-  const shipInitialState: ShipInitialStateConfig = {
-    angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
-    frame,
+  const ship: EntityConfig = {
     id: shipId,
-    orientation: localFrame.intoMat3(mat3.zero(), frame),
-    position: vec3.create(0, 0, 12_000_000),
-    velocity: vec3.create(0, 1_000, 0),
-  };
-
-  const physics: WorldPhysicsConfig = {
-    planets: [sun, earth],
-    shipInitialStates: [shipInitialState],
-    ships: [ship],
+    metadata: { legacyKind: "ship" },
+    components: {
+      controllable: { enabled: true },
+      gravityMass: { density: 1, volume: 1 },
+      state: {
+        angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
+        frame,
+        kind: "direct",
+        orientation: localFrame.intoMat3(mat3.zero(), frame),
+        position: vec3.create(0, 0, 12_000_000),
+        velocity: vec3.create(0, 1_000, 0),
+      },
+    },
   };
 
   return {
+    entities: [sun, earth, ship],
+    mainControlledEntityId: shipId,
     mainShipId: shipId,
-    physics,
   };
 }
 

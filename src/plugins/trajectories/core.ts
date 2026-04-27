@@ -20,9 +20,7 @@ export function createScenePlugin(): ScenePlugin {
     initScene: (params) => {
       const trajectoryPlan = buildTrajectoryPlan(
         params.world,
-        params.config.entities.length > 0
-          ? params.config.entities
-          : params.config.physics.planets,
+        params.config.entities,
       );
       addTrajectorySceneObjects(
         params.scene,

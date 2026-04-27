@@ -93,9 +93,3 @@ export interface ShipInitialStateConfig {
   position: Vec3;
   velocity: Vec3;
 }
-
-export interface WorldPhysicsConfig {
-  planets: (PlanetPhysicsConfig | StarPhysicsConfig)[];
-  shipInitialStates: ShipInitialStateConfig[];
-  ships: ShipPhysicsConfig[];
-}

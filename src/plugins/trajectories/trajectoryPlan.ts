@@ -1,9 +1,4 @@
-import type {
-  EntityConfig,
-  KeplerianOrbit,
-  PlanetPhysicsConfig,
-  StarPhysicsConfig,
-} from "../../app/configPorts";
+import type { EntityConfig, KeplerianOrbit } from "../../app/configPorts";
 import type { World } from "../../domain/domainPorts";
 import { vec3 } from "../../domain/vec3";
 
@@ -43,9 +38,7 @@ export function parseTrajectoryId(
 
 export function buildTrajectoryPlan(
   world: World,
-  planetPhysicsConfigs:
-    | EntityConfig[]
-    | (PlanetPhysicsConfig | StarPhysicsConfig)[],
+  entityConfigs: EntityConfig[],
 ): TrajectoryPlan[] {
   const plan: TrajectoryPlan[] = [];
 
@@ -58,7 +51,7 @@ export function buildTrajectoryPlan(
   }
 
   // Build trajectories for planets (skip moons)
-  for (const cfg of getTrajectoryPlanetConfigs(planetPhysicsConfigs)) {
+  for (const cfg of getTrajectoryPlanetConfigs(entityConfigs)) {
     if (cfg.kind !== "planet" || cfg.centralBodyId !== "planet:sun") continue;
     const body = getById(world.entityStates, cfg.id, "Entity state");
     const speedMps = vec3.length(body.velocity);
@@ -77,15 +70,19 @@ export function buildTrajectoryPlan(
   return plan;
 }
 
-function getTrajectoryPlanetConfigs(
-  configs: EntityConfig[] | (PlanetPhysicsConfig | StarPhysicsConfig)[],
-): (PlanetPhysicsConfig | StarPhysicsConfig)[] {
-  if (configs.length === 0 || !("components" in configs[0])) {
-    return configs as (PlanetPhysicsConfig | StarPhysicsConfig)[];
-  }
-
-  const planetConfigs: (PlanetPhysicsConfig | StarPhysicsConfig)[] = [];
-  for (const entity of configs as EntityConfig[]) {
+function getTrajectoryPlanetConfigs(configs: EntityConfig[]): {
+  centralBodyId: string;
+  id: string;
+  kind: "planet" | "star";
+  orbit: KeplerianOrbit;
+}[] {
+  const planetConfigs: {
+    centralBodyId: string;
+    id: string;
+    kind: "planet" | "star";
+    orbit: KeplerianOrbit;
+  }[] = [];
+  for (const entity of configs) {
     if (
       entity.metadata?.legacyKind !== "planet" &&
       entity.metadata?.legacyKind !== "star"
@@ -93,38 +90,14 @@ function getTrajectoryPlanetConfigs(
       continue;
     }
     const state = entity.components.state;
-    const mass = entity.components.gravityMass;
-    const spin = entity.components.axialSpin;
-    if (!state || state.kind !== "keplerian" || !mass || !spin) continue;
-    const physicalRadius = mass.physicalRadius;
-    if (physicalRadius === undefined) continue;
+    if (!state || state.kind !== "keplerian") continue;
 
-    if (entity.metadata.legacyKind === "star") {
-      const light = entity.components.lightEmitter;
-      if (!light) continue;
-      planetConfigs.push({
-        angularSpeedRadPerSec: spin.angularSpeedRadPerSec,
-        centralBodyId: state.centralBodyId,
-        density: mass.density,
-        id: entity.id,
-        kind: "star",
-        luminosity: light.luminosity,
-        obliquityRad: spin.obliquityRad,
-        orbit: state.orbit,
-        physicalRadius,
-      });
-    } else {
-      planetConfigs.push({
-        angularSpeedRadPerSec: spin.angularSpeedRadPerSec,
-        centralBodyId: state.centralBodyId,
-        density: mass.density,
-        id: entity.id,
-        kind: "planet",
-        obliquityRad: spin.obliquityRad,
-        orbit: state.orbit,
-        physicalRadius,
-      });
-    }
+    planetConfigs.push({
+      centralBodyId: state.centralBodyId,
+      id: entity.id,
+      kind: entity.metadata.legacyKind,
+      orbit: state.orbit,
+    });
   }
 
   return planetConfigs;

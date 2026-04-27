@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PlanetPhysicsConfig } from "../../app/configPorts";
+import type { EntityConfig } from "../../app/configPorts";
 import type {
   EntityMotionState,
   ShipBody,
@@ -49,22 +49,23 @@ describe("buildTrajectoryPlan", () => {
       gravityMasses: [],
       lightEmitters: [],
     };
-    const planetConfig: PlanetPhysicsConfig = {
-      angularSpeedRadPerSec: 0,
-      centralBodyId: "planet:sun",
-      density: 1,
+    const planetConfig: EntityConfig = {
       id: planet.id,
-      kind: "planet",
-      obliquityRad: 0,
-      orbit: {
-        argPeriapsisRad: 0,
-        eccentricity: 0,
-        inclinationRad: 0,
-        lonAscNodeRad: 0,
-        meanAnomalyAtEpochRad: 0,
-        semiMajorAxis: 100,
+      metadata: { legacyKind: "planet" },
+      components: {
+        state: {
+          centralBodyId: "planet:sun",
+          kind: "keplerian",
+          orbit: {
+            argPeriapsisRad: 0,
+            eccentricity: 0,
+            inclinationRad: 0,
+            lonAscNodeRad: 0,
+            meanAnomalyAtEpochRad: 0,
+            semiMajorAxis: 100,
+          },
+        },
       },
-      physicalRadius: 1,
     };
 
     const plan = buildTrajectoryPlan(world, [planetConfig]);

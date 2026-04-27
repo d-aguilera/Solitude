@@ -107,11 +107,6 @@ describe("createScene", () => {
       entities,
       mainControlledEntityId: ship.id,
       mainShipId: ship.id,
-      physics: {
-        planets: [],
-        shipInitialStates: [],
-        ships: [],
-      },
       render: {
         pilotCameraOffset: vec3.zero(),
         pilotLookState: { azimuth: 0, elevation: 0 },

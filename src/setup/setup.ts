@@ -35,22 +35,19 @@ export interface WorldSetup {
 
 export type WorldConfigBase = Pick<
   WorldAndSceneConfig,
-  "mainShipId" | "physics"
-> &
-  Partial<Pick<WorldAndSceneConfig, "entities" | "mainControlledEntityId">>;
+  "entities" | "mainControlledEntityId" | "mainShipId"
+>;
 
 export function createWorld({
-  entities = [],
+  entities,
   mainControlledEntityId,
   mainShipId,
-  physics,
 }: WorldConfigBase): WorldSetup {
   const resolvedMainControlledEntityId = mainControlledEntityId || mainShipId;
   validateWorldConfig({
     entities,
     mainControlledEntityId: resolvedMainControlledEntityId,
     mainShipId,
-    physics,
   });
 
   const world: World = {
@@ -64,14 +61,9 @@ export function createWorld({
     lightEmitters: [],
   };
 
-  const entityDerivedSetup =
-    entities.length > 0 ? createSetupFromEntityConfigs(entities) : null;
-  const planetsAndStars =
-    entityDerivedSetup?.planetsAndStars ??
-    createPlanetsAndStarsFromConfig(physics.planets);
-  const ships =
-    entityDerivedSetup?.ships ??
-    createShipsFromConfig(physics.ships, physics.shipInitialStates);
+  const entityDerivedSetup = createSetupFromEntityConfigs(entities);
+  const planetsAndStars = entityDerivedSetup.planetsAndStars;
+  const ships = entityDerivedSetup.ships;
   populateGenericWorldFromSetup(world, entities, ships, planetsAndStars);
 
   const mainControlledBody = getControlledBodyById(
@@ -95,53 +87,27 @@ export function createHeadlessWorld(config: WorldConfigBase): WorldSetup {
 }
 
 function validateWorldConfig({
-  entities = [],
+  entities,
   mainControlledEntityId,
   mainShipId,
-  physics,
-}: WorldConfigBase & { mainControlledEntityId: string }): void {
+}: WorldConfigBase): void {
   if (!mainShipId) {
     throw new Error("World config is missing mainShipId");
   }
 
-  if (entities.length > 0) {
-    const entityIndex = buildEntityConfigIndex(entities);
-    if (!mainControlledEntityId) {
-      throw new Error("World config is missing mainControlledEntityId");
-    }
-    if (!entityIndex.byId.has(mainControlledEntityId)) {
-      throw new Error(
-        `Main controlled entity config not found: ${mainControlledEntityId}`,
-      );
-    }
-    if (!entityIndex.controllableEntityIds.includes(mainControlledEntityId)) {
-      throw new Error(
-        `Main controlled entity is not controllable: ${mainControlledEntityId}`,
-      );
-    }
-    return;
+  const entityIndex = buildEntityConfigIndex(entities);
+  if (!mainControlledEntityId) {
+    throw new Error("World config is missing mainControlledEntityId");
   }
-
-  const shipIds = new Set<string>();
-  for (const ship of physics.ships) {
-    if (!ship.id) throw new Error("Ship physics config is missing id");
-    shipIds.add(ship.id);
+  if (!entityIndex.byId.has(mainControlledEntityId)) {
+    throw new Error(
+      `Main controlled entity config not found: ${mainControlledEntityId}`,
+    );
   }
-
-  if (!shipIds.has(mainShipId)) {
-    throw new Error(`Main ship physics config not found: ${mainShipId}`);
-  }
-
-  const initialStateIds = new Set<string>();
-  for (const state of physics.shipInitialStates) {
-    if (!state.id) throw new Error("Ship initial state is missing id");
-    initialStateIds.add(state.id);
-  }
-
-  for (const shipId of shipIds) {
-    if (!initialStateIds.has(shipId)) {
-      throw new Error(`Ship initial state not found: ${shipId}`);
-    }
+  if (!entityIndex.controllableEntityIds.includes(mainControlledEntityId)) {
+    throw new Error(
+      `Main controlled entity is not controllable: ${mainControlledEntityId}`,
+    );
   }
 }
 
@@ -285,23 +251,8 @@ function populateGenericWorldFromSetup(
   ships: ShipsSetup,
   planetsAndStars: PlanetsAndStarsSetup,
 ): void {
-  if (entityConfigs.length > 0) {
-    for (const entityConfig of entityConfigs) {
-      addGenericEntityById(world, entityConfig, ships, planetsAndStars);
-    }
-    return;
-  }
-
-  for (let i = 0; i < ships.ships.length; i++) {
-    addShipEntity(world, ships, i);
-  }
-
-  for (let i = 0; i < planetsAndStars.planets.length; i++) {
-    addPlanetEntity(world, planetsAndStars, i);
-  }
-
-  for (let i = 0; i < planetsAndStars.stars.length; i++) {
-    addStarEntity(world, planetsAndStars, i);
+  for (const entityConfig of entityConfigs) {
+    addGenericEntityById(world, entityConfig, ships, planetsAndStars);
   }
 }
 

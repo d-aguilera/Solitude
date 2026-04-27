@@ -7,11 +7,6 @@ export function buildWorldAndSceneConfig() {
     mainControlledEntityId: "",
     mainShipId: "",
     thrustLevel: 1,
-    physics: {
-      planets: [],
-      shipInitialStates: [],
-      ships: [],
-    },
     render: {
       pilotCameraOffset: vec3.create(0, 51000, 4850),
       pilotLookState: { azimuth: 0, elevation: 0 },
