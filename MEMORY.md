@@ -10,11 +10,12 @@
 
 - `MEMORY_PLUGIN_EXTRACTION.md`: audit notes and candidate list for moving non-core code into plugins.
 - `MEMORY_ENTITY_MODEL.md`: dedicated strategy/context for replacing ships/planets/stars core buckets with generic entities/components.
-- **Note**: Plugin extraction is still useful history, but the strategic direction has shifted to entity model generalization.
+- `MEMORY_OPERATOR_MODEL.md`: current strategic plan for moving main ship/control/camera behavior into plugin-defined operator modes around a generic focused entity.
+- **Note**: Plugin extraction and entity model generalization are still useful history, but the strategic direction has shifted to operator/focus generalization.
 
 ## Current focus
 
-- Generalize the core world/entity model so scenario plugins define content and core systems operate on generic capabilities rather than solar-system-shaped categories like ships, planets, and stars.
+- Generalize the main interactive subject so core owns a generic focused entity, main view plumbing, and simulation phases while plugins define spacecraft controls, camera rigs, telemetry assumptions, and operator modes.
 
 ## Must-Do After Code Changes (Do Not Skip)
 
@@ -59,6 +60,7 @@
 ## Entity Model Strategy
 
 - **State**: runtime `World` stores generic entities and capability arrays; legacy planet/star/ship config remains at plugin/API compatibility edges.
+- **Next strategic layer**: use the generic entity model as the foundation for operator/focus generalization. The main ship should become plugin-owned behavior rather than a core assumption.
 - **Target model**: core stores generic entities with capability-style components, such as transform/state, gravity mass, collision sphere, render mesh/color, light emitter, axial spin, controllable body, and main controlled body marker.
 - **System rule**: systems should query capabilities instead of categories:
   - gravity integrates entities with mass + position + velocity.
@@ -113,7 +115,8 @@
 ## Current state
 
 - Core loop is working: input → physics → scene update → render → HUD.
-- Solar-system content is contributed by a plugin, but core still models it through transitional `ships`, `planets`, and `stars` buckets.
+- Solar-system content is contributed by a plugin, and runtime world state is largely generic entity/capability based.
+- Core still assumes a main spacecraft-like controlled body for propulsion, RCS, attitude, HUD context, and the primary/pilot camera path.
 - Default runtime uses Canvas 2D; WebGL renderer exists but is not wired by default.
 - Tests cover geometry/mesh parsing and projection clipping.
 
@@ -124,7 +127,7 @@
 
 ## Open questions / risks
 
-- Entity generalization touches physics, rendering, controls, collision, and plugin APIs; keep each migration step small and reversible.
+- Operator/focus generalization touches simulation phase ordering, input ownership, controls, camera rigs, HUD contexts, playback, telemetry, autopilot, and plugin capability requirements; keep each migration step small and reversible.
 - Some plugin features currently assume planets/stars/ships; expect temporary adapters while the generic model lands.
 - Gravity uses fixed sub-steps for stability; high time scales can still destabilize.
 - WebGL path is present but not wired in the default entry; decide if/when to switch.
