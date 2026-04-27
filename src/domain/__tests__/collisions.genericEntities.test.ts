@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { resolveCollisions } from "../collisions";
-import type { ShipBody, World } from "../domainPorts";
+import type { ControlledBody, World } from "../domainPorts";
 import { localFrame } from "../localFrame";
 import { mat3 } from "../mat3";
 import { vec3 } from "../vec3";
 
-function createShip(id: string): ShipBody {
+function createShip(id: string): ControlledBody {
   const frame = localFrame.fromUp(vec3.create(0, 0, 1));
   return {
     angularVelocity: { pitch: 0, roll: 0, yaw: 0 },

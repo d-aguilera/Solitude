@@ -175,7 +175,7 @@ export function getRcsCommandInto(
  *  - roll/pitch/yaw input, or
  *  - plugin-provided attitude commands
  */
-export function updateShipAngularVelocityFromInput(
+export function updateControlledBodyAngularVelocityFromInput(
   dtMillis: number,
   ship: ControlledBodyState,
   controlInput: ControlInput,

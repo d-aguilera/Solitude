@@ -56,19 +56,17 @@ function createConfig(entities: EntityConfig[]): WorldConfigBase {
   return {
     entities,
     mainControlledEntityId: "ship:main",
-    mainShipId: "ship:main",
   };
 }
 
 describe("createWorld", () => {
-  it("fails clearly when no plugin contributed a main ship id", () => {
+  it("fails clearly when no plugin contributed a main controlled entity id", () => {
     const config: WorldConfigBase = {
       entities: [createSun(), createShip("ship:main")],
-      mainControlledEntityId: "ship:main",
-      mainShipId: "",
+      mainControlledEntityId: "",
     };
 
-    expect(() => createWorld(config)).toThrow("missing mainShipId");
+    expect(() => createWorld(config)).toThrow("missing mainControlledEntityId");
   });
 
   it("fails clearly when the main controlled entity config is missing", () => {
@@ -109,7 +107,6 @@ describe("createWorld", () => {
         },
       ],
       mainControlledEntityId: "planet:sun",
-      mainShipId: "ship:main",
     };
 
     expect(() => createWorld(config)).toThrow(
@@ -121,7 +118,6 @@ describe("createWorld", () => {
     const config: WorldAndSceneConfig = {
       entities: [createSun(), createShip("ship:main")],
       mainControlledEntityId: "ship:main",
-      mainShipId: "ship:main",
       render: {
         pilotCameraOffset: vec3.zero(),
         pilotLookState: { azimuth: 0, elevation: 0 },

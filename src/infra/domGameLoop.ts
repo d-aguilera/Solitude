@@ -126,7 +126,7 @@ export function runLoop({
   applySceneInitPlugins(scenePlugins, {
     scene,
     world: worldSetup.world,
-    mainShip: worldSetup.mainShip,
+    mainControlledBody: worldSetup.mainControlledBody,
     config,
   });
 
@@ -172,7 +172,7 @@ export function runLoop({
     0,
     sceneState,
     sceneControlState,
-    worldAndScene.mainShip,
+    worldAndScene.mainControlledBody,
     controlInput,
   );
 
@@ -201,7 +201,7 @@ export function runLoop({
   >[0] = {
     controlInput,
     dtMillis: 0,
-    mainShip: worldAndScene.mainShip,
+    mainControlledBody: worldAndScene.mainControlledBody,
     nowMs: 0,
     simTimeMillis: 0,
     state: loopState,
@@ -234,7 +234,7 @@ export function runLoop({
         dtTickMillis,
         sceneState,
         sceneControlState,
-        worldAndScene.mainShip,
+        worldAndScene.mainControlledBody,
         controlInput,
       );
       applyScenePlugins(scenePlugins, {
@@ -242,7 +242,7 @@ export function runLoop({
         dtSimMillis,
         scene: worldAndScene.scene,
         world: worldAndScene.world,
-        mainShip: worldAndScene.mainShip,
+        mainControlledBody: worldAndScene.mainControlledBody,
       });
     }
 
@@ -292,7 +292,7 @@ export function runLoop({
         controlInput,
         currentRcsLevel: tickOutput.currentRcsLevel,
         currentThrustLevel: tickOutput.currentThrustLevel,
-        mainShip: worldAndScene.mainShip,
+        mainControlledBody: worldAndScene.mainControlledBody,
         nowMs,
         simTimeMillis,
         world: worldAndScene.world,
@@ -353,7 +353,7 @@ function createLoopViews(
       viewId,
       scene: worldAndScene.scene,
       world: worldAndScene.world,
-      mainShip: worldAndScene.mainShip,
+      mainControlledBody: worldAndScene.mainControlledBody,
       config,
     });
     const worldSegments: WorldSegment[] = [];
@@ -364,7 +364,7 @@ function createLoopViews(
       renderedView: createRenderedView(),
       renderParams: {
         camera: sceneView.camera,
-        mainShip: worldAndScene.mainShip,
+        mainControlledBody: worldAndScene.mainControlledBody,
         objectsFilter,
         renderCache,
         scene: worldAndScene.scene,
@@ -375,7 +375,7 @@ function createLoopViews(
         viewId,
         scene: worldAndScene.scene,
         world: worldAndScene.world,
-        mainShip: worldAndScene.mainShip,
+        mainControlledBody: worldAndScene.mainControlledBody,
         config,
       },
       worldSegments,

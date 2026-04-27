@@ -24,7 +24,7 @@ export function createHudPlugin(): HudPlugin {
       const hasOrbit = computeShipOrbitReadoutInto(
         orbitReadout,
         context.world,
-        context.mainShip,
+        context.mainControlledBody,
       );
       if (!hasOrbit) return;
 

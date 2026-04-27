@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { EntityMotionState, ShipBody, World } from "../domainPorts";
+import type { ControlledBody, EntityMotionState, World } from "../domainPorts";
 import { localFrame } from "../localFrame";
 import { mat3 } from "../mat3";
 import {
@@ -23,7 +23,7 @@ function createState(id: string, x: number, mass: number, radius: number) {
   };
 }
 
-function createShip(): ShipBody {
+function createShip(): ControlledBody {
   const frame = localFrame.fromUp(vec3.create(0, 0, 1));
   return {
     angularVelocity: { pitch: 0, roll: 0, yaw: 0 },

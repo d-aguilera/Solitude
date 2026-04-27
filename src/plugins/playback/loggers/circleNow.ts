@@ -212,7 +212,7 @@ export function createCircleNowLogger(
 
   const sampleAfterTick = (context: PlaybackLoggerTickContext): void => {
     if (!context.controlInput.circleNow) return;
-    if (!context.world || !context.mainShip) {
+    if (!context.world || !context.mainControlledBody) {
       pushMissingSample(context);
       return;
     }
@@ -324,10 +324,11 @@ export function createCircleNowLogger(
   }
 
   function pushCircleNowSample(context: PlaybackLoggerTickContext): void {
-    const { mainShip: ship, world } = context as PlaybackLoggerTickContext & {
-      mainShip: ShipBody;
-      world: World;
-    };
+    const { mainControlledBody: ship, world } =
+      context as PlaybackLoggerTickContext & {
+        mainControlledBody: ShipBody;
+        world: World;
+      };
     if (!findPrimary(world, ship.position)) {
       pushMissingSample(context);
       return;

@@ -19,10 +19,6 @@ export function applyWorldModelPlugins(
     setMainControlledEntityId: (id: string) => {
       config.mainControlledEntityId = id;
     },
-    setMainShipId: (id: string) => {
-      config.mainShipId = id;
-      config.mainControlledEntityId = id;
-    },
   };
 
   for (const plugin of worldModelPlugins) {

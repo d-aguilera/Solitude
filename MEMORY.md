@@ -69,7 +69,7 @@
 - **Migration strategy**:
   1. Move remaining plugins to direct generic entity contribution.
   2. Retire legacy world-model registry methods and config arrays.
-  3. Rename remaining core-facing ship terminology where it means generic controlled body.
+  3. Keep remaining ship terminology only where it is spacecraft-specific or playback compatibility.
 - **Compatibility approach**: keep changes incremental and test-backed. Use adapters during the transition rather than doing a full rewrite.
 
 ## Runtime flow

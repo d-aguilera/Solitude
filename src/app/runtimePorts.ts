@@ -1,4 +1,4 @@
-import type { ShipBody, World } from "../domain/domainPorts";
+import type { ControlledBody, World } from "../domain/domainPorts";
 import type { ControlInput } from "./controlPorts";
 import type { Scene } from "./scenePorts";
 
@@ -19,7 +19,7 @@ export interface TickOutput {
 }
 
 export interface WorldAndScene {
-  mainShip: ShipBody;
+  mainControlledBody: ControlledBody;
   scene: Scene;
   world: World;
 }

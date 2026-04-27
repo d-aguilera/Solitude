@@ -8,7 +8,6 @@ export * from "./renderConfigPorts";
 export interface WorldAndSceneConfig {
   entities: EntityConfig[];
   mainControlledEntityId: EntityId;
-  mainShipId: string;
   thrustLevel: number;
   render: WorldRenderConfig;
 }

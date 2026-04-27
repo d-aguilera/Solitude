@@ -100,17 +100,18 @@ Systems should query capabilities rather than categories:
 - `src/plugins/solarSystem/` contributes world content through direct generic `addEntities` calls; plugin application no longer backfills legacy physics/render arrays.
 - Shared `WorldRenderConfig` no longer carries legacy planet/star/ship render arrays; scene assembly requires renderable entity components.
 - Shared `WorldAndSceneConfig` no longer carries legacy physics arrays; `createWorld` requires generic entity config and derives setup inputs from entity components.
+- Core-facing config/runtime/setup/control/view surfaces now use main controlled body terminology; `ShipBody` remains only as a compatibility type alias for spacecraft-specific plugins and playback schemas.
 - `src/domain/domainPorts.ts` defines `World` as generic entity/capability arrays.
 - Core gravity, collision, spin, orbit primary lookup, scene/lights, trajectories, and playback diagnostics now operate on generic capabilities.
 - Playback snapshots still keep v1 `ships` / `planets` / `stars` fields for compatibility, while also capturing generic `entities`.
 
 ## Near-Term Candidates
 
-- Rename remaining core-facing `ship` terminology to controlled body where it is not truly spacecraft-specific.
+- No entity-model migration task is currently queued here; next work should be chosen from fresh repo inspection.
 
 ## Watch-Outs
 
 - Legacy playback scripts still use `ships`, `planets`, and `stars` snapshot fields; preserve read/apply compatibility until scripts are migrated or schema-gated.
-- Legacy config arrays still exist as plugin/API compatibility, even though runtime `World` no longer stores fixed buckets.
+- Legacy physics config item types still exist as setup/plugin-local adapter shapes; shared config arrays have been removed.
 - Some scene object kinds are still `ship` / `planet` / `star` because render labels, culling, and LOD use those visual roles.
 - Tests may use tiny fake worlds with spacecraft/body fixtures; keep them generic unless they are explicitly testing compatibility.

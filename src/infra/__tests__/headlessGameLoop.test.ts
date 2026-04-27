@@ -77,7 +77,6 @@ function buildHeadlessConfig(): WorldConfigBase {
   return {
     entities: [sun, earth, ship],
     mainControlledEntityId: shipId,
-    mainShipId: shipId,
   };
 }
 
@@ -94,11 +93,11 @@ describe("headlessGameLoop", () => {
 
   it("advances ship position over time", () => {
     const loop = createHeadlessLoop(buildHeadlessConfig());
-    const before = vec3.clone(loop.worldAndScene.mainShip.position);
+    const before = vec3.clone(loop.worldAndScene.mainControlledBody.position);
 
     loop.step(1000);
 
-    const after = loop.worldAndScene.mainShip.position;
+    const after = loop.worldAndScene.mainControlledBody.position;
     const delta = vec3.subInto(vec3.zero(), after, before);
     expect(vec3.length(delta)).toBeGreaterThan(0);
   });

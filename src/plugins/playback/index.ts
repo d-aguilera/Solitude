@@ -32,7 +32,7 @@ export function createPlaybackPlugin(
         controlInput,
         dtMillis,
         world,
-        mainShip,
+        mainControlledBody,
         nowMs,
         simTimeMillis,
         state,
@@ -40,7 +40,7 @@ export function createPlaybackPlugin(
         controller.updateLoop(
           controlInput,
           world,
-          mainShip,
+          mainControlledBody,
           nowMs,
           simTimeMillis ?? 0,
           getEffectiveTimeScale(dtMillis, state.framePolicy.simDtMillis),

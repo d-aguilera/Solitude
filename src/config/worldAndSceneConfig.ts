@@ -5,7 +5,6 @@ export function buildWorldAndSceneConfig() {
   const config: WorldAndSceneConfig = {
     entities: [],
     mainControlledEntityId: "",
-    mainShipId: "",
     thrustLevel: 1,
     render: {
       pilotCameraOffset: vec3.create(0, 51000, 4850),

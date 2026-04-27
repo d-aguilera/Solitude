@@ -16,13 +16,13 @@ import {
   maxThrustAcceleration,
   resolvePropulsionCommandWithPlugins,
   updateControlState,
-  updateShipAngularVelocityFromInput,
+  updateControlledBodyAngularVelocityFromInput,
 } from "./controls";
 import {
   applyCelestialSpin,
+  applyControlledBodyRotation,
   applyGravity,
   applyRcsTranslation,
-  applyShipRotation,
   applyThrust,
 } from "./physics";
 import type { ControlPlugin } from "./pluginPorts";
@@ -60,23 +60,27 @@ export function createTickHandler(
       dtMillis,
       controlInput,
       simControlState,
-      worldAndScene.mainShip,
+      worldAndScene.mainControlledBody,
       worldAndScene.world,
       controlPlugins,
     );
-    updateShipAngularVelocityFromInput(
+    updateControlledBodyAngularVelocityFromInput(
       dtMillis,
-      worldAndScene.mainShip,
+      worldAndScene.mainControlledBody,
       controlInput,
       simControlState,
       worldAndScene.world,
       controlPlugins,
     );
-    applyShipRotation(dtMillis, worldAndScene.mainShip);
-    applyThrust(dtMillis, worldAndScene.mainShip, propulsionCommand.main);
+    applyControlledBodyRotation(dtMillis, worldAndScene.mainControlledBody);
+    applyThrust(
+      dtMillis,
+      worldAndScene.mainControlledBody,
+      propulsionCommand.main,
+    );
     applyRcsTranslation(
       dtMillis,
-      worldAndScene.mainShip,
+      worldAndScene.mainControlledBody,
       propulsionCommand.rcs,
     );
 

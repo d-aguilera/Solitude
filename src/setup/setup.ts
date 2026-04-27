@@ -14,7 +14,6 @@ import type {
 import type {
   ControlledBody,
   EntityRecord,
-  ShipBody,
   World,
 } from "../domain/domainPorts";
 import { type LocalFrame, localFrame } from "../domain/localFrame";
@@ -29,25 +28,21 @@ export const initialFrame: LocalFrame = localFrame.fromUp(vec3.create(0, 0, 1));
 
 export interface WorldSetup {
   mainControlledBody: ControlledBody;
-  mainShip: ShipBody;
   world: World;
 }
 
 export type WorldConfigBase = Pick<
   WorldAndSceneConfig,
-  "entities" | "mainControlledEntityId" | "mainShipId"
+  "entities" | "mainControlledEntityId"
 >;
 
 export function createWorld({
   entities,
   mainControlledEntityId,
-  mainShipId,
 }: WorldConfigBase): WorldSetup {
-  const resolvedMainControlledEntityId = mainControlledEntityId || mainShipId;
   validateWorldConfig({
     entities,
-    mainControlledEntityId: resolvedMainControlledEntityId,
-    mainShipId,
+    mainControlledEntityId,
   });
 
   const world: World = {
@@ -68,13 +63,11 @@ export function createWorld({
 
   const mainControlledBody = getControlledBodyById(
     world,
-    resolvedMainControlledEntityId,
+    mainControlledEntityId,
   );
-  const mainShip = mainControlledBody;
 
   return {
     mainControlledBody,
-    mainShip,
     world,
   };
 }
@@ -89,12 +82,7 @@ export function createHeadlessWorld(config: WorldConfigBase): WorldSetup {
 function validateWorldConfig({
   entities,
   mainControlledEntityId,
-  mainShipId,
 }: WorldConfigBase): void {
-  if (!mainShipId) {
-    throw new Error("World config is missing mainShipId");
-  }
-
   const entityIndex = buildEntityConfigIndex(entities);
   if (!mainControlledEntityId) {
     throw new Error("World config is missing mainControlledEntityId");

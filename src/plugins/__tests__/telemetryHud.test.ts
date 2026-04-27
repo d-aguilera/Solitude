@@ -73,12 +73,12 @@ function createWorldAndShip(): { world: World; ship: ShipBody } {
   return { world, ship };
 }
 
-function createHudContext(world: World, mainShip: ShipBody): HudContext {
+function createHudContext(world: World, mainControlledBody: ShipBody): HudContext {
   return {
     controlInput: createControlInput(),
     currentRcsLevel: -1,
     currentThrustLevel: 5,
-    mainShip,
+    mainControlledBody,
     nowMs: 1234,
     simTimeMillis: 65_000,
     world,

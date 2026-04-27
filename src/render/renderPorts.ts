@@ -7,7 +7,7 @@ import type {
   Scene,
   SceneObject,
 } from "../app/scenePorts";
-import type { ShipBody } from "../domain/domainPorts";
+import type { ControlledBody } from "../domain/domainPorts";
 import type { Vec3 } from "../domain/vec3";
 import type { RenderFrameCache } from "./renderFrameCache";
 import type { ScreenPoint } from "./scrn";
@@ -133,7 +133,7 @@ export interface ViewRenderer {
 
 export interface ViewRenderParams {
   camera: DomainCameraPose;
-  mainShip: ShipBody;
+  mainControlledBody: ControlledBody;
   objectsFilter?: (obj: SceneObject) => boolean;
   renderFaces?: boolean;
   sortFaces?: boolean;

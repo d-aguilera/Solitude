@@ -1,4 +1,4 @@
-import type { ShipBody } from "../domain/domainPorts";
+import type { ControlledBody } from "../domain/domainPorts";
 import { updateCameras, updatePilotCameraOffset } from "./cameras";
 import type { ControlInput } from "./controlPorts";
 import { updatePilotLook } from "./controls";
@@ -9,7 +9,7 @@ export function updateSceneGraph(
   dtMillis: number,
   sceneState: SceneState,
   sceneControlState: SceneControlState,
-  mainShip: ShipBody,
+  mainControlledBody: ControlledBody,
   controlInput: ControlInput,
 ) {
   updatePilotLook(dtMillis, controlInput, sceneControlState.pilotLookState);
@@ -19,5 +19,9 @@ export function updateSceneGraph(
     sceneState.primaryView.cameraOffset,
   );
 
-  updateCameras(mainShip, sceneState.views, sceneControlState.pilotLookState);
+  updateCameras(
+    mainControlledBody,
+    sceneState.views,
+    sceneControlState.pilotLookState,
+  );
 }

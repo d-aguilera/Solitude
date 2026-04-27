@@ -15,7 +15,6 @@ describe("solarSystem plugin", () => {
     const registry: WorldModelRegistry = {
       addEntities,
       setMainControlledEntityId: vi.fn(),
-      setMainShipId: vi.fn(),
     };
 
     createSolarSystemPlugin().worldModel!.contributeWorldModel(registry, {
@@ -23,7 +22,9 @@ describe("solarSystem plugin", () => {
     });
 
     expect(registry.addEntities).toHaveBeenCalledOnce();
-    expect(registry.setMainShipId).toHaveBeenCalledWith("ship:main");
+    expect(registry.setMainControlledEntityId).toHaveBeenCalledWith(
+      "ship:main",
+    );
     expect(
       addEntities.mock.calls[0][0].map((entity: EntityConfig) => entity.id),
     ).toEqual([
@@ -44,12 +45,10 @@ describe("solarSystem plugin", () => {
     ]);
   });
 
-  it("contributes solar bodies, main ship, and enemy ship", () => {
+  it("contributes solar bodies, main controlled body, and enemy ship", () => {
     const config = buildWorldAndSceneConfig();
 
     applyWorldModelPlugins(config, [createSolarSystemPlugin()]);
-
-    expect(config.mainShipId).toBe("ship:main");
     expect(config.mainControlledEntityId).toBe("ship:main");
     expect(config.entities.map((entity) => entity.id)).toEqual([
       "planet:sun",
@@ -86,12 +85,12 @@ describe("solarSystem plugin", () => {
     const earthSphere = worldSetup.world.collisionSpheres.find(
       (sphere) => sphere.id === "planet:earth",
     );
-    const mainShip = worldSetup.mainShip;
+    const mainControlledBody = worldSetup.mainControlledBody;
     const enemyShip = worldSetup.world.controllableBodies.find(
       (ship) => ship.id === "ship:enemy",
     );
 
-    expect(worldSetup.mainControlledBody).toBe(mainShip);
+    expect(worldSetup.mainControlledBody).toBe(mainControlledBody);
     expect(worldSetup.world.entities.map((entity) => entity.id)).toEqual(
       config.entities.map((entity) => entity.id),
     );
@@ -121,7 +120,7 @@ describe("solarSystem plugin", () => {
 
     const mainOffset = vec3.subInto(
       vec3.zero(),
-      mainShip.position,
+      mainControlledBody.position,
       earth!.position,
     );
     const enemyOffset = vec3.subInto(

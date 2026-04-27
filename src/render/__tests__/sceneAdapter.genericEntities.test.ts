@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { EntityConfig, WorldAndSceneConfig } from "../../app/configPorts";
 import type { Mesh } from "../../app/scenePorts";
 import type {
+  ControlledBody,
   EntityMotionState,
-  ShipBody,
   World,
 } from "../../domain/domainPorts";
 import { localFrame } from "../../domain/localFrame";
@@ -25,7 +25,7 @@ function createState(id: string): EntityMotionState {
   };
 }
 
-function createShip(id: string): ShipBody {
+function createShip(id: string): ControlledBody {
   const frame = localFrame.fromUp(vec3.create(0, 0, 1));
   return {
     angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
@@ -106,7 +106,6 @@ describe("createScene", () => {
     const config: WorldAndSceneConfig = {
       entities,
       mainControlledEntityId: ship.id,
-      mainShipId: ship.id,
       render: {
         pilotCameraOffset: vec3.zero(),
         pilotLookState: { azimuth: 0, elevation: 0 },

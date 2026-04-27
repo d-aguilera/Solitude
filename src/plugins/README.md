@@ -45,9 +45,7 @@ owns validation and interpretation of its own option keys.
 ## World model
 
 World-model plugins contribute scenario objects before world setup runs. They
-may add generic entity definitions. Transitional legacy helpers still accept
-celestial body physics/render config, complete ship physics/render config,
-complete ship initial states, and the required `mainShipId`.
+add generic entity definitions and set the required main controlled entity id.
 
 Core setup requires a plugin-contributed main controlled entity. Scenario-specific
 placement logic belongs in the contributing plugin.

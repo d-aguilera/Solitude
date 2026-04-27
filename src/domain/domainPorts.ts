@@ -21,7 +21,7 @@ export interface BodyState {
 
 /**
  * Angular velocity expressed as roll/pitch/yaw rates (rad/s).
- * Roll is about the ship's forward axis, pitch about right, yaw about up.
+ * Roll is about the controlled body's forward axis, pitch about right, yaw about up.
  */
 export interface AngularVelocity {
   roll: number;
@@ -118,17 +118,10 @@ export interface PlanetPhysics extends PhysicsBody {
   physicalRadius: number; // meters
 }
 
-/**
- * Domain-level ship body.
- */
-export interface ShipBody extends CelestialBody {
-  frame: LocalFrame;
-  orientation: Mat3;
-  angularVelocity: AngularVelocity;
-}
+export type ShipBody = ControlledBody;
 
 /**
- * Physical properties of a ship body.
+ * Physical properties of a controlled body.
  */
 export interface ShipPhysics extends PhysicsBody {}
 

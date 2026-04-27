@@ -4,7 +4,7 @@ import type {
 } from "../app/configPorts";
 import type {
   AngularVelocity,
-  ShipBody,
+  ControlledBody,
   ShipPhysics,
 } from "../domain/domainPorts";
 import { localFrame, type LocalFrame } from "../domain/localFrame";
@@ -13,7 +13,7 @@ import { vec3, type Vec3 } from "../domain/vec3";
 
 export interface ShipsSetup {
   shipPhysics: ShipPhysics[];
-  ships: ShipBody[];
+  ships: ControlledBody[];
 }
 
 export function createShipsFromConfig(
@@ -44,7 +44,7 @@ export function createShipsFromConfig(
 function createShip(
   { id, density, volume }: ShipPhysicsConfig,
   initialState: ShipInitialStateConfig,
-): { shipBody: ShipBody; shipPhysics: ShipPhysics } {
+): { shipBody: ControlledBody; shipPhysics: ShipPhysics } {
   validateShipInitialState(initialState);
 
   const shipPhysics: ShipPhysics = {
@@ -53,7 +53,7 @@ function createShip(
     mass: density * volume,
   };
 
-  const shipBody: ShipBody = {
+  const shipBody: ControlledBody = {
     id,
     angularVelocity: cloneAngularVelocity(initialState.angularVelocity),
     frame: cloneFrame(initialState.frame),

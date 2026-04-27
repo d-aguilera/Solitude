@@ -1,5 +1,10 @@
 import { parameters } from "../global/parameters";
-import type { BodyId, EntityMotionState, ShipBody, World } from "./domainPorts";
+import type {
+  BodyId,
+  ControlledBody,
+  EntityMotionState,
+  World,
+} from "./domainPorts";
 import { EPS_ECCENTRICITY, EPS_TIME_SEC } from "./epsilon";
 import { type Vec3, vec3 } from "./vec3";
 
@@ -62,7 +67,7 @@ export function createOrbitReadout(): OrbitReadout {
 export function computeShipOrbitReadoutInto(
   out: OrbitReadout,
   world: World,
-  ship: ShipBody,
+  ship: ControlledBody,
 ): boolean {
   const primary = getDominantBodyPrimary(world, ship.position);
   if (!primary) return false;

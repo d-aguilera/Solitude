@@ -1,4 +1,4 @@
-import type { ShipBody } from "../domain/domainPorts";
+import type { ControlledBody } from "../domain/domainPorts";
 import type { LocalFrame } from "../domain/localFrame";
 import type { Vec3 } from "../domain/vec3";
 import type { DomainCameraPose, PilotLookState } from "./scenePorts";
@@ -20,7 +20,7 @@ export type ViewLayout =
 
 export interface ViewFrameUpdateParams {
   frame: LocalFrame;
-  mainShip: ShipBody;
+  mainControlledBody: ControlledBody;
   pilotLookState: PilotLookState;
 }
 

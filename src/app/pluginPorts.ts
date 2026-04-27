@@ -1,4 +1,4 @@
-import type { ShipBody, World } from "../domain/domainPorts";
+import type { ControlledBody, World } from "../domain/domainPorts";
 import type { Vec3 } from "../domain/vec3";
 import type { WorldAndSceneConfig } from "./configPorts";
 import type {
@@ -63,7 +63,7 @@ export interface ControlPlugin {
 export interface HudContext {
   nowMs: number;
   world: World;
-  mainShip: ShipBody;
+  mainControlledBody: ControlledBody;
   controlInput: ControlInput;
   currentThrustLevel: number;
   currentRcsLevel: number;
@@ -85,7 +85,7 @@ export interface SegmentProviderParams {
   viewId: SceneViewId;
   scene: Scene;
   world: World;
-  mainShip: ShipBody;
+  mainControlledBody: ControlledBody;
   config: WorldAndSceneConfig;
 }
 
@@ -99,7 +99,7 @@ export interface SegmentPlugin {
 export interface SceneInitParams {
   scene: Scene;
   world: World;
-  mainShip: ShipBody;
+  mainControlledBody: ControlledBody;
   config: WorldAndSceneConfig;
 }
 
@@ -108,7 +108,7 @@ export interface SceneUpdateParams {
   dtSimMillis: number;
   scene: Scene;
   world: World;
-  mainShip: ShipBody;
+  mainControlledBody: ControlledBody;
 }
 
 export type SceneObjectFilter = (obj: SceneObject) => boolean;
@@ -117,7 +117,7 @@ export interface SceneViewFilterParams {
   viewId: SceneViewId;
   scene: Scene;
   world: World;
-  mainShip: ShipBody;
+  mainControlledBody: ControlledBody;
   config: WorldAndSceneConfig;
 }
 
@@ -140,7 +140,7 @@ export interface LoopInitParams {
 export interface LoopUpdateParams {
   controlInput: ControlInput;
   dtMillis: number;
-  mainShip?: ShipBody;
+  mainControlledBody?: ControlledBody;
   nowMs: number;
   simTimeMillis?: number;
   state: LoopState;
@@ -184,7 +184,6 @@ export interface ViewPlugin {
 export interface WorldModelRegistry {
   addEntities: (entities: EntityConfig[]) => void;
   setMainControlledEntityId: (id: EntityId) => void;
-  setMainShipId: (id: string) => void;
 }
 
 export interface WorldModelContributionParams {

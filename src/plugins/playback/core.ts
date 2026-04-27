@@ -57,7 +57,7 @@ export interface PlaybackController {
   updateLoop: (
     controlInput: ControlInput,
     world: World | undefined,
-    mainShip: ShipBody | undefined,
+    mainControlledBody: ShipBody | undefined,
     nowMs: number,
     simTimeMillis: number,
     effectiveTimeScale?: number,
@@ -107,14 +107,14 @@ export function createPlaybackController(
   const updateLoop: PlaybackController["updateLoop"] = (
     controlInput,
     world,
-    mainShip,
+    mainControlledBody,
     nowMs,
     simTimeMillis,
     effectiveTimeScale = playbackTimeScale,
   ) => {
     processCaptureToggle(
       world,
-      mainShip,
+      mainControlledBody,
       nowMs,
       simTimeMillis,
       effectiveTimeScale,
@@ -129,7 +129,7 @@ export function createPlaybackController(
         createLoggerLifecycleContext(
           controlInput,
           world,
-          mainShip,
+          mainControlledBody,
           scriptTimeMs,
           simTimeMillis,
           script,
@@ -189,7 +189,7 @@ export function createPlaybackController(
         createLoggerLifecycleContext(
           params?.controlInput,
           params?.world,
-          params?.mainShip,
+          params?.mainControlledBody,
           scriptTimeMs,
           params?.simTimeMillis ?? 0,
           script,
@@ -260,7 +260,7 @@ export function createPlaybackController(
 
   function processCaptureToggle(
     world: World | undefined,
-    mainShip: ShipBody | undefined,
+    mainControlledBody: ShipBody | undefined,
     nowMs: number,
     simTimeMillis: number,
     effectiveTimeScale: number,
@@ -275,7 +275,7 @@ export function createPlaybackController(
       return;
     }
 
-    if (!world || !mainShip) {
+    if (!world || !mainControlledBody) {
       statusText = "CAPTURE: missing world";
       console.warn(statusText);
       return;
@@ -285,7 +285,7 @@ export function createPlaybackController(
     recorder = {
       snapshot: capturePlaybackSnapshot(
         world,
-        mainShip,
+        mainControlledBody,
         diagnostic.scenario,
         simTimeMillis,
       ),
@@ -475,7 +475,7 @@ function sampleLoggerAfterTick(
     controlInput: params.controlInput,
     dtSimMillis,
     dtTickMillis,
-    mainShip: params.mainShip,
+    mainControlledBody: params.mainControlledBody,
     playbackElapsedMs,
     script,
     simTimeMillis: params.simTimeMillis ?? 0,
@@ -486,14 +486,14 @@ function sampleLoggerAfterTick(
 function createLoggerLifecycleContext(
   controlInput: ControlInput | undefined,
   world: World | undefined,
-  mainShip: ShipBody | undefined,
+  mainControlledBody: ShipBody | undefined,
   playbackElapsedMs: number,
   simTimeMillis: number,
   script: CompiledPlaybackScript,
 ) {
   return {
     controlInput: controlInput ?? ({} as ControlInput),
-    mainShip,
+    mainControlledBody,
     playbackElapsedMs,
     script,
     simTimeMillis,

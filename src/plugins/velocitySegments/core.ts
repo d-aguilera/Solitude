@@ -11,8 +11,8 @@ const VELOCITY_SEGMENT_BACKWARD_COLOR = "red";
 
 export function createSegmentsPlugin(): SegmentPlugin {
   return {
-    appendSegments: (into, { mainShip }) => {
-      if (!mutateShipVelocitySegments(mainShip, velocitySegments)) {
+    appendSegments: (into, { mainControlledBody }) => {
+      if (!mutateShipVelocitySegments(mainControlledBody, velocitySegments)) {
         return;
       }
       into.push(forwardSegment, backwardSegment);

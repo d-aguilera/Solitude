@@ -1,8 +1,8 @@
 import type {
+  ControlledBody,
   EntityAxialSpin,
   GravityEngine,
   GravityState,
-  ShipBody,
   World,
 } from "../domain/domainPorts";
 import { localFrame } from "../domain/localFrame";
@@ -48,26 +48,26 @@ function applyThrustToVelocity(
 }
 
 /**
- * Applies thrust into the ship's body velocity
+ * Applies thrust into the controlled body's velocity.
  */
 export function applyThrust(
   dtMillis: number,
-  controlledShip: ShipBody,
+  controlledBody: ControlledBody,
   thrust: ThrustCommand,
 ): void {
   if (dtMillis === 0) {
     return;
   }
 
-  applyThrustToVelocity(dtMillis, thrust, controlledShip);
+  applyThrustToVelocity(dtMillis, thrust, controlledBody);
 }
 
 /**
- * Applies RCS translation jets into the ship's body velocity (lateral only).
+ * Applies RCS translation into the controlled body's velocity (lateral only).
  */
 export function applyRcsTranslation(
   dtMillis: number,
-  controlledShip: ShipBody,
+  controlledBody: ControlledBody,
   rcs: RcsCommand,
 ): void {
   if (dtMillis === 0) {
@@ -76,14 +76,14 @@ export function applyRcsTranslation(
   if (rcs.right === 0) return;
 
   const accelScale = (maxRcsTranslationAcceleration * dtMillis) / 1000;
-  vec3.scaleInto(cvScratch, accelScale * rcs.right, controlledShip.frame.right);
-  vec3.addInto(controlledShip.velocity, controlledShip.velocity, cvScratch);
+  vec3.scaleInto(cvScratch, accelScale * rcs.right, controlledBody.frame.right);
+  vec3.addInto(controlledBody.velocity, controlledBody.velocity, cvScratch);
 }
 
 /**
- * Integrate ship attitude by applying its angular velocity to the local frame.
+ * Integrate controlled-body attitude by applying angular velocity to the local frame.
  */
-export function applyShipRotation(
+export function applyControlledBodyRotation(
   dtMillis: number,
   ship: ControlledBodyState,
 ): void {

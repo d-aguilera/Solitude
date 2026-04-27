@@ -12,7 +12,7 @@ export function createHudPlugin(): HudPlugin {
     updateHudParams: (grid, context) => {
       circleNowTracker.update(
         context.world,
-        context.mainShip,
+        context.mainControlledBody,
         context.controlInput.circleNow,
         context.nowMs,
       );

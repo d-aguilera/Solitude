@@ -69,15 +69,21 @@ function createAxialViewDefinitions(): ViewDefinition[] {
   ];
 }
 
-function updateTopViewFrame({ frame, mainShip }: ViewFrameUpdateParams): void {
-  const { right, forward, up } = mainShip.frame;
+function updateTopViewFrame({
+  frame,
+  mainControlledBody,
+}: ViewFrameUpdateParams): void {
+  const { right, forward, up } = mainControlledBody.frame;
   vec3.copyInto(frame.right, right);
   vec3.scaleInto(frame.forward, -1, up); // forward = -up
   vec3.copyInto(frame.up, forward); // up = forward
 }
 
-function updateLeftViewFrame({ frame, mainShip }: ViewFrameUpdateParams): void {
-  const { right, forward, up } = mainShip.frame;
+function updateLeftViewFrame({
+  frame,
+  mainControlledBody,
+}: ViewFrameUpdateParams): void {
+  const { right, forward, up } = mainControlledBody.frame;
   vec3.copyInto(frame.up, up);
   vec3.copyInto(frame.forward, right);
   vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -right
@@ -86,17 +92,20 @@ function updateLeftViewFrame({ frame, mainShip }: ViewFrameUpdateParams): void {
 
 function updateRightViewFrame({
   frame,
-  mainShip,
+  mainControlledBody,
 }: ViewFrameUpdateParams): void {
-  const { right, forward, up } = mainShip.frame;
+  const { right, forward, up } = mainControlledBody.frame;
   vec3.copyInto(frame.up, up);
   vec3.copyInto(frame.forward, right); // forward = right
   vec3.copyInto(frame.right, forward);
   vec3.scaleInto(frame.right, -1, frame.right); // right = -forward
 }
 
-function updateRearViewFrame({ frame, mainShip }: ViewFrameUpdateParams): void {
-  const { right, forward, up } = mainShip.frame;
+function updateRearViewFrame({
+  frame,
+  mainControlledBody,
+}: ViewFrameUpdateParams): void {
+  const { right, forward, up } = mainControlledBody.frame;
   vec3.copyInto(frame.up, up);
   vec3.copyInto(frame.right, right);
   vec3.copyInto(frame.forward, forward);

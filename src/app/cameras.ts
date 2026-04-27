@@ -1,4 +1,4 @@
-import type { ShipBody } from "../domain/domainPorts";
+import type { ControlledBody } from "../domain/domainPorts";
 import { type LocalFrame, localFrame } from "../domain/localFrame";
 import { type Vec3, vec3 } from "../domain/vec3";
 import type { ControlInput } from "./controlPorts";
@@ -20,14 +20,18 @@ const viewFrameUpdateParamsScratch = {} as ViewFrameUpdateParams;
  * Update all camera positions / orientations.
  */
 export function updateCameras(
-  mainShip: ShipBody,
+  mainControlledBody: ControlledBody,
   views: SceneViewState[],
   pilotLookState: PilotLookState,
 ): void {
-  viewFrameUpdateParamsScratch.mainShip = mainShip;
+  viewFrameUpdateParamsScratch.mainControlledBody = mainControlledBody;
   viewFrameUpdateParamsScratch.pilotLookState = pilotLookState;
   for (const view of views) {
-    setCameraRelativeToShip(view.camera, mainShip, view.cameraOffset);
+    setCameraRelativeToControlledBody(
+      view.camera,
+      mainControlledBody,
+      view.cameraOffset,
+    );
     viewFrameUpdateParamsScratch.frame = view.camera.frame;
     view.definition.updateFrame(viewFrameUpdateParamsScratch);
   }
@@ -47,14 +51,14 @@ export function createPrimaryViewDefinition(
 
 export function updatePilotViewFrame({
   frame,
-  mainShip,
+  mainControlledBody,
   pilotLookState,
 }: {
   frame: LocalFrame;
-  mainShip: ShipBody;
+  mainControlledBody: ControlledBody;
   pilotLookState: PilotLookState;
 }): void {
-  localFrame.copyInto(frame, mainShip.frame);
+  localFrame.copyInto(frame, mainControlledBody.frame);
   const { azimuth, elevation } = pilotLookState;
   if (azimuth !== 0)
     localFrame.rotateAroundAxisInPlace(frame, frame.up, azimuth);
@@ -62,9 +66,9 @@ export function updatePilotViewFrame({
     localFrame.rotateAroundAxisInPlace(frame, frame.right, elevation);
 }
 
-function setCameraRelativeToShip(
+function setCameraRelativeToControlledBody(
   pose: DomainCameraPose,
-  ship: ShipBody,
+  ship: ControlledBody,
   localOffset: Vec3,
 ): void {
   const { right, forward, up } = ship.frame;
