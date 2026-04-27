@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import type { EntityConfig } from "../../app/entityConfigPorts";
+import type { WorldModelRegistry } from "../../app/pluginPorts";
 import { applyWorldModelPlugins } from "../../app/worldModelConfig";
 import { buildWorldAndSceneConfig } from "../../config/worldAndSceneConfig";
 import { vec3 } from "../../domain/vec3";
@@ -7,6 +9,45 @@ import { createWorld } from "../../setup/setup";
 import { createSolarSystemPlugin } from "./index";
 
 describe("solarSystem plugin", () => {
+  it("contributes world content through generic entities", () => {
+    const config = buildWorldAndSceneConfig();
+    const addEntities = vi.fn<WorldModelRegistry["addEntities"]>();
+    const registry: WorldModelRegistry = {
+      addCelestialBodies: vi.fn(),
+      addEntities,
+      addShips: vi.fn(),
+      setMainControlledEntityId: vi.fn(),
+      setMainShipId: vi.fn(),
+    };
+
+    createSolarSystemPlugin().worldModel!.contributeWorldModel(registry, {
+      config,
+    });
+
+    expect(registry.addEntities).toHaveBeenCalledOnce();
+    expect(registry.addCelestialBodies).not.toHaveBeenCalled();
+    expect(registry.addShips).not.toHaveBeenCalled();
+    expect(registry.setMainShipId).toHaveBeenCalledWith("ship:main");
+    expect(
+      addEntities.mock.calls[0][0].map((entity: EntityConfig) => entity.id),
+    ).toEqual([
+      "planet:sun",
+      "planet:mercury",
+      "planet:venus",
+      "planet:earth",
+      "planet:mars",
+      "planet:jupiter",
+      "planet:saturn",
+      "planet:uranus",
+      "planet:neptune",
+      "planet:moon",
+      "planet:phobos",
+      "planet:deimos",
+      "ship:main",
+      "ship:enemy",
+    ]);
+  });
+
   it("contributes solar bodies, main ship, and enemy ship", () => {
     const config = buildWorldAndSceneConfig();
 
