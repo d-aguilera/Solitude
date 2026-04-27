@@ -1,6 +1,16 @@
 import type { WorldAndSceneConfig } from "../app/configPorts";
 import { buildEntityConfigIndex } from "../app/entityConfig";
-import type { EntityConfig } from "../app/entityConfigPorts";
+import type {
+  DirectEntityStateConfig,
+  EntityConfig,
+  KeplerianEntityStateConfig,
+} from "../app/entityConfigPorts";
+import type {
+  PlanetPhysicsConfig,
+  ShipInitialStateConfig,
+  ShipPhysicsConfig,
+  StarPhysicsConfig,
+} from "../app/physicsConfigPorts";
 import type {
   ControlledBody,
   EntityRecord,
@@ -54,8 +64,14 @@ export function createWorld({
     lightEmitters: [],
   };
 
-  const planetsAndStars = createPlanetsAndStarsFromConfig(physics.planets);
-  const ships = createShipsFromConfig(physics.ships, physics.shipInitialStates);
+  const entityDerivedSetup =
+    entities.length > 0 ? createSetupFromEntityConfigs(entities) : null;
+  const planetsAndStars =
+    entityDerivedSetup?.planetsAndStars ??
+    createPlanetsAndStarsFromConfig(physics.planets);
+  const ships =
+    entityDerivedSetup?.ships ??
+    createShipsFromConfig(physics.ships, physics.shipInitialStates);
   populateGenericWorldFromSetup(world, entities, ships, planetsAndStars);
 
   const mainControlledBody = getControlledBodyById(
@@ -88,6 +104,24 @@ function validateWorldConfig({
     throw new Error("World config is missing mainShipId");
   }
 
+  if (entities.length > 0) {
+    const entityIndex = buildEntityConfigIndex(entities);
+    if (!mainControlledEntityId) {
+      throw new Error("World config is missing mainControlledEntityId");
+    }
+    if (!entityIndex.byId.has(mainControlledEntityId)) {
+      throw new Error(
+        `Main controlled entity config not found: ${mainControlledEntityId}`,
+      );
+    }
+    if (!entityIndex.controllableEntityIds.includes(mainControlledEntityId)) {
+      throw new Error(
+        `Main controlled entity is not controllable: ${mainControlledEntityId}`,
+      );
+    }
+    return;
+  }
+
   const shipIds = new Set<string>();
   for (const ship of physics.ships) {
     if (!ship.id) throw new Error("Ship physics config is missing id");
@@ -109,23 +143,140 @@ function validateWorldConfig({
       throw new Error(`Ship initial state not found: ${shipId}`);
     }
   }
+}
 
-  if (entities.length > 0) {
-    const entityIndex = buildEntityConfigIndex(entities);
-    if (!mainControlledEntityId) {
-      throw new Error("World config is missing mainControlledEntityId");
-    }
-    if (!entityIndex.byId.has(mainControlledEntityId)) {
-      throw new Error(
-        `Main controlled entity config not found: ${mainControlledEntityId}`,
-      );
-    }
-    if (!entityIndex.controllableEntityIds.includes(mainControlledEntityId)) {
-      throw new Error(
-        `Main controlled entity is not controllable: ${mainControlledEntityId}`,
-      );
+function createSetupFromEntityConfigs(entities: EntityConfig[]): {
+  planetsAndStars: PlanetsAndStarsSetup;
+  ships: ShipsSetup;
+} {
+  const celestialConfigs: (PlanetPhysicsConfig | StarPhysicsConfig)[] = [];
+  const shipConfigs: ShipPhysicsConfig[] = [];
+  const shipInitialStates: ShipInitialStateConfig[] = [];
+
+  for (const entity of entities) {
+    if (entity.metadata?.legacyKind === "planet") {
+      celestialConfigs.push(createPlanetPhysicsConfig(entity));
+    } else if (entity.metadata?.legacyKind === "star") {
+      celestialConfigs.push(createStarPhysicsConfig(entity));
+    } else if (entity.components.controllable) {
+      shipConfigs.push(createShipPhysicsConfig(entity));
+      shipInitialStates.push(createShipInitialStateConfig(entity));
     }
   }
+
+  return {
+    planetsAndStars: createPlanetsAndStarsFromConfig(celestialConfigs),
+    ships: createShipsFromConfig(shipConfigs, shipInitialStates),
+  };
+}
+
+function createPlanetPhysicsConfig(entity: EntityConfig): PlanetPhysicsConfig {
+  const state = requireKeplerianState(entity);
+  const mass = requireGravityMass(entity);
+  const spin = requireAxialSpin(entity);
+  return {
+    angularSpeedRadPerSec: spin.angularSpeedRadPerSec,
+    centralBodyId: state.centralBodyId,
+    density: mass.density,
+    id: entity.id,
+    kind: "planet",
+    obliquityRad: spin.obliquityRad,
+    orbit: state.orbit,
+    physicalRadius: requirePhysicalRadius(entity),
+  };
+}
+
+function createStarPhysicsConfig(entity: EntityConfig): StarPhysicsConfig {
+  const state = requireKeplerianState(entity);
+  const mass = requireGravityMass(entity);
+  const spin = requireAxialSpin(entity);
+  const light = entity.components.lightEmitter;
+  if (!light) throw new Error(`Star entity is missing light: ${entity.id}`);
+  return {
+    angularSpeedRadPerSec: spin.angularSpeedRadPerSec,
+    centralBodyId: state.centralBodyId,
+    density: mass.density,
+    id: entity.id,
+    kind: "star",
+    luminosity: light.luminosity,
+    obliquityRad: spin.obliquityRad,
+    orbit: state.orbit,
+    physicalRadius: requirePhysicalRadius(entity),
+  };
+}
+
+function createShipPhysicsConfig(entity: EntityConfig): ShipPhysicsConfig {
+  const mass = requireGravityMass(entity);
+  if (mass.volume === undefined) {
+    throw new Error(`Controlled entity is missing volume: ${entity.id}`);
+  }
+  return {
+    density: mass.density,
+    id: entity.id,
+    volume: mass.volume,
+  };
+}
+
+function createShipInitialStateConfig(
+  entity: EntityConfig,
+): ShipInitialStateConfig {
+  const state = requireDirectState(entity);
+  if (!state.frame) {
+    throw new Error(`Controlled entity is missing frame: ${entity.id}`);
+  }
+  if (!state.angularVelocity) {
+    throw new Error(
+      `Controlled entity is missing angular velocity: ${entity.id}`,
+    );
+  }
+  return {
+    angularVelocity: state.angularVelocity,
+    frame: state.frame,
+    id: entity.id,
+    orientation: state.orientation,
+    position: state.position,
+    velocity: state.velocity,
+  };
+}
+
+function requireGravityMass(entity: EntityConfig) {
+  const mass = entity.components.gravityMass;
+  if (!mass) throw new Error(`Entity is missing gravity mass: ${entity.id}`);
+  return mass;
+}
+
+function requirePhysicalRadius(entity: EntityConfig): number {
+  const physicalRadius = requireGravityMass(entity).physicalRadius;
+  if (physicalRadius === undefined) {
+    throw new Error(`Celestial entity is missing radius: ${entity.id}`);
+  }
+  return physicalRadius;
+}
+
+function requireAxialSpin(entity: EntityConfig) {
+  const spin = entity.components.axialSpin;
+  if (!spin) throw new Error(`Celestial entity is missing spin: ${entity.id}`);
+  return spin;
+}
+
+function requireKeplerianState(
+  entity: EntityConfig,
+): KeplerianEntityStateConfig {
+  const state = entity.components.state;
+  if (!state || state.kind !== "keplerian") {
+    throw new Error(
+      `Celestial entity is missing Keplerian state: ${entity.id}`,
+    );
+  }
+  return state;
+}
+
+function requireDirectState(entity: EntityConfig): DirectEntityStateConfig {
+  const state = entity.components.state;
+  if (!state || state.kind !== "direct") {
+    throw new Error(`Controlled entity is missing direct state: ${entity.id}`);
+  }
+  return state;
 }
 
 function populateGenericWorldFromSetup(

@@ -97,15 +97,15 @@ Systems should query capabilities rather than categories:
 
 - `src/plugins/solarSystem/` owns solar bodies, colors, mesh assets, default main/enemy ships, and Earth-bound ship placement.
 - `src/app/pluginPorts.ts` exposes generic `addEntities` for world-model content; legacy `addCelestialBodies` / `addShips` registry hooks have been removed.
-- `src/plugins/solarSystem/` contributes world content through direct generic `addEntities` calls; the registry backfills legacy physics/render arrays from legacy-kind entity metadata while setup still needs them.
-- `src/setup/setup.ts` builds runtime generic capability arrays from transitional local setup results.
+- `src/plugins/solarSystem/` contributes world content through direct generic `addEntities` calls; plugin application no longer backfills legacy physics/render arrays.
+- `src/setup/setup.ts` can derive runtime generic capability arrays from generic entity config; legacy physics arrays remain as fallback compatibility for older tests/configs.
 - `src/domain/domainPorts.ts` defines `World` as generic entity/capability arrays.
 - Core gravity, collision, spin, orbit primary lookup, scene/lights, trajectories, and playback diagnostics now operate on generic capabilities.
 - Playback snapshots still keep v1 `ships` / `planets` / `stars` fields for compatibility, while also capturing generic `entities`.
 
 ## Near-Term Candidates
 
-- Collapse legacy physics/render config arrays once setup can derive all runtime capabilities from generic entity config.
+- Continue shrinking legacy physics/render config arrays from fallback tests and compatibility types.
 - Rename remaining core-facing `ship` terminology to controlled body where it is not truly spacecraft-specific.
 
 ## Watch-Outs

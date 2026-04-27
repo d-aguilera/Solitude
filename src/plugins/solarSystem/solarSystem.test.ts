@@ -51,32 +51,11 @@ describe("solarSystem plugin", () => {
 
     expect(config.mainShipId).toBe("ship:main");
     expect(config.mainControlledEntityId).toBe("ship:main");
-    expect(config.physics.planets.map((body) => body.id)).toEqual([
-      "planet:sun",
-      "planet:mercury",
-      "planet:venus",
-      "planet:earth",
-      "planet:mars",
-      "planet:jupiter",
-      "planet:saturn",
-      "planet:uranus",
-      "planet:neptune",
-      "planet:moon",
-      "planet:phobos",
-      "planet:deimos",
-    ]);
-    expect(config.physics.ships.map((ship) => ship.id)).toEqual([
-      "ship:main",
-      "ship:enemy",
-    ]);
-    expect(config.render.ships.map((ship) => ship.id)).toEqual([
-      "ship:main",
-      "ship:enemy",
-    ]);
-    expect(config.physics.shipInitialStates.map((state) => state.id)).toEqual([
-      "ship:main",
-      "ship:enemy",
-    ]);
+    expect(config.physics.planets).toEqual([]);
+    expect(config.physics.ships).toEqual([]);
+    expect(config.render.planets).toEqual([]);
+    expect(config.render.ships).toEqual([]);
+    expect(config.physics.shipInitialStates).toEqual([]);
     expect(config.entities.map((entity) => entity.id)).toEqual([
       "planet:sun",
       "planet:mercury",

@@ -1,4 +1,5 @@
 import type {
+  EntityConfig,
   KeplerianOrbit,
   PlanetPhysicsConfig,
   StarPhysicsConfig,
@@ -42,7 +43,9 @@ export function parseTrajectoryId(
 
 export function buildTrajectoryPlan(
   world: World,
-  planetPhysicsConfigs: (PlanetPhysicsConfig | StarPhysicsConfig)[],
+  planetPhysicsConfigs:
+    | EntityConfig[]
+    | (PlanetPhysicsConfig | StarPhysicsConfig)[],
 ): TrajectoryPlan[] {
   const plan: TrajectoryPlan[] = [];
 
@@ -55,7 +58,7 @@ export function buildTrajectoryPlan(
   }
 
   // Build trajectories for planets (skip moons)
-  for (const cfg of planetPhysicsConfigs) {
+  for (const cfg of getTrajectoryPlanetConfigs(planetPhysicsConfigs)) {
     if (cfg.kind !== "planet" || cfg.centralBodyId !== "planet:sun") continue;
     const body = getById(world.entityStates, cfg.id, "Entity state");
     const speedMps = vec3.length(body.velocity);
@@ -72,6 +75,59 @@ export function buildTrajectoryPlan(
   }
 
   return plan;
+}
+
+function getTrajectoryPlanetConfigs(
+  configs: EntityConfig[] | (PlanetPhysicsConfig | StarPhysicsConfig)[],
+): (PlanetPhysicsConfig | StarPhysicsConfig)[] {
+  if (configs.length === 0 || !("components" in configs[0])) {
+    return configs as (PlanetPhysicsConfig | StarPhysicsConfig)[];
+  }
+
+  const planetConfigs: (PlanetPhysicsConfig | StarPhysicsConfig)[] = [];
+  for (const entity of configs as EntityConfig[]) {
+    if (
+      entity.metadata?.legacyKind !== "planet" &&
+      entity.metadata?.legacyKind !== "star"
+    ) {
+      continue;
+    }
+    const state = entity.components.state;
+    const mass = entity.components.gravityMass;
+    const spin = entity.components.axialSpin;
+    if (!state || state.kind !== "keplerian" || !mass || !spin) continue;
+    const physicalRadius = mass.physicalRadius;
+    if (physicalRadius === undefined) continue;
+
+    if (entity.metadata.legacyKind === "star") {
+      const light = entity.components.lightEmitter;
+      if (!light) continue;
+      planetConfigs.push({
+        angularSpeedRadPerSec: spin.angularSpeedRadPerSec,
+        centralBodyId: state.centralBodyId,
+        density: mass.density,
+        id: entity.id,
+        kind: "star",
+        luminosity: light.luminosity,
+        obliquityRad: spin.obliquityRad,
+        orbit: state.orbit,
+        physicalRadius,
+      });
+    } else {
+      planetConfigs.push({
+        angularSpeedRadPerSec: spin.angularSpeedRadPerSec,
+        centralBodyId: state.centralBodyId,
+        density: mass.density,
+        id: entity.id,
+        kind: "planet",
+        obliquityRad: spin.obliquityRad,
+        orbit: state.orbit,
+        physicalRadius,
+      });
+    }
+  }
+
+  return planetConfigs;
 }
 
 function getById<T extends { id: string }>(
