@@ -98,6 +98,7 @@ Systems should query capabilities rather than categories:
 - `src/plugins/solarSystem/` owns solar bodies, colors, mesh assets, default main/enemy ships, and Earth-bound ship placement.
 - `src/app/pluginPorts.ts` exposes generic `addEntities` for world-model content; legacy `addCelestialBodies` / `addShips` registry hooks have been removed.
 - `src/plugins/solarSystem/` contributes world content through direct generic `addEntities` calls; plugin application no longer backfills legacy physics/render arrays.
+- Shared `WorldRenderConfig` no longer carries legacy planet/star/ship render arrays; scene assembly requires renderable entity components.
 - `src/setup/setup.ts` can derive runtime generic capability arrays from generic entity config; legacy physics arrays remain as fallback compatibility for older tests/configs.
 - `src/domain/domainPorts.ts` defines `World` as generic entity/capability arrays.
 - Core gravity, collision, spin, orbit primary lookup, scene/lights, trajectories, and playback diagnostics now operate on generic capabilities.
@@ -105,7 +106,7 @@ Systems should query capabilities rather than categories:
 
 ## Near-Term Candidates
 
-- Continue shrinking legacy physics/render config arrays from fallback tests and compatibility types.
+- Continue shrinking legacy physics config arrays from fallback tests and compatibility types.
 - Rename remaining core-facing `ship` terminology to controlled body where it is not truly spacecraft-specific.
 
 ## Watch-Outs

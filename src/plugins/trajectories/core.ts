@@ -1,10 +1,4 @@
-import type {
-  EntityConfig,
-  PlanetRenderConfig,
-  ShipRenderConfig,
-  StarRenderConfig,
-  WorldAndSceneConfig,
-} from "../../app/configPorts";
+import type { EntityConfig, WorldAndSceneConfig } from "../../app/configPorts";
 import type { ScenePlugin } from "../../app/pluginPorts";
 import type { PolylineSceneObject, RGB, Scene } from "../../app/scenePorts";
 import type { World } from "../../domain/domainPorts";
@@ -82,14 +76,12 @@ function addTrajectorySceneObjects(
 function getTrajectoryColor(
   config: WorldAndSceneConfig,
   id: string,
-  kind: "planet" | "ship",
+  _kind: "planet" | "ship",
 ): RGB {
   if (config.entities.length > 0) {
     return getEntityRenderConfig(config.entities, id).color;
   }
-  return kind === "ship"
-    ? getShipRenderConfig(config.render.ships, id).color
-    : getPlanetRenderConfig(config.render.planets, id).color;
+  return { r: 255, g: 255, b: 255 };
 }
 
 function getEntityRenderConfig(configs: EntityConfig[], id: string) {
@@ -119,30 +111,6 @@ function createPolylineSceneObject(
     count: 0,
     tail: -1,
   };
-}
-
-function getShipRenderConfig(
-  configs: ShipRenderConfig[],
-  id: string,
-): ShipRenderConfig {
-  const cfg = configs.find((item) => item.id === id);
-  if (!cfg) {
-    throw new Error(`Ship render config not found: ${id}`);
-  }
-  return cfg;
-}
-
-function getPlanetRenderConfig(
-  configs: (PlanetRenderConfig | StarRenderConfig)[],
-  id: string,
-): PlanetRenderConfig {
-  const cfg = configs.find(
-    (item) => item.kind === "planet" && item.id === id,
-  ) as PlanetRenderConfig | undefined;
-  if (!cfg) {
-    throw new Error(`Planet render config not found: ${id}`);
-  }
-  return cfg;
 }
 
 function getById<T extends { id: string }>(

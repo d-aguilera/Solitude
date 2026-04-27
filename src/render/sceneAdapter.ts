@@ -1,17 +1,8 @@
-import type {
-  EntityConfig,
-  PlanetRenderConfig,
-  ShipRenderConfig,
-  StarRenderConfig,
-  WorldAndSceneConfig,
-} from "../app/configPorts";
+import type { EntityConfig, WorldAndSceneConfig } from "../app/configPorts";
 import type {
   CelestialBodySceneObject,
-  PlanetSceneObject,
   Scene,
   SceneObject,
-  ShipSceneObject,
-  StarSceneObject,
 } from "../app/scenePorts";
 import type {
   EntityLightEmitter,
@@ -28,16 +19,8 @@ export function createSceneFromWorld(
     lights: [],
   };
 
-  if (config.entities.length > 0) {
-    addEntitySceneObjects(scene, world, config.entities);
-    addLightsFromEmitters(scene, world.lightEmitters);
-    return scene;
-  }
-
-  addPlanetsAndStarsSceneObjects(scene, world, config.render.planets);
-  addShipSceneObjects(scene, world, config.render.ships);
-  addLightsFromStars(scene, world);
-
+  addEntitySceneObjects(scene, world, config.entities);
+  addLightsFromEmitters(scene, world.lightEmitters);
   return scene;
 }
 
@@ -126,85 +109,6 @@ function createCelestialSceneObject(
     backFaceCulling: true,
     velocity: state.velocity,
   };
-}
-
-function addPlanetsAndStarsSceneObjects(
-  scene: Scene,
-  world: World,
-  configs: (PlanetRenderConfig | StarRenderConfig)[],
-): void {
-  for (const cfg of configs) {
-    const body = getById(world.entityStates, cfg.id, "Entity state");
-    if (cfg.kind === "star") {
-      const light = getById(world.lightEmitters, cfg.id, "Light emitter");
-      const sceneObj: StarSceneObject = {
-        id: cfg.id,
-        kind: "star",
-        centralBodyId: cfg.centralBodyId,
-        mesh: cfg.mesh,
-        position: body.position, // alias
-        orientation: body.orientation, // alias
-        color: cfg.color,
-        lineWidth: 1,
-        applyTransform: true,
-        wireframeOnly: false,
-        backFaceCulling: true,
-        velocity: body.velocity, // alias
-        luminosity: light.luminosity,
-      };
-      scene.objects.push(sceneObj);
-    } else {
-      const sceneObj: PlanetSceneObject = {
-        id: cfg.id,
-        kind: "planet",
-        centralBodyId: cfg.centralBodyId,
-        mesh: cfg.mesh,
-        position: body.position, // alias
-        orientation: body.orientation, // alias
-        color: cfg.color,
-        lineWidth: 1,
-        applyTransform: true,
-        wireframeOnly: false,
-        backFaceCulling: true,
-        velocity: body.velocity, // alias
-      };
-      scene.objects.push(sceneObj);
-    }
-  }
-}
-
-function addShipSceneObjects(
-  scene: Scene,
-  world: World,
-  configs: ShipRenderConfig[],
-): void {
-  for (const cfg of configs) {
-    const shipBody = getById(world.entityStates, cfg.id, "Entity state");
-    const sceneObj: ShipSceneObject = {
-      id: shipBody.id,
-      kind: "ship",
-      mesh: cfg.mesh,
-      position: shipBody.position, // alias
-      orientation: shipBody.orientation, // alias
-      color: cfg.color,
-      lineWidth: 1,
-      applyTransform: true,
-      wireframeOnly: false,
-      backFaceCulling: false,
-    };
-    scene.objects.push(sceneObj);
-  }
-}
-
-function addLightsFromStars(scene: Scene, world: World): void {
-  const count = world.lightEmitters.length;
-  for (let i = 0; i < count; i++) {
-    const light = world.lightEmitters[i];
-    scene.lights.push({
-      position: light.state.position, // alias
-      intensity: light.luminosity,
-    });
-  }
 }
 
 function addLightsFromEmitters(

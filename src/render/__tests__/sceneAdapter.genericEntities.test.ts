@@ -115,8 +115,6 @@ describe("createScene", () => {
       render: {
         pilotCameraOffset: vec3.zero(),
         pilotLookState: { azimuth: 0, elevation: 0 },
-        planets: [],
-        ships: [],
       },
       thrustLevel: 1,
     };

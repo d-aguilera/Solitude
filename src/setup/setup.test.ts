@@ -146,8 +146,6 @@ describe("createWorld", () => {
       render: {
         pilotCameraOffset: vec3.zero(),
         pilotLookState: { azimuth: 0, elevation: 0 },
-        planets: [],
-        ships: [],
       },
       thrustLevel: 1,
     };
@@ -155,7 +153,7 @@ describe("createWorld", () => {
     const { world } = createWorld(config);
 
     expect(() => createScene(world, config)).toThrow(
-      "Ship render config not found: ship:main",
+      "World config is missing rendered entities",
     );
   });
 });

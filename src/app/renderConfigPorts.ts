@@ -26,6 +26,4 @@ export interface ShipRenderConfig {
 export interface WorldRenderConfig {
   pilotCameraOffset: Vec3;
   pilotLookState: PilotLookState;
-  planets: (PlanetRenderConfig | StarRenderConfig)[];
-  ships: ShipRenderConfig[];
 }

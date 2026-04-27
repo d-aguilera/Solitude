@@ -15,8 +15,6 @@ export function buildWorldAndSceneConfig() {
     render: {
       pilotCameraOffset: vec3.create(0, 51000, 4850),
       pilotLookState: { azimuth: 0, elevation: 0 },
-      planets: [],
-      ships: [],
     },
   };
 

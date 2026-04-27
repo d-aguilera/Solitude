@@ -18,26 +18,10 @@ export function createScene(
 }
 
 function validateRenderedWorldConfig(config: WorldAndSceneConfig): void {
-  if (config.entities.length > 0) {
-    validateRenderedEntityConfig(config);
-    return;
+  if (config.entities.length === 0) {
+    throw new Error("World config is missing rendered entities");
   }
-
-  const renderedShipIds = new Set<string>();
-  for (const ship of config.render.ships) {
-    if (!ship.id) throw new Error("Ship render config is missing id");
-    renderedShipIds.add(ship.id);
-  }
-
-  for (const ship of config.physics.ships) {
-    if (!renderedShipIds.has(ship.id)) {
-      throw new Error(`Ship render config not found: ${ship.id}`);
-    }
-  }
-
-  if (!renderedShipIds.has(config.mainShipId)) {
-    throw new Error(`Main ship render config not found: ${config.mainShipId}`);
-  }
+  validateRenderedEntityConfig(config);
 }
 
 function validateRenderedEntityConfig(config: WorldAndSceneConfig): void {
