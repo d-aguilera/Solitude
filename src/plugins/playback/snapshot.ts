@@ -1,10 +1,15 @@
-import type { ShipBody, World } from "../../domain/domainPorts";
+import type {
+  EntityMotionState,
+  ShipBody,
+  World,
+} from "../../domain/domainPorts";
 import type { LocalFrame } from "../../domain/localFrame";
 import type { Mat3 } from "../../domain/mat3";
 import { getDominantBodyPrimary } from "../../domain/orbit";
 import type { Vec3 } from "../../domain/vec3";
 import { vec3 } from "../../domain/vec3";
 import type {
+  PlaybackEntitySnapshot,
   PlaybackRotatingBodySnapshot,
   PlaybackScenarioId,
   PlaybackShipSnapshot,
@@ -24,6 +29,7 @@ export function capturePlaybackSnapshot(
       capturedSimTimeMillis,
       dominantBodyId: primary?.id ?? null,
     },
+    entities: world.entityStates.map(captureEntity),
     ships: world.ships.map(captureShip),
     planets: world.planets.map(captureRotatingBody),
     stars: world.stars.map(captureRotatingBody),
@@ -34,12 +40,26 @@ export function applyPlaybackSnapshot(
   snapshot: PlaybackSnapshot,
   world: World,
 ): boolean {
+  if (snapshot.entities && !applyEntitySnapshots(snapshot.entities, world)) {
+    return false;
+  }
   if (!applyShipSnapshots(snapshot.ships, world.ships)) return false;
   if (!applyRotatingBodySnapshots(snapshot.planets, world.planets)) {
     return false;
   }
   if (!applyRotatingBodySnapshots(snapshot.stars, world.stars)) return false;
   return true;
+}
+
+function captureEntity(entity: EntityMotionState): PlaybackEntitySnapshot {
+  const snapshot: PlaybackEntitySnapshot = captureRotatingBody(entity);
+  if (hasFrame(entity)) {
+    snapshot.frame = cloneFrame(entity.frame);
+  }
+  if (hasAngularVelocity(entity)) {
+    snapshot.angularVelocity = { ...entity.angularVelocity };
+  }
+  return snapshot;
 }
 
 function captureShip(ship: ShipBody): PlaybackShipSnapshot {
@@ -58,7 +78,7 @@ function captureRotatingBody({
   position,
   velocity,
   orientation,
-}: World["planets"][number]): PlaybackRotatingBodySnapshot {
+}: EntityMotionState): PlaybackRotatingBodySnapshot {
   return {
     id,
     position: cloneVec3(position),
@@ -86,6 +106,29 @@ function applyShipSnapshots(
   return true;
 }
 
+function applyEntitySnapshots(
+  snapshots: PlaybackEntitySnapshot[],
+  world: World,
+): boolean {
+  for (let i = 0; i < snapshots.length; i++) {
+    const snapshot = snapshots[i];
+    const entity = findById(world.entityStates, snapshot.id);
+    if (!entity) return false;
+    copyVec3(entity.position, snapshot.position);
+    copyVec3(entity.velocity, snapshot.velocity);
+    copyMat3(entity.orientation, snapshot.orientation);
+    if (snapshot.frame && hasFrame(entity)) {
+      copyFrame(entity.frame, snapshot.frame);
+    }
+    if (snapshot.angularVelocity && hasAngularVelocity(entity)) {
+      entity.angularVelocity.roll = snapshot.angularVelocity.roll;
+      entity.angularVelocity.pitch = snapshot.angularVelocity.pitch;
+      entity.angularVelocity.yaw = snapshot.angularVelocity.yaw;
+    }
+  }
+  return true;
+}
+
 function applyRotatingBodySnapshots(
   snapshots: PlaybackRotatingBodySnapshot[],
   bodies: World["planets"],
@@ -106,6 +149,18 @@ function findById<T extends { id: string }>(items: T[], id: string): T | null {
     if (items[i].id === id) return items[i];
   }
   return null;
+}
+
+function hasFrame(entity: EntityMotionState): entity is EntityMotionState & {
+  frame: LocalFrame;
+} {
+  return "frame" in entity;
+}
+
+function hasAngularVelocity(
+  entity: EntityMotionState,
+): entity is EntityMotionState & Pick<ShipBody, "angularVelocity"> {
+  return "angularVelocity" in entity;
 }
 
 function cloneVec3(value: Vec3): Vec3 {

@@ -3,7 +3,6 @@ import type {
   PlanetPhysicsConfig,
   StarPhysicsConfig,
 } from "../../app/configPorts";
-import { getPlanetBodyById } from "../../app/worldLookup";
 import type { World } from "../../domain/domainPorts";
 import { vec3 } from "../../domain/vec3";
 
@@ -47,8 +46,7 @@ export function buildTrajectoryPlan(
 ): TrajectoryPlan[] {
   const plan: TrajectoryPlan[] = [];
 
-  // Build trajectories for ships
-  for (const ship of world.ships) {
+  for (const ship of world.controllableBodies) {
     plan.push({
       pathId: trajectoryIdForShip(ship.id),
       capacity: 3 * 24 * 10, // 720 point capacity = 10 days
@@ -59,7 +57,7 @@ export function buildTrajectoryPlan(
   // Build trajectories for planets (skip moons)
   for (const cfg of planetPhysicsConfigs) {
     if (cfg.kind !== "planet" || cfg.centralBodyId !== "planet:sun") continue;
-    const body = getPlanetBodyById(world, cfg.id);
+    const body = getById(world.entityStates, cfg.id, "Entity state");
     const speedMps = vec3.length(body.velocity);
     const speedMpMs = speedMps / 1000;
     const orbitLengthMeters = orbitalEllipseLength(cfg.orbit);
@@ -74,6 +72,18 @@ export function buildTrajectoryPlan(
   }
 
   return plan;
+}
+
+function getById<T extends { id: string }>(
+  list: T[],
+  id: string,
+  typeName: string,
+): T {
+  const obj = list.find((item) => item.id === id);
+  if (!obj) {
+    throw new Error(`${typeName} not found: ${id}`);
+  }
+  return obj;
 }
 
 /**

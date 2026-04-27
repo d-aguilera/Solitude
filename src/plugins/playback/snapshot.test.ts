@@ -79,5 +79,47 @@ describe("playback snapshots", () => {
     expect(ship.orientation).toBe(orientationAlias);
     expect(ship.position.x).toBe(1);
     expect(ship.orientation[0][0]).toBe(snapshot.ships[0].orientation[0][0]);
+    expect(snapshot.entities?.map((entity) => entity.id)).toEqual([
+      "ship:test",
+      "planet:test",
+    ]);
+  });
+
+  it("captures and applies generic entity snapshots without legacy buckets", () => {
+    const ship: ShipBody = {
+      id: "ship:generic",
+      position: vec3.create(10, 0, 0),
+      velocity: vec3.create(0, 10, 0),
+      frame: localFrame.fromUp(vec3.create(0, 0, 1)),
+      orientation: mat3.zero(),
+      angularVelocity: { roll: 0, pitch: 0, yaw: 0 },
+    };
+    localFrame.intoMat3(ship.orientation, ship.frame);
+    const world: World = {
+      axialSpins: [],
+      collisionSpheres: [],
+      controllableBodies: [ship],
+      entities: [{ id: ship.id }],
+      entityIndex: new Map([[ship.id, { id: ship.id }]]),
+      entityStates: [ship],
+      gravityMasses: [{ id: ship.id, density: 1, mass: 1, state: ship }],
+      lightEmitters: [],
+      ships: [],
+      shipPhysics: [],
+      planets: [],
+      planetPhysics: [],
+      stars: [],
+      starPhysics: [],
+    };
+    const snapshot = capturePlaybackSnapshot(world, ship, "moon-circle", 123);
+
+    ship.position.x = 99;
+    ship.velocity.y = 42;
+
+    expect(snapshot.ships).toEqual([]);
+    expect(snapshot.entities?.[0].frame).toBeDefined();
+    expect(applyPlaybackSnapshot(snapshot, world)).toBe(true);
+    expect(ship.position.x).toBe(10);
+    expect(ship.velocity.y).toBe(10);
   });
 });

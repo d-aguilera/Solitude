@@ -1,7 +1,9 @@
 import type {
+  EntityConfig,
   PlanetRenderConfig,
   ShipRenderConfig,
   StarRenderConfig,
+  WorldAndSceneConfig,
 } from "../../app/configPorts";
 import type { ScenePlugin } from "../../app/pluginPorts";
 import type { PolylineSceneObject, RGB, Scene } from "../../app/scenePorts";
@@ -29,8 +31,7 @@ export function createScenePlugin(): ScenePlugin {
       addTrajectorySceneObjects(
         params.scene,
         params.world,
-        params.config.render.planets,
-        params.config.render.ships,
+        params.config,
         trajectoryPlan,
       );
       trajectoryList = bindTrajectoryPlanToScene(params.scene, trajectoryPlan);
@@ -44,8 +45,7 @@ export function createScenePlugin(): ScenePlugin {
 function addTrajectorySceneObjects(
   scene: Scene,
   world: World,
-  planetConfigs: (PlanetRenderConfig | StarRenderConfig)[],
-  shipConfigs: ShipRenderConfig[],
+  config: WorldAndSceneConfig,
   trajectoryPlan: TrajectoryPlan[],
 ): void {
   const existingIds = new Set(scene.objects.map((obj) => obj.id));
@@ -59,30 +59,43 @@ function addTrajectorySceneObjects(
 
     if (trajectoryTarget.kind === "ship") {
       const shipId = trajectoryTarget.targetId;
-      const shipBody = getById(world.ships, shipId, "Ship");
-      const shipConfig = getShipRenderConfig(shipConfigs, shipId);
+      const shipBody = getById(world.entityStates, shipId, "Entity state");
+      const color = getTrajectoryColor(config, shipId, trajectoryTarget.kind);
       scene.objects.push(
-        createPolylineSceneObject(
-          entry.pathId,
-          shipBody.position,
-          shipConfig.color,
-        ),
+        createPolylineSceneObject(entry.pathId, shipBody.position, color),
       );
     } else {
       const planetId = trajectoryTarget.targetId;
-      const planetBody = getById(world.planets, planetId, "Planet");
-      const planetConfig = getPlanetRenderConfig(planetConfigs, planetId);
+      const planetBody = getById(world.entityStates, planetId, "Entity state");
+      const color = getTrajectoryColor(config, planetId, trajectoryTarget.kind);
       scene.objects.push(
-        createPolylineSceneObject(
-          entry.pathId,
-          planetBody.position,
-          planetConfig.color,
-        ),
+        createPolylineSceneObject(entry.pathId, planetBody.position, color),
       );
     }
 
     existingIds.add(entry.pathId);
   }
+}
+
+function getTrajectoryColor(
+  config: WorldAndSceneConfig,
+  id: string,
+  kind: "planet" | "ship",
+): RGB {
+  if (config.entities.length > 0) {
+    return getEntityRenderConfig(config.entities, id).color;
+  }
+  return kind === "ship"
+    ? getShipRenderConfig(config.render.ships, id).color
+    : getPlanetRenderConfig(config.render.planets, id).color;
+}
+
+function getEntityRenderConfig(configs: EntityConfig[], id: string) {
+  const cfg = configs.find((item) => item.id === id)?.components.renderable;
+  if (!cfg) {
+    throw new Error(`Entity render config not found: ${id}`);
+  }
+  return cfg;
 }
 
 function createPolylineSceneObject(

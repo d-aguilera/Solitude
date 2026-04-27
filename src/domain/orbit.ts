@@ -1,5 +1,5 @@
 import { parameters } from "../global/parameters";
-import type { BodyId, RotatingBody, ShipBody, World } from "./domainPorts";
+import type { BodyId, EntityMotionState, ShipBody, World } from "./domainPorts";
 import { EPS_ECCENTRICITY, EPS_TIME_SEC } from "./epsilon";
 import { type Vec3, vec3 } from "./vec3";
 
@@ -25,7 +25,7 @@ export interface OrbitReadout {
 
 export type GravityPrimary = {
   id: BodyId;
-  body: RotatingBody;
+  body: EntityMotionState;
   mass: number;
   radius: number;
 };
@@ -144,7 +144,7 @@ export function computeShipOrbitReadoutInto(
 export function getDominantBody(
   world: World,
   position: Vec3,
-): RotatingBody | null {
+): EntityMotionState | null {
   const primary = getDominantBodyPrimary(world, position);
   return primary ? primary.body : null;
 }
@@ -160,37 +160,19 @@ function findDominantBody(world: World, position: Vec3): GravityPrimary | null {
   let best: GravityPrimary | null = null;
   let bestAccel = -Infinity;
 
-  const planetCount = Math.min(
-    world.planets.length,
-    world.planetPhysics.length,
-  );
-  for (let i = 0; i < planetCount; i++) {
-    const body = world.planets[i];
-    const physics = world.planetPhysics[i];
-    const accel = accelMagnitudeAtPosition(body, physics.mass, position);
-    if (accel > bestAccel) {
-      bestAccel = accel;
-      best = {
-        id: body.id,
-        body,
-        mass: physics.mass,
-        radius: physics.physicalRadius,
-      };
-    }
-  }
+  for (let i = 0; i < world.collisionSpheres.length; i++) {
+    const sphere = world.collisionSpheres[i];
+    const mass = findGravityMass(world, sphere.id);
+    if (mass == null) continue;
 
-  const starCount = Math.min(world.stars.length, world.starPhysics.length);
-  for (let i = 0; i < starCount; i++) {
-    const body = world.stars[i];
-    const physics = world.starPhysics[i];
-    const accel = accelMagnitudeAtPosition(body, physics.mass, position);
+    const accel = accelMagnitudeAtPosition(sphere.state, mass, position);
     if (accel > bestAccel) {
       bestAccel = accel;
       best = {
-        id: body.id,
-        body,
-        mass: physics.mass,
-        radius: physics.physicalRadius,
+        id: sphere.id,
+        body: sphere.state,
+        mass,
+        radius: sphere.radius,
       };
     }
   }
@@ -199,13 +181,21 @@ function findDominantBody(world: World, position: Vec3): GravityPrimary | null {
 }
 
 function accelMagnitudeAtPosition(
-  body: RotatingBody,
+  body: EntityMotionState,
   mass: number,
   position: Vec3,
 ): number {
   const r2 = vec3.distSq(body.position, position);
   if (r2 === 0) return 0;
   return (parameters.newtonG * mass) / r2;
+}
+
+function findGravityMass(world: World, id: BodyId): number | null {
+  for (let i = 0; i < world.gravityMasses.length; i++) {
+    const mass = world.gravityMasses[i];
+    if (mass.id === id) return mass.mass;
+  }
+  return null;
 }
 
 function computeApsisTimersInto(

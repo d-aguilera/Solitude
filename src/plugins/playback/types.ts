@@ -76,6 +76,7 @@ export interface CompiledPlaybackScript {
 }
 
 export interface PlaybackSnapshot {
+  entities?: PlaybackEntitySnapshot[];
   metadata: PlaybackSnapshotMetadata;
   ships: PlaybackShipSnapshot[];
   planets: PlaybackRotatingBodySnapshot[];
@@ -102,4 +103,9 @@ export interface PlaybackRotatingBodySnapshot {
   position: Vec3;
   velocity: Vec3;
   orientation: Mat3;
+}
+
+export interface PlaybackEntitySnapshot extends PlaybackRotatingBodySnapshot {
+  angularVelocity?: AngularVelocity;
+  frame?: LocalFrame;
 }

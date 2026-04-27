@@ -3,11 +3,12 @@ import {
   maxThrustAcceleration,
 } from "../../../app/controls";
 import type {
-  RotatingBody,
+  EntityMotionState,
   ShipBody,
   World,
 } from "../../../domain/domainPorts";
 import { EPS_DELTA_V, EPS_LEN, EPS_SPEED_FINE } from "../../../domain/epsilon";
+import { getDominantBodyPrimary } from "../../../domain/orbit";
 import { type Vec3, vec3 } from "../../../domain/vec3";
 import { parameters } from "../../../global/parameters";
 import type { CompiledPlaybackScript } from "../types";
@@ -172,7 +173,7 @@ export function createCircleNowLogger(
     tangentialProjectionLength: NaN,
   };
 
-  let primaryBodyScratch: RotatingBody | null = null;
+  let primaryBodyScratch: EntityMotionState | null = null;
   let primaryIdScratch = "";
   let primaryMassScratch = 0;
   let primaryRadiusScratch = 0;
@@ -930,55 +931,13 @@ export function createCircleNowLogger(
   }
 
   function findPrimary(world: World, position: Vec3): boolean {
-    primaryBodyScratch = null;
-    primaryIdScratch = "";
-    primaryMassScratch = 0;
-    primaryRadiusScratch = 0;
-    let bestAccel = -Infinity;
-
-    const planetCount = Math.min(
-      world.planets.length,
-      world.planetPhysics.length,
-    );
-    for (let i = 0; i < planetCount; i++) {
-      const body = world.planets[i];
-      const physics = world.planetPhysics[i];
-      const accel = accelMagnitude(body, physics.mass, position);
-      if (accel > bestAccel) {
-        bestAccel = accel;
-        primaryBodyScratch = body;
-        primaryIdScratch = body.id;
-        primaryMassScratch = physics.mass;
-        primaryRadiusScratch = physics.physicalRadius;
-      }
-    }
-
-    const starCount = Math.min(world.stars.length, world.starPhysics.length);
-    for (let i = 0; i < starCount; i++) {
-      const body = world.stars[i];
-      const physics = world.starPhysics[i];
-      const accel = accelMagnitude(body, physics.mass, position);
-      if (accel > bestAccel) {
-        bestAccel = accel;
-        primaryBodyScratch = body;
-        primaryIdScratch = body.id;
-        primaryMassScratch = physics.mass;
-        primaryRadiusScratch = physics.physicalRadius;
-      }
-    }
-
-    return primaryBodyScratch !== null;
+    const primary = getDominantBodyPrimary(world, position);
+    primaryBodyScratch = primary?.body ?? null;
+    primaryIdScratch = primary?.id ?? "";
+    primaryMassScratch = primary?.mass ?? 0;
+    primaryRadiusScratch = primary?.radius ?? 0;
+    return primary != null;
   }
-}
-
-function accelMagnitude(
-  body: RotatingBody,
-  mass: number,
-  position: Vec3,
-): number {
-  const r2 = vec3.distSq(body.position, position);
-  if (r2 === 0) return 0;
-  return (parameters.newtonG * mass) / r2;
 }
 
 function angleDeg(a: Vec3, b: Vec3): number {
