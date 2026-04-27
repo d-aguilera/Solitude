@@ -28,12 +28,6 @@ function createWorldAndShip(): { world: World; ship: ShipBody } {
     entityStates: [ship],
     gravityMasses: [{ id: ship.id, density: 1, mass: 1, state: ship }],
     lightEmitters: [],
-    ships: [ship],
-    shipPhysics: [{ id: ship.id, density: 1, mass: 1 }],
-    planets: [],
-    planetPhysics: [],
-    stars: [],
-    starPhysics: [],
   };
   return { world, ship };
 }

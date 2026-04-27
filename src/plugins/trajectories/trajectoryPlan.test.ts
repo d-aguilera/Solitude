@@ -48,12 +48,6 @@ describe("buildTrajectoryPlan", () => {
       entityStates: [ship, planet],
       gravityMasses: [],
       lightEmitters: [],
-      ships: [],
-      shipPhysics: [],
-      planets: [],
-      planetPhysics: [],
-      stars: [],
-      starPhysics: [],
     };
     const planetConfig: PlanetPhysicsConfig = {
       angularSpeedRadPerSec: 0,

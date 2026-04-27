@@ -28,12 +28,6 @@ describe("applyCelestialSpin", () => {
       entityStates: [state],
       gravityMasses: [],
       lightEmitters: [],
-      ships: [],
-      shipPhysics: [],
-      planets: [],
-      planetPhysics: [],
-      stars: [],
-      starPhysics: [],
     };
 
     applyCelestialSpin(500, world);

@@ -81,19 +81,6 @@ function createWorld(): { ship: ShipBody; world: World } {
         { id: planet.id, density: 1, mass: 7.342e22, state: planet },
       ],
       lightEmitters: [],
-      ships: [ship],
-      shipPhysics: [{ id: ship.id, density: 1, mass: 1 }],
-      planets: [planet],
-      planetPhysics: [
-        {
-          id: planet.id,
-          density: 1,
-          mass: 7.342e22,
-          physicalRadius: 1_737_400,
-        },
-      ],
-      stars: [],
-      starPhysics: [],
     },
   };
 }
@@ -293,9 +280,11 @@ describe("circle-now playback logger", () => {
     const logger = createCircleNowLogger(script);
     const { ship, world } = createWorld();
     const controlInput = createControlInput(["circleNow"]);
+    const planetMass = world.gravityMasses.find(
+      (mass) => mass.id === "planet:moon",
+    )!.mass;
     const circularSpeed = Math.sqrt(
-      (parameters.newtonG * world.planetPhysics[0].mass) /
-        vec3.length(ship.position),
+      (parameters.newtonG * planetMass) / vec3.length(ship.position),
     );
     ship.velocity.y = circularSpeed;
 
@@ -388,12 +377,6 @@ describe("circle-now playback logger", () => {
           entityStates: [],
           gravityMasses: [],
           lightEmitters: [],
-          ships: [],
-          shipPhysics: [],
-          planets: [],
-          planetPhysics: [],
-          stars: [],
-          starPhysics: [],
         },
       });
     }).not.toThrow();

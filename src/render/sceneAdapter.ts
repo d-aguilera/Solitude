@@ -134,40 +134,39 @@ function addPlanetsAndStarsSceneObjects(
   configs: (PlanetRenderConfig | StarRenderConfig)[],
 ): void {
   for (const cfg of configs) {
+    const body = getById(world.entityStates, cfg.id, "Entity state");
     if (cfg.kind === "star") {
-      const starBody = getById(world.stars, cfg.id, "Star");
-      const starPhysics = getById(world.starPhysics, cfg.id, "Star physics");
+      const light = getById(world.lightEmitters, cfg.id, "Light emitter");
       const sceneObj: StarSceneObject = {
         id: cfg.id,
         kind: "star",
         centralBodyId: cfg.centralBodyId,
         mesh: cfg.mesh,
-        position: starBody.position, // alias
-        orientation: starBody.orientation, // alias
+        position: body.position, // alias
+        orientation: body.orientation, // alias
         color: cfg.color,
         lineWidth: 1,
         applyTransform: true,
         wireframeOnly: false,
         backFaceCulling: true,
-        velocity: starBody.velocity, // alias
-        luminosity: starPhysics.luminosity,
+        velocity: body.velocity, // alias
+        luminosity: light.luminosity,
       };
       scene.objects.push(sceneObj);
     } else {
-      const planetBody = getById(world.planets, cfg.id, "Planet");
       const sceneObj: PlanetSceneObject = {
         id: cfg.id,
         kind: "planet",
         centralBodyId: cfg.centralBodyId,
         mesh: cfg.mesh,
-        position: planetBody.position, // alias
-        orientation: planetBody.orientation, // alias
+        position: body.position, // alias
+        orientation: body.orientation, // alias
         color: cfg.color,
         lineWidth: 1,
         applyTransform: true,
         wireframeOnly: false,
         backFaceCulling: true,
-        velocity: planetBody.velocity, // alias
+        velocity: body.velocity, // alias
       };
       scene.objects.push(sceneObj);
     }
@@ -180,7 +179,7 @@ function addShipSceneObjects(
   configs: ShipRenderConfig[],
 ): void {
   for (const cfg of configs) {
-    const shipBody = getById(world.ships, cfg.id, "Ship");
+    const shipBody = getById(world.entityStates, cfg.id, "Entity state");
     const sceneObj: ShipSceneObject = {
       id: shipBody.id,
       kind: "ship",
@@ -198,13 +197,12 @@ function addShipSceneObjects(
 }
 
 function addLightsFromStars(scene: Scene, world: World): void {
-  const count = world.stars.length;
+  const count = world.lightEmitters.length;
   for (let i = 0; i < count; i++) {
-    const starBody = world.stars[i];
-    const starPhysics = world.starPhysics[i];
+    const light = world.lightEmitters[i];
     scene.lights.push({
-      position: starBody.position, // alias
-      intensity: starPhysics.luminosity,
+      position: light.state.position, // alias
+      intensity: light.luminosity,
     });
   }
 }

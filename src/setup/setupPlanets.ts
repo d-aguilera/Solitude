@@ -7,7 +7,6 @@ import type {
   PlanetPhysics,
   RotatingBody,
   StarPhysics,
-  World,
 } from "../domain/domainPorts";
 import { mat3, type Mat3 } from "../domain/mat3";
 import { vec3, type Vec3 } from "../domain/vec3";
@@ -29,28 +28,6 @@ export interface PlanetsAndStarsSetup {
   planets: RotatingBody[];
   starPhysics: StarPhysics[];
   stars: RotatingBody[];
-}
-
-/**
- * Add planets + stars from an arbitrary list of PlanetConfig.
- *
- * Responsibilities kept here:
- *  - Register corresponding CelestialBody entries in world
- *  - Register PlanetPhysics / StarPhysics entries for gravity
- *
- * Orbital initial conditions are derived from Keplerian elements relative
- * to a central body. After initialization, positions and velocities are
- * evolved using the gravity engine.
- */
-export function addPlanetsAndStarsFromConfig(
-  configs: (PlanetPhysicsConfig | StarPhysicsConfig)[],
-  world: World,
-): void {
-  const setup = createPlanetsAndStarsFromConfig(configs);
-  world.planets.push(...setup.planets);
-  world.planetPhysics.push(...setup.planetPhysics);
-  world.stars.push(...setup.stars);
-  world.starPhysics.push(...setup.starPhysics);
 }
 
 export function createPlanetsAndStarsFromConfig(

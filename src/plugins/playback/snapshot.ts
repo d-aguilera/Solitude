@@ -30,9 +30,9 @@ export function capturePlaybackSnapshot(
       dominantBodyId: primary?.id ?? null,
     },
     entities: world.entityStates.map(captureEntity),
-    ships: world.ships.map(captureShip),
-    planets: world.planets.map(captureRotatingBody),
-    stars: world.stars.map(captureRotatingBody),
+    ships: world.controllableBodies.map(captureShip),
+    planets: captureLegacyRotatingBodies(world, "planet"),
+    stars: captureLegacyRotatingBodies(world, "star"),
   };
 }
 
@@ -43,12 +43,27 @@ export function applyPlaybackSnapshot(
   if (snapshot.entities && !applyEntitySnapshots(snapshot.entities, world)) {
     return false;
   }
-  if (!applyShipSnapshots(snapshot.ships, world.ships)) return false;
-  if (!applyRotatingBodySnapshots(snapshot.planets, world.planets)) {
+  if (!applyShipSnapshots(snapshot.ships, world.controllableBodies))
     return false;
-  }
-  if (!applyRotatingBodySnapshots(snapshot.stars, world.stars)) return false;
+  if (!applyRotatingBodySnapshots(snapshot.planets, world.entityStates))
+    return false;
+  if (!applyRotatingBodySnapshots(snapshot.stars, world.entityStates))
+    return false;
   return true;
+}
+
+function captureLegacyRotatingBodies(
+  world: World,
+  legacyKind: "planet" | "star",
+): PlaybackRotatingBodySnapshot[] {
+  const snapshots: PlaybackRotatingBodySnapshot[] = [];
+  for (let i = 0; i < world.entities.length; i++) {
+    const entity = world.entities[i];
+    if (entity.legacyKind !== legacyKind) continue;
+    const state = findById(world.entityStates, entity.id);
+    if (state) snapshots.push(captureRotatingBody(state));
+  }
+  return snapshots;
 }
 
 function captureEntity(entity: EntityMotionState): PlaybackEntitySnapshot {
@@ -89,7 +104,7 @@ function captureRotatingBody({
 
 function applyShipSnapshots(
   snapshots: PlaybackShipSnapshot[],
-  ships: World["ships"],
+  ships: World["controllableBodies"],
 ): boolean {
   for (let i = 0; i < snapshots.length; i++) {
     const snapshot = snapshots[i];
@@ -131,7 +146,7 @@ function applyEntitySnapshots(
 
 function applyRotatingBodySnapshots(
   snapshots: PlaybackRotatingBodySnapshot[],
-  bodies: World["planets"],
+  bodies: World["entityStates"],
 ): boolean {
   for (let i = 0; i < snapshots.length; i++) {
     const snapshot = snapshots[i];

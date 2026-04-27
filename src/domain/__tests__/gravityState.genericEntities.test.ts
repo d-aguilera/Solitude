@@ -14,12 +14,6 @@ function createWorldWithGravityState(state: EntityMotionState): World {
     entityStates: [state],
     gravityMasses: [{ id: state.id, density: 1, mass: 42, state }],
     lightEmitters: [],
-    ships: [],
-    shipPhysics: [],
-    planets: [],
-    planetPhysics: [],
-    stars: [],
-    starPhysics: [],
   };
 }
 

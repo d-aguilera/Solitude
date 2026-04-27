@@ -44,12 +44,6 @@ describe("resolveCollisions", () => {
       entityStates: [ship, sphereState],
       gravityMasses: [],
       lightEmitters: [],
-      ships: [],
-      shipPhysics: [],
-      planets: [],
-      planetPhysics: [],
-      stars: [],
-      starPhysics: [],
     };
 
     resolveCollisions(world);

@@ -40,6 +40,7 @@ export interface CelestialBody {
 
 export interface EntityRecord {
   id: EntityId;
+  legacyKind?: "planet" | "ship" | "star";
 }
 
 export interface EntityMotionState extends CelestialBody {
@@ -151,10 +152,4 @@ export interface World {
   axialSpins: EntityAxialSpin[];
   controllableBodies: ControlledBody[];
   lightEmitters: EntityLightEmitter[];
-  ships: ShipBody[];
-  shipPhysics: ShipPhysics[];
-  planets: RotatingBody[];
-  planetPhysics: PlanetPhysics[];
-  stars: RotatingBody[];
-  starPhysics: StarPhysics[];
 }

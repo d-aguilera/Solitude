@@ -15,6 +15,14 @@ function createWorld(): { world: World; ship: ShipBody } {
     angularVelocity: { roll: 1, pitch: 2, yaw: 3 },
   };
   localFrame.intoMat3(ship.orientation, ship.frame);
+  const planet = {
+    id: "planet:test",
+    position: vec3.create(10, 0, 0),
+    velocity: vec3.create(0, 10, 0),
+    orientation: mat3.zero(),
+    rotationAxis: vec3.create(0, 0, 1),
+    angularSpeedRadPerSec: 0,
+  };
 
   const world: World = {
     axialSpins: [],
@@ -25,42 +33,20 @@ function createWorld(): { world: World; ship: ShipBody } {
     entityStates: [],
     gravityMasses: [],
     lightEmitters: [],
-    ships: [ship],
-    shipPhysics: [{ id: ship.id, density: 1, mass: 1 }],
-    planets: [
-      {
-        id: "planet:test",
-        position: vec3.create(10, 0, 0),
-        velocity: vec3.create(0, 10, 0),
-        orientation: mat3.zero(),
-        rotationAxis: vec3.create(0, 0, 1),
-        angularSpeedRadPerSec: 0,
-      },
-    ],
-    planetPhysics: [
-      {
-        id: "planet:test",
-        density: 1,
-        mass: 10,
-        physicalRadius: 1,
-      },
-    ],
-    stars: [],
-    starPhysics: [],
   };
   world.entityIndex.set(ship.id, world.entities[0]);
   world.entityIndex.set("planet:test", world.entities[1]);
-  world.entityStates.push(ship, world.planets[0]);
+  world.entityStates.push(ship, planet);
   world.gravityMasses.push(
     { id: ship.id, density: 1, mass: 1, state: ship },
-    { id: "planet:test", density: 1, mass: 10, state: world.planets[0] },
+    { id: "planet:test", density: 1, mass: 10, state: planet },
   );
   world.collisionSpheres.push({
     id: "planet:test",
     radius: 1,
-    state: world.planets[0],
+    state: planet,
   });
-  mat3.copy(mat3.identity, world.planets[0].orientation);
+  mat3.copy(mat3.identity, planet.orientation);
   return { world, ship };
 }
 
@@ -104,19 +90,13 @@ describe("playback snapshots", () => {
       entityStates: [ship],
       gravityMasses: [{ id: ship.id, density: 1, mass: 1, state: ship }],
       lightEmitters: [],
-      ships: [],
-      shipPhysics: [],
-      planets: [],
-      planetPhysics: [],
-      stars: [],
-      starPhysics: [],
     };
     const snapshot = capturePlaybackSnapshot(world, ship, "moon-circle", 123);
 
     ship.position.x = 99;
     ship.velocity.y = 42;
 
-    expect(snapshot.ships).toEqual([]);
+    expect(snapshot.ships.map((item) => item.id)).toEqual(["ship:generic"]);
     expect(snapshot.entities?.[0].frame).toBeDefined();
     expect(applyPlaybackSnapshot(snapshot, world)).toBe(true);
     expect(ship.position.x).toBe(10);

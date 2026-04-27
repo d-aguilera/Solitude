@@ -102,12 +102,6 @@ describe("createScene", () => {
       entityStates: [star, planet, ship],
       gravityMasses: [],
       lightEmitters: [{ id: star.id, luminosity: 99, state: star }],
-      ships: [],
-      shipPhysics: [],
-      planets: [],
-      planetPhysics: [],
-      stars: [],
-      starPhysics: [],
     };
     const config: WorldAndSceneConfig = {
       entities,

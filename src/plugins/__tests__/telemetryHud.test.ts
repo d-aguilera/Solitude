@@ -38,6 +38,14 @@ function createWorldAndShip(): { world: World; ship: ShipBody } {
     orientation: mat3.identity,
     angularVelocity: { roll: 0, pitch: 0, yaw: 0 },
   };
+  const planet = {
+    id: planetId,
+    position: vec3.zero(),
+    velocity: vec3.zero(),
+    orientation: mat3.identity,
+    rotationAxis: vec3.create(0, 0, 1),
+    angularSpeedRadPerSec: 0,
+  };
 
   const world: World = {
     axialSpins: [],
@@ -48,40 +56,18 @@ function createWorldAndShip(): { world: World; ship: ShipBody } {
     entityStates: [],
     gravityMasses: [],
     lightEmitters: [],
-    ships: [ship],
-    shipPhysics: [{ id: shipId, density: 1, mass: 1 }],
-    planets: [
-      {
-        id: planetId,
-        position: vec3.zero(),
-        velocity: vec3.zero(),
-        orientation: mat3.identity,
-        rotationAxis: vec3.create(0, 0, 1),
-        angularSpeedRadPerSec: 0,
-      },
-    ],
-    planetPhysics: [
-      {
-        id: planetId,
-        density: 5_500,
-        mass: planetMass,
-        physicalRadius: planetRadius,
-      },
-    ],
-    stars: [],
-    starPhysics: [],
   };
   world.entityIndex.set(shipId, world.entities[0]);
   world.entityIndex.set(planetId, world.entities[1]);
-  world.entityStates.push(ship, world.planets[0]);
+  world.entityStates.push(ship, planet);
   world.collisionSpheres.push({
     id: planetId,
     radius: planetRadius,
-    state: world.planets[0],
+    state: planet,
   });
   world.gravityMasses.push(
     { id: shipId, density: 1, mass: 1, state: ship },
-    { id: planetId, density: 5_500, mass: planetMass, state: world.planets[0] },
+    { id: planetId, density: 5_500, mass: planetMass, state: planet },
   );
 
   return { world, ship };

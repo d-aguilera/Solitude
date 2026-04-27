@@ -49,12 +49,6 @@ describe("orbit helpers", () => {
       entityStates: [near.state, far.state, ship],
       gravityMasses: [near.gravityMass, far.gravityMass],
       lightEmitters: [],
-      ships: [],
-      shipPhysics: [],
-      planets: [],
-      planetPhysics: [],
-      stars: [],
-      starPhysics: [],
     };
 
     const primary = getDominantBodyPrimary(world, ship.position);

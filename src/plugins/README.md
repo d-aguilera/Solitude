@@ -45,13 +45,12 @@ owns validation and interpretation of its own option keys.
 ## World model
 
 World-model plugins contribute scenario objects before world setup runs. They
-may add celestial body physics/render config, complete ship physics/render
-config, complete ship initial states, and the required `mainShipId`.
+may add generic entity definitions. Transitional legacy helpers still accept
+celestial body physics/render config, complete ship physics/render config,
+complete ship initial states, and the required `mainShipId`.
 
-Core setup requires a plugin-contributed main ship. Ship mass is derived from
-mandatory `density * volume`; ship initial state must include position,
-velocity, frame, orientation, and angular velocity. Scenario-specific placement
-logic belongs in the contributing plugin.
+Core setup requires a plugin-contributed main controlled entity. Scenario-specific
+placement logic belongs in the contributing plugin.
 
 The default browser runtime enables the `solarSystem` plugin, which contributes
 the solar bodies plus the default main and enemy ships.

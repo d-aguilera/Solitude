@@ -6,18 +6,25 @@ import type {
   AngularVelocity,
   ShipBody,
   ShipPhysics,
-  World,
 } from "../domain/domainPorts";
 import { localFrame, type LocalFrame } from "../domain/localFrame";
 import { mat3, type Mat3 } from "../domain/mat3";
 import { vec3, type Vec3 } from "../domain/vec3";
 
-export function addShipsFromConfig(
+export interface ShipsSetup {
+  shipPhysics: ShipPhysics[];
+  ships: ShipBody[];
+}
+
+export function createShipsFromConfig(
   configs: ShipPhysicsConfig[],
   initialStates: ShipInitialStateConfig[],
-  world: World,
-) {
+): ShipsSetup {
   const initialStateById = buildInitialStateMap(initialStates);
+  const setup: ShipsSetup = {
+    shipPhysics: [],
+    ships: [],
+  };
 
   for (const config of configs) {
     validateShipPhysicsConfig(config);
@@ -27,9 +34,11 @@ export function addShipsFromConfig(
     }
 
     const { shipBody, shipPhysics } = createShip(config, initialState);
-    world.ships.push(shipBody);
-    world.shipPhysics.push(shipPhysics);
+    setup.ships.push(shipBody);
+    setup.shipPhysics.push(shipPhysics);
   }
+
+  return setup;
 }
 
 function createShip(

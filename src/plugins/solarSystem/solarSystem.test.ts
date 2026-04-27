@@ -69,13 +69,14 @@ describe("solarSystem plugin", () => {
 
     const worldSetup = createWorld(config);
     const sceneSetup = createScene(worldSetup.world, config);
-    const earthIndex = worldSetup.world.planets.findIndex(
-      (body) => body.id === "planet:earth",
+    const earth = worldSetup.world.entityStates.find(
+      (entity) => entity.id === "planet:earth",
     );
-    const earth = worldSetup.world.planets[earthIndex];
-    const earthPhysics = worldSetup.world.planetPhysics[earthIndex];
+    const earthSphere = worldSetup.world.collisionSpheres.find(
+      (sphere) => sphere.id === "planet:earth",
+    );
     const mainShip = worldSetup.mainShip;
-    const enemyShip = worldSetup.world.ships.find(
+    const enemyShip = worldSetup.world.controllableBodies.find(
       (ship) => ship.id === "ship:enemy",
     );
 
@@ -110,20 +111,16 @@ describe("solarSystem plugin", () => {
     const mainOffset = vec3.subInto(
       vec3.zero(),
       mainShip.position,
-      earth.position,
+      earth!.position,
     );
     const enemyOffset = vec3.subInto(
       vec3.zero(),
       enemyShip!.position,
-      earth.position,
+      earth!.position,
     );
 
-    expect(vec3.length(mainOffset)).toBeGreaterThan(
-      earthPhysics.physicalRadius,
-    );
-    expect(vec3.length(enemyOffset)).toBeGreaterThan(
-      earthPhysics.physicalRadius,
-    );
+    expect(vec3.length(mainOffset)).toBeGreaterThan(earthSphere!.radius);
+    expect(vec3.length(enemyOffset)).toBeGreaterThan(earthSphere!.radius);
     expect(vec3.dot(mainOffset, enemyOffset)).toBeLessThan(0);
   });
 });

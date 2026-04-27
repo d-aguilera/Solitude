@@ -1,7 +1,6 @@
 import type { WorldAndSceneConfig } from "../app/configPorts";
 import { buildEntityConfigIndex } from "../app/entityConfig";
 import type { EntityConfig } from "../app/entityConfigPorts";
-import { getShipById } from "../app/worldLookup";
 import type {
   ControlledBody,
   EntityRecord,
@@ -10,8 +9,11 @@ import type {
 } from "../domain/domainPorts";
 import { type LocalFrame, localFrame } from "../domain/localFrame";
 import { vec3 } from "../domain/vec3";
-import { addPlanetsAndStarsFromConfig } from "./setupPlanets";
-import { addShipsFromConfig } from "./setupShips";
+import {
+  createPlanetsAndStarsFromConfig,
+  type PlanetsAndStarsSetup,
+} from "./setupPlanets";
+import { createShipsFromConfig, type ShipsSetup } from "./setupShips";
 
 export const initialFrame: LocalFrame = localFrame.fromUp(vec3.create(0, 0, 1));
 
@@ -50,23 +52,17 @@ export function createWorld({
     entityStates: [],
     gravityMasses: [],
     lightEmitters: [],
-    ships: [],
-    shipPhysics: [],
-    planets: [],
-    planetPhysics: [],
-    stars: [],
-    starPhysics: [],
   };
 
-  addPlanetsAndStarsFromConfig(physics.planets, world);
-  addShipsFromConfig(physics.ships, physics.shipInitialStates, world);
-  populateGenericWorldFromLegacy(world, entities);
+  const planetsAndStars = createPlanetsAndStarsFromConfig(physics.planets);
+  const ships = createShipsFromConfig(physics.ships, physics.shipInitialStates);
+  populateGenericWorldFromSetup(world, entities, ships, planetsAndStars);
 
-  const mainShip = getShipById(world, mainShipId);
   const mainControlledBody = getControlledBodyById(
     world,
     resolvedMainControlledEntityId,
   );
+  const mainShip = mainControlledBody;
 
   return {
     mainControlledBody,
@@ -132,58 +128,83 @@ function validateWorldConfig({
   }
 }
 
-function populateGenericWorldFromLegacy(
+function populateGenericWorldFromSetup(
   world: World,
   entityConfigs: EntityConfig[],
+  ships: ShipsSetup,
+  planetsAndStars: PlanetsAndStarsSetup,
 ): void {
   if (entityConfigs.length > 0) {
     for (const entityConfig of entityConfigs) {
-      addGenericEntityById(world, entityConfig.id);
+      addGenericEntityById(world, entityConfig, ships, planetsAndStars);
     }
     return;
   }
 
-  for (let i = 0; i < world.ships.length; i++) {
-    addShipEntity(world, i);
+  for (let i = 0; i < ships.ships.length; i++) {
+    addShipEntity(world, ships, i);
   }
 
-  for (let i = 0; i < world.planets.length; i++) {
-    addPlanetEntity(world, i);
+  for (let i = 0; i < planetsAndStars.planets.length; i++) {
+    addPlanetEntity(world, planetsAndStars, i);
   }
 
-  for (let i = 0; i < world.stars.length; i++) {
-    addStarEntity(world, i);
+  for (let i = 0; i < planetsAndStars.stars.length; i++) {
+    addStarEntity(world, planetsAndStars, i);
   }
 }
 
-function addGenericEntityById(world: World, id: string): void {
-  const shipIndex = world.ships.findIndex((ship) => ship.id === id);
+function addGenericEntityById(
+  world: World,
+  entityConfig: EntityConfig,
+  ships: ShipsSetup,
+  planetsAndStars: PlanetsAndStarsSetup,
+): void {
+  const id = entityConfig.id;
+  const shipIndex = ships.ships.findIndex((ship) => ship.id === id);
   if (shipIndex >= 0) {
-    addShipEntity(world, shipIndex);
+    addShipEntity(world, ships, shipIndex, entityConfig.metadata?.legacyKind);
     return;
   }
 
-  const planetIndex = world.planets.findIndex((planet) => planet.id === id);
+  const planetIndex = planetsAndStars.planets.findIndex(
+    (planet) => planet.id === id,
+  );
   if (planetIndex >= 0) {
-    addPlanetEntity(world, planetIndex);
+    addPlanetEntity(
+      world,
+      planetsAndStars,
+      planetIndex,
+      entityConfig.metadata?.legacyKind,
+    );
     return;
   }
 
-  const starIndex = world.stars.findIndex((star) => star.id === id);
+  const starIndex = planetsAndStars.stars.findIndex((star) => star.id === id);
   if (starIndex >= 0) {
-    addStarEntity(world, starIndex);
+    addStarEntity(
+      world,
+      planetsAndStars,
+      starIndex,
+      entityConfig.metadata?.legacyKind,
+    );
     return;
   }
 
   throw new Error(`Entity config has no setup output: ${id}`);
 }
 
-function addShipEntity(world: World, index: number): void {
-  const ship = world.ships[index];
-  addEntityRecord(world, ship);
+function addShipEntity(
+  world: World,
+  setup: ShipsSetup,
+  index: number,
+  legacyKind: EntityRecord["legacyKind"] = "ship",
+): void {
+  const ship = setup.ships[index];
+  addEntityRecord(world, ship, legacyKind);
   world.entityStates.push(ship);
   world.controllableBodies.push(ship);
-  const physics = world.shipPhysics[index];
+  const physics = setup.shipPhysics[index];
   if (physics) {
     world.gravityMasses.push({
       density: physics.density,
@@ -194,9 +215,14 @@ function addShipEntity(world: World, index: number): void {
   }
 }
 
-function addPlanetEntity(world: World, index: number): void {
-  const planet = world.planets[index];
-  addEntityRecord(world, planet);
+function addPlanetEntity(
+  world: World,
+  setup: PlanetsAndStarsSetup,
+  index: number,
+  legacyKind: EntityRecord["legacyKind"] = "planet",
+): void {
+  const planet = setup.planets[index];
+  addEntityRecord(world, planet, legacyKind);
   world.entityStates.push(planet);
   world.axialSpins.push({
     angularSpeedRadPerSec: planet.angularSpeedRadPerSec,
@@ -204,7 +230,7 @@ function addPlanetEntity(world: World, index: number): void {
     rotationAxis: planet.rotationAxis,
     state: planet,
   });
-  const physics = world.planetPhysics[index];
+  const physics = setup.planetPhysics[index];
   if (physics) {
     world.gravityMasses.push({
       density: physics.density,
@@ -220,9 +246,14 @@ function addPlanetEntity(world: World, index: number): void {
   }
 }
 
-function addStarEntity(world: World, index: number): void {
-  const star = world.stars[index];
-  addEntityRecord(world, star);
+function addStarEntity(
+  world: World,
+  setup: PlanetsAndStarsSetup,
+  index: number,
+  legacyKind: EntityRecord["legacyKind"] = "star",
+): void {
+  const star = setup.stars[index];
+  addEntityRecord(world, star, legacyKind);
   world.entityStates.push(star);
   world.axialSpins.push({
     angularSpeedRadPerSec: star.angularSpeedRadPerSec,
@@ -230,7 +261,7 @@ function addStarEntity(world: World, index: number): void {
     rotationAxis: star.rotationAxis,
     state: star,
   });
-  const physics = world.starPhysics[index];
+  const physics = setup.starPhysics[index];
   if (physics) {
     world.gravityMasses.push({
       density: physics.density,
@@ -251,8 +282,12 @@ function addStarEntity(world: World, index: number): void {
   }
 }
 
-function addEntityRecord(world: World, entity: EntityRecord): void {
-  const record: EntityRecord = { id: entity.id };
+function addEntityRecord(
+  world: World,
+  entity: EntityRecord,
+  legacyKind?: EntityRecord["legacyKind"],
+): void {
+  const record: EntityRecord = { id: entity.id, legacyKind };
   world.entities.push(record);
   world.entityIndex.set(record.id, record);
 }

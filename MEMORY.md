@@ -43,7 +43,7 @@
 - `src/infra/`: DOM input, layout, game loop, gravity engine.
 - `src/render/`: projection + render staging (faces, polylines, HUD).
 - `src/rasterize/`: Canvas2D + WebGL rasterizers.
-- `src/setup/`: transitional world/scene construction; target is generic entity assembly from plugin-contributed components.
+- `src/setup/`: generic runtime world/scene construction from transitional plugin-contributed config.
 - `src/config/`: generic config helpers and base runtime config.
 - `src/global/`: cross-cutting globals (allowed onion exception).
 - `src/plugins/`: plugin catalog/composition layer (outer layer), including default world-model content.
@@ -58,7 +58,7 @@
 
 ## Entity Model Strategy
 
-- **Problem**: solar-system content has moved to a plugin, but core still has a fixed world schema: `ships`, `planets`, `stars`, plus setup/render/physics paths that branch on those categories.
+- **State**: runtime `World` stores generic entities and capability arrays; legacy planet/star/ship config remains at plugin/API compatibility edges.
 - **Target model**: core stores generic entities with capability-style components, such as transform/state, gravity mass, collision sphere, render mesh/color, light emitter, axial spin, controllable body, and main controlled body marker.
 - **System rule**: systems should query capabilities instead of categories:
   - gravity integrates entities with mass + position + velocity.
@@ -67,10 +67,9 @@
   - controls operate on the configured main controllable entity.
   - telemetry/autopilot plugins can define their own higher-level concepts, such as dominant gravitational primary, without forcing those concepts into core.
 - **Migration strategy**:
-  1. Add generic entity/component types alongside current `World` buckets.
-  2. Adapt current planet/star/ship plugin contributions into generic entities while preserving existing behavior.
-  3. Move gravity, collision, render scene assembly, and control targeting one system at a time to capability queries.
-  4. Delete the fixed `ships` / `planets` / `stars` buckets once no core system depends on them.
+  1. Move remaining plugins to direct generic entity contribution.
+  2. Retire legacy world-model registry methods and config arrays.
+  3. Rename remaining core-facing ship terminology where it means generic controlled body.
 - **Compatibility approach**: keep changes incremental and test-backed. Use adapters during the transition rather than doing a full rewrite.
 
 ## Runtime flow
