@@ -13,9 +13,7 @@ describe("solarSystem plugin", () => {
     const config = buildWorldAndSceneConfig();
     const addEntities = vi.fn<WorldModelRegistry["addEntities"]>();
     const registry: WorldModelRegistry = {
-      addCelestialBodies: vi.fn(),
       addEntities,
-      addShips: vi.fn(),
       setMainControlledEntityId: vi.fn(),
       setMainShipId: vi.fn(),
     };
@@ -25,8 +23,6 @@ describe("solarSystem plugin", () => {
     });
 
     expect(registry.addEntities).toHaveBeenCalledOnce();
-    expect(registry.addCelestialBodies).not.toHaveBeenCalled();
-    expect(registry.addShips).not.toHaveBeenCalled();
     expect(registry.setMainShipId).toHaveBeenCalledWith("ship:main");
     expect(
       addEntities.mock.calls[0][0].map((entity: EntityConfig) => entity.id),

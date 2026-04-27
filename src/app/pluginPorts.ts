@@ -11,17 +11,6 @@ import type {
 } from "./controlPorts";
 import type { EntityConfig, EntityId } from "./entityConfigPorts";
 import type { HudGrid } from "./hudPorts";
-import type {
-  PlanetPhysicsConfig,
-  ShipInitialStateConfig,
-  ShipPhysicsConfig,
-  StarPhysicsConfig,
-} from "./physicsConfigPorts";
-import type {
-  PlanetRenderConfig,
-  ShipRenderConfig,
-  StarRenderConfig,
-} from "./renderConfigPorts";
 import type { Scene, SceneObject } from "./scenePorts";
 import type { SceneViewId, ViewDefinition } from "./viewPorts";
 
@@ -192,21 +181,8 @@ export interface ViewPlugin {
   ) => void;
 }
 
-export interface CelestialBodyContribution {
-  physics: (PlanetPhysicsConfig | StarPhysicsConfig)[];
-  render: (PlanetRenderConfig | StarRenderConfig)[];
-}
-
-export interface ShipContribution {
-  initialStates: ShipInitialStateConfig[];
-  physics: ShipPhysicsConfig[];
-  render: ShipRenderConfig[];
-}
-
 export interface WorldModelRegistry {
   addEntities: (entities: EntityConfig[]) => void;
-  addCelestialBodies: (contribution: CelestialBodyContribution) => void;
-  addShips: (contribution: ShipContribution) => void;
   setMainControlledEntityId: (id: EntityId) => void;
   setMainShipId: (id: string) => void;
 }
