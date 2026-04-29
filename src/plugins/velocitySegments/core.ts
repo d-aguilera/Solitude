@@ -1,5 +1,5 @@
 import type { SegmentPlugin, WorldSegment } from "../../app/pluginPorts";
-import type { ShipBody } from "../../domain/domainPorts";
+import type { ControlledBody } from "../../domain/domainPorts";
 import { EPS_SPEED_SQ } from "../../domain/epsilon";
 import { type Vec3, vec3 } from "../../domain/vec3";
 
@@ -11,8 +11,10 @@ const VELOCITY_SEGMENT_BACKWARD_COLOR = "red";
 
 export function createSegmentsPlugin(): SegmentPlugin {
   return {
-    appendSegments: (into, { mainControlledBody }) => {
-      if (!mutateShipVelocitySegments(mainControlledBody, velocitySegments)) {
+    appendSegments: (into, { mainFocus }) => {
+      if (
+        !mutateFocusVelocitySegments(mainFocus.controlledBody, velocitySegments)
+      ) {
         return;
       }
       into.push(forwardSegment, backwardSegment);
@@ -22,13 +24,13 @@ export function createSegmentsPlugin(): SegmentPlugin {
 
 /**
  * Pure helper that computes the world-space line segments representing
- * a ship's velocity direction.
+ * the focused body's velocity direction.
  */
-function mutateShipVelocitySegments(
-  ship: ShipBody,
+function mutateFocusVelocitySegments(
+  body: ControlledBody,
   [forward, backward]: WorldSegment[],
 ): boolean {
-  vec3.copyInto(velocityScratch, ship.velocity);
+  vec3.copyInto(velocityScratch, body.velocity);
 
   const speedSq = vec3.lengthSq(velocityScratch);
   if (speedSq < EPS_SPEED_SQ) {
@@ -36,7 +38,7 @@ function mutateShipVelocitySegments(
   }
 
   const dir = vec3.normalizeInto(velocityScratch);
-  const center = ship.position;
+  const center = body.position;
 
   vec3.scaledAddInto(forward.start, center, dir, VELOCITY_SEGMENT_INNER_RADIUS);
   vec3.scaledAddInto(forward.end, center, dir, VELOCITY_SEGMENT_LENGTH);

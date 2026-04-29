@@ -76,14 +76,15 @@ function createWorldAndShip(): { world: World; ship: ShipBody } {
 function createHudContext(
   world: World,
   mainControlledBody: ShipBody,
+  mainFocusBody: ShipBody = mainControlledBody,
 ): HudContext {
   return {
     controlInput: createControlInput(),
     currentRcsLevel: -1,
     currentThrustLevel: 5,
     mainFocus: {
-      controlledBody: mainControlledBody,
-      entityId: mainControlledBody.id,
+      controlledBody: mainFocusBody,
+      entityId: mainFocusBody.id,
     },
     mainControlledBody,
     nowMs: 1234,
@@ -121,8 +122,14 @@ describe("telemetry HUD plugins", () => {
 
   it("orbitTelemetry writes orbit and circularization cells", () => {
     const { world, ship } = createWorldAndShip();
+    const legacyMainControlledBody: ShipBody = {
+      ...ship,
+      id: "ship:legacy",
+      position: vec3.zero(),
+      velocity: vec3.zero(),
+    };
     const grid = createHudGrid();
-    const context = createHudContext(world, ship);
+    const context = createHudContext(world, legacyMainControlledBody, ship);
 
     createOrbitTelemetryHudPlugin().updateHudParams(grid, context);
 

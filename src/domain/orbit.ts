@@ -69,11 +69,19 @@ export function computeShipOrbitReadoutInto(
   world: World,
   ship: ControlledBody,
 ): boolean {
-  const primary = getDominantBodyPrimary(world, ship.position);
+  return computeOrbitReadoutInto(out, world, ship);
+}
+
+export function computeOrbitReadoutInto(
+  out: OrbitReadout,
+  world: World,
+  body: ControlledBody,
+): boolean {
+  const primary = getDominantBodyPrimary(world, body.position);
   if (!primary) return false;
 
-  vec3.subInto(rScratch, ship.position, primary.body.position);
-  vec3.subInto(vScratch, ship.velocity, primary.body.velocity);
+  vec3.subInto(rScratch, body.position, primary.body.position);
+  vec3.subInto(vScratch, body.velocity, primary.body.velocity);
 
   const r = vec3.length(rScratch);
   if (r === 0) return false;

@@ -34,7 +34,7 @@ export class DefaultViewRenderer implements ViewRenderer {
 
   renderInto(into: RenderedView, params: ViewRenderParams): void {
     const {
-      mainControlledBody,
+      mainFocus,
       camera,
       objectsFilter,
       surface,
@@ -113,7 +113,7 @@ export class DefaultViewRenderer implements ViewRenderer {
       ? renderBodyLabelsInto(
           into.bodyLabels,
           scene.objects,
-          mainControlledBody.position,
+          mainFocus.controlledBody.position,
           screenWidth,
           screenHeight,
           projectInto,

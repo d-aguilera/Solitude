@@ -20,16 +20,16 @@ Status: not started.
 
 Next focused change:
 
-- Migrate the easiest generic focus consumers from `mainControlledBody` to `mainFocus`:
-  - render label distance anchor in `ViewRenderParams` / `DefaultViewRenderer`;
-  - orbit/velocity readouts that only need focused position/velocity;
-  - scene/segment params where focus identity is enough for generic behavior.
+- Add `mainFocus` to main-view camera frame params and migrate camera rigs that only need the focused body's frame:
+  - `ViewFrameUpdateParams` should expose `mainFocus` next to the legacy `mainControlledBody`;
+  - `updateMainViewFrame` should read the focused body's frame through `mainFocus`;
+  - axial view plugin frame callbacks can migrate to `mainFocus.controlledBody.frame` while remaining spacecraft-compatible for now.
 
 Success criteria:
 
-- Spacecraft-specific plugins can still use `mainControlledBody`.
-- Generic consumers use `mainFocus` or a focus-derived state reference where possible.
-- No behavior change in rendering, HUD, or segment output.
+- Existing primary and axial camera behavior is unchanged.
+- `mainControlledBody` remains available as a compatibility alias in view params.
+- No camera-rig extraction or switching yet.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -37,6 +37,7 @@ Success criteria:
 - 2026-04-29: Audited `pilot`, `ship`, `mainControlledBody`, and spacecraft-control references. See **Audit: Operator Terminology Hotspots**.
 - 2026-04-29: Added a `FocusContext` runtime bridge as `mainFocus` on `WorldSetup`, `WorldAndScene`, plugin params, and render params, while keeping `mainControlledBody` aliases intact.
 - 2026-04-29: Renamed primary-view app/config plumbing to `mainView*` names. Kept deprecated `pilot*` aliases and render-config fallback helpers for compatibility.
+- 2026-04-29: Migrated easy generic focus consumers to `mainFocus`: render label anchor, velocity segments, and orbit telemetry. Added generic `computeOrbitReadoutInto` with `computeShipOrbitReadoutInto` retained as compatibility wrapper.
 
 ## Decision Log
 

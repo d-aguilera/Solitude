@@ -1,6 +1,6 @@
 import type { HudPlugin } from "../../app/pluginPorts";
 import {
-  computeShipOrbitReadoutInto,
+  computeOrbitReadoutInto,
   createOrbitReadout,
 } from "../../domain/orbit";
 import { formatDistance, formatSimTime } from "../../render/formatters";
@@ -21,10 +21,10 @@ export function createHudPlugin(): HudPlugin {
 
   return {
     updateHudParams: (grid, context) => {
-      const hasOrbit = computeShipOrbitReadoutInto(
+      const hasOrbit = computeOrbitReadoutInto(
         orbitReadout,
         context.world,
-        context.mainControlledBody,
+        context.mainFocus.controlledBody,
       );
       if (!hasOrbit) return;
 

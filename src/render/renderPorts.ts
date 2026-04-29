@@ -135,7 +135,8 @@ export interface ViewRenderer {
 export interface ViewRenderParams {
   camera: DomainCameraPose;
   mainFocus: FocusContext;
-  mainControlledBody: ControlledBody;
+  /** @deprecated Use mainFocus. */
+  mainControlledBody?: ControlledBody;
   objectsFilter?: (obj: SceneObject) => boolean;
   renderFaces?: boolean;
   sortFaces?: boolean;
