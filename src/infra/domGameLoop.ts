@@ -15,6 +15,7 @@ import type {
   SegmentProviderParams,
   WorldSegment,
 } from "../app/pluginPorts";
+import { getMainViewLookState } from "../app/renderConfigPorts";
 import type {
   TickCallback,
   TickOutput,
@@ -144,7 +145,7 @@ export function runLoop({
   );
 
   const sceneControlState: SceneControlState = {
-    pilotLookState: config.render.pilotLookState,
+    mainViewLookState: getMainViewLookState(config.render),
   };
 
   const sceneViews = createSceneViewStates(

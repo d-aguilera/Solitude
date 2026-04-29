@@ -20,23 +20,23 @@ Status: not started.
 
 Next focused change:
 
-- Rename/reframe generic primary-view terminology while preserving aliases where useful:
-  - `PilotLookState` -> `MainViewLookState`;
-  - `SceneControlState.pilotLookState` -> `mainViewLookState`;
-  - `pilotCameraOffset` -> `mainViewCameraOffset`;
-  - `updatePilotLook` / `updatePilotCameraOffset` / `updatePilotViewFrame` -> main-view names.
+- Migrate the easiest generic focus consumers from `mainControlledBody` to `mainFocus`:
+  - render label distance anchor in `ViewRenderParams` / `DefaultViewRenderer`;
+  - orbit/velocity readouts that only need focused position/velocity;
+  - scene/segment params where focus identity is enough for generic behavior.
 
 Success criteria:
 
-- Primary-view naming improves in app/config/view plumbing without changing behavior.
-- Existing config construction and plugins still work.
-- Compatibility aliases remain where removing them would cause unnecessary churn.
+- Spacecraft-specific plugins can still use `mainControlledBody`.
+- Generic consumers use `mainFocus` or a focus-derived state reference where possible.
+- No behavior change in rendering, HUD, or segment output.
 - Typecheck and tests pass.
 
 ## Completed Slices
 
 - 2026-04-29: Audited `pilot`, `ship`, `mainControlledBody`, and spacecraft-control references. See **Audit: Operator Terminology Hotspots**.
 - 2026-04-29: Added a `FocusContext` runtime bridge as `mainFocus` on `WorldSetup`, `WorldAndScene`, plugin params, and render params, while keeping `mainControlledBody` aliases intact.
+- 2026-04-29: Renamed primary-view app/config plumbing to `mainView*` names. Kept deprecated `pilot*` aliases and render-config fallback helpers for compatibility.
 
 ## Decision Log
 

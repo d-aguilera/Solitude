@@ -1,7 +1,7 @@
 import type { ControlledBody } from "../domain/domainPorts";
-import { updateCameras, updatePilotCameraOffset } from "./cameras";
+import { updateCameras, updateMainViewCameraOffset } from "./cameras";
 import type { ControlInput } from "./controlPorts";
-import { updatePilotLook } from "./controls";
+import { updateMainViewLook } from "./controls";
 import type { SceneControlState } from "./scenePorts";
 import type { SceneState } from "./viewPorts";
 
@@ -12,8 +12,13 @@ export function updateSceneGraph(
   mainControlledBody: ControlledBody,
   controlInput: ControlInput,
 ) {
-  updatePilotLook(dtMillis, controlInput, sceneControlState.pilotLookState);
-  updatePilotCameraOffset(
+  updateMainViewLook(
+    dtMillis,
+    controlInput,
+    sceneControlState.mainViewLookState,
+  );
+  sceneControlState.pilotLookState = sceneControlState.mainViewLookState;
+  updateMainViewCameraOffset(
     dtMillis,
     controlInput,
     sceneState.primaryView.cameraOffset,
@@ -22,6 +27,6 @@ export function updateSceneGraph(
   updateCameras(
     mainControlledBody,
     sceneState.views,
-    sceneControlState.pilotLookState,
+    sceneControlState.mainViewLookState,
   );
 }

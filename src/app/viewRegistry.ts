@@ -3,6 +3,7 @@ import { vec3 } from "../domain/vec3";
 import { createPrimaryViewDefinition } from "./cameras";
 import type { WorldAndSceneConfig } from "./configPorts";
 import type { GamePlugin, ViewPlugin, ViewRegistry } from "./pluginPorts";
+import { getMainViewCameraOffset } from "./renderConfigPorts";
 import type { DomainCameraPose } from "./scenePorts";
 import type { SceneViewState, ViewDefinition } from "./viewPorts";
 
@@ -11,7 +12,7 @@ export function buildViewDefinitions(
   plugins: GamePlugin[],
 ): ViewDefinition[] {
   const definitions: ViewDefinition[] = [
-    createPrimaryViewDefinition(config.render.pilotCameraOffset),
+    createPrimaryViewDefinition(getMainViewCameraOffset(config.render)),
   ];
   const registry: ViewRegistry = {
     addView: (view) => {

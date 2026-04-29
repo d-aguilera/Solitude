@@ -2,7 +2,7 @@ import type { ControlledBody } from "../domain/domainPorts";
 import { type LocalFrame, localFrame } from "../domain/localFrame";
 import { type Vec3, vec3 } from "../domain/vec3";
 import type { ControlInput } from "./controlPorts";
-import type { DomainCameraPose, PilotLookState } from "./scenePorts";
+import type { DomainCameraPose, MainViewLookState } from "./scenePorts";
 import type {
   SceneViewState,
   ViewDefinition,
@@ -22,10 +22,11 @@ const viewFrameUpdateParamsScratch = {} as ViewFrameUpdateParams;
 export function updateCameras(
   mainControlledBody: ControlledBody,
   views: SceneViewState[],
-  pilotLookState: PilotLookState,
+  mainViewLookState: MainViewLookState,
 ): void {
   viewFrameUpdateParamsScratch.mainControlledBody = mainControlledBody;
-  viewFrameUpdateParamsScratch.pilotLookState = pilotLookState;
+  viewFrameUpdateParamsScratch.mainViewLookState = mainViewLookState;
+  viewFrameUpdateParamsScratch.pilotLookState = mainViewLookState;
   for (const view of views) {
     setCameraRelativeToControlledBody(
       view.camera,
@@ -45,26 +46,29 @@ export function createPrimaryViewDefinition(
     labelMode: "full",
     initialCameraOffset,
     layout: { kind: "primary" },
-    updateFrame: updatePilotViewFrame,
+    updateFrame: updateMainViewFrame,
   };
 }
 
-export function updatePilotViewFrame({
+export function updateMainViewFrame({
   frame,
   mainControlledBody,
-  pilotLookState,
+  mainViewLookState,
 }: {
   frame: LocalFrame;
   mainControlledBody: ControlledBody;
-  pilotLookState: PilotLookState;
+  mainViewLookState: MainViewLookState;
 }): void {
   localFrame.copyInto(frame, mainControlledBody.frame);
-  const { azimuth, elevation } = pilotLookState;
+  const { azimuth, elevation } = mainViewLookState;
   if (azimuth !== 0)
     localFrame.rotateAroundAxisInPlace(frame, frame.up, azimuth);
   if (elevation !== 0)
     localFrame.rotateAroundAxisInPlace(frame, frame.right, elevation);
 }
+
+/** @deprecated Use updateMainViewFrame. */
+export const updatePilotViewFrame = updateMainViewFrame;
 
 function setCameraRelativeToControlledBody(
   pose: DomainCameraPose,
@@ -85,10 +89,10 @@ function setCameraRelativeToControlledBody(
   vec3.addInto(pose.position, ship.position, worldOffsetScratch);
 }
 
-export function updatePilotCameraOffset(
+export function updateMainViewCameraOffset(
   dtMillis: number,
   controlInput: ControlInput,
-  pilotCameraLocalOffset: Vec3,
+  mainViewCameraLocalOffset: Vec3,
 ): void {
   if (dtMillis === 0) return;
 
@@ -105,7 +109,10 @@ export function updatePilotCameraOffset(
 
   if (dx === 0 && dy === 0 && dz === 0) return;
 
-  pilotCameraLocalOffset.x += dx * dtMillis;
-  pilotCameraLocalOffset.y += dy * dtMillis;
-  pilotCameraLocalOffset.z += dz * dtMillis;
+  mainViewCameraLocalOffset.x += dx * dtMillis;
+  mainViewCameraLocalOffset.y += dy * dtMillis;
+  mainViewCameraLocalOffset.z += dz * dtMillis;
 }
+
+/** @deprecated Use updateMainViewCameraOffset. */
+export const updatePilotCameraOffset = updateMainViewCameraOffset;

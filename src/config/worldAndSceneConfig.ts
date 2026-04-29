@@ -7,8 +7,8 @@ export function buildWorldAndSceneConfig() {
     mainControlledEntityId: "",
     thrustLevel: 1,
     render: {
-      pilotCameraOffset: vec3.create(0, 51000, 4850),
-      pilotLookState: { azimuth: 0, elevation: 0 },
+      mainViewCameraOffset: vec3.create(0, 51000, 4850),
+      mainViewLookState: { azimuth: 0, elevation: 0 },
     },
   };
 

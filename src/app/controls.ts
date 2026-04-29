@@ -9,14 +9,14 @@ import type {
   ThrustCommand,
 } from "./controlPorts";
 import type { ControlPlugin } from "./pluginPorts";
-import type { PilotLookState } from "./scenePorts";
+import type { MainViewLookState } from "./scenePorts";
 
 // Max main-engine thrust acceleration in m/s^2 at 100% thrust
 export const maxThrustAcceleration = 1_000_000; // ~ 100_000 G
 // Max RCS translation acceleration in m/s^2 (independent of thrust level).
 export const maxRcsTranslationAcceleration = 20_000; // ~ 2_000 G
 
-// Pilot look rates are in radians per millisecond.
+// Main-view look rates are in radians per millisecond.
 const lookSpeed = 0.0015;
 
 // Ship attitude rates (rad/s) and acceleration (rad/s^2).
@@ -44,12 +44,12 @@ export function updateControlState(
 }
 
 /**
- * Update pilot look angles in-place based on input.
+ * Update main-view look angles in-place based on input.
  */
-export function updatePilotLook(
+export function updateMainViewLook(
   dtMillis: number,
   controlInput: ControlInput,
-  lookState: PilotLookState,
+  lookState: MainViewLookState,
 ): void {
   if (controlInput.lookReset) {
     lookState.azimuth = 0;
@@ -61,6 +61,9 @@ export function updatePilotLook(
   if (controlInput.lookUp) lookState.elevation += lookSpeed * dtMillis;
   if (controlInput.lookDown) lookState.elevation -= lookSpeed * dtMillis;
 }
+
+/** @deprecated Use updateMainViewLook. */
+export const updatePilotLook = updateMainViewLook;
 
 function getManualAttitudeCommand(controlInput: ControlInput): AttitudeCommand {
   let rollInput = 0;

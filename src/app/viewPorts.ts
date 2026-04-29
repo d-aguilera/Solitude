@@ -1,7 +1,7 @@
 import type { ControlledBody } from "../domain/domainPorts";
 import type { LocalFrame } from "../domain/localFrame";
 import type { Vec3 } from "../domain/vec3";
-import type { DomainCameraPose, PilotLookState } from "./scenePorts";
+import type { DomainCameraPose, MainViewLookState } from "./scenePorts";
 
 export type SceneViewId = string;
 
@@ -21,7 +21,9 @@ export type ViewLayout =
 export interface ViewFrameUpdateParams {
   frame: LocalFrame;
   mainControlledBody: ControlledBody;
-  pilotLookState: PilotLookState;
+  mainViewLookState: MainViewLookState;
+  /** @deprecated Use mainViewLookState. */
+  pilotLookState?: MainViewLookState;
 }
 
 export interface ViewDefinition {

@@ -40,12 +40,12 @@ function resizeCanvases(container: Element, views: LayoutView[]): void {
   const containerHeight = container.clientHeight;
   const aspectRatio = 16 / 9;
 
-  let pilotWidth = containerWidth;
-  let pilotHeight = containerHeight; // pilotWidth / aspectRatio;
+  let primaryWidth = containerWidth;
+  let primaryHeight = containerHeight; // primaryWidth / aspectRatio;
 
-  // if (pilotHeight > containerHeight) {
-  //   pilotHeight = containerHeight;
-  //   pilotWidth = pilotHeight * aspectRatio;
+  // if (primaryHeight > containerHeight) {
+  //   primaryHeight = containerHeight;
+  //   primaryWidth = primaryHeight * aspectRatio;
   // }
 
   const primaryView = views.find((view) => view.layout.kind === "primary");
@@ -54,7 +54,7 @@ function resizeCanvases(container: Element, views: LayoutView[]): void {
     primaryView.canvas.style.right = "auto";
     primaryView.canvas.style.top = "0";
     primaryView.canvas.style.bottom = "auto";
-    resizeCanvasToCssBox(primaryView.canvas, pilotWidth, pilotHeight);
+    resizeCanvasToCssBox(primaryView.canvas, primaryWidth, primaryHeight);
   }
 
   // PiP views: 20% of container width, fixed aspect ratio.

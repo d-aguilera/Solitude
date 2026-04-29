@@ -34,12 +34,15 @@ export interface Mesh {
 }
 
 /**
- * Pilot's view state relative to the controlled vehicle.
+ * Main view look state relative to the focused entity.
  */
-export interface PilotLookState {
+export interface MainViewLookState {
   azimuth: number;
   elevation: number;
 }
+
+/** @deprecated Use MainViewLookState. */
+export type PilotLookState = MainViewLookState;
 
 export interface PlanetSceneObject extends CelestialBodySceneObject {
   kind: "planet";
@@ -77,7 +80,9 @@ export interface Scene {
  * Per-player scene control state that must persist across frames.
  */
 export interface SceneControlState {
-  pilotLookState: PilotLookState;
+  mainViewLookState: MainViewLookState;
+  /** @deprecated Use mainViewLookState. */
+  pilotLookState?: MainViewLookState;
 }
 
 /**
