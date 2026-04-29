@@ -101,4 +101,15 @@ describe("headlessGameLoop", () => {
     const delta = vec3.subInto(vec3.zero(), after, before);
     expect(vec3.length(delta)).toBeGreaterThan(0);
   });
+
+  it("preserves the main focus bridge in headless runs", () => {
+    const loop = createHeadlessLoop(buildHeadlessConfig());
+
+    expect(loop.worldAndScene.mainFocus.entityId).toBe(
+      loop.worldAndScene.mainControlledBody.id,
+    );
+    expect(loop.worldAndScene.mainFocus.controlledBody).toBe(
+      loop.worldAndScene.mainControlledBody,
+    );
+  });
 });

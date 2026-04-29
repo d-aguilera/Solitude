@@ -11,6 +11,7 @@ import type {
 } from "./controlPorts";
 import type { EntityConfig, EntityId } from "./entityConfigPorts";
 import type { HudGrid } from "./hudPorts";
+import type { FocusContext } from "./runtimePorts";
 import type { Scene, SceneObject } from "./scenePorts";
 import type { SceneViewId, ViewDefinition } from "./viewPorts";
 
@@ -63,6 +64,7 @@ export interface ControlPlugin {
 export interface HudContext {
   nowMs: number;
   world: World;
+  mainFocus: FocusContext;
   mainControlledBody: ControlledBody;
   controlInput: ControlInput;
   currentThrustLevel: number;
@@ -85,6 +87,7 @@ export interface SegmentProviderParams {
   viewId: SceneViewId;
   scene: Scene;
   world: World;
+  mainFocus: FocusContext;
   mainControlledBody: ControlledBody;
   config: WorldAndSceneConfig;
 }
@@ -99,6 +102,7 @@ export interface SegmentPlugin {
 export interface SceneInitParams {
   scene: Scene;
   world: World;
+  mainFocus: FocusContext;
   mainControlledBody: ControlledBody;
   config: WorldAndSceneConfig;
 }
@@ -108,6 +112,7 @@ export interface SceneUpdateParams {
   dtSimMillis: number;
   scene: Scene;
   world: World;
+  mainFocus: FocusContext;
   mainControlledBody: ControlledBody;
 }
 
@@ -117,6 +122,7 @@ export interface SceneViewFilterParams {
   viewId: SceneViewId;
   scene: Scene;
   world: World;
+  mainFocus: FocusContext;
   mainControlledBody: ControlledBody;
   config: WorldAndSceneConfig;
 }
@@ -140,6 +146,7 @@ export interface LoopInitParams {
 export interface LoopUpdateParams {
   controlInput: ControlInput;
   dtMillis: number;
+  mainFocus?: FocusContext;
   mainControlledBody?: ControlledBody;
   nowMs: number;
   simTimeMillis?: number;

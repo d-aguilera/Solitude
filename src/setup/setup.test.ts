@@ -60,6 +60,15 @@ function createConfig(entities: EntityConfig[]): WorldConfigBase {
 }
 
 describe("createWorld", () => {
+  it("exposes a generic main focus alias for the configured controlled entity", () => {
+    const config = createConfig([createSun(), createShip("ship:main")]);
+
+    const setup = createWorld(config);
+
+    expect(setup.mainFocus.entityId).toBe("ship:main");
+    expect(setup.mainFocus.controlledBody).toBe(setup.mainControlledBody);
+  });
+
   it("fails clearly when no plugin contributed a main controlled entity id", () => {
     const config: WorldConfigBase = {
       entities: [createSun(), createShip("ship:main")],

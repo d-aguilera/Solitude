@@ -126,6 +126,7 @@ export function runLoop({
   applySceneInitPlugins(scenePlugins, {
     scene,
     world: worldSetup.world,
+    mainFocus: worldSetup.mainFocus,
     mainControlledBody: worldSetup.mainControlledBody,
     config,
   });
@@ -201,6 +202,7 @@ export function runLoop({
   >[0] = {
     controlInput,
     dtMillis: 0,
+    mainFocus: worldAndScene.mainFocus,
     mainControlledBody: worldAndScene.mainControlledBody,
     nowMs: 0,
     simTimeMillis: 0,
@@ -242,6 +244,7 @@ export function runLoop({
         dtSimMillis,
         scene: worldAndScene.scene,
         world: worldAndScene.world,
+        mainFocus: worldAndScene.mainFocus,
         mainControlledBody: worldAndScene.mainControlledBody,
       });
     }
@@ -292,6 +295,7 @@ export function runLoop({
         controlInput,
         currentRcsLevel: tickOutput.currentRcsLevel,
         currentThrustLevel: tickOutput.currentThrustLevel,
+        mainFocus: worldAndScene.mainFocus,
         mainControlledBody: worldAndScene.mainControlledBody,
         nowMs,
         simTimeMillis,
@@ -353,6 +357,7 @@ function createLoopViews(
       viewId,
       scene: worldAndScene.scene,
       world: worldAndScene.world,
+      mainFocus: worldAndScene.mainFocus,
       mainControlledBody: worldAndScene.mainControlledBody,
       config,
     });
@@ -364,6 +369,7 @@ function createLoopViews(
       renderedView: createRenderedView(),
       renderParams: {
         camera: sceneView.camera,
+        mainFocus: worldAndScene.mainFocus,
         mainControlledBody: worldAndScene.mainControlledBody,
         objectsFilter,
         renderCache,
@@ -375,6 +381,7 @@ function createLoopViews(
         viewId,
         scene: worldAndScene.scene,
         world: worldAndScene.world,
+        mainFocus: worldAndScene.mainFocus,
         mainControlledBody: worldAndScene.mainControlledBody,
         config,
       },

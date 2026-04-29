@@ -11,6 +11,7 @@ import type {
   ShipPhysicsConfig,
   StarPhysicsConfig,
 } from "../app/physicsConfigPorts";
+import type { FocusContext } from "../app/runtimePorts";
 import type {
   ControlledBody,
   EntityRecord,
@@ -27,6 +28,7 @@ import { createShipsFromConfig, type ShipsSetup } from "./setupShips";
 export const initialFrame: LocalFrame = localFrame.fromUp(vec3.create(0, 0, 1));
 
 export interface WorldSetup {
+  mainFocus: FocusContext;
   mainControlledBody: ControlledBody;
   world: World;
 }
@@ -65,8 +67,13 @@ export function createWorld({
     world,
     mainControlledEntityId,
   );
+  const mainFocus: FocusContext = {
+    controlledBody: mainControlledBody,
+    entityId: mainControlledEntityId,
+  };
 
   return {
+    mainFocus,
     mainControlledBody,
     world,
   };

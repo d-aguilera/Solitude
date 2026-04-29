@@ -20,22 +20,23 @@ Status: not started.
 
 Next focused change:
 
-- Audit `pilot`, `ship`, `mainControlledBody`, and spacecraft-specific control references.
-- Classify each cluster as one of:
-  - generic focus/main-view concept,
-  - spacecraft/operator-plugin concept,
-  - compatibility-only name.
-- Produce a short implementation order for the first terminology/adapter step.
+- Rename/reframe generic primary-view terminology while preserving aliases where useful:
+  - `PilotLookState` -> `MainViewLookState`;
+  - `SceneControlState.pilotLookState` -> `mainViewLookState`;
+  - `pilotCameraOffset` -> `mainViewCameraOffset`;
+  - `updatePilotLook` / `updatePilotCameraOffset` / `updatePilotViewFrame` -> main-view names.
 
 Success criteria:
 
-- No broad code movement yet.
-- A small list of files/symbols to rename first.
-- A clear first bridge abstraction, probably around focus lookup or main-view naming.
+- Primary-view naming improves in app/config/view plumbing without changing behavior.
+- Existing config construction and plugins still work.
+- Compatibility aliases remain where removing them would cause unnecessary churn.
+- Typecheck and tests pass.
 
 ## Completed Slices
 
-- None yet.
+- 2026-04-29: Audited `pilot`, `ship`, `mainControlledBody`, and spacecraft-control references. See **Audit: Operator Terminology Hotspots**.
+- 2026-04-29: Added a `FocusContext` runtime bridge as `mainFocus` on `WorldSetup`, `WorldAndScene`, plugin params, and render params, while keeping `mainControlledBody` aliases intact.
 
 ## Decision Log
 
@@ -133,6 +134,52 @@ Keep the implementation simple and allocation-conscious. Prefer arrays of phase 
 - Key collisions between active plugins need an explicit policy before multiple operator modes can coexist.
 
 ## Subplans
+
+### Audit: Operator Terminology Hotspots
+
+Date: 2026-04-29.
+
+Classification:
+
+- Generic focus/main-view concepts:
+  - `src/setup/setup.ts`: `mainControlledEntityId` validation and lookup is already close to the target focus identity, but the returned runtime object is still named `mainControlledBody`.
+  - `src/app/runtimePorts.ts`: `WorldAndScene.mainControlledBody` is the central runtime bridge that should gain a generic focused-entity alias first.
+  - `src/app/pluginPorts.ts`: HUD, segment, scene, loop, and render-related params pass `mainControlledBody`; these are mixed generic focus consumers and spacecraft-specific consumers, so migrate additively.
+  - `src/infra/domGameLoop.ts`: assembles and repeatedly passes `mainControlledBody`; this is the main fan-out point and should be changed through aliases before downstream renames.
+  - `src/render/renderPorts.ts` and `src/render/DefaultViewRenderer.ts`: `mainControlledBody` is only used as a label distance anchor. This is generic focus-position behavior and should become focus/anchor terminology.
+  - `src/app/cameras.ts`, `src/app/scene.ts`, `src/app/viewPorts.ts`, `src/app/scenePorts.ts`, `src/app/renderConfigPorts.ts`, `src/config/worldAndSceneConfig.ts`: `pilot` mostly means primary/main-view look state or camera offset. Rename these after the focus bridge, with compatibility aliases where config churn would be high.
+  - `src/infra/domLayout.ts`: local `pilotWidth` / `pilotHeight` are layout-only and can be renamed to primary/main view at any time.
+
+- Spacecraft/operator-plugin concepts:
+  - `src/app/controlPorts.ts`, `src/app/controls.ts`, `src/app/game.ts`, `src/app/physics.ts`: thrust, RCS, roll/pitch/yaw attitude, angular velocity smoothing, and controlled-body rotation are spacecraft/operator behavior. Do not rename these as generic focus behavior; extract them after simulation phases exist.
+  - `src/infra/domKeyboardInput.ts`: base key map currently owns spacecraft actions and camera-offset controls. Split global/main-view actions from operator actions later under the input-context subplan.
+  - `src/plugins/autopilot/*`: autopilot requires spacecraft motion, frame/attitude, propulsion, and orbit assumptions. It should later declare/query compatible focus capabilities.
+  - `src/plugins/shipTelemetry/hud.ts`: explicitly spacecraft-control readout; keep ship/operator terminology until a spacecraft telemetry plugin boundary is clearer.
+  - `src/plugins/axialViews/index.ts`: views are currently vehicle-frame rigs. They should become contributed main-view/aux-view camera rigs for compatible focused entities, not generic core assumptions.
+
+- Compatibility-only or visual-role names:
+  - `src/domain/domainPorts.ts`: `ShipBody` is already a compatibility alias for `ControlledBody`; keep it while playback and plugins migrate.
+  - `src/setup/setupShips.ts`: legacy adapter from controllable entity configs into ship-shaped setup. Keep until generic setup no longer needs the adapter.
+  - `src/plugins/playback/*`: v1 snapshots and diagnostic logs preserve `ships`, `shipForward...`, and `mainControlledBody` compatibility fields. Avoid making playback the first migration target.
+  - `src/render/sceneAdapter.ts`, `src/app/scenePorts.ts`, trajectory IDs in `src/plugins/trajectories/*`, and tests with `legacyKind: "ship"`: many `ship` names are visual roles or compatibility identifiers. Rename only when render/trajectory schemas gain generic role support.
+  - `src/plugins/solarSystem/ships.ts`, `src/plugins/solarSystem/ship.obj`, related tests/scripts: scenario spacecraft content, not core architecture.
+
+First implementation order:
+
+1. Add the focus bridge in setup/runtime/plugin params:
+   - likely files: `src/app/runtimePorts.ts`, `src/setup/setup.ts`, `src/app/pluginPorts.ts`, `src/infra/domGameLoop.ts`, and focused tests in `src/setup/setup.test.ts` or `src/infra/__tests__/headlessGameLoop.test.ts`.
+   - keep `mainControlledBody` as an alias.
+   - prefer a shape like `FocusContext` / `FocusedEntity` with `entityId` and `controlledBody` rather than a plain renamed body reference.
+2. Rename generic primary-view terminology:
+   - `PilotLookState` -> `MainViewLookState`;
+   - `SceneControlState.pilotLookState` -> `mainViewLookState`;
+   - `pilotCameraOffset` -> `mainViewCameraOffset`;
+   - `updatePilotLook` / `updatePilotCameraOffset` / `updatePilotViewFrame` -> main-view names with temporary aliases where needed.
+3. Migrate generic focus consumers:
+   - render label anchor, velocity segments, orbit telemetry, scene filters, HUD contexts.
+   - use focus/capability names where the consumer only needs position/velocity.
+4. Add explicit simulation phases before extracting spacecraft controls:
+   - only then move thrust/RCS/attitude resolution out of `src/app/game.ts` and `src/app/controls.ts`.
 
 ### Capability Queries And Requirements
 

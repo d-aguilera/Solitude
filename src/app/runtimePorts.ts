@@ -1,4 +1,4 @@
-import type { ControlledBody, World } from "../domain/domainPorts";
+import type { ControlledBody, EntityId, World } from "../domain/domainPorts";
 import type { ControlInput } from "./controlPorts";
 import type { Scene } from "./scenePorts";
 
@@ -18,7 +18,13 @@ export interface TickOutput {
   currentRcsLevel: number;
 }
 
+export interface FocusContext {
+  entityId: EntityId;
+  controlledBody: ControlledBody;
+}
+
 export interface WorldAndScene {
+  mainFocus: FocusContext;
   mainControlledBody: ControlledBody;
   scene: Scene;
   world: World;

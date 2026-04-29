@@ -1,5 +1,6 @@
 import type { HudGrid } from "../app/hudPorts";
 import type { WorldSegment } from "../app/pluginPorts";
+import type { FocusContext } from "../app/runtimePorts";
 import type {
   DomainCameraPose,
   Mesh,
@@ -133,6 +134,7 @@ export interface ViewRenderer {
 
 export interface ViewRenderParams {
   camera: DomainCameraPose;
+  mainFocus: FocusContext;
   mainControlledBody: ControlledBody;
   objectsFilter?: (obj: SceneObject) => boolean;
   renderFaces?: boolean;
