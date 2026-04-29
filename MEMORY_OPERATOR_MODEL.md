@@ -20,18 +20,18 @@ Status: not started.
 
 Next focused change:
 
-- Move spacecraft-specific input actions/bindings toward the `spacecraftOperator` plugin:
-  - keep global/main-view controls separate from vehicle controls;
-  - start by splitting action lists/key maps without changing behavior;
-  - preserve playback/autopilot control-state compatibility during the bridge.
+- Move spacecraft control helper logic out of generic app controls:
+  - relocate thrust-level, thrust command, RCS command, and attitude command helpers toward `spacecraftOperator`;
+  - keep shared app ports/types (`ControlInput`, `PropulsionCommand`, etc.) stable;
+  - preserve autopilot/playback compatibility during the bridge.
 
 Success criteria:
 
 - Tick ordering remains covered by tests.
 - Manual controls, autopilot, playback, and HUD control readouts remain behavior-compatible.
 - Runtime/headless setup still installs the current spacecraft behavior by default.
-- Base input retains only generic/global/main-view actions where practical.
-- Spacecraft controls are named as `spacecraftOperator` contributions.
+- `src/app/controls.ts` keeps main-view/global control logic only where practical.
+- Spacecraft command interpretation lives under `spacecraftOperator`.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -46,6 +46,7 @@ Success criteria:
 - 2026-04-29: Routed spacecraft vehicle dynamics through `SimulationPlugin.updateVehicleDynamics` with the current spacecraft adapter auto-installed inside `createTickHandler`; phase params now carry mutable tick output.
 - 2026-04-29: Moved default spacecraft vehicle-dynamics registration out of `createTickHandler`; DOM/headless setup now installs the spacecraft simulation adapter and passes the full simulation plugin list into core.
 - 2026-04-29: Made spacecraft dynamics a named `spacecraftOperator` plugin contribution. Browser defaults include it in `defaultPluginIds`; headless installs the same plugin explicitly by default.
+- 2026-04-29: Moved spacecraft-specific action names and key bindings out of base input and into `spacecraftOperator.input`; base actions now cover generic/main-view look and camera offset controls.
 
 ## Decision Log
 

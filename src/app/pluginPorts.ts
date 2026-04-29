@@ -23,7 +23,7 @@ export interface KeyHandler {
 }
 
 export interface InputPlugin {
-  actions?: ControlAction[];
+  actions?: readonly ControlAction[];
   keyMap?: Record<string, ControlAction>;
   createKeyHandler?: (controlInput: ControlInput) => KeyHandler;
 }

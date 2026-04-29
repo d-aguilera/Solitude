@@ -54,31 +54,11 @@ const baseKeyMap: Record<string, ControlAction> = {
   ArrowLeft: "lookLeft",
   ArrowRight: "lookRight",
   ArrowUp: "lookUp",
-  Digit0: "thrust0",
-  Digit1: "thrust1",
-  Digit2: "thrust2",
-  Digit3: "thrust3",
-  Digit4: "thrust4",
-  Digit5: "thrust5",
-  Digit6: "thrust6",
-  Digit7: "thrust7",
-  Digit8: "thrust8",
-  Digit9: "thrust9",
-  KeyA: "yawLeft",
-  KeyB: "burnBackwards",
-  KeyD: "yawRight",
-  KeyE: "rollRight",
   KeyI: "camUp",
   KeyJ: "camBackward",
   KeyK: "camDown",
-  KeyM: "burnRight",
-  KeyN: "burnLeft",
-  KeyQ: "rollLeft",
   KeyR: "lookReset",
-  KeyS: "pitchDown",
   KeyU: "camForward",
-  KeyW: "pitchUp",
-  Space: "burnForward",
 };
 
 function collectInputPlugins(plugins: GamePlugin[]): InputPlugin[] {
@@ -138,3 +118,8 @@ function buildKeyMap(plugins: InputPlugin[]): Record<string, ControlAction> {
   }
   return keyMap;
 }
+
+export const __domKeyboardInputTest = {
+  buildKeyMap,
+  collectControlActions,
+};

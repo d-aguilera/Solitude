@@ -4,12 +4,6 @@ import type { Mat3 } from "../domain/mat3";
 import type { Vec3 } from "../domain/vec3";
 
 export const BASE_CONTROL_ACTIONS = [
-  "rollLeft",
-  "rollRight",
-  "pitchUp",
-  "pitchDown",
-  "yawLeft",
-  "yawRight",
   "lookLeft",
   "lookRight",
   "lookUp",
@@ -19,20 +13,6 @@ export const BASE_CONTROL_ACTIONS = [
   "camBackward",
   "camUp",
   "camDown",
-  "burnForward",
-  "burnBackwards",
-  "burnLeft",
-  "burnRight",
-  "thrust0",
-  "thrust1",
-  "thrust2",
-  "thrust3",
-  "thrust4",
-  "thrust5",
-  "thrust6",
-  "thrust7",
-  "thrust8",
-  "thrust9",
 ] as const;
 
 export type BaseControlAction = (typeof BASE_CONTROL_ACTIONS)[number];

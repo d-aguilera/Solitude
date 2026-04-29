@@ -41,6 +41,11 @@ the `spacecraftOperator` plugin, which currently owns the legacy spacecraft
 thrust, RCS, and attitude vehicle-dynamics adapter while input ownership is
 still transitional.
 
+The `spacecraftOperator` plugin also contributes the current spacecraft key
+bindings and action names for roll/pitch/yaw, burns, RCS translation, and
+thrust-level selection. Base input actions are reserved for generic/main-view
+controls such as look and camera offset.
+
 ## Registration
 
 Available plugins are exported from `src/plugins/index.ts`.
