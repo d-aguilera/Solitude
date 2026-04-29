@@ -174,7 +174,7 @@ export function runLoop({
     0,
     sceneState,
     sceneControlState,
-    worldAndScene.mainControlledBody,
+    worldAndScene.mainFocus,
     controlInput,
   );
 
@@ -237,7 +237,7 @@ export function runLoop({
         dtTickMillis,
         sceneState,
         sceneControlState,
-        worldAndScene.mainControlledBody,
+        worldAndScene.mainFocus,
         controlInput,
       );
       applyScenePlugins(scenePlugins, {

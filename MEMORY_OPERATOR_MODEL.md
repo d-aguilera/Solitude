@@ -20,16 +20,16 @@ Status: not started.
 
 Next focused change:
 
-- Add `mainFocus` to main-view camera frame params and migrate camera rigs that only need the focused body's frame:
-  - `ViewFrameUpdateParams` should expose `mainFocus` next to the legacy `mainControlledBody`;
-  - `updateMainViewFrame` should read the focused body's frame through `mainFocus`;
-  - axial view plugin frame callbacks can migrate to `mainFocus.controlledBody.frame` while remaining spacecraft-compatible for now.
+- Add an explicit simulation phase API skeleton without moving spacecraft physics yet:
+  - introduce low-allocation phase callback arrays on plugins/app loop params;
+  - preserve current ordering exactly;
+  - start with no-op phase hooks around the existing control/vehicle dynamics, gravity, collision, spin sequence.
 
 Success criteria:
 
-- Existing primary and axial camera behavior is unchanged.
-- `mainControlledBody` remains available as a compatibility alias in view params.
-- No camera-rig extraction or switching yet.
+- Existing `ControlPlugin` path and spacecraft controls still behave the same.
+- No plugin needs to implement the new phase hooks yet.
+- Phase names/order are explicit enough to support later extraction of thrust/RCS/attitude.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -38,6 +38,7 @@ Success criteria:
 - 2026-04-29: Added a `FocusContext` runtime bridge as `mainFocus` on `WorldSetup`, `WorldAndScene`, plugin params, and render params, while keeping `mainControlledBody` aliases intact.
 - 2026-04-29: Renamed primary-view app/config plumbing to `mainView*` names. Kept deprecated `pilot*` aliases and render-config fallback helpers for compatibility.
 - 2026-04-29: Migrated easy generic focus consumers to `mainFocus`: render label anchor, velocity segments, and orbit telemetry. Added generic `computeOrbitReadoutInto` with `computeShipOrbitReadoutInto` retained as compatibility wrapper.
+- 2026-04-29: Added `mainFocus` to `ViewFrameUpdateParams` and migrated primary/axial camera frame callbacks to read the focused body's frame through `mainFocus`, with `mainControlledBody` kept as a compatibility alias.
 
 ## Decision Log
 

@@ -1,7 +1,8 @@
 import type { ControlledBody } from "../domain/domainPorts";
-import { type LocalFrame, localFrame } from "../domain/localFrame";
+import { localFrame } from "../domain/localFrame";
 import { type Vec3, vec3 } from "../domain/vec3";
 import type { ControlInput } from "./controlPorts";
+import type { FocusContext } from "./runtimePorts";
 import type { DomainCameraPose, MainViewLookState } from "./scenePorts";
 import type {
   SceneViewState,
@@ -20,17 +21,19 @@ const viewFrameUpdateParamsScratch = {} as ViewFrameUpdateParams;
  * Update all camera positions / orientations.
  */
 export function updateCameras(
-  mainControlledBody: ControlledBody,
+  mainFocus: FocusContext,
   views: SceneViewState[],
   mainViewLookState: MainViewLookState,
 ): void {
-  viewFrameUpdateParamsScratch.mainControlledBody = mainControlledBody;
+  const focusedBody = mainFocus.controlledBody;
+  viewFrameUpdateParamsScratch.mainFocus = mainFocus;
+  viewFrameUpdateParamsScratch.mainControlledBody = focusedBody;
   viewFrameUpdateParamsScratch.mainViewLookState = mainViewLookState;
   viewFrameUpdateParamsScratch.pilotLookState = mainViewLookState;
   for (const view of views) {
     setCameraRelativeToControlledBody(
       view.camera,
-      mainControlledBody,
+      focusedBody,
       view.cameraOffset,
     );
     viewFrameUpdateParamsScratch.frame = view.camera.frame;
@@ -52,14 +55,10 @@ export function createPrimaryViewDefinition(
 
 export function updateMainViewFrame({
   frame,
-  mainControlledBody,
+  mainFocus,
   mainViewLookState,
-}: {
-  frame: LocalFrame;
-  mainControlledBody: ControlledBody;
-  mainViewLookState: MainViewLookState;
-}): void {
-  localFrame.copyInto(frame, mainControlledBody.frame);
+}: ViewFrameUpdateParams): void {
+  localFrame.copyInto(frame, mainFocus.controlledBody.frame);
   const { azimuth, elevation } = mainViewLookState;
   if (azimuth !== 0)
     localFrame.rotateAroundAxisInPlace(frame, frame.up, azimuth);

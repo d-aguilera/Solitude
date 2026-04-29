@@ -69,11 +69,8 @@ function createAxialViewDefinitions(): ViewDefinition[] {
   ];
 }
 
-function updateTopViewFrame({
-  frame,
-  mainControlledBody,
-}: ViewFrameUpdateParams): void {
-  const { right, forward, up } = mainControlledBody.frame;
+function updateTopViewFrame({ frame, mainFocus }: ViewFrameUpdateParams): void {
+  const { right, forward, up } = mainFocus.controlledBody.frame;
   vec3.copyInto(frame.right, right);
   vec3.scaleInto(frame.forward, -1, up); // forward = -up
   vec3.copyInto(frame.up, forward); // up = forward
@@ -81,9 +78,9 @@ function updateTopViewFrame({
 
 function updateLeftViewFrame({
   frame,
-  mainControlledBody,
+  mainFocus,
 }: ViewFrameUpdateParams): void {
-  const { right, forward, up } = mainControlledBody.frame;
+  const { right, forward, up } = mainFocus.controlledBody.frame;
   vec3.copyInto(frame.up, up);
   vec3.copyInto(frame.forward, right);
   vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -right
@@ -92,9 +89,9 @@ function updateLeftViewFrame({
 
 function updateRightViewFrame({
   frame,
-  mainControlledBody,
+  mainFocus,
 }: ViewFrameUpdateParams): void {
-  const { right, forward, up } = mainControlledBody.frame;
+  const { right, forward, up } = mainFocus.controlledBody.frame;
   vec3.copyInto(frame.up, up);
   vec3.copyInto(frame.forward, right); // forward = right
   vec3.copyInto(frame.right, forward);
@@ -103,9 +100,9 @@ function updateRightViewFrame({
 
 function updateRearViewFrame({
   frame,
-  mainControlledBody,
+  mainFocus,
 }: ViewFrameUpdateParams): void {
-  const { right, forward, up } = mainControlledBody.frame;
+  const { right, forward, up } = mainFocus.controlledBody.frame;
   vec3.copyInto(frame.up, up);
   vec3.copyInto(frame.right, right);
   vec3.copyInto(frame.forward, forward);

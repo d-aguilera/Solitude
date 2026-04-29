@@ -1,7 +1,7 @@
-import type { ControlledBody } from "../domain/domainPorts";
 import { updateCameras, updateMainViewCameraOffset } from "./cameras";
 import type { ControlInput } from "./controlPorts";
 import { updateMainViewLook } from "./controls";
+import type { FocusContext } from "./runtimePorts";
 import type { SceneControlState } from "./scenePorts";
 import type { SceneState } from "./viewPorts";
 
@@ -9,7 +9,7 @@ export function updateSceneGraph(
   dtMillis: number,
   sceneState: SceneState,
   sceneControlState: SceneControlState,
-  mainControlledBody: ControlledBody,
+  mainFocus: FocusContext,
   controlInput: ControlInput,
 ) {
   updateMainViewLook(
@@ -25,7 +25,7 @@ export function updateSceneGraph(
   );
 
   updateCameras(
-    mainControlledBody,
+    mainFocus,
     sceneState.views,
     sceneControlState.mainViewLookState,
   );
