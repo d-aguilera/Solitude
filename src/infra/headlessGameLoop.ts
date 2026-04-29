@@ -7,9 +7,9 @@ import type {
   WorldAndScene,
 } from "../app/runtimePorts";
 import type { Scene } from "../app/scenePorts";
-import { createSpacecraftVehicleDynamicsPlugin } from "../app/spacecraftVehicleDynamics";
 import type { GravityEngine } from "../domain/domainPorts";
 import { parameters } from "../global/parameters";
+import { createSpacecraftOperatorPlugin } from "../plugins/spacecraftOperator/index";
 import { createHeadlessWorld, type WorldConfigBase } from "../setup/setup";
 import { NewtonianGravityEngine } from "./NewtonianGravityEngine";
 
@@ -64,8 +64,16 @@ export function createHeadlessLoop(
   const thrustLevel = options.thrustLevel ?? 1;
   const timeScale = options.timeScale ?? 1;
   const controlPlugins = options.controlPlugins ?? [];
+  const spacecraftOperator = createSpacecraftOperatorPlugin();
+  if (!spacecraftOperator.simulation) {
+    throw new Error("Spacecraft operator plugin is missing simulation");
+  }
+  const spacecraftSimulation =
+    typeof spacecraftOperator.simulation === "function"
+      ? spacecraftOperator.simulation({ controlPlugins })
+      : spacecraftOperator.simulation;
   const simulationPlugins = [
-    createSpacecraftVehicleDynamicsPlugin(controlPlugins),
+    spacecraftSimulation,
     ...(options.simulationPlugins ?? []),
   ];
 

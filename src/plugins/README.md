@@ -18,6 +18,7 @@ Each plugin lives in its own folder. A typical split is:
 - `hud.ts`: HUD overlays or render-specific formatting (render dependencies)
 - `scene.ts`: scene init/update hooks and view filters (app + setup dependencies)
 - `segments.ts`: view overlay segment providers (app + domain dependencies)
+- `simulation.ts`: deterministic simulation phase hooks such as vehicle dynamics
 - `views.ts`: view registration, camera offsets, and camera frame strategies
 - `worldModel.ts`: pre-runtime world/scenario model contribution
 - `index.ts`: composes the above into a `GamePlugin`
@@ -34,6 +35,11 @@ registered by plugins. Infra owns the canvas elements and their DOM IDs.
 HUD plugins write directly into a preallocated HUD grid. Keep each plugin
 focused on one telemetry group, and avoid allocating per-cell objects in the
 HUD refresh path.
+
+Simulation plugins run inside the fixed tick order. The default runtime includes
+the `spacecraftOperator` plugin, which currently owns the legacy spacecraft
+thrust, RCS, and attitude vehicle-dynamics adapter while input ownership is
+still transitional.
 
 ## Registration
 

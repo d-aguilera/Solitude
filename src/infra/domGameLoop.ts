@@ -25,7 +25,6 @@ import type {
 } from "../app/runtimePorts";
 import { updateSceneGraph } from "../app/scene";
 import type { SceneControlState } from "../app/scenePorts";
-import { createSpacecraftVehicleDynamicsPlugin } from "../app/spacecraftVehicleDynamics";
 import type { SceneState, SceneViewState } from "../app/viewPorts";
 import {
   createSceneViewStates,
@@ -120,10 +119,7 @@ export function runLoop({
   const loopPlugins = collectLoopPlugins(plugins);
   const scenePlugins = collectScenePlugins(plugins);
   const segmentPlugins = collectSegmentPlugins(plugins);
-  const simulationPlugins = [
-    createSpacecraftVehicleDynamicsPlugin(controlPlugins),
-    ...collectSimulationPlugins(plugins),
-  ];
+  const simulationPlugins = collectSimulationPlugins(plugins, controlPlugins);
 
   applyLoopInitPlugins(loopPlugins, { config });
 
@@ -490,12 +486,18 @@ function collectSegmentPlugins(plugins: GamePlugin[]): SegmentPlugin[] {
   return segmentPlugins;
 }
 
-function collectSimulationPlugins(plugins: GamePlugin[]): SimulationPlugin[] {
+function collectSimulationPlugins(
+  plugins: GamePlugin[],
+  controlPlugins: ControlPlugin[],
+): SimulationPlugin[] {
   const simulationPlugins: SimulationPlugin[] = [];
   for (const plugin of plugins) {
-    if (plugin.simulation) {
-      simulationPlugins.push(plugin.simulation);
-    }
+    if (!plugin.simulation) continue;
+    simulationPlugins.push(
+      typeof plugin.simulation === "function"
+        ? plugin.simulation({ controlPlugins })
+        : plugin.simulation,
+    );
   }
   return simulationPlugins;
 }

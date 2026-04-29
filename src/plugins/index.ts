@@ -9,6 +9,7 @@ import { createProfilingPlugin } from "./profiling/index";
 import { createRuntimeTelemetryPlugin } from "./runtimeTelemetry/index";
 import { createShipTelemetryPlugin } from "./shipTelemetry/index";
 import { createSolarSystemPlugin } from "./solarSystem/index";
+import { createSpacecraftOperatorPlugin } from "./spacecraftOperator/index";
 import { createTimeScalePlugin } from "./timeScale/index";
 import { createTrajectoriesPlugin } from "./trajectories/index";
 import { createVelocitySegmentsPlugin } from "./velocitySegments/index";
@@ -21,6 +22,7 @@ export const defaultPluginIds = [
   "orbitTelemetry",
   "runtimeTelemetry",
   "shipTelemetry",
+  "spacecraftOperator",
   "autopilot",
   "memory",
   "pause",
@@ -42,6 +44,7 @@ export const availablePlugins: Record<string, PluginFactory> = {
   runtimeTelemetry: createRuntimeTelemetryPlugin,
   shipTelemetry: createShipTelemetryPlugin,
   solarSystem: createSolarSystemPlugin,
+  spacecraftOperator: createSpacecraftOperatorPlugin,
   timeScale: createTimeScalePlugin,
   trajectories: createTrajectoriesPlugin,
   velocitySegments: createVelocitySegmentsPlugin,

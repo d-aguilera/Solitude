@@ -1,11 +1,10 @@
-import type { ControlledBody, World } from "../domain/domainPorts";
 import type {
   ControlInput,
   PropulsionCommand,
   RcsCommand,
   SimControlState,
   ThrustCommand,
-} from "./controlPorts";
+} from "../../app/controlPorts";
 import {
   getMainThrustCommandInto,
   getRcsCommandInto,
@@ -14,13 +13,14 @@ import {
   resolvePropulsionCommandWithPlugins,
   updateControlState,
   updateControlledBodyAngularVelocityFromInput,
-} from "./controls";
+} from "../../app/controls";
 import {
   applyControlledBodyRotation,
   applyRcsTranslation,
   applyThrust,
-} from "./physics";
-import type { ControlPlugin, SimulationPlugin } from "./pluginPorts";
+} from "../../app/physics";
+import type { ControlPlugin, SimulationPlugin } from "../../app/pluginPorts";
+import type { ControlledBody, World } from "../../domain/domainPorts";
 
 export interface SpacecraftVehicleDynamicsParams {
   controlInput: ControlInput;

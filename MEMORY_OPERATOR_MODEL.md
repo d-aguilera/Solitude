@@ -20,18 +20,18 @@ Status: not started.
 
 Next focused change:
 
-- Make the default spacecraft dynamics adapter an explicit operator/plugin-style contribution:
-  - keep dependency on existing `ControlPlugin[]` visible during the bridge;
-  - decide whether the contribution belongs in `src/plugins/` now or stays as an infra-installed adapter until input ownership moves;
-  - avoid moving keyboard actions yet.
+- Move spacecraft-specific input actions/bindings toward the `spacecraftOperator` plugin:
+  - keep global/main-view controls separate from vehicle controls;
+  - start by splitting action lists/key maps without changing behavior;
+  - preserve playback/autopilot control-state compatibility during the bridge.
 
 Success criteria:
 
 - Tick ordering remains covered by tests.
 - Manual controls, autopilot, playback, and HUD control readouts remain behavior-compatible.
 - Runtime/headless setup still installs the current spacecraft behavior by default.
-- The installation point is named/documented as spacecraft/operator behavior, not generic core.
-- No change to control action definitions yet.
+- Base input retains only generic/global/main-view actions where practical.
+- Spacecraft controls are named as `spacecraftOperator` contributions.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -42,9 +42,10 @@ Success criteria:
 - 2026-04-29: Migrated easy generic focus consumers to `mainFocus`: render label anchor, velocity segments, and orbit telemetry. Added generic `computeOrbitReadoutInto` with `computeShipOrbitReadoutInto` retained as compatibility wrapper.
 - 2026-04-29: Added `mainFocus` to `ViewFrameUpdateParams` and migrated primary/axial camera frame callbacks to read the focused body's frame through `mainFocus`, with `mainControlledBody` kept as a compatibility alias.
 - 2026-04-29: Added an explicit no-op simulation phase API skeleton with hooks around vehicle dynamics, gravity, collisions, and spin. Wired DOM/headless collection and added an order test while preserving existing spacecraft behavior.
-- 2026-04-29: Isolated the existing thrust/RCS/attitude vehicle-dynamics block into `src/app/spacecraftVehicleDynamics.ts`, preserving current direct invocation and control-plugin behavior.
+- 2026-04-29: Isolated the existing thrust/RCS/attitude vehicle-dynamics block into `src/app/spacecraftVehicleDynamics.ts`, preserving current direct invocation and control-plugin behavior. Later moved it under `src/plugins/spacecraftOperator/`.
 - 2026-04-29: Routed spacecraft vehicle dynamics through `SimulationPlugin.updateVehicleDynamics` with the current spacecraft adapter auto-installed inside `createTickHandler`; phase params now carry mutable tick output.
 - 2026-04-29: Moved default spacecraft vehicle-dynamics registration out of `createTickHandler`; DOM/headless setup now installs the spacecraft simulation adapter and passes the full simulation plugin list into core.
+- 2026-04-29: Made spacecraft dynamics a named `spacecraftOperator` plugin contribution. Browser defaults include it in `defaultPluginIds`; headless installs the same plugin explicitly by default.
 
 ## Decision Log
 

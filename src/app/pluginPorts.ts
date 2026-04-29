@@ -82,6 +82,14 @@ export interface SimulationPlugin {
   afterSpin?: (params: SimulationPhaseParams) => void;
 }
 
+export interface SimulationContributionParams {
+  controlPlugins: ControlPlugin[];
+}
+
+export type SimulationContribution =
+  | SimulationPlugin
+  | ((params: SimulationContributionParams) => SimulationPlugin);
+
 export interface HudContext {
   nowMs: number;
   world: World;
@@ -233,7 +241,7 @@ export interface GamePlugin {
   loop?: LoopPlugin;
   segments?: SegmentPlugin;
   scene?: ScenePlugin;
-  simulation?: SimulationPlugin;
+  simulation?: SimulationContribution;
   views?: ViewPlugin;
   worldModel?: WorldModelPlugin;
 }
