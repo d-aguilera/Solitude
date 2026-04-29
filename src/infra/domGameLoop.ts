@@ -25,6 +25,7 @@ import type {
 } from "../app/runtimePorts";
 import { updateSceneGraph } from "../app/scene";
 import type { SceneControlState } from "../app/scenePorts";
+import { createSpacecraftVehicleDynamicsPlugin } from "../app/spacecraftVehicleDynamics";
 import type { SceneState, SceneViewState } from "../app/viewPorts";
 import {
   createSceneViewStates,
@@ -119,7 +120,10 @@ export function runLoop({
   const loopPlugins = collectLoopPlugins(plugins);
   const scenePlugins = collectScenePlugins(plugins);
   const segmentPlugins = collectSegmentPlugins(plugins);
-  const simulationPlugins = collectSimulationPlugins(plugins);
+  const simulationPlugins = [
+    createSpacecraftVehicleDynamicsPlugin(controlPlugins),
+    ...collectSimulationPlugins(plugins),
+  ];
 
   applyLoopInitPlugins(loopPlugins, { config });
 
@@ -143,7 +147,6 @@ export function runLoop({
     gravityEngine,
     config.thrustLevel,
     worldAndScene,
-    controlPlugins,
     simulationPlugins,
   );
 

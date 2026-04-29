@@ -7,6 +7,7 @@ import type {
   WorldAndScene,
 } from "../app/runtimePorts";
 import type { Scene } from "../app/scenePorts";
+import { createSpacecraftVehicleDynamicsPlugin } from "../app/spacecraftVehicleDynamics";
 import type { GravityEngine } from "../domain/domainPorts";
 import { parameters } from "../global/parameters";
 import { createHeadlessWorld, type WorldConfigBase } from "../setup/setup";
@@ -62,13 +63,17 @@ export function createHeadlessLoop(
 
   const thrustLevel = options.thrustLevel ?? 1;
   const timeScale = options.timeScale ?? 1;
+  const controlPlugins = options.controlPlugins ?? [];
+  const simulationPlugins = [
+    createSpacecraftVehicleDynamicsPlugin(controlPlugins),
+    ...(options.simulationPlugins ?? []),
+  ];
 
   const tickInto = createTickHandler(
     gravityEngine,
     thrustLevel,
     worldAndScene,
-    options.controlPlugins ?? [],
-    options.simulationPlugins ?? [],
+    simulationPlugins,
   );
 
   const baseControlInput = createControlInput();

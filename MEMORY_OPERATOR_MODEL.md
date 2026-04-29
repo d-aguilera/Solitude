@@ -20,17 +20,18 @@ Status: not started.
 
 Next focused change:
 
-- Move default spacecraft vehicle-dynamics registration out of `game.ts` construction:
-  - introduce an explicit app/bootstrap adapter or plugin contribution for the current spacecraft dynamics;
-  - keep the adapter close to existing control plugin wiring during the bridge;
-  - avoid changing input ownership or control action definitions yet.
+- Make the default spacecraft dynamics adapter an explicit operator/plugin-style contribution:
+  - keep dependency on existing `ControlPlugin[]` visible during the bridge;
+  - decide whether the contribution belongs in `src/plugins/` now or stays as an infra-installed adapter until input ownership moves;
+  - avoid moving keyboard actions yet.
 
 Success criteria:
 
 - Tick ordering remains covered by tests.
 - Manual controls, autopilot, playback, and HUD control readouts remain behavior-compatible.
-- `game.ts` only executes simulation plugins; it does not create the spacecraft adapter itself.
-- Runtime/headless setup still installs the current spacecraft adapter by default.
+- Runtime/headless setup still installs the current spacecraft behavior by default.
+- The installation point is named/documented as spacecraft/operator behavior, not generic core.
+- No change to control action definitions yet.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -43,6 +44,7 @@ Success criteria:
 - 2026-04-29: Added an explicit no-op simulation phase API skeleton with hooks around vehicle dynamics, gravity, collisions, and spin. Wired DOM/headless collection and added an order test while preserving existing spacecraft behavior.
 - 2026-04-29: Isolated the existing thrust/RCS/attitude vehicle-dynamics block into `src/app/spacecraftVehicleDynamics.ts`, preserving current direct invocation and control-plugin behavior.
 - 2026-04-29: Routed spacecraft vehicle dynamics through `SimulationPlugin.updateVehicleDynamics` with the current spacecraft adapter auto-installed inside `createTickHandler`; phase params now carry mutable tick output.
+- 2026-04-29: Moved default spacecraft vehicle-dynamics registration out of `createTickHandler`; DOM/headless setup now installs the spacecraft simulation adapter and passes the full simulation plugin list into core.
 
 ## Decision Log
 
