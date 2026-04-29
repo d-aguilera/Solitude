@@ -20,16 +20,17 @@ Status: not started.
 
 Next focused change:
 
-- Extract spacecraft vehicle dynamics behind the simulation phase boundary:
-  - keep existing behavior and control plugin semantics;
-  - move thrust/RCS/attitude application toward a spacecraft/operator-owned simulation plugin or adapter;
-  - start by isolating the current core vehicle-dynamics block into a narrow function/module before changing ownership.
+- Route spacecraft vehicle dynamics through the simulation-plugin path:
+  - wrap the isolated spacecraft dynamics adapter as the default vehicle-dynamics phase implementation;
+  - keep output readouts (`currentThrustLevel`, `currentRcsLevel`) behavior-compatible;
+  - preserve existing `ControlPlugin` semantics for autopilot/playback during the bridge step.
 
 Success criteria:
 
 - Tick ordering remains covered by tests.
 - Manual controls, autopilot, playback, and HUD control readouts remain behavior-compatible.
-- Any new plugin/adapter boundary is additive and reversible.
+- `game.ts` no longer directly owns the spacecraft dynamics block.
+- The default runtime still includes the spacecraft adapter automatically.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -40,6 +41,7 @@ Success criteria:
 - 2026-04-29: Migrated easy generic focus consumers to `mainFocus`: render label anchor, velocity segments, and orbit telemetry. Added generic `computeOrbitReadoutInto` with `computeShipOrbitReadoutInto` retained as compatibility wrapper.
 - 2026-04-29: Added `mainFocus` to `ViewFrameUpdateParams` and migrated primary/axial camera frame callbacks to read the focused body's frame through `mainFocus`, with `mainControlledBody` kept as a compatibility alias.
 - 2026-04-29: Added an explicit no-op simulation phase API skeleton with hooks around vehicle dynamics, gravity, collisions, and spin. Wired DOM/headless collection and added an order test while preserving existing spacecraft behavior.
+- 2026-04-29: Isolated the existing thrust/RCS/attitude vehicle-dynamics block into `src/app/spacecraftVehicleDynamics.ts`, preserving current direct invocation and control-plugin behavior.
 
 ## Decision Log
 
