@@ -20,16 +20,16 @@ Status: not started.
 
 Next focused change:
 
-- Add an explicit simulation phase API skeleton without moving spacecraft physics yet:
-  - introduce low-allocation phase callback arrays on plugins/app loop params;
-  - preserve current ordering exactly;
-  - start with no-op phase hooks around the existing control/vehicle dynamics, gravity, collision, spin sequence.
+- Extract spacecraft vehicle dynamics behind the simulation phase boundary:
+  - keep existing behavior and control plugin semantics;
+  - move thrust/RCS/attitude application toward a spacecraft/operator-owned simulation plugin or adapter;
+  - start by isolating the current core vehicle-dynamics block into a narrow function/module before changing ownership.
 
 Success criteria:
 
-- Existing `ControlPlugin` path and spacecraft controls still behave the same.
-- No plugin needs to implement the new phase hooks yet.
-- Phase names/order are explicit enough to support later extraction of thrust/RCS/attitude.
+- Tick ordering remains covered by tests.
+- Manual controls, autopilot, playback, and HUD control readouts remain behavior-compatible.
+- Any new plugin/adapter boundary is additive and reversible.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -39,6 +39,7 @@ Success criteria:
 - 2026-04-29: Renamed primary-view app/config plumbing to `mainView*` names. Kept deprecated `pilot*` aliases and render-config fallback helpers for compatibility.
 - 2026-04-29: Migrated easy generic focus consumers to `mainFocus`: render label anchor, velocity segments, and orbit telemetry. Added generic `computeOrbitReadoutInto` with `computeShipOrbitReadoutInto` retained as compatibility wrapper.
 - 2026-04-29: Added `mainFocus` to `ViewFrameUpdateParams` and migrated primary/axial camera frame callbacks to read the focused body's frame through `mainFocus`, with `mainControlledBody` kept as a compatibility alias.
+- 2026-04-29: Added an explicit no-op simulation phase API skeleton with hooks around vehicle dynamics, gravity, collisions, and spin. Wired DOM/headless collection and added an order test while preserving existing spacecraft behavior.
 
 ## Decision Log
 

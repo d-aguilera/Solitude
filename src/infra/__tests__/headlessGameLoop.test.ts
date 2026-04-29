@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { EntityConfig } from "../../app/configPorts";
+import type { SimulationPlugin } from "../../app/pluginPorts";
+import type { GravityEngine, GravityState } from "../../domain/domainPorts";
 import { localFrame } from "../../domain/localFrame";
 import { mat3 } from "../../domain/mat3";
 import { vec3 } from "../../domain/vec3";
@@ -81,6 +83,44 @@ function buildHeadlessConfig(): WorldConfigBase {
 }
 
 describe("headlessGameLoop", () => {
+  it("runs simulation phase hooks around the existing physics order", () => {
+    const events: string[] = [];
+    const gravityEngine: GravityEngine = {
+      step: (_dtSeconds: number, _state: GravityState) => {
+        events.push("gravity");
+      },
+    };
+    const simulationPlugin: SimulationPlugin = {
+      beforeVehicleDynamics: () => events.push("beforeVehicleDynamics"),
+      afterVehicleDynamics: () => events.push("afterVehicleDynamics"),
+      beforeGravity: () => events.push("beforeGravity"),
+      afterGravity: () => events.push("afterGravity"),
+      afterCollisions: () => events.push("afterCollisions"),
+      afterSpin: () => events.push("afterSpin"),
+    };
+    const loop = createHeadlessLoop(buildHeadlessConfig(), {
+      gravityEngine,
+      simulationPlugins: [simulationPlugin],
+    });
+
+    loop.step(16);
+
+    expect(events.slice(0, 3)).toEqual([
+      "beforeVehicleDynamics",
+      "afterVehicleDynamics",
+      "beforeGravity",
+    ]);
+    expect(events.slice(3, -3).length).toBeGreaterThan(0);
+    expect(events.slice(3, -3).every((event) => event === "gravity")).toBe(
+      true,
+    );
+    expect(events.slice(-3)).toEqual([
+      "afterGravity",
+      "afterCollisions",
+      "afterSpin",
+    ]);
+  });
+
   it("runs a step without any render config", () => {
     const loop = createHeadlessLoop(buildHeadlessConfig(), {
       thrustLevel: 5,

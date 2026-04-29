@@ -13,6 +13,7 @@ import type {
   SceneViewFilterParams,
   SegmentPlugin,
   SegmentProviderParams,
+  SimulationPlugin,
   WorldSegment,
 } from "../app/pluginPorts";
 import { getMainViewLookState } from "../app/renderConfigPorts";
@@ -118,6 +119,7 @@ export function runLoop({
   const loopPlugins = collectLoopPlugins(plugins);
   const scenePlugins = collectScenePlugins(plugins);
   const segmentPlugins = collectSegmentPlugins(plugins);
+  const simulationPlugins = collectSimulationPlugins(plugins);
 
   applyLoopInitPlugins(loopPlugins, { config });
 
@@ -142,6 +144,7 @@ export function runLoop({
     config.thrustLevel,
     worldAndScene,
     controlPlugins,
+    simulationPlugins,
   );
 
   const sceneControlState: SceneControlState = {
@@ -482,6 +485,16 @@ function collectSegmentPlugins(plugins: GamePlugin[]): SegmentPlugin[] {
     }
   }
   return segmentPlugins;
+}
+
+function collectSimulationPlugins(plugins: GamePlugin[]): SimulationPlugin[] {
+  const simulationPlugins: SimulationPlugin[] = [];
+  for (const plugin of plugins) {
+    if (plugin.simulation) {
+      simulationPlugins.push(plugin.simulation);
+    }
+  }
+  return simulationPlugins;
 }
 
 function applyLoopInitPlugins(

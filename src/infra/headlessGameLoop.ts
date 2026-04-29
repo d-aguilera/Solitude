@@ -1,6 +1,6 @@
 import { createControlInput, type ControlInput } from "../app/controlPorts";
 import { createTickHandler } from "../app/game";
-import type { ControlPlugin } from "../app/pluginPorts";
+import type { ControlPlugin, SimulationPlugin } from "../app/pluginPorts";
 import type {
   TickOutput,
   TickParams,
@@ -17,6 +17,7 @@ export interface HeadlessLoopOptions {
   thrustLevel?: number;
   timeScale?: number;
   controlPlugins?: ControlPlugin[];
+  simulationPlugins?: SimulationPlugin[];
 }
 
 export interface HeadlessLoop {
@@ -67,6 +68,7 @@ export function createHeadlessLoop(
     thrustLevel,
     worldAndScene,
     options.controlPlugins ?? [],
+    options.simulationPlugins ?? [],
   );
 
   const baseControlInput = createControlInput();

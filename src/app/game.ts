@@ -25,7 +25,7 @@ import {
   applyRcsTranslation,
   applyThrust,
 } from "./physics";
-import type { ControlPlugin } from "./pluginPorts";
+import type { ControlPlugin, SimulationPlugin } from "./pluginPorts";
 import type {
   TickCallback,
   TickOutput,
@@ -41,6 +41,7 @@ export function createTickHandler(
   thrustLevel: number,
   worldAndScene: WorldAndScene,
   controlPlugins: ControlPlugin[] = [],
+  simulationPlugins: SimulationPlugin[] = [],
 ): TickCallback {
   let propulsionCommand: PropulsionCommand;
 
@@ -49,13 +50,26 @@ export function createTickHandler(
   };
 
   const gravityState = buildInitialGravityState(worldAndScene.world);
+  const simulationPhaseParams = {
+    controlInput: {} as ControlInput,
+    controlState: simControlState,
+    dtMillis: 0,
+    dtMillisSim: 0,
+    mainFocus: worldAndScene.mainFocus,
+    mainControlledBody: worldAndScene.mainControlledBody,
+    world: worldAndScene.world,
+  };
 
   /**
    * Per‑frame update/render entry called by the game loop.
    */
   return (output: TickOutput, params: TickParams): void => {
     const { controlInput, dtMillis, dtMillisSim } = params;
+    simulationPhaseParams.controlInput = controlInput;
+    simulationPhaseParams.dtMillis = dtMillis;
+    simulationPhaseParams.dtMillisSim = dtMillisSim;
 
+    applyBeforeVehicleDynamics(simulationPlugins, simulationPhaseParams);
     propulsionCommand = getPropulsionCommandForTick(
       dtMillis,
       controlInput,
@@ -83,12 +97,17 @@ export function createTickHandler(
       worldAndScene.mainControlledBody,
       propulsionCommand.rcs,
     );
+    applyAfterVehicleDynamics(simulationPlugins, simulationPhaseParams);
 
+    applyBeforeGravity(simulationPlugins, simulationPhaseParams);
     applyGravity(dtMillisSim, gravityEngine, gravityState);
+    applyAfterGravity(simulationPlugins, simulationPhaseParams);
 
     resolveCollisions(worldAndScene.world);
+    applyAfterCollisions(simulationPlugins, simulationPhaseParams);
 
     applyCelestialSpin(dtMillisSim, worldAndScene.world);
+    applyAfterSpin(simulationPlugins, simulationPhaseParams);
 
     output.currentThrustLevel = getRenderedThrustLevel(
       propulsionCommand.main,
@@ -97,6 +116,52 @@ export function createTickHandler(
 
     output.currentRcsLevel = getRenderedRcsLevel(propulsionCommand.rcs);
   };
+}
+
+type SimulationPhaseParams = Parameters<
+  NonNullable<SimulationPlugin["beforeVehicleDynamics"]>
+>[0];
+
+function applyBeforeVehicleDynamics(
+  plugins: SimulationPlugin[],
+  params: SimulationPhaseParams,
+): void {
+  for (const plugin of plugins) plugin.beforeVehicleDynamics?.(params);
+}
+
+function applyAfterVehicleDynamics(
+  plugins: SimulationPlugin[],
+  params: SimulationPhaseParams,
+): void {
+  for (const plugin of plugins) plugin.afterVehicleDynamics?.(params);
+}
+
+function applyBeforeGravity(
+  plugins: SimulationPlugin[],
+  params: SimulationPhaseParams,
+): void {
+  for (const plugin of plugins) plugin.beforeGravity?.(params);
+}
+
+function applyAfterGravity(
+  plugins: SimulationPlugin[],
+  params: SimulationPhaseParams,
+): void {
+  for (const plugin of plugins) plugin.afterGravity?.(params);
+}
+
+function applyAfterCollisions(
+  plugins: SimulationPlugin[],
+  params: SimulationPhaseParams,
+): void {
+  for (const plugin of plugins) plugin.afterCollisions?.(params);
+}
+
+function applyAfterSpin(
+  plugins: SimulationPlugin[],
+  params: SimulationPhaseParams,
+): void {
+  for (const plugin of plugins) plugin.afterSpin?.(params);
 }
 
 let manualPropulsionCommand: PropulsionCommand = {

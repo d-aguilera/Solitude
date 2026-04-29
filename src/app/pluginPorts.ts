@@ -61,6 +61,25 @@ export interface ControlPlugin {
   ) => PropulsionCommand;
 }
 
+export interface SimulationPhaseParams {
+  controlInput: ControlInput;
+  controlState: SimControlState;
+  dtMillis: number;
+  dtMillisSim: number;
+  mainFocus: FocusContext;
+  mainControlledBody: ControlledBody;
+  world: World;
+}
+
+export interface SimulationPlugin {
+  beforeVehicleDynamics?: (params: SimulationPhaseParams) => void;
+  afterVehicleDynamics?: (params: SimulationPhaseParams) => void;
+  beforeGravity?: (params: SimulationPhaseParams) => void;
+  afterGravity?: (params: SimulationPhaseParams) => void;
+  afterCollisions?: (params: SimulationPhaseParams) => void;
+  afterSpin?: (params: SimulationPhaseParams) => void;
+}
+
 export interface HudContext {
   nowMs: number;
   world: World;
@@ -212,6 +231,7 @@ export interface GamePlugin {
   loop?: LoopPlugin;
   segments?: SegmentPlugin;
   scene?: ScenePlugin;
+  simulation?: SimulationPlugin;
   views?: ViewPlugin;
   worldModel?: WorldModelPlugin;
 }
