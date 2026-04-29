@@ -11,7 +11,7 @@ import type {
 } from "./controlPorts";
 import type { EntityConfig, EntityId } from "./entityConfigPorts";
 import type { HudGrid } from "./hudPorts";
-import type { FocusContext } from "./runtimePorts";
+import type { FocusContext, TickOutput } from "./runtimePorts";
 import type { Scene, SceneObject } from "./scenePorts";
 import type { SceneViewId, ViewDefinition } from "./viewPorts";
 
@@ -68,11 +68,13 @@ export interface SimulationPhaseParams {
   dtMillisSim: number;
   mainFocus: FocusContext;
   mainControlledBody: ControlledBody;
+  output: TickOutput;
   world: World;
 }
 
 export interface SimulationPlugin {
   beforeVehicleDynamics?: (params: SimulationPhaseParams) => void;
+  updateVehicleDynamics?: (params: SimulationPhaseParams) => void;
   afterVehicleDynamics?: (params: SimulationPhaseParams) => void;
   beforeGravity?: (params: SimulationPhaseParams) => void;
   afterGravity?: (params: SimulationPhaseParams) => void;

@@ -20,7 +20,7 @@ import {
   applyRcsTranslation,
   applyThrust,
 } from "./physics";
-import type { ControlPlugin } from "./pluginPorts";
+import type { ControlPlugin, SimulationPlugin } from "./pluginPorts";
 
 export interface SpacecraftVehicleDynamicsParams {
   controlInput: ControlInput;
@@ -64,7 +64,31 @@ export function applySpacecraftVehicleDynamics(
   return propulsionCommand;
 }
 
-export function getRenderedThrustLevel(
+export function createSpacecraftVehicleDynamicsPlugin(
+  controlPlugins: ControlPlugin[],
+): SimulationPlugin {
+  return {
+    updateVehicleDynamics: (params) => {
+      const propulsionCommand = applySpacecraftVehicleDynamics({
+        controlInput: params.controlInput,
+        controlPlugins,
+        controlState: params.controlState,
+        dtMillis: params.dtMillis,
+        mainControlledBody: params.mainControlledBody,
+        world: params.world,
+      });
+      params.output.currentThrustLevel = getRenderedThrustLevel(
+        propulsionCommand.main,
+        params.controlState,
+      );
+      params.output.currentRcsLevel = getRenderedRcsLevel(
+        propulsionCommand.rcs,
+      );
+    },
+  };
+}
+
+function getRenderedThrustLevel(
   thrustCommand: ThrustCommand,
   controlState: SimControlState,
 ): number {
@@ -76,7 +100,7 @@ export function getRenderedThrustLevel(
     : -controlState.thrustLevel;
 }
 
-export function getRenderedRcsLevel(rcsCommand: RcsCommand): number {
+function getRenderedRcsLevel(rcsCommand: RcsCommand): number {
   if (rcsCommand.right === 0) {
     return 0;
   }

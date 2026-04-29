@@ -92,6 +92,7 @@ describe("headlessGameLoop", () => {
     };
     const simulationPlugin: SimulationPlugin = {
       beforeVehicleDynamics: () => events.push("beforeVehicleDynamics"),
+      updateVehicleDynamics: () => events.push("vehicleDynamics"),
       afterVehicleDynamics: () => events.push("afterVehicleDynamics"),
       beforeGravity: () => events.push("beforeGravity"),
       afterGravity: () => events.push("afterGravity"),
@@ -105,13 +106,14 @@ describe("headlessGameLoop", () => {
 
     loop.step(16);
 
-    expect(events.slice(0, 3)).toEqual([
+    expect(events.slice(0, 4)).toEqual([
       "beforeVehicleDynamics",
+      "vehicleDynamics",
       "afterVehicleDynamics",
       "beforeGravity",
     ]);
-    expect(events.slice(3, -3).length).toBeGreaterThan(0);
-    expect(events.slice(3, -3).every((event) => event === "gravity")).toBe(
+    expect(events.slice(4, -3).length).toBeGreaterThan(0);
+    expect(events.slice(4, -3).every((event) => event === "gravity")).toBe(
       true,
     );
     expect(events.slice(-3)).toEqual([
@@ -119,6 +121,23 @@ describe("headlessGameLoop", () => {
       "afterCollisions",
       "afterSpin",
     ]);
+  });
+
+  it("lets simulation vehicle-dynamics plugins write tick output", () => {
+    const simulationPlugin: SimulationPlugin = {
+      updateVehicleDynamics: ({ output }) => {
+        output.currentThrustLevel = 42;
+        output.currentRcsLevel = -0.5;
+      },
+    };
+    const loop = createHeadlessLoop(buildHeadlessConfig(), {
+      simulationPlugins: [simulationPlugin],
+    });
+
+    const output = loop.step(16);
+
+    expect(output.currentThrustLevel).toBe(42);
+    expect(output.currentRcsLevel).toBe(-0.5);
   });
 
   it("runs a step without any render config", () => {
