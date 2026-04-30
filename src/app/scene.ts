@@ -1,6 +1,6 @@
 import { updateCameras, updateMainViewCameraOffset } from "./cameras";
 import type { ControlInput } from "./controlPorts";
-import { updateMainViewLook } from "./controls";
+import { updateMainViewLook } from "./mainViewControls";
 import type { FocusContext } from "./runtimePorts";
 import type { SceneControlState } from "./scenePorts";
 import type { SceneState } from "./viewPorts";

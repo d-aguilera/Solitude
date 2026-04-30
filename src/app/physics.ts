@@ -13,11 +13,6 @@ import type {
   RcsCommand,
   ThrustCommand,
 } from "./controlPorts";
-import {
-  maxRcsTranslationAcceleration,
-  maxThrustAcceleration,
-} from "./controls";
-
 // Scratch vector for applyThrustToVelocity
 const cvScratch = vec3.zero();
 const Rspin = mat3.zero();
@@ -34,6 +29,7 @@ function applyThrustToVelocity(
   dtMillis: number,
   thrust: ThrustCommand,
   body: ControlledBodyState,
+  maxThrustAcceleration: number,
 ): void {
   if (dtMillis === 0) return;
   if (thrust.forward === 0) return;
@@ -54,12 +50,18 @@ export function applyThrust(
   dtMillis: number,
   controlledBody: ControlledBody,
   thrust: ThrustCommand,
+  maxThrustAcceleration: number,
 ): void {
   if (dtMillis === 0) {
     return;
   }
 
-  applyThrustToVelocity(dtMillis, thrust, controlledBody);
+  applyThrustToVelocity(
+    dtMillis,
+    thrust,
+    controlledBody,
+    maxThrustAcceleration,
+  );
 }
 
 /**
@@ -69,6 +71,7 @@ export function applyRcsTranslation(
   dtMillis: number,
   controlledBody: ControlledBody,
   rcs: RcsCommand,
+  maxRcsTranslationAcceleration: number,
 ): void {
   if (dtMillis === 0) {
     return;

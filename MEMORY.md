@@ -84,7 +84,7 @@
 ## Key files
 
 - `src/infra/NewtonianGravityEngine.ts`: N-body gravity (leapfrog).
-- `src/app/controls.ts`: input mapping to thrust/attitude/autopilot.
+- `src/plugins/spacecraftOperator/`: spacecraft input bindings plus thrust/RCS/attitude command interpretation and vehicle dynamics.
 - `src/plugins/autopilot/logic.ts`: align-to-velocity/body and “circle now”.
 - `src/plugins/playback/`: diagnostic capture/playback for repeatable circle-now repros.
 - `src/setup/sceneSetup.ts`: scene graph + trajectory setup.

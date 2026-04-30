@@ -6,6 +6,13 @@ import type {
   ThrustCommand,
 } from "../../app/controlPorts";
 import {
+  applyControlledBodyRotation,
+  applyRcsTranslation,
+  applyThrust,
+} from "../../app/physics";
+import type { ControlPlugin, SimulationPlugin } from "../../app/pluginPorts";
+import type { ControlledBody, World } from "../../domain/domainPorts";
+import {
   getMainThrustCommandInto,
   getRcsCommandInto,
   maxRcsTranslationAcceleration,
@@ -13,14 +20,7 @@ import {
   resolvePropulsionCommandWithPlugins,
   updateControlState,
   updateControlledBodyAngularVelocityFromInput,
-} from "../../app/controls";
-import {
-  applyControlledBodyRotation,
-  applyRcsTranslation,
-  applyThrust,
-} from "../../app/physics";
-import type { ControlPlugin, SimulationPlugin } from "../../app/pluginPorts";
-import type { ControlledBody, World } from "../../domain/domainPorts";
+} from "./controlLogic";
 
 export interface SpacecraftVehicleDynamicsParams {
   controlInput: ControlInput;
@@ -59,8 +59,18 @@ export function applySpacecraftVehicleDynamics(
     controlPlugins,
   );
   applyControlledBodyRotation(dtMillis, mainControlledBody);
-  applyThrust(dtMillis, mainControlledBody, propulsionCommand.main);
-  applyRcsTranslation(dtMillis, mainControlledBody, propulsionCommand.rcs);
+  applyThrust(
+    dtMillis,
+    mainControlledBody,
+    propulsionCommand.main,
+    maxThrustAcceleration,
+  );
+  applyRcsTranslation(
+    dtMillis,
+    mainControlledBody,
+    propulsionCommand.rcs,
+    maxRcsTranslationAcceleration,
+  );
   return propulsionCommand;
 }
 

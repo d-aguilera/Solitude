@@ -1,7 +1,3 @@
-import {
-  maxRcsTranslationAcceleration,
-  maxThrustAcceleration,
-} from "../../../app/controls";
 import type {
   EntityMotionState,
   ShipBody,
@@ -11,6 +7,10 @@ import { EPS_DELTA_V, EPS_LEN, EPS_SPEED_FINE } from "../../../domain/epsilon";
 import { getDominantBodyPrimary } from "../../../domain/orbit";
 import { type Vec3, vec3 } from "../../../domain/vec3";
 import { parameters } from "../../../global/parameters";
+import {
+  maxRcsTranslationAcceleration,
+  maxThrustAcceleration,
+} from "../../spacecraftOperator/controlLogic";
 import type { CompiledPlaybackScript } from "../types";
 import type {
   PlaybackLogger,

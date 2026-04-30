@@ -20,18 +20,18 @@ Status: not started.
 
 Next focused change:
 
-- Move spacecraft control helper logic out of generic app controls:
-  - relocate thrust-level, thrust command, RCS command, and attitude command helpers toward `spacecraftOperator`;
-  - keep shared app ports/types (`ControlInput`, `PropulsionCommand`, etc.) stable;
-  - preserve autopilot/playback compatibility during the bridge.
+- Continue shrinking transitional spacecraft/control compatibility surfaces:
+  - remove or rename `src/app/controls.ts` compatibility re-export if no production imports remain;
+  - audit `ControlPlugin` naming and params for spacecraft-specific assumptions;
+  - decide whether autopilot should depend on `spacecraftOperator` capability names or stay on shared control ports for one more slice.
 
 Success criteria:
 
 - Tick ordering remains covered by tests.
 - Manual controls, autopilot, playback, and HUD control readouts remain behavior-compatible.
 - Runtime/headless setup still installs the current spacecraft behavior by default.
-- `src/app/controls.ts` keeps main-view/global control logic only where practical.
-- Spacecraft command interpretation lives under `spacecraftOperator`.
+- No new plugin-to-core layering violations.
+- Transitional aliases are reduced only where imports prove safe.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -47,6 +47,7 @@ Success criteria:
 - 2026-04-29: Moved default spacecraft vehicle-dynamics registration out of `createTickHandler`; DOM/headless setup now installs the spacecraft simulation adapter and passes the full simulation plugin list into core.
 - 2026-04-29: Made spacecraft dynamics a named `spacecraftOperator` plugin contribution. Browser defaults include it in `defaultPluginIds`; headless installs the same plugin explicitly by default.
 - 2026-04-29: Moved spacecraft-specific action names and key bindings out of base input and into `spacecraftOperator.input`; base actions now cover generic/main-view look and camera offset controls.
+- 2026-04-29: Moved spacecraft thrust/RCS/attitude command interpretation out of `src/app/controls.ts` and into `src/plugins/spacecraftOperator/controlLogic.ts`. `src/app/mainViewControls.ts` now owns main-view look logic; `src/app/controls.ts` is only a temporary main-view compatibility re-export.
 
 ## Decision Log
 
