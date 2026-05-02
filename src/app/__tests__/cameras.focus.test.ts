@@ -20,7 +20,6 @@ function createBody(id: string, upX: number): ControlledBody {
 describe("main view camera frame", () => {
   it("uses mainFocus instead of the legacy mainControlledBody alias", () => {
     const focusedBody = createBody("ship:focus", 0.25);
-    const legacyBody = createBody("ship:legacy", -0.25);
     const frame = localFrame.zero();
     const mainFocus: FocusContext = {
       controlledBody: focusedBody,
@@ -29,12 +28,10 @@ describe("main view camera frame", () => {
 
     updateMainViewFrame({
       frame,
-      mainControlledBody: legacyBody,
       mainFocus,
       mainViewLookState: { azimuth: 0, elevation: 0 },
     });
 
     expect(frame.forward).toEqual(focusedBody.frame.forward);
-    expect(frame.forward).not.toEqual(legacyBody.frame.forward);
   });
 });

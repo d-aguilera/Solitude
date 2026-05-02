@@ -27,7 +27,6 @@ export function updateCameras(
 ): void {
   const focusedBody = mainFocus.controlledBody;
   viewFrameUpdateParamsScratch.mainFocus = mainFocus;
-  viewFrameUpdateParamsScratch.mainControlledBody = focusedBody;
   viewFrameUpdateParamsScratch.mainViewLookState = mainViewLookState;
   viewFrameUpdateParamsScratch.pilotLookState = mainViewLookState;
   for (const view of views) {

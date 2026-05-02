@@ -1,4 +1,3 @@
-import type { ControlledBody } from "../domain/domainPorts";
 import type { LocalFrame } from "../domain/localFrame";
 import type { Vec3 } from "../domain/vec3";
 import type { FocusContext } from "./runtimePorts";
@@ -22,8 +21,6 @@ export type ViewLayout =
 export interface ViewFrameUpdateParams {
   frame: LocalFrame;
   mainFocus: FocusContext;
-  /** @deprecated Use mainFocus. */
-  mainControlledBody?: ControlledBody;
   mainViewLookState: MainViewLookState;
   /** @deprecated Use mainViewLookState. */
   pilotLookState?: MainViewLookState;

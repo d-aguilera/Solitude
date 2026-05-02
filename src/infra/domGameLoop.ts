@@ -373,7 +373,6 @@ function createLoopViews(
       renderParams: {
         camera: sceneView.camera,
         mainFocus: worldAndScene.mainFocus,
-        mainControlledBody: worldAndScene.mainControlledBody,
         objectsFilter,
         renderCache,
         scene: worldAndScene.scene,
