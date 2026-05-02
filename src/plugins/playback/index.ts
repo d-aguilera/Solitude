@@ -31,6 +31,7 @@ export function createPlaybackPlugin(
       updateLoopState: ({
         controlInput,
         dtMillis,
+        mainFocus,
         world,
         mainControlledBody,
         nowMs,
@@ -40,7 +41,7 @@ export function createPlaybackPlugin(
         controller.updateLoop(
           controlInput,
           world,
-          mainControlledBody,
+          mainFocus?.controlledBody ?? mainControlledBody,
           nowMs,
           simTimeMillis ?? 0,
           getEffectiveTimeScale(dtMillis, state.framePolicy.simDtMillis),
