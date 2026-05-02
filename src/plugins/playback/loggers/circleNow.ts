@@ -212,7 +212,7 @@ export function createCircleNowLogger(
 
   const sampleAfterTick = (context: PlaybackLoggerTickContext): void => {
     if (!context.controlInput.circleNow) return;
-    if (!context.world || !context.mainControlledBody) {
+    if (!context.world || !getContextControlledBody(context)) {
       pushMissingSample(context);
       return;
     }
@@ -324,11 +324,8 @@ export function createCircleNowLogger(
   }
 
   function pushCircleNowSample(context: PlaybackLoggerTickContext): void {
-    const { mainControlledBody: ship, world } =
-      context as PlaybackLoggerTickContext & {
-        mainControlledBody: ShipBody;
-        world: World;
-      };
+    const world = context.world as World;
+    const ship = getContextControlledBody(context) as ShipBody;
     if (!findPrimary(world, ship.position)) {
       pushMissingSample(context);
       return;
@@ -939,6 +936,12 @@ export function createCircleNowLogger(
     primaryRadiusScratch = primary?.radius ?? 0;
     return primary != null;
   }
+}
+
+function getContextControlledBody(
+  context: PlaybackLoggerLifecycleContext,
+): ShipBody | undefined {
+  return context.controlledBody ?? context.mainControlledBody;
 }
 
 function angleDeg(a: Vec3, b: Vec3): number {

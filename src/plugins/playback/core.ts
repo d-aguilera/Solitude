@@ -473,6 +473,7 @@ function sampleLoggerAfterTick(
   const dtSimMillis = params.state.framePolicy.simDtMillis ?? dtTickMillis;
   logger.sampleAfterTick({
     controlInput: params.controlInput,
+    controlledBody: getLoopControlledBody(params),
     dtSimMillis,
     dtTickMillis,
     mainControlledBody: getLoopControlledBody(params),
@@ -493,6 +494,7 @@ function createLoggerLifecycleContext(
 ) {
   return {
     controlInput: controlInput ?? ({} as ControlInput),
+    controlledBody,
     mainControlledBody: controlledBody,
     playbackElapsedMs,
     script,
