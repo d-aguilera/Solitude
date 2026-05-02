@@ -88,15 +88,15 @@ export function applyRcsTranslation(
  */
 export function applyControlledBodyRotation(
   dtMillis: number,
-  ship: ControlledBodyState,
+  controlledBody: ControlledBodyState,
 ): void {
   const dtSec = dtMillis / 1000;
   if (dtSec <= 0) return;
 
-  const omega = ship.angularVelocity;
+  const omega = controlledBody.angularVelocity;
   if (omega.roll === 0 && omega.pitch === 0 && omega.yaw === 0) return;
 
-  const { frame } = ship;
+  const { frame } = controlledBody;
   // Convert roll/pitch/yaw rates into a world-space angular velocity vector.
   omegaWorldScratch.x =
     frame.forward.x * omega.roll +
@@ -117,7 +117,7 @@ export function applyControlledBodyRotation(
   const angle = omegaMag * dtSec;
   vec3.scaleInto(omegaAxisScratch, 1 / omegaMag, omegaWorldScratch);
   localFrame.rotateAroundAxisInPlace(frame, omegaAxisScratch, angle);
-  localFrame.intoMat3(ship.orientation, frame);
+  localFrame.intoMat3(controlledBody.orientation, frame);
 }
 
 /**

@@ -48,7 +48,7 @@ export interface ThrustCommand {
 }
 
 export interface RcsCommand {
-  /** Signed RCS translation command in [-1, 1] along the ship-right axis. */
+  /** Signed RCS translation command in [-1, 1] along the controlled body's right axis. */
   right: number;
 }
 

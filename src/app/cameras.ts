@@ -66,10 +66,10 @@ export function updateMainViewFrame({
 
 function setCameraRelativeToControlledBody(
   pose: DomainCameraPose,
-  ship: ControlledBody,
+  controlledBody: ControlledBody,
   localOffset: Vec3,
 ): void {
-  const { right, forward, up } = ship.frame;
+  const { right, forward, up } = controlledBody.frame;
 
   vec3.scaleInto(offsetRightScratch, localOffset.x, right);
   vec3.scaleInto(offsetForwardScratch, localOffset.y, forward);
@@ -79,8 +79,7 @@ function setCameraRelativeToControlledBody(
   vec3.addInto(worldOffsetScratch, offsetRightScratch, offsetForwardScratch);
   vec3.addInto(worldOffsetScratch, worldOffsetScratch, offsetUpScratch);
 
-  // pose.position = ship.position + worldOffsetScratch
-  vec3.addInto(pose.position, ship.position, worldOffsetScratch);
+  vec3.addInto(pose.position, controlledBody.position, worldOffsetScratch);
 }
 
 export function updateMainViewCameraOffset(

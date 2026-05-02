@@ -14,16 +14,16 @@ const vRelScratch: Vec3 = vec3.zero();
 const vNormalScratch: Vec3 = vec3.zero();
 
 /**
- * Process collisions between ship bodies and planets/stars.
+ * Process collisions between controllable bodies and collision spheres.
  *
  * Behavior:
- *  - Ships are treated as points.
- *  - Planets and stars are treated as rigid spheres with physicalRadius.
+ *  - Controllable bodies are treated as points.
+ *  - Collision bodies are treated as rigid spheres.
  *  - Collisions are resolved in the body's rest frame:
- *      v_rel  = v_ship - v_body
+ *      v_rel  = v_controlled - v_body
  *      v_rel' = v_rel - 2 * (v_rel · n) * n
- *      v_ship' = v_body + v_rel'
- *    where n is the outward normal from body center to ship.
+ *      v_controlled' = v_body + v_rel'
+ *    where n is the outward normal from body center to controlled body.
  */
 export function resolveCollisions(world: World): void {
   const { collisionSpheres, controllableBodies } = world;
@@ -31,9 +31,9 @@ export function resolveCollisions(world: World): void {
   const sphereCount = collisionSpheres.length;
 
   for (let si = 0; si < controllableBodies.length; si++) {
-    const ship = controllableBodies[si];
-    const shipPos = ship.position;
-    const shipVel = ship.velocity;
+    const controlledBody = controllableBodies[si];
+    const controlledPosition = controlledBody.position;
+    const controlledVelocity = controlledBody.velocity;
 
     let collided = false;
     let bestPenetration = 0;
@@ -43,13 +43,13 @@ export function resolveCollisions(world: World): void {
 
     for (let i = 0; i < sphereCount; i++) {
       const sphere = collisionSpheres[i];
-      if (sphere.id === ship.id) continue;
+      if (sphere.id === controlledBody.id) continue;
 
       const body = sphere.state;
       const radius = sphere.radius;
 
-      // delta = shipPos - body.position
-      vec3.subInto(deltaScratch, shipPos, body.position);
+      // delta = controlledPosition - body.position
+      vec3.subInto(deltaScratch, controlledPosition, body.position);
       const distSq = vec3.lengthSq(deltaScratch);
       const radiusSq = radius * radius;
 
@@ -69,22 +69,27 @@ export function resolveCollisions(world: World): void {
 
     if (!collided || !bestCenter || !bestVelocity) continue;
 
-    // Resolve the single deepest collision for this ship.
+    // Resolve the single deepest collision for this controlled body.
 
-    // normal = (shipPos - bestCenter) normalized
-    vec3.subInto(normalScratch, shipPos, bestCenter);
+    // normal = (controlledPosition - bestCenter) normalized
+    vec3.subInto(normalScratch, controlledPosition, bestCenter);
     vec3.normalizeInto(normalScratch);
 
-    // Place ship exactly on the surface: shipPos = bestCenter + normal * bestRadius
-    vec3.scaledAddInto(shipPos, bestCenter, normalScratch, bestRadius);
+    // Place controlled body exactly on the surface.
+    vec3.scaledAddInto(
+      controlledPosition,
+      bestCenter,
+      normalScratch,
+      bestRadius,
+    );
 
-    // Relative velocity in the body's rest frame: v_rel = v_ship - v_body
-    vec3.subInto(vRelScratch, shipVel, bestVelocity);
+    // Relative velocity in the body's rest frame.
+    vec3.subInto(vRelScratch, controlledVelocity, bestVelocity);
 
     // Project relative velocity onto normal: vn = v_rel · n
     const vn = vec3.dot(vRelScratch, normalScratch);
 
-    // If the ship is moving away from the surface in the body's frame, keep velocity.
+    // If the controlled body is moving away from the surface, keep velocity.
     if (vn >= 0) {
       continue;
     }
@@ -99,7 +104,7 @@ export function resolveCollisions(world: World): void {
 
     vec3.scaleInto(vRelScratch, 1 - tangentialDamping, vRelScratch);
 
-    // Back to world frame: v_ship' = v_body + v_rel'
-    vec3.addInto(shipVel, bestVelocity, vRelScratch);
+    // Back to world frame.
+    vec3.addInto(controlledVelocity, bestVelocity, vRelScratch);
   }
 }

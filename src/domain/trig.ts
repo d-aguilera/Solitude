@@ -33,13 +33,13 @@ function tangentialDirAtAngle(
 
 export const trig = {
   /**
-   * Compute a radial direction on a not-necessarily-axis-aligned ship
+   * Compute a radial direction on a not-necessarily-axis-aligned frame
    * defined by two basis vectors.
    */
   radialDirAtAngle,
 
   /**
-   * Local tangential direction around that orbit ship.
+   * Local tangential direction around that orbit frame.
    */
   tangentialDirAtAngle,
 };

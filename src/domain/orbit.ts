@@ -64,14 +64,6 @@ export function createOrbitReadout(): OrbitReadout {
   };
 }
 
-export function computeShipOrbitReadoutInto(
-  out: OrbitReadout,
-  world: World,
-  ship: ControlledBody,
-): boolean {
-  return computeOrbitReadoutInto(out, world, ship);
-}
-
 export function computeOrbitReadoutInto(
   out: OrbitReadout,
   world: World,

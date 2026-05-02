@@ -5,7 +5,7 @@ import { localFrame } from "../localFrame";
 import { mat3 } from "../mat3";
 import { vec3 } from "../vec3";
 
-function createShip(id: string): ControlledBody {
+function createControlledBody(id: string): ControlledBody {
   const frame = localFrame.fromUp(vec3.create(0, 0, 1));
   return {
     angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
@@ -19,7 +19,7 @@ function createShip(id: string): ControlledBody {
 
 describe("resolveCollisions", () => {
   it("resolves controllable bodies against generic collision spheres", () => {
-    const ship = createShip("ship:test");
+    const controlledBody = createControlledBody("ship:test");
     const sphereState = {
       id: "body:sphere",
       orientation: mat3.copy(mat3.identity, mat3.zero()),
@@ -35,20 +35,20 @@ describe("resolveCollisions", () => {
           state: sphereState,
         },
       ],
-      controllableBodies: [ship],
-      entities: [{ id: ship.id }, { id: sphereState.id }],
+      controllableBodies: [controlledBody],
+      entities: [{ id: controlledBody.id }, { id: sphereState.id }],
       entityIndex: new Map([
-        [ship.id, { id: ship.id }],
+        [controlledBody.id, { id: controlledBody.id }],
         [sphereState.id, { id: sphereState.id }],
       ]),
-      entityStates: [ship, sphereState],
+      entityStates: [controlledBody, sphereState],
       gravityMasses: [],
       lightEmitters: [],
     };
 
     resolveCollisions(world);
 
-    expect(ship.position.x).toBe(10);
-    expect(ship.velocity.x).toBeGreaterThan(0);
+    expect(controlledBody.position.x).toBe(10);
+    expect(controlledBody.velocity.x).toBeGreaterThan(0);
   });
 });

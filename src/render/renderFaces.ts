@@ -147,7 +147,7 @@ function buildFaces(
           // Use precomputed world-space face normal
           n = worldFaceNormals[fi];
         } else {
-          // Fallback for meshes without precomputed normals (ship)
+          // Fallback for meshes without precomputed normals.
           vec3.subInto(e1Scratch, v1, v0);
           vec3.subInto(e2Scratch, v2, v0);
           vec3.crossInto(normalScratch, e1Scratch, e2Scratch);
