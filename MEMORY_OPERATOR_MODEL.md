@@ -16,14 +16,17 @@
 
 ## Current Slice
 
-Status: in progress.
+Status: ready for next phase.
 
 Next focused change:
 
-- Continue shrinking transitional spacecraft/control compatibility surfaces:
-  - decide whether `ControlPlugin` should be renamed toward operator-control terminology or stay as the shared control-extension port for one more slice;
-  - migrate any remaining plugin consumers from deprecated `ship` control params to `controlledBody`;
-  - decide whether autopilot should depend on `spacecraftOperator` capability names or stay on shared control ports for one more slice.
+- Remove the remaining core setup/runtime `mainControlledBody` bridge:
+  - replace `WorldSetup.mainControlledBody` and `WorldAndScene.mainControlledBody` consumers with `mainFocus.controlledBody`;
+  - update `src/setup/setup.ts`, `src/app/runtimePorts.ts`, `src/infra/__tests__/headlessGameLoop.test.ts`, and `src/plugins/solarSystem/solarSystem.test.ts`;
+  - keep behavior unchanged: `mainFocus` should still reference the configured focused controllable entity.
+- After that, decide how to migrate config naming:
+  - `mainControlledEntityId` is still the transitional config/world-model name;
+  - likely next name is `mainFocusEntityId` or equivalent, with compatibility adapters for plugin-contributed config.
 
 Success criteria:
 
@@ -31,7 +34,7 @@ Success criteria:
 - Manual controls, autopilot, playback, and HUD control readouts remain behavior-compatible.
 - Runtime/headless setup still installs the current spacecraft behavior by default.
 - No new plugin-to-core layering violations.
-- Transitional aliases are reduced only where imports prove safe.
+- `rg mainControlledBody src` only finds intentional compatibility leftovers, ideally none after the bridge removal.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -49,6 +52,13 @@ Success criteria:
 - 2026-04-29: Moved spacecraft-specific action names and key bindings out of base input and into `spacecraftOperator.input`; base actions now cover generic/main-view look and camera offset controls.
 - 2026-04-29: Moved spacecraft thrust/RCS/attitude command interpretation out of `src/app/controls.ts` and into `src/plugins/spacecraftOperator/controlLogic.ts`. `src/app/mainViewControls.ts` now owns main-view look logic; `src/app/controls.ts` is only a temporary main-view compatibility re-export.
 - 2026-05-01: Removed the unused `src/app/controls.ts` compatibility re-export. Added generic `controlledBody` fields to control plugin attitude/propulsion params while keeping deprecated `ship` aliases, and migrated autopilot's control plugin bridge to the generic field.
+- 2026-05-02: Migrated plugin-facing contexts to focused-body plumbing:
+  - HUD plugins, orbit telemetry, spacecraft telemetry, autopilot HUD, and velocity segments use `mainFocus.controlledBody`.
+  - `spacecraftOperator` vehicle dynamics now applies to `mainFocus.controlledBody`.
+  - Playback loop, capture/logging, and circle-now diagnostics now use `controlledBody`/`mainFocus` instead of `mainControlledBody`.
+  - View/render params and camera frame updates no longer carry a `mainControlledBody` alias.
+  - Simulation phase, HUD, scene, segment, and loop plugin params no longer expose `mainControlledBody`; loop params now require `mainFocus`.
+- 2026-05-02: Updated `MEMORY.md` with the phase boundary and committed it as Operator model 22. The sharper operator-specific handoff is this document.
 
 ## Decision Log
 
@@ -250,11 +260,17 @@ Current rough direction:
 - Preserve current ordering with explicit phases before extracting behavior.
 - Use arrays of phase callbacks, not an allocation-heavy event bus.
 
+Current state:
+
+- Explicit simulation phases exist around vehicle dynamics, gravity, collisions, and spin.
+- Spacecraft vehicle dynamics is installed via the `spacecraftOperator` simulation plugin.
+- Phase params are focused-entity-first and no longer expose `mainControlledBody`.
+
 Unresolved:
 
-- Exact phase names and params.
-- Whether control plugins evolve into phase plugins or a separate simulation plugin port.
+- Whether control plugins evolve into operator-control terminology or stay as shared control-extension ports.
 - How much mutable tick output belongs to generic core versus operator plugins.
+- Whether spacecraft/autopilot capability requirements should be declared before or during operator-mode registration.
 
 ### Input Contexts
 
