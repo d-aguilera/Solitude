@@ -16,6 +16,7 @@
 ## Current focus
 
 - Generalize the main interactive subject so core owns a generic focused entity, main view plumbing, and simulation phases while plugins define spacecraft controls, camera rigs, telemetry assumptions, and operator modes.
+- **Current phase boundary**: plugin-facing runtime contexts now use `mainFocus`/`controlledBody` rather than `mainControlledBody`. The remaining main-controlled bridge is core setup/runtime state (`WorldSetup` / `WorldAndScene.mainControlledBody`) plus transitional config naming (`mainControlledEntityId`).
 
 ## Must-Do After Code Changes (Do Not Skip)
 
@@ -80,6 +81,7 @@
 - `src/infra/domBootstrap.ts` wires input, layout, renderers, loop, and gravity engine.
 - `src/infra/domGameLoop.ts` runs the frame loop and orchestrates physics + rendering.
 - `src/app/game.ts` is the per-tick simulation core.
+- Plugin phase/HUD/scene/segment/loop contexts are focused-entity-first: use `mainFocus.controlledBody` for the active body.
 
 ## Key files
 
@@ -116,7 +118,9 @@
 
 - Core loop is working: input → physics → scene update → render → HUD.
 - Solar-system content is contributed by a plugin, and runtime world state is largely generic entity/capability based.
-- Core still assumes a main spacecraft-like controlled body for propulsion, RCS, attitude, HUD context, and the primary/pilot camera path.
+- Spacecraft propulsion/RCS/attitude lives in `src/plugins/spacecraftOperator/` and operates on `mainFocus.controlledBody`.
+- HUD, view/render params, playback loop/logging, and plugin simulation/scene/segment contexts have been migrated away from `mainControlledBody` aliases.
+- Core still exposes a transitional `mainControlledBody` bridge from setup/runtime objects, and config still names the focused entity via `mainControlledEntityId`.
 - Default runtime uses Canvas 2D; WebGL renderer exists but is not wired by default.
 - Tests cover geometry/mesh parsing and projection clipping.
 
@@ -124,10 +128,17 @@
 
 - Autopilot refactor: introduced layer-specific `autoPilot.ts` modules, and kept render ports local (no re-export of autopilot types).
 - Solar-system scenario extraction: moved solar bodies, colors, meshes, and default ships into `src/plugins/solarSystem/`; introduced world-model plugin contributions.
+- Operator model commits 13–21: migrated HUD telemetry, spacecraft vehicle dynamics, playback loop/loggers, view/render params, and plugin phase contexts to focused-body plumbing; removed most `mainControlledBody` compatibility fields outside the core setup/runtime bridge.
+
+## Next steps
+
+- Replace `WorldSetup.mainControlledBody` and `WorldAndScene.mainControlledBody` with `mainFocus`-only plumbing, updating headless/runtime tests that still assert the old bridge.
+- Rename or wrap `mainControlledEntityId` toward focused-entity terminology, keeping config/plugin compatibility adapters while the transition lands.
+- After that bridge is removed, scan for remaining `mainControlledBody` references. Expected leftovers should be none, except any intentionally deprecated compatibility adapters if kept for external config/API stability.
 
 ## Open questions / risks
 
-- Operator/focus generalization touches simulation phase ordering, input ownership, controls, camera rigs, HUD contexts, playback, telemetry, autopilot, and plugin capability requirements; keep each migration step small and reversible.
+- The next operator/focus phase touches setup/runtime object shape and config naming; keep it small and reversible, because it affects bootstrap, headless loops, scene setup, playback, and tests.
 - Some plugin features currently assume planets/stars/ships; expect temporary adapters while the generic model lands.
 - Gravity uses fixed sub-steps for stability; high time scales can still destabilize.
 - WebGL path is present but not wired in the default entry; decide if/when to switch.
