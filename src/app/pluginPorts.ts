@@ -1,4 +1,4 @@
-import type { ControlledBody, World } from "../domain/domainPorts";
+import type { World } from "../domain/domainPorts";
 import type { Vec3 } from "../domain/vec3";
 import type { WorldAndSceneConfig } from "./configPorts";
 import type {
@@ -173,8 +173,7 @@ export interface LoopInitParams {
 export interface LoopUpdateParams {
   controlInput: ControlInput;
   dtMillis: number;
-  mainFocus?: FocusContext;
-  mainControlledBody?: ControlledBody;
+  mainFocus: FocusContext;
   nowMs: number;
   simTimeMillis?: number;
   state: LoopState;

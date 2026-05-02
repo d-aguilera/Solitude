@@ -3,12 +3,18 @@ import { createControlInput } from "../../app/controlPorts";
 import type { LoopUpdateParams } from "../../app/pluginPorts";
 import { createLoopPlugin } from "./core";
 
+const mainFocus: LoopUpdateParams["mainFocus"] = {
+  controlledBody: {} as LoopUpdateParams["mainFocus"]["controlledBody"],
+  entityId: "ship:test",
+};
+
 function createLoopUpdateParams(pauseToggle: boolean): LoopUpdateParams {
   const controlInput = createControlInput(["pauseToggle"]);
   controlInput.pauseToggle = pauseToggle;
   return {
     controlInput,
     dtMillis: 16,
+    mainFocus,
     nowMs: 0,
     state: {
       framePolicy: {

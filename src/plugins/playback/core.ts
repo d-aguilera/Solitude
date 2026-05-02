@@ -506,5 +506,5 @@ function createLoggerLifecycleContext(
 function getLoopControlledBody(
   params: LoopUpdateParams | undefined,
 ): ShipBody | undefined {
-  return params?.mainFocus?.controlledBody ?? params?.mainControlledBody;
+  return params?.mainFocus.controlledBody;
 }

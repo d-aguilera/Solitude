@@ -4,6 +4,11 @@ import type { LoopUpdateParams } from "../../app/pluginPorts";
 import { parameters } from "../../global/parameters";
 import { createLoopPlugin } from "./core";
 
+const mainFocus: LoopUpdateParams["mainFocus"] = {
+  controlledBody: {} as LoopUpdateParams["mainFocus"]["controlledBody"],
+  entityId: "ship:test",
+};
+
 function createLoopUpdateParams(dtMillis: number): LoopUpdateParams {
   const controlInput = createControlInput([
     "decreaseTimeScale",
@@ -12,6 +17,7 @@ function createLoopUpdateParams(dtMillis: number): LoopUpdateParams {
   return {
     controlInput,
     dtMillis,
+    mainFocus,
     nowMs: 0,
     state: {
       framePolicy: {

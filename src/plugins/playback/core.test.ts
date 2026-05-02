@@ -150,7 +150,10 @@ describe("playback controller", () => {
     const params: LoopUpdateParams = {
       controlInput,
       dtMillis: 20,
-      mainControlledBody: ship,
+      mainFocus: {
+        controlledBody: ship,
+        entityId: ship.id,
+      },
       nowMs: 20,
       simTimeMillis: 20,
       state: {

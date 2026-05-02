@@ -205,7 +205,6 @@ export function runLoop({
     controlInput,
     dtMillis: 0,
     mainFocus: worldAndScene.mainFocus,
-    mainControlledBody: worldAndScene.mainControlledBody,
     nowMs: 0,
     simTimeMillis: 0,
     state: loopState,
