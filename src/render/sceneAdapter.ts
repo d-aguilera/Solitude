@@ -95,8 +95,10 @@ function createCelestialSceneObject(
   return {
     id: entity.id,
     kind: "planet",
-    centralBodyId:
-      entityState?.kind === "keplerian" ? entityState.centralBodyId : undefined,
+    centralEntityId:
+      entityState?.kind === "keplerian"
+        ? entityState.centralEntityId
+        : undefined,
     mesh: renderable.mesh,
     position: state.position,
     orientation: state.orientation,

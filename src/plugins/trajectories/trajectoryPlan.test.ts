@@ -54,7 +54,7 @@ describe("buildTrajectoryPlan", () => {
       metadata: { legacyKind: "planet" },
       components: {
         state: {
-          centralBodyId: "planet:sun",
+          centralEntityId: "planet:sun",
           kind: "keplerian",
           orbit: {
             argPeriapsisRad: 0,

@@ -1,7 +1,7 @@
 import { parameters } from "../global/parameters";
 import type {
-  BodyId,
   ControlledBody,
+  EntityId,
   EntityMotionState,
   World,
 } from "./domainPorts";
@@ -9,7 +9,7 @@ import { EPS_ECCENTRICITY, EPS_TIME_SEC } from "./epsilon";
 import { type Vec3, vec3 } from "./vec3";
 
 export interface OrbitReadout {
-  primaryId: BodyId;
+  primaryId: EntityId;
   primaryRadius: number;
   distance: number;
   speed: number;
@@ -29,7 +29,7 @@ export interface OrbitReadout {
 }
 
 export type GravityPrimary = {
-  id: BodyId;
+  id: EntityId;
   body: EntityMotionState;
   mass: number;
   radius: number;
@@ -195,7 +195,7 @@ function accelMagnitudeAtPosition(
   return (parameters.newtonG * mass) / r2;
 }
 
-function findGravityMass(world: World, id: BodyId): number | null {
+function findGravityMass(world: World, id: EntityId): number | null {
   for (let i = 0; i < world.gravityMasses.length; i++) {
     const mass = world.gravityMasses[i];
     if (mass.id === id) return mass.mass;

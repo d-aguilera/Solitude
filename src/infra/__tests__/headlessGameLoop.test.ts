@@ -21,7 +21,7 @@ function buildHeadlessConfig(): WorldConfigBase {
       gravityMass: { density: 1_000, physicalRadius: 1_000_000 },
       lightEmitter: { luminosity: 1 },
       state: {
-        centralBodyId: sunId,
+        centralEntityId: sunId,
         kind: "keplerian",
         orbit: {
           semiMajorAxis: 0,
@@ -42,7 +42,7 @@ function buildHeadlessConfig(): WorldConfigBase {
       collisionSphere: { radius: 1_000_000 },
       gravityMass: { density: 5_000, physicalRadius: 1_000_000 },
       state: {
-        centralBodyId: sunId,
+        centralEntityId: sunId,
         kind: "keplerian",
         orbit: {
           semiMajorAxis: 10_000_000,

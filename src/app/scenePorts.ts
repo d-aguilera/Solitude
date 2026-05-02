@@ -1,3 +1,4 @@
+import type { EntityId } from "../domain/domainPorts";
 import type { LocalFrame } from "../domain/localFrame";
 import type { Mat3 } from "../domain/mat3";
 import type { Vec3 } from "../domain/vec3";
@@ -18,7 +19,7 @@ export interface BaseSceneObject {
 export interface CelestialBodySceneObject extends SolidSceneObject {
   kind: "planet" | "star";
   backFaceCulling: true;
-  centralBodyId?: string;
+  centralEntityId?: EntityId;
   velocity: Vec3;
 }
 

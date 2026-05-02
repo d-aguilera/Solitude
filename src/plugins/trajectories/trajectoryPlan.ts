@@ -93,7 +93,7 @@ function getTrajectoryPlanetConfigs(configs: EntityConfig[]): {
     if (!state || state.kind !== "keplerian") continue;
 
     planetConfigs.push({
-      centralBodyId: state.centralBodyId,
+      centralBodyId: state.centralEntityId,
       id: entity.id,
       kind: entity.metadata.legacyKind,
       orbit: state.orbit,

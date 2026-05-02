@@ -115,6 +115,7 @@ Success criteria:
   - deleted the alias from `domainPorts`;
   - plugin/playback/logging/test code now types focused/controlled objects as `ControlledBody`;
   - playback snapshot field names remain unchanged for schema compatibility.
+- 2026-05-02: Removed `BodyId` and duplicate `EntityId`.
 
 ## Decision Log
 

@@ -1,4 +1,5 @@
-import type { EntityConfig, EntityId } from "./entityConfigPorts";
+import type { EntityId } from "../domain/domainPorts";
+import type { EntityConfig } from "./entityConfigPorts";
 import type { WorldRenderConfig } from "./renderConfigPorts";
 
 export * from "./entityConfigPorts";

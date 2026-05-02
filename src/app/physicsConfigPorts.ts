@@ -1,4 +1,4 @@
-import type { AngularVelocity, BodyId } from "../domain/domainPorts";
+import type { AngularVelocity, EntityId } from "../domain/domainPorts";
 import type { LocalFrame } from "../domain/localFrame";
 import type { Mat3 } from "../domain/mat3";
 import type { Vec3 } from "../domain/vec3";
@@ -31,7 +31,7 @@ export interface CelestialBodyPhysicsConfig {
    * For moons this is the id of the parent planet.
    * For a root body (e.g. Sun at origin) this should be equal to its own id.
    */
-  centralBodyId: BodyId;
+  centralEntityId: EntityId;
 
   /**
    * Axial rotation:

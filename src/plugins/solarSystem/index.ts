@@ -58,7 +58,7 @@ function buildSolarSystemBodyEntities({
             }
           : undefined,
         state: {
-          centralBodyId: body.centralBodyId,
+          centralEntityId: body.centralEntityId,
           kind: "keplerian",
           orbit: body.orbit,
         },

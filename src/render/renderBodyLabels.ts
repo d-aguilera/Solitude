@@ -3,7 +3,7 @@ import type {
   SceneObject,
   StarSceneObject,
 } from "../app/scenePorts";
-import type { BodyId } from "../domain/domainPorts";
+import type { EntityId } from "../domain/domainPorts";
 import { type Vec3, vec3 } from "../domain/vec3";
 import { alloc } from "../global/allocProfiler";
 import { formatDistance, formatSpeed } from "./formatters";
@@ -449,7 +449,7 @@ function isMoonLabelSeparated(
   screenHeight: number,
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
 ): boolean {
-  const parentId = body.centralBodyId;
+  const parentId = body.centralEntityId;
   if (!parentId || parentId === body.id) return true;
 
   const parent = cache.objectById.get(parentId);
@@ -675,7 +675,7 @@ function compareByDistanceDesc(a: SortedScratchItem, b: SortedScratchItem) {
   return b.distance - a.distance;
 }
 
-function displayNameForBodyId(id: BodyId): string {
+function displayNameForBodyId(id: EntityId): string {
   const parts = id.split(":");
   const raw = parts[parts.length - 1] || id;
   return raw.charAt(0).toUpperCase() + raw.slice(1);
@@ -684,7 +684,7 @@ function displayNameForBodyId(id: BodyId): string {
 function fillLabelLines(
   into: string[],
   labelMode: BodyLabelContent,
-  bodyId: BodyId,
+  bodyId: EntityId,
   distance: number,
   speed: number,
 ): number {

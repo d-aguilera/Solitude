@@ -53,7 +53,7 @@ describe("createScene", () => {
             role: "lightEmitter",
           },
           state: {
-            centralBodyId: star.id,
+            centralEntityId: star.id,
             kind: "keplerian",
             orbit: {
               argPeriapsisRad: 0,
@@ -75,7 +75,7 @@ describe("createScene", () => {
             role: "celestialBody",
           },
           state: {
-            centralBodyId: star.id,
+            centralEntityId: star.id,
             kind: "keplerian",
             orbit: {
               argPeriapsisRad: 0,

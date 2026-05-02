@@ -195,7 +195,8 @@ function computeInitialStateForBody(id: string): void {
     throw new Error(`Config not found for body id=${id}`);
   }
 
-  const isRoot = cfg.orbit.semiMajorAxis === 0 || cfg.centralBodyId === cfg.id;
+  const isRoot =
+    cfg.orbit.semiMajorAxis === 0 || cfg.centralEntityId === cfg.id;
 
   computingStateScratch[id] = true;
 
@@ -206,7 +207,7 @@ function computeInitialStateForBody(id: string): void {
     position = vec3.zero();
     velocity = vec3.zero();
   } else {
-    const parentId = cfg.centralBodyId;
+    const parentId = cfg.centralEntityId;
     // Ensure parent state is computed first.
     computeInitialStateForBody(parentId);
 

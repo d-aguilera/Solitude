@@ -1,4 +1,5 @@
-import type { EntityConfig, EntityId } from "./entityConfigPorts";
+import type { EntityId } from "../domain/domainPorts";
+import type { EntityConfig } from "./entityConfigPorts";
 
 export interface EntityConfigIndex {
   axialSpinEntityIds: EntityId[];

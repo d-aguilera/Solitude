@@ -1,4 +1,4 @@
-import type { World } from "../domain/domainPorts";
+import type { EntityId, World } from "../domain/domainPorts";
 import type { Vec3 } from "../domain/vec3";
 import type { WorldAndSceneConfig } from "./configPorts";
 import type {
@@ -9,7 +9,7 @@ import type {
   PropulsionCommand,
   SimControlState,
 } from "./controlPorts";
-import type { EntityConfig, EntityId } from "./entityConfigPorts";
+import type { EntityConfig } from "./entityConfigPorts";
 import type { HudGrid } from "./hudPorts";
 import type { FocusContext, TickOutput } from "./runtimePorts";
 import type { Scene, SceneObject } from "./scenePorts";

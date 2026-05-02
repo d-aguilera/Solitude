@@ -16,7 +16,7 @@ function createSun(): EntityConfig {
       gravityMass: { density: 1_000, physicalRadius: 1_000_000 },
       lightEmitter: { luminosity: 1 },
       state: {
-        centralBodyId: sunId,
+        centralEntityId: sunId,
         kind: "keplerian",
         orbit: {
           argPeriapsisRad: 0,

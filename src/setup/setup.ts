@@ -155,7 +155,7 @@ function createPlanetPhysicsConfig(entity: EntityConfig): PlanetPhysicsConfig {
   const spin = requireAxialSpin(entity);
   return {
     angularSpeedRadPerSec: spin.angularSpeedRadPerSec,
-    centralBodyId: state.centralBodyId,
+    centralEntityId: state.centralEntityId,
     density: mass.density,
     id: entity.id,
     kind: "planet",
@@ -173,7 +173,7 @@ function createStarPhysicsConfig(entity: EntityConfig): StarPhysicsConfig {
   if (!light) throw new Error(`Star entity is missing light: ${entity.id}`);
   return {
     angularSpeedRadPerSec: spin.angularSpeedRadPerSec,
-    centralBodyId: state.centralBodyId,
+    centralEntityId: state.centralEntityId,
     density: mass.density,
     id: entity.id,
     kind: "star",

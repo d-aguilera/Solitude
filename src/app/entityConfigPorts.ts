@@ -1,11 +1,9 @@
-import type { AngularVelocity, BodyId } from "../domain/domainPorts";
+import type { AngularVelocity, EntityId } from "../domain/domainPorts";
 import type { LocalFrame } from "../domain/localFrame";
 import type { Mat3 } from "../domain/mat3";
 import type { Vec3 } from "../domain/vec3";
 import type { KeplerianOrbit } from "./physicsConfigPorts";
 import type { Mesh, RGB } from "./scenePorts";
-
-export type EntityId = string;
 
 export type LegacyEntityKind = "planet" | "ship" | "star";
 
@@ -24,7 +22,7 @@ export interface DirectEntityStateConfig {
 }
 
 export interface KeplerianEntityStateConfig {
-  centralBodyId: BodyId;
+  centralEntityId: EntityId;
   kind: "keplerian";
   orbit: KeplerianOrbit;
 }

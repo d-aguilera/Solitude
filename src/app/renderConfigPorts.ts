@@ -1,10 +1,11 @@
+import type { EntityId } from "../domain/domainPorts";
 import type { Vec3 } from "../domain/vec3";
 import type { MainViewLookState, Mesh, RGB } from "./scenePorts";
 
 export interface PlanetRenderConfig {
   id: string;
   kind: "planet";
-  centralBodyId?: string;
+  centralEntityId?: EntityId;
   color: RGB;
   mesh: Mesh;
 }
@@ -12,7 +13,7 @@ export interface PlanetRenderConfig {
 export interface StarRenderConfig {
   id: string;
   kind: "star";
-  centralBodyId?: string;
+  centralEntityId?: EntityId;
   color: RGB;
   mesh: Mesh;
 }

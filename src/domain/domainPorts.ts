@@ -3,18 +3,12 @@ import type { Mat3 } from "./mat3";
 import type { Vec3 } from "./vec3";
 
 /**
- * ID of a logical body participating in gravity.
+ * ID of a generic world entity.
  */
-export type BodyId = string;
-
-/**
- * ID of a generic world entity. Scenario-specific prefixes such as
- * "ship:" or "planet:" are naming conventions, not core categories.
- */
-export type EntityId = BodyId;
+export type EntityId = string;
 
 export interface BodyState {
-  id: BodyId;
+  id: EntityId;
   mass: number;
   velocity: Vec3;
 }
