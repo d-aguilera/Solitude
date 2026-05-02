@@ -13,7 +13,11 @@ import type { EntityConfig } from "./entityConfigPorts";
 import type { HudGrid } from "./hudPorts";
 import type { FocusContext, TickOutput } from "./runtimePorts";
 import type { Scene, SceneObject } from "./scenePorts";
-import type { SceneViewId, ViewDefinition } from "./viewPorts";
+import type {
+  MainViewCameraRig,
+  SceneViewId,
+  ViewDefinition,
+} from "./viewPorts";
 
 export type RuntimeOptions = Readonly<Record<string, string>>;
 
@@ -196,6 +200,7 @@ export interface LoopPlugin {
 }
 
 export interface ViewRegistry {
+  addMainViewCameraRig: (rig: MainViewCameraRig) => void;
   addView: (view: ViewDefinition) => void;
 }
 

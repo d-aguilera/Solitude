@@ -120,6 +120,7 @@
 - Core loop is working: input → physics → scene update → render → HUD.
 - Solar-system content is contributed by a plugin, and runtime world state is largely generic entity/capability based.
 - Spacecraft propulsion/RCS/attitude, spacecraft input bindings, and the primary forward camera rig live in `src/plugins/spacecraftOperator/` and operate on `mainFocus.controlledBody`.
+- Core owns the primary view definition/canvas/layout while plugins register named main-view camera rigs; core uses the first registered rig as the current rig and fails if none exists.
 - HUD, view/render params, playback loop/logging, and plugin simulation/scene/segment contexts have been migrated away from `mainControlledBody` aliases.
 - Core no longer exposes the transitional `mainControlledBody` bridge from setup/runtime objects; config now names the focused entity via `mainFocusEntityId`.
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
@@ -141,7 +142,7 @@
 ## Next steps
 
 - Continue the operator model migration from the remaining spacecraft-specific/operator-mode seams. `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming should remain absent from `src`.
-- Current V1 operator boundary: the default spacecraft experience is plugin-owned for controls, vehicle dynamics, input bindings, and the primary forward camera rig. Remaining work is runtime operator-mode switching, richer camera rig selection/state, and playback schema migration.
+- Current post-V1 boundary: the default spacecraft experience is plugin-owned for controls, vehicle dynamics, input bindings, and the primary forward camera rig. Core owns primary view plumbing and selects the active rig by id. Remaining work is runtime operator-mode switching and playback schema migration.
 
 ## Planned Future Work
 

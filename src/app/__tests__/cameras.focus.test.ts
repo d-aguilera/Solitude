@@ -3,8 +3,10 @@ import type { ControlledBody } from "../../domain/domainPorts";
 import { localFrame } from "../../domain/localFrame";
 import { mat3 } from "../../domain/mat3";
 import { vec3 } from "../../domain/vec3";
-import { updateMainViewFrame } from "../cameras";
+import { createSpacecraftOperatorPlugin } from "../../plugins/spacecraftOperator/index";
+import type { WorldAndSceneConfig } from "../configPorts";
 import type { FocusContext } from "../runtimePorts";
+import { buildViewDefinitions } from "../viewRegistry";
 
 function createBody(id: string, upX: number): ControlledBody {
   return {
@@ -18,15 +20,27 @@ function createBody(id: string, upX: number): ControlledBody {
 }
 
 describe("main view camera frame", () => {
-  it("uses mainFocus for the focused body frame", () => {
+  it("uses the spacecraft main-view rig for the focused body frame", () => {
     const focusedBody = createBody("ship:focus", 0.25);
     const frame = localFrame.zero();
     const mainFocus: FocusContext = {
       controlledBody: focusedBody,
       entityId: focusedBody.id,
     };
+    const config: WorldAndSceneConfig = {
+      entities: [],
+      mainFocusEntityId: focusedBody.id,
+      render: {
+        mainViewCameraOffset: vec3.zero(),
+        mainViewLookState: { azimuth: 0, elevation: 0 },
+      },
+      thrustLevel: 1,
+    };
+    const [primaryView] = buildViewDefinitions(config, [
+      createSpacecraftOperatorPlugin(),
+    ]);
 
-    updateMainViewFrame({
+    primaryView.updateFrame({
       frame,
       mainFocus,
       mainViewLookState: { azimuth: 0, elevation: 0 },

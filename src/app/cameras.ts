@@ -1,10 +1,10 @@
 import type { ControlledBody } from "../domain/domainPorts";
-import { localFrame } from "../domain/localFrame";
 import { type Vec3, vec3 } from "../domain/vec3";
 import type { ControlInput } from "./controlPorts";
 import type { FocusContext } from "./runtimePorts";
 import type { DomainCameraPose, MainViewLookState } from "./scenePorts";
 import type {
+  MainViewCameraRig,
   SceneViewState,
   ViewDefinition,
   ViewFrameUpdateParams,
@@ -41,27 +41,15 @@ export function updateCameras(
 
 export function createPrimaryViewDefinition(
   initialCameraOffset: Vec3,
+  cameraRig: MainViewCameraRig,
 ): ViewDefinition {
   return {
     id: "primary",
     labelMode: "full",
     initialCameraOffset,
     layout: { kind: "primary" },
-    updateFrame: updateMainViewFrame,
+    updateFrame: cameraRig.updateFrame,
   };
-}
-
-export function updateMainViewFrame({
-  frame,
-  mainFocus,
-  mainViewLookState,
-}: ViewFrameUpdateParams): void {
-  localFrame.copyInto(frame, mainFocus.controlledBody.frame);
-  const { azimuth, elevation } = mainViewLookState;
-  if (azimuth !== 0)
-    localFrame.rotateAroundAxisInPlace(frame, frame.up, azimuth);
-  if (elevation !== 0)
-    localFrame.rotateAroundAxisInPlace(frame, frame.right, elevation);
 }
 
 function setCameraRelativeToControlledBody(

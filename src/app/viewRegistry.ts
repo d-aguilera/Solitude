@@ -1,18 +1,34 @@
 import { localFrame } from "../domain/localFrame";
 import { vec3 } from "../domain/vec3";
+import { createPrimaryViewDefinition } from "./cameras";
 import type { WorldAndSceneConfig } from "./configPorts";
 import type { GamePlugin, ViewPlugin, ViewRegistry } from "./pluginPorts";
+import { getMainViewCameraOffset } from "./renderConfigPorts";
 import type { DomainCameraPose } from "./scenePorts";
-import type { SceneViewState, ViewDefinition } from "./viewPorts";
+import type {
+  MainViewCameraRig,
+  MainViewCameraRigId,
+  SceneViewState,
+  ViewDefinition,
+} from "./viewPorts";
 
 export function buildViewDefinitions(
   config: WorldAndSceneConfig,
   plugins: GamePlugin[],
 ): ViewDefinition[] {
-  const definitions: ViewDefinition[] = [];
+  const auxiliaryDefinitions: ViewDefinition[] = [];
+  const mainViewCameraRigs: MainViewCameraRig[] = [];
+  const mainViewCameraRigIds = new Set<MainViewCameraRigId>();
   const registry: ViewRegistry = {
+    addMainViewCameraRig: (rig) => {
+      if (mainViewCameraRigIds.has(rig.id)) {
+        throw new Error(`Duplicate main view camera rig registered: ${rig.id}`);
+      }
+      mainViewCameraRigIds.add(rig.id);
+      mainViewCameraRigs.push(rig);
+    },
     addView: (view) => {
-      definitions.push(view);
+      auxiliaryDefinitions.push(view);
     },
   };
 
@@ -20,7 +36,16 @@ export function buildViewDefinitions(
     plugin.registerViews(registry, { config });
   }
 
-  return definitions;
+  const currentMainViewCameraRig = mainViewCameraRigs[0];
+  if (!currentMainViewCameraRig) {
+    throw new Error("No active main view camera rig configured");
+  }
+
+  const primaryView = createPrimaryViewDefinition(
+    getMainViewCameraOffset(config.render),
+    currentMainViewCameraRig,
+  );
+  return [primaryView, ...auxiliaryDefinitions];
 }
 
 export function createSceneViewStates(

@@ -24,6 +24,13 @@ export interface ViewFrameUpdateParams {
   mainViewLookState: MainViewLookState;
 }
 
+export type MainViewCameraRigId = string;
+
+export interface MainViewCameraRig {
+  id: MainViewCameraRigId;
+  updateFrame: (params: ViewFrameUpdateParams) => void;
+}
+
 export interface ViewDefinition {
   id: SceneViewId;
   labelMode: ViewLabelMode;

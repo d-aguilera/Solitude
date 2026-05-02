@@ -16,13 +16,12 @@
 
 ## Current Slice
 
-Status: V1 boundary complete; ready for next phase.
+Status: main-view camera rig state implemented; verify and choose next phase.
 
 Next focused change:
 
-- Choose the next post-V1 operator-mode seam:
-  - runtime operator-mode switching for focus, camera rig, controls, and HUD emphasis;
-  - camera rig state/switching policy;
+- Choose the next post-camera-rig seam:
+  - runtime operator-mode switching for focus, active camera rig, controls, and HUD emphasis;
   - playback generic focus/operator snapshot fields while preserving `ships` schema compatibility.
 
 Success criteria:
@@ -31,7 +30,7 @@ Success criteria:
 - Manual controls, autopilot, playback, and HUD control readouts remain behavior-compatible.
 - Runtime/headless setup still installs the current spacecraft behavior by default.
 - Runtime/headless setup validates plugin focused-entity requirements before behavior hooks use the focus.
-- The primary view is registered by `spacecraftOperator`, not injected unconditionally by core view registry.
+- Core owns the primary view definition while plugins supply camera rigs; the first registered rig is current and setup fails if none exists.
 - No new plugin-to-core layering violations.
 - `rg mainControlledBody src` remains empty.
 - `rg "mainControlledEntityId|setMainControlledEntityId" src` remains empty.
@@ -120,8 +119,12 @@ Success criteria:
 - 2026-05-02: Implemented the V1 operator boundary:
   - `GamePlugin` can declare focused-entity capability requirements;
   - DOM/headless setup validates requirements against `mainFocus`;
-  - `spacecraftOperator` registers the default primary forward camera rig;
-  - core view registry no longer injects a primary view by default.
+  - `spacecraftOperator` made the default primary forward camera behavior plugin-provided.
+- 2026-05-02: Added main-view camera rig state:
+  - plugins register named `MainViewCameraRig` entries separately from auxiliary views;
+  - core creates exactly one primary view from the first registered rig;
+  - `spacecraftOperator` registers `spacecraft.forward`;
+  - missing or duplicate active rigs fail clearly during view definition build.
 
 ## Decision Log
 
@@ -144,7 +147,7 @@ Success criteria:
 - The next strategic step is to separate "the user is flying a ship" from core runtime architecture.
 - Core should own generic focus, main view plumbing, render/simulation orchestration, and deterministic phase ordering.
 - Plugins should define what it means to operate a focused entity: spacecraft controls, propulsion, RCS, attitude, camera rigs, HUD/readout assumptions, autopilot behavior, and future operator modes.
-- V1 boundary: the default spacecraft operator owns controls, vehicle dynamics, input bindings, and the primary forward camera rig; core still owns the primary canvas/layout/render target.
+- Current boundary: the default spacecraft operator owns controls, vehicle dynamics, input bindings, and the primary forward camera rig; core owns the primary view definition/canvas/layout/render target and uses the first registered rig as current.
 
 ## Core Idea
 
@@ -170,7 +173,7 @@ Core owns:
 - Generic collision resolution.
 - Axial spin resolution.
 - Scene/render assembly from renderable/light capabilities.
-- Main view layout and renderer plumbing.
+- Main view layout, renderer plumbing, primary view definition, and configured active camera rig selection.
 - Active focus / operator-mode selection.
 - Plugin lifecycle and deterministic simulation phase ordering.
 
@@ -180,7 +183,7 @@ Plugins own or contribute:
 - Spacecraft-specific entity definitions, meshes, masses, collision spheres, and initial state.
 - Input actions and key maps for a given operator mode.
 - Control systems, including thrust, RCS, attitude, and future vehicle dynamics.
-- Main-view camera rigs, such as forward vehicle camera, chase camera, free camera, orbital/map camera, or body-fixed camera.
+- Named main-view camera rigs, such as forward vehicle camera, chase camera, free camera, orbital/map camera, or body-fixed camera.
 - HUD and telemetry assumptions.
 - Autopilot behavior for compatible focus capabilities.
 
@@ -359,17 +362,18 @@ Unresolved:
 
 Problem:
 
-- The primary canvas/layout/render target is core-owned, but the current forward camera rig is spacecraft-operator behavior.
+- The primary canvas/layout/render target and primary view definition are core-owned, but the current forward camera rig is spacecraft-operator behavior.
 
 Current rough direction:
 
 - Let plugins contribute camera rigs for the active focus.
 - Keep the primary canvas/layout/render target core-owned.
+- Keep one core primary view and select its active rig by id.
 
 Unresolved:
 
-- How camera rig state is stored and switched.
 - How auxiliary axial views relate to active camera rigs.
+- How operator-mode switching mutates the active rig at runtime.
 
 ### Playback Migration
 
@@ -403,7 +407,7 @@ Unresolved:
    - Keep core physics helpers only when they are genuinely generic.
 5. Make the main view camera rig-selectable:
    - Keep primary view core-owned.
-   - Completed V1 by moving the current primary forward rig into `spacecraftOperator`; future work is rig state/switching.
+   - Completed by moving the current primary forward rig into `spacecraftOperator` as `spacecraft.forward`; future work is runtime switching.
 6. Migrate dependent plugins:
    - Autopilot, ship telemetry, velocity segments, orbit telemetry, trajectories, axial views, and playback should consume focus/capability queries instead of assuming a core main ship.
 7. Add operator-mode switching:
@@ -419,7 +423,7 @@ Unresolved:
 - Runtime world state is generic entity/capability based.
 - `World` still exposes `controllableBodies` for the current controlled-body capability array.
 - Core game tick owns deterministic phase ordering; spacecraft vehicle dynamics runs through `spacecraftOperator`.
-- The primary canvas/layout/render target is core-owned; `spacecraftOperator` registers the current primary forward camera rig.
+- The primary canvas/layout/render target and primary view definition are core-owned; `spacecraftOperator` registers the current `spacecraft.forward` camera rig.
 - Base input actions are generic/main-view only; spacecraft input actions come from `spacecraftOperator`.
 - Plugin contexts use `mainFocus`; playback retains ship-shaped schema fields for compatibility.
 
@@ -435,6 +439,6 @@ Unresolved:
 
 ## Near-Term Candidates
 
-- Add runtime operator-mode switching for focus, camera rig, controls, and HUD emphasis.
-- Add camera rig state/switching policy and decide how axial views relate to active operator modes.
+- Add runtime operator-mode switching for focus, active camera rig, controls, and HUD emphasis.
+- Decide how axial views relate to active operator modes.
 - Migrate playback toward generic focus/operator snapshot fields while preserving `ships` schema compatibility.

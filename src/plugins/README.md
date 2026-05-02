@@ -25,13 +25,13 @@ Each plugin lives in its own folder. A typical split is:
 
 Loop plugins can also influence per-frame policies such as whether the sim, scene, or HUD advance for a given tick, can request a fixed real tick delta for diagnostics, and may run post-frame cleanup. When multiple loop plugins write the same frame-policy field, later plugins in the bootstrap order win.
 
-View plugins register named views through the view registry. The primary canvas and layout plumbing are core-owned, but the active primary camera rig is registered by plugins. The default runtime gets its primary forward spacecraft camera from `spacecraftOperator`; optional views such as axial picture-in-picture cameras are registered by plugins. Infra owns the canvas elements and their DOM IDs.
+View plugins register named views and main-view camera rigs through the view registry. The primary canvas, layout plumbing, and primary `ViewDefinition` are core-owned, but the active primary camera rig is supplied by plugins. Optional views such as picture-in-picture cameras are registered as full plugin views. Infra owns the canvas elements and their DOM IDs.
 
 HUD plugins write directly into a preallocated HUD grid. Keep each plugin focused on one telemetry group, and avoid allocating per-cell objects in the HUD refresh path.
 
-Simulation plugins run inside the fixed tick order. The default runtime includes the `spacecraftOperator` plugin, which owns spacecraft thrust, RCS, attitude vehicle dynamics, input bindings, and the primary forward camera rig.
+Simulation plugins run inside the fixed tick order. Vehicle or operator behavior that mutates focused entities should be contributed through simulation phases rather than hard-coded into core tick logic.
 
-The `spacecraftOperator` plugin also contributes the current spacecraft key bindings and action names for roll/pitch/yaw, burns, RCS translation, and thrust-level selection. Base input actions are reserved for generic/main-view controls such as look and camera offset.
+Input plugins contribute operator-specific action names and key bindings. Base input actions are reserved for generic/main-view controls such as look and camera offset.
 
 Plugins may declare focused-entity requirements. Infra validates those requirements against the assembled world and `mainFocus` during setup, before simulation/HUD/scene hooks run. Missing hard requirements fail startup with the plugin id, focus entity id, and missing capability.
 
@@ -45,7 +45,7 @@ World-model plugins contribute scenario objects before world setup runs. They ad
 
 Core setup requires a plugin-contributed main focus entity. Scenario-specific placement logic belongs in the contributing plugin.
 
-The default browser runtime enables the `solarSystem` plugin, which contributes the solar bodies plus the default main and enemy ships.
+Which world-model plugins are enabled is a bootstrap/composition decision.
 
 ## Diagnostic playback
 
