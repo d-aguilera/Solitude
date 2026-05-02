@@ -7,6 +7,7 @@ import { localFrame } from "../../domain/localFrame";
 import { mat3 } from "../../domain/mat3";
 import { circularSpeedAtRadius } from "../../domain/phys";
 import { vec3 } from "../../domain/vec3";
+import { createHudPlugin as createAutopilotHudPlugin } from "../autopilot/hud";
 import { createHudPlugin as createOrbitTelemetryHudPlugin } from "../orbitTelemetry/hud";
 import { createHudPlugin as createRuntimeTelemetryHudPlugin } from "../runtimeTelemetry/hud";
 import { createRuntimeTelemetryController } from "../runtimeTelemetry/logic";
@@ -107,6 +108,22 @@ describe("telemetry HUD plugins", () => {
     expect(grid[2][4]).toBe("RCS: -1.00");
   });
 
+  it("shipTelemetry reads the focused body instead of the legacy main body", () => {
+    const { world, ship } = createWorldAndShip();
+    const legacyMainControlledBody: ShipBody = {
+      ...ship,
+      id: "ship:legacy",
+      velocity: vec3.zero(),
+    };
+    ship.velocity = vec3.create(10, 0, 0);
+    const grid = createHudGrid();
+    const context = createHudContext(world, legacyMainControlledBody, ship);
+
+    createShipTelemetryHudPlugin().updateHudParams(grid, context);
+
+    expect(grid[0][4]).toBe("Speed: 36 km/h");
+  });
+
   it("runtimeTelemetry writes simulation time and fps cells", () => {
     const { world, ship } = createWorldAndShip();
     const grid = createHudGrid();
@@ -139,5 +156,23 @@ describe("telemetry HUD plugins", () => {
     expect(grid[3][0]).toBe("i: 0.0°");
     expect(grid[0][1]).toContain("Δv Rad: ");
     expect(grid[1][1]).toContain("Δv Tan: ");
+  });
+
+  it("autopilot HUD reads circle-now diagnostics from the focused body", () => {
+    const { world, ship } = createWorldAndShip();
+    const legacyMainControlledBody: ShipBody = {
+      ...ship,
+      id: "ship:legacy",
+      position: vec3.zero(),
+      velocity: vec3.zero(),
+    };
+    const grid = createHudGrid();
+    const context = createHudContext(world, legacyMainControlledBody, ship);
+    context.controlInput.circleNow = true;
+
+    createAutopilotHudPlugin().updateHudParams(grid, context);
+
+    expect(grid[0][3]).toBe("AP: VEL BODY [CN]");
+    expect(grid[4][2]).toBe("");
   });
 });

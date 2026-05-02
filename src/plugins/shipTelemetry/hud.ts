@@ -10,9 +10,9 @@ export function createHudPlugin(): HudPlugin {
   return {
     updateHudParams: (
       grid,
-      { currentRcsLevel, currentThrustLevel, mainControlledBody },
+      { currentRcsLevel, currentThrustLevel, mainFocus },
     ) => {
-      const speedMps = vec3.length(mainControlledBody.velocity);
+      const speedMps = vec3.length(mainFocus.controlledBody.velocity);
       grid[0][4] = speedPrefix.concat(formatSpeed(speedMps));
 
       const thrustPadding = currentThrustLevel < 0 ? "" : " ";
