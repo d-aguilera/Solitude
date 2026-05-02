@@ -18,11 +18,11 @@ import type {
 
 export function capturePlaybackSnapshot(
   world: World,
-  mainControlledBody: ShipBody,
+  controlledBody: ShipBody,
   label: PlaybackScenarioId,
   capturedSimTimeMillis: number,
 ): PlaybackSnapshot {
-  const primary = getDominantBodyPrimary(world, mainControlledBody.position);
+  const primary = getDominantBodyPrimary(world, controlledBody.position);
   return {
     metadata: {
       label,
