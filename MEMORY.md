@@ -11,6 +11,7 @@
 - `MEMORY_PLUGIN_EXTRACTION.md`: audit notes and candidate list for moving non-core code into plugins.
 - `MEMORY_ENTITY_MODEL.md`: dedicated strategy/context for replacing ships/planets/stars core buckets with generic entities/components.
 - `MEMORY_OPERATOR_MODEL.md`: current strategic plan for moving main ship/control/camera behavior into plugin-defined operator modes around a generic focused entity.
+- `MEMORY_HEADLESS_PLAYBACK.md`: planned work for running recorded playback scenarios end-to-end without the browser.
 - **Note**: Plugin extraction and entity model generalization are still useful history, but the strategic direction has shifted to operator/focus generalization.
 
 ## Current focus
@@ -135,6 +136,10 @@
 - Replace `WorldSetup.mainControlledBody` and `WorldAndScene.mainControlledBody` with `mainFocus`-only plumbing, updating headless/runtime tests that still assert the old bridge.
 - Rename or wrap `mainControlledEntityId` toward focused-entity terminology, keeping config/plugin compatibility adapters while the transition lands.
 - After that bridge is removed, scan for remaining `mainControlledBody` references. Expected leftovers should be none, except any intentionally deprecated compatibility adapters if kept for external config/API stability.
+
+## Planned Future Work
+
+- Headless playback runner: make recorded playback scenarios runnable end-to-end without DOM/browser runtime. See `MEMORY_HEADLESS_PLAYBACK.md`.
 
 ## Open questions / risks
 
