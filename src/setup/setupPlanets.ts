@@ -186,7 +186,7 @@ function computeInitialStateForBody(id: string): void {
 
   if (computingStateScratch[id]) {
     throw new Error(
-      `Cyclic centralBodyId relationship detected while computing initial state for ${id}`,
+      `Cyclic centralEntityId relationship detected while computing initial state for ${id}`,
     );
   }
 
