@@ -22,6 +22,3 @@ export function updateMainViewLook(
   if (controlInput.lookUp) lookState.elevation += lookSpeed * dtMillis;
   if (controlInput.lookDown) lookState.elevation -= lookSpeed * dtMillis;
 }
-
-/** @deprecated Use updateMainViewLook. */
-export const updatePilotLook = updateMainViewLook;

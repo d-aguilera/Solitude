@@ -23,7 +23,8 @@ Next focused change:
 - Choose the next operator-mode extraction seam now that the focus identity bridge is gone:
   - `mainFocusEntityId` is the config/world-model name;
   - `mainControlledBody`, `mainControlledEntityId`, and `setMainControlledEntityId` are absent from `src`;
-  - likely next candidates are capability requirements for spacecraft-specific plugins or the next camera/operator-mode boundary.
+  - the remaining explicit deprecated source fields are the control-plugin `ship` aliases;
+  - likely next candidates are retiring those aliases, capability requirements for spacecraft-specific plugins, or the next camera/operator-mode boundary.
 
 Success criteria:
 
@@ -33,6 +34,7 @@ Success criteria:
 - No new plugin-to-core layering violations.
 - `rg mainControlledBody src` remains empty.
 - `rg "mainControlledEntityId|setMainControlledEntityId" src` remains empty.
+- `rg "pilotLookState|pilotCameraOffset|updatePilot" src` remains empty.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -71,6 +73,10 @@ Success criteria:
   - removed `setMainControlledEntityId` from `WorldModelRegistry`;
   - removed focus-id fallback handling and compatibility tests;
   - `rg "mainControlledEntityId|setMainControlledEntityId" src` is empty.
+- 2026-05-02: Retired deprecated main-view `pilot*` aliases:
+  - removed `PilotLookState`, `pilotLookState`, `pilotCameraOffset`, and `updatePilot*` exports;
+  - render config now requires `mainViewCameraOffset` / `mainViewLookState`;
+  - `rg "pilotLookState|pilotCameraOffset|updatePilot" src` is empty.
 
 ## Decision Log
 

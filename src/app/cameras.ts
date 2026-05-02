@@ -28,7 +28,6 @@ export function updateCameras(
   const focusedBody = mainFocus.controlledBody;
   viewFrameUpdateParamsScratch.mainFocus = mainFocus;
   viewFrameUpdateParamsScratch.mainViewLookState = mainViewLookState;
-  viewFrameUpdateParamsScratch.pilotLookState = mainViewLookState;
   for (const view of views) {
     setCameraRelativeToControlledBody(
       view.camera,
@@ -64,9 +63,6 @@ export function updateMainViewFrame({
   if (elevation !== 0)
     localFrame.rotateAroundAxisInPlace(frame, frame.right, elevation);
 }
-
-/** @deprecated Use updateMainViewFrame. */
-export const updatePilotViewFrame = updateMainViewFrame;
 
 function setCameraRelativeToControlledBody(
   pose: DomainCameraPose,
@@ -111,6 +107,3 @@ export function updateMainViewCameraOffset(
   mainViewCameraLocalOffset.y += dy * dtMillis;
   mainViewCameraLocalOffset.z += dz * dtMillis;
 }
-
-/** @deprecated Use updateMainViewCameraOffset. */
-export const updatePilotCameraOffset = updateMainViewCameraOffset;

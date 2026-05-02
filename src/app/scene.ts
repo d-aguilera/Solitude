@@ -17,7 +17,6 @@ export function updateSceneGraph(
     controlInput,
     sceneControlState.mainViewLookState,
   );
-  sceneControlState.pilotLookState = sceneControlState.mainViewLookState;
   updateMainViewCameraOffset(
     dtMillis,
     controlInput,

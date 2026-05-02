@@ -41,9 +41,6 @@ export interface MainViewLookState {
   elevation: number;
 }
 
-/** @deprecated Use MainViewLookState. */
-export type PilotLookState = MainViewLookState;
-
 export interface PlanetSceneObject extends CelestialBodySceneObject {
   kind: "planet";
 }
@@ -81,8 +78,6 @@ export interface Scene {
  */
 export interface SceneControlState {
   mainViewLookState: MainViewLookState;
-  /** @deprecated Use mainViewLookState. */
-  pilotLookState?: MainViewLookState;
 }
 
 /**

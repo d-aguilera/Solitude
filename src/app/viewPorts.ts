@@ -22,8 +22,6 @@ export interface ViewFrameUpdateParams {
   frame: LocalFrame;
   mainFocus: FocusContext;
   mainViewLookState: MainViewLookState;
-  /** @deprecated Use mainViewLookState. */
-  pilotLookState?: MainViewLookState;
 }
 
 export interface ViewDefinition {

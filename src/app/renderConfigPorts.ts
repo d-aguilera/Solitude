@@ -26,14 +26,10 @@ export interface ShipRenderConfig {
 export interface WorldRenderConfig {
   mainViewCameraOffset?: Vec3;
   mainViewLookState?: MainViewLookState;
-  /** @deprecated Use mainViewCameraOffset. */
-  pilotCameraOffset?: Vec3;
-  /** @deprecated Use mainViewLookState. */
-  pilotLookState?: MainViewLookState;
 }
 
 export function getMainViewCameraOffset(config: WorldRenderConfig): Vec3 {
-  const offset = config.mainViewCameraOffset ?? config.pilotCameraOffset;
+  const offset = config.mainViewCameraOffset;
   if (!offset) {
     throw new Error("Render config is missing mainViewCameraOffset");
   }
@@ -43,7 +39,7 @@ export function getMainViewCameraOffset(config: WorldRenderConfig): Vec3 {
 export function getMainViewLookState(
   config: WorldRenderConfig,
 ): MainViewLookState {
-  const lookState = config.mainViewLookState ?? config.pilotLookState;
+  const lookState = config.mainViewLookState;
   if (!lookState) {
     throw new Error("Render config is missing mainViewLookState");
   }
