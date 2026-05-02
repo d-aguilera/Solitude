@@ -48,8 +48,8 @@ function createEntitySceneObject(
     throw new Error(`Renderable entity config not found: ${entity.id}`);
   }
 
-  const kind = entity.metadata?.legacyKind;
-  if (kind === "ship") {
+  const role = renderable.role;
+  if (role === "controlledBody") {
     return {
       id: entity.id,
       kind: "ship",
@@ -65,7 +65,7 @@ function createEntitySceneObject(
   }
 
   const celestial = createCelestialSceneObject(entity, state);
-  if (kind === "star") {
+  if (role === "lightEmitter") {
     return {
       ...celestial,
       kind: "star",
@@ -73,16 +73,14 @@ function createEntitySceneObject(
         .luminosity,
     };
   }
-  if (kind === "planet") {
+  if (role === "celestialBody") {
     return {
       ...celestial,
       kind: "planet",
     };
   }
 
-  throw new Error(
-    `Renderable entity is missing legacy render kind: ${entity.id}`,
-  );
+  throw new Error(`Renderable entity has unknown render role: ${entity.id}`);
 }
 
 function createCelestialSceneObject(

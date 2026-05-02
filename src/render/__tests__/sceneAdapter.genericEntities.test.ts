@@ -45,10 +45,13 @@ describe("createScene", () => {
     const entities: EntityConfig[] = [
       {
         id: star.id,
-        metadata: { legacyKind: "star" },
         components: {
           lightEmitter: { luminosity: 99 },
-          renderable: { color: { r: 1, g: 1, b: 0 }, mesh },
+          renderable: {
+            color: { r: 1, g: 1, b: 0 },
+            mesh,
+            role: "lightEmitter",
+          },
           state: {
             centralBodyId: star.id,
             kind: "keplerian",
@@ -65,9 +68,12 @@ describe("createScene", () => {
       },
       {
         id: planet.id,
-        metadata: { legacyKind: "planet" },
         components: {
-          renderable: { color: { r: 0, g: 0, b: 1 }, mesh },
+          renderable: {
+            color: { r: 0, g: 0, b: 1 },
+            mesh,
+            role: "celestialBody",
+          },
           state: {
             centralBodyId: star.id,
             kind: "keplerian",
@@ -84,10 +90,13 @@ describe("createScene", () => {
       },
       {
         id: ship.id,
-        metadata: { legacyKind: "ship" },
         components: {
           controllable: { enabled: true },
-          renderable: { color: { r: 1, g: 1, b: 1 }, mesh },
+          renderable: {
+            color: { r: 1, g: 1, b: 1 },
+            mesh,
+            role: "controlledBody",
+          },
         },
       },
     ];

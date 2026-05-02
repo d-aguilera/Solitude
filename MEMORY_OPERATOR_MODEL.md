@@ -26,7 +26,8 @@ Next focused change:
   - `rg "@deprecated" src` is empty;
   - core setup and generic core logic use controllable-body terminology rather than ship setup/local terminology;
   - core setup classifies entities from components/capabilities rather than `legacyKind`;
-  - likely next candidates are render scene kind migration, `ShipBody` plugin/playback compatibility, capability requirements for spacecraft-specific plugins, or the next camera/operator-mode boundary.
+  - render scene adaptation uses explicit `renderable.role` instead of `legacyKind`;
+  - likely next candidates are `ShipBody` plugin/playback compatibility, trajectory/playback `legacyKind` compatibility, capability requirements for spacecraft-specific plugins, or the next camera/operator-mode boundary.
 
 Success criteria:
 
@@ -41,6 +42,7 @@ Success criteria:
 - `rg "setupShips|ShipsSetup|createShipsFromConfig|ShipPhysicsConfig|ShipInitialStateConfig|ShipPhysics" src` should only find playback-schema compatibility if any; core setup should stay controllable-body-first.
 - `computeShipOrbitReadoutInto` should remain absent.
 - setup classification should not branch on `entity.metadata?.legacyKind`; `legacyKind` is only copied to world records for compatibility.
+- render scene adaptation should not read `legacyKind`; use `renderable.role`.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -102,6 +104,11 @@ Success criteria:
   - planets are detected by celestial gravity/collision/spin/Keplerian capabilities;
   - controlled bodies are detected by the controllable component;
   - setup/headless tests build without legacy metadata while world records retain default compatibility roles.
+- 2026-05-02: Made render scene adaptation use explicit render roles:
+  - added `RenderableConfig.role` with `controlledBody`, `celestialBody`, and `lightEmitter`;
+  - `sceneAdapter` no longer reads `legacyKind`;
+  - solar-system renderable entities assign roles when contributing world-model config;
+  - render adapter tests build without legacy metadata.
 
 ## Decision Log
 

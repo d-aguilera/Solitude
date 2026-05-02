@@ -54,6 +54,7 @@ function buildSolarSystemBodyEntities({
           ? {
               color: renderConfig.color,
               mesh: renderConfig.mesh,
+              role: body.kind === "star" ? "lightEmitter" : "celestialBody",
             }
           : undefined,
         state: {
@@ -93,6 +94,7 @@ function buildSolarSystemShipEntities({
           ? {
               color: renderConfig.color,
               mesh: renderConfig.mesh,
+              role: "controlledBody",
             }
           : undefined,
         state: initialState

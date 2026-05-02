@@ -47,7 +47,13 @@ export interface CollisionSphereConfig {
 export interface RenderableConfig {
   color: RGB;
   mesh: Mesh;
+  role: RenderableRole;
 }
+
+export type RenderableRole =
+  | "celestialBody"
+  | "controlledBody"
+  | "lightEmitter";
 
 export interface LightEmitterConfig {
   luminosity: number;
