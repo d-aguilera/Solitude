@@ -1,5 +1,5 @@
 import type { ControlInput } from "../../../app/controlPorts";
-import type { ShipBody, World } from "../../../domain/domainPorts";
+import type { ControlledBody, World } from "../../../domain/domainPorts";
 import type { CompiledPlaybackScript } from "../types";
 
 export interface PlaybackLogger {
@@ -10,7 +10,7 @@ export interface PlaybackLogger {
 
 export interface PlaybackLoggerLifecycleContext {
   controlInput: ControlInput;
-  controlledBody?: ShipBody;
+  controlledBody?: ControlledBody;
   playbackElapsedMs: number;
   script: CompiledPlaybackScript;
   simTimeMillis: number;

@@ -118,8 +118,6 @@ export interface PlanetPhysics extends PhysicsBody {
   physicalRadius: number; // meters
 }
 
-export type ShipBody = ControlledBody;
-
 /**
  * Physical properties of a controlled body.
  */

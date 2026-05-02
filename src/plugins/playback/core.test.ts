@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 import { createControlInput } from "../../app/controlPorts";
 import type { LoopUpdateParams } from "../../app/pluginPorts";
-import type { ShipBody, World } from "../../domain/domainPorts";
+import type { ControlledBody, World } from "../../domain/domainPorts";
 import { localFrame } from "../../domain/localFrame";
 import { mat3 } from "../../domain/mat3";
 import { vec3 } from "../../domain/vec3";
 import { createPlaybackController } from "./core";
 import type { PlaybackScript } from "./types";
 
-function createWorldAndShip(): { world: World; ship: ShipBody } {
-  const ship: ShipBody = {
+function createWorldAndShip(): { world: World; ship: ControlledBody } {
+  const ship: ControlledBody = {
     id: "ship:test",
     position: vec3.create(1, 0, 0),
     velocity: vec3.create(0, 1, 0),

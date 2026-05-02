@@ -1,6 +1,6 @@
 import type {
+  ControlledBody,
   EntityMotionState,
-  ShipBody,
   World,
 } from "../../domain/domainPorts";
 import type { LocalFrame } from "../../domain/localFrame";
@@ -18,7 +18,7 @@ import type {
 
 export function capturePlaybackSnapshot(
   world: World,
-  controlledBody: ShipBody,
+  controlledBody: ControlledBody,
   label: PlaybackScenarioId,
   capturedSimTimeMillis: number,
 ): PlaybackSnapshot {
@@ -77,7 +77,7 @@ function captureEntity(entity: EntityMotionState): PlaybackEntitySnapshot {
   return snapshot;
 }
 
-function captureShip(ship: ShipBody): PlaybackShipSnapshot {
+function captureShip(ship: ControlledBody): PlaybackShipSnapshot {
   return {
     id: ship.id,
     position: cloneVec3(ship.position),
@@ -174,7 +174,7 @@ function hasFrame(entity: EntityMotionState): entity is EntityMotionState & {
 
 function hasAngularVelocity(
   entity: EntityMotionState,
-): entity is EntityMotionState & Pick<ShipBody, "angularVelocity"> {
+): entity is EntityMotionState & Pick<ControlledBody, "angularVelocity"> {
   return "angularVelocity" in entity;
 }
 

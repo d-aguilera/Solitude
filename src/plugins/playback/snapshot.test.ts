@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import type { ShipBody, World } from "../../domain/domainPorts";
+import type { ControlledBody, World } from "../../domain/domainPorts";
 import { localFrame } from "../../domain/localFrame";
 import { mat3 } from "../../domain/mat3";
 import { vec3 } from "../../domain/vec3";
 import { applyPlaybackSnapshot, capturePlaybackSnapshot } from "./snapshot";
 
-function createWorld(): { world: World; ship: ShipBody } {
-  const ship: ShipBody = {
+function createWorld(): { world: World; ship: ControlledBody } {
+  const ship: ControlledBody = {
     id: "ship:test",
     position: vec3.create(1, 2, 3),
     velocity: vec3.create(4, 5, 6),
@@ -72,7 +72,7 @@ describe("playback snapshots", () => {
   });
 
   it("captures and applies generic entity snapshots without legacy buckets", () => {
-    const ship: ShipBody = {
+    const ship: ControlledBody = {
       id: "ship:generic",
       position: vec3.create(10, 0, 0),
       velocity: vec3.create(0, 10, 0),

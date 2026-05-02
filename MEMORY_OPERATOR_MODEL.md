@@ -27,7 +27,8 @@ Next focused change:
   - core setup and generic core logic use controllable-body terminology rather than ship setup/local terminology;
   - core setup classifies entities from components/capabilities rather than `legacyKind`;
   - render scene adaptation uses explicit `renderable.role` instead of `legacyKind`;
-  - likely next candidates are `ShipBody` plugin/playback compatibility, trajectory/playback `legacyKind` compatibility, capability requirements for spacecraft-specific plugins, or the next camera/operator-mode boundary.
+  - `ShipBody` alias is gone; plugin/playback code uses `ControlledBody` directly;
+  - likely next candidates are trajectory/playback `legacyKind` compatibility, playback `ships` schema migration, capability requirements for spacecraft-specific plugins, or the next camera/operator-mode boundary.
 
 Success criteria:
 
@@ -43,6 +44,7 @@ Success criteria:
 - `computeShipOrbitReadoutInto` should remain absent.
 - setup classification should not branch on `entity.metadata?.legacyKind`; `legacyKind` is only copied to world records for compatibility.
 - render scene adaptation should not read `legacyKind`; use `renderable.role`.
+- `rg "ShipBody" src` remains empty.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -109,6 +111,10 @@ Success criteria:
   - `sceneAdapter` no longer reads `legacyKind`;
   - solar-system renderable entities assign roles when contributing world-model config;
   - render adapter tests build without legacy metadata.
+- 2026-05-02: Removed `ShipBody` compatibility alias:
+  - deleted the alias from `domainPorts`;
+  - plugin/playback/logging/test code now types focused/controlled objects as `ControlledBody`;
+  - playback snapshot field names remain unchanged for schema compatibility.
 
 ## Decision Log
 

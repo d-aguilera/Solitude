@@ -126,6 +126,7 @@
 - Core setup classifies entities from capabilities/components rather than `legacyKind`; `legacyKind` is still copied through for render/playback/trajectory compatibility.
 - Render scene adaptation uses explicit `renderable.role` values rather than `legacyKind`; current roles are `controlledBody`, `celestialBody`, and `lightEmitter`.
 - Generic core logic uses controlled-body wording for collisions, camera positioning, rotation, and orbit readouts; remaining `ship` names in core-facing files are compatibility IDs, legacy render roles, or plugin/playback schema.
+- The old `ShipBody` type alias has been removed; plugin/playback code uses `ControlledBody` directly while playback schema names remain compatibility-shaped.
 - Default runtime uses Canvas 2D; WebGL renderer exists but is not wired by default.
 - Tests cover geometry/mesh parsing and projection clipping.
 

@@ -1,5 +1,5 @@
 import type { HudPlugin } from "../../app/pluginPorts";
-import type { ShipBody, World } from "../../domain/domainPorts";
+import type { ControlledBody, World } from "../../domain/domainPorts";
 import { EPS_LEN_COARSE, EPS_SPEED_COARSE } from "../../domain/epsilon";
 import { getDominantBodyPrimary } from "../../domain/orbit";
 import { vec3 } from "../../domain/vec3";
@@ -31,7 +31,7 @@ interface CircleNowDebugTracker {
   debug: CircleNowHudDebug;
   update: (
     world: World,
-    ship: ShipBody,
+    ship: ControlledBody,
     circleNowActive: boolean,
     nowMs: number,
   ) => void;
@@ -59,7 +59,7 @@ function createCircleNowDebugTracker(): CircleNowDebugTracker {
 
   const update = (
     world: World,
-    ship: ShipBody,
+    ship: ControlledBody,
     circleNowActive: boolean,
     nowMs: number,
   ): void => {

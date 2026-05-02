@@ -1,6 +1,6 @@
 import type {
+  ControlledBody,
   EntityMotionState,
-  ShipBody,
   World,
 } from "../../../domain/domainPorts";
 import { EPS_DELTA_V, EPS_LEN, EPS_SPEED_FINE } from "../../../domain/epsilon";
@@ -325,7 +325,7 @@ export function createCircleNowLogger(
 
   function pushCircleNowSample(context: PlaybackLoggerTickContext): void {
     const world = context.world as World;
-    const ship = getContextControlledBody(context) as ShipBody;
+    const ship = getContextControlledBody(context) as ControlledBody;
     if (!findPrimary(world, ship.position)) {
       pushMissingSample(context);
       return;
@@ -466,7 +466,7 @@ export function createCircleNowLogger(
   }
 
   function computeTangentialDirectionIndex(
-    ship: ShipBody,
+    ship: ControlledBody,
     radialSpeedMps: number,
   ): number {
     vec3.scaleInto(tangentialScratch, radialSpeedMps, rHatScratch);
@@ -494,13 +494,13 @@ export function createCircleNowLogger(
     return 0;
   }
 
-  function computeInwardAlignmentDeg(ship: ShipBody): number {
+  function computeInwardAlignmentDeg(ship: ControlledBody): number {
     vec3.scaleInto(inwardScratch, -1, rHatScratch);
     return angleDeg(ship.frame.forward, inwardScratch);
   }
 
   function computeTangentialRollDiagnostics(
-    ship: ShipBody,
+    ship: ControlledBody,
   ): CircleNowRollDiagnostics {
     const forward = ship.frame.forward;
     const proj = vec3.dot(tangentialScratch, forward);
@@ -570,7 +570,7 @@ export function createCircleNowLogger(
   }
 
   function computeAccelerationCommand(
-    ship: ShipBody,
+    ship: ControlledBody,
     dtTickMillis: number,
     deltaVMagnitudeMps: number,
   ): {
@@ -940,7 +940,7 @@ export function createCircleNowLogger(
 
 function getContextControlledBody(
   context: PlaybackLoggerLifecycleContext,
-): ShipBody | undefined {
+): ControlledBody | undefined {
   return context.controlledBody;
 }
 

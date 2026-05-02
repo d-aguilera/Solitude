@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createControlInput } from "../../app/controlPorts";
 import type { HudGrid } from "../../app/hudPorts";
 import type { HudContext } from "../../app/pluginPorts";
-import type { ShipBody, World } from "../../domain/domainPorts";
+import type { ControlledBody, World } from "../../domain/domainPorts";
 import { localFrame } from "../../domain/localFrame";
 import { mat3 } from "../../domain/mat3";
 import { circularSpeedAtRadius } from "../../domain/phys";
@@ -23,7 +23,7 @@ function createHudGrid(): HudGrid {
   ];
 }
 
-function createWorldAndShip(): { world: World; ship: ShipBody } {
+function createWorldAndShip(): { world: World; ship: ControlledBody } {
   const planetId = "planet:earth";
   const shipId = "ship:test";
   const planetMass = 5.972e24;
@@ -31,7 +31,7 @@ function createWorldAndShip(): { world: World; ship: ShipBody } {
   const orbitRadius = planetRadius + 400_000;
   const shipVelocity = circularSpeedAtRadius(planetMass, orbitRadius);
 
-  const ship: ShipBody = {
+  const ship: ControlledBody = {
     id: shipId,
     position: vec3.create(orbitRadius, 0, 0),
     velocity: vec3.create(0, shipVelocity, 0),
@@ -74,7 +74,10 @@ function createWorldAndShip(): { world: World; ship: ShipBody } {
   return { world, ship };
 }
 
-function createHudContext(world: World, mainFocusBody: ShipBody): HudContext {
+function createHudContext(
+  world: World,
+  mainFocusBody: ControlledBody,
+): HudContext {
   return {
     controlInput: createControlInput(),
     currentRcsLevel: -1,

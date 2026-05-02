@@ -1,6 +1,6 @@
 import type { ControlInput, SimControlState } from "../../app/controlPorts";
 import type { LoopPlugin, LoopUpdateParams } from "../../app/pluginPorts";
-import type { ShipBody, World } from "../../domain/domainPorts";
+import type { ControlledBody, World } from "../../domain/domainPorts";
 import { createPlaybackLogger, type PlaybackLogger } from "./loggers/index";
 import {
   applyCompiledPhaseControls,
@@ -57,7 +57,7 @@ export interface PlaybackController {
   updateLoop: (
     controlInput: ControlInput,
     world: World | undefined,
-    controlledBody: ShipBody | undefined,
+    controlledBody: ControlledBody | undefined,
     nowMs: number,
     simTimeMillis: number,
     effectiveTimeScale?: number,
@@ -260,7 +260,7 @@ export function createPlaybackController(
 
   function processCaptureToggle(
     world: World | undefined,
-    controlledBody: ShipBody | undefined,
+    controlledBody: ControlledBody | undefined,
     nowMs: number,
     simTimeMillis: number,
     effectiveTimeScale: number,
@@ -486,7 +486,7 @@ function sampleLoggerAfterTick(
 function createLoggerLifecycleContext(
   controlInput: ControlInput | undefined,
   world: World | undefined,
-  controlledBody: ShipBody | undefined,
+  controlledBody: ControlledBody | undefined,
   playbackElapsedMs: number,
   simTimeMillis: number,
   script: CompiledPlaybackScript,
@@ -503,6 +503,6 @@ function createLoggerLifecycleContext(
 
 function getLoopControlledBody(
   params: LoopUpdateParams | undefined,
-): ShipBody | undefined {
+): ControlledBody | undefined {
   return params?.mainFocus.controlledBody;
 }

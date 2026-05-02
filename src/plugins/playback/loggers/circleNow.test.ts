@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createControlInput } from "../../../app/controlPorts";
-import type { ShipBody, World } from "../../../domain/domainPorts";
+import type { ControlledBody, World } from "../../../domain/domainPorts";
 import { mat3 } from "../../../domain/mat3";
 import { vec3 } from "../../../domain/vec3";
 import { parameters } from "../../../global/parameters";
@@ -39,13 +39,13 @@ function createScript(): ReturnType<typeof compilePlaybackScript> {
   return compilePlaybackScript(script);
 }
 
-function createWorld(): { ship: ShipBody; world: World } {
+function createWorld(): { ship: ControlledBody; world: World } {
   const frame = {
     right: vec3.create(0, 1, 0),
     forward: vec3.create(-1, 0, 0),
     up: vec3.create(0, 0, 1),
   };
-  const ship: ShipBody = {
+  const ship: ControlledBody = {
     id: "ship:test",
     position: vec3.create(10_000_000, 0, 0),
     velocity: vec3.create(0, 1500, 0),
