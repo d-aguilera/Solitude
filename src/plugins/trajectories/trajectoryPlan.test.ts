@@ -51,7 +51,6 @@ describe("buildTrajectoryPlan", () => {
     };
     const planetConfig: EntityConfig = {
       id: planet.id,
-      metadata: { legacyKind: "planet" },
       components: {
         state: {
           centralEntityId: "planet:sun",

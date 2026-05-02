@@ -52,7 +52,7 @@ export function buildTrajectoryPlan(
 
   // Build trajectories for planets (skip moons)
   for (const cfg of getTrajectoryPlanetConfigs(entityConfigs)) {
-    if (cfg.kind !== "planet" || cfg.centralBodyId !== "planet:sun") continue;
+    if (cfg.centralBodyId !== "planet:sun") continue;
     const body = getById(world.entityStates, cfg.id, "Entity state");
     const speedMps = vec3.length(body.velocity);
     const speedMpMs = speedMps / 1000;
@@ -73,29 +73,21 @@ export function buildTrajectoryPlan(
 function getTrajectoryPlanetConfigs(configs: EntityConfig[]): {
   centralBodyId: string;
   id: string;
-  kind: "planet" | "star";
   orbit: KeplerianOrbit;
 }[] {
   const planetConfigs: {
     centralBodyId: string;
     id: string;
-    kind: "planet" | "star";
     orbit: KeplerianOrbit;
   }[] = [];
   for (const entity of configs) {
-    if (
-      entity.metadata?.legacyKind !== "planet" &&
-      entity.metadata?.legacyKind !== "star"
-    ) {
-      continue;
-    }
     const state = entity.components.state;
     if (!state || state.kind !== "keplerian") continue;
+    if (entity.components.lightEmitter) continue;
 
     planetConfigs.push({
       centralBodyId: state.centralEntityId,
       id: entity.id,
-      kind: entity.metadata.legacyKind,
       orbit: state.orbit,
     });
   }

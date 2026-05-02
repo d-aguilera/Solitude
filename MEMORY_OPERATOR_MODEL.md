@@ -28,7 +28,8 @@ Next focused change:
   - core setup classifies entities from components/capabilities rather than `legacyKind`;
   - render scene adaptation uses explicit `renderable.role` instead of `legacyKind`;
   - `ShipBody` alias is gone; plugin/playback code uses `ControlledBody` directly;
-  - likely next candidates are trajectory/playback `legacyKind` compatibility, playback `ships` schema migration, capability requirements for spacecraft-specific plugins, or the next camera/operator-mode boundary.
+  - trajectory planning uses component/capability checks rather than `legacyKind`;
+  - likely next candidates are playback `legacyKind` compatibility, playback `ships` schema migration, capability requirements for spacecraft-specific plugins, or the next camera/operator-mode boundary.
 
 Success criteria:
 
@@ -45,6 +46,7 @@ Success criteria:
 - setup classification should not branch on `entity.metadata?.legacyKind`; `legacyKind` is only copied to world records for compatibility.
 - render scene adaptation should not read `legacyKind`; use `renderable.role`.
 - `rg "ShipBody" src` remains empty.
+- trajectory planning should not read `legacyKind`.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -115,6 +117,9 @@ Success criteria:
   - deleted the alias from `domainPorts`;
   - plugin/playback/logging/test code now types focused/controlled objects as `ControlledBody`;
   - playback snapshot field names remain unchanged for schema compatibility.
+- 2026-05-02: Removed trajectory planner dependency on `legacyKind`:
+  - planet trajectory candidates come from Keplerian state and non-light-emitter components;
+  - trajectory tests build without legacy metadata.
 - 2026-05-02: Removed `BodyId` and duplicate `EntityId`.
 
 ## Decision Log
