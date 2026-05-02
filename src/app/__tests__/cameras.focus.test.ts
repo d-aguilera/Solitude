@@ -18,7 +18,7 @@ function createBody(id: string, upX: number): ControlledBody {
 }
 
 describe("main view camera frame", () => {
-  it("uses mainFocus instead of the legacy mainControlledBody alias", () => {
+  it("uses mainFocus for the focused body frame", () => {
     const focusedBody = createBody("ship:focus", 0.25);
     const frame = localFrame.zero();
     const mainFocus: FocusContext = {

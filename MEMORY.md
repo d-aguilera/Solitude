@@ -17,7 +17,7 @@
 ## Current focus
 
 - Generalize the main interactive subject so core owns a generic focused entity, main view plumbing, and simulation phases while plugins define spacecraft controls, camera rigs, telemetry assumptions, and operator modes.
-- **Current phase boundary**: plugin-facing runtime contexts now use `mainFocus`/`controlledBody` rather than `mainControlledBody`. The remaining main-controlled bridge is core setup/runtime state (`WorldSetup` / `WorldAndScene.mainControlledBody`) plus transitional config naming (`mainControlledEntityId`).
+- **Current phase boundary**: plugin-facing and core runtime contexts now use `mainFocus`/`controlledBody` rather than `mainControlledBody`. The remaining transitional name is config/world-model `mainControlledEntityId`.
 
 ## Must-Do After Code Changes (Do Not Skip)
 
@@ -121,7 +121,7 @@
 - Solar-system content is contributed by a plugin, and runtime world state is largely generic entity/capability based.
 - Spacecraft propulsion/RCS/attitude lives in `src/plugins/spacecraftOperator/` and operates on `mainFocus.controlledBody`.
 - HUD, view/render params, playback loop/logging, and plugin simulation/scene/segment contexts have been migrated away from `mainControlledBody` aliases.
-- Core still exposes a transitional `mainControlledBody` bridge from setup/runtime objects, and config still names the focused entity via `mainControlledEntityId`.
+- Core no longer exposes the transitional `mainControlledBody` bridge from setup/runtime objects; config still names the focused entity via `mainControlledEntityId`.
 - Default runtime uses Canvas 2D; WebGL renderer exists but is not wired by default.
 - Tests cover geometry/mesh parsing and projection clipping.
 
@@ -133,9 +133,8 @@
 
 ## Next steps
 
-- Replace `WorldSetup.mainControlledBody` and `WorldAndScene.mainControlledBody` with `mainFocus`-only plumbing, updating headless/runtime tests that still assert the old bridge.
 - Rename or wrap `mainControlledEntityId` toward focused-entity terminology, keeping config/plugin compatibility adapters while the transition lands.
-- After that bridge is removed, scan for remaining `mainControlledBody` references. Expected leftovers should be none, except any intentionally deprecated compatibility adapters if kept for external config/API stability.
+- Keep `rg mainControlledBody src` empty unless an explicitly documented compatibility adapter is reintroduced for external API stability.
 
 ## Planned Future Work
 

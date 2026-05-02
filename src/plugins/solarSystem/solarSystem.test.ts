@@ -45,7 +45,7 @@ describe("solarSystem plugin", () => {
     ]);
   });
 
-  it("contributes solar bodies, main controlled body, and enemy ship", () => {
+  it("contributes solar bodies, main focus, and enemy ship", () => {
     const config = buildWorldAndSceneConfig();
 
     applyWorldModelPlugins(config, [createSolarSystemPlugin()]);
@@ -85,12 +85,13 @@ describe("solarSystem plugin", () => {
     const earthSphere = worldSetup.world.collisionSpheres.find(
       (sphere) => sphere.id === "planet:earth",
     );
-    const mainControlledBody = worldSetup.mainControlledBody;
+    const mainFocusedBody = worldSetup.mainFocus.controlledBody;
     const enemyShip = worldSetup.world.controllableBodies.find(
       (ship) => ship.id === "ship:enemy",
     );
 
-    expect(worldSetup.mainControlledBody).toBe(mainControlledBody);
+    expect(worldSetup.mainFocus.entityId).toBe("ship:main");
+    expect(mainFocusedBody.id).toBe("ship:main");
     expect(worldSetup.world.entities.map((entity) => entity.id)).toEqual(
       config.entities.map((entity) => entity.id),
     );
@@ -120,7 +121,7 @@ describe("solarSystem plugin", () => {
 
     const mainOffset = vec3.subInto(
       vec3.zero(),
-      mainControlledBody.position,
+      mainFocusedBody.position,
       earth!.position,
     );
     const enemyOffset = vec3.subInto(

@@ -25,7 +25,6 @@ export interface FocusContext {
 
 export interface WorldAndScene {
   mainFocus: FocusContext;
-  mainControlledBody: ControlledBody;
   scene: Scene;
   world: World;
 }

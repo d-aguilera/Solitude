@@ -152,23 +152,24 @@ describe("headlessGameLoop", () => {
 
   it("advances ship position over time", () => {
     const loop = createHeadlessLoop(buildHeadlessConfig());
-    const before = vec3.clone(loop.worldAndScene.mainControlledBody.position);
+    const before = vec3.clone(
+      loop.worldAndScene.mainFocus.controlledBody.position,
+    );
 
     loop.step(1000);
 
-    const after = loop.worldAndScene.mainControlledBody.position;
+    const after = loop.worldAndScene.mainFocus.controlledBody.position;
     const delta = vec3.subInto(vec3.zero(), after, before);
     expect(vec3.length(delta)).toBeGreaterThan(0);
   });
 
-  it("preserves the main focus bridge in headless runs", () => {
+  it("preserves the main focus in headless runs", () => {
     const loop = createHeadlessLoop(buildHeadlessConfig());
 
-    expect(loop.worldAndScene.mainFocus.entityId).toBe(
-      loop.worldAndScene.mainControlledBody.id,
-    );
-    expect(loop.worldAndScene.mainFocus.controlledBody).toBe(
-      loop.worldAndScene.mainControlledBody,
+    expect(loop.worldAndScene.mainFocus.entityId).toBe("ship:test");
+    expect(loop.worldAndScene.mainFocus.controlledBody.id).toBe("ship:test");
+    expect(loop.worldAndScene.world.controllableBodies).toContain(
+      loop.worldAndScene.mainFocus.controlledBody,
     );
   });
 });

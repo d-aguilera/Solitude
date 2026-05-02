@@ -66,7 +66,10 @@ describe("createWorld", () => {
     const setup = createWorld(config);
 
     expect(setup.mainFocus.entityId).toBe("ship:main");
-    expect(setup.mainFocus.controlledBody).toBe(setup.mainControlledBody);
+    expect(setup.mainFocus.controlledBody.id).toBe("ship:main");
+    expect(setup.world.controllableBodies).toContain(
+      setup.mainFocus.controlledBody,
+    );
   });
 
   it("fails clearly when no plugin contributed a main controlled entity id", () => {

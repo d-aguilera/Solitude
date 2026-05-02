@@ -20,13 +20,10 @@ Status: ready for next phase.
 
 Next focused change:
 
-- Remove the remaining core setup/runtime `mainControlledBody` bridge:
-  - replace `WorldSetup.mainControlledBody` and `WorldAndScene.mainControlledBody` consumers with `mainFocus.controlledBody`;
-  - update `src/setup/setup.ts`, `src/app/runtimePorts.ts`, `src/infra/__tests__/headlessGameLoop.test.ts`, and `src/plugins/solarSystem/solarSystem.test.ts`;
-  - keep behavior unchanged: `mainFocus` should still reference the configured focused controllable entity.
-- After that, decide how to migrate config naming:
-  - `mainControlledEntityId` is still the transitional config/world-model name;
-  - likely next name is `mainFocusEntityId` or equivalent, with compatibility adapters for plugin-contributed config.
+- Migrate config naming from `mainControlledEntityId` toward focused-entity terminology:
+  - likely next name is `mainFocusEntityId` or equivalent;
+  - keep compatibility adapters for plugin-contributed config and existing tests while the transition lands;
+  - preserve behavior: the configured main focus should still reference the default spacecraft entity.
 
 Success criteria:
 
@@ -34,7 +31,7 @@ Success criteria:
 - Manual controls, autopilot, playback, and HUD control readouts remain behavior-compatible.
 - Runtime/headless setup still installs the current spacecraft behavior by default.
 - No new plugin-to-core layering violations.
-- `rg mainControlledBody src` only finds intentional compatibility leftovers, ideally none after the bridge removal.
+- `rg mainControlledBody src` remains empty.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -59,6 +56,10 @@ Success criteria:
   - View/render params and camera frame updates no longer carry a `mainControlledBody` alias.
   - Simulation phase, HUD, scene, segment, and loop plugin params no longer expose `mainControlledBody`; loop params now require `mainFocus`.
 - 2026-05-02: Updated `MEMORY.md` with the phase boundary and committed it as Operator model 22. The sharper operator-specific handoff is this document.
+- 2026-05-02: Removed the remaining core setup/runtime `mainControlledBody` bridge:
+  - `WorldSetup` and `WorldAndScene` now expose only `mainFocus`.
+  - Headless/runtime tests assert through `mainFocus.controlledBody`.
+  - `rg mainControlledBody src` is empty.
 
 ## Decision Log
 

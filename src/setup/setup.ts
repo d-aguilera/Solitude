@@ -29,7 +29,6 @@ export const initialFrame: LocalFrame = localFrame.fromUp(vec3.create(0, 0, 1));
 
 export interface WorldSetup {
   mainFocus: FocusContext;
-  mainControlledBody: ControlledBody;
   world: World;
 }
 
@@ -63,18 +62,17 @@ export function createWorld({
   const ships = entityDerivedSetup.ships;
   populateGenericWorldFromSetup(world, entities, ships, planetsAndStars);
 
-  const mainControlledBody = getControlledBodyById(
+  const focusedControlledBody = getControlledBodyById(
     world,
     mainControlledEntityId,
   );
   const mainFocus: FocusContext = {
-    controlledBody: mainControlledBody,
+    controlledBody: focusedControlledBody,
     entityId: mainControlledEntityId,
   };
 
   return {
     mainFocus,
-    mainControlledBody,
     world,
   };
 }
