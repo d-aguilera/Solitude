@@ -26,8 +26,8 @@ export interface SpacecraftVehicleDynamicsParams {
   controlInput: ControlInput;
   controlPlugins: ControlPlugin[];
   controlState: SimControlState;
+  controlledBody: ControlledBody;
   dtMillis: number;
-  mainControlledBody: ControlledBody;
   world: World;
 }
 
@@ -38,36 +38,36 @@ export function applySpacecraftVehicleDynamics(
     controlInput,
     controlPlugins,
     controlState,
+    controlledBody,
     dtMillis,
-    mainControlledBody,
     world,
   } = params;
   const propulsionCommand = getPropulsionCommandForTick(
     dtMillis,
     controlInput,
     controlState,
-    mainControlledBody,
+    controlledBody,
     world,
     controlPlugins,
   );
   updateControlledBodyAngularVelocityFromInput(
     dtMillis,
-    mainControlledBody,
+    controlledBody,
     controlInput,
     controlState,
     world,
     controlPlugins,
   );
-  applyControlledBodyRotation(dtMillis, mainControlledBody);
+  applyControlledBodyRotation(dtMillis, controlledBody);
   applyThrust(
     dtMillis,
-    mainControlledBody,
+    controlledBody,
     propulsionCommand.main,
     maxThrustAcceleration,
   );
   applyRcsTranslation(
     dtMillis,
-    mainControlledBody,
+    controlledBody,
     propulsionCommand.rcs,
     maxRcsTranslationAcceleration,
   );
@@ -83,8 +83,8 @@ export function createSpacecraftVehicleDynamicsPlugin(
         controlInput: params.controlInput,
         controlPlugins,
         controlState: params.controlState,
+        controlledBody: params.mainFocus.controlledBody,
         dtMillis: params.dtMillis,
-        mainControlledBody: params.mainControlledBody,
         world: params.world,
       });
       params.output.currentThrustLevel = getRenderedThrustLevel(
@@ -126,7 +126,7 @@ function getPropulsionCommandForTick(
   dtMillis: number,
   controlInput: ControlInput,
   controlState: SimControlState,
-  mainControlledBody: ControlledBody,
+  controlledBody: ControlledBody,
   world: World,
   controlPlugins: ControlPlugin[],
 ): PropulsionCommand {
@@ -140,7 +140,7 @@ function getPropulsionCommandForTick(
   return resolvePropulsionCommandWithPlugins(
     dtMillis,
     controlInput,
-    mainControlledBody,
+    controlledBody,
     world,
     manualPropulsionCommand,
     maxThrustAcceleration,
