@@ -190,7 +190,6 @@ export function resolvePropulsionCommandWithPlugins(
       dtMillis,
       controlInput,
       controlledBody: ship,
-      ship,
       world,
       manualPropulsion: command,
       maxThrustAcceleration,
@@ -213,7 +212,6 @@ function getPluginAttitudeCommand(
     const command = plugin.getAttitudeCommand({
       dtMillis,
       controlledBody: ship,
-      ship,
       controlInput,
       controlState,
       world,

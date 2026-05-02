@@ -133,7 +133,7 @@
 
 ## Next steps
 
-- Continue the operator model migration from the remaining spacecraft-specific/operator-mode seams. `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, and deprecated main-view `pilot*` aliases should remain absent from `src`.
+- Continue the operator model migration from the remaining spacecraft-specific/operator-mode seams. `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, and `@deprecated` source markers should remain absent from `src`.
 
 ## Planned Future Work
 
