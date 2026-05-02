@@ -16,8 +16,12 @@ export function applyWorldModelPlugins(
     addEntities: (entities: EntityConfig[]) => {
       config.entities.push(...entities);
     },
-    setMainControlledEntityId: (id: string) => {
+    setMainFocusEntityId: (id: string) => {
+      config.mainFocusEntityId = id;
       config.mainControlledEntityId = id;
+    },
+    setMainControlledEntityId: (id: string) => {
+      registry.setMainFocusEntityId(id);
     },
   };
 

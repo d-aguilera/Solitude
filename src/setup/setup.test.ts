@@ -55,7 +55,7 @@ function createShip(id: string): EntityConfig {
 function createConfig(entities: EntityConfig[]): WorldConfigBase {
   return {
     entities,
-    mainControlledEntityId: "ship:main",
+    mainFocusEntityId: "ship:main",
   };
 }
 
@@ -72,20 +72,30 @@ describe("createWorld", () => {
     );
   });
 
-  it("fails clearly when no plugin contributed a main controlled entity id", () => {
+  it("accepts the legacy main controlled entity id as a compatibility fallback", () => {
     const config: WorldConfigBase = {
       entities: [createSun(), createShip("ship:main")],
-      mainControlledEntityId: "",
+      mainControlledEntityId: "ship:main",
     };
 
-    expect(() => createWorld(config)).toThrow("missing mainControlledEntityId");
+    const setup = createWorld(config);
+
+    expect(setup.mainFocus.entityId).toBe("ship:main");
   });
 
-  it("fails clearly when the main controlled entity config is missing", () => {
+  it("fails clearly when no plugin contributed a main focus entity id", () => {
+    const config: WorldConfigBase = {
+      entities: [createSun(), createShip("ship:main")],
+    };
+
+    expect(() => createWorld(config)).toThrow("missing mainFocusEntityId");
+  });
+
+  it("fails clearly when the main focus entity config is missing", () => {
     const config = createConfig([createSun(), createShip("ship:other")]);
 
     expect(() => createWorld(config)).toThrow(
-      "Main controlled entity config not found: ship:main",
+      "Main focus entity config not found: ship:main",
     );
   });
 
@@ -109,7 +119,7 @@ describe("createWorld", () => {
     );
   });
 
-  it("fails clearly when the configured main controlled entity is not controllable", () => {
+  it("fails clearly when the configured main focus entity is not controllable", () => {
     const config: WorldConfigBase = {
       entities: [
         createSun(),
@@ -118,18 +128,18 @@ describe("createWorld", () => {
           components: {},
         },
       ],
-      mainControlledEntityId: "planet:sun",
+      mainFocusEntityId: "planet:sun",
     };
 
     expect(() => createWorld(config)).toThrow(
-      "Main controlled entity is not controllable: planet:sun",
+      "Main focus entity is not controllable: planet:sun",
     );
   });
 
   it("fails clearly when rendered ship config is missing", () => {
     const config: WorldAndSceneConfig = {
       entities: [createSun(), createShip("ship:main")],
-      mainControlledEntityId: "ship:main",
+      mainFocusEntityId: "ship:main",
       render: {
         mainViewCameraOffset: vec3.zero(),
         mainViewLookState: { azimuth: 0, elevation: 0 },

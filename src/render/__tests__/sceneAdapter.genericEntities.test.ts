@@ -105,7 +105,7 @@ describe("createScene", () => {
     };
     const config: WorldAndSceneConfig = {
       entities,
-      mainControlledEntityId: ship.id,
+      mainFocusEntityId: ship.id,
       render: {
         mainViewCameraOffset: vec3.zero(),
         mainViewLookState: { azimuth: 0, elevation: 0 },

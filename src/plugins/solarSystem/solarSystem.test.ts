@@ -14,6 +14,7 @@ describe("solarSystem plugin", () => {
     const addEntities = vi.fn<WorldModelRegistry["addEntities"]>();
     const registry: WorldModelRegistry = {
       addEntities,
+      setMainFocusEntityId: vi.fn(),
       setMainControlledEntityId: vi.fn(),
     };
 
@@ -22,9 +23,8 @@ describe("solarSystem plugin", () => {
     });
 
     expect(registry.addEntities).toHaveBeenCalledOnce();
-    expect(registry.setMainControlledEntityId).toHaveBeenCalledWith(
-      "ship:main",
-    );
+    expect(registry.setMainFocusEntityId).toHaveBeenCalledWith("ship:main");
+    expect(registry.setMainControlledEntityId).not.toHaveBeenCalled();
     expect(
       addEntities.mock.calls[0][0].map((entity: EntityConfig) => entity.id),
     ).toEqual([
@@ -49,6 +49,7 @@ describe("solarSystem plugin", () => {
     const config = buildWorldAndSceneConfig();
 
     applyWorldModelPlugins(config, [createSolarSystemPlugin()]);
+    expect(config.mainFocusEntityId).toBe("ship:main");
     expect(config.mainControlledEntityId).toBe("ship:main");
     expect(config.entities.map((entity) => entity.id)).toEqual([
       "planet:sun",
@@ -71,6 +72,24 @@ describe("solarSystem plugin", () => {
       config.entities.find((entity) => entity.id === "ship:main")?.components
         .controllable?.enabled,
     ).toBe(true);
+  });
+
+  it("keeps legacy world-model focus registration compatible", () => {
+    const config = buildWorldAndSceneConfig();
+
+    applyWorldModelPlugins(config, [
+      {
+        id: "legacy-focus-plugin",
+        worldModel: {
+          contributeWorldModel: (registry) => {
+            registry.setMainControlledEntityId("ship:legacy");
+          },
+        },
+      },
+    ]);
+
+    expect(config.mainFocusEntityId).toBe("ship:legacy");
+    expect(config.mainControlledEntityId).toBe("ship:legacy");
   });
 
   it("places both default ships relative to Earth and renders the scene", () => {

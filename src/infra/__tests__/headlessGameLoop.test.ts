@@ -78,7 +78,7 @@ function buildHeadlessConfig(): WorldConfigBase {
 
   return {
     entities: [sun, earth, ship],
-    mainControlledEntityId: shipId,
+    mainFocusEntityId: shipId,
   };
 }
 

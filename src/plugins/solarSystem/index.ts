@@ -14,7 +14,7 @@ export function createSolarSystemPlugin(): GamePlugin {
           ...buildSolarSystemBodyEntities(solarSystem),
           ...buildSolarSystemShipEntities(ships),
         ]);
-        registry.setMainControlledEntityId("ship:main");
+        registry.setMainFocusEntityId("ship:main");
       },
     },
   };

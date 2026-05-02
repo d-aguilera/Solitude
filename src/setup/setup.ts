@@ -1,4 +1,7 @@
-import type { WorldAndSceneConfig } from "../app/configPorts";
+import {
+  requireMainFocusEntityId,
+  type WorldAndSceneConfig,
+} from "../app/configPorts";
 import { buildEntityConfigIndex } from "../app/entityConfig";
 import type {
   DirectEntityStateConfig,
@@ -34,17 +37,13 @@ export interface WorldSetup {
 
 export type WorldConfigBase = Pick<
   WorldAndSceneConfig,
-  "entities" | "mainControlledEntityId"
+  "entities" | "mainControlledEntityId" | "mainFocusEntityId"
 >;
 
-export function createWorld({
-  entities,
-  mainControlledEntityId,
-}: WorldConfigBase): WorldSetup {
-  validateWorldConfig({
-    entities,
-    mainControlledEntityId,
-  });
+export function createWorld(config: WorldConfigBase): WorldSetup {
+  validateWorldConfig(config);
+  const { entities } = config;
+  const mainFocusEntityId = requireMainFocusEntityId(config);
 
   const world: World = {
     axialSpins: [],
@@ -62,13 +61,10 @@ export function createWorld({
   const ships = entityDerivedSetup.ships;
   populateGenericWorldFromSetup(world, entities, ships, planetsAndStars);
 
-  const focusedControlledBody = getControlledBodyById(
-    world,
-    mainControlledEntityId,
-  );
+  const focusedControlledBody = getControlledBodyById(world, mainFocusEntityId);
   const mainFocus: FocusContext = {
     controlledBody: focusedControlledBody,
-    entityId: mainControlledEntityId,
+    entityId: mainFocusEntityId,
   };
 
   return {
@@ -86,21 +82,19 @@ export function createHeadlessWorld(config: WorldConfigBase): WorldSetup {
 
 function validateWorldConfig({
   entities,
+  mainFocusEntityId,
   mainControlledEntityId,
 }: WorldConfigBase): void {
   const entityIndex = buildEntityConfigIndex(entities);
-  if (!mainControlledEntityId) {
-    throw new Error("World config is missing mainControlledEntityId");
+  const focusEntityId = requireMainFocusEntityId({
+    mainFocusEntityId,
+    mainControlledEntityId,
+  });
+  if (!entityIndex.byId.has(focusEntityId)) {
+    throw new Error(`Main focus entity config not found: ${focusEntityId}`);
   }
-  if (!entityIndex.byId.has(mainControlledEntityId)) {
-    throw new Error(
-      `Main controlled entity config not found: ${mainControlledEntityId}`,
-    );
-  }
-  if (!entityIndex.controllableEntityIds.includes(mainControlledEntityId)) {
-    throw new Error(
-      `Main controlled entity is not controllable: ${mainControlledEntityId}`,
-    );
+  if (!entityIndex.controllableEntityIds.includes(focusEntityId)) {
+    throw new Error(`Main focus entity is not controllable: ${focusEntityId}`);
   }
 }
 

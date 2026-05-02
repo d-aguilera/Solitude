@@ -4,6 +4,7 @@ import { vec3 } from "../domain/vec3";
 export function buildWorldAndSceneConfig() {
   const config: WorldAndSceneConfig = {
     entities: [],
+    mainFocusEntityId: "",
     mainControlledEntityId: "",
     thrustLevel: 1,
     render: {

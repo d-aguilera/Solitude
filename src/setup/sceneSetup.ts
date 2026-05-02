@@ -1,4 +1,7 @@
-import type { WorldAndSceneConfig } from "../app/configPorts";
+import {
+  requireMainFocusEntityId,
+  type WorldAndSceneConfig,
+} from "../app/configPorts";
 import type { Scene } from "../app/scenePorts";
 import type { World } from "../domain/domainPorts";
 import { createSceneFromWorld } from "../render/sceneAdapter";
@@ -41,9 +44,10 @@ function validateRenderedEntityConfig(config: WorldAndSceneConfig): void {
     }
   }
 
-  if (!renderedEntityIds.has(config.mainControlledEntityId)) {
+  const mainFocusEntityId = requireMainFocusEntityId(config);
+  if (!renderedEntityIds.has(mainFocusEntityId)) {
     throw new Error(
-      `Main controlled entity render config not found: ${config.mainControlledEntityId}`,
+      `Main focus entity render config not found: ${mainFocusEntityId}`,
     );
   }
 }
