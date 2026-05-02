@@ -10,7 +10,6 @@ function createSun(): EntityConfig {
   const sunId = "planet:sun";
   return {
     id: sunId,
-    metadata: { legacyKind: "star" },
     components: {
       axialSpin: { angularSpeedRadPerSec: 0, obliquityRad: 0 },
       collisionSphere: { radius: 1_000_000 },
@@ -36,7 +35,6 @@ function createControlledEntity(id: string): EntityConfig {
   const frame = localFrame.fromUp(vec3.create(0, 0, 1));
   return {
     id,
-    metadata: { legacyKind: "ship" },
     components: {
       controllable: { enabled: true },
       gravityMass: { density: 1, volume: 1 },
@@ -73,6 +71,17 @@ describe("createWorld", () => {
     expect(setup.world.controllableBodies).toContain(
       setup.mainFocus.controlledBody,
     );
+    expect(setup.world.lightEmitters.map((light) => light.id)).toEqual([
+      "planet:sun",
+    ]);
+    expect(setup.world.entities).toContainEqual({
+      id: "ship:main",
+      legacyKind: "ship",
+    });
+    expect(setup.world.entities).toContainEqual({
+      id: "planet:sun",
+      legacyKind: "star",
+    });
   });
 
   it("fails clearly when no plugin contributed a main focus entity id", () => {

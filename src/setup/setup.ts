@@ -111,11 +111,11 @@ function createSetupFromEntityConfigs(entities: EntityConfig[]): {
   const controlledBodyInitialStates: ControlledBodyInitialStateConfig[] = [];
 
   for (const entity of entities) {
-    if (entity.metadata?.legacyKind === "planet") {
-      celestialConfigs.push(createPlanetPhysicsConfig(entity));
-    } else if (entity.metadata?.legacyKind === "star") {
+    if (isStarEntityConfig(entity)) {
       celestialConfigs.push(createStarPhysicsConfig(entity));
-    } else if (entity.components.controllable) {
+    } else if (isPlanetEntityConfig(entity)) {
+      celestialConfigs.push(createPlanetPhysicsConfig(entity));
+    } else if (isControllableEntityConfig(entity)) {
       controlledBodyConfigs.push(createControlledBodyPhysicsConfig(entity));
       controlledBodyInitialStates.push(
         createControlledBodyInitialStateConfig(entity),
@@ -130,6 +130,23 @@ function createSetupFromEntityConfigs(entities: EntityConfig[]): {
     ),
     planetsAndStars: createPlanetsAndStarsFromConfig(celestialConfigs),
   };
+}
+
+function isStarEntityConfig(entity: EntityConfig): boolean {
+  return !!entity.components.lightEmitter && isPlanetEntityConfig(entity);
+}
+
+function isPlanetEntityConfig(entity: EntityConfig): boolean {
+  return (
+    !!entity.components.axialSpin &&
+    !!entity.components.collisionSphere &&
+    entity.components.gravityMass?.physicalRadius !== undefined &&
+    entity.components.state?.kind === "keplerian"
+  );
+}
+
+function isControllableEntityConfig(entity: EntityConfig): boolean {
+  return !!entity.components.controllable;
 }
 
 function createPlanetPhysicsConfig(entity: EntityConfig): PlanetPhysicsConfig {

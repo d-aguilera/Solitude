@@ -15,7 +15,6 @@ function buildHeadlessConfig(): WorldConfigBase {
 
   const sun: EntityConfig = {
     id: sunId,
-    metadata: { legacyKind: "star" },
     components: {
       axialSpin: { angularSpeedRadPerSec: 0, obliquityRad: 0 },
       collisionSphere: { radius: 1_000_000 },
@@ -38,7 +37,6 @@ function buildHeadlessConfig(): WorldConfigBase {
 
   const earth: EntityConfig = {
     id: earthId,
-    metadata: { legacyKind: "planet" },
     components: {
       axialSpin: { angularSpeedRadPerSec: 0, obliquityRad: 0 },
       collisionSphere: { radius: 1_000_000 },
@@ -61,7 +59,6 @@ function buildHeadlessConfig(): WorldConfigBase {
   const frame = localFrame.fromUp(vec3.create(0, 0, 1));
   const controlledEntity: EntityConfig = {
     id: controlledEntityId,
-    metadata: { legacyKind: "ship" },
     components: {
       controllable: { enabled: true },
       gravityMass: { density: 1, volume: 1 },

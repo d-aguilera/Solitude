@@ -123,6 +123,7 @@
 - HUD, view/render params, playback loop/logging, and plugin simulation/scene/segment contexts have been migrated away from `mainControlledBody` aliases.
 - Core no longer exposes the transitional `mainControlledBody` bridge from setup/runtime objects; config now names the focused entity via `mainFocusEntityId`.
 - Core setup constructs generic controllable bodies via `setupControllableBodies`; scenario plugins may still provide spacecraft content and legacy render roles.
+- Core setup classifies entities from capabilities/components rather than `legacyKind`; `legacyKind` is still copied through for render/playback/trajectory compatibility.
 - Generic core logic uses controlled-body wording for collisions, camera positioning, rotation, and orbit readouts; remaining `ship` names in core-facing files are compatibility IDs, legacy render roles, or plugin/playback schema.
 - Default runtime uses Canvas 2D; WebGL renderer exists but is not wired by default.
 - Tests cover geometry/mesh parsing and projection clipping.

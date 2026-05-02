@@ -25,7 +25,8 @@ Next focused change:
   - `mainControlledBody`, `mainControlledEntityId`, and `setMainControlledEntityId` are absent from `src`;
   - `rg "@deprecated" src` is empty;
   - core setup and generic core logic use controllable-body terminology rather than ship setup/local terminology;
-  - likely next candidates are `ShipBody` plugin/playback compatibility, render scene kind migration, capability requirements for spacecraft-specific plugins, or the next camera/operator-mode boundary.
+  - core setup classifies entities from components/capabilities rather than `legacyKind`;
+  - likely next candidates are render scene kind migration, `ShipBody` plugin/playback compatibility, capability requirements for spacecraft-specific plugins, or the next camera/operator-mode boundary.
 
 Success criteria:
 
@@ -39,6 +40,7 @@ Success criteria:
 - `rg "@deprecated" src` remains empty.
 - `rg "setupShips|ShipsSetup|createShipsFromConfig|ShipPhysicsConfig|ShipInitialStateConfig|ShipPhysics" src` should only find playback-schema compatibility if any; core setup should stay controllable-body-first.
 - `computeShipOrbitReadoutInto` should remain absent.
+- setup classification should not branch on `entity.metadata?.legacyKind`; `legacyKind` is only copied to world records for compatibility.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -95,6 +97,11 @@ Success criteria:
   - removed unused `computeShipOrbitReadoutInto` wrapper;
   - generic domain tests use controlled-body fixture names;
   - remaining core-facing `ship` matches are explicit compatibility IDs, legacy render roles, or schema names.
+- 2026-05-02: Made setup classify from components instead of `legacyKind`:
+  - stars are detected by light emitter plus celestial capabilities;
+  - planets are detected by celestial gravity/collision/spin/Keplerian capabilities;
+  - controlled bodies are detected by the controllable component;
+  - setup/headless tests build without legacy metadata while world records retain default compatibility roles.
 
 ## Decision Log
 
