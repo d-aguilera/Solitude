@@ -71,7 +71,6 @@ export interface SimulationPhaseParams {
   dtMillis: number;
   dtMillisSim: number;
   mainFocus: FocusContext;
-  mainControlledBody: ControlledBody;
   output: TickOutput;
   world: World;
 }
@@ -98,7 +97,6 @@ export interface HudContext {
   nowMs: number;
   world: World;
   mainFocus: FocusContext;
-  mainControlledBody: ControlledBody;
   controlInput: ControlInput;
   currentThrustLevel: number;
   currentRcsLevel: number;
@@ -121,7 +119,6 @@ export interface SegmentProviderParams {
   scene: Scene;
   world: World;
   mainFocus: FocusContext;
-  mainControlledBody: ControlledBody;
   config: WorldAndSceneConfig;
 }
 
@@ -136,7 +133,6 @@ export interface SceneInitParams {
   scene: Scene;
   world: World;
   mainFocus: FocusContext;
-  mainControlledBody: ControlledBody;
   config: WorldAndSceneConfig;
 }
 
@@ -146,7 +142,6 @@ export interface SceneUpdateParams {
   scene: Scene;
   world: World;
   mainFocus: FocusContext;
-  mainControlledBody: ControlledBody;
 }
 
 export type SceneObjectFilter = (obj: SceneObject) => boolean;
@@ -156,7 +151,6 @@ export interface SceneViewFilterParams {
   scene: Scene;
   world: World;
   mainFocus: FocusContext;
-  mainControlledBody: ControlledBody;
   config: WorldAndSceneConfig;
 }
 

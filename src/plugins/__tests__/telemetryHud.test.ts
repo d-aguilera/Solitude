@@ -74,11 +74,7 @@ function createWorldAndShip(): { world: World; ship: ShipBody } {
   return { world, ship };
 }
 
-function createHudContext(
-  world: World,
-  mainControlledBody: ShipBody,
-  mainFocusBody: ShipBody = mainControlledBody,
-): HudContext {
+function createHudContext(world: World, mainFocusBody: ShipBody): HudContext {
   return {
     controlInput: createControlInput(),
     currentRcsLevel: -1,
@@ -87,7 +83,6 @@ function createHudContext(
       controlledBody: mainFocusBody,
       entityId: mainFocusBody.id,
     },
-    mainControlledBody,
     nowMs: 1234,
     simTimeMillis: 65_000,
     world,
@@ -110,14 +105,9 @@ describe("telemetry HUD plugins", () => {
 
   it("shipTelemetry reads the focused body instead of the legacy main body", () => {
     const { world, ship } = createWorldAndShip();
-    const legacyMainControlledBody: ShipBody = {
-      ...ship,
-      id: "ship:legacy",
-      velocity: vec3.zero(),
-    };
     ship.velocity = vec3.create(10, 0, 0);
     const grid = createHudGrid();
-    const context = createHudContext(world, legacyMainControlledBody, ship);
+    const context = createHudContext(world, ship);
 
     createShipTelemetryHudPlugin().updateHudParams(grid, context);
 
@@ -139,14 +129,8 @@ describe("telemetry HUD plugins", () => {
 
   it("orbitTelemetry writes orbit and circularization cells", () => {
     const { world, ship } = createWorldAndShip();
-    const legacyMainControlledBody: ShipBody = {
-      ...ship,
-      id: "ship:legacy",
-      position: vec3.zero(),
-      velocity: vec3.zero(),
-    };
     const grid = createHudGrid();
-    const context = createHudContext(world, legacyMainControlledBody, ship);
+    const context = createHudContext(world, ship);
 
     createOrbitTelemetryHudPlugin().updateHudParams(grid, context);
 
@@ -160,14 +144,8 @@ describe("telemetry HUD plugins", () => {
 
   it("autopilot HUD reads circle-now diagnostics from the focused body", () => {
     const { world, ship } = createWorldAndShip();
-    const legacyMainControlledBody: ShipBody = {
-      ...ship,
-      id: "ship:legacy",
-      position: vec3.zero(),
-      velocity: vec3.zero(),
-    };
     const grid = createHudGrid();
-    const context = createHudContext(world, legacyMainControlledBody, ship);
+    const context = createHudContext(world, ship);
     context.controlInput.circleNow = true;
 
     createAutopilotHudPlugin().updateHudParams(grid, context);

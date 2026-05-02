@@ -130,7 +130,6 @@ export function runLoop({
     scene,
     world: worldSetup.world,
     mainFocus: worldSetup.mainFocus,
-    mainControlledBody: worldSetup.mainControlledBody,
     config,
   });
 
@@ -248,7 +247,6 @@ export function runLoop({
         scene: worldAndScene.scene,
         world: worldAndScene.world,
         mainFocus: worldAndScene.mainFocus,
-        mainControlledBody: worldAndScene.mainControlledBody,
       });
     }
 
@@ -299,7 +297,6 @@ export function runLoop({
         currentRcsLevel: tickOutput.currentRcsLevel,
         currentThrustLevel: tickOutput.currentThrustLevel,
         mainFocus: worldAndScene.mainFocus,
-        mainControlledBody: worldAndScene.mainControlledBody,
         nowMs,
         simTimeMillis,
         world: worldAndScene.world,
@@ -361,7 +358,6 @@ function createLoopViews(
       scene: worldAndScene.scene,
       world: worldAndScene.world,
       mainFocus: worldAndScene.mainFocus,
-      mainControlledBody: worldAndScene.mainControlledBody,
       config,
     });
     const worldSegments: WorldSegment[] = [];
@@ -384,7 +380,6 @@ function createLoopViews(
         scene: worldAndScene.scene,
         world: worldAndScene.world,
         mainFocus: worldAndScene.mainFocus,
-        mainControlledBody: worldAndScene.mainControlledBody,
         config,
       },
       worldSegments,

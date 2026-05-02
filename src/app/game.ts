@@ -31,7 +31,6 @@ export function createTickHandler(
     dtMillis: 0,
     dtMillisSim: 0,
     mainFocus: worldAndScene.mainFocus,
-    mainControlledBody: worldAndScene.mainControlledBody,
     output: {} as TickOutput,
     world: worldAndScene.world,
   };

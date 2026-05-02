@@ -38,7 +38,6 @@ function createWorld(focusedBody: ControlledBody): World {
 function updateVehicleDynamics(
   plugin: SimulationPlugin,
   focusedBody: ControlledBody,
-  legacyBody: ControlledBody,
 ): void {
   const controlInput = createControlInput();
   controlInput.burnForward = true;
@@ -54,7 +53,6 @@ function updateVehicleDynamics(
       controlledBody: focusedBody,
       entityId: focusedBody.id,
     },
-    mainControlledBody: legacyBody,
     output: {
       currentRcsLevel: 0,
       currentThrustLevel: 0,
@@ -69,7 +67,7 @@ describe("spacecraft vehicle dynamics plugin", () => {
     const legacyBody = createBody("ship:legacy");
     const plugin = createSpacecraftVehicleDynamicsPlugin([]);
 
-    updateVehicleDynamics(plugin, focusedBody, legacyBody);
+    updateVehicleDynamics(plugin, focusedBody);
 
     expect(vec3.length(focusedBody.velocity)).toBeGreaterThan(0);
     expect(vec3.length(legacyBody.velocity)).toBe(0);
