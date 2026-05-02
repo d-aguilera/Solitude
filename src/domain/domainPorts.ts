@@ -123,7 +123,7 @@ export type ShipBody = ControlledBody;
 /**
  * Physical properties of a controlled body.
  */
-export interface ShipPhysics extends PhysicsBody {}
+export interface ControlledBodyPhysics extends PhysicsBody {}
 
 /**
  * Physical properties of a star body.

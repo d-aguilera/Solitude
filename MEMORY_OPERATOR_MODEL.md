@@ -24,7 +24,8 @@ Next focused change:
   - `mainFocusEntityId` is the config/world-model name;
   - `mainControlledBody`, `mainControlledEntityId`, and `setMainControlledEntityId` are absent from `src`;
   - `rg "@deprecated" src` is empty;
-  - likely next candidates are capability requirements for spacecraft-specific plugins or the next camera/operator-mode boundary.
+  - core setup uses controllable-body terminology rather than ship setup terminology;
+  - likely next candidates are domain/core local ship wording, capability requirements for spacecraft-specific plugins, or the next camera/operator-mode boundary.
 
 Success criteria:
 
@@ -36,6 +37,7 @@ Success criteria:
 - `rg "mainControlledEntityId|setMainControlledEntityId" src` remains empty.
 - `rg "pilotLookState|pilotCameraOffset|updatePilot" src` remains empty.
 - `rg "@deprecated" src` remains empty.
+- `rg "setupShips|ShipsSetup|createShipsFromConfig|ShipPhysicsConfig|ShipInitialStateConfig|ShipPhysics" src` should only find playback-schema compatibility if any; core setup should stay controllable-body-first.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -82,6 +84,11 @@ Success criteria:
   - removed `ship` from `AttitudeCommandParams` and `PropulsionCommandParams`;
   - spacecraft operator plugin callbacks now pass only `controlledBody`;
   - `rg "@deprecated" src` is empty.
+- 2026-05-02: Renamed core setup construction from ships to controllable bodies:
+  - `setupShips.ts` became `setupControllableBodies.ts`;
+  - setup config types and helper functions now use `ControlledBody*` / controllable-body terminology;
+  - setup error messages refer to controlled bodies;
+  - scenario spacecraft files still use spacecraft/ship names where they describe actual content.
 
 ## Decision Log
 

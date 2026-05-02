@@ -1,7 +1,7 @@
 import type {
+  ControlledBodyInitialStateConfig,
+  ControlledBodyPhysicsConfig,
   PlanetPhysicsConfig,
-  ShipInitialStateConfig,
-  ShipPhysicsConfig,
   ShipRenderConfig,
   StarPhysicsConfig,
 } from "../../app/configPorts";
@@ -33,8 +33,8 @@ const axisScratch = vec3.zero();
 export function buildDefaultSolarSystemShipConfigs(
   celestialPhysics: (PlanetPhysicsConfig | StarPhysicsConfig)[],
 ): {
-  initialStates: ShipInitialStateConfig[];
-  physics: ShipPhysicsConfig[];
+  initialStates: ControlledBodyInitialStateConfig[];
+  physics: ControlledBodyPhysicsConfig[];
   render: ShipRenderConfig[];
 } {
   const mainShipMesh = createScaledShipMesh();
@@ -48,7 +48,7 @@ export function buildDefaultSolarSystemShipConfigs(
     enemyShipMesh.faces,
   );
 
-  const physics: ShipPhysicsConfig[] = [
+  const physics: ControlledBodyPhysicsConfig[] = [
     {
       density: SHIP_DENSITY_KG_PER_M3,
       id: "ship:main",
@@ -75,7 +75,7 @@ export function buildDefaultSolarSystemShipConfigs(
   ];
 
   const { earthBody, earthPhysics } = createEarthState(celestialPhysics);
-  const initialStates: ShipInitialStateConfig[] = [
+  const initialStates: ControlledBodyInitialStateConfig[] = [
     createOrbitingShipInitialState({
       body: earthBody,
       direction: vec3.create(0, 0, 1),
@@ -123,7 +123,7 @@ function createOrbitingShipInitialState({
   id: string;
   physics: PlanetPhysics;
   shipMass: number;
-}): ShipInitialStateConfig {
+}): ControlledBodyInitialStateConfig {
   const radialDirection = vec3.normalizeInto(direction);
   const position = computeShipStartPosition(
     body.position,

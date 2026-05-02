@@ -122,6 +122,7 @@
 - Spacecraft propulsion/RCS/attitude lives in `src/plugins/spacecraftOperator/` and operates on `mainFocus.controlledBody`.
 - HUD, view/render params, playback loop/logging, and plugin simulation/scene/segment contexts have been migrated away from `mainControlledBody` aliases.
 - Core no longer exposes the transitional `mainControlledBody` bridge from setup/runtime objects; config now names the focused entity via `mainFocusEntityId`.
+- Core setup constructs generic controllable bodies via `setupControllableBodies`; scenario plugins may still provide spacecraft content and legacy render roles.
 - Default runtime uses Canvas 2D; WebGL renderer exists but is not wired by default.
 - Tests cover geometry/mesh parsing and projection clipping.
 
@@ -133,7 +134,7 @@
 
 ## Next steps
 
-- Continue the operator model migration from the remaining spacecraft-specific/operator-mode seams. `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, and `@deprecated` source markers should remain absent from `src`.
+- Continue the operator model migration from the remaining spacecraft-specific/operator-mode seams. `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming should remain absent from `src`.
 
 ## Planned Future Work
 

@@ -9,9 +9,9 @@ import type {
   KeplerianEntityStateConfig,
 } from "../app/entityConfigPorts";
 import type {
+  ControlledBodyInitialStateConfig,
+  ControlledBodyPhysicsConfig,
   PlanetPhysicsConfig,
-  ShipInitialStateConfig,
-  ShipPhysicsConfig,
   StarPhysicsConfig,
 } from "../app/physicsConfigPorts";
 import type { FocusContext } from "../app/runtimePorts";
@@ -23,10 +23,13 @@ import type {
 import { type LocalFrame, localFrame } from "../domain/localFrame";
 import { vec3 } from "../domain/vec3";
 import {
+  type ControllableBodiesSetup,
+  createControllableBodiesFromConfig,
+} from "./setupControllableBodies";
+import {
   createPlanetsAndStarsFromConfig,
   type PlanetsAndStarsSetup,
 } from "./setupPlanets";
-import { createShipsFromConfig, type ShipsSetup } from "./setupShips";
 
 export const initialFrame: LocalFrame = localFrame.fromUp(vec3.create(0, 0, 1));
 
@@ -58,8 +61,13 @@ export function createWorld(config: WorldConfigBase): WorldSetup {
 
   const entityDerivedSetup = createSetupFromEntityConfigs(entities);
   const planetsAndStars = entityDerivedSetup.planetsAndStars;
-  const ships = entityDerivedSetup.ships;
-  populateGenericWorldFromSetup(world, entities, ships, planetsAndStars);
+  const controllableBodies = entityDerivedSetup.controllableBodies;
+  populateGenericWorldFromSetup(
+    world,
+    entities,
+    controllableBodies,
+    planetsAndStars,
+  );
 
   const focusedControlledBody = getControlledBodyById(world, mainFocusEntityId);
   const mainFocus: FocusContext = {
@@ -96,11 +104,11 @@ function validateWorldConfig({
 
 function createSetupFromEntityConfigs(entities: EntityConfig[]): {
   planetsAndStars: PlanetsAndStarsSetup;
-  ships: ShipsSetup;
+  controllableBodies: ControllableBodiesSetup;
 } {
   const celestialConfigs: (PlanetPhysicsConfig | StarPhysicsConfig)[] = [];
-  const shipConfigs: ShipPhysicsConfig[] = [];
-  const shipInitialStates: ShipInitialStateConfig[] = [];
+  const controlledBodyConfigs: ControlledBodyPhysicsConfig[] = [];
+  const controlledBodyInitialStates: ControlledBodyInitialStateConfig[] = [];
 
   for (const entity of entities) {
     if (entity.metadata?.legacyKind === "planet") {
@@ -108,14 +116,19 @@ function createSetupFromEntityConfigs(entities: EntityConfig[]): {
     } else if (entity.metadata?.legacyKind === "star") {
       celestialConfigs.push(createStarPhysicsConfig(entity));
     } else if (entity.components.controllable) {
-      shipConfigs.push(createShipPhysicsConfig(entity));
-      shipInitialStates.push(createShipInitialStateConfig(entity));
+      controlledBodyConfigs.push(createControlledBodyPhysicsConfig(entity));
+      controlledBodyInitialStates.push(
+        createControlledBodyInitialStateConfig(entity),
+      );
     }
   }
 
   return {
+    controllableBodies: createControllableBodiesFromConfig(
+      controlledBodyConfigs,
+      controlledBodyInitialStates,
+    ),
     planetsAndStars: createPlanetsAndStarsFromConfig(celestialConfigs),
-    ships: createShipsFromConfig(shipConfigs, shipInitialStates),
   };
 }
 
@@ -154,7 +167,9 @@ function createStarPhysicsConfig(entity: EntityConfig): StarPhysicsConfig {
   };
 }
 
-function createShipPhysicsConfig(entity: EntityConfig): ShipPhysicsConfig {
+function createControlledBodyPhysicsConfig(
+  entity: EntityConfig,
+): ControlledBodyPhysicsConfig {
   const mass = requireGravityMass(entity);
   if (mass.volume === undefined) {
     throw new Error(`Controlled entity is missing volume: ${entity.id}`);
@@ -166,9 +181,9 @@ function createShipPhysicsConfig(entity: EntityConfig): ShipPhysicsConfig {
   };
 }
 
-function createShipInitialStateConfig(
+function createControlledBodyInitialStateConfig(
   entity: EntityConfig,
-): ShipInitialStateConfig {
+): ControlledBodyInitialStateConfig {
   const state = requireDirectState(entity);
   if (!state.frame) {
     throw new Error(`Controlled entity is missing frame: ${entity.id}`);
@@ -231,24 +246,36 @@ function requireDirectState(entity: EntityConfig): DirectEntityStateConfig {
 function populateGenericWorldFromSetup(
   world: World,
   entityConfigs: EntityConfig[],
-  ships: ShipsSetup,
+  controllableBodies: ControllableBodiesSetup,
   planetsAndStars: PlanetsAndStarsSetup,
 ): void {
   for (const entityConfig of entityConfigs) {
-    addGenericEntityById(world, entityConfig, ships, planetsAndStars);
+    addGenericEntityById(
+      world,
+      entityConfig,
+      controllableBodies,
+      planetsAndStars,
+    );
   }
 }
 
 function addGenericEntityById(
   world: World,
   entityConfig: EntityConfig,
-  ships: ShipsSetup,
+  controllableBodies: ControllableBodiesSetup,
   planetsAndStars: PlanetsAndStarsSetup,
 ): void {
   const id = entityConfig.id;
-  const shipIndex = ships.ships.findIndex((ship) => ship.id === id);
-  if (shipIndex >= 0) {
-    addShipEntity(world, ships, shipIndex, entityConfig.metadata?.legacyKind);
+  const controlledBodyIndex = controllableBodies.controllableBodies.findIndex(
+    (body) => body.id === id,
+  );
+  if (controlledBodyIndex >= 0) {
+    addControlledBodyEntity(
+      world,
+      controllableBodies,
+      controlledBodyIndex,
+      entityConfig.metadata?.legacyKind,
+    );
     return;
   }
 
@@ -279,23 +306,23 @@ function addGenericEntityById(
   throw new Error(`Entity config has no setup output: ${id}`);
 }
 
-function addShipEntity(
+function addControlledBodyEntity(
   world: World,
-  setup: ShipsSetup,
+  setup: ControllableBodiesSetup,
   index: number,
   legacyKind: EntityRecord["legacyKind"] = "ship",
 ): void {
-  const ship = setup.ships[index];
-  addEntityRecord(world, ship, legacyKind);
-  world.entityStates.push(ship);
-  world.controllableBodies.push(ship);
-  const physics = setup.shipPhysics[index];
+  const controlledBody = setup.controllableBodies[index];
+  addEntityRecord(world, controlledBody, legacyKind);
+  world.entityStates.push(controlledBody);
+  world.controllableBodies.push(controlledBody);
+  const physics = setup.controlledBodyPhysics[index];
   if (physics) {
     world.gravityMasses.push({
       density: physics.density,
-      id: ship.id,
+      id: controlledBody.id,
       mass: physics.mass,
-      state: ship,
+      state: controlledBody,
     });
   }
 }

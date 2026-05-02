@@ -32,7 +32,7 @@ function createSun(): EntityConfig {
   };
 }
 
-function createShip(id: string): EntityConfig {
+function createControlledEntity(id: string): EntityConfig {
   const frame = localFrame.fromUp(vec3.create(0, 0, 1));
   return {
     id,
@@ -61,7 +61,10 @@ function createConfig(entities: EntityConfig[]): WorldConfigBase {
 
 describe("createWorld", () => {
   it("exposes a generic main focus alias for the configured controlled entity", () => {
-    const config = createConfig([createSun(), createShip("ship:main")]);
+    const config = createConfig([
+      createSun(),
+      createControlledEntity("ship:main"),
+    ]);
 
     const setup = createWorld(config);
 
@@ -74,7 +77,7 @@ describe("createWorld", () => {
 
   it("fails clearly when no plugin contributed a main focus entity id", () => {
     const config = {
-      entities: [createSun(), createShip("ship:main")],
+      entities: [createSun(), createControlledEntity("ship:main")],
       mainFocusEntityId: "",
     } satisfies WorldConfigBase;
 
@@ -82,7 +85,10 @@ describe("createWorld", () => {
   });
 
   it("fails clearly when the main focus entity config is missing", () => {
-    const config = createConfig([createSun(), createShip("ship:other")]);
+    const config = createConfig([
+      createSun(),
+      createControlledEntity("ship:other"),
+    ]);
 
     expect(() => createWorld(config)).toThrow(
       "Main focus entity config not found: ship:main",
@@ -90,9 +96,9 @@ describe("createWorld", () => {
   });
 
   it("fails clearly when a controlled entity state is missing", () => {
-    const ship = createShip("ship:main");
-    delete ship.components.state;
-    const config = createConfig([createSun(), ship]);
+    const controlledEntity = createControlledEntity("ship:main");
+    delete controlledEntity.components.state;
+    const config = createConfig([createSun(), controlledEntity]);
 
     expect(() => createWorld(config)).toThrow(
       "Controlled entity is missing direct state: ship:main",
@@ -100,12 +106,12 @@ describe("createWorld", () => {
   });
 
   it("fails clearly when controlled body mass inputs are invalid", () => {
-    const ship = createShip("ship:main");
-    ship.components.gravityMass = { density: 1, volume: 0 };
-    const config = createConfig([createSun(), ship]);
+    const controlledEntity = createControlledEntity("ship:main");
+    controlledEntity.components.gravityMass = { density: 1, volume: 0 };
+    const config = createConfig([createSun(), controlledEntity]);
 
     expect(() => createWorld(config)).toThrow(
-      "Ship physics config has invalid volume: ship:main",
+      "Controlled body physics config has invalid volume: ship:main",
     );
   });
 
@@ -126,9 +132,9 @@ describe("createWorld", () => {
     );
   });
 
-  it("fails clearly when rendered ship config is missing", () => {
+  it("fails clearly when rendered controllable entity config is missing", () => {
     const config: WorldAndSceneConfig = {
-      entities: [createSun(), createShip("ship:main")],
+      entities: [createSun(), createControlledEntity("ship:main")],
       mainFocusEntityId: "ship:main",
       render: {
         mainViewCameraOffset: vec3.zero(),

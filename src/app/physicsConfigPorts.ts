@@ -79,13 +79,13 @@ export interface StarPhysicsConfig extends CelestialBodyPhysicsConfig {
   luminosity: number; // W (or scaled W) for stars
 }
 
-export interface ShipPhysicsConfig {
+export interface ControlledBodyPhysicsConfig {
   density: number; // kg/m^3
   id: string;
   volume: number; // m^3, derived from hull mesh
 }
 
-export interface ShipInitialStateConfig {
+export interface ControlledBodyInitialStateConfig {
   angularVelocity: AngularVelocity;
   frame: LocalFrame;
   id: string;

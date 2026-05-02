@@ -11,7 +11,7 @@ import { createHeadlessLoop } from "../headlessGameLoop";
 function buildHeadlessConfig(): WorldConfigBase {
   const sunId = "planet:sun";
   const earthId = "planet:earth";
-  const shipId = "ship:test";
+  const controlledEntityId = "ship:test";
 
   const sun: EntityConfig = {
     id: sunId,
@@ -59,8 +59,8 @@ function buildHeadlessConfig(): WorldConfigBase {
   };
 
   const frame = localFrame.fromUp(vec3.create(0, 0, 1));
-  const ship: EntityConfig = {
-    id: shipId,
+  const controlledEntity: EntityConfig = {
+    id: controlledEntityId,
     metadata: { legacyKind: "ship" },
     components: {
       controllable: { enabled: true },
@@ -77,8 +77,8 @@ function buildHeadlessConfig(): WorldConfigBase {
   };
 
   return {
-    entities: [sun, earth, ship],
-    mainFocusEntityId: shipId,
+    entities: [sun, earth, controlledEntity],
+    mainFocusEntityId: controlledEntityId,
   };
 }
 
@@ -150,7 +150,7 @@ describe("headlessGameLoop", () => {
     expect(output.currentThrustLevel).toBeGreaterThan(0);
   });
 
-  it("advances ship position over time", () => {
+  it("advances the focused body position over time", () => {
     const loop = createHeadlessLoop(buildHeadlessConfig());
     const before = vec3.clone(
       loop.worldAndScene.mainFocus.controlledBody.position,
