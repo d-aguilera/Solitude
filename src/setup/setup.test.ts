@@ -72,21 +72,11 @@ describe("createWorld", () => {
     );
   });
 
-  it("accepts the legacy main controlled entity id as a compatibility fallback", () => {
-    const config: WorldConfigBase = {
-      entities: [createSun(), createShip("ship:main")],
-      mainControlledEntityId: "ship:main",
-    };
-
-    const setup = createWorld(config);
-
-    expect(setup.mainFocus.entityId).toBe("ship:main");
-  });
-
   it("fails clearly when no plugin contributed a main focus entity id", () => {
-    const config: WorldConfigBase = {
+    const config = {
       entities: [createSun(), createShip("ship:main")],
-    };
+      mainFocusEntityId: "",
+    } satisfies WorldConfigBase;
 
     expect(() => createWorld(config)).toThrow("missing mainFocusEntityId");
   });

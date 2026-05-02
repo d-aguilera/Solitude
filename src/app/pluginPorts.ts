@@ -217,8 +217,6 @@ export interface ViewPlugin {
 export interface WorldModelRegistry {
   addEntities: (entities: EntityConfig[]) => void;
   setMainFocusEntityId: (id: EntityId) => void;
-  /** @deprecated Use setMainFocusEntityId. */
-  setMainControlledEntityId: (id: EntityId) => void;
 }
 
 export interface WorldModelContributionParams {

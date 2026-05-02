@@ -37,7 +37,7 @@ export interface WorldSetup {
 
 export type WorldConfigBase = Pick<
   WorldAndSceneConfig,
-  "entities" | "mainControlledEntityId" | "mainFocusEntityId"
+  "entities" | "mainFocusEntityId"
 >;
 
 export function createWorld(config: WorldConfigBase): WorldSetup {
@@ -83,13 +83,9 @@ export function createHeadlessWorld(config: WorldConfigBase): WorldSetup {
 function validateWorldConfig({
   entities,
   mainFocusEntityId,
-  mainControlledEntityId,
 }: WorldConfigBase): void {
   const entityIndex = buildEntityConfigIndex(entities);
-  const focusEntityId = requireMainFocusEntityId({
-    mainFocusEntityId,
-    mainControlledEntityId,
-  });
+  const focusEntityId = requireMainFocusEntityId({ mainFocusEntityId });
   if (!entityIndex.byId.has(focusEntityId)) {
     throw new Error(`Main focus entity config not found: ${focusEntityId}`);
   }

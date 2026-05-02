@@ -20,10 +20,10 @@ Status: ready for next phase.
 
 Next focused change:
 
-- Decide whether to retire or keep the deprecated config compatibility adapters:
-  - `mainFocusEntityId` is now the canonical config/world-model name;
-  - `mainControlledEntityId` and `setMainControlledEntityId` remain compatibility paths;
-  - if retiring them, update config ports, default config construction, tests, and any migration notes in one narrow slice.
+- Choose the next operator-mode extraction seam now that the focus identity bridge is gone:
+  - `mainFocusEntityId` is the config/world-model name;
+  - `mainControlledBody`, `mainControlledEntityId`, and `setMainControlledEntityId` are absent from `src`;
+  - likely next candidates are capability requirements for spacecraft-specific plugins or the next camera/operator-mode boundary.
 
 Success criteria:
 
@@ -32,7 +32,7 @@ Success criteria:
 - Runtime/headless setup still installs the current spacecraft behavior by default.
 - No new plugin-to-core layering violations.
 - `rg mainControlledBody src` remains empty.
-- Any remaining `mainControlledEntityId` references are deliberate compatibility code or tests.
+- `rg "mainControlledEntityId|setMainControlledEntityId" src` remains empty.
 - Typecheck and tests pass.
 
 ## Completed Slices
@@ -66,6 +66,11 @@ Success criteria:
   - `WorldModelRegistry` exposes `setMainFocusEntityId`, with deprecated `setMainControlledEntityId` alias.
   - Setup and scene validation resolve focus identity through a shared helper.
   - Solar-system content registers the default focused entity via the new world-model API.
+- 2026-05-02: Retired the config/world-model compatibility names:
+  - removed `mainControlledEntityId` from `WorldAndSceneConfig`;
+  - removed `setMainControlledEntityId` from `WorldModelRegistry`;
+  - removed focus-id fallback handling and compatibility tests;
+  - `rg "mainControlledEntityId|setMainControlledEntityId" src` is empty.
 
 ## Decision Log
 

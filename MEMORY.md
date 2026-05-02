@@ -17,7 +17,7 @@
 ## Current focus
 
 - Generalize the main interactive subject so core owns a generic focused entity, main view plumbing, and simulation phases while plugins define spacecraft controls, camera rigs, telemetry assumptions, and operator modes.
-- **Current phase boundary**: plugin-facing and core runtime contexts now use `mainFocus`/`controlledBody`, and config/world-model APIs prefer `mainFocusEntityId`. The old `mainControlledEntityId` name remains only as an intentional compatibility path.
+- **Current phase boundary**: plugin-facing and core runtime contexts now use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`. The old `mainControlledEntityId` / `setMainControlledEntityId` compatibility path has been retired from source.
 
 ## Must-Do After Code Changes (Do Not Skip)
 
@@ -121,7 +121,7 @@
 - Solar-system content is contributed by a plugin, and runtime world state is largely generic entity/capability based.
 - Spacecraft propulsion/RCS/attitude lives in `src/plugins/spacecraftOperator/` and operates on `mainFocus.controlledBody`.
 - HUD, view/render params, playback loop/logging, and plugin simulation/scene/segment contexts have been migrated away from `mainControlledBody` aliases.
-- Core no longer exposes the transitional `mainControlledBody` bridge from setup/runtime objects; config now names the focused entity via `mainFocusEntityId`, with `mainControlledEntityId` kept as a deprecated compatibility fallback.
+- Core no longer exposes the transitional `mainControlledBody` bridge from setup/runtime objects; config now names the focused entity via `mainFocusEntityId`.
 - Default runtime uses Canvas 2D; WebGL renderer exists but is not wired by default.
 - Tests cover geometry/mesh parsing and projection clipping.
 
@@ -133,8 +133,7 @@
 
 ## Next steps
 
-- Decide when to retire the deprecated `mainControlledEntityId` / `setMainControlledEntityId` compatibility adapters.
-- Keep `rg mainControlledBody src` empty.
+- Continue the operator model migration from the remaining spacecraft-specific/operator-mode seams; `mainControlledBody`, `mainControlledEntityId`, and `setMainControlledEntityId` should remain absent from `src`.
 
 ## Planned Future Work
 
