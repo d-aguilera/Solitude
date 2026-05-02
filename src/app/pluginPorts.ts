@@ -35,6 +35,8 @@ export interface ControlStateUpdateParams {
 
 export interface AttitudeCommandParams {
   dtMillis: number;
+  controlledBody: ControlledBodyState;
+  /** @deprecated Use controlledBody. */
   ship: ControlledBodyState;
   controlInput: ControlInput;
   controlState: SimControlState;
@@ -43,6 +45,8 @@ export interface AttitudeCommandParams {
 
 export interface PropulsionCommandParams {
   dtMillis: number;
+  controlledBody: ControlledBodyState;
+  /** @deprecated Use controlledBody. */
   ship: ControlledBodyState;
   world: World;
   controlInput: ControlInput;

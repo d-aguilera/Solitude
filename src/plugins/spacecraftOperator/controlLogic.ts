@@ -189,6 +189,7 @@ export function resolvePropulsionCommandWithPlugins(
     command = plugin.resolvePropulsionCommand({
       dtMillis,
       controlInput,
+      controlledBody: ship,
       ship,
       world,
       manualPropulsion: command,
@@ -211,6 +212,7 @@ function getPluginAttitudeCommand(
     if (!plugin.getAttitudeCommand) continue;
     const command = plugin.getAttitudeCommand({
       dtMillis,
+      controlledBody: ship,
       ship,
       controlInput,
       controlState,

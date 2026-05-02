@@ -12,7 +12,7 @@ export function createControlPlugin(): ControlPlugin {
     getAttitudeCommand: (params) =>
       getAutopilotAttitudeCommand(
         params.dtMillis,
-        params.ship,
+        params.controlledBody,
         params.controlInput,
         params.world,
       ),
@@ -29,7 +29,7 @@ function createImmediatePropulsionResolver(): PropulsionResolver {
     resolveAutopilotPropulsionCommand(
       params.dtMillis,
       params.controlInput,
-      params.ship,
+      params.controlledBody,
       params.world,
       params.manualPropulsion,
       params.maxThrustAcceleration,

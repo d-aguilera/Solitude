@@ -16,13 +16,13 @@
 
 ## Current Slice
 
-Status: not started.
+Status: in progress.
 
 Next focused change:
 
 - Continue shrinking transitional spacecraft/control compatibility surfaces:
-  - remove or rename `src/app/controls.ts` compatibility re-export if no production imports remain;
-  - audit `ControlPlugin` naming and params for spacecraft-specific assumptions;
+  - decide whether `ControlPlugin` should be renamed toward operator-control terminology or stay as the shared control-extension port for one more slice;
+  - migrate any remaining plugin consumers from deprecated `ship` control params to `controlledBody`;
   - decide whether autopilot should depend on `spacecraftOperator` capability names or stay on shared control ports for one more slice.
 
 Success criteria:
@@ -48,6 +48,7 @@ Success criteria:
 - 2026-04-29: Made spacecraft dynamics a named `spacecraftOperator` plugin contribution. Browser defaults include it in `defaultPluginIds`; headless installs the same plugin explicitly by default.
 - 2026-04-29: Moved spacecraft-specific action names and key bindings out of base input and into `spacecraftOperator.input`; base actions now cover generic/main-view look and camera offset controls.
 - 2026-04-29: Moved spacecraft thrust/RCS/attitude command interpretation out of `src/app/controls.ts` and into `src/plugins/spacecraftOperator/controlLogic.ts`. `src/app/mainViewControls.ts` now owns main-view look logic; `src/app/controls.ts` is only a temporary main-view compatibility re-export.
+- 2026-05-01: Removed the unused `src/app/controls.ts` compatibility re-export. Added generic `controlledBody` fields to control plugin attitude/propulsion params while keeping deprecated `ship` aliases, and migrated autopilot's control plugin bridge to the generic field.
 
 ## Decision Log
 
