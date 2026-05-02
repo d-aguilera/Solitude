@@ -18,11 +18,11 @@ export type PluginFactory = (runtimeOptions: RuntimeOptions) => GamePlugin;
 
 export const defaultPluginIds = [
   "solarSystem",
+  "spacecraftOperator",
   "axialViews",
   "orbitTelemetry",
   "runtimeTelemetry",
   "shipTelemetry",
-  "spacecraftOperator",
   "autopilot",
   "memory",
   "pause",

@@ -1,16 +1,13 @@
-import type { AngularVelocity, EntityId } from "../domain/domainPorts";
+import type {
+  AngularVelocity,
+  EntityId,
+  LegacyEntityKind,
+} from "../domain/domainPorts";
 import type { LocalFrame } from "../domain/localFrame";
 import type { Mat3 } from "../domain/mat3";
 import type { Vec3 } from "../domain/vec3";
 import type { KeplerianOrbit } from "./physicsConfigPorts";
 import type { Mesh, RGB } from "./scenePorts";
-
-export type LegacyEntityKind = "planet" | "ship" | "star";
-
-export interface EntityMetadataConfig {
-  legacyKind?: LegacyEntityKind;
-  tags?: string[];
-}
 
 export interface DirectEntityStateConfig {
   angularVelocity?: AngularVelocity;
@@ -79,5 +76,5 @@ export interface EntityComponentsConfig {
 export interface EntityConfig {
   components: EntityComponentsConfig;
   id: EntityId;
-  metadata?: EntityMetadataConfig;
+  legacyKind?: LegacyEntityKind;
 }

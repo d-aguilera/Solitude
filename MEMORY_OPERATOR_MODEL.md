@@ -16,26 +16,22 @@
 
 ## Current Slice
 
-Status: ready for next phase.
+Status: V1 boundary complete; ready for next phase.
 
 Next focused change:
 
-- Choose the next operator-mode extraction seam now that the focus identity bridge is gone:
-  - `mainFocusEntityId` is the config/world-model name;
-  - `mainControlledBody`, `mainControlledEntityId`, and `setMainControlledEntityId` are absent from `src`;
-  - `rg "@deprecated" src` is empty;
-  - core setup and generic core logic use controllable-body terminology rather than ship setup/local terminology;
-  - core setup classifies entities from components/capabilities rather than `legacyKind`;
-  - render scene adaptation uses explicit `renderable.role` instead of `legacyKind`;
-  - `ShipBody` alias is gone; plugin/playback code uses `ControlledBody` directly;
-  - trajectory planning uses component/capability checks rather than `legacyKind`;
-  - likely next candidates are playback `legacyKind` compatibility, playback `ships` schema migration, capability requirements for spacecraft-specific plugins, or the next camera/operator-mode boundary.
+- Choose the next post-V1 operator-mode seam:
+  - runtime operator-mode switching for focus, camera rig, controls, and HUD emphasis;
+  - camera rig state/switching policy;
+  - playback generic focus/operator snapshot fields while preserving `ships` schema compatibility.
 
 Success criteria:
 
 - Tick ordering remains covered by tests.
 - Manual controls, autopilot, playback, and HUD control readouts remain behavior-compatible.
 - Runtime/headless setup still installs the current spacecraft behavior by default.
+- Runtime/headless setup validates plugin focused-entity requirements before behavior hooks use the focus.
+- The primary view is registered by `spacecraftOperator`, not injected unconditionally by core view registry.
 - No new plugin-to-core layering violations.
 - `rg mainControlledBody src` remains empty.
 - `rg "mainControlledEntityId|setMainControlledEntityId" src` remains empty.
@@ -121,6 +117,11 @@ Success criteria:
   - planet trajectory candidates come from Keplerian state and non-light-emitter components;
   - trajectory tests build without legacy metadata.
 - 2026-05-02: Removed `BodyId` and duplicate `EntityId`.
+- 2026-05-02: Implemented the V1 operator boundary:
+  - `GamePlugin` can declare focused-entity capability requirements;
+  - DOM/headless setup validates requirements against `mainFocus`;
+  - `spacecraftOperator` registers the default primary forward camera rig;
+  - core view registry no longer injects a primary view by default.
 
 ## Decision Log
 
@@ -143,6 +144,7 @@ Success criteria:
 - The next strategic step is to separate "the user is flying a ship" from core runtime architecture.
 - Core should own generic focus, main view plumbing, render/simulation orchestration, and deterministic phase ordering.
 - Plugins should define what it means to operate a focused entity: spacecraft controls, propulsion, RCS, attitude, camera rigs, HUD/readout assumptions, autopilot behavior, and future operator modes.
+- V1 boundary: the default spacecraft operator owns controls, vehicle dynamics, input bindings, and the primary forward camera rig; core still owns the primary canvas/layout/render target.
 
 ## Core Idea
 
@@ -357,17 +359,15 @@ Unresolved:
 
 Problem:
 
-- The primary view is core-owned but currently behaves like a pilot/forward camera attached to `mainControlledBody`.
+- The primary canvas/layout/render target is core-owned, but the current forward camera rig is spacecraft-operator behavior.
 
 Current rough direction:
 
-- Rename generic "pilot view" concepts to "main view" first.
-- Then let plugins contribute camera rigs for the active focus.
+- Let plugins contribute camera rigs for the active focus.
 - Keep the primary canvas/layout/render target core-owned.
 
 Unresolved:
 
-- Whether the current forward camera becomes a default core rig or moves directly into a spacecraft/operator plugin.
 - How camera rig state is stored and switched.
 - How auxiliary axial views relate to active camera rigs.
 
@@ -392,19 +392,18 @@ Unresolved:
 
 1. Rename/reframe generic terminology:
    - `pilot` view/state/config names to `main` where they describe generic camera/view behavior.
-   - Preserve compatibility aliases where churn would be risky.
+   - Completed for current source; preserve absence of deprecated aliases.
 2. Introduce a generic focus concept:
-   - Replace central reliance on `mainControlledBody` with a focus entity id plus required capability lookups.
-   - Keep transitional helpers while consumers migrate.
+   - Completed for current source with `mainFocusEntityId` and `mainFocus`.
 3. Add simulation plugin phases:
    - Give plugins a clear place to apply vehicle dynamics before gravity and react after physics.
-   - Preserve current tick ordering initially.
+   - Completed while preserving current tick ordering.
 4. Extract spacecraft control physics:
-   - Move thrust, RCS, attitude command resolution, and associated input actions out of core into a spacecraft/operator plugin.
+   - Completed for thrust, RCS, attitude command resolution, vehicle dynamics, and associated input actions.
    - Keep core physics helpers only when they are genuinely generic.
 5. Make the main view camera rig-selectable:
    - Keep primary view core-owned.
-   - Let plugins contribute camera rigs for the active focus.
+   - Completed V1 by moving the current primary forward rig into `spacecraftOperator`; future work is rig state/switching.
 6. Migrate dependent plugins:
    - Autopilot, ship telemetry, velocity segments, orbit telemetry, trajectories, axial views, and playback should consume focus/capability queries instead of assuming a core main ship.
 7. Add operator-mode switching:
@@ -418,16 +417,11 @@ Unresolved:
 ## Current Transitional State
 
 - Runtime world state is generic entity/capability based.
-- `World` still exposes `controllableBodies`, and runtime setup exposes `mainControlledBody`.
-- Core game tick still applies spacecraft-specific control physics:
-  - control-state update
-  - thrust command
-  - RCS command
-  - attitude command
-  - controlled-body rotation
-- Primary view is core-owned but still created as a pilot-style forward view relative to the main controlled body.
-- Base input actions still include spacecraft controls and camera-offset controls.
-- HUD, segment, scene, loop, autopilot, telemetry, trajectories, and playback plugin contexts commonly receive `mainControlledBody`.
+- `World` still exposes `controllableBodies` for the current controlled-body capability array.
+- Core game tick owns deterministic phase ordering; spacecraft vehicle dynamics runs through `spacecraftOperator`.
+- The primary canvas/layout/render target is core-owned; `spacecraftOperator` registers the current primary forward camera rig.
+- Base input actions are generic/main-view only; spacecraft input actions come from `spacecraftOperator`.
+- Plugin contexts use `mainFocus`; playback retains ship-shaped schema fields for compatibility.
 
 ## Watch-Outs
 
@@ -441,9 +435,6 @@ Unresolved:
 
 ## Near-Term Candidates
 
-- Audit all `pilot`, `ship`, `mainControlledBody`, and spacecraft-specific control references and classify them as:
-  - generic focus/main-view concepts,
-  - spacecraft/operator-plugin concepts,
-  - compatibility-only names.
-- Start with terminology and adapter changes before moving physics behavior.
-- Consider a small focus-query helper as the bridge between current `mainControlledBody` and future `mainFocusEntityId`.
+- Add runtime operator-mode switching for focus, camera rig, controls, and HUD emphasis.
+- Add camera rig state/switching policy and decide how axial views relate to active operator modes.
+- Migrate playback toward generic focus/operator snapshot fields while preserving `ships` schema compatibility.

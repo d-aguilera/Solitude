@@ -9,5 +9,13 @@ export function createAutopilotPlugin(): GamePlugin {
     input: createInputPlugin(),
     controls: createControlPlugin(),
     hud: createHudPlugin(),
+    requirements: {
+      mainFocus: [
+        "controlledBody",
+        "motionState",
+        "localFrame",
+        "angularVelocity",
+      ],
+    },
   };
 }

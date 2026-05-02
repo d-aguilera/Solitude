@@ -8,6 +8,9 @@ import { vec3 } from "../../domain/vec3";
 export function createAxialViewsPlugin(): GamePlugin {
   return {
     id: "axialViews",
+    requirements: {
+      mainFocus: ["controlledBody", "localFrame"],
+    },
     views: {
       registerViews: (registry) => {
         for (const view of createAxialViewDefinitions()) {

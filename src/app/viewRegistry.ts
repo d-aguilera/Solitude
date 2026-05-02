@@ -1,9 +1,7 @@
 import { localFrame } from "../domain/localFrame";
 import { vec3 } from "../domain/vec3";
-import { createPrimaryViewDefinition } from "./cameras";
 import type { WorldAndSceneConfig } from "./configPorts";
 import type { GamePlugin, ViewPlugin, ViewRegistry } from "./pluginPorts";
-import { getMainViewCameraOffset } from "./renderConfigPorts";
 import type { DomainCameraPose } from "./scenePorts";
 import type { SceneViewState, ViewDefinition } from "./viewPorts";
 
@@ -11,9 +9,7 @@ export function buildViewDefinitions(
   config: WorldAndSceneConfig,
   plugins: GamePlugin[],
 ): ViewDefinition[] {
-  const definitions: ViewDefinition[] = [
-    createPrimaryViewDefinition(getMainViewCameraOffset(config.render)),
-  ];
+  const definitions: ViewDefinition[] = [];
   const registry: ViewRegistry = {
     addView: (view) => {
       definitions.push(view);

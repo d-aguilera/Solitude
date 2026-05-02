@@ -16,6 +16,7 @@ import type {
   SimulationPlugin,
   WorldSegment,
 } from "../app/pluginPorts";
+import { validatePluginRequirements } from "../app/pluginRequirements";
 import { getMainViewLookState } from "../app/renderConfigPorts";
 import type {
   TickCallback,
@@ -121,10 +122,15 @@ export function runLoop({
   const segmentPlugins = collectSegmentPlugins(plugins);
   const simulationPlugins = collectSimulationPlugins(plugins, controlPlugins);
 
-  applyLoopInitPlugins(loopPlugins, { config });
-
   const worldSetup = createWorld(config);
+  validatePluginRequirements({
+    mainFocus: worldSetup.mainFocus,
+    plugins,
+    world: worldSetup.world,
+  });
   const { scene } = createScene(worldSetup.world, config);
+
+  applyLoopInitPlugins(loopPlugins, { config });
 
   applySceneInitPlugins(scenePlugins, {
     scene,
@@ -255,7 +261,7 @@ export function runLoop({
       });
     }
 
-    const { passes } = renderDebug;
+    const passes = renderDebug.passes;
     const facesBuild = passes.faces && passes.facesBuild;
     const facesRaster = passes.faces && passes.facesRaster;
     const facesSort = passes.faces && passes.facesSort;

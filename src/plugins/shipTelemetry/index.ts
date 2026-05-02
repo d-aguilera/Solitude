@@ -5,5 +5,8 @@ export function createShipTelemetryPlugin(): GamePlugin {
   return {
     id: "shipTelemetry",
     hud: createHudPlugin(),
+    requirements: {
+      mainFocus: ["controlledBody", "motionState"],
+    },
   };
 }

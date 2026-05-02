@@ -7,6 +7,8 @@ import type { Vec3 } from "./vec3";
  */
 export type EntityId = string;
 
+export type LegacyEntityKind = "planet" | "ship" | "star";
+
 export interface BodyState {
   id: EntityId;
   mass: number;
@@ -34,7 +36,7 @@ export interface CelestialBody {
 
 export interface EntityRecord {
   id: EntityId;
-  legacyKind?: "planet" | "ship" | "star";
+  legacyKind?: LegacyEntityKind;
 }
 
 export interface EntityMotionState extends CelestialBody {

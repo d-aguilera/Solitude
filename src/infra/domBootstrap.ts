@@ -66,7 +66,7 @@ function createViewCanvases(
 ): LayoutViewPlusDefinition[] {
   const views: LayoutViewPlusDefinition[] = [];
   let index = 0;
-  for (const definition of definitions) {
+  for (const definition of primaryDefinitionsFirst(definitions)) {
     const canvas = getOrCreateViewCanvas(
       container,
       createViewCanvasId(index),
@@ -80,6 +80,19 @@ function createViewCanvases(
     index++;
   }
   return views;
+}
+
+function primaryDefinitionsFirst(
+  definitions: ViewDefinition[],
+): ViewDefinition[] {
+  const ordered: ViewDefinition[] = [];
+  for (const definition of definitions) {
+    if (definition.layout.kind === "primary") ordered.push(definition);
+  }
+  for (const definition of definitions) {
+    if (definition.layout.kind !== "primary") ordered.push(definition);
+  }
+  return ordered;
 }
 
 function getOrCreateViewCanvas(

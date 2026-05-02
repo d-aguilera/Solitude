@@ -226,6 +226,19 @@ export interface WorldModelPlugin {
   ) => void;
 }
 
+export type FocusCapabilityRequirement =
+  | "angularVelocity"
+  | "collisionSphere"
+  | "controlledBody"
+  | "gravityMass"
+  | "lightEmitter"
+  | "localFrame"
+  | "motionState";
+
+export interface PluginRequirements {
+  mainFocus?: readonly FocusCapabilityRequirement[];
+}
+
 export interface GamePlugin {
   id: string;
   controls?: ControlPlugin;
@@ -235,6 +248,7 @@ export interface GamePlugin {
   segments?: SegmentPlugin;
   scene?: ScenePlugin;
   simulation?: SimulationContribution;
+  requirements?: PluginRequirements;
   views?: ViewPlugin;
   worldModel?: WorldModelPlugin;
 }

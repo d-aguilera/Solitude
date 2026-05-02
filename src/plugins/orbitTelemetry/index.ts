@@ -5,5 +5,8 @@ export function createOrbitTelemetryPlugin(): GamePlugin {
   return {
     id: "orbitTelemetry",
     hud: createHudPlugin(),
+    requirements: {
+      mainFocus: ["controlledBody", "motionState"],
+    },
   };
 }

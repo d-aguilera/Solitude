@@ -1,6 +1,7 @@
 import { createControlInput, type ControlInput } from "../app/controlPorts";
 import { createTickHandler } from "../app/game";
 import type { ControlPlugin, SimulationPlugin } from "../app/pluginPorts";
+import { validatePluginRequirements } from "../app/pluginRequirements";
 import type {
   TickOutput,
   TickParams,
@@ -65,6 +66,11 @@ export function createHeadlessLoop(
   const timeScale = options.timeScale ?? 1;
   const controlPlugins = options.controlPlugins ?? [];
   const spacecraftOperator = createSpacecraftOperatorPlugin();
+  validatePluginRequirements({
+    mainFocus: worldSetup.mainFocus,
+    plugins: [spacecraftOperator],
+    world: worldSetup.world,
+  });
   if (!spacecraftOperator.simulation) {
     throw new Error("Spacecraft operator plugin is missing simulation");
   }

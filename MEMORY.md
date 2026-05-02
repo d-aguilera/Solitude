@@ -63,12 +63,12 @@
 
 - **State**: runtime `World` stores generic entities and capability arrays; legacy planet/star/ship config remains at plugin/API compatibility edges.
 - **Next strategic layer**: use the generic entity model as the foundation for operator/focus generalization. The main ship should become plugin-owned behavior rather than a core assumption.
-- **Target model**: core stores generic entities with capability-style components, such as transform/state, gravity mass, collision sphere, render mesh/color, light emitter, axial spin, controllable body, and main controlled body marker.
+- **Target model**: core stores generic entities with capability-style components, such as transform/state, gravity mass, collision sphere, render mesh/color, light emitter, axial spin, controllable body, and main focus identity.
 - **System rule**: systems should query capabilities instead of categories:
   - gravity integrates entities with mass + position + velocity.
   - collision checks controllable/dynamic bodies against collision spheres.
   - rendering draws renderable mesh entities and light emitters.
-  - controls operate on the configured main controllable entity.
+  - operator/control plugins operate on the configured main focus when its required capabilities are present.
   - telemetry/autopilot plugins can define their own higher-level concepts, such as dominant gravitational primary, without forcing those concepts into core.
 - **Migration strategy**:
   1. Move remaining plugins to direct generic entity contribution.
@@ -119,9 +119,10 @@
 
 - Core loop is working: input → physics → scene update → render → HUD.
 - Solar-system content is contributed by a plugin, and runtime world state is largely generic entity/capability based.
-- Spacecraft propulsion/RCS/attitude lives in `src/plugins/spacecraftOperator/` and operates on `mainFocus.controlledBody`.
+- Spacecraft propulsion/RCS/attitude, spacecraft input bindings, and the primary forward camera rig live in `src/plugins/spacecraftOperator/` and operate on `mainFocus.controlledBody`.
 - HUD, view/render params, playback loop/logging, and plugin simulation/scene/segment contexts have been migrated away from `mainControlledBody` aliases.
 - Core no longer exposes the transitional `mainControlledBody` bridge from setup/runtime objects; config now names the focused entity via `mainFocusEntityId`.
+- Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
 - Core setup constructs generic controllable bodies via `setupControllableBodies`; scenario plugins may still provide spacecraft content and legacy render roles.
 - Core setup classifies entities from capabilities/components rather than `legacyKind`; `legacyKind` is still copied through for render/playback/trajectory compatibility.
 - Render scene adaptation uses explicit `renderable.role` values rather than `legacyKind`; current roles are `controlledBody`, `celestialBody`, and `lightEmitter`.
@@ -140,6 +141,7 @@
 ## Next steps
 
 - Continue the operator model migration from the remaining spacecraft-specific/operator-mode seams. `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming should remain absent from `src`.
+- Current V1 operator boundary: the default spacecraft experience is plugin-owned for controls, vehicle dynamics, input bindings, and the primary forward camera rig. Remaining work is runtime operator-mode switching, richer camera rig selection/state, and playback schema migration.
 
 ## Planned Future Work
 

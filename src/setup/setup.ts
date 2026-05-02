@@ -291,7 +291,7 @@ function addGenericEntityById(
       world,
       controllableBodies,
       controlledBodyIndex,
-      entityConfig.metadata?.legacyKind,
+      entityConfig.legacyKind,
     );
     return;
   }
@@ -304,19 +304,14 @@ function addGenericEntityById(
       world,
       planetsAndStars,
       planetIndex,
-      entityConfig.metadata?.legacyKind,
+      entityConfig.legacyKind,
     );
     return;
   }
 
   const starIndex = planetsAndStars.stars.findIndex((star) => star.id === id);
   if (starIndex >= 0) {
-    addStarEntity(
-      world,
-      planetsAndStars,
-      starIndex,
-      entityConfig.metadata?.legacyKind,
-    );
+    addStarEntity(world, planetsAndStars, starIndex, entityConfig.legacyKind);
     return;
   }
 
