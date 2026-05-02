@@ -941,7 +941,7 @@ export function createCircleNowLogger(
 function getContextControlledBody(
   context: PlaybackLoggerLifecycleContext,
 ): ShipBody | undefined {
-  return context.controlledBody ?? context.mainControlledBody;
+  return context.controlledBody;
 }
 
 function angleDeg(a: Vec3, b: Vec3): number {

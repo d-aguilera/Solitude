@@ -11,8 +11,6 @@ export interface PlaybackLogger {
 export interface PlaybackLoggerLifecycleContext {
   controlInput: ControlInput;
   controlledBody?: ShipBody;
-  /** @deprecated Use controlledBody. */
-  mainControlledBody?: ShipBody;
   playbackElapsedMs: number;
   script: CompiledPlaybackScript;
   simTimeMillis: number;

@@ -476,7 +476,6 @@ function sampleLoggerAfterTick(
     controlledBody: getLoopControlledBody(params),
     dtSimMillis,
     dtTickMillis,
-    mainControlledBody: getLoopControlledBody(params),
     playbackElapsedMs,
     script,
     simTimeMillis: params.simTimeMillis ?? 0,
@@ -495,7 +494,6 @@ function createLoggerLifecycleContext(
   return {
     controlInput: controlInput ?? ({} as ControlInput),
     controlledBody,
-    mainControlledBody: controlledBody,
     playbackElapsedMs,
     script,
     simTimeMillis,
