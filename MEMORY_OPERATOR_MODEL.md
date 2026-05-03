@@ -16,13 +16,14 @@
 
 ## Current Slice
 
-Status: main-view camera rig state implemented; verify and choose next phase.
+Status: spacecraft thrust-state cleanup implemented; verify and choose next phase.
 
 Next focused change:
 
 - Choose the next post-camera-rig seam:
   - runtime operator-mode switching for focus, active camera rig, controls, and HUD emphasis;
   - playback generic focus/operator snapshot fields while preserving `ships` schema compatibility.
+  - remaining spacecraft-control port cleanup: genericize/remove app-level `ThrustCommand`, `RcsCommand`, `PropulsionCommand`, and thrust/RCS HUD tick output.
 
 Success criteria:
 
@@ -31,6 +32,7 @@ Success criteria:
 - Runtime/headless setup still installs the current spacecraft behavior by default.
 - Runtime/headless setup validates plugin focused-entity requirements before behavior hooks use the focus.
 - Core owns the primary view definition while plugins supply camera rigs; the first registered rig is current and setup fails if none exists.
+- Core config/tick setup does not own initial thrust level; spacecraft operator owns spacecraft control state.
 - No new plugin-to-core layering violations.
 - `rg mainControlledBody src` remains empty.
 - `rg "mainControlledEntityId|setMainControlledEntityId" src` remains empty.
@@ -125,6 +127,11 @@ Success criteria:
   - core creates exactly one primary view from the first registered rig;
   - `spacecraftOperator` registers `spacecraft.forward`;
   - missing or duplicate active rigs fail clearly during view definition build.
+- 2026-05-03: Removed initial thrust-level ownership from core:
+  - deleted `thrustLevel` from world config and tick handler setup;
+  - `spacecraftOperator` owns closure-local spacecraft control state initialized to thrust level `1`;
+  - playback still overrides spacecraft thrust level through the neutral mutable control-state bag;
+  - moved thrust/RCS velocity application helpers from app physics into `spacecraftOperator`.
 
 ## Decision Log
 
@@ -148,6 +155,7 @@ Success criteria:
 - Core should own generic focus, main view plumbing, render/simulation orchestration, and deterministic phase ordering.
 - Plugins should define what it means to operate a focused entity: spacecraft controls, propulsion, RCS, attitude, camera rigs, HUD/readout assumptions, autopilot behavior, and future operator modes.
 - Current boundary: the default spacecraft operator owns controls, vehicle dynamics, input bindings, and the primary forward camera rig; core owns the primary view definition/canvas/layout/render target and uses the first registered rig as current.
+- Core still exposes transitional spacecraft-control command/output ports for autopilot/playback/HUD compatibility; these are the next cleanup seam before or alongside operator-mode switching.
 
 ## Core Idea
 

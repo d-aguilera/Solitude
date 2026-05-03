@@ -138,11 +138,9 @@ describe("headlessGameLoop", () => {
   });
 
   it("runs a step without any render config", () => {
-    const loop = createHeadlessLoop(buildHeadlessConfig(), {
-      thrustLevel: 5,
-    });
+    const loop = createHeadlessLoop(buildHeadlessConfig());
 
-    const output = loop.step(1000, { burnForward: true });
+    const output = loop.step(1000, { burnForward: true, thrust5: true });
 
     expect(output.currentThrustLevel).toBeGreaterThan(0);
   });

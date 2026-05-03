@@ -1,5 +1,4 @@
 import type {
-  ControlledBody,
   EntityAxialSpin,
   GravityEngine,
   GravityState,
@@ -8,80 +7,11 @@ import type {
 import { localFrame } from "../domain/localFrame";
 import { mat3 } from "../domain/mat3";
 import { vec3 } from "../domain/vec3";
-import type {
-  ControlledBodyState,
-  RcsCommand,
-  ThrustCommand,
-} from "./controlPorts";
-// Scratch vector for applyThrustToVelocity
-const cvScratch = vec3.zero();
+import type { ControlledBodyState } from "./controlPorts";
+
 const Rspin = mat3.zero();
 const omegaWorldScratch = vec3.zero();
 const omegaAxisScratch = vec3.zero();
-
-/**
- * Apply thrust acceleration to the controlled body's velocity when burn/brake
- * are active. Acceleration magnitude is:
- *
- *   a = maxThrustAcceleration * currentThrustPercent
- */
-function applyThrustToVelocity(
-  dtMillis: number,
-  thrust: ThrustCommand,
-  body: ControlledBodyState,
-  maxThrustAcceleration: number,
-): void {
-  if (dtMillis === 0) return;
-  if (thrust.forward === 0) return;
-
-  const { frame, velocity } = body;
-  const accelScale = (maxThrustAcceleration * dtMillis) / 1000;
-
-  if (thrust.forward !== 0) {
-    vec3.scaleInto(cvScratch, accelScale * thrust.forward, frame.forward);
-    vec3.addInto(body.velocity, velocity, cvScratch);
-  }
-}
-
-/**
- * Applies thrust into the controlled body's velocity.
- */
-export function applyThrust(
-  dtMillis: number,
-  controlledBody: ControlledBody,
-  thrust: ThrustCommand,
-  maxThrustAcceleration: number,
-): void {
-  if (dtMillis === 0) {
-    return;
-  }
-
-  applyThrustToVelocity(
-    dtMillis,
-    thrust,
-    controlledBody,
-    maxThrustAcceleration,
-  );
-}
-
-/**
- * Applies RCS translation into the controlled body's velocity (lateral only).
- */
-export function applyRcsTranslation(
-  dtMillis: number,
-  controlledBody: ControlledBody,
-  rcs: RcsCommand,
-  maxRcsTranslationAcceleration: number,
-): void {
-  if (dtMillis === 0) {
-    return;
-  }
-  if (rcs.right === 0) return;
-
-  const accelScale = (maxRcsTranslationAcceleration * dtMillis) / 1000;
-  vec3.scaleInto(cvScratch, accelScale * rcs.right, controlledBody.frame.right);
-  vec3.addInto(controlledBody.velocity, controlledBody.velocity, cvScratch);
-}
 
 /**
  * Integrate controlled-body attitude by applying angular velocity to the local frame.

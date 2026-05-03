@@ -2,16 +2,12 @@ import type {
   ControlInput,
   PropulsionCommand,
   RcsCommand,
-  SimControlState,
   ThrustCommand,
 } from "../../app/controlPorts";
-import {
-  applyControlledBodyRotation,
-  applyRcsTranslation,
-  applyThrust,
-} from "../../app/physics";
+import { applyControlledBodyRotation } from "../../app/physics";
 import type { ControlPlugin, SimulationPlugin } from "../../app/pluginPorts";
 import type { ControlledBody, World } from "../../domain/domainPorts";
+import { vec3 } from "../../domain/vec3";
 import {
   getMainThrustCommandInto,
   getRcsCommandInto,
@@ -20,12 +16,15 @@ import {
   resolvePropulsionCommandWithPlugins,
   updateControlState,
   updateControlledBodyAngularVelocityFromInput,
+  type SpacecraftControlState,
 } from "./controlLogic";
+
+const velocityDeltaScratch = vec3.zero();
 
 export interface SpacecraftVehicleDynamicsParams {
   controlInput: ControlInput;
   controlPlugins: ControlPlugin[];
-  controlState: SimControlState;
+  controlState: SpacecraftControlState;
   controlledBody: ControlledBody;
   dtMillis: number;
   world: World;
@@ -77,19 +76,23 @@ export function applySpacecraftVehicleDynamics(
 export function createSpacecraftVehicleDynamicsPlugin(
   controlPlugins: ControlPlugin[],
 ): SimulationPlugin {
+  const controlState: SpacecraftControlState = {
+    thrustLevel: 1,
+  };
+
   return {
     updateVehicleDynamics: (params) => {
       const propulsionCommand = applySpacecraftVehicleDynamics({
         controlInput: params.controlInput,
         controlPlugins,
-        controlState: params.controlState,
+        controlState,
         controlledBody: params.mainFocus.controlledBody,
         dtMillis: params.dtMillis,
         world: params.world,
       });
       params.output.currentThrustLevel = getRenderedThrustLevel(
         propulsionCommand.main,
-        params.controlState,
+        controlState,
       );
       params.output.currentRcsLevel = getRenderedRcsLevel(
         propulsionCommand.rcs,
@@ -100,7 +103,7 @@ export function createSpacecraftVehicleDynamicsPlugin(
 
 function getRenderedThrustLevel(
   thrustCommand: ThrustCommand,
-  controlState: SimControlState,
+  controlState: SpacecraftControlState,
 ): number {
   if (thrustCommand.forward === 0) {
     return 0;
@@ -125,7 +128,7 @@ let manualPropulsionCommand: PropulsionCommand = {
 function getPropulsionCommandForTick(
   dtMillis: number,
   controlInput: ControlInput,
-  controlState: SimControlState,
+  controlState: SpacecraftControlState,
   controlledBody: ControlledBody,
   world: World,
   controlPlugins: ControlPlugin[],
@@ -146,5 +149,49 @@ function getPropulsionCommandForTick(
     maxThrustAcceleration,
     maxRcsTranslationAcceleration,
     controlPlugins,
+  );
+}
+
+function applyThrust(
+  dtMillis: number,
+  controlledBody: ControlledBody,
+  thrust: ThrustCommand,
+  maxThrustAcceleration: number,
+): void {
+  if (dtMillis === 0) return;
+  if (thrust.forward === 0) return;
+
+  const accelScale = (maxThrustAcceleration * dtMillis) / 1000;
+  vec3.scaleInto(
+    velocityDeltaScratch,
+    accelScale * thrust.forward,
+    controlledBody.frame.forward,
+  );
+  vec3.addInto(
+    controlledBody.velocity,
+    controlledBody.velocity,
+    velocityDeltaScratch,
+  );
+}
+
+function applyRcsTranslation(
+  dtMillis: number,
+  controlledBody: ControlledBody,
+  rcs: RcsCommand,
+  maxRcsTranslationAcceleration: number,
+): void {
+  if (dtMillis === 0) return;
+  if (rcs.right === 0) return;
+
+  const accelScale = (maxRcsTranslationAcceleration * dtMillis) / 1000;
+  vec3.scaleInto(
+    velocityDeltaScratch,
+    accelScale * rcs.right,
+    controlledBody.frame.right,
+  );
+  vec3.addInto(
+    controlledBody.velocity,
+    controlledBody.velocity,
+    velocityDeltaScratch,
   );
 }

@@ -16,7 +16,6 @@ import { NewtonianGravityEngine } from "./NewtonianGravityEngine";
 
 export interface HeadlessLoopOptions {
   gravityEngine?: GravityEngine;
-  thrustLevel?: number;
   timeScale?: number;
   controlPlugins?: ControlPlugin[];
   simulationPlugins?: SimulationPlugin[];
@@ -62,7 +61,6 @@ export function createHeadlessLoop(
     options.gravityEngine ??
     new NewtonianGravityEngine(parameters.newtonG, parameters.softeningLength);
 
-  const thrustLevel = options.thrustLevel ?? 1;
   const timeScale = options.timeScale ?? 1;
   const controlPlugins = options.controlPlugins ?? [];
   const spacecraftOperator = createSpacecraftOperatorPlugin();
@@ -85,7 +83,6 @@ export function createHeadlessLoop(
 
   const tickInto = createTickHandler(
     gravityEngine,
-    thrustLevel,
     worldAndScene,
     simulationPlugins,
   );

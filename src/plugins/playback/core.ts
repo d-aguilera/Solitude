@@ -1,4 +1,4 @@
-import type { ControlInput, SimControlState } from "../../app/controlPorts";
+import type { ControlInput, MutableControlState } from "../../app/controlPorts";
 import type { LoopPlugin, LoopUpdateParams } from "../../app/pluginPorts";
 import type { ControlledBody, World } from "../../domain/domainPorts";
 import { createPlaybackLogger, type PlaybackLogger } from "./loggers/index";
@@ -52,7 +52,7 @@ export interface PlaybackController {
   isInputLocked: () => boolean;
   updateControlState: (
     controlInput: ControlInput,
-    controlState: SimControlState,
+    controlState: MutableControlState,
   ) => void;
   updateLoop: (
     controlInput: ControlInput,
@@ -202,11 +202,34 @@ export function createPlaybackController(
     _controlInput,
     controlState,
   ) => {
-    latestThrustLevel = controlState.thrustLevel;
+    latestThrustLevel = readSpacecraftThrustLevel(controlState);
     if (status === "playing" && currentPhaseThrustLevel != null) {
       controlState.thrustLevel = currentPhaseThrustLevel;
     }
   };
+
+  function readSpacecraftThrustLevel(
+    controlState: MutableControlState,
+  ): ThrustLevel {
+    return isThrustLevelValue(controlState.thrustLevel)
+      ? controlState.thrustLevel
+      : 1;
+  }
+
+  function isThrustLevelValue(value: unknown): value is ThrustLevel {
+    return (
+      value === 0 ||
+      value === 1 ||
+      value === 2 ||
+      value === 3 ||
+      value === 4 ||
+      value === 5 ||
+      value === 6 ||
+      value === 7 ||
+      value === 8 ||
+      value === 9
+    );
+  }
 
   function applySceneSnapshot(world: World): void {
     if (diagnostic?.mode !== "playback" || !script || sceneSnapshotApplied) {

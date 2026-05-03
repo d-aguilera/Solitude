@@ -2,9 +2,9 @@ import type {
   AttitudeCommand,
   ControlInput,
   ControlledBodyState,
+  MutableControlState,
   PropulsionCommand,
   RcsCommand,
-  SimControlState,
   ThrustCommand,
 } from "../../app/controlPorts";
 import type { ControlPlugin } from "../../app/pluginPorts";
@@ -28,9 +28,13 @@ const shipThrustValues = Array.from<number, number>(
   (_, i) => Math.pow(i, shipThrustExponent) / shipThrustMaxPow,
 );
 
+export interface SpacecraftControlState extends MutableControlState {
+  thrustLevel: number;
+}
+
 export function updateControlState(
   controlInput: ControlInput,
-  controlState: SimControlState,
+  controlState: SpacecraftControlState,
   controlPlugins: ControlPlugin[] = [],
 ): void {
   updateThrustLevelFromInput(controlInput, controlState);
@@ -104,7 +108,7 @@ const thrustKeys: (keyof ControlInput)[] = [
  */
 function updateThrustLevelFromInput(
   controlInput: ControlInput,
-  controlState: SimControlState,
+  controlState: SpacecraftControlState,
 ): void {
   for (let i = 9; i >= 0; i--) {
     if (controlInput[thrustKeys[i]]) {
@@ -122,7 +126,7 @@ function updateThrustLevelFromInput(
 export function getMainThrustCommandInto(
   into: ThrustCommand,
   controlInput: ControlInput,
-  controlState: SimControlState,
+  controlState: SpacecraftControlState,
 ): void {
   const mag = shipThrustValues[controlState.thrustLevel];
   const forward = controlInput.burnForward ? mag : 0;
@@ -156,7 +160,7 @@ export function updateControlledBodyAngularVelocityFromInput(
   dtMillis: number,
   ship: ControlledBodyState,
   controlInput: ControlInput,
-  controlState: SimControlState,
+  controlState: SpacecraftControlState,
   world: World,
   controlPlugins: ControlPlugin[] = [],
 ): void {
@@ -203,7 +207,7 @@ function getPluginAttitudeCommand(
   dtMillis: number,
   ship: ControlledBodyState,
   controlInput: ControlInput,
-  controlState: SimControlState,
+  controlState: SpacecraftControlState,
   world: World,
   controlPlugins: ControlPlugin[],
 ): AttitudeCommand | null {

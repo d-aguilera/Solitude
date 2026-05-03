@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  createControlInput,
-  type SimControlState,
-} from "../../app/controlPorts";
+import { createControlInput } from "../../app/controlPorts";
 import type { SimulationPlugin } from "../../app/pluginPorts";
 import type { ControlledBody, World } from "../../domain/domainPorts";
 import { localFrame } from "../../domain/localFrame";
@@ -41,12 +38,8 @@ function updateVehicleDynamics(
 ): void {
   const controlInput = createControlInput();
   controlInput.burnForward = true;
-  const controlState: SimControlState = {
-    thrustLevel: 9,
-  };
   plugin.updateVehicleDynamics?.({
     controlInput,
-    controlState,
     dtMillis: 1000,
     dtMillisSim: 1000,
     mainFocus: {

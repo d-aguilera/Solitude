@@ -34,7 +34,6 @@ describe("main view camera frame", () => {
         mainViewCameraOffset: vec3.zero(),
         mainViewLookState: { azimuth: 0, elevation: 0 },
       },
-      thrustLevel: 1,
     };
     const [primaryView] = buildViewDefinitions(config, [
       createSpacecraftOperatorPlugin(),

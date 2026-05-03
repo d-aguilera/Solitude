@@ -6,8 +6,8 @@ import type {
   ControlAction,
   ControlInput,
   ControlledBodyState,
+  MutableControlState,
   PropulsionCommand,
-  SimControlState,
 } from "./controlPorts";
 import type { EntityConfig } from "./entityConfigPorts";
 import type { HudGrid } from "./hudPorts";
@@ -34,14 +34,14 @@ export interface InputPlugin {
 
 export interface ControlStateUpdateParams {
   controlInput: ControlInput;
-  controlState: SimControlState;
+  controlState: MutableControlState;
 }
 
 export interface AttitudeCommandParams {
   dtMillis: number;
   controlledBody: ControlledBodyState;
   controlInput: ControlInput;
-  controlState: SimControlState;
+  controlState: MutableControlState;
   world: World;
 }
 
@@ -67,7 +67,6 @@ export interface ControlPlugin {
 
 export interface SimulationPhaseParams {
   controlInput: ControlInput;
-  controlState: SimControlState;
   dtMillis: number;
   dtMillisSim: number;
   mainFocus: FocusContext;

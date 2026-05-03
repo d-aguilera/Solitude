@@ -146,7 +146,6 @@ export function runLoop({
 
   const tickInto: TickCallback = createTickHandler(
     gravityEngine,
-    config.thrustLevel,
     worldAndScene,
     simulationPlugins,
   );

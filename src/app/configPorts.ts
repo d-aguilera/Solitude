@@ -9,7 +9,6 @@ export * from "./renderConfigPorts";
 export interface WorldAndSceneConfig {
   entities: EntityConfig[];
   mainFocusEntityId: EntityId;
-  thrustLevel: number;
   render: WorldRenderConfig;
 }
 

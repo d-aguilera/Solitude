@@ -68,9 +68,4 @@ export interface ControlledBodyState {
   angularVelocity: AngularVelocity;
 }
 
-/**
- * Per-player simulation control state that must persist across frames.
- */
-export interface SimControlState {
-  thrustLevel: number;
-}
+export type MutableControlState = Record<string, unknown>;

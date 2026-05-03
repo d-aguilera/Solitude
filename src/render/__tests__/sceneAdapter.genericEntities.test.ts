@@ -119,7 +119,6 @@ describe("createScene", () => {
         mainViewCameraOffset: vec3.zero(),
         mainViewLookState: { azimuth: 0, elevation: 0 },
       },
-      thrustLevel: 1,
     };
 
     const { scene } = createScene(world, config);

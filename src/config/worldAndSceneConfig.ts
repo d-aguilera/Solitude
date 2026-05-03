@@ -5,7 +5,6 @@ export function buildWorldAndSceneConfig() {
   const config: WorldAndSceneConfig = {
     entities: [],
     mainFocusEntityId: "",
-    thrustLevel: 1,
     render: {
       mainViewCameraOffset: vec3.create(0, 51000, 4850),
       mainViewLookState: { azimuth: 0, elevation: 0 },

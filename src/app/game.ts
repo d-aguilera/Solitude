@@ -1,7 +1,7 @@
 import { resolveCollisions } from "../domain/collisions";
 import type { GravityEngine } from "../domain/domainPorts";
 import { buildInitialGravityState } from "../domain/gravityState";
-import type { ControlInput, SimControlState } from "./controlPorts";
+import type { ControlInput } from "./controlPorts";
 import { applyCelestialSpin, applyGravity } from "./physics";
 import type { SimulationPlugin } from "./pluginPorts";
 import type {
@@ -16,18 +16,12 @@ import type {
  */
 export function createTickHandler(
   gravityEngine: GravityEngine,
-  thrustLevel: number,
   worldAndScene: WorldAndScene,
   simulationPlugins: SimulationPlugin[] = [],
 ): TickCallback {
-  const simControlState: SimControlState = {
-    thrustLevel,
-  };
-
   const gravityState = buildInitialGravityState(worldAndScene.world);
   const simulationPhaseParams = {
     controlInput: {} as ControlInput,
-    controlState: simControlState,
     dtMillis: 0,
     dtMillisSim: 0,
     mainFocus: worldAndScene.mainFocus,
@@ -39,10 +33,9 @@ export function createTickHandler(
    * Per‑frame update/render entry called by the game loop.
    */
   return (output: TickOutput, params: TickParams): void => {
-    const { controlInput, dtMillis, dtMillisSim } = params;
-    simulationPhaseParams.controlInput = controlInput;
-    simulationPhaseParams.dtMillis = dtMillis;
-    simulationPhaseParams.dtMillisSim = dtMillisSim;
+    simulationPhaseParams.controlInput = params.controlInput;
+    simulationPhaseParams.dtMillis = params.dtMillis;
+    simulationPhaseParams.dtMillisSim = params.dtMillisSim;
     simulationPhaseParams.output = output;
     output.currentThrustLevel = 0;
     output.currentRcsLevel = 0;
@@ -52,13 +45,13 @@ export function createTickHandler(
     applyAfterVehicleDynamics(simulationPlugins, simulationPhaseParams);
 
     applyBeforeGravity(simulationPlugins, simulationPhaseParams);
-    applyGravity(dtMillisSim, gravityEngine, gravityState);
+    applyGravity(params.dtMillisSim, gravityEngine, gravityState);
     applyAfterGravity(simulationPlugins, simulationPhaseParams);
 
     resolveCollisions(worldAndScene.world);
     applyAfterCollisions(simulationPlugins, simulationPhaseParams);
 
-    applyCelestialSpin(dtMillisSim, worldAndScene.world);
+    applyCelestialSpin(params.dtMillisSim, worldAndScene.world);
     applyAfterSpin(simulationPlugins, simulationPhaseParams);
   };
 }

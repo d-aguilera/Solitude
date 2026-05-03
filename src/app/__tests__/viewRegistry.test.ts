@@ -18,7 +18,6 @@ function createConfig(): WorldAndSceneConfig {
       mainViewCameraOffset: vec3.create(0, 0, 0),
       mainViewLookState: { azimuth: 0, elevation: 0 },
     },
-    thrustLevel: 1,
   };
 }
 
