@@ -11,7 +11,7 @@ import type {
 } from "./controlPorts";
 import type { EntityConfig } from "./entityConfigPorts";
 import type { HudGrid } from "./hudPorts";
-import type { FocusContext, TickOutput } from "./runtimePorts";
+import type { FocusContext } from "./runtimePorts";
 import type { Scene, SceneObject } from "./scenePorts";
 import type {
   MainViewCameraRig,
@@ -70,7 +70,6 @@ export interface SimulationPhaseParams {
   dtMillis: number;
   dtMillisSim: number;
   mainFocus: FocusContext;
-  output: TickOutput;
   world: World;
 }
 
@@ -97,8 +96,6 @@ export interface HudContext {
   world: World;
   mainFocus: FocusContext;
   controlInput: ControlInput;
-  currentThrustLevel: number;
-  currentRcsLevel: number;
   simTimeMillis: number;
 }
 

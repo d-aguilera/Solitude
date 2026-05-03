@@ -6,6 +6,7 @@ import { localFrame } from "../../domain/localFrame";
 import { mat3 } from "../../domain/mat3";
 import { vec3 } from "../../domain/vec3";
 import { createSpacecraftVehicleDynamicsPlugin } from "./core";
+import { createSpacecraftOperatorTelemetry } from "./telemetry";
 
 function createBody(id: string): ControlledBody {
   const frame = localFrame.fromUp(vec3.create(0, 0, 1));
@@ -46,10 +47,6 @@ function updateVehicleDynamics(
       controlledBody: focusedBody,
       entityId: focusedBody.id,
     },
-    output: {
-      currentRcsLevel: 0,
-      currentThrustLevel: 0,
-    },
     world: createWorld(focusedBody),
   });
 }
@@ -64,5 +61,16 @@ describe("spacecraft vehicle dynamics plugin", () => {
 
     expect(vec3.length(focusedBody.velocity)).toBeGreaterThan(0);
     expect(vec3.length(legacyBody.velocity)).toBe(0);
+  });
+
+  it("writes spacecraft readout levels into plugin telemetry", () => {
+    const focusedBody = createBody("ship:focus");
+    const telemetry = createSpacecraftOperatorTelemetry();
+    const plugin = createSpacecraftVehicleDynamicsPlugin([], telemetry);
+
+    updateVehicleDynamics(plugin, focusedBody);
+
+    expect(telemetry.currentThrustLevel).toBe(1);
+    expect(telemetry.currentRcsLevel).toBe(0);
   });
 });

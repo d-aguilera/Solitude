@@ -18,6 +18,10 @@ import {
   updateControlledBodyAngularVelocityFromInput,
   type SpacecraftControlState,
 } from "./controlLogic";
+import {
+  createSpacecraftOperatorTelemetry,
+  type SpacecraftOperatorTelemetry,
+} from "./telemetry";
 
 const velocityDeltaScratch = vec3.zero();
 
@@ -75,6 +79,7 @@ export function applySpacecraftVehicleDynamics(
 
 export function createSpacecraftVehicleDynamicsPlugin(
   controlPlugins: ControlPlugin[],
+  telemetry: SpacecraftOperatorTelemetry = createSpacecraftOperatorTelemetry(),
 ): SimulationPlugin {
   const controlState: SpacecraftControlState = {
     thrustLevel: 1,
@@ -90,13 +95,11 @@ export function createSpacecraftVehicleDynamicsPlugin(
         dtMillis: params.dtMillis,
         world: params.world,
       });
-      params.output.currentThrustLevel = getRenderedThrustLevel(
+      telemetry.currentThrustLevel = getRenderedThrustLevel(
         propulsionCommand.main,
         controlState,
       );
-      params.output.currentRcsLevel = getRenderedRcsLevel(
-        propulsionCommand.rcs,
-      );
+      telemetry.currentRcsLevel = getRenderedRcsLevel(propulsionCommand.rcs);
     },
   };
 }

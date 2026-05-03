@@ -12,6 +12,7 @@ import { createHudPlugin as createOrbitTelemetryHudPlugin } from "../orbitTeleme
 import { createHudPlugin as createRuntimeTelemetryHudPlugin } from "../runtimeTelemetry/hud";
 import { createRuntimeTelemetryController } from "../runtimeTelemetry/logic";
 import { createHudPlugin as createShipTelemetryHudPlugin } from "../shipTelemetry/hud";
+import { createSpacecraftOperatorTelemetry } from "../spacecraftOperator/telemetry";
 
 function createHudGrid(): HudGrid {
   return [
@@ -80,8 +81,6 @@ function createHudContext(
 ): HudContext {
   return {
     controlInput: createControlInput(),
-    currentRcsLevel: -1,
-    currentThrustLevel: 5,
     mainFocus: {
       controlledBody: mainFocusBody,
       entityId: mainFocusBody.id,
@@ -98,8 +97,11 @@ describe("telemetry HUD plugins", () => {
     ship.velocity = vec3.create(10, 0, 0);
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
+    const telemetry = createSpacecraftOperatorTelemetry();
+    telemetry.currentThrustLevel = 5;
+    telemetry.currentRcsLevel = -1;
 
-    createShipTelemetryHudPlugin().updateHudParams(grid, context);
+    createShipTelemetryHudPlugin(telemetry).updateHudParams(grid, context);
 
     expect(grid[0][4]).toBe("Speed: 36 km/h");
     expect(grid[1][4]).toBe("Thrust:  5");
@@ -111,8 +113,9 @@ describe("telemetry HUD plugins", () => {
     ship.velocity = vec3.create(10, 0, 0);
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
+    const telemetry = createSpacecraftOperatorTelemetry();
 
-    createShipTelemetryHudPlugin().updateHudParams(grid, context);
+    createShipTelemetryHudPlugin(telemetry).updateHudParams(grid, context);
 
     expect(grid[0][4]).toBe("Speed: 36 km/h");
   });

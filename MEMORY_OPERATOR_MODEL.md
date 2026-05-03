@@ -132,6 +132,10 @@ Success criteria:
   - `spacecraftOperator` owns closure-local spacecraft control state initialized to thrust level `1`;
   - playback still overrides spacecraft thrust level through the neutral mutable control-state bag;
   - moved thrust/RCS velocity application helpers from app physics into `spacecraftOperator`.
+- 2026-05-03: Removed thrust/RCS readout output from core:
+  - deleted `currentThrustLevel` and `currentRcsLevel` from tick output and HUD context;
+  - removed the now-empty tick output pipe from core/runtime loops;
+  - plugin composition creates spacecraft operator telemetry and shares it with spacecraft dynamics plus ship telemetry HUD.
 
 ## Decision Log
 
@@ -155,7 +159,7 @@ Success criteria:
 - Core should own generic focus, main view plumbing, render/simulation orchestration, and deterministic phase ordering.
 - Plugins should define what it means to operate a focused entity: spacecraft controls, propulsion, RCS, attitude, camera rigs, HUD/readout assumptions, autopilot behavior, and future operator modes.
 - Current boundary: the default spacecraft operator owns controls, vehicle dynamics, input bindings, and the primary forward camera rig; core owns the primary view definition/canvas/layout/render target and uses the first registered rig as current.
-- Core still exposes transitional spacecraft-control command/output ports for autopilot/playback/HUD compatibility; these are the next cleanup seam before or alongside operator-mode switching.
+- Core still exposes spacecraft-control command ports for autopilot/playback compatibility; output/readout state has moved to plugin-owned telemetry.
 
 ## Core Idea
 

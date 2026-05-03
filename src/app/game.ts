@@ -4,12 +4,7 @@ import { buildInitialGravityState } from "../domain/gravityState";
 import type { ControlInput } from "./controlPorts";
 import { applyCelestialSpin, applyGravity } from "./physics";
 import type { SimulationPlugin } from "./pluginPorts";
-import type {
-  TickCallback,
-  TickOutput,
-  TickParams,
-  WorldAndScene,
-} from "./runtimePorts";
+import type { TickCallback, TickParams, WorldAndScene } from "./runtimePorts";
 
 /**
  * App‑core game entry.
@@ -25,20 +20,16 @@ export function createTickHandler(
     dtMillis: 0,
     dtMillisSim: 0,
     mainFocus: worldAndScene.mainFocus,
-    output: {} as TickOutput,
     world: worldAndScene.world,
   };
 
   /**
    * Per‑frame update/render entry called by the game loop.
    */
-  return (output: TickOutput, params: TickParams): void => {
+  return (params: TickParams): void => {
     simulationPhaseParams.controlInput = params.controlInput;
     simulationPhaseParams.dtMillis = params.dtMillis;
     simulationPhaseParams.dtMillisSim = params.dtMillisSim;
-    simulationPhaseParams.output = output;
-    output.currentThrustLevel = 0;
-    output.currentRcsLevel = 0;
 
     applyBeforeVehicleDynamics(simulationPlugins, simulationPhaseParams);
     applyVehicleDynamics(simulationPlugins, simulationPhaseParams);

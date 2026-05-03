@@ -56,6 +56,7 @@
 - **Role**: plugins are the outermost layer that compose input, control, loop, HUD, scene, segment hooks, and world-model content around the core game.
 - **Layering rule**: inner layers (`domain`, `app`, `render`) must never import from `src/plugins`; infra/bootstrap decides what to load.
 - **Registration**: `src/plugins/index.ts` exports `availablePlugins` and `loadPlugins`; infra (e.g. `src/infra/domBootstrap.ts`) chooses plugin IDs.
+- **Composition state**: plugin-to-plugin shared state that should not enter core belongs in the plugin composition layer, e.g. spacecraft operator telemetry for thrust/RCS HUD readouts.
 - **Single source of truth**: plugin list, structure, and behavior live in `src/plugins/README.md`.
 - **World-model goal**: scenario plugins should contribute generic entities/components. Core should validate required capabilities (e.g. main controllable body) rather than requiring fixed categories.
 
@@ -83,6 +84,7 @@
 - `src/infra/domGameLoop.ts` runs the frame loop and orchestrates physics + rendering.
 - `src/app/game.ts` is the per-tick simulation core.
 - Plugin phase/HUD/scene/segment/loop contexts are focused-entity-first: use `mainFocus.controlledBody` for the active body.
+- Per-tick core no longer returns mutable tick output; operator-specific readout state lives in plugins.
 
 ## Key files
 

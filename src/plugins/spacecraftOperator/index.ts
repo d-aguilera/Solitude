@@ -1,10 +1,17 @@
-import type { GamePlugin } from "../../app/pluginPorts";
+import type { GamePlugin, RuntimeOptions } from "../../app/pluginPorts";
 import type { ViewFrameUpdateParams } from "../../app/viewPorts";
 import { localFrame } from "../../domain/localFrame";
+import type { PluginCompositionContext } from "../pluginComposition";
 import { createSpacecraftVehicleDynamicsPlugin } from "./core";
 import { createInputPlugin } from "./input";
+import { createSpacecraftOperatorTelemetry } from "./telemetry";
 
-export function createSpacecraftOperatorPlugin(): GamePlugin {
+export function createSpacecraftOperatorPlugin(
+  _runtimeOptions: RuntimeOptions = {},
+  context?: PluginCompositionContext,
+): GamePlugin {
+  const telemetry =
+    context?.spacecraftOperatorTelemetry ?? createSpacecraftOperatorTelemetry();
   return {
     id: "spacecraftOperator",
     input: createInputPlugin(),
@@ -16,8 +23,8 @@ export function createSpacecraftOperatorPlugin(): GamePlugin {
         "angularVelocity",
       ],
     },
-    simulation: ({ controlPlugins }) =>
-      createSpacecraftVehicleDynamicsPlugin(controlPlugins),
+    simulation: (params) =>
+      createSpacecraftVehicleDynamicsPlugin(params.controlPlugins, telemetry),
     views: {
       registerViews: (registry) => {
         registry.addMainViewCameraRig({

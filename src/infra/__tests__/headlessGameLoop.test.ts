@@ -120,29 +120,34 @@ describe("headlessGameLoop", () => {
     ]);
   });
 
-  it("lets simulation vehicle-dynamics plugins write tick output", () => {
+  it("lets simulation vehicle-dynamics plugins run during headless steps", () => {
+    let updateCount = 0;
     const simulationPlugin: SimulationPlugin = {
-      updateVehicleDynamics: ({ output }) => {
-        output.currentThrustLevel = 42;
-        output.currentRcsLevel = -0.5;
+      updateVehicleDynamics: () => {
+        updateCount += 1;
       },
     };
     const loop = createHeadlessLoop(buildHeadlessConfig(), {
       simulationPlugins: [simulationPlugin],
     });
 
-    const output = loop.step(16);
+    loop.step(16);
 
-    expect(output.currentThrustLevel).toBe(42);
-    expect(output.currentRcsLevel).toBe(-0.5);
+    expect(updateCount).toBe(1);
   });
 
   it("runs a step without any render config", () => {
     const loop = createHeadlessLoop(buildHeadlessConfig());
+    const before = vec3.clone(
+      loop.worldAndScene.mainFocus.controlledBody.velocity,
+    );
 
-    const output = loop.step(1000, { burnForward: true, thrust5: true });
+    loop.step(1000, { burnForward: true, thrust5: true });
 
-    expect(output.currentThrustLevel).toBeGreaterThan(0);
+    const after = loop.worldAndScene.mainFocus.controlledBody.velocity;
+    expect(
+      vec3.length(vec3.subInto(vec3.zero(), after, before)),
+    ).toBeGreaterThan(0);
   });
 
   it("advances the focused body position over time", () => {

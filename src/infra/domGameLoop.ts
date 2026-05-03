@@ -20,7 +20,6 @@ import { validatePluginRequirements } from "../app/pluginRequirements";
 import { getMainViewLookState } from "../app/renderConfigPorts";
 import type {
   TickCallback,
-  TickOutput,
   TickParams,
   WorldAndScene,
 } from "../app/runtimePorts";
@@ -144,7 +143,7 @@ export function runLoop({
     scene,
   };
 
-  const tickInto: TickCallback = createTickHandler(
+  const tick: TickCallback = createTickHandler(
     gravityEngine,
     worldAndScene,
     simulationPlugins,
@@ -167,11 +166,6 @@ export function runLoop({
     dtMillis: 0,
     dtMillisSim: 0,
     controlInput,
-  };
-
-  const tickOutput: TickOutput = {
-    currentThrustLevel: 0,
-    currentRcsLevel: 0,
   };
 
   const renderCache = createRenderFrameCache();
@@ -233,7 +227,7 @@ export function runLoop({
     if (framePolicy.advanceSim) {
       tickParams.dtMillis = dtTickMillis;
       tickParams.dtMillisSim = dtSimMillis;
-      tickInto(tickOutput, tickParams);
+      tick(tickParams);
       simTimeMillis += tickParams.dtMillisSim;
     }
 
@@ -298,8 +292,6 @@ export function runLoop({
       clearHudGrid(renderedHud);
       applyHudPlugins(hudPlugins, renderedHud, {
         controlInput,
-        currentRcsLevel: tickOutput.currentRcsLevel,
-        currentThrustLevel: tickOutput.currentThrustLevel,
         mainFocus: worldAndScene.mainFocus,
         nowMs,
         simTimeMillis,

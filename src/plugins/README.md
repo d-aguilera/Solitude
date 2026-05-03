@@ -39,6 +39,8 @@ Plugins may declare focused-entity requirements. Infra validates those requireme
 
 Available plugins are exported from `src/plugins/index.ts`. Infra/bootstrap chooses which plugins to enable via `loadPlugins` (e.g. `src/infra/domBootstrap.ts`). Infra passes runtime URL options to plugins as a raw string map; each plugin owns validation and interpretation of its own option keys.
 
+`loadPlugins` may also create composition-local shared state for plugins that are intentionally paired by the selected catalog. Keep that state in `src/plugins` and pass it into plugin factories; do not route plugin-specific readouts through app/core contexts just to let another plugin display them.
+
 ## World model
 
 World-model plugins contribute scenario objects before world setup runs. They add generic entity definitions and set the required main focus entity id.

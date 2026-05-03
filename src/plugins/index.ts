@@ -5,6 +5,10 @@ import { createMemoryPlugin } from "./memory/index";
 import { createOrbitTelemetryPlugin } from "./orbitTelemetry/index";
 import { createPausePlugin } from "./pause/index";
 import { createPlaybackPlugin } from "./playback/index";
+import {
+  createPluginCompositionContext,
+  type PluginCompositionContext,
+} from "./pluginComposition";
 import { createProfilingPlugin } from "./profiling/index";
 import { createRuntimeTelemetryPlugin } from "./runtimeTelemetry/index";
 import { createShipTelemetryPlugin } from "./shipTelemetry/index";
@@ -14,7 +18,10 @@ import { createTimeScalePlugin } from "./timeScale/index";
 import { createTrajectoriesPlugin } from "./trajectories/index";
 import { createVelocitySegmentsPlugin } from "./velocitySegments/index";
 
-export type PluginFactory = (runtimeOptions: RuntimeOptions) => GamePlugin;
+export type PluginFactory = (
+  runtimeOptions: RuntimeOptions,
+  context: PluginCompositionContext,
+) => GamePlugin;
 
 export const defaultPluginIds = [
   "solarSystem",
@@ -55,10 +62,11 @@ export function loadPlugins(
   runtimeOptions: RuntimeOptions = {},
 ): GamePlugin[] {
   const plugins: GamePlugin[] = [];
+  const context = createPluginCompositionContext();
   for (const id of ids) {
     const factory = availablePlugins[id];
     if (!factory) continue;
-    plugins.push(factory(runtimeOptions));
+    plugins.push(factory(runtimeOptions, context));
   }
   return plugins;
 }

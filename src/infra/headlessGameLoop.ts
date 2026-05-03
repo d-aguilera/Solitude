@@ -2,11 +2,7 @@ import { createControlInput, type ControlInput } from "../app/controlPorts";
 import { createTickHandler } from "../app/game";
 import type { ControlPlugin, SimulationPlugin } from "../app/pluginPorts";
 import { validatePluginRequirements } from "../app/pluginRequirements";
-import type {
-  TickOutput,
-  TickParams,
-  WorldAndScene,
-} from "../app/runtimePorts";
+import type { TickParams, WorldAndScene } from "../app/runtimePorts";
 import type { Scene } from "../app/scenePorts";
 import type { GravityEngine } from "../domain/domainPorts";
 import { parameters } from "../global/parameters";
@@ -23,7 +19,7 @@ export interface HeadlessLoopOptions {
 
 export interface HeadlessLoop {
   worldAndScene: WorldAndScene;
-  step: (dtMillis: number, controlInput?: Partial<ControlInput>) => TickOutput;
+  step: (dtMillis: number, controlInput?: Partial<ControlInput>) => void;
 }
 
 const EMPTY_SCENE: Scene = { objects: [], lights: [] };
@@ -81,7 +77,7 @@ export function createHeadlessLoop(
     ...(options.simulationPlugins ?? []),
   ];
 
-  const tickInto = createTickHandler(
+  const tick = createTickHandler(
     gravityEngine,
     worldAndScene,
     simulationPlugins,
@@ -95,22 +91,15 @@ export function createHeadlessLoop(
     controlInput: baseControlInput,
   };
 
-  const tickOutput: TickOutput = {
-    currentThrustLevel: 0,
-    currentRcsLevel: 0,
-  };
-
   const step = (
     dtMillis: number,
     controlInput?: Partial<ControlInput>,
-  ): TickOutput => {
+  ): void => {
     tickParams.dtMillis = dtMillis;
     tickParams.dtMillisSim = dtMillis * timeScale;
     tickParams.controlInput = mergeControlInput(baseControlInput, controlInput);
 
-    tickInto(tickOutput, tickParams);
-
-    return { ...tickOutput };
+    tick(tickParams);
   };
 
   return { worldAndScene, step };
