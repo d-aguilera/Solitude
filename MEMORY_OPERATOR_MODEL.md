@@ -145,8 +145,9 @@ Success criteria:
 
 ## Open Subplans
 
+- Plugin capability registry for operator-specific protocols.
 - Capability queries and plugin requirements.
-- Plugin interdependency / compatibility policy.
+- Plugin interdependency / compatibility policy: prefer capability-mediated contracts over static imports between peer plugins when the dependency is a runtime extension point.
 - Simulation phase API.
 - Active input contexts and key collision policy.
 - Main-view camera rig registration.
@@ -160,6 +161,61 @@ Success criteria:
 - Plugins should define what it means to operate a focused entity: spacecraft controls, propulsion, RCS, attitude, camera rigs, HUD/readout assumptions, autopilot behavior, and future operator modes.
 - Current boundary: the default spacecraft operator owns controls, vehicle dynamics, input bindings, and the primary forward camera rig; core owns the primary view definition/canvas/layout/render target and uses the first registered rig as current.
 - Core still exposes spacecraft-control command ports for autopilot/playback compatibility; output/readout state has moved to plugin-owned telemetry.
+- Next big change: replace core spacecraft-control command ports with a plugin capability registry so thrust/RCS/propulsion command types live outside core without creating static dependencies between peer spacecraft plugins.
+
+## Next Big Change: Plugin Capability Registry
+
+Goal: remove `ThrustCommand`, `RcsCommand`, `PropulsionCommand`, `PropulsionCommandParams`, and `ControlPlugin.resolvePropulsionCommand` from app/core ports while preserving autopilot, playback, and spacecraft-operator behavior.
+
+Do not move per-tick propulsion commands into `MutableControlState`. `MutableControlState` is persistent mutable operator/control state, such as selected thrust level, playback state, mode flags, and timers. A thrust/RCS command is a per-tick resolved output and should remain a command protocol, not state.
+
+Avoid solving this by putting `SpacecraftControlPlugin` in `src/plugins/spacecraftOperator/ports.ts` and having `autopilot` import it directly. That would work, but it creates static peer-plugin dependencies and turns `spacecraftOperator` into an import hub. The preferred abstraction is capability-mediated: plugins publish/consume named extension capabilities, while core only assembles opaque capability buckets.
+
+Proposed model:
+
+- Core/app defines a generic plugin capability registry surface with opaque ids, probably in `src/app/pluginPorts.ts` or a small adjacent app port file.
+- `GamePlugin` can contribute plugin capabilities, separate from focused-entity requirements.
+- Core/bootstrap/load code assembles capability providers and passes a capability lookup/registry into plugin contribution factories.
+- The registry should not know spacecraft types. It should traffic in opaque ids and unknown payloads at the app boundary; plugin-side helpers provide typed access.
+- `spacecraftOperator` defines the typed spacecraft capability ids and payload contracts in its own plugin folder, e.g. `spacecraft.propulsionResolver.v1` and possibly `spacecraft.attitudeResolver.v1`.
+- `autopilot` contributes a provider for the spacecraft propulsion capability instead of implementing a core `resolvePropulsionCommand` hook.
+- `spacecraftOperator` consumes providers for that capability while resolving per-tick vehicle dynamics.
+- Playback should keep using the neutral `MutableControlState` path for persistent thrust-level override/state; it should not receive thrust/RCS command ownership unless a later playback slice needs an explicit capability.
+
+Sketch, intentionally not final API:
+
+```ts
+// app-level shape: generic and untyped at the core boundary
+export interface PluginCapabilityProvider {
+  id: string;
+  value: unknown;
+}
+
+export interface PluginCapabilityRegistry {
+  getAll: (id: string) => readonly unknown[];
+}
+```
+
+```ts
+// spacecraftOperator-owned typed helper
+export const spacecraftPropulsionResolverCapability =
+  "spacecraft.propulsionResolver.v1";
+
+export interface SpacecraftPropulsionResolver {
+  resolvePropulsionCommand: (
+    params: SpacecraftPropulsionCommandParams,
+  ) => SpacecraftPropulsionCommand;
+}
+```
+
+Migration order:
+
+1. Add the generic plugin capability registry and wire it through plugin loading/contribution setup without changing behavior.
+2. Move spacecraft propulsion command types from `src/app/controlPorts.ts` into `src/plugins/spacecraftOperator/`.
+3. Convert `autopilot` from core `ControlPlugin.resolvePropulsionCommand` to a spacecraft propulsion capability provider.
+4. Convert `spacecraftOperator` to consume propulsion providers from the capability registry.
+5. Remove `PropulsionCommandParams` and `resolvePropulsionCommand` from core `ControlPlugin`.
+6. Re-run behavior tests plus guard search for `ThrustCommand|RcsCommand|PropulsionCommand|PropulsionCommandParams` under `src/app`, `src/infra`, `src/domain`, `src/render`, and `src/setup`.
 
 ## Core Idea
 
