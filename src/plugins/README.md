@@ -35,6 +35,8 @@ Input plugins contribute operator-specific action names and key bindings. Base i
 
 Plugins may declare focused-entity requirements. Infra validates those requirements against the assembled world and `mainFocus` during setup, before simulation/HUD/scene hooks run. Missing hard requirements fail startup with the plugin id, focus entity id, and missing capability.
 
+Plugins may also publish operator-specific capabilities through opaque app-level ids. Infra assembles these into a generic registry and passes the registry to plugin contribution factories; core does not inspect capability payloads. A plugin must not import a peer plugin or shared plugin-layer protocol module just to speak a capability protocol. Providers and consumers keep local structural views of the runtime contract and consumers validate unknown payloads before use.
+
 ## Registration
 
 Available plugins are exported from `src/plugins/index.ts`. Infra/bootstrap chooses which plugins to enable via `loadPlugins` (e.g. `src/infra/domBootstrap.ts`). Infra passes runtime URL options to plugins as a raw string map; each plugin owns validation and interpretation of its own option keys.

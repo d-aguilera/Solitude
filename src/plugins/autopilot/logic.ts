@@ -2,9 +2,6 @@ import type {
   AttitudeCommand,
   ControlInput,
   ControlledBodyState,
-  PropulsionCommand,
-  RcsCommand,
-  ThrustCommand,
 } from "../../app/controlPorts";
 import type { World } from "../../domain/domainPorts";
 import {
@@ -18,6 +15,11 @@ import {
 import { getDominantBody, getDominantBodyPrimary } from "../../domain/orbit";
 import { vec3, type Vec3 } from "../../domain/vec3";
 import { parameters } from "../../global/parameters";
+import type {
+  SpacecraftPropulsionCommand,
+  SpacecraftRcsCommand,
+  SpacecraftThrustCommand,
+} from "./spacecraftPropulsion";
 
 // Max rate at which the ship can reorient itself toward its velocity vector.
 const alignToVelocityMaxAngularSpeed = 2.0; // rad/s
@@ -68,9 +70,9 @@ const alignToTangentKd = 1.0;
 
 const RAD_TO_DEG = 180 / Math.PI;
 
-const circleZeroThrust: ThrustCommand = { forward: 0 };
-const circleZeroRcs: RcsCommand = { right: 0 };
-const circleZeroPropulsion: PropulsionCommand = {
+const circleZeroThrust: SpacecraftThrustCommand = { forward: 0 };
+const circleZeroRcs: SpacecraftRcsCommand = { right: 0 };
+const circleZeroPropulsion: SpacecraftPropulsionCommand = {
   main: circleZeroThrust,
   rcs: circleZeroRcs,
 };
@@ -553,7 +555,7 @@ function computeCircleNowThrust(
   world: World,
   maxThrustAcceleration: number,
   maxRcsTranslationAcceleration: number,
-): PropulsionCommand {
+): SpacecraftPropulsionCommand {
   if (maxThrustAcceleration === 0) {
     return circleZeroPropulsion;
   }
@@ -619,10 +621,10 @@ export function resolveAutopilotPropulsionCommand(
   controlInput: ControlInput,
   ship: ControlledBodyState,
   world: World,
-  manualPropulsion: PropulsionCommand,
+  manualPropulsion: SpacecraftPropulsionCommand,
   maxThrustAcceleration: number,
   maxRcsTranslationAcceleration: number,
-): PropulsionCommand {
+): SpacecraftPropulsionCommand {
   if (!controlInput.circleNow) {
     return manualPropulsion;
   }

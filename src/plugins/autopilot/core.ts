@@ -3,10 +3,12 @@ import {
   getAutopilotAttitudeCommand,
   resolveAutopilotPropulsionCommand,
 } from "./logic";
+import {
+  createSpacecraftPropulsionResolverProvider,
+  type SpacecraftPropulsionResolver,
+} from "./spacecraftPropulsion";
 
 export function createControlPlugin(): ControlPlugin {
-  const resolvePropulsionCommand = createImmediatePropulsionResolver();
-
   return {
     updateControlState: (_) => {},
     getAttitudeCommand: (params) =>
@@ -16,23 +18,26 @@ export function createControlPlugin(): ControlPlugin {
         params.controlInput,
         params.world,
       ),
-    resolvePropulsionCommand,
   };
 }
 
-type PropulsionResolver = NonNullable<
-  ControlPlugin["resolvePropulsionCommand"]
->;
+export function createPropulsionResolverProvider() {
+  return createSpacecraftPropulsionResolverProvider(
+    createImmediatePropulsionResolver(),
+  );
+}
 
-function createImmediatePropulsionResolver(): PropulsionResolver {
-  return (params) =>
-    resolveAutopilotPropulsionCommand(
-      params.dtMillis,
-      params.controlInput,
-      params.controlledBody,
-      params.world,
-      params.manualPropulsion,
-      params.maxThrustAcceleration,
-      params.maxRcsTranslationAcceleration,
-    );
+function createImmediatePropulsionResolver(): SpacecraftPropulsionResolver {
+  return {
+    resolvePropulsionCommand: (params) =>
+      resolveAutopilotPropulsionCommand(
+        params.dtMillis,
+        params.controlInput,
+        params.controlledBody,
+        params.world,
+        params.manualPropulsion,
+        params.maxThrustAcceleration,
+        params.maxRcsTranslationAcceleration,
+      ),
+  };
 }

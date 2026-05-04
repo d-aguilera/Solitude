@@ -1,6 +1,11 @@
 import { createControlInput, type ControlInput } from "../app/controlPorts";
 import { createTickHandler } from "../app/game";
-import type { ControlPlugin, SimulationPlugin } from "../app/pluginPorts";
+import { createPluginCapabilityRegistry } from "../app/pluginCapabilities";
+import type {
+  ControlPlugin,
+  PluginCapabilityProvider,
+  SimulationPlugin,
+} from "../app/pluginPorts";
 import { validatePluginRequirements } from "../app/pluginRequirements";
 import type { TickParams, WorldAndScene } from "../app/runtimePorts";
 import type { Scene } from "../app/scenePorts";
@@ -13,6 +18,7 @@ import { NewtonianGravityEngine } from "./NewtonianGravityEngine";
 export interface HeadlessLoopOptions {
   gravityEngine?: GravityEngine;
   timeScale?: number;
+  capabilityProviders?: PluginCapabilityProvider[];
   controlPlugins?: ControlPlugin[];
   simulationPlugins?: SimulationPlugin[];
 }
@@ -59,6 +65,9 @@ export function createHeadlessLoop(
 
   const timeScale = options.timeScale ?? 1;
   const controlPlugins = options.controlPlugins ?? [];
+  const capabilityRegistry = createPluginCapabilityRegistry(
+    options.capabilityProviders,
+  );
   const spacecraftOperator = createSpacecraftOperatorPlugin();
   validatePluginRequirements({
     mainFocus: worldSetup.mainFocus,
@@ -70,7 +79,7 @@ export function createHeadlessLoop(
   }
   const spacecraftSimulation =
     typeof spacecraftOperator.simulation === "function"
-      ? spacecraftOperator.simulation({ controlPlugins })
+      ? spacecraftOperator.simulation({ capabilityRegistry, controlPlugins })
       : spacecraftOperator.simulation;
   const simulationPlugins = [
     spacecraftSimulation,

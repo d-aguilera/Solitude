@@ -3,12 +3,15 @@ import type {
   ControlInput,
   ControlledBodyState,
   MutableControlState,
-  PropulsionCommand,
-  RcsCommand,
-  ThrustCommand,
 } from "../../app/controlPorts";
 import type { ControlPlugin } from "../../app/pluginPorts";
 import type { World } from "../../domain/domainPorts";
+import type {
+  SpacecraftPropulsionCommand,
+  SpacecraftPropulsionResolver,
+  SpacecraftRcsCommand,
+  SpacecraftThrustCommand,
+} from "./capabilities";
 
 // Max main-engine thrust acceleration in m/s^2 at 100% thrust
 export const maxThrustAcceleration = 1_000_000; // ~ 100_000 G
@@ -124,7 +127,7 @@ function updateThrustLevelFromInput(
  *  - Magnitude from stored thrust level (set by 0-9) in the given state.
  */
 export function getMainThrustCommandInto(
-  into: ThrustCommand,
+  into: SpacecraftThrustCommand,
   controlInput: ControlInput,
   controlState: SpacecraftControlState,
 ): void {
@@ -138,7 +141,7 @@ export function getMainThrustCommandInto(
  * Signed RCS translation command in [-1, 1] for N/M lateral burns.
  */
 export function getRcsCommandInto(
-  into: RcsCommand,
+  into: SpacecraftRcsCommand,
   controlInput: ControlInput,
 ): void {
   if (controlInput.burnLeft === controlInput.burnRight) {
@@ -182,15 +185,14 @@ export function resolvePropulsionCommandWithPlugins(
   controlInput: ControlInput,
   ship: ControlledBodyState,
   world: World,
-  manualPropulsion: PropulsionCommand,
+  manualPropulsion: SpacecraftPropulsionCommand,
   maxThrustAcceleration: number,
   maxRcsTranslationAcceleration: number,
-  controlPlugins: ControlPlugin[] = [],
-): PropulsionCommand {
+  propulsionResolvers: readonly SpacecraftPropulsionResolver[] = [],
+): SpacecraftPropulsionCommand {
   let command = manualPropulsion;
-  for (const plugin of controlPlugins) {
-    if (!plugin.resolvePropulsionCommand) continue;
-    command = plugin.resolvePropulsionCommand({
+  for (const resolver of propulsionResolvers) {
+    command = resolver.resolvePropulsionCommand({
       dtMillis,
       controlInput,
       controlledBody: ship,

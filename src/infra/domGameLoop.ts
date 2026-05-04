@@ -1,5 +1,6 @@
 import { createTickHandler } from "../app/game";
 import type { HudGrid } from "../app/hudPorts";
+import { createPluginCapabilityRegistry } from "../app/pluginCapabilities";
 import type {
   ControlPlugin,
   FramePolicy,
@@ -8,6 +9,8 @@ import type {
   HudPlugin,
   LoopPlugin,
   LoopState,
+  PluginCapabilityProvider,
+  PluginCapabilityRegistry,
   SceneObjectFilter,
   ScenePlugin,
   SceneViewFilterParams,
@@ -115,11 +118,18 @@ export function runLoop({
   plugins,
 }: RunLoopParams): void {
   const controlPlugins = collectControlPlugins(plugins);
+  const capabilityRegistry = createPluginCapabilityRegistry(
+    collectCapabilityProviders(plugins),
+  );
   const hudPlugins = collectHudPlugins(plugins);
   const loopPlugins = collectLoopPlugins(plugins);
   const scenePlugins = collectScenePlugins(plugins);
   const segmentPlugins = collectSegmentPlugins(plugins);
-  const simulationPlugins = collectSimulationPlugins(plugins, controlPlugins);
+  const simulationPlugins = collectSimulationPlugins(
+    plugins,
+    controlPlugins,
+    capabilityRegistry,
+  );
 
   const worldSetup = createWorld(config);
   validatePluginRequirements({
@@ -466,6 +476,18 @@ function collectControlPlugins(plugins: GamePlugin[]): ControlPlugin[] {
   return controlPlugins;
 }
 
+function collectCapabilityProviders(
+  plugins: GamePlugin[],
+): PluginCapabilityProvider[] {
+  const providers: PluginCapabilityProvider[] = [];
+  for (const plugin of plugins) {
+    if (plugin.capabilities) {
+      providers.push(...plugin.capabilities);
+    }
+  }
+  return providers;
+}
+
 function collectSegmentPlugins(plugins: GamePlugin[]): SegmentPlugin[] {
   const segmentPlugins: SegmentPlugin[] = [];
   for (const plugin of plugins) {
@@ -479,13 +501,14 @@ function collectSegmentPlugins(plugins: GamePlugin[]): SegmentPlugin[] {
 function collectSimulationPlugins(
   plugins: GamePlugin[],
   controlPlugins: ControlPlugin[],
+  capabilityRegistry: PluginCapabilityRegistry,
 ): SimulationPlugin[] {
   const simulationPlugins: SimulationPlugin[] = [];
   for (const plugin of plugins) {
     if (!plugin.simulation) continue;
     simulationPlugins.push(
       typeof plugin.simulation === "function"
-        ? plugin.simulation({ controlPlugins })
+        ? plugin.simulation({ capabilityRegistry, controlPlugins })
         : plugin.simulation,
     );
   }

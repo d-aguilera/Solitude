@@ -7,7 +7,6 @@ import type {
   ControlInput,
   ControlledBodyState,
   MutableControlState,
-  PropulsionCommand,
 } from "./controlPorts";
 import type { EntityConfig } from "./entityConfigPorts";
 import type { HudGrid } from "./hudPorts";
@@ -45,14 +44,13 @@ export interface AttitudeCommandParams {
   world: World;
 }
 
-export interface PropulsionCommandParams {
-  dtMillis: number;
-  controlledBody: ControlledBodyState;
-  world: World;
-  controlInput: ControlInput;
-  manualPropulsion: PropulsionCommand;
-  maxThrustAcceleration: number;
-  maxRcsTranslationAcceleration: number;
+export interface PluginCapabilityProvider {
+  id: string;
+  value: unknown;
+}
+
+export interface PluginCapabilityRegistry {
+  getAll: (id: string) => readonly unknown[];
 }
 
 export interface ControlPlugin {
@@ -60,9 +58,6 @@ export interface ControlPlugin {
   getAttitudeCommand?: (
     params: AttitudeCommandParams,
   ) => AttitudeCommand | null;
-  resolvePropulsionCommand?: (
-    params: PropulsionCommandParams,
-  ) => PropulsionCommand;
 }
 
 export interface SimulationPhaseParams {
@@ -84,6 +79,7 @@ export interface SimulationPlugin {
 }
 
 export interface SimulationContributionParams {
+  capabilityRegistry: PluginCapabilityRegistry;
   controlPlugins: ControlPlugin[];
 }
 
@@ -242,6 +238,7 @@ export interface PluginRequirements {
 
 export interface GamePlugin {
   id: string;
+  capabilities?: readonly PluginCapabilityProvider[];
   controls?: ControlPlugin;
   hud?: HudPlugin;
   input?: InputPlugin;

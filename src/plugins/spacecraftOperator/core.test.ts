@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createControlInput } from "../../app/controlPorts";
+import { createPluginCapabilityRegistry } from "../../app/pluginCapabilities";
 import type { SimulationPlugin } from "../../app/pluginPorts";
 import type { ControlledBody, World } from "../../domain/domainPorts";
 import { localFrame } from "../../domain/localFrame";
@@ -55,7 +56,10 @@ describe("spacecraft vehicle dynamics plugin", () => {
   it("applies vehicle dynamics to the focused body instead of the legacy main body", () => {
     const focusedBody = createBody("ship:focus");
     const legacyBody = createBody("ship:legacy");
-    const plugin = createSpacecraftVehicleDynamicsPlugin([]);
+    const plugin = createSpacecraftVehicleDynamicsPlugin(
+      [],
+      createPluginCapabilityRegistry(),
+    );
 
     updateVehicleDynamics(plugin, focusedBody);
 
@@ -66,11 +70,40 @@ describe("spacecraft vehicle dynamics plugin", () => {
   it("writes spacecraft readout levels into plugin telemetry", () => {
     const focusedBody = createBody("ship:focus");
     const telemetry = createSpacecraftOperatorTelemetry();
-    const plugin = createSpacecraftVehicleDynamicsPlugin([], telemetry);
+    const plugin = createSpacecraftVehicleDynamicsPlugin(
+      [],
+      createPluginCapabilityRegistry(),
+      telemetry,
+    );
 
     updateVehicleDynamics(plugin, focusedBody);
 
     expect(telemetry.currentThrustLevel).toBe(1);
     expect(telemetry.currentRcsLevel).toBe(0);
+  });
+
+  it("uses spacecraft propulsion resolver capabilities", () => {
+    const focusedBody = createBody("ship:focus");
+    const plugin = createSpacecraftVehicleDynamicsPlugin(
+      [],
+      createPluginCapabilityRegistry([
+        {
+          id: "spacecraft.propulsionResolver.v1",
+          value: {
+            resolvePropulsionCommand: () => ({
+              main: { forward: 0 },
+              rcs: { right: 1 },
+            }),
+          },
+        },
+      ]),
+    );
+
+    updateVehicleDynamics(plugin, focusedBody);
+
+    expect(
+      vec3.dot(focusedBody.velocity, focusedBody.frame.right),
+    ).toBeGreaterThan(0);
+    expect(vec3.dot(focusedBody.velocity, focusedBody.frame.forward)).toBe(0);
   });
 });

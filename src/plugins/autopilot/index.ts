@@ -1,11 +1,12 @@
 import type { GamePlugin } from "../../app/pluginPorts";
-import { createControlPlugin } from "./core";
+import { createControlPlugin, createPropulsionResolverProvider } from "./core";
 import { createHudPlugin } from "./hud";
 import { createInputPlugin } from "./input";
 
 export function createAutopilotPlugin(): GamePlugin {
   return {
     id: "autopilot",
+    capabilities: [createPropulsionResolverProvider()],
     input: createInputPlugin(),
     controls: createControlPlugin(),
     hud: createHudPlugin(),

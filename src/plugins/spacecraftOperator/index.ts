@@ -24,7 +24,11 @@ export function createSpacecraftOperatorPlugin(
       ],
     },
     simulation: (params) =>
-      createSpacecraftVehicleDynamicsPlugin(params.controlPlugins, telemetry),
+      createSpacecraftVehicleDynamicsPlugin(
+        params.controlPlugins,
+        params.capabilityRegistry,
+        telemetry,
+      ),
     views: {
       registerViews: (registry) => {
         registry.addMainViewCameraRig({

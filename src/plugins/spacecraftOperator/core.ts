@@ -1,13 +1,19 @@
-import type {
-  ControlInput,
-  PropulsionCommand,
-  RcsCommand,
-  ThrustCommand,
-} from "../../app/controlPorts";
+import type { ControlInput } from "../../app/controlPorts";
 import { applyControlledBodyRotation } from "../../app/physics";
-import type { ControlPlugin, SimulationPlugin } from "../../app/pluginPorts";
+import type {
+  ControlPlugin,
+  PluginCapabilityRegistry,
+  SimulationPlugin,
+} from "../../app/pluginPorts";
 import type { ControlledBody, World } from "../../domain/domainPorts";
 import { vec3 } from "../../domain/vec3";
+import {
+  getSpacecraftPropulsionResolvers,
+  type SpacecraftPropulsionCommand,
+  type SpacecraftPropulsionResolver,
+  type SpacecraftRcsCommand,
+  type SpacecraftThrustCommand,
+} from "./capabilities";
 import {
   getMainThrustCommandInto,
   getRcsCommandInto,
@@ -31,18 +37,20 @@ export interface SpacecraftVehicleDynamicsParams {
   controlState: SpacecraftControlState;
   controlledBody: ControlledBody;
   dtMillis: number;
+  propulsionResolvers: readonly SpacecraftPropulsionResolver[];
   world: World;
 }
 
 export function applySpacecraftVehicleDynamics(
   params: SpacecraftVehicleDynamicsParams,
-): PropulsionCommand {
+): SpacecraftPropulsionCommand {
   const {
     controlInput,
     controlPlugins,
     controlState,
     controlledBody,
     dtMillis,
+    propulsionResolvers,
     world,
   } = params;
   const propulsionCommand = getPropulsionCommandForTick(
@@ -52,6 +60,7 @@ export function applySpacecraftVehicleDynamics(
     controlledBody,
     world,
     controlPlugins,
+    propulsionResolvers,
   );
   updateControlledBodyAngularVelocityFromInput(
     dtMillis,
@@ -79,11 +88,14 @@ export function applySpacecraftVehicleDynamics(
 
 export function createSpacecraftVehicleDynamicsPlugin(
   controlPlugins: ControlPlugin[],
+  capabilityRegistry: PluginCapabilityRegistry,
   telemetry: SpacecraftOperatorTelemetry = createSpacecraftOperatorTelemetry(),
 ): SimulationPlugin {
   const controlState: SpacecraftControlState = {
     thrustLevel: 1,
   };
+  const propulsionResolvers =
+    getSpacecraftPropulsionResolvers(capabilityRegistry);
 
   return {
     updateVehicleDynamics: (params) => {
@@ -93,6 +105,7 @@ export function createSpacecraftVehicleDynamicsPlugin(
         controlState,
         controlledBody: params.mainFocus.controlledBody,
         dtMillis: params.dtMillis,
+        propulsionResolvers,
         world: params.world,
       });
       telemetry.currentThrustLevel = getRenderedThrustLevel(
@@ -105,7 +118,7 @@ export function createSpacecraftVehicleDynamicsPlugin(
 }
 
 function getRenderedThrustLevel(
-  thrustCommand: ThrustCommand,
+  thrustCommand: SpacecraftThrustCommand,
   controlState: SpacecraftControlState,
 ): number {
   if (thrustCommand.forward === 0) {
@@ -116,14 +129,14 @@ function getRenderedThrustLevel(
     : -controlState.thrustLevel;
 }
 
-function getRenderedRcsLevel(rcsCommand: RcsCommand): number {
+function getRenderedRcsLevel(rcsCommand: SpacecraftRcsCommand): number {
   if (rcsCommand.right === 0) {
     return 0;
   }
   return rcsCommand.right;
 }
 
-let manualPropulsionCommand: PropulsionCommand = {
+let manualPropulsionCommand: SpacecraftPropulsionCommand = {
   main: { forward: 0 },
   rcs: { right: 0 },
 };
@@ -135,7 +148,8 @@ function getPropulsionCommandForTick(
   controlledBody: ControlledBody,
   world: World,
   controlPlugins: ControlPlugin[],
-): PropulsionCommand {
+  propulsionResolvers: readonly SpacecraftPropulsionResolver[],
+): SpacecraftPropulsionCommand {
   updateControlState(controlInput, controlState, controlPlugins);
   getMainThrustCommandInto(
     manualPropulsionCommand.main,
@@ -151,14 +165,14 @@ function getPropulsionCommandForTick(
     manualPropulsionCommand,
     maxThrustAcceleration,
     maxRcsTranslationAcceleration,
-    controlPlugins,
+    propulsionResolvers,
   );
 }
 
 function applyThrust(
   dtMillis: number,
   controlledBody: ControlledBody,
-  thrust: ThrustCommand,
+  thrust: SpacecraftThrustCommand,
   maxThrustAcceleration: number,
 ): void {
   if (dtMillis === 0) return;
@@ -180,7 +194,7 @@ function applyThrust(
 function applyRcsTranslation(
   dtMillis: number,
   controlledBody: ControlledBody,
-  rcs: RcsCommand,
+  rcs: SpacecraftRcsCommand,
   maxRcsTranslationAcceleration: number,
 ): void {
   if (dtMillis === 0) return;

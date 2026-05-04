@@ -124,6 +124,7 @@
 - Spacecraft propulsion/RCS/attitude, spacecraft input bindings, and the primary forward camera rig live in `src/plugins/spacecraftOperator/` and operate on `mainFocus.controlledBody`.
 - Spacecraft operator state, including the initial thrust level, is owned by `spacecraftOperator`; core config/tick setup no longer carries `thrustLevel`.
 - Thrust/RCS velocity application helpers live with `spacecraftOperator`; core physics only keeps generic gravity, spin, collision, and controlled-body rotation helpers.
+- Core exposes a generic plugin capability registry for plugin-to-plugin operator protocols. Plugins use opaque capability ids plus local structural/runtime validation rather than importing peer plugins or shared plugin-layer protocol modules.
 - Core owns the primary view definition/canvas/layout while plugins register named main-view camera rigs; core uses the first registered rig as the current rig and fails if none exists.
 - HUD, view/render params, playback loop/logging, and plugin simulation/scene/segment contexts have been migrated away from `mainControlledBody` aliases.
 - Core no longer exposes the transitional `mainControlledBody` bridge from setup/runtime objects; config now names the focused entity via `mainFocusEntityId`.
@@ -142,11 +143,12 @@
 - Autopilot refactor: introduced layer-specific `autoPilot.ts` modules, and kept render ports local (no re-export of autopilot types).
 - Solar-system scenario extraction: moved solar bodies, colors, meshes, and default ships into `src/plugins/solarSystem/`; introduced world-model plugin contributions.
 - Operator model commits 13–21: migrated HUD telemetry, spacecraft vehicle dynamics, playback loop/loggers, view/render params, and plugin phase contexts to focused-body plumbing; removed most `mainControlledBody` compatibility fields outside the core setup/runtime bridge.
+- Operator model follow-up: removed core thrust/RCS/propulsion command ports in favor of the generic plugin capability registry; autopilot now publishes a spacecraft propulsion resolver capability consumed by `spacecraftOperator` without importing peer plugin or shared plugin-layer protocol code.
 
 ## Next steps
 
 - Continue the operator model migration from the remaining spacecraft-specific/operator-mode seams. `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming should remain absent from `src`.
-- Current post-V1 boundary: the default spacecraft experience is plugin-owned for controls, vehicle dynamics, input bindings, primary forward camera rig, and spacecraft control state. Core owns primary view plumbing and selects the first registered camera rig. Remaining work is runtime operator-mode switching and playback schema migration.
+- Current post-V1 boundary: the default spacecraft experience is plugin-owned for controls, propulsion command protocols, vehicle dynamics, input bindings, primary forward camera rig, and spacecraft control state. Core owns primary view plumbing and selects the first registered camera rig. Remaining work is runtime operator-mode switching and playback schema migration.
 
 ## Planned Future Work
 
