@@ -74,7 +74,7 @@
 - **Migration strategy**:
   1. Move remaining plugins to direct generic entity contribution.
   2. Retire legacy world-model registry methods and config arrays.
-  3. Keep remaining ship terminology only where it is spacecraft-specific or playback compatibility.
+  3. Keep remaining ship terminology only where it is spacecraft-specific or non-architectural compatibility IDs/visual roles.
 - **Compatibility approach**: keep changes incremental and test-backed. Use adapters during the transition rather than doing a full rewrite.
 
 ## Runtime flow
@@ -130,11 +130,11 @@
 - Core no longer exposes the transitional `mainControlledBody` bridge from setup/runtime objects; config now names the focused entity via `mainFocusEntityId`.
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
 - Core setup constructs generic controllable bodies via `setupControllableBodies`; scenario plugins may still provide spacecraft content and legacy render roles.
-- Core setup classifies entities from capabilities/components rather than `legacyKind`; `legacyKind` is still copied through for render/playback/trajectory compatibility.
+- Core setup classifies entities from capabilities/components rather than `legacyKind`; `legacyKind` is still copied through for remaining render/trajectory compatibility, but playback no longer depends on it.
 - Render scene adaptation uses explicit `renderable.role` values rather than `legacyKind`; current roles are `controlledBody`, `celestialBody`, and `lightEmitter`.
 - Trajectory planning uses component/capability checks rather than `legacyKind`.
-- Generic core logic uses controlled-body wording for collisions, camera positioning, rotation, and orbit readouts; remaining `ship` names in core-facing files are compatibility IDs, legacy render roles, or plugin/playback schema.
-- The old `ShipBody` type alias has been removed; plugin/playback code uses `ControlledBody` directly while playback schema names remain compatibility-shaped.
+- Generic core logic uses controlled-body wording for collisions, camera positioning, rotation, and orbit readouts; remaining `ship` names in core-facing files are compatibility IDs, legacy render roles, or plugin/scenario spacecraft content.
+- Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`; old `ships` / `planets` / `stars` playback snapshot buckets are no longer supported.
 - Default runtime uses Canvas 2D; WebGL renderer exists but is not wired by default.
 - Tests cover geometry/mesh parsing and projection clipping.
 
@@ -144,11 +144,12 @@
 - Solar-system scenario extraction: moved solar bodies, colors, meshes, and default ships into `src/plugins/solarSystem/`; introduced world-model plugin contributions.
 - Operator model commits 13–21: migrated HUD telemetry, spacecraft vehicle dynamics, playback loop/loggers, view/render params, and plugin phase contexts to focused-body plumbing; removed most `mainControlledBody` compatibility fields outside the core setup/runtime bridge.
 - Operator model follow-up: removed core thrust/RCS/propulsion command ports in favor of the generic plugin capability registry; autopilot now publishes a spacecraft propulsion resolver capability consumed by `spacecraftOperator` without importing peer plugin or shared plugin-layer protocol code.
+- Operator/entity-model follow-up: migrated playback snapshots to generic entity snapshots and dropped old script-schema compatibility; `random-trip` was migrated to the new format.
 
 ## Next steps
 
 - Continue the operator model migration from the remaining spacecraft-specific/operator-mode seams. `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming should remain absent from `src`.
-- Current post-V1 boundary: the default spacecraft experience is plugin-owned for controls, propulsion command protocols, vehicle dynamics, input bindings, primary forward camera rig, and spacecraft control state. Core owns primary view plumbing and selects the first registered camera rig. Remaining work is runtime operator-mode switching and playback schema migration.
+- Current post-V1 boundary: the default spacecraft experience is plugin-owned for controls, propulsion command protocols, vehicle dynamics, input bindings, primary forward camera rig, and spacecraft control state. Core owns primary view plumbing and selects the first registered camera rig. Remaining operator work is runtime operator-mode switching; entity-model cleanup can now remove playback-driven legacy category bridges.
 
 ## Planned Future Work
 

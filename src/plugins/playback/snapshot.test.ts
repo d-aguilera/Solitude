@@ -51,7 +51,7 @@ function createWorld(): { world: World; ship: ControlledBody } {
 }
 
 describe("playback snapshots", () => {
-  it("applies snapshots in place", () => {
+  it("captures and applies generic entity snapshots in place", () => {
     const { world, ship } = createWorld();
     const positionAlias = ship.position;
     const orientationAlias = ship.orientation;
@@ -64,14 +64,15 @@ describe("playback snapshots", () => {
     expect(ship.position).toBe(positionAlias);
     expect(ship.orientation).toBe(orientationAlias);
     expect(ship.position.x).toBe(1);
-    expect(ship.orientation[0][0]).toBe(snapshot.ships[0].orientation[0][0]);
-    expect(snapshot.entities?.map((entity) => entity.id)).toEqual([
+    expect(ship.orientation[0][0]).toBe(snapshot.entities[0].orientation[0][0]);
+    expect(snapshot.metadata.focusEntityId).toBe("ship:test");
+    expect(snapshot.entities.map((entity) => entity.id)).toEqual([
       "ship:test",
       "planet:test",
     ]);
   });
 
-  it("captures and applies generic entity snapshots without legacy buckets", () => {
+  it("captures controllable entity frame and angular velocity", () => {
     const ship: ControlledBody = {
       id: "ship:generic",
       position: vec3.create(10, 0, 0),
@@ -96,8 +97,9 @@ describe("playback snapshots", () => {
     ship.position.x = 99;
     ship.velocity.y = 42;
 
-    expect(snapshot.ships.map((item) => item.id)).toEqual(["ship:generic"]);
-    expect(snapshot.entities?.[0].frame).toBeDefined();
+    expect(snapshot.entities.map((item) => item.id)).toEqual(["ship:generic"]);
+    expect(snapshot.entities[0].frame).toBeDefined();
+    expect(snapshot.entities[0].angularVelocity).toBeDefined();
     expect(applyPlaybackSnapshot(snapshot, world)).toBe(true);
     expect(ship.position.x).toBe(10);
     expect(ship.velocity.y).toBe(10);

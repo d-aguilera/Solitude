@@ -76,36 +76,22 @@ export interface CompiledPlaybackScript {
 }
 
 export interface PlaybackSnapshot {
-  entities?: PlaybackEntitySnapshot[];
+  entities: PlaybackEntitySnapshot[];
   metadata: PlaybackSnapshotMetadata;
-  ships: PlaybackShipSnapshot[];
-  planets: PlaybackRotatingBodySnapshot[];
-  stars: PlaybackRotatingBodySnapshot[];
 }
 
 export interface PlaybackSnapshotMetadata {
   label: PlaybackScenarioId;
   capturedSimTimeMillis: number;
   dominantBodyId: string | null;
+  focusEntityId: string;
 }
 
-export interface PlaybackShipSnapshot {
-  id: string;
-  position: Vec3;
-  velocity: Vec3;
-  frame: LocalFrame;
-  orientation: Mat3;
-  angularVelocity: AngularVelocity;
-}
-
-export interface PlaybackRotatingBodySnapshot {
+export interface PlaybackEntitySnapshot {
   id: string;
   position: Vec3;
   velocity: Vec3;
   orientation: Mat3;
-}
-
-export interface PlaybackEntitySnapshot extends PlaybackRotatingBodySnapshot {
   angularVelocity?: AngularVelocity;
   frame?: LocalFrame;
 }

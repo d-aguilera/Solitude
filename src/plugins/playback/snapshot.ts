@@ -10,9 +10,7 @@ import type { Vec3 } from "../../domain/vec3";
 import { vec3 } from "../../domain/vec3";
 import type {
   PlaybackEntitySnapshot,
-  PlaybackRotatingBodySnapshot,
   PlaybackScenarioId,
-  PlaybackShipSnapshot,
   PlaybackSnapshot,
 } from "./types";
 
@@ -28,11 +26,9 @@ export function capturePlaybackSnapshot(
       label,
       capturedSimTimeMillis,
       dominantBodyId: primary?.id ?? null,
+      focusEntityId: controlledBody.id,
     },
     entities: world.entityStates.map(captureEntity),
-    ships: world.controllableBodies.map(captureShip),
-    planets: captureLegacyRotatingBodies(world, "planet"),
-    stars: captureLegacyRotatingBodies(world, "star"),
   };
 }
 
@@ -40,85 +36,21 @@ export function applyPlaybackSnapshot(
   snapshot: PlaybackSnapshot,
   world: World,
 ): boolean {
-  if (snapshot.entities && !applyEntitySnapshots(snapshot.entities, world)) {
-    return false;
-  }
-  if (!applyShipSnapshots(snapshot.ships, world.controllableBodies))
-    return false;
-  if (!applyRotatingBodySnapshots(snapshot.planets, world.entityStates))
-    return false;
-  if (!applyRotatingBodySnapshots(snapshot.stars, world.entityStates))
-    return false;
-  return true;
-}
-
-function captureLegacyRotatingBodies(
-  world: World,
-  legacyKind: "planet" | "star",
-): PlaybackRotatingBodySnapshot[] {
-  const snapshots: PlaybackRotatingBodySnapshot[] = [];
-  for (let i = 0; i < world.entities.length; i++) {
-    const entity = world.entities[i];
-    if (entity.legacyKind !== legacyKind) continue;
-    const state = findById(world.entityStates, entity.id);
-    if (state) snapshots.push(captureRotatingBody(state));
-  }
-  return snapshots;
+  return applyEntitySnapshots(snapshot.entities, world);
 }
 
 function captureEntity(entity: EntityMotionState): PlaybackEntitySnapshot {
-  const snapshot: PlaybackEntitySnapshot = captureRotatingBody(entity);
-  if (hasFrame(entity)) {
-    snapshot.frame = cloneFrame(entity.frame);
-  }
+  const snapshot: PlaybackEntitySnapshot = {
+    id: entity.id,
+    position: cloneVec3(entity.position),
+    velocity: cloneVec3(entity.velocity),
+    orientation: cloneMat3(entity.orientation),
+  };
+  if (hasFrame(entity)) snapshot.frame = cloneFrame(entity.frame);
   if (hasAngularVelocity(entity)) {
     snapshot.angularVelocity = { ...entity.angularVelocity };
   }
   return snapshot;
-}
-
-function captureShip(ship: ControlledBody): PlaybackShipSnapshot {
-  return {
-    id: ship.id,
-    position: cloneVec3(ship.position),
-    velocity: cloneVec3(ship.velocity),
-    frame: cloneFrame(ship.frame),
-    orientation: cloneMat3(ship.orientation),
-    angularVelocity: { ...ship.angularVelocity },
-  };
-}
-
-function captureRotatingBody({
-  id,
-  position,
-  velocity,
-  orientation,
-}: EntityMotionState): PlaybackRotatingBodySnapshot {
-  return {
-    id,
-    position: cloneVec3(position),
-    velocity: cloneVec3(velocity),
-    orientation: cloneMat3(orientation),
-  };
-}
-
-function applyShipSnapshots(
-  snapshots: PlaybackShipSnapshot[],
-  ships: World["controllableBodies"],
-): boolean {
-  for (let i = 0; i < snapshots.length; i++) {
-    const snapshot = snapshots[i];
-    const ship = findById(ships, snapshot.id);
-    if (!ship) return false;
-    copyVec3(ship.position, snapshot.position);
-    copyVec3(ship.velocity, snapshot.velocity);
-    copyFrame(ship.frame, snapshot.frame);
-    copyMat3(ship.orientation, snapshot.orientation);
-    ship.angularVelocity.roll = snapshot.angularVelocity.roll;
-    ship.angularVelocity.pitch = snapshot.angularVelocity.pitch;
-    ship.angularVelocity.yaw = snapshot.angularVelocity.yaw;
-  }
-  return true;
 }
 
 function applyEntitySnapshots(
@@ -140,21 +72,6 @@ function applyEntitySnapshots(
       entity.angularVelocity.pitch = snapshot.angularVelocity.pitch;
       entity.angularVelocity.yaw = snapshot.angularVelocity.yaw;
     }
-  }
-  return true;
-}
-
-function applyRotatingBodySnapshots(
-  snapshots: PlaybackRotatingBodySnapshot[],
-  bodies: World["entityStates"],
-): boolean {
-  for (let i = 0; i < snapshots.length; i++) {
-    const snapshot = snapshots[i];
-    const body = findById(bodies, snapshot.id);
-    if (!body) return false;
-    copyVec3(body.position, snapshot.position);
-    copyVec3(body.velocity, snapshot.velocity);
-    copyMat3(body.orientation, snapshot.orientation);
   }
   return true;
 }

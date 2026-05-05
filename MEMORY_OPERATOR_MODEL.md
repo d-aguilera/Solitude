@@ -16,14 +16,14 @@
 
 ## Current Slice
 
-Status: plugin capability registry for spacecraft propulsion implemented; verify and choose next phase.
+Status: playback schema migration completed for the entity-model objective; verify and choose next entity-model cleanup slice.
 
 Next focused change:
 
 - Choose the next post-camera-rig seam:
   - runtime operator-mode switching for focus, active camera rig, controls, and HUD emphasis;
-  - playback generic focus/operator snapshot fields while preserving `ships` schema compatibility.
   - remaining spacecraft-control port cleanup: genericize/remove app-level attitude command/control-plugin seams when there is a capability-mediated replacement.
+  - entity-model cleanup now unblocked by playback: remove playback-driven `legacyKind`/category bridges from core setup.
 
 Success criteria:
 
@@ -38,7 +38,7 @@ Success criteria:
 - `rg "mainControlledEntityId|setMainControlledEntityId" src` remains empty.
 - `rg "pilotLookState|pilotCameraOffset|updatePilot" src` remains empty.
 - `rg "@deprecated" src` remains empty.
-- `rg "setupShips|ShipsSetup|createShipsFromConfig|ShipPhysicsConfig|ShipInitialStateConfig|ShipPhysics" src` should only find playback-schema compatibility if any; core setup should stay controllable-body-first.
+- `rg "setupShips|ShipsSetup|createShipsFromConfig|ShipPhysicsConfig|ShipInitialStateConfig|ShipPhysics" src` should remain empty; core setup should stay controllable-body-first.
 - `computeShipOrbitReadoutInto` should remain absent.
 - setup classification should not branch on `entity.metadata?.legacyKind`; `legacyKind` is only copied to world records for compatibility.
 - render scene adaptation should not read `legacyKind`; use `renderable.role`.
@@ -99,7 +99,7 @@ Success criteria:
   - collisions, camera positioning, controlled-body rotation, and RCS comments now use controlled-body wording;
   - removed unused `computeShipOrbitReadoutInto` wrapper;
   - generic domain tests use controlled-body fixture names;
-  - remaining core-facing `ship` matches are explicit compatibility IDs, legacy render roles, or schema names.
+  - remaining core-facing `ship` matches are explicit compatibility IDs, legacy render roles, or spacecraft-specific names.
 - 2026-05-02: Made setup classify from components instead of `legacyKind`:
   - stars are detected by light emitter plus celestial capabilities;
   - planets are detected by celestial gravity/collision/spin/Keplerian capabilities;
@@ -113,7 +113,7 @@ Success criteria:
 - 2026-05-02: Removed `ShipBody` compatibility alias:
   - deleted the alias from `domainPorts`;
   - plugin/playback/logging/test code now types focused/controlled objects as `ControlledBody`;
-  - playback snapshot field names remain unchanged for schema compatibility.
+  - playback snapshot field names were still compatibility-shaped at this point; this was later removed by the v2-only playback migration.
 - 2026-05-02: Removed trajectory planner dependency on `legacyKind`:
   - planet trajectory candidates come from Keplerian state and non-light-emitter components;
   - trajectory tests build without legacy metadata.
@@ -143,6 +143,11 @@ Success criteria:
   - spacecraft operator consumes propulsion resolvers from the registry using its own local runtime guard when resolving per-tick vehicle dynamics;
   - removed `ThrustCommand`, `RcsCommand`, `PropulsionCommand`, `PropulsionCommandParams`, and `ControlPlugin.resolvePropulsionCommand` from core/app ports;
   - guard searches should keep `src/plugins/autopilot` free of `spacecraftOperator` imports and avoid `src/plugins/capabilities` shared protocol modules.
+- 2026-05-05: Migrated playback snapshots to generic entity/focus schema and intentionally dropped old script compatibility:
+  - `PlaybackSnapshot.entities` is now required and is the only world snapshot payload;
+  - snapshot metadata records `focusEntityId`;
+  - removed `PlaybackShipSnapshot`, `PlaybackRotatingBodySnapshot`, and v1 `ships` / `planets` / `stars` apply/capture paths;
+  - migrated `random-trip` to the new schema for interactive refactor testing.
 
 ## Decision Log
 
@@ -323,9 +328,8 @@ Classification:
   - `src/plugins/axialViews/index.ts`: views are currently vehicle-frame rigs. They should become contributed main-view/aux-view camera rigs for compatible focused entities, not generic core assumptions.
 
 - Compatibility-only or visual-role names:
-  - `src/domain/domainPorts.ts`: `ShipBody` is already a compatibility alias for `ControlledBody`; keep it while playback and plugins migrate.
-  - `src/setup/setupShips.ts`: legacy adapter from controllable entity configs into ship-shaped setup. Keep until generic setup no longer needs the adapter.
-  - `src/plugins/playback/*`: v1 snapshots and diagnostic logs preserve `ships`, `shipForward...`, and `mainControlledBody` compatibility fields. Avoid making playback the first migration target.
+  - `src/setup/setupControllableBodies.ts`: adapter from controllable entity configs into controlled-body setup. Keep until generic setup no longer needs the adapter.
+  - `src/plugins/playback/*`: playback snapshots now use generic `entities` plus `focusEntityId`; diagnostic field names may still contain historical spacecraft wording where they describe spacecraft-specific measurements.
   - `src/render/sceneAdapter.ts`, `src/app/scenePorts.ts`, trajectory IDs in `src/plugins/trajectories/*`, and tests with `legacyKind: "ship"`: many `ship` names are visual roles or compatibility identifiers. Rename only when render/trajectory schemas gain generic role support.
   - `src/plugins/solarSystem/ships.ts`, `src/plugins/solarSystem/ship.obj`, related tests/scripts: scenario spacecraft content, not core architecture.
 
@@ -356,7 +360,7 @@ Examples:
 - Ship telemetry requires a focused motion state and spacecraft control readouts.
 - Orbit telemetry requires a focused motion state and gravity bodies.
 - Velocity segments require a focused motion state.
-- Playback may require schema-specific compatibility for old ship fields and new generic entity snapshots.
+- Playback requires generic entity snapshots with a focus id; old ship/planet/star snapshot fields are no longer supported.
 
 Loaded-but-inert plugins are acceptable only when the inactive state is explicit and visible during setup or diagnostics.
 
@@ -455,18 +459,17 @@ Unresolved:
 
 Problem:
 
-- Playback still preserves ship-shaped compatibility fields.
-- Operator/focus generalization will change the central runtime context captured by diagnostics.
+- Playback snapshots now use generic entities and focus metadata.
+- Operator/focus generalization may later add operator-mode metadata to diagnostics.
 
 Current rough direction:
 
-- Preserve old playback schemas while adding generic focus/operator fields.
-- Avoid making playback the first migration target unless it blocks a smaller slice.
+- Playback snapshots are v2-only: capture/apply generic entities and record the focus entity id.
+- Old `ships` / `planets` / `stars` snapshot buckets were intentionally removed instead of schema-gated.
 
 Unresolved:
 
-- Snapshot v2 shape for active operator/focus state.
-- Compatibility lifetime for `ships` fields.
+- Whether later operator-mode recordings need additional operator-mode metadata beyond `focusEntityId`.
 
 ## Migration Strategy
 
@@ -492,7 +495,7 @@ Unresolved:
 8. Remove remaining core ship assumptions:
    - Delete spacecraft-specific base actions from core.
    - Remove core thrust/RCS/attitude state once the plugin path owns it.
-   - Keep spacecraft naming only inside spacecraft-specific plugins and compatibility schemas.
+   - Keep spacecraft naming only inside spacecraft-specific plugins, visual roles, and compatibility IDs.
 
 ## Current Transitional State
 
@@ -501,7 +504,7 @@ Unresolved:
 - Core game tick owns deterministic phase ordering; spacecraft vehicle dynamics runs through `spacecraftOperator`.
 - The primary canvas/layout/render target and primary view definition are core-owned; `spacecraftOperator` registers the current `spacecraft.forward` camera rig.
 - Base input actions are generic/main-view only; spacecraft input actions come from `spacecraftOperator`.
-- Plugin contexts use `mainFocus`; playback retains ship-shaped schema fields for compatibility.
+- Plugin contexts use `mainFocus`; playback snapshots use generic entity/focus fields.
 
 ## Watch-Outs
 
@@ -509,7 +512,7 @@ Unresolved:
 - Plugin phase ordering must be deterministic and documented before ship physics moves out of core.
 - Avoid allocation-heavy ECS/event patterns in per-frame loops.
 - Preserve onion layering: domain/app/render must not import from `src/plugins`.
-- Playback compatibility still matters; old schemas may retain `ships` fields while generic snapshots mature.
+- Playback compatibility with old script schemas was intentionally dropped; keep built-in scripts migrated when schema changes.
 - Some render scene object kinds may remain visually named `ship`, `planet`, or `star` if labels, culling, or LOD still need visual roles.
 - Be careful with "main view" versus "active operator mode": camera switching may need to switch controls too.
 
@@ -517,4 +520,4 @@ Unresolved:
 
 - Add runtime operator-mode switching for focus, active camera rig, controls, and HUD emphasis.
 - Decide how axial views relate to active operator modes.
-- Migrate playback toward generic focus/operator snapshot fields while preserving `ships` schema compatibility.
+- Remove playback-unblocked category bridges from core setup/domain where `legacyKind` and planet/star/ship adapters remain.

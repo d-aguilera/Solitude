@@ -10,7 +10,7 @@
 
 - Solar-system content is plugin-owned.
 - Runtime `World` now stores generic entities and capability arrays instead of fixed `ships`, `planets`, and `stars` buckets.
-- The remaining transition work is mostly at outer compatibility edges: legacy world-model contribution methods, legacy physics/render config arrays, old playback snapshot fields, and scenario/plugin terminology.
+- The remaining transition work is mostly at outer/setup/render edges: legacy physics setup adapters, visual scene roles, render config names, and scenario/plugin terminology.
 
 ## Target Model
 
@@ -77,7 +77,7 @@ Systems should query capabilities rather than categories:
    - Update the solar-system plugin to contribute generic entities through the generic registry API.
    - Migrate telemetry, autopilot, velocity segments, axial views, trajectories, and HUD contexts to generic controlled-body/world queries.
    - Update orbit helpers so dominant-primary lookup accepts generic gravity/collision/body capabilities rather than `world.planets` and `world.stars`.
-   - Add playback snapshot schema v2 using generic entity snapshots; keep v1 read/apply compatibility until existing scripts are migrated.
+   - Add playback snapshot schema v2 using generic entity snapshots; compatibility with old v1 snapshot buckets has been intentionally dropped.
 
 6. **Remove legacy buckets**
    - Delete `World.ships`, `World.planets`, `World.stars`, and matching physics arrays after production code no longer depends on them.
@@ -100,10 +100,10 @@ Systems should query capabilities rather than categories:
 - `src/plugins/solarSystem/` contributes world content through direct generic `addEntities` calls; plugin application no longer backfills legacy physics/render arrays.
 - Shared `WorldRenderConfig` no longer carries legacy planet/star/ship render arrays; scene assembly requires renderable entity components.
 - Shared `WorldAndSceneConfig` no longer carries legacy physics arrays; `createWorld` requires generic entity config and derives setup inputs from entity components.
-- Core-facing config/runtime/setup/control/view surfaces now use main controlled body terminology; `ShipBody` remains only as a compatibility type alias for spacecraft-specific plugins and playback schemas.
+- Core-facing config/runtime/setup/control/view surfaces now use controlled-body/focus terminology; the old `ShipBody` compatibility alias has been removed.
 - `src/domain/domainPorts.ts` defines `World` as generic entity/capability arrays.
 - Core gravity, collision, spin, orbit primary lookup, scene/lights, trajectories, and playback diagnostics now operate on generic capabilities.
-- Playback snapshots still keep v1 `ships` / `planets` / `stars` fields for compatibility, while also capturing generic `entities`.
+- Playback snapshots are v2-only and use generic `entities` plus `focusEntityId`; old `ships` / `planets` / `stars` snapshot buckets are no longer supported. `random-trip` has been migrated.
 
 ## Near-Term Candidates
 
@@ -111,7 +111,7 @@ Systems should query capabilities rather than categories:
 
 ## Watch-Outs
 
-- Legacy playback scripts still use `ships`, `planets`, and `stars` snapshot fields; preserve read/apply compatibility until scripts are migrated or schema-gated.
+- Playback no longer needs `legacyKind`; the remaining `legacyKind` and category-name cleanup is setup/render/trajectory debt.
 - Legacy physics config item types still exist as setup/plugin-local adapter shapes; shared config arrays have been removed.
 - Some scene object kinds are still `ship` / `planet` / `star` because render labels, culling, and LOD use those visual roles.
 - Tests may use tiny fake worlds with spacecraft/body fixtures; keep them generic unless they are explicitly testing compatibility.
