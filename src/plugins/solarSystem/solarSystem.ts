@@ -1,9 +1,7 @@
 import type {
+  EntityRenderConfig,
+  KeplerianBodyPhysicsConfig,
   KeplerianOrbit,
-  PlanetPhysicsConfig,
-  PlanetRenderConfig,
-  StarPhysicsConfig,
-  StarRenderConfig,
 } from "../../app/configPorts";
 import type { Mesh } from "../../app/scenePorts";
 import { parseObjMesh } from "../../config/obj";
@@ -230,20 +228,17 @@ function buildOrbit(
  *
  * All distances and radii are in meters.
  */
-type SolarBodyConfig =
-  | (PlanetPhysicsConfig & PlanetRenderConfig)
-  | (StarPhysicsConfig & StarRenderConfig);
+type SolarBodyConfig = KeplerianBodyPhysicsConfig & EntityRenderConfig;
 
 export function buildDefaultSolarSystemConfigs(): {
-  physics: (PlanetPhysicsConfig | StarPhysicsConfig)[];
-  render: (PlanetRenderConfig | StarRenderConfig)[];
+  physics: KeplerianBodyPhysicsConfig[];
+  render: EntityRenderConfig[];
 } {
   const sunId = "planet:sun";
 
   const configs: SolarBodyConfig[] = [
     {
       id: sunId,
-      kind: "star",
       orbit: {
         semiMajorAxis: 0,
         eccentricity: 0,
@@ -263,7 +258,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:mercury",
-      kind: "planet",
       orbit: buildOrbit(
         orbits.mercury,
         eccentricities.mercury,
@@ -282,7 +276,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:venus",
-      kind: "planet",
       orbit: buildOrbit(
         orbits.venus,
         eccentricities.venus,
@@ -301,7 +294,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:earth",
-      kind: "planet",
       orbit: buildOrbit(
         orbits.earth,
         eccentricities.earth,
@@ -320,7 +312,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:mars",
-      kind: "planet",
       orbit: buildOrbit(
         orbits.mars,
         eccentricities.mars,
@@ -339,7 +330,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:jupiter",
-      kind: "planet",
       orbit: buildOrbit(
         orbits.jupiter,
         eccentricities.jupiter,
@@ -358,7 +348,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:saturn",
-      kind: "planet",
       orbit: buildOrbit(
         orbits.saturn,
         eccentricities.saturn,
@@ -377,7 +366,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:uranus",
-      kind: "planet",
       orbit: buildOrbit(
         orbits.uranus,
         eccentricities.uranus,
@@ -396,7 +384,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:neptune",
-      kind: "planet",
       orbit: buildOrbit(
         orbits.neptune,
         eccentricities.neptune,
@@ -415,7 +402,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:moon",
-      kind: "planet",
       orbit: buildOrbit(
         orbits.moon,
         eccentricities.moon,
@@ -434,7 +420,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:phobos",
-      kind: "planet",
       orbit: buildOrbit(
         orbits.phobos,
         eccentricities.phobos,
@@ -453,7 +438,6 @@ export function buildDefaultSolarSystemConfigs(): {
     },
     {
       id: "planet:deimos",
-      kind: "planet",
       orbit: buildOrbit(
         orbits.deimos,
         eccentricities.deimos,
@@ -472,48 +456,27 @@ export function buildDefaultSolarSystemConfigs(): {
     },
   ];
 
-  const physics: (PlanetPhysicsConfig | StarPhysicsConfig)[] = [];
-  const render: (PlanetRenderConfig | StarRenderConfig)[] = [];
+  const physics: KeplerianBodyPhysicsConfig[] = [];
+  const render: EntityRenderConfig[] = [];
 
   for (const cfg of configs) {
-    if (cfg.kind === "star") {
-      physics.push({
-        id: cfg.id,
-        kind: "star",
-        orbit: cfg.orbit,
-        physicalRadius: cfg.physicalRadius,
-        density: cfg.density,
-        centralEntityId: cfg.centralEntityId,
-        obliquityRad: cfg.obliquityRad,
-        angularSpeedRadPerSec: cfg.angularSpeedRadPerSec,
-        luminosity: cfg.luminosity,
-      });
-      render.push({
-        id: cfg.id,
-        kind: "star",
-        centralEntityId: cfg.centralEntityId,
-        color: cfg.color,
-        mesh: cfg.mesh,
-      });
-    } else {
-      physics.push({
-        id: cfg.id,
-        kind: "planet",
-        orbit: cfg.orbit,
-        physicalRadius: cfg.physicalRadius,
-        density: cfg.density,
-        centralEntityId: cfg.centralEntityId,
-        obliquityRad: cfg.obliquityRad,
-        angularSpeedRadPerSec: cfg.angularSpeedRadPerSec,
-      });
-      render.push({
-        id: cfg.id,
-        kind: "planet",
-        centralEntityId: cfg.centralEntityId,
-        color: cfg.color,
-        mesh: cfg.mesh,
-      });
-    }
+    physics.push({
+      id: cfg.id,
+      orbit: cfg.orbit,
+      physicalRadius: cfg.physicalRadius,
+      density: cfg.density,
+      centralEntityId: cfg.centralEntityId,
+      obliquityRad: cfg.obliquityRad,
+      angularSpeedRadPerSec: cfg.angularSpeedRadPerSec,
+      luminosity: cfg.luminosity,
+    });
+
+    render.push({
+      id: cfg.id,
+      centralEntityId: cfg.centralEntityId,
+      color: cfg.color,
+      mesh: cfg.mesh,
+    });
   }
 
   return { physics, render };

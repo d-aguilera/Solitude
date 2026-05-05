@@ -174,7 +174,7 @@ function buildFaces(
         }
 
         const intensity =
-          obj.kind === "star"
+          obj.kind === "lightEmitter"
             ? 1
             : toneMapIrradiance(computeIrradianceAtPoint(v0, n, lights));
 

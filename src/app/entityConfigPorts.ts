@@ -41,10 +41,7 @@ export interface RenderableConfig {
   role: RenderableRole;
 }
 
-export type RenderableRole =
-  | "celestialBody"
-  | "controlledBody"
-  | "lightEmitter";
+export type RenderableRole = "controlledBody" | "lightEmitter" | "orbitalBody";
 
 export interface LightEmitterConfig {
   luminosity: number;

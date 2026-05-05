@@ -21,7 +21,7 @@ function createBody(id: string, upX: number): ControlledBody {
 
 describe("main view camera frame", () => {
   it("uses the spacecraft main-view rig for the focused body frame", () => {
-    const focusedBody = createBody("ship:focus", 0.25);
+    const focusedBody = createBody("craft:focus", 0.25);
     const frame = localFrame.zero();
     const mainFocus: FocusContext = {
       controlledBody: focusedBody,

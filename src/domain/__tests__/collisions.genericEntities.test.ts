@@ -19,7 +19,7 @@ function createControlledBody(id: string): ControlledBody {
 
 describe("resolveCollisions", () => {
   it("resolves controllable bodies against generic collision spheres", () => {
-    const controlledBody = createControlledBody("ship:test");
+    const controlledBody = createControlledBody("craft:test");
     const sphereState = {
       id: "body:sphere",
       orientation: mat3.copy(mat3.identity, mat3.zero()),

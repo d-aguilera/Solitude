@@ -1,7 +1,7 @@
 import type {
-  PlanetSceneObject,
+  BodySceneObject,
+  LightEmitterSceneObject,
   SceneObject,
-  StarSceneObject,
 } from "../app/scenePorts";
 import type { EntityId } from "../domain/domainPorts";
 import { type Vec3, vec3 } from "../domain/vec3";
@@ -19,9 +19,11 @@ import { scrn } from "./scrn";
 import { sortRangeInPlace } from "./sortRange";
 
 type SortedScratchItem = {
-  body: PlanetSceneObject | StarSceneObject;
+  body: LabelBodySceneObject;
   distance: number;
 };
+
+type LabelBodySceneObject = BodySceneObject | LightEmitterSceneObject;
 
 const sortedScratch: SortedScratchItem[] = [];
 const diffScratch: Vec3 = vec3.zero();
@@ -37,7 +39,7 @@ export interface LabelLayoutCache {
   lastScreenHeight: number;
   lastBodyCount: number;
   needsRelayout: boolean;
-  sortedBodies: (PlanetSceneObject | StarSceneObject)[];
+  sortedBodies: LabelBodySceneObject[];
   entries: Map<string, LabelLayoutEntry>;
   objectById: Map<string, SceneObject>;
   grid: LabelSpatialGrid;
@@ -102,7 +104,7 @@ const placedLabelRectsScratch: LabelRect[] = [];
 let placedLabelCount = 0;
 
 /**
- * Scratch structure for tracking all projected planet/star centers that are
+ * Scratch structure for tracking all projected body centers that are
  * in front of the camera and on-screen during a single render pass.
  */
 let allBodyCentersCount = 0;
@@ -189,11 +191,15 @@ function countLabelBodies(
   let count = 0;
   for (let i = 0; i < objects.length; i++) {
     const obj = objects[i];
-    if (obj.kind !== "planet" && obj.kind !== "star") continue;
+    if (!isLabelBody(obj)) continue;
     if (objectsFilter && !objectsFilter(obj)) continue;
     count++;
   }
   return count;
+}
+
+function isLabelBody(obj: SceneObject): obj is LabelBodySceneObject {
+  return obj.kind === "orbitalBody" || obj.kind === "lightEmitter";
 }
 
 function shouldRelayout(
@@ -265,7 +271,7 @@ function layoutLabels(
     }
 
     if (
-      body.kind === "planet" &&
+      body.kind === "orbitalBody" &&
       !isMoonLabelSeparated(
         body,
         cache,
@@ -345,7 +351,7 @@ function renderLabelsFromCache(
     }
 
     if (
-      body.kind === "planet" &&
+      body.kind === "orbitalBody" &&
       !isMoonLabelSeparated(
         body,
         cache,
@@ -442,7 +448,7 @@ function renderLabelsFromCache(
 }
 
 function isMoonLabelSeparated(
-  body: PlanetSceneObject,
+  body: BodySceneObject,
   cache: LabelLayoutCache,
   anchor: Point,
   screenWidth: number,
@@ -453,7 +459,7 @@ function isMoonLabelSeparated(
   if (!parentId || parentId === body.id) return true;
 
   const parent = cache.objectById.get(parentId);
-  if (!parent || parent.kind !== "planet") {
+  if (!parent || parent.kind !== "orbitalBody") {
     return true;
   }
 
@@ -596,7 +602,7 @@ function getGridCell(
 }
 
 /**
- * Collect all planet/star centers that are:
+ * Collect all body centers that are:
  *  - in front of the camera, and
  *  - inside the screen rectangle.
  *
@@ -614,7 +620,7 @@ function collectVisibleBodyCenters(
 
   for (let i = 0; i < objects.length; i++) {
     const obj = objects[i];
-    if (obj.kind !== "planet" && obj.kind !== "star") continue;
+    if (!isLabelBody(obj)) continue;
     if (objectsFilter && !objectsFilter(obj)) continue;
 
     if (!projectInto(ndcScratch, obj.position)) {
@@ -641,14 +647,14 @@ function collectVisibleBodyCenters(
 function sortBodies(
   objects: SceneObject[],
   referencePosition: Vec3,
-  objectsFilter?: (obj: PlanetSceneObject | StarSceneObject) => boolean,
+  objectsFilter?: (obj: LabelBodySceneObject) => boolean,
 ): number {
   let count = 0;
 
   for (let i = 0; i < objects.length; i++) {
     const obj = objects[i];
-    if (obj.kind !== "planet" && obj.kind !== "star") continue;
-    const body: PlanetSceneObject | StarSceneObject = obj;
+    if (!isLabelBody(obj)) continue;
+    const body = obj;
     if (objectsFilter && !objectsFilter(body)) continue;
 
     vec3.subInto(diffScratch, body.position, referencePosition);
@@ -700,7 +706,7 @@ function fillLabelLines(
 /**
  * Pick a direction index (0..7) in 45° steps such that the label's rectangle
  * neither overlaps existing label rectangles nor contains any visible
- * planet/star center, if possible.
+ * body center, if possible.
  *
  * Angles:
  *   0 -> 0°   (up)
@@ -752,7 +758,7 @@ function pickDirectionIndexForLabel(
 /**
  * Returns true if the candidate rectangle:
  *  - overlaps any previously placed label rectangle, or
- *  - contains the projected center of any visible planet/star.
+ *  - contains the projected center of any visible body.
  */
 function candidateRectOccupied(
   grid: LabelSpatialGrid,
@@ -784,7 +790,7 @@ function candidateRectOccupied(
         }
       }
 
-      // 2) Check if this candidate contains any visible planet/star center.
+      // 2) Check if this candidate contains any visible body center.
       for (let i = 0; i < cell.centers.length; i++) {
         const c = allBodyCentersScratch[cell.centers[i]];
         if (c.x >= x && c.x <= x2 && c.y >= y && c.y <= y2) {

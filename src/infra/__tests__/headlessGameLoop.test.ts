@@ -9,9 +9,9 @@ import type { WorldConfigBase } from "../../setup/setup";
 import { createHeadlessLoop } from "../headlessGameLoop";
 
 function buildHeadlessConfig(): WorldConfigBase {
-  const sunId = "planet:sun";
-  const earthId = "planet:earth";
-  const controlledEntityId = "ship:test";
+  const sunId = "body:primary";
+  const earthId = "body:secondary";
+  const controlledEntityId = "craft:test";
 
   const sun: EntityConfig = {
     id: sunId,
@@ -166,8 +166,8 @@ describe("headlessGameLoop", () => {
   it("preserves the main focus in headless runs", () => {
     const loop = createHeadlessLoop(buildHeadlessConfig());
 
-    expect(loop.worldAndScene.mainFocus.entityId).toBe("ship:test");
-    expect(loop.worldAndScene.mainFocus.controlledBody.id).toBe("ship:test");
+    expect(loop.worldAndScene.mainFocus.entityId).toBe("craft:test");
+    expect(loop.worldAndScene.mainFocus.controlledBody.id).toBe("craft:test");
     expect(loop.worldAndScene.world.controllableBodies).toContain(
       loop.worldAndScene.mainFocus.controlledBody,
     );

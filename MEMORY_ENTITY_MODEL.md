@@ -10,7 +10,7 @@
 
 - Solar-system content is plugin-owned.
 - Runtime `World` now stores generic entities and capability arrays instead of fixed `ships`, `planets`, and `stars` buckets.
-- The remaining transition work is mostly at outer/setup/render edges: legacy physics setup adapters, visual scene roles, render config names, and scenario/plugin terminology.
+- The remaining transition work is mostly at plugin/scenario edges: solar-system ids/content names, trajectory compatibility identifiers, and spacecraft-specific plugin terminology.
 
 ## Target Model
 
@@ -37,7 +37,7 @@ Systems should query capabilities rather than categories:
 ## Migration Strategy
 
 1. Add generic entity/component types alongside the current `World` buckets.
-2. Adapt existing solar-system plugin contributions into generic entities while still populating the old buckets for compatibility.
+2. Adapt existing solar-system plugin contributions into generic entities while preserving behavior during migration.
 3. Move core systems one at a time to capability queries:
    - gravity state construction
    - collision resolution
@@ -52,13 +52,13 @@ Systems should query capabilities rather than categories:
 1. **Foundation and parity**
    - Introduce generic entity/config/world types alongside current `World`.
    - Build id indexes once during setup; hot systems should iterate capability arrays directly.
-   - Add adapters from current celestial/ship config into generic entity configs, then into both generic arrays and legacy buckets.
+   - Add adapters from current scenario config into generic entity configs.
    - Add parity tests proving solar-system ids, masses, positions, velocities, main controlled body, scene objects, and lights match current behavior.
 
 2. **Generic setup path**
    - Make `createWorld` build generic capability arrays as the primary setup output.
    - Keep legacy buckets populated from the generic world for callers not yet migrated.
-   - Extract pure celestial initial-state derivation from `setupPlanets.ts` so the solar-system plugin no longer creates a temporary legacy `World` just to place ships.
+   - Extract pure Keplerian initial-state derivation so the solar-system plugin can place spacecraft without a temporary legacy `World`.
    - Update validation to require a main controllable entity, gravity bodies with mass where needed, and render configs for renderable entities.
 
 3. **Move core simulation systems**
@@ -111,7 +111,7 @@ Systems should query capabilities rather than categories:
 
 ## Watch-Outs
 
-- `legacyKind` has been removed from source; the remaining category-name cleanup is setup/render/trajectory vocabulary and adapter shape debt.
-- Legacy physics config item types still exist as setup/plugin-local adapter shapes; shared config arrays have been removed.
-- Some scene object kinds are still `ship` / `planet` / `star` because render labels, culling, and LOD use those visual roles.
+- `legacyKind` has been removed from source.
+- Legacy category-shaped setup/render adapter names have been replaced with generic Keplerian body setup and role-based render scene objects.
+- Some plugin ids and file names still use spacecraft or solar-system scenario vocabulary.
 - Tests may use tiny fake worlds with spacecraft/body fixtures; keep them generic unless they are explicitly testing compatibility.

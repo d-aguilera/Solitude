@@ -153,6 +153,12 @@ Success criteria:
   - deleted `EntityConfig.legacyKind` from app config ports;
   - removed solar-system `legacyKind` contributions and setup copy-through;
   - setup/world records now carry entity identity only.
+- 2026-05-05: Completed core category naming cleanup for the entity-model objective:
+  - replaced `setupPlanets.ts` / `PlanetsAndStarsSetup` with `setupKeplerianBodies.ts` / `KeplerianBodiesSetup`;
+  - replaced `PlanetPhysicsConfig` / `StarPhysicsConfig` and domain `PlanetPhysics` / `StarPhysics` with generic Keplerian/spherical body physics types;
+  - replaced app render config category types with `EntityRenderConfig`;
+  - changed render scene object kinds from `ship` / `planet` / `star` to `controlledBody` / `orbitalBody` / `lightEmitter`;
+  - renamed axial spin handling from `applyCelestialSpin` to `applyAxialSpin`.
 
 ## Decision Log
 
@@ -525,4 +531,4 @@ Unresolved:
 
 - Add runtime operator-mode switching for focus, active camera rig, controls, and HUD emphasis.
 - Decide how axial views relate to active operator modes.
-- Remove category-shaped setup/render ports and adapters where planet/star/ship names remain in core-facing code.
+- Core category naming cleanup is complete for `src/app`, `src/domain`, `src/infra`, `src/render`, and `src/setup`; remaining spacecraft/solar-system names are plugin/scenario vocabulary or IDs.

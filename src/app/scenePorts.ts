@@ -16,8 +16,8 @@ export interface BaseSceneObject {
   backFaceCulling: boolean;
 }
 
-export interface CelestialBodySceneObject extends SolidSceneObject {
-  kind: "planet" | "star";
+export interface OrbitalBodySceneObject extends SolidSceneObject {
+  kind: "lightEmitter" | "orbitalBody";
   backFaceCulling: true;
   centralEntityId?: EntityId;
   velocity: Vec3;
@@ -42,8 +42,8 @@ export interface MainViewLookState {
   elevation: number;
 }
 
-export interface PlanetSceneObject extends CelestialBodySceneObject {
-  kind: "planet";
+export interface BodySceneObject extends OrbitalBodySceneObject {
+  kind: "orbitalBody";
 }
 
 /**
@@ -85,24 +85,28 @@ export interface SceneControlState {
  * Domain-level scene object union for rendering adapters.
  */
 export type SceneObject =
-  | ShipSceneObject
-  | PlanetSceneObject
-  | StarSceneObject
+  | ControlledBodySceneObject
+  | BodySceneObject
+  | LightEmitterSceneObject
   | PolylineSceneObject;
 
-export type SceneObjectKind = "ship" | "planet" | "polyline" | "star";
+export type SceneObjectKind =
+  | "controlledBody"
+  | "lightEmitter"
+  | "orbitalBody"
+  | "polyline";
 
 export interface SolidSceneObject extends BaseSceneObject {
   applyTransform: true;
   wireframeOnly: false;
 }
 
-export interface ShipSceneObject extends SolidSceneObject {
-  kind: "ship";
+export interface ControlledBodySceneObject extends SolidSceneObject {
+  kind: "controlledBody";
   backFaceCulling: false;
 }
 
-export interface StarSceneObject extends CelestialBodySceneObject {
-  kind: "star";
+export interface LightEmitterSceneObject extends OrbitalBodySceneObject {
+  kind: "lightEmitter";
   luminosity: number; // W or scaled units for lighting
 }

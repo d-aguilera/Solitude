@@ -1,8 +1,11 @@
-import type { PlanetSceneObject, StarSceneObject } from "../app/scenePorts";
+import type {
+  BodySceneObject,
+  LightEmitterSceneObject,
+} from "../app/scenePorts";
 import { vec3 } from "../domain/vec3";
 
 const objectDiameterWorldScratch = new WeakMap<
-  PlanetSceneObject | StarSceneObject,
+  BodySceneObject | LightEmitterSceneObject,
   number
 >();
 
@@ -10,7 +13,7 @@ const objectDiameterWorldScratch = new WeakMap<
  * Returns the world-space diameter for a body mesh, cached per object.
  */
 export function getBodyDiameterWorld(
-  obj: PlanetSceneObject | StarSceneObject,
+  obj: BodySceneObject | LightEmitterSceneObject,
 ): number {
   const cached = objectDiameterWorldScratch.get(obj);
   if (cached !== undefined) return cached;

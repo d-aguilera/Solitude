@@ -2,7 +2,7 @@ import { resolveCollisions } from "../domain/collisions";
 import type { GravityEngine } from "../domain/domainPorts";
 import { buildInitialGravityState } from "../domain/gravityState";
 import type { ControlInput } from "./controlPorts";
-import { applyCelestialSpin, applyGravity } from "./physics";
+import { applyAxialSpin, applyGravity } from "./physics";
 import type { SimulationPlugin } from "./pluginPorts";
 import type { TickCallback, TickParams, WorldAndScene } from "./runtimePorts";
 
@@ -42,7 +42,7 @@ export function createTickHandler(
     resolveCollisions(worldAndScene.world);
     applyAfterCollisions(simulationPlugins, simulationPhaseParams);
 
-    applyCelestialSpin(params.dtMillisSim, worldAndScene.world);
+    applyAxialSpin(params.dtMillisSim, worldAndScene.world);
     applyAfterSpin(simulationPlugins, simulationPhaseParams);
   };
 }

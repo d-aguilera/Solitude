@@ -60,9 +60,9 @@ The playback plugin is enabled by runtime options parsed by infra:
 - `?mode=playback&scenario=moon-circle-long&log=circle-now`: enable the circle-now measurement logger for that playback run. The logger samples only while `circleNow` is active and dumps console JSON at playback end, including `schemaVersion: 3`, the circle-now algorithm version, active-relative eccentricity threshold timings, and per-sample target-bearing diagnostics.
 - Add `&autopilot=v1`, `&autopilot=v2`, `&autopilot=v3`, `&autopilot=v4`, or `&autopilot=v5` to select the circle-now/autopilot algorithm for interactive or playback runs. The default is `v5`.
 
-Playback is intentionally a control-state recorder/player, not a raw keyboard event macro. It owns only flight/autopilot controls and uses a fixed real tick delta with scaled simulation time so ship maneuverability remains real-time.
+Playback is intentionally a control-state recorder/player, not a raw keyboard event macro. It owns only flight/autopilot controls and uses a fixed real tick delta with scaled simulation time so spacecraft maneuverability remains real-time.
 
-Capture stores the effective time scale from recording start; changing time scale during recording is warned about because v1 scripts have one top-level time scale, not a time-scale timeline.
+Capture stores the effective time scale from recording start; changing time scale during recording is warned about because scripts have one top-level time scale, not a time-scale timeline.
 
 The `scenario` query value is a script id. Capture accepts any non-empty id; playback succeeds once that id is registered in `playback/scripts/index.ts`, otherwise it fails closed with a missing-script status.
 

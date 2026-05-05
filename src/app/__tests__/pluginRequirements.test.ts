@@ -20,7 +20,7 @@ function createControlledBody(id: string): ControlledBody {
 }
 
 function createWorldAndFocus(): { mainFocus: FocusContext; world: World } {
-  const controlledBody = createControlledBody("ship:test");
+  const controlledBody = createControlledBody("craft:test");
   const world: World = {
     axialSpins: [],
     collisionSpheres: [],
@@ -72,7 +72,7 @@ describe("validatePluginRequirements", () => {
     expect(() =>
       validatePluginRequirements({ mainFocus, plugins: [plugin], world }),
     ).toThrow(
-      'Plugin "light-demo" requires main focus capability "lightEmitter" on entity "ship:test"',
+      'Plugin "light-demo" requires main focus capability "lightEmitter" on entity "craft:test"',
     );
   });
 });

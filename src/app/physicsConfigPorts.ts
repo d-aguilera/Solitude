@@ -3,11 +3,8 @@ import type { LocalFrame } from "../domain/localFrame";
 import type { Mat3 } from "../domain/mat3";
 import type { Vec3 } from "../domain/vec3";
 
-export type CelestialBodyKind = "planet" | "star";
-
-export interface CelestialBodyPhysicsConfig {
-  id: string; // domain id, e.g. "planet:earth"
-  kind: CelestialBodyKind;
+export interface KeplerianBodyPhysicsConfig {
+  id: EntityId;
 
   /**
    * Keplerian orbital elements relative to a chosen central body.
@@ -23,13 +20,12 @@ export interface CelestialBodyPhysicsConfig {
   // Physical body properties (SI units)
   physicalRadius: number; // meters
   density: number; // kg/m^3
+  luminosity?: number; // W or scaled units for light-emitting bodies
 
   /**
    * ID of the central body that dominates this orbit.
    *
-   * For heliocentric planetary orbits this is the Sun's id.
-   * For moons this is the id of the parent planet.
-   * For a root body (e.g. Sun at origin) this should be equal to its own id.
+   * For a root body at the origin, this should be equal to its own id.
    */
   centralEntityId: EntityId;
 
@@ -68,15 +64,6 @@ export interface KeplerianOrbit {
   argPeriapsisRad: number;
   /** Mean anomaly at the chosen epoch (radians). */
   meanAnomalyAtEpochRad: number;
-}
-
-export interface PlanetPhysicsConfig extends CelestialBodyPhysicsConfig {
-  kind: "planet";
-}
-
-export interface StarPhysicsConfig extends CelestialBodyPhysicsConfig {
-  kind: "star";
-  luminosity: number; // W (or scaled W) for stars
 }
 
 export interface ControlledBodyPhysicsConfig {

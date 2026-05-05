@@ -28,7 +28,7 @@ function createControlledBody(): ControlledBody {
   return {
     angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
     frame,
-    id: "ship:test",
+    id: "craft:test",
     orientation: localFrame.intoMat3(mat3.zero(), frame),
     position: vec3.create(10, 0, 0),
     velocity: vec3.create(0, 1, 0),

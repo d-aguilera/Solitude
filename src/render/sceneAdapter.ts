@@ -1,6 +1,6 @@
 import type { EntityConfig, WorldAndSceneConfig } from "../app/configPorts";
 import type {
-  CelestialBodySceneObject,
+  OrbitalBodySceneObject,
   Scene,
   SceneObject,
 } from "../app/scenePorts";
@@ -52,7 +52,7 @@ function createEntitySceneObject(
   if (role === "controlledBody") {
     return {
       id: entity.id,
-      kind: "ship",
+      kind: "controlledBody",
       mesh: renderable.mesh,
       position: state.position,
       orientation: state.orientation,
@@ -64,29 +64,29 @@ function createEntitySceneObject(
     };
   }
 
-  const celestial = createCelestialSceneObject(entity, state);
+  const body = createOrbitalBodySceneObject(entity, state);
   if (role === "lightEmitter") {
     return {
-      ...celestial,
-      kind: "star",
+      ...body,
+      kind: "lightEmitter",
       luminosity: getById(world.lightEmitters, entity.id, "Light emitter")
         .luminosity,
     };
   }
-  if (role === "celestialBody") {
+  if (role === "orbitalBody") {
     return {
-      ...celestial,
-      kind: "planet",
+      ...body,
+      kind: "orbitalBody",
     };
   }
 
   throw new Error(`Renderable entity has unknown render role: ${entity.id}`);
 }
 
-function createCelestialSceneObject(
+function createOrbitalBodySceneObject(
   entity: EntityConfig,
   state: EntityMotionState,
-): CelestialBodySceneObject {
+): OrbitalBodySceneObject {
   const renderable = entity.components.renderable;
   if (!renderable) {
     throw new Error(`Renderable entity config not found: ${entity.id}`);
@@ -94,7 +94,7 @@ function createCelestialSceneObject(
   const entityState = entity.components.state;
   return {
     id: entity.id,
-    kind: "planet",
+    kind: "orbitalBody",
     centralEntityId:
       entityState?.kind === "keplerian"
         ? entityState.centralEntityId

@@ -1,7 +1,7 @@
 import type {
-  PlanetSceneObject,
-  ShipSceneObject,
-  StarSceneObject,
+  BodySceneObject,
+  ControlledBodySceneObject,
+  LightEmitterSceneObject,
 } from "../app/scenePorts";
 import type { Vec3 } from "../domain/vec3";
 import type { RenderFrameCache } from "./renderFrameCache";
@@ -16,7 +16,7 @@ import type { Renderable } from "./renderPorts";
  * for the duration of the current render frame, not across frames.
  */
 export function toRenderable(
-  obj: ShipSceneObject | PlanetSceneObject | StarSceneObject,
+  obj: ControlledBodySceneObject | BodySceneObject | LightEmitterSceneObject,
   renderCache: RenderFrameCache,
 ): Renderable {
   const { applyTransform, color: baseColor, lineWidth, mesh } = obj;

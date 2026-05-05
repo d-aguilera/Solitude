@@ -1,13 +1,13 @@
 import type {
-  PlanetSceneObject,
+  BodySceneObject,
+  LightEmitterSceneObject,
   SceneObject,
-  StarSceneObject,
 } from "../app/scenePorts";
 import { ProjectionService } from "./ProjectionService";
 import { getBodyDiameterWorld } from "./bodyDiameterCache";
 
 const onePixelDepthScratch = new WeakMap<
-  PlanetSceneObject | StarSceneObject,
+  BodySceneObject | LightEmitterSceneObject,
   { screenHeight: number; depth: number }
 >();
 
@@ -16,7 +16,7 @@ export function isBodyAtOrBeyondOnePixelThreshold(
   projectionService: ProjectionService,
   screenHeight: number,
 ): boolean {
-  if (obj.kind !== "planet" && obj.kind !== "star") return false;
+  if (obj.kind !== "orbitalBody" && obj.kind !== "lightEmitter") return false;
 
   const centerDepth = projectionService.getCameraDepthForWorldPoint(
     obj.position,
@@ -30,7 +30,7 @@ export function isBodyAtOrBeyondOnePixelThreshold(
 }
 
 function getOnePixelDepthForObject(
-  obj: PlanetSceneObject | StarSceneObject,
+  obj: BodySceneObject | LightEmitterSceneObject,
   projectionService: ProjectionService,
   screenHeight: number,
 ): number {

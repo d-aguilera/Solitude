@@ -89,9 +89,9 @@ function applySpinForBodies(
 }
 
 /**
- * Advance axial spin for planets and stars as a simulation concern.
+ * Advance axial spin for entities that expose the axial-spin capability.
  */
-export function applyCelestialSpin(dtMillisSim: number, world: World): void {
+export function applyAxialSpin(dtMillisSim: number, world: World): void {
   if (dtMillisSim <= 0) return;
 
   applySpinForBodies(dtMillisSim, world.axialSpins);

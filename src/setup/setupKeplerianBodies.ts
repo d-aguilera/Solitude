@@ -1,13 +1,8 @@
 import type {
+  KeplerianBodyPhysicsConfig,
   KeplerianOrbit,
-  PlanetPhysicsConfig,
-  StarPhysicsConfig,
 } from "../app/configPorts";
-import type {
-  PlanetPhysics,
-  RotatingBody,
-  StarPhysics,
-} from "../domain/domainPorts";
+import type { RotatingBody, SphericalBodyPhysics } from "../domain/domainPorts";
 import { mat3, type Mat3 } from "../domain/mat3";
 import { vec3, type Vec3 } from "../domain/vec3";
 import { parameters } from "../global/parameters";
@@ -17,27 +12,22 @@ import { mutateStateVectorFromKeplerian } from "./kepler";
 const initialStatePositionScratch: Record<string, Vec3> = {};
 const initialStateVelocityScratch: Record<string, Vec3> = {};
 const massByIdScratch: Record<string, number> = {};
-const configByIdScratch: Record<
-  string,
-  PlanetPhysicsConfig | StarPhysicsConfig
-> = {};
+const configByIdScratch: Record<string, KeplerianBodyPhysicsConfig> = {};
 const computingStateScratch: Record<string, boolean> = {};
 
-export interface PlanetsAndStarsSetup {
-  planetPhysics: PlanetPhysics[];
-  planets: RotatingBody[];
-  starPhysics: StarPhysics[];
-  stars: RotatingBody[];
+export interface KeplerianBodiesSetup {
+  bodies: RotatingBody[];
+  lightEmitterLuminosities: (number | undefined)[];
+  physics: SphericalBodyPhysics[];
 }
 
-export function createPlanetsAndStarsFromConfig(
-  configs: (PlanetPhysicsConfig | StarPhysicsConfig)[],
-): PlanetsAndStarsSetup {
-  const setup: PlanetsAndStarsSetup = {
-    planetPhysics: [],
-    planets: [],
-    starPhysics: [],
-    stars: [],
+export function createKeplerianBodiesFromConfig(
+  configs: KeplerianBodyPhysicsConfig[],
+): KeplerianBodiesSetup {
+  const setup: KeplerianBodiesSetup = {
+    bodies: [],
+    lightEmitterLuminosities: [],
+    physics: [],
   };
 
   // Build lookup tables for configs and masses.
@@ -71,7 +61,7 @@ export function createPlanetsAndStarsFromConfig(
 
     const orientation = mat3.copy(mat3.identity, mat3.zero());
 
-    const celestialBody: RotatingBody = {
+    const body: RotatingBody = {
       id: cfg.id,
       position: vec3.clone(center),
       velocity: vec3.clone(initialVelocity),
@@ -80,23 +70,16 @@ export function createPlanetsAndStarsFromConfig(
       angularSpeedRadPerSec: cfg.angularSpeedRadPerSec,
     };
 
-    const planetPhysics: PlanetPhysics = {
+    const physics: SphericalBodyPhysics = {
       id: cfg.id,
       physicalRadius: cfg.physicalRadius,
       density: cfg.density,
       mass: massByIdScratch[cfg.id],
     };
 
-    if (cfg.kind === "star") {
-      setup.stars.push(celestialBody);
-      setup.starPhysics.push({
-        ...planetPhysics,
-        luminosity: cfg.luminosity,
-      });
-    } else if (cfg.kind === "planet") {
-      setup.planets.push(celestialBody);
-      setup.planetPhysics.push({ ...planetPhysics });
-    }
+    setup.bodies.push(body);
+    setup.physics.push(physics);
+    setup.lightEmitterLuminosities.push(cfg.luminosity);
   }
 
   return setup;
@@ -105,7 +88,10 @@ export function createPlanetsAndStarsFromConfig(
 /**
  * Helper: compute physical mass from radius and density.
  */
-function computePlanetMass(physicalRadius: number, density: number): number {
+function computeSphericalBodyMass(
+  physicalRadius: number,
+  density: number,
+): number {
   const volume =
     (4 / 3) * Math.PI * physicalRadius * physicalRadius * physicalRadius;
   return density * volume;
@@ -114,9 +100,7 @@ function computePlanetMass(physicalRadius: number, density: number): number {
 /**
  * Initialize lookup tables for configs and derived masses.
  */
-function buildConfigAndMassTables(
-  configs: (PlanetPhysicsConfig | StarPhysicsConfig)[],
-): void {
+function buildConfigAndMassTables(configs: KeplerianBodyPhysicsConfig[]): void {
   // Reset scratch tables (keys are small; simple reassignment is fine).
   for (const key in configByIdScratch) {
     delete configByIdScratch[key];
@@ -137,7 +121,7 @@ function buildConfigAndMassTables(
   for (let i = 0; i < configs.length; i++) {
     const cfg = configs[i];
     configByIdScratch[cfg.id] = cfg;
-    massByIdScratch[cfg.id] = computePlanetMass(
+    massByIdScratch[cfg.id] = computeSphericalBodyMass(
       cfg.physicalRadius,
       cfg.density,
     );

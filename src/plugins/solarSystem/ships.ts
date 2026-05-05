@@ -1,13 +1,15 @@
 import type {
   ControlledBodyInitialStateConfig,
   ControlledBodyPhysicsConfig,
-  PlanetPhysicsConfig,
-  ShipRenderConfig,
-  StarPhysicsConfig,
+  EntityRenderConfig,
+  KeplerianBodyPhysicsConfig,
 } from "../../app/configPorts";
 import type { Mesh } from "../../app/scenePorts";
 import { parseObjMesh } from "../../config/obj";
-import type { PlanetPhysics, RotatingBody } from "../../domain/domainPorts";
+import type {
+  RotatingBody,
+  SphericalBodyPhysics,
+} from "../../domain/domainPorts";
 import {
   DOT_PARALLEL_COS,
   EPS_LEN,
@@ -20,7 +22,7 @@ import { circularSpeedAtRadius } from "../../domain/phys";
 import { km } from "../../domain/units";
 import { vec3, type Vec3 } from "../../domain/vec3";
 import { initialFrame } from "../../setup/setup";
-import { createPlanetsAndStarsFromConfig } from "../../setup/setupPlanets";
+import { createKeplerianBodiesFromConfig } from "../../setup/setupKeplerianBodies";
 import { colors } from "./colors";
 import shipObjText from "./ship.obj?raw";
 
@@ -31,11 +33,11 @@ const EARTH_ID = "planet:earth";
 const axisScratch = vec3.zero();
 
 export function buildDefaultSolarSystemShipConfigs(
-  celestialPhysics: (PlanetPhysicsConfig | StarPhysicsConfig)[],
+  celestialPhysics: KeplerianBodyPhysicsConfig[],
 ): {
   initialStates: ControlledBodyInitialStateConfig[];
   physics: ControlledBodyPhysicsConfig[];
-  render: ShipRenderConfig[];
+  render: EntityRenderConfig[];
 } {
   const mainShipMesh = createScaledShipMesh();
   const enemyShipMesh = createScaledShipMesh();
@@ -61,7 +63,7 @@ export function buildDefaultSolarSystemShipConfigs(
     },
   ];
 
-  const render: ShipRenderConfig[] = [
+  const render: EntityRenderConfig[] = [
     {
       color: colors.ship,
       id: "ship:main",
@@ -95,19 +97,20 @@ export function buildDefaultSolarSystemShipConfigs(
   return { initialStates, physics, render };
 }
 
-function createEarthState(
-  celestialPhysics: (PlanetPhysicsConfig | StarPhysicsConfig)[],
-): { earthBody: RotatingBody; earthPhysics: PlanetPhysics } {
-  const setup = createPlanetsAndStarsFromConfig(celestialPhysics);
+function createEarthState(celestialPhysics: KeplerianBodyPhysicsConfig[]): {
+  earthBody: RotatingBody;
+  earthPhysics: SphericalBodyPhysics;
+} {
+  const setup = createKeplerianBodiesFromConfig(celestialPhysics);
 
-  const earthIndex = setup.planets.findIndex((body) => body.id === EARTH_ID);
+  const earthIndex = setup.bodies.findIndex((body) => body.id === EARTH_ID);
   if (earthIndex < 0) {
     throw new Error(`Solar system plugin requires body: ${EARTH_ID}`);
   }
 
   return {
-    earthBody: setup.planets[earthIndex],
-    earthPhysics: setup.planetPhysics[earthIndex],
+    earthBody: setup.bodies[earthIndex],
+    earthPhysics: setup.physics[earthIndex],
   };
 }
 
@@ -121,7 +124,7 @@ function createOrbitingShipInitialState({
   body: RotatingBody;
   direction: Vec3;
   id: string;
-  physics: PlanetPhysics;
+  physics: SphericalBodyPhysics;
   shipMass: number;
 }): ControlledBodyInitialStateConfig {
   const radialDirection = vec3.normalizeInto(direction);

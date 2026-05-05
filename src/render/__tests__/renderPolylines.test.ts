@@ -7,7 +7,7 @@ import type { RenderedPolyline } from "../renderPorts";
 
 function createPolyline(count: number, tail: number): PolylineSceneObject {
   return {
-    id: "traj:ship:main",
+    id: "traj:craft:main",
     kind: "polyline",
     mesh: {
       points: [vec3.zero(), vec3.zero()],

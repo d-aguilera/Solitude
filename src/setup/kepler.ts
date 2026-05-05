@@ -8,7 +8,7 @@ import { vec3, type Vec3 } from "../domain/vec3";
  * eccentricity e.
  *
  * Uses a simple Newton–Raphson iteration, which converges quickly for
- * the small eccentricities typical of solar system planets.
+ * the small eccentricities typical of solar-system orbital bodies.
  */
 function solveEccentricAnomaly(
   meanAnomalyRad: number,

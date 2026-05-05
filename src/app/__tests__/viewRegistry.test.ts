@@ -13,7 +13,7 @@ import {
 function createConfig(): WorldAndSceneConfig {
   return {
     entities: [],
-    mainFocusEntityId: "ship:main",
+    mainFocusEntityId: "craft:main",
     render: {
       mainViewCameraOffset: vec3.create(0, 0, 0),
       mainViewLookState: { azimuth: 0, elevation: 0 },

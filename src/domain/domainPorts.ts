@@ -23,21 +23,15 @@ export interface AngularVelocity {
   yaw: number;
 }
 
-/**
- * Logical celestial body that participates in physics / gravity.
- */
-export interface CelestialBody {
-  id: string;
-  position: Vec3;
-  velocity: Vec3;
-}
-
 export interface EntityRecord {
   id: EntityId;
 }
 
-export interface EntityMotionState extends CelestialBody {
+export interface EntityMotionState {
+  id: EntityId;
+  position: Vec3;
   orientation: Mat3;
+  velocity: Vec3;
 }
 
 export interface EntityGravityMass extends PhysicsBody {
@@ -69,10 +63,9 @@ export interface ControlledBody extends EntityMotionState {
 }
 
 /**
- * Celestial body with persistent axial spin state.
+ * Motion state with persistent axial spin state.
  */
-export interface RotatingBody extends CelestialBody {
-  orientation: Mat3;
+export interface RotatingBody extends EntityMotionState {
   rotationAxis: Vec3;
   angularSpeedRadPerSec: number;
 }
@@ -105,9 +98,9 @@ export interface PhysicsBody {
 }
 
 /**
- * Physical properties of a planet / star body.
+ * Physical properties for a spherical body.
  */
-export interface PlanetPhysics extends PhysicsBody {
+export interface SphericalBodyPhysics extends PhysicsBody {
   physicalRadius: number; // meters
 }
 
@@ -115,13 +108,6 @@ export interface PlanetPhysics extends PhysicsBody {
  * Physical properties of a controlled body.
  */
 export interface ControlledBodyPhysics extends PhysicsBody {}
-
-/**
- * Physical properties of a star body.
- */
-export interface StarPhysics extends PlanetPhysics {
-  luminosity: number; // W or scaled units for lighting
-}
 
 /**
  * Generalized world-state container for dynamic entities controlled by

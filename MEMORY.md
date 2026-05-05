@@ -129,11 +129,11 @@
 - HUD, view/render params, playback loop/logging, and plugin simulation/scene/segment contexts have been migrated away from `mainControlledBody` aliases.
 - Core no longer exposes the transitional `mainControlledBody` bridge from setup/runtime objects; config now names the focused entity via `mainFocusEntityId`.
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
-- Core setup constructs generic controllable bodies via `setupControllableBodies`; scenario plugins may still provide spacecraft content and legacy render roles.
+- Core setup constructs generic controllable bodies via `setupControllableBodies` and Keplerian motion bodies via `setupKeplerianBodies`; scenario plugins may still provide spacecraft content.
 - Core setup classifies entities from capabilities/components; `legacyKind` has been removed from source.
-- Render scene adaptation uses explicit `renderable.role` values; current roles are `controlledBody`, `celestialBody`, and `lightEmitter`.
+- Render scene adaptation uses explicit `renderable.role` values; current roles are `controlledBody`, `orbitalBody`, and `lightEmitter`.
 - Trajectory planning uses component/capability checks.
-- Generic core logic uses controlled-body wording for collisions, camera positioning, rotation, and orbit readouts; remaining `ship` names in core-facing files are compatibility IDs, legacy render roles, or plugin/scenario spacecraft content.
+- Generic core logic uses controlled-body/focused-entity wording for collisions, camera positioning, rotation, orbit readouts, setup, and render roles; planet/star/ship category words are absent from core source.
 - Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`; old `ships` / `planets` / `stars` playback snapshot buckets are no longer supported.
 - Default runtime uses Canvas 2D; WebGL renderer exists but is not wired by default.
 - Tests cover geometry/mesh parsing and projection clipping.
@@ -145,6 +145,7 @@
 - Operator model commits 13–21: migrated HUD telemetry, spacecraft vehicle dynamics, playback loop/loggers, view/render params, and plugin phase contexts to focused-body plumbing; removed most `mainControlledBody` compatibility fields outside the core setup/runtime bridge.
 - Operator model follow-up: removed core thrust/RCS/propulsion command ports in favor of the generic plugin capability registry; autopilot now publishes a spacecraft propulsion resolver capability consumed by `spacecraftOperator` without importing peer plugin or shared plugin-layer protocol code.
 - Operator/entity-model follow-up: migrated playback snapshots to generic entity snapshots and dropped old script-schema compatibility; `random-trip` was migrated to the new format.
+- Entity-model cleanup: removed `legacyKind`, replaced planet/star setup adapters with generic Keplerian body setup, and changed render scene object kinds to `controlledBody` / `orbitalBody` / `lightEmitter`.
 
 ## Next steps
 
@@ -158,7 +159,7 @@
 ## Open questions / risks
 
 - The next operator/focus phase touches setup/runtime object shape and config naming; keep it small and reversible, because it affects bootstrap, headless loops, scene setup, playback, and tests.
-- Some plugin features currently assume planets/stars/ships; expect temporary adapters while the generic model lands.
+- Some plugin features still use spacecraft or solar-system scenario vocabulary; keep that out of core unless it is truly generic.
 - Gravity uses fixed sub-steps for stability; high time scales can still destabilize.
 - WebGL path is present but not wired in the default entry; decide if/when to switch.
 - Controls are keyboard-only with no in-app help; consider a help overlay or onboarding prompt.

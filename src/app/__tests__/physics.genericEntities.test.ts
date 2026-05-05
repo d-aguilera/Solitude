@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import type { EntityMotionState, World } from "../../domain/domainPorts";
 import { mat3 } from "../../domain/mat3";
 import { vec3 } from "../../domain/vec3";
-import { applyCelestialSpin } from "../physics";
+import { applyAxialSpin } from "../physics";
 
-describe("applyCelestialSpin", () => {
+describe("applyAxialSpin", () => {
   it("spins generic axial-spin capabilities", () => {
     const state: EntityMotionState = {
       id: "body:spinning",
@@ -30,7 +30,7 @@ describe("applyCelestialSpin", () => {
       lightEmitters: [],
     };
 
-    applyCelestialSpin(500, world);
+    applyAxialSpin(500, world);
 
     expect(state.orientation[0][0]).toBeCloseTo(0);
     expect(state.orientation[1][0]).toBeCloseTo(1);

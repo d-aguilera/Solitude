@@ -42,7 +42,7 @@ function buildSolarSystemBodyEntities({
           physicalRadius: body.physicalRadius,
         },
         lightEmitter:
-          body.kind === "star"
+          body.luminosity !== undefined
             ? {
                 luminosity: body.luminosity,
               }
@@ -51,7 +51,8 @@ function buildSolarSystemBodyEntities({
           ? {
               color: renderConfig.color,
               mesh: renderConfig.mesh,
-              role: body.kind === "star" ? "lightEmitter" : "celestialBody",
+              role:
+                body.luminosity !== undefined ? "lightEmitter" : "orbitalBody",
             }
           : undefined,
         state: {

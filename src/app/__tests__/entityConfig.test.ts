@@ -6,7 +6,7 @@ describe("buildEntityConfigIndex", () => {
   it("indexes entity ids by generic capability", () => {
     const entities: EntityConfig[] = [
       {
-        id: "planet:test",
+        id: "body:test",
         components: {
           axialSpin: {
             angularSpeedRadPerSec: 1,
@@ -22,7 +22,7 @@ describe("buildEntityConfigIndex", () => {
         },
       },
       {
-        id: "ship:test",
+        id: "craft:test",
         components: {
           controllable: {
             enabled: true,
@@ -33,21 +33,21 @@ describe("buildEntityConfigIndex", () => {
 
     const index = buildEntityConfigIndex(entities);
 
-    expect(index.byId.get("planet:test")).toBe(entities[0]);
-    expect(index.axialSpinEntityIds).toEqual(["planet:test"]);
-    expect(index.collisionSphereEntityIds).toEqual(["planet:test"]);
-    expect(index.gravityMassEntityIds).toEqual(["planet:test"]);
-    expect(index.controllableEntityIds).toEqual(["ship:test"]);
+    expect(index.byId.get("body:test")).toBe(entities[0]);
+    expect(index.axialSpinEntityIds).toEqual(["body:test"]);
+    expect(index.collisionSphereEntityIds).toEqual(["body:test"]);
+    expect(index.gravityMassEntityIds).toEqual(["body:test"]);
+    expect(index.controllableEntityIds).toEqual(["craft:test"]);
   });
 
   it("fails clearly for duplicate entity ids", () => {
     const entities: EntityConfig[] = [
-      { id: "ship:test", components: {} },
-      { id: "ship:test", components: {} },
+      { id: "craft:test", components: {} },
+      { id: "craft:test", components: {} },
     ];
 
     expect(() => buildEntityConfigIndex(entities)).toThrow(
-      "Duplicate entity config id: ship:test",
+      "Duplicate entity config id: craft:test",
     );
   });
 });

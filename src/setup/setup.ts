@@ -11,8 +11,7 @@ import type {
 import type {
   ControlledBodyInitialStateConfig,
   ControlledBodyPhysicsConfig,
-  PlanetPhysicsConfig,
-  StarPhysicsConfig,
+  KeplerianBodyPhysicsConfig,
 } from "../app/physicsConfigPorts";
 import type { FocusContext } from "../app/runtimePorts";
 import type {
@@ -27,9 +26,9 @@ import {
   createControllableBodiesFromConfig,
 } from "./setupControllableBodies";
 import {
-  createPlanetsAndStarsFromConfig,
-  type PlanetsAndStarsSetup,
-} from "./setupPlanets";
+  createKeplerianBodiesFromConfig,
+  type KeplerianBodiesSetup,
+} from "./setupKeplerianBodies";
 
 export const initialFrame: LocalFrame = localFrame.fromUp(vec3.create(0, 0, 1));
 
@@ -60,13 +59,13 @@ export function createWorld(config: WorldConfigBase): WorldSetup {
   };
 
   const entityDerivedSetup = createSetupFromEntityConfigs(entities);
-  const planetsAndStars = entityDerivedSetup.planetsAndStars;
+  const keplerianBodies = entityDerivedSetup.keplerianBodies;
   const controllableBodies = entityDerivedSetup.controllableBodies;
   populateGenericWorldFromSetup(
     world,
     entities,
     controllableBodies,
-    planetsAndStars,
+    keplerianBodies,
   );
 
   const focusedControlledBody = getControlledBodyById(world, mainFocusEntityId);
@@ -103,18 +102,16 @@ function validateWorldConfig({
 }
 
 function createSetupFromEntityConfigs(entities: EntityConfig[]): {
-  planetsAndStars: PlanetsAndStarsSetup;
+  keplerianBodies: KeplerianBodiesSetup;
   controllableBodies: ControllableBodiesSetup;
 } {
-  const celestialConfigs: (PlanetPhysicsConfig | StarPhysicsConfig)[] = [];
+  const keplerianConfigs: KeplerianBodyPhysicsConfig[] = [];
   const controlledBodyConfigs: ControlledBodyPhysicsConfig[] = [];
   const controlledBodyInitialStates: ControlledBodyInitialStateConfig[] = [];
 
   for (const entity of entities) {
-    if (isStarEntityConfig(entity)) {
-      celestialConfigs.push(createStarPhysicsConfig(entity));
-    } else if (isPlanetEntityConfig(entity)) {
-      celestialConfigs.push(createPlanetPhysicsConfig(entity));
+    if (isKeplerianBodyEntityConfig(entity)) {
+      keplerianConfigs.push(createKeplerianBodyPhysicsConfig(entity));
     } else if (isControllableEntityConfig(entity)) {
       controlledBodyConfigs.push(createControlledBodyPhysicsConfig(entity));
       controlledBodyInitialStates.push(
@@ -128,15 +125,11 @@ function createSetupFromEntityConfigs(entities: EntityConfig[]): {
       controlledBodyConfigs,
       controlledBodyInitialStates,
     ),
-    planetsAndStars: createPlanetsAndStarsFromConfig(celestialConfigs),
+    keplerianBodies: createKeplerianBodiesFromConfig(keplerianConfigs),
   };
 }
 
-function isStarEntityConfig(entity: EntityConfig): boolean {
-  return !!entity.components.lightEmitter && isPlanetEntityConfig(entity);
-}
-
-function isPlanetEntityConfig(entity: EntityConfig): boolean {
+function isKeplerianBodyEntityConfig(entity: EntityConfig): boolean {
   return (
     !!entity.components.axialSpin &&
     !!entity.components.collisionSphere &&
@@ -149,35 +142,19 @@ function isControllableEntityConfig(entity: EntityConfig): boolean {
   return !!entity.components.controllable;
 }
 
-function createPlanetPhysicsConfig(entity: EntityConfig): PlanetPhysicsConfig {
-  const state = requireKeplerianState(entity);
-  const mass = requireGravityMass(entity);
-  const spin = requireAxialSpin(entity);
-  return {
-    angularSpeedRadPerSec: spin.angularSpeedRadPerSec,
-    centralEntityId: state.centralEntityId,
-    density: mass.density,
-    id: entity.id,
-    kind: "planet",
-    obliquityRad: spin.obliquityRad,
-    orbit: state.orbit,
-    physicalRadius: requirePhysicalRadius(entity),
-  };
-}
-
-function createStarPhysicsConfig(entity: EntityConfig): StarPhysicsConfig {
+function createKeplerianBodyPhysicsConfig(
+  entity: EntityConfig,
+): KeplerianBodyPhysicsConfig {
   const state = requireKeplerianState(entity);
   const mass = requireGravityMass(entity);
   const spin = requireAxialSpin(entity);
   const light = entity.components.lightEmitter;
-  if (!light) throw new Error(`Star entity is missing light: ${entity.id}`);
   return {
     angularSpeedRadPerSec: spin.angularSpeedRadPerSec,
     centralEntityId: state.centralEntityId,
     density: mass.density,
     id: entity.id,
-    kind: "star",
-    luminosity: light.luminosity,
+    luminosity: light?.luminosity,
     obliquityRad: spin.obliquityRad,
     orbit: state.orbit,
     physicalRadius: requirePhysicalRadius(entity),
@@ -229,14 +206,14 @@ function requireGravityMass(entity: EntityConfig) {
 function requirePhysicalRadius(entity: EntityConfig): number {
   const physicalRadius = requireGravityMass(entity).physicalRadius;
   if (physicalRadius === undefined) {
-    throw new Error(`Celestial entity is missing radius: ${entity.id}`);
+    throw new Error(`Keplerian entity is missing radius: ${entity.id}`);
   }
   return physicalRadius;
 }
 
 function requireAxialSpin(entity: EntityConfig) {
   const spin = entity.components.axialSpin;
-  if (!spin) throw new Error(`Celestial entity is missing spin: ${entity.id}`);
+  if (!spin) throw new Error(`Keplerian entity is missing spin: ${entity.id}`);
   return spin;
 }
 
@@ -246,7 +223,7 @@ function requireKeplerianState(
   const state = entity.components.state;
   if (!state || state.kind !== "keplerian") {
     throw new Error(
-      `Celestial entity is missing Keplerian state: ${entity.id}`,
+      `Keplerian entity is missing Keplerian state: ${entity.id}`,
     );
   }
   return state;
@@ -264,14 +241,14 @@ function populateGenericWorldFromSetup(
   world: World,
   entityConfigs: EntityConfig[],
   controllableBodies: ControllableBodiesSetup,
-  planetsAndStars: PlanetsAndStarsSetup,
+  keplerianBodies: KeplerianBodiesSetup,
 ): void {
   for (const entityConfig of entityConfigs) {
     addGenericEntityById(
       world,
       entityConfig,
       controllableBodies,
-      planetsAndStars,
+      keplerianBodies,
     );
   }
 }
@@ -280,7 +257,7 @@ function addGenericEntityById(
   world: World,
   entityConfig: EntityConfig,
   controllableBodies: ControllableBodiesSetup,
-  planetsAndStars: PlanetsAndStarsSetup,
+  keplerianBodies: KeplerianBodiesSetup,
 ): void {
   const id = entityConfig.id;
   const controlledBodyIndex = controllableBodies.controllableBodies.findIndex(
@@ -291,17 +268,9 @@ function addGenericEntityById(
     return;
   }
 
-  const planetIndex = planetsAndStars.planets.findIndex(
-    (planet) => planet.id === id,
-  );
-  if (planetIndex >= 0) {
-    addPlanetEntity(world, planetsAndStars, planetIndex);
-    return;
-  }
-
-  const starIndex = planetsAndStars.stars.findIndex((star) => star.id === id);
-  if (starIndex >= 0) {
-    addStarEntity(world, planetsAndStars, starIndex);
+  const bodyIndex = keplerianBodies.bodies.findIndex((body) => body.id === id);
+  if (bodyIndex >= 0) {
+    addKeplerianBodyEntity(world, keplerianBodies, bodyIndex);
     return;
   }
 
@@ -328,67 +297,40 @@ function addControlledBodyEntity(
   }
 }
 
-function addPlanetEntity(
+function addKeplerianBodyEntity(
   world: World,
-  setup: PlanetsAndStarsSetup,
+  setup: KeplerianBodiesSetup,
   index: number,
 ): void {
-  const planet = setup.planets[index];
-  addEntityRecord(world, planet);
-  world.entityStates.push(planet);
+  const body = setup.bodies[index];
+  addEntityRecord(world, body);
+  world.entityStates.push(body);
   world.axialSpins.push({
-    angularSpeedRadPerSec: planet.angularSpeedRadPerSec,
-    id: planet.id,
-    rotationAxis: planet.rotationAxis,
-    state: planet,
+    angularSpeedRadPerSec: body.angularSpeedRadPerSec,
+    id: body.id,
+    rotationAxis: body.rotationAxis,
+    state: body,
   });
-  const physics = setup.planetPhysics[index];
+  const physics = setup.physics[index];
   if (physics) {
     world.gravityMasses.push({
       density: physics.density,
-      id: planet.id,
+      id: body.id,
       mass: physics.mass,
-      state: planet,
+      state: body,
     });
     world.collisionSpheres.push({
-      id: planet.id,
+      id: body.id,
       radius: physics.physicalRadius,
-      state: planet,
+      state: body,
     });
   }
-}
-
-function addStarEntity(
-  world: World,
-  setup: PlanetsAndStarsSetup,
-  index: number,
-): void {
-  const star = setup.stars[index];
-  addEntityRecord(world, star);
-  world.entityStates.push(star);
-  world.axialSpins.push({
-    angularSpeedRadPerSec: star.angularSpeedRadPerSec,
-    id: star.id,
-    rotationAxis: star.rotationAxis,
-    state: star,
-  });
-  const physics = setup.starPhysics[index];
-  if (physics) {
-    world.gravityMasses.push({
-      density: physics.density,
-      id: star.id,
-      mass: physics.mass,
-      state: star,
-    });
-    world.collisionSpheres.push({
-      id: star.id,
-      radius: physics.physicalRadius,
-      state: star,
-    });
+  const luminosity = setup.lightEmitterLuminosities[index];
+  if (luminosity !== undefined) {
     world.lightEmitters.push({
-      id: star.id,
-      luminosity: physics.luminosity,
-      state: star,
+      id: body.id,
+      luminosity,
+      state: body,
     });
   }
 }
