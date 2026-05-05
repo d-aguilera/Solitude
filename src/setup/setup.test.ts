@@ -74,14 +74,8 @@ describe("createWorld", () => {
     expect(setup.world.lightEmitters.map((light) => light.id)).toEqual([
       "planet:sun",
     ]);
-    expect(setup.world.entities).toContainEqual({
-      id: "ship:main",
-      legacyKind: "ship",
-    });
-    expect(setup.world.entities).toContainEqual({
-      id: "planet:sun",
-      legacyKind: "star",
-    });
+    expect(setup.world.entities).toContainEqual({ id: "ship:main" });
+    expect(setup.world.entities).toContainEqual({ id: "planet:sun" });
   });
 
   it("fails clearly when no plugin contributed a main focus entity id", () => {

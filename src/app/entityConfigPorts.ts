@@ -1,8 +1,4 @@
-import type {
-  AngularVelocity,
-  EntityId,
-  LegacyEntityKind,
-} from "../domain/domainPorts";
+import type { AngularVelocity, EntityId } from "../domain/domainPorts";
 import type { LocalFrame } from "../domain/localFrame";
 import type { Mat3 } from "../domain/mat3";
 import type { Vec3 } from "../domain/vec3";
@@ -76,5 +72,4 @@ export interface EntityComponentsConfig {
 export interface EntityConfig {
   components: EntityComponentsConfig;
   id: EntityId;
-  legacyKind?: LegacyEntityKind;
 }

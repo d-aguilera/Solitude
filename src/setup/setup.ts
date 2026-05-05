@@ -287,12 +287,7 @@ function addGenericEntityById(
     (body) => body.id === id,
   );
   if (controlledBodyIndex >= 0) {
-    addControlledBodyEntity(
-      world,
-      controllableBodies,
-      controlledBodyIndex,
-      entityConfig.legacyKind,
-    );
+    addControlledBodyEntity(world, controllableBodies, controlledBodyIndex);
     return;
   }
 
@@ -300,18 +295,13 @@ function addGenericEntityById(
     (planet) => planet.id === id,
   );
   if (planetIndex >= 0) {
-    addPlanetEntity(
-      world,
-      planetsAndStars,
-      planetIndex,
-      entityConfig.legacyKind,
-    );
+    addPlanetEntity(world, planetsAndStars, planetIndex);
     return;
   }
 
   const starIndex = planetsAndStars.stars.findIndex((star) => star.id === id);
   if (starIndex >= 0) {
-    addStarEntity(world, planetsAndStars, starIndex, entityConfig.legacyKind);
+    addStarEntity(world, planetsAndStars, starIndex);
     return;
   }
 
@@ -322,10 +312,9 @@ function addControlledBodyEntity(
   world: World,
   setup: ControllableBodiesSetup,
   index: number,
-  legacyKind: EntityRecord["legacyKind"] = "ship",
 ): void {
   const controlledBody = setup.controllableBodies[index];
-  addEntityRecord(world, controlledBody, legacyKind);
+  addEntityRecord(world, controlledBody);
   world.entityStates.push(controlledBody);
   world.controllableBodies.push(controlledBody);
   const physics = setup.controlledBodyPhysics[index];
@@ -343,10 +332,9 @@ function addPlanetEntity(
   world: World,
   setup: PlanetsAndStarsSetup,
   index: number,
-  legacyKind: EntityRecord["legacyKind"] = "planet",
 ): void {
   const planet = setup.planets[index];
-  addEntityRecord(world, planet, legacyKind);
+  addEntityRecord(world, planet);
   world.entityStates.push(planet);
   world.axialSpins.push({
     angularSpeedRadPerSec: planet.angularSpeedRadPerSec,
@@ -374,10 +362,9 @@ function addStarEntity(
   world: World,
   setup: PlanetsAndStarsSetup,
   index: number,
-  legacyKind: EntityRecord["legacyKind"] = "star",
 ): void {
   const star = setup.stars[index];
-  addEntityRecord(world, star, legacyKind);
+  addEntityRecord(world, star);
   world.entityStates.push(star);
   world.axialSpins.push({
     angularSpeedRadPerSec: star.angularSpeedRadPerSec,
@@ -406,12 +393,8 @@ function addStarEntity(
   }
 }
 
-function addEntityRecord(
-  world: World,
-  entity: EntityRecord,
-  legacyKind?: EntityRecord["legacyKind"],
-): void {
-  const record: EntityRecord = { id: entity.id, legacyKind };
+function addEntityRecord(world: World, entity: EntityRecord): void {
+  const record: EntityRecord = { id: entity.id };
   world.entities.push(record);
   world.entityIndex.set(record.id, record);
 }

@@ -23,7 +23,7 @@ Next focused change:
 - Choose the next post-camera-rig seam:
   - runtime operator-mode switching for focus, active camera rig, controls, and HUD emphasis;
   - remaining spacecraft-control port cleanup: genericize/remove app-level attitude command/control-plugin seams when there is a capability-mediated replacement.
-  - entity-model cleanup now unblocked by playback: remove playback-driven `legacyKind`/category bridges from core setup.
+  - entity-model cleanup now unblocked by playback: remove remaining category-shaped setup/render ports and adapters.
 
 Success criteria:
 
@@ -40,8 +40,8 @@ Success criteria:
 - `rg "@deprecated" src` remains empty.
 - `rg "setupShips|ShipsSetup|createShipsFromConfig|ShipPhysicsConfig|ShipInitialStateConfig|ShipPhysics" src` should remain empty; core setup should stay controllable-body-first.
 - `computeShipOrbitReadoutInto` should remain absent.
-- setup classification should not branch on `entity.metadata?.legacyKind`; `legacyKind` is only copied to world records for compatibility.
-- render scene adaptation should not read `legacyKind`; use `renderable.role`.
+- `rg "legacyKind|LegacyEntityKind" src` remains empty.
+- render scene adaptation should use `renderable.role`.
 - `rg "ShipBody" src` remains empty.
 - trajectory planning should not read `legacyKind`.
 - Typecheck and tests pass.
@@ -148,6 +148,11 @@ Success criteria:
   - snapshot metadata records `focusEntityId`;
   - removed `PlaybackShipSnapshot`, `PlaybackRotatingBodySnapshot`, and v1 `ships` / `planets` / `stars` apply/capture paths;
   - migrated `random-trip` to the new schema for interactive refactor testing.
+- 2026-05-05: Removed `legacyKind` from source:
+  - deleted `LegacyEntityKind` and `EntityRecord.legacyKind` from domain ports;
+  - deleted `EntityConfig.legacyKind` from app config ports;
+  - removed solar-system `legacyKind` contributions and setup copy-through;
+  - setup/world records now carry entity identity only.
 
 ## Decision Log
 
@@ -330,7 +335,7 @@ Classification:
 - Compatibility-only or visual-role names:
   - `src/setup/setupControllableBodies.ts`: adapter from controllable entity configs into controlled-body setup. Keep until generic setup no longer needs the adapter.
   - `src/plugins/playback/*`: playback snapshots now use generic `entities` plus `focusEntityId`; diagnostic field names may still contain historical spacecraft wording where they describe spacecraft-specific measurements.
-  - `src/render/sceneAdapter.ts`, `src/app/scenePorts.ts`, trajectory IDs in `src/plugins/trajectories/*`, and tests with `legacyKind: "ship"`: many `ship` names are visual roles or compatibility identifiers. Rename only when render/trajectory schemas gain generic role support.
+  - `src/render/sceneAdapter.ts`, `src/app/scenePorts.ts`, trajectory IDs in `src/plugins/trajectories/*`, and tests with spacecraft ids: many `ship` names are visual roles or compatibility identifiers. Rename only when render/trajectory schemas gain generic role support.
   - `src/plugins/solarSystem/ships.ts`, `src/plugins/solarSystem/ship.obj`, related tests/scripts: scenario spacecraft content, not core architecture.
 
 First implementation order:
@@ -520,4 +525,4 @@ Unresolved:
 
 - Add runtime operator-mode switching for focus, active camera rig, controls, and HUD emphasis.
 - Decide how axial views relate to active operator modes.
-- Remove playback-unblocked category bridges from core setup/domain where `legacyKind` and planet/star/ship adapters remain.
+- Remove category-shaped setup/render ports and adapters where planet/star/ship names remain in core-facing code.

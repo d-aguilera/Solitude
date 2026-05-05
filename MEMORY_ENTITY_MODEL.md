@@ -111,7 +111,7 @@ Systems should query capabilities rather than categories:
 
 ## Watch-Outs
 
-- Playback no longer needs `legacyKind`; the remaining `legacyKind` and category-name cleanup is setup/render/trajectory debt.
+- `legacyKind` has been removed from source; the remaining category-name cleanup is setup/render/trajectory vocabulary and adapter shape debt.
 - Legacy physics config item types still exist as setup/plugin-local adapter shapes; shared config arrays have been removed.
 - Some scene object kinds are still `ship` / `planet` / `star` because render labels, culling, and LOD use those visual roles.
 - Tests may use tiny fake worlds with spacecraft/body fixtures; keep them generic unless they are explicitly testing compatibility.

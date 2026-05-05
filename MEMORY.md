@@ -130,9 +130,9 @@
 - Core no longer exposes the transitional `mainControlledBody` bridge from setup/runtime objects; config now names the focused entity via `mainFocusEntityId`.
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
 - Core setup constructs generic controllable bodies via `setupControllableBodies`; scenario plugins may still provide spacecraft content and legacy render roles.
-- Core setup classifies entities from capabilities/components rather than `legacyKind`; `legacyKind` is still copied through for remaining render/trajectory compatibility, but playback no longer depends on it.
-- Render scene adaptation uses explicit `renderable.role` values rather than `legacyKind`; current roles are `controlledBody`, `celestialBody`, and `lightEmitter`.
-- Trajectory planning uses component/capability checks rather than `legacyKind`.
+- Core setup classifies entities from capabilities/components; `legacyKind` has been removed from source.
+- Render scene adaptation uses explicit `renderable.role` values; current roles are `controlledBody`, `celestialBody`, and `lightEmitter`.
+- Trajectory planning uses component/capability checks.
 - Generic core logic uses controlled-body wording for collisions, camera positioning, rotation, and orbit readouts; remaining `ship` names in core-facing files are compatibility IDs, legacy render roles, or plugin/scenario spacecraft content.
 - Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`; old `ships` / `planets` / `stars` playback snapshot buckets are no longer supported.
 - Default runtime uses Canvas 2D; WebGL renderer exists but is not wired by default.

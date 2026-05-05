@@ -29,7 +29,6 @@ function buildSolarSystemBodyEntities({
     const renderConfig = render.find((item) => item.id === body.id);
     entities.push({
       id: body.id,
-      legacyKind: body.kind,
       components: {
         axialSpin: {
           angularSpeedRadPerSec: body.angularSpeedRadPerSec,
@@ -77,7 +76,6 @@ function buildSolarSystemShipEntities({
     const renderConfig = render.find((item) => item.id === ship.id);
     entities.push({
       id: ship.id,
-      legacyKind: "ship",
       components: {
         controllable: {
           enabled: true,
