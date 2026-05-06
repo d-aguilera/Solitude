@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./config/*": "./src/config/*.ts"
+  },
   "dependencies": {
     "@solitude/browser": "0.0.0",
     "@solitude/engine": "0.0.0"

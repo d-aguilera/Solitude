@@ -262,7 +262,6 @@ Recommended next code slice:
 
 1. Start moving Solitude-owned source into `packages/solitude/src`.
 2. Good next candidates:
-   - `src/config/worldAndSceneConfig.ts`;
    - `src/bootstrap.ts`;
    - `src/plugins`, after package imports are ready.
 3. Keep using thin `src/*` compatibility shims while other packages still import
@@ -270,6 +269,31 @@ Recommended next code slice:
 4. Add real package root exports only as consumers are updated.
 5. Keep the root app entry working until `index.html` and Vite entry ownership
    move cleanly.
+
+## Completed Slice: Package Split 13
+
+Status: implemented after `Package split 12`.
+
+What changed:
+
+1. Moved Solitude's default `buildWorldAndSceneConfig` factory from
+   `src/config/worldAndSceneConfig.ts` to
+   `packages/solitude/src/config/worldAndSceneConfig.ts`.
+2. Updated the moved config to import engine types/helpers through
+   `@solitude/engine` subpaths.
+3. Added a transitional `src/config/worldAndSceneConfig.ts` re-export shim.
+4. Added a `solitude` package subpath export for `./config/*`.
+
+Notes:
+
+- The `WorldAndSceneConfig` type remains engine-owned.
+- The default main-view camera offset remains Solitude-owned product
+  composition.
+
+Verification:
+
+- Prettier, `npm run typecheck`, `npm run test`, and
+  `npm run typecheck --workspaces --if-present` passed for this slice.
 
 ## Completed Slice: Package Split 12
 
