@@ -66,7 +66,8 @@ function resizeCanvases(container: Element, views: LayoutView[]): void {
 
   for (const view of views) {
     if (view.layout.kind !== "pip") continue;
-    const { canvas, layout } = view;
+    const canvas = view.canvas;
+    const layout = view.layout;
     canvas.style.left = "auto";
     canvas.style.right = "auto";
     canvas.style.top = "auto";

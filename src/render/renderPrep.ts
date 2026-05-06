@@ -19,20 +19,19 @@ export function toRenderable(
   obj: ControlledBodySceneObject | BodySceneObject | LightEmitterSceneObject,
   renderCache: RenderFrameCache,
 ): Renderable {
-  const { applyTransform, color: baseColor, lineWidth, mesh } = obj;
   let worldPoints: Vec3[];
 
-  if (applyTransform) {
+  if (obj.applyTransform) {
     worldPoints = getCachedWorldPoints(renderCache, obj);
   } else {
     // Polyline or other world-space-only geometry: no transform, no copies.
-    worldPoints = mesh.points;
+    worldPoints = obj.mesh.points;
   }
 
   return {
-    mesh,
+    mesh: obj.mesh,
     worldPoints,
-    lineWidth,
-    baseColor,
+    lineWidth: obj.lineWidth,
+    baseColor: obj.color,
   };
 }

@@ -26,8 +26,8 @@ const vNormalScratch: Vec3 = vec3.zero();
  *    where n is the outward normal from body center to controlled body.
  */
 export function resolveCollisions(world: World): void {
-  const { collisionSpheres, controllableBodies } = world;
-
+  const collisionSpheres = world.collisionSpheres;
+  const controllableBodies = world.controllableBodies;
   const sphereCount = collisionSpheres.length;
 
   for (let si = 0; si < controllableBodies.length; si++) {

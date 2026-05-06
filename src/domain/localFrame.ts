@@ -58,7 +58,9 @@ function fromUp(referenceUp: Readonly<Vec3>): LocalFrame {
  *  Columns are basis vectors: [right | forward | up].
  */
 function intoMat3(into: Mat3, frame: Readonly<LocalFrame>): Mat3 {
-  const { right, forward, up } = frame;
+  const right = frame.right;
+  const forward = frame.forward;
+  const up = frame.up;
   const into0 = into[0];
   into0[0] = right.x;
   into0[1] = forward.x;

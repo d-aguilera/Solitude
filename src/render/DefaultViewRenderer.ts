@@ -46,7 +46,8 @@ export class DefaultViewRenderer implements ViewRenderer {
       renderSegments = true,
       renderBodyLabels = true,
     } = params;
-    const { width: screenWidth, height: screenHeight } = surface;
+    const screenWidth = surface.width;
+    const screenHeight = surface.height;
 
     if (this.projectionService) {
       this.projectionService.reset(camera, screenWidth, screenHeight);

@@ -1,4 +1,5 @@
 import type { HudGrid } from "../../app/hudPorts";
+import type { RGB } from "../../app/scenePorts";
 import type {
   Rasterizer,
   RenderedBodyLabel,
@@ -7,6 +8,7 @@ import type {
   RenderedSegment,
   TextMetrics,
 } from "../../render/renderPorts";
+import type { ScreenPoint } from "../../render/scrn";
 
 export class WebGLRasterizer implements Rasterizer {
   private gl: WebGL2RenderingContext;
@@ -287,17 +289,48 @@ export class WebGLRasterizer implements Rasterizer {
     const data = new Float32Array(vertexCount * 6);
 
     let offset = 0;
+    let face: RenderedFace;
+    let p0: ScreenPoint, p1: ScreenPoint, p2: ScreenPoint;
+    let color: RGB;
     for (let i = 0; i < count; i++) {
-      const { p0, p1, p2, color } = faces[i];
-      const { x: x0, y: y0, depth: depth0 } = p0;
-      const { x: x1, y: y1, depth: depth1 } = p1;
-      const { x: x2, y: y2, depth: depth2 } = p2;
+      face = faces[i];
+      p0 = face.p0;
+      p1 = face.p1;
+      p2 = face.p2;
+      color = face.color;
       const r = color.r / 255;
       const g = color.g / 255;
       const b = color.b / 255;
-      offset = this.writeFaceVertex(data, offset, x0, y0, depth0, r, g, b);
-      offset = this.writeFaceVertex(data, offset, x1, y1, depth1, r, g, b);
-      offset = this.writeFaceVertex(data, offset, x2, y2, depth2, r, g, b);
+      offset = this.writeFaceVertex(
+        data,
+        offset,
+        p0.x,
+        p0.y,
+        p0.depth,
+        r,
+        g,
+        b,
+      );
+      offset = this.writeFaceVertex(
+        data,
+        offset,
+        p1.x,
+        p1.y,
+        p1.depth,
+        r,
+        g,
+        b,
+      );
+      offset = this.writeFaceVertex(
+        data,
+        offset,
+        p2.x,
+        p2.y,
+        p2.depth,
+        r,
+        g,
+        b,
+      );
     }
 
     gl.bindVertexArray(this.faceVAO);
@@ -347,15 +380,16 @@ export class WebGLRasterizer implements Rasterizer {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.lineVBO);
 
     // We’ll draw each polyline separately to honor lineWidth and color.
+    let polyline: RenderedPolyline;
     for (let i = 0; i < count; i++) {
-      const { points, cssColor, lineWidth } = polylines[i];
-      if (points.length < 2) continue;
+      polyline = polylines[i];
+      if (polyline.points.length < 2) continue;
 
       // Parse cssColor "rgb(r,g,b)"
       let rr = 1,
         gg = 1,
         bb = 1;
-      const m = cssColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      const m = polyline.cssColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
       if (m) {
         rr = Number(m[1]) / 255;
         gg = Number(m[2]) / 255;
@@ -363,12 +397,12 @@ export class WebGLRasterizer implements Rasterizer {
       }
 
       // One vertex per ScreenPoint
-      const n = points.length;
+      const n = polyline.points.length;
       const data = new Float32Array(n * 6);
       let offset = 0;
 
       for (let i = 0; i < n; i++) {
-        const p = points[i];
+        const p = polyline.points[i];
         data[offset++] = p.x;
         data[offset++] = p.y;
         data[offset++] = p.depth;
@@ -381,7 +415,7 @@ export class WebGLRasterizer implements Rasterizer {
 
       // WebGL2 core line width is effectively 1 on most platforms;
       // setting gl.lineWidth may not have visible effect, but we call it anyway.
-      gl.lineWidth(lineWidth);
+      gl.lineWidth(polyline.lineWidth);
 
       gl.drawArrays(gl.LINE_STRIP, 0, n);
     }
@@ -409,13 +443,17 @@ export class WebGLRasterizer implements Rasterizer {
 
     const data = new Float32Array(2 * 6);
 
+    let segment: RenderedSegment;
+    let start: ScreenPoint, end: ScreenPoint;
     for (let i = 0; i < count; i++) {
-      const { start, end, cssColor, lineWidth } = segments[i];
+      segment = segments[i];
+      start = segment.start;
+      end = segment.end;
 
       let rr = 1,
         gg = 1,
         bb = 1;
-      const m = cssColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      const m = segment.cssColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
       if (m) {
         rr = Number(m[1]) / 255;
         gg = Number(m[2]) / 255;
@@ -442,7 +480,7 @@ export class WebGLRasterizer implements Rasterizer {
 
       // WebGL2 core line width is effectively 1 on most platforms;
       // setting gl.lineWidth may not have visible effect, but we call it anyway.
-      gl.lineWidth(lineWidth);
+      gl.lineWidth(segment.lineWidth);
       gl.drawArrays(gl.LINES, 0, 2);
     }
 

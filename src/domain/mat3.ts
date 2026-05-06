@@ -30,7 +30,9 @@ function copy(from: Mat3, to: Mat3): Mat3 {
  *   v' = v.x * r + v.y * f + v.z * u
  */
 function mulVec3Into(out: Vec3, R: Readonly<Mat3>, v: Readonly<Vec3>): void {
-  const { x, y, z } = v,
+  const x = v.x,
+    y = v.y,
+    z = v.z,
     R0 = R[0],
     R1 = R[1],
     R2 = R[2];
@@ -67,7 +69,9 @@ function mulMat3Into(into: Mat3, A: Readonly<Mat3>, B: Readonly<Mat3>): void {
 }
 
 function rotAxisInto(into: Mat3, axis: Readonly<Vec3>, angle: number): void {
-  let { x, y, z } = axis;
+  let x = axis.x,
+    y = axis.y,
+    z = axis.z;
 
   const len = Math.hypot(x, y, z);
 

@@ -26,7 +26,7 @@ export function applyControlledBodyRotation(
   const omega = controlledBody.angularVelocity;
   if (omega.roll === 0 && omega.pitch === 0 && omega.yaw === 0) return;
 
-  const { frame } = controlledBody;
+  const frame = controlledBody.frame;
   // Convert roll/pitch/yaw rates into a world-space angular velocity vector.
   omegaWorldScratch.x =
     frame.forward.x * omega.roll +

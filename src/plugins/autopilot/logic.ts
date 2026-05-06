@@ -306,11 +306,11 @@ function commandFromWorldAxis(
   axisWorld: Vec3,
   speed: number,
 ): AttitudeCommand {
-  const { forward, right, up } = state.frame;
+  const frame = state.frame;
   return {
-    roll: vec3.dot(axisWorld, forward) * speed,
-    pitch: vec3.dot(axisWorld, right) * speed,
-    yaw: vec3.dot(axisWorld, up) * speed,
+    roll: vec3.dot(axisWorld, frame.forward) * speed,
+    pitch: vec3.dot(axisWorld, frame.right) * speed,
+    yaw: vec3.dot(axisWorld, frame.up) * speed,
   };
 }
 
@@ -469,19 +469,18 @@ function computeCircleNowState(
   vec3.subInto(circleVRelScratch, ship.velocity, primary.body.velocity);
   const radialSpeed = vec3.dot(circleRHatScratch, circleVRelScratch);
 
-  const { tangentialSpeed, hasTangentialDir } =
-    computeCircleTangentialDirection(
-      ship,
-      circleRHatScratch,
-      circleVRelScratch,
-      radialSpeed,
-      circleTScratch,
-    );
+  const direction = computeCircleTangentialDirection(
+    ship,
+    circleRHatScratch,
+    circleVRelScratch,
+    radialSpeed,
+    circleTScratch,
+  );
 
   circleStateScratch.r = r;
   circleStateScratch.radialSpeed = radialSpeed;
-  circleStateScratch.tangentialSpeed = tangentialSpeed;
-  circleStateScratch.hasTangentialDir = hasTangentialDir;
+  circleStateScratch.tangentialSpeed = direction.tangentialSpeed;
+  circleStateScratch.hasTangentialDir = direction.hasTangentialDir;
   return circleStateScratch;
 }
 

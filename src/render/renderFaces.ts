@@ -36,18 +36,16 @@ export function renderFacesInto(
   sortFaces: boolean = true,
   projectionService?: ProjectionService,
 ): number {
-  const { objects, lights } = scene;
-
   const projection =
     projectionService ??
     new ProjectionService(camera, screenWidth, screenHeight);
 
   const faceList = buildFaces(
-    objects,
+    scene.objects,
     camera,
     screenWidth,
     screenHeight,
-    lights,
+    scene.lights,
     renderCache,
     projection,
     objectsFilter,
@@ -129,17 +127,21 @@ function buildFaces(
         : mesh.points;
       const cameraPoints =
         projectionService.worldPointsToCameraPointsNoClip(worldPoints);
-      const { faces } = mesh;
+      const faces = mesh.faces;
       const worldFaceNormals = getCachedWorldFaceNormals(renderCache, obj);
 
-      for (let fi = 0; fi < faces.length; fi++) {
-        const face = faces[fi];
-        const i0 = face[0];
-        const i1 = face[1];
-        const i2 = face[2];
-        const v0 = worldPoints[i0];
-        const v1 = worldPoints[i1];
-        const v2 = worldPoints[i2];
+      const facesLength = faces.length;
+      let face: number[];
+      let i0: number, i1: number, i2: number;
+      let v0: Vec3, v1: Vec3, v2: Vec3;
+      for (let fi = 0; fi < facesLength; fi++) {
+        face = faces[fi];
+        i0 = face[0];
+        i1 = face[1];
+        i2 = face[2];
+        v0 = worldPoints[i0];
+        v1 = worldPoints[i1];
+        v2 = worldPoints[i2];
 
         let n: Vec3;
 
@@ -326,13 +328,15 @@ function shadeFacesInto(into: RenderedFace[], count: number): void {
     into.length = n; // grow only
   }
 
+  let baseColor: RGB;
+
   for (let i = 0; i < n; i++) {
     const face = faceEntryScratch[i];
-    const { r: baseR, g: baseG, b: baseB } = face.baseColor;
+    baseColor = face.baseColor;
     const k = 0.2 + 0.8 * face.intensity;
-    const r = Math.round(baseR * k);
-    const g = Math.round(baseG * k);
-    const b = Math.round(baseB * k);
+    const r = Math.round(baseColor.r * k);
+    const g = Math.round(baseColor.g * k);
+    const b = Math.round(baseColor.b * k);
 
     let entry = into[i];
     if (!entry) {

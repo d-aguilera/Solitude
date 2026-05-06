@@ -57,11 +57,11 @@ function setCameraRelativeToControlledBody(
   controlledBody: ControlledBody,
   localOffset: Vec3,
 ): void {
-  const { right, forward, up } = controlledBody.frame;
+  const frame = controlledBody.frame;
 
-  vec3.scaleInto(offsetRightScratch, localOffset.x, right);
-  vec3.scaleInto(offsetForwardScratch, localOffset.y, forward);
-  vec3.scaleInto(offsetUpScratch, localOffset.z, up);
+  vec3.scaleInto(offsetRightScratch, localOffset.x, frame.right);
+  vec3.scaleInto(offsetForwardScratch, localOffset.y, frame.forward);
+  vec3.scaleInto(offsetUpScratch, localOffset.z, frame.up);
 
   // worldOffsetScratch = offsetRightScratch + offsetForwardScratch + offsetUpScratch
   vec3.addInto(worldOffsetScratch, offsetRightScratch, offsetForwardScratch);

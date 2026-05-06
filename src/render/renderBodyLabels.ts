@@ -254,8 +254,13 @@ function layoutLabels(
 
   placedLabelCount = 0;
 
+  let item: SortedScratchItem;
+  let body: LabelBodySceneObject;
+  let distance: number;
   for (let i = 0; i < sortedCount; i++) {
-    const { body, distance } = sortedScratch[i];
+    item = sortedScratch[i];
+    body = item.body;
+    distance = item.distance;
     if (!projectInto(ndcScratch, body.position)) {
       continue;
     }

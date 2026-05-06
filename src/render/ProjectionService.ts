@@ -52,6 +52,10 @@ const ndcBScratch: NdcPoint = ndc.zero();
 
 const clipChangedScratch = { value: false };
 
+let x1: number, y1: number, z1: number;
+let x2: number, y2: number, z2: number;
+let dx: number, dy: number, dz: number;
+
 /**
  * Scratch polygons used during triangle clipping.
  */
@@ -234,7 +238,6 @@ export class ProjectionService {
    * Return true if a camera-space point is inside the half-space of a given plane.
    */
   private isInsidePlane(p: Vec3, plane: FrustumPlane): boolean {
-    const { x, y, z } = p;
     let limitX: number;
     let limitY: number;
     let limitZ: number;
@@ -242,29 +245,29 @@ export class ProjectionService {
     switch (plane) {
       case "NEAR":
         limitY = NEAR;
-        return y >= limitY;
+        return p.y >= limitY;
       case "FAR":
         limitY = FAR;
-        return y <= limitY;
+        return p.y <= limitY;
       case "LEFT": {
-        if (y <= 0 || !Number.isFinite(y)) return false;
-        limitX = y * this.tanHalfFovX;
-        return x >= -limitX;
+        if (p.y <= 0 || !Number.isFinite(p.y)) return false;
+        limitX = p.y * this.tanHalfFovX;
+        return p.x >= -limitX;
       }
       case "RIGHT": {
-        if (y <= 0 || !Number.isFinite(y)) return false;
-        limitX = y * this.tanHalfFovX;
-        return x <= limitX;
+        if (p.y <= 0 || !Number.isFinite(p.y)) return false;
+        limitX = p.y * this.tanHalfFovX;
+        return p.x <= limitX;
       }
       case "TOP": {
-        if (y <= 0 || !Number.isFinite(y)) return false;
-        limitZ = y * this.tanHalfFovY;
-        return z >= -limitZ;
+        if (p.y <= 0 || !Number.isFinite(p.y)) return false;
+        limitZ = p.y * this.tanHalfFovY;
+        return p.z >= -limitZ;
       }
       case "BOTTOM": {
-        if (y <= 0 || !Number.isFinite(y)) return false;
-        limitZ = y * this.tanHalfFovY;
-        return z <= limitZ;
+        if (p.y <= 0 || !Number.isFinite(p.y)) return false;
+        limitZ = p.y * this.tanHalfFovY;
+        return p.z <= limitZ;
       }
     }
   }
@@ -279,11 +282,15 @@ export class ProjectionService {
     q: Vec3,
     plane: FrustumPlane,
   ): void {
-    const { x: x1, y: y1, z: z1 } = p;
-    const { x: x2, y: y2, z: z2 } = q;
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const dz = z2 - z1;
+    x1 = p.x;
+    y1 = p.y;
+    z1 = p.z;
+    x2 = q.x;
+    y2 = q.y;
+    z2 = q.z;
+    dx = x2 - x1;
+    dy = y2 - y1;
+    dz = z2 - z1;
 
     let denom: number;
     let t = 0;
@@ -610,11 +617,15 @@ export class ProjectionService {
       const outCode = useA ? codeA : codeB;
       const p = useA ? a : b;
       const q = useA ? b : a;
-      const { x: x1, y: y1, z: z1 } = p;
-      const { x: x2, y: y2, z: z2 } = q;
-      const dx = x2 - x1;
-      const dy = y2 - y1;
-      const dz = z2 - z1;
+      x1 = p.x;
+      y1 = p.y;
+      z1 = p.z;
+      x2 = q.x;
+      y2 = q.y;
+      z2 = q.z;
+      dx = x2 - x1;
+      dy = y2 - y1;
+      dz = z2 - z1;
 
       let t = 0;
       if (outCode & OUT_NEAR) {

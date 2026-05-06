@@ -1,5 +1,4 @@
 import type { HudGrid } from "../../app/hudPorts";
-import type { RGB } from "../../app/scenePorts";
 import { rgbToQuantizedCss } from "../../render/color";
 import { LABEL_FONT } from "../../render/labelStyle";
 import type {
@@ -22,7 +21,6 @@ let p: Point;
 let p0: Point;
 let p1: Point;
 let p2: Point;
-let color: RGB;
 let cssColor: string;
 let textMetrics: TextMetrics;
 let hudLineHeight = 0;
@@ -109,9 +107,13 @@ export class CanvasRasterizer implements Rasterizer {
   drawFaces(faces: RenderedFace[], count: number): void {
     ctx = this.ctx;
 
+    let face: RenderedFace;
     for (let i = 0; i < count; i++) {
-      ({ color, p0, p1, p2 } = faces[i]);
-      cssColor = rgbToQuantizedCss(color);
+      face = faces[i];
+      p0 = face.p0;
+      p1 = face.p1;
+      p2 = face.p2;
+      cssColor = rgbToQuantizedCss(face.color);
       ctx.fillStyle = cssColor;
       ctx.strokeStyle = cssColor;
       ctx.beginPath();
@@ -126,7 +128,8 @@ export class CanvasRasterizer implements Rasterizer {
 
   drawHud(hud: HudGrid): void {
     ctx = this.ctx;
-    const { width: canvasWidth, height: canvasHeight } = ctx.canvas;
+    const canvasWidth = ctx.canvas.width;
+    const canvasHeight = ctx.canvas.height;
     const hudLength = hud.length;
 
     ctx.font = "16px monospace";
@@ -173,51 +176,55 @@ export class CanvasRasterizer implements Rasterizer {
     const hudCenterMid = hudInnerLeft + (hudInnerRight - hudInnerLeft) * 0.66;
     const hudCenterRight = hudInnerLeft + (hudInnerRight - hudInnerLeft) * 0.83;
 
+    let text: string;
+
     // Draw right-aligned text (fifth column)
     ctx.textAlign = "right";
     for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
-      const text = hud[rowIndex][4];
+      text = hud[rowIndex][4];
       if (text) ctx.fillText(text, hudInnerRight, hudRowsScratch[rowIndex]);
     }
 
     // Draw ~83% centered text (fourth column)
     ctx.textAlign = "center";
     for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
-      const text = hud[rowIndex][3];
+      text = hud[rowIndex][3];
       if (text) ctx.fillText(text, hudCenterRight, hudRowsScratch[rowIndex]);
     }
 
     // Draw 66% centered text (third column)
     ctx.textAlign = "center";
     for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
-      const text = hud[rowIndex][2];
+      text = hud[rowIndex][2];
       if (text) ctx.fillText(text, hudCenterMid, hudRowsScratch[rowIndex]);
     }
 
     // Draw 33% centered text
     ctx.textAlign = "center";
     for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
-      const text = hud[rowIndex][1];
+      text = hud[rowIndex][1];
       if (text) ctx.fillText(text, hudCenterLeft, hudRowsScratch[rowIndex]);
     }
 
     // Draw left-aligned text
     ctx.textAlign = "left";
     for (let rowIndex = 0; rowIndex < hudLength; rowIndex++) {
-      const text = hud[rowIndex][0];
+      text = hud[rowIndex][0];
       if (text) ctx.fillText(text, hudInnerLeft, hudRowsScratch[rowIndex]);
     }
   }
 
   drawPolylines(polylines: RenderedPolyline[], count: number): void {
     ctx = this.ctx;
-
+    let polyline: RenderedPolyline;
     for (let i = 0; i < count; i++) {
-      const { cssColor, lineWidth, pointCount, points } = polylines[i];
+      polyline = polylines[i];
+      const pointCount = polyline.pointCount;
       if (pointCount < 2) continue;
-      ctx.strokeStyle = cssColor;
-      ctx.lineWidth = lineWidth;
+      ctx.strokeStyle = polyline.cssColor;
+      ctx.lineWidth = polyline.lineWidth;
       ctx.beginPath();
+      const points = polyline.points;
       p = points[0];
       ctx.moveTo(p.x, p.y);
       for (let i = 1; i < pointCount; i++) {
@@ -230,11 +237,13 @@ export class CanvasRasterizer implements Rasterizer {
 
   drawSegments(segments: RenderedSegment[], count: number): void {
     ctx = this.ctx;
-
+    let segment: RenderedSegment;
     for (let i = 0; i < count; i++) {
-      const { cssColor, lineWidth, start, end } = segments[i];
-      ctx.strokeStyle = cssColor;
-      ctx.lineWidth = lineWidth;
+      segment = segments[i];
+      const start = segment.start;
+      const end = segment.end;
+      ctx.strokeStyle = segment.cssColor;
+      ctx.lineWidth = segment.lineWidth;
       ctx.beginPath();
       ctx.moveTo(start.x, start.y);
       ctx.lineTo(end.x, end.y);

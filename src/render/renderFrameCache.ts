@@ -54,10 +54,11 @@ function ensureWorldPoints(cache: RenderFrameCache, obj: SceneObject): Vec3[] {
     return entry.worldPoints;
   }
 
-  const { orientation, position, mesh } = obj;
-  const srcPoints = mesh.points;
+  const srcPoints = obj.mesh.points;
   const dst = ensureVec3ArrayCapacity(entry.worldPoints, srcPoints.length);
 
+  const orientation = obj.orientation;
+  const position = obj.position;
   for (let i = 0; i < srcPoints.length; i++) {
     const wp = dst[i];
     mat3.mulVec3Into(wp, orientation, srcPoints[i]);

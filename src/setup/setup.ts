@@ -44,7 +44,7 @@ export type WorldConfigBase = Pick<
 
 export function createWorld(config: WorldConfigBase): WorldSetup {
   validateWorldConfig(config);
-  const { entities } = config;
+  const entities = config.entities;
   const mainFocusEntityId = requireMainFocusEntityId(config);
 
   const world: World = {

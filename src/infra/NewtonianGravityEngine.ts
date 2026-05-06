@@ -32,7 +32,8 @@ export class NewtonianGravityEngine implements GravityEngine {
       return;
     }
 
-    const { bodyStates, positions } = state;
+    const bodyStates = state.bodyStates;
+    const positions = state.positions;
 
     if (bodyStates.length === 0) {
       return;

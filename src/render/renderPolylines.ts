@@ -1,4 +1,4 @@
-import type { SceneObject } from "../app/scenePorts";
+import type { Mesh, SceneObject } from "../app/scenePorts";
 import type { Vec3 } from "../domain/vec3";
 import { alloc } from "../global/allocProfiler";
 import { rgbToQuantizedCss } from "./color";
@@ -34,6 +34,7 @@ export function renderPolylinesInto(
     let current: RenderedPolyline | undefined;
     let screenPoints: ScreenPoint[];
     let obj: SceneObject;
+    let mesh: Mesh;
     let meshPoints: Vec3[];
     let prev = -1,
       curr: number,
@@ -43,7 +44,9 @@ export function renderPolylinesInto(
       obj = objects[oi];
       if (obj.kind !== "polyline") continue;
       if (objectsFilter && !objectsFilter(obj)) continue;
-      const { count, mesh, tail } = obj;
+      mesh = obj.mesh;
+      const count = obj.count;
+      const tail = obj.tail;
 
       meshPoints = mesh.points;
       if (meshPoints.length === 0) continue;
@@ -88,16 +91,15 @@ export function renderPolylinesInto(
     }
 
     function startNew() {
-      const { color, lineWidth } = obj;
       current = into[intoCount];
       if (current) {
-        current.cssColor = rgbToQuantizedCss(color);
-        current.lineWidth = lineWidth;
+        current.cssColor = rgbToQuantizedCss(obj.color);
+        current.lineWidth = obj.lineWidth;
         current.pointCount = pointCount;
       } else {
         current = {
-          cssColor: rgbToQuantizedCss(color),
-          lineWidth,
+          cssColor: rgbToQuantizedCss(obj.color),
+          lineWidth: obj.lineWidth,
           pointCount,
           points: [],
         };

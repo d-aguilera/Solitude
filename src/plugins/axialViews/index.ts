@@ -73,31 +73,31 @@ function createAxialViewDefinitions(): ViewDefinition[] {
 }
 
 function updateTopViewFrame({ frame, mainFocus }: ViewFrameUpdateParams): void {
-  const { right, forward, up } = mainFocus.controlledBody.frame;
-  vec3.copyInto(frame.right, right);
-  vec3.scaleInto(frame.forward, -1, up); // forward = -up
-  vec3.copyInto(frame.up, forward); // up = forward
+  const controlledBodyFrame = mainFocus.controlledBody.frame;
+  vec3.copyInto(frame.right, controlledBodyFrame.right);
+  vec3.scaleInto(frame.forward, -1, controlledBodyFrame.up); // forward = -up
+  vec3.copyInto(frame.up, controlledBodyFrame.forward); // up = forward
 }
 
 function updateLeftViewFrame({
   frame,
   mainFocus,
 }: ViewFrameUpdateParams): void {
-  const { right, forward, up } = mainFocus.controlledBody.frame;
-  vec3.copyInto(frame.up, up);
-  vec3.copyInto(frame.forward, right);
+  const controlledBodyFrame = mainFocus.controlledBody.frame;
+  vec3.copyInto(frame.up, controlledBodyFrame.up);
+  vec3.copyInto(frame.forward, controlledBodyFrame.right);
   vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -right
-  vec3.copyInto(frame.right, forward);
+  vec3.copyInto(frame.right, controlledBodyFrame.forward);
 }
 
 function updateRightViewFrame({
   frame,
   mainFocus,
 }: ViewFrameUpdateParams): void {
-  const { right, forward, up } = mainFocus.controlledBody.frame;
-  vec3.copyInto(frame.up, up);
-  vec3.copyInto(frame.forward, right); // forward = right
-  vec3.copyInto(frame.right, forward);
+  const controlledBodyFrame = mainFocus.controlledBody.frame;
+  vec3.copyInto(frame.up, controlledBodyFrame.up);
+  vec3.copyInto(frame.forward, controlledBodyFrame.right); // forward = right
+  vec3.copyInto(frame.right, controlledBodyFrame.forward);
   vec3.scaleInto(frame.right, -1, frame.right); // right = -forward
 }
 
@@ -105,9 +105,9 @@ function updateRearViewFrame({
   frame,
   mainFocus,
 }: ViewFrameUpdateParams): void {
-  const { right, forward, up } = mainFocus.controlledBody.frame;
-  vec3.copyInto(frame.up, up);
-  vec3.copyInto(frame.right, right);
-  vec3.copyInto(frame.forward, forward);
+  const controlledBodyFrame = mainFocus.controlledBody.frame;
+  vec3.copyInto(frame.up, controlledBodyFrame.up);
+  vec3.copyInto(frame.right, controlledBodyFrame.right);
+  vec3.copyInto(frame.forward, controlledBodyFrame.forward);
   vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -forward
 }
