@@ -12,6 +12,12 @@
 - Preserve the onion rule: inner layers (`domain`, `app`, `render`) must not import from `src/plugins`.
 - Plugins remain the outermost composition layer for input, controls, loop policy, HUD, scene hooks, and segment overlays.
 
+## Package Split Impact
+
+- As of package-split Phase 0, generic headless loop composition no longer imports or installs the Solitude `spacecraftOperator` plugin by default.
+- This reinforces the extraction boundary: product/scenario plugins remain caller-composed outer-layer behavior, even in headless tests.
+- No plugin folders moved yet; physical package relocation is still future work.
+
 ## Out Of Scope
 
 - Debugging and profiling candidates are removed from the plugin-extraction list by decision.

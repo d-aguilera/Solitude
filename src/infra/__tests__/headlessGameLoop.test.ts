@@ -5,6 +5,7 @@ import type { GravityEngine, GravityState } from "../../domain/domainPorts";
 import { localFrame } from "../../domain/localFrame";
 import { mat3 } from "../../domain/mat3";
 import { vec3 } from "../../domain/vec3";
+import { createSpacecraftOperatorPlugin } from "../../plugins/spacecraftOperator/index";
 import type { WorldConfigBase } from "../../setup/setup";
 import { createHeadlessLoop } from "../headlessGameLoop";
 
@@ -136,8 +137,24 @@ describe("headlessGameLoop", () => {
     expect(updateCount).toBe(1);
   });
 
-  it("runs a step without any render config", () => {
+  it("runs a step without any render config or Solitude plugins", () => {
     const loop = createHeadlessLoop(buildHeadlessConfig());
+    const before = vec3.clone(
+      loop.worldAndScene.mainFocus.controlledBody.position,
+    );
+
+    loop.step(1000);
+
+    const after = loop.worldAndScene.mainFocus.controlledBody.position;
+    expect(
+      vec3.length(vec3.subInto(vec3.zero(), after, before)),
+    ).toBeGreaterThan(0);
+  });
+
+  it("lets callers compose Solitude spacecraft dynamics explicitly", () => {
+    const loop = createHeadlessLoop(buildHeadlessConfig(), {
+      plugins: [createSpacecraftOperatorPlugin()],
+    });
     const before = vec3.clone(
       loop.worldAndScene.mainFocus.controlledBody.velocity,
     );

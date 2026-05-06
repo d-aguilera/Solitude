@@ -29,7 +29,7 @@ Success criteria:
 
 - Tick ordering remains covered by tests.
 - Manual controls, autopilot, playback, and HUD control readouts remain behavior-compatible.
-- Runtime/headless setup still installs the current spacecraft behavior by default.
+- Browser runtime setup still installs the current spacecraft behavior by default; generic headless setup receives spacecraft behavior only when the caller explicitly supplies the plugin.
 - Runtime/headless setup validates plugin focused-entity requirements before behavior hooks use the focus.
 - Core owns the primary view definition while plugins supply camera rigs; the first registered rig is current and setup fails if none exists.
 - Core config/tick setup does not own initial thrust level; spacecraft operator owns spacecraft control state.
@@ -159,6 +159,10 @@ Success criteria:
   - replaced app render config category types with `EntityRenderConfig`;
   - changed render scene object kinds from `ship` / `planet` / `star` to `controlledBody` / `orbitalBody` / `lightEmitter`;
   - renamed axial spin handling from `applyCelestialSpin` to `applyAxialSpin`.
+- 2026-05-06: Package-split Phase 0 boundary hardening:
+  - `createHeadlessLoop` no longer imports or auto-installs `spacecraftOperator`;
+  - generic headless composition now accepts caller-supplied `GamePlugin[]` and derives control plugins, capability providers, requirements, and simulation contributions from that list;
+  - browser defaults still install spacecraft behavior through the Solitude plugin catalog, while headless tests pass `createSpacecraftOperatorPlugin()` explicitly when testing spacecraft dynamics.
 
 ## Decision Log
 
@@ -422,6 +426,7 @@ Current state:
 
 - Explicit simulation phases exist around vehicle dynamics, gravity, collisions, and spin.
 - Spacecraft vehicle dynamics is installed via the `spacecraftOperator` simulation plugin.
+- Browser runtime installs the spacecraft operator through the default Solitude plugin catalog; generic headless runtime requires callers to provide that plugin explicitly.
 - Phase params are focused-entity-first and no longer expose `mainControlledBody`.
 
 Unresolved:
@@ -513,6 +518,7 @@ Unresolved:
 - Runtime world state is generic entity/capability based.
 - `World` still exposes `controllableBodies` for the current controlled-body capability array.
 - Core game tick owns deterministic phase ordering; spacecraft vehicle dynamics runs through `spacecraftOperator`.
+- Generic headless runtime does not auto-install `spacecraftOperator`; Solitude callers compose it explicitly when they need spacecraft behavior.
 - The primary canvas/layout/render target and primary view definition are core-owned; `spacecraftOperator` registers the current `spacecraft.forward` camera rig.
 - Base input actions are generic/main-view only; spacecraft input actions come from `spacecraftOperator`.
 - Plugin contexts use `mainFocus`; playback snapshots use generic entity/focus fields.

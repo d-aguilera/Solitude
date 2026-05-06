@@ -12,6 +12,12 @@
 - Runtime `World` now stores generic entities and capability arrays instead of fixed `ships`, `planets`, and `stars` buckets.
 - The remaining transition work is mostly at plugin/scenario edges: solar-system ids/content names, trajectory compatibility identifiers, and spacecraft-specific plugin terminology.
 
+## Package Split Impact
+
+- As of package-split Phase 0, generic headless setup no longer installs Solitude spacecraft behavior by default.
+- The generic entity model is now exercised headlessly without Solitude plugins, while spacecraft behavior remains available when callers explicitly compose the `spacecraftOperator` plugin.
+- No entity-model code moved packages yet; this is boundary hardening before the physical split.
+
 ## Target Model
 
 Core should store generic entities with capability-style components. Likely components include:

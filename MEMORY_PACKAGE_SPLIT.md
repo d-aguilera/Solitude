@@ -61,7 +61,7 @@ Owns:
 - Physics/math primitives and gravity/collision/spin helpers.
 - World/config setup from generic entity definitions.
 - Scene graph and render preparation contracts.
-- Generic headless stepping primitives, once they do not import Solitude plugins.
+- Generic headless stepping primitives. As of Phase 0, callers pass product plugins into headless composition when they need them.
 - `NewtonianGravityEngine`, unless a later split creates an `engine-newtonian` adapter package.
 
 Does not own:
@@ -111,9 +111,14 @@ Remaining physical-boundary issues:
 
 - `src/bootstrap.ts` imports the Solitude plugin catalog directly.
 - `src/plugins/index.ts` is a product-level catalog living beside engine code.
-- `src/infra/headlessGameLoop.ts` still imports and installs `spacecraftOperator` directly, so a generic headless loop still knows about Solitude spacecraft behavior.
 - Tests currently assume one package root and one `src` tree.
 - Imports are relative; package exports do not yet enforce boundaries.
+
+Phase 0 completed boundary hardening:
+
+- `src/infra/headlessGameLoop.ts` no longer imports or auto-installs `spacecraftOperator`.
+- `createHeadlessLoop` accepts composed `GamePlugin[]` from the caller and derives control plugins, capability providers, focused-entity requirements, and simulation contributions from that list.
+- Headless tests now cover both generic stepping without Solitude plugins and Solitude spacecraft dynamics when `createSpacecraftOperatorPlugin()` is passed explicitly.
 
 ## Relationship To Other Memory Docs
 
@@ -162,8 +167,8 @@ The package split impacts headless playback directly:
 
 Purpose: reduce risk before moving directories.
 
-- Remove Solitude plugin imports from generic infra/headless code.
-- Make headless setup accept all required simulation/control/capability plugins from the caller.
+- Remove Solitude plugin imports from generic infra/headless code. Completed for `src/infra/headlessGameLoop.ts`.
+- Make headless setup accept all required simulation/control/capability plugins from the caller. Completed for `createHeadlessLoop`.
 - Keep Solitude's default browser bootstrap responsible for installing the spacecraft operator and other product plugins.
 - Add guard checks or tests for no imports from generic layers into `src/plugins`.
 - Identify the minimal engine public API needed by current Solitude plugins.
@@ -212,20 +217,35 @@ Purpose: reduce risk before moving directories.
 - Consider separate repos only after the monorepo package API is stable and boring.
 - Consider splitting `NewtonianGravityEngine` into an adapter package only if the engine core needs multiple gravity backends.
 
-## First Implementation Slice
+## Completed Slice: Package Split 2
 
-Recommended first code slice:
+Status: implemented after the `Package split 1` planning commit.
 
-1. Refactor `src/infra/headlessGameLoop.ts` so it no longer imports `src/plugins/spacecraftOperator`.
-2. Require callers/tests to pass the spacecraft simulation plugin when they want Solitude spacecraft behavior.
-3. Add or update tests proving generic headless stepping works without Solitude plugins and Solitude-flavored headless stepping still works when the plugin is supplied.
-4. Run Prettier, `npm run typecheck`, and `npm run test`.
+What changed:
+
+1. Refactored `src/infra/headlessGameLoop.ts` so it no longer imports `src/plugins/spacecraftOperator`.
+2. Added `HeadlessLoopOptions.plugins` for caller-owned plugin composition.
+3. Derived headless control plugins, capability providers, requirement validation, and simulation contributions from the supplied plugin list.
+4. Updated tests to prove generic headless stepping works without Solitude plugins and Solitude-flavored headless stepping works when the spacecraft plugin is supplied.
 
 Why first:
 
 - It is small and reversible.
 - It converts the most obvious current physical-boundary violation into an explicit composition choice.
 - It supports the future headless playback runner split.
+
+Verification:
+
+- Prettier, `npm run typecheck`, and `npm run test` passed for this slice.
+
+## Next Implementation Slice
+
+Recommended next code slice:
+
+1. Add a lightweight import-boundary guard test or script for the pre-package tree.
+2. Fail if generic source areas (`src/app`, `src/domain`, `src/render`, `src/setup`, and generic `src/infra` files) import from `src/plugins`.
+3. Decide whether `src/global` is exempt in this guard, matching the known onion exception in `MEMORY.md`.
+4. Keep the guard narrow enough that the package move can replace it later with package `exports` enforcement.
 
 ## Public API Sketch
 

@@ -10,7 +10,8 @@
 
 - Browser playback works through DOM bootstrap/runtime options, e.g. `?mode=playback&scenario=random-trip`.
 - `src/infra/headlessGameLoop.ts` is currently a thin simulation stepper intended for tests.
-- Headless setup builds a world with `createHeadlessWorld`, installs `spacecraftOperator` simulation by default, and advances physics through `step(dtMillis, controlInputOverrides)`.
+- Headless setup builds a world with `createHeadlessWorld` and advances physics through `step(dtMillis, controlInputOverrides)`.
+- As of package-split Phase 0, generic headless setup no longer installs `spacecraftOperator` by default. Callers pass Solitude plugins explicitly through `HeadlessLoopOptions.plugins` when spacecraft behavior is needed.
 - Playback internals are unit-tested (`src/plugins/playback/core.test.ts`, snapshot tests, logger tests), but headless bootstrap does not play a recorded scenario end-to-end.
 
 ## Current Gap
@@ -53,6 +54,7 @@ Expected behavior:
 
 - Prefer a dedicated headless playback runner over making the existing simple `createHeadlessLoop` too DOM-runtime-shaped.
 - Keep the existing `createHeadlessLoop` useful as a direct physics/test stepper.
+- Compose Solitude plugins explicitly in a Solitude-owned runner; do not add playback or spacecraft defaults back into the generic headless loop.
 - Reuse plugin ports rather than importing playback internals directly where possible.
 - Avoid DOM assumptions: no canvas, no requestAnimationFrame, no keyboard handler dependency.
 - Keep allocation/performance constraints in mind if this becomes part of regression suites.
@@ -68,7 +70,7 @@ Expected behavior:
 
 ## Open Questions
 
-- Should headless playback load the full default plugin list or only the minimal playback + spacecraft operator set?
+- Should a Solitude-owned headless playback runner load the full default plugin list or only the minimal playback + spacecraft operator set?
 - Should it parse URL-style query strings or accept `RuntimeOptions` directly?
 - How should diagnostics be surfaced: returned report object, captured console output, or plugin logger injection?
 - Should playback completion be exposed through a public plugin/controller status port before building a full runner?

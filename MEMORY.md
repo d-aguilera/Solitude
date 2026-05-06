@@ -90,6 +90,7 @@
 ## Key files
 
 - `src/infra/NewtonianGravityEngine.ts`: N-body gravity (leapfrog).
+- `src/infra/headlessGameLoop.ts`: generic headless stepper; callers pass Solitude plugins explicitly when they need spacecraft behavior.
 - `src/plugins/spacecraftOperator/`: spacecraft input bindings plus thrust/RCS/attitude command interpretation and vehicle dynamics.
 - `src/plugins/autopilot/logic.ts`: align-to-velocity/body and “circle now”.
 - `src/plugins/playback/`: diagnostic capture/playback for repeatable circle-now repros.
@@ -130,6 +131,7 @@
 - HUD, view/render params, playback loop/logging, and plugin simulation/scene/segment contexts have been migrated away from `mainControlledBody` aliases.
 - Core no longer exposes the transitional `mainControlledBody` bridge from setup/runtime objects; config now names the focused entity via `mainFocusEntityId`.
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
+- Package-split Phase 0 has started: generic headless runtime no longer imports or auto-installs Solitude spacecraft plugins; Solitude behavior is caller-composed for headless runs.
 - Core setup constructs generic controllable bodies via `setupControllableBodies` and Keplerian motion bodies via `setupKeplerianBodies`; scenario plugins may still provide spacecraft content.
 - Core setup classifies entities from capabilities/components; `legacyKind` has been removed from source.
 - Render scene adaptation uses explicit `renderable.role` values; current roles are `controlledBody`, `orbitalBody`, and `lightEmitter`.
@@ -147,6 +149,7 @@
 - Operator model follow-up: removed core thrust/RCS/propulsion command ports in favor of the generic plugin capability registry; autopilot now publishes a spacecraft propulsion resolver capability consumed by `spacecraftOperator` without importing peer plugin or shared plugin-layer protocol code.
 - Operator/entity-model follow-up: migrated playback snapshots to generic entity snapshots and dropped old script-schema compatibility; `random-trip` was migrated to the new format.
 - Entity-model cleanup: removed `legacyKind`, replaced planet/star setup adapters with generic Keplerian body setup, and changed render scene object kinds to `controlledBody` / `orbitalBody` / `lightEmitter`.
+- Package split Phase 0: removed the direct `spacecraftOperator` import from generic headless loop composition; headless callers now pass Solitude plugins explicitly.
 
 ## Next steps
 

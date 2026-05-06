@@ -3,7 +3,9 @@ import { createTickHandler } from "../app/game";
 import { createPluginCapabilityRegistry } from "../app/pluginCapabilities";
 import type {
   ControlPlugin,
+  GamePlugin,
   PluginCapabilityProvider,
+  PluginCapabilityRegistry,
   SimulationPlugin,
 } from "../app/pluginPorts";
 import { validatePluginRequirements } from "../app/pluginRequirements";
@@ -11,13 +13,13 @@ import type { TickParams, WorldAndScene } from "../app/runtimePorts";
 import type { Scene } from "../app/scenePorts";
 import type { GravityEngine } from "../domain/domainPorts";
 import { parameters } from "../global/parameters";
-import { createSpacecraftOperatorPlugin } from "../plugins/spacecraftOperator/index";
 import { createHeadlessWorld, type WorldConfigBase } from "../setup/setup";
 import { NewtonianGravityEngine } from "./NewtonianGravityEngine";
 
 export interface HeadlessLoopOptions {
   gravityEngine?: GravityEngine;
   timeScale?: number;
+  plugins?: GamePlugin[];
   capabilityProviders?: PluginCapabilityProvider[];
   controlPlugins?: ControlPlugin[];
   simulationPlugins?: SimulationPlugin[];
@@ -64,25 +66,21 @@ export function createHeadlessLoop(
     new NewtonianGravityEngine(parameters.newtonG, parameters.softeningLength);
 
   const timeScale = options.timeScale ?? 1;
-  const controlPlugins = options.controlPlugins ?? [];
+  const plugins = options.plugins ?? [];
+  const controlPlugins = [
+    ...collectControlPlugins(plugins),
+    ...(options.controlPlugins ?? []),
+  ];
   const capabilityRegistry = createPluginCapabilityRegistry(
-    options.capabilityProviders,
+    collectCapabilityProviders(plugins, options.capabilityProviders),
   );
-  const spacecraftOperator = createSpacecraftOperatorPlugin();
   validatePluginRequirements({
     mainFocus: worldSetup.mainFocus,
-    plugins: [spacecraftOperator],
+    plugins,
     world: worldSetup.world,
   });
-  if (!spacecraftOperator.simulation) {
-    throw new Error("Spacecraft operator plugin is missing simulation");
-  }
-  const spacecraftSimulation =
-    typeof spacecraftOperator.simulation === "function"
-      ? spacecraftOperator.simulation({ capabilityRegistry, controlPlugins })
-      : spacecraftOperator.simulation;
   const simulationPlugins = [
-    spacecraftSimulation,
+    ...collectSimulationPlugins(plugins, controlPlugins, capabilityRegistry),
     ...(options.simulationPlugins ?? []),
   ];
 
@@ -112,4 +110,49 @@ export function createHeadlessLoop(
   };
 
   return { worldAndScene, step };
+}
+
+function collectControlPlugins(
+  plugins: readonly GamePlugin[],
+): ControlPlugin[] {
+  const controlPlugins: ControlPlugin[] = [];
+  for (const plugin of plugins) {
+    if (plugin.controls) {
+      controlPlugins.push(plugin.controls);
+    }
+  }
+  return controlPlugins;
+}
+
+function collectCapabilityProviders(
+  plugins: readonly GamePlugin[],
+  additionalProviders: readonly PluginCapabilityProvider[] | undefined,
+): PluginCapabilityProvider[] {
+  const providers: PluginCapabilityProvider[] = [];
+  for (const plugin of plugins) {
+    if (plugin.capabilities) {
+      providers.push(...plugin.capabilities);
+    }
+  }
+  if (additionalProviders) {
+    providers.push(...additionalProviders);
+  }
+  return providers;
+}
+
+function collectSimulationPlugins(
+  plugins: readonly GamePlugin[],
+  controlPlugins: ControlPlugin[],
+  capabilityRegistry: PluginCapabilityRegistry,
+): SimulationPlugin[] {
+  const simulationPlugins: SimulationPlugin[] = [];
+  for (const plugin of plugins) {
+    if (!plugin.simulation) continue;
+    simulationPlugins.push(
+      typeof plugin.simulation === "function"
+        ? plugin.simulation({ capabilityRegistry, controlPlugins })
+        : plugin.simulation,
+    );
+  }
+  return simulationPlugins;
 }
