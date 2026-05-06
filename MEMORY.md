@@ -136,6 +136,7 @@
 - Package-split workspace skeleton exists under `packages/engine`, `packages/browser`, and `packages/solitude`; runtime source has not moved yet.
 - Package split source migration has started: real `domain` and `global` source now lives under `packages/engine/src`; `src/domain/*` and `src/global/*` are transitional re-export shims.
 - Production app-layer source now lives under `packages/engine/src/app`; `src/app/*` files are transitional re-export shims while tests and callers migrate.
+- Generic OBJ parser source now lives under `packages/engine/src/config`; `src/config/obj.ts` is a transitional re-export shim.
 - Core setup constructs generic controllable bodies via `setupControllableBodies` and Keplerian motion bodies via `setupKeplerianBodies`; scenario plugins may still provide spacecraft content.
 - Core setup classifies entities from capabilities/components; `legacyKind` has been removed from source.
 - Render scene adaptation uses explicit `renderable.role` values; current roles are `controlledBody`, `orbitalBody`, and `lightEmitter`.
@@ -158,6 +159,7 @@
 - Package split workspace skeleton: added npm workspaces and empty package entrypoints for engine, browser, and Solitude app packages.
 - Package split source migration: moved real domain/global implementation files into `packages/engine/src` with old-path compatibility shims.
 - Package split source migration: moved production app-layer implementation files into `packages/engine/src/app` with old-path compatibility shims.
+- Package split source migration: moved generic OBJ parser into `packages/engine/src/config` with old-path compatibility shim.
 
 ## Next steps
 

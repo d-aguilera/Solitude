@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./app/*": "./src/app/*.ts",
+    "./config/*": "./src/config/*.ts",
     "./domain/*": "./src/domain/*.ts",
     "./global/*": "./src/global/*.ts"
   },

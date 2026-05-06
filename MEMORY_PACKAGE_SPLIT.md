@@ -262,7 +262,6 @@ Recommended next code slice:
 
 1. Continue moving engine-owned source into `packages/engine/src`.
 2. Good next candidates:
-   - `src/config/obj.ts`, because it is a generic parser used by Solitude content;
    - `src/setup`, once app config ports are in engine;
    - `src/render`, once app scene/render ports are in engine.
 3. Keep using thin `src/*` compatibility shims while other packages still import
@@ -270,6 +269,30 @@ Recommended next code slice:
 4. Add real `packages/engine/src/index.ts` exports only as consumers are updated.
 5. Keep `src/config/worldAndSceneConfig.ts`, `src/bootstrap.ts`, and `src/plugins`
    in app-owned source until the Solitude package move.
+
+## Completed Slice: Package Split 8
+
+Status: implemented after `Package split 7`.
+
+What changed:
+
+1. Moved generic OBJ parser implementation from `src/config/obj.ts` to
+   `packages/engine/src/config/obj.ts`.
+2. Moved the parser test to `packages/engine/src/config/__tests__`.
+3. Added a transitional `src/config/obj.ts` re-export shim.
+4. Added an `@solitude/engine` subpath export for `./config/*`.
+
+Notes:
+
+- `src/config/worldAndSceneConfig.ts` remains app/Solitude-owned because it
+  encodes the current default main-view camera offset.
+- Solar-system plugins still import `src/config/obj` through the old shim for
+  now.
+
+Verification:
+
+- Prettier, `npm run typecheck`, `npm run test`, and
+  `npm run typecheck --workspaces --if-present` passed for this slice.
 
 ## Completed Slice: Package Split 7
 
