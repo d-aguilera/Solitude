@@ -98,34 +98,30 @@ Depends on `@solitude/engine` and `@solitude/browser`.
 
 ## Current Boundary State
 
-The conceptual split is mostly in place:
+The conceptual and physical split is now mostly in place:
 
-- Core source uses generic `mainFocus` / `controlledBody` terminology.
-- Runtime `World` is generic entity/capability based.
-- Solar-system content is plugin-owned in
-  `packages/solitude/src/plugins/solarSystem/`.
-- Spacecraft controls, vehicle dynamics, telemetry state, and primary forward
-  camera rig are plugin-owned in
-  `packages/solitude/src/plugins/spacecraftOperator/`.
+- Engine-owned domain/app/setup/render/global/headless/gravity source lives under `packages/engine/src`.
+- Browser DOM/runtime/rasterizer adapters live under `packages/browser/src`.
+- Solitude app shell, bootstrap, default config, and plugins live under `packages/solitude`.
+- Root `src/*` files are mostly transitional compatibility shims plus remaining root tests.
+- Solar-system content is plugin-owned in `packages/solitude/src/plugins/solarSystem/`.
+- Spacecraft controls, vehicle dynamics, telemetry state, and primary forward camera rig are plugin-owned in `packages/solitude/src/plugins/spacecraftOperator/`.
 - Core plugin-to-plugin protocols use an opaque capability registry.
 - Playback snapshots are generic entity/focus schema only.
 
 Remaining physical-boundary issues:
 
-- `packages/solitude/index.html` is now the Vite entry path and imports
-  `packages/solitude/src/bootstrap.ts` through the package-root `/src` path.
-- The old root `src/plugins` compatibility shims have been removed; remaining
-  callers use `solitude/plugins/*` package exports.
-- Tests currently assume one package root and one `src` tree.
-- Imports are relative; package exports do not yet enforce boundaries.
+- Root `src/*` compatibility shims still exist for engine, browser, Solitude config, and bootstrap paths.
+- Some tests still live under root `src` and exercise compatibility shims or Solitude composition from outside the Solitude package.
+- Package exports are intentionally broad/transitional during migration and need later narrowing.
+- Root TypeScript/Vitest tooling still spans both `src` and `packages`.
 
-Phase 0 completed boundary hardening:
+Boundary hardening already in place:
 
-- `src/infra/headlessGameLoop.ts` no longer imports or auto-installs `spacecraftOperator`.
+- `packages/engine/src/infra/headlessGameLoop.ts` no longer imports or auto-installs `spacecraftOperator`.
 - `createHeadlessLoop` accepts composed `GamePlugin[]` from the caller and derives control plugins, capability providers, focused-entity requirements, and simulation contributions from that list.
 - Headless tests now cover both generic stepping without Solitude plugins and Solitude spacecraft dynamics when `createSpacecraftOperatorPlugin()` is passed explicitly.
-- `src/architecture/importBoundaries.test.ts` guards generic/browser
-  production source roots against imports that resolve into Solitude plugins.
+- `src/architecture/importBoundaries.test.ts` guards generic/browser production source roots against imports that resolve into Solitude plugins.
 
 ## Relationship To Other Memory Docs
 
@@ -177,10 +173,7 @@ Purpose: reduce risk before moving directories.
 - Remove Solitude plugin imports from generic infra/headless code. Completed for `src/infra/headlessGameLoop.ts`.
 - Make headless setup accept all required simulation/control/capability plugins from the caller. Completed for `createHeadlessLoop`.
 - Keep Solitude's default browser bootstrap responsible for installing the spacecraft operator and other product plugins.
-- Add guard checks or tests for no imports from generic/browser layers into
-  Solitude plugins. Completed for production files in `src/app`, `src/domain`,
-  `src/infra`, `src/render`, `src/setup`, `packages/engine/src`, and
-  `packages/browser/src`.
+- Add guard checks or tests for no imports from generic/browser layers into Solitude plugins. Completed for production files in `src/app`, `src/domain`, `src/infra`, `src/render`, `src/setup`, `packages/engine/src`, and `packages/browser/src`.
 - Identify the minimal engine public API needed by current Solitude plugins.
 
 ### Phase 1: Workspace Skeleton
@@ -227,202 +220,97 @@ Purpose: reduce risk before moving directories.
 - Consider separate repos only after the monorepo package API is stable and boring.
 - Consider splitting `NewtonianGravityEngine` into an adapter package only if the engine core needs multiple gravity backends.
 
-## Completed Slice: Package Split 2
-
-Status: implemented after the `Package split 1` planning commit.
-
-What changed:
-
-1. Refactored `src/infra/headlessGameLoop.ts` so it no longer imports `src/plugins/spacecraftOperator`.
-2. Added `HeadlessLoopOptions.plugins` for caller-owned plugin composition.
-3. Derived headless control plugins, capability providers, requirement validation, and simulation contributions from the supplied plugin list.
-4. Updated tests to prove generic headless stepping works without Solitude plugins and Solitude-flavored headless stepping works when the spacecraft plugin is supplied.
-
-Why first:
-
-- It is small and reversible.
-- It converts the most obvious current physical-boundary violation into an explicit composition choice.
-- It supports the future headless playback runner split.
-
-Verification:
-
-- Prettier, `npm run typecheck`, `npm run test`, and
-  `npm run typecheck --workspaces --if-present` passed for this slice.
-
-## Completed Slice: Package Split 3
-
-Status: implemented after `Package split 2`.
-
-What changed:
-
-1. Added `src/architecture/importBoundaries.test.ts`.
-2. The test scans production `.ts` files under `src/app`, `src/domain`, `src/infra`, `src/render`, and `src/setup`.
-3. It fails if a relative static or dynamic import resolves under the old
-   `src/plugins` shim path or the real `packages/solitude/src/plugins` path.
-4. It intentionally excludes tests and `src/global`; tests still exercise product plugin behavior, and `src/global` remains the documented onion exception.
-5. Added `@types/node` as a direct dev dependency so file-scanning architecture tests typecheck cleanly.
-
-Verification:
-
-- Prettier, `npm run typecheck`, and `npm run test` passed for this slice.
-
 ## Next Implementation Slice
 
 Recommended next code slice:
 
-1. Reduce remaining old-path compatibility shims where practical.
-2. Good next candidates:
-   - root `src/bootstrap.ts` shim consumers;
-   - remaining root app/infra tests that can move closer to package-local
-     ownership.
-3. Keep using thin `src/*` compatibility shims while external/root callers are
-   transitional.
+1. Remove the root `src/bootstrap.ts` compatibility shim if no in-repo consumers remain.
+2. Then start moving root tests to package ownership:
+   - app/engine-only tests to `packages/engine/src/app/__tests__`;
+   - browser adapter tests to `packages/browser/src/infra`;
+   - mixed Solitude composition tests either stay temporarily at root or move under `packages/solitude`.
+3. Keep root `src/*` implementation shims until their corresponding old-path tests/callers are gone.
 4. Add real package root exports only as consumers are updated.
 5. Keep root npm scripts working while package ownership continues to firm up.
 
-## Completed Slice: Package Split 15
+## Completed Slices
 
-Status: implemented after `Package split 14`.
-
-What changed:
-
-1. Moved Solitude app-shell assets (`index.html`, `index.css`, and favicon)
-   into `packages/solitude`.
-2. Updated Vite root to `packages/solitude` so the real browser entry now lives
-   inside the Solitude package.
-3. Kept the existing root `dist` output path for `npm run build` /
-   `npm run preview` compatibility.
-4. Expanded the Vite test include globs to cover root and package-local tests if
-   Vite config is used by Vitest.
-
-Notes:
-
-- `packages/solitude/index.html` now imports `/src/bootstrap.ts`, which resolves
-  to `packages/solitude/src/bootstrap.ts` under the Vite package root.
-- The root `src/bootstrap.ts` shim remains for old-path TypeScript consumers,
-  but the Vite browser entry no longer depends on it.
-
-Verification:
-
-- Prettier, `npm run typecheck`, `npm run test`,
-  `npm run typecheck --workspaces --if-present`, and `npm run build` passed for
-  this slice.
-
-## Completed Slice: Package Split 16
-
-Status: implemented after `Package split 15`.
+### Completed Slice: Package Split 16
 
 What changed:
 
-1. Updated root app/infra tests that compose the Solitude spacecraft operator to
-   import it through `solitude/plugins/spacecraftOperator/index`.
+1. Updated root app/infra tests that compose the Solitude spacecraft operator to import it through `solitude/plugins/spacecraftOperator/index`.
 2. Removed the remaining root `src/plugins` compatibility shims.
 
 Notes:
 
-- The root `src/bootstrap.ts` side-effect shim remains because it is harmless
-  old-path compatibility for TypeScript consumers.
-- Solitude plugin source and package exports are now the only in-repo plugin
-  import path.
+- The root `src/bootstrap.ts` side-effect shim remains because it is harmless old-path compatibility for TypeScript consumers.
+- Solitude plugin source and package exports are now the only in-repo plugin import path.
 
-Verification:
-
-- Prettier, `npm run typecheck`, `npm run test`, and
-  `npm run typecheck --workspaces --if-present` passed for this slice.
-
-## Completed Slice: Package Split 14
-
-Status: implemented after `Package split 13`.
+### Completed Slice: Package Split 15
 
 What changed:
 
-1. Moved Solitude browser bootstrap from `src/bootstrap.ts` to
-   `packages/solitude/src/bootstrap.ts`.
-2. Moved the Solitude plugin catalog/tree from `src/plugins` to
-   `packages/solitude/src/plugins`.
-3. Updated moved bootstrap/plugin imports to consume engine/browser contracts
-   through `@solitude/engine` and `@solitude/browser` package subpaths.
-4. Added transitional old-path shims for `src/bootstrap.ts`,
-   `src/plugins/index.ts`, and `src/plugins/spacecraftOperator/index.ts`.
-5. Added `solitude` package subpath exports for bootstrap and plugins.
-6. Broadened the architecture import-boundary guard so engine/browser
-   production roots cannot import Solitude plugin package paths.
+1. Moved Solitude app-shell assets (`index.html`, `index.css`, and favicon) into `packages/solitude`.
+2. Updated Vite root to `packages/solitude` so the real browser entry now lives inside the Solitude package.
+3. Kept the existing root `dist` output path for `npm run build` / `npm run preview` compatibility.
+4. Expanded the Vite test include globs to cover root and package-local tests if Vite config is used by Vitest.
 
 Notes:
 
-- At the time of this slice, the root Vite entry still pointed at
-  `src/bootstrap.ts`; Package Split 15 moved the Vite app shell into
-  `packages/solitude`.
-- Solitude plugin tests moved with the plugin tree and now typecheck inside the
-  Solitude workspace package.
+- `packages/solitude/index.html` now imports `/src/bootstrap.ts`, which resolves to `packages/solitude/src/bootstrap.ts` under the Vite package root.
+- The root `src/bootstrap.ts` shim remains for old-path TypeScript consumers, but the Vite browser entry no longer depends on it.
 
-Verification:
-
-- Prettier, `npm run typecheck`, `npm run test`, and
-  `npm run typecheck --workspaces --if-present` passed for this slice.
-
-## Completed Slice: Package Split 13
-
-Status: implemented after `Package split 12`.
+### Completed Slice: Package Split 14
 
 What changed:
 
-1. Moved Solitude's default `buildWorldAndSceneConfig` factory from
-   `src/config/worldAndSceneConfig.ts` to
-   `packages/solitude/src/config/worldAndSceneConfig.ts`.
-2. Updated the moved config to import engine types/helpers through
-   `@solitude/engine` subpaths.
+1. Moved Solitude browser bootstrap from `src/bootstrap.ts` to `packages/solitude/src/bootstrap.ts`.
+2. Moved the Solitude plugin catalog/tree from `src/plugins` to `packages/solitude/src/plugins`.
+3. Updated moved bootstrap/plugin imports to consume engine/browser contracts through `@solitude/engine` and `@solitude/browser` package subpaths.
+4. Added transitional old-path shims for `src/bootstrap.ts`, `src/plugins/index.ts`, and `src/plugins/spacecraftOperator/index.ts`.
+5. Added `solitude` package subpath exports for bootstrap and plugins.
+6. Broadened the architecture import-boundary guard so engine/browser production roots cannot import Solitude plugin package paths.
+
+Notes:
+
+- At the time of this slice, the root Vite entry still pointed at `src/bootstrap.ts`; Package Split 15 moved the Vite app shell into `packages/solitude`.
+- Solitude plugin tests moved with the plugin tree and now typecheck inside the Solitude workspace package.
+
+### Completed Slice: Package Split 13
+
+What changed:
+
+1. Moved Solitude's default `buildWorldAndSceneConfig` factory from `src/config/worldAndSceneConfig.ts` to `packages/solitude/src/config/worldAndSceneConfig.ts`.
+2. Updated the moved config to import engine types/helpers through `@solitude/engine` subpaths.
 3. Added a transitional `src/config/worldAndSceneConfig.ts` re-export shim.
 4. Added a `solitude` package subpath export for `./config/*`.
 
 Notes:
 
 - The `WorldAndSceneConfig` type remains engine-owned.
-- The default main-view camera offset remains Solitude-owned product
-  composition.
+- The default main-view camera offset remains Solitude-owned product composition.
 
-Verification:
-
-- Prettier, `npm run typecheck`, `npm run test`, and
-  `npm run typecheck --workspaces --if-present` passed for this slice.
-
-## Completed Slice: Package Split 12
-
-Status: implemented after `Package split 11`.
+### Completed Slice: Package Split 12
 
 What changed:
 
-1. Moved production DOM infra files from `src/infra` to
-   `packages/browser/src/infra`.
-2. Updated browser infra imports to consume engine contracts through
-   `@solitude/engine` subpaths and browser rasterizers through local browser
-   package paths.
-3. Added transitional `src/infra/dom*` and `src/infra/infraPorts.ts` re-export
-   shims.
+1. Moved production DOM infra files from `src/infra` to `packages/browser/src/infra`.
+2. Updated browser infra imports to consume engine contracts through `@solitude/engine` subpaths and browser rasterizers through local browser package paths.
+3. Added transitional `src/infra/dom*` and `src/infra/infraPorts.ts` re-export shims.
 4. Added an `@solitude/browser` subpath export for `./infra/*`.
 
 Notes:
 
-- `src/infra/NewtonianGravityEngine.ts` and `src/infra/headlessGameLoop.ts`
-  remain engine shims.
-- `src/infra/__tests__` remains under the old tree for now because those tests
-  still exercise browser shims and Solitude plugin composition.
+- `src/infra/NewtonianGravityEngine.ts` and `src/infra/headlessGameLoop.ts` remain engine shims.
+- `src/infra/__tests__` remains under the old tree for now because those tests still exercise browser shims and Solitude plugin composition.
 
-Verification:
-
-- Prettier, `npm run typecheck`, `npm run test`, and
-  `npm run typecheck --workspaces --if-present` passed for this slice.
-
-## Completed Slice: Package Split 11
-
-Status: implemented after `Package split 10`.
+### Completed Slice: Package Split 11
 
 What changed:
 
-1. Moved Canvas and WebGL rasterizer/surface adapters from `src/rasterize` to
-   `packages/browser/src/rasterize`.
-2. Updated browser rasterizer imports to consume engine app/render contracts
-   through `@solitude/engine` subpaths.
+1. Moved Canvas and WebGL rasterizer/surface adapters from `src/rasterize` to `packages/browser/src/rasterize`.
+2. Updated browser rasterizer imports to consume engine app/render contracts through `@solitude/engine` subpaths.
 3. Added transitional `src/rasterize/*` re-export shims.
 4. Added `@solitude/browser` subpath exports for rasterizer files.
 
@@ -431,171 +319,105 @@ Notes:
 - DOM infra still imports old `src/rasterize/*` paths through shims.
 - Browser package now has its first real implementation source.
 
-Verification:
-
-- Prettier, `npm run typecheck`, `npm run test`, and
-  `npm run typecheck --workspaces --if-present` passed for this slice.
-
-## Completed Slice: Package Split 10
-
-Status: implemented after `Package split 9`.
+### Completed Slice: Package Split 10
 
 What changed:
 
-1. Moved `NewtonianGravityEngine` from `src/infra` to
-   `packages/engine/src/infra`.
+1. Moved `NewtonianGravityEngine` from `src/infra` to `packages/engine/src/infra`.
 2. Moved generic `headlessGameLoop` to `packages/engine/src/infra`.
-3. Added transitional `src/infra/NewtonianGravityEngine.ts` and
-   `src/infra/headlessGameLoop.ts` re-export shims.
+3. Added transitional `src/infra/NewtonianGravityEngine.ts` and `src/infra/headlessGameLoop.ts` re-export shims.
 4. Added an `@solitude/engine` subpath export for `./infra/*`.
 
 Notes:
 
 - DOM/browser infra remains in `src/infra` for the next browser-package slice.
 - Runtime callers still import old `src/infra/*` paths through shims.
-- `headlessGameLoop` tests remain under `src/infra/__tests__` for now because
-  one test intentionally composes the Solitude spacecraft plugin through the
-  outer-layer test boundary.
+- `headlessGameLoop` tests remain under `src/infra/__tests__` for now because one test intentionally composes the Solitude spacecraft plugin through the outer-layer test boundary.
 
-Verification:
-
-- Prettier, `npm run typecheck`, `npm run test`, and
-  `npm run typecheck --workspaces --if-present` passed for this slice.
-
-## Completed Slice: Package Split 9
-
-Status: implemented after `Package split 8`.
+### Completed Slice: Package Split 9
 
 What changed:
 
-1. Moved setup implementation and setup tests from `src/setup` to
-   `packages/engine/src/setup`.
-2. Moved render implementation and render tests from `src/render` to
-   `packages/engine/src/render`, because setup scene construction depends on
-   render scene adaptation.
+1. Moved setup implementation and setup tests from `src/setup` to `packages/engine/src/setup`.
+2. Moved render implementation and render tests from `src/render` to `packages/engine/src/render`, because setup scene construction depends on render scene adaptation.
 3. Added transitional `src/setup/*` and `src/render/*` re-export shims.
 4. Added `@solitude/engine` subpath exports for `./setup/*` and `./render/*`.
 
 Notes:
 
-- Runtime and plugin callers still import old `src/setup/*` and `src/render/*`
-  paths through shims.
-- World creation, headless world setup, Keplerian setup, controllable-body setup,
-  scene setup, scene adaptation, render prep, view rendering, HUD rendering, and
-  render formatting now physically live in the engine package.
+- Runtime and plugin callers still import old `src/setup/*` and `src/render/*` paths through shims.
+- World creation, headless world setup, Keplerian setup, controllable-body setup, scene setup, scene adaptation, render prep, view rendering, HUD rendering, and render formatting now physically live in the engine package.
 
-Verification:
-
-- Prettier, `npm run typecheck`, `npm run test`, and
-  `npm run typecheck --workspaces --if-present` passed for this slice.
-
-## Completed Slice: Package Split 8
-
-Status: implemented after `Package split 7`.
+### Completed Slice: Package Split 8
 
 What changed:
 
-1. Moved generic OBJ parser implementation from `src/config/obj.ts` to
-   `packages/engine/src/config/obj.ts`.
+1. Moved generic OBJ parser implementation from `src/config/obj.ts` to `packages/engine/src/config/obj.ts`.
 2. Moved the parser test to `packages/engine/src/config/__tests__`.
 3. Added a transitional `src/config/obj.ts` re-export shim.
 4. Added an `@solitude/engine` subpath export for `./config/*`.
 
 Notes:
 
-- `src/config/worldAndSceneConfig.ts` remains app/Solitude-owned because it
-  encodes the current default main-view camera offset.
-- Solar-system plugins still import `src/config/obj` through the old shim for
-  now.
+- `src/config/worldAndSceneConfig.ts` remains app/Solitude-owned because it encodes the current default main-view camera offset.
+- Solar-system plugins still import `src/config/obj` through the old shim for now.
 
-Verification:
-
-- Prettier, `npm run typecheck`, `npm run test`, and
-  `npm run typecheck --workspaces --if-present` passed for this slice.
-
-## Completed Slice: Package Split 7
-
-Status: implemented after `Package split 6`.
+### Completed Slice: Package Split 7
 
 What changed:
 
 1. Moved production `src/app/*.ts` files to `packages/engine/src/app`.
-2. Left `src/app/__tests__` in place for now because some app tests intentionally
-   compose Solitude plugins.
-3. Added transitional `src/app/*` re-export shims that point at
-   `@solitude/engine/app/*`.
+2. Left `src/app/__tests__` in place for now because some app tests intentionally compose Solitude plugins.
+3. Added transitional `src/app/*` re-export shims that point at `@solitude/engine/app/*`.
 4. Added an `@solitude/engine` subpath export for `./app/*`.
 
 Notes:
 
-- Runtime callers still import old `src/app/*` paths, but those files are now
-  compatibility shims only.
-- Generic app ports, plugin ports, tick orchestration, view registry, scene
-  update, and world-model application are now physically in the engine package.
+- Runtime callers still import old `src/app/*` paths, but those files are now compatibility shims only.
+- Generic app ports, plugin ports, tick orchestration, view registry, scene update, and world-model application are now physically in the engine package.
 
-Verification:
-
-- Prettier, `npm run typecheck`, `npm run test`, and
-  `npm run typecheck --workspaces --if-present` passed for this slice.
-
-## Completed Slice: Package Split 6
-
-Status: implemented after `Package split 5`.
+### Completed Slice: Package Split 6
 
 What changed:
 
-1. Moved real `src/domain` source and domain tests to
-   `packages/engine/src/domain`.
+1. Moved real `src/domain` source and domain tests to `packages/engine/src/domain`.
 2. Moved real `src/global` source to `packages/engine/src/global`.
-3. Added transitional `src/domain/*` and `src/global/*` re-export shims that point
-   at `@solitude/engine` subpath exports.
+3. Added transitional `src/domain/*` and `src/global/*` re-export shims that point at `@solitude/engine` subpath exports.
 4. Added `@solitude/engine` subpath exports for `./domain/*` and `./global/*`.
 5. Updated Vitest include globs so package-local tests run.
 
 Notes:
 
-- Runtime callers still import the old `src/domain/*` and `src/global/*` paths.
-  Those files are now compatibility shims only.
-- The real math, physics primitive, domain port, profiler, and global parameter
-  implementations now physically live in the engine package.
+- Runtime callers still import the old `src/domain/*` and `src/global/*` paths. Those files are now compatibility shims only.
+- The real math, physics primitive, domain port, profiler, and global parameter implementations now physically live in the engine package.
 
-Verification:
-
-- Prettier, `npm run typecheck`, `npm run test`, and
-  `npm run typecheck --workspaces --if-present` passed for this slice.
-
-## Completed Slice: Package Split 5
-
-Status: implemented after `Package split 4`.
+### Completed Slice: Package Split 5
 
 What changed:
 
 1. Added npm workspaces at the root with `packages/*`.
 2. Created empty package skeletons:
-   - `packages/engine`
-   - `packages/browser`
-   - `packages/solitude`
-3. Added package-local `package.json`, `tsconfig.json`, and placeholder
-   `src/index.ts` files.
+
+- `packages/engine`
+- `packages/browser`
+- `packages/solitude`
+
+3. Added package-local `package.json`, `tsconfig.json`, and placeholder `src/index.ts` files.
 4. Added package dependency relationships:
-   - `@solitude/browser` depends on `@solitude/engine`.
-   - `solitude` depends on `@solitude/browser` and `@solitude/engine`.
+
+- `@solitude/browser` depends on `@solitude/engine`.
+- `solitude` depends on `@solitude/browser` and `@solitude/engine`.
+
 5. Updated root TypeScript includes and format scripts to cover `packages/**`.
 6. Refreshed `package-lock.json` so npm links the workspace packages.
 
 Notes:
 
 - Runtime source has not moved yet.
-- Package entrypoints currently export nothing; they exist only to make the
-  workspace skeleton typecheck before file migration.
-- npm reported existing audit findings during lockfile refresh; dependency
-  remediation remains out of scope for this package-split slice.
+- Package entrypoints currently export nothing; they exist only to make the workspace skeleton typecheck before file migration.
+- npm reported existing audit findings during lockfile refresh; dependency remediation remains out of scope for this package-split slice.
 
-Verification:
-
-- Prettier, `npm run typecheck`, and `npm run test` passed for this slice.
-
-## Completed Slice: Package Split 4
+### Completed Slice: Package Split 4
 
 Status: audit completed after `Package split 3`.
 
@@ -606,7 +428,7 @@ What changed:
 3. Chose first-skeleton ownership for current config/runtime entrypoints.
 4. Drafted initial public API candidates for `@solitude/engine` and `@solitude/browser`.
 
-### Import Edge Summary
+#### Import Edge Summary
 
 Current production import directions line up with the target split:
 
@@ -619,13 +441,12 @@ Remaining expected churn:
 
 - `src/bootstrap.ts` is now a compatibility shim; real product composition lives
   in `packages/solitude/src/bootstrap.ts`.
-- The old root `src/plugins` compatibility shims have been removed; the real
-  Solitude plugin catalog lives in `packages/solitude/src/plugins/index.ts`.
+- The old root `src/plugins` compatibility shims have been removed; the real Solitude plugin catalog lives in `packages/solitude/src/plugins/index.ts`.
 - `src/rasterize` should move with browser adapters.
 - `src/config/obj.ts` is a generic OBJ mesh parser used by Solitude content and should move to engine.
 - `src/config/worldAndSceneConfig.ts` should move to Solitude app composition for the first skeleton because it encodes the current default main-view camera offset. The `WorldAndSceneConfig` type remains engine-owned.
 
-### First-Pass Engine Exports
+#### First-Pass Engine Exports
 
 Prefer narrow exports and add only what current consumers need.
 
@@ -707,7 +528,7 @@ export { AU, C, km } from "./domain/units";
 export { EPS_DELTA_V, EPS_LEN, EPS_SPEED_FINE } from "./domain/epsilon";
 ```
 
-### First-Pass Browser Exports
+#### First-Pass Browser Exports
 
 Candidate `@solitude/browser` exports:
 
@@ -725,7 +546,7 @@ Keep these internal unless a real consumer appears:
 - `initLayout`
 - concrete canvas/WebGL rasterizer classes
 
-### Solitude-Owned Composition
+#### Solitude-Owned Composition
 
 The `solitude` package should own:
 
@@ -740,16 +561,37 @@ import { buildWorldAndSceneConfig } from "./config/worldAndSceneConfig";
 import { defaultPluginIds, loadPlugins } from "./plugins";
 ```
 
-Verification:
+### Completed Slice: Package Split 3
 
-- Audit-only slice; no source behavior changed.
+What changed:
+
+1. Added `src/architecture/importBoundaries.test.ts`.
+2. The test scans production `.ts` files under `src/app`, `src/domain`, `src/infra`, `src/render`, and `src/setup`.
+3. It fails if a relative static or dynamic import resolves under the old `src/plugins` shim path or the real `packages/solitude/src/plugins` path.
+4. It intentionally excludes tests and `src/global`; tests still exercise product plugin behavior, and `src/global` remains the documented onion exception.
+5. Added `@types/node` as a direct dev dependency so file-scanning architecture tests typecheck cleanly.
+
+### Completed Slice: Package Split 2
+
+What changed:
+
+1. Refactored `src/infra/headlessGameLoop.ts` so it no longer imports `src/plugins/spacecraftOperator`.
+2. Added `HeadlessLoopOptions.plugins` for caller-owned plugin composition.
+3. Derived headless control plugins, capability providers, requirement validation, and simulation contributions from the supplied plugin list.
+4. Updated tests to prove generic headless stepping works without Solitude plugins and Solitude-flavored headless stepping works when the spacecraft plugin is supplied.
+
+Why first:
+
+- It is small and reversible.
+- It converts the most obvious current physical-boundary violation into an explicit composition choice.
+- It supports the future headless playback runner split.
 
 ## Guardrails
 
 - Keep performance as the first constraint; file moves must not introduce allocation-heavy abstractions in hot loops.
 - Preserve onion layering inside `@solitude/engine`.
 - Do not make engine depend on package-local Solitude concepts to avoid a short migration.
-- Do not publish broad deep exports just to make imports easier.
+- Keep package exports purposeful; broad transitional subpath exports are acceptable during migration, but should remain visible cleanup targets.
 - Keep changes incremental and test-backed.
 - Do not reintroduce category-shaped world buckets or spacecraft assumptions in engine APIs.
 - Treat package boundaries as architectural tests: if a file needs a Solitude plugin import, it probably belongs in `solitude`, not `engine` or `browser`.
@@ -758,12 +600,6 @@ Verification:
 
 - Should browser URL option parsing live in `browser` or `solitude` once runtime options become more product-specific?
 - Should `render` stay entirely in `engine`, or should some renderer-facing formatting/helpers move with browser adapters?
-- Should generic utility plugins such as pause/time-scale/profiling remain in Solitude initially or move to a later shared plugin package?
-- How strict should package `exports` be during migration: narrow from day one, or temporary migration exports with a cleanup checklist?
-- Should headless playback be implemented before or after the physical package move?
-
-## Verification Notes
-
-- This document was created as planning context only.
-- No package split code changes have been performed yet.
-- After future code changes, follow `MEMORY.md`: run Prettier, organize imports, `npm run typecheck`, and `npm run test`.
+- Should generic utility plugins such as pause/time-scale/profiling stay in Solitude long-term, or move to a later shared plugin package?
+- Which migration-friendly subpath exports should be narrowed once old-path shims and root tests are cleaned up?
+- When should headless playback work resume now that the physical package move is well underway?
