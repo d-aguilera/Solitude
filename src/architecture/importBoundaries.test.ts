@@ -5,9 +5,20 @@ import { describe, expect, it } from "vitest";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const srcRoot = join(repoRoot, "src");
-const pluginsRoot = join(srcRoot, "plugins");
+const packageRoot = join(repoRoot, "packages");
 
-const guardedRoots = ["app", "domain", "infra", "render", "setup"];
+const pluginsRoots = [
+  join(srcRoot, "plugins"),
+  join(packageRoot, "solitude/src/plugins"),
+];
+
+const guardedRoots = [
+  ...["app", "domain", "infra", "render", "setup"].map((root) =>
+    join(srcRoot, root),
+  ),
+  join(packageRoot, "engine/src"),
+  join(packageRoot, "browser/src"),
+];
 
 const importSpecifierPattern =
   /\b(?:import|export)\s+(?:type\s+)?(?:[^'"]*?\s+from\s+)?["']([^"']+)["']|\bimport\s*\(\s*["']([^"']+)["']\s*\)/g;
@@ -16,8 +27,7 @@ describe("import boundaries", () => {
   it("keeps generic production source from importing Solitude plugins", () => {
     const violations: string[] = [];
 
-    for (const root of guardedRoots) {
-      const rootPath = join(srcRoot, root);
+    for (const rootPath of guardedRoots) {
       for (const filePath of collectProductionTypeScriptFiles(rootPath)) {
         violations.push(...findPluginImports(filePath));
       }
@@ -61,10 +71,25 @@ function findPluginImports(filePath: string): string[] {
 
   for (const match of source.matchAll(importSpecifierPattern)) {
     const specifier = match[1] ?? match[2];
-    if (!specifier || !specifier.startsWith(".")) continue;
+    if (!specifier) continue;
+    if (
+      specifier === "solitude/plugins" ||
+      specifier.startsWith("solitude/plugins/")
+    ) {
+      const sourcePath = relative(repoRoot, filePath);
+      violations.push(`${sourcePath} imports ${specifier}`);
+      continue;
+    }
+    if (!specifier.startsWith(".")) continue;
 
     const resolvedTarget = resolve(dirname(filePath), specifier);
-    if (!isUnderPath(resolvedTarget, pluginsRoot)) continue;
+    if (
+      !pluginsRoots.some((pluginsRoot) =>
+        isUnderPath(resolvedTarget, pluginsRoot),
+      )
+    ) {
+      continue;
+    }
 
     const sourcePath = relative(repoRoot, filePath);
     const targetPath = relative(repoRoot, resolvedTarget);

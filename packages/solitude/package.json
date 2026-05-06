@@ -5,7 +5,10 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./config/*": "./src/config/*.ts"
+    "./bootstrap": "./src/bootstrap.ts",
+    "./config/*": "./src/config/*.ts",
+    "./plugins": "./src/plugins/index.ts",
+    "./plugins/*": "./src/plugins/*.ts"
   },
   "dependencies": {
     "@solitude/browser": "0.0.0",
