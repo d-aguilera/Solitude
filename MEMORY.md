@@ -12,6 +12,7 @@
 - `MEMORY_ENTITY_MODEL.md`: dedicated strategy/context for replacing ships/planets/stars core buckets with generic entities/components.
 - `MEMORY_OPERATOR_MODEL.md`: current strategic plan for moving main ship/control/camera behavior into plugin-defined operator modes around a generic focused entity.
 - `MEMORY_HEADLESS_PLAYBACK.md`: planned work for running recorded playback scenarios end-to-end without the browser.
+- `MEMORY_PACKAGE_SPLIT.md`: planned work for physically splitting the generic engine, browser adapters, and Solitude app/scenario packages.
 - **Note**: Plugin extraction and entity model generalization are still useful history, but the strategic direction has shifted to operator/focus generalization.
 
 ## Current focus
