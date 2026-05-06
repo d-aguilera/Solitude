@@ -237,7 +237,8 @@ Why first:
 
 Verification:
 
-- Prettier, `npm run typecheck`, and `npm run test` passed for this slice.
+- Prettier, `npm run typecheck`, `npm run test`, and
+  `npm run typecheck --workspaces --if-present` passed for this slice.
 
 ## Completed Slice: Package Split 3
 
@@ -259,10 +260,48 @@ Verification:
 
 Recommended next code slice:
 
-1. Create the npm workspace skeleton with empty package entrypoints.
-2. Keep source files in place at first if needed, but make root tooling aware of `packages/engine`, `packages/browser`, and `packages/solitude`.
-3. Add package-local `package.json` and `tsconfig.json` files with conservative `exports` placeholders based on the audit below.
-4. Move files only after the skeleton typechecks.
+1. Start moving engine-owned source into `packages/engine/src`.
+2. Begin with low-risk leaves or tightly grouped internals:
+   - `src/domain`;
+   - `src/app`;
+   - `src/global`;
+   - `src/config/obj.ts`;
+   - `src/setup`;
+   - `src/render`.
+3. Add real `packages/engine/src/index.ts` exports only as consumers are updated.
+4. Keep `src/config/worldAndSceneConfig.ts`, `src/bootstrap.ts`, and `src/plugins`
+   in app-owned source until the Solitude package move.
+
+## Completed Slice: Package Split 5
+
+Status: implemented after `Package split 4`.
+
+What changed:
+
+1. Added npm workspaces at the root with `packages/*`.
+2. Created empty package skeletons:
+   - `packages/engine`
+   - `packages/browser`
+   - `packages/solitude`
+3. Added package-local `package.json`, `tsconfig.json`, and placeholder
+   `src/index.ts` files.
+4. Added package dependency relationships:
+   - `@solitude/browser` depends on `@solitude/engine`.
+   - `solitude` depends on `@solitude/browser` and `@solitude/engine`.
+5. Updated root TypeScript includes and format scripts to cover `packages/**`.
+6. Refreshed `package-lock.json` so npm links the workspace packages.
+
+Notes:
+
+- Runtime source has not moved yet.
+- Package entrypoints currently export nothing; they exist only to make the
+  workspace skeleton typecheck before file migration.
+- npm reported existing audit findings during lockfile refresh; dependency
+  remediation remains out of scope for this package-split slice.
+
+Verification:
+
+- Prettier, `npm run typecheck`, and `npm run test` passed for this slice.
 
 ## Completed Slice: Package Split 4
 

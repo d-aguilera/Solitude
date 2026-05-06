@@ -1,10 +1,14 @@
 {
+  "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "predev": "npm run typecheck && vitest run",
     "dev": "vite --host",
-    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,html,md}\" \"*.{ts,tsx,js,jsx,json,css,html,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,html,md}\" \"*.{ts,tsx,js,jsx,json,css,html,md}\"",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,html,md}\" \"packages/**/*.{ts,tsx,js,jsx,json,css,html,md}\" \"*.{ts,tsx,js,jsx,json,css,html,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,html,md}\" \"packages/**/*.{ts,tsx,js,jsx,json,css,html,md}\" \"*.{ts,tsx,js,jsx,json,css,html,md}\"",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

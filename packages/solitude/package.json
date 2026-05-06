@@ -1,0 +1,13 @@
+{
+  "name": "solitude",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@solitude/browser": "0.0.0",
+    "@solitude/engine": "0.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

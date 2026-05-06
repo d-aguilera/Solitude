@@ -133,6 +133,7 @@
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
 - Package-split Phase 0 has started: generic headless runtime no longer imports or auto-installs Solitude spacecraft plugins; Solitude behavior is caller-composed for headless runs.
 - Package-split Phase 0 now includes an architecture guard test that keeps generic production source roots from importing `src/plugins`.
+- Package-split workspace skeleton exists under `packages/engine`, `packages/browser`, and `packages/solitude`; runtime source has not moved yet.
 - Core setup constructs generic controllable bodies via `setupControllableBodies` and Keplerian motion bodies via `setupKeplerianBodies`; scenario plugins may still provide spacecraft content.
 - Core setup classifies entities from capabilities/components; `legacyKind` has been removed from source.
 - Render scene adaptation uses explicit `renderable.role` values; current roles are `controlledBody`, `orbitalBody`, and `lightEmitter`.
@@ -152,6 +153,7 @@
 - Entity-model cleanup: removed `legacyKind`, replaced planet/star setup adapters with generic Keplerian body setup, and changed render scene object kinds to `controlledBody` / `orbitalBody` / `lightEmitter`.
 - Package split Phase 0: removed the direct `spacecraftOperator` import from generic headless loop composition; headless callers now pass Solitude plugins explicitly.
 - Package split Phase 0: added a production import-boundary guard for generic source roots versus `src/plugins`.
+- Package split workspace skeleton: added npm workspaces and empty package entrypoints for engine, browser, and Solitude app packages.
 
 ## Next steps
 

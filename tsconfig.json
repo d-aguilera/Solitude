@@ -17,6 +17,11 @@
     "target": "es2020",
     "verbatimModuleSyntax": true
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "packages/**/*.ts",
+    "packages/**/*.d.ts"
+  ],
   "exclude": ["dist", "node_modules"]
 }
