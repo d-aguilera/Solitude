@@ -260,17 +260,43 @@ Verification:
 
 Recommended next code slice:
 
-1. Start moving browser-owned source into `packages/browser/src`.
+1. Start moving Solitude-owned source into `packages/solitude/src`.
 2. Good next candidates:
-   - DOM infra files such as `domBootstrap`, `domCanvasBootstrap`,
-     `domWebGLBootstrap`, `domGameLoop`, `domKeyboardInput`, `domLayout`, and
-     `domRuntimeOptions`.
+   - `src/config/worldAndSceneConfig.ts`;
+   - `src/bootstrap.ts`;
+   - `src/plugins`, after package imports are ready.
 3. Keep using thin `src/*` compatibility shims while other packages still import
    old paths.
-4. Add real `packages/browser/src/index.ts` exports only as consumers are
-   updated.
-5. Keep `src/config/worldAndSceneConfig.ts`, `src/bootstrap.ts`, and `src/plugins`
-   in app-owned source until the Solitude package move.
+4. Add real package root exports only as consumers are updated.
+5. Keep the root app entry working until `index.html` and Vite entry ownership
+   move cleanly.
+
+## Completed Slice: Package Split 12
+
+Status: implemented after `Package split 11`.
+
+What changed:
+
+1. Moved production DOM infra files from `src/infra` to
+   `packages/browser/src/infra`.
+2. Updated browser infra imports to consume engine contracts through
+   `@solitude/engine` subpaths and browser rasterizers through local browser
+   package paths.
+3. Added transitional `src/infra/dom*` and `src/infra/infraPorts.ts` re-export
+   shims.
+4. Added an `@solitude/browser` subpath export for `./infra/*`.
+
+Notes:
+
+- `src/infra/NewtonianGravityEngine.ts` and `src/infra/headlessGameLoop.ts`
+  remain engine shims.
+- `src/infra/__tests__` remains under the old tree for now because those tests
+  still exercise browser shims and Solitude plugin composition.
+
+Verification:
+
+- Prettier, `npm run typecheck`, `npm run test`, and
+  `npm run typecheck --workspaces --if-present` passed for this slice.
 
 ## Completed Slice: Package Split 11
 

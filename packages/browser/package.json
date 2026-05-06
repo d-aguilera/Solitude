@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./infra/*": "./src/infra/*.ts",
     "./rasterize/*": "./src/rasterize/*.ts",
     "./rasterize/canvas/*": "./src/rasterize/canvas/*.ts",
     "./rasterize/webgl/*": "./src/rasterize/webgl/*.ts"
