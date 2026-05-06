@@ -15,6 +15,7 @@
 ## Package Split Impact
 
 - As of package-split Phase 0, generic headless loop composition no longer imports or installs the Solitude `spacecraftOperator` plugin by default.
+- An architecture guard now fails if production files under generic roots import `src/plugins`.
 - This reinforces the extraction boundary: product/scenario plugins remain caller-composed outer-layer behavior, even in headless tests.
 - No plugin folders moved yet; physical package relocation is still future work.
 

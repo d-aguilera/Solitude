@@ -119,6 +119,7 @@ Phase 0 completed boundary hardening:
 - `src/infra/headlessGameLoop.ts` no longer imports or auto-installs `spacecraftOperator`.
 - `createHeadlessLoop` accepts composed `GamePlugin[]` from the caller and derives control plugins, capability providers, focused-entity requirements, and simulation contributions from that list.
 - Headless tests now cover both generic stepping without Solitude plugins and Solitude spacecraft dynamics when `createSpacecraftOperatorPlugin()` is passed explicitly.
+- `src/architecture/importBoundaries.test.ts` guards generic production source roots against imports that resolve into `src/plugins`.
 
 ## Relationship To Other Memory Docs
 
@@ -170,7 +171,7 @@ Purpose: reduce risk before moving directories.
 - Remove Solitude plugin imports from generic infra/headless code. Completed for `src/infra/headlessGameLoop.ts`.
 - Make headless setup accept all required simulation/control/capability plugins from the caller. Completed for `createHeadlessLoop`.
 - Keep Solitude's default browser bootstrap responsible for installing the spacecraft operator and other product plugins.
-- Add guard checks or tests for no imports from generic layers into `src/plugins`.
+- Add guard checks or tests for no imports from generic layers into `src/plugins`. Completed for production files in `src/app`, `src/domain`, `src/infra`, `src/render`, and `src/setup`.
 - Identify the minimal engine public API needed by current Solitude plugins.
 
 ### Phase 1: Workspace Skeleton
@@ -238,14 +239,29 @@ Verification:
 
 - Prettier, `npm run typecheck`, and `npm run test` passed for this slice.
 
+## Completed Slice: Package Split 3
+
+Status: implemented after `Package split 2`.
+
+What changed:
+
+1. Added `src/architecture/importBoundaries.test.ts`.
+2. The test scans production `.ts` files under `src/app`, `src/domain`, `src/infra`, `src/render`, and `src/setup`.
+3. It fails if a relative static or dynamic import resolves under `src/plugins`.
+4. It intentionally excludes tests and `src/global`; tests still exercise product plugin behavior, and `src/global` remains the documented onion exception.
+5. Added `@types/node` as a direct dev dependency so file-scanning architecture tests typecheck cleanly.
+
+Verification:
+
+- Prettier, `npm run typecheck`, and `npm run test` passed for this slice.
+
 ## Next Implementation Slice
 
 Recommended next code slice:
 
-1. Add a lightweight import-boundary guard test or script for the pre-package tree.
-2. Fail if generic source areas (`src/app`, `src/domain`, `src/render`, `src/setup`, and generic `src/infra` files) import from `src/plugins`.
-3. Decide whether `src/global` is exempt in this guard, matching the known onion exception in `MEMORY.md`.
-4. Keep the guard narrow enough that the package move can replace it later with package `exports` enforcement.
+1. Identify the minimal public API needed for `@solitude/engine` and `@solitude/browser` by auditing cross-boundary imports.
+2. Draft package `exports` candidates before moving files.
+3. Decide whether `src/config/worldAndSceneConfig.ts` belongs in engine, browser, or Solitude app composition for the first workspace skeleton.
 
 ## Public API Sketch
 
