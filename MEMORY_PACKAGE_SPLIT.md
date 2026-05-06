@@ -259,48 +259,157 @@ Verification:
 
 Recommended next code slice:
 
-1. Identify the minimal public API needed for `@solitude/engine` and `@solitude/browser` by auditing cross-boundary imports.
-2. Draft package `exports` candidates before moving files.
-3. Decide whether `src/config/worldAndSceneConfig.ts` belongs in engine, browser, or Solitude app composition for the first workspace skeleton.
+1. Create the npm workspace skeleton with empty package entrypoints.
+2. Keep source files in place at first if needed, but make root tooling aware of `packages/engine`, `packages/browser`, and `packages/solitude`.
+3. Add package-local `package.json` and `tsconfig.json` files with conservative `exports` placeholders based on the audit below.
+4. Move files only after the skeleton typechecks.
 
-## Public API Sketch
+## Completed Slice: Package Split 4
 
-Engine exports should initially be conservative. Prefer adding exports as real consumers need them rather than exposing whole internal trees.
+Status: audit completed after `Package split 3`.
 
-Likely engine exports:
+What changed:
+
+1. Audited production import edges between proposed package areas.
+2. Confirmed generic production roots are guarded against plugin imports.
+3. Chose first-skeleton ownership for current config/runtime entrypoints.
+4. Drafted initial public API candidates for `@solitude/engine` and `@solitude/browser`.
+
+### Import Edge Summary
+
+Current production import directions line up with the target split:
+
+- Solitude app composition imports app/world-model helpers, browser bootstrap, browser runtime option parsing, and the Solitude plugin catalog.
+- Browser/infra imports engine-style app/domain/setup/render contracts and rasterizer adapters.
+- Solitude plugins import engine app/domain/setup/render/config helpers.
+- Generic engine-style production roots do not import `src/plugins`.
+
+Remaining expected churn:
+
+- `src/bootstrap.ts` is product composition and should move to `solitude`.
+- `src/plugins/index.ts` is the Solitude plugin catalog and should move to `solitude`.
+- `src/rasterize` should move with browser adapters.
+- `src/config/obj.ts` is a generic OBJ mesh parser used by Solitude content and should move to engine.
+- `src/config/worldAndSceneConfig.ts` should move to Solitude app composition for the first skeleton because it encodes the current default main-view camera offset. The `WorldAndSceneConfig` type remains engine-owned.
+
+### First-Pass Engine Exports
+
+Prefer narrow exports and add only what current consumers need.
+
+Candidate `@solitude/engine` root exports:
+
+```ts
+export { applyWorldModelPlugins } from "./app/worldModelConfig";
+export { buildViewDefinitions } from "./app/viewRegistry";
+export { createPluginCapabilityRegistry } from "./app/pluginCapabilities";
+export { createTickHandler } from "./app/game";
+export { createWorld, createHeadlessWorld } from "./setup/setup";
+export { createScene } from "./setup/sceneSetup";
+export { NewtonianGravityEngine } from "./infra/NewtonianGravityEngine";
+export { parseObjMesh } from "./config/obj";
+export { updateSceneGraph } from "./app/scene";
+export { validatePluginRequirements } from "./app/pluginRequirements";
+```
+
+Candidate transitional exports for current Solitude plugins:
+
+```ts
+export {
+  circularSpeedAtRadius,
+  computeVolumeOfTriangleMesh,
+  createKeplerianBodiesFromConfig,
+  formatDistance,
+  formatSimTime,
+  formatSpeed,
+  getDominantBody,
+  getDominantBodyPrimary,
+  initialFrame,
+} from "./transitional-public-paths";
+```
+
+Likely type exports include:
 
 ```ts
 export type {
+  ControlAction,
+  ControlledBody,
+  ControlledBodyState,
+  ControlInput,
   EntityConfig,
+  FocusContext,
   GamePlugin,
+  GravityEngine,
+  GravityState,
+  HudGrid,
+  HudPlugin,
+  InputPlugin,
+  LoopPlugin,
+  MainViewCameraRig,
+  MutableControlState,
+  PluginCapabilityProvider,
+  PolylineSceneObject,
+  RGB,
   RuntimeOptions,
+  Scene,
+  SceneObject,
+  ScenePlugin,
+  SegmentPlugin,
+  SimulationPlugin,
+  ViewDefinition,
+  ViewLayout,
   World,
   WorldAndSceneConfig,
-} from "./app-or-domain-public-paths";
-
-export {
-  applyWorldModelPlugins,
-  createPluginCapabilityRegistry,
-  createScene,
-  createTickHandler,
-  createWorld,
-  createHeadlessWorld,
-  NewtonianGravityEngine,
-  validatePluginRequirements,
-} from "./public-paths";
+  WorldSegment,
+} from "./public-type-paths";
 ```
 
-Likely browser exports:
+Math/constants exports can either be root-level for now or grouped under a subpath such as `@solitude/engine/math`:
 
 ```ts
-export {
-  bootstrapWithCanvas,
-  bootstrapWithWebGL,
-  parseRuntimeOptionsFromSearch,
-} from "./public-paths";
+export { localFrame } from "./domain/localFrame";
+export { mat3 } from "./domain/mat3";
+export { parameters } from "./global/parameters";
+export { vec3 } from "./domain/vec3";
+export { AU, C, km } from "./domain/units";
+export { EPS_DELTA_V, EPS_LEN, EPS_SPEED_FINE } from "./domain/epsilon";
 ```
 
-Exact names should follow the code that exists when each package is created.
+### First-Pass Browser Exports
+
+Candidate `@solitude/browser` exports:
+
+```ts
+export { bootstrapWith } from "./infra/domBootstrap";
+export { bootstrap as bootstrapCanvasRuntime } from "./infra/domCanvasBootstrap";
+export { bootstrap as bootstrapWebGLRuntime } from "./infra/domWebGLBootstrap";
+export { parseRuntimeOptionsFromSearch } from "./infra/domRuntimeOptions";
+```
+
+Keep these internal unless a real consumer appears:
+
+- `runLoop`
+- `initInput`
+- `initLayout`
+- concrete canvas/WebGL rasterizer classes
+
+### Solitude-Owned Composition
+
+The `solitude` package should own:
+
+```ts
+import { applyWorldModelPlugins } from "@solitude/engine";
+import {
+  bootstrapCanvasRuntime,
+  parseRuntimeOptionsFromSearch,
+} from "@solitude/browser";
+
+import { buildWorldAndSceneConfig } from "./config/worldAndSceneConfig";
+import { defaultPluginIds, loadPlugins } from "./plugins";
+```
+
+Verification:
+
+- Audit-only slice; no source behavior changed.
 
 ## Guardrails
 
