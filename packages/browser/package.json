@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./rasterize/*": "./src/rasterize/*.ts",
+    "./rasterize/canvas/*": "./src/rasterize/canvas/*.ts",
+    "./rasterize/webgl/*": "./src/rasterize/webgl/*.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0"

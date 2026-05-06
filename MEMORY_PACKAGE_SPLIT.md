@@ -262,8 +262,6 @@ Recommended next code slice:
 
 1. Start moving browser-owned source into `packages/browser/src`.
 2. Good next candidates:
-   - `src/rasterize`, because it is browser adapter code around engine render
-     ports;
    - DOM infra files such as `domBootstrap`, `domCanvasBootstrap`,
      `domWebGLBootstrap`, `domGameLoop`, `domKeyboardInput`, `domLayout`, and
      `domRuntimeOptions`.
@@ -273,6 +271,29 @@ Recommended next code slice:
    updated.
 5. Keep `src/config/worldAndSceneConfig.ts`, `src/bootstrap.ts`, and `src/plugins`
    in app-owned source until the Solitude package move.
+
+## Completed Slice: Package Split 11
+
+Status: implemented after `Package split 10`.
+
+What changed:
+
+1. Moved Canvas and WebGL rasterizer/surface adapters from `src/rasterize` to
+   `packages/browser/src/rasterize`.
+2. Updated browser rasterizer imports to consume engine app/render contracts
+   through `@solitude/engine` subpaths.
+3. Added transitional `src/rasterize/*` re-export shims.
+4. Added `@solitude/browser` subpath exports for rasterizer files.
+
+Notes:
+
+- DOM infra still imports old `src/rasterize/*` paths through shims.
+- Browser package now has its first real implementation source.
+
+Verification:
+
+- Prettier, `npm run typecheck`, `npm run test`, and
+  `npm run typecheck --workspaces --if-present` passed for this slice.
 
 ## Completed Slice: Package Split 10
 
