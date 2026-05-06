@@ -270,16 +270,43 @@ Verification:
 
 Recommended next code slice:
 
-1. Move root app shell ownership into the Solitude package where practical.
+1. Reduce remaining old-path compatibility shims where practical.
 2. Good next candidates:
-   - `index.html` / Vite entry ownership;
-   - `index.css` and other app-shell assets;
    - remaining old-path test imports that still reach `src/plugins/*` shims.
-3. Keep using thin `src/*` compatibility shims while root Vite ownership is
+   - root `src/bootstrap.ts` shim consumers;
+   - root app/infra tests that can move to package imports.
+3. Keep using thin `src/*` compatibility shims while external/root callers are
    transitional.
 4. Add real package root exports only as consumers are updated.
-5. Keep the root app entry working until `index.html` and Vite entry ownership
-   move cleanly.
+5. Keep root npm scripts working while package ownership continues to firm up.
+
+## Completed Slice: Package Split 15
+
+Status: implemented after `Package split 14`.
+
+What changed:
+
+1. Moved Solitude app-shell assets (`index.html`, `index.css`, and favicon)
+   into `packages/solitude`.
+2. Updated Vite root to `packages/solitude` so the real browser entry now lives
+   inside the Solitude package.
+3. Kept the existing root `dist` output path for `npm run build` /
+   `npm run preview` compatibility.
+4. Expanded the Vite test include globs to cover root and package-local tests if
+   Vite config is used by Vitest.
+
+Notes:
+
+- `packages/solitude/index.html` now imports `/src/bootstrap.ts`, which resolves
+  to `packages/solitude/src/bootstrap.ts` under the Vite package root.
+- The root `src/bootstrap.ts` shim remains for old-path TypeScript consumers,
+  but the Vite browser entry no longer depends on it.
+
+Verification:
+
+- Prettier, `npm run typecheck`, `npm run test`,
+  `npm run typecheck --workspaces --if-present`, and `npm run build` passed for
+  this slice.
 
 ## Completed Slice: Package Split 14
 

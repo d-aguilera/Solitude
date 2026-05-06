@@ -1,15 +1,18 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  root: ".", // index.html at root
+  root: "packages/solitude",
   build: {
-    outDir: "dist",
-    rollupOptions: {
-      input: "index.html",
-    },
+    emptyOutDir: true,
+    outDir: "../../dist",
   },
   test: {
-    include: ["src/**/*.test.ts", "src/**/*.spec.ts"],
+    include: [
+      "../../src/**/*.test.ts",
+      "../../src/**/*.spec.ts",
+      "../**/*.test.ts",
+      "../**/*.spec.ts",
+    ],
     exclude: ["dist", "node_modules", "**/dist/**", "**/node_modules/**"],
   },
 });
