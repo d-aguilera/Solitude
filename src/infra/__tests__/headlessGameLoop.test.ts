@@ -1,3 +1,4 @@
+import { createSpacecraftOperatorPlugin } from "solitude/plugins/spacecraftOperator/index";
 import { describe, expect, it } from "vitest";
 import type { EntityConfig } from "../../app/configPorts";
 import type { SimulationPlugin } from "../../app/pluginPorts";
@@ -5,7 +6,6 @@ import type { GravityEngine, GravityState } from "../../domain/domainPorts";
 import { localFrame } from "../../domain/localFrame";
 import { mat3 } from "../../domain/mat3";
 import { vec3 } from "../../domain/vec3";
-import { createSpacecraftOperatorPlugin } from "../../plugins/spacecraftOperator/index";
 import type { WorldConfigBase } from "../../setup/setup";
 import { createHeadlessLoop } from "../headlessGameLoop";
 

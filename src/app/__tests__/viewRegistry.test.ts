@@ -1,7 +1,7 @@
+import { createSpacecraftOperatorPlugin } from "solitude/plugins/spacecraftOperator/index";
 import { describe, expect, it } from "vitest";
 import { localFrame } from "../../domain/localFrame";
 import { vec3 } from "../../domain/vec3";
-import { createSpacecraftOperatorPlugin } from "../../plugins/spacecraftOperator/index";
 import type { WorldAndSceneConfig } from "../configPorts";
 import type { GamePlugin } from "../pluginPorts";
 import {

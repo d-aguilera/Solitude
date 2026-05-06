@@ -112,10 +112,10 @@ The conceptual split is mostly in place:
 
 Remaining physical-boundary issues:
 
-- `src/bootstrap.ts` is still the root Vite entry path, but now only imports the
-  Solitude package bootstrap side effect.
-- `src/plugins/index.ts` and `src/plugins/spacecraftOperator/index.ts` are
-  old-path compatibility shims.
+- `packages/solitude/index.html` is now the Vite entry path and imports
+  `packages/solitude/src/bootstrap.ts` through the package-root `/src` path.
+- The old root `src/plugins` compatibility shims have been removed; remaining
+  callers use `solitude/plugins/*` package exports.
 - Tests currently assume one package root and one `src` tree.
 - Imports are relative; package exports do not yet enforce boundaries.
 
@@ -272,9 +272,9 @@ Recommended next code slice:
 
 1. Reduce remaining old-path compatibility shims where practical.
 2. Good next candidates:
-   - remaining old-path test imports that still reach `src/plugins/*` shims.
    - root `src/bootstrap.ts` shim consumers;
-   - root app/infra tests that can move to package imports.
+   - remaining root app/infra tests that can move closer to package-local
+     ownership.
 3. Keep using thin `src/*` compatibility shims while external/root callers are
    transitional.
 4. Add real package root exports only as consumers are updated.
@@ -308,6 +308,28 @@ Verification:
   `npm run typecheck --workspaces --if-present`, and `npm run build` passed for
   this slice.
 
+## Completed Slice: Package Split 16
+
+Status: implemented after `Package split 15`.
+
+What changed:
+
+1. Updated root app/infra tests that compose the Solitude spacecraft operator to
+   import it through `solitude/plugins/spacecraftOperator/index`.
+2. Removed the remaining root `src/plugins` compatibility shims.
+
+Notes:
+
+- The root `src/bootstrap.ts` side-effect shim remains because it is harmless
+  old-path compatibility for TypeScript consumers.
+- Solitude plugin source and package exports are now the only in-repo plugin
+  import path.
+
+Verification:
+
+- Prettier, `npm run typecheck`, `npm run test`, and
+  `npm run typecheck --workspaces --if-present` passed for this slice.
+
 ## Completed Slice: Package Split 14
 
 Status: implemented after `Package split 13`.
@@ -328,8 +350,9 @@ What changed:
 
 Notes:
 
-- The current root Vite entry still points at `src/bootstrap.ts`; that shim now
-  loads the Solitude package bootstrap side effect.
+- At the time of this slice, the root Vite entry still pointed at
+  `src/bootstrap.ts`; Package Split 15 moved the Vite app shell into
+  `packages/solitude`.
 - Solitude plugin tests moved with the plugin tree and now typecheck inside the
   Solitude workspace package.
 
@@ -596,8 +619,8 @@ Remaining expected churn:
 
 - `src/bootstrap.ts` is now a compatibility shim; real product composition lives
   in `packages/solitude/src/bootstrap.ts`.
-- `src/plugins/index.ts` is now a compatibility shim; the real Solitude plugin
-  catalog lives in `packages/solitude/src/plugins/index.ts`.
+- The old root `src/plugins` compatibility shims have been removed; the real
+  Solitude plugin catalog lives in `packages/solitude/src/plugins/index.ts`.
 - `src/rasterize` should move with browser adapters.
 - `src/config/obj.ts` is a generic OBJ mesh parser used by Solitude content and should move to engine.
 - `src/config/worldAndSceneConfig.ts` should move to Solitude app composition for the first skeleton because it encodes the current default main-view camera offset. The `WorldAndSceneConfig` type remains engine-owned.

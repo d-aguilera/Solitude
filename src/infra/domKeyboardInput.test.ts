@@ -1,6 +1,6 @@
+import { createSpacecraftOperatorPlugin } from "solitude/plugins/spacecraftOperator/index";
 import { describe, expect, it } from "vitest";
 import { BASE_CONTROL_ACTIONS } from "../app/controlPorts";
-import { createSpacecraftOperatorPlugin } from "../plugins/spacecraftOperator/index";
 import { __domKeyboardInputTest } from "./domKeyboardInput";
 
 describe("domKeyboardInput", () => {

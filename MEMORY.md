@@ -50,7 +50,7 @@
 - `src/setup/`: generic runtime world/scene construction from transitional plugin-contributed config.
 - `src/config/`: generic config helpers and base runtime config.
 - `src/global/`: cross-cutting globals (allowed onion exception).
-- `packages/solitude/src/plugins/`: plugin catalog/composition layer (outer layer), including default world-model content. `src/plugins/*` contains transitional shims only where old-path imports still need them.
+- `packages/solitude/src/plugins/`: plugin catalog/composition layer (outer layer), including default world-model content.
 
 ## Plugins
 
@@ -143,7 +143,7 @@
 - Canvas/WebGL rasterizer source now lives under `packages/browser/src/rasterize`; `src/rasterize/*` files are transitional re-export shims.
 - DOM/browser infra source now lives under `packages/browser/src/infra`; `src/infra/dom*` and `src/infra/infraPorts.ts` are transitional re-export shims.
 - Solitude default world/scene config now lives under `packages/solitude/src/config`; `src/config/worldAndSceneConfig.ts` is a transitional re-export shim.
-- Solitude browser bootstrap and plugin catalog now live under `packages/solitude/src`; `src/bootstrap.ts`, `src/plugins/index.ts`, and `src/plugins/spacecraftOperator/index.ts` are transitional shims.
+- Solitude browser bootstrap and plugin catalog now live under `packages/solitude/src`; `src/bootstrap.ts` remains an old-path side-effect shim, while root `src/plugins` shims have been removed.
 - Solitude app shell assets now live under `packages/solitude` (`index.html`, `index.css`, favicon); root Vite config points at that package while still building to root `dist`.
 - Core setup constructs generic controllable bodies via `setupControllableBodies` and Keplerian motion bodies via `setupKeplerianBodies`; scenario plugins may still provide spacecraft content.
 - Core setup classifies entities from capabilities/components; `legacyKind` has been removed from source.
