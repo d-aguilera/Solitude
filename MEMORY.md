@@ -134,6 +134,7 @@
 - Package-split Phase 0 has started: generic headless runtime no longer imports or auto-installs Solitude spacecraft plugins; Solitude behavior is caller-composed for headless runs.
 - Package-split Phase 0 now includes an architecture guard test that keeps generic production source roots from importing `src/plugins`.
 - Package-split workspace skeleton exists under `packages/engine`, `packages/browser`, and `packages/solitude`; runtime source has not moved yet.
+- Package split source migration has started: real `domain` and `global` source now lives under `packages/engine/src`; `src/domain/*` and `src/global/*` are transitional re-export shims.
 - Core setup constructs generic controllable bodies via `setupControllableBodies` and Keplerian motion bodies via `setupKeplerianBodies`; scenario plugins may still provide spacecraft content.
 - Core setup classifies entities from capabilities/components; `legacyKind` has been removed from source.
 - Render scene adaptation uses explicit `renderable.role` values; current roles are `controlledBody`, `orbitalBody`, and `lightEmitter`.
@@ -154,6 +155,7 @@
 - Package split Phase 0: removed the direct `spacecraftOperator` import from generic headless loop composition; headless callers now pass Solitude plugins explicitly.
 - Package split Phase 0: added a production import-boundary guard for generic source roots versus `src/plugins`.
 - Package split workspace skeleton: added npm workspaces and empty package entrypoints for engine, browser, and Solitude app packages.
+- Package split source migration: moved real domain/global implementation files into `packages/engine/src` with old-path compatibility shims.
 
 ## Next steps
 

@@ -260,17 +260,43 @@ Verification:
 
 Recommended next code slice:
 
-1. Start moving engine-owned source into `packages/engine/src`.
-2. Begin with low-risk leaves or tightly grouped internals:
-   - `src/domain`;
-   - `src/app`;
-   - `src/global`;
-   - `src/config/obj.ts`;
-   - `src/setup`;
-   - `src/render`.
-3. Add real `packages/engine/src/index.ts` exports only as consumers are updated.
-4. Keep `src/config/worldAndSceneConfig.ts`, `src/bootstrap.ts`, and `src/plugins`
+1. Continue moving engine-owned source into `packages/engine/src`.
+2. Good next candidates:
+   - `src/app`, because it depends on moved `domain`/`global` but not on plugins;
+   - `src/config/obj.ts`, because it is a generic parser used by Solitude content;
+   - `src/setup`, once app config ports are in engine;
+   - `src/render`, once app scene/render ports are in engine.
+3. Keep using thin `src/*` compatibility shims while other packages still import
+   old paths.
+4. Add real `packages/engine/src/index.ts` exports only as consumers are updated.
+5. Keep `src/config/worldAndSceneConfig.ts`, `src/bootstrap.ts`, and `src/plugins`
    in app-owned source until the Solitude package move.
+
+## Completed Slice: Package Split 6
+
+Status: implemented after `Package split 5`.
+
+What changed:
+
+1. Moved real `src/domain` source and domain tests to
+   `packages/engine/src/domain`.
+2. Moved real `src/global` source to `packages/engine/src/global`.
+3. Added transitional `src/domain/*` and `src/global/*` re-export shims that point
+   at `@solitude/engine` subpath exports.
+4. Added `@solitude/engine` subpath exports for `./domain/*` and `./global/*`.
+5. Updated Vitest include globs so package-local tests run.
+
+Notes:
+
+- Runtime callers still import the old `src/domain/*` and `src/global/*` paths.
+  Those files are now compatibility shims only.
+- The real math, physics primitive, domain port, profiler, and global parameter
+  implementations now physically live in the engine package.
+
+Verification:
+
+- Prettier, `npm run typecheck`, `npm run test`, and
+  `npm run typecheck --workspaces --if-present` passed for this slice.
 
 ## Completed Slice: Package Split 5
 
