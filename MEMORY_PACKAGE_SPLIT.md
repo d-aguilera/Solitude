@@ -262,13 +262,41 @@ Recommended next code slice:
 
 1. Continue moving engine-owned source into `packages/engine/src`.
 2. Good next candidates:
-   - `src/setup`, once app config ports are in engine;
-   - `src/render`, once app scene/render ports are in engine.
+   - engine-owned gravity/headless infra, especially `NewtonianGravityEngine` and
+     `headlessGameLoop`;
+   - browser-owned DOM/rasterizer infra, once engine exports stabilize.
 3. Keep using thin `src/*` compatibility shims while other packages still import
    old paths.
 4. Add real `packages/engine/src/index.ts` exports only as consumers are updated.
 5. Keep `src/config/worldAndSceneConfig.ts`, `src/bootstrap.ts`, and `src/plugins`
    in app-owned source until the Solitude package move.
+
+## Completed Slice: Package Split 9
+
+Status: implemented after `Package split 8`.
+
+What changed:
+
+1. Moved setup implementation and setup tests from `src/setup` to
+   `packages/engine/src/setup`.
+2. Moved render implementation and render tests from `src/render` to
+   `packages/engine/src/render`, because setup scene construction depends on
+   render scene adaptation.
+3. Added transitional `src/setup/*` and `src/render/*` re-export shims.
+4. Added `@solitude/engine` subpath exports for `./setup/*` and `./render/*`.
+
+Notes:
+
+- Runtime and plugin callers still import old `src/setup/*` and `src/render/*`
+  paths through shims.
+- World creation, headless world setup, Keplerian setup, controllable-body setup,
+  scene setup, scene adaptation, render prep, view rendering, HUD rendering, and
+  render formatting now physically live in the engine package.
+
+Verification:
+
+- Prettier, `npm run typecheck`, `npm run test`, and
+  `npm run typecheck --workspaces --if-present` passed for this slice.
 
 ## Completed Slice: Package Split 8
 

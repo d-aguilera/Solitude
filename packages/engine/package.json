@@ -8,7 +8,9 @@
     "./app/*": "./src/app/*.ts",
     "./config/*": "./src/config/*.ts",
     "./domain/*": "./src/domain/*.ts",
-    "./global/*": "./src/global/*.ts"
+    "./global/*": "./src/global/*.ts",
+    "./render/*": "./src/render/*.ts",
+    "./setup/*": "./src/setup/*.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"
