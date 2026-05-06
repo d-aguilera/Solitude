@@ -139,6 +139,7 @@
 - Generic OBJ parser source now lives under `packages/engine/src/config`; `src/config/obj.ts` is a transitional re-export shim.
 - Setup source now lives under `packages/engine/src/setup`; `src/setup/*` files are transitional re-export shims.
 - Render source now lives under `packages/engine/src/render`; `src/render/*` files are transitional re-export shims.
+- Engine-owned gravity/headless infra now lives under `packages/engine/src/infra`; `src/infra/NewtonianGravityEngine.ts` and `src/infra/headlessGameLoop.ts` are transitional re-export shims.
 - Core setup constructs generic controllable bodies via `setupControllableBodies` and Keplerian motion bodies via `setupKeplerianBodies`; scenario plugins may still provide spacecraft content.
 - Core setup classifies entities from capabilities/components; `legacyKind` has been removed from source.
 - Render scene adaptation uses explicit `renderable.role` values; current roles are `controlledBody`, `orbitalBody`, and `lightEmitter`.
@@ -164,6 +165,7 @@
 - Package split source migration: moved generic OBJ parser into `packages/engine/src/config` with old-path compatibility shim.
 - Package split source migration: moved setup implementation and setup tests into `packages/engine/src/setup` with old-path compatibility shims.
 - Package split source migration: moved render implementation and render tests into `packages/engine/src/render` with old-path compatibility shims.
+- Package split source migration: moved `NewtonianGravityEngine` plus generic headless loop into `packages/engine/src/infra` with old-path compatibility shims.
 
 ## Next steps
 

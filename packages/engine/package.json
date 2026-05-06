@@ -9,6 +9,7 @@
     "./config/*": "./src/config/*.ts",
     "./domain/*": "./src/domain/*.ts",
     "./global/*": "./src/global/*.ts",
+    "./infra/*": "./src/infra/*.ts",
     "./render/*": "./src/render/*.ts",
     "./setup/*": "./src/setup/*.ts"
   },

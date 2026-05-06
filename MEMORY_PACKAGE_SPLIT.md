@@ -260,16 +260,45 @@ Verification:
 
 Recommended next code slice:
 
-1. Continue moving engine-owned source into `packages/engine/src`.
+1. Start moving browser-owned source into `packages/browser/src`.
 2. Good next candidates:
-   - engine-owned gravity/headless infra, especially `NewtonianGravityEngine` and
-     `headlessGameLoop`;
-   - browser-owned DOM/rasterizer infra, once engine exports stabilize.
+   - `src/rasterize`, because it is browser adapter code around engine render
+     ports;
+   - DOM infra files such as `domBootstrap`, `domCanvasBootstrap`,
+     `domWebGLBootstrap`, `domGameLoop`, `domKeyboardInput`, `domLayout`, and
+     `domRuntimeOptions`.
 3. Keep using thin `src/*` compatibility shims while other packages still import
    old paths.
-4. Add real `packages/engine/src/index.ts` exports only as consumers are updated.
+4. Add real `packages/browser/src/index.ts` exports only as consumers are
+   updated.
 5. Keep `src/config/worldAndSceneConfig.ts`, `src/bootstrap.ts`, and `src/plugins`
    in app-owned source until the Solitude package move.
+
+## Completed Slice: Package Split 10
+
+Status: implemented after `Package split 9`.
+
+What changed:
+
+1. Moved `NewtonianGravityEngine` from `src/infra` to
+   `packages/engine/src/infra`.
+2. Moved generic `headlessGameLoop` to `packages/engine/src/infra`.
+3. Added transitional `src/infra/NewtonianGravityEngine.ts` and
+   `src/infra/headlessGameLoop.ts` re-export shims.
+4. Added an `@solitude/engine` subpath export for `./infra/*`.
+
+Notes:
+
+- DOM/browser infra remains in `src/infra` for the next browser-package slice.
+- Runtime callers still import old `src/infra/*` paths through shims.
+- `headlessGameLoop` tests remain under `src/infra/__tests__` for now because
+  one test intentionally composes the Solitude spacecraft plugin through the
+  outer-layer test boundary.
+
+Verification:
+
+- Prettier, `npm run typecheck`, `npm run test`, and
+  `npm run typecheck --workspaces --if-present` passed for this slice.
 
 ## Completed Slice: Package Split 9
 
