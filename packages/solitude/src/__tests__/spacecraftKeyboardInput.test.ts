@@ -1,4 +1,4 @@
-import { __domKeyboardInputTest } from "@solitude/browser/infra/domKeyboardInput";
+import { __domKeyboardInputTest } from "@solitude/browser/dom/keyboardInput";
 import { createSpacecraftOperatorPlugin } from "solitude/plugins/spacecraftOperator/index";
 import { describe, expect, it } from "vitest";
 

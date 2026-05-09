@@ -109,6 +109,7 @@ The conceptual and physical split is in place:
 - Core plugin-to-plugin protocols use an opaque capability registry.
 - Playback snapshots are generic entity/focus schema only.
 - Package exports are explicit subpaths for current cross-package consumers.
+- Browser package public paths use `@solitude/browser/dom/*`; internal adapter files may still live under `src/infra`.
 
 Remaining physical-boundary issues:
 
@@ -229,6 +230,31 @@ treated as normal API curation:
 3. Keep Solitude-specific behavior out of `@solitude/engine` and `@solitude/browser`.
 
 ## Completed Slices
+
+### Completed Slice: Package Split 23
+
+What changed:
+
+1. Renamed public `@solitude/browser` DOM adapter exports from `./infra/dom*` paths to `./dom/*` paths.
+2. Updated Solitude imports to use `@solitude/browser/dom/canvasBootstrap`, `@solitude/browser/dom/runtimeOptions`, and `@solitude/browser/dom/keyboardInput`.
+3. Kept the internal browser file layout unchanged for now; package exports map the cleaner public paths to the existing implementation files.
+
+Notes:
+
+- `infra` remains an internal architecture label rather than part of the public browser API.
+- The `dom` namespace stays explicit because these adapters depend on DOM/browser globals.
+
+### Completed Slice: Package Split 22
+
+What changed:
+
+1. Removed the remaining re-export forwarding from `packages/engine/src/app/configPorts.ts`.
+2. Updated consumers to import entity, physics, and render config types from their owning engine modules.
+3. Added an explicit `@solitude/engine/app/physicsConfigPorts` package export for cross-package physics config type consumers.
+
+Notes:
+
+- Engine source no longer has `export *` or `export ... from` re-export statements.
 
 ### Completed Slice: Package Split 21
 

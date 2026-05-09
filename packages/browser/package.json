@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./infra/domCanvasBootstrap": "./src/infra/domCanvasBootstrap.ts",
-    "./infra/domKeyboardInput": "./src/infra/domKeyboardInput.ts",
-    "./infra/domRuntimeOptions": "./src/infra/domRuntimeOptions.ts"
+    "./dom/canvasBootstrap": "./src/infra/domCanvasBootstrap.ts",
+    "./dom/keyboardInput": "./src/infra/domKeyboardInput.ts",
+    "./dom/runtimeOptions": "./src/infra/domRuntimeOptions.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0"

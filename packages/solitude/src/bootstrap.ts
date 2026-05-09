@@ -1,5 +1,5 @@
-import { bootstrap } from "@solitude/browser/infra/domCanvasBootstrap";
-import { parseRuntimeOptionsFromSearch } from "@solitude/browser/infra/domRuntimeOptions";
+import { bootstrap } from "@solitude/browser/dom/canvasBootstrap";
+import { parseRuntimeOptionsFromSearch } from "@solitude/browser/dom/runtimeOptions";
 import { applyWorldModelPlugins } from "@solitude/engine/app/worldModelConfig";
 import { buildWorldAndSceneConfig } from "./config/worldAndSceneConfig";
 import { defaultPluginIds, loadPlugins } from "./plugins/index";
