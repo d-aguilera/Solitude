@@ -224,16 +224,29 @@ Purpose: reduce risk before moving directories.
 
 Recommended next code slice:
 
-1. Remove the root `src/bootstrap.ts` compatibility shim if no in-repo consumers remain.
-2. Then start moving root tests to package ownership:
-   - app/engine-only tests to `packages/engine/src/app/__tests__`;
-   - browser adapter tests to `packages/browser/src/infra`;
-   - mixed Solitude composition tests either stay temporarily at root or move under `packages/solitude`.
-3. Keep root `src/*` implementation shims until their corresponding old-path tests/callers are gone.
-4. Add real package root exports only as consumers are updated.
-5. Keep root npm scripts working while package ownership continues to firm up.
+1. Audit whether the root `src/bootstrap.ts` compatibility shim has any in-repo consumers; remove it if not.
+2. Decide the next old-path shim group to retire or harden. Root `src/*` is now mostly one-line re-export shims plus the architecture guard.
+3. Add real package root exports only as consumers are updated.
+4. Keep root npm scripts working while package ownership continues to firm up.
+5. Start narrowing broad/transitional package exports only after old-path consumers are gone.
 
 ## Completed Slices
+
+### Completed Slice: Package Split 17
+
+What changed:
+
+1. Moved generic app tests into `packages/engine/src/app/__tests__`.
+2. Moved generic headless runtime tests into `packages/engine/src/infra/__tests__`.
+3. Moved browser keyboard/runtime-option tests into `packages/browser/src/infra`.
+4. Moved Solitude spacecraft integration checks into `packages/solitude/src/__tests__`.
+5. Split mixed tests so engine/browser test source no longer imports Solitude plugins.
+
+Notes:
+
+- The root `src` test tree is now down to `src/architecture/importBoundaries.test.ts`.
+- Automated verification passed with `npm run typecheck` and `npm run test`.
+- Manual interactive verification passed by playing back the `random-trip` scenario.
 
 ### Completed Slice: Package Split 16
 

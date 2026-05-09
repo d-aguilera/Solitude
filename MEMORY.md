@@ -3,105 +3,94 @@
 ## At-a-glance
 
 - **App**: Solitude — browser-based spaceflight + orbital mechanics sandbox with pilot and picture-in-picture axial views.
-- **Core value**: real-ish Newtonian gravity and a controllable ship, rendered in 2D/3D projections.
+- **Core value**: real-ish Newtonian gravity and a controllable spacecraft, rendered in 2D/3D projections.
 - **Primary user**: someone exploring orbital dynamics and spacecraft controls.
+- **Current strategic direction**: keep the engine generic; keep Solitude-specific spacecraft, solar-system, playback, and operator behavior in the Solitude package/plugins.
+
+## How To Use This File
+
+- Keep this file as a **current-state snapshot and router**.
+- Put detailed migration logs, completed slices, and long tactical notes in the relevant spin-off memory doc.
+- When a topic grows beyond a few bullets here, move the detail into the spin-off and leave a pointer.
 
 ## Spin-off memory docs
 
-- `MEMORY_PLUGIN_EXTRACTION.md`: audit notes and candidate list for moving non-core code into plugins.
-- `MEMORY_ENTITY_MODEL.md`: dedicated strategy/context for replacing ships/planets/stars core buckets with generic entities/components.
-- `MEMORY_OPERATOR_MODEL.md`: current strategic plan for moving main ship/control/camera behavior into plugin-defined operator modes around a generic focused entity.
+- `MEMORY_PACKAGE_SPLIT.md`: physical package split into `@solitude/engine`, `@solitude/browser`, and `solitude`; includes completed package-split slices and next migration steps.
+- `MEMORY_OPERATOR_MODEL.md`: strategy for moving main ship/control/camera behavior into plugin-defined operator modes around a generic focused entity.
+- `MEMORY_ENTITY_MODEL.md`: strategy/context for replacing ships/planets/stars core buckets with generic entities/components.
 - `MEMORY_HEADLESS_PLAYBACK.md`: planned work for running recorded playback scenarios end-to-end without the browser.
-- `MEMORY_PACKAGE_SPLIT.md`: planned work for physically splitting the generic engine, browser adapters, and Solitude app/scenario packages.
-- **Note**: Plugin extraction and entity model generalization are still useful history, but the strategic direction has shifted to operator/focus generalization.
+- `MEMORY_PLUGIN_EXTRACTION.md`: older audit notes and candidate list for moving non-core code into plugins.
 
 ## Current focus
 
-- Generalize the main interactive subject so core owns a generic focused entity, main view plumbing, and simulation phases while plugins define spacecraft controls, camera rigs, telemetry assumptions, and operator modes.
-- **Current phase boundary**: plugin-facing and core runtime contexts now use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`. The old `mainControlledEntityId` / `setMainControlledEntityId` compatibility path has been retired from source.
+- **Primary active work**: continue the package split. See `MEMORY_PACKAGE_SPLIT.md` before moving files, changing imports/exports, changing package boundaries, or touching bootstrap/headless composition.
+- **Operator/focus boundary**: core/runtime contexts use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`.
+- **Retired compatibility names**: keep `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming out of source.
 
-## Must-Do After Code Changes (Do Not Skip)
+## Must-Do After Code Changes
 
-- Run Prettier on modified files (or the whole codebase if easier).
-- Organize imports at the top of modified source files. Prettier may not do this; use the TypeScript/VS Code "Organize Imports" source action or an equivalent tool when available.
+- Run Prettier on modified files, or the whole codebase if easier.
+- Organize imports at the top of modified source files. Prettier uses `prettier-plugin-organize-imports`, but verify when imports move across packages.
 - Run: `npm run typecheck`
 - Run: `npm run test`
-- If you did not run them, explicitly say “Not run” in your response.
+- If you did not run either command, explicitly say “Not run” in the response.
 
 ## Non-negotiables and exceptions
 
 - **Performance is paramount**: CPU time, memory consumption, and garbage collection pressure come before everything else.
 - **Onion layering**: domain core → app logic → infra adapters. Outer layers depend inward, even if it costs performance.
-- **Known exception**: `src/global/` is a deliberate carve-out and may violate onion rules. Do not treat it as a layering issue.
+- **Known exception**: `src/global/` / `packages/engine/src/global/` is a deliberate carve-out and may violate onion rules. Do not treat it as a layering issue.
 - **Physics**: Newtonian N-body with leapfrog integration for stability.
-- **Solar system data**: use real-ish values (AU, km, approximate J2000 elements) for plausibility.
-- **Entity model direction**: core should not know about scenario categories such as planet/star/ship except where still transitional. Prefer generic bodies/components/capabilities.
-- **Rendering**: default Canvas 2D for portability; WebGL path exists if needed.
+- **Solar-system data**: use real-ish values (AU, km, approximate J2000 elements) for plausibility.
+- **Entity model direction**: core should not know scenario categories such as planet/star/ship. Prefer generic bodies/components/capabilities.
+- **Rendering**: default Canvas 2D for portability; WebGL path exists but is not wired by default.
 - **Math helpers**: always use math helpers when available for vector/matrix/trig instead of inlining the math.
-- **Epsilons**: use the shared constants in `src/domain/epsilon.ts` instead of inline literals.
+- **Epsilons**: use shared constants in `packages/engine/src/domain/epsilon.ts` instead of inline literals.
 
-## Architecture map
+## Package Snapshot
 
-- `src/domain/`: math + physics primitives (vec/mat, orbit, collisions, gravity state).
-- `src/app/`: app/game logic (controls, autopilot, scene updates).
-- `src/infra/`: DOM input, layout, game loop, gravity engine.
-- `src/render/`: projection + render staging (faces, polylines, HUD).
-- `src/rasterize/`: Canvas2D + WebGL rasterizers.
-- `src/setup/`: generic runtime world/scene construction from transitional plugin-contributed config.
-- `src/config/`: generic config helpers and base runtime config.
-- `src/global/`: cross-cutting globals (allowed onion exception).
-- `packages/solitude/src/plugins/`: plugin catalog/composition layer (outer layer), including default world-model content.
+- `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
+- `packages/browser/src/`: DOM/runtime adapters, keyboard input, layout, Canvas 2D, and WebGL rasterizer adapters.
+- `packages/solitude/src/`: Solitude app bootstrap, default config, plugin catalog, scenarios, spacecraft operator, playback, telemetry, and product-specific behavior.
+- `src/*`: transitional compatibility shims for old import paths, plus `src/architecture/importBoundaries.test.ts`.
+- Root Vite config uses `packages/solitude` as the app root and still builds to root `dist`.
 
-## Plugins
+## Runtime Flow
 
-- **Role**: plugins are the outermost layer that compose input, control, loop, HUD, scene, segment hooks, and world-model content around the core game.
-- **Layering rule**: inner layers (`domain`, `app`, `render`) and browser adapters must never import from Solitude plugins; Solitude bootstrap decides what to load.
-- **Registration**: `packages/solitude/src/plugins/index.ts` exports `availablePlugins` and `loadPlugins`; Solitude bootstrap chooses plugin IDs.
-- **Composition state**: plugin-to-plugin shared state that should not enter core belongs in the plugin composition layer, e.g. spacecraft operator telemetry for thrust/RCS HUD readouts.
-- **Single source of truth**: plugin list, structure, and behavior live in `packages/solitude/src/plugins/README.md`.
-- **World-model goal**: scenario plugins should contribute generic entities/components. Core should validate required capabilities (e.g. main controllable body) rather than requiring fixed categories.
+- `packages/solitude/index.html` loads `packages/solitude/src/bootstrap.ts`.
+- Solitude bootstrap builds config, loads the product plugin set, and calls browser runtime bootstrap.
+- `packages/browser/src/infra/domBootstrap.ts` wires DOM input, layout, renderers, game loop, and gravity engine.
+- `packages/engine/src/app/game.ts` runs per-tick simulation phases.
+- Solitude plugins provide spacecraft controls, vehicle dynamics, camera rigs, HUD readouts, playback behavior, and scenario/world-model content.
 
-## Entity Model Strategy
+## Current State
 
-- **State**: runtime `World` stores generic entities and capability arrays; legacy planet/star/ship config remains at plugin/API compatibility edges.
-- **Next strategic layer**: use the generic entity model as the foundation for operator/focus generalization. The main ship should become plugin-owned behavior rather than a core assumption.
-- **Target model**: core stores generic entities with capability-style components, such as transform/state, gravity mass, collision sphere, render mesh/color, light emitter, axial spin, controllable body, and main focus identity.
-- **System rule**: systems should query capabilities instead of categories:
-  - gravity integrates entities with mass + position + velocity.
-  - collision checks controllable/dynamic bodies against collision spheres.
-  - rendering draws renderable mesh entities and light emitters.
-  - operator/control plugins operate on the configured main focus when its required capabilities are present.
-  - telemetry/autopilot plugins can define their own higher-level concepts, such as dominant gravitational primary, without forcing those concepts into core.
-- **Migration strategy**:
-  1. Move remaining plugins to direct generic entity contribution.
-  2. Retire legacy world-model registry methods and config arrays.
-  3. Keep remaining ship terminology only where it is spacecraft-specific or non-architectural compatibility IDs/visual roles.
-- **Compatibility approach**: keep changes incremental and test-backed. Use adapters during the transition rather than doing a full rewrite.
+- Core loop works: input → physics → scene update → render → HUD.
+- Runtime world state is generic entity/capability based.
+- Solar-system content is contributed by `packages/solitude/src/plugins/solarSystem/`.
+- Spacecraft propulsion/RCS/attitude, input bindings, spacecraft operator state, and the primary forward camera rig live in `packages/solitude/src/plugins/spacecraftOperator/`.
+- Core owns generic focus, primary-view plumbing, simulation phase order, gravity, spin, collision, setup, render preparation, and plugin port/capability contracts.
+- Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
+- Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
+- Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`.
+- Tests have moved mostly into owning packages; root `src` keeps only the architecture boundary guard for now.
 
-## Runtime flow
+## Key Files
 
-- `packages/solitude/index.html` is the Vite app shell and loads `packages/solitude/src/bootstrap.ts`, which builds config and bootstraps the DOM runtime. `src/bootstrap.ts` is an old-path side-effect shim only.
-- `packages/browser/src/infra/domBootstrap.ts` wires input, layout, renderers, loop, and gravity engine.
-- `src/infra/domGameLoop.ts` runs the frame loop and orchestrates physics + rendering.
-- `src/app/game.ts` is the per-tick simulation core.
-- Plugin phase/HUD/scene/segment/loop contexts are focused-entity-first: use `mainFocus.controlledBody` for the active body.
-- Per-tick core no longer returns mutable tick output; operator-specific readout state lives in plugins.
-
-## Key files
-
-- `src/infra/NewtonianGravityEngine.ts`: N-body gravity (leapfrog).
-- `src/infra/headlessGameLoop.ts`: generic headless stepper; callers pass Solitude plugins explicitly when they need spacecraft behavior.
-- `packages/solitude/src/plugins/spacecraftOperator/`: spacecraft input bindings plus thrust/RCS/attitude command interpretation and vehicle dynamics.
+- `packages/engine/src/infra/NewtonianGravityEngine.ts`: N-body gravity with leapfrog integration.
+- `packages/engine/src/infra/headlessGameLoop.ts`: generic headless stepper; callers pass Solitude plugins explicitly when needed.
+- `packages/engine/src/setup/sceneSetup.ts`: generic scene graph + trajectory setup.
+- `packages/engine/src/render/DefaultViewRenderer.ts`: projection + draw list assembly.
+- `packages/browser/src/infra/domBootstrap.ts`: browser runtime composition.
+- `packages/solitude/src/bootstrap.ts`: Solitude browser app composition.
+- `packages/solitude/src/plugins/spacecraftOperator/`: spacecraft controls, dynamics, telemetry state, and forward camera rig.
 - `packages/solitude/src/plugins/autopilot/logic.ts`: align-to-velocity/body and “circle now”.
-- `packages/solitude/src/plugins/playback/`: diagnostic capture/playback for repeatable circle-now repros.
-- `src/setup/sceneSetup.ts`: scene graph + trajectory setup.
-- `packages/solitude/src/plugins/solarSystem/`: solar system data, colors, meshes, default ships, and Earth-bound initial ship states.
-- `src/render/DefaultViewRenderer.ts`: projection + draw list assembly.
+- `packages/solitude/src/plugins/playback/`: diagnostic capture/playback and repeatable scenario logs.
 
-## Controls quick reference
+## Controls Quick Reference
 
 - Look: `Arrow keys`, reset with `R`.
-- Thrust level: `0–9` set magnitude (used by `Space`/`B`).
+- Thrust level: `0–9` set magnitude, used by `Space`/`B`.
 - Main engine: `Space` forward, `B` backward.
 - RCS translation: `N` left, `M` right.
 - Attitude: `W/S` pitch, `Q/E` roll, `A/D` yaw.
@@ -111,86 +100,24 @@
 - Pause: `P`.
 - Profiling HUD toggle: `O`.
 
-## Local dev workflow
+## Local Dev Workflow
 
-- `npm run dev` (runs `typecheck` + `vitest run` first, then `vite --host`).
-- `npm run test` (Vitest watch).
-- `npm run typecheck` (TS no-emit).
-- `npm run build` / `npm run preview` for production.
-- After code changes: run `npm run typecheck` and `npm run test`.
+- `npm run dev` runs `typecheck` + `vitest run` first, then starts Vite with `--host`.
+- `npm run typecheck` runs TypeScript no-emit.
+- `npm run test` runs Vitest once.
+- `npm run build` / `npm run preview` cover production build/preview.
 
-## Current state
+## Next Steps Snapshot
 
-- Core loop is working: input → physics → scene update → render → HUD.
-- Solar-system content is contributed by a plugin, and runtime world state is largely generic entity/capability based.
-- Spacecraft propulsion/RCS/attitude, spacecraft input bindings, and the primary forward camera rig live in `packages/solitude/src/plugins/spacecraftOperator/` and operate on `mainFocus.controlledBody`.
-- Spacecraft operator state, including the initial thrust level, is owned by `spacecraftOperator`; core config/tick setup no longer carries `thrustLevel`.
-- Thrust/RCS velocity application helpers live with `spacecraftOperator`; core physics only keeps generic gravity, spin, collision, and controlled-body rotation helpers.
-- Core exposes a generic plugin capability registry for plugin-to-plugin operator protocols. Plugins use opaque capability ids plus local structural/runtime validation rather than importing peer plugins or shared plugin-layer protocol modules.
-- Core owns the primary view definition/canvas/layout while plugins register named main-view camera rigs; core uses the first registered rig as the current rig and fails if none exists.
-- HUD, view/render params, playback loop/logging, and plugin simulation/scene/segment contexts have been migrated away from `mainControlledBody` aliases.
-- Core no longer exposes the transitional `mainControlledBody` bridge from setup/runtime objects; config now names the focused entity via `mainFocusEntityId`.
-- Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
-- Package-split Phase 0 has started: generic headless runtime no longer imports or auto-installs Solitude spacecraft plugins; Solitude behavior is caller-composed for headless runs.
-- Package-split Phase 0 now includes an architecture guard test that keeps generic/browser production source roots from importing Solitude plugins.
-- Package-split workspace skeleton exists under `packages/engine`, `packages/browser`, and `packages/solitude`; major engine/browser/Solitude runtime source is actively moving into package roots.
-- Package split source migration has started: real `domain` and `global` source now lives under `packages/engine/src`; `src/domain/*` and `src/global/*` are transitional re-export shims.
-- Production app-layer source now lives under `packages/engine/src/app`; `src/app/*` files are transitional re-export shims while tests and callers migrate.
-- Generic OBJ parser source now lives under `packages/engine/src/config`; `src/config/obj.ts` is a transitional re-export shim.
-- Setup source now lives under `packages/engine/src/setup`; `src/setup/*` files are transitional re-export shims.
-- Render source now lives under `packages/engine/src/render`; `src/render/*` files are transitional re-export shims.
-- Engine-owned gravity/headless infra now lives under `packages/engine/src/infra`; `src/infra/NewtonianGravityEngine.ts` and `src/infra/headlessGameLoop.ts` are transitional re-export shims.
-- Canvas/WebGL rasterizer source now lives under `packages/browser/src/rasterize`; `src/rasterize/*` files are transitional re-export shims.
-- DOM/browser infra source now lives under `packages/browser/src/infra`; `src/infra/dom*` and `src/infra/infraPorts.ts` are transitional re-export shims.
-- Solitude default world/scene config now lives under `packages/solitude/src/config`; `src/config/worldAndSceneConfig.ts` is a transitional re-export shim.
-- Solitude browser bootstrap and plugin catalog now live under `packages/solitude/src`; `src/bootstrap.ts` remains an old-path side-effect shim, while root `src/plugins` shims have been removed.
-- Solitude app shell assets now live under `packages/solitude` (`index.html`, `index.css`, favicon); root Vite config points at that package while still building to root `dist`.
-- Package split test migration has started: app/infra tests now live with their owning engine, browser, or Solitude package; the root `src` test tree is down to the architecture boundary guard.
-- Core setup constructs generic controllable bodies via `setupControllableBodies` and Keplerian motion bodies via `setupKeplerianBodies`; scenario plugins may still provide spacecraft content.
-- Core setup classifies entities from capabilities/components; `legacyKind` has been removed from source.
-- Render scene adaptation uses explicit `renderable.role` values; current roles are `controlledBody`, `orbitalBody`, and `lightEmitter`.
-- Trajectory planning uses component/capability checks.
-- Generic core logic uses controlled-body/focused-entity wording for collisions, camera positioning, rotation, orbit readouts, setup, and render roles; planet/star/ship category words are absent from core source.
-- Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`; old `ships` / `planets` / `stars` playback snapshot buckets are no longer supported.
-- Default runtime uses Canvas 2D; WebGL renderer exists but is not wired by default.
-- Tests cover geometry/mesh parsing and projection clipping.
+- Continue package split cleanup from `MEMORY_PACKAGE_SPLIT.md`; the next likely areas are old-path shims, package exports, and root tooling boundaries.
+- Continue operator/focus cleanup from `MEMORY_OPERATOR_MODEL.md`; remaining operator work is runtime operator-mode switching above the generic engine boundary.
+- Planned future work: Solitude-owned headless playback runner. See `MEMORY_HEADLESS_PLAYBACK.md`.
 
-## Recent changes (last 1–2 weeks)
+## Open Questions / Risks
 
-- Autopilot refactor: introduced layer-specific `autoPilot.ts` modules, and kept render ports local (no re-export of autopilot types).
-- Solar-system scenario extraction: moved solar bodies, colors, meshes, and default ships into `src/plugins/solarSystem/`; introduced world-model plugin contributions.
-- Operator model commits 13–21: migrated HUD telemetry, spacecraft vehicle dynamics, playback loop/loggers, view/render params, and plugin phase contexts to focused-body plumbing; removed most `mainControlledBody` compatibility fields outside the core setup/runtime bridge.
-- Operator model follow-up: removed core thrust/RCS/propulsion command ports in favor of the generic plugin capability registry; autopilot now publishes a spacecraft propulsion resolver capability consumed by `spacecraftOperator` without importing peer plugin or shared plugin-layer protocol code.
-- Operator/entity-model follow-up: migrated playback snapshots to generic entity snapshots and dropped old script-schema compatibility; `random-trip` was migrated to the new format.
-- Entity-model cleanup: removed `legacyKind`, replaced planet/star setup adapters with generic Keplerian body setup, and changed render scene object kinds to `controlledBody` / `orbitalBody` / `lightEmitter`.
-- Package split Phase 0: removed the direct `spacecraftOperator` import from generic headless loop composition; headless callers now pass Solitude plugins explicitly.
-- Package split Phase 0: added a production import-boundary guard for generic/browser source roots versus Solitude plugins.
-- Package split workspace skeleton: added npm workspaces and empty package entrypoints for engine, browser, and Solitude app packages.
-- Package split source migration: moved real domain/global implementation files into `packages/engine/src` with old-path compatibility shims.
-- Package split source migration: moved production app-layer implementation files into `packages/engine/src/app` with old-path compatibility shims.
-- Package split source migration: moved generic OBJ parser into `packages/engine/src/config` with old-path compatibility shim.
-- Package split source migration: moved setup implementation and setup tests into `packages/engine/src/setup` with old-path compatibility shims.
-- Package split source migration: moved render implementation and render tests into `packages/engine/src/render` with old-path compatibility shims.
-- Package split source migration: moved `NewtonianGravityEngine` plus generic headless loop into `packages/engine/src/infra` with old-path compatibility shims.
-- Package split source migration: moved Canvas/WebGL rasterizer adapters into `packages/browser/src/rasterize` with old-path compatibility shims.
-- Package split source migration: moved DOM/browser infra into `packages/browser/src/infra` with old-path compatibility shims.
-- Package split source migration: moved Solitude default world/scene config into `packages/solitude/src/config` with old-path compatibility shim.
-- Package split source migration: moved Solitude browser bootstrap and plugin catalog/tree into `packages/solitude/src` with old-path compatibility shims for current callers.
-- Package split test migration: moved generic app/headless tests into `packages/engine`, browser keyboard/runtime-option tests into `packages/browser`, and Solitude spacecraft integration checks into `packages/solitude`.
-
-## Next steps
-
-- Continue the operator model migration from the remaining spacecraft-specific/operator-mode seams. `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming should remain absent from `src`.
-- Current post-V1 boundary: the default spacecraft experience is plugin-owned for controls, propulsion command protocols, vehicle dynamics, input bindings, primary forward camera rig, and spacecraft control state. Core owns primary view plumbing and selects the first registered camera rig. Remaining operator work is runtime operator-mode switching; entity-model cleanup can now remove playback-driven legacy category bridges.
-
-## Planned Future Work
-
-- Headless playback runner: make recorded playback scenarios runnable end-to-end without DOM/browser runtime. See `MEMORY_HEADLESS_PLAYBACK.md`.
-
-## Open questions / risks
-
-- The next operator/focus phase touches setup/runtime object shape and config naming; keep it small and reversible, because it affects bootstrap, headless loops, scene setup, playback, and tests.
-- Some plugin features still use spacecraft or solar-system scenario vocabulary; keep that out of core unless it is truly generic.
+- Root `src/*` compatibility shims are useful during migration but should not become permanent architecture.
+- Package exports are broad/transitional and need later narrowing.
+- Some plugin features still use spacecraft or solar-system vocabulary; keep that out of engine/browser unless it is truly generic.
 - Gravity uses fixed sub-steps for stability; high time scales can still destabilize.
-- WebGL path is present but not wired in the default entry; decide if/when to switch.
+- WebGL path is present but not wired in the default entry.
 - Controls are keyboard-only with no in-app help; consider a help overlay or onboarding prompt.
