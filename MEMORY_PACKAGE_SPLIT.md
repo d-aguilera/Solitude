@@ -98,7 +98,7 @@ Depends on `@solitude/engine` and `@solitude/browser`.
 
 ## Current Boundary State
 
-The conceptual and physical split is now mostly in place:
+The conceptual and physical split is in place:
 
 - Engine-owned domain/app/setup/render/global/headless/gravity source lives under `packages/engine/src`.
 - Browser DOM/runtime/rasterizer adapters live under `packages/browser/src`.
@@ -108,11 +108,11 @@ The conceptual and physical split is now mostly in place:
 - Spacecraft controls, vehicle dynamics, telemetry state, and primary forward camera rig are plugin-owned in `packages/solitude/src/plugins/spacecraftOperator/`.
 - Core plugin-to-plugin protocols use an opaque capability registry.
 - Playback snapshots are generic entity/focus schema only.
+- Package exports are explicit subpaths for current cross-package consumers.
 
 Remaining physical-boundary issues:
 
 - App/infra tests now live with their owning package.
-- Package exports are intentionally broad/transitional during migration and need later narrowing.
 - Root TypeScript/Vitest tooling only targets package source.
 
 Boundary hardening already in place:
@@ -221,13 +221,28 @@ Purpose: reduce risk before moving directories.
 
 ## Next Implementation Slice
 
-Recommended next code slice:
+The package split migration is effectively complete. Future work should be
+treated as normal API curation:
 
-1. Start narrowing broad/transitional package exports now that old-path consumers are gone.
-2. Add real package root exports only as consumers are updated.
-3. Keep root npm scripts working while package ownership continues to firm up.
+1. Add or remove explicit package subpath exports only when real consumers need them.
+2. Consider package-level API docs if the packages become published or reused outside this workspace.
+3. Keep Solitude-specific behavior out of `@solitude/engine` and `@solitude/browser`.
 
 ## Completed Slices
+
+### Completed Slice: Package Split 21
+
+What changed:
+
+1. Replaced broad `@solitude/engine` wildcard exports with explicit subpaths used by browser and Solitude code.
+2. Replaced broad `@solitude/browser` wildcard exports with the three DOM adapter subpaths used by Solitude.
+3. Replaced broad `solitude` exports with the single package subpath currently exercised by in-repo tests.
+4. Updated memory to mark the package split migration as effectively complete.
+
+Notes:
+
+- Package internals are no longer publicly reachable through wildcard exports by default.
+- Future package export changes should be intentional API additions, not migration compatibility.
 
 ### Completed Slice: Package Split 20
 

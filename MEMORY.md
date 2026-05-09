@@ -23,7 +23,7 @@
 
 ## Current focus
 
-- **Primary active work**: continue the package split. See `MEMORY_PACKAGE_SPLIT.md` before moving files, changing imports/exports, changing package boundaries, or touching bootstrap/headless composition.
+- **Primary active work**: package split is complete enough for normal development. See `MEMORY_PACKAGE_SPLIT.md` before changing package exports, package boundaries, or bootstrap/headless composition.
 - **Operator/focus boundary**: core/runtime contexts use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`.
 - **Retired compatibility names**: keep `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming out of source.
 
@@ -109,13 +109,13 @@
 
 ## Next Steps Snapshot
 
-- Continue package split cleanup from `MEMORY_PACKAGE_SPLIT.md`; the next likely area is narrowing package subpath exports.
+- Package split migration is effectively complete; future package work should focus on normal API curation.
 - Continue operator/focus cleanup from `MEMORY_OPERATOR_MODEL.md`; remaining operator work is runtime operator-mode switching above the generic engine boundary.
 - Planned future work: Solitude-owned headless playback runner. See `MEMORY_HEADLESS_PLAYBACK.md`.
 
 ## Open Questions / Risks
 
-- Package exports are broad/transitional and need later narrowing.
+- Package exports are explicit and should stay intentionally curated.
 - Some plugin features still use spacecraft or solar-system vocabulary; keep that out of engine/browser unless it is truly generic.
 - Gravity uses fixed sub-steps for stability; high time scales can still destabilize.
 - WebGL path is present but not wired in the default entry.

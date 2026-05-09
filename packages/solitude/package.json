@@ -4,10 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./bootstrap": "./src/bootstrap.ts",
-    "./config/*": "./src/config/*.ts",
-    "./plugins": "./src/plugins/index.ts",
-    "./plugins/*": "./src/plugins/*.ts"
+    "./plugins/spacecraftOperator/index": "./src/plugins/spacecraftOperator/index.ts"
   },
   "dependencies": {
     "@solitude/browser": "0.0.0",
