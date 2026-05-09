@@ -52,7 +52,7 @@
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, layout, Canvas 2D, and WebGL rasterizer adapters.
 - `packages/solitude/src/`: Solitude app bootstrap, default config, plugin catalog, scenarios, spacecraft operator, playback, telemetry, and product-specific behavior.
-- `src/*`: transitional compatibility shims for old import paths, plus `src/architecture/importBoundaries.test.ts`.
+- `src/*`: transitional engine/browser compatibility shims for old import paths, plus `src/architecture/importBoundaries.test.ts`.
 - Root Vite config uses `packages/solitude` as the app root and still builds to root `dist`.
 
 ## Runtime Flow
@@ -109,7 +109,7 @@
 
 ## Next Steps Snapshot
 
-- Continue package split cleanup from `MEMORY_PACKAGE_SPLIT.md`; the next likely areas are old-path shims, package exports, and root tooling boundaries.
+- Continue package split cleanup from `MEMORY_PACKAGE_SPLIT.md`; the next likely areas are remaining engine/browser old-path shims, package exports, and root tooling boundaries.
 - Continue operator/focus cleanup from `MEMORY_OPERATOR_MODEL.md`; remaining operator work is runtime operator-mode switching above the generic engine boundary.
 - Planned future work: Solitude-owned headless playback runner. See `MEMORY_HEADLESS_PLAYBACK.md`.
 

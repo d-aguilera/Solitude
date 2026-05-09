@@ -111,7 +111,7 @@ The conceptual and physical split is now mostly in place:
 
 Remaining physical-boundary issues:
 
-- Root `src/*` compatibility shims still exist for engine, browser, Solitude config, and bootstrap paths.
+- Root `src/*` compatibility shims still exist for engine and browser paths.
 - App/infra tests now live with their owning package; root `src` keeps only the architecture boundary guard for now.
 - Package exports are intentionally broad/transitional during migration and need later narrowing.
 - Root TypeScript/Vitest tooling still spans both `src` and `packages`.
@@ -224,13 +224,27 @@ Purpose: reduce risk before moving directories.
 
 Recommended next code slice:
 
-1. Audit whether the root `src/bootstrap.ts` compatibility shim has any in-repo consumers; remove it if not.
-2. Decide the next old-path shim group to retire or harden. Root `src/*` is now mostly one-line re-export shims plus the architecture guard.
-3. Add real package root exports only as consumers are updated.
-4. Keep root npm scripts working while package ownership continues to firm up.
-5. Start narrowing broad/transitional package exports only after old-path consumers are gone.
+1. Decide the next engine/browser old-path shim group to retire or harden. Root `src/*` is now engine/browser re-export shims plus the architecture guard.
+2. Add real package root exports only as consumers are updated.
+3. Keep root npm scripts working while package ownership continues to firm up.
+4. Start narrowing broad/transitional package exports only after old-path consumers are gone.
 
 ## Completed Slices
+
+### Completed Slice: Package Split 18
+
+What changed:
+
+1. Removed the unused root `src/bootstrap.ts` side-effect compatibility shim.
+2. Removed the unused root `src/config/worldAndSceneConfig.ts` Solitude config compatibility shim.
+3. Removed the stale root `src/vite-env.d.ts`; the active app-local Vite env file lives under `packages/solitude/src`.
+4. Hardened `src/architecture/importBoundaries.test.ts` so root compatibility shim directories cannot import the Solitude package.
+
+Notes:
+
+- Root `src/*` no longer contains Solitude-owned product shims.
+- Solitude browser composition remains available through `packages/solitude/src/bootstrap.ts` and the `solitude/bootstrap` package export.
+- The remaining root shims are engine/browser old-path compatibility only.
 
 ### Completed Slice: Package Split 17
 
