@@ -111,10 +111,10 @@ The conceptual and physical split is now mostly in place:
 
 Remaining physical-boundary issues:
 
-- Root `src/*` compatibility shims still exist for engine and browser paths.
-- App/infra tests now live with their owning package; root `src` keeps only the architecture boundary guard for now.
+- Root `src` keeps only the architecture boundary guard.
+- App/infra tests now live with their owning package.
 - Package exports are intentionally broad/transitional during migration and need later narrowing.
-- Root TypeScript/Vitest tooling still spans both `src` and `packages`.
+- Root TypeScript/Vitest tooling still includes `src` for the architecture boundary guard.
 
 Boundary hardening already in place:
 
@@ -224,12 +224,25 @@ Purpose: reduce risk before moving directories.
 
 Recommended next code slice:
 
-1. Decide the next engine/browser old-path shim group to retire or harden. Root `src/*` is now engine/browser re-export shims plus the architecture guard.
+1. Start narrowing broad/transitional package exports now that old-path consumers are gone.
 2. Add real package root exports only as consumers are updated.
 3. Keep root npm scripts working while package ownership continues to firm up.
-4. Start narrowing broad/transitional package exports only after old-path consumers are gone.
+4. Consider moving the architecture boundary guard out of root `src` if root tooling should stop including `src` entirely.
 
 ## Completed Slices
+
+### Completed Slice: Package Split 19
+
+What changed:
+
+1. Removed the remaining root one-line compatibility shims for engine and browser package paths.
+2. Updated `src/architecture/importBoundaries.test.ts` to guard against any production TypeScript returning under root `src`.
+3. Updated package split memory to reflect that root `src` now contains only the architecture boundary guard.
+
+Notes:
+
+- In-repo consumers use package paths such as `@solitude/engine/*`, `@solitude/browser/*`, and `solitude/*`.
+- The next cleanup pressure is package export narrowing and root tooling boundaries.
 
 ### Completed Slice: Package Split 18
 

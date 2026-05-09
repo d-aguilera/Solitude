@@ -4,31 +4,15 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const srcRoot = join(repoRoot, "src");
 const packageRoot = join(repoRoot, "packages");
 
-const pluginsRoots = [
-  join(srcRoot, "plugins"),
-  join(packageRoot, "solitude/src/plugins"),
-];
+const srcRoot = join(repoRoot, "src");
+const pluginsRoots = [join(packageRoot, "solitude/src/plugins")];
 
 const guardedRoots = [
-  ...["app", "domain", "infra", "render", "setup"].map((root) =>
-    join(srcRoot, root),
-  ),
   join(packageRoot, "engine/src"),
   join(packageRoot, "browser/src"),
 ];
-
-const rootShimRoots = [
-  "app",
-  "config",
-  "domain",
-  "global",
-  "infra",
-  "render",
-  "setup",
-].map((root) => join(srcRoot, root));
 
 const importSpecifierPattern =
   /\b(?:import|export)\s+(?:type\s+)?(?:[^'"]*?\s+from\s+)?["']([^"']+)["']|\bimport\s*\(\s*["']([^"']+)["']\s*\)/g;
@@ -46,16 +30,12 @@ describe("import boundaries", () => {
     expect(violations).toEqual([]);
   });
 
-  it("keeps root compatibility shims free of Solitude package imports", () => {
-    const violations: string[] = [];
-
-    for (const rootPath of rootShimRoots) {
-      for (const filePath of collectProductionTypeScriptFiles(rootPath)) {
-        violations.push(...findSolitudePackageImports(filePath));
-      }
-    }
-
-    expect(violations).toEqual([]);
+  it("keeps root src free of production compatibility shims", () => {
+    expect(
+      collectProductionTypeScriptFiles(srcRoot).map((filePath) =>
+        relative(repoRoot, filePath),
+      ),
+    ).toEqual([]);
   });
 });
 
@@ -116,22 +96,6 @@ function findPluginImports(filePath: string): string[] {
     const sourcePath = relative(repoRoot, filePath);
     const targetPath = relative(repoRoot, resolvedTarget);
     violations.push(`${sourcePath} imports ${targetPath}`);
-  }
-
-  return violations;
-}
-
-function findSolitudePackageImports(filePath: string): string[] {
-  const source = readFileSync(filePath, "utf8");
-  const violations: string[] = [];
-
-  for (const match of source.matchAll(importSpecifierPattern)) {
-    const specifier = match[1] ?? match[2];
-    if (!specifier) continue;
-    if (specifier === "solitude" || specifier.startsWith("solitude/")) {
-      const sourcePath = relative(repoRoot, filePath);
-      violations.push(`${sourcePath} imports ${specifier}`);
-    }
   }
 
   return violations;
