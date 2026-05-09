@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
     "./bootstrap": "./src/bootstrap.ts",
     "./config/*": "./src/config/*.ts",
     "./plugins": "./src/plugins/index.ts",

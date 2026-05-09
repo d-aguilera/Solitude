@@ -52,7 +52,7 @@
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, layout, Canvas 2D, and WebGL rasterizer adapters.
 - `packages/solitude/src/`: Solitude app bootstrap, default config, plugin catalog, scenarios, spacecraft operator, playback, telemetry, and product-specific behavior.
-- `src/architecture/importBoundaries.test.ts`: root architecture boundary guard; production source lives under `packages/*`.
+- Production and test source lives under `packages/*`; the root `src` directory has been removed.
 - Root Vite config uses `packages/solitude` as the app root and still builds to root `dist`.
 
 ## Runtime Flow
@@ -73,7 +73,7 @@
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
 - Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`.
-- Tests have moved into owning packages; root `src` keeps only the architecture boundary guard.
+- Tests have moved into owning packages; root TypeScript/Vitest tooling no longer includes `src`.
 
 ## Key Files
 
@@ -109,7 +109,7 @@
 
 ## Next Steps Snapshot
 
-- Continue package split cleanup from `MEMORY_PACKAGE_SPLIT.md`; the next likely areas are package exports and root tooling boundaries.
+- Continue package split cleanup from `MEMORY_PACKAGE_SPLIT.md`; the next likely area is narrowing package subpath exports.
 - Continue operator/focus cleanup from `MEMORY_OPERATOR_MODEL.md`; remaining operator work is runtime operator-mode switching above the generic engine boundary.
 - Planned future work: Solitude-owned headless playback runner. See `MEMORY_HEADLESS_PLAYBACK.md`.
 

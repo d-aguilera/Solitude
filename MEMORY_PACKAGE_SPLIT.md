@@ -103,7 +103,7 @@ The conceptual and physical split is now mostly in place:
 - Engine-owned domain/app/setup/render/global/headless/gravity source lives under `packages/engine/src`.
 - Browser DOM/runtime/rasterizer adapters live under `packages/browser/src`.
 - Solitude app shell, bootstrap, default config, and plugins live under `packages/solitude`.
-- Root `src/*` files are mostly transitional compatibility shims plus the architecture boundary guard.
+- Root `src` has been removed.
 - Solar-system content is plugin-owned in `packages/solitude/src/plugins/solarSystem/`.
 - Spacecraft controls, vehicle dynamics, telemetry state, and primary forward camera rig are plugin-owned in `packages/solitude/src/plugins/spacecraftOperator/`.
 - Core plugin-to-plugin protocols use an opaque capability registry.
@@ -111,17 +111,16 @@ The conceptual and physical split is now mostly in place:
 
 Remaining physical-boundary issues:
 
-- Root `src` keeps only the architecture boundary guard.
 - App/infra tests now live with their owning package.
 - Package exports are intentionally broad/transitional during migration and need later narrowing.
-- Root TypeScript/Vitest tooling still includes `src` for the architecture boundary guard.
+- Root TypeScript/Vitest tooling only targets package source.
 
 Boundary hardening already in place:
 
 - `packages/engine/src/infra/headlessGameLoop.ts` no longer imports or auto-installs `spacecraftOperator`.
 - `createHeadlessLoop` accepts composed `GamePlugin[]` from the caller and derives control plugins, capability providers, focused-entity requirements, and simulation contributions from that list.
 - Engine headless tests cover generic stepping without Solitude plugins; Solitude-owned integration tests cover spacecraft dynamics when `createSpacecraftOperatorPlugin()` is passed explicitly.
-- `src/architecture/importBoundaries.test.ts` guards generic/browser production source roots against imports that resolve into Solitude plugins.
+- Package boundaries are currently enforced by package placement and import paths; the old root architecture guard has been removed.
 
 ## Relationship To Other Memory Docs
 
@@ -227,9 +226,22 @@ Recommended next code slice:
 1. Start narrowing broad/transitional package exports now that old-path consumers are gone.
 2. Add real package root exports only as consumers are updated.
 3. Keep root npm scripts working while package ownership continues to firm up.
-4. Consider moving the architecture boundary guard out of root `src` if root tooling should stop including `src` entirely.
 
 ## Completed Slices
+
+### Completed Slice: Package Split 20
+
+What changed:
+
+1. Removed the final root `src/architecture/importBoundaries.test.ts` guard and eliminated the root `src` directory.
+2. Removed empty package root `src/index.ts` entrypoints from `@solitude/engine`, `@solitude/browser`, and `solitude`.
+3. Removed the corresponding `"."` package exports, leaving only currently used subpath exports.
+4. Updated root TypeScript, Vitest, and Prettier config so they no longer scan `src`.
+
+Notes:
+
+- There are no in-repo imports of package root entrypoints.
+- Package split cleanup can now focus on narrowing broad subpath exports.
 
 ### Completed Slice: Package Split 19
 
