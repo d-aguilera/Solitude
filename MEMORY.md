@@ -15,7 +15,7 @@
 
 ## Spin-off memory docs
 
-- `MEMORY_PACKAGE_SPLIT.md`: physical package split into `@solitude/engine`, `@solitude/browser`, and `solitude`; includes completed package-split slices and next migration steps.
+- `MEMORY_PACKAGE_SPLIT.md`: archived package-split record for `@solitude/engine`, `@solitude/browser`, and `solitude`; consult before package boundary/export changes.
 - `MEMORY_OPERATOR_MODEL.md`: strategy for moving main ship/control/camera behavior into plugin-defined operator modes around a generic focused entity.
 - `MEMORY_ENTITY_MODEL.md`: strategy/context for replacing ships/planets/stars core buckets with generic entities/components.
 - `MEMORY_HEADLESS_PLAYBACK.md`: planned work for running recorded playback scenarios end-to-end without the browser.
@@ -23,7 +23,7 @@
 
 ## Current focus
 
-- **Primary active work**: package split is complete enough for normal development. See `MEMORY_PACKAGE_SPLIT.md` before changing package exports, package boundaries, or bootstrap/headless composition.
+- **Primary active work**: continue operator-model work. See `MEMORY_OPERATOR_MODEL.md` before changing focus, controls, camera rigs, HUD contexts, playback operator assumptions, or simulation plugin phases.
 - **Operator/focus boundary**: core/runtime contexts use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`.
 - **Retired compatibility names**: keep `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming out of source.
 
@@ -39,7 +39,7 @@
 
 - **Performance is paramount**: CPU time, memory consumption, and garbage collection pressure come before everything else.
 - **Onion layering**: domain core → app logic → infra adapters. Outer layers depend inward, even if it costs performance.
-- **Known exception**: `src/global/` / `packages/engine/src/global/` is a deliberate carve-out and may violate onion rules. Do not treat it as a layering issue.
+- **Known exception**: `packages/engine/src/global/` is a deliberate carve-out and may violate onion rules. Do not treat it as a layering issue.
 - **Physics**: Newtonian N-body with leapfrog integration for stability.
 - **Solar-system data**: use real-ish values (AU, km, approximate J2000 elements) for plausibility.
 - **Entity model direction**: core should not know scenario categories such as planet/star/ship. Prefer generic bodies/components/capabilities.
@@ -109,8 +109,8 @@
 
 ## Next Steps Snapshot
 
-- Package split migration is effectively complete; future package work should focus on normal API curation.
-- Continue operator/focus cleanup from `MEMORY_OPERATOR_MODEL.md`; remaining operator work is runtime operator-mode switching above the generic engine boundary.
+- Package split migration is closed; future package work is normal API curation.
+- Continue operator/focus cleanup from `MEMORY_OPERATOR_MODEL.md`; next operator work is runtime operator-mode switching above the generic engine boundary.
 - Planned future work: Solitude-owned headless playback runner. See `MEMORY_HEADLESS_PLAYBACK.md`.
 
 ## Open Questions / Risks

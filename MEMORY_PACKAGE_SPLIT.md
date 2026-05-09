@@ -2,9 +2,9 @@
 
 ## Purpose
 
-- Dedicated context for physically splitting the Solitude codebase into engine, browser adapter, and Solitude app/scenario packages.
+- Archived context for the completed physical split of the Solitude codebase into engine, browser adapter, and Solitude app/scenario packages.
 - Use this before moving files, changing package boundaries, changing public exports, or touching bootstrap/headless composition.
-- Goal: make the already mostly-generic core engine usable as a real library, while Solitude remains the solar-system spacecraft simulation built on top.
+- Goal achieved: the generic core engine is package-separated, while Solitude remains the solar-system spacecraft simulation built on top.
 
 ## Strategic Direction
 
@@ -222,12 +222,14 @@ Purpose: reduce risk before moving directories.
 
 ## Next Implementation Slice
 
-The package split migration is effectively complete. Future work should be
-treated as normal API curation:
+Package split migration is closed. Future work should be treated as normal API
+curation rather than migration:
 
 1. Add or remove explicit package subpath exports only when real consumers need them.
 2. Consider package-level API docs if the packages become published or reused outside this workspace.
 3. Keep Solitude-specific behavior out of `@solitude/engine` and `@solitude/browser`.
+
+Active strategic work has moved back to `MEMORY_OPERATOR_MODEL.md`.
 
 ## Completed Slices
 

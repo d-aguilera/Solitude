@@ -16,14 +16,14 @@
 
 ## Current Slice
 
-Status: playback schema migration completed for the entity-model objective; verify and choose next entity-model cleanup slice.
+Status: package split migration is closed; operator-model work is active again.
 
 Next focused change:
 
-- Choose the next post-camera-rig seam:
-  - runtime operator-mode switching for focus, active camera rig, controls, and HUD emphasis;
-  - remaining spacecraft-control port cleanup: genericize/remove app-level attitude command/control-plugin seams when there is a capability-mediated replacement.
-  - entity-model cleanup now unblocked by playback: remove remaining category-shaped setup/render ports and adapters.
+- Add runtime operator-mode switching above the generic engine boundary:
+  - define where active operator mode selection lives in Solitude/browser runtime composition;
+  - switch focus, active main-view camera rig, control/input context, and HUD emphasis together;
+  - keep the current spacecraft mode as the default and preserve existing keyboard behavior until another mode exists.
 
 Success criteria:
 
@@ -34,15 +34,15 @@ Success criteria:
 - Core owns the primary view definition while plugins supply camera rigs; the first registered rig is current and setup fails if none exists.
 - Core config/tick setup does not own initial thrust level; spacecraft operator owns spacecraft control state.
 - No new plugin-to-core layering violations.
-- `rg mainControlledBody src` remains empty.
-- `rg "mainControlledEntityId|setMainControlledEntityId" src` remains empty.
-- `rg "pilotLookState|pilotCameraOffset|updatePilot" src` remains empty.
-- `rg "@deprecated" src` remains empty.
-- `rg "setupShips|ShipsSetup|createShipsFromConfig|ShipPhysicsConfig|ShipInitialStateConfig|ShipPhysics" src` should remain empty; core setup should stay controllable-body-first.
+- `rg mainControlledBody packages` remains empty.
+- `rg "mainControlledEntityId|setMainControlledEntityId" packages` remains empty.
+- `rg "pilotLookState|pilotCameraOffset|updatePilot" packages` remains empty.
+- `rg "@deprecated" packages` remains empty.
+- `rg "setupShips|ShipsSetup|createShipsFromConfig|ShipPhysicsConfig|ShipInitialStateConfig|ShipPhysics" packages` should remain empty; core setup should stay controllable-body-first.
 - `computeShipOrbitReadoutInto` should remain absent.
-- `rg "legacyKind|LegacyEntityKind" src` remains empty.
+- `rg "legacyKind|LegacyEntityKind" packages` remains empty.
 - render scene adaptation should use `renderable.role`.
-- `rg "ShipBody" src` remains empty.
+- `rg "ShipBody" packages` remains empty.
 - trajectory planning should not read `legacyKind`.
 - Typecheck and tests pass.
 
@@ -182,12 +182,12 @@ Success criteria:
 ## Current Direction
 
 - The entity model generalization is the foundation: core world state is now largely generic entities and capability arrays.
-- The next strategic step is to separate "the user is flying a ship" from core runtime architecture.
+- The next strategic step is runtime operator-mode switching: separate "the user is flying a ship" from runtime focus/camera/control selection.
 - Core should own generic focus, main view plumbing, render/simulation orchestration, and deterministic phase ordering.
 - Plugins should define what it means to operate a focused entity: spacecraft controls, propulsion, RCS, attitude, camera rigs, HUD/readout assumptions, autopilot behavior, and future operator modes.
 - Current boundary: the default spacecraft operator owns controls, vehicle dynamics, input bindings, and the primary forward camera rig; core owns the primary view definition/canvas/layout/render target and uses the first registered rig as current.
 - Core no longer exposes spacecraft propulsion command ports; plugins connect through the generic capability registry using opaque ids and local structural/runtime validation, without importing peer plugins or shared plugin-layer protocol code.
-- Next big change: choose between runtime operator-mode switching and playback schema migration.
+- Next big change: add runtime operator-mode switching above the engine boundary.
 
 ## Completed Big Change: Plugin Capability Registry
 
@@ -537,4 +537,4 @@ Unresolved:
 
 - Add runtime operator-mode switching for focus, active camera rig, controls, and HUD emphasis.
 - Decide how axial views relate to active operator modes.
-- Core category naming cleanup is complete for `src/app`, `src/domain`, `src/infra`, `src/render`, and `src/setup`; remaining spacecraft/solar-system names are plugin/scenario vocabulary or IDs.
+- Core category naming cleanup is complete for engine package app/domain/infra/render/setup code; remaining spacecraft/solar-system names are plugin/scenario vocabulary or IDs.
