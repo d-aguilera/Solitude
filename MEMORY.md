@@ -145,6 +145,7 @@
 - Solitude default world/scene config now lives under `packages/solitude/src/config`; `src/config/worldAndSceneConfig.ts` is a transitional re-export shim.
 - Solitude browser bootstrap and plugin catalog now live under `packages/solitude/src`; `src/bootstrap.ts` remains an old-path side-effect shim, while root `src/plugins` shims have been removed.
 - Solitude app shell assets now live under `packages/solitude` (`index.html`, `index.css`, favicon); root Vite config points at that package while still building to root `dist`.
+- Package split test migration has started: app/infra tests now live with their owning engine, browser, or Solitude package; the root `src` test tree is down to the architecture boundary guard.
 - Core setup constructs generic controllable bodies via `setupControllableBodies` and Keplerian motion bodies via `setupKeplerianBodies`; scenario plugins may still provide spacecraft content.
 - Core setup classifies entities from capabilities/components; `legacyKind` has been removed from source.
 - Render scene adaptation uses explicit `renderable.role` values; current roles are `controlledBody`, `orbitalBody`, and `lightEmitter`.
@@ -175,6 +176,7 @@
 - Package split source migration: moved DOM/browser infra into `packages/browser/src/infra` with old-path compatibility shims.
 - Package split source migration: moved Solitude default world/scene config into `packages/solitude/src/config` with old-path compatibility shim.
 - Package split source migration: moved Solitude browser bootstrap and plugin catalog/tree into `packages/solitude/src` with old-path compatibility shims for current callers.
+- Package split test migration: moved generic app/headless tests into `packages/engine`, browser keyboard/runtime-option tests into `packages/browser`, and Solitude spacecraft integration checks into `packages/solitude`.
 
 ## Next steps
 

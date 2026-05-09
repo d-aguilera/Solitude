@@ -1,17 +1,8 @@
+import { __domKeyboardInputTest } from "@solitude/browser/infra/domKeyboardInput";
 import { createSpacecraftOperatorPlugin } from "solitude/plugins/spacecraftOperator/index";
 import { describe, expect, it } from "vitest";
-import { BASE_CONTROL_ACTIONS } from "../app/controlPorts";
-import { __domKeyboardInputTest } from "./domKeyboardInput";
 
-describe("domKeyboardInput", () => {
-  it("keeps spacecraft controls out of base actions", () => {
-    expect(BASE_CONTROL_ACTIONS).toContain("lookLeft");
-    expect(BASE_CONTROL_ACTIONS).toContain("camForward");
-    expect(BASE_CONTROL_ACTIONS).not.toContain("burnForward");
-    expect(BASE_CONTROL_ACTIONS).not.toContain("rollLeft");
-    expect(BASE_CONTROL_ACTIONS).not.toContain("thrust9");
-  });
-
+describe("spacecraft keyboard input", () => {
   it("gets spacecraft key bindings from the spacecraft operator plugin", () => {
     const plugin = createSpacecraftOperatorPlugin();
     const input = plugin.input;

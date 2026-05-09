@@ -1,4 +1,3 @@
-import { createSpacecraftOperatorPlugin } from "solitude/plugins/spacecraftOperator/index";
 import { describe, expect, it } from "vitest";
 import { localFrame } from "../../domain/localFrame";
 import { vec3 } from "../../domain/vec3";
@@ -21,6 +20,22 @@ function createConfig(): WorldAndSceneConfig {
   };
 }
 
+function createMainRigPlugin(): GamePlugin {
+  return {
+    id: "test-main-rig",
+    views: {
+      registerViews: (registry) => {
+        registry.addMainViewCameraRig({
+          id: "test.forward",
+          updateFrame: ({ frame }) => {
+            localFrame.copyInto(frame, localFrame.zero());
+          },
+        });
+      },
+    },
+  };
+}
+
 describe("viewRegistry", () => {
   it("requires an explicit or registered main view camera rig", () => {
     expect(() => buildViewDefinitions(createConfig(), [])).toThrow(
@@ -30,7 +45,7 @@ describe("viewRegistry", () => {
 
   it("creates the primary view from the first registered rig by default", () => {
     const definitions = buildViewDefinitions(createConfig(), [
-      createSpacecraftOperatorPlugin(),
+      createMainRigPlugin(),
     ]);
 
     expect(definitions.map((definition) => definition.id)).toEqual(["primary"]);
@@ -43,7 +58,7 @@ describe("viewRegistry", () => {
       views: {
         registerViews: (registry) => {
           registry.addMainViewCameraRig({
-            id: "spacecraft.forward",
+            id: "test.forward",
             updateFrame: ({ frame }) => {
               localFrame.copyInto(frame, localFrame.zero());
             },
@@ -54,10 +69,10 @@ describe("viewRegistry", () => {
 
     expect(() =>
       buildViewDefinitions(createConfig(), [
-        createSpacecraftOperatorPlugin(),
+        createMainRigPlugin(),
         duplicateRigPlugin,
       ]),
-    ).toThrow("Duplicate main view camera rig registered: spacecraft.forward");
+    ).toThrow("Duplicate main view camera rig registered: test.forward");
   });
 
   it("rejects multiple primary views", () => {
@@ -76,7 +91,7 @@ describe("viewRegistry", () => {
       },
     };
     const definitions = buildViewDefinitions(createConfig(), [
-      createSpacecraftOperatorPlugin(),
+      createMainRigPlugin(),
       extraPrimaryPlugin,
     ]);
     const views = createSceneViewStates(definitions);

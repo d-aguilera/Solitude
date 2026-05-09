@@ -1,4 +1,3 @@
-import { createSpacecraftOperatorPlugin } from "solitude/plugins/spacecraftOperator/index";
 import { describe, expect, it } from "vitest";
 import type { EntityConfig } from "../../app/configPorts";
 import type { SimulationPlugin } from "../../app/pluginPorts";
@@ -146,22 +145,6 @@ describe("headlessGameLoop", () => {
     loop.step(1000);
 
     const after = loop.worldAndScene.mainFocus.controlledBody.position;
-    expect(
-      vec3.length(vec3.subInto(vec3.zero(), after, before)),
-    ).toBeGreaterThan(0);
-  });
-
-  it("lets callers compose Solitude spacecraft dynamics explicitly", () => {
-    const loop = createHeadlessLoop(buildHeadlessConfig(), {
-      plugins: [createSpacecraftOperatorPlugin()],
-    });
-    const before = vec3.clone(
-      loop.worldAndScene.mainFocus.controlledBody.velocity,
-    );
-
-    loop.step(1000, { burnForward: true, thrust5: true });
-
-    const after = loop.worldAndScene.mainFocus.controlledBody.velocity;
     expect(
       vec3.length(vec3.subInto(vec3.zero(), after, before)),
     ).toBeGreaterThan(0);

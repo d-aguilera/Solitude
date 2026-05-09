@@ -1,12 +1,12 @@
+import type { WorldAndSceneConfig } from "@solitude/engine/app/configPorts";
+import type { FocusContext } from "@solitude/engine/app/runtimePorts";
+import { buildViewDefinitions } from "@solitude/engine/app/viewRegistry";
+import type { ControlledBody } from "@solitude/engine/domain/domainPorts";
+import { localFrame } from "@solitude/engine/domain/localFrame";
+import { mat3 } from "@solitude/engine/domain/mat3";
+import { vec3 } from "@solitude/engine/domain/vec3";
 import { createSpacecraftOperatorPlugin } from "solitude/plugins/spacecraftOperator/index";
 import { describe, expect, it } from "vitest";
-import type { ControlledBody } from "../../domain/domainPorts";
-import { localFrame } from "../../domain/localFrame";
-import { mat3 } from "../../domain/mat3";
-import { vec3 } from "../../domain/vec3";
-import type { WorldAndSceneConfig } from "../configPorts";
-import type { FocusContext } from "../runtimePorts";
-import { buildViewDefinitions } from "../viewRegistry";
 
 function createBody(id: string, upX: number): ControlledBody {
   return {

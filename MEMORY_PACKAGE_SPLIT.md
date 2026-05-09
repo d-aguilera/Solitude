@@ -103,7 +103,7 @@ The conceptual and physical split is now mostly in place:
 - Engine-owned domain/app/setup/render/global/headless/gravity source lives under `packages/engine/src`.
 - Browser DOM/runtime/rasterizer adapters live under `packages/browser/src`.
 - Solitude app shell, bootstrap, default config, and plugins live under `packages/solitude`.
-- Root `src/*` files are mostly transitional compatibility shims plus remaining root tests.
+- Root `src/*` files are mostly transitional compatibility shims plus the architecture boundary guard.
 - Solar-system content is plugin-owned in `packages/solitude/src/plugins/solarSystem/`.
 - Spacecraft controls, vehicle dynamics, telemetry state, and primary forward camera rig are plugin-owned in `packages/solitude/src/plugins/spacecraftOperator/`.
 - Core plugin-to-plugin protocols use an opaque capability registry.
@@ -112,7 +112,7 @@ The conceptual and physical split is now mostly in place:
 Remaining physical-boundary issues:
 
 - Root `src/*` compatibility shims still exist for engine, browser, Solitude config, and bootstrap paths.
-- Some tests still live under root `src` and exercise compatibility shims or Solitude composition from outside the Solitude package.
+- App/infra tests now live with their owning package; root `src` keeps only the architecture boundary guard for now.
 - Package exports are intentionally broad/transitional during migration and need later narrowing.
 - Root TypeScript/Vitest tooling still spans both `src` and `packages`.
 
@@ -120,7 +120,7 @@ Boundary hardening already in place:
 
 - `packages/engine/src/infra/headlessGameLoop.ts` no longer imports or auto-installs `spacecraftOperator`.
 - `createHeadlessLoop` accepts composed `GamePlugin[]` from the caller and derives control plugins, capability providers, focused-entity requirements, and simulation contributions from that list.
-- Headless tests now cover both generic stepping without Solitude plugins and Solitude spacecraft dynamics when `createSpacecraftOperatorPlugin()` is passed explicitly.
+- Engine headless tests cover generic stepping without Solitude plugins; Solitude-owned integration tests cover spacecraft dynamics when `createSpacecraftOperatorPlugin()` is passed explicitly.
 - `src/architecture/importBoundaries.test.ts` guards generic/browser production source roots against imports that resolve into Solitude plugins.
 
 ## Relationship To Other Memory Docs
