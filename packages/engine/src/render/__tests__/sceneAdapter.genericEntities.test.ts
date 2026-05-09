@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { EntityConfig, WorldAndSceneConfig } from "../../app/configPorts";
+import type { WorldAndSceneConfig } from "../../app/configPorts";
+import type { EntityConfig } from "../../app/entityConfigPorts";
 import type { Mesh } from "../../app/scenePorts";
 import type {
   ControlledBody,

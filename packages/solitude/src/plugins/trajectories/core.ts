@@ -1,7 +1,5 @@
-import type {
-  EntityConfig,
-  WorldAndSceneConfig,
-} from "@solitude/engine/app/configPorts";
+import type { WorldAndSceneConfig } from "@solitude/engine/app/configPorts";
+import type { EntityConfig } from "@solitude/engine/app/entityConfigPorts";
 import type { ScenePlugin } from "@solitude/engine/app/pluginPorts";
 import type {
   PolylineSceneObject,

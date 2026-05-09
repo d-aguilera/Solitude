@@ -1,4 +1,4 @@
-import type { EntityConfig } from "@solitude/engine/app/configPorts";
+import type { EntityConfig } from "@solitude/engine/app/entityConfigPorts";
 import type {
   ControlledBody,
   EntityMotionState,

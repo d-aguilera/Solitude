@@ -2,10 +2,6 @@ import type { EntityId } from "../domain/domainPorts";
 import type { EntityConfig } from "./entityConfigPorts";
 import type { WorldRenderConfig } from "./renderConfigPorts";
 
-export * from "./entityConfigPorts";
-export * from "./physicsConfigPorts";
-export * from "./renderConfigPorts";
-
 export interface WorldAndSceneConfig {
   entities: EntityConfig[];
   mainFocusEntityId: EntityId;

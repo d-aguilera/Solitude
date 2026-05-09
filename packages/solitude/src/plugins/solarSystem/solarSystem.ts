@@ -1,8 +1,8 @@
 import type {
-  EntityRenderConfig,
   KeplerianBodyPhysicsConfig,
   KeplerianOrbit,
-} from "@solitude/engine/app/configPorts";
+} from "@solitude/engine/app/physicsConfigPorts";
+import type { EntityRenderConfig } from "@solitude/engine/app/renderConfigPorts";
 import type { Mesh } from "@solitude/engine/app/scenePorts";
 import { parseObjMesh } from "@solitude/engine/config/obj";
 import { AU, km } from "@solitude/engine/domain/units";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { EntityConfig } from "../../app/configPorts";
+import type { EntityConfig } from "../../app/entityConfigPorts";
 import type { SimulationPlugin } from "../../app/pluginPorts";
 import type { GravityEngine, GravityState } from "../../domain/domainPorts";
 import { localFrame } from "../../domain/localFrame";

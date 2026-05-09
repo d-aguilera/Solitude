@@ -1,7 +1,5 @@
-import type {
-  EntityConfig,
-  KeplerianOrbit,
-} from "@solitude/engine/app/configPorts";
+import type { EntityConfig } from "@solitude/engine/app/entityConfigPorts";
+import type { KeplerianOrbit } from "@solitude/engine/app/physicsConfigPorts";
 import type { World } from "@solitude/engine/domain/domainPorts";
 import { vec3 } from "@solitude/engine/domain/vec3";
 

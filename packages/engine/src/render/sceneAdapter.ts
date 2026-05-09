@@ -1,4 +1,5 @@
-import type { EntityConfig, WorldAndSceneConfig } from "../app/configPorts";
+import type { WorldAndSceneConfig } from "../app/configPorts";
+import type { EntityConfig } from "../app/entityConfigPorts";
 import type {
   OrbitalBodySceneObject,
   Scene,

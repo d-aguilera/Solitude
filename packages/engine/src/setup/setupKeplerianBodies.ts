@@ -1,7 +1,7 @@
 import type {
   KeplerianBodyPhysicsConfig,
   KeplerianOrbit,
-} from "../app/configPorts";
+} from "../app/physicsConfigPorts";
 import type { RotatingBody, SphericalBodyPhysics } from "../domain/domainPorts";
 import { mat3, type Mat3 } from "../domain/mat3";
 import { vec3, type Vec3 } from "../domain/vec3";

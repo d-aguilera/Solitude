@@ -1,7 +1,7 @@
 import type {
   ControlledBodyInitialStateConfig,
   ControlledBodyPhysicsConfig,
-} from "../app/configPorts";
+} from "../app/physicsConfigPorts";
 import type {
   AngularVelocity,
   ControlledBody,

@@ -13,6 +13,7 @@
     "./app/pluginCapabilities": "./src/app/pluginCapabilities.ts",
     "./app/pluginPorts": "./src/app/pluginPorts.ts",
     "./app/pluginRequirements": "./src/app/pluginRequirements.ts",
+    "./app/physicsConfigPorts": "./src/app/physicsConfigPorts.ts",
     "./app/renderConfigPorts": "./src/app/renderConfigPorts.ts",
     "./app/runtimePorts": "./src/app/runtimePorts.ts",
     "./app/scene": "./src/app/scene.ts",

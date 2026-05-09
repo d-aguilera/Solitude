@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { EntityConfig, WorldAndSceneConfig } from "../app/configPorts";
+import type { WorldAndSceneConfig } from "../app/configPorts";
+import type { EntityConfig } from "../app/entityConfigPorts";
 import { localFrame } from "../domain/localFrame";
 import { mat3 } from "../domain/mat3";
 import { vec3 } from "../domain/vec3";

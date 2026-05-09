@@ -1,4 +1,4 @@
-import type { EntityConfig } from "@solitude/engine/app/configPorts";
+import type { EntityConfig } from "@solitude/engine/app/entityConfigPorts";
 import { localFrame } from "@solitude/engine/domain/localFrame";
 import { mat3 } from "@solitude/engine/domain/mat3";
 import { vec3 } from "@solitude/engine/domain/vec3";
