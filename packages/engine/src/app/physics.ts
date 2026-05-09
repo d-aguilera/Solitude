@@ -5,13 +5,33 @@ import type {
   World,
 } from "../domain/domainPorts";
 import { localFrame } from "../domain/localFrame";
-import { mat3 } from "../domain/mat3";
-import { vec3 } from "../domain/vec3";
+import { mat3, type Mat3 } from "../domain/mat3";
+import { vec3, type Vec3 } from "../domain/vec3";
 import type { ControlledBodyState } from "./controlPorts";
 
 const Rspin = mat3.zero();
 const omegaWorldScratch = vec3.zero();
 const omegaAxisScratch = vec3.zero();
+
+export interface PhysicsWorkspace {
+  Rspin: Mat3;
+  omegaWorldScratch: Vec3;
+  omegaAxisScratch: Vec3;
+}
+
+export function createPhysicsWorkspace(): PhysicsWorkspace {
+  return {
+    Rspin: mat3.zero(),
+    omegaWorldScratch: vec3.zero(),
+    omegaAxisScratch: vec3.zero(),
+  };
+}
+
+const defaultPhysicsWorkspace: PhysicsWorkspace = {
+  Rspin,
+  omegaWorldScratch,
+  omegaAxisScratch,
+};
 
 /**
  * Integrate controlled-body attitude by applying angular velocity to the local frame.
@@ -19,6 +39,7 @@ const omegaAxisScratch = vec3.zero();
 export function applyControlledBodyRotation(
   dtMillis: number,
   controlledBody: ControlledBodyState,
+  workspace: PhysicsWorkspace = defaultPhysicsWorkspace,
 ): void {
   const dtSec = dtMillis / 1000;
   if (dtSec <= 0) return;
@@ -28,6 +49,9 @@ export function applyControlledBodyRotation(
 
   const frame = controlledBody.frame;
   // Convert roll/pitch/yaw rates into a world-space angular velocity vector.
+  const omegaAxisScratch = workspace.omegaAxisScratch;
+  const omegaWorldScratch = workspace.omegaWorldScratch;
+
   omegaWorldScratch.x =
     frame.forward.x * omega.roll +
     frame.right.x * omega.pitch +
@@ -78,7 +102,9 @@ export function applyGravity(
 function applySpinForBodies(
   dtMillisSim: number,
   bodies: EntityAxialSpin[],
+  workspace: PhysicsWorkspace,
 ): void {
+  const Rspin = workspace.Rspin;
   for (let i = 0; i < bodies.length; i++) {
     const body = bodies[i];
     const angle = (body.angularSpeedRadPerSec * dtMillisSim) / 1000;
@@ -91,8 +117,12 @@ function applySpinForBodies(
 /**
  * Advance axial spin for entities that expose the axial-spin capability.
  */
-export function applyAxialSpin(dtMillisSim: number, world: World): void {
+export function applyAxialSpin(
+  dtMillisSim: number,
+  world: World,
+  workspace: PhysicsWorkspace = defaultPhysicsWorkspace,
+): void {
   if (dtMillisSim <= 0) return;
 
-  applySpinForBodies(dtMillisSim, world.axialSpins);
+  applySpinForBodies(dtMillisSim, world.axialSpins, workspace);
 }

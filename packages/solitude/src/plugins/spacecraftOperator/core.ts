@@ -1,5 +1,9 @@
 import type { ControlInput } from "@solitude/engine/app/controlPorts";
-import { applyControlledBodyRotation } from "@solitude/engine/app/physics";
+import {
+  applyControlledBodyRotation,
+  createPhysicsWorkspace,
+  type PhysicsWorkspace,
+} from "@solitude/engine/app/physics";
 import type {
   ControlPlugin,
   PluginCapabilityRegistry,
@@ -40,6 +44,7 @@ export interface SpacecraftVehicleDynamicsParams {
   controlState: SpacecraftControlState;
   controlledBody: ControlledBody;
   dtMillis: number;
+  physicsWorkspace?: PhysicsWorkspace;
   propulsionResolvers: readonly SpacecraftPropulsionResolver[];
   world: World;
 }
@@ -47,42 +52,37 @@ export interface SpacecraftVehicleDynamicsParams {
 export function applySpacecraftVehicleDynamics(
   params: SpacecraftVehicleDynamicsParams,
 ): SpacecraftPropulsionCommand {
-  const {
-    controlInput,
-    controlPlugins,
-    controlState,
-    controlledBody,
-    dtMillis,
-    propulsionResolvers,
-    world,
-  } = params;
   const propulsionCommand = getPropulsionCommandForTick(
-    dtMillis,
-    controlInput,
-    controlState,
-    controlledBody,
-    world,
-    controlPlugins,
-    propulsionResolvers,
+    params.dtMillis,
+    params.controlInput,
+    params.controlState,
+    params.controlledBody,
+    params.world,
+    params.controlPlugins,
+    params.propulsionResolvers,
   );
   updateControlledBodyAngularVelocityFromInput(
-    dtMillis,
-    controlledBody,
-    controlInput,
-    controlState,
-    world,
-    controlPlugins,
+    params.dtMillis,
+    params.controlledBody,
+    params.controlInput,
+    params.controlState,
+    params.world,
+    params.controlPlugins,
   );
-  applyControlledBodyRotation(dtMillis, controlledBody);
+  applyControlledBodyRotation(
+    params.dtMillis,
+    params.controlledBody,
+    params.physicsWorkspace,
+  );
   applyThrust(
-    dtMillis,
-    controlledBody,
+    params.dtMillis,
+    params.controlledBody,
     propulsionCommand.main,
     maxThrustAcceleration,
   );
   applyRcsTranslation(
-    dtMillis,
-    controlledBody,
+    params.dtMillis,
+    params.controlledBody,
     propulsionCommand.rcs,
     maxRcsTranslationAcceleration,
   );
@@ -99,6 +99,7 @@ export function createSpacecraftVehicleDynamicsPlugin(
   };
   const propulsionResolvers =
     getSpacecraftPropulsionResolvers(capabilityRegistry);
+  const physicsWorkspace = createPhysicsWorkspace();
 
   return {
     updateVehicleDynamics: (params) => {
@@ -108,6 +109,7 @@ export function createSpacecraftVehicleDynamicsPlugin(
         controlState,
         controlledBody: params.mainFocus.controlledBody,
         dtMillis: params.dtMillis,
+        physicsWorkspace,
         propulsionResolvers,
         world: params.world,
       });

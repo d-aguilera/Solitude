@@ -5,15 +5,23 @@ import type {
 } from "../domain/domainPorts";
 import { type Vec3, vec3 } from "../domain/vec3";
 
-const accelerations: Vec3[] = [];
+export interface NewtonianGravityWorkspace {
+  accelerations: Vec3[];
+  scratchD: Vec3;
+  scratchScaled: Vec3;
+  scratchDeltaPos: Vec3;
+  scratchDeltaVel: Vec3;
+}
 
-// Scratch vectors reused during force accumulation.
-const scratchD: Vec3 = vec3.zero();
-const scratchScaled: Vec3 = vec3.zero();
-
-// Scratch vectors reused during integration.
-const scratchDeltaPos: Vec3 = vec3.zero();
-const scratchDeltaVel: Vec3 = vec3.zero();
+export function createNewtonianGravityWorkspace(): NewtonianGravityWorkspace {
+  return {
+    accelerations: [],
+    scratchD: vec3.zero(),
+    scratchScaled: vec3.zero(),
+    scratchDeltaPos: vec3.zero(),
+    scratchDeltaVel: vec3.zero(),
+  };
+}
 
 /**
  * Concrete GravityEngine using a Newtonian N-body implementation.
@@ -22,6 +30,7 @@ export class NewtonianGravityEngine implements GravityEngine {
   constructor(
     private G: number,
     private softeningLength: number,
+    private readonly workspace: NewtonianGravityWorkspace = createNewtonianGravityWorkspace(),
   ) {}
   /**
    * Advance gravity simulation by dtSeconds using a leapfrog
@@ -58,6 +67,10 @@ export class NewtonianGravityEngine implements GravityEngine {
     bodies: BodyState[],
     positions: Vec3[],
   ): void {
+    const workspace = this.workspace;
+    const accelerations = workspace.accelerations;
+    const scratchD = workspace.scratchD;
+    const scratchScaled = workspace.scratchScaled;
     const n = bodies.length;
 
     if (accelerations.length < n) {
@@ -111,6 +124,8 @@ export class NewtonianGravityEngine implements GravityEngine {
    * Kick velocities using accelerations over dtSeconds.
    */
   private kickBodyVelocities(bodies: BodyState[], dtSeconds: number): void {
+    const accelerations = this.workspace.accelerations;
+    const scratchDeltaVel = this.workspace.scratchDeltaVel;
     const n = bodies.length;
 
     for (let i = 0; i < n; i++) {
@@ -129,6 +144,7 @@ export class NewtonianGravityEngine implements GravityEngine {
     positions: Vec3[],
     dtSeconds: number,
   ): void {
+    const scratchDeltaPos = this.workspace.scratchDeltaPos;
     const n = bodies.length;
 
     for (let i = 0; i < n; i++) {

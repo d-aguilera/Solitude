@@ -25,6 +25,58 @@ const SUN_LUMINOSITY = 3.828e26; // W
 const EARTH_ORBIT_RADIUS_2 = AU * AU;
 const E_SUN_AT_EARTH = SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS_2);
 
+export type ClippedTriangleScratch = [
+  [Vec3, Vec3, Vec3],
+  [Vec3, Vec3, Vec3],
+  [Vec3, Vec3, Vec3],
+  [Vec3, Vec3, Vec3],
+  [Vec3, Vec3, Vec3],
+  [Vec3, Vec3, Vec3],
+];
+
+export interface RenderFacesWorkspace {
+  clipped: ClippedTriangleScratch;
+  e1Scratch: Vec3;
+  e2Scratch: Vec3;
+  faceEntryScratch: FaceEntry[];
+  Lscratch: Vec3;
+  ndc0: NdcPoint;
+  ndc1: NdcPoint;
+  ndc2: NdcPoint;
+  normalScratch: Vec3;
+  p0: ScreenPoint;
+  p1: ScreenPoint;
+  p2: ScreenPoint;
+  toCameraScratch: Vec3;
+  toLightScratch: Vec3;
+}
+
+export function createRenderFacesWorkspace(): RenderFacesWorkspace {
+  return {
+    clipped: [
+      [vec3.zero(), vec3.zero(), vec3.zero()],
+      [vec3.zero(), vec3.zero(), vec3.zero()],
+      [vec3.zero(), vec3.zero(), vec3.zero()],
+      [vec3.zero(), vec3.zero(), vec3.zero()],
+      [vec3.zero(), vec3.zero(), vec3.zero()],
+      [vec3.zero(), vec3.zero(), vec3.zero()],
+    ],
+    e1Scratch: vec3.zero(),
+    e2Scratch: vec3.zero(),
+    faceEntryScratch: [],
+    Lscratch: vec3.zero(),
+    ndc0: ndc.zero(),
+    ndc1: ndc.zero(),
+    ndc2: ndc.zero(),
+    normalScratch: vec3.zero(),
+    p0: scrn.zero(),
+    p1: scrn.zero(),
+    p2: scrn.zero(),
+    toCameraScratch: vec3.zero(),
+    toLightScratch: vec3.zero(),
+  };
+}
+
 export function renderFacesInto(
   into: RenderedFace[],
   scene: Scene,
@@ -32,14 +84,11 @@ export function renderFacesInto(
   screenWidth: number,
   screenHeight: number,
   renderCache: RenderFrameCache,
-  objectsFilter?: (obj: SceneObject) => boolean,
-  sortFaces: boolean = true,
-  projectionService?: ProjectionService,
+  projectionService: ProjectionService,
+  workspace: RenderFacesWorkspace,
+  objectsFilter: ((obj: SceneObject) => boolean) | undefined,
+  sortFaces: boolean,
 ): number {
-  const projection =
-    projectionService ??
-    new ProjectionService(camera, screenWidth, screenHeight);
-
   const faceList = buildFaces(
     scene.objects,
     camera,
@@ -47,51 +96,23 @@ export function renderFacesInto(
     screenHeight,
     scene.lights,
     renderCache,
-    projection,
+    projectionService,
+    workspace,
     objectsFilter,
   );
 
   if (sortFaces) {
-    sortRangeInPlace(faceEntryScratch, faceList, compareFaceDepthDesc);
+    sortRangeInPlace(
+      workspace.faceEntryScratch,
+      faceList,
+      compareFaceDepthDesc,
+    );
   }
 
-  shadeFacesInto(into, faceList);
+  shadeFacesInto(into, faceList, workspace);
 
   return faceList;
 }
-
-// shared scratch for fallback normals
-const e1Scratch: Vec3 = vec3.zero();
-const e2Scratch: Vec3 = vec3.zero();
-const normalScratch: Vec3 = vec3.zero();
-const toCameraScratch: Vec3 = vec3.zero();
-
-const clipped: [
-  [Vec3, Vec3, Vec3],
-  [Vec3, Vec3, Vec3],
-  [Vec3, Vec3, Vec3],
-  [Vec3, Vec3, Vec3],
-  [Vec3, Vec3, Vec3],
-  [Vec3, Vec3, Vec3],
-] = [
-  [vec3.zero(), vec3.zero(), vec3.zero()],
-  [vec3.zero(), vec3.zero(), vec3.zero()],
-  [vec3.zero(), vec3.zero(), vec3.zero()],
-  [vec3.zero(), vec3.zero(), vec3.zero()],
-  [vec3.zero(), vec3.zero(), vec3.zero()],
-  [vec3.zero(), vec3.zero(), vec3.zero()],
-];
-
-// Grow-only scratch buffer for face entries across frames.
-const faceEntryScratch: FaceEntry[] = [];
-
-const p0 = scrn.zero();
-const p1 = scrn.zero();
-const p2 = scrn.zero();
-
-const ndc0: NdcPoint = ndc.zero();
-const ndc1: NdcPoint = ndc.zero();
-const ndc2: NdcPoint = ndc.zero();
 
 /**
  * Build the list of shaded triangle faces (with depth and lighting information)
@@ -105,9 +126,22 @@ function buildFaces(
   lights: PointLight[],
   renderCache: RenderFrameCache,
   projectionService: ProjectionService,
-  objectsFilter?: (obj: SceneObject) => boolean,
+  workspace: RenderFacesWorkspace,
+  objectsFilter: ((obj: SceneObject) => boolean) | undefined,
 ): number {
   return alloc.withName(buildFaces.name, () => {
+    const clipped = workspace.clipped;
+    const e1Scratch = workspace.e1Scratch;
+    const e2Scratch = workspace.e2Scratch;
+    const faceEntryScratch = workspace.faceEntryScratch;
+    const ndc0 = workspace.ndc0;
+    const ndc1 = workspace.ndc1;
+    const ndc2 = workspace.ndc2;
+    const normalScratch = workspace.normalScratch;
+    const p0 = workspace.p0;
+    const p1 = workspace.p1;
+    const p2 = workspace.p2;
+    const toCameraScratch = workspace.toCameraScratch;
     // Reuse a grow-only scratch buffer instead of allocating a fresh array.
     let faceCount = 0;
 
@@ -178,7 +212,9 @@ function buildFaces(
         const intensity =
           obj.kind === "lightEmitter"
             ? 1
-            : toneMapIrradiance(computeIrradianceAtPoint(v0, n, lights));
+            : toneMapIrradiance(
+                computeIrradianceAtPoint(v0, n, lights, workspace),
+              );
 
         if ((code0 | code1 | code2) === 0) {
           projectionService.projectCameraPointToNdcInto(ndc0, c0);
@@ -270,15 +306,15 @@ function buildFaces(
   });
 }
 
-const toLightScratch: Vec3 = vec3.zero();
-const Lscratch: Vec3 = vec3.zero();
-
 function computeIrradianceAtPoint(
   p: Vec3,
   n: Vec3,
   lights: PointLight[],
+  workspace: RenderFacesWorkspace,
 ): number {
   if (lights.length === 0) return 0;
+  const Lscratch = workspace.Lscratch;
+  const toLightScratch = workspace.toLightScratch;
 
   let E = 0;
 
@@ -321,8 +357,13 @@ function toneMapIrradiance(E: number): number {
 /**
  * Shade the given face list into a caller-provided grow-only scratch buffer.
  */
-function shadeFacesInto(into: RenderedFace[], count: number): void {
+function shadeFacesInto(
+  into: RenderedFace[],
+  count: number,
+  workspace: RenderFacesWorkspace,
+): void {
   const n = count;
+  const faceEntryScratch = workspace.faceEntryScratch;
 
   if (into.length < n) {
     into.length = n; // grow only
@@ -362,7 +403,7 @@ function compareFaceDepthDesc(a: FaceEntry, b: FaceEntry): number {
   return b.depth - a.depth;
 }
 
-interface FaceEntry {
+export interface FaceEntry {
   baseColor: RGB;
   depth: number;
   intensity: number;

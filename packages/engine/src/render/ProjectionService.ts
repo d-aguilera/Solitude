@@ -22,35 +22,52 @@ const VERTICAL_FOV = 30;
 const vFovRad = (VERTICAL_FOV * Math.PI) / 180;
 const focalLengthY = 1 / Math.tan(vFovRad / 2);
 
-/**
- * Global pool of camera-space points reused across all ProjectionService instances.
- * Grows on demand but never shrinks; growth allocs are paid once, not per frame.
- */
-const GLOBAL_CAMERA_POINT_POOL: Vec3[] = [];
+export interface ProjectionWorkspace {
+  cameraPointPool: Vec3[];
+  deltaScratch: Vec3;
+  cameraPointScratch: Vec3;
+  aCamScratch: Vec3;
+  bCamScratch: Vec3;
+  ndcAScratch: NdcPoint;
+  ndcBScratch: NdcPoint;
+  clipChangedScratch: { value: boolean };
+  polyInScratch: Vec3[];
+  polyOutScratch: Vec3[];
+}
 
-/** Ensure the global camera-point pool can hold at least `n` Vec3s. */
-function ensureGlobalCameraPointPoolCapacity(n: number): void {
-  const length = GLOBAL_CAMERA_POINT_POOL.length;
+export function createProjectionWorkspace(): ProjectionWorkspace {
+  const polyInScratch: Vec3[] = [];
+  const polyOutScratch: Vec3[] = [];
+  for (let i = 0; i < MAX_CLIPPED_VERTS; i++) {
+    polyInScratch.push(vec3.zero());
+    polyOutScratch.push(vec3.zero());
+  }
+
+  return {
+    cameraPointPool: [],
+    deltaScratch: vec3.zero(),
+    cameraPointScratch: vec3.zero(),
+    aCamScratch: vec3.zero(),
+    bCamScratch: vec3.zero(),
+    ndcAScratch: ndc.zero(),
+    ndcBScratch: ndc.zero(),
+    clipChangedScratch: { value: false },
+    polyInScratch,
+    polyOutScratch,
+  };
+}
+
+/** Ensure the workspace camera-point pool can hold at least `n` Vec3s. */
+function ensureCameraPointPoolCapacity(pool: Vec3[], n: number): void {
+  const length = pool.length;
   if (length < n) {
-    alloc.withName(ensureGlobalCameraPointPoolCapacity.name, () => {
+    alloc.withName(ensureCameraPointPoolCapacity.name, () => {
       for (let i = length; i < n; i++) {
-        GLOBAL_CAMERA_POINT_POOL.push(vec3.zero());
+        pool.push(vec3.zero());
       }
     });
   }
 }
-
-// scratch
-const deltaScratch: Vec3 = vec3.zero();
-const cameraPointScratch: Vec3 = vec3.zero();
-
-const aCamScratch: Vec3 = vec3.zero();
-const bCamScratch: Vec3 = vec3.zero();
-
-const ndcAScratch: NdcPoint = ndc.zero();
-const ndcBScratch: NdcPoint = ndc.zero();
-
-const clipChangedScratch = { value: false };
 
 let x1: number, y1: number, z1: number;
 let x2: number, y2: number, z2: number;
@@ -60,12 +77,6 @@ let dx: number, dy: number, dz: number;
  * Scratch polygons used during triangle clipping.
  */
 const MAX_CLIPPED_VERTS = 9;
-const polyInScratch: Vec3[] = [];
-const polyOutScratch: Vec3[] = [];
-for (let i = 0; i < MAX_CLIPPED_VERTS; i++) {
-  polyInScratch.push(vec3.zero());
-  polyOutScratch.push(vec3.zero());
-}
 
 type FrustumPlane = "NEAR" | "FAR" | "LEFT" | "RIGHT" | "TOP" | "BOTTOM";
 
@@ -117,6 +128,7 @@ export class ProjectionService {
     pose: DomainCameraPose,
     canvasWidth: number,
     canvasHeight: number,
+    private readonly workspace: ProjectionWorkspace = createProjectionWorkspace(),
   ) {
     this.focalLengthX = focalLengthY * (canvasHeight / canvasWidth);
     this.tanHalfFovY = 1 / focalLengthY;
@@ -150,6 +162,7 @@ export class ProjectionService {
    * Returns false when the point lies outside the camera frustum.
    */
   projectWorldPointToNdcInto(into: NdcPoint, worldPoint: Vec3): boolean {
+    const cameraPointScratch = this.workspace.cameraPointScratch;
     this.worldPointToCameraPointNoClipInto(cameraPointScratch, worldPoint);
     if (this.computeOutCode(cameraPointScratch)) {
       return false;
@@ -160,11 +173,13 @@ export class ProjectionService {
 
   worldPointsToCameraPointsNoClip(worldPoints: Vec3[]): Vec3[] {
     const n = worldPoints.length;
+    const cameraPointPool = this.workspace.cameraPointPool;
+    const deltaScratch = this.workspace.deltaScratch;
 
-    // 1) Ensure the global pool is large enough (allocates only when it grows).
-    ensureGlobalCameraPointPoolCapacity(n);
+    // 1) Ensure the workspace pool is large enough (allocates only when it grows).
+    ensureCameraPointPoolCapacity(cameraPointPool, n);
 
-    // 2) Use the first n entries from the global pool as our scratch array.
+    // 2) Use the first n entries from the workspace pool as our scratch array.
     const R_localFromWorld = this.R_localFromWorld;
     const position = this.cameraPosition;
 
@@ -173,15 +188,11 @@ export class ProjectionService {
       vec3.subInto(deltaScratch, worldPoints[i], position);
 
       // cameraPoints[i] = R_localFromWorld * delta
-      mat3.mulVec3Into(
-        GLOBAL_CAMERA_POINT_POOL[i],
-        R_localFromWorld,
-        deltaScratch,
-      );
+      mat3.mulVec3Into(cameraPointPool[i], R_localFromWorld, deltaScratch);
     }
 
     // Callers must treat only the first n elements as valid for this call.
-    return GLOBAL_CAMERA_POINT_POOL;
+    return cameraPointPool;
   }
 
   /**
@@ -191,6 +202,7 @@ export class ProjectionService {
     into: Vec3,
     worldPoint: Vec3,
   ): void {
+    const deltaScratch = this.workspace.deltaScratch;
     // delta = worldPoint - cameraPosition
     vec3.subInto(deltaScratch, worldPoint, this.cameraPosition);
 
@@ -213,6 +225,7 @@ export class ProjectionService {
    * Camera-space forward depth (y) for a world-space point.
    */
   getCameraDepthForWorldPoint(worldPoint: Vec3): number {
+    const cameraPointScratch = this.workspace.cameraPointScratch;
     this.worldPointToCameraPointNoClipInto(cameraPointScratch, worldPoint);
     return cameraPointScratch.y;
   }
@@ -457,8 +470,8 @@ export class ProjectionService {
     c: Vec3,
   ): number {
     // Initialize polygon with original triangle
-    const inVerts = polyInScratch;
-    const outVerts = polyOutScratch;
+    const inVerts = this.workspace.polyInScratch;
+    const outVerts = this.workspace.polyOutScratch;
 
     vec3.copyInto(inVerts[0], a);
     vec3.copyInto(inVerts[1], b);
@@ -521,6 +534,11 @@ export class ProjectionService {
     screenWidth: number,
     screenHeight: number,
   ): boolean {
+    const aCamScratch = this.workspace.aCamScratch;
+    const bCamScratch = this.workspace.bCamScratch;
+    const clipChangedScratch = this.workspace.clipChangedScratch;
+    const ndcAScratch = this.workspace.ndcAScratch;
+    const ndcBScratch = this.workspace.ndcBScratch;
     // 1) World -> camera space
     this.worldPointToCameraPointNoClipInto(aCamScratch, aWorld);
     this.worldPointToCameraPointNoClipInto(bCamScratch, bWorld);

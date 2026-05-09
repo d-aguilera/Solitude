@@ -7,7 +7,7 @@ import {
   createLabelLayoutCache,
   renderBodyLabelsInto,
 } from "./renderBodyLabels";
-import { renderFacesInto } from "./renderFaces";
+import { createRenderFacesWorkspace, renderFacesInto } from "./renderFaces";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals";
 import { renderPolylinesInto } from "./renderPolylines";
 import type {
@@ -20,6 +20,7 @@ import { drawMode } from "./renderPorts";
 import { renderWorldSegmentsInto } from "./renderSegments";
 
 export class DefaultViewRenderer implements ViewRenderer {
+  private readonly faceWorkspace;
   private readonly labelLayoutCache: LabelLayoutCache;
   private readonly labelMode: BodyLabelContent;
   private projectionService?: ProjectionService;
@@ -28,6 +29,7 @@ export class DefaultViewRenderer implements ViewRenderer {
     private readonly measureText: (text: string, font: string) => TextMetrics,
     labelMode: BodyLabelContent = "full",
   ) {
+    this.faceWorkspace = createRenderFacesWorkspace();
     this.labelLayoutCache = createLabelLayoutCache(this.measureText);
     this.labelMode = labelMode;
   }
@@ -85,9 +87,10 @@ export class DefaultViewRenderer implements ViewRenderer {
             screenWidth,
             screenHeight,
             renderCache,
+            projectionService,
+            this.faceWorkspace,
             objectsFilter,
             sortFaces,
-            projectionService,
           )
         : 0;
 

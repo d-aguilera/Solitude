@@ -2,7 +2,11 @@ import { resolveCollisions } from "../domain/collisions";
 import type { GravityEngine } from "../domain/domainPorts";
 import { buildInitialGravityState } from "../domain/gravityState";
 import type { ControlInput } from "./controlPorts";
-import { applyAxialSpin, applyGravity } from "./physics";
+import {
+  applyAxialSpin,
+  applyGravity,
+  createPhysicsWorkspace,
+} from "./physics";
 import type { SimulationPlugin } from "./pluginPorts";
 import type { TickCallback, TickParams, WorldAndScene } from "./runtimePorts";
 
@@ -14,6 +18,8 @@ export function createTickHandler(
   worldAndScene: WorldAndScene,
   simulationPlugins: SimulationPlugin[] = [],
 ): TickCallback {
+  const simulationPhasePlan = createSimulationPhasePlan(simulationPlugins);
+  const physicsWorkspace = createPhysicsWorkspace();
   const gravityState = buildInitialGravityState(worldAndScene.world);
   const simulationPhaseParams = {
     controlInput: {} as ControlInput,
@@ -31,19 +37,37 @@ export function createTickHandler(
     simulationPhaseParams.dtMillis = params.dtMillis;
     simulationPhaseParams.dtMillisSim = params.dtMillisSim;
 
-    applyBeforeVehicleDynamics(simulationPlugins, simulationPhaseParams);
-    applyVehicleDynamics(simulationPlugins, simulationPhaseParams);
-    applyAfterVehicleDynamics(simulationPlugins, simulationPhaseParams);
+    applySimulationPhase(
+      simulationPhasePlan.beforeVehicleDynamics,
+      simulationPhaseParams,
+    );
+    applySimulationPhase(
+      simulationPhasePlan.updateVehicleDynamics,
+      simulationPhaseParams,
+    );
+    applySimulationPhase(
+      simulationPhasePlan.afterVehicleDynamics,
+      simulationPhaseParams,
+    );
 
-    applyBeforeGravity(simulationPlugins, simulationPhaseParams);
+    applySimulationPhase(
+      simulationPhasePlan.beforeGravity,
+      simulationPhaseParams,
+    );
     applyGravity(params.dtMillisSim, gravityEngine, gravityState);
-    applyAfterGravity(simulationPlugins, simulationPhaseParams);
+    applySimulationPhase(
+      simulationPhasePlan.afterGravity,
+      simulationPhaseParams,
+    );
 
     resolveCollisions(worldAndScene.world);
-    applyAfterCollisions(simulationPlugins, simulationPhaseParams);
+    applySimulationPhase(
+      simulationPhasePlan.afterCollisions,
+      simulationPhaseParams,
+    );
 
-    applyAxialSpin(params.dtMillisSim, worldAndScene.world);
-    applyAfterSpin(simulationPlugins, simulationPhaseParams);
+    applyAxialSpin(params.dtMillisSim, worldAndScene.world, physicsWorkspace);
+    applySimulationPhase(simulationPhasePlan.afterSpin, simulationPhaseParams);
   };
 }
 
@@ -51,51 +75,65 @@ type SimulationPhaseParams = Parameters<
   NonNullable<SimulationPlugin["beforeVehicleDynamics"]>
 >[0];
 
-function applyBeforeVehicleDynamics(
-  plugins: SimulationPlugin[],
-  params: SimulationPhaseParams,
-): void {
-  for (const plugin of plugins) plugin.beforeVehicleDynamics?.(params);
+type SimulationPhaseHook = (params: SimulationPhaseParams) => void;
+
+interface SimulationPhasePlan {
+  beforeVehicleDynamics: SimulationPhaseHook[];
+  updateVehicleDynamics: SimulationPhaseHook[];
+  afterVehicleDynamics: SimulationPhaseHook[];
+  beforeGravity: SimulationPhaseHook[];
+  afterGravity: SimulationPhaseHook[];
+  afterCollisions: SimulationPhaseHook[];
+  afterSpin: SimulationPhaseHook[];
 }
 
-function applyAfterVehicleDynamics(
-  plugins: SimulationPlugin[],
-  params: SimulationPhaseParams,
-): void {
-  for (const plugin of plugins) plugin.afterVehicleDynamics?.(params);
+function createSimulationPhasePlan(
+  plugins: readonly SimulationPlugin[],
+): SimulationPhasePlan {
+  const plan: SimulationPhasePlan = {
+    beforeVehicleDynamics: [],
+    updateVehicleDynamics: [],
+    afterVehicleDynamics: [],
+    beforeGravity: [],
+    afterGravity: [],
+    afterCollisions: [],
+    afterSpin: [],
+  };
+
+  for (const plugin of plugins) {
+    if (plugin.beforeVehicleDynamics) {
+      plan.beforeVehicleDynamics.push(
+        plugin.beforeVehicleDynamics.bind(plugin),
+      );
+    }
+    if (plugin.updateVehicleDynamics) {
+      plan.updateVehicleDynamics.push(
+        plugin.updateVehicleDynamics.bind(plugin),
+      );
+    }
+    if (plugin.afterVehicleDynamics) {
+      plan.afterVehicleDynamics.push(plugin.afterVehicleDynamics.bind(plugin));
+    }
+    if (plugin.beforeGravity) {
+      plan.beforeGravity.push(plugin.beforeGravity.bind(plugin));
+    }
+    if (plugin.afterGravity) {
+      plan.afterGravity.push(plugin.afterGravity.bind(plugin));
+    }
+    if (plugin.afterCollisions) {
+      plan.afterCollisions.push(plugin.afterCollisions.bind(plugin));
+    }
+    if (plugin.afterSpin) {
+      plan.afterSpin.push(plugin.afterSpin.bind(plugin));
+    }
+  }
+
+  return plan;
 }
 
-function applyVehicleDynamics(
-  plugins: SimulationPlugin[],
+function applySimulationPhase(
+  hooks: readonly SimulationPhaseHook[],
   params: SimulationPhaseParams,
 ): void {
-  for (const plugin of plugins) plugin.updateVehicleDynamics?.(params);
-}
-
-function applyBeforeGravity(
-  plugins: SimulationPlugin[],
-  params: SimulationPhaseParams,
-): void {
-  for (const plugin of plugins) plugin.beforeGravity?.(params);
-}
-
-function applyAfterGravity(
-  plugins: SimulationPlugin[],
-  params: SimulationPhaseParams,
-): void {
-  for (const plugin of plugins) plugin.afterGravity?.(params);
-}
-
-function applyAfterCollisions(
-  plugins: SimulationPlugin[],
-  params: SimulationPhaseParams,
-): void {
-  for (const plugin of plugins) plugin.afterCollisions?.(params);
-}
-
-function applyAfterSpin(
-  plugins: SimulationPlugin[],
-  params: SimulationPhaseParams,
-): void {
-  for (const plugin of plugins) plugin.afterSpin?.(params);
+  for (let i = 0; i < hooks.length; i++) hooks[i](params);
 }
