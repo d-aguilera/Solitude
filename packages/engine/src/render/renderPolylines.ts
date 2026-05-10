@@ -26,7 +26,7 @@ export function renderPolylinesInto(
   into: RenderedPolyline[],
   objects: SceneObject[],
   projectSegmentInto: SegmentProjector,
-  objectsFilter: (obj: SceneObject) => boolean,
+  objectsFilter?: (obj: SceneObject) => boolean,
 ): number {
   return alloc.withName(renderPolylinesInto.name, () => {
     let intoCount = 0;

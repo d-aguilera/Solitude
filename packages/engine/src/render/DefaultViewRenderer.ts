@@ -1,4 +1,3 @@
-import type { PolylineSceneObject, SceneObject } from "../app/scenePorts";
 import type { Vec3 } from "../domain/vec3";
 import type { NdcPoint } from "./ndc";
 import { ProjectionService } from "./ProjectionService";
@@ -24,6 +23,22 @@ export class DefaultViewRenderer implements ViewRenderer {
   private readonly labelLayoutCache: LabelLayoutCache;
   private readonly labelMode: BodyLabelContent;
   private projectionService?: ProjectionService;
+  private screenWidth = 0;
+  private screenHeight = 0;
+  private readonly projectInto = (into: NdcPoint, wp: Vec3) =>
+    this.requireProjectionService().projectWorldPointToNdcInto(into, wp);
+  private readonly projectSegmentInto: SegmentProjector = (
+    into: ProjectedSegment,
+    a: Vec3,
+    b: Vec3,
+  ) =>
+    this.requireProjectionService().projectWorldSegmentToScreenInto(
+      into,
+      a,
+      b,
+      this.screenWidth,
+      this.screenHeight,
+    );
 
   constructor(
     private readonly measureText: (text: string, font: string) => TextMetrics,
@@ -50,6 +65,8 @@ export class DefaultViewRenderer implements ViewRenderer {
     } = params;
     const screenWidth = surface.width;
     const screenHeight = surface.height;
+    this.screenWidth = screenWidth;
+    this.screenHeight = screenHeight;
 
     if (this.projectionService) {
       this.projectionService.reset(camera, screenWidth, screenHeight);
@@ -60,23 +77,7 @@ export class DefaultViewRenderer implements ViewRenderer {
         screenHeight,
       );
     }
-    const projectionService = this.projectionService;
-
-    const projectInto = (into: NdcPoint, wp: Vec3) =>
-      projectionService.projectWorldPointToNdcInto(into, wp);
-
-    const projectSegmentInto: SegmentProjector = (
-      into: ProjectedSegment,
-      a: Vec3,
-      b: Vec3,
-    ) =>
-      projectionService.projectWorldSegmentToScreenInto(
-        into,
-        a,
-        b,
-        screenWidth,
-        screenHeight,
-      );
+    const projectionService = this.requireProjectionService();
 
     into.faceCount =
       renderFaces && drawMode === "faces"
@@ -98,10 +99,8 @@ export class DefaultViewRenderer implements ViewRenderer {
       ? renderPolylinesInto(
           into.polylines,
           scene.objects,
-          projectSegmentInto,
-          (obj: SceneObject): obj is PolylineSceneObject =>
-            obj.kind === "polyline" &&
-            (objectsFilter ? objectsFilter(obj) : true),
+          this.projectSegmentInto,
+          objectsFilter,
         )
       : 0;
 
@@ -109,7 +108,7 @@ export class DefaultViewRenderer implements ViewRenderer {
       ? renderWorldSegmentsInto(
           into.segments,
           params.worldSegments,
-          projectSegmentInto,
+          this.projectSegmentInto,
         )
       : 0;
 
@@ -120,13 +119,20 @@ export class DefaultViewRenderer implements ViewRenderer {
           mainFocus.controlledBody.position,
           screenWidth,
           screenHeight,
-          projectInto,
+          this.projectInto,
           this.labelLayoutCache,
           nowMs(),
           objectsFilter,
           this.labelMode,
         )
       : 0;
+  }
+
+  private requireProjectionService(): ProjectionService {
+    if (!this.projectionService) {
+      throw new Error("Projection service used before renderer initialization");
+    }
+    return this.projectionService;
   }
 }
 
