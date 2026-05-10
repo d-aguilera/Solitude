@@ -24,17 +24,24 @@ Each plugin lives in its own folder. A typical split is:
 - `worldModel.ts`: pre-runtime world/scenario model contribution
 - `index.ts`: composes the above into a `GamePlugin`
 
-Loop plugins can also influence per-frame policies such as whether the sim, scene, or HUD advance for a given tick, can request a fixed real tick delta for diagnostics, and may run post-frame cleanup. When multiple loop plugins write the same frame-policy field, later plugins in the bootstrap order win.
+Loop plugins can also influence per-frame policies such as whether the sim,
+scene, or browser overlays advance for a given tick, can request a fixed real
+tick delta for diagnostics, and may run post-frame cleanup. When multiple loop
+plugins write the same frame-policy field, later plugins in the bootstrap order
+win.
 
 View plugins register named views and main-view camera rigs through the view registry. The primary canvas, layout plumbing, and primary `ViewDefinition` are core-owned, but the active primary camera rig is supplied by plugins. Optional views such as picture-in-picture cameras are registered as full plugin views. Infra owns the canvas elements and their DOM IDs.
 
-HUD plugins write directly into a preallocated HUD grid. Keep each plugin focused on one telemetry group, and avoid allocating per-cell objects in the HUD refresh path.
+The `hud` plugin owns the preallocated HUD grid and browser overlay rendering.
+Telemetry plugins publish `solitude.hud.panel.v1` providers that write into that
+grid. Keep each provider focused on one telemetry group, and avoid allocating
+per-cell objects in the HUD refresh path.
 
 Simulation plugins run inside the fixed tick order. Vehicle or operator behavior that mutates focused entities should be contributed through simulation phases rather than hard-coded into core tick logic.
 
 Input plugins contribute operator-specific action names and key bindings. Base input actions are reserved for generic/main-view controls such as look and camera offset.
 
-Plugins may declare focused-entity requirements. Infra validates those requirements against the assembled world and `mainFocus` during setup, before simulation/HUD/scene hooks run. Missing hard requirements fail startup with the plugin id, focus entity id, and missing capability.
+Plugins may declare focused-entity requirements. Infra validates those requirements against the assembled world and `mainFocus` during setup, before simulation, overlay, and scene hooks run. Missing hard requirements fail startup with the plugin id, focus entity id, and missing capability.
 
 Plugins may also publish operator-specific capabilities through opaque app-level ids. Infra assembles these into a generic registry and passes the registry to plugin contribution factories; core does not inspect capability payloads. A plugin must not import a peer plugin or shared plugin-layer protocol module just to speak a capability protocol. Providers and consumers keep local structural views of the runtime contract and consumers validate unknown payloads before use.
 

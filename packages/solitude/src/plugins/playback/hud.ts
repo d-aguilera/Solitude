@@ -3,12 +3,6 @@ import type { PlaybackController } from "./core";
 
 const timeScalePrefix = "Time Scale: x";
 
-export function createHudPlugin(
-  controller: PlaybackController,
-): HudPanelProvider {
-  return createHudPanel(controller);
-}
-
 export function createHudPanel(
   controller: PlaybackController,
 ): HudPanelProvider {

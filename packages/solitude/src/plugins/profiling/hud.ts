@@ -3,12 +3,6 @@ import type { ProfilingController } from "./logic";
 
 const profilingText = "PROFILING";
 
-export function createHudPlugin(
-  controller: ProfilingController,
-): HudPanelProvider {
-  return createHudPanel(controller);
-}
-
 export function createHudPanel(
   controller: ProfilingController,
 ): HudPanelProvider {

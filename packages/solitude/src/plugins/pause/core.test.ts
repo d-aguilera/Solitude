@@ -20,7 +20,7 @@ function createLoopUpdateParams(pauseToggle: boolean): LoopUpdateParams {
       framePolicy: {
         advanceSim: true,
         advanceScene: true,
-        advanceHud: true,
+        advanceOverlay: true,
       },
     },
   };
@@ -37,7 +37,7 @@ describe("pause loop plugin", () => {
     expect(runningA?.framePolicy).toEqual({
       advanceSim: true,
       advanceScene: true,
-      advanceHud: true,
+      advanceOverlay: true,
     });
 
     const pausedA = loop.updateLoopState?.(createLoopUpdateParams(true));
@@ -48,7 +48,7 @@ describe("pause loop plugin", () => {
     expect(pausedA?.framePolicy).toEqual({
       advanceSim: false,
       advanceScene: false,
-      advanceHud: true,
+      advanceOverlay: true,
     });
   });
 });

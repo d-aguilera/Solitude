@@ -61,11 +61,11 @@
 - Solitude bootstrap builds config, loads the product plugin set, and calls browser runtime bootstrap.
 - `packages/browser/src/infra/domBootstrap.ts` wires DOM input, layout, renderers, game loop, and gravity engine.
 - `packages/engine/src/app/game.ts` runs per-tick simulation phases.
-- Solitude plugins provide spacecraft controls, vehicle dynamics, camera rigs, HUD readouts, playback behavior, and scenario/world-model content.
+- Solitude plugins provide spacecraft controls, vehicle dynamics, camera rigs, HUD overlay/readout behavior, playback behavior, and scenario/world-model content.
 
 ## Current State
 
-- Core loop works: input → physics → scene update → render → HUD.
+- Core loop works: input → physics → scene update → render → browser overlays.
 - Runtime world state is generic entity/capability based.
 - Solar-system content is contributed by `packages/solitude/src/plugins/solarSystem/`.
 - Spacecraft propulsion/RCS/attitude, input bindings, spacecraft operator state, and the primary forward camera rig live in `packages/solitude/src/plugins/spacecraftOperator/`.

@@ -11,10 +11,6 @@ import { vec3 } from "@solitude/engine/domain/vec3";
 import type { HudPanelProvider } from "../hud/capabilities";
 import { getAutopilotMode } from "./logic";
 
-export function createHudPlugin(): HudPanelProvider {
-  return createHudPanel();
-}
-
 export function createHudPanel(): HudPanelProvider {
   const circleNowTracker = createCircleNowDebugTracker();
 

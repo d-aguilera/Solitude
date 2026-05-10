@@ -7,12 +7,6 @@ const speedPrefix = "Speed: ";
 const thrustPrefix = "Thrust: ";
 const rcsPrefix = "RCS: ";
 
-export function createHudPlugin(
-  telemetry: SpacecraftOperatorTelemetry,
-): HudPanelProvider {
-  return createHudPanel(telemetry);
-}
-
 export function createHudPanel(
   telemetry: SpacecraftOperatorTelemetry,
 ): HudPanelProvider {

@@ -5,12 +5,6 @@ import type { RuntimeTelemetryController } from "./logic";
 const fpsPrefix = "FPS: ";
 const timePrefix = "Time: ";
 
-export function createHudPlugin(
-  controller: RuntimeTelemetryController,
-): HudPanelProvider {
-  return createHudPanel(controller);
-}
-
 export function createHudPanel(
   controller: RuntimeTelemetryController,
 ): HudPanelProvider {

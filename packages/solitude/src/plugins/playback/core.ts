@@ -109,7 +109,7 @@ export function createPlaybackController(
   const playbackFramePolicy = {
     advanceSim: false,
     advanceScene: false,
-    advanceHud: true,
+    advanceOverlay: true,
     tickDtMillis: fixedDtMillis,
     simDtMillis: fixedDtMillis * playbackTimeScale,
   };

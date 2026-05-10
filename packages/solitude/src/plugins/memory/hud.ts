@@ -1,12 +1,6 @@
 import type { HudPanelProvider } from "../hud/capabilities";
 import type { MemoryTelemetryController } from "./logic";
 
-export function createHudPlugin(
-  controller: MemoryTelemetryController,
-): HudPanelProvider {
-  return createHudPanel(controller);
-}
-
 export function createHudPanel(
   controller: MemoryTelemetryController,
 ): HudPanelProvider {

@@ -23,7 +23,7 @@ function createLoopUpdateParams(dtMillis: number): LoopUpdateParams {
       framePolicy: {
         advanceSim: true,
         advanceScene: true,
-        advanceHud: true,
+        advanceOverlay: true,
       },
     },
   };

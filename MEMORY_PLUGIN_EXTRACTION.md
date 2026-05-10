@@ -9,13 +9,13 @@
 ## Current Goal
 
 - Move optional scenario, telemetry, or UX behavior out of core layers.
-- Preserve the onion rule: inner layers (`domain`, `app`, `render`) must not import from `src/plugins`.
-- Plugins remain the outermost composition layer for input, controls, loop policy, HUD, scene hooks, and segment overlays.
+- Preserve the package boundary: `@solitude/engine` and `@solitude/browser` must not import Solitude plugins.
+- Plugins remain the outermost composition layer for input, controls, loop policy, HUD overlay/readout behavior, scene hooks, and segment overlays.
 
 ## Package Split Impact
 
-- As of package-split Phase 0, generic headless loop composition no longer imports or installs the Solitude `spacecraftOperator` plugin by default.
-- An architecture guard now fails if production files under generic roots import `src/plugins`.
+- Generic headless loop composition no longer imports or installs Solitude plugins by default.
+- Package placement and exports enforce the core/browser boundary; do not add imports from `@solitude/engine` or `@solitude/browser` into `packages/solitude/src/plugins`.
 - This reinforces the extraction boundary: product/scenario plugins remain caller-composed outer-layer behavior, even in headless tests.
 - No plugin folders moved yet; physical package relocation is still future work.
 
@@ -27,33 +27,60 @@
 
 ## Current Plugin Surface
 
-Existing plugin types live in `src/app/pluginPorts.ts`:
+Generic plugin types live in `packages/engine/src/app/pluginPorts.ts`:
 
 - `input`: actions, key maps, and custom key handlers.
 - `controls`: control-state updates, attitude commands, propulsion command resolution.
 - `loop`: frame policy, loop init, loop update, post-frame cleanup.
-- `hud`: HUD grid writers.
 - `scene`: scene init/update hooks and per-view object filters.
 - `segments`: world-space overlay segment providers.
-- `worldModel`: pre-runtime contribution of celestial bodies, ships, render config, initial ship states, and the main ship ID.
+- `views`: main-view camera rigs and optional view registration.
+- `worldModel`: pre-runtime contribution of generic entities and main focus identity.
+
+HUD is now Solitude-owned:
+
+- `packages/solitude/src/plugins/hud/` owns the fixed HUD grid, panel capability protocol, update cadence, and browser overlay rendering.
+- Telemetry/readout plugins publish `solitude.hud.panel.v1` capability providers instead of using an engine `HudPlugin` slot.
+- Browser exposes a generic `solitude.browser.overlay.v1` capability host; it does not know the Solitude HUD grid.
+- `@solitude/engine` no longer exports `HudGrid`, `HudContext`, `HudPlugin`, `DefaultHudRenderer`, or a rasterizer HUD draw pass.
 
 Existing plugins already cover:
 
-- Autopilot: `src/plugins/autopilot/`
-- Axial views: `src/plugins/axialViews/`
-- Memory telemetry: `src/plugins/memory/`
-- Orbit telemetry: `src/plugins/orbitTelemetry/`
-- Pause: `src/plugins/pause/`
-- Playback/capture diagnostics: `src/plugins/playback/`
-- Profiling toggle/HUD: `src/plugins/profiling/`
-- Runtime telemetry: `src/plugins/runtimeTelemetry/`
-- Ship telemetry: `src/plugins/shipTelemetry/`
-- Time scale: `src/plugins/timeScale/`
-- Trajectories: `src/plugins/trajectories/`
-- Velocity segments: `src/plugins/velocitySegments/`
-- Solar system world model: `src/plugins/solarSystem/`
+- Autopilot: `packages/solitude/src/plugins/autopilot/`
+- Axial views: `packages/solitude/src/plugins/axialViews/`
+- HUD shell/overlay: `packages/solitude/src/plugins/hud/`
+- Memory telemetry: `packages/solitude/src/plugins/memory/`
+- Orbit telemetry: `packages/solitude/src/plugins/orbitTelemetry/`
+- Pause: `packages/solitude/src/plugins/pause/`
+- Playback/capture diagnostics: `packages/solitude/src/plugins/playback/`
+- Profiling toggle/HUD: `packages/solitude/src/plugins/profiling/`
+- Runtime telemetry: `packages/solitude/src/plugins/runtimeTelemetry/`
+- Ship telemetry: `packages/solitude/src/plugins/shipTelemetry/`
+- Time scale: `packages/solitude/src/plugins/timeScale/`
+- Trajectories: `packages/solitude/src/plugins/trajectories/`
+- Velocity segments: `packages/solitude/src/plugins/velocitySegments/`
+- Solar system world model: `packages/solitude/src/plugins/solarSystem/`
 
 ## Completed Decisions
+
+### HUD Shell / Overlay
+
+Status: extraction implemented on 2026-05-10.
+
+What changed:
+
+- Added a Solitude-owned `hud` plugin.
+- Added `solitude.hud.panel.v1` providers for readout plugins.
+- Moved the fixed HUD grid and panel context out of engine and into `packages/solitude/src/plugins/hud/`.
+- Removed the engine `GamePlugin.hud` slot and the engine `HudGrid`/`HudContext`/`HudPlugin` types.
+- Removed `DefaultHudRenderer` and the engine rasterizer HUD pass.
+- Added a browser generic overlay capability host used by the Solitude HUD plugin.
+- Renamed frame policy `advanceHud` to `advanceOverlay`.
+
+Known remaining static pieces:
+
+- `packages/browser/src/infra/domLayout.ts` still has a fixed `avoidHud`/HUD top inset for PiP layout.
+- Canvas HUD text drawing lives in `packages/browser/src/rasterize/canvas/CanvasHudRasterizer.ts`; this is browser adapter code, but the visual grid contract is Solitude-owned.
 
 ### Auxiliary PiP / Axial Views
 
@@ -83,9 +110,9 @@ Status: cleanup implemented on 2026-04-25.
 
 What changed:
 
-- Moved FPS averaging/storage out of `src/infra/domGameLoop.ts` and into `src/plugins/runtimeTelemetry/`.
-- Removed `fps` from the generic `HudContext`; runtime telemetry now passes FPS through its own loop/HUD controller.
-- Removed the now-unused `src/infra/fps.ts` helper and `src/app/RingBuffer.ts`.
+- Moved FPS averaging/storage out of the browser game loop and into `packages/solitude/src/plugins/runtimeTelemetry/`.
+- Runtime telemetry now passes FPS through its own loop/HUD panel controller.
+- Removed the now-unused FPS helper and ring buffer.
 
 ### Trajectory Runtime Type
 
@@ -116,22 +143,22 @@ Status: medium-priority extraction/split candidate.
 
 Why it is non-core:
 
-- `src/domain/orbit.ts` is currently imported only by plugins.
+- `packages/engine/src/domain/orbit.ts` is currently imported only by plugins.
 - `OrbitReadout`, apsis timers, and circularization delta-v readout serve HUD/autopilot behavior more than core physics integration.
 - Keeping telemetry readout in domain makes plugin-specific concepts look core.
 
 Current touch points:
 
-- `src/domain/orbit.ts`: `OrbitReadout`, `createOrbitReadout`, `computeShipOrbitReadoutInto`.
-- `src/domain/orbit.ts`: `getDominantBody` and `getDominantBodyPrimary`.
-- `src/plugins/orbitTelemetry/hud.ts`: consumes `computeShipOrbitReadoutInto`.
-- `src/plugins/autopilot/logic.ts`: consumes `getDominantBody` and `getDominantBodyPrimary`.
-- `src/plugins/autopilot/hud.ts`: consumes `getDominantBodyPrimary`.
+- `packages/engine/src/domain/orbit.ts`: `OrbitReadout`, `createOrbitReadout`, `computeOrbitReadoutInto`.
+- `packages/engine/src/domain/orbit.ts`: `getDominantBody` and `getDominantBodyPrimary`.
+- `packages/solitude/src/plugins/orbitTelemetry/hud.ts`: consumes `computeOrbitReadoutInto`.
+- `packages/solitude/src/plugins/autopilot/logic.ts`: consumes `getDominantBody` and `getDominantBodyPrimary`.
+- `packages/solitude/src/plugins/autopilot/hud.ts`: consumes `getDominantBodyPrimary`.
 
 Likely extraction shape:
 
-- Split `src/domain/orbit.ts` into smaller pieces.
-- Move HUD readout construction into `src/plugins/orbitTelemetry/`.
+- Split `packages/engine/src/domain/orbit.ts` into smaller pieces.
+- Keep HUD readout construction in `packages/solitude/src/plugins/orbitTelemetry/`.
 - Keep or relocate shared gravitational-primary math depending on desired ownership:
   - Keep a tiny domain helper if "dominant gravitational body" is considered domain vocabulary.
   - Or move it to plugin-local helpers if it remains used only by autopilot/telemetry plugins.

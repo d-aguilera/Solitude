@@ -3,12 +3,6 @@ import type { TimeScaleController } from "./logic";
 
 const timeScalePrefix = "Time Scale: x";
 
-export function createHudPlugin(
-  controller: TimeScaleController,
-): HudPanelProvider {
-  return createHudPanel(controller);
-}
-
 export function createHudPanel(
   controller: TimeScaleController,
 ): HudPanelProvider {

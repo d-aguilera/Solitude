@@ -136,7 +136,7 @@ export interface SceneViewFilterParams {
 export interface FramePolicy {
   advanceSim: boolean;
   advanceScene: boolean;
-  advanceHud: boolean;
+  advanceOverlay: boolean;
   tickDtMillis?: number;
   simDtMillis?: number;
 }

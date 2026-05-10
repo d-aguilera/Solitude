@@ -308,7 +308,7 @@ export function runLoop({
       applyBrowserOverlayProviders(
         overlayProviders,
         {
-          advanceOverlay: shouldAdvanceOverlay && framePolicy.advanceHud,
+          advanceOverlay: shouldAdvanceOverlay && framePolicy.advanceOverlay,
           controlInput,
           framePolicy,
           mainFocus: worldAndScene.mainFocus,
@@ -588,8 +588,8 @@ function applyLoopPlugins(
       if (policy.advanceScene !== undefined) {
         state.framePolicy.advanceScene = policy.advanceScene;
       }
-      if (policy.advanceHud !== undefined) {
-        state.framePolicy.advanceHud = policy.advanceHud;
+      if (policy.advanceOverlay !== undefined) {
+        state.framePolicy.advanceOverlay = policy.advanceOverlay;
       }
       if (policy.tickDtMillis !== undefined) {
         state.framePolicy.tickDtMillis = policy.tickDtMillis;
@@ -614,14 +614,14 @@ function createDefaultFramePolicy(): FramePolicy {
   return {
     advanceSim: true,
     advanceScene: true,
-    advanceHud: true,
+    advanceOverlay: true,
   };
 }
 
 function resetFramePolicy(policy: FramePolicy): void {
   policy.advanceSim = true;
   policy.advanceScene = true;
-  policy.advanceHud = true;
+  policy.advanceOverlay = true;
   policy.tickDtMillis = undefined;
   policy.simDtMillis = undefined;
 }
