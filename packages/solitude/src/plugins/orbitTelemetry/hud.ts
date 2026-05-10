@@ -1,4 +1,3 @@
-import type { HudPlugin } from "@solitude/engine/app/pluginPorts";
 import {
   computeOrbitReadoutInto,
   createOrbitReadout,
@@ -7,6 +6,7 @@ import {
   formatDistance,
   formatSimTime,
 } from "@solitude/engine/render/formatters";
+import type { HudPanelProvider } from "../hud/capabilities";
 
 const orbitPrefix = "Orbit: ";
 const peApEmpty = "Pe/Ap: --";
@@ -17,13 +17,13 @@ const deltaVTanPrefix = "Δv Tan: ";
 const periapsisTimeEmpty = "Pe in: --";
 const apoapsisTimeEmpty = "Ap in: --";
 
-export function createHudPlugin(): HudPlugin {
+export function createHudPanel(): HudPanelProvider {
   const orbitReadout = createOrbitReadout();
   let primaryDisplayNameId = "";
   let primaryDisplayName = "";
 
   return {
-    updateHudParams: (grid, context) => {
+    writeHud: (grid, context) => {
       const hasOrbit = computeOrbitReadoutInto(
         orbitReadout,
         context.world,

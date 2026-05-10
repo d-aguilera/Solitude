@@ -99,6 +99,14 @@ export interface HudPlugin {
   updateHudParams: (grid: HudGrid, context: HudContext) => void;
 }
 
+export interface HudContributionParams {
+  capabilityRegistry: PluginCapabilityRegistry;
+}
+
+export type HudContribution =
+  | HudPlugin
+  | ((params: HudContributionParams) => HudPlugin);
+
 export interface WorldSegment {
   start: Vec3;
   end: Vec3;
@@ -240,7 +248,7 @@ export interface GamePlugin {
   id: string;
   capabilities?: readonly PluginCapabilityProvider[];
   controls?: ControlPlugin;
-  hud?: HudPlugin;
+  hud?: HudContribution;
   input?: InputPlugin;
   loop?: LoopPlugin;
   segments?: SegmentPlugin;

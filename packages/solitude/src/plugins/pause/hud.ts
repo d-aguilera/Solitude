@@ -1,11 +1,15 @@
-import type { HudPlugin } from "@solitude/engine/app/pluginPorts";
+import type { HudPanelProvider } from "../hud/capabilities";
 import type { PauseController } from "./logic";
 
 const pausedText = "PAUSED";
 
-export function createHudPlugin(controller: PauseController): HudPlugin {
+export function createHudPlugin(controller: PauseController): HudPanelProvider {
+  return createHudPanel(controller);
+}
+
+export function createHudPanel(controller: PauseController): HudPanelProvider {
   return {
-    updateHudParams: (grid) => {
+    writeHud: (grid) => {
       if (!controller.isPaused()) return;
       grid[2][1] = pausedText;
     },

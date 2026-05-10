@@ -1,6 +1,6 @@
-import type { HudPlugin } from "@solitude/engine/app/pluginPorts";
 import { vec3 } from "@solitude/engine/domain/vec3";
 import { formatSpeed } from "@solitude/engine/render/formatters";
+import type { HudPanelProvider } from "../hud/capabilities";
 import type { SpacecraftOperatorTelemetry } from "../spacecraftOperator/telemetry";
 
 const speedPrefix = "Speed: ";
@@ -9,9 +9,15 @@ const rcsPrefix = "RCS: ";
 
 export function createHudPlugin(
   telemetry: SpacecraftOperatorTelemetry,
-): HudPlugin {
+): HudPanelProvider {
+  return createHudPanel(telemetry);
+}
+
+export function createHudPanel(
+  telemetry: SpacecraftOperatorTelemetry,
+): HudPanelProvider {
   return {
-    updateHudParams: (grid, context) => {
+    writeHud: (grid, context) => {
       const speedMps = vec3.length(context.mainFocus.controlledBody.velocity);
       grid[0][4] = speedPrefix.concat(formatSpeed(speedMps));
 

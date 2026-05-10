@@ -1,10 +1,11 @@
 import type { GamePlugin } from "@solitude/engine/app/pluginPorts";
-import { createHudPlugin } from "./hud";
+import { createHudPanelProvider } from "../hud/capabilities";
+import { createHudPanel } from "./hud";
 
 export function createOrbitTelemetryPlugin(): GamePlugin {
   return {
     id: "orbitTelemetry",
-    hud: createHudPlugin(),
+    capabilities: [createHudPanelProvider(createHudPanel())],
     requirements: {
       mainFocus: ["controlledBody", "motionState"],
     },

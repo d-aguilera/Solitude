@@ -10,11 +10,11 @@ import { mat3 } from "@solitude/engine/domain/mat3";
 import { circularSpeedAtRadius } from "@solitude/engine/domain/phys";
 import { vec3 } from "@solitude/engine/domain/vec3";
 import { describe, expect, it } from "vitest";
-import { createHudPlugin as createAutopilotHudPlugin } from "../autopilot/hud";
-import { createHudPlugin as createOrbitTelemetryHudPlugin } from "../orbitTelemetry/hud";
-import { createHudPlugin as createRuntimeTelemetryHudPlugin } from "../runtimeTelemetry/hud";
+import { createHudPanel as createAutopilotHudPanel } from "../autopilot/hud";
+import { createHudPanel as createOrbitTelemetryHudPanel } from "../orbitTelemetry/hud";
+import { createHudPanel as createRuntimeTelemetryHudPanel } from "../runtimeTelemetry/hud";
 import { createRuntimeTelemetryController } from "../runtimeTelemetry/logic";
-import { createHudPlugin as createShipTelemetryHudPlugin } from "../shipTelemetry/hud";
+import { createHudPanel as createShipTelemetryHudPanel } from "../shipTelemetry/hud";
 import { createSpacecraftOperatorTelemetry } from "../spacecraftOperator/telemetry";
 
 function createHudGrid(): HudGrid {
@@ -104,7 +104,7 @@ describe("telemetry HUD plugins", () => {
     telemetry.currentThrustLevel = 5;
     telemetry.currentRcsLevel = -1;
 
-    createShipTelemetryHudPlugin(telemetry).updateHudParams(grid, context);
+    createShipTelemetryHudPanel(telemetry).writeHud(grid, context);
 
     expect(grid[0][4]).toBe("Speed: 36 km/h");
     expect(grid[1][4]).toBe("Thrust:  5");
@@ -118,7 +118,7 @@ describe("telemetry HUD plugins", () => {
     const context = createHudContext(world, ship);
     const telemetry = createSpacecraftOperatorTelemetry();
 
-    createShipTelemetryHudPlugin(telemetry).updateHudParams(grid, context);
+    createShipTelemetryHudPanel(telemetry).writeHud(grid, context);
 
     expect(grid[0][4]).toBe("Speed: 36 km/h");
   });
@@ -130,7 +130,7 @@ describe("telemetry HUD plugins", () => {
     const controller = createRuntimeTelemetryController();
 
     controller.updateFps(1000 / 60);
-    createRuntimeTelemetryHudPlugin(controller).updateHudParams(grid, context);
+    createRuntimeTelemetryHudPanel(controller).writeHud(grid, context);
 
     expect(grid[3][4]).toBe("Time: 01m 05s");
     expect(grid[4][4]).toBe("FPS: 60.0");
@@ -141,7 +141,7 @@ describe("telemetry HUD plugins", () => {
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
 
-    createOrbitTelemetryHudPlugin().updateHudParams(grid, context);
+    createOrbitTelemetryHudPanel().writeHud(grid, context);
 
     expect(grid[0][0]).toBe("Orbit: Earth (bound)");
     expect(grid[1][0]).toContain("Pe/Ap: ");
@@ -157,7 +157,7 @@ describe("telemetry HUD plugins", () => {
     const context = createHudContext(world, ship);
     context.controlInput.circleNow = true;
 
-    createAutopilotHudPlugin().updateHudParams(grid, context);
+    createAutopilotHudPanel().writeHud(grid, context);
 
     expect(grid[0][3]).toBe("AP: VEL BODY [CN]");
     expect(grid[4][2]).toBe("");

@@ -1,11 +1,19 @@
-import type { HudPlugin } from "@solitude/engine/app/pluginPorts";
+import type { HudPanelProvider } from "../hud/capabilities";
 import type { PlaybackController } from "./core";
 
 const timeScalePrefix = "Time Scale: x";
 
-export function createHudPlugin(controller: PlaybackController): HudPlugin {
+export function createHudPlugin(
+  controller: PlaybackController,
+): HudPanelProvider {
+  return createHudPanel(controller);
+}
+
+export function createHudPanel(
+  controller: PlaybackController,
+): HudPanelProvider {
   return {
-    updateHudParams: (grid) => {
+    writeHud: (grid) => {
       const timeScale = controller.getEffectiveTimeScale();
       if (timeScale != null) {
         grid[3][3] = timeScalePrefix.concat(timeScale.toString());

@@ -1,4 +1,3 @@
-import type { HudPlugin } from "@solitude/engine/app/pluginPorts";
 import type {
   ControlledBody,
   World,
@@ -9,13 +8,18 @@ import {
 } from "@solitude/engine/domain/epsilon";
 import { getDominantBodyPrimary } from "@solitude/engine/domain/orbit";
 import { vec3 } from "@solitude/engine/domain/vec3";
+import type { HudPanelProvider } from "../hud/capabilities";
 import { getAutopilotMode } from "./logic";
 
-export function createHudPlugin(): HudPlugin {
+export function createHudPlugin(): HudPanelProvider {
+  return createHudPanel();
+}
+
+export function createHudPanel(): HudPanelProvider {
   const circleNowTracker = createCircleNowDebugTracker();
 
   return {
-    updateHudParams: (grid, context) => {
+    writeHud: (grid, context) => {
       circleNowTracker.update(
         context.world,
         context.mainFocus.controlledBody,

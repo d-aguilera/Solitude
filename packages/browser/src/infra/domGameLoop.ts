@@ -6,6 +6,7 @@ import type {
   FramePolicy,
   GamePlugin,
   HudContext,
+  HudContribution,
   HudPlugin,
   LoopPlugin,
   LoopState,
@@ -124,7 +125,6 @@ export function runLoop({
   const capabilityRegistry = createPluginCapabilityRegistry(
     collectCapabilityProviders(plugins),
   );
-  const hudPlugins = collectHudPlugins(plugins);
   const loopPlugins = collectLoopPlugins(plugins);
   const scenePlugins = collectScenePlugins(plugins);
   const segmentPlugins = collectSegmentPlugins(plugins);
@@ -133,6 +133,7 @@ export function runLoop({
     controlPlugins,
     capabilityRegistry,
   );
+  const hudPlugins = collectHudPlugins(plugins, capabilityRegistry);
 
   const worldSetup = createWorld(config);
   validatePluginRequirements({
@@ -439,14 +440,26 @@ function clearHudGrid(grid: HudGrid): void {
   }
 }
 
-function collectHudPlugins(plugins: GamePlugin[]): HudPlugin[] {
+function collectHudPlugins(
+  plugins: GamePlugin[],
+  capabilityRegistry: PluginCapabilityRegistry,
+): HudPlugin[] {
   const hudPlugins: HudPlugin[] = [];
   for (const plugin of plugins) {
     if (plugin.hud) {
-      hudPlugins.push(plugin.hud);
+      hudPlugins.push(createHudContribution(plugin.hud, capabilityRegistry));
     }
   }
   return hudPlugins;
+}
+
+function createHudContribution(
+  contribution: HudContribution,
+  capabilityRegistry: PluginCapabilityRegistry,
+): HudPlugin {
+  return typeof contribution === "function"
+    ? contribution({ capabilityRegistry })
+    : contribution;
 }
 
 function collectScenePlugins(plugins: GamePlugin[]): ScenePlugin[] {

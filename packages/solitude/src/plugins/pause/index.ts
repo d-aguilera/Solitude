@@ -1,13 +1,14 @@
 import type { GamePlugin } from "@solitude/engine/app/pluginPorts";
+import { createHudPanelProvider } from "../hud/capabilities";
 import { createLoopPlugin } from "./core";
-import { createHudPlugin } from "./hud";
+import { createHudPanel } from "./hud";
 import { createInputPlugin } from "./input";
 
 export function createPausePlugin(): GamePlugin {
   const { loop, controller } = createLoopPlugin();
   return {
     id: "pause",
-    hud: createHudPlugin(controller),
+    capabilities: [createHudPanelProvider(createHudPanel(controller))],
     input: createInputPlugin(),
     loop,
   };

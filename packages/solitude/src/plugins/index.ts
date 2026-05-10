@@ -4,6 +4,7 @@ import type {
 } from "@solitude/engine/app/pluginPorts";
 import { createAutopilotPlugin } from "./autopilot/index";
 import { createAxialViewsPlugin } from "./axialViews/index";
+import { createHudPlugin } from "./hud/index";
 import { createMemoryPlugin } from "./memory/index";
 import { createOrbitTelemetryPlugin } from "./orbitTelemetry/index";
 import { createPausePlugin } from "./pause/index";
@@ -29,6 +30,7 @@ export type PluginFactory = (
 export const defaultPluginIds = [
   "solarSystem",
   "spacecraftOperator",
+  "hud",
   "axialViews",
   "orbitTelemetry",
   "runtimeTelemetry",
@@ -46,6 +48,7 @@ export const defaultPluginIds = [
 export const availablePlugins: Record<string, PluginFactory> = {
   autopilot: createAutopilotPlugin,
   axialViews: createAxialViewsPlugin,
+  hud: createHudPlugin,
   memory: createMemoryPlugin,
   orbitTelemetry: createOrbitTelemetryPlugin,
   pause: createPausePlugin,

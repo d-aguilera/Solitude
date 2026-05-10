@@ -1,12 +1,13 @@
 import type { GamePlugin } from "@solitude/engine/app/pluginPorts";
+import { createHudPanelProvider } from "../hud/capabilities";
 import { createLoopPlugin } from "./core";
-import { createHudPlugin } from "./hud";
+import { createHudPanel } from "./hud";
 
 export function createRuntimeTelemetryPlugin(): GamePlugin {
   const { plugin, controller } = createLoopPlugin();
   return {
     id: "runtimeTelemetry",
-    hud: createHudPlugin(controller),
+    capabilities: [createHudPanelProvider(createHudPanel(controller))],
     loop: plugin,
   };
 }

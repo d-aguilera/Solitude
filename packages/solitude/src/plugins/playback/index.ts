@@ -2,8 +2,9 @@ import type {
   GamePlugin,
   RuntimeOptions,
 } from "@solitude/engine/app/pluginPorts";
+import { createHudPanelProvider } from "../hud/capabilities";
 import { createPlaybackController } from "./core";
-import { createHudPlugin } from "./hud";
+import { createHudPanel } from "./hud";
 import { createInputPlugin } from "./input";
 import { parsePlaybackRuntimeOptions } from "./options";
 
@@ -22,12 +23,12 @@ export function createPlaybackPlugin(
 
   return {
     id: "playback",
+    capabilities: [createHudPanelProvider(createHudPanel(controller))],
     controls: {
       updateControlState: ({ controlInput, controlState }) => {
         controller.updateControlState(controlInput, controlState);
       },
     },
-    hud: createHudPlugin(controller),
     input: createInputPlugin(options.diagnostic, controller),
     loop: {
       getInitialSimTimeMillis: () => controller.getInitialSimTimeMillis(),
