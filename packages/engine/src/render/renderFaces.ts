@@ -128,7 +128,8 @@ function buildFaces(
   workspace: RenderFacesWorkspace,
   objectsFilter: ((obj: SceneObject) => boolean) | undefined,
 ): number {
-  return alloc.withName(buildFaces.name, () => {
+  alloc.pushName(buildFaces.name);
+  try {
     const clipped = workspace.clipped;
     const e1Scratch = workspace.e1Scratch;
     const e2Scratch = workspace.e2Scratch;
@@ -302,7 +303,9 @@ function buildFaces(
     }
 
     return faceCount;
-  });
+  } finally {
+    alloc.popName();
+  }
 }
 
 function computeIrradianceAtPoint(

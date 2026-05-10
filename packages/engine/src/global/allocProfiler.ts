@@ -30,18 +30,23 @@ function getFullName(name: string): string {
 
 export const alloc = {
   withName<T>(name: string, fn: () => T): T {
+    alloc.pushName(name);
+    try {
+      return fn();
+    } finally {
+      alloc.popName();
+    }
+  },
+  pushName(name: string): void {
     if (nameStack.length === nameStackDepth) {
       nameStack.push(name);
     } else {
       nameStack[nameStackDepth] = name;
     }
     nameStackDepth++;
-
-    const result: T = fn();
-
+  },
+  popName(): void {
     nameStackDepth--;
-
-    return result;
   },
   vec3(count = 1): void {
     globalProfiler.increment("alloc", getFullName("vec3"), count);

@@ -28,7 +28,8 @@ export function renderPolylinesInto(
   projectSegmentInto: SegmentProjector,
   objectsFilter?: (obj: SceneObject) => boolean,
 ): number {
-  return alloc.withName(renderPolylinesInto.name, () => {
+  alloc.pushName(renderPolylinesInto.name);
+  try {
     let intoCount = 0;
     let pointCount = 0;
     let current: RenderedPolyline | undefined;
@@ -127,5 +128,7 @@ export function renderPolylinesInto(
       current = undefined;
       pointCount = 0;
     }
-  });
+  } finally {
+    alloc.popName();
+  }
 }

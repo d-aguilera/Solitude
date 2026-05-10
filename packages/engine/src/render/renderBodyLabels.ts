@@ -145,7 +145,8 @@ export function renderBodyLabelsInto(
   objectsFilter?: (obj: SceneObject) => boolean,
   labelMode: BodyLabelContent = "full",
 ): number {
-  return alloc.withName(renderBodyLabelsInto.name, () => {
+  alloc.pushName(renderBodyLabelsInto.name);
+  try {
     if (layoutCache.labelMode !== labelMode) {
       layoutCache.labelMode = labelMode;
       layoutCache.needsRelayout = true;
@@ -181,7 +182,9 @@ export function renderBodyLabelsInto(
       objectsFilter,
       labelMode,
     );
-  });
+  } finally {
+    alloc.popName();
+  }
 }
 
 function countLabelBodies(
