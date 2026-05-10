@@ -18,7 +18,6 @@ import {
 } from "./renderFrameCache";
 import type { RenderedFace } from "./renderPorts";
 import { type ScreenPoint, scrn } from "./scrn";
-import { sortRangeInPlace } from "./sortRange";
 
 // E = I / (4π r²) at 1 AU from the Sun.
 const SUN_LUMINOSITY = 3.828e26; // W
@@ -47,6 +46,8 @@ export interface RenderFacesWorkspace {
   p0: ScreenPoint;
   p1: ScreenPoint;
   p2: ScreenPoint;
+  sortStackHi: number[];
+  sortStackLo: number[];
   toCameraScratch: Vec3;
   toLightScratch: Vec3;
 }
@@ -72,6 +73,8 @@ export function createRenderFacesWorkspace(): RenderFacesWorkspace {
     p0: scrn.zero(),
     p1: scrn.zero(),
     p2: scrn.zero(),
+    sortStackHi: [],
+    sortStackLo: [],
     toCameraScratch: vec3.zero(),
     toLightScratch: vec3.zero(),
   };
@@ -102,11 +105,7 @@ export function renderFacesInto(
   );
 
   if (sortFaces) {
-    sortRangeInPlace(
-      workspace.faceEntryScratch,
-      faceList,
-      compareFaceDepthDesc,
-    );
+    sortFacesByDepthDesc(workspace.faceEntryScratch, faceList, workspace);
   }
 
   shadeFacesInto(into, faceList, workspace);
@@ -399,8 +398,63 @@ function shadeFacesInto(
   }
 }
 
-function compareFaceDepthDesc(a: FaceEntry, b: FaceEntry): number {
-  return b.depth - a.depth;
+function sortFacesByDepthDesc(
+  array: FaceEntry[],
+  count: number,
+  workspace: RenderFacesWorkspace,
+): void {
+  if (count <= 1) return;
+
+  const stackLo = workspace.sortStackLo;
+  const stackHi = workspace.sortStackHi;
+  stackLo.length = 0;
+  stackHi.length = 0;
+  stackLo.push(0);
+  stackHi.push(count - 1);
+
+  const insertionThreshold = 16;
+
+  while (stackLo.length > 0) {
+    const lo = stackLo.pop() as number;
+    const hi = stackHi.pop() as number;
+    if (hi - lo <= insertionThreshold) continue;
+
+    const pivotDepth = array[(lo + hi) >> 1].depth;
+    let i = lo;
+    let j = hi;
+
+    while (i <= j) {
+      while (array[i].depth > pivotDepth) i++;
+      while (array[j].depth < pivotDepth) j--;
+      if (i <= j) {
+        const tmp = array[i];
+        array[i] = array[j];
+        array[j] = tmp;
+        i++;
+        j--;
+      }
+    }
+
+    if (lo < j) {
+      stackLo.push(lo);
+      stackHi.push(j);
+    }
+    if (i < hi) {
+      stackLo.push(i);
+      stackHi.push(hi);
+    }
+  }
+
+  for (let i = 1; i < count; i++) {
+    const item = array[i];
+    const itemDepth = item.depth;
+    let j = i - 1;
+    while (j >= 0 && array[j].depth < itemDepth) {
+      array[j + 1] = array[j];
+      j--;
+    }
+    array[j + 1] = item;
+  }
 }
 
 export interface FaceEntry {
