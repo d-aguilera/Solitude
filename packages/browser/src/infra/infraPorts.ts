@@ -4,7 +4,6 @@ import type { GamePlugin } from "@solitude/engine/app/pluginPorts";
 import type { ViewDefinition } from "@solitude/engine/app/viewPorts";
 import type { GravityEngine } from "@solitude/engine/domain/domainPorts";
 import type {
-  HudRenderer,
   Rasterizer,
   RenderSurface2D,
   ViewRenderer,
@@ -20,8 +19,6 @@ export interface RunLoopView {
 export interface RunLoopParams {
   config: WorldAndSceneConfig;
   views: RunLoopView[];
-  hudRenderer: HudRenderer;
-  hudRasterizer: Rasterizer;
   gravityEngine: GravityEngine;
   controlInput: ControlInput;
   plugins: GamePlugin[];

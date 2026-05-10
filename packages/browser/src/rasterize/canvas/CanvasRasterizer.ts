@@ -1,4 +1,3 @@
-import type { HudGrid } from "@solitude/engine/app/hudPorts";
 import { rgbToQuantizedCss } from "@solitude/engine/render/color";
 import { LABEL_FONT } from "@solitude/engine/render/labelStyle";
 import type {
@@ -14,6 +13,8 @@ import type {
 
 const hudMargin = 10;
 const hudPadding = 10;
+
+type HudGrid = readonly (readonly string[])[];
 
 // scratch
 let ctx: CanvasRenderingContext2D;
@@ -126,7 +127,8 @@ export class CanvasRasterizer implements Rasterizer {
     }
   }
 
-  drawHud(hud: HudGrid): void {
+  drawHud(hud: unknown): void {
+    if (!isHudGrid(hud)) return;
     ctx = this.ctx;
     const canvasWidth = ctx.canvas.width;
     const canvasHeight = ctx.canvas.height;
@@ -261,4 +263,12 @@ export class CanvasRasterizer implements Rasterizer {
 
     return textMetrics;
   }
+}
+
+function isHudGrid(value: unknown): value is HudGrid {
+  if (!Array.isArray(value)) return false;
+  for (const row of value) {
+    if (!Array.isArray(row)) return false;
+  }
+  return true;
 }

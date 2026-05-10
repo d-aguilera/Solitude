@@ -1,13 +1,9 @@
 import { createTickHandler } from "@solitude/engine/app/game";
-import type { HudGrid } from "@solitude/engine/app/hudPorts";
 import { createPluginCapabilityRegistry } from "@solitude/engine/app/pluginCapabilities";
 import type {
   ControlPlugin,
   FramePolicy,
   GamePlugin,
-  HudContext,
-  HudContribution,
-  HudPlugin,
   LoopPlugin,
   LoopState,
   PluginCapabilityProvider,
@@ -50,6 +46,10 @@ import type {
 import { createScene } from "@solitude/engine/setup/sceneSetup";
 import { createWorld } from "@solitude/engine/setup/setup";
 import type { RunLoopParams, RunLoopView } from "./infraPorts";
+import {
+  browserOverlayCapability,
+  type BrowserOverlayProvider,
+} from "./overlayPorts";
 
 type RenderDebug = {
   views: Record<string, boolean | undefined>;
@@ -115,8 +115,6 @@ function getRenderDebug(): RenderDebug {
 export function runLoop({
   config,
   views,
-  hudRenderer,
-  hudRasterizer,
   gravityEngine,
   controlInput,
   plugins,
@@ -133,7 +131,7 @@ export function runLoop({
     controlPlugins,
     capabilityRegistry,
   );
-  const hudPlugins = collectHudPlugins(plugins, capabilityRegistry);
+  const overlayProviders = collectBrowserOverlayProviders(capabilityRegistry);
 
   const worldSetup = createWorld(config);
   validatePluginRequirements({
@@ -202,11 +200,10 @@ export function runLoop({
     worldAndScene,
     config,
   );
-
-  const renderedHud: HudGrid = createHudGrid();
+  const primaryOverlayRasterizer = getPrimaryRasterizer(loopViews);
 
   let lastTimeMs: number;
-  let lastHudTimeMs: number;
+  let lastOverlayTimeMs: number;
   let dtMillis: number;
   let simTimeMillis = getInitialSimTimeMillis(loopPlugins);
   const loopState: LoopState = {
@@ -300,27 +297,31 @@ export function runLoop({
       });
     }
 
-    const shouldRenderHud = nowMs - lastHudTimeMs > 100;
-
-    if (shouldRenderHud && framePolicy.advanceHud && renderDebug.hud) {
-      clearHudGrid(renderedHud);
-      applyHudPlugins(hudPlugins, renderedHud, {
-        controlInput,
-        mainFocus: worldAndScene.mainFocus,
-        nowMs,
-        simTimeMillis,
-        world: worldAndScene.world,
-      });
-
-      hudRenderer.renderInto(renderedHud, renderedHud);
-      lastHudTimeMs = nowMs;
-    }
+    const shouldAdvanceOverlay = nowMs - lastOverlayTimeMs > 100;
 
     for (const view of loopViews) {
       if (!isViewEnabled(renderDebug, view.definition.id)) continue;
       rasterizeView(view.renderedView, view.rasterizer, facesRaster);
     }
-    if (renderDebug.hud) rasterizeHud(renderedHud, hudRasterizer);
+    if (renderDebug.hud) {
+      applyBrowserOverlayProviders(
+        overlayProviders,
+        {
+          advanceOverlay: shouldAdvanceOverlay && framePolicy.advanceHud,
+          controlInput,
+          framePolicy,
+          mainFocus: worldAndScene.mainFocus,
+          nowMs,
+          primaryRasterizer: primaryOverlayRasterizer,
+          simTimeMillis,
+          world: worldAndScene.world,
+        },
+        capabilityRegistry,
+      );
+      if (shouldAdvanceOverlay) {
+        lastOverlayTimeMs = nowMs;
+      }
+    }
     loopUpdateParams.simTimeMillis = simTimeMillis;
     applyLoopPostPlugins(loopPlugins, loopUpdateParams);
 
@@ -329,7 +330,7 @@ export function runLoop({
 
   const first = (nowMs: number) => {
     lastTimeMs = nowMs;
-    lastHudTimeMs = nowMs;
+    lastOverlayTimeMs = nowMs;
     requestAnimationFrame(loop);
   };
 
@@ -411,55 +412,46 @@ function createRenderedView(): RenderedView {
   };
 }
 
+function getPrimaryRasterizer(views: LoopView[]): Rasterizer {
+  for (const view of views) {
+    if (view.definition.layout.kind === "primary") {
+      return view.rasterizer;
+    }
+  }
+  throw new Error("Required primary overlay rasterizer not registered");
+}
+
 function isViewEnabled(renderDebug: RenderDebug, viewId: string): boolean {
   return renderDebug.views[viewId] !== false;
 }
 
-function rasterizeHud(hud: HudGrid, rasterizer: Rasterizer) {
-  rasterizer.drawHud(hud);
-}
-
-function createHudGrid(): HudGrid {
-  return [
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-  ];
-}
-
-function clearHudGrid(grid: HudGrid): void {
-  for (let rowIndex = 0; rowIndex < grid.length; rowIndex++) {
-    const row = grid[rowIndex];
-    row[0] = "";
-    row[1] = "";
-    row[2] = "";
-    row[3] = "";
-    row[4] = "";
-  }
-}
-
-function collectHudPlugins(
-  plugins: GamePlugin[],
+function collectBrowserOverlayProviders(
   capabilityRegistry: PluginCapabilityRegistry,
-): HudPlugin[] {
-  const hudPlugins: HudPlugin[] = [];
-  for (const plugin of plugins) {
-    if (plugin.hud) {
-      hudPlugins.push(createHudContribution(plugin.hud, capabilityRegistry));
-    }
-  }
-  return hudPlugins;
+): BrowserOverlayProvider[] {
+  return capabilityRegistry
+    .getAll(browserOverlayCapability)
+    .filter(isBrowserOverlayProvider);
 }
 
-function createHudContribution(
-  contribution: HudContribution,
+function isBrowserOverlayProvider(
+  value: unknown,
+): value is BrowserOverlayProvider {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "renderOverlay" in value &&
+    typeof value.renderOverlay === "function"
+  );
+}
+
+function applyBrowserOverlayProviders(
+  providers: BrowserOverlayProvider[],
+  context: Parameters<BrowserOverlayProvider["renderOverlay"]>[0],
   capabilityRegistry: PluginCapabilityRegistry,
-): HudPlugin {
-  return typeof contribution === "function"
-    ? contribution({ capabilityRegistry })
-    : contribution;
+): void {
+  for (const provider of providers) {
+    provider.renderOverlay(context, capabilityRegistry);
+  }
 }
 
 function collectScenePlugins(plugins: GamePlugin[]): ScenePlugin[] {
@@ -637,16 +629,6 @@ function applyScenePlugins(
 ): void {
   for (const plugin of plugins) {
     plugin.updateScene?.(params);
-  }
-}
-
-function applyHudPlugins(
-  plugins: HudPlugin[],
-  grid: HudGrid,
-  context: HudContext,
-): void {
-  for (const plugin of plugins) {
-    plugin.updateHudParams(grid, context);
   }
 }
 

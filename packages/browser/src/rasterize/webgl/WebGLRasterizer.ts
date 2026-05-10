@@ -1,4 +1,3 @@
-import type { HudGrid } from "@solitude/engine/app/hudPorts";
 import type { RGB } from "@solitude/engine/app/scenePorts";
 import type {
   Rasterizer,
@@ -495,7 +494,7 @@ export class WebGLRasterizer implements Rasterizer {
     void labels;
   }
 
-  drawHud(hud: HudGrid): void {
+  drawHud(hud: unknown): void {
     // No-op for now. Same comment as drawBodyLabels.
     void hud;
   }

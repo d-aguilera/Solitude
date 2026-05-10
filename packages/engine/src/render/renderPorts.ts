@@ -1,4 +1,3 @@
-import type { HudGrid } from "../app/hudPorts";
 import type { WorldSegment } from "../app/pluginPorts";
 import type { FocusContext } from "../app/runtimePorts";
 import type {
@@ -16,13 +15,6 @@ export type DrawMode = "faces" | "lines";
 
 export const drawMode: DrawMode = "faces";
 
-/**
- * Top-level view rendering abstraction.
- */
-export interface HudRenderer {
-  renderInto(into: HudGrid, grid: HudGrid): void;
-}
-
 export interface Point {
   x: number;
   y: number;
@@ -35,7 +27,7 @@ export interface Rasterizer {
   clear(color: string): void;
   drawBodyLabels(labels: RenderedBodyLabel[], count: number): void;
   drawFaces(faces: RenderedFace[], count: number): void;
-  drawHud(hud: HudGrid): void;
+  drawHud(hud: unknown): void;
   drawPolylines(polylines: RenderedPolyline[], count: number): void;
   drawSegments(segments: RenderedSegment[], count: number): void;
   measureText(text: string, font: string): TextMetrics;

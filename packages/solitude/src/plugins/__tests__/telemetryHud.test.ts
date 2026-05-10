@@ -1,6 +1,4 @@
 import { createControlInput } from "@solitude/engine/app/controlPorts";
-import type { HudGrid } from "@solitude/engine/app/hudPorts";
-import type { HudContext } from "@solitude/engine/app/pluginPorts";
 import type {
   ControlledBody,
   World,
@@ -11,6 +9,8 @@ import { circularSpeedAtRadius } from "@solitude/engine/domain/phys";
 import { vec3 } from "@solitude/engine/domain/vec3";
 import { describe, expect, it } from "vitest";
 import { createHudPanel as createAutopilotHudPanel } from "../autopilot/hud";
+import type { HudContext } from "../hud/capabilities";
+import type { HudGrid } from "../hud/grid";
 import { createHudPanel as createOrbitTelemetryHudPanel } from "../orbitTelemetry/hud";
 import { createHudPanel as createRuntimeTelemetryHudPanel } from "../runtimeTelemetry/hud";
 import { createRuntimeTelemetryController } from "../runtimeTelemetry/logic";

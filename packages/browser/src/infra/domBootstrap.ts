@@ -5,10 +5,8 @@ import { buildViewDefinitions } from "@solitude/engine/app/viewRegistry";
 import type { GravityEngine } from "@solitude/engine/domain/domainPorts";
 import { parameters } from "@solitude/engine/global/parameters";
 import { NewtonianGravityEngine } from "@solitude/engine/infra/NewtonianGravityEngine";
-import { DefaultHudRenderer } from "@solitude/engine/render/DefaultHudRenderer";
 import { DefaultViewRenderer } from "@solitude/engine/render/DefaultViewRenderer";
 import type {
-  HudRenderer,
   Rasterizer,
   RenderSurface2D,
 } from "@solitude/engine/render/renderPorts";
@@ -41,17 +39,12 @@ export function bootstrapWith(
   );
 
   const views = createRunLoopViews(viewCanvases, makeSurface, makeRasterizer);
-  const primaryView = getRequiredPrimaryRunLoopView(views);
-  const hudRasterizer = primaryView.rasterizer;
-  const hudRenderer: HudRenderer = new DefaultHudRenderer();
 
   const { controlInput } = initInput(plugins);
 
   runLoop({
     config,
     views,
-    hudRenderer,
-    hudRasterizer,
     gravityEngine,
     controlInput,
     plugins,
@@ -116,21 +109,6 @@ function getOrCreateViewCanvas(
 
 function createViewCanvasId(index: number): string {
   return `sceneViewCanvas-${index}`;
-}
-
-function getRequiredPrimaryRunLoopView(views: RunLoopView[]): RunLoopView {
-  let primaryView: RunLoopView | null = null;
-  for (const view of views) {
-    if (view.definition.layout.kind !== "primary") continue;
-    if (primaryView) {
-      throw new Error("Multiple primary views registered");
-    }
-    primaryView = view;
-  }
-  if (!primaryView) {
-    throw new Error("Required primary view not registered");
-  }
-  return primaryView;
 }
 
 function createRunLoopViews(

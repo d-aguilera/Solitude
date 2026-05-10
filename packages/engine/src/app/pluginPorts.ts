@@ -9,7 +9,6 @@ import type {
   MutableControlState,
 } from "./controlPorts";
 import type { EntityConfig } from "./entityConfigPorts";
-import type { HudGrid } from "./hudPorts";
 import type { FocusContext } from "./runtimePorts";
 import type { Scene, SceneObject } from "./scenePorts";
 import type {
@@ -86,26 +85,6 @@ export interface SimulationContributionParams {
 export type SimulationContribution =
   | SimulationPlugin
   | ((params: SimulationContributionParams) => SimulationPlugin);
-
-export interface HudContext {
-  nowMs: number;
-  world: World;
-  mainFocus: FocusContext;
-  controlInput: ControlInput;
-  simTimeMillis: number;
-}
-
-export interface HudPlugin {
-  updateHudParams: (grid: HudGrid, context: HudContext) => void;
-}
-
-export interface HudContributionParams {
-  capabilityRegistry: PluginCapabilityRegistry;
-}
-
-export type HudContribution =
-  | HudPlugin
-  | ((params: HudContributionParams) => HudPlugin);
 
 export interface WorldSegment {
   start: Vec3;
@@ -248,7 +227,6 @@ export interface GamePlugin {
   id: string;
   capabilities?: readonly PluginCapabilityProvider[];
   controls?: ControlPlugin;
-  hud?: HudContribution;
   input?: InputPlugin;
   loop?: LoopPlugin;
   segments?: SegmentPlugin;

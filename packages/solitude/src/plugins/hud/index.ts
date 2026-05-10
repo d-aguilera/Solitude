@@ -1,21 +1,33 @@
+import { createBrowserOverlayProvider } from "@solitude/browser/dom/overlayPorts";
 import type { GamePlugin } from "@solitude/engine/app/pluginPorts";
 import { hudPanelCapability, isHudPanelProvider } from "./capabilities";
+import { clearHudGrid, createHudGrid } from "./grid";
 
 export function createHudPlugin(): GamePlugin {
+  const grid = createHudGrid();
+  let lastHudTimeMs = 0;
+
   return {
     id: "hud",
-    hud: ({ capabilityRegistry }) => {
-      const providers = capabilityRegistry
-        .getAll(hudPanelCapability)
-        .filter(isHudPanelProvider);
+    capabilities: [
+      createBrowserOverlayProvider({
+        renderOverlay: (context, capabilityRegistry) => {
+          if (context.advanceOverlay) {
+            clearHudGrid(grid);
+            const providers = capabilityRegistry
+              .getAll(hudPanelCapability)
+              .filter(isHudPanelProvider);
+            for (const provider of providers) {
+              provider.writeHud(grid, context);
+            }
+            lastHudTimeMs = context.nowMs;
+          }
 
-      return {
-        updateHudParams: (grid, context) => {
-          for (const provider of providers) {
-            provider.writeHud(grid, context);
+          if (lastHudTimeMs > 0) {
+            context.primaryRasterizer.drawHud(grid);
           }
         },
-      };
-    },
+      }),
+    ],
   };
 }
