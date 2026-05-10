@@ -52,31 +52,33 @@ import {
   type OverlayRasterizer,
 } from "./overlayPorts";
 
+type RenderPassDebug = {
+  faces: boolean;
+  facesBuild: boolean;
+  facesRaster: boolean;
+  facesSort: boolean;
+  polylines: boolean;
+  segments: boolean;
+  bodyLabels: boolean;
+};
+
 type RenderDebug = {
-  views: Record<string, boolean | undefined>;
-  passes: {
-    faces: boolean;
-    facesBuild: boolean;
-    facesRaster: boolean;
-    facesSort: boolean;
-    polylines: boolean;
-    segments: boolean;
-    bodyLabels: boolean;
-  };
+  views: Record<string, boolean>;
+  passes: RenderPassDebug;
   hud: boolean;
 };
 
-const defaultRenderDebug: RenderDebug = {
-  views: {},
-  passes: {
-    faces: true,
-    facesBuild: true,
-    facesRaster: true,
-    facesSort: true,
-    polylines: true,
-    segments: true,
-    bodyLabels: true,
-  },
+const defaultRenderPassDebug: RenderPassDebug = {
+  faces: true,
+  facesBuild: true,
+  facesRaster: true,
+  facesSort: true,
+  polylines: true,
+  segments: true,
+  bodyLabels: true,
+};
+
+const defaultRenderDebug = {
   hud: true,
 };
 
@@ -88,26 +90,38 @@ type LoopView = RunLoopView & {
   worldSegments: WorldSegment[];
 };
 
-function getRenderDebug(): RenderDebug {
+function getRenderDebug(views: readonly LoopView[]): RenderDebug {
   const root = globalThis as typeof globalThis & {
-    __solitudeRenderDebug?: RenderDebug;
+    __solitudeRenderDebug?: Partial<RenderDebug>;
   };
+
+  const defaultViews = createDefaultViewDebug(views);
   if (!root.__solitudeRenderDebug) {
     root.__solitudeRenderDebug = {
-      views: { ...defaultRenderDebug.views },
-      passes: { ...defaultRenderDebug.passes },
+      views: defaultViews,
+      passes: { ...defaultRenderPassDebug },
       hud: defaultRenderDebug.hud,
     };
-    return root.__solitudeRenderDebug;
+    return root.__solitudeRenderDebug as RenderDebug;
   }
 
   const existing = root.__solitudeRenderDebug;
-  existing.views = { ...defaultRenderDebug.views, ...existing.views };
-  existing.passes = { ...defaultRenderDebug.passes, ...existing.passes };
+  existing.views = { ...defaultViews, ...existing.views };
+  existing.passes = { ...defaultRenderPassDebug, ...existing.passes };
   if (existing.hud === undefined) {
     existing.hud = defaultRenderDebug.hud;
   }
-  return existing;
+  return existing as RenderDebug;
+}
+
+function createDefaultViewDebug(
+  views: readonly LoopView[],
+): Record<string, boolean> {
+  const viewDebug: Record<string, boolean> = {};
+  for (const view of views) {
+    viewDebug[view.definition.id] = true;
+  }
+  return viewDebug;
 }
 
 /**
@@ -221,7 +235,7 @@ export function runLoop({
     state: loopState,
     world: worldAndScene.world,
   };
-  const renderDebug = getRenderDebug();
+  const renderDebug = getRenderDebug(loopViews);
 
   const loop = (nowMs: number) => {
     dtMillis = nowMs - lastTimeMs;
