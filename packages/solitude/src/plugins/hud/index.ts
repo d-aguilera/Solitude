@@ -23,8 +23,8 @@ export function createHudPlugin(): GamePlugin {
             lastHudTimeMs = context.nowMs;
           }
 
-          if (lastHudTimeMs > 0) {
-            context.primaryRasterizer.drawHud(grid);
+          if (lastHudTimeMs > 0 && context.primaryOverlayRasterizer) {
+            context.primaryOverlayRasterizer.drawHud(grid);
           }
         },
       }),

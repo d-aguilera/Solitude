@@ -27,7 +27,6 @@ export interface Rasterizer {
   clear(color: string): void;
   drawBodyLabels(labels: RenderedBodyLabel[], count: number): void;
   drawFaces(faces: RenderedFace[], count: number): void;
-  drawHud(hud: unknown): void;
   drawPolylines(polylines: RenderedPolyline[], count: number): void;
   drawSegments(segments: RenderedSegment[], count: number): void;
   measureText(text: string, font: string): TextMetrics;

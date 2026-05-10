@@ -4,9 +4,11 @@ import type {
   Rasterizer,
   RenderSurface2D,
 } from "@solitude/engine/render/renderPorts";
+import { CanvasHudRasterizer } from "../rasterize/canvas/CanvasHudRasterizer";
 import { CanvasRasterizer } from "../rasterize/canvas/CanvasRasterizer";
 import { CanvasSurface } from "../rasterize/canvas/CanvasSurface";
 import { bootstrapWith } from "./domBootstrap";
+import type { OverlayRasterizer } from "./overlayPorts";
 
 /**
  * Canvas 2D DOM-level bootstrap
@@ -15,7 +17,13 @@ export function bootstrap(
   config: WorldAndSceneConfig,
   plugins: GamePlugin[],
 ): void {
-  bootstrapWith(config, makeSurface, makeRasterizer, plugins);
+  bootstrapWith(
+    config,
+    makeSurface,
+    makeRasterizer,
+    makeOverlayRasterizer,
+    plugins,
+  );
 }
 
 function getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
@@ -26,6 +34,10 @@ function getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
 
 function makeRasterizer(canvas: HTMLCanvasElement): Rasterizer {
   return new CanvasRasterizer(getContext(canvas));
+}
+
+function makeOverlayRasterizer(canvas: HTMLCanvasElement): OverlayRasterizer {
+  return new CanvasHudRasterizer(getContext(canvas));
 }
 
 function makeSurface(canvas: HTMLCanvasElement): RenderSurface2D {

@@ -49,6 +49,7 @@ import type { RunLoopParams, RunLoopView } from "./infraPorts";
 import {
   browserOverlayCapability,
   type BrowserOverlayProvider,
+  type OverlayRasterizer,
 } from "./overlayPorts";
 
 type RenderDebug = {
@@ -200,7 +201,7 @@ export function runLoop({
     worldAndScene,
     config,
   );
-  const primaryOverlayRasterizer = getPrimaryRasterizer(loopViews);
+  const primaryOverlayRasterizer = getPrimaryOverlayRasterizer(loopViews);
 
   let lastTimeMs: number;
   let lastOverlayTimeMs: number;
@@ -312,7 +313,7 @@ export function runLoop({
           framePolicy,
           mainFocus: worldAndScene.mainFocus,
           nowMs,
-          primaryRasterizer: primaryOverlayRasterizer,
+          primaryOverlayRasterizer,
           simTimeMillis,
           world: worldAndScene.world,
         },
@@ -412,10 +413,12 @@ function createRenderedView(): RenderedView {
   };
 }
 
-function getPrimaryRasterizer(views: LoopView[]): Rasterizer {
+function getPrimaryOverlayRasterizer(
+  views: LoopView[],
+): OverlayRasterizer | null {
   for (const view of views) {
     if (view.definition.layout.kind === "primary") {
-      return view.rasterizer;
+      return view.overlayRasterizer;
     }
   }
   throw new Error("Required primary overlay rasterizer not registered");

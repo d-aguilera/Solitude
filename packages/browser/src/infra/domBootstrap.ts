@@ -14,6 +14,7 @@ import { runLoop } from "./domGameLoop";
 import { initInput } from "./domKeyboardInput";
 import { initLayout, type LayoutView } from "./domLayout";
 import type { RunLoopView } from "./infraPorts";
+import type { OverlayRasterizer } from "./overlayPorts";
 
 /**
  * DOM-level bootstrap
@@ -22,6 +23,9 @@ export function bootstrapWith(
   config: WorldAndSceneConfig,
   makeSurface: (canvas: HTMLCanvasElement) => RenderSurface2D,
   makeRasterizer: (canvas: HTMLCanvasElement) => Rasterizer,
+  makeOverlayRasterizer: (
+    canvas: HTMLCanvasElement,
+  ) => OverlayRasterizer | null,
   plugins: GamePlugin[],
 ): void {
   const container = document.querySelector(".canvas-container");
@@ -38,7 +42,12 @@ export function bootstrapWith(
     parameters.softeningLength,
   );
 
-  const views = createRunLoopViews(viewCanvases, makeSurface, makeRasterizer);
+  const views = createRunLoopViews(
+    viewCanvases,
+    makeSurface,
+    makeRasterizer,
+    makeOverlayRasterizer,
+  );
 
   const { controlInput } = initInput(plugins);
 
@@ -115,12 +124,16 @@ function createRunLoopViews(
   views: LayoutViewPlusDefinition[],
   makeSurface: (canvas: HTMLCanvasElement) => RenderSurface2D,
   makeRasterizer: (canvas: HTMLCanvasElement) => Rasterizer,
+  makeOverlayRasterizer: (
+    canvas: HTMLCanvasElement,
+  ) => OverlayRasterizer | null,
 ): RunLoopView[] {
   const result: RunLoopView[] = [];
   for (const view of views) {
     const rasterizer = makeRasterizer(view.canvas);
     result.push({
       definition: view.definition,
+      overlayRasterizer: makeOverlayRasterizer(view.canvas),
       rasterizer,
       renderer: new DefaultViewRenderer(
         (text: string, font: string) => rasterizer.measureText(text, font),

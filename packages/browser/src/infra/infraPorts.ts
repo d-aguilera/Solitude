@@ -8,9 +8,11 @@ import type {
   RenderSurface2D,
   ViewRenderer,
 } from "@solitude/engine/render/renderPorts";
+import type { OverlayRasterizer } from "./overlayPorts";
 
 export interface RunLoopView {
   definition: ViewDefinition;
+  overlayRasterizer: OverlayRasterizer | null;
   rasterizer: Rasterizer;
   renderer: ViewRenderer;
   surface: RenderSurface2D;

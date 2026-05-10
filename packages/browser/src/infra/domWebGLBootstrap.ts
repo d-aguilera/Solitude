@@ -15,7 +15,7 @@ export function bootstrap(
   config: WorldAndSceneConfig,
   plugins: GamePlugin[],
 ): void {
-  bootstrapWith(config, makeSurface, makeRasterizer, plugins);
+  bootstrapWith(config, makeSurface, makeRasterizer, () => null, plugins);
 }
 
 function getContext(canvas: HTMLCanvasElement): WebGL2RenderingContext {

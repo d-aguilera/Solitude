@@ -6,9 +6,12 @@ import type {
 } from "@solitude/engine/app/pluginPorts";
 import type { FocusContext } from "@solitude/engine/app/runtimePorts";
 import type { World } from "@solitude/engine/domain/domainPorts";
-import type { Rasterizer } from "@solitude/engine/render/renderPorts";
 
 export const browserOverlayCapability = "solitude.browser.overlay.v1";
+
+export interface OverlayRasterizer {
+  drawHud: (hud: unknown) => void;
+}
 
 export interface BrowserOverlayContext {
   advanceOverlay: boolean;
@@ -16,7 +19,7 @@ export interface BrowserOverlayContext {
   framePolicy: FramePolicy;
   mainFocus: FocusContext;
   nowMs: number;
-  primaryRasterizer: Rasterizer;
+  primaryOverlayRasterizer: OverlayRasterizer | null;
   simTimeMillis: number;
   world: World;
 }

@@ -494,11 +494,6 @@ export class WebGLRasterizer implements Rasterizer {
     void labels;
   }
 
-  drawHud(hud: unknown): void {
-    // No-op for now. Same comment as drawBodyLabels.
-    void hud;
-  }
-
   measureText(text: string, font: string): TextMetrics {
     void text;
     void font;
