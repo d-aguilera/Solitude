@@ -55,6 +55,7 @@ export interface RenderedFace {
   p1: ScreenPoint;
   p2: ScreenPoint;
   color: RGB;
+  depth: number;
 }
 
 export interface RenderedPolyline {

@@ -37,7 +37,6 @@ export interface RenderFacesWorkspace {
   clipped: ClippedTriangleScratch;
   e1Scratch: Vec3;
   e2Scratch: Vec3;
-  faceEntryScratch: FaceEntry[];
   Lscratch: Vec3;
   ndc0: NdcPoint;
   ndc1: NdcPoint;
@@ -64,7 +63,6 @@ export function createRenderFacesWorkspace(): RenderFacesWorkspace {
     ],
     e1Scratch: vec3.zero(),
     e2Scratch: vec3.zero(),
-    faceEntryScratch: [],
     Lscratch: vec3.zero(),
     ndc0: ndc.zero(),
     ndc1: ndc.zero(),
@@ -93,6 +91,7 @@ export function renderFacesInto(
   sortFaces: boolean,
 ): number {
   const faceList = buildFaces(
+    into,
     scene.objects,
     camera,
     screenWidth,
@@ -105,10 +104,8 @@ export function renderFacesInto(
   );
 
   if (sortFaces) {
-    sortFacesByDepthDesc(workspace.faceEntryScratch, faceList, workspace);
+    sortFacesByDepthDesc(into, faceList, workspace);
   }
-
-  shadeFacesInto(into, faceList, workspace);
 
   return faceList;
 }
@@ -118,6 +115,7 @@ export function renderFacesInto(
  * for all non-wireframe objects in the scene.
  */
 function buildFaces(
+  into: RenderedFace[],
   objects: SceneObject[],
   camera: DomainCameraPose,
   canvasWidth: number,
@@ -133,7 +131,6 @@ function buildFaces(
     const clipped = workspace.clipped;
     const e1Scratch = workspace.e1Scratch;
     const e2Scratch = workspace.e2Scratch;
-    const faceEntryScratch = workspace.faceEntryScratch;
     const ndc0 = workspace.ndc0;
     const ndc1 = workspace.ndc1;
     const ndc2 = workspace.ndc2;
@@ -227,27 +224,16 @@ function buildFaces(
 
           const avgDepth = (p0.depth + p1.depth + p2.depth) / 3;
 
-          let entry = faceEntryScratch[faceCount];
-          if (!entry) {
-            // Growing --> append a new element.
-            entry = {
-              baseColor,
-              depth: avgDepth,
-              intensity,
-              p0: scrn.copy(p0, scrn.zero()),
-              p1: scrn.copy(p1, scrn.zero()),
-              p2: scrn.copy(p2, scrn.zero()),
-            };
-            faceEntryScratch[faceCount] = entry;
-          } else {
-            // Reuse existing entry
-            entry.baseColor = baseColor;
-            entry.depth = avgDepth;
-            entry.intensity = intensity;
-            scrn.copy(p0, entry.p0);
-            scrn.copy(p1, entry.p1);
-            scrn.copy(p2, entry.p2);
-          }
+          writeFaceInto(
+            into,
+            faceCount,
+            baseColor,
+            intensity,
+            avgDepth,
+            p0,
+            p1,
+            p2,
+          );
 
           faceCount++;
         } else {
@@ -274,27 +260,16 @@ function buildFaces(
 
             const avgDepth = (p0.depth + p1.depth + p2.depth) / 3;
 
-            let entry = faceEntryScratch[faceCount];
-            if (!entry) {
-              // Growing --> append a new element.
-              entry = {
-                baseColor,
-                depth: avgDepth,
-                intensity,
-                p0: scrn.copy(p0, scrn.zero()),
-                p1: scrn.copy(p1, scrn.zero()),
-                p2: scrn.copy(p2, scrn.zero()),
-              };
-              faceEntryScratch[faceCount] = entry;
-            } else {
-              // Reuse existing entry
-              entry.baseColor = baseColor;
-              entry.depth = avgDepth;
-              entry.intensity = intensity;
-              scrn.copy(p0, entry.p0);
-              scrn.copy(p1, entry.p1);
-              scrn.copy(p2, entry.p2);
-            }
+            writeFaceInto(
+              into,
+              faceCount,
+              baseColor,
+              intensity,
+              avgDepth,
+              p0,
+              p1,
+              p2,
+            );
 
             faceCount++;
           }
@@ -306,6 +281,43 @@ function buildFaces(
   } finally {
     alloc.popName();
   }
+}
+
+function writeFaceInto(
+  into: RenderedFace[],
+  index: number,
+  baseColor: RGB,
+  intensity: number,
+  depth: number,
+  p0: ScreenPoint,
+  p1: ScreenPoint,
+  p2: ScreenPoint,
+): void {
+  const k = 0.2 + 0.8 * intensity;
+  const r = Math.round(baseColor.r * k);
+  const g = Math.round(baseColor.g * k);
+  const b = Math.round(baseColor.b * k);
+
+  let entry = into[index];
+  if (!entry) {
+    entry = {
+      p0: scrn.copy(p0, scrn.zero()),
+      p1: scrn.copy(p1, scrn.zero()),
+      p2: scrn.copy(p2, scrn.zero()),
+      color: { r, g, b },
+      depth,
+    };
+    into[index] = entry;
+    return;
+  }
+
+  scrn.copy(p0, entry.p0);
+  scrn.copy(p1, entry.p1);
+  scrn.copy(p2, entry.p2);
+  entry.color.r = r;
+  entry.color.g = g;
+  entry.color.b = b;
+  entry.depth = depth;
 }
 
 function computeIrradianceAtPoint(
@@ -356,53 +368,8 @@ function toneMapIrradiance(E: number): number {
   return Math.max(0, Math.min(1, ldr));
 }
 
-/**
- * Shade the given face list into a caller-provided grow-only scratch buffer.
- */
-function shadeFacesInto(
-  into: RenderedFace[],
-  count: number,
-  workspace: RenderFacesWorkspace,
-): void {
-  const n = count;
-  const faceEntryScratch = workspace.faceEntryScratch;
-
-  if (into.length < n) {
-    into.length = n; // grow only
-  }
-
-  let baseColor: RGB;
-
-  for (let i = 0; i < n; i++) {
-    const face = faceEntryScratch[i];
-    baseColor = face.baseColor;
-    const k = 0.2 + 0.8 * face.intensity;
-    const r = Math.round(baseColor.r * k);
-    const g = Math.round(baseColor.g * k);
-    const b = Math.round(baseColor.b * k);
-
-    let entry = into[i];
-    if (!entry) {
-      entry = {
-        p0: scrn.copy(face.p0, scrn.zero()),
-        p1: scrn.copy(face.p1, scrn.zero()),
-        p2: scrn.copy(face.p2, scrn.zero()),
-        color: { r, g, b },
-      };
-      into[i] = entry;
-    } else {
-      scrn.copy(face.p0, entry.p0);
-      scrn.copy(face.p1, entry.p1);
-      scrn.copy(face.p2, entry.p2);
-      entry.color.r = r;
-      entry.color.g = g;
-      entry.color.b = b;
-    }
-  }
-}
-
 function sortFacesByDepthDesc(
-  array: FaceEntry[],
+  array: RenderedFace[],
   count: number,
   workspace: RenderFacesWorkspace,
 ): void {
@@ -458,13 +425,4 @@ function sortFacesByDepthDesc(
     }
     array[j + 1] = item;
   }
-}
-
-export interface FaceEntry {
-  baseColor: RGB;
-  depth: number;
-  intensity: number;
-  p0: ScreenPoint;
-  p1: ScreenPoint;
-  p2: ScreenPoint;
 }

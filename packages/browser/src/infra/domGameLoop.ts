@@ -275,9 +275,15 @@ export function runLoop({
     }
 
     if (framePolicy.advanceSim || framePolicy.advanceScene) {
-      profiler.run("render", "frameCacheUpdate", () => {
+      if (profiler.begin("render", "frameCacheUpdate")) {
+        try {
+          updateRenderFrameCache(renderCache, worldAndScene.scene);
+        } finally {
+          profiler.end("render", "frameCacheUpdate");
+        }
+      } else {
         updateRenderFrameCache(renderCache, worldAndScene.scene);
-      });
+      }
     }
 
     const passes = renderDebug.passes;
@@ -307,9 +313,15 @@ export function runLoop({
       } else {
         view.worldSegments.length = 0;
       }
-      profiler.run("viewRender", view.definition.id, () => {
+      if (profiler.begin("viewRender", view.definition.id)) {
+        try {
+          view.renderer.renderInto(view.renderedView, renderParams);
+        } finally {
+          profiler.end("viewRender", view.definition.id);
+        }
+      } else {
         view.renderer.renderInto(view.renderedView, renderParams);
-      });
+      }
     }
 
     const shouldAdvanceOverlay = nowMs - lastOverlayTimeMs > 100;

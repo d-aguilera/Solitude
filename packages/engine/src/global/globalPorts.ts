@@ -3,6 +3,19 @@
  */
 export interface Profiler {
   /**
+   * Begin a measurement section.
+   *
+   * Returns true when profiling is actively collecting this frame; callers may
+   * skip the matching end call when false.
+   */
+  begin: (group: string, name: string) => boolean;
+
+  /**
+   * End a measurement section started with begin.
+   */
+  end: (group: string, name: string) => void;
+
+  /**
    * Time a function and register its duration in an implementation-defined way.
    */
   run: <T>(group: string, name: string, fn: () => T) => T;

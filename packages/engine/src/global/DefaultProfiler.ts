@@ -8,19 +8,21 @@ export class DefaultProfiler implements Profiler, ProfilerController {
 
   private counters: Record<string, Record<string, number>> = {};
 
-  run<T>(group: string, name: string, fn: () => T): T {
-    if (!this.doProfile) {
-      return fn();
-    }
+  begin(group: string, name: string): boolean {
+    if (!this.doProfile) return false;
 
-    const markStart = `${group}:${name}:start`;
-    const markEnd = `${group}:${name}:end`;
-    const measureName = `${group}:${name}`;
+    performance.mark(createMarkName(group, name, "start"));
+    return true;
+  }
 
-    performance.mark(markStart);
-    const result = fn();
+  end(group: string, name: string): void {
+    if (!this.doProfile) return;
+
+    const markStart = createMarkName(group, name, "start");
+    const markEnd = createMarkName(group, name, "end");
+    const measureName = createMeasureName(group, name);
+
     performance.mark(markEnd);
-
     performance.measure(measureName, markStart, markEnd);
     const entries = performance.getEntriesByName(measureName);
     const duration = entries[entries.length - 1]!.duration;
@@ -30,8 +32,17 @@ export class DefaultProfiler implements Profiler, ProfilerController {
     performance.clearMarks(markStart);
     performance.clearMarks(markEnd);
     performance.clearMeasures(measureName);
+  }
 
-    return result;
+  run<T>(group: string, name: string, fn: () => T): T {
+    const isProfiling = this.begin(group, name);
+    if (!isProfiling) return fn();
+
+    try {
+      return fn();
+    } finally {
+      this.end(group, name);
+    }
   }
 
   increment(group: string, name: string, count?: number): void {
@@ -103,4 +114,16 @@ export class DefaultProfiler implements Profiler, ProfilerController {
 
     this.doProfile = false;
   }
+}
+
+function createMarkName(
+  group: string,
+  name: string,
+  phase: "start" | "end",
+): string {
+  return group.concat(":", name, ":", phase);
+}
+
+function createMeasureName(group: string, name: string): string {
+  return group.concat(":", name);
 }
