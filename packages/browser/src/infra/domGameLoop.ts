@@ -48,6 +48,7 @@ import { createWorld } from "@solitude/engine/setup/setup";
 import type { RunLoopParams, RunLoopView } from "./infraPorts";
 import {
   browserOverlayCapability,
+  type BrowserOverlayContext,
   type BrowserOverlayProvider,
   type OverlayRasterizer,
 } from "./overlayPorts";
@@ -235,6 +236,25 @@ export function runLoop({
     state: loopState,
     world: worldAndScene.world,
   };
+  const sceneUpdateParams: Parameters<
+    NonNullable<ScenePlugin["updateScene"]>
+  >[0] = {
+    dtMillis: 0,
+    dtSimMillis: 0,
+    scene: worldAndScene.scene,
+    world: worldAndScene.world,
+    mainFocus: worldAndScene.mainFocus,
+  };
+  const overlayContext: BrowserOverlayContext = {
+    advanceOverlay: false,
+    controlInput,
+    framePolicy: loopState.framePolicy,
+    mainFocus: worldAndScene.mainFocus,
+    nowMs: 0,
+    primaryOverlayRasterizer,
+    simTimeMillis: 0,
+    world: worldAndScene.world,
+  };
   const renderDebug = getRenderDebug(loopViews);
 
   const loop = (nowMs: number) => {
@@ -265,13 +285,9 @@ export function runLoop({
         worldAndScene.mainFocus,
         controlInput,
       );
-      applyScenePlugins(scenePlugins, {
-        dtMillis: dtTickMillis,
-        dtSimMillis,
-        scene: worldAndScene.scene,
-        world: worldAndScene.world,
-        mainFocus: worldAndScene.mainFocus,
-      });
+      sceneUpdateParams.dtMillis = dtTickMillis;
+      sceneUpdateParams.dtSimMillis = dtSimMillis;
+      applyScenePlugins(scenePlugins, sceneUpdateParams);
     }
 
     if (framePolicy.advanceSim || framePolicy.advanceScene) {
@@ -331,18 +347,14 @@ export function runLoop({
       rasterizeView(view.renderedView, view.rasterizer, facesRaster);
     }
     if (renderDebug.hud) {
+      overlayContext.advanceOverlay =
+        shouldAdvanceOverlay && framePolicy.advanceOverlay;
+      overlayContext.framePolicy = framePolicy;
+      overlayContext.nowMs = nowMs;
+      overlayContext.simTimeMillis = simTimeMillis;
       applyBrowserOverlayProviders(
         overlayProviders,
-        {
-          advanceOverlay: shouldAdvanceOverlay && framePolicy.advanceOverlay,
-          controlInput,
-          framePolicy,
-          mainFocus: worldAndScene.mainFocus,
-          nowMs,
-          primaryOverlayRasterizer,
-          simTimeMillis,
-          world: worldAndScene.world,
-        },
+        overlayContext,
         capabilityRegistry,
       );
       if (shouldAdvanceOverlay) {
