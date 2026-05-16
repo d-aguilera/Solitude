@@ -27,6 +27,7 @@ export function initInput(plugins: GamePlugin[] = []): {
   window.addEventListener("keydown", (e: KeyboardEvent) => {
     const action = keyMap[e.code];
     if (!action) return;
+    e.preventDefault();
     for (const handler of keyHandlers) {
       if (handler.handleKeyDown(action, e.repeat)) {
         return;
@@ -38,6 +39,7 @@ export function initInput(plugins: GamePlugin[] = []): {
   window.addEventListener("keyup", (e: KeyboardEvent) => {
     const action = keyMap[e.code];
     if (!action) return;
+    e.preventDefault();
     for (const handler of keyHandlers) {
       if (handler.handleKeyUp(action)) {
         return;

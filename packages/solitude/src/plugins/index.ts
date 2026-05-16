@@ -6,6 +6,7 @@ import { createAutopilotPlugin } from "./autopilot/index";
 import { createAxialViewsPlugin } from "./axialViews/index";
 import { createHudPlugin } from "./hud/index";
 import { createMemoryPlugin } from "./memory/index";
+import { createOperatorSwitchPlugin } from "./operatorSwitch/index";
 import { createOrbitTelemetryPlugin } from "./orbitTelemetry/index";
 import { createPausePlugin } from "./pause/index";
 import { createPlaybackPlugin } from "./playback/index";
@@ -29,6 +30,7 @@ export type PluginFactory = (
 
 export const defaultPluginIds = [
   "solarSystem",
+  "operatorSwitch",
   "spacecraftOperator",
   "hud",
   "axialViews",
@@ -51,6 +53,7 @@ export const availablePlugins: Record<string, PluginFactory> = {
   hud: createHudPlugin,
   memory: createMemoryPlugin,
   orbitTelemetry: createOrbitTelemetryPlugin,
+  operatorSwitch: createOperatorSwitchPlugin,
   pause: createPausePlugin,
   playback: createPlaybackPlugin,
   profiling: createProfilingPlugin,

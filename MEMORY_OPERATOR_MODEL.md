@@ -20,16 +20,18 @@ Status: package split migration is closed; operator-model work is active again.
 
 Next focused change:
 
-- Add runtime operator-mode switching above the generic engine boundary:
-  - define where active operator mode selection lives in Solitude/browser runtime composition;
-  - switch focus, active main-view camera rig, control/input context, and HUD emphasis together;
-  - keep the current spacecraft mode as the default and preserve existing keyboard behavior until another mode exists.
+- Extend runtime operator switching beyond focused-ship control:
+  - define per-entity/autonomous operator state for modes such as circle-now;
+  - allow playback/runtime perspective switching without losing the recorded control target;
+  - decide how HUD emphasis distinguishes current focus from background controlled/autopilot entities.
 
 Success criteria:
 
 - Tick ordering remains covered by tests.
 - Manual controls, autopilot, playback, and HUD control readouts remain behavior-compatible.
 - Browser runtime setup still installs the current spacecraft behavior by default; generic headless setup receives spacecraft behavior only when the caller explicitly supplies the plugin.
+- Browser runtime setup installs the Solitude operator switch plugin by default; `Tab` swaps focus/control between `ship:main` and `ship:enemy`.
+- Spacecraft operator state is keyed by focused entity id; transient autopilot modes clear on focus swap until background/autonomous operator state exists.
 - Runtime/headless setup validates plugin focused-entity requirements before behavior hooks use the focus.
 - Core owns the primary view definition while plugins supply camera rigs; the first registered rig is current and setup fails if none exists.
 - Core config/tick setup does not own initial thrust level; spacecraft operator owns spacecraft control state.
@@ -163,6 +165,12 @@ Success criteria:
   - `createHeadlessLoop` no longer imports or auto-installs `spacecraftOperator`;
   - generic headless composition now accepts caller-supplied `GamePlugin[]` and derives control plugins, capability providers, requirements, and simulation contributions from that list;
   - browser defaults still install spacecraft behavior through the Solitude plugin catalog, while headless tests pass `createSpacecraftOperatorPlugin()` explicitly when testing spacecraft dynamics.
+- 2026-05-16: Implemented first runtime focus/control switch:
+  - added a generic `updateFocusContext` helper in engine app code;
+  - added Solitude `operatorSwitch` plugin enabled by default after `solarSystem`;
+  - `Tab` swaps focus/control between `ship:main` and `ship:enemy` while preventing browser focus movement;
+  - spacecraft operator control state is now per focused entity id, preserving each ship's thrust level;
+  - focus swap clears transient autopilot actions so the newly focused ship does not inherit the previous ship's autopilot mode.
 
 ## Decision Log
 

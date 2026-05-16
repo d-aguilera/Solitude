@@ -94,15 +94,17 @@ export function createSpacecraftVehicleDynamicsPlugin(
   capabilityRegistry: PluginCapabilityRegistry,
   telemetry: SpacecraftOperatorTelemetry = createSpacecraftOperatorTelemetry(),
 ): SimulationPlugin {
-  const controlState: SpacecraftControlState = {
-    thrustLevel: 1,
-  };
+  const controlStatesByEntityId = new Map<string, SpacecraftControlState>();
   const propulsionResolvers =
     getSpacecraftPropulsionResolvers(capabilityRegistry);
   const physicsWorkspace = createPhysicsWorkspace();
 
   return {
     updateVehicleDynamics: (params) => {
+      const controlState = getControlStateForEntity(
+        controlStatesByEntityId,
+        params.mainFocus.entityId,
+      );
       const propulsionCommand = applySpacecraftVehicleDynamics({
         controlInput: params.controlInput,
         controlPlugins,
@@ -120,6 +122,18 @@ export function createSpacecraftVehicleDynamicsPlugin(
       telemetry.currentRcsLevel = getRenderedRcsLevel(propulsionCommand.rcs);
     },
   };
+}
+
+function getControlStateForEntity(
+  statesByEntityId: Map<string, SpacecraftControlState>,
+  entityId: string,
+): SpacecraftControlState {
+  let controlState = statesByEntityId.get(entityId);
+  if (!controlState) {
+    controlState = { thrustLevel: 1 };
+    statesByEntityId.set(entityId, controlState);
+  }
+  return controlState;
 }
 
 function getRenderedThrustLevel(

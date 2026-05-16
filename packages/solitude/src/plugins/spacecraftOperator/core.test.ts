@@ -24,14 +24,14 @@ function createBody(id: string): ControlledBody {
   };
 }
 
-function createWorld(focusedBody: ControlledBody): World {
+function createWorld(...bodies: ControlledBody[]): World {
   return {
     axialSpins: [],
     collisionSpheres: [],
-    controllableBodies: [focusedBody],
-    entities: [{ id: focusedBody.id }],
-    entityIndex: new Map([[focusedBody.id, { id: focusedBody.id }]]),
-    entityStates: [focusedBody],
+    controllableBodies: bodies,
+    entities: bodies.map((body) => ({ id: body.id })),
+    entityIndex: new Map(bodies.map((body) => [body.id, { id: body.id }])),
+    entityStates: bodies,
     gravityMasses: [],
     lightEmitters: [],
   };
@@ -40,8 +40,9 @@ function createWorld(focusedBody: ControlledBody): World {
 function updateVehicleDynamics(
   plugin: SimulationPlugin,
   focusedBody: ControlledBody,
+  controlInput = createControlInput(),
+  world = createWorld(focusedBody),
 ): void {
-  const controlInput = createControlInput();
   controlInput.burnForward = true;
   plugin.updateVehicleDynamics?.({
     controlInput,
@@ -51,7 +52,7 @@ function updateVehicleDynamics(
       controlledBody: focusedBody,
       entityId: focusedBody.id,
     },
-    world: createWorld(focusedBody),
+    world,
   });
 }
 
@@ -108,5 +109,28 @@ describe("spacecraft vehicle dynamics plugin", () => {
       vec3.dot(focusedBody.velocity, focusedBody.frame.right),
     ).toBeGreaterThan(0);
     expect(vec3.dot(focusedBody.velocity, focusedBody.frame.forward)).toBe(0);
+  });
+
+  it("keeps spacecraft control state per focused entity", () => {
+    const mainBody = createBody("ship:main");
+    const enemyBody = createBody("ship:enemy");
+    const world = createWorld(mainBody, enemyBody);
+    const telemetry = createSpacecraftOperatorTelemetry();
+    const plugin = createSpacecraftVehicleDynamicsPlugin(
+      [],
+      createPluginCapabilityRegistry(),
+      telemetry,
+    );
+
+    const mainInput = createControlInput();
+    mainInput.thrust5 = true;
+    updateVehicleDynamics(plugin, mainBody, mainInput, world);
+    expect(telemetry.currentThrustLevel).toBe(5);
+
+    updateVehicleDynamics(plugin, enemyBody, createControlInput(), world);
+    expect(telemetry.currentThrustLevel).toBe(1);
+
+    updateVehicleDynamics(plugin, mainBody, createControlInput(), world);
+    expect(telemetry.currentThrustLevel).toBe(5);
   });
 });
