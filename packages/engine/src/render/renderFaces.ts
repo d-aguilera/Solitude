@@ -90,7 +90,7 @@ export function renderFacesInto(
   objectsFilter: ((obj: SceneObject) => boolean) | undefined,
   sortFaces: boolean,
 ): number {
-  const faceList = buildFaces(
+  const faceCount = buildFaces(
     into,
     scene.objects,
     camera,
@@ -104,10 +104,10 @@ export function renderFacesInto(
   );
 
   if (sortFaces) {
-    sortFacesByDepthDesc(into, faceList, workspace);
+    sortFacesByDepthDesc(into, faceCount, workspace);
   }
 
-  return faceList;
+  return faceCount;
 }
 
 /**
