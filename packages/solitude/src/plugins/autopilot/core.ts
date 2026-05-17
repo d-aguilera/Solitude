@@ -1,7 +1,16 @@
-import type { ControlPlugin } from "@solitude/engine/app/pluginPorts";
+import type {
+  ControlInput,
+  MutableControlState,
+} from "@solitude/engine/app/controlPorts";
+import type {
+  ControlPlugin,
+  PluginCapabilityProvider,
+} from "@solitude/engine/app/pluginPorts";
 import {
   getAutopilotAttitudeCommand,
+  getAutopilotMode,
   resolveAutopilotPropulsionCommand,
+  type AutopilotMode,
 } from "./logic";
 import {
   createSpacecraftPropulsionResolverProvider,
@@ -10,7 +19,14 @@ import {
 
 export function createControlPlugin(): ControlPlugin {
   return {
-    updateControlState: (_) => {},
+    updateControlState: ({ controlInput, controlState }) => {
+      const mode = getAutopilotMode(controlInput);
+      if (mode === "none") {
+        delete controlState[autopilotModeStateKey];
+      } else {
+        controlState[autopilotModeStateKey] = mode;
+      }
+    },
     getAttitudeCommand: (params) =>
       getAutopilotAttitudeCommand(
         params.dtMillis,
@@ -19,6 +35,57 @@ export function createControlPlugin(): ControlPlugin {
         params.world,
       ),
   };
+}
+
+const autopilotModeStateKey = "autopilot.mode.v1";
+const spacecraftAutonomousControlCapabilityId =
+  "spacecraft.autonomousControl.v1";
+
+type StoredAutopilotMode = Exclude<AutopilotMode, "none">;
+
+export function isStoredAutopilotMode(
+  value: unknown,
+): value is StoredAutopilotMode {
+  return (
+    value === "alignToVelocity" ||
+    value === "alignToBody" ||
+    value === "circleNow"
+  );
+}
+
+interface SpacecraftAutonomousControl {
+  hasAutonomousControl: (controlState: MutableControlState) => boolean;
+  writeAutonomousControlInput: (
+    controlInput: ControlInput,
+    controlState: MutableControlState,
+  ) => void;
+}
+
+export function createAutonomousControlProvider(): PluginCapabilityProvider {
+  return {
+    id: spacecraftAutonomousControlCapabilityId,
+    value: createAutopilotAutonomousControl(),
+  };
+}
+
+function createAutopilotAutonomousControl(): SpacecraftAutonomousControl {
+  return {
+    hasAutonomousControl: (controlState) =>
+      isStoredAutopilotMode(controlState[autopilotModeStateKey]),
+    writeAutonomousControlInput: (controlInput, controlState) => {
+      clearAutopilotActions(controlInput);
+      const mode = controlState[autopilotModeStateKey];
+      if (isStoredAutopilotMode(mode)) {
+        controlInput[mode] = true;
+      }
+    },
+  };
+}
+
+function clearAutopilotActions(controlInput: ControlInput): void {
+  controlInput.alignToVelocity = false;
+  controlInput.alignToBody = false;
+  controlInput.circleNow = false;
 }
 
 export function createPropulsionResolverProvider() {

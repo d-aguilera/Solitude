@@ -9,6 +9,10 @@ import { localFrame } from "@solitude/engine/domain/localFrame";
 import { mat3 } from "@solitude/engine/domain/mat3";
 import { vec3 } from "@solitude/engine/domain/vec3";
 import { describe, expect, it } from "vitest";
+import {
+  createAutonomousControlProvider,
+  createControlPlugin as createAutopilotControlPlugin,
+} from "../autopilot/core";
 import { createSpacecraftVehicleDynamicsPlugin } from "./core";
 import { createSpacecraftOperatorTelemetry } from "./telemetry";
 
@@ -133,4 +137,82 @@ describe("spacecraft vehicle dynamics plugin", () => {
     updateVehicleDynamics(plugin, mainBody, createControlInput(), world);
     expect(telemetry.currentThrustLevel).toBe(5);
   });
+
+  it("continues autonomous autopilot propulsion on unfocused controlled bodies", () => {
+    const mainBody = createBody("ship:main");
+    const enemyBody = createBody("ship:enemy");
+    const world = createWorld(mainBody, enemyBody);
+    const plugin = createSpacecraftVehicleDynamicsPlugin(
+      [createAutopilotControlPlugin()],
+      createPluginCapabilityRegistry([
+        createAutonomousControlProvider(),
+        createCircleNowThrustResolver(),
+      ]),
+    );
+    const mainInput = createControlInput();
+    mainInput.circleNow = true;
+
+    runVehicleDynamics(plugin, mainBody, mainInput, world);
+    const focusedMainSpeed = vec3.length(mainBody.velocity);
+
+    runVehicleDynamics(plugin, enemyBody, createControlInput(), world);
+
+    expect(vec3.length(mainBody.velocity)).toBeGreaterThan(focusedMainSpeed);
+    expect(vec3.length(enemyBody.velocity)).toBe(0);
+  });
+
+  it("restores the focused body's stored autopilot mode on focus return", () => {
+    const mainBody = createBody("ship:main");
+    const enemyBody = createBody("ship:enemy");
+    const world = createWorld(mainBody, enemyBody);
+    const plugin = createSpacecraftVehicleDynamicsPlugin(
+      [createAutopilotControlPlugin()],
+      createPluginCapabilityRegistry([
+        createAutonomousControlProvider(),
+        createCircleNowThrustResolver(),
+      ]),
+    );
+    const mainInput = createControlInput();
+    mainInput.circleNow = true;
+    runVehicleDynamics(plugin, mainBody, mainInput, world);
+    runVehicleDynamics(plugin, enemyBody, createControlInput(), world);
+
+    const returnInput = createControlInput();
+    runVehicleDynamics(plugin, mainBody, returnInput, world);
+
+    expect(returnInput.circleNow).toBe(true);
+  });
 });
+
+function runVehicleDynamics(
+  plugin: SimulationPlugin,
+  focusedBody: ControlledBody,
+  controlInput: ReturnType<typeof createControlInput>,
+  world: World,
+): void {
+  plugin.updateVehicleDynamics?.({
+    controlInput,
+    dtMillis: 1000,
+    dtMillisSim: 1000,
+    mainFocus: {
+      controlledBody: focusedBody,
+      entityId: focusedBody.id,
+    },
+    world,
+  });
+}
+
+function createCircleNowThrustResolver() {
+  return {
+    id: "spacecraft.propulsionResolver.v1",
+    value: {
+      resolvePropulsionCommand: (params: {
+        controlInput: ReturnType<typeof createControlInput>;
+        manualPropulsion: { main: { forward: number }; rcs: { right: number } };
+      }) =>
+        params.controlInput.circleNow
+          ? { main: { forward: 1 }, rcs: { right: 0 } }
+          : params.manualPropulsion,
+    },
+  };
+}

@@ -1,12 +1,15 @@
 import type {
   ControlInput,
   ControlledBodyState,
+  MutableControlState,
 } from "@solitude/engine/app/controlPorts";
 import type { PluginCapabilityRegistry } from "@solitude/engine/app/pluginPorts";
 import type { World } from "@solitude/engine/domain/domainPorts";
 
 const spacecraftPropulsionResolverCapabilityId =
   "spacecraft.propulsionResolver.v1";
+const spacecraftAutonomousControlCapabilityId =
+  "spacecraft.autonomousControl.v1";
 
 export interface SpacecraftThrustCommand {
   /** Signed main-engine thrust percent in [-1, 1]. */
@@ -39,12 +42,28 @@ export interface SpacecraftPropulsionResolver {
   ) => SpacecraftPropulsionCommand;
 }
 
+export interface SpacecraftAutonomousControl {
+  hasAutonomousControl: (controlState: MutableControlState) => boolean;
+  writeAutonomousControlInput: (
+    controlInput: ControlInput,
+    controlState: MutableControlState,
+  ) => void;
+}
+
 export function getSpacecraftPropulsionResolvers(
   registry: PluginCapabilityRegistry,
 ): SpacecraftPropulsionResolver[] {
   return registry
     .getAll(spacecraftPropulsionResolverCapabilityId)
     .filter(isSpacecraftPropulsionResolver);
+}
+
+export function getSpacecraftAutonomousControls(
+  registry: PluginCapabilityRegistry,
+): SpacecraftAutonomousControl[] {
+  return registry
+    .getAll(spacecraftAutonomousControlCapabilityId)
+    .filter(isSpacecraftAutonomousControl);
 }
 
 function isSpacecraftPropulsionResolver(
@@ -55,5 +74,17 @@ function isSpacecraftPropulsionResolver(
     typeof candidate === "object" &&
     candidate !== null &&
     typeof candidate.resolvePropulsionCommand === "function"
+  );
+}
+
+function isSpacecraftAutonomousControl(
+  value: unknown,
+): value is SpacecraftAutonomousControl {
+  const candidate = value as Partial<SpacecraftAutonomousControl> | null;
+  return (
+    typeof candidate === "object" &&
+    candidate !== null &&
+    typeof candidate.hasAutonomousControl === "function" &&
+    typeof candidate.writeAutonomousControlInput === "function"
   );
 }

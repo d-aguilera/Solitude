@@ -15,7 +15,9 @@ import type {
 } from "@solitude/engine/domain/domainPorts";
 import { vec3 } from "@solitude/engine/domain/vec3";
 import {
+  getSpacecraftAutonomousControls,
   getSpacecraftPropulsionResolvers,
+  type SpacecraftAutonomousControl,
   type SpacecraftPropulsionCommand,
   type SpacecraftPropulsionResolver,
   type SpacecraftRcsCommand,
@@ -37,6 +39,7 @@ import {
 } from "./telemetry";
 
 const velocityDeltaScratch = vec3.zero();
+const backgroundControlInput = {} as ControlInput;
 
 export interface SpacecraftVehicleDynamicsParams {
   controlInput: ControlInput;
@@ -46,6 +49,7 @@ export interface SpacecraftVehicleDynamicsParams {
   dtMillis: number;
   physicsWorkspace?: PhysicsWorkspace;
   propulsionResolvers: readonly SpacecraftPropulsionResolver[];
+  updateControlStateFromInput?: boolean;
   world: World;
 }
 
@@ -60,6 +64,7 @@ export function applySpacecraftVehicleDynamics(
     params.world,
     params.controlPlugins,
     params.propulsionResolvers,
+    params.updateControlStateFromInput ?? true,
   );
   updateControlledBodyAngularVelocityFromInput(
     params.dtMillis,
@@ -95,16 +100,31 @@ export function createSpacecraftVehicleDynamicsPlugin(
   telemetry: SpacecraftOperatorTelemetry = createSpacecraftOperatorTelemetry(),
 ): SimulationPlugin {
   const controlStatesByEntityId = new Map<string, SpacecraftControlState>();
+  const autonomousControls =
+    getSpacecraftAutonomousControls(capabilityRegistry);
   const propulsionResolvers =
     getSpacecraftPropulsionResolvers(capabilityRegistry);
   const physicsWorkspace = createPhysicsWorkspace();
+  let lastFocusedEntityId: string | null = null;
 
   return {
     updateVehicleDynamics: (params) => {
+      const focusedEntityId = params.mainFocus.entityId;
       const controlState = getControlStateForEntity(
         controlStatesByEntityId,
-        params.mainFocus.entityId,
+        focusedEntityId,
       );
+      if (
+        lastFocusedEntityId !== null &&
+        lastFocusedEntityId !== focusedEntityId
+      ) {
+        writeAutonomousControlInput(
+          autonomousControls,
+          params.controlInput,
+          controlState,
+        );
+      }
+      lastFocusedEntityId = focusedEntityId;
       const propulsionCommand = applySpacecraftVehicleDynamics({
         controlInput: params.controlInput,
         controlPlugins,
@@ -120,6 +140,33 @@ export function createSpacecraftVehicleDynamicsPlugin(
         controlState,
       );
       telemetry.currentRcsLevel = getRenderedRcsLevel(propulsionCommand.rcs);
+
+      for (const controlledBody of params.world.controllableBodies) {
+        if (controlledBody.id === focusedEntityId) continue;
+        const backgroundControlState = getControlStateForEntity(
+          controlStatesByEntityId,
+          controlledBody.id,
+        );
+        if (!hasAutonomousControl(autonomousControls, backgroundControlState)) {
+          continue;
+        }
+        writeAutonomousControlInput(
+          autonomousControls,
+          backgroundControlInput,
+          backgroundControlState,
+        );
+        applySpacecraftVehicleDynamics({
+          controlInput: backgroundControlInput,
+          controlPlugins,
+          controlState: backgroundControlState,
+          controlledBody,
+          dtMillis: params.dtMillis,
+          physicsWorkspace,
+          propulsionResolvers,
+          updateControlStateFromInput: false,
+          world: params.world,
+        });
+      }
     },
   };
 }
@@ -168,8 +215,11 @@ function getPropulsionCommandForTick(
   world: World,
   controlPlugins: ControlPlugin[],
   propulsionResolvers: readonly SpacecraftPropulsionResolver[],
+  updateControlStateFromInput: boolean,
 ): SpacecraftPropulsionCommand {
-  updateControlState(controlInput, controlState, controlPlugins);
+  if (updateControlStateFromInput) {
+    updateControlState(controlInput, controlState, controlPlugins);
+  }
   getMainThrustCommandInto(
     manualPropulsionCommand.main,
     controlInput,
@@ -186,6 +236,26 @@ function getPropulsionCommandForTick(
     maxRcsTranslationAcceleration,
     propulsionResolvers,
   );
+}
+
+function hasAutonomousControl(
+  autonomousControls: readonly SpacecraftAutonomousControl[],
+  controlState: SpacecraftControlState,
+): boolean {
+  for (const control of autonomousControls) {
+    if (control.hasAutonomousControl(controlState)) return true;
+  }
+  return false;
+}
+
+function writeAutonomousControlInput(
+  autonomousControls: readonly SpacecraftAutonomousControl[],
+  controlInput: ControlInput,
+  controlState: SpacecraftControlState,
+): void {
+  for (const control of autonomousControls) {
+    control.writeAutonomousControlInput(controlInput, controlState);
+  }
 }
 
 function applyThrust(

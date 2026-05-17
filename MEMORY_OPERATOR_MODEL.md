@@ -20,10 +20,10 @@ Status: package split migration is closed; operator-model work is active again.
 
 Next focused change:
 
-- Extend runtime operator switching beyond focused-ship control:
-  - define per-entity/autonomous operator state for modes such as circle-now;
+- Extend runtime operator switching into explicit foreground/background operator UX:
+  - distinguish focused control/HUD emphasis from background autonomous ships;
   - allow playback/runtime perspective switching without losing the recorded control target;
-  - decide how HUD emphasis distinguishes current focus from background controlled/autopilot entities.
+  - decide whether background operator status should appear in HUD, labels, or another overlay.
 
 Success criteria:
 
@@ -31,7 +31,8 @@ Success criteria:
 - Manual controls, autopilot, playback, and HUD control readouts remain behavior-compatible.
 - Browser runtime setup still installs the current spacecraft behavior by default; generic headless setup receives spacecraft behavior only when the caller explicitly supplies the plugin.
 - Browser runtime setup installs the Solitude operator switch plugin by default; `Tab` swaps focus/control between `ship:main` and `ship:enemy`.
-- Spacecraft operator state is keyed by focused entity id; transient autopilot modes clear on focus swap until background/autonomous operator state exists.
+- Spacecraft operator state is keyed by focused entity id.
+- Autopilot mode is persisted per controlled ship; unfocused ships continue autonomous autopilot modes while manual controls remain focused-only.
 - Runtime/headless setup validates plugin focused-entity requirements before behavior hooks use the focus.
 - Core owns the primary view definition while plugins supply camera rigs; the first registered rig is current and setup fails if none exists.
 - Core config/tick setup does not own initial thrust level; spacecraft operator owns spacecraft control state.
@@ -171,6 +172,12 @@ Success criteria:
   - `Tab` swaps focus/control between `ship:main` and `ship:enemy` while preventing browser focus movement;
   - spacecraft operator control state is now per focused entity id, preserving each ship's thrust level;
   - focus swap clears transient autopilot actions so the newly focused ship does not inherit the previous ship's autopilot mode.
+- 2026-05-16: Added background autonomous autopilot continuation:
+  - autopilot mode is stored in per-entity spacecraft control state owned by the autopilot plugin;
+  - autopilot publishes a local structural `spacecraft.autonomousControl.v1` capability provider;
+  - spacecraft operator consumes autonomous-control providers to synthesize per-entity effective input, without knowing autopilot state keys;
+  - manual thrust/RCS/attitude input remains focused-only;
+  - returning focus to a ship restores its stored autopilot mode into foreground input/HUD state.
 
 ## Decision Log
 
