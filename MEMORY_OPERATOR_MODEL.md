@@ -11,7 +11,7 @@
 - Start from **Current Slice**. Treat everything else as background unless the slice points at it.
 - Keep each code change narrow enough to finish with typecheck/test in one Codex session.
 - When a slice completes, update **Completed Slices**, choose the next slice, and refresh **Current Slice**.
-- When a topic is too large to solve inline, add or update a small subplan under **Subplans** instead of expanding the main roadmap.
+- When a topic is too large to solve inline, add a compact note under **Open Questions** instead of expanding the main roadmap.
 - Prefer adapter/bridge steps over rewrites. The plan should survive many small commits.
 
 ## Current Slice
@@ -51,7 +51,7 @@ Success criteria:
 
 ## Completed Slices
 
-- 2026-04-29: Audited `pilot`, `ship`, `mainControlledBody`, and spacecraft-control references. See **Audit: Operator Terminology Hotspots**.
+- 2026-04-29: Audited `pilot`, `ship`, `mainControlledBody`, and spacecraft-control references.
 - 2026-04-29: Added a `FocusContext` runtime bridge as `mainFocus` on `WorldSetup`, `WorldAndScene`, plugin params, and render params, while keeping `mainControlledBody` aliases intact.
 - 2026-04-29: Renamed primary-view app/config plumbing to `mainView*` names. Kept deprecated `pilot*` aliases and render-config fallback helpers for compatibility.
 - 2026-04-29: Migrated easy generic focus consumers to `mainFocus`: render label anchor, velocity segments, and orbit telemetry. Added generic `computeOrbitReadoutInto` with `computeShipOrbitReadoutInto` retained as compatibility wrapper.
@@ -171,7 +171,7 @@ Success criteria:
   - added Solitude `operatorSwitch` plugin enabled by default after `solarSystem`;
   - `Tab` swaps focus/control between `ship:main` and `ship:enemy` while preventing browser focus movement;
   - spacecraft operator control state is now per focused entity id, preserving each ship's thrust level;
-  - focus swap clears transient autopilot actions so the newly focused ship does not inherit the previous ship's autopilot mode.
+  - this slice cleared transient autopilot actions on focus swap; the later autonomous-control slice superseded this by restoring stored per-ship autopilot state.
 - 2026-05-16: Added background autonomous autopilot continuation:
   - autopilot mode is stored in per-entity spacecraft control state owned by the autopilot plugin;
   - autopilot publishes a local structural `spacecraft.autonomousControl.v1` capability provider;
@@ -185,371 +185,46 @@ Success criteria:
 - 2026-04-27: Main view should remain core-owned. Plugins should contribute camera rigs or operator modes for that view, not own the primary view/canvas itself.
 - 2026-04-27: Do not reduce core to only the gravity engine. Core should still own generic world/runtime orchestration, focus selection, main view plumbing, and deterministic simulation phases.
 
-## Open Subplans
+## Current Architecture
 
-- Capability queries and plugin requirements.
-- Plugin interdependency / compatibility policy: prefer capability-mediated contracts over static imports between peer plugins when the dependency is a runtime extension point.
-- Simulation phase API.
-- Active input contexts and key collision policy.
-- Main-view camera rig registration.
-- Playback schema migration.
+- Core owns generic focus (`mainFocusEntityId` / `mainFocus`), world/runtime orchestration, deterministic simulation phase ordering, render assembly, and the primary view definition/canvas/layout target.
+- Runtime world state is generic entity/capability based. `World.controllableBodies` remains the current controlled-body capability array.
+- Plugins declare focused-entity requirements, and DOM/headless setup validates them against the assembled world and current `mainFocus`.
+- Browser runtime installs Solitude's default plugin catalog, including `solarSystem`, `operatorSwitch`, `spacecraftOperator`, telemetry, autopilot, playback, and rendering helpers.
+- Generic headless runtime does not auto-install Solitude spacecraft behavior; callers compose Solitude plugins explicitly when needed.
+- Base input actions are generic/main-view only. Spacecraft input actions come from `spacecraftOperator`; `Tab` focus switching comes from `operatorSwitch`.
+- The primary view is core-owned. Plugins register main-view camera rigs; `spacecraftOperator` currently contributes `spacecraft.forward`, and core uses the first registered rig.
+- Spacecraft vehicle dynamics runs through the `spacecraftOperator` simulation plugin before gravity. Manual thrust/RCS/attitude input is focused-only.
+- Spacecraft operator state is keyed by entity id, so each controlled ship remembers persistent state such as thrust level.
+- Autopilot owns its per-entity mode state and publishes capability providers:
+  - `spacecraft.propulsionResolver.v1` for per-tick propulsion commands.
+  - `spacecraft.autonomousControl.v1` for background autonomous-control input synthesis.
+- `spacecraftOperator` consumes spacecraft capabilities structurally through the generic capability registry; it should not import peer plugins or know peer-plugin private state keys.
+- Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`.
 
 ## Current Direction
 
-- The entity model generalization is the foundation: core world state is now largely generic entities and capability arrays.
-- The next strategic step is runtime operator-mode switching: separate "the user is flying a ship" from runtime focus/camera/control selection.
-- Core should own generic focus, main view plumbing, render/simulation orchestration, and deterministic phase ordering.
-- Plugins should define what it means to operate a focused entity: spacecraft controls, propulsion, RCS, attitude, camera rigs, HUD/readout assumptions, autopilot behavior, and future operator modes.
-- Current boundary: the default spacecraft operator owns controls, vehicle dynamics, input bindings, and the primary forward camera rig; core owns the primary view definition/canvas/layout/render target and uses the first registered rig as current.
-- Core no longer exposes spacecraft propulsion command ports; plugins connect through the generic capability registry using opaque ids and local structural/runtime validation, without importing peer plugins or shared plugin-layer protocol code.
-- Next big change: add runtime operator-mode switching above the engine boundary.
-
-## Completed Big Change: Plugin Capability Registry
-
-Status: implemented 2026-05-03.
-
-Goal: remove `ThrustCommand`, `RcsCommand`, `PropulsionCommand`, `PropulsionCommandParams`, and `ControlPlugin.resolvePropulsionCommand` from app/core ports while preserving autopilot, playback, and spacecraft-operator behavior.
-
-Do not move per-tick propulsion commands into `MutableControlState`. `MutableControlState` is persistent mutable operator/control state, such as selected thrust level, playback state, mode flags, and timers. A thrust/RCS command is a per-tick resolved output and should remain a command protocol, not state.
-
-Avoid solving this by putting `SpacecraftControlPlugin` in `src/plugins/spacecraftOperator/ports.ts` and having `autopilot` import it directly. That would work, but it creates static peer-plugin dependencies and turns `spacecraftOperator` into an import hub. The preferred abstraction is capability-mediated: plugins publish/consume named extension capabilities, while core only assembles opaque capability buckets.
-
-Proposed model:
-
-- Core/app defines a generic plugin capability registry surface with opaque ids, probably in `src/app/pluginPorts.ts` or a small adjacent app port file.
-- `GamePlugin` can contribute plugin capabilities, separate from focused-entity requirements.
-- Core/bootstrap/load code assembles capability providers and passes a capability lookup/registry into plugin contribution factories.
-- The registry should not know spacecraft types. It should traffic in opaque ids and unknown payloads at the app boundary; plugin-side helpers provide typed access.
-- Provider and consumer plugins each define local structural views of typed capability ids and payload contracts, e.g. `spacecraft.propulsionResolver.v1` and possibly `spacecraft.attitudeResolver.v1`.
-- `autopilot` contributes a provider for the spacecraft propulsion capability instead of implementing a core `resolvePropulsionCommand` hook.
-- `spacecraftOperator` consumes providers for that capability while resolving per-tick vehicle dynamics.
-- Playback should keep using the neutral `MutableControlState` path for persistent thrust-level override/state; it should not receive thrust/RCS command ownership unless a later playback slice needs an explicit capability.
-
-Sketch, intentionally not final API:
-
-```ts
-// app-level shape: generic and untyped at the core boundary
-export interface PluginCapabilityProvider {
-  id: string;
-  value: unknown;
-}
-
-export interface PluginCapabilityRegistry {
-  getAll: (id: string) => readonly unknown[];
-}
-```
-
-```ts
-// provider/consumer-local helper
-export const spacecraftPropulsionResolverCapability =
-  "spacecraft.propulsionResolver.v1";
-
-export interface SpacecraftPropulsionResolver {
-  resolvePropulsionCommand: (
-    params: SpacecraftPropulsionCommandParams,
-  ) => SpacecraftPropulsionCommand;
-}
-```
-
-Migration order:
-
-1. Add the generic plugin capability registry and wire it through plugin loading/contribution setup without changing behavior.
-2. Move spacecraft propulsion command types from `src/app/controlPorts.ts` into `src/plugins/spacecraftOperator/`.
-3. Convert `autopilot` from core `ControlPlugin.resolvePropulsionCommand` to a spacecraft propulsion capability provider.
-4. Convert `spacecraftOperator` to consume propulsion providers from the capability registry.
-5. Remove `PropulsionCommandParams` and `resolvePropulsionCommand` from core `ControlPlugin`.
-6. Re-run behavior tests plus guard search for `ThrustCommand|RcsCommand|PropulsionCommand|PropulsionCommandParams` under `src/app`, `src/infra`, `src/domain`, `src/render`, and `src/setup`.
-
-## Core Idea
-
-The main ship should become a plugin contribution, but the replacement core concept should not be another hidden ship-shaped special case.
-
-Prefer:
-
-- `mainFocusEntityId` or equivalent generic focus identity.
-- Capability queries around that focus entity.
-- Plugin-owned operator behavior attached to the focus.
-
-Avoid:
-
-- Core requiring thrust, RCS, angular velocity, cockpit/front direction, orbit telemetry, or autopilot compatibility for every focused entity.
-- Moving all existing ship assumptions into a single new "main ship plugin" without exposing the underlying boundaries.
-
-## Target Model
-
-Core owns:
-
-- Generic world entity/capability storage.
-- Gravity stepping.
-- Generic collision resolution.
-- Axial spin resolution.
-- Scene/render assembly from renderable/light capabilities.
-- Main view layout, renderer plumbing, primary view definition, and configured active camera rig selection.
-- Active focus / operator-mode selection.
-- Plugin lifecycle and deterministic simulation phase ordering.
-
-Plugins own or contribute:
-
-- Focusable entities and their capabilities.
-- Spacecraft-specific entity definitions, meshes, masses, collision spheres, and initial state.
-- Input actions and key maps for a given operator mode.
-- Control systems, including thrust, RCS, attitude, and future vehicle dynamics.
-- Named main-view camera rigs, such as forward vehicle camera, chase camera, free camera, orbital/map camera, or body-fixed camera.
-- HUD and telemetry assumptions.
-- Autopilot behavior for compatible focus capabilities.
-
-## Main View Direction
-
-- Rename/reframe "pilot view" concepts to "main view" where they are generic camera/view concerns.
-- The main view should remain core-owned as the primary canvas/layout/render target.
-- Plugins should register camera rigs or main-view modes, not own the primary view itself.
-- Future `F1`, `F2`, etc. switching should likely switch an active operator mode, not only a camera:
-  - focus entity
-  - camera rig
-  - input context
-  - control system
-  - HUD emphasis
-
-## Simulation Phase Direction
-
-Moving ship physics into plugins requires explicit phase ordering.
-
-Likely phases:
-
-1. control state update / input interpretation
-2. pre-physics plugin update
-3. plugin force or velocity-delta application
-4. gravity step
-5. collision resolution
-6. post-physics plugin update
-7. scene/camera/HUD update
-
-Keep the implementation simple and allocation-conscious. Prefer arrays of phase callbacks over a dynamic event bus in hot paths.
-
-## Input Ownership Direction
-
-- Core should not permanently own spacecraft-specific actions such as roll, pitch, yaw, burn, RCS, and thrust levels.
-- Core may own only universal actions, such as operator-mode switching or global runtime controls, if they remain universal.
-- Active operator modes should determine their input actions and bindings.
-- Key collisions between active plugins need an explicit policy before multiple operator modes can coexist.
-
-## Subplans
-
-### Audit: Operator Terminology Hotspots
-
-Date: 2026-04-29.
-
-Classification:
-
-- Generic focus/main-view concepts:
-  - `src/setup/setup.ts`: `mainControlledEntityId` validation and lookup is already close to the target focus identity, but the returned runtime object is still named `mainControlledBody`.
-  - `src/app/runtimePorts.ts`: `WorldAndScene.mainControlledBody` is the central runtime bridge that should gain a generic focused-entity alias first.
-  - `src/app/pluginPorts.ts`: HUD, segment, scene, loop, and render-related params pass `mainControlledBody`; these are mixed generic focus consumers and spacecraft-specific consumers, so migrate additively.
-  - `src/infra/domGameLoop.ts`: assembles and repeatedly passes `mainControlledBody`; this is the main fan-out point and should be changed through aliases before downstream renames.
-  - `src/render/renderPorts.ts` and `src/render/DefaultViewRenderer.ts`: `mainControlledBody` is only used as a label distance anchor. This is generic focus-position behavior and should become focus/anchor terminology.
-  - `src/app/cameras.ts`, `src/app/scene.ts`, `src/app/viewPorts.ts`, `src/app/scenePorts.ts`, `src/app/renderConfigPorts.ts`, `src/config/worldAndSceneConfig.ts`: `pilot` mostly means primary/main-view look state or camera offset. Rename these after the focus bridge, with compatibility aliases where config churn would be high.
-  - `src/infra/domLayout.ts`: local `pilotWidth` / `pilotHeight` are layout-only and can be renamed to primary/main view at any time.
-
-- Spacecraft/operator-plugin concepts:
-  - `src/app/controlPorts.ts`, `src/app/controls.ts`, `src/app/game.ts`, `src/app/physics.ts`: thrust, RCS, roll/pitch/yaw attitude, angular velocity smoothing, and controlled-body rotation are spacecraft/operator behavior. Do not rename these as generic focus behavior; extract them after simulation phases exist.
-  - `src/infra/domKeyboardInput.ts`: base key map currently owns spacecraft actions and camera-offset controls. Split global/main-view actions from operator actions later under the input-context subplan.
-  - `src/plugins/autopilot/*`: autopilot requires spacecraft motion, frame/attitude, propulsion, and orbit assumptions. It should later declare/query compatible focus capabilities.
-  - `src/plugins/shipTelemetry/hud.ts`: explicitly spacecraft-control readout; keep ship/operator terminology until a spacecraft telemetry plugin boundary is clearer.
-  - `src/plugins/axialViews/index.ts`: views are currently vehicle-frame rigs. They should become contributed main-view/aux-view camera rigs for compatible focused entities, not generic core assumptions.
-
-- Compatibility-only or visual-role names:
-  - `src/setup/setupControllableBodies.ts`: adapter from controllable entity configs into controlled-body setup. Keep until generic setup no longer needs the adapter.
-  - `src/plugins/playback/*`: playback snapshots now use generic `entities` plus `focusEntityId`; diagnostic field names may still contain historical spacecraft wording where they describe spacecraft-specific measurements.
-  - `src/render/sceneAdapter.ts`, `src/app/scenePorts.ts`, trajectory IDs in `src/plugins/trajectories/*`, and tests with spacecraft ids: many `ship` names are visual roles or compatibility identifiers. Rename only when render/trajectory schemas gain generic role support.
-  - `src/plugins/solarSystem/ships.ts`, `src/plugins/solarSystem/ship.obj`, related tests/scripts: scenario spacecraft content, not core architecture.
-
-First implementation order:
-
-1. Add the focus bridge in setup/runtime/plugin params:
-   - likely files: `src/app/runtimePorts.ts`, `src/setup/setup.ts`, `src/app/pluginPorts.ts`, `src/infra/domGameLoop.ts`, and focused tests in `src/setup/setup.test.ts` or `src/infra/__tests__/headlessGameLoop.test.ts`.
-   - keep `mainControlledBody` as an alias.
-   - prefer a shape like `FocusContext` / `FocusedEntity` with `entityId` and `controlledBody` rather than a plain renamed body reference.
-2. Rename generic primary-view terminology:
-   - `PilotLookState` -> `MainViewLookState`;
-   - `SceneControlState.pilotLookState` -> `mainViewLookState`;
-   - `pilotCameraOffset` -> `mainViewCameraOffset`;
-   - `updatePilotLook` / `updatePilotCameraOffset` / `updatePilotViewFrame` -> main-view names with temporary aliases where needed.
-3. Migrate generic focus consumers:
-   - render label anchor, velocity segments, orbit telemetry, scene filters, HUD contexts.
-   - use focus/capability names where the consumer only needs position/velocity.
-4. Add explicit simulation phases before extracting spacecraft controls:
-   - only then move thrust/RCS/attitude resolution out of `src/app/game.ts` and `src/app/controls.ts`.
-
-### Capability Queries And Requirements
-
-Plugins that depend on spacecraft-like behavior should declare or validate their requirements.
-
-Examples:
-
-- Autopilot requires a focused entity with motion state, local frame/attitude, and relevant control authority.
-- Ship telemetry requires a focused motion state and spacecraft control readouts.
-- Orbit telemetry requires a focused motion state and gravity bodies.
-- Velocity segments require a focused motion state.
-- Playback requires generic entity snapshots with a focus id; old ship/planet/star snapshot fields are no longer supported.
-
-Loaded-but-inert plugins are acceptable only when the inactive state is explicit and visible during setup or diagnostics.
-
-Current rough direction:
-
-- Capabilities should probably be queried from existing world arrays and setup indexes, not from a new dynamic ECS layer.
-- A plugin should be able to ask for a focused entity with named capabilities and receive either direct references or a setup-time error/inactive result.
-- Do not solve plugin dependency ordering here yet; start with capability presence/absence.
-
-Unresolved:
-
-- Whether requirements are declared statically on `GamePlugin`, checked during plugin loading, or checked lazily by each plugin hook.
-- How visible inactive plugins should be in HUD/diagnostics.
-- How to express "one of several compatible capability sets" without overbuilding.
-
-### Plugin Interdependency
-
-Problem:
-
-- Autopilot, telemetry, playback, trajectories, and future operator modes may depend on capabilities or state produced by other plugins.
-- Direct plugin-to-plugin imports would violate the outer composition model and make load order brittle.
-
-Current rough direction:
-
-- Prefer shared app-level ports/capabilities over plugin-to-plugin dependencies.
-- Prefer setup-time validation over runtime surprises.
-- Let plugins be independently loadable when their requirements are met by the assembled world/operator context.
-
-Unresolved:
-
-- Whether plugins should declare hard requirements, soft requirements, or both.
-- Whether operator modes become the main dependency boundary.
-- How to report missing requirements without making optional plugins noisy.
-
-### Simulation Phase API
-
-Problem:
-
-- Moving ship physics into plugins requires a deterministic place to apply attitude, thrust, RCS, and future vehicle dynamics.
-- Current ordering is spacecraft control physics, gravity, collision, spin, then scene/render/HUD.
-
-Current rough direction:
-
-- Preserve current ordering with explicit phases before extracting behavior.
-- Use arrays of phase callbacks, not an allocation-heavy event bus.
-
-Current state:
-
-- Explicit simulation phases exist around vehicle dynamics, gravity, collisions, and spin.
-- Spacecraft vehicle dynamics is installed via the `spacecraftOperator` simulation plugin.
-- Browser runtime installs the spacecraft operator through the default Solitude plugin catalog; generic headless runtime requires callers to provide that plugin explicitly.
-- Phase params are focused-entity-first and no longer expose `mainControlledBody`.
-
-Unresolved:
-
-- Whether control plugins evolve into operator-control terminology or stay as shared control-extension ports.
-- How much mutable tick output belongs to generic core versus operator plugins.
-- Whether spacecraft/autopilot capability requirements should be declared before or during operator-mode registration.
-
-### Input Contexts
-
-Problem:
-
-- Core currently owns spacecraft-specific actions.
-- Future operator-mode switching should change controls as well as camera/focus.
-
-Current rough direction:
-
-- Keep global runtime controls separate from operator controls.
-- Active operator mode contributes the currently active action set and key map.
-- Key collision policy can wait until multiple operator modes exist.
-
-Unresolved:
-
-- Which existing actions are truly global.
-- How to preserve playback/control diagnostics while input moves.
-- How `F1`, `F2`, etc. operator switching should be reserved.
-
-### Main-View Camera Rigs
-
-Problem:
-
-- The primary canvas/layout/render target and primary view definition are core-owned, but the current forward camera rig is spacecraft-operator behavior.
-
-Current rough direction:
-
-- Let plugins contribute camera rigs for the active focus.
-- Keep the primary canvas/layout/render target core-owned.
-- Keep one core primary view and select its active rig by id.
-
-Unresolved:
-
-- How auxiliary axial views relate to active camera rigs.
-- How operator-mode switching mutates the active rig at runtime.
-
-### Playback Migration
-
-Problem:
-
-- Playback snapshots now use generic entities and focus metadata.
-- Operator/focus generalization may later add operator-mode metadata to diagnostics.
-
-Current rough direction:
-
-- Playback snapshots are v2-only: capture/apply generic entities and record the focus entity id.
-- Old `ships` / `planets` / `stars` snapshot buckets were intentionally removed instead of schema-gated.
-
-Unresolved:
-
-- Whether later operator-mode recordings need additional operator-mode metadata beyond `focusEntityId`.
-
-## Migration Strategy
-
-1. Rename/reframe generic terminology:
-   - `pilot` view/state/config names to `main` where they describe generic camera/view behavior.
-   - Completed for current source; preserve absence of deprecated aliases.
-2. Introduce a generic focus concept:
-   - Completed for current source with `mainFocusEntityId` and `mainFocus`.
-3. Add simulation plugin phases:
-   - Give plugins a clear place to apply vehicle dynamics before gravity and react after physics.
-   - Completed while preserving current tick ordering.
-4. Extract spacecraft control physics:
-   - Completed for thrust, RCS, attitude command resolution, vehicle dynamics, and associated input actions.
-   - Keep core physics helpers only when they are genuinely generic.
-5. Make the main view camera rig-selectable:
-   - Keep primary view core-owned.
-   - Completed by moving the current primary forward rig into `spacecraftOperator` as `spacecraft.forward`; future work is runtime switching.
-6. Migrate dependent plugins:
-   - Autopilot, ship telemetry, velocity segments, orbit telemetry, trajectories, axial views, and playback should consume focus/capability queries instead of assuming a core main ship.
-7. Add operator-mode switching:
-   - Switch focus, camera rig, controls, and HUD emphasis together.
-   - Reserve function keys or another explicit input policy for switching once multiple modes exist.
-8. Remove remaining core ship assumptions:
-   - Delete spacecraft-specific base actions from core.
-   - Remove core thrust/RCS/attitude state once the plugin path owns it.
-   - Keep spacecraft naming only inside spacecraft-specific plugins, visual roles, and compatibility IDs.
-
-## Current Transitional State
-
-- Runtime world state is generic entity/capability based.
-- `World` still exposes `controllableBodies` for the current controlled-body capability array.
-- Core game tick owns deterministic phase ordering; spacecraft vehicle dynamics runs through `spacecraftOperator`.
-- Generic headless runtime does not auto-install `spacecraftOperator`; Solitude callers compose it explicitly when they need spacecraft behavior.
-- The primary canvas/layout/render target and primary view definition are core-owned; `spacecraftOperator` registers the current `spacecraft.forward` camera rig.
-- Base input actions are generic/main-view only; spacecraft input actions come from `spacecraftOperator`.
-- Plugin contexts use `mainFocus`; playback snapshots use generic entity/focus fields.
+- The next useful operator-model work is UX around foreground/background operation:
+  - make it easier to see what background autonomous ships are doing;
+  - distinguish focused control/HUD emphasis from background autonomous state;
+  - decide whether background operator status belongs in HUD, labels, telemetry panels, or another overlay.
+- Playback/runtime perspective switching is still the main open product capability: watch from one ship while another recorded/autonomous control target continues its maneuver.
+- Keep adding operator concepts above the engine boundary. Core should remain generic; Solitude plugins should define spacecraft semantics, autopilot, HUD/readouts, and default focus-switch behavior.
+- When peer plugins need to cooperate, use opaque capability ids plus local structural guards instead of direct plugin imports or shared plugin-layer protocol modules.
+
+## Open Questions
+
+- How should HUD/readouts represent multiple operated ships without cluttering the primary view?
+- Should axial/PIP views track the active focus, show background autonomous ships, or become independently targetable?
+- Does playback need separate "view focus" and "control target" metadata, or is `focusEntityId` enough with runtime overrides?
+- Should future operator modes use explicit mode records that bundle focus target, camera rig, input context, control system, and HUD emphasis?
+- What key-collision policy is needed when multiple operator modes or selectable control contexts coexist?
 
 ## Watch-Outs
 
-- Do not collapse every concern into a monolithic main-ship plugin. Separate entity contribution, control system, camera rig, HUD/readout, and operator selection boundaries.
-- Plugin phase ordering must be deterministic and documented before ship physics moves out of core.
-- Avoid allocation-heavy ECS/event patterns in per-frame loops.
-- Preserve onion layering: domain/app/render must not import from `src/plugins`.
+- Do not collapse entity contribution, control system, camera rig, HUD/readout, autopilot, and operator selection into one monolithic main-ship plugin.
+- Preserve onion layering: engine/domain/app/render/browser packages must not import from Solitude plugins.
+- Keep plugin phase ordering deterministic and allocation-conscious; avoid event-bus or ECS patterns in hot per-frame paths unless there is a concrete performance story.
+- Keep spacecraft naming inside spacecraft-specific plugins, scenario IDs/assets, visual roles, and user-facing labels. Core should continue using generic focus/entity/control terminology.
 - Playback compatibility with old script schemas was intentionally dropped; keep built-in scripts migrated when schema changes.
-- Some render scene object kinds may remain visually named `ship`, `planet`, or `star` if labels, culling, or LOD still need visual roles.
-- Be careful with "main view" versus "active operator mode": camera switching may need to switch controls too.
-
-## Near-Term Candidates
-
-- Add runtime operator-mode switching for focus, active camera rig, controls, and HUD emphasis.
-- Decide how axial views relate to active operator modes.
-- Core category naming cleanup is complete for engine package app/domain/infra/render/setup code; remaining spacecraft/solar-system names are plugin/scenario vocabulary or IDs.
+- Keep the guard searches in **Current Slice** green after operator/entity cleanup.
