@@ -184,6 +184,8 @@ Success criteria:
 - 2026-04-27: Chose "operator model" as the initiative name because the target is broader than a main-ship plugin. The future unit of switching is likely an operator mode: focus, camera, controls, HUD emphasis, and control system together.
 - 2026-04-27: Main view should remain core-owned. Plugins should contribute camera rigs or operator modes for that view, not own the primary view/canvas itself.
 - 2026-04-27: Do not reduce core to only the gravity engine. Core should still own generic world/runtime orchestration, focus selection, main view plumbing, and deterministic simulation phases.
+- 2026-05-19: Axial/PIP views stay linked to the primary view/focus. They are alternate views of the foreground operator, not independently targetable cameras.
+- 2026-05-19: During recording, input is attributed to the entity focused at that time. During playback, `Tab` may switch the viewed/focused entity, but recorded input still applies to the entity that was focused when that input was recorded.
 
 ## Current Architecture
 
@@ -215,8 +217,6 @@ Success criteria:
 ## Open Questions
 
 - How should HUD/readouts represent multiple operated ships without cluttering the primary view?
-- Should axial/PIP views track the active focus, show background autonomous ships, or become independently targetable?
-- Does playback need separate "view focus" and "control target" metadata, or is `focusEntityId` enough with runtime overrides?
 - Should future operator modes use explicit mode records that bundle focus target, camera rig, input context, control system, and HUD emphasis?
 - What key-collision policy is needed when multiple operator modes or selectable control contexts coexist?
 
