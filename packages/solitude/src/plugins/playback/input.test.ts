@@ -11,6 +11,13 @@ describe("playback input", () => {
     expect(handler.handleKeyUp("profilingToggle")).toBe(false);
   });
 
+  it("allows operator focus switching through while playback input is locked", () => {
+    const handler = createPlaybackHandler(true);
+
+    expect(handler.handleKeyDown("operatorSwapFocus", false)).toBe(false);
+    expect(handler.handleKeyUp("operatorSwapFocus")).toBe(false);
+  });
+
   it("still locks playback-owned controls while allowing pause handling", () => {
     const handlePause = vi.fn();
     const handler = createPlaybackHandler(true, handlePause);

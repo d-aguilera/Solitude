@@ -2,10 +2,12 @@ import type {
   ControlInput,
   MutableControlState,
 } from "@solitude/engine/app/controlPorts";
+import { updateFocusContext } from "@solitude/engine/app/focus";
 import type {
   LoopPlugin,
   LoopUpdateParams,
 } from "@solitude/engine/app/pluginPorts";
+import type { FocusContext } from "@solitude/engine/app/runtimePorts";
 import type {
   ControlledBody,
   World,
@@ -42,6 +44,7 @@ interface RecorderState {
   snapshot: PlaybackSnapshot;
   phases: PlaybackPhase[];
   phaseStartRuntimeMs: number;
+  previousFocusEntityId: string;
   previousControls: PlaybackControlState;
   recordingStartedRuntimeMs: number;
   capturedSimTimeMillis: number;
@@ -52,6 +55,8 @@ interface RecorderState {
 export interface PlaybackController {
   afterFrame: (params?: LoopUpdateParams) => void;
   applySceneSnapshot: (world: World) => void;
+  beforeVehicleDynamics: (world: World, mainFocus: FocusContext) => void;
+  afterVehicleDynamics: (world: World, mainFocus: FocusContext) => void;
   getEffectiveTimeScale: () => number | null;
   getInitialSimTimeMillis: () => number | null;
   getStatus: () => PlaybackStatus;
@@ -67,6 +72,7 @@ export interface PlaybackController {
     controlInput: ControlInput,
     world: World | undefined,
     controlledBody: ControlledBody | undefined,
+    focusedEntityId: string | undefined,
     nowMs: number,
     simTimeMillis: number,
     effectiveTimeScale?: number,
@@ -97,10 +103,12 @@ export function createPlaybackController(
   let scriptTimeMs = 0;
   let phaseIndex = 0;
   let currentPhaseThrustLevel: ThrustLevel | null = null;
+  let currentPhaseFocusEntityId: string | null = null;
   let latestThrustLevel = 1;
   let recorder: RecorderState | null = null;
   let sceneSnapshotApplied = false;
   let playbackHasStarted = false;
+  let restoredFocusEntityId: string | null = null;
 
   if (statusText && (status === "warning" || status === "missing")) {
     console.warn(statusText);
@@ -117,6 +125,7 @@ export function createPlaybackController(
     controlInput,
     world,
     controlledBody,
+    focusedEntityId,
     nowMs,
     simTimeMillis,
     effectiveTimeScale = playbackTimeScale,
@@ -128,9 +137,10 @@ export function createPlaybackController(
       simTimeMillis,
       effectiveTimeScale,
       controlInput,
+      focusedEntityId,
     );
     processPause(controlInput);
-    updateRecording(controlInput, nowMs, effectiveTimeScale);
+    updateRecording(controlInput, focusedEntityId, nowMs, effectiveTimeScale);
 
     if (status === "playing" && script && !playbackHasStarted) {
       playbackHasStarted = true;
@@ -168,6 +178,7 @@ export function createPlaybackController(
     ) {
       clearPlaybackControls(controlInput);
       currentPhaseThrustLevel = null;
+      currentPhaseFocusEntityId = null;
       playbackFramePolicy.advanceSim = false;
       playbackFramePolicy.advanceScene = false;
       if (script) {
@@ -188,6 +199,7 @@ export function createPlaybackController(
         params,
         script,
         scriptTimeMs + script.fixedDtMillis,
+        currentPhaseFocusEntityId,
       );
       scriptTimeMs += script.fixedDtMillis;
       return;
@@ -198,7 +210,7 @@ export function createPlaybackController(
         createLoggerLifecycleContext(
           params?.controlInput,
           params?.world,
-          getLoopControlledBody(params),
+          getPlaybackControlledBody(params, currentPhaseFocusEntityId),
           scriptTimeMs,
           params?.simTimeMillis ?? 0,
           script,
@@ -216,6 +228,21 @@ export function createPlaybackController(
       controlState.thrustLevel = currentPhaseThrustLevel;
     }
   };
+
+  function beforeVehicleDynamics(world: World, mainFocus: FocusContext): void {
+    restoredFocusEntityId = null;
+    if (status !== "playing" || !currentPhaseFocusEntityId) return;
+    if (mainFocus.entityId === currentPhaseFocusEntityId) return;
+    restoredFocusEntityId = mainFocus.entityId;
+    updateFocusContext(world, mainFocus, currentPhaseFocusEntityId);
+  }
+
+  function afterVehicleDynamics(world: World, mainFocus: FocusContext): void {
+    if (!restoredFocusEntityId) return;
+    const entityId = restoredFocusEntityId;
+    restoredFocusEntityId = null;
+    updateFocusContext(world, mainFocus, entityId);
+  }
 
   function readSpacecraftThrustLevel(
     controlState: MutableControlState,
@@ -297,13 +324,14 @@ export function createPlaybackController(
     simTimeMillis: number,
     effectiveTimeScale: number,
     controlInput: ControlInput,
+    focusedEntityId: string | undefined,
   ): void {
     if (!captureToggleRequested) return;
     captureToggleRequested = false;
     if (diagnostic?.mode !== "capture") return;
 
     if (recorder) {
-      stopRecording(nowMs, effectiveTimeScale, controlInput);
+      stopRecording(nowMs, effectiveTimeScale, controlInput, focusedEntityId);
       return;
     }
 
@@ -323,6 +351,7 @@ export function createPlaybackController(
       ),
       phases: [],
       phaseStartRuntimeMs: nowMs,
+      previousFocusEntityId: controlledBody.id,
       previousControls: clonePlaybackControlState(controls),
       recordingStartedRuntimeMs: nowMs,
       capturedSimTimeMillis: simTimeMillis,
@@ -370,6 +399,7 @@ export function createPlaybackController(
 
   function updateRecording(
     controlInput: ControlInput,
+    focusedEntityId: string | undefined,
     nowMs: number,
     effectiveTimeScale: number,
   ): void {
@@ -380,10 +410,17 @@ export function createPlaybackController(
     }
 
     const controls = readPlaybackControlState(controlInput, latestThrustLevel);
-    if (playbackControlsEqual(controls, recorder.previousControls)) return;
+    const nextFocusEntityId = focusedEntityId ?? recorder.previousFocusEntityId;
+    if (
+      playbackControlsEqual(controls, recorder.previousControls) &&
+      nextFocusEntityId === recorder.previousFocusEntityId
+    ) {
+      return;
+    }
 
     pushRecordedPhase(recorder, nowMs);
     recorder.phaseStartRuntimeMs = nowMs;
+    recorder.previousFocusEntityId = nextFocusEntityId;
     recorder.previousControls = clonePlaybackControlState(controls);
   }
 
@@ -391,10 +428,11 @@ export function createPlaybackController(
     nowMs: number,
     effectiveTimeScale: number,
     controlInput: ControlInput,
+    focusedEntityId: string | undefined,
   ): void {
     if (!recorder) return;
 
-    updateRecording(controlInput, nowMs, effectiveTimeScale);
+    updateRecording(controlInput, focusedEntityId, nowMs, effectiveTimeScale);
     pushRecordedPhase(recorder, nowMs);
 
     const output: PlaybackScript = {
@@ -428,6 +466,7 @@ export function createPlaybackController(
     state.phases.push({
       durationMs,
       controls: clonePlaybackControlState(state.previousControls),
+      focusEntityId: state.previousFocusEntityId,
     });
   }
 
@@ -439,6 +478,7 @@ export function createPlaybackController(
     const phase = compiled.phases[phaseIndex] ?? null;
     applyCompiledPhaseControls(controlInput, phase);
     currentPhaseThrustLevel = phase?.thrustLevel ?? null;
+    currentPhaseFocusEntityId = phase?.focusEntityId ?? null;
   }
 
   function finishPlayback(controlInput: ControlInput): void {
@@ -446,11 +486,14 @@ export function createPlaybackController(
     statusText = "PLAYBACK: done";
     clearPlaybackControls(controlInput);
     currentPhaseThrustLevel = null;
+    currentPhaseFocusEntityId = null;
   }
 
   return {
     afterFrame,
+    afterVehicleDynamics,
     applySceneSnapshot,
+    beforeVehicleDynamics,
     getEffectiveTimeScale,
     getInitialSimTimeMillis,
     getStatus,
@@ -498,6 +541,7 @@ function sampleLoggerAfterTick(
   params: LoopUpdateParams | undefined,
   script: CompiledPlaybackScript,
   playbackElapsedMs: number,
+  focusEntityId: string | null,
 ): void {
   if (!logger?.sampleAfterTick || !params) return;
 
@@ -505,7 +549,7 @@ function sampleLoggerAfterTick(
   const dtSimMillis = params.state.framePolicy.simDtMillis ?? dtTickMillis;
   logger.sampleAfterTick({
     controlInput: params.controlInput,
-    controlledBody: getLoopControlledBody(params),
+    controlledBody: getPlaybackControlledBody(params, focusEntityId),
     dtSimMillis,
     dtTickMillis,
     playbackElapsedMs,
@@ -531,6 +575,17 @@ function createLoggerLifecycleContext(
     simTimeMillis,
     world,
   };
+}
+
+function getPlaybackControlledBody(
+  params: LoopUpdateParams | undefined,
+  entityId: string | null,
+): ControlledBody | undefined {
+  if (!entityId || !params?.world) return getLoopControlledBody(params);
+  for (const body of params.world.controllableBodies) {
+    if (body.id === entityId) return body;
+  }
+  return getLoopControlledBody(params);
 }
 
 function getLoopControlledBody(

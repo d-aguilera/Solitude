@@ -43,6 +43,8 @@ export function compilePlaybackScript(
     endMs += durationMs;
     phases.push({
       endMs,
+      focusEntityId:
+        phase.focusEntityId ?? script.snapshot.metadata.focusEntityId,
       trueActions: collectTrueActions(phase.controls),
       thrustLevel: phase.controls.thrustLevel ?? null,
     });

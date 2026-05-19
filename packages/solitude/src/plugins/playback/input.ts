@@ -4,6 +4,7 @@ import type { PlaybackController } from "./core";
 import type { DiagnosticRuntimeOptions } from "./options";
 
 const captureToggleAction: ControlAction = "playbackCaptureToggle";
+const operatorSwapFocusAction: ControlAction = "operatorSwapFocus";
 const pauseToggleAction: ControlAction = "pauseToggle";
 const profilingToggleAction: ControlAction = "profilingToggle";
 
@@ -43,7 +44,7 @@ function createCaptureKeyHandler(controller: PlaybackController): KeyHandler {
 function createPlaybackKeyHandler(controller: PlaybackController): KeyHandler {
   return {
     handleKeyDown: (action, isRepeat) => {
-      if (action === profilingToggleAction) return false;
+      if (isUnlockedPlaybackAction(action)) return false;
       if (!controller.isInputLocked()) return false;
       if (action === pauseToggleAction && !isRepeat) {
         controller.handlePause();
@@ -51,8 +52,12 @@ function createPlaybackKeyHandler(controller: PlaybackController): KeyHandler {
       return true;
     },
     handleKeyUp: (action) => {
-      if (action === profilingToggleAction) return false;
+      if (isUnlockedPlaybackAction(action)) return false;
       return controller.isInputLocked();
     },
   };
+}
+
+function isUnlockedPlaybackAction(action: ControlAction): boolean {
+  return action === profilingToggleAction || action === operatorSwapFocusAction;
 }

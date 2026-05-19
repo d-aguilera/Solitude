@@ -44,6 +44,25 @@ describe("playback script logic", () => {
     expect(compiled.phases[1].thrustLevel).toBe(4);
   });
 
+  it("defaults phase focus to the snapshot focus for existing scripts", () => {
+    const compiled = compilePlaybackScript(createScript());
+
+    expect(compiled.phases.map((phase) => phase.focusEntityId)).toEqual([
+      "ship:test",
+      "ship:test",
+    ]);
+  });
+
+  it("preserves explicit per-phase focus targets", () => {
+    const script = createScript();
+    script.phases[1].focusEntityId = "ship:enemy";
+
+    const compiled = compilePlaybackScript(script);
+
+    expect(compiled.phases[0].focusEntityId).toBe("ship:test");
+    expect(compiled.phases[1].focusEntityId).toBe("ship:enemy");
+  });
+
   it("advances phase lookup from a cursor", () => {
     const compiled = compilePlaybackScript(createScript());
 

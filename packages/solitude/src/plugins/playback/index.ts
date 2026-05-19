@@ -45,12 +45,21 @@ export function createPlaybackPlugin(
           controlInput,
           world,
           mainFocus.controlledBody,
+          mainFocus.entityId,
           nowMs,
           simTimeMillis ?? 0,
           getEffectiveTimeScale(dtMillis, state.framePolicy.simDtMillis),
         ),
       afterFrame: (params) => {
         controller.afterFrame(params);
+      },
+    },
+    simulation: {
+      beforeVehicleDynamics: ({ mainFocus, world }) => {
+        controller.beforeVehicleDynamics(world, mainFocus);
+      },
+      afterVehicleDynamics: ({ mainFocus, world }) => {
+        controller.afterVehicleDynamics(world, mainFocus);
       },
     },
     scene: {

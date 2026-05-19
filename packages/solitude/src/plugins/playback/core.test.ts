@@ -11,9 +11,9 @@ import { describe, expect, it, vi } from "vitest";
 import { createPlaybackController } from "./core";
 import type { PlaybackScript } from "./types";
 
-function createWorldAndShip(): { world: World; ship: ControlledBody } {
+function createShip(id: string): ControlledBody {
   const ship: ControlledBody = {
-    id: "ship:test",
+    id,
     position: vec3.create(1, 0, 0),
     velocity: vec3.create(0, 1, 0),
     frame: localFrame.fromUp(vec3.create(0, 0, 1)),
@@ -21,7 +21,11 @@ function createWorldAndShip(): { world: World; ship: ControlledBody } {
     angularVelocity: { roll: 0, pitch: 0, yaw: 0 },
   };
   localFrame.intoMat3(ship.orientation, ship.frame);
+  return ship;
+}
 
+function createWorldAndShip(): { world: World; ship: ControlledBody } {
+  const ship = createShip("ship:test");
   const world: World = {
     axialSpins: [],
     collisionSpheres: [],
@@ -33,6 +37,32 @@ function createWorldAndShip(): { world: World; ship: ControlledBody } {
     lightEmitters: [],
   };
   return { world, ship };
+}
+
+function createWorldWithShips(): {
+  enemy: ControlledBody;
+  main: ControlledBody;
+  world: World;
+} {
+  const main = createShip("ship:main");
+  const enemy = createShip("ship:enemy");
+  const world: World = {
+    axialSpins: [],
+    collisionSpheres: [],
+    controllableBodies: [main, enemy],
+    entities: [{ id: main.id }, { id: enemy.id }],
+    entityIndex: new Map([
+      [main.id, { id: main.id }],
+      [enemy.id, { id: enemy.id }],
+    ]),
+    entityStates: [main, enemy],
+    gravityMasses: [
+      { id: main.id, density: 1, mass: 1, state: main },
+      { id: enemy.id, density: 1, mass: 1, state: enemy },
+    ],
+    lightEmitters: [],
+  };
+  return { enemy, main, world };
 }
 
 describe("playback controller", () => {
@@ -50,14 +80,15 @@ describe("playback controller", () => {
       controlInput,
       world,
       ship,
+      ship.id,
       100,
       5000,
       5,
     );
     controlInput.circleNow = true;
-    controller.updateLoop(controlInput, world, ship, 1100, 6000, 5);
+    controller.updateLoop(controlInput, world, ship, ship.id, 1100, 6000, 5);
     controller.handleCaptureToggle();
-    controller.updateLoop(controlInput, world, ship, 2100, 7000, 5);
+    controller.updateLoop(controlInput, world, ship, ship.id, 2100, 7000, 5);
 
     expect(controller.getStatus()).toBe("capture-idle");
     expect(startResult).toBeNull();
@@ -78,6 +109,32 @@ describe("playback controller", () => {
     info.mockRestore();
   });
 
+  it("records focus changes as phase boundaries during capture", () => {
+    const { enemy, main, world } = createWorldWithShips();
+    const controller = createPlaybackController({
+      mode: "capture",
+      scenario: "moon-circle",
+    });
+    const controlInput = createControlInput(["circleNow"]);
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+
+    controller.handleCaptureToggle();
+    controller.updateLoop(controlInput, world, main, main.id, 100, 5000, 5);
+    controller.updateLoop(controlInput, world, enemy, enemy.id, 1100, 6000, 5);
+    controller.handleCaptureToggle();
+    controller.updateLoop(controlInput, world, enemy, enemy.id, 2100, 7000, 5);
+
+    const dumpedScript = String(
+      info.mock.calls.find((call) =>
+        String(call[0]).includes("export const playbackScript"),
+      )?.[0] ?? "",
+    );
+    expect(dumpedScript).toContain('"focusEntityId": "ship:main"');
+    expect(dumpedScript).toContain('"focusEntityId": "ship:enemy"');
+
+    info.mockRestore();
+  });
+
   it("fails closed when playback script is missing", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const controller = createPlaybackController({
@@ -90,6 +147,7 @@ describe("playback controller", () => {
       controlInput,
       undefined,
       undefined,
+      undefined,
       0,
       0,
     );
@@ -98,7 +156,7 @@ describe("playback controller", () => {
     expect(result?.framePolicy?.advanceSim).toBe(false);
 
     controller.handlePause();
-    controller.updateLoop(controlInput, undefined, undefined, 16, 0);
+    controller.updateLoop(controlInput, undefined, undefined, undefined, 16, 0);
 
     expect(controller.getStatus()).toBe("released");
     warn.mockRestore();
@@ -124,6 +182,7 @@ describe("playback controller", () => {
       controlInput,
       undefined,
       undefined,
+      undefined,
       100,
       0,
     );
@@ -134,6 +193,36 @@ describe("playback controller", () => {
     expect(result?.framePolicy?.tickDtMillis).toBe(20);
     expect(result?.framePolicy?.simDtMillis).toBe(140);
     expect(controlInput.circleNow).toBe(true);
+  });
+
+  it("temporarily targets recorded focus for vehicle dynamics and restores viewed focus", () => {
+    const { enemy, main, world } = createWorldWithShips();
+    const script = createPlaybackScript(20, 1, 100, "ship:main");
+    const controller = createPlaybackController(
+      {
+        mode: "playback",
+        scenario: script.id,
+      },
+      undefined,
+      () => script,
+    );
+    const controlInput = createControlInput(["pauseToggle", "circleNow"]);
+    const mainFocus = {
+      controlledBody: enemy,
+      entityId: enemy.id,
+    };
+
+    controller.handlePause();
+    controller.updateLoop(controlInput, world, enemy, enemy.id, 0, 0);
+    controller.beforeVehicleDynamics(world, mainFocus);
+
+    expect(mainFocus.entityId).toBe(main.id);
+    expect(mainFocus.controlledBody).toBe(main);
+
+    controller.afterVehicleDynamics(world, mainFocus);
+
+    expect(mainFocus.entityId).toBe(enemy.id);
+    expect(mainFocus.controlledBody).toBe(enemy);
   });
 
   it("emits a requested diagnostic log at playback end", () => {
@@ -172,9 +261,9 @@ describe("playback controller", () => {
     };
 
     controller.handlePause();
-    controller.updateLoop(controlInput, world, ship, 0, 0);
+    controller.updateLoop(controlInput, world, ship, ship.id, 0, 0);
     controller.afterFrame(params);
-    controller.updateLoop(controlInput, world, ship, 20, 20);
+    controller.updateLoop(controlInput, world, ship, ship.id, 20, 20);
     controller.afterFrame(params);
 
     expect(info).toHaveBeenCalledTimes(1);
@@ -190,7 +279,16 @@ function createPlaybackScript(
   fixedDtMillis: number,
   timeScale: number,
   durationMs = 100,
+  phaseFocusEntityId?: string,
 ): PlaybackScript {
+  const phase: PlaybackScript["phases"][number] = {
+    durationMs,
+    controls: { circleNow: true },
+  };
+  if (phaseFocusEntityId) {
+    phase.focusEntityId = phaseFocusEntityId;
+  }
+
   return {
     id: "custom-playback",
     snapshot: {
@@ -204,7 +302,7 @@ function createPlaybackScript(
     },
     fixedDtMillis,
     timeScale,
-    phases: [{ durationMs, controls: { circleNow: true } }],
+    phases: [phase],
     endBehavior: "pause",
     metadata: {
       capturedSimTimeMillis: 0,

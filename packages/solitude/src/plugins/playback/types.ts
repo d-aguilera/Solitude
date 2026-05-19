@@ -31,6 +31,7 @@ export interface PlaybackScript {
 export interface PlaybackPhase {
   durationMs: number;
   controls: PlaybackControlState;
+  focusEntityId?: string;
 }
 
 export interface PlaybackScriptMetadata {
@@ -60,6 +61,7 @@ export type ThrustLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
 export interface CompiledPlaybackPhase {
   endMs: number;
+  focusEntityId: string;
   trueActions: readonly ControlAction[];
   thrustLevel: ThrustLevel | null;
 }
