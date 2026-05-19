@@ -23,8 +23,9 @@
 
 ## Current focus
 
-- **Primary active work**: continue operator-model work. See `MEMORY_OPERATOR_MODEL.md` before changing focus, controls, camera rigs, HUD contexts, playback operator assumptions, or simulation plugin phases.
+- **Primary active work**: operator runtime focus switching is implemented. See `MEMORY_OPERATOR_MODEL.md` before changing focus, controls, camera rigs, HUD contexts, playback operator assumptions, or simulation plugin phases.
 - **Operator/focus boundary**: core/runtime contexts use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`.
+- **Remaining operator follow-ups**: foreground/background UX and declarative input lock policy live in `MEMORY_OPERATOR_MODEL.md`.
 - **Retired compatibility names**: keep `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming out of source.
 
 ## Must-Do After Code Changes
@@ -62,6 +63,7 @@
 - `packages/browser/src/infra/domBootstrap.ts` wires DOM input, layout, renderers, game loop, and gravity engine.
 - `packages/engine/src/app/game.ts` runs per-tick simulation phases.
 - Solitude plugins provide spacecraft controls, vehicle dynamics, camera rigs, HUD overlay/readout behavior, playback behavior, and scenario/world-model content.
+- Solitude plugin order is runtime behavior; later loop/frame-policy plugins can override earlier ones, and DOM input handlers are consulted in reverse plugin order.
 
 ## Current State
 
@@ -69,6 +71,8 @@
 - Runtime world state is generic entity/capability based.
 - Solar-system content is contributed by `packages/solitude/src/plugins/solarSystem/`.
 - Spacecraft propulsion/RCS/attitude, input bindings, spacecraft operator state, and the primary forward camera rig live in `packages/solitude/src/plugins/spacecraftOperator/`.
+- Runtime focus switching lives in `packages/solitude/src/plugins/operatorSwitch/`; `Tab` swaps foreground focus between `ship:main` and `ship:enemy`.
+- During playback, `Tab` may switch the viewed focus while recorded controls continue applying to the entity focused when each playback phase was recorded.
 - Core owns generic focus, primary-view plumbing, simulation phase order, gravity, spin, collision, setup, render preparation, and plugin port/capability contracts.
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
@@ -84,6 +88,7 @@
 - `packages/browser/src/infra/domBootstrap.ts`: browser runtime composition.
 - `packages/solitude/src/bootstrap.ts`: Solitude browser app composition.
 - `packages/solitude/src/plugins/spacecraftOperator/`: spacecraft controls, dynamics, telemetry state, and forward camera rig.
+- `packages/solitude/src/plugins/operatorSwitch/`: default runtime focus switching between controllable ships.
 - `packages/solitude/src/plugins/autopilot/logic.ts`: align-to-velocity/body and “circle now”.
 - `packages/solitude/src/plugins/playback/`: diagnostic capture/playback and repeatable scenario logs.
 
@@ -98,6 +103,7 @@
 - Camera offset: `U/J` forward/back, `I/K` up/down.
 - Time scale: `[` decrease, `]` increase.
 - Pause: `P`.
+- Focus switch: `Tab`.
 - Profiling HUD toggle: `O`.
 
 ## Local Dev Workflow
@@ -110,13 +116,14 @@
 ## Next Steps Snapshot
 
 - Package split migration is closed; future package work is normal API curation.
-- Continue operator/focus cleanup from `MEMORY_OPERATOR_MODEL.md`; next operator work is runtime operator-mode switching above the generic engine boundary.
+- Operator runtime focus switching series is closed; remaining operator-model work is foreground/background UX and declarative input lock policy. See `MEMORY_OPERATOR_MODEL.md`.
 - Planned future work: Solitude-owned headless playback runner. See `MEMORY_HEADLESS_PLAYBACK.md`.
 
 ## Open Questions / Risks
 
 - Package exports are explicit and should stay intentionally curated.
 - Some plugin features still use spacecraft or solar-system vocabulary; keep that out of engine/browser unless it is truly generic.
+- Default Solitude plugin order is behaviorally significant; preserve ordering-sensitive tests when moving playback, operator switch, pause, profiling, or input plugins.
 - Gravity uses fixed sub-steps for stability; high time scales can still destabilize.
 - WebGL path is present but not wired in the default entry.
 - Controls are keyboard-only with no in-app help; consider a help overlay or onboarding prompt.

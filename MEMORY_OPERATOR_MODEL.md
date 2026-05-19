@@ -16,13 +16,12 @@
 
 ## Current Slice
 
-Status: package split migration is closed; operator-model work is active again.
+Status: operator runtime focus switching is implemented; operator-model follow-up work is active.
 
 Next focused change:
 
-- Extend runtime operator switching into explicit foreground/background operator UX:
+- Extend runtime focus switching into explicit foreground/background operator UX:
   - distinguish focused control/HUD emphasis from background autonomous ships;
-  - allow playback/runtime perspective switching without losing the recorded control target;
   - decide whether background operator status should appear in HUD, labels, or another overlay.
 
 Success criteria:
@@ -178,6 +177,12 @@ Success criteria:
   - spacecraft operator consumes autonomous-control providers to synthesize per-entity effective input, without knowing autopilot state keys;
   - manual thrust/RCS/attitude input remains focused-only;
   - returning focus to a ship restores its stored autopilot mode into foreground input/HUD state.
+- 2026-05-19: Closed the runtime focus-switching series:
+  - `Tab` switches foreground focus during normal runtime and while playback is waiting, playing, paused, or done;
+  - playback records per-phase `focusEntityId`, with old scripts defaulting phase focus to snapshot metadata;
+  - during playback, recorded controls apply to the recorded phase focus while the viewed/HUD focus can switch independently;
+  - operator switch requests a scene/overlay refresh on focus swaps so paused playback updates camera/HUD without advancing simulation;
+  - default plugin order now keeps playback before operator switch, with tests documenting that ordering dependency.
 
 ## Decision Log
 
