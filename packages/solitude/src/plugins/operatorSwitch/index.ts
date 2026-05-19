@@ -2,6 +2,7 @@ import { updateFocusContext } from "@solitude/engine/app/focus";
 import type {
   GamePlugin,
   LoopPlugin,
+  LoopUpdateResult,
   RuntimeOptions,
 } from "@solitude/engine/app/pluginPorts";
 import type { FocusContext } from "@solitude/engine/app/runtimePorts";
@@ -10,6 +11,12 @@ import type { World } from "@solitude/engine/domain/domainPorts";
 const swapFocusAction = "operatorSwapFocus";
 const defaultFocusTargets = ["ship:main", "ship:enemy"] as const;
 const autopilotActions = ["alignToVelocity", "alignToBody", "circleNow"];
+const FOCUS_SWAP_LOOP_UPDATE: LoopUpdateResult = {
+  framePolicy: {
+    advanceScene: true,
+    advanceOverlay: true,
+  },
+};
 
 export function createOperatorSwitchPlugin(
   _runtimeOptions: RuntimeOptions = {},
@@ -74,8 +81,9 @@ function createOperatorSwitchLoop(
   return {
     updateLoopState: ({ mainFocus, world }) => {
       if (!world) return null;
-      controller.applyPendingSwap(world, mainFocus);
-      return null;
+      return controller.applyPendingSwap(world, mainFocus)
+        ? FOCUS_SWAP_LOOP_UPDATE
+        : null;
     },
   };
 }

@@ -9,6 +9,7 @@ import { localFrame } from "@solitude/engine/domain/localFrame";
 import { mat3 } from "@solitude/engine/domain/mat3";
 import { vec3 } from "@solitude/engine/domain/vec3";
 import { describe, expect, it } from "vitest";
+import { defaultPluginIds } from "../index";
 import { __operatorSwitchTest, createOperatorSwitchPlugin } from "./index";
 
 function createBody(id: string): ControlledBody {
@@ -56,7 +57,7 @@ function createWorld(): {
 }
 
 function applyLoop(plugin: LoopPlugin, world: World, mainFocus: FocusContext) {
-  plugin.updateLoopState?.({
+  return plugin.updateLoopState?.({
     controlInput: createControlInput(),
     dtMillis: 16,
     mainFocus,
@@ -74,6 +75,12 @@ function applyLoop(plugin: LoopPlugin, world: World, mainFocus: FocusContext) {
 }
 
 describe("operator switch plugin", () => {
+  it("runs after playback in the default loop order so paused focus swaps refresh the scene", () => {
+    expect(defaultPluginIds.indexOf("operatorSwitch")).toBeGreaterThan(
+      defaultPluginIds.indexOf("playback"),
+    );
+  });
+
   it("maps Tab to focus swapping and consumes repeat-safe key events", () => {
     const { enemy, mainFocus, world } = createWorld();
     const controlInput = createControlInput([
@@ -91,8 +98,9 @@ describe("operator switch plugin", () => {
     expect(
       handler.handleKeyDown(__operatorSwitchTest.swapFocusAction, true),
     ).toBe(true);
-    applyLoop(plugin.loop!, world, mainFocus);
+    const repeatResult = applyLoop(plugin.loop!, world, mainFocus);
     expect(mainFocus.entityId).toBe("ship:main");
+    expect(repeatResult).toBeNull();
 
     expect(
       handler.handleKeyDown(__operatorSwitchTest.swapFocusAction, false),
@@ -102,10 +110,14 @@ describe("operator switch plugin", () => {
       true,
     );
 
-    applyLoop(plugin.loop!, world, mainFocus);
+    const swapResult = applyLoop(plugin.loop!, world, mainFocus);
 
     expect(mainFocus.entityId).toBe("ship:enemy");
     expect(mainFocus.controlledBody).toBe(enemy);
+    expect(swapResult?.framePolicy).toEqual({
+      advanceOverlay: true,
+      advanceScene: true,
+    });
   });
 
   it("toggles from enemy back to main on the next request", () => {

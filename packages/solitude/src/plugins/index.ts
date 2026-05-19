@@ -28,9 +28,10 @@ export type PluginFactory = (
   context: PluginCompositionContext,
 ) => GamePlugin;
 
+// Plugin order is runtime behavior: later loop/frame-policy plugins can
+// override earlier ones, and input handlers are consulted in reverse order.
 export const defaultPluginIds = [
   "solarSystem",
-  "operatorSwitch",
   "spacecraftOperator",
   "hud",
   "axialViews",
@@ -43,6 +44,7 @@ export const defaultPluginIds = [
   "profiling",
   "timeScale",
   "playback",
+  "operatorSwitch",
   "trajectories",
   "velocitySegments",
 ];
