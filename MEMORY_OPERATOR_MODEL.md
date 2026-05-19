@@ -203,6 +203,7 @@ Success criteria:
   - `spacecraft.autonomousControl.v1` for background autonomous-control input synthesis.
 - `spacecraftOperator` consumes spacecraft capabilities structurally through the generic capability registry; it should not import peer plugins or know peer-plugin private state keys.
 - Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`.
+- Playback currently acts as an input lock during replay and has a small explicit allowlist for non-playback actions such as pause, profiling, and operator focus swapping. This is action-string coupling rather than import coupling, but it is still a known input-ownership smell.
 
 ## Current Direction
 
@@ -211,6 +212,7 @@ Success criteria:
   - distinguish focused control/HUD emphasis from background autonomous state;
   - decide whether background operator status belongs in HUD, labels, telemetry panels, or another overlay.
 - Playback/runtime perspective switching is still the main open product capability: watch from one ship while another recorded/autonomous control target continues its maneuver.
+- Future input-model work should replace playback's hard-coded locked-input allowlist with declarative action ownership/lock policy, so plugins can mark actions as playback-recorded, runtime-pass-through, debug, operator, etc. Playback should lock/replay categories of recorded controls rather than knowing sibling plugin action names.
 - Keep adding operator concepts above the engine boundary. Core should remain generic; Solitude plugins should define spacecraft semantics, autopilot, HUD/readouts, and default focus-switch behavior.
 - When peer plugins need to cooperate, use opaque capability ids plus local structural guards instead of direct plugin imports or shared plugin-layer protocol modules.
 
@@ -219,6 +221,7 @@ Success criteria:
 - How should HUD/readouts represent multiple operated ships without cluttering the primary view?
 - Should future operator modes use explicit mode records that bundle focus target, camera rig, input context, control system, and HUD emphasis?
 - What key-collision policy is needed when multiple operator modes or selectable control contexts coexist?
+- What is the minimal declarative input lock/ownership API that lets playback lock recorded controls while allowing runtime/operator/debug actions through without plugin-specific action allowlists?
 
 ## Watch-Outs
 
@@ -227,4 +230,5 @@ Success criteria:
 - Keep plugin phase ordering deterministic and allocation-conscious; avoid event-bus or ECS patterns in hot per-frame paths unless there is a concrete performance story.
 - Keep spacecraft naming inside spacecraft-specific plugins, scenario IDs/assets, visual roles, and user-facing labels. Core should continue using generic focus/entity/control terminology.
 - Playback compatibility with old script schemas was intentionally dropped; keep built-in scripts migrated when schema changes.
+- Avoid adding more sibling-plugin action names to playback's input lock allowlist; prefer solving the declarative input policy first if more pass-through controls are needed.
 - Keep the guard searches in **Current Slice** green after operator/entity cleanup.
