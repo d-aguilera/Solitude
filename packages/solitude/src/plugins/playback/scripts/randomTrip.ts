@@ -7,7 +7,7 @@ export const playbackScript = {
       label: "random-trip",
       capturedSimTimeMillis: 188684.30599999998,
       dominantBodyId: "planet:earth",
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     entities: [
       {
@@ -245,7 +245,7 @@ export const playbackScript = {
         ],
       },
       {
-        id: "ship:main",
+        id: "ship:blue",
         position: {
           x: -26509820329.7833,
           y: 144691096170.18997,
@@ -285,7 +285,7 @@ export const playbackScript = {
         },
       },
       {
-        id: "ship:enemy",
+        id: "ship:red",
         position: {
           x: -26506104025.63364,
           y: 144696001716.12823,

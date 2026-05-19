@@ -116,9 +116,9 @@ describe("spacecraft vehicle dynamics plugin", () => {
   });
 
   it("keeps spacecraft control state per focused entity", () => {
-    const mainBody = createBody("ship:main");
-    const enemyBody = createBody("ship:enemy");
-    const world = createWorld(mainBody, enemyBody);
+    const blueBody = createBody("ship:blue");
+    const redBody = createBody("ship:red");
+    const world = createWorld(blueBody, redBody);
     const telemetry = createSpacecraftOperatorTelemetry();
     const plugin = createSpacecraftVehicleDynamicsPlugin(
       [],
@@ -128,20 +128,20 @@ describe("spacecraft vehicle dynamics plugin", () => {
 
     const mainInput = createControlInput();
     mainInput.thrust5 = true;
-    updateVehicleDynamics(plugin, mainBody, mainInput, world);
+    updateVehicleDynamics(plugin, blueBody, mainInput, world);
     expect(telemetry.currentThrustLevel).toBe(5);
 
-    updateVehicleDynamics(plugin, enemyBody, createControlInput(), world);
+    updateVehicleDynamics(plugin, redBody, createControlInput(), world);
     expect(telemetry.currentThrustLevel).toBe(1);
 
-    updateVehicleDynamics(plugin, mainBody, createControlInput(), world);
+    updateVehicleDynamics(plugin, blueBody, createControlInput(), world);
     expect(telemetry.currentThrustLevel).toBe(5);
   });
 
   it("continues autonomous autopilot propulsion on unfocused controlled bodies", () => {
-    const mainBody = createBody("ship:main");
-    const enemyBody = createBody("ship:enemy");
-    const world = createWorld(mainBody, enemyBody);
+    const blueBody = createBody("ship:blue");
+    const redBody = createBody("ship:red");
+    const world = createWorld(blueBody, redBody);
     const plugin = createSpacecraftVehicleDynamicsPlugin(
       [createAutopilotControlPlugin()],
       createPluginCapabilityRegistry([
@@ -152,19 +152,19 @@ describe("spacecraft vehicle dynamics plugin", () => {
     const mainInput = createControlInput();
     mainInput.circleNow = true;
 
-    runVehicleDynamics(plugin, mainBody, mainInput, world);
-    const focusedMainSpeed = vec3.length(mainBody.velocity);
+    runVehicleDynamics(plugin, blueBody, mainInput, world);
+    const focusedBlueSpeed = vec3.length(blueBody.velocity);
 
-    runVehicleDynamics(plugin, enemyBody, createControlInput(), world);
+    runVehicleDynamics(plugin, redBody, createControlInput(), world);
 
-    expect(vec3.length(mainBody.velocity)).toBeGreaterThan(focusedMainSpeed);
-    expect(vec3.length(enemyBody.velocity)).toBe(0);
+    expect(vec3.length(blueBody.velocity)).toBeGreaterThan(focusedBlueSpeed);
+    expect(vec3.length(redBody.velocity)).toBe(0);
   });
 
   it("restores the focused body's stored autopilot mode on focus return", () => {
-    const mainBody = createBody("ship:main");
-    const enemyBody = createBody("ship:enemy");
-    const world = createWorld(mainBody, enemyBody);
+    const blueBody = createBody("ship:blue");
+    const redBody = createBody("ship:red");
+    const world = createWorld(blueBody, redBody);
     const plugin = createSpacecraftVehicleDynamicsPlugin(
       [createAutopilotControlPlugin()],
       createPluginCapabilityRegistry([
@@ -174,11 +174,11 @@ describe("spacecraft vehicle dynamics plugin", () => {
     );
     const mainInput = createControlInput();
     mainInput.circleNow = true;
-    runVehicleDynamics(plugin, mainBody, mainInput, world);
-    runVehicleDynamics(plugin, enemyBody, createControlInput(), world);
+    runVehicleDynamics(plugin, blueBody, mainInput, world);
+    runVehicleDynamics(plugin, redBody, createControlInput(), world);
 
     const returnInput = createControlInput();
-    runVehicleDynamics(plugin, mainBody, returnInput, world);
+    runVehicleDynamics(plugin, blueBody, returnInput, world);
 
     expect(returnInput.circleNow).toBe(true);
   });

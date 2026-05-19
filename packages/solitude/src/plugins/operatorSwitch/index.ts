@@ -9,7 +9,7 @@ import type { FocusContext } from "@solitude/engine/app/runtimePorts";
 import type { World } from "@solitude/engine/domain/domainPorts";
 
 const swapFocusAction = "operatorSwapFocus";
-const defaultFocusTargets = ["ship:main", "ship:enemy"] as const;
+const defaultFocusTargets = ["ship:blue", "ship:red"] as const;
 const autopilotActions = ["alignToVelocity", "alignToBody", "circleNow"];
 const FOCUS_SWAP_LOOP_UPDATE: LoopUpdateResult = {
   framePolicy: {

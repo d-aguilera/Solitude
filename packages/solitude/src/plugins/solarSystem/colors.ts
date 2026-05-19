@@ -1,8 +1,8 @@
 import type { RGB } from "@solitude/engine/app/scenePorts";
 
 export const ALL_COLORS = [
-  "ship",
-  "enemyShip",
+  "blueShip",
+  "redShip",
   "earth",
   "jupiter",
   "mars",
@@ -21,8 +21,8 @@ export type ColorName = (typeof ALL_COLORS)[number];
 export type Colors = Record<ColorName, RGB>;
 
 export const colors: Colors = {
-  ship: { r: 0, g: 255, b: 255 },
-  enemyShip: { r: 255, g: 64, b: 64 },
+  blueShip: { r: 0, g: 255, b: 255 },
+  redShip: { r: 255, g: 64, b: 64 },
   earth: { r: 80, g: 120, b: 255 },
   jupiter: { r: 220, g: 180, b: 120 },
   mars: { r: 255, g: 80, b: 50 },

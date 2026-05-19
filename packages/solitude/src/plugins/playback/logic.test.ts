@@ -55,12 +55,12 @@ describe("playback script logic", () => {
 
   it("preserves explicit per-phase focus targets", () => {
     const script = createScript();
-    script.phases[1].focusEntityId = "ship:enemy";
+    script.phases[1].focusEntityId = "ship:red";
 
     const compiled = compilePlaybackScript(script);
 
     expect(compiled.phases[0].focusEntityId).toBe("ship:test");
-    expect(compiled.phases[1].focusEntityId).toBe("ship:enemy");
+    expect(compiled.phases[1].focusEntityId).toBe("ship:red");
   });
 
   it("advances phase lookup from a cursor", () => {

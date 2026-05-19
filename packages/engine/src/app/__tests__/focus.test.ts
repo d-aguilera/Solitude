@@ -32,34 +32,34 @@ function createMotionState(id: string): EntityMotionState {
 }
 
 function createWorld(): {
-  enemy: ControlledBody;
-  main: ControlledBody;
+  red: ControlledBody;
+  blue: ControlledBody;
   mainFocus: FocusContext;
   world: World;
 } {
-  const main = createControlledBody("ship:main");
-  const enemy = createControlledBody("ship:enemy");
+  const blue = createControlledBody("ship:blue");
+  const red = createControlledBody("ship:red");
   const planet = createMotionState("planet:test");
   const world: World = {
     axialSpins: [],
     collisionSpheres: [],
-    controllableBodies: [main, enemy],
-    entities: [{ id: main.id }, { id: enemy.id }, { id: planet.id }],
+    controllableBodies: [blue, red],
+    entities: [{ id: blue.id }, { id: red.id }, { id: planet.id }],
     entityIndex: new Map([
-      [main.id, { id: main.id }],
-      [enemy.id, { id: enemy.id }],
+      [blue.id, { id: blue.id }],
+      [red.id, { id: red.id }],
       [planet.id, { id: planet.id }],
     ]),
-    entityStates: [main, enemy, planet],
+    entityStates: [blue, red, planet],
     gravityMasses: [],
     lightEmitters: [],
   };
   return {
-    enemy,
-    main,
+    red,
+    blue,
     mainFocus: {
-      controlledBody: main,
-      entityId: main.id,
+      controlledBody: blue,
+      entityId: blue.id,
     },
     world,
   };
@@ -67,12 +67,12 @@ function createWorld(): {
 
 describe("updateFocusContext", () => {
   it("switches the mutable focus context to another controllable body", () => {
-    const { enemy, mainFocus, world } = createWorld();
+    const { red, mainFocus, world } = createWorld();
 
-    updateFocusContext(world, mainFocus, "ship:enemy");
+    updateFocusContext(world, mainFocus, "ship:red");
 
-    expect(mainFocus.entityId).toBe("ship:enemy");
-    expect(mainFocus.controlledBody).toBe(enemy);
+    expect(mainFocus.entityId).toBe("ship:red");
+    expect(mainFocus.controlledBody).toBe(red);
   });
 
   it("fails clearly when the target entity is not controllable", () => {

@@ -29,7 +29,7 @@ Success criteria:
 - Tick ordering remains covered by tests.
 - Manual controls, autopilot, playback, and HUD control readouts remain behavior-compatible.
 - Browser runtime setup still installs the current spacecraft behavior by default; generic headless setup receives spacecraft behavior only when the caller explicitly supplies the plugin.
-- Browser runtime setup installs the Solitude operator switch plugin by default; `Tab` swaps focus/control between `ship:main` and `ship:enemy`.
+- Browser runtime setup installs the Solitude operator switch plugin by default; `Tab` swaps focus/control between `ship:blue` and `ship:red`.
 - Spacecraft operator state is keyed by focused entity id.
 - Autopilot mode is persisted per controlled ship; unfocused ships continue autonomous autopilot modes while manual controls remain focused-only.
 - Runtime/headless setup validates plugin focused-entity requirements before behavior hooks use the focus.

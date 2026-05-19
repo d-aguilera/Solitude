@@ -42,40 +42,40 @@ export function buildDefaultSolarSystemShipConfigs(
   physics: ControlledBodyPhysicsConfig[];
   render: EntityRenderConfig[];
 } {
-  const mainShipMesh = createScaledShipMesh();
-  const enemyShipMesh = createScaledShipMesh();
-  const mainShipVolume = computeVolumeOfTriangleMesh(
-    mainShipMesh.points,
-    mainShipMesh.faces,
+  const blueShipMesh = createScaledShipMesh();
+  const redShipMesh = createScaledShipMesh();
+  const blueShipVolume = computeVolumeOfTriangleMesh(
+    blueShipMesh.points,
+    blueShipMesh.faces,
   );
-  const enemyShipVolume = computeVolumeOfTriangleMesh(
-    enemyShipMesh.points,
-    enemyShipMesh.faces,
+  const redShipVolume = computeVolumeOfTriangleMesh(
+    redShipMesh.points,
+    redShipMesh.faces,
   );
 
   const physics: ControlledBodyPhysicsConfig[] = [
     {
       density: SHIP_DENSITY_KG_PER_M3,
-      id: "ship:main",
-      volume: mainShipVolume,
+      id: "ship:blue",
+      volume: blueShipVolume,
     },
     {
       density: SHIP_DENSITY_KG_PER_M3,
-      id: "ship:enemy",
-      volume: enemyShipVolume,
+      id: "ship:red",
+      volume: redShipVolume,
     },
   ];
 
   const render: EntityRenderConfig[] = [
     {
-      color: colors.ship,
-      id: "ship:main",
-      mesh: mainShipMesh,
+      color: colors.blueShip,
+      id: "ship:blue",
+      mesh: blueShipMesh,
     },
     {
-      color: colors.enemyShip,
-      id: "ship:enemy",
-      mesh: enemyShipMesh,
+      color: colors.redShip,
+      id: "ship:red",
+      mesh: redShipMesh,
     },
   ];
 
@@ -84,16 +84,16 @@ export function buildDefaultSolarSystemShipConfigs(
     createOrbitingShipInitialState({
       body: earthBody,
       direction: vec3.create(0, 0, 1),
-      id: "ship:main",
+      id: "ship:blue",
       physics: earthPhysics,
-      shipMass: SHIP_DENSITY_KG_PER_M3 * mainShipVolume,
+      shipMass: SHIP_DENSITY_KG_PER_M3 * blueShipVolume,
     }),
     createOrbitingShipInitialState({
       body: earthBody,
       direction: vec3.create(0, 0, -1),
-      id: "ship:enemy",
+      id: "ship:red",
       physics: earthPhysics,
-      shipMass: SHIP_DENSITY_KG_PER_M3 * enemyShipVolume,
+      shipMass: SHIP_DENSITY_KG_PER_M3 * redShipVolume,
     }),
   ];
 

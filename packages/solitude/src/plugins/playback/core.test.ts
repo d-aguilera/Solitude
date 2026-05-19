@@ -40,29 +40,29 @@ function createWorldAndShip(): { world: World; ship: ControlledBody } {
 }
 
 function createWorldWithShips(): {
-  enemy: ControlledBody;
-  main: ControlledBody;
+  red: ControlledBody;
+  blue: ControlledBody;
   world: World;
 } {
-  const main = createShip("ship:main");
-  const enemy = createShip("ship:enemy");
+  const blue = createShip("ship:blue");
+  const red = createShip("ship:red");
   const world: World = {
     axialSpins: [],
     collisionSpheres: [],
-    controllableBodies: [main, enemy],
-    entities: [{ id: main.id }, { id: enemy.id }],
+    controllableBodies: [blue, red],
+    entities: [{ id: blue.id }, { id: red.id }],
     entityIndex: new Map([
-      [main.id, { id: main.id }],
-      [enemy.id, { id: enemy.id }],
+      [blue.id, { id: blue.id }],
+      [red.id, { id: red.id }],
     ]),
-    entityStates: [main, enemy],
+    entityStates: [blue, red],
     gravityMasses: [
-      { id: main.id, density: 1, mass: 1, state: main },
-      { id: enemy.id, density: 1, mass: 1, state: enemy },
+      { id: blue.id, density: 1, mass: 1, state: blue },
+      { id: red.id, density: 1, mass: 1, state: red },
     ],
     lightEmitters: [],
   };
-  return { enemy, main, world };
+  return { red, blue, world };
 }
 
 describe("playback controller", () => {
@@ -110,7 +110,7 @@ describe("playback controller", () => {
   });
 
   it("records focus changes as phase boundaries during capture", () => {
-    const { enemy, main, world } = createWorldWithShips();
+    const { red, blue, world } = createWorldWithShips();
     const controller = createPlaybackController({
       mode: "capture",
       scenario: "moon-circle",
@@ -119,18 +119,18 @@ describe("playback controller", () => {
     const info = vi.spyOn(console, "info").mockImplementation(() => {});
 
     controller.handleCaptureToggle();
-    controller.updateLoop(controlInput, world, main, main.id, 100, 5000, 5);
-    controller.updateLoop(controlInput, world, enemy, enemy.id, 1100, 6000, 5);
+    controller.updateLoop(controlInput, world, blue, blue.id, 100, 5000, 5);
+    controller.updateLoop(controlInput, world, red, red.id, 1100, 6000, 5);
     controller.handleCaptureToggle();
-    controller.updateLoop(controlInput, world, enemy, enemy.id, 2100, 7000, 5);
+    controller.updateLoop(controlInput, world, red, red.id, 2100, 7000, 5);
 
     const dumpedScript = String(
       info.mock.calls.find((call) =>
         String(call[0]).includes("export const playbackScript"),
       )?.[0] ?? "",
     );
-    expect(dumpedScript).toContain('"focusEntityId": "ship:main"');
-    expect(dumpedScript).toContain('"focusEntityId": "ship:enemy"');
+    expect(dumpedScript).toContain('"focusEntityId": "ship:blue"');
+    expect(dumpedScript).toContain('"focusEntityId": "ship:red"');
 
     info.mockRestore();
   });
@@ -196,8 +196,8 @@ describe("playback controller", () => {
   });
 
   it("temporarily targets recorded focus for vehicle dynamics and restores viewed focus", () => {
-    const { enemy, main, world } = createWorldWithShips();
-    const script = createPlaybackScript(20, 1, 100, "ship:main");
+    const { red, blue, world } = createWorldWithShips();
+    const script = createPlaybackScript(20, 1, 100, "ship:blue");
     const controller = createPlaybackController(
       {
         mode: "playback",
@@ -208,21 +208,21 @@ describe("playback controller", () => {
     );
     const controlInput = createControlInput(["pauseToggle", "circleNow"]);
     const mainFocus = {
-      controlledBody: enemy,
-      entityId: enemy.id,
+      controlledBody: red,
+      entityId: red.id,
     };
 
     controller.handlePause();
-    controller.updateLoop(controlInput, world, enemy, enemy.id, 0, 0);
+    controller.updateLoop(controlInput, world, red, red.id, 0, 0);
     controller.beforeVehicleDynamics(world, mainFocus);
 
-    expect(mainFocus.entityId).toBe(main.id);
-    expect(mainFocus.controlledBody).toBe(main);
+    expect(mainFocus.entityId).toBe(blue.id);
+    expect(mainFocus.controlledBody).toBe(blue);
 
     controller.afterVehicleDynamics(world, mainFocus);
 
-    expect(mainFocus.entityId).toBe(enemy.id);
-    expect(mainFocus.controlledBody).toBe(enemy);
+    expect(mainFocus.entityId).toBe(red.id);
+    expect(mainFocus.controlledBody).toBe(red);
   });
 
   it("emits a requested diagnostic log at playback end", () => {

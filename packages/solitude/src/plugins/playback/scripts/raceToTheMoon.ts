@@ -7,7 +7,7 @@ export const playbackScript = {
       label: "race-to-the-moon",
       capturedSimTimeMillis: 128140,
       dominantBodyId: "planet:earth",
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     entities: [
       {
@@ -245,7 +245,7 @@ export const playbackScript = {
         ],
       },
       {
-        id: "ship:main",
+        id: "ship:blue",
         position: {
           x: -26508239153.724125,
           y: 144690901047.7558,
@@ -285,7 +285,7 @@ export const playbackScript = {
         },
       },
       {
-        id: "ship:enemy",
+        id: "ship:red",
         position: {
           x: -26506904163.76239,
           y: 144686621960.73758,
@@ -334,7 +334,7 @@ export const playbackScript = {
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 200,
@@ -342,14 +342,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 316.6000000000058,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 266.6000000000058,
@@ -357,14 +357,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 149.89999999999418,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 149.89999999999418,
@@ -372,14 +372,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 266.6000000000058,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 349.79999999998836,
@@ -387,14 +387,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1216.5,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 149.70000000001164,
@@ -402,14 +402,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 383.20000000001164,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 183.39999999999418,
@@ -417,14 +417,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 266.5,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 299.8999999999942,
@@ -432,14 +432,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 433.1000000000058,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 233.39999999999418,
@@ -447,14 +447,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1249.3999999999942,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 716.6000000000058,
@@ -462,14 +462,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1132.8999999999942,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 216.70000000001164,
@@ -477,14 +477,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 133.19999999998254,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 849.7000000000116,
@@ -492,14 +492,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 416.5,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 133.29999999998836,
@@ -507,14 +507,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchUp: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 3848.7000000000116,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 149.89999999999418,
@@ -522,14 +522,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 266.6000000000058,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 499.79999999998836,
@@ -537,14 +537,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 133.30000000001746,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 149.89999999999418,
@@ -552,14 +552,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 233.39999999999418,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 516.3999999999942,
@@ -567,14 +567,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 483.20000000001164,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 133.39999999999418,
@@ -582,14 +582,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 616.3000000000175,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 233.29999999998836,
@@ -597,14 +597,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchUp: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 2499.2000000000116,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 233.19999999998254,
@@ -612,14 +612,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchUp: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 83.30000000001746,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 333.29999999998836,
@@ -627,14 +627,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnBackwards: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 266.5,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 299.8999999999942,
@@ -642,14 +642,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnBackwards: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 216.60000000000582,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 666.5,
@@ -657,14 +657,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 116.60000000000582,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 283.19999999998254,
@@ -672,14 +672,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 699.9000000000233,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 2699.0999999999767,
@@ -687,14 +687,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnBackwards: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 284.30000000001746,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 498.69999999998254,
@@ -702,14 +702,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnBackwards: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.60000000000582,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 66.70000000001164,
@@ -717,7 +717,7 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 449.8999999999942,
@@ -726,7 +726,7 @@ export const playbackScript = {
         pitchDown: true,
         yawLeft: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 33.29999999998836,
@@ -734,14 +734,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawLeft: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 216.60000000000582,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 349.80000000001746,
@@ -749,14 +749,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 184.5,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 581.8999999999942,
@@ -764,14 +764,14 @@ export const playbackScript = {
         thrustLevel: 5,
         rollRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 349.79999999998836,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 133.5,
@@ -779,14 +779,14 @@ export const playbackScript = {
         thrustLevel: 5,
         rollRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 199.80000000001746,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 333.19999999998254,
@@ -794,14 +794,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchUp: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 200,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 499.70000000001164,
@@ -809,14 +809,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1849.5,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 216.60000000000582,
@@ -824,21 +824,21 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 449.8999999999942,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 766.2999999999884,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 233.30000000001746,
@@ -846,14 +846,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 383.0999999999767,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 166.60000000000582,
@@ -861,14 +861,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 250,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 316.6000000000058,
@@ -876,21 +876,21 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 283.20000000001164,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 949.6999999999825,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 100,
@@ -898,7 +898,7 @@ export const playbackScript = {
         thrustLevel: 5,
         yawLeft: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 66.60000000000582,
@@ -907,7 +907,7 @@ export const playbackScript = {
         pitchDown: true,
         yawLeft: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 116.70000000001164,
@@ -915,14 +915,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 516.5,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 283.0999999999767,
@@ -930,14 +930,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchUp: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 500.1000000000058,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 216.39999999999418,
@@ -945,7 +945,7 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 66.60000000000582,
@@ -954,7 +954,7 @@ export const playbackScript = {
         pitchDown: true,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 250.10000000000582,
@@ -962,14 +962,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 283.20000000001164,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1149.5,
@@ -977,14 +977,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 66.69999999998254,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 299.8999999999942,
@@ -992,14 +992,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchUp: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 216.5,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 583.1000000000058,
@@ -1007,14 +1007,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 733.2000000000116,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 266.5,
@@ -1022,14 +1022,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawLeft: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 233.19999999998254,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 116.80000000001746,
@@ -1037,14 +1037,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 783,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1949.3999999999942,
@@ -1052,14 +1052,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 299.79999999998836,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 549.8000000000175,
@@ -1067,14 +1067,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1233,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 699.6999999999825,
@@ -1082,14 +1082,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 549.9000000000233,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 83.19999999998254,
@@ -1097,7 +1097,7 @@ export const playbackScript = {
         thrustLevel: 5,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 166.60000000000582,
@@ -1106,7 +1106,7 @@ export const playbackScript = {
         pitchUp: true,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.70000000001164,
@@ -1114,14 +1114,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 316.5,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 83.39999999999418,
@@ -1129,7 +1129,7 @@ export const playbackScript = {
         thrustLevel: 5,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 83.19999999998254,
@@ -1138,7 +1138,7 @@ export const playbackScript = {
         pitchDown: true,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.800000000017462,
@@ -1146,14 +1146,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 433.19999999998254,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 199.80000000001746,
@@ -1161,7 +1161,7 @@ export const playbackScript = {
         thrustLevel: 5,
         yawLeft: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 166.60000000000582,
@@ -1169,14 +1169,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 67.89999999999418,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 98.79999999998836,
@@ -1184,14 +1184,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 383.20000000001164,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 83.29999999998836,
@@ -1199,14 +1199,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawLeft: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 299.8999999999942,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 66.60000000000582,
@@ -1214,14 +1214,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchUp: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 383.20000000001164,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 5514.899999999994,
@@ -1229,21 +1229,21 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 166.5,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1049.7000000000116,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 266.5999999999767,
@@ -1251,14 +1251,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawLeft: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 199.90000000002328,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 583.1999999999825,
@@ -1266,14 +1266,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 283.20000000001164,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 216.5,
@@ -1281,14 +1281,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 599.8999999999942,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 99.89999999999418,
@@ -1296,14 +1296,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawRight: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 1549.5,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 249.89999999999418,
@@ -1311,14 +1311,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawRight: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 433.20000000001164,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 66.70000000001164,
@@ -1326,21 +1326,21 @@ export const playbackScript = {
         thrustLevel: 5,
         yawRight: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 1666,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 316.69999999998254,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 299.80000000001746,
@@ -1348,14 +1348,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 266.5,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 116.69999999998254,
@@ -1363,14 +1363,14 @@ export const playbackScript = {
         thrustLevel: 9,
         yawLeft: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 149.89999999999418,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 233.20000000001164,
@@ -1378,14 +1378,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 516.6000000000058,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 283.19999999998254,
@@ -1393,14 +1393,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 316.6000000000058,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 116.60000000000582,
@@ -1408,14 +1408,14 @@ export const playbackScript = {
         thrustLevel: 9,
         yawRight: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 200.10000000000582,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 133.19999999998254,
@@ -1423,14 +1423,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 349.80000000001746,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 133.29999999998836,
@@ -1438,28 +1438,28 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 716.5,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 16.60000000000582,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 699.7999999999884,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 116.60000000000582,
@@ -1467,14 +1467,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 100,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 133.20000000001164,
@@ -1482,14 +1482,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 466.5,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.699999999982538,
@@ -1497,7 +1497,7 @@ export const playbackScript = {
         thrustLevel: 5,
         yawLeft: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 66.60000000000582,
@@ -1506,7 +1506,7 @@ export const playbackScript = {
         pitchDown: true,
         yawLeft: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 66.70000000001164,
@@ -1514,14 +1514,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 449.79999999998836,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 116.70000000001164,
@@ -1529,14 +1529,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawLeft: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 149.89999999999418,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 683.1000000000058,
@@ -1544,7 +1544,7 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 100,
@@ -1553,7 +1553,7 @@ export const playbackScript = {
         burnForward: true,
         pitchUp: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 133.29999999998836,
@@ -1561,14 +1561,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 249.89999999999418,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 183.30000000001746,
@@ -1576,14 +1576,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 216.69999999998254,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 249.80000000001746,
@@ -1591,14 +1591,14 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchDown: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 150,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 149.89999999999418,
@@ -1606,14 +1606,14 @@ export const playbackScript = {
         thrustLevel: 5,
         yawLeft: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 116.60000000000582,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1766.1999999999825,
@@ -1621,14 +1621,14 @@ export const playbackScript = {
         thrustLevel: 5,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 99.90000000002328,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 283.19999999998254,
@@ -1636,21 +1636,21 @@ export const playbackScript = {
         thrustLevel: 5,
         pitchUp: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1282.8999999999942,
       controls: {
         thrustLevel: 5,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 199.90000000002328,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.699999999982538,
@@ -1658,7 +1658,7 @@ export const playbackScript = {
         thrustLevel: 9,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 216.60000000000582,
@@ -1667,7 +1667,7 @@ export const playbackScript = {
         pitchDown: true,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.70000000001164,
@@ -1675,14 +1675,14 @@ export const playbackScript = {
         thrustLevel: 9,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 333.19999999998254,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 166.60000000000582,
@@ -1690,14 +1690,14 @@ export const playbackScript = {
         thrustLevel: 9,
         yawLeft: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 183.29999999998836,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 383.1000000000058,
@@ -1705,14 +1705,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 166.70000000001164,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 283.19999999998254,
@@ -1720,14 +1720,14 @@ export const playbackScript = {
         thrustLevel: 9,
         pitchUp: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 583.2000000000116,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 249.79999999998836,
@@ -1735,14 +1735,14 @@ export const playbackScript = {
         thrustLevel: 9,
         pitchUp: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 783.2000000000116,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 3482.100000000006,
@@ -1750,14 +1750,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1066.1999999999825,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 116.70000000001164,
@@ -1765,14 +1765,14 @@ export const playbackScript = {
         thrustLevel: 9,
         yawLeft: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 849.7000000000116,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 133.29999999998836,
@@ -1780,14 +1780,14 @@ export const playbackScript = {
         thrustLevel: 9,
         yawRight: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 749.7000000000116,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 2116.0999999999767,
@@ -1795,7 +1795,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 1566.1000000000058,
@@ -1804,7 +1804,7 @@ export const playbackScript = {
         burnForward: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 216.5,
@@ -1812,7 +1812,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 949.6000000000058,
@@ -1821,7 +1821,7 @@ export const playbackScript = {
         burnForward: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 4265.399999999994,
@@ -1829,7 +1829,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 66.60000000000582,
@@ -1838,7 +1838,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 316.5,
@@ -1846,7 +1846,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 66.79999999998836,
@@ -1855,7 +1855,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 483,
@@ -1863,7 +1863,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 66.70000000001164,
@@ -1872,7 +1872,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 283.29999999998836,
@@ -1880,7 +1880,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 66.5,
@@ -1889,7 +1889,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 249.90000000002328,
@@ -1897,7 +1897,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 66.79999999998836,
@@ -1906,7 +1906,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 266.6000000000058,
@@ -1914,7 +1914,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 99.89999999999418,
@@ -1923,7 +1923,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 83.39999999999418,
@@ -1931,7 +1931,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 166.5,
@@ -1940,7 +1940,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 83.20000000001164,
@@ -1948,7 +1948,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 166.69999999998254,
@@ -1957,7 +1957,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 83.30000000001746,
@@ -1965,7 +1965,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 116.69999999998254,
@@ -1974,7 +1974,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 83.20000000001164,
@@ -1982,7 +1982,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 83.5,
@@ -1991,7 +1991,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 116.39999999999418,
@@ -1999,7 +1999,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 66.70000000001164,
@@ -2008,7 +2008,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 216.79999999998836,
@@ -2016,7 +2016,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 66.5,
@@ -2025,7 +2025,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 100,
@@ -2033,7 +2033,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 99.80000000001746,
@@ -2042,7 +2042,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 66.69999999998254,
@@ -2050,7 +2050,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 400,
@@ -2059,7 +2059,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 433.1000000000058,
@@ -2067,7 +2067,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 83.29999999998836,
@@ -2076,7 +2076,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 116.70000000001164,
@@ -2084,7 +2084,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 66.5,
@@ -2093,7 +2093,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 116.70000000001164,
@@ -2101,7 +2101,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 49.89999999999418,
@@ -2110,7 +2110,7 @@ export const playbackScript = {
         burnBackwards: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 2182.600000000006,
@@ -2118,14 +2118,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 16.79999999998836,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 999.6000000000058,
@@ -2133,7 +2133,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 50,
@@ -2142,7 +2142,7 @@ export const playbackScript = {
         pitchUp: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 66.60000000000582,
@@ -2152,7 +2152,7 @@ export const playbackScript = {
         yawRight: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 33.39999999999418,
@@ -2161,7 +2161,7 @@ export const playbackScript = {
         yawRight: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 816.3999999999942,
@@ -2169,14 +2169,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 199.89999999999418,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 33.30000000001746,
@@ -2184,7 +2184,7 @@ export const playbackScript = {
         thrustLevel: 9,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 83.29999999998836,
@@ -2193,14 +2193,14 @@ export const playbackScript = {
         pitchUp: true,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 366.5,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 166.79999999998836,
@@ -2208,14 +2208,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 616.4000000000233,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 2782.2999999999884,
@@ -2223,14 +2223,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 216.60000000000582,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 166.60000000000582,
@@ -2238,14 +2238,14 @@ export const playbackScript = {
         thrustLevel: 9,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 499.79999999998836,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 100,
@@ -2253,14 +2253,14 @@ export const playbackScript = {
         thrustLevel: 9,
         pitchUp: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 316.6000000000058,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 66.5,
@@ -2268,14 +2268,14 @@ export const playbackScript = {
         thrustLevel: 9,
         pitchUp: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 116.79999999998836,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 149.80000000001746,
@@ -2283,14 +2283,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 533.2999999999884,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1482.7999999999884,
@@ -2298,14 +2298,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.70000000001164,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 1699.3999999999942,
@@ -2313,7 +2313,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 316.5,
@@ -2322,7 +2322,7 @@ export const playbackScript = {
         burnForward: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 333.20000000001164,
@@ -2330,7 +2330,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 333.3999999999942,
@@ -2339,7 +2339,7 @@ export const playbackScript = {
         burnForward: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 6814.200000000012,
@@ -2347,14 +2347,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 16.599999999976717,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 766.5,
@@ -2362,7 +2362,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 266.5,
@@ -2371,7 +2371,7 @@ export const playbackScript = {
         burnForward: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 549.9000000000233,
@@ -2379,7 +2379,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 166.5,
@@ -2388,7 +2388,7 @@ export const playbackScript = {
         burnForward: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 966.3999999999942,
@@ -2396,14 +2396,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.60000000000582,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 4098.6999999999825,
@@ -2411,7 +2411,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 83.30000000001746,
@@ -2420,7 +2420,7 @@ export const playbackScript = {
         burnForward: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 983,
@@ -2428,7 +2428,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 233.19999999998254,
@@ -2437,7 +2437,7 @@ export const playbackScript = {
         burnForward: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 2965.6999999999825,
@@ -2445,7 +2445,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 133.30000000004657,
@@ -2454,7 +2454,7 @@ export const playbackScript = {
         pitchUp: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 266.5,
@@ -2462,7 +2462,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 183.29999999998836,
@@ -2471,7 +2471,7 @@ export const playbackScript = {
         pitchUp: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 400,
@@ -2479,14 +2479,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 299.79999999998836,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 133.29999999998836,
@@ -2494,14 +2494,14 @@ export const playbackScript = {
         thrustLevel: 9,
         pitchUp: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 466.6000000000349,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 99.79999999998836,
@@ -2509,14 +2509,14 @@ export const playbackScript = {
         thrustLevel: 9,
         yawRight: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 549.8999999999651,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 100,
@@ -2524,14 +2524,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 766.4000000000233,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 2899,
@@ -2539,14 +2539,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 16.70000000001164,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1132.899999999965,
@@ -2554,7 +2554,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 283.20000000001164,
@@ -2563,7 +2563,7 @@ export const playbackScript = {
         burnForward: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 316.6000000000349,
@@ -2571,7 +2571,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 166.59999999997672,
@@ -2580,7 +2580,7 @@ export const playbackScript = {
         burnForward: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 366.70000000001164,
@@ -2588,14 +2588,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.5,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 2099.2999999999884,
@@ -2603,14 +2603,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 16.70000000001164,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1099.5,
@@ -2618,14 +2618,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.70000000001164,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 350,
@@ -2633,7 +2633,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 83.39999999996508,
@@ -2642,7 +2642,7 @@ export const playbackScript = {
         burnForward: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 349.70000000001164,
@@ -2650,7 +2650,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 66.70000000001164,
@@ -2659,7 +2659,7 @@ export const playbackScript = {
         burnForward: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 8463.799999999988,
@@ -2667,14 +2667,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 466.4000000000233,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 100,
@@ -2682,14 +2682,14 @@ export const playbackScript = {
         thrustLevel: 9,
         yawRight: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 233.29999999998836,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 116.59999999997672,
@@ -2697,14 +2697,14 @@ export const playbackScript = {
         thrustLevel: 9,
         pitchUp: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 249.90000000002328,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 99.89999999996508,
@@ -2712,14 +2712,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 366.6000000000349,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 66.70000000001164,
@@ -2727,14 +2727,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 666.5,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 4981.599999999977,
@@ -2742,14 +2742,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 16.599999999976717,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 916.5,
@@ -2757,7 +2757,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 49.90000000002328,
@@ -2766,7 +2766,7 @@ export const playbackScript = {
         pitchUp: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 483.20000000001164,
@@ -2774,14 +2774,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 216.70000000001164,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 183.19999999995343,
@@ -2789,14 +2789,14 @@ export const playbackScript = {
         thrustLevel: 9,
         pitchUp: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 183.20000000001164,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 116.60000000003492,
@@ -2804,14 +2804,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 283.3999999999651,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 199.79999999998836,
@@ -2819,14 +2819,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 2182.5,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1582.9000000000233,
@@ -2834,14 +2834,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.70000000001164,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 1499.5,
@@ -2849,14 +2849,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 16.70000000001164,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 1282.7999999999884,
@@ -2864,7 +2864,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 133.29999999998836,
@@ -2874,7 +2874,7 @@ export const playbackScript = {
         yawRight: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.70000000001164,
@@ -2883,7 +2883,7 @@ export const playbackScript = {
         yawRight: true,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 933,
@@ -2891,14 +2891,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 233.20000000001164,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.699999999953434,
@@ -2906,7 +2906,7 @@ export const playbackScript = {
         thrustLevel: 9,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 233.20000000001164,
@@ -2915,7 +2915,7 @@ export const playbackScript = {
         pitchUp: true,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.79999999998836,
@@ -2923,14 +2923,14 @@ export const playbackScript = {
         thrustLevel: 9,
         yawRight: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 233.10000000003492,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 316.5999999999767,
@@ -2938,14 +2938,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 599.9000000000233,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 2382.399999999965,
@@ -2953,14 +2953,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.70000000001164,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 1432.7999999999884,
@@ -2968,14 +2968,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 549.9000000000233,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 33.29999999998836,
@@ -2983,7 +2983,7 @@ export const playbackScript = {
         thrustLevel: 9,
         pitchUp: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 183.20000000001164,
@@ -2992,7 +2992,7 @@ export const playbackScript = {
         pitchUp: true,
         yawRight: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 83.40000000002328,
@@ -3000,14 +3000,14 @@ export const playbackScript = {
         thrustLevel: 9,
         yawRight: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 533.0999999999767,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 116.59999999997672,
@@ -3015,14 +3015,14 @@ export const playbackScript = {
         thrustLevel: 9,
         pitchUp: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 216.60000000003492,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 299.8999999999651,
@@ -3030,14 +3030,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 300,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 149.80000000004657,
@@ -3045,14 +3045,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 399.8999999999651,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 3765.600000000035,
@@ -3060,14 +3060,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 266.5999999999767,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 249.79999999998836,
@@ -3075,14 +3075,14 @@ export const playbackScript = {
         thrustLevel: 9,
         pitchUp: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 116.5,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 283.20000000001164,
@@ -3090,14 +3090,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 400,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 66.59999999997672,
@@ -3105,14 +3105,14 @@ export const playbackScript = {
         thrustLevel: 9,
         burnForward: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 366.6000000000349,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 1049.5999999999767,
@@ -3120,14 +3120,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 16.70000000001164,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 2065.9000000000233,
@@ -3135,14 +3135,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.699999999953434,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 1549.4000000000233,
@@ -3150,14 +3150,14 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 16.70000000001164,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 2016,
@@ -3165,7 +3165,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 399.8999999999651,
@@ -3173,14 +3173,14 @@ export const playbackScript = {
         thrustLevel: 9,
         circleNow: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 16.600000000034925,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 1416.2000000000116,
@@ -3188,7 +3188,7 @@ export const playbackScript = {
         thrustLevel: 9,
         alignToVelocity: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 5431.5,
@@ -3196,14 +3196,14 @@ export const playbackScript = {
         thrustLevel: 9,
         circleNow: true,
       },
-      focusEntityId: "ship:main",
+      focusEntityId: "ship:blue",
     },
     {
       durationMs: 16.699999999953434,
       controls: {
         thrustLevel: 9,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
     {
       durationMs: 5431.5,
@@ -3211,7 +3211,7 @@ export const playbackScript = {
         thrustLevel: 9,
         circleNow: true,
       },
-      focusEntityId: "ship:enemy",
+      focusEntityId: "ship:red",
     },
   ],
   endBehavior: "pause",

@@ -22,7 +22,7 @@ describe("solarSystem plugin", () => {
     });
 
     expect(registry.addEntities).toHaveBeenCalledOnce();
-    expect(registry.setMainFocusEntityId).toHaveBeenCalledWith("ship:main");
+    expect(registry.setMainFocusEntityId).toHaveBeenCalledWith("ship:blue");
     expect(
       addEntities.mock.calls[0][0].map((entity: EntityConfig) => entity.id),
     ).toEqual([
@@ -38,16 +38,16 @@ describe("solarSystem plugin", () => {
       "planet:moon",
       "planet:phobos",
       "planet:deimos",
-      "ship:main",
-      "ship:enemy",
+      "ship:blue",
+      "ship:red",
     ]);
   });
 
-  it("contributes solar bodies, main focus, and enemy ship", () => {
+  it("contributes solar bodies, main focus, and red ship", () => {
     const config = buildWorldAndSceneConfig();
 
     applyWorldModelPlugins(config, [createSolarSystemPlugin()]);
-    expect(config.mainFocusEntityId).toBe("ship:main");
+    expect(config.mainFocusEntityId).toBe("ship:blue");
     expect(config.entities.map((entity) => entity.id)).toEqual([
       "planet:sun",
       "planet:mercury",
@@ -61,12 +61,12 @@ describe("solarSystem plugin", () => {
       "planet:moon",
       "planet:phobos",
       "planet:deimos",
-      "ship:main",
-      "ship:enemy",
+      "ship:blue",
+      "ship:red",
     ]);
     expect(config.entities[0].components.lightEmitter?.luminosity).toBeTruthy();
     expect(
-      config.entities.find((entity) => entity.id === "ship:main")?.components
+      config.entities.find((entity) => entity.id === "ship:blue")?.components
         .controllable?.enabled,
     ).toBe(true);
   });
@@ -83,19 +83,19 @@ describe("solarSystem plugin", () => {
     const earthSphere = worldSetup.world.collisionSpheres.find(
       (sphere) => sphere.id === "planet:earth",
     );
-    const mainFocusedBody = worldSetup.mainFocus.controlledBody;
-    const enemyShip = worldSetup.world.controllableBodies.find(
-      (ship) => ship.id === "ship:enemy",
+    const blueFocusedBody = worldSetup.mainFocus.controlledBody;
+    const redShip = worldSetup.world.controllableBodies.find(
+      (ship) => ship.id === "ship:red",
     );
 
-    expect(worldSetup.mainFocus.entityId).toBe("ship:main");
-    expect(mainFocusedBody.id).toBe("ship:main");
+    expect(worldSetup.mainFocus.entityId).toBe("ship:blue");
+    expect(blueFocusedBody.id).toBe("ship:blue");
     expect(worldSetup.world.entities.map((entity) => entity.id)).toEqual(
       config.entities.map((entity) => entity.id),
     );
     expect(worldSetup.world.controllableBodies.map((body) => body.id)).toEqual([
-      "ship:main",
-      "ship:enemy",
+      "ship:blue",
+      "ship:red",
     ]);
     expect(worldSetup.world.gravityMasses.map((mass) => mass.id)).toEqual(
       config.entities.map((entity) => entity.id),
@@ -109,27 +109,27 @@ describe("solarSystem plugin", () => {
       worldSetup.world.lightEmitters.some((light) => light.id === "planet:sun"),
     ).toBe(true);
     expect(earth).toBeDefined();
-    expect(enemyShip).toBeDefined();
-    expect(sceneSetup.scene.objects.some((obj) => obj.id === "ship:main")).toBe(
+    expect(redShip).toBeDefined();
+    expect(sceneSetup.scene.objects.some((obj) => obj.id === "ship:blue")).toBe(
       true,
     );
-    expect(
-      sceneSetup.scene.objects.some((obj) => obj.id === "ship:enemy"),
-    ).toBe(true);
-
-    const mainOffset = vec3.subInto(
-      vec3.zero(),
-      mainFocusedBody.position,
-      earth!.position,
-    );
-    const enemyOffset = vec3.subInto(
-      vec3.zero(),
-      enemyShip!.position,
-      earth!.position,
+    expect(sceneSetup.scene.objects.some((obj) => obj.id === "ship:red")).toBe(
+      true,
     );
 
-    expect(vec3.length(mainOffset)).toBeGreaterThan(earthSphere!.radius);
-    expect(vec3.length(enemyOffset)).toBeGreaterThan(earthSphere!.radius);
-    expect(vec3.dot(mainOffset, enemyOffset)).toBeLessThan(0);
+    const blueOffset = vec3.subInto(
+      vec3.zero(),
+      blueFocusedBody.position,
+      earth!.position,
+    );
+    const redOffset = vec3.subInto(
+      vec3.zero(),
+      redShip!.position,
+      earth!.position,
+    );
+
+    expect(vec3.length(blueOffset)).toBeGreaterThan(earthSphere!.radius);
+    expect(vec3.length(redOffset)).toBeGreaterThan(earthSphere!.radius);
+    expect(vec3.dot(blueOffset, redOffset)).toBeLessThan(0);
   });
 });

@@ -25,32 +25,32 @@ function createBody(id: string): ControlledBody {
 }
 
 function createWorld(): {
-  enemy: ControlledBody;
-  main: ControlledBody;
+  red: ControlledBody;
+  blue: ControlledBody;
   mainFocus: FocusContext;
   world: World;
 } {
-  const main = createBody("ship:main");
-  const enemy = createBody("ship:enemy");
+  const blue = createBody("ship:blue");
+  const red = createBody("ship:red");
   const world: World = {
     axialSpins: [],
     collisionSpheres: [],
-    controllableBodies: [main, enemy],
-    entities: [{ id: main.id }, { id: enemy.id }],
+    controllableBodies: [blue, red],
+    entities: [{ id: blue.id }, { id: red.id }],
     entityIndex: new Map([
-      [main.id, { id: main.id }],
-      [enemy.id, { id: enemy.id }],
+      [blue.id, { id: blue.id }],
+      [red.id, { id: red.id }],
     ]),
-    entityStates: [main, enemy],
+    entityStates: [blue, red],
     gravityMasses: [],
     lightEmitters: [],
   };
   return {
-    enemy,
-    main,
+    red,
+    blue,
     mainFocus: {
-      controlledBody: main,
-      entityId: main.id,
+      controlledBody: blue,
+      entityId: blue.id,
     },
     world,
   };
@@ -82,7 +82,7 @@ describe("operator switch plugin", () => {
   });
 
   it("maps Tab to focus swapping and consumes repeat-safe key events", () => {
-    const { enemy, mainFocus, world } = createWorld();
+    const { red, mainFocus, world } = createWorld();
     const controlInput = createControlInput([
       "alignToVelocity",
       "alignToBody",
@@ -99,7 +99,7 @@ describe("operator switch plugin", () => {
       handler.handleKeyDown(__operatorSwitchTest.swapFocusAction, true),
     ).toBe(true);
     const repeatResult = applyLoop(plugin.loop!, world, mainFocus);
-    expect(mainFocus.entityId).toBe("ship:main");
+    expect(mainFocus.entityId).toBe("ship:blue");
     expect(repeatResult).toBeNull();
 
     expect(
@@ -112,19 +112,19 @@ describe("operator switch plugin", () => {
 
     const swapResult = applyLoop(plugin.loop!, world, mainFocus);
 
-    expect(mainFocus.entityId).toBe("ship:enemy");
-    expect(mainFocus.controlledBody).toBe(enemy);
+    expect(mainFocus.entityId).toBe("ship:red");
+    expect(mainFocus.controlledBody).toBe(red);
     expect(swapResult?.framePolicy).toEqual({
       advanceOverlay: true,
       advanceScene: true,
     });
   });
 
-  it("toggles from enemy back to main on the next request", () => {
-    const { main, mainFocus, world } = createWorld();
+  it("toggles from red back to blue on the next request", () => {
+    const { blue, mainFocus, world } = createWorld();
     const controller = __operatorSwitchTest.createOperatorSwitchController([
-      "ship:main",
-      "ship:enemy",
+      "ship:blue",
+      "ship:red",
     ]);
 
     controller.requestSwap();
@@ -132,14 +132,14 @@ describe("operator switch plugin", () => {
     controller.requestSwap();
     controller.applyPendingSwap(world, mainFocus);
 
-    expect(mainFocus.entityId).toBe("ship:main");
-    expect(mainFocus.controlledBody).toBe(main);
+    expect(mainFocus.entityId).toBe("ship:blue");
+    expect(mainFocus.controlledBody).toBe(blue);
   });
 
   it("fails clearly when a switch target is not controllable", () => {
     const { mainFocus, world } = createWorld();
     const controller = __operatorSwitchTest.createOperatorSwitchController([
-      "ship:main",
+      "ship:blue",
       "ship:missing",
     ]);
 
