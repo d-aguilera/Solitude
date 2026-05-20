@@ -1,7 +1,6 @@
-export { BASE_CONTROL_ACTIONS, createControlInput } from "./app/controlPorts";
+export { createControlInput } from "./app/controlPorts";
 export type {
   AttitudeCommand,
-  BaseControlAction,
   ControlAction,
   ControlInput,
   ControlledBodyState,
@@ -36,6 +35,8 @@ export type {
   SimulationContributionParams,
   SimulationPhaseParams,
   SimulationPlugin,
+  ViewControlPlugin,
+  ViewControlUpdateParams,
   ViewPlugin,
   ViewRegistrationParams,
   ViewRegistry,

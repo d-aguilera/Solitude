@@ -2,6 +2,7 @@ import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import { createAutopilotPlugin } from "./autopilot/index";
 import { createAxialViewsPlugin } from "./axialViews/index";
 import { createHudPlugin } from "./hud/index";
+import { createMainViewLookaroundPlugin } from "./mainViewLookaround/index";
 import { createMemoryPlugin } from "./memory/index";
 import { createOperatorSwitchPlugin } from "./operatorSwitch/index";
 import { createOrbitTelemetryPlugin } from "./orbitTelemetry/index";
@@ -29,6 +30,7 @@ export type PluginFactory = (
 // override earlier ones, and input handlers are consulted in reverse order.
 export const defaultPluginIds = [
   "solarSystem",
+  "mainViewLookaround",
   "spacecraftOperator",
   "hud",
   "axialViews",
@@ -50,6 +52,7 @@ export const availablePlugins: Record<string, PluginFactory> = {
   autopilot: createAutopilotPlugin,
   axialViews: createAxialViewsPlugin,
   hud: createHudPlugin,
+  mainViewLookaround: createMainViewLookaroundPlugin,
   memory: createMemoryPlugin,
   orbitTelemetry: createOrbitTelemetryPlugin,
   operatorSwitch: createOperatorSwitchPlugin,

@@ -183,6 +183,11 @@ Success criteria:
   - during playback, recorded controls apply to the recorded phase focus while the viewed/HUD focus can switch independently;
   - operator switch requests a scene/overlay refresh on focus swaps so paused playback updates camera/HUD without advancing simulation;
   - default plugin order now keeps playback before operator switch, with tests documenting that ordering dependency.
+- 2026-05-20: Extracted main-view lookaround controls:
+  - added the `mainViewLookaround` plugin for arrow-key look, look reset, and primary camera offset controls;
+  - added a generic `GamePlugin.viewControls` hook for per-frame view-control state updates;
+  - removed browser/engine product default input actions and key bindings;
+  - renamed the remaining engine scene export to `updateSceneViewCameras`, which only refreshes camera poses/frames.
 
 ## Decision Log
 
@@ -199,7 +204,7 @@ Success criteria:
 - Plugins declare focused-entity requirements, and DOM/headless setup validates them against the assembled world and current `mainFocus`.
 - Browser runtime installs Solitude's default plugin catalog, including `solarSystem`, `operatorSwitch`, `spacecraftOperator`, telemetry, autopilot, playback, and rendering helpers.
 - Generic headless runtime does not auto-install Solitude spacecraft behavior; callers compose Solitude plugins explicitly when needed.
-- Base input actions are generic/main-view only. Spacecraft input actions come from `spacecraftOperator`; `Tab` focus switching comes from `operatorSwitch`.
+- Browser/engine input has no product default actions. Main-view lookaround input comes from `mainViewLookaround`, spacecraft input actions come from `spacecraftOperator`, and `Tab` focus switching comes from `operatorSwitch`.
 - The primary view is core-owned. Plugins register main-view camera rigs; `spacecraftOperator` currently contributes `spacecraft.forward`, and core uses the first registered rig.
 - Spacecraft vehicle dynamics runs through the `spacecraftOperator` simulation plugin before gravity. Manual thrust/RCS/attitude input is focused-only.
 - Spacecraft operator state is keyed by entity id, so each controlled ship remembers persistent state such as thrust level.

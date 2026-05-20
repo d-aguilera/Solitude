@@ -1,4 +1,4 @@
-export { updateSceneGraph } from "./app/scene";
+export { updateSceneViewCameras } from "./app/scene";
 export type {
   BaseSceneObject,
   BodySceneObject,

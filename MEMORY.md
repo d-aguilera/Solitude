@@ -70,6 +70,7 @@
 - Core loop works: input → physics → scene update → render → browser overlays.
 - Runtime world state is generic entity/capability based.
 - Solar-system content is contributed by `packages/solitude/src/plugins/solarSystem/`.
+- Main-view lookaround input/camera-offset controls live in `packages/solitude/src/plugins/mainViewLookaround/`.
 - Spacecraft propulsion/RCS/attitude, input bindings, spacecraft operator state, and the primary forward camera rig live in `packages/solitude/src/plugins/spacecraftOperator/`.
 - Runtime focus switching lives in `packages/solitude/src/plugins/operatorSwitch/`; `Tab` swaps foreground focus between `ship:blue` and `ship:red`.
 - During playback, `Tab` may switch the viewed focus while recorded controls continue applying to the entity focused when each playback phase was recorded.

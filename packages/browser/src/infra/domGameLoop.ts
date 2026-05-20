@@ -12,6 +12,7 @@ import type {
   SegmentPlugin,
   SegmentProviderParams,
   SimulationPlugin,
+  ViewControlPlugin,
   WorldSegment,
 } from "@solitude/engine/plugin";
 import type {
@@ -27,7 +28,7 @@ import {
   createSceneViewStates,
   getRequiredPrimaryViewState,
   updateRenderFrameCache,
-  updateSceneGraph,
+  updateSceneViewCameras,
 } from "@solitude/engine/render";
 import type {
   TickCallback,
@@ -142,6 +143,7 @@ export function runLoop({
   const loopPlugins = collectLoopPlugins(plugins);
   const scenePlugins = collectScenePlugins(plugins);
   const segmentPlugins = collectSegmentPlugins(plugins);
+  const viewControlPlugins = collectViewControlPlugins(plugins);
   const simulationPlugins = collectSimulationPlugins(
     plugins,
     controlPlugins,
@@ -198,12 +200,10 @@ export function runLoop({
 
   const renderCache = createRenderFrameCache();
 
-  updateSceneGraph(
-    0,
+  updateSceneViewCameras(
     sceneState,
-    sceneControlState,
     worldAndScene.mainFocus,
-    controlInput,
+    sceneControlState.mainViewLookState,
   );
 
   updateRenderFrameCache(renderCache, worldAndScene.scene);
@@ -245,6 +245,15 @@ export function runLoop({
     world: worldAndScene.world,
     mainFocus: worldAndScene.mainFocus,
   };
+  const viewControlUpdateParams: Parameters<
+    NonNullable<ViewControlPlugin["updateViewControls"]>
+  >[0] = {
+    controlInput,
+    dtMillis: 0,
+    mainFocus: worldAndScene.mainFocus,
+    sceneControlState,
+    sceneState,
+  };
   const overlayContext: BrowserOverlayContext = {
     advanceOverlay: false,
     controlInput,
@@ -278,12 +287,12 @@ export function runLoop({
     }
 
     if (framePolicy.advanceScene) {
-      updateSceneGraph(
-        dtTickMillis,
+      viewControlUpdateParams.dtMillis = dtTickMillis;
+      applyViewControlPlugins(viewControlPlugins, viewControlUpdateParams);
+      updateSceneViewCameras(
         sceneState,
-        sceneControlState,
         worldAndScene.mainFocus,
-        controlInput,
+        sceneControlState.mainViewLookState,
       );
       sceneUpdateParams.dtMillis = dtTickMillis;
       sceneUpdateParams.dtSimMillis = dtSimMillis;
@@ -505,6 +514,16 @@ function collectScenePlugins(plugins: GamePlugin[]): ScenePlugin[] {
   return scenePlugins;
 }
 
+function collectViewControlPlugins(plugins: GamePlugin[]): ViewControlPlugin[] {
+  const viewControlPlugins: ViewControlPlugin[] = [];
+  for (const plugin of plugins) {
+    if (plugin.viewControls) {
+      viewControlPlugins.push(plugin.viewControls);
+    }
+  }
+  return viewControlPlugins;
+}
+
 function collectLoopPlugins(plugins: GamePlugin[]): LoopPlugin[] {
   const loopPlugins: LoopPlugin[] = [];
   for (const plugin of plugins) {
@@ -670,6 +689,15 @@ function applyScenePlugins(
 ): void {
   for (const plugin of plugins) {
     plugin.updateScene?.(params);
+  }
+}
+
+function applyViewControlPlugins(
+  plugins: ViewControlPlugin[],
+  params: Parameters<NonNullable<ViewControlPlugin["updateViewControls"]>>[0],
+): void {
+  for (const plugin of plugins) {
+    plugin.updateViewControls?.(params);
   }
 }
 

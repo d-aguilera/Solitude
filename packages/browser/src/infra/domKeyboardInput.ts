@@ -5,10 +5,7 @@ import type {
   InputPlugin,
   KeyHandler,
 } from "@solitude/engine/plugin";
-import {
-  BASE_CONTROL_ACTIONS,
-  createControlInput,
-} from "@solitude/engine/plugin";
+import { createControlInput } from "@solitude/engine/plugin";
 
 /**
  * Initialize keyboard listeners and keep the actions state updated.
@@ -59,17 +56,7 @@ function updateInputs(
   }
 }
 
-const baseKeyMap: Record<string, ControlAction> = {
-  ArrowDown: "lookDown",
-  ArrowLeft: "lookLeft",
-  ArrowRight: "lookRight",
-  ArrowUp: "lookUp",
-  KeyI: "camUp",
-  KeyJ: "camBackward",
-  KeyK: "camDown",
-  KeyR: "lookReset",
-  KeyU: "camForward",
-};
+const baseKeyMap: Record<string, ControlAction> = {};
 
 function collectInputPlugins(plugins: GamePlugin[]): InputPlugin[] {
   const inputPlugins: InputPlugin[] = [];
@@ -82,21 +69,16 @@ function collectInputPlugins(plugins: GamePlugin[]): InputPlugin[] {
 }
 
 function collectControlActions(plugins: InputPlugin[]): string[] {
-  const envActions = new Set<ControlAction>(BASE_CONTROL_ACTIONS);
   const actions = new Set<string>();
   for (const plugin of plugins) {
     if (plugin.actions) {
       for (const action of plugin.actions) {
-        if (!envActions.has(action)) {
-          actions.add(action);
-        }
+        actions.add(action);
       }
     }
     if (plugin.keyMap) {
       for (const action of Object.values(plugin.keyMap)) {
-        if (!envActions.has(action)) {
-          actions.add(action);
-        }
+        actions.add(action);
       }
     }
   }

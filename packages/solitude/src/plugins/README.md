@@ -20,6 +20,7 @@ Each plugin lives in its own folder. A typical split is:
 - `scene.ts`: scene init/update hooks and view filters (app + setup dependencies)
 - `segments.ts`: view overlay segment providers (app + domain dependencies)
 - `simulation.ts`: deterministic simulation phase hooks such as vehicle dynamics
+- `viewControls.ts` or `core.ts`: per-frame view control state updates
 - `views.ts`: view registration, camera offsets, and camera frame strategies
 - `worldModel.ts`: pre-runtime world/scenario model contribution
 - `index.ts`: composes the above into a `GamePlugin`
@@ -39,7 +40,9 @@ per-cell objects in the HUD refresh path.
 
 Simulation plugins run inside the fixed tick order. Vehicle or operator behavior that mutates focused entities should be contributed through simulation phases rather than hard-coded into core tick logic.
 
-Input plugins contribute operator-specific action names and key bindings. Base input actions are reserved for generic/main-view controls such as look and camera offset.
+Input plugins contribute action names and key bindings. Browser input has no
+product default actions; the default main-view lookaround controls are
+plugin-owned rather than browser or engine defaults.
 
 Plugins may declare focused-entity requirements. Infra validates those requirements against the assembled world and `mainFocus` during setup, before simulation, overlay, and scene hooks run. Missing hard requirements fail startup with the plugin id, focus entity id, and missing capability.
 

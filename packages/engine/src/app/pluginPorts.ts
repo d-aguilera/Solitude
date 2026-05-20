@@ -10,9 +10,10 @@ import type {
 } from "./controlPorts";
 import type { EntityConfig } from "./entityConfigPorts";
 import type { FocusContext } from "./runtimePorts";
-import type { Scene, SceneObject } from "./scenePorts";
+import type { Scene, SceneControlState, SceneObject } from "./scenePorts";
 import type {
   MainViewCameraRig,
+  SceneState,
   SceneViewId,
   ViewDefinition,
 } from "./viewPorts";
@@ -123,6 +124,14 @@ export interface SceneUpdateParams {
   mainFocus: FocusContext;
 }
 
+export interface ViewControlUpdateParams {
+  controlInput: ControlInput;
+  dtMillis: number;
+  mainFocus: FocusContext;
+  sceneControlState: SceneControlState;
+  sceneState: SceneState;
+}
+
 export type SceneObjectFilter = (obj: SceneObject) => boolean;
 
 export interface SceneViewFilterParams {
@@ -169,6 +178,10 @@ export interface ScenePlugin {
   getViewObjectsFilter?: (
     params: SceneViewFilterParams,
   ) => SceneObjectFilter | null;
+}
+
+export interface ViewControlPlugin {
+  updateViewControls?: (params: ViewControlUpdateParams) => void;
 }
 
 export interface LoopPlugin {
@@ -233,6 +246,7 @@ export interface GamePlugin {
   scene?: ScenePlugin;
   simulation?: SimulationContribution;
   requirements?: PluginRequirements;
+  viewControls?: ViewControlPlugin;
   views?: ViewPlugin;
   worldModel?: WorldModelPlugin;
 }

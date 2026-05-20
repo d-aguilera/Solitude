@@ -1,6 +1,5 @@
 import type { ControlledBody } from "../domain/domainPorts";
 import { type Vec3, vec3 } from "../domain/vec3";
-import type { ControlInput } from "./controlPorts";
 import type { FocusContext } from "./runtimePorts";
 import type { DomainCameraPose, MainViewLookState } from "./scenePorts";
 import type {
@@ -68,29 +67,4 @@ function setCameraRelativeToControlledBody(
   vec3.addInto(worldOffsetScratch, worldOffsetScratch, offsetUpScratch);
 
   vec3.addInto(pose.position, controlledBody.position, worldOffsetScratch);
-}
-
-export function updateMainViewCameraOffset(
-  dtMillis: number,
-  controlInput: ControlInput,
-  mainViewCameraLocalOffset: Vec3,
-): void {
-  if (dtMillis === 0) return;
-
-  const moveSpeed = 5;
-
-  let dx = 0;
-  let dy = 0;
-  let dz = 0;
-
-  if (controlInput.camForward) dy += moveSpeed;
-  if (controlInput.camBackward) dy -= moveSpeed;
-  if (controlInput.camUp) dz += moveSpeed;
-  if (controlInput.camDown) dz -= moveSpeed;
-
-  if (dx === 0 && dy === 0 && dz === 0) return;
-
-  mainViewCameraLocalOffset.x += dx * dtMillis;
-  mainViewCameraLocalOffset.y += dy * dtMillis;
-  mainViewCameraLocalOffset.z += dz * dtMillis;
 }

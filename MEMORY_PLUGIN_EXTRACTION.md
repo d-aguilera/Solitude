@@ -49,6 +49,7 @@ Existing plugins already cover:
 - Autopilot: `packages/solitude/src/plugins/autopilot/`
 - Axial views: `packages/solitude/src/plugins/axialViews/`
 - HUD shell/overlay: `packages/solitude/src/plugins/hud/`
+- Main-view lookaround controls: `packages/solitude/src/plugins/mainViewLookaround/`
 - Memory telemetry: `packages/solitude/src/plugins/memory/`
 - Orbit telemetry: `packages/solitude/src/plugins/orbitTelemetry/`
 - Pause: `packages/solitude/src/plugins/pause/`
@@ -168,32 +169,31 @@ Watch-outs:
 - The dominant-body helper is useful beyond HUD. Do not bury it too deeply if future app behavior will need it.
 - Keep numerical/orbital math testable after the move.
 
-## Smaller Candidate: Pilot Look / Camera Offset Controls
+## Completed Decision: Main-View Lookaround / Camera Offset Controls
 
-Status: possible, but not obviously worth extracting first.
+Status: extraction implemented on 2026-05-20.
 
 Why it might be non-core:
 
 - Arrow-key look and `U/J/I/K` camera offset are camera UX, not simulation physics.
-- They live in base control actions and the base key map.
+- They used to live in base control actions and the base key map.
 
-Current touch points:
+What changed:
 
-- `src/app/controlPorts.ts`: `look*` and `cam*` base actions.
-- `src/infra/domKeyboardInput.ts`: base key bindings.
-- `src/app/controls.ts`: `updatePilotLook`.
-- `src/app/cameras.ts`: `updatePilotCameraOffset`.
-- `src/app/scene.ts`: calls both before updating cameras.
+- Added `packages/solitude/src/plugins/mainViewLookaround/`.
+- Moved `look*` and `cam*` actions plus arrow/`U/J/I/K/R` bindings into the plugin.
+- Moved main-view look and camera-offset integration into the plugin through `GamePlugin.viewControls`.
+- Removed product default actions/key bindings from browser/engine input.
+- Renamed the remaining engine scene update export to `updateSceneViewCameras`; it now only refreshes generic camera poses/frames.
 
-Why it may stay core:
+Known remaining static pieces:
 
-- Pilot camera control is part of the primary playable experience.
-- Extracting it before dynamic view/camera support may make the scene update path more awkward.
+- `SceneControlState.mainViewLookState` and render config `mainViewLookState` remain engine-owned because camera rigs consume generic look state.
+- `WorldRenderConfig.mainViewCameraOffset` remains engine-owned initial primary-view camera configuration.
 
 ## Recommended Order
 
 1. Orbit readout/domain split.
-2. Pilot look / camera offset controls, only if the camera/view refactor makes it natural.
 
 ## Documentation Notes
 
@@ -205,5 +205,5 @@ Why it may stay core:
 ## Verification Notes
 
 - This document was created from a read-only audit on 2026-04-18.
-- No extraction has been performed yet.
+- Main-view lookaround extraction was implemented on 2026-05-20.
 - After future code changes, follow `MEMORY.md`: run `npm run typecheck` and `npm run test`.
