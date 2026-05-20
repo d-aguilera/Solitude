@@ -235,6 +235,19 @@ Active strategic work has moved back to `MEMORY_OPERATOR_MODEL.md`.
 
 ## Completed Slices
 
+### Completed Slice: Package Split 27
+
+What changed:
+
+1. Added `@solitude/engine/world` as a curated facade for generic entity/world/config/focus/setup APIs.
+2. Updated browser and Solitude consumers to import world/config/setup contracts from the facade.
+3. Kept existing granular world-related subpaths as compatibility exports.
+
+Notes:
+
+- `@solitude/engine/world` intentionally excludes scene/render object ports for now; those remain candidates for a separate render facade.
+- Runtime loop ports remain separate until a dedicated runtime facade slice.
+
 ### Completed Slice: Package Split 26
 
 What changed:

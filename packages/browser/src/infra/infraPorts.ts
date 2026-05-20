@@ -1,12 +1,14 @@
-import type { WorldAndSceneConfig } from "@solitude/engine/app/configPorts";
 import type { ViewDefinition } from "@solitude/engine/app/viewPorts";
-import type { GravityEngine } from "@solitude/engine/domain/domainPorts";
 import type { ControlInput, GamePlugin } from "@solitude/engine/plugin";
 import type {
   Rasterizer,
   RenderSurface2D,
   ViewRenderer,
 } from "@solitude/engine/render/renderPorts";
+import type {
+  GravityEngine,
+  WorldAndSceneConfig,
+} from "@solitude/engine/world";
 import type { OverlayRasterizer } from "./overlayPorts";
 
 export interface RunLoopView {

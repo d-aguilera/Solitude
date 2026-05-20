@@ -1,5 +1,5 @@
-import type { WorldAndSceneConfig } from "@solitude/engine/app/configPorts";
 import { vec3 } from "@solitude/engine/math";
+import type { WorldAndSceneConfig } from "@solitude/engine/world";
 
 export function buildWorldAndSceneConfig() {
   const config: WorldAndSceneConfig = {

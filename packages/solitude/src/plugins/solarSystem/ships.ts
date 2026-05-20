@@ -1,15 +1,5 @@
-import type {
-  ControlledBodyInitialStateConfig,
-  ControlledBodyPhysicsConfig,
-  KeplerianBodyPhysicsConfig,
-} from "@solitude/engine/app/physicsConfigPorts";
-import type { EntityRenderConfig } from "@solitude/engine/app/renderConfigPorts";
 import type { Mesh } from "@solitude/engine/app/scenePorts";
 import { parseObjMesh } from "@solitude/engine/config/obj";
-import type {
-  RotatingBody,
-  SphericalBodyPhysics,
-} from "@solitude/engine/domain/domainPorts";
 import {
   circularSpeedAtRadius,
   computeVolumeOfTriangleMesh,
@@ -23,8 +13,18 @@ import {
   type LocalFrame,
   type Vec3,
 } from "@solitude/engine/math";
-import { initialFrame } from "@solitude/engine/setup/setup";
-import { createKeplerianBodiesFromConfig } from "@solitude/engine/setup/setupKeplerianBodies";
+import type {
+  ControlledBodyInitialStateConfig,
+  ControlledBodyPhysicsConfig,
+  EntityRenderConfig,
+  KeplerianBodyPhysicsConfig,
+  RotatingBody,
+  SphericalBodyPhysics,
+} from "@solitude/engine/world";
+import {
+  createKeplerianBodiesFromConfig,
+  initialFrame,
+} from "@solitude/engine/world";
 import { colors } from "./colors";
 import shipObjText from "./ship.obj?raw";
 

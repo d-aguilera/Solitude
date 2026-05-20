@@ -1,12 +1,12 @@
-import { updateFocusContext } from "@solitude/engine/app/focus";
 import type { FocusContext } from "@solitude/engine/app/runtimePorts";
-import type { World } from "@solitude/engine/domain/domainPorts";
 import type {
   GamePlugin,
   LoopPlugin,
   LoopUpdateResult,
   RuntimeOptions,
 } from "@solitude/engine/plugin";
+import type { World } from "@solitude/engine/world";
+import { updateFocusContext } from "@solitude/engine/world";
 
 const swapFocusAction = "operatorSwapFocus";
 const defaultFocusTargets = ["ship:blue", "ship:red"] as const;

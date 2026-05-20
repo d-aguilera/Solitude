@@ -1,6 +1,6 @@
-import type { AngularVelocity } from "@solitude/engine/domain/domainPorts";
 import type { LocalFrame, Mat3, Vec3 } from "@solitude/engine/math";
 import type { ControlAction } from "@solitude/engine/plugin";
+import type { AngularVelocity } from "@solitude/engine/world";
 
 export type PlaybackScenarioId = string;
 export type PlaybackEndBehavior = "pause";

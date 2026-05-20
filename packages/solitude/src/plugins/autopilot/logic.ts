@@ -1,4 +1,3 @@
-import type { World } from "@solitude/engine/domain/domainPorts";
 import { parameters } from "@solitude/engine/global/parameters";
 import {
   EPS_ANGLE_RAD,
@@ -17,6 +16,7 @@ import type {
   ControlInput,
   ControlledBodyState,
 } from "@solitude/engine/plugin";
+import type { World } from "@solitude/engine/world";
 import type {
   SpacecraftPropulsionCommand,
   SpacecraftRcsCommand,

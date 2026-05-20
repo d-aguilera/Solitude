@@ -1,10 +1,7 @@
-import type {
-  ControlledBody,
-  World,
-} from "@solitude/engine/domain/domainPorts";
 import { localFrame, mat3, vec3 } from "@solitude/engine/math";
 import type { LoopUpdateParams } from "@solitude/engine/plugin";
 import { createControlInput } from "@solitude/engine/plugin";
+import type { ControlledBody, World } from "@solitude/engine/world";
 import { describe, expect, it, vi } from "vitest";
 import { createPlaybackController } from "./core";
 import type { PlaybackScript } from "./types";

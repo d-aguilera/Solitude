@@ -1,7 +1,6 @@
 import { createTickHandler } from "@solitude/engine/app/game";
 import { createPluginCapabilityRegistry } from "@solitude/engine/app/pluginCapabilities";
 import { validatePluginRequirements } from "@solitude/engine/app/pluginRequirements";
-import { getMainViewLookState } from "@solitude/engine/app/renderConfigPorts";
 import type {
   TickCallback,
   TickParams,
@@ -43,8 +42,11 @@ import type {
   RenderedView,
   ViewRenderParams,
 } from "@solitude/engine/render/renderPorts";
-import { createScene } from "@solitude/engine/setup/sceneSetup";
-import { createWorld } from "@solitude/engine/setup/setup";
+import {
+  createScene,
+  createWorld,
+  getMainViewLookState,
+} from "@solitude/engine/world";
 import type { RunLoopParams, RunLoopView } from "./infraPorts";
 import {
   browserOverlayCapability,

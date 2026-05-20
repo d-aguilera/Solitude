@@ -6,6 +6,7 @@
   "exports": {
     "./math": "./src/math.ts",
     "./plugin": "./src/plugin.ts",
+    "./world": "./src/world.ts",
     "./app/configPorts": "./src/app/configPorts.ts",
     "./app/controlPorts": "./src/app/controlPorts.ts",
     "./app/entityConfigPorts": "./src/app/entityConfigPorts.ts",

@@ -1,9 +1,9 @@
 import type { FocusContext } from "@solitude/engine/app/runtimePorts";
-import type { World } from "@solitude/engine/domain/domainPorts";
 import type {
   ControlInput,
   PluginCapabilityProvider,
 } from "@solitude/engine/plugin";
+import type { World } from "@solitude/engine/world";
 import type { HudGrid } from "./grid";
 
 export const hudPanelCapability = "solitude.hud.panel.v1";

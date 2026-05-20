@@ -1,13 +1,10 @@
-import type {
-  ControlledBody,
-  World,
-} from "@solitude/engine/domain/domainPorts";
 import {
   EPS_LEN_COARSE,
   EPS_SPEED_COARSE,
   getDominantBodyPrimary,
   vec3,
 } from "@solitude/engine/math";
+import type { ControlledBody, World } from "@solitude/engine/world";
 import type { HudPanelProvider } from "../hud/capabilities";
 import { getAutopilotMode } from "./logic";
 

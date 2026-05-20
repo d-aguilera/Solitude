@@ -1,8 +1,10 @@
-import type { WorldAndSceneConfig } from "@solitude/engine/app/configPorts";
 import type { FocusContext } from "@solitude/engine/app/runtimePorts";
 import { buildViewDefinitions } from "@solitude/engine/app/viewRegistry";
-import type { ControlledBody } from "@solitude/engine/domain/domainPorts";
 import { localFrame, mat3, vec3 } from "@solitude/engine/math";
+import type {
+  ControlledBody,
+  WorldAndSceneConfig,
+} from "@solitude/engine/world";
 import { createSpacecraftOperatorPlugin } from "solitude/plugins/spacecraftOperator/index";
 import { describe, expect, it } from "vitest";
 

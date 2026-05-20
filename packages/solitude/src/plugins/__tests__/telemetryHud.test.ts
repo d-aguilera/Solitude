@@ -1,7 +1,3 @@
-import type {
-  ControlledBody,
-  World,
-} from "@solitude/engine/domain/domainPorts";
 import {
   circularSpeedAtRadius,
   localFrame,
@@ -9,6 +5,7 @@ import {
   vec3,
 } from "@solitude/engine/math";
 import { createControlInput } from "@solitude/engine/plugin";
+import type { ControlledBody, World } from "@solitude/engine/world";
 import { describe, expect, it } from "vitest";
 import { createHudPanel as createAutopilotHudPanel } from "../autopilot/hud";
 import type { HudContext } from "../hud/capabilities";

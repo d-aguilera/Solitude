@@ -3,10 +3,6 @@ import {
   createPhysicsWorkspace,
   type PhysicsWorkspace,
 } from "@solitude/engine/app/physics";
-import type {
-  ControlledBody,
-  World,
-} from "@solitude/engine/domain/domainPorts";
 import { vec3 } from "@solitude/engine/math";
 import type {
   ControlInput,
@@ -14,6 +10,7 @@ import type {
   PluginCapabilityRegistry,
   SimulationPlugin,
 } from "@solitude/engine/plugin";
+import type { ControlledBody, World } from "@solitude/engine/world";
 import {
   getSpacecraftAutonomousControls,
   getSpacecraftPropulsionResolvers,

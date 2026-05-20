@@ -1,9 +1,11 @@
-import type { EntityConfig } from "@solitude/engine/app/entityConfigPorts";
-import { applyWorldModelPlugins } from "@solitude/engine/app/worldModelConfig";
 import { vec3 } from "@solitude/engine/math";
 import type { WorldModelRegistry } from "@solitude/engine/plugin";
-import { createScene } from "@solitude/engine/setup/sceneSetup";
-import { createWorld } from "@solitude/engine/setup/setup";
+import type { EntityConfig } from "@solitude/engine/world";
+import {
+  applyWorldModelPlugins,
+  createScene,
+  createWorld,
+} from "@solitude/engine/world";
 import { describe, expect, it, vi } from "vitest";
 import { buildWorldAndSceneConfig } from "../../config/worldAndSceneConfig";
 import { createSolarSystemPlugin } from "./index";

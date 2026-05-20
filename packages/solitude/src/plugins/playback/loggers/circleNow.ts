@@ -1,8 +1,3 @@
-import type {
-  ControlledBody,
-  EntityMotionState,
-  World,
-} from "@solitude/engine/domain/domainPorts";
 import { parameters } from "@solitude/engine/global/parameters";
 import {
   EPS_DELTA_V,
@@ -12,6 +7,11 @@ import {
   type Vec3,
   vec3,
 } from "@solitude/engine/math";
+import type {
+  ControlledBody,
+  EntityMotionState,
+  World,
+} from "@solitude/engine/world";
 import {
   maxRcsTranslationAcceleration,
   maxThrustAcceleration,

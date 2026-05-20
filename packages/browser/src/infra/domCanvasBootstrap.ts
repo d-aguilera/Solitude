@@ -1,9 +1,9 @@
-import type { WorldAndSceneConfig } from "@solitude/engine/app/configPorts";
 import type { GamePlugin } from "@solitude/engine/plugin";
 import type {
   Rasterizer,
   RenderSurface2D,
 } from "@solitude/engine/render/renderPorts";
+import type { WorldAndSceneConfig } from "@solitude/engine/world";
 import { CanvasHudRasterizer } from "../rasterize/canvas/CanvasHudRasterizer";
 import { CanvasRasterizer } from "../rasterize/canvas/CanvasRasterizer";
 import { CanvasSurface } from "../rasterize/canvas/CanvasSurface";

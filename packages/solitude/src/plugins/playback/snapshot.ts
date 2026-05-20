@@ -1,10 +1,10 @@
+import type { LocalFrame, Mat3, Vec3 } from "@solitude/engine/math";
+import { getDominantBodyPrimary, vec3 } from "@solitude/engine/math";
 import type {
   ControlledBody,
   EntityMotionState,
   World,
-} from "@solitude/engine/domain/domainPorts";
-import type { LocalFrame, Mat3, Vec3 } from "@solitude/engine/math";
-import { getDominantBodyPrimary, vec3 } from "@solitude/engine/math";
+} from "@solitude/engine/world";
 import type {
   PlaybackEntitySnapshot,
   PlaybackScenarioId,

@@ -1,10 +1,10 @@
-import type { EntityConfig } from "@solitude/engine/app/entityConfigPorts";
+import { localFrame, mat3, vec3 } from "@solitude/engine/math";
 import type {
   ControlledBody,
+  EntityConfig,
   EntityMotionState,
   World,
-} from "@solitude/engine/domain/domainPorts";
-import { localFrame, mat3, vec3 } from "@solitude/engine/math";
+} from "@solitude/engine/world";
 import { describe, expect, it } from "vitest";
 import {
   buildTrajectoryPlan,

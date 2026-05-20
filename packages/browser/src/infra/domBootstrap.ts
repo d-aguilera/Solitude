@@ -1,7 +1,5 @@
-import type { WorldAndSceneConfig } from "@solitude/engine/app/configPorts";
 import type { ViewDefinition } from "@solitude/engine/app/viewPorts";
 import { buildViewDefinitions } from "@solitude/engine/app/viewRegistry";
-import type { GravityEngine } from "@solitude/engine/domain/domainPorts";
 import { parameters } from "@solitude/engine/global/parameters";
 import { NewtonianGravityEngine } from "@solitude/engine/infra/NewtonianGravityEngine";
 import type { GamePlugin } from "@solitude/engine/plugin";
@@ -10,6 +8,10 @@ import type {
   Rasterizer,
   RenderSurface2D,
 } from "@solitude/engine/render/renderPorts";
+import type {
+  GravityEngine,
+  WorldAndSceneConfig,
+} from "@solitude/engine/world";
 import { runLoop } from "./domGameLoop";
 import { initInput } from "./domKeyboardInput";
 import { initLayout, type LayoutView } from "./domLayout";

@@ -1,4 +1,3 @@
-import type { World } from "@solitude/engine/domain/domainPorts";
 import type {
   AttitudeCommand,
   ControlInput,
@@ -6,6 +5,7 @@ import type {
   ControlPlugin,
   MutableControlState,
 } from "@solitude/engine/plugin";
+import type { World } from "@solitude/engine/world";
 import type {
   SpacecraftPropulsionCommand,
   SpacecraftPropulsionResolver,

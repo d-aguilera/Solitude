@@ -1,9 +1,9 @@
-import type { World } from "@solitude/engine/domain/domainPorts";
 import type {
   ControlInput,
   ControlledBodyState,
   PluginCapabilityProvider,
 } from "@solitude/engine/plugin";
+import type { World } from "@solitude/engine/world";
 
 const spacecraftPropulsionResolverCapabilityId =
   "spacecraft.propulsionResolver.v1";
