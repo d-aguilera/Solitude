@@ -235,7 +235,7 @@ Active strategic work has moved back to `MEMORY_OPERATOR_MODEL.md`.
 
 ## Completed Slices
 
-### Completed Slices: Package Split 24-31
+### Completed Slices: Package Split 24-33
 
 What changed:
 
@@ -250,8 +250,8 @@ Resulting engine shape:
 - `@solitude/engine/math`: vector/matrix/frame math, units, epsilons, mesh volume, and orbital helpers.
 - `@solitude/engine/plugin`: plugin contracts and control-input contracts.
 - `@solitude/engine/render`: render, scene, and view contracts plus generic render helpers.
-- `@solitude/engine/runtime`: tick/runtime orchestration, headless runtime, generic physics helpers, gravity adapter, parameters, and profiling.
-- `@solitude/engine/world`: generic entity/world/config/focus/setup APIs.
+- `@solitude/engine/runtime`: tick/runtime orchestration, focus context updates, headless runtime, generic physics helpers, gravity adapter, parameters, and profiling.
+- `@solitude/engine/world`: generic entity/world/config/setup APIs.
 
 Notes:
 

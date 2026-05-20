@@ -5,8 +5,8 @@ import type {
   RuntimeOptions,
 } from "@solitude/engine/plugin";
 import type { FocusContext } from "@solitude/engine/runtime";
+import { updateFocusContext } from "@solitude/engine/runtime";
 import type { World } from "@solitude/engine/world";
-import { updateFocusContext } from "@solitude/engine/world";
 
 const swapFocusAction = "operatorSwapFocus";
 const defaultFocusTargets = ["ship:blue", "ship:red"] as const;

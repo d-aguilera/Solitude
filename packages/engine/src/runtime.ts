@@ -1,3 +1,4 @@
+export { updateFocusContext } from "./app/focus";
 export { createTickHandler } from "./app/game";
 export {
   applyAxialSpin,

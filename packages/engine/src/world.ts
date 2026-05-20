@@ -14,7 +14,6 @@ export type {
   RenderableConfig,
   RenderableRole,
 } from "./app/entityConfigPorts";
-export { updateFocusContext } from "./app/focus";
 export type {
   ControlledBodyInitialStateConfig,
   ControlledBodyPhysicsConfig,
