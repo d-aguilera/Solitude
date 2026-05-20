@@ -235,109 +235,29 @@ Active strategic work has moved back to `MEMORY_OPERATOR_MODEL.md`.
 
 ## Completed Slices
 
-### Completed Slice: Package Split 31
+### Completed Slices: Package Split 24-31
 
 What changed:
 
-1. Removed old granular compatibility exports from `@solitude/engine`.
-2. Kept only curated facade exports: `assets`, `math`, `plugin`, `render`, `runtime`, and `world`.
-3. Verified browser and Solitude already consume only those facade subpaths.
+1. Hardened workspace boundaries with `scripts/check-package-boundaries.mjs`, wired root typecheck through boundary checks and package-local workspace typechecks, and kept package tarballs free of tests.
+2. Replaced the broad internal-looking `@solitude/engine` export surface with six curated facade subpaths:
+   `assets`, `math`, `plugin`, `render`, `runtime`, and `world`.
+3. Migrated browser and Solitude callers to those facades, then removed the old granular compatibility exports from `packages/engine/package.json`.
+
+Resulting engine shape:
+
+- `@solitude/engine/assets`: generic asset parsing helpers.
+- `@solitude/engine/math`: vector/matrix/frame math, units, epsilons, mesh volume, and orbital helpers.
+- `@solitude/engine/plugin`: plugin contracts and control-input contracts.
+- `@solitude/engine/render`: render, scene, and view contracts plus generic render helpers.
+- `@solitude/engine/runtime`: tick/runtime orchestration, headless runtime, generic physics helpers, gravity adapter, parameters, and profiling.
+- `@solitude/engine/world`: generic entity/world/config/focus/setup APIs.
 
 Notes:
 
+- External engine imports now use only the curated facade subpaths.
 - Internal engine source continues using package-internal relative imports.
 - Future cross-package engine API additions should extend an existing facade or add a new intentional facade; do not reintroduce folder-shaped internal subpath exports by default.
-
-### Completed Slice: Package Split 30
-
-What changed:
-
-1. Added `@solitude/engine/assets` as a curated facade for generic asset parsing helpers.
-2. Moved Solitude solar-system OBJ mesh imports from `@solitude/engine/config/obj` to the asset facade.
-3. Kept `@solitude/engine/config/obj` as a compatibility export.
-
-Notes:
-
-- OBJ parsing stays separate from `@solitude/engine/render` because it is asset/config loading, not a render runtime contract.
-- External engine imports now use the curated facade subpaths only.
-
-### Completed Slice: Package Split 29
-
-What changed:
-
-1. Added `@solitude/engine/runtime` as a curated facade for runtime loop ports, tick orchestration, plugin capability/requirement helpers, generic physics helpers, headless runtime, Newtonian gravity, parameters, and profiling.
-2. Updated browser and Solitude runtime-facing consumers to import those APIs from the facade.
-3. Kept existing granular runtime/global/infra subpaths as compatibility exports.
-
-Notes:
-
-- This leaves `@solitude/engine/config/obj` as the main remaining non-facade utility used by Solitude assets.
-- Browser DOM package imports now mostly flow through `plugin`, `world`, `render`, and `runtime`.
-
-### Completed Slice: Package Split 28
-
-What changed:
-
-1. Added `@solitude/engine/render` as a curated facade for render contracts, scene/view ports, view registry helpers, and generic render format/style helpers.
-2. Updated browser and Solitude consumers to import render-facing APIs from the facade.
-3. Kept existing granular render, scene, and view subpaths as compatibility exports.
-
-Notes:
-
-- Runtime loop and profiling APIs remain outside this facade and should move in a separate runtime facade slice.
-- OBJ parsing remains outside the render facade for now because it is asset/config loading rather than runtime render contract.
-
-### Completed Slice: Package Split 27
-
-What changed:
-
-1. Added `@solitude/engine/world` as a curated facade for generic entity/world/config/focus/setup APIs.
-2. Updated browser and Solitude consumers to import world/config/setup contracts from the facade.
-3. Kept existing granular world-related subpaths as compatibility exports.
-
-Notes:
-
-- `@solitude/engine/world` intentionally excludes scene/render object ports for now; those remain candidates for a separate render facade.
-- Runtime loop ports remain separate until a dedicated runtime facade slice.
-
-### Completed Slice: Package Split 26
-
-What changed:
-
-1. Added `@solitude/engine/math` as a curated facade for generic math, units, epsilon constants, mesh volume, and orbital helper APIs.
-2. Updated Solitude consumers to import those helpers from the facade instead of granular `@solitude/engine/domain/*` subpaths.
-3. Kept the existing granular domain math exports as compatibility subpaths.
-
-Notes:
-
-- This follows the Package Split 25 facade pattern: add the stable doorway, migrate callers, then leave old subpaths alone until a later tightening pass.
-- `@solitude/engine/domain/domainPorts` remains separate for now because it is world/entity model API rather than math API.
-
-### Completed Slice: Package Split 25
-
-What changed:
-
-1. Added `@solitude/engine/plugin` as the first curated engine facade subpath.
-2. The facade gathers plugin and control-input contracts that external consumers use most often.
-3. Updated browser and Solitude consumers to import plugin/control APIs from the facade.
-
-Notes:
-
-- Existing granular `@solitude/engine/app/pluginPorts` and `@solitude/engine/app/controlPorts` exports remain as compatibility subpaths for now.
-- Future facade slices should follow this pattern: add a narrow stable doorway first, migrate consumers, then tighten old subpaths only after the migration is boring.
-
-### Completed Slice: Package Split 24
-
-What changed:
-
-1. Added `scripts/check-package-boundaries.mjs`.
-2. Root `npm run typecheck` now runs package-boundary checks before package-local workspace typechecks.
-3. Added package-local `.npmignore` files so dry-run package tarballs exclude tests.
-
-Notes:
-
-- The boundary checker rejects cross-package relative imports, unexported workspace package subpaths, and undeclared workspace package dependencies.
-- Packages remain private and source-exported.
 
 ### Completed Slice: Package Split 23
 
