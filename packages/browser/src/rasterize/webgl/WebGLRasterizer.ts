@@ -1,13 +1,13 @@
-import type { RGB } from "@solitude/engine/app/scenePorts";
 import type {
   Rasterizer,
   RenderedBodyLabel,
   RenderedFace,
   RenderedPolyline,
   RenderedSegment,
+  RGB,
+  ScreenPoint,
   TextMetrics,
-} from "@solitude/engine/render/renderPorts";
-import type { ScreenPoint } from "@solitude/engine/render/scrn";
+} from "@solitude/engine/render";
 
 export class WebGLRasterizer implements Rasterizer {
   private gl: WebGL2RenderingContext;

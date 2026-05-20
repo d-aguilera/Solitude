@@ -1,4 +1,4 @@
-import { formatSimTime } from "@solitude/engine/render/formatters";
+import { formatSimTime } from "@solitude/engine/render";
 import type { HudPanelProvider } from "../hud/capabilities";
 import type { RuntimeTelemetryController } from "./logic";
 

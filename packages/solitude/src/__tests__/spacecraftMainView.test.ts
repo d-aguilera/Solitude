@@ -1,6 +1,6 @@
 import type { FocusContext } from "@solitude/engine/app/runtimePorts";
-import { buildViewDefinitions } from "@solitude/engine/app/viewRegistry";
 import { localFrame, mat3, vec3 } from "@solitude/engine/math";
+import { buildViewDefinitions } from "@solitude/engine/render";
 import type {
   ControlledBody,
   WorldAndSceneConfig,

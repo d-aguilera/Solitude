@@ -1,4 +1,3 @@
-import type { Mesh } from "@solitude/engine/app/scenePorts";
 import { parseObjMesh } from "@solitude/engine/config/obj";
 import {
   circularSpeedAtRadius,
@@ -13,6 +12,7 @@ import {
   type LocalFrame,
   type Vec3,
 } from "@solitude/engine/math";
+import type { Mesh } from "@solitude/engine/render";
 import type {
   ControlledBodyInitialStateConfig,
   ControlledBodyPhysicsConfig,

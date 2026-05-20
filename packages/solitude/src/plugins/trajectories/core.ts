@@ -1,11 +1,7 @@
-import type {
-  PolylineSceneObject,
-  RGB,
-  Scene,
-} from "@solitude/engine/app/scenePorts";
 import type { Vec3 } from "@solitude/engine/math";
 import { mat3 } from "@solitude/engine/math";
 import type { ScenePlugin } from "@solitude/engine/plugin";
+import type { PolylineSceneObject, RGB, Scene } from "@solitude/engine/render";
 import type {
   EntityConfig,
   World,

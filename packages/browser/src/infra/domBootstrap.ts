@@ -1,13 +1,15 @@
-import type { ViewDefinition } from "@solitude/engine/app/viewPorts";
-import { buildViewDefinitions } from "@solitude/engine/app/viewRegistry";
 import { parameters } from "@solitude/engine/global/parameters";
 import { NewtonianGravityEngine } from "@solitude/engine/infra/NewtonianGravityEngine";
 import type { GamePlugin } from "@solitude/engine/plugin";
-import { DefaultViewRenderer } from "@solitude/engine/render/DefaultViewRenderer";
 import type {
   Rasterizer,
   RenderSurface2D,
-} from "@solitude/engine/render/renderPorts";
+  ViewDefinition,
+} from "@solitude/engine/render";
+import {
+  buildViewDefinitions,
+  DefaultViewRenderer,
+} from "@solitude/engine/render";
 import type {
   GravityEngine,
   WorldAndSceneConfig,

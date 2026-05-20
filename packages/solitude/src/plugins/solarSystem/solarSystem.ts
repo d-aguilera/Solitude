@@ -1,6 +1,6 @@
-import type { Mesh } from "@solitude/engine/app/scenePorts";
 import { parseObjMesh } from "@solitude/engine/config/obj";
 import { AU, km, vec3, type Vec3 } from "@solitude/engine/math";
+import type { Mesh } from "@solitude/engine/render";
 import type {
   EntityRenderConfig,
   KeplerianBodyPhysicsConfig,

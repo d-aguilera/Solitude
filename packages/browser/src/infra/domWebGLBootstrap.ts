@@ -1,8 +1,5 @@
 import type { GamePlugin } from "@solitude/engine/plugin";
-import type {
-  Rasterizer,
-  RenderSurface2D,
-} from "@solitude/engine/render/renderPorts";
+import type { Rasterizer, RenderSurface2D } from "@solitude/engine/render";
 import type { WorldAndSceneConfig } from "@solitude/engine/world";
 import { WebGLRasterizer } from "../rasterize/webgl/WebGLRasterizer";
 import { WebGLSurface } from "../rasterize/webgl/WebGLSurface";

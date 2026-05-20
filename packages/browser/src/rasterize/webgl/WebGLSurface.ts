@@ -1,4 +1,4 @@
-import type { RenderSurface2D } from "@solitude/engine/render/renderPorts";
+import type { RenderSurface2D } from "@solitude/engine/render";
 
 export class WebGLSurface implements RenderSurface2D {
   constructor(private readonly gl: WebGL2RenderingContext) {}

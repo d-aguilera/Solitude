@@ -1,4 +1,4 @@
-import type { RGB } from "@solitude/engine/app/scenePorts";
+import type { RGB } from "@solitude/engine/render";
 
 export const ALL_COLORS = [
   "blueShip",

@@ -1,5 +1,3 @@
-import { rgbToQuantizedCss } from "@solitude/engine/render/color";
-import { LABEL_FONT } from "@solitude/engine/render/labelStyle";
 import type {
   Point,
   Rasterizer,
@@ -9,7 +7,8 @@ import type {
   RenderedSegment,
   Size,
   TextMetrics,
-} from "@solitude/engine/render/renderPorts";
+} from "@solitude/engine/render";
+import { LABEL_FONT, rgbToQuantizedCss } from "@solitude/engine/render";
 
 // scratch
 let ctx: CanvasRenderingContext2D;

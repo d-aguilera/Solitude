@@ -1,10 +1,10 @@
-import type { ViewDefinition } from "@solitude/engine/app/viewPorts";
 import type { ControlInput, GamePlugin } from "@solitude/engine/plugin";
 import type {
   Rasterizer,
   RenderSurface2D,
+  ViewDefinition,
   ViewRenderer,
-} from "@solitude/engine/render/renderPorts";
+} from "@solitude/engine/render";
 import type {
   GravityEngine,
   WorldAndSceneConfig,

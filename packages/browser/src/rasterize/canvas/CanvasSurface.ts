@@ -1,4 +1,4 @@
-import type { RenderSurface2D } from "@solitude/engine/render/renderPorts";
+import type { RenderSurface2D } from "@solitude/engine/render";
 
 /**
  * Canvas-backed implementation of RenderSurface2D.

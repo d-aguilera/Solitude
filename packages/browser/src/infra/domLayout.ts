@@ -1,4 +1,4 @@
-import type { ViewLayout } from "@solitude/engine/app/viewPorts";
+import type { ViewLayout } from "@solitude/engine/render";
 
 let remove: (() => void) | null = null;
 

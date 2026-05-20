@@ -235,6 +235,19 @@ Active strategic work has moved back to `MEMORY_OPERATOR_MODEL.md`.
 
 ## Completed Slices
 
+### Completed Slice: Package Split 28
+
+What changed:
+
+1. Added `@solitude/engine/render` as a curated facade for render contracts, scene/view ports, view registry helpers, and generic render format/style helpers.
+2. Updated browser and Solitude consumers to import render-facing APIs from the facade.
+3. Kept existing granular render, scene, and view subpaths as compatibility exports.
+
+Notes:
+
+- Runtime loop and profiling APIs remain outside this facade and should move in a separate runtime facade slice.
+- OBJ parsing remains outside the render facade for now because it is asset/config loading rather than runtime render contract.
+
 ### Completed Slice: Package Split 27
 
 What changed:

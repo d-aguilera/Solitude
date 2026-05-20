@@ -1,4 +1,4 @@
-import type { PolylineSceneObject } from "@solitude/engine/app/scenePorts";
+import type { PolylineSceneObject } from "@solitude/engine/render";
 
 export type Trajectory = {
   intervalMillis: number;

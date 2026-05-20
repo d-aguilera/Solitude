@@ -6,16 +6,6 @@ import type {
   TickParams,
   WorldAndScene,
 } from "@solitude/engine/app/runtimePorts";
-import { updateSceneGraph } from "@solitude/engine/app/scene";
-import type { SceneControlState } from "@solitude/engine/app/scenePorts";
-import type {
-  SceneState,
-  SceneViewState,
-} from "@solitude/engine/app/viewPorts";
-import {
-  createSceneViewStates,
-  getRequiredPrimaryViewState,
-} from "@solitude/engine/app/viewRegistry";
 import { profiler } from "@solitude/engine/global/profiling";
 import type {
   ControlPlugin,
@@ -33,15 +23,21 @@ import type {
   SimulationPlugin,
   WorldSegment,
 } from "@solitude/engine/plugin";
-import {
-  createRenderFrameCache,
-  updateRenderFrameCache,
-} from "@solitude/engine/render/renderFrameCache";
 import type {
   Rasterizer,
   RenderedView,
+  SceneControlState,
+  SceneState,
+  SceneViewState,
   ViewRenderParams,
-} from "@solitude/engine/render/renderPorts";
+} from "@solitude/engine/render";
+import {
+  createRenderFrameCache,
+  createSceneViewStates,
+  getRequiredPrimaryViewState,
+  updateRenderFrameCache,
+  updateSceneGraph,
+} from "@solitude/engine/render";
 import {
   createScene,
   createWorld,
