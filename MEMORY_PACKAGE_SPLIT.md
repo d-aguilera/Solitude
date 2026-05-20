@@ -114,14 +114,16 @@ The conceptual and physical split is in place:
 Remaining physical-boundary issues:
 
 - App/infra tests now live with their owning package.
-- Root TypeScript/Vitest tooling only targets package source.
+- Root Vitest tooling still runs from the Solitude Vite root while including all package tests.
 
 Boundary hardening already in place:
 
 - `packages/engine/src/infra/headlessGameLoop.ts` no longer imports or auto-installs `spacecraftOperator`.
 - `createHeadlessLoop` accepts composed `GamePlugin[]` from the caller and derives control plugins, capability providers, focused-entity requirements, and simulation contributions from that list.
 - Engine headless tests cover generic stepping without Solitude plugins; Solitude-owned integration tests cover spacecraft dynamics when `createSpacecraftOperatorPlugin()` is passed explicitly.
-- Package boundaries are currently enforced by package placement and import paths; the old root architecture guard has been removed.
+- Root `npm run typecheck` now runs `scripts/check-package-boundaries.mjs` before package-local workspace typechecks.
+- The boundary checker rejects cross-package relative imports, unexported workspace package subpaths, and undeclared workspace package dependencies.
+- Package dry-run tarballs ignore package test files via package-local `.npmignore` files; packages remain private and source-exported.
 
 ## Relationship To Other Memory Docs
 
