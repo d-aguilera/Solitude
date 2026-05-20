@@ -1,6 +1,6 @@
-import { parameters } from "@solitude/engine/global/parameters";
 import type { LoopUpdateParams } from "@solitude/engine/plugin";
 import { createControlInput } from "@solitude/engine/plugin";
+import { parameters } from "@solitude/engine/runtime";
 import { describe, expect, it } from "vitest";
 import { createLoopPlugin } from "./core";
 

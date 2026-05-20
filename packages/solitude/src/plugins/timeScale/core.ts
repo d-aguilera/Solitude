@@ -1,5 +1,5 @@
-import { parameters } from "@solitude/engine/global/parameters";
 import type { LoopPlugin, LoopUpdateResult } from "@solitude/engine/plugin";
+import { parameters } from "@solitude/engine/runtime";
 import { createTimeScaleController } from "./logic";
 
 export function createLoopPlugin(): {

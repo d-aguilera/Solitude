@@ -1,10 +1,10 @@
-import type { FocusContext } from "@solitude/engine/app/runtimePorts";
 import type {
   GamePlugin,
   LoopPlugin,
   LoopUpdateResult,
   RuntimeOptions,
 } from "@solitude/engine/plugin";
+import type { FocusContext } from "@solitude/engine/runtime";
 import type { World } from "@solitude/engine/world";
 import { updateFocusContext } from "@solitude/engine/world";
 

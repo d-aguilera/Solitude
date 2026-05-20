@@ -235,6 +235,19 @@ Active strategic work has moved back to `MEMORY_OPERATOR_MODEL.md`.
 
 ## Completed Slices
 
+### Completed Slice: Package Split 29
+
+What changed:
+
+1. Added `@solitude/engine/runtime` as a curated facade for runtime loop ports, tick orchestration, plugin capability/requirement helpers, generic physics helpers, headless runtime, Newtonian gravity, parameters, and profiling.
+2. Updated browser and Solitude runtime-facing consumers to import those APIs from the facade.
+3. Kept existing granular runtime/global/infra subpaths as compatibility exports.
+
+Notes:
+
+- This leaves `@solitude/engine/config/obj` as the main remaining non-facade utility used by Solitude assets.
+- Browser DOM package imports now mostly flow through `plugin`, `world`, `render`, and `runtime`.
+
 ### Completed Slice: Package Split 28
 
 What changed:

@@ -1,4 +1,3 @@
-import { parameters } from "@solitude/engine/global/parameters";
 import {
   EPS_ANGLE_RAD,
   EPS_DELTA_V,
@@ -16,6 +15,7 @@ import type {
   ControlInput,
   ControlledBodyState,
 } from "@solitude/engine/plugin";
+import { parameters } from "@solitude/engine/runtime";
 import type { World } from "@solitude/engine/world";
 import type {
   SpacecraftPropulsionCommand,

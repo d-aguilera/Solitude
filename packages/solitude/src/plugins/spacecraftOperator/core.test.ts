@@ -1,7 +1,7 @@
-import { createPluginCapabilityRegistry } from "@solitude/engine/app/pluginCapabilities";
 import { localFrame, mat3, vec3 } from "@solitude/engine/math";
 import type { SimulationPlugin } from "@solitude/engine/plugin";
 import { createControlInput } from "@solitude/engine/plugin";
+import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
 import { describe, expect, it } from "vitest";
 import {

@@ -1,4 +1,3 @@
-import { parameters } from "@solitude/engine/global/parameters";
 import {
   EPS_DELTA_V,
   EPS_LEN,
@@ -7,6 +6,7 @@ import {
   type Vec3,
   vec3,
 } from "@solitude/engine/math";
+import { parameters } from "@solitude/engine/runtime";
 import type {
   ControlledBody,
   EntityMotionState,

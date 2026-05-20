@@ -1,12 +1,3 @@
-import { createTickHandler } from "@solitude/engine/app/game";
-import { createPluginCapabilityRegistry } from "@solitude/engine/app/pluginCapabilities";
-import { validatePluginRequirements } from "@solitude/engine/app/pluginRequirements";
-import type {
-  TickCallback,
-  TickParams,
-  WorldAndScene,
-} from "@solitude/engine/app/runtimePorts";
-import { profiler } from "@solitude/engine/global/profiling";
 import type {
   ControlPlugin,
   FramePolicy,
@@ -38,6 +29,17 @@ import {
   updateRenderFrameCache,
   updateSceneGraph,
 } from "@solitude/engine/render";
+import type {
+  TickCallback,
+  TickParams,
+  WorldAndScene,
+} from "@solitude/engine/runtime";
+import {
+  createPluginCapabilityRegistry,
+  createTickHandler,
+  profiler,
+  validatePluginRequirements,
+} from "@solitude/engine/runtime";
 import {
   createScene,
   createWorld,

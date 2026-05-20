@@ -1,8 +1,3 @@
-import {
-  applyControlledBodyRotation,
-  createPhysicsWorkspace,
-  type PhysicsWorkspace,
-} from "@solitude/engine/app/physics";
 import { vec3 } from "@solitude/engine/math";
 import type {
   ControlInput,
@@ -10,6 +5,11 @@ import type {
   PluginCapabilityRegistry,
   SimulationPlugin,
 } from "@solitude/engine/plugin";
+import {
+  applyControlledBodyRotation,
+  createPhysicsWorkspace,
+  type PhysicsWorkspace,
+} from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
 import {
   getSpacecraftAutonomousControls,

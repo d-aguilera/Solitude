@@ -7,6 +7,7 @@
     "./math": "./src/math.ts",
     "./plugin": "./src/plugin.ts",
     "./render": "./src/render.ts",
+    "./runtime": "./src/runtime.ts",
     "./world": "./src/world.ts",
     "./app/configPorts": "./src/app/configPorts.ts",
     "./app/controlPorts": "./src/app/controlPorts.ts",

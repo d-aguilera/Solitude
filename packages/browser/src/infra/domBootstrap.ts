@@ -1,5 +1,3 @@
-import { parameters } from "@solitude/engine/global/parameters";
-import { NewtonianGravityEngine } from "@solitude/engine/infra/NewtonianGravityEngine";
 import type { GamePlugin } from "@solitude/engine/plugin";
 import type {
   Rasterizer,
@@ -10,6 +8,7 @@ import {
   buildViewDefinitions,
   DefaultViewRenderer,
 } from "@solitude/engine/render";
+import { NewtonianGravityEngine, parameters } from "@solitude/engine/runtime";
 import type {
   GravityEngine,
   WorldAndSceneConfig,

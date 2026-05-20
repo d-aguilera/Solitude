@@ -1,5 +1,5 @@
-import { createHeadlessLoop } from "@solitude/engine/infra/headlessGameLoop";
 import { localFrame, mat3, vec3 } from "@solitude/engine/math";
+import { createHeadlessLoop } from "@solitude/engine/runtime";
 import type { EntityConfig, WorldConfigBase } from "@solitude/engine/world";
 import { createSpacecraftOperatorPlugin } from "solitude/plugins/spacecraftOperator/index";
 import { describe, expect, it } from "vitest";
