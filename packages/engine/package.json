@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./assets": "./src/assets.ts",
     "./math": "./src/math.ts",
     "./plugin": "./src/plugin.ts",
     "./render": "./src/render.ts",

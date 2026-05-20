@@ -1,4 +1,4 @@
-import { parseObjMesh } from "@solitude/engine/config/obj";
+import { parseObjMesh } from "@solitude/engine/assets";
 import { AU, km, vec3, type Vec3 } from "@solitude/engine/math";
 import type { Mesh } from "@solitude/engine/render";
 import type {

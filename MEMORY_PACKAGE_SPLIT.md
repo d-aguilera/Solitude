@@ -235,6 +235,19 @@ Active strategic work has moved back to `MEMORY_OPERATOR_MODEL.md`.
 
 ## Completed Slices
 
+### Completed Slice: Package Split 30
+
+What changed:
+
+1. Added `@solitude/engine/assets` as a curated facade for generic asset parsing helpers.
+2. Moved Solitude solar-system OBJ mesh imports from `@solitude/engine/config/obj` to the asset facade.
+3. Kept `@solitude/engine/config/obj` as a compatibility export.
+
+Notes:
+
+- OBJ parsing stays separate from `@solitude/engine/render` because it is asset/config loading, not a render runtime contract.
+- External engine imports now use the curated facade subpaths only.
+
 ### Completed Slice: Package Split 29
 
 What changed:

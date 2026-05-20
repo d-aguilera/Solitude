@@ -1,4 +1,4 @@
-import { parseObjMesh } from "@solitude/engine/config/obj";
+import { parseObjMesh } from "@solitude/engine/assets";
 import {
   circularSpeedAtRadius,
   computeVolumeOfTriangleMesh,
