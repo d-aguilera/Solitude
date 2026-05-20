@@ -235,6 +235,19 @@ Active strategic work has moved back to `MEMORY_OPERATOR_MODEL.md`.
 
 ## Completed Slices
 
+### Completed Slice: Package Split 31
+
+What changed:
+
+1. Removed old granular compatibility exports from `@solitude/engine`.
+2. Kept only curated facade exports: `assets`, `math`, `plugin`, `render`, `runtime`, and `world`.
+3. Verified browser and Solitude already consume only those facade subpaths.
+
+Notes:
+
+- Internal engine source continues using package-internal relative imports.
+- Future cross-package engine API additions should extend an existing facade or add a new intentional facade; do not reintroduce folder-shaped internal subpath exports by default.
+
 ### Completed Slice: Package Split 30
 
 What changed:
