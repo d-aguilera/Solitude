@@ -1,4 +1,5 @@
 import type { World } from "@solitude/engine/domain/domainPorts";
+import { parameters } from "@solitude/engine/global/parameters";
 import {
   EPS_ANGLE_RAD,
   EPS_DELTA_V,
@@ -6,13 +7,11 @@ import {
   EPS_LEN_COARSE,
   EPS_SPEED_COARSE,
   EPS_SPEED_FINE,
-} from "@solitude/engine/domain/epsilon";
-import {
   getDominantBody,
   getDominantBodyPrimary,
-} from "@solitude/engine/domain/orbit";
-import { vec3, type Vec3 } from "@solitude/engine/domain/vec3";
-import { parameters } from "@solitude/engine/global/parameters";
+  vec3,
+  type Vec3,
+} from "@solitude/engine/math";
 import type {
   AttitudeCommand,
   ControlInput,

@@ -1,6 +1,5 @@
 import type { ControlledBody } from "@solitude/engine/domain/domainPorts";
-import { EPS_SPEED_SQ } from "@solitude/engine/domain/epsilon";
-import { type Vec3, vec3 } from "@solitude/engine/domain/vec3";
+import { EPS_SPEED_SQ, type Vec3, vec3 } from "@solitude/engine/math";
 import type { SegmentPlugin, WorldSegment } from "@solitude/engine/plugin";
 
 const VELOCITY_SEGMENT_LENGTH = 500000; // meters

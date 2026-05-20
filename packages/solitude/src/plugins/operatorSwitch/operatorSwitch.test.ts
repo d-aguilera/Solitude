@@ -3,9 +3,7 @@ import type {
   ControlledBody,
   World,
 } from "@solitude/engine/domain/domainPorts";
-import { localFrame } from "@solitude/engine/domain/localFrame";
-import { mat3 } from "@solitude/engine/domain/mat3";
-import { vec3 } from "@solitude/engine/domain/vec3";
+import { localFrame, mat3, vec3 } from "@solitude/engine/math";
 import type { LoopPlugin } from "@solitude/engine/plugin";
 import { createControlInput } from "@solitude/engine/plugin";
 import { describe, expect, it } from "vitest";

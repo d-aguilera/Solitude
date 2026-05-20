@@ -11,19 +11,18 @@ import type {
   SphericalBodyPhysics,
 } from "@solitude/engine/domain/domainPorts";
 import {
+  circularSpeedAtRadius,
+  computeVolumeOfTriangleMesh,
   DOT_PARALLEL_COS,
   EPS_LEN,
   EPS_LEN_STRICT,
-} from "@solitude/engine/domain/epsilon";
-import {
+  km,
   localFrame,
+  mat3,
+  vec3,
   type LocalFrame,
-} from "@solitude/engine/domain/localFrame";
-import { mat3 } from "@solitude/engine/domain/mat3";
-import { computeVolumeOfTriangleMesh } from "@solitude/engine/domain/meshVolume";
-import { circularSpeedAtRadius } from "@solitude/engine/domain/phys";
-import { km } from "@solitude/engine/domain/units";
-import { vec3, type Vec3 } from "@solitude/engine/domain/vec3";
+  type Vec3,
+} from "@solitude/engine/math";
 import { initialFrame } from "@solitude/engine/setup/setup";
 import { createKeplerianBodiesFromConfig } from "@solitude/engine/setup/setupKeplerianBodies";
 import { colors } from "./colors";

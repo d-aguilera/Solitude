@@ -1,5 +1,5 @@
 import type { ViewFrameUpdateParams } from "@solitude/engine/app/viewPorts";
-import { localFrame } from "@solitude/engine/domain/localFrame";
+import { localFrame } from "@solitude/engine/math";
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import type { PluginCompositionContext } from "../pluginComposition";
 import { createSpacecraftVehicleDynamicsPlugin } from "./core";

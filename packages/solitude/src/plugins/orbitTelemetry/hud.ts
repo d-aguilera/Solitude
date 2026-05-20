@@ -1,7 +1,7 @@
 import {
   computeOrbitReadoutInto,
   createOrbitReadout,
-} from "@solitude/engine/domain/orbit";
+} from "@solitude/engine/math";
 import {
   formatDistance,
   formatSimTime,

@@ -1,4 +1,4 @@
-import { vec3 } from "@solitude/engine/domain/vec3";
+import { vec3 } from "@solitude/engine/math";
 import type { Trajectory } from "./types";
 
 /**

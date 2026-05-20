@@ -1,4 +1,4 @@
-import { vec3 } from "@solitude/engine/domain/vec3";
+import { vec3 } from "@solitude/engine/math";
 import { formatSpeed } from "@solitude/engine/render/formatters";
 import type { HudPanelProvider } from "../hud/capabilities";
 import type { SpacecraftOperatorTelemetry } from "../spacecraftOperator/telemetry";

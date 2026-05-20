@@ -5,8 +5,7 @@ import type {
 import type { EntityRenderConfig } from "@solitude/engine/app/renderConfigPorts";
 import type { Mesh } from "@solitude/engine/app/scenePorts";
 import { parseObjMesh } from "@solitude/engine/config/obj";
-import { AU, km } from "@solitude/engine/domain/units";
-import { vec3, type Vec3 } from "@solitude/engine/domain/vec3";
+import { AU, km, vec3, type Vec3 } from "@solitude/engine/math";
 import { colors } from "./colors";
 import icoObjText from "./ico.obj?raw";
 

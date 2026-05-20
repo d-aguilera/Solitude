@@ -1,6 +1,6 @@
 import type { EntityConfig } from "@solitude/engine/app/entityConfigPorts";
 import { applyWorldModelPlugins } from "@solitude/engine/app/worldModelConfig";
-import { vec3 } from "@solitude/engine/domain/vec3";
+import { vec3 } from "@solitude/engine/math";
 import type { WorldModelRegistry } from "@solitude/engine/plugin";
 import { createScene } from "@solitude/engine/setup/sceneSetup";
 import { createWorld } from "@solitude/engine/setup/setup";

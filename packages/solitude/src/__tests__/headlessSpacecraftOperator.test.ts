@@ -1,8 +1,6 @@
 import type { EntityConfig } from "@solitude/engine/app/entityConfigPorts";
-import { localFrame } from "@solitude/engine/domain/localFrame";
-import { mat3 } from "@solitude/engine/domain/mat3";
-import { vec3 } from "@solitude/engine/domain/vec3";
 import { createHeadlessLoop } from "@solitude/engine/infra/headlessGameLoop";
+import { localFrame, mat3, vec3 } from "@solitude/engine/math";
 import type { WorldConfigBase } from "@solitude/engine/setup/setup";
 import { createSpacecraftOperatorPlugin } from "solitude/plugins/spacecraftOperator/index";
 import { describe, expect, it } from "vitest";

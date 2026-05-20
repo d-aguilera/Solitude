@@ -2,7 +2,7 @@ import type {
   ViewDefinition,
   ViewFrameUpdateParams,
 } from "@solitude/engine/app/viewPorts";
-import { vec3 } from "@solitude/engine/domain/vec3";
+import { vec3 } from "@solitude/engine/math";
 import type { GamePlugin } from "@solitude/engine/plugin";
 
 export function createAxialViewsPlugin(): GamePlugin {

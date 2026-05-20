@@ -5,9 +5,9 @@ import type {
 import {
   EPS_LEN_COARSE,
   EPS_SPEED_COARSE,
-} from "@solitude/engine/domain/epsilon";
-import { getDominantBodyPrimary } from "@solitude/engine/domain/orbit";
-import { vec3 } from "@solitude/engine/domain/vec3";
+  getDominantBodyPrimary,
+  vec3,
+} from "@solitude/engine/math";
 import type { HudPanelProvider } from "../hud/capabilities";
 import { getAutopilotMode } from "./logic";
 

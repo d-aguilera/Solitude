@@ -7,7 +7,7 @@ import type {
   ControlledBody,
   World,
 } from "@solitude/engine/domain/domainPorts";
-import { vec3 } from "@solitude/engine/domain/vec3";
+import { vec3 } from "@solitude/engine/math";
 import type {
   ControlInput,
   ControlPlugin,

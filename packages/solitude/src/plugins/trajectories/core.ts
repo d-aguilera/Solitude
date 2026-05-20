@@ -6,8 +6,8 @@ import type {
   Scene,
 } from "@solitude/engine/app/scenePorts";
 import type { World } from "@solitude/engine/domain/domainPorts";
-import { mat3 } from "@solitude/engine/domain/mat3";
-import type { Vec3 } from "@solitude/engine/domain/vec3";
+import type { Vec3 } from "@solitude/engine/math";
+import { mat3 } from "@solitude/engine/math";
 import type { ScenePlugin } from "@solitude/engine/plugin";
 import { updateTrajectories } from "./logic";
 import { bindTrajectoryPlanToScene } from "./trajectoryBind";

@@ -235,6 +235,19 @@ Active strategic work has moved back to `MEMORY_OPERATOR_MODEL.md`.
 
 ## Completed Slices
 
+### Completed Slice: Package Split 26
+
+What changed:
+
+1. Added `@solitude/engine/math` as a curated facade for generic math, units, epsilon constants, mesh volume, and orbital helper APIs.
+2. Updated Solitude consumers to import those helpers from the facade instead of granular `@solitude/engine/domain/*` subpaths.
+3. Kept the existing granular domain math exports as compatibility subpaths.
+
+Notes:
+
+- This follows the Package Split 25 facade pattern: add the stable doorway, migrate callers, then leave old subpaths alone until a later tightening pass.
+- `@solitude/engine/domain/domainPorts` remains separate for now because it is world/entity model API rather than math API.
+
 ### Completed Slice: Package Split 25
 
 What changed:

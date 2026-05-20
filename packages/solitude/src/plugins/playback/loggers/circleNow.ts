@@ -3,14 +3,15 @@ import type {
   EntityMotionState,
   World,
 } from "@solitude/engine/domain/domainPorts";
+import { parameters } from "@solitude/engine/global/parameters";
 import {
   EPS_DELTA_V,
   EPS_LEN,
   EPS_SPEED_FINE,
-} from "@solitude/engine/domain/epsilon";
-import { getDominantBodyPrimary } from "@solitude/engine/domain/orbit";
-import { type Vec3, vec3 } from "@solitude/engine/domain/vec3";
-import { parameters } from "@solitude/engine/global/parameters";
+  getDominantBodyPrimary,
+  type Vec3,
+  vec3,
+} from "@solitude/engine/math";
 import {
   maxRcsTranslationAcceleration,
   maxThrustAcceleration,

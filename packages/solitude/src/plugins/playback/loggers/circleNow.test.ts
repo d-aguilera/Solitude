@@ -2,9 +2,8 @@ import type {
   ControlledBody,
   World,
 } from "@solitude/engine/domain/domainPorts";
-import { mat3 } from "@solitude/engine/domain/mat3";
-import { vec3 } from "@solitude/engine/domain/vec3";
 import { parameters } from "@solitude/engine/global/parameters";
+import { mat3, vec3 } from "@solitude/engine/math";
 import { createControlInput } from "@solitude/engine/plugin";
 import { describe, expect, it, vi } from "vitest";
 import { compilePlaybackScript } from "../logic";

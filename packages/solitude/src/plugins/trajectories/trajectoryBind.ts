@@ -2,7 +2,7 @@ import type {
   PolylineSceneObject,
   Scene,
 } from "@solitude/engine/app/scenePorts";
-import { vec3 } from "@solitude/engine/domain/vec3";
+import { vec3 } from "@solitude/engine/math";
 import type { TrajectoryPlan } from "./trajectoryPlan";
 import type { Trajectory } from "./types";
 
