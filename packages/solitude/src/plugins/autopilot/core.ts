@@ -1,11 +1,9 @@
 import type {
   ControlInput,
-  MutableControlState,
-} from "@solitude/engine/app/controlPorts";
-import type {
   ControlPlugin,
+  MutableControlState,
   PluginCapabilityProvider,
-} from "@solitude/engine/app/pluginPorts";
+} from "@solitude/engine/plugin";
 import {
   getAutopilotAttitudeCommand,
   getAutopilotMode,

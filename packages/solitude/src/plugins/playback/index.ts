@@ -1,7 +1,4 @@
-import type {
-  GamePlugin,
-  RuntimeOptions,
-} from "@solitude/engine/app/pluginPorts";
+import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import { createHudPanelProvider } from "../hud/capabilities";
 import { createPlaybackController } from "./core";
 import { createHudPanel } from "./hud";

@@ -1,17 +1,15 @@
-import type {
-  ControlInput,
-  MutableControlState,
-} from "@solitude/engine/app/controlPorts";
 import { updateFocusContext } from "@solitude/engine/app/focus";
-import type {
-  LoopPlugin,
-  LoopUpdateParams,
-} from "@solitude/engine/app/pluginPorts";
 import type { FocusContext } from "@solitude/engine/app/runtimePorts";
 import type {
   ControlledBody,
   World,
 } from "@solitude/engine/domain/domainPorts";
+import type {
+  ControlInput,
+  LoopPlugin,
+  LoopUpdateParams,
+  MutableControlState,
+} from "@solitude/engine/plugin";
 import { createPlaybackLogger, type PlaybackLogger } from "./loggers/index";
 import {
   applyCompiledPhaseControls,

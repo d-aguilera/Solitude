@@ -1,6 +1,4 @@
-import { createControlInput } from "@solitude/engine/app/controlPorts";
 import { createPluginCapabilityRegistry } from "@solitude/engine/app/pluginCapabilities";
-import type { SimulationPlugin } from "@solitude/engine/app/pluginPorts";
 import type {
   ControlledBody,
   World,
@@ -8,6 +6,8 @@ import type {
 import { localFrame } from "@solitude/engine/domain/localFrame";
 import { mat3 } from "@solitude/engine/domain/mat3";
 import { vec3 } from "@solitude/engine/domain/vec3";
+import type { SimulationPlugin } from "@solitude/engine/plugin";
+import { createControlInput } from "@solitude/engine/plugin";
 import { describe, expect, it } from "vitest";
 import {
   createAutonomousControlProvider,

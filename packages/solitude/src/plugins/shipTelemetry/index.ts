@@ -1,7 +1,4 @@
-import type {
-  GamePlugin,
-  RuntimeOptions,
-} from "@solitude/engine/app/pluginPorts";
+import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import { createHudPanelProvider } from "../hud/capabilities";
 import type { PluginCompositionContext } from "../pluginComposition";
 import { createSpacecraftOperatorTelemetry } from "../spacecraftOperator/telemetry";

@@ -1,4 +1,4 @@
-import type { GamePlugin } from "@solitude/engine/app/pluginPorts";
+import type { GamePlugin } from "@solitude/engine/plugin";
 import { createHudPanelProvider } from "../hud/capabilities";
 import { createLoopPlugin } from "./core";
 import { createHudPanel } from "./hud";

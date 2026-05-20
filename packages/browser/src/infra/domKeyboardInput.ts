@@ -1,16 +1,14 @@
 import type {
   ControlAction,
   ControlInput,
-} from "@solitude/engine/app/controlPorts";
-import {
-  BASE_CONTROL_ACTIONS,
-  createControlInput,
-} from "@solitude/engine/app/controlPorts";
-import type {
   GamePlugin,
   InputPlugin,
   KeyHandler,
-} from "@solitude/engine/app/pluginPorts";
+} from "@solitude/engine/plugin";
+import {
+  BASE_CONTROL_ACTIONS,
+  createControlInput,
+} from "@solitude/engine/plugin";
 
 /**
  * Initialize keyboard listeners and keep the actions state updated.

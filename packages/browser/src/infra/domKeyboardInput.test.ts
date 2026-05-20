@@ -1,5 +1,5 @@
-import { BASE_CONTROL_ACTIONS } from "@solitude/engine/app/controlPorts";
-import type { InputPlugin } from "@solitude/engine/app/pluginPorts";
+import type { InputPlugin } from "@solitude/engine/plugin";
+import { BASE_CONTROL_ACTIONS } from "@solitude/engine/plugin";
 import { describe, expect, it } from "vitest";
 import { __domKeyboardInputTest } from "./domKeyboardInput";
 

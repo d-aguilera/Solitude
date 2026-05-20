@@ -1,5 +1,4 @@
-import type { ControlAction } from "@solitude/engine/app/controlPorts";
-import type { InputPlugin } from "@solitude/engine/app/pluginPorts";
+import type { ControlAction, InputPlugin } from "@solitude/engine/plugin";
 
 const spacecraftActions = [
   "rollLeft",

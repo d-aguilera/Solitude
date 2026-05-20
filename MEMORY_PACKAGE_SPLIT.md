@@ -235,6 +235,32 @@ Active strategic work has moved back to `MEMORY_OPERATOR_MODEL.md`.
 
 ## Completed Slices
 
+### Completed Slice: Package Split 25
+
+What changed:
+
+1. Added `@solitude/engine/plugin` as the first curated engine facade subpath.
+2. The facade gathers plugin and control-input contracts that external consumers use most often.
+3. Updated browser and Solitude consumers to import plugin/control APIs from the facade.
+
+Notes:
+
+- Existing granular `@solitude/engine/app/pluginPorts` and `@solitude/engine/app/controlPorts` exports remain as compatibility subpaths for now.
+- Future facade slices should follow this pattern: add a narrow stable doorway first, migrate consumers, then tighten old subpaths only after the migration is boring.
+
+### Completed Slice: Package Split 24
+
+What changed:
+
+1. Added `scripts/check-package-boundaries.mjs`.
+2. Root `npm run typecheck` now runs package-boundary checks before package-local workspace typechecks.
+3. Added package-local `.npmignore` files so dry-run package tarballs exclude tests.
+
+Notes:
+
+- The boundary checker rejects cross-package relative imports, unexported workspace package subpaths, and undeclared workspace package dependencies.
+- Packages remain private and source-exported.
+
 ### Completed Slice: Package Split 23
 
 What changed:

@@ -1,5 +1,5 @@
 import type { EntityConfig } from "@solitude/engine/app/entityConfigPorts";
-import type { GamePlugin } from "@solitude/engine/app/pluginPorts";
+import type { GamePlugin } from "@solitude/engine/plugin";
 import { buildDefaultSolarSystemShipConfigs } from "./ships";
 import { buildDefaultSolarSystemConfigs } from "./solarSystem";
 

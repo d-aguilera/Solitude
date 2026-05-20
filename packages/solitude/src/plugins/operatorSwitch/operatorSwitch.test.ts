@@ -1,5 +1,3 @@
-import { createControlInput } from "@solitude/engine/app/controlPorts";
-import type { LoopPlugin } from "@solitude/engine/app/pluginPorts";
 import type { FocusContext } from "@solitude/engine/app/runtimePorts";
 import type {
   ControlledBody,
@@ -8,6 +6,8 @@ import type {
 import { localFrame } from "@solitude/engine/domain/localFrame";
 import { mat3 } from "@solitude/engine/domain/mat3";
 import { vec3 } from "@solitude/engine/domain/vec3";
+import type { LoopPlugin } from "@solitude/engine/plugin";
+import { createControlInput } from "@solitude/engine/plugin";
 import { describe, expect, it } from "vitest";
 import { defaultPluginIds } from "../index";
 import { __operatorSwitchTest, createOperatorSwitchPlugin } from "./index";

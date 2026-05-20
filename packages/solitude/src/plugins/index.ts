@@ -1,7 +1,4 @@
-import type {
-  GamePlugin,
-  RuntimeOptions,
-} from "@solitude/engine/app/pluginPorts";
+import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import { createAutopilotPlugin } from "./autopilot/index";
 import { createAxialViewsPlugin } from "./axialViews/index";
 import { createHudPlugin } from "./hud/index";

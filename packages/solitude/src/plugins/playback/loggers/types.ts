@@ -1,8 +1,8 @@
-import type { ControlInput } from "@solitude/engine/app/controlPorts";
 import type {
   ControlledBody,
   World,
 } from "@solitude/engine/domain/domainPorts";
+import type { ControlInput } from "@solitude/engine/plugin";
 import type { CompiledPlaybackScript } from "../types";
 
 export interface PlaybackLogger {

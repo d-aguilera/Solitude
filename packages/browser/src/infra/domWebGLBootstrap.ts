@@ -1,5 +1,5 @@
 import type { WorldAndSceneConfig } from "@solitude/engine/app/configPorts";
-import type { GamePlugin } from "@solitude/engine/app/pluginPorts";
+import type { GamePlugin } from "@solitude/engine/plugin";
 import type {
   Rasterizer,
   RenderSurface2D,

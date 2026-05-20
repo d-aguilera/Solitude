@@ -1,4 +1,4 @@
-import { createControlInput } from "@solitude/engine/app/controlPorts";
+import { createControlInput } from "@solitude/engine/plugin";
 import { describe, expect, it } from "vitest";
 import {
   applyCompiledPhaseControls,

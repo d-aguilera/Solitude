@@ -1,8 +1,9 @@
 import type {
   ControlAction,
   ControlInput,
-} from "@solitude/engine/app/controlPorts";
-import type { InputPlugin, KeyHandler } from "@solitude/engine/app/pluginPorts";
+  InputPlugin,
+  KeyHandler,
+} from "@solitude/engine/plugin";
 
 const autopilotToggleActions: Set<ControlAction> = new Set([
   "alignToBody",

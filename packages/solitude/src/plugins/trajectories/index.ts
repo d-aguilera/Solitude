@@ -1,4 +1,4 @@
-import type { GamePlugin } from "@solitude/engine/app/pluginPorts";
+import type { GamePlugin } from "@solitude/engine/plugin";
 import { createScenePlugin } from "./core";
 
 export function createTrajectoriesPlugin(): GamePlugin {

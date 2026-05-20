@@ -1,21 +1,5 @@
 import { createTickHandler } from "@solitude/engine/app/game";
 import { createPluginCapabilityRegistry } from "@solitude/engine/app/pluginCapabilities";
-import type {
-  ControlPlugin,
-  FramePolicy,
-  GamePlugin,
-  LoopPlugin,
-  LoopState,
-  PluginCapabilityProvider,
-  PluginCapabilityRegistry,
-  SceneObjectFilter,
-  ScenePlugin,
-  SceneViewFilterParams,
-  SegmentPlugin,
-  SegmentProviderParams,
-  SimulationPlugin,
-  WorldSegment,
-} from "@solitude/engine/app/pluginPorts";
 import { validatePluginRequirements } from "@solitude/engine/app/pluginRequirements";
 import { getMainViewLookState } from "@solitude/engine/app/renderConfigPorts";
 import type {
@@ -34,6 +18,22 @@ import {
   getRequiredPrimaryViewState,
 } from "@solitude/engine/app/viewRegistry";
 import { profiler } from "@solitude/engine/global/profiling";
+import type {
+  ControlPlugin,
+  FramePolicy,
+  GamePlugin,
+  LoopPlugin,
+  LoopState,
+  PluginCapabilityProvider,
+  PluginCapabilityRegistry,
+  SceneObjectFilter,
+  ScenePlugin,
+  SceneViewFilterParams,
+  SegmentPlugin,
+  SegmentProviderParams,
+  SimulationPlugin,
+  WorldSegment,
+} from "@solitude/engine/plugin";
 import {
   createRenderFrameCache,
   updateRenderFrameCache,

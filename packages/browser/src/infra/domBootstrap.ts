@@ -1,10 +1,10 @@
 import type { WorldAndSceneConfig } from "@solitude/engine/app/configPorts";
-import type { GamePlugin } from "@solitude/engine/app/pluginPorts";
 import type { ViewDefinition } from "@solitude/engine/app/viewPorts";
 import { buildViewDefinitions } from "@solitude/engine/app/viewRegistry";
 import type { GravityEngine } from "@solitude/engine/domain/domainPorts";
 import { parameters } from "@solitude/engine/global/parameters";
 import { NewtonianGravityEngine } from "@solitude/engine/infra/NewtonianGravityEngine";
+import type { GamePlugin } from "@solitude/engine/plugin";
 import { DefaultViewRenderer } from "@solitude/engine/render/DefaultViewRenderer";
 import type {
   Rasterizer,

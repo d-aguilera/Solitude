@@ -1,7 +1,4 @@
-import type {
-  LoopPlugin,
-  LoopUpdateResult,
-} from "@solitude/engine/app/pluginPorts";
+import type { LoopPlugin, LoopUpdateResult } from "@solitude/engine/plugin";
 import { createPauseController } from "./logic";
 
 const RUNNING_LOOP_UPDATE: LoopUpdateResult = {

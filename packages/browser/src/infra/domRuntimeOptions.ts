@@ -1,4 +1,4 @@
-import type { RuntimeOptions } from "@solitude/engine/app/pluginPorts";
+import type { RuntimeOptions } from "@solitude/engine/plugin";
 
 export function parseRuntimeOptionsFromSearch(search: string): RuntimeOptions {
   const params = new URLSearchParams(search);

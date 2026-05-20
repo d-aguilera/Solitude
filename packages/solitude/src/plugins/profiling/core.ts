@@ -1,5 +1,5 @@
-import type { LoopPlugin } from "@solitude/engine/app/pluginPorts";
 import { profilerController } from "@solitude/engine/global/profiling";
+import type { LoopPlugin } from "@solitude/engine/plugin";
 import { createProfilingController } from "./logic";
 
 export function createLoopPlugin(): {

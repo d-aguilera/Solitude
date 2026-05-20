@@ -1,4 +1,4 @@
-import type { LoopPlugin } from "@solitude/engine/app/pluginPorts";
+import type { LoopPlugin } from "@solitude/engine/plugin";
 import { createRuntimeTelemetryController } from "./logic";
 
 export function createLoopPlugin(): {

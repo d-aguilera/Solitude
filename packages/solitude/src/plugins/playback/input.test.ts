@@ -1,5 +1,5 @@
-import { createControlInput } from "@solitude/engine/app/controlPorts";
-import type { KeyHandler } from "@solitude/engine/app/pluginPorts";
+import type { KeyHandler } from "@solitude/engine/plugin";
+import { createControlInput } from "@solitude/engine/plugin";
 import { describe, expect, it, vi } from "vitest";
 import { createInputPlugin } from "./input";
 

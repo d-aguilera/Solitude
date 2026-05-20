@@ -1,4 +1,4 @@
-import type { InputPlugin } from "@solitude/engine/app/pluginPorts";
+import type { InputPlugin } from "@solitude/engine/plugin";
 
 export function createInputPlugin(): InputPlugin {
   return {

@@ -1,19 +1,19 @@
-import type { ControlInput } from "@solitude/engine/app/controlPorts";
 import {
   applyControlledBodyRotation,
   createPhysicsWorkspace,
   type PhysicsWorkspace,
 } from "@solitude/engine/app/physics";
 import type {
-  ControlPlugin,
-  PluginCapabilityRegistry,
-  SimulationPlugin,
-} from "@solitude/engine/app/pluginPorts";
-import type {
   ControlledBody,
   World,
 } from "@solitude/engine/domain/domainPorts";
 import { vec3 } from "@solitude/engine/domain/vec3";
+import type {
+  ControlInput,
+  ControlPlugin,
+  PluginCapabilityRegistry,
+  SimulationPlugin,
+} from "@solitude/engine/plugin";
 import {
   getSpacecraftAutonomousControls,
   getSpacecraftPropulsionResolvers,

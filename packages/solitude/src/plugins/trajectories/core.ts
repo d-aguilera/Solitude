@@ -1,6 +1,5 @@
 import type { WorldAndSceneConfig } from "@solitude/engine/app/configPorts";
 import type { EntityConfig } from "@solitude/engine/app/entityConfigPorts";
-import type { ScenePlugin } from "@solitude/engine/app/pluginPorts";
 import type {
   PolylineSceneObject,
   RGB,
@@ -9,6 +8,7 @@ import type {
 import type { World } from "@solitude/engine/domain/domainPorts";
 import { mat3 } from "@solitude/engine/domain/mat3";
 import type { Vec3 } from "@solitude/engine/domain/vec3";
+import type { ScenePlugin } from "@solitude/engine/plugin";
 import { updateTrajectories } from "./logic";
 import { bindTrajectoryPlanToScene } from "./trajectoryBind";
 import {

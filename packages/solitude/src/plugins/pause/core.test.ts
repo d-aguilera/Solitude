@@ -1,5 +1,5 @@
-import { createControlInput } from "@solitude/engine/app/controlPorts";
-import type { LoopUpdateParams } from "@solitude/engine/app/pluginPorts";
+import type { LoopUpdateParams } from "@solitude/engine/plugin";
+import { createControlInput } from "@solitude/engine/plugin";
 import { describe, expect, it } from "vitest";
 import { createLoopPlugin } from "./core";
 

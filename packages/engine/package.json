@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./plugin": "./src/plugin.ts",
     "./app/configPorts": "./src/app/configPorts.ts",
     "./app/controlPorts": "./src/app/controlPorts.ts",
     "./app/entityConfigPorts": "./src/app/entityConfigPorts.ts",

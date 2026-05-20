@@ -1,4 +1,4 @@
-import type { RuntimeOptions } from "@solitude/engine/app/pluginPorts";
+import type { RuntimeOptions } from "@solitude/engine/plugin";
 
 export type DiagnosticMode = "capture" | "playback";
 export type DiagnosticLogMode = "circle-now";

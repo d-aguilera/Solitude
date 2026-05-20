@@ -1,8 +1,3 @@
-import type {
-  AttitudeCommand,
-  ControlInput,
-  ControlledBodyState,
-} from "@solitude/engine/app/controlPorts";
 import type { World } from "@solitude/engine/domain/domainPorts";
 import {
   EPS_ANGLE_RAD,
@@ -18,6 +13,11 @@ import {
 } from "@solitude/engine/domain/orbit";
 import { vec3, type Vec3 } from "@solitude/engine/domain/vec3";
 import { parameters } from "@solitude/engine/global/parameters";
+import type {
+  AttitudeCommand,
+  ControlInput,
+  ControlledBodyState,
+} from "@solitude/engine/plugin";
 import type {
   SpacecraftPropulsionCommand,
   SpacecraftRcsCommand,

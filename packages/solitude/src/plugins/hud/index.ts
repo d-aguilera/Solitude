@@ -1,5 +1,5 @@
 import { createBrowserOverlayProvider } from "@solitude/browser/dom/overlayPorts";
-import type { GamePlugin } from "@solitude/engine/app/pluginPorts";
+import type { GamePlugin } from "@solitude/engine/plugin";
 import {
   hudPanelCapability,
   isHudPanelProvider,

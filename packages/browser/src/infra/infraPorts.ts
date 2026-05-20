@@ -1,8 +1,7 @@
 import type { WorldAndSceneConfig } from "@solitude/engine/app/configPorts";
-import type { ControlInput } from "@solitude/engine/app/controlPorts";
-import type { GamePlugin } from "@solitude/engine/app/pluginPorts";
 import type { ViewDefinition } from "@solitude/engine/app/viewPorts";
 import type { GravityEngine } from "@solitude/engine/domain/domainPorts";
+import type { ControlInput, GamePlugin } from "@solitude/engine/plugin";
 import type {
   Rasterizer,
   RenderSurface2D,

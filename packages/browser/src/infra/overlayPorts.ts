@@ -1,11 +1,11 @@
-import type { ControlInput } from "@solitude/engine/app/controlPorts";
+import type { FocusContext } from "@solitude/engine/app/runtimePorts";
+import type { World } from "@solitude/engine/domain/domainPorts";
 import type {
+  ControlInput,
   FramePolicy,
   PluginCapabilityProvider,
   PluginCapabilityRegistry,
-} from "@solitude/engine/app/pluginPorts";
-import type { FocusContext } from "@solitude/engine/app/runtimePorts";
-import type { World } from "@solitude/engine/domain/domainPorts";
+} from "@solitude/engine/plugin";
 
 export const browserOverlayCapability = "solitude.browser.overlay.v1";
 

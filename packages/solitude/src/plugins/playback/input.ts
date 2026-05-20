@@ -1,5 +1,8 @@
-import type { ControlAction } from "@solitude/engine/app/controlPorts";
-import type { InputPlugin, KeyHandler } from "@solitude/engine/app/pluginPorts";
+import type {
+  ControlAction,
+  InputPlugin,
+  KeyHandler,
+} from "@solitude/engine/plugin";
 import type { PlaybackController } from "./core";
 import type { DiagnosticRuntimeOptions } from "./options";
 

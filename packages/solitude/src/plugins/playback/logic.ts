@@ -1,7 +1,4 @@
-import type {
-  ControlAction,
-  ControlInput,
-} from "@solitude/engine/app/controlPorts";
+import type { ControlAction, ControlInput } from "@solitude/engine/plugin";
 import type {
   CompiledPlaybackPhase,
   CompiledPlaybackScript,

@@ -1,10 +1,10 @@
+import type { World } from "@solitude/engine/domain/domainPorts";
 import type {
   ControlInput,
   ControlledBodyState,
   MutableControlState,
-} from "@solitude/engine/app/controlPorts";
-import type { PluginCapabilityRegistry } from "@solitude/engine/app/pluginPorts";
-import type { World } from "@solitude/engine/domain/domainPorts";
+  PluginCapabilityRegistry,
+} from "@solitude/engine/plugin";
 
 const spacecraftPropulsionResolverCapabilityId =
   "spacecraft.propulsionResolver.v1";
