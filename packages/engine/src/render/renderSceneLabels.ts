@@ -1,17 +1,12 @@
-import type {
-  BodySceneObject,
-  LightEmitterSceneObject,
-  SceneObject,
-} from "../app/scenePorts";
-import type { EntityId } from "../domain/domainPorts";
-import { type Vec3, vec3 } from "../domain/vec3";
+import type { SceneLabelCandidate } from "../app/pluginPorts";
+import type { ViewLabelMode } from "../app/viewPorts";
+import type { Vec3 } from "../domain/vec3";
 import { alloc } from "../global/allocProfiler";
-import { formatDistance, formatSpeed } from "./formatters";
 import { LABEL_FONT } from "./labelStyle";
 import { type NdcPoint, ndc } from "./ndc";
 import type {
   Point,
-  RenderedBodyLabel,
+  RenderedSceneLabel,
   Size,
   TextMetrics,
 } from "./renderPorts";
@@ -19,29 +14,25 @@ import { scrn } from "./scrn";
 import { sortRangeInPlace } from "./sortRange";
 
 type SortedScratchItem = {
-  body: LabelBodySceneObject;
-  distance: number;
+  label: SceneLabelCandidate;
 };
 
-type LabelBodySceneObject = BodySceneObject | LightEmitterSceneObject;
-
 const sortedScratch: SortedScratchItem[] = [];
-const diffScratch: Vec3 = vec3.zero();
 const ndcScratch: NdcPoint = ndc.zero();
 const parentNdcScratch: NdcPoint = ndc.zero();
 
 export interface LabelLayoutCache {
   font: string;
   charWidth: number;
-  labelMode: BodyLabelContent;
+  labelMode: ViewLabelMode;
   lastLayoutTimeMs: number;
   lastScreenWidth: number;
   lastScreenHeight: number;
-  lastBodyCount: number;
+  lastLabelCount: number;
   needsRelayout: boolean;
-  sortedBodies: LabelBodySceneObject[];
+  sortedLabels: SceneLabelCandidate[];
   entries: Map<string, LabelLayoutEntry>;
-  objectById: Map<string, SceneObject>;
+  labelById: Map<string, SceneLabelCandidate>;
   grid: LabelSpatialGrid;
 }
 
@@ -63,8 +54,6 @@ interface LabelGridCell {
 const LABEL_LAYOUT_INTERVAL_MS = 150;
 const LABEL_GRID_CELL_SIZE = 128;
 
-export type BodyLabelContent = "full" | "nameOnly";
-
 export function createLabelLayoutCache(
   measureText: (text: string, font: string) => TextMetrics,
   font: string = LABEL_FONT,
@@ -78,11 +67,11 @@ export function createLabelLayoutCache(
     lastLayoutTimeMs: -Infinity,
     lastScreenWidth: -1,
     lastScreenHeight: -1,
-    lastBodyCount: -1,
+    lastLabelCount: -1,
     needsRelayout: true,
-    sortedBodies: [],
+    sortedLabels: [],
     entries: new Map(),
-    objectById: new Map(),
+    labelById: new Map(),
     grid: {
       cellSize: LABEL_GRID_CELL_SIZE,
       cells: new Map(),
@@ -104,11 +93,11 @@ const placedLabelRectsScratch: LabelRect[] = [];
 let placedLabelCount = 0;
 
 /**
- * Scratch structure for tracking all projected body centers that are
- * in front of the camera and on-screen during a single render pass.
+ * Scratch structure for tracking all projected anchors that are in front of
+ * the camera and on-screen during a single render pass.
  */
-let allBodyCentersCount = 0;
-const allBodyCentersScratch: Point[] = [];
+let allAnchorsCount = 0;
+const allAnchorsScratch: Point[] = [];
 const anchor = scrn.zero();
 const parentAnchor = scrn.zero();
 const boxCenter: Point = { x: 0, y: 0 };
@@ -126,83 +115,56 @@ const lineHeight = 16;
 const padding: Size = { width: 6, height: 4 };
 
 /**
- * Render body labels with a cached layout:
+ * Render scene labels with a cached layout:
  *  - Fast path every frame: project anchors, use cached placement direction,
  *    and render labels.
  *  - Slow path on a throttled interval: recompute layout by probing 8 angles
  *    at 45° steps (starting from 45°) while avoiding overlaps and visible
- *    body centers using a spatial grid.
+ *    label anchors using a spatial grid.
  */
-export function renderBodyLabelsInto(
-  into: RenderedBodyLabel[],
-  objects: SceneObject[],
-  referencePosition: Vec3,
+export function renderSceneLabelsInto(
+  into: RenderedSceneLabel[],
+  labels: SceneLabelCandidate[],
   screenWidth: number,
   screenHeight: number,
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
   layoutCache: LabelLayoutCache,
   nowMs: number,
-  objectsFilter?: (obj: SceneObject) => boolean,
-  labelMode: BodyLabelContent = "full",
+  labelMode: ViewLabelMode = "full",
 ): number {
-  alloc.pushName(renderBodyLabelsInto.name);
+  alloc.pushName(renderSceneLabelsInto.name);
   try {
     if (layoutCache.labelMode !== labelMode) {
       layoutCache.labelMode = labelMode;
       layoutCache.needsRelayout = true;
     }
-    const bodyCount = countLabelBodies(objects, objectsFilter);
     if (
-      shouldRelayout(layoutCache, nowMs, screenWidth, screenHeight, bodyCount)
-    ) {
-      layoutLabels(
+      shouldRelayout(
         layoutCache,
-        objects,
-        referencePosition,
+        nowMs,
         screenWidth,
         screenHeight,
-        projectInto,
-        objectsFilter,
-        labelMode,
-      );
+        labels.length,
+      )
+    ) {
+      layoutLabels(layoutCache, labels, screenWidth, screenHeight, projectInto);
       layoutCache.lastLayoutTimeMs = nowMs;
       layoutCache.lastScreenWidth = screenWidth;
       layoutCache.lastScreenHeight = screenHeight;
-      layoutCache.lastBodyCount = bodyCount;
+      layoutCache.lastLabelCount = labels.length;
       layoutCache.needsRelayout = false;
     }
 
     return renderLabelsFromCache(
       into,
       layoutCache,
-      referencePosition,
       screenWidth,
       screenHeight,
       projectInto,
-      objectsFilter,
-      labelMode,
     );
   } finally {
     alloc.popName();
   }
-}
-
-function countLabelBodies(
-  objects: SceneObject[],
-  objectsFilter?: (obj: SceneObject) => boolean,
-): number {
-  let count = 0;
-  for (let i = 0; i < objects.length; i++) {
-    const obj = objects[i];
-    if (!isLabelBody(obj)) continue;
-    if (objectsFilter && !objectsFilter(obj)) continue;
-    count++;
-  }
-  return count;
-}
-
-function isLabelBody(obj: SceneObject): obj is LabelBodySceneObject {
-  return obj.kind === "orbitalBody" || obj.kind === "lightEmitter";
 }
 
 function shouldRelayout(
@@ -210,61 +172,55 @@ function shouldRelayout(
   nowMs: number,
   screenWidth: number,
   screenHeight: number,
-  bodyCount: number,
+  labelCount: number,
 ): boolean {
   if (cache.needsRelayout) return true;
   if (screenWidth !== cache.lastScreenWidth) return true;
   if (screenHeight !== cache.lastScreenHeight) return true;
-  if (bodyCount !== cache.lastBodyCount) return true;
+  if (labelCount !== cache.lastLabelCount) return true;
   return nowMs - cache.lastLayoutTimeMs >= LABEL_LAYOUT_INTERVAL_MS;
 }
 
 function layoutLabels(
   cache: LabelLayoutCache,
-  objects: SceneObject[],
-  referencePosition: Vec3,
+  labels: SceneLabelCandidate[],
   screenWidth: number,
   screenHeight: number,
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
-  objectsFilter?: (obj: SceneObject) => boolean,
-  labelMode: BodyLabelContent = "full",
 ): void {
-  cache.objectById.clear();
-  for (let i = 0; i < objects.length; i++) {
-    cache.objectById.set(objects[i].id, objects[i]);
+  cache.labelById.clear();
+  for (let i = 0; i < labels.length; i++) {
+    cache.labelById.set(labels[i].id, labels[i]);
   }
 
   clearSpatialGrid(cache.grid);
 
-  allBodyCentersCount = collectVisibleBodyCenters(
+  allAnchorsCount = collectVisibleAnchors(
     cache.grid,
-    objects,
+    labels,
     projectInto,
     screenWidth,
     screenHeight,
-    objectsFilter,
   );
 
-  const sortedCount = sortBodies(objects, referencePosition, objectsFilter);
+  const sortedCount = sortLabels(labels);
 
-  if (cache.sortedBodies.length < sortedCount) {
-    cache.sortedBodies.length = sortedCount;
+  if (cache.sortedLabels.length < sortedCount) {
+    cache.sortedLabels.length = sortedCount;
   }
   for (let i = 0; i < sortedCount; i++) {
-    cache.sortedBodies[i] = sortedScratch[i].body;
+    cache.sortedLabels[i] = sortedScratch[i].label;
   }
-  cache.sortedBodies.length = sortedCount;
+  cache.sortedLabels.length = sortedCount;
 
   placedLabelCount = 0;
 
   let item: SortedScratchItem;
-  let body: LabelBodySceneObject;
-  let distance: number;
+  let label: SceneLabelCandidate;
   for (let i = 0; i < sortedCount; i++) {
     item = sortedScratch[i];
-    body = item.body;
-    distance = item.distance;
-    if (!projectInto(ndcScratch, body.position)) {
+    label = item.label;
+    if (!projectInto(ndcScratch, label.anchor)) {
       continue;
     }
 
@@ -279,9 +235,9 @@ function layoutLabels(
     }
 
     if (
-      body.kind === "orbitalBody" &&
-      !isMoonLabelSeparated(
-        body,
+      label.parentId &&
+      !isParentLabelSeparated(
+        label,
         cache,
         anchor,
         screenWidth,
@@ -292,13 +248,7 @@ function layoutLabels(
       continue;
     }
 
-    const lineCount = fillLabelLines(
-      lines,
-      labelMode,
-      body.id,
-      distance,
-      vec3.length(body.velocity),
-    );
+    const lineCount = fillLabelLines(lines, label);
 
     const maxTextWidth = getTextWidth(lines, lineCount, cache.charWidth);
     boxSize.width = maxTextWidth + padding.width * 2;
@@ -324,27 +274,23 @@ function layoutLabels(
     );
 
     registerPlacedLabel(cache.grid, position, boxSize);
-    updateCacheEntry(cache, body.id, directionIndex, boxSize);
+    updateCacheEntry(cache, label.id, directionIndex, boxSize);
   }
 }
 
 function renderLabelsFromCache(
-  into: RenderedBodyLabel[],
+  into: RenderedSceneLabel[],
   cache: LabelLayoutCache,
-  referencePosition: Vec3,
   screenWidth: number,
   screenHeight: number,
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
-  objectsFilter?: (obj: SceneObject) => boolean,
-  labelMode: BodyLabelContent = "full",
 ): number {
   let count = 0;
-  const sortedBodies = cache.sortedBodies;
-  for (let i = 0; i < sortedBodies.length; i++) {
-    const body = sortedBodies[i];
-    if (!body) continue;
-    if (objectsFilter && !objectsFilter(body)) continue;
-    if (!projectInto(ndcScratch, body.position)) {
+  const sortedLabels = cache.sortedLabels;
+  for (let i = 0; i < sortedLabels.length; i++) {
+    const label = sortedLabels[i];
+    if (!label) continue;
+    if (!projectInto(ndcScratch, label.anchor)) {
       continue;
     }
 
@@ -359,9 +305,9 @@ function renderLabelsFromCache(
     }
 
     if (
-      body.kind === "orbitalBody" &&
-      !isMoonLabelSeparated(
-        body,
+      label.parentId &&
+      !isParentLabelSeparated(
+        label,
         cache,
         anchor,
         screenWidth,
@@ -372,24 +318,15 @@ function renderLabelsFromCache(
       continue;
     }
 
-    vec3.subInto(diffScratch, body.position, referencePosition);
-    const distance = vec3.length(diffScratch);
-
-    const lineCount = fillLabelLines(
-      lines,
-      labelMode,
-      body.id,
-      distance,
-      vec3.length(body.velocity),
-    );
+    const lineCount = fillLabelLines(lines, label);
 
     const maxTextWidth = getTextWidth(lines, lineCount, cache.charWidth);
     boxSize.width = maxTextWidth + padding.width * 2;
     boxSize.height = lineCount * lineHeight + padding.height * 2;
 
-    let entry = cache.entries.get(body.id);
+    let entry = cache.entries.get(label.id);
     if (!entry) {
-      entry = createCacheEntry(body.id, cache);
+      entry = createCacheEntry(label.id, cache);
       cache.needsRelayout = true;
     }
 
@@ -455,23 +392,23 @@ function renderLabelsFromCache(
   return count;
 }
 
-function isMoonLabelSeparated(
-  body: BodySceneObject,
+function isParentLabelSeparated(
+  label: SceneLabelCandidate,
   cache: LabelLayoutCache,
   anchor: Point,
   screenWidth: number,
   screenHeight: number,
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
 ): boolean {
-  const parentId = body.centralEntityId;
-  if (!parentId || parentId === body.id) return true;
+  const parentId = label.parentId;
+  if (!parentId || parentId === label.id) return true;
 
-  const parent = cache.objectById.get(parentId);
-  if (!parent || parent.kind !== "orbitalBody") {
+  const parent = cache.labelById.get(parentId);
+  if (!parent) {
     return true;
   }
 
-  if (!projectInto(parentNdcScratch, parent.position)) {
+  if (!projectInto(parentNdcScratch, parent.anchor)) {
     return true;
   }
 
@@ -547,21 +484,17 @@ function registerPlacedLabel(
   placedLabelCount++;
 }
 
-function registerBodyCenter(grid: LabelSpatialGrid, { x, y }: Point): void {
-  if (allBodyCentersCount < allBodyCentersScratch.length) {
-    const dst = allBodyCentersScratch[allBodyCentersCount];
+function registerAnchor(grid: LabelSpatialGrid, { x, y }: Point): void {
+  if (allAnchorsCount < allAnchorsScratch.length) {
+    const dst = allAnchorsScratch[allAnchorsCount];
     dst.x = x;
     dst.y = y;
   } else {
-    allBodyCentersScratch.push({ x, y });
+    allAnchorsScratch.push({ x, y });
   }
 
-  addCenterToGrid(
-    grid,
-    allBodyCentersCount,
-    allBodyCentersScratch[allBodyCentersCount],
-  );
-  allBodyCentersCount++;
+  addCenterToGrid(grid, allAnchorsCount, allAnchorsScratch[allAnchorsCount]);
+  allAnchorsCount++;
 }
 
 function addRectToGrid(
@@ -609,29 +542,19 @@ function getGridCell(
   return cell;
 }
 
-/**
- * Collect all body centers that are:
- *  - in front of the camera, and
- *  - inside the screen rectangle.
- *
- * Returns the number of centers stored in allBodyCentersScratch.
- */
-function collectVisibleBodyCenters(
+function collectVisibleAnchors(
   grid: LabelSpatialGrid,
-  objects: SceneObject[],
+  labels: SceneLabelCandidate[],
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
   screenWidth: number,
   screenHeight: number,
-  objectsFilter?: (obj: SceneObject) => boolean,
 ): number {
-  allBodyCentersCount = 0;
+  allAnchorsCount = 0;
 
-  for (let i = 0; i < objects.length; i++) {
-    const obj = objects[i];
-    if (!isLabelBody(obj)) continue;
-    if (objectsFilter && !objectsFilter(obj)) continue;
+  for (let i = 0; i < labels.length; i++) {
+    const label = labels[i];
 
-    if (!projectInto(ndcScratch, obj.position)) {
+    if (!projectInto(ndcScratch, label.anchor)) {
       continue; // behind the camera
     }
 
@@ -646,75 +569,49 @@ function collectVisibleBodyCenters(
       continue;
     }
 
-    registerBodyCenter(grid, anchor);
+    registerAnchor(grid, anchor);
   }
 
-  return allBodyCentersCount;
+  return allAnchorsCount;
 }
 
-function sortBodies(
-  objects: SceneObject[],
-  referencePosition: Vec3,
-  objectsFilter?: (obj: LabelBodySceneObject) => boolean,
-): number {
+function sortLabels(labels: SceneLabelCandidate[]): number {
   let count = 0;
 
-  for (let i = 0; i < objects.length; i++) {
-    const obj = objects[i];
-    if (!isLabelBody(obj)) continue;
-    const body = obj;
-    if (objectsFilter && !objectsFilter(body)) continue;
-
-    vec3.subInto(diffScratch, body.position, referencePosition);
-    const distance = vec3.length(diffScratch);
+  for (let i = 0; i < labels.length; i++) {
+    const label = labels[i];
     if (count < sortedScratch.length) {
       const entry = sortedScratch[count];
-      entry.body = body;
-      entry.distance = distance;
+      entry.label = label;
     } else {
       sortedScratch.push({
-        body,
-        distance,
+        label,
       });
     }
     count++;
   }
 
-  // Farther to nearer so nearer labels are processed last.
-  sortRangeInPlace(sortedScratch, count, compareByDistanceDesc);
+  sortRangeInPlace(sortedScratch, count, compareByPriorityAsc);
   return count;
 }
 
-function compareByDistanceDesc(a: SortedScratchItem, b: SortedScratchItem) {
-  return b.distance - a.distance;
+function compareByPriorityAsc(a: SortedScratchItem, b: SortedScratchItem) {
+  return (a.label.priority ?? 0) - (b.label.priority ?? 0);
 }
 
-function displayNameForBodyId(id: EntityId): string {
-  const parts = id.split(":");
-  const raw = parts[parts.length - 1] || id;
-  return raw.charAt(0).toUpperCase() + raw.slice(1);
-}
-
-function fillLabelLines(
-  into: string[],
-  labelMode: BodyLabelContent,
-  bodyId: EntityId,
-  distance: number,
-  speed: number,
-): number {
-  into[0] = displayNameForBodyId(bodyId);
-  if (labelMode === "nameOnly") {
-    return 1;
+function fillLabelLines(into: string[], label: SceneLabelCandidate): number {
+  const labelLines = label.lines;
+  const lineCount = labelLines.length;
+  for (let i = 0; i < lineCount; i++) {
+    into[i] = labelLines[i];
   }
-  into[1] = "d=".concat(formatDistance(distance));
-  into[2] = "v=".concat(formatSpeed(speed));
-  return 3;
+  return lineCount;
 }
 
 /**
  * Pick a direction index (0..7) in 45° steps such that the label's rectangle
  * neither overlaps existing label rectangles nor contains any visible
- * body center, if possible.
+ * label anchor, if possible.
  *
  * Angles:
  *   0 -> 0°   (up)
@@ -766,7 +663,7 @@ function pickDirectionIndexForLabel(
 /**
  * Returns true if the candidate rectangle:
  *  - overlaps any previously placed label rectangle, or
- *  - contains the projected center of any visible body.
+ *  - contains the projected anchor of any visible label.
  */
 function candidateRectOccupied(
   grid: LabelSpatialGrid,
@@ -798,9 +695,9 @@ function candidateRectOccupied(
         }
       }
 
-      // 2) Check if this candidate contains any visible body center.
+      // 2) Check if this candidate contains any visible label anchor.
       for (let i = 0; i < cell.centers.length; i++) {
-        const c = allBodyCentersScratch[cell.centers[i]];
+        const c = allAnchorsScratch[cell.centers[i]];
         if (c.x >= x && c.x <= x2 && c.y >= y && c.y <= y2) {
           return true;
         }

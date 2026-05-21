@@ -1,11 +1,7 @@
+import type { ViewLabelMode } from "../app/viewPorts";
 import type { Vec3 } from "../domain/vec3";
 import type { NdcPoint } from "./ndc";
 import { ProjectionService } from "./ProjectionService";
-import type { BodyLabelContent, LabelLayoutCache } from "./renderBodyLabels";
-import {
-  createLabelLayoutCache,
-  renderBodyLabelsInto,
-} from "./renderBodyLabels";
 import { createRenderFacesWorkspace, renderFacesInto } from "./renderFaces";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals";
 import { renderPolylinesInto } from "./renderPolylines";
@@ -16,12 +12,17 @@ import type {
   ViewRenderParams,
 } from "./renderPorts";
 import { drawMode } from "./renderPorts";
+import type { LabelLayoutCache } from "./renderSceneLabels";
+import {
+  createLabelLayoutCache,
+  renderSceneLabelsInto,
+} from "./renderSceneLabels";
 import { renderWorldSegmentsInto } from "./renderSegments";
 
 export class DefaultViewRenderer implements ViewRenderer {
   private readonly faceWorkspace;
   private readonly labelLayoutCache: LabelLayoutCache;
-  private readonly labelMode: BodyLabelContent;
+  private readonly labelMode: ViewLabelMode;
   private projectionService?: ProjectionService;
   private screenWidth = 0;
   private screenHeight = 0;
@@ -42,7 +43,7 @@ export class DefaultViewRenderer implements ViewRenderer {
 
   constructor(
     private readonly measureText: (text: string, font: string) => TextMetrics,
-    labelMode: BodyLabelContent = "full",
+    labelMode: ViewLabelMode = "full",
   ) {
     this.faceWorkspace = createRenderFacesWorkspace();
     this.labelLayoutCache = createLabelLayoutCache(this.measureText);
@@ -51,7 +52,6 @@ export class DefaultViewRenderer implements ViewRenderer {
 
   renderInto(into: RenderedView, params: ViewRenderParams): void {
     const {
-      mainFocus,
       camera,
       objectsFilter,
       surface,
@@ -61,7 +61,7 @@ export class DefaultViewRenderer implements ViewRenderer {
       sortFaces = true,
       renderPolylines = true,
       renderSegments = true,
-      renderBodyLabels = true,
+      renderSceneLabels = true,
     } = params;
     const screenWidth = surface.width;
     const screenHeight = surface.height;
@@ -112,17 +112,15 @@ export class DefaultViewRenderer implements ViewRenderer {
         )
       : 0;
 
-    into.bodyLabelCount = renderBodyLabels
-      ? renderBodyLabelsInto(
-          into.bodyLabels,
-          scene.objects,
-          mainFocus.controlledBody.position,
+    into.sceneLabelCount = renderSceneLabels
+      ? renderSceneLabelsInto(
+          into.sceneLabels,
+          params.sceneLabelCandidates,
           screenWidth,
           screenHeight,
           this.projectInto,
           this.labelLayoutCache,
           nowMs(),
-          objectsFilter,
           this.labelMode,
         )
       : 0;

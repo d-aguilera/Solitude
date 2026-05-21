@@ -16,6 +16,7 @@ import type {
   SceneState,
   SceneViewId,
   ViewDefinition,
+  ViewLabelMode,
 } from "./viewPorts";
 
 export type RuntimeOptions = Readonly<Record<string, string>>;
@@ -106,6 +107,30 @@ export interface SegmentPlugin {
   appendSegments?: (
     into: WorldSegment[],
     params: SegmentProviderParams,
+  ) => void;
+}
+
+export interface SceneLabelCandidate {
+  id: string;
+  anchor: Vec3;
+  lines: readonly string[];
+  parentId?: EntityId;
+  priority?: number;
+}
+
+export interface SceneLabelProviderParams {
+  viewId: SceneViewId;
+  labelMode: ViewLabelMode;
+  scene: Scene;
+  world: World;
+  mainFocus: FocusContext;
+  config: WorldAndSceneConfig;
+}
+
+export interface SceneLabelPlugin {
+  appendLabels?: (
+    into: SceneLabelCandidate[],
+    params: SceneLabelProviderParams,
   ) => void;
 }
 
@@ -244,6 +269,7 @@ export interface GamePlugin {
   loop?: LoopPlugin;
   segments?: SegmentPlugin;
   scene?: ScenePlugin;
+  labels?: SceneLabelPlugin;
   simulation?: SimulationContribution;
   requirements?: PluginRequirements;
   viewControls?: ViewControlPlugin;

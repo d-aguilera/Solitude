@@ -1,8 +1,8 @@
 import type {
   Rasterizer,
-  RenderedBodyLabel,
   RenderedFace,
   RenderedPolyline,
+  RenderedSceneLabel,
   RenderedSegment,
   RGB,
   ScreenPoint,
@@ -488,7 +488,7 @@ export class WebGLRasterizer implements Rasterizer {
     gl.useProgram(null);
   }
 
-  drawBodyLabels(labels: RenderedBodyLabel[]): void {
+  drawSceneLabels(labels: RenderedSceneLabel[]): void {
     // No-op for now. You can keep using a Canvas2D overlay for labels,
     // or later implement label rendering in a separate adapter.
     void labels;

@@ -1,9 +1,9 @@
 import type {
   Point,
   Rasterizer,
-  RenderedBodyLabel,
   RenderedFace,
   RenderedPolyline,
+  RenderedSceneLabel,
   RenderedSegment,
   Size,
   TextMetrics,
@@ -18,7 +18,7 @@ let p1: Point;
 let p2: Point;
 let cssColor: string;
 let textMetrics: TextMetrics;
-let label: RenderedBodyLabel;
+let label: RenderedSceneLabel;
 let anchor: Point;
 let lineHeight: number;
 let lines: string[];
@@ -48,7 +48,7 @@ export class CanvasRasterizer implements Rasterizer {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  drawBodyLabels(labels: RenderedBodyLabel[], count: number): void {
+  drawSceneLabels(labels: RenderedSceneLabel[], count: number): void {
     ctx = this.ctx;
 
     ctx.font = LABEL_FONT;

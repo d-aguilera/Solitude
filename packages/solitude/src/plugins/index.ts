@@ -1,6 +1,7 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import { createAutopilotPlugin } from "./autopilot/index";
 import { createAxialViewsPlugin } from "./axialViews/index";
+import { createBodyLabelsPlugin } from "./bodyLabels/index";
 import { createHudPlugin } from "./hud/index";
 import { createMainViewLookaroundPlugin } from "./mainViewLookaround/index";
 import { createMemoryPlugin } from "./memory/index";
@@ -33,6 +34,7 @@ export const defaultPluginIds = [
   "mainViewLookaround",
   "spacecraftOperator",
   "hud",
+  "bodyLabels",
   "axialViews",
   "orbitTelemetry",
   "runtimeTelemetry",
@@ -51,6 +53,7 @@ export const defaultPluginIds = [
 export const availablePlugins: Record<string, PluginFactory> = {
   autopilot: createAutopilotPlugin,
   axialViews: createAxialViewsPlugin,
+  bodyLabels: createBodyLabelsPlugin,
   hud: createHudPlugin,
   mainViewLookaround: createMainViewLookaroundPlugin,
   memory: createMemoryPlugin,

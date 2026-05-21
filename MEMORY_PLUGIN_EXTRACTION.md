@@ -33,6 +33,7 @@ Generic plugin types live in `packages/engine/src/app/pluginPorts.ts`:
 - `controls`: control-state updates, attitude commands, propulsion command resolution.
 - `loop`: frame policy, loop init, loop update, post-frame cleanup.
 - `scene`: scene init/update hooks and per-view object filters.
+- `labels`: scene label candidate providers; engine owns projection/layout, plugins own label content.
 - `segments`: world-space overlay segment providers.
 - `views`: main-view camera rigs and optional view registration.
 - `worldModel`: pre-runtime contribution of generic entities and main focus identity.
@@ -48,6 +49,7 @@ Existing plugins already cover:
 
 - Autopilot: `packages/solitude/src/plugins/autopilot/`
 - Axial views: `packages/solitude/src/plugins/axialViews/`
+- Body labels: `packages/solitude/src/plugins/bodyLabels/`
 - HUD shell/overlay: `packages/solitude/src/plugins/hud/`
 - Main-view lookaround controls: `packages/solitude/src/plugins/mainViewLookaround/`
 - Memory telemetry: `packages/solitude/src/plugins/memory/`
@@ -150,6 +152,21 @@ What changed:
 Decision:
 
 - Dominant-body lookup remains engine-owned because autopilot, playback snapshots, and diagnostic loggers use it beyond HUD display.
+
+### Body Label Content
+
+Status: extraction/split implemented on 2026-05-21.
+
+What changed:
+
+- Added generic scene-label candidate plugin support; engine render code still owns projection, cached layout, overlap avoidance, and final label positions.
+- Renamed renderer output from body labels to scene labels.
+- Moved Solitude body label content policy into `packages/solitude/src/plugins/bodyLabels/`: labelable objects, ID-derived display names, distance/speed lines, compact name-only labels, and parent label hints.
+
+Decision:
+
+- Label placement remains engine-owned because it depends on camera projection, viewport size, overlap state, and renderer caches.
+- Label content and candidate selection are plugin-owned UX policy.
 
 ## Strongest Remaining Candidates
 

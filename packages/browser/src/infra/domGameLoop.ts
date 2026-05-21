@@ -6,6 +6,9 @@ import type {
   LoopState,
   PluginCapabilityProvider,
   PluginCapabilityRegistry,
+  SceneLabelCandidate,
+  SceneLabelPlugin,
+  SceneLabelProviderParams,
   SceneObjectFilter,
   ScenePlugin,
   SceneViewFilterParams,
@@ -61,7 +64,7 @@ type RenderPassDebug = {
   facesSort: boolean;
   polylines: boolean;
   segments: boolean;
-  bodyLabels: boolean;
+  sceneLabels: boolean;
 };
 
 type RenderDebug = {
@@ -77,7 +80,7 @@ const defaultRenderPassDebug: RenderPassDebug = {
   facesSort: true,
   polylines: true,
   segments: true,
-  bodyLabels: true,
+  sceneLabels: true,
 };
 
 const defaultRenderDebug = {
@@ -85,9 +88,11 @@ const defaultRenderDebug = {
 };
 
 type LoopView = RunLoopView & {
+  labelParams: SceneLabelProviderParams;
   objectsFilter?: SceneObjectFilter;
   renderedView: RenderedView;
   renderParams: ViewRenderParams;
+  sceneLabelCandidates: SceneLabelCandidate[];
   segmentParams: SegmentProviderParams;
   worldSegments: WorldSegment[];
 };
@@ -142,6 +147,7 @@ export function runLoop({
   );
   const loopPlugins = collectLoopPlugins(plugins);
   const scenePlugins = collectScenePlugins(plugins);
+  const labelPlugins = collectLabelPlugins(plugins);
   const segmentPlugins = collectSegmentPlugins(plugins);
   const viewControlPlugins = collectViewControlPlugins(plugins);
   const simulationPlugins = collectSimulationPlugins(
@@ -317,7 +323,7 @@ export function runLoop({
     const facesSort = passes.faces && passes.facesSort;
     const polylines = passes.polylines;
     const segments = passes.segments;
-    const bodyLabels = passes.bodyLabels;
+    const sceneLabels = passes.sceneLabels;
 
     for (const view of loopViews) {
       const renderParams = view.renderParams;
@@ -325,7 +331,7 @@ export function runLoop({
       renderParams.sortFaces = facesSort;
       renderParams.renderPolylines = polylines;
       renderParams.renderSegments = segments;
-      renderParams.renderBodyLabels = bodyLabels;
+      renderParams.renderSceneLabels = sceneLabels;
 
       if (!isViewEnabled(renderDebug, view.definition.id)) continue;
 
@@ -337,6 +343,15 @@ export function runLoop({
         );
       } else {
         view.worldSegments.length = 0;
+      }
+      if (sceneLabels) {
+        applyLabelPlugins(
+          labelPlugins,
+          view.sceneLabelCandidates,
+          view.labelParams,
+        );
+      } else {
+        view.sceneLabelCandidates.length = 0;
       }
       if (profiler.begin("viewRender", view.definition.id)) {
         try {
@@ -396,7 +411,7 @@ function rasterizeView(
   }
   rasterizer.drawPolylines(view.polylines, view.polylineCount);
   rasterizer.drawSegments(view.segments, view.segmentCount);
-  rasterizer.drawBodyLabels(view.bodyLabels, view.bodyLabelCount);
+  rasterizer.drawSceneLabels(view.sceneLabels, view.sceneLabelCount);
 }
 
 function createLoopViews(
@@ -419,10 +434,19 @@ function createLoopViews(
       mainFocus: worldAndScene.mainFocus,
       config,
     });
+    const sceneLabelCandidates: SceneLabelCandidate[] = [];
     const worldSegments: WorldSegment[] = [];
 
     result.push({
       ...view,
+      labelParams: {
+        viewId,
+        labelMode: view.definition.labelMode,
+        scene: worldAndScene.scene,
+        world: worldAndScene.world,
+        mainFocus: worldAndScene.mainFocus,
+        config,
+      },
       objectsFilter,
       renderedView: createRenderedView(),
       renderParams: {
@@ -431,9 +455,11 @@ function createLoopViews(
         objectsFilter,
         renderCache,
         scene: worldAndScene.scene,
+        sceneLabelCandidates,
         surface: view.surface,
         worldSegments,
       },
+      sceneLabelCandidates,
       segmentParams: {
         viewId,
         scene: worldAndScene.scene,
@@ -449,12 +475,12 @@ function createLoopViews(
 
 function createRenderedView(): RenderedView {
   return {
-    bodyLabels: [],
-    bodyLabelCount: 0,
     faces: [],
     faceCount: 0,
     polylines: [],
     polylineCount: 0,
+    sceneLabels: [],
+    sceneLabelCount: 0,
     segments: [],
     segmentCount: 0,
   };
@@ -514,6 +540,16 @@ function collectScenePlugins(plugins: GamePlugin[]): ScenePlugin[] {
   return scenePlugins;
 }
 
+function collectLabelPlugins(plugins: GamePlugin[]): SceneLabelPlugin[] {
+  const labelPlugins: SceneLabelPlugin[] = [];
+  for (const plugin of plugins) {
+    if (plugin.labels) {
+      labelPlugins.push(plugin.labels);
+    }
+  }
+  return labelPlugins;
+}
+
 function collectViewControlPlugins(plugins: GamePlugin[]): ViewControlPlugin[] {
   const viewControlPlugins: ViewControlPlugin[] = [];
   for (const plugin of plugins) {
@@ -522,6 +558,17 @@ function collectViewControlPlugins(plugins: GamePlugin[]): ViewControlPlugin[] {
     }
   }
   return viewControlPlugins;
+}
+
+function applyLabelPlugins(
+  plugins: SceneLabelPlugin[],
+  into: SceneLabelCandidate[],
+  params: SceneLabelProviderParams,
+): void {
+  into.length = 0;
+  for (const plugin of plugins) {
+    plugin.appendLabels?.(into, params);
+  }
 }
 
 function collectLoopPlugins(plugins: GamePlugin[]): LoopPlugin[] {

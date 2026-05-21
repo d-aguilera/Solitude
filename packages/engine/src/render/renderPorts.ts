@@ -1,4 +1,4 @@
-import type { WorldSegment } from "../app/pluginPorts";
+import type { SceneLabelCandidate, WorldSegment } from "../app/pluginPorts";
 import type { FocusContext } from "../app/runtimePorts";
 import type {
   DomainCameraPose,
@@ -25,7 +25,7 @@ export interface Point {
  */
 export interface Rasterizer {
   clear(color: string): void;
-  drawBodyLabels(labels: RenderedBodyLabel[], count: number): void;
+  drawSceneLabels(labels: RenderedSceneLabel[], count: number): void;
   drawFaces(faces: RenderedFace[], count: number): void;
   drawPolylines(polylines: RenderedPolyline[], count: number): void;
   drawSegments(segments: RenderedSegment[], count: number): void;
@@ -39,7 +39,7 @@ export interface Renderable {
   baseColor: RGB;
 }
 
-export interface RenderedBodyLabel {
+export interface RenderedSceneLabel {
   anchor: Point;
   edgePoint: Point;
   lineHeight: number;
@@ -73,8 +73,8 @@ export interface RenderedSegment {
 }
 
 export interface RenderedView {
-  bodyLabels: RenderedBodyLabel[];
-  bodyLabelCount: number;
+  sceneLabels: RenderedSceneLabel[];
+  sceneLabelCount: number;
   faces: RenderedFace[];
   faceCount: number;
   polylines: RenderedPolyline[];
@@ -128,10 +128,11 @@ export interface ViewRenderParams {
   mainFocus: FocusContext;
   objectsFilter?: (obj: SceneObject) => boolean;
   renderFaces?: boolean;
-  sortFaces?: boolean;
   renderPolylines?: boolean;
   renderSegments?: boolean;
-  renderBodyLabels?: boolean;
+  renderSceneLabels?: boolean;
+  sceneLabelCandidates: SceneLabelCandidate[];
+  sortFaces?: boolean;
   renderCache: RenderFrameCache;
   scene: Scene;
   surface: RenderSurface2D;
