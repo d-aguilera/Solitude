@@ -1,9 +1,6 @@
-import {
-  computeOrbitReadoutInto,
-  createOrbitReadout,
-} from "@solitude/engine/math";
 import { formatDistance, formatSimTime } from "@solitude/engine/render";
 import type { HudPanelProvider } from "../hud/capabilities";
+import { computeOrbitReadoutInto, createOrbitReadout } from "./orbitReadout";
 
 const orbitPrefix = "Orbit: ";
 const peApEmpty = "Pe/Ap: --";

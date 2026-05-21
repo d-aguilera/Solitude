@@ -136,38 +136,24 @@ What changed:
 - Removed the special `enemyShip` / `enemyShipId` runtime field; secondary ships live in `world.ships`.
 - Core setup now requires plugin-contributed main ship config and initial state.
 
+### Orbit Readout Helpers In Domain
+
+Status: extraction/split implemented on 2026-05-21.
+
+What changed:
+
+- Moved `OrbitReadout`, `createOrbitReadout`, `computeOrbitReadoutInto`, apsis timers, and circularization delta-v readout from `packages/engine/src/domain/orbit.ts` to `packages/solitude/src/plugins/orbitTelemetry/`.
+- Removed orbit readout exports from `@solitude/engine/math`.
+- Kept `GravityPrimary`, `getDominantBody`, and `getDominantBodyPrimary` in engine as generic dominant gravitational-primary math.
+- Kept engine tests focused on primary lookup from generic gravity/collision capabilities; Solitude HUD tests cover orbit readout display and no-primary behavior.
+
+Decision:
+
+- Dominant-body lookup remains engine-owned because autopilot, playback snapshots, and diagnostic loggers use it beyond HUD display.
+
 ## Strongest Remaining Candidates
 
-### 1. Orbit Readout Helpers In Domain
-
-Status: medium-priority extraction/split candidate.
-
-Why it is non-core:
-
-- `packages/engine/src/domain/orbit.ts` is currently imported only by plugins.
-- `OrbitReadout`, apsis timers, and circularization delta-v readout serve HUD/autopilot behavior more than core physics integration.
-- Keeping telemetry readout in domain makes plugin-specific concepts look core.
-
-Current touch points:
-
-- `packages/engine/src/domain/orbit.ts`: `OrbitReadout`, `createOrbitReadout`, `computeOrbitReadoutInto`.
-- `packages/engine/src/domain/orbit.ts`: `getDominantBody` and `getDominantBodyPrimary`.
-- `packages/solitude/src/plugins/orbitTelemetry/hud.ts`: consumes `computeOrbitReadoutInto`.
-- `packages/solitude/src/plugins/autopilot/logic.ts`: consumes `getDominantBody` and `getDominantBodyPrimary`.
-- `packages/solitude/src/plugins/autopilot/hud.ts`: consumes `getDominantBodyPrimary`.
-
-Likely extraction shape:
-
-- Split `packages/engine/src/domain/orbit.ts` into smaller pieces.
-- Keep HUD readout construction in `packages/solitude/src/plugins/orbitTelemetry/`.
-- Keep or relocate shared gravitational-primary math depending on desired ownership:
-  - Keep a tiny domain helper if "dominant gravitational body" is considered domain vocabulary.
-  - Or move it to plugin-local helpers if it remains used only by autopilot/telemetry plugins.
-
-Watch-outs:
-
-- The dominant-body helper is useful beyond HUD. Do not bury it too deeply if future app behavior will need it.
-- Keep numerical/orbital math testable after the move.
+- No current plugin-extraction candidate is queued here; choose the next slice from fresh repo inspection.
 
 ## Completed Decision: Main-View Lookaround / Camera Offset Controls
 
@@ -193,7 +179,7 @@ Known remaining static pieces:
 
 ## Recommended Order
 
-1. Orbit readout/domain split.
+- Choose the next plugin-extraction target from fresh repo inspection.
 
 ## Documentation Notes
 
@@ -201,9 +187,3 @@ Known remaining static pieces:
   - It still points at `src/app/autoPilot.ts` and old wiring.
   - Actual code is now in `src/plugins/autopilot/`.
 - Update `MEMORY_CIRCLE_NOW.md` before the next circle-now troubleshooting pass.
-
-## Verification Notes
-
-- This document was created from a read-only audit on 2026-04-18.
-- Main-view lookaround extraction was implemented on 2026-05-20.
-- After future code changes, follow `MEMORY.md`: run `npm run typecheck` and `npm run test`.

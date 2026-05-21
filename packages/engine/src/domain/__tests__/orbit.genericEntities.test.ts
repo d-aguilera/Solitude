@@ -2,11 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ControlledBody, EntityMotionState, World } from "../domainPorts";
 import { localFrame } from "../localFrame";
 import { mat3 } from "../mat3";
-import {
-  computeOrbitReadoutInto,
-  createOrbitReadout,
-  getDominantBodyPrimary,
-} from "../orbit";
+import { getDominantBodyPrimary } from "../orbit";
 import { vec3 } from "../vec3";
 
 function createState(id: string, x: number, mass: number, radius: number) {
@@ -56,12 +52,9 @@ describe("orbit helpers", () => {
     };
 
     const primary = getDominantBodyPrimary(world, controlledBody.position);
-    const readout = createOrbitReadout();
 
     expect(primary?.id).toBe("body:near");
     expect(primary?.body).toBe(near.state);
     expect(primary?.radius).toBe(2);
-    expect(computeOrbitReadoutInto(readout, world, controlledBody)).toBe(true);
-    expect(readout.primaryId).toBe("body:near");
   });
 });

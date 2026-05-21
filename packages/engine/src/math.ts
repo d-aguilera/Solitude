@@ -18,13 +18,8 @@ export type { LocalFrame } from "./domain/localFrame";
 export { mat3 } from "./domain/mat3";
 export type { Mat3 } from "./domain/mat3";
 export { computeVolumeOfTriangleMesh } from "./domain/meshVolume";
-export {
-  computeOrbitReadoutInto,
-  createOrbitReadout,
-  getDominantBody,
-  getDominantBodyPrimary,
-} from "./domain/orbit";
-export type { GravityPrimary, OrbitReadout } from "./domain/orbit";
+export { getDominantBody, getDominantBodyPrimary } from "./domain/orbit";
+export type { GravityPrimary } from "./domain/orbit";
 export { circularSpeedAtRadius } from "./domain/phys";
 export { AU, C, km } from "./domain/units";
 export { vec3 } from "./domain/vec3";

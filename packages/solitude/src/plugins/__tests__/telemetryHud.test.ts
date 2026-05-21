@@ -150,6 +150,23 @@ describe("telemetry HUD plugins", () => {
     expect(grid[1][1]).toContain("Δv Tan: ");
   });
 
+  it("orbitTelemetry leaves cells untouched when no primary is available", () => {
+    const { world, ship } = createWorldAndShip();
+    world.collisionSpheres.length = 0;
+    world.gravityMasses.length = 0;
+    const grid = createHudGrid();
+    grid[0][0] = "existing";
+    grid[1][0] = "existing pe/ap";
+    const context = createHudContext(world, ship);
+
+    createOrbitTelemetryHudPanel().writeHud(grid, context);
+
+    expect(grid[0][0]).toBe("existing");
+    expect(grid[1][0]).toBe("existing pe/ap");
+    expect(grid[0][1]).toBe("");
+    expect(grid[1][1]).toBe("");
+  });
+
   it("autopilot HUD reads circle-now diagnostics from the focused body", () => {
     const { world, ship } = createWorldAndShip();
     const grid = createHudGrid();
