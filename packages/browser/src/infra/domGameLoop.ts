@@ -87,6 +87,8 @@ const defaultRenderDebug = {
   hud: true,
 };
 
+const EMPTY_ENTITY_CONTROL_INPUTS = new Map();
+
 type LoopView = RunLoopView & {
   labelParams: SceneLabelProviderParams;
   objectsFilter?: SceneObjectFilter;
@@ -196,6 +198,7 @@ export function runLoop({
     dtMillis: 0,
     dtMillisSim: 0,
     controlInput,
+    controlInputsByEntityId: EMPTY_ENTITY_CONTROL_INPUTS,
   };
 
   const tick: TickCallback = createTickHandler(

@@ -1,4 +1,5 @@
 import { vec3 } from "@solitude/engine/math";
+import type { ControlledBody } from "@solitude/engine/world";
 import { createSolitudeHeadlessLoop } from "solitude/headless";
 import { describe, expect, it } from "vitest";
 
@@ -24,4 +25,38 @@ describe("server-style headless Solitude composition", () => {
     );
     expect(velocityDelta).toBeGreaterThan(0);
   });
+
+  it("can route controls to multiple ships in one authoritative headless tick", () => {
+    const { loop } = createSolitudeHeadlessLoop();
+    const blue = getControlledBody(loop.worldAndScene.world, "ship:blue");
+    const red = getControlledBody(loop.worldAndScene.world, "ship:red");
+    const blueBefore = vec3.clone(blue.velocity);
+    const redBefore = vec3.clone(red.velocity);
+
+    loop.stepWithEntityInputs(
+      1000,
+      new Map([
+        ["ship:blue", { burnForward: true, thrust5: true }],
+        ["ship:red", { burnRight: true }],
+      ]),
+    );
+
+    const blueVelocityDelta = vec3.length(
+      vec3.subInto(vec3.zero(), blue.velocity, blueBefore),
+    );
+    const redVelocityDelta = vec3.length(
+      vec3.subInto(vec3.zero(), red.velocity, redBefore),
+    );
+    expect(blueVelocityDelta).toBeGreaterThan(1000);
+    expect(redVelocityDelta).toBeGreaterThan(1000);
+  });
 });
+
+function getControlledBody(
+  world: { controllableBodies: ControlledBody[] },
+  id: string,
+): ControlledBody {
+  const body = world.controllableBodies.find((item) => item.id === id);
+  if (!body) throw new Error(`Missing controlled body: ${id}`);
+  return body;
+}

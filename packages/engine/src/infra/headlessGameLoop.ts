@@ -11,7 +11,7 @@ import type {
 import { validatePluginRequirements } from "../app/pluginRequirements";
 import type { TickParams, WorldAndScene } from "../app/runtimePorts";
 import type { Scene } from "../app/scenePorts";
-import type { GravityEngine } from "../domain/domainPorts";
+import type { EntityId, GravityEngine } from "../domain/domainPorts";
 import { parameters } from "../global/parameters";
 import { createHeadlessWorld, type WorldConfigBase } from "../setup/setup";
 import { NewtonianGravityEngine } from "./NewtonianGravityEngine";
@@ -28,9 +28,14 @@ export interface HeadlessLoopOptions {
 export interface HeadlessLoop {
   worldAndScene: WorldAndScene;
   step: (dtMillis: number, controlInput?: Partial<ControlInput>) => void;
+  stepWithEntityInputs: (
+    dtMillis: number,
+    controlInputsByEntityId: ReadonlyMap<EntityId, Partial<ControlInput>>,
+  ) => void;
 }
 
 const EMPTY_SCENE: Scene = { objects: [], lights: [] };
+const EMPTY_ENTITY_CONTROL_INPUTS = new Map();
 
 function mergeControlInput(
   base: ControlInput,
@@ -44,6 +49,17 @@ function mergeControlInput(
     }
   }
   return merged as ControlInput;
+}
+
+function mergeEntityControlInputs(
+  base: ControlInput,
+  overridesByEntityId: ReadonlyMap<EntityId, Partial<ControlInput>>,
+): ReadonlyMap<EntityId, ControlInput> {
+  const mergedByEntityId = new Map<EntityId, ControlInput>();
+  for (const [entityId, overrides] of overridesByEntityId) {
+    mergedByEntityId.set(entityId, mergeControlInput(base, overrides));
+  }
+  return mergedByEntityId;
 }
 
 /**
@@ -90,6 +106,7 @@ export function createHeadlessLoop(
     dtMillis: 0,
     dtMillisSim: 0,
     controlInput: baseControlInput,
+    controlInputsByEntityId: EMPTY_ENTITY_CONTROL_INPUTS,
   };
 
   const tick = createTickHandler(
@@ -106,11 +123,27 @@ export function createHeadlessLoop(
     tickParams.dtMillis = dtMillis;
     tickParams.dtMillisSim = dtMillis * timeScale;
     tickParams.controlInput = mergeControlInput(baseControlInput, controlInput);
+    tickParams.controlInputsByEntityId = EMPTY_ENTITY_CONTROL_INPUTS;
 
     tick();
   };
 
-  return { worldAndScene, step };
+  const stepWithEntityInputs = (
+    dtMillis: number,
+    controlInputsByEntityId: ReadonlyMap<EntityId, Partial<ControlInput>>,
+  ): void => {
+    tickParams.dtMillis = dtMillis;
+    tickParams.dtMillisSim = dtMillis * timeScale;
+    tickParams.controlInput = baseControlInput;
+    tickParams.controlInputsByEntityId = mergeEntityControlInputs(
+      baseControlInput,
+      controlInputsByEntityId,
+    );
+
+    tick();
+  };
+
+  return { worldAndScene, step, stepWithEntityInputs };
 }
 
 function collectControlPlugins(

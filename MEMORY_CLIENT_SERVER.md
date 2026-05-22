@@ -82,7 +82,7 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 ## Current Slice
 
-Status: first server/headless composition proof implemented.
+Status: per-entity headless control routing implemented.
 
 First focused slice:
 
@@ -102,10 +102,13 @@ Success criteria for the first implementation slice:
 
 Next focused slice:
 
-- Decide and implement the first per-entity control-routing seam for authoritative multiplayer.
-- Preserve the existing single-player `mainFocus` path.
-- Keep the initial server proof preallocated to `ship:blue` and `ship:red`.
-- Avoid adding WebSockets until two entities can be controlled independently in one headless authoritative tick.
+- Decide the next non-networked server seam.
+- Likely candidates:
+  - promote generic runtime snapshots out of playback-private code;
+  - add a tiny server package/script that uses `solitude/headless` plus `stepWithEntityInputs`;
+  - add a headless loop-plugin harness if pause/time-scale/playback behavior becomes relevant.
+- Keep browser single-player behavior on the existing global `mainFocus`/`controlInput` path.
+- Keep networking out until the server state protocol is clearer.
 
 ## Candidate First Implementation Plan
 
@@ -151,5 +154,10 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-22: Added an opt-in per-entity control path for authoritative headless ticks:
+  - `TickParams` / `SimulationPhaseParams` can carry `controlInputsByEntityId`.
+  - `HeadlessLoop.stepWithEntityInputs()` accepts entity-addressed control input maps.
+  - `spacecraftOperator` uses the map when present to advance multiple manually controlled ships in one tick while preserving the existing single-focus path.
+  - `headlessServerComposition.test.ts` now proves `ship:blue` and `ship:red` can both receive controls in one headless Solitude tick.
 - 2026-05-22: Added `solitude/headless` and a server-style smoke test proving the default Solitude world can be composed headlessly through public exports and advanced with spacecraft input. This exposed the next real architecture gap as per-entity control routing, not basic server-side composition.
 - 2026-05-22: Started client-server architecture memory and set the first work path around a non-networked server/headless composition proof.

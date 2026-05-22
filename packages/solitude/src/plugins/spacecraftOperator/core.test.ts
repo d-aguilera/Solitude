@@ -11,6 +11,8 @@ import {
 import { createSpacecraftVehicleDynamicsPlugin } from "./core";
 import { createSpacecraftOperatorTelemetry } from "./telemetry";
 
+const EMPTY_ENTITY_CONTROL_INPUTS = new Map();
+
 function createBody(id: string): ControlledBody {
   const frame = localFrame.fromUp(vec3.create(0, 0, 1));
   return {
@@ -45,6 +47,7 @@ function updateVehicleDynamics(
   controlInput.burnForward = true;
   plugin.updateVehicleDynamics?.({
     controlInput,
+    controlInputsByEntityId: EMPTY_ENTITY_CONTROL_INPUTS,
     dtMillis: 1000,
     dtMillisSim: 1000,
     mainFocus: {
@@ -187,6 +190,7 @@ function runVehicleDynamics(
 ): void {
   plugin.updateVehicleDynamics?.({
     controlInput,
+    controlInputsByEntityId: EMPTY_ENTITY_CONTROL_INPUTS,
     dtMillis: 1000,
     dtMillisSim: 1000,
     mainFocus: {

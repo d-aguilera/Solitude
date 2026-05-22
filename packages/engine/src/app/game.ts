@@ -7,8 +7,10 @@ import {
   applyGravity,
   createPhysicsWorkspace,
 } from "./physics";
-import type { SimulationPlugin } from "./pluginPorts";
+import type { SimulationPhaseParams, SimulationPlugin } from "./pluginPorts";
 import type { TickCallback, TickParams, WorldAndScene } from "./runtimePorts";
+
+const EMPTY_ENTITY_CONTROL_INPUTS = new Map();
 
 /**
  * App‑core game entry.
@@ -22,8 +24,9 @@ export function createTickHandler(
   const simulationPhasePlan = createSimulationPhasePlan(simulationPlugins);
   const physicsWorkspace = createPhysicsWorkspace();
   const gravityState = buildInitialGravityState(worldAndScene.world);
-  const simulationPhaseParams = {
+  const simulationPhaseParams: SimulationPhaseParams = {
     controlInput: {} as ControlInput,
+    controlInputsByEntityId: EMPTY_ENTITY_CONTROL_INPUTS,
     dtMillis: 0,
     dtMillisSim: 0,
     mainFocus: worldAndScene.mainFocus,
@@ -35,6 +38,8 @@ export function createTickHandler(
    */
   return (): void => {
     simulationPhaseParams.controlInput = tickParams.controlInput;
+    simulationPhaseParams.controlInputsByEntityId =
+      tickParams.controlInputsByEntityId;
     simulationPhaseParams.dtMillis = tickParams.dtMillis;
     simulationPhaseParams.dtMillisSim = tickParams.dtMillisSim;
 
@@ -75,10 +80,6 @@ export function createTickHandler(
     applySimulationPhase(simulationPhasePlan.afterSpin, simulationPhaseParams);
   };
 }
-
-type SimulationPhaseParams = Parameters<
-  NonNullable<SimulationPlugin["beforeVehicleDynamics"]>
->[0];
 
 type SimulationPhaseHook = (params: SimulationPhaseParams) => void;
 

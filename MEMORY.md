@@ -24,7 +24,7 @@
 
 ## Current focus
 
-- **Primary active work**: client-server architecture; next slice is per-entity control routing for an authoritative headless runtime. See `MEMORY_CLIENT_SERVER.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
+- **Primary active work**: client-server architecture; per-entity headless control routing is implemented, and the next slice should choose the next non-networked server seam. See `MEMORY_CLIENT_SERVER.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
 - **Operator/focus boundary**: core/runtime contexts use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`.
 - **Remaining operator follow-ups**: foreground/background UX and declarative input lock policy live in `MEMORY_OPERATOR_MODEL.md`.
 - **Retired compatibility names**: keep `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming out of source.
@@ -48,6 +48,7 @@
 - **Rendering**: default Canvas 2D for portability; WebGL path exists but is not wired by default.
 - **Math helpers**: always use math helpers when available for vector/matrix/trig instead of inlining the math.
 - **Epsilons**: use shared constants in `packages/engine/src/domain/epsilon.ts` instead of inline literals.
+- **Optional arguments**: avoid optional runtime/plumbing arguments unless absence is semantically meaningful. Prefer required parameters with empty collections or default objects so call sites and implementations do not grow defensive branches.
 
 ## Package Snapshot
 
@@ -118,7 +119,7 @@
 
 ## Next Steps Snapshot
 
-- Active path: client-server architecture; next slice is per-entity control routing. See `MEMORY_CLIENT_SERVER.md`.
+- Active path: client-server architecture; choose the next non-networked server seam. See `MEMORY_CLIENT_SERVER.md`.
 - Package split migration is closed; future package work is normal API curation.
 - Operator runtime focus switching series is closed; remaining operator-model work is foreground/background UX and declarative input lock policy. See `MEMORY_OPERATOR_MODEL.md`.
 - Planned future work: Solitude-owned headless playback runner. See `MEMORY_HEADLESS_PLAYBACK.md`.

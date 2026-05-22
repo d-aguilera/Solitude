@@ -2,7 +2,9 @@ import { vec3 } from "@solitude/engine/math";
 import type {
   ControlInput,
   ControlPlugin,
+  EntityControlInputs,
   PluginCapabilityRegistry,
+  SimulationPhaseParams,
   SimulationPlugin,
 } from "@solitude/engine/plugin";
 import {
@@ -106,6 +108,20 @@ export function createSpacecraftVehicleDynamicsPlugin(
 
   return {
     updateVehicleDynamics: (params) => {
+      if (params.controlInputsByEntityId.size > 0) {
+        applyEntityControlVehicleDynamics(
+          params,
+          params.controlInputsByEntityId,
+          controlStatesByEntityId,
+          autonomousControls,
+          propulsionResolvers,
+          controlPlugins,
+          physicsWorkspace,
+          telemetry,
+        );
+        return;
+      }
+
       const focusedEntityId = params.mainFocus.entityId;
       const controlState = getControlStateForEntity(
         controlStatesByEntityId,
@@ -166,6 +182,75 @@ export function createSpacecraftVehicleDynamicsPlugin(
       }
     },
   };
+}
+
+function applyEntityControlVehicleDynamics(
+  params: SimulationPhaseParams,
+  controlInputsByEntityId: EntityControlInputs,
+  controlStatesByEntityId: Map<string, SpacecraftControlState>,
+  autonomousControls: readonly SpacecraftAutonomousControl[],
+  propulsionResolvers: readonly SpacecraftPropulsionResolver[],
+  controlPlugins: ControlPlugin[],
+  physicsWorkspace: PhysicsWorkspace,
+  telemetry: SpacecraftOperatorTelemetry,
+): void {
+  let focusedPropulsionCommand: SpacecraftPropulsionCommand | null = null;
+  let focusedControlState: SpacecraftControlState | null = null;
+
+  for (const controlledBody of params.world.controllableBodies) {
+    const controlState = getControlStateForEntity(
+      controlStatesByEntityId,
+      controlledBody.id,
+    );
+    const controlInput = controlInputsByEntityId.get(controlledBody.id);
+
+    let propulsionCommand: SpacecraftPropulsionCommand | null = null;
+    if (controlInput) {
+      propulsionCommand = applySpacecraftVehicleDynamics({
+        controlInput,
+        controlPlugins,
+        controlState,
+        controlledBody,
+        dtMillis: params.dtMillis,
+        physicsWorkspace,
+        propulsionResolvers,
+        world: params.world,
+      });
+    } else if (hasAutonomousControl(autonomousControls, controlState)) {
+      writeAutonomousControlInput(
+        autonomousControls,
+        backgroundControlInput,
+        controlState,
+      );
+      propulsionCommand = applySpacecraftVehicleDynamics({
+        controlInput: backgroundControlInput,
+        controlPlugins,
+        controlState,
+        controlledBody,
+        dtMillis: params.dtMillis,
+        physicsWorkspace,
+        propulsionResolvers,
+        updateControlStateFromInput: false,
+        world: params.world,
+      });
+    }
+
+    if (controlledBody.id === params.mainFocus.entityId) {
+      focusedPropulsionCommand = propulsionCommand;
+      focusedControlState = controlState;
+    }
+  }
+
+  telemetry.currentThrustLevel =
+    focusedPropulsionCommand && focusedControlState
+      ? getRenderedThrustLevel(
+          focusedPropulsionCommand.main,
+          focusedControlState,
+        )
+      : 0;
+  telemetry.currentRcsLevel = focusedPropulsionCommand
+    ? getRenderedRcsLevel(focusedPropulsionCommand.rcs)
+    : 0;
 }
 
 function getControlStateForEntity(

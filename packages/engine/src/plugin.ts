@@ -4,6 +4,7 @@ export type {
   ControlAction,
   ControlInput,
   ControlledBodyState,
+  EntityControlInputs,
   MutableControlState,
 } from "./app/controlPorts";
 export type {

@@ -6,6 +6,7 @@ import type {
   ControlAction,
   ControlInput,
   ControlledBodyState,
+  EntityControlInputs,
   MutableControlState,
 } from "./controlPorts";
 import type { EntityConfig } from "./entityConfigPorts";
@@ -63,6 +64,7 @@ export interface ControlPlugin {
 
 export interface SimulationPhaseParams {
   controlInput: ControlInput;
+  controlInputsByEntityId: EntityControlInputs;
   dtMillis: number;
   dtMillisSim: number;
   mainFocus: FocusContext;

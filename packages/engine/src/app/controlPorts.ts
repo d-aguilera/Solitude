@@ -1,10 +1,11 @@
-import type { AngularVelocity } from "../domain/domainPorts";
+import type { AngularVelocity, EntityId } from "../domain/domainPorts";
 import type { LocalFrame } from "../domain/localFrame";
 import type { Mat3 } from "../domain/mat3";
 import type { Vec3 } from "../domain/vec3";
 
 export type ControlAction = string;
 export type ControlInput = Record<string, boolean>;
+export type EntityControlInputs = ReadonlyMap<EntityId, ControlInput>;
 
 export function createControlInput(
   extraActions: readonly string[] = [],
