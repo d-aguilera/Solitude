@@ -1,6 +1,5 @@
-import type { LocalFrame, Mat3, Vec3 } from "@solitude/engine/math";
 import type { ControlAction } from "@solitude/engine/plugin";
-import type { AngularVelocity } from "@solitude/engine/world";
+import type { RuntimeEntitySnapshot } from "@solitude/engine/runtime";
 
 export type PlaybackScenarioId = string;
 export type PlaybackEndBehavior = "pause";
@@ -87,11 +86,4 @@ export interface PlaybackSnapshotMetadata {
   focusEntityId: string;
 }
 
-export interface PlaybackEntitySnapshot {
-  id: string;
-  position: Vec3;
-  velocity: Vec3;
-  orientation: Mat3;
-  angularVelocity?: AngularVelocity;
-  frame?: LocalFrame;
-}
+export type PlaybackEntitySnapshot = RuntimeEntitySnapshot;

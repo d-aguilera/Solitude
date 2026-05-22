@@ -24,7 +24,7 @@
 
 ## Current focus
 
-- **Primary active work**: client-server architecture; per-entity headless control routing is implemented, and the next slice should choose the next non-networked server seam. See `MEMORY_CLIENT_SERVER.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
+- **Primary active work**: client-server architecture; per-entity headless control routing and generic runtime snapshots are implemented, and the next slice should choose the next non-networked server seam. See `MEMORY_CLIENT_SERVER.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
 - **Operator/focus boundary**: core/runtime contexts use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`.
 - **Remaining operator follow-ups**: foreground/background UX and declarative input lock policy live in `MEMORY_OPERATOR_MODEL.md`.
 - **Retired compatibility names**: keep `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming out of source.

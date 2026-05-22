@@ -16,6 +16,25 @@ export type {
   TickParams,
   WorldAndScene,
 } from "./app/runtimePorts";
+export {
+  applyRuntimeEntitySnapshots,
+  applyRuntimeEntitySnapshotsWithWorkspace,
+  applyRuntimeSnapshot,
+  applyRuntimeSnapshotWithWorkspace,
+  captureRuntimeEntitySnapshot,
+  captureRuntimeEntitySnapshotInto,
+  captureRuntimeSnapshot,
+  captureRuntimeSnapshotInto,
+  createRuntimeEntitySnapshot,
+  createRuntimeSnapshot,
+  createRuntimeSnapshotApplyWorkspace,
+  refreshRuntimeSnapshotApplyWorkspace,
+} from "./app/runtimeSnapshot";
+export type {
+  RuntimeEntitySnapshot,
+  RuntimeSnapshotApplyWorkspace,
+  RuntimeWorldSnapshot,
+} from "./app/runtimeSnapshot";
 export { parameters } from "./global/parameters";
 export { profiler, profilerController } from "./global/profiling";
 export { createHeadlessLoop } from "./infra/headlessGameLoop";

@@ -82,7 +82,7 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 ## Current Slice
 
-Status: per-entity headless control routing implemented.
+Status: generic runtime snapshots implemented.
 
 First focused slice:
 
@@ -104,7 +104,6 @@ Next focused slice:
 
 - Decide the next non-networked server seam.
 - Likely candidates:
-  - promote generic runtime snapshots out of playback-private code;
   - add a tiny server package/script that uses `solitude/headless` plus `stepWithEntityInputs`;
   - add a headless loop-plugin harness if pause/time-scale/playback behavior becomes relevant.
 - Keep browser single-player behavior on the existing global `mainFocus`/`controlInput` path.
@@ -154,6 +153,13 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-22: Promoted generic entity-state snapshots into `@solitude/engine/runtime`:
+  - added `captureRuntimeSnapshot`, `applyRuntimeSnapshot`, and entity-level helpers;
+  - added reusable `createRuntimeSnapshot` / `captureRuntimeSnapshotInto` APIs so future server broadcasts can avoid per-capture object graph allocation after initial storage setup;
+  - added reusable apply workspaces and `applyRuntimeSnapshotWithWorkspace` so future client snapshot application can avoid repeated linear state lookup and per-apply map allocation;
+  - kept playback-owned metadata in Solitude while delegating generic entity capture/apply to the engine;
+  - added engine runtime snapshot tests for generic entity state plus controllable frame/angular velocity;
+  - playback snapshot tests continue to cover the Solitude metadata wrapper.
 - 2026-05-22: Added an opt-in per-entity control path for authoritative headless ticks:
   - `TickParams` / `SimulationPhaseParams` can carry `controlInputsByEntityId`.
   - `HeadlessLoop.stepWithEntityInputs()` accepts entity-addressed control input maps.
