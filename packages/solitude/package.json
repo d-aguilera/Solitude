@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./headless": "./src/headless.ts",
     "./plugins/spacecraftOperator/index": "./src/plugins/spacecraftOperator/index.ts"
   },
   "dependencies": {

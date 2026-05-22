@@ -82,25 +82,30 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 ## Current Slice
 
-Status: planning started.
+Status: first server/headless composition proof implemented.
 
 First focused slice:
 
-- Add this memory doc and link it from `MEMORY.md`.
-- Mark client-server architecture as the active current work path.
-- Define the first implementation slice as a non-networked server-runtime proof:
-  - identify the minimal public exports needed for a server-side Solitude composition;
-  - prove a Node/headless entry can build the default Solitude world, load the relevant Solitude plugins, and advance the simulation for pre-existing ships;
-  - avoid WebSocket/session work until the headless composition boundary is verified;
-  - avoid dynamic ship spawning in the first proof; use `ship:blue` and `ship:red`.
+- Added `solitude/headless` as a curated non-browser composition export.
+- `createSolitudeHeadlessLoop()` now builds the default Solitude config, loads Solitude plugins, applies world-model contributions, and creates an engine headless loop.
+- Added a server-style smoke test that imports `solitude/headless`, verifies `ship:blue` and `ship:red` exist, and proves spacecraft dynamics advances under headless input.
+- WebSocket/session work remains intentionally out of scope.
+- Dynamic ship spawning remains intentionally out of scope; the proof uses preallocated ships.
 
 Success criteria for the first implementation slice:
 
-- No browser package imports in the server-side proof.
-- No networking dependency required yet.
-- The proof composes through package exports or documents the exact export gaps.
-- The simulation advances under Node/headless with Solitude spacecraft behavior installed explicitly.
-- Tests or a small script demonstrate that at least one ship changes state when supplied input.
+- No browser package imports in the server-side proof. Done.
+- No networking dependency required yet. Done.
+- The proof composes through package exports. Done via `solitude/headless`.
+- The simulation advances under Node/headless with Solitude spacecraft behavior installed. Done.
+- Tests demonstrate that at least one ship changes state when supplied input. Done in `headlessServerComposition.test.ts`.
+
+Next focused slice:
+
+- Decide and implement the first per-entity control-routing seam for authoritative multiplayer.
+- Preserve the existing single-player `mainFocus` path.
+- Keep the initial server proof preallocated to `ship:blue` and `ship:red`.
+- Avoid adding WebSockets until two entities can be controlled independently in one headless authoritative tick.
 
 ## Candidate First Implementation Plan
 
@@ -146,4 +151,5 @@ Success criteria for the first implementation slice:
 
 ## Completed Slices
 
+- 2026-05-22: Added `solitude/headless` and a server-style smoke test proving the default Solitude world can be composed headlessly through public exports and advanced with spacecraft input. This exposed the next real architecture gap as per-entity control routing, not basic server-side composition.
 - 2026-05-22: Started client-server architecture memory and set the first work path around a non-networked server/headless composition proof.
