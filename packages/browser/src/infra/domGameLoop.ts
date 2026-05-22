@@ -179,12 +179,6 @@ export function runLoop({
     scene,
   };
 
-  const tick: TickCallback = createTickHandler(
-    gravityEngine,
-    worldAndScene,
-    simulationPlugins,
-  );
-
   const sceneControlState: SceneControlState = {
     mainViewLookState: getMainViewLookState(config.render),
   };
@@ -203,6 +197,13 @@ export function runLoop({
     dtMillisSim: 0,
     controlInput,
   };
+
+  const tick: TickCallback = createTickHandler(
+    gravityEngine,
+    worldAndScene,
+    tickParams,
+    simulationPlugins,
+  );
 
   const renderCache = createRenderFrameCache();
 
@@ -288,7 +289,7 @@ export function runLoop({
     if (framePolicy.advanceSim) {
       tickParams.dtMillis = dtTickMillis;
       tickParams.dtMillisSim = dtSimMillis;
-      tick(tickParams);
+      tick();
       simTimeMillis += tickParams.dtMillisSim;
     }
 

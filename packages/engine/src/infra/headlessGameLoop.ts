@@ -84,12 +84,6 @@ export function createHeadlessLoop(
     ...(options.simulationPlugins ?? []),
   ];
 
-  const tick = createTickHandler(
-    gravityEngine,
-    worldAndScene,
-    simulationPlugins,
-  );
-
   const baseControlInput = createControlInput();
 
   const tickParams: TickParams = {
@@ -97,6 +91,13 @@ export function createHeadlessLoop(
     dtMillisSim: 0,
     controlInput: baseControlInput,
   };
+
+  const tick = createTickHandler(
+    gravityEngine,
+    worldAndScene,
+    tickParams,
+    simulationPlugins,
+  );
 
   const step = (
     dtMillis: number,
@@ -106,7 +107,7 @@ export function createHeadlessLoop(
     tickParams.dtMillisSim = dtMillis * timeScale;
     tickParams.controlInput = mergeControlInput(baseControlInput, controlInput);
 
-    tick(tickParams);
+    tick();
   };
 
   return { worldAndScene, step };

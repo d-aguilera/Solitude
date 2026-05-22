@@ -16,6 +16,7 @@ import type { TickCallback, TickParams, WorldAndScene } from "./runtimePorts";
 export function createTickHandler(
   gravityEngine: GravityEngine,
   worldAndScene: WorldAndScene,
+  tickParams: Readonly<TickParams>,
   simulationPlugins: SimulationPlugin[] = [],
 ): TickCallback {
   const simulationPhasePlan = createSimulationPhasePlan(simulationPlugins);
@@ -32,10 +33,10 @@ export function createTickHandler(
   /**
    * Per‑frame update/render entry called by the game loop.
    */
-  return (params: TickParams): void => {
-    simulationPhaseParams.controlInput = params.controlInput;
-    simulationPhaseParams.dtMillis = params.dtMillis;
-    simulationPhaseParams.dtMillisSim = params.dtMillisSim;
+  return (): void => {
+    simulationPhaseParams.controlInput = tickParams.controlInput;
+    simulationPhaseParams.dtMillis = tickParams.dtMillis;
+    simulationPhaseParams.dtMillisSim = tickParams.dtMillisSim;
 
     applySimulationPhase(
       simulationPhasePlan.beforeVehicleDynamics,
@@ -54,7 +55,7 @@ export function createTickHandler(
       simulationPhasePlan.beforeGravity,
       simulationPhaseParams,
     );
-    applyGravity(params.dtMillisSim, gravityEngine, gravityState);
+    applyGravity(tickParams.dtMillisSim, gravityEngine, gravityState);
     applySimulationPhase(
       simulationPhasePlan.afterGravity,
       simulationPhaseParams,
@@ -66,7 +67,11 @@ export function createTickHandler(
       simulationPhaseParams,
     );
 
-    applyAxialSpin(params.dtMillisSim, worldAndScene.world, physicsWorkspace);
+    applyAxialSpin(
+      tickParams.dtMillisSim,
+      worldAndScene.world,
+      physicsWorkspace,
+    );
     applySimulationPhase(simulationPhasePlan.afterSpin, simulationPhaseParams);
   };
 }
