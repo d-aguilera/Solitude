@@ -1,0 +1,16 @@
+{
+  "name": "@solitude/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./runtime": "./src/runtime.ts"
+  },
+  "dependencies": {
+    "@solitude/engine": "0.0.0",
+    "solitude": "0.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

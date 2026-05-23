@@ -82,7 +82,7 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 ## Current Slice
 
-Status: generic runtime snapshots implemented.
+Status: non-networked server package proof implemented.
 
 First focused slice:
 
@@ -104,8 +104,9 @@ Next focused slice:
 
 - Decide the next non-networked server seam.
 - Likely candidates:
-  - add a tiny server package/script that uses `solitude/headless` plus `stepWithEntityInputs`;
   - add a headless loop-plugin harness if pause/time-scale/playback behavior becomes relevant.
+  - start sketching network protocol message types without binding them to a transport;
+  - add a browser-side remote snapshot apply proof.
 - Keep browser single-player behavior on the existing global `mainFocus`/`controlInput` path.
 - Keep networking out until the server state protocol is clearer.
 
@@ -153,6 +154,12 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-23: Added `@solitude/server` with a non-networked authoritative runtime proof:
+  - `createSolitudeServerGame()` composes `solitude/headless`;
+  - server steps require entity-addressed control inputs;
+  - runtime snapshots are captured into reusable storage after each step;
+  - server package declares `solitude` and `@solitude/engine` dependencies and imports no browser package;
+  - package boundary tooling handled the new workspace package without changes.
 - 2026-05-22: Promoted generic entity-state snapshots into `@solitude/engine/runtime`:
   - added `captureRuntimeSnapshot`, `applyRuntimeSnapshot`, and entity-level helpers;
   - added reusable `createRuntimeSnapshot` / `captureRuntimeSnapshotInto` APIs so future server broadcasts can avoid per-capture object graph allocation after initial storage setup;
