@@ -373,6 +373,9 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
         color: #a9bab2;
         font-variant-numeric: tabular-nums;
       }
+      .run-state {
+        color: #d7f3de;
+      }
     </style>
   </head>
   <body>
@@ -383,6 +386,7 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
         <label>Game <input id="gameId" placeholder="game:1" /></label>
         <label>Entity <input id="entityId" placeholder="ship:blue" /></label>
         <label>Step millis <input id="dtMillis" type="number" value="1000" /></label>
+        <label>Run interval <input id="runIntervalMillis" type="number" value="250" /></label>
       </section>
       <section class="actions">
         <button id="createGame">Create game</button>
@@ -390,24 +394,30 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
         <button id="connectEvents" class="secondary">Reconnect stream</button>
         <button id="sendBurn" class="secondary">Send forward burn</button>
         <button id="stepGame">Step</button>
+        <button id="toggleRun" class="secondary">Run</button>
       </section>
       <section>
         <div id="status" class="status">Snapshot stream waiting for a game</div>
+        <div id="runStatus" class="status run-state">Paused</div>
       </section>
       <pre id="log"></pre>
     </main>
     <script>
       let sequence = 1;
       let events = null;
+      let runTimer = 0;
 
       const fields = {
         clientId: document.querySelector("#clientId"),
         gameId: document.querySelector("#gameId"),
         entityId: document.querySelector("#entityId"),
         dtMillis: document.querySelector("#dtMillis"),
+        runIntervalMillis: document.querySelector("#runIntervalMillis"),
       };
       const logEl = document.querySelector("#log");
       const statusEl = document.querySelector("#status");
+      const runStatusEl = document.querySelector("#runStatus");
+      const toggleRunButton = document.querySelector("#toggleRun");
 
       document.querySelector("#createGame").addEventListener("click", () => {
         sendMessage({ type: "createGame", clientId: fields.clientId.value, sequence: nextSequence() });
@@ -432,6 +442,7 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
         });
       });
       document.querySelector("#stepGame").addEventListener("click", stepGame);
+      toggleRunButton.addEventListener("click", toggleRun);
 
       async function sendMessage(message) {
         const response = await fetch("/message", {
@@ -444,6 +455,10 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
       }
 
       async function stepGame() {
+        if (!fields.gameId.value) {
+          statusEl.textContent = "Create or join a game before stepping";
+          return;
+        }
         const response = await fetch("/step", {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -454,6 +469,32 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
         });
         const payload = await response.json();
         handleMessages(payload.messages, { suppressSnapshots: Boolean(events) });
+      }
+
+      function toggleRun() {
+        if (runTimer) {
+          stopRunLoop();
+          return;
+        }
+        if (!fields.gameId.value) {
+          statusEl.textContent = "Create or join a game before running";
+          return;
+        }
+        const intervalMillis = Math.max(50, Number(fields.runIntervalMillis.value) || 250);
+        fields.runIntervalMillis.value = String(intervalMillis);
+        runStatusEl.textContent = "Running every " + intervalMillis + " ms";
+        toggleRunButton.textContent = "Pause";
+        runTimer = window.setInterval(() => {
+          void stepGame();
+        }, intervalMillis);
+        void stepGame();
+      }
+
+      function stopRunLoop() {
+        window.clearInterval(runTimer);
+        runTimer = 0;
+        runStatusEl.textContent = "Paused";
+        toggleRunButton.textContent = "Run";
       }
 
       function connectEvents() {
