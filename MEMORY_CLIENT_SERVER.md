@@ -82,7 +82,7 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 ## Current Slice
 
-Status: in-process session manager implemented.
+Status: browser remote-world mirror proof implemented.
 
 First focused slice:
 
@@ -103,7 +103,6 @@ Success criteria for the first implementation slice:
 Next focused slice:
 
 - Decide the next server/client seam before adding WebSockets:
-  - add a browser-side remote snapshot apply proof;
   - split or document protocol sequence semantics;
   - add an in-process transport adapter test around the session manager.
 - Keep browser single-player behavior on the existing global `mainFocus`/`controlInput` path.
@@ -153,6 +152,11 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-23: Added `@solitude/browser/remoteWorldMirror`:
+  - creates a local engine `World` from a world config;
+  - applies authoritative runtime snapshots into existing world objects;
+  - reuses the indexed runtime snapshot apply workspace;
+  - remains non-DOM and does not depend on `solitude` or `@solitude/server`.
 - 2026-05-23: Added an in-process `@solitude/server/sessions` manager:
   - creates games backed by `createSolitudeServerGame()`;
   - joins clients to preallocated `ship:blue` and `ship:red`;

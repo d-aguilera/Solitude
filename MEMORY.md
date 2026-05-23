@@ -53,7 +53,7 @@
 ## Package Snapshot
 
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
-- `packages/browser/src/`: DOM/runtime adapters, keyboard input, layout, Canvas 2D, and WebGL rasterizer adapters.
+- `packages/browser/src/`: DOM/runtime adapters, keyboard input, layout, Canvas 2D, WebGL rasterizer adapters, and remote-world mirror helpers.
 - `packages/server/src/`: Node-oriented, non-DOM server adapter experiments for authoritative headless Solitude games.
 - `packages/solitude/src/`: Solitude app bootstrap, default config, plugin catalog, scenarios, spacecraft operator, playback, telemetry, and product-specific behavior.
 - Production and test source lives under `packages/*`; the root `src` directory has been removed.
@@ -82,6 +82,7 @@
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
 - Server runtime proof lives in `@solitude/server/runtime`; it composes `solitude/headless`, steps entity-addressed controls, and reuses runtime snapshot storage without networking.
+- Browser remote-world mirror proof lives in `@solitude/browser/remoteWorldMirror`; it applies authoritative runtime snapshots into a local world via a reusable indexed workspace.
 - Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`.
 - Tests have moved into owning packages; root TypeScript/Vitest tooling no longer includes `src`.
 
@@ -92,6 +93,7 @@
 - `packages/engine/src/setup/sceneSetup.ts`: generic scene graph + trajectory setup.
 - `packages/engine/src/render/DefaultViewRenderer.ts`: projection + draw list assembly.
 - `packages/browser/src/infra/domBootstrap.ts`: browser runtime composition.
+- `packages/browser/src/infra/remoteWorldMirror.ts`: non-DOM authoritative snapshot apply mirror for future network clients.
 - `packages/server/src/runtime.ts`: non-networked authoritative server runtime proof.
 - `packages/solitude/src/bootstrap.ts`: Solitude browser app composition.
 - `packages/solitude/src/plugins/spacecraftOperator/`: spacecraft controls, dynamics, telemetry state, and forward camera rig.
@@ -122,7 +124,7 @@
 
 ## Next Steps Snapshot
 
-- Active path: client-server architecture; non-networked `@solitude/server/runtime` proof is in progress. See `MEMORY_CLIENT_SERVER.md`.
+- Active path: client-server architecture; server/session/protocol and browser remote-world mirror proofs are in place. See `MEMORY_CLIENT_SERVER.md`.
 - Package split migration is closed; future package work is normal API curation.
 - Operator runtime focus switching series is closed; remaining operator-model work is foreground/background UX and declarative input lock policy. See `MEMORY_OPERATOR_MODEL.md`.
 - Planned future work: Solitude-owned headless playback runner. See `MEMORY_HEADLESS_PLAYBACK.md`.

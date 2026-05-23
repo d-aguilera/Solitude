@@ -7,7 +7,8 @@
     "./dom/canvasBootstrap": "./src/infra/domCanvasBootstrap.ts",
     "./dom/keyboardInput": "./src/infra/domKeyboardInput.ts",
     "./dom/overlayPorts": "./src/infra/overlayPorts.ts",
-    "./dom/runtimeOptions": "./src/infra/domRuntimeOptions.ts"
+    "./dom/runtimeOptions": "./src/infra/domRuntimeOptions.ts",
+    "./remoteWorldMirror": "./src/infra/remoteWorldMirror.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0"
