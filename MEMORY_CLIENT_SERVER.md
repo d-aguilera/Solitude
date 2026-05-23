@@ -82,7 +82,7 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 ## Current Slice
 
-Status: browser remote-world mirror proof implemented.
+Status: in-process transport adapter implemented.
 
 First focused slice:
 
@@ -104,7 +104,8 @@ Next focused slice:
 
 - Decide the next server/client seam before adding WebSockets:
   - split or document protocol sequence semantics;
-  - add an in-process transport adapter test around the session manager.
+  - add a browser-side input-message adapter around keyboard/control state;
+  - consider the first WebSocket adapter only after message ownership is clearer.
 - Keep browser single-player behavior on the existing global `mainFocus`/`controlInput` path.
 - Keep networking out until the server state protocol is clearer.
 
@@ -152,6 +153,11 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-23: Added `@solitude/server/transport`:
+  - validates unknown inbound payloads with protocol guards;
+  - routes valid client messages into the in-process session manager;
+  - exposes `stepGame()` for authoritative snapshot emission;
+  - remains in-process and transport-free, but is shaped for a future WebSocket wrapper.
 - 2026-05-23: Added `@solitude/browser/remoteWorldMirror`:
   - creates a local engine `World` from a world config;
   - applies authoritative runtime snapshots into existing world objects;

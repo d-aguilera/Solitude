@@ -6,7 +6,8 @@
   "exports": {
     "./protocol": "./src/protocol.ts",
     "./runtime": "./src/runtime.ts",
-    "./sessions": "./src/sessions.ts"
+    "./sessions": "./src/sessions.ts",
+    "./transport": "./src/transport.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0",
