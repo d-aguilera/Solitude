@@ -82,7 +82,7 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 ## Current Slice
 
-Status: non-networked server package proof implemented.
+Status: transport-agnostic protocol types implemented.
 
 First focused slice:
 
@@ -102,11 +102,11 @@ Success criteria for the first implementation slice:
 
 Next focused slice:
 
-- Decide the next non-networked server seam.
-- Likely candidates:
-  - add a headless loop-plugin harness if pause/time-scale/playback behavior becomes relevant.
-  - start sketching network protocol message types without binding them to a transport;
-  - add a browser-side remote snapshot apply proof.
+- Build an in-process session manager before adding WebSockets:
+  - create games;
+  - join clients to preallocated `ship:blue` / `ship:red`;
+  - accept validated protocol input messages;
+  - step a game and produce snapshot protocol messages.
 - Keep browser single-player behavior on the existing global `mainFocus`/`controlInput` path.
 - Keep networking out until the server state protocol is clearer.
 
@@ -154,6 +154,12 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-23: Added transport-agnostic `@solitude/server/protocol` message types:
+  - client messages cover `createGame`, `joinGame`, `leaveGame`, and `input`;
+  - server messages cover `gameCreated`, `joined`, `snapshot`, and `error`;
+  - protocol includes `gameId`, `clientId`, `entityId`, `sequence`, and `tick` where relevant;
+  - added small constructors for server messages and lightweight guards for ingress/egress validation;
+  - no WebSocket or transport dependency introduced.
 - 2026-05-23: Added `@solitude/server` with a non-networked authoritative runtime proof:
   - `createSolitudeServerGame()` composes `solitude/headless`;
   - server steps require entity-addressed control inputs;

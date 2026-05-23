@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./protocol": "./src/protocol.ts",
     "./runtime": "./src/runtime.ts"
   },
   "dependencies": {
