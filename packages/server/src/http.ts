@@ -387,12 +387,12 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
       <section class="actions">
         <button id="createGame">Create game</button>
         <button id="joinGame" class="secondary">Join game</button>
-        <button id="connectEvents" class="secondary">Connect events</button>
+        <button id="connectEvents" class="secondary">Reconnect stream</button>
         <button id="sendBurn" class="secondary">Send forward burn</button>
         <button id="stepGame">Step</button>
       </section>
       <section>
-        <div id="status" class="status">Not connected</div>
+        <div id="status" class="status">Snapshot stream waiting for a game</div>
       </section>
       <pre id="log"></pre>
     </main>
@@ -440,7 +440,7 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
           body: JSON.stringify(message),
         });
         const payload = await response.json();
-        handleMessages(payload.messages);
+        handleMessages(payload.messages, { connectAfterJoin: true });
       }
 
       async function stepGame() {
@@ -453,14 +453,18 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
           }),
         });
         const payload = await response.json();
-        handleMessages(payload.messages);
+        handleMessages(payload.messages, { suppressSnapshots: Boolean(events) });
       }
 
       function connectEvents() {
+        if (!fields.gameId.value) {
+          statusEl.textContent = "Create or join a game before connecting the snapshot stream";
+          return;
+        }
         if (events) events.close();
         events = new EventSource("/events?gameId=" + encodeURIComponent(fields.gameId.value));
         events.addEventListener("ready", (event) => {
-          statusEl.textContent = "SSE connected for " + JSON.parse(event.data).gameId;
+          statusEl.textContent = "Snapshot stream connected for " + JSON.parse(event.data).gameId;
         });
         events.onmessage = (event) => {
           handleMessages([JSON.parse(event.data)]);
@@ -470,7 +474,7 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
         };
       }
 
-      function handleMessages(messages) {
+      function handleMessages(messages, options = {}) {
         for (const message of messages) {
           if (message.type === "gameCreated") {
             fields.gameId.value = message.gameId;
@@ -478,8 +482,10 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
           if (message.type === "joined") {
             fields.gameId.value = message.gameId;
             fields.entityId.value = message.entityId;
+            if (options.connectAfterJoin) connectEvents();
           }
           if (message.type === "snapshot") {
+            if (options.suppressSnapshots) continue;
             statusEl.textContent =
               "tick " + message.tick + " | entities " + message.snapshot.entities.length;
           }
