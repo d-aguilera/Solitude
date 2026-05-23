@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     "./protocol": "./src/protocol.ts",
-    "./runtime": "./src/runtime.ts"
+    "./runtime": "./src/runtime.ts",
+    "./sessions": "./src/sessions.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0",

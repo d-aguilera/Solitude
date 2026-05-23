@@ -82,7 +82,7 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 ## Current Slice
 
-Status: transport-agnostic protocol types implemented.
+Status: in-process session manager implemented.
 
 First focused slice:
 
@@ -102,11 +102,10 @@ Success criteria for the first implementation slice:
 
 Next focused slice:
 
-- Build an in-process session manager before adding WebSockets:
-  - create games;
-  - join clients to preallocated `ship:blue` / `ship:red`;
-  - accept validated protocol input messages;
-  - step a game and produce snapshot protocol messages.
+- Decide the next server/client seam before adding WebSockets:
+  - add a browser-side remote snapshot apply proof;
+  - split or document protocol sequence semantics;
+  - add an in-process transport adapter test around the session manager.
 - Keep browser single-player behavior on the existing global `mainFocus`/`controlInput` path.
 - Keep networking out until the server state protocol is clearer.
 
@@ -154,6 +153,12 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-23: Added an in-process `@solitude/server/sessions` manager:
+  - creates games backed by `createSolitudeServerGame()`;
+  - joins clients to preallocated `ship:blue` and `ship:red`;
+  - accepts protocol input messages only for the client's assigned entity;
+  - steps games and emits snapshot protocol messages;
+  - remains transport-free and WebSocket-free.
 - 2026-05-23: Added transport-agnostic `@solitude/server/protocol` message types:
   - client messages cover `createGame`, `joinGame`, `leaveGame`, and `input`;
   - server messages cover `gameCreated`, `joined`, `snapshot`, and `error`;
