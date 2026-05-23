@@ -82,7 +82,7 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 ## Current Slice
 
-Status: in-process transport adapter implemented.
+Status: dependency-free HTTP/SSE probe implemented over the in-process transport.
 
 First focused slice:
 
@@ -102,12 +102,13 @@ Success criteria for the first implementation slice:
 
 Next focused slice:
 
-- Decide the next server/client seam before adding WebSockets:
-  - split or document protocol sequence semantics;
+- Use the interactive probe to validate the current create/join/input/step loop from a real browser.
+- Decide whether the next browser slice should:
+  - render authoritative snapshots through `remoteWorldMirror`;
   - add a browser-side input-message adapter around keyboard/control state;
-  - consider the first WebSocket adapter only after message ownership is clearer.
+  - introduce a real-time server tick loop instead of manual `/step`;
+  - consider WebSockets only after the HTTP/SSE probe exposes the next concrete need.
 - Keep browser single-player behavior on the existing global `mainFocus`/`controlInput` path.
-- Keep networking out until the server state protocol is clearer.
 
 ## Candidate First Implementation Plan
 
@@ -153,6 +154,13 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-23: Added `@solitude/server/http` and a root `npm run dev:server` probe:
+  - serves a minimal browser page for create/join/input/step interaction;
+  - accepts client protocol messages via `POST /message`;
+  - steps games via `POST /step`;
+  - streams authoritative snapshot messages via server-sent events at `GET /events`;
+  - runs through Vite's SSR loader so TypeScript server code can be exercised without adding a dev runner dependency;
+  - remains a thin Node HTTP adapter over the existing in-process transport, not a replacement for engine/runtime work.
 - 2026-05-23: Added `@solitude/server/transport`:
   - validates unknown inbound payloads with protocol guards;
   - routes valid client messages into the in-process session manager;
