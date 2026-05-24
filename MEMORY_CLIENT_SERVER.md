@@ -84,7 +84,7 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 ## Current Slice
 
-Status: first browser-testable HTTP/SSE probe implemented; server-retained held-input semantics now make live running controls behave coherently.
+Status: first browser-testable HTTP/SSE probe implemented; server-retained held input and browser keyboard-state messaging now make live running controls behave coherently.
 
 Currently available:
 
@@ -92,7 +92,7 @@ Currently available:
 - `POST /message` accepts create/join/leave/input protocol messages.
 - `POST /step` advances a game and emits an authoritative snapshot.
 - `GET /events?gameId=...` streams snapshots over server-sent events.
-- The served probe page can create/join games, auto-connect the snapshot stream, toggle forward burn, step manually, or run/pause a browser-driven step loop.
+- The served probe page can create/join games, auto-connect the snapshot stream, toggle forward burn, use spacecraft keyboard controls, step manually, or run/pause a browser-driven step loop.
 - The Vite SSR loader used by the dev script is closed before the HTTP server starts; the probe should only expose the Solitude HTTP port, not Vite's HMR port.
 
 Important current behavior:
@@ -100,6 +100,7 @@ Important current behavior:
 - Joining the same game with the same client id is idempotent for assignment: the server returns `joined` for the existing entity and does not consume another ship.
 - Input messages patch the latest held control state for the assigned entity. They do not emit snapshots by themselves.
 - The probe's forward burn toggle sends `burnForward: true` to start and `burnForward: false` to stop; the server retains the latest value across authoritative steps.
+- The probe also sends keydown/keyup patches for spacecraft controls (`Space`, `W/A/S/D`, `Q/E`, `N/M`, `B`, `0-9`) while an entity is assigned.
 - The `Run` button is still browser-driven stepping through repeated `/step` calls, not a server-owned fixed-rate simulation loop.
 
 Next focused slice:
@@ -107,7 +108,7 @@ Next focused slice:
 - Decide whether the next browser slice should:
   - render authoritative snapshots through `remoteWorldMirror`;
   - introduce a real-time server tick loop instead of manual `/step`;
-  - add browser-side keyboard/control-state messaging;
+  - render authoritative snapshots through `remoteWorldMirror`;
   - consider WebSockets only after the HTTP/SSE probe exposes the next concrete need.
 - Keep browser single-player behavior on the existing global `mainFocus`/`controlInput` path.
 
@@ -119,10 +120,10 @@ Next focused slice:
    - Render the mirrored world using existing browser rendering adapters if a clean composition path exists.
    - This makes the prototype visibly multiplayer-shaped.
 
-2. Add browser keyboard/control-state messaging
-   - Convert keydown/keyup into latest held input messages for the assigned entity.
-   - Keep the protocol adapter outside the demo HTML if it is likely to be reused by real remote mode.
-   - This makes continuous burn/attitude control testable before full visual remote rendering.
+2. Extract the probe page into reusable browser modules
+   - Move the remaining inline demo wiring out of the HTML string when it starts blocking larger browser slices.
+   - Keep protocol/client state, keyboard control state, and rendering/mirror concerns separable.
+   - This can be done alongside the first rendered remote mode if the inline page becomes too awkward.
 
 3. Add a server-owned tick loop
    - Move repeated stepping from the probe page into the server/session layer.
@@ -156,6 +157,10 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-24: Added browser client adapter and keyboard-state messaging:
+  - added `@solitude/server/client` with a browser-safe HTTP/SSE protocol client and keyboard input patcher;
+  - the probe now sends keydown/keyup patches for spacecraft controls while assigned to an entity;
+  - keyboard input uses the same server-retained held-input semantics as the forward-burn toggle.
 - 2026-05-24: Added server-retained held-input semantics:
   - input messages now patch the assigned entity's held controls instead of applying for only one step;
   - authoritative steps reuse the latest held controls until a later input message changes them;

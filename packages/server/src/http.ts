@@ -376,6 +376,9 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
       .run-state {
         color: #d7f3de;
       }
+      .key-state {
+        color: #d7e6dc;
+      }
     </style>
   </head>
   <body>
@@ -399,6 +402,7 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
       <section>
         <div id="status" class="status">Snapshot stream waiting for a game</div>
         <div id="runStatus" class="status run-state">Paused</div>
+        <div id="keyStatus" class="status key-state">Keyboard controls idle</div>
       </section>
       <pre id="log"></pre>
     </main>
@@ -407,6 +411,29 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
       let burnHeld = false;
       let events = null;
       let runTimer = 0;
+      const heldControls = {};
+      const keyMap = {
+        Digit0: "thrust0",
+        Digit1: "thrust1",
+        Digit2: "thrust2",
+        Digit3: "thrust3",
+        Digit4: "thrust4",
+        Digit5: "thrust5",
+        Digit6: "thrust6",
+        Digit7: "thrust7",
+        Digit8: "thrust8",
+        Digit9: "thrust9",
+        KeyA: "yawLeft",
+        KeyB: "burnBackwards",
+        KeyD: "yawRight",
+        KeyE: "rollRight",
+        KeyM: "burnRight",
+        KeyN: "burnLeft",
+        KeyQ: "rollLeft",
+        KeyS: "pitchDown",
+        KeyW: "pitchUp",
+        Space: "burnForward",
+      };
 
       const fields = {
         clientId: document.querySelector("#clientId"),
@@ -416,6 +443,7 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
         runIntervalMillis: document.querySelector("#runIntervalMillis"),
       };
       const logEl = document.querySelector("#log");
+      const keyStatusEl = document.querySelector("#keyStatus");
       const statusEl = document.querySelector("#status");
       const runStatusEl = document.querySelector("#runStatus");
       const toggleBurnButton = document.querySelector("#toggleBurn");
@@ -436,6 +464,12 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
       toggleBurnButton.addEventListener("click", toggleForwardBurn);
       document.querySelector("#stepGame").addEventListener("click", stepGame);
       toggleRunButton.addEventListener("click", toggleRun);
+      window.addEventListener("keydown", (event) => {
+        void handleKeyboardInput(event, true);
+      });
+      window.addEventListener("keyup", (event) => {
+        void handleKeyboardInput(event, false);
+      });
 
       async function sendMessage(message) {
         const response = await fetch("/message", {
@@ -464,12 +498,36 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
         handleMessages(payload.messages, { suppressSnapshots: Boolean(events) });
       }
 
+      async function handleKeyboardInput(event, isDown) {
+        if (event.repeat || event.target instanceof HTMLInputElement) return;
+        const action = keyMap[event.code];
+        if (!action) return;
+        event.preventDefault();
+        if (!fields.gameId.value || !fields.entityId.value) {
+          keyStatusEl.textContent = "Keyboard controls waiting for assigned entity";
+          return;
+        }
+        if (heldControls[action] === isDown) return;
+        heldControls[action] = isDown;
+        keyStatusEl.textContent = action + " " + (isDown ? "held" : "released");
+        await sendMessage({
+          type: "input",
+          clientId: fields.clientId.value,
+          entityId: fields.entityId.value,
+          gameId: fields.gameId.value,
+          sequence: nextSequence(),
+          controls: { [action]: isDown },
+        });
+      }
+
       function toggleForwardBurn() {
         if (!fields.gameId.value || !fields.entityId.value) {
           statusEl.textContent = "Create or join a game before sending input";
           return;
         }
         burnHeld = !burnHeld;
+        heldControls.burnForward = burnHeld;
+        if (burnHeld) heldControls.thrust5 = true;
         toggleBurnButton.textContent = burnHeld ? "Stop forward burn" : "Start forward burn";
         statusEl.textContent = burnHeld ? "Forward burn held" : "Forward burn released";
         sendMessage({
