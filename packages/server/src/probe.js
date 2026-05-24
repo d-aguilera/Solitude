@@ -349,6 +349,22 @@ function nextSequence() {
   return value;
 }
 
+let currentLogList;
+let currentLogListMaxDate;
+
+const summaryFormatter = new Intl.DateTimeFormat(undefined, {
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+  hour: "numeric",
+  minute: "numeric",
+});
+
+const timeFormatter = new Intl.DateTimeFormat(undefined, {
+  second: "2-digit",
+  fractionalSecondDigits: 3,
+});
+
 function log(value) {
   const loggedValue =
     value.type === "snapshot"
@@ -360,8 +376,40 @@ function log(value) {
           entities: value.snapshot.entities.length,
         }
       : value;
-  logEl.textContent =
-    JSON.stringify(loggedValue, null, 2) +
-    "\n\n" +
-    logEl.textContent.slice(0, 10000);
+
+  const newDate = new Date();
+
+  if (!currentLogListMaxDate) {
+    currentLogListMaxDate = new Date(
+      newDate.getFullYear(),
+      newDate.getMonth(),
+      newDate.getDate(),
+      newDate.getHours(),
+      newDate.getMinutes(),
+    );
+  }
+
+  if (newDate > currentLogListMaxDate) {
+    const summaryEl = document.createElement("summary");
+    summaryEl.textContent = summaryFormatter.format(currentLogListMaxDate);
+    currentLogList = document.createElement("ul");
+    const detailsEl = document.createElement("details");
+    detailsEl.appendChild(summaryEl);
+    detailsEl.appendChild(currentLogList);
+    const liEl = document.createElement("li");
+    liEl.appendChild(detailsEl);
+    logEl.appendChild(liEl);
+
+    currentLogListMaxDate.setMinutes(currentLogListMaxDate.getMinutes() + 1);
+  }
+
+  const timeEl = document.createElement("span");
+  timeEl.textContent = timeFormatter.format(newDate);
+  const textEl = document.createElement("pre");
+  textEl.textContent = JSON.stringify(loggedValue, null, 2);
+  const subliEl = document.createElement("li");
+  subliEl.append(timeEl);
+  subliEl.append(textEl);
+
+  currentLogList.appendChild(subliEl);
 }
