@@ -213,12 +213,20 @@
       toggleBurnButton.addEventListener("click", toggleForwardBurn);
       document.querySelector("#stepGame").addEventListener("click", stepGame);
       toggleRunButton.addEventListener("click", toggleRun);
-      window.addEventListener("keydown", (event) => {
-        void handleKeyboardInput(event, true);
-      });
-      window.addEventListener("keyup", (event) => {
-        void handleKeyboardInput(event, false);
-      });
+      window.addEventListener(
+        "keydown",
+        (event) => {
+          void handleKeyboardInput(event, true);
+        },
+        { capture: true },
+      );
+      window.addEventListener(
+        "keyup",
+        (event) => {
+          void handleKeyboardInput(event, false);
+        },
+        { capture: true },
+      );
 
       async function sendMessage(message) {
         const response = await fetch("/message", {
@@ -250,10 +258,11 @@
       }
 
       async function handleKeyboardInput(event, isDown) {
-        if (event.repeat || event.target instanceof HTMLInputElement) return;
+        if (event.repeat || isTextInputTarget(event.target)) return;
         const action = keyMap[event.code];
         if (!action) return;
         event.preventDefault();
+        event.stopPropagation();
         if (!fields.gameId.value || !fields.entityId.value) {
           keyStatusEl.textContent =
             "Keyboard controls waiting for assigned entity";
@@ -392,6 +401,7 @@
         const centerY = height * 0.5;
 
         drawGrid(snapshotContext, width, height);
+        const visibleEntityIds = [];
         for (const entity of entities) {
           const projected = projectPosition(
             entity.position,
@@ -401,6 +411,7 @@
             scale,
           );
           if (!projected.visible) continue;
+          visibleEntityIds.push(entity.id);
           drawEntity(snapshotContext, entity, projected.x, projected.y);
         }
 
@@ -414,7 +425,8 @@
           (focus?.id ?? "none") +
           " | speed " +
           speed +
-          " m/s";
+          " m/s | visible " +
+          visibleEntityIds.join(", ");
       }
 
       function drawGrid(context, width, height) {
@@ -467,11 +479,9 @@
         context.beginPath();
         context.arc(x, y, radius, 0, Math.PI * 2);
         context.fill();
-        if (isShip || entity.id === fields.entityId.value) {
-          context.fillStyle = "#d7e6dc";
-          context.font = "12px ui-sans-serif, system-ui";
-          context.fillText(entity.id, x + 8, y - 8);
-        }
+        context.fillStyle = "#d7e6dc";
+        context.font = "12px ui-sans-serif, system-ui";
+        context.fillText(entity.id, x + 8, y - 8);
       }
 
       function colorForEntity(entityId) {
@@ -494,6 +504,14 @@
           Number.isFinite(value.x) &&
           Number.isFinite(value.y) &&
           Number.isFinite(value.z)
+        );
+      }
+
+      function isTextInputTarget(value) {
+        return (
+          value instanceof HTMLInputElement ||
+          value instanceof HTMLTextAreaElement ||
+          value instanceof HTMLSelectElement
         );
       }
 
