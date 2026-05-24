@@ -13,7 +13,10 @@ describe("Solitude HTTP server", () => {
       const response = await fetch(`${server.url}/`);
 
       expect(response.status).toBe(200);
-      expect(await response.text()).toContain("Solitude Server Probe");
+      const page = await response.text();
+      expect(page).toContain("Solitude Server Probe");
+      expect(page).toContain("position.x");
+      expect(page).not.toContain("position[0]");
     } finally {
       await server.close();
     }

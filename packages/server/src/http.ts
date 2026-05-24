@@ -628,9 +628,7 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
       function renderSnapshot(message) {
         if (!snapshotContext) return;
         const entities = message.snapshot.entities.filter((entity) =>
-          Number.isFinite(entity.position?.[0]) &&
-          Number.isFinite(entity.position?.[1]) &&
-          Number.isFinite(entity.position?.[2])
+          isFiniteVec3(entity.position)
         );
         const width = snapshotCanvas.width;
         const height = snapshotCanvas.height;
@@ -639,7 +637,7 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
         snapshotContext.fillRect(0, 0, width, height);
 
         const focus = entities.find((entity) => entity.id === fields.entityId.value) ?? entities[0];
-        const focusPosition = focus?.position ?? [0, 0, 0];
+        const focusPosition = focus?.position ?? { x: 0, y: 0, z: 0 };
         const scale = Math.min(width, height) * 0.055;
         const centerX = width * 0.5;
         const centerY = height * 0.5;
@@ -674,8 +672,8 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
       }
 
       function projectPosition(position, focusPosition, centerX, centerY, scale) {
-        const dx = position[0] - focusPosition[0];
-        const dy = position[1] - focusPosition[1];
+        const dx = position.x - focusPosition.x;
+        const dy = position.y - focusPosition.y;
         const x = centerX + signedLog(dx, 1_000_000) * scale;
         const y = centerY - signedLog(dy, 1_000_000) * scale;
         return {
@@ -714,7 +712,16 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
 
       function vectorMagnitude(vector) {
         if (!vector) return 0;
-        return Math.hypot(vector[0] ?? 0, vector[1] ?? 0, vector[2] ?? 0);
+        return Math.hypot(vector.x ?? 0, vector.y ?? 0, vector.z ?? 0);
+      }
+
+      function isFiniteVec3(value) {
+        return (
+          value &&
+          Number.isFinite(value.x) &&
+          Number.isFinite(value.y) &&
+          Number.isFinite(value.z)
+        );
       }
 
       function nextSequence() {
