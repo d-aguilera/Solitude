@@ -31,10 +31,19 @@ const DEFAULT_SESSION_MANAGER_OPTIONS: SolitudeSessionManagerOptions = {
 
 export interface SolitudeSessionManager {
   handleMessage: (message: SolitudeClientMessage) => SolitudeServerMessage[];
+  listGames: () => SolitudeGameSummary[];
   stepGame: (
     gameId: SolitudeGameId,
     dtMillis: number,
   ) => SnapshotMessage | null;
+}
+
+export interface SolitudeGameSummary {
+  assignedEntityIds: EntityId[];
+  availableEntityIds: EntityId[];
+  gameId: SolitudeGameId;
+  maxClients: number;
+  tick: number;
 }
 
 interface ServerGameSession {
@@ -205,7 +214,25 @@ export function createSolitudeSessionManager(
     });
   };
 
-  return { handleMessage, stepGame };
+  const listGames = (): SolitudeGameSummary[] => {
+    const summaries: SolitudeGameSummary[] = [];
+    for (const session of gamesById.values()) {
+      summaries.push({
+        assignedEntityIds: Array.from(
+          session.assignedEntityByClientId.values(),
+        ),
+        availableEntityIds: options.assignableEntityIds.slice(
+          session.nextEntityIndex,
+        ),
+        gameId: session.id,
+        maxClients: options.assignableEntityIds.length,
+        tick: session.tick,
+      });
+    }
+    return summaries;
+  };
+
+  return { handleMessage, listGames, stepGame };
 }
 
 function createGameId(value: number): SolitudeGameId {

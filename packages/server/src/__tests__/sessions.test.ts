@@ -79,6 +79,43 @@ describe("Solitude session manager", () => {
     ]);
   });
 
+  it("lists games with assigned and available entity ids", () => {
+    const manager = createSolitudeSessionManager();
+    manager.handleMessage({
+      type: "createGame",
+      clientId: "client:a",
+      sequence: 1,
+    });
+
+    expect(manager.listGames()).toEqual([
+      {
+        assignedEntityIds: ["ship:blue"],
+        availableEntityIds: ["ship:red"],
+        gameId: "game:1",
+        maxClients: 2,
+        tick: 0,
+      },
+    ]);
+
+    manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:b",
+      gameId: "game:1",
+      sequence: 3,
+    });
+    manager.stepGame("game:1", 1000);
+
+    expect(manager.listGames()).toEqual([
+      {
+        assignedEntityIds: ["ship:blue", "ship:red"],
+        availableEntityIds: [],
+        gameId: "game:1",
+        maxClients: 2,
+        tick: 1,
+      },
+    ]);
+  });
+
   it("accepts assigned input and emits a snapshot on step", () => {
     const manager = createSolitudeSessionManager();
     manager.handleMessage({

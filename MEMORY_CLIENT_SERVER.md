@@ -93,7 +93,7 @@ Currently available:
 - `POST /message` accepts create/join/leave/input protocol messages.
 - `POST /step` advances a game and emits an authoritative snapshot.
 - `GET /events?gameId=...` streams snapshots over server-sent events.
-- The served probe page can create/join games, auto-connect the snapshot stream, toggle forward burn, use spacecraft keyboard controls, step manually, run/pause a server-owned step loop, and render incoming snapshots into a simple canvas viewport.
+- The served probe page can create/join games, list existing games, auto-connect the snapshot stream, use spacecraft keyboard controls, run/pause a server-owned step loop, and render incoming snapshots into a simple canvas viewport.
 - The Vite SSR loader used by the dev script is closed before the HTTP server starts; the probe should only expose the Solitude HTTP port, not Vite's HMR port.
 
 Important current behavior:
@@ -104,6 +104,7 @@ Important current behavior:
 - The probe also sends keydown/keyup patches for spacecraft controls (`Space`, `W/A/S/D`, `Q/E`, `N/M`, `B`, `0-9`) while an entity is assigned.
 - The snapshot viewport renders directly from network snapshots with a small log-scaled top-down projection. It does not yet use `remoteWorldMirror` or the engine renderer.
 - The `Run` button now starts a server-owned interval via `POST /run`; `Pause` stops it via `POST /pause`. Manual `/step` remains available for debugging.
+- `GET /games` exposes current game summaries with assigned/available entity ids so clients can discover games before joining.
 
 Next focused slice:
 
@@ -157,6 +158,10 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-24: Added game discovery:
+  - session manager and transport expose game summaries;
+  - `GET /games` returns summaries with assigned and available entity ids;
+  - the probe can refresh existing games and join them without manually typing a game id.
 - 2026-05-24: Extracted server ticking into `@solitude/server/ticker`:
   - HTTP `/run` and `/pause` now delegate interval lifecycle to a transport-agnostic ticker;
   - ticker exposes `runGame`, `pauseGame`, `pauseAll`, and `isRunning`;

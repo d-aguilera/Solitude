@@ -34,6 +34,7 @@ const fields = {
   dtMillis: document.querySelector("#dtMillis"),
   runIntervalMillis: document.querySelector("#runIntervalMillis"),
 };
+const gamesListEl = document.querySelector("#gamesList");
 const logEl = document.querySelector("#log");
 const keyStatusEl = document.querySelector("#keyStatus");
 const snapshotCanvas = document.querySelector("#snapshotCanvas");
@@ -58,6 +59,10 @@ document.querySelector("#joinGame").addEventListener("click", () => {
     gameId: fields.gameId.value,
     sequence: nextSequence(),
   });
+});
+
+document.querySelector("#refreshGames").addEventListener("click", () => {
+  void refreshGames();
 });
 
 document
@@ -90,6 +95,60 @@ async function sendMessage(message) {
   });
   const payload = await response.json();
   handleMessages(payload.messages, { connectAfterJoin: true });
+  void refreshGames();
+}
+
+async function refreshGames() {
+  const response = await fetch("/games");
+  const payload = await response.json();
+  renderGames(payload.games ?? []);
+}
+
+function renderGames(games) {
+  gamesListEl.textContent = "";
+  if (games.length === 0) {
+    const emptyItem = document.createElement("li");
+    emptyItem.className = "game-summary";
+    emptyItem.textContent = "No games yet";
+    gamesListEl.appendChild(emptyItem);
+    return;
+  }
+  for (const game of games) {
+    const item = document.createElement("li");
+    item.className = "game-row";
+
+    const summary = document.createElement("div");
+    summary.className = "game-summary";
+    summary.textContent =
+      game.gameId +
+      " | tick " +
+      game.tick +
+      " | assigned " +
+      formatEntityList(game.assignedEntityIds) +
+      " | available " +
+      formatEntityList(game.availableEntityIds);
+
+    const joinButton = document.createElement("button");
+    joinButton.className = "secondary";
+    joinButton.textContent = "Join";
+    joinButton.disabled = game.availableEntityIds.length === 0;
+    joinButton.addEventListener("click", () => {
+      fields.gameId.value = game.gameId;
+      sendMessage({
+        type: "joinGame",
+        clientId: fields.clientId.value,
+        gameId: game.gameId,
+        sequence: nextSequence(),
+      });
+    });
+
+    item.append(summary, joinButton);
+    gamesListEl.appendChild(item);
+  }
+}
+
+function formatEntityList(entityIds) {
+  return entityIds.length === 0 ? "none" : entityIds.join(", ");
 }
 
 async function handleKeyboardInput(event, isDown) {

@@ -55,6 +55,34 @@ describe("Solitude HTTP server", () => {
     }
   });
 
+  it("serves game summaries", async () => {
+    const server = await startTestServer();
+    try {
+      await postJson(server, "/message", {
+        type: "createGame",
+        clientId: "client:a",
+        sequence: 1,
+      });
+
+      const response = await fetch(`${server.url}/games`);
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({
+        games: [
+          {
+            assignedEntityIds: ["ship:blue"],
+            availableEntityIds: ["ship:red"],
+            gameId: "game:1",
+            maxClients: 2,
+            tick: 0,
+          },
+        ],
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
   it("publishes snapshots over server-sent events when a game steps", async () => {
     const server = await startTestServer();
     try {

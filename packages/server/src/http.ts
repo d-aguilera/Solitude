@@ -110,6 +110,11 @@ export function createSolitudeHttpRequestHandler(
       return;
     }
 
+    if (request.method === "GET" && requestUrl.pathname === "/games") {
+      sendGameList(response, transport.listGames());
+      return;
+    }
+
     if (request.method === "POST" && requestUrl.pathname === "/message") {
       const payload = await readJsonBody(request);
       const sequence = getFallbackSequence(payload);
@@ -264,6 +269,18 @@ function sendJson(
     statusCode,
     "application/json; charset=utf-8",
     JSON.stringify(payload),
+  );
+}
+
+function sendGameList(
+  response: ServerResponse,
+  games: ReturnType<SolitudeInProcessTransport["listGames"]>,
+): void {
+  sendText(
+    response,
+    200,
+    "application/json; charset=utf-8",
+    JSON.stringify({ games }),
   );
 }
 

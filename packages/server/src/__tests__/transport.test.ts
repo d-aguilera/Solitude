@@ -62,4 +62,26 @@ describe("Solitude in-process transport", () => {
     expect(snapshot?.tick).toBe(1);
     expect(snapshot?.snapshot.entities.length).toBeGreaterThan(0);
   });
+
+  it("lists session games", () => {
+    const transport = createSolitudeInProcessTransport();
+    transport.receive(
+      {
+        type: "createGame",
+        clientId: "client:a",
+        sequence: 1,
+      },
+      1,
+    );
+
+    expect(transport.listGames()).toEqual([
+      {
+        assignedEntityIds: ["ship:blue"],
+        availableEntityIds: ["ship:red"],
+        gameId: "game:1",
+        maxClients: 2,
+        tick: 0,
+      },
+    ]);
+  });
 });

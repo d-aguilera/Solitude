@@ -95,3 +95,24 @@ button.secondary {
 #log {
   list-style: none;
 }
+#gamesList {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.game-row {
+  align-items: center;
+  border: 1px solid #263430;
+  border-radius: 6px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 10px;
+}
+.game-summary {
+  color: #d7e6dc;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}

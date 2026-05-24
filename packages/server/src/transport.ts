@@ -8,6 +8,7 @@ import {
 } from "./protocol";
 import {
   createSolitudeSessionManager,
+  type SolitudeGameSummary,
   type SolitudeSessionManager,
 } from "./sessions";
 
@@ -17,6 +18,7 @@ export interface SolitudeInProcessTransport {
     payload: unknown,
     fallbackSequence: SolitudeProtocolSequence,
   ) => SolitudeServerMessage[];
+  listGames: () => SolitudeGameSummary[];
   stepGame: (
     gameId: SolitudeGameId,
     dtMillis: number,
@@ -40,6 +42,7 @@ export function createSolitudeInProcessTransport(
       }
       return sessionManager.handleMessage(payload);
     },
+    listGames: () => sessionManager.listGames(),
     stepGame: (gameId, dtMillis) => sessionManager.stepGame(gameId, dtMillis),
   };
 }
