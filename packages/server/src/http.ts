@@ -392,7 +392,7 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
         <button id="createGame">Create game</button>
         <button id="joinGame" class="secondary">Join game</button>
         <button id="connectEvents" class="secondary">Reconnect stream</button>
-        <button id="sendBurn" class="secondary">Send forward burn</button>
+        <button id="toggleBurn" class="secondary">Start forward burn</button>
         <button id="stepGame">Step</button>
         <button id="toggleRun" class="secondary">Run</button>
       </section>
@@ -404,6 +404,7 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
     </main>
     <script>
       let sequence = 1;
+      let burnHeld = false;
       let events = null;
       let runTimer = 0;
 
@@ -417,6 +418,7 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
       const logEl = document.querySelector("#log");
       const statusEl = document.querySelector("#status");
       const runStatusEl = document.querySelector("#runStatus");
+      const toggleBurnButton = document.querySelector("#toggleBurn");
       const toggleRunButton = document.querySelector("#toggleRun");
 
       document.querySelector("#createGame").addEventListener("click", () => {
@@ -431,16 +433,7 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
         });
       });
       document.querySelector("#connectEvents").addEventListener("click", connectEvents);
-      document.querySelector("#sendBurn").addEventListener("click", () => {
-        sendMessage({
-          type: "input",
-          clientId: fields.clientId.value,
-          entityId: fields.entityId.value,
-          gameId: fields.gameId.value,
-          sequence: nextSequence(),
-          controls: { burnForward: true, thrust5: true },
-        });
-      });
+      toggleBurnButton.addEventListener("click", toggleForwardBurn);
       document.querySelector("#stepGame").addEventListener("click", stepGame);
       toggleRunButton.addEventListener("click", toggleRun);
 
@@ -469,6 +462,26 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
         });
         const payload = await response.json();
         handleMessages(payload.messages, { suppressSnapshots: Boolean(events) });
+      }
+
+      function toggleForwardBurn() {
+        if (!fields.gameId.value || !fields.entityId.value) {
+          statusEl.textContent = "Create or join a game before sending input";
+          return;
+        }
+        burnHeld = !burnHeld;
+        toggleBurnButton.textContent = burnHeld ? "Stop forward burn" : "Start forward burn";
+        statusEl.textContent = burnHeld ? "Forward burn held" : "Forward burn released";
+        sendMessage({
+          type: "input",
+          clientId: fields.clientId.value,
+          entityId: fields.entityId.value,
+          gameId: fields.gameId.value,
+          sequence: nextSequence(),
+          controls: burnHeld
+            ? { burnForward: true, thrust5: true }
+            : { burnForward: false },
+        });
       }
 
       function toggleRun() {

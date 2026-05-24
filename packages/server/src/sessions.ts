@@ -21,7 +21,13 @@ const DEFAULT_ASSIGNABLE_ENTITY_IDS = ["ship:blue", "ship:red"] as const;
 
 export interface SolitudeSessionManagerOptions {
   assignableEntityIds: readonly EntityId[];
+  createGame: () => SolitudeServerGame;
 }
+
+const DEFAULT_SESSION_MANAGER_OPTIONS: SolitudeSessionManagerOptions = {
+  assignableEntityIds: DEFAULT_ASSIGNABLE_ENTITY_IDS,
+  createGame: createSolitudeServerGame,
+};
 
 export interface SolitudeSessionManager {
   handleMessage: (message: SolitudeClientMessage) => SolitudeServerMessage[];
@@ -34,17 +40,15 @@ export interface SolitudeSessionManager {
 interface ServerGameSession {
   assignedEntityByClientId: Map<SolitudeClientId, EntityId>;
   game: SolitudeServerGame;
+  heldControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
   id: SolitudeGameId;
   nextEntityIndex: number;
   nextSequence: SolitudeProtocolSequence;
-  pendingInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
   tick: number;
 }
 
 export function createSolitudeSessionManager(
-  options: SolitudeSessionManagerOptions = {
-    assignableEntityIds: DEFAULT_ASSIGNABLE_ENTITY_IDS,
-  },
+  options: SolitudeSessionManagerOptions = DEFAULT_SESSION_MANAGER_OPTIONS,
 ): SolitudeSessionManager {
   const gamesById = new Map<SolitudeGameId, ServerGameSession>();
   let nextGameNumber = 1;
@@ -57,11 +61,11 @@ export function createSolitudeSessionManager(
     nextGameNumber++;
     const session: ServerGameSession = {
       assignedEntityByClientId: new Map(),
-      game: createSolitudeServerGame(),
+      game: options.createGame(),
+      heldControlInputsByEntityId: new Map(),
       id: gameId,
       nextEntityIndex: 0,
       nextSequence: sequence + 2,
-      pendingInputsByEntityId: new Map(),
       tick: 0,
     };
     gamesById.set(gameId, session);
@@ -116,7 +120,13 @@ export function createSolitudeSessionManager(
   ): SolitudeServerMessage[] => {
     const session = getGame(message.gameId, message.sequence);
     if (!isSession(session)) return [session];
+    const assignedEntityId = session.assignedEntityByClientId.get(
+      message.clientId,
+    );
     session.assignedEntityByClientId.delete(message.clientId);
+    if (assignedEntityId) {
+      session.heldControlInputsByEntityId.delete(assignedEntityId);
+    }
     return [];
   };
 
@@ -135,7 +145,10 @@ export function createSolitudeSessionManager(
         }),
       ];
     }
-    session.pendingInputsByEntityId.set(message.entityId, message.controls);
+    const heldControls =
+      session.heldControlInputsByEntityId.get(message.entityId) ?? {};
+    Object.assign(heldControls, message.controls);
+    session.heldControlInputsByEntityId.set(message.entityId, heldControls);
     return [];
   };
 
@@ -147,9 +160,8 @@ export function createSolitudeSessionManager(
     if (!session) return null;
     const snapshot = session.game.step(
       dtMillis,
-      session.pendingInputsByEntityId,
+      session.heldControlInputsByEntityId,
     );
-    session.pendingInputsByEntityId.clear();
     session.tick++;
     const sequence = session.nextSequence;
     session.nextSequence++;

@@ -1,5 +1,15 @@
+import type { ControlInput } from "@solitude/engine/plugin";
+import type {
+  RuntimeWorldSnapshot,
+  WorldAndScene,
+} from "@solitude/engine/runtime";
+import type { EntityId } from "@solitude/engine/world";
 import { describe, expect, it } from "vitest";
-import { createSolitudeSessionManager } from "../sessions";
+import type { SolitudeServerGame } from "../runtime";
+import {
+  createSolitudeSessionManager,
+  type SolitudeSessionManagerOptions,
+} from "../sessions";
 
 describe("Solitude session manager", () => {
   it("creates a game and assigns the creator to the first ship", () => {
@@ -96,6 +106,74 @@ describe("Solitude session manager", () => {
     expect(snapshot?.snapshot.entities.length).toBeGreaterThan(0);
   });
 
+  it("retains assigned input across steps and merges later patches", () => {
+    const game = createRecordingGame();
+    const manager = createSolitudeSessionManager(createTestOptions(game));
+    manager.handleMessage({
+      type: "createGame",
+      clientId: "client:a",
+      sequence: 1,
+    });
+
+    manager.handleMessage({
+      type: "input",
+      clientId: "client:a",
+      entityId: "ship:blue",
+      gameId: "game:1",
+      sequence: 3,
+      controls: { burnForward: true, thrust5: true },
+    });
+    manager.stepGame("game:1", 1000);
+    manager.stepGame("game:1", 1000);
+
+    expect(game.controlInputsByStep).toEqual([
+      [["ship:blue", { burnForward: true, thrust5: true }]],
+      [["ship:blue", { burnForward: true, thrust5: true }]],
+    ]);
+
+    manager.handleMessage({
+      type: "input",
+      clientId: "client:a",
+      entityId: "ship:blue",
+      gameId: "game:1",
+      sequence: 4,
+      controls: { burnForward: false },
+    });
+    manager.stepGame("game:1", 1000);
+
+    expect(game.controlInputsByStep[2]).toEqual([
+      ["ship:blue", { burnForward: false, thrust5: true }],
+    ]);
+  });
+
+  it("clears held input when the assigned client leaves", () => {
+    const game = createRecordingGame();
+    const manager = createSolitudeSessionManager(createTestOptions(game));
+    manager.handleMessage({
+      type: "createGame",
+      clientId: "client:a",
+      sequence: 1,
+    });
+    manager.handleMessage({
+      type: "input",
+      clientId: "client:a",
+      entityId: "ship:blue",
+      gameId: "game:1",
+      sequence: 3,
+      controls: { burnForward: true },
+    });
+
+    manager.handleMessage({
+      type: "leaveGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 4,
+    });
+    manager.stepGame("game:1", 1000);
+
+    expect(game.controlInputsByStep).toEqual([[]]);
+  });
+
   it("rejects input for entities not assigned to the client", () => {
     const manager = createSolitudeSessionManager();
     manager.handleMessage({
@@ -123,3 +201,35 @@ describe("Solitude session manager", () => {
     ]);
   });
 });
+
+interface RecordingGame extends SolitudeServerGame {
+  controlInputsByStep: Array<Array<[EntityId, Partial<ControlInput>]>>;
+}
+
+function createRecordingGame(): RecordingGame {
+  const snapshot: RuntimeWorldSnapshot = { entities: [] };
+  const game: RecordingGame = {
+    controlInputsByStep: [],
+    snapshot,
+    worldAndScene: {} as WorldAndScene,
+    step: (_dtMillis, controlInputsByEntityId) => {
+      const controlInputs: Array<[EntityId, Partial<ControlInput>]> = [];
+      for (const [entityId, controls] of controlInputsByEntityId) {
+        controlInputs.push([entityId, { ...controls }]);
+      }
+      controlInputs.sort(([left], [right]) => left.localeCompare(right));
+      game.controlInputsByStep.push(controlInputs);
+      return snapshot;
+    },
+  };
+  return game;
+}
+
+function createTestOptions(
+  game: SolitudeServerGame,
+): SolitudeSessionManagerOptions {
+  return {
+    assignableEntityIds: ["ship:blue", "ship:red"],
+    createGame: () => game,
+  };
+}

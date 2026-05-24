@@ -84,7 +84,7 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 ## Current Slice
 
-Status: first browser-testable HTTP/SSE probe implemented; next slice should move toward rendered remote state or real server tick/input semantics.
+Status: first browser-testable HTTP/SSE probe implemented; server-retained held-input semantics now make live running controls behave coherently.
 
 Currently available:
 
@@ -92,14 +92,14 @@ Currently available:
 - `POST /message` accepts create/join/leave/input protocol messages.
 - `POST /step` advances a game and emits an authoritative snapshot.
 - `GET /events?gameId=...` streams snapshots over server-sent events.
-- The served probe page can create/join games, auto-connect the snapshot stream, send one-shot forward burn input, step manually, or run/pause a browser-driven step loop.
+- The served probe page can create/join games, auto-connect the snapshot stream, toggle forward burn, step manually, or run/pause a browser-driven step loop.
 - The Vite SSR loader used by the dev script is closed before the HTTP server starts; the probe should only expose the Solitude HTTP port, not Vite's HMR port.
 
 Important current behavior:
 
 - Joining the same game with the same client id is idempotent for assignment: the server returns `joined` for the existing entity and does not consume another ship.
-- Input messages queue control state for the next authoritative step. They do not emit snapshots by themselves.
-- The probe's `Send forward burn` sends a one-step input; continuous burn needs repeated input sends or server-retained held input state.
+- Input messages patch the latest held control state for the assigned entity. They do not emit snapshots by themselves.
+- The probe's forward burn toggle sends `burnForward: true` to start and `burnForward: false` to stop; the server retains the latest value across authoritative steps.
 - The `Run` button is still browser-driven stepping through repeated `/step` calls, not a server-owned fixed-rate simulation loop.
 
 Next focused slice:
@@ -107,7 +107,7 @@ Next focused slice:
 - Decide whether the next browser slice should:
   - render authoritative snapshots through `remoteWorldMirror`;
   - introduce a real-time server tick loop instead of manual `/step`;
-  - add browser-side held-input messaging around keyboard/control state;
+  - add browser-side keyboard/control-state messaging;
   - consider WebSockets only after the HTTP/SSE probe exposes the next concrete need.
 - Keep browser single-player behavior on the existing global `mainFocus`/`controlInput` path.
 
@@ -119,11 +119,10 @@ Next focused slice:
    - Render the mirrored world using existing browser rendering adapters if a clean composition path exists.
    - This makes the prototype visibly multiplayer-shaped.
 
-2. Add held-input semantics
-   - Treat input messages as latest held control state per assigned entity until replaced or cleared.
-   - Add explicit clear-on-leave/disconnect behavior.
-   - Update the probe so holding or toggling controls has intuitive effects while the game runs.
-   - This makes continuous burn/attitude control testable before full keyboard integration.
+2. Add browser keyboard/control-state messaging
+   - Convert keydown/keyup into latest held input messages for the assigned entity.
+   - Keep the protocol adapter outside the demo HTML if it is likely to be reused by real remote mode.
+   - This makes continuous burn/attitude control testable before full visual remote rendering.
 
 3. Add a server-owned tick loop
    - Move repeated stepping from the probe page into the server/session layer.
@@ -138,7 +137,7 @@ Next focused slice:
 
 ## Open Design Questions
 
-- Should held input be retained server-side until replaced, or should clients resend current controls at tick/input rate?
+- Should clients send only changed controls, complete control states, or both? Current probe sends changed controls into server-retained state.
 - Should the next visible browser proof live in `@solitude/server` as a probe page, in `@solitude/browser` as reusable adapter code, or in the Solitude app behind a mode flag?
 - Should clients render by mutating a local `World` via `remoteWorldMirror`, or should they render from immutable network snapshots transformed into render-frame caches?
 - How much of `domGameLoop` should be split into a reusable app/runtime harness before adding server code?
@@ -157,6 +156,11 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-24: Added server-retained held-input semantics:
+  - input messages now patch the assigned entity's held controls instead of applying for only one step;
+  - authoritative steps reuse the latest held controls until a later input message changes them;
+  - leaving a game clears the leaving client's held entity controls;
+  - the probe's forward burn action is now a start/stop toggle that works with the run loop.
 - 2026-05-23: Added probe run/pause controls:
   - page can repeatedly call `/step` at a configurable interval;
   - this creates an immediately watchable live tick loop without adding server-owned scheduling yet;
