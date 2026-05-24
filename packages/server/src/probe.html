@@ -258,11 +258,12 @@
       }
 
       async function handleKeyboardInput(event, isDown) {
-        if (event.repeat || isTextInputTarget(event.target)) return;
+        if (isTextInputTarget(event.target)) return;
         const action = keyMap[event.code];
         if (!action) return;
         event.preventDefault();
         event.stopPropagation();
+        if (event.repeat) return;
         if (!fields.gameId.value || !fields.entityId.value) {
           keyStatusEl.textContent =
             "Keyboard controls waiting for assigned entity";
