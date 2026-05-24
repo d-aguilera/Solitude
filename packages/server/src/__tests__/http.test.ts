@@ -76,6 +76,34 @@ describe("Solitude HTTP server", () => {
       await server.close();
     }
   });
+
+  it("publishes snapshots from a server-owned run loop", async () => {
+    const server = await startTestServer();
+    try {
+      await postJson(server, "/message", {
+        type: "createGame",
+        clientId: "client:a",
+        sequence: 1,
+      });
+
+      const eventStream = await openEventStream(
+        `${server.url}/events?gameId=game%3A1`,
+      );
+      const snapshotPromise = eventStream.readUntil('"type":"snapshot"');
+
+      await postJson(server, "/run", {
+        dtMillis: 1000,
+        gameId: "game:1",
+        intervalMillis: 10,
+      });
+
+      expect(await snapshotPromise).toContain('"tick":1');
+      await postJson(server, "/pause", { gameId: "game:1" });
+      eventStream.close();
+    } finally {
+      await server.close();
+    }
+  });
 });
 
 async function startTestServer(): Promise<SolitudeHttpServer> {

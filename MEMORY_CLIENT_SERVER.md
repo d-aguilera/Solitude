@@ -84,7 +84,7 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 ## Current Slice
 
-Status: first browser-testable HTTP/SSE probe implemented; server-retained held input, keyboard-state messaging, and a simple live snapshot viewport now make the demo page feel like an actual remote-client prototype.
+Status: first browser-testable HTTP/SSE probe implemented; server-retained held input, keyboard-state messaging, server-owned ticking, and a simple live snapshot viewport now make the demo page feel like an actual remote-client prototype.
 
 Currently available:
 
@@ -92,7 +92,7 @@ Currently available:
 - `POST /message` accepts create/join/leave/input protocol messages.
 - `POST /step` advances a game and emits an authoritative snapshot.
 - `GET /events?gameId=...` streams snapshots over server-sent events.
-- The served probe page can create/join games, auto-connect the snapshot stream, toggle forward burn, use spacecraft keyboard controls, step manually, run/pause a browser-driven step loop, and render incoming snapshots into a simple canvas viewport.
+- The served probe page can create/join games, auto-connect the snapshot stream, toggle forward burn, use spacecraft keyboard controls, step manually, run/pause a server-owned step loop, and render incoming snapshots into a simple canvas viewport.
 - The Vite SSR loader used by the dev script is closed before the HTTP server starts; the probe should only expose the Solitude HTTP port, not Vite's HMR port.
 
 Important current behavior:
@@ -102,7 +102,7 @@ Important current behavior:
 - The probe's forward burn toggle sends `burnForward: true` to start and `burnForward: false` to stop; the server retains the latest value across authoritative steps.
 - The probe also sends keydown/keyup patches for spacecraft controls (`Space`, `W/A/S/D`, `Q/E`, `N/M`, `B`, `0-9`) while an entity is assigned.
 - The snapshot viewport renders directly from network snapshots with a small log-scaled top-down projection. It does not yet use `remoteWorldMirror` or the engine renderer.
-- The `Run` button is still browser-driven stepping through repeated `/step` calls, not a server-owned fixed-rate simulation loop.
+- The `Run` button now starts a server-owned interval via `POST /run`; `Pause` stops it via `POST /pause`. Manual `/step` remains available for debugging.
 
 Next focused slice:
 
@@ -127,10 +127,8 @@ Next focused slice:
    - This can be done alongside the first rendered remote mode if the inline page becomes too awkward.
 
 3. Add a server-owned tick loop
-   - Move repeated stepping from the probe page into the server/session layer.
-   - Broadcast snapshots on a fixed cadence through the existing SSE channel.
-   - Keep manual step available for deterministic tests/debugging.
-   - This is closer to an authoritative server but raises timing, pause, cleanup, and CPU policy questions.
+   - Basic HTTP-adapter-owned loops exist for the probe.
+   - Remaining work: move loop ownership closer to session/runtime policy, add game lifecycle cleanup, and decide fixed timestep/accumulator behavior.
 
 4. Extract a browser client protocol adapter
    - Convert local control state into protocol input messages.
@@ -158,6 +156,11 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-24: Added server-owned run/pause ticking to the HTTP probe:
+  - `POST /run` starts an interval that steps a game and publishes snapshots over SSE;
+  - `POST /pause` stops the interval;
+  - the probe's Run/Pause button now controls the server loop instead of using browser-side `/step` polling;
+  - manual `/step` remains available for debugging and deterministic tests.
 - 2026-05-24: Added a live snapshot viewport to the server probe:
   - incoming authoritative snapshots now draw into a canvas on the demo page;
   - the viewport centers on the assigned entity and uses a log-scaled top-down projection;
@@ -176,6 +179,7 @@ Next focused slice:
   - page can repeatedly call `/step` at a configurable interval;
   - this creates an immediately watchable live tick loop without adding server-owned scheduling yet;
   - continuous controls are still not solved because input remains one-shot/next-step in the probe.
+  - superseded by the 2026-05-24 server-owned run/pause loop.
 - 2026-05-23: Cleaned up `npm run dev:server` port behavior:
   - Vite is used only as a temporary SSR/TypeScript loader;
   - Vite HMR is disabled and Vite is closed before the Solitude HTTP server starts;

@@ -31,14 +31,18 @@ export interface SolitudeHttpServer {
   url: string;
 }
 
-export type SolitudeHttpRequestHandler = (
-  request: IncomingMessage,
-  response: ServerResponse,
-) => Promise<void>;
+export interface SolitudeHttpRequestHandler {
+  (request: IncomingMessage, response: ServerResponse): Promise<void>;
+  close: () => void;
+}
 
 interface StepRequest {
   dtMillis: number;
   gameId: SolitudeGameId;
+}
+
+interface RunRequest extends StepRequest {
+  intervalMillis: number;
 }
 
 export function createDefaultSolitudeHttpServerOptions(): SolitudeHttpServerOptions {
@@ -53,8 +57,15 @@ export function createSolitudeHttpRequestHandler(
   transport: SolitudeInProcessTransport,
 ): SolitudeHttpRequestHandler {
   const subscriptionsByGameId = new Map<SolitudeGameId, Set<ServerResponse>>();
+  const loopsByGameId = new Map<
+    SolitudeGameId,
+    ReturnType<typeof setInterval>
+  >();
 
-  return async (request, response) => {
+  const handler = async (
+    request: IncomingMessage,
+    response: ServerResponse,
+  ) => {
     setCommonHeaders(response);
 
     if (request.method === "OPTIONS") {
@@ -131,6 +142,46 @@ export function createSolitudeHttpRequestHandler(
       return;
     }
 
+    if (request.method === "POST" && requestUrl.pathname === "/run") {
+      const payload = await readJsonBody(request);
+      if (!isRunRequest(payload)) {
+        sendJson(response, 400, {
+          messages: [
+            createErrorMessage({
+              code: "invalidRequest",
+              message: "Invalid run request",
+              sequence: 0,
+            }),
+          ],
+        });
+        return;
+      }
+
+      startGameLoop(transport, subscriptionsByGameId, loopsByGameId, payload);
+      sendJson(response, 200, { messages: [] });
+      return;
+    }
+
+    if (request.method === "POST" && requestUrl.pathname === "/pause") {
+      const payload = await readJsonBody(request);
+      if (!isPauseRequest(payload)) {
+        sendJson(response, 400, {
+          messages: [
+            createErrorMessage({
+              code: "invalidRequest",
+              message: "Invalid pause request",
+              sequence: 0,
+            }),
+          ],
+        });
+        return;
+      }
+
+      stopGameLoop(loopsByGameId, payload.gameId);
+      sendJson(response, 200, { messages: [] });
+      return;
+    }
+
     sendJson(response, 404, {
       messages: [
         createErrorMessage({
@@ -141,6 +192,13 @@ export function createSolitudeHttpRequestHandler(
       ],
     });
   };
+
+  handler.close = () => {
+    for (const gameId of loopsByGameId.keys()) {
+      stopGameLoop(loopsByGameId, gameId);
+    }
+  };
+  return handler;
 }
 
 export async function startSolitudeHttpServer(
@@ -170,6 +228,7 @@ export async function startSolitudeHttpServer(
   return {
     close: () =>
       new Promise<void>((resolve, reject) => {
+        handler.close();
         server.close((error) => {
           if (error) reject(error);
           else resolve();
@@ -178,6 +237,34 @@ export async function startSolitudeHttpServer(
     server,
     url: `http://${options.hostname}:${address.port}`,
   };
+}
+
+function startGameLoop(
+  transport: SolitudeInProcessTransport,
+  subscriptionsByGameId: Map<SolitudeGameId, Set<ServerResponse>>,
+  loopsByGameId: Map<SolitudeGameId, ReturnType<typeof setInterval>>,
+  request: RunRequest,
+): void {
+  stopGameLoop(loopsByGameId, request.gameId);
+  const interval = setInterval(() => {
+    const snapshot = transport.stepGame(request.gameId, request.dtMillis);
+    if (!snapshot) {
+      stopGameLoop(loopsByGameId, request.gameId);
+      return;
+    }
+    publishSnapshot(subscriptionsByGameId, snapshot);
+  }, request.intervalMillis);
+  loopsByGameId.set(request.gameId, interval);
+}
+
+function stopGameLoop(
+  loopsByGameId: Map<SolitudeGameId, ReturnType<typeof setInterval>>,
+  gameId: SolitudeGameId,
+): void {
+  const interval = loopsByGameId.get(gameId);
+  if (!interval) return;
+  clearInterval(interval);
+  loopsByGameId.delete(gameId);
 }
 
 function setCommonHeaders(response: ServerResponse): void {
@@ -280,8 +367,26 @@ function isStepRequest(value: unknown): value is StepRequest {
     isRecord(value) &&
     typeof value.gameId === "string" &&
     typeof value.dtMillis === "number" &&
-    Number.isFinite(value.dtMillis)
+    Number.isFinite(value.dtMillis) &&
+    value.dtMillis > 0
   );
+}
+
+function isRunRequest(value: unknown): value is RunRequest {
+  return (
+    isRecord(value) &&
+    typeof value.gameId === "string" &&
+    typeof value.dtMillis === "number" &&
+    Number.isFinite(value.dtMillis) &&
+    value.dtMillis > 0 &&
+    typeof value.intervalMillis === "number" &&
+    Number.isFinite(value.intervalMillis) &&
+    value.intervalMillis >= 10
+  );
+}
+
+function isPauseRequest(value: unknown): value is { gameId: SolitudeGameId } {
+  return isRecord(value) && typeof value.gameId === "string";
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

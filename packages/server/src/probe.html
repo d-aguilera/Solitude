@@ -150,7 +150,7 @@
       let sequence = 1;
       let burnHeld = false;
       let events = null;
-      let runTimer = 0;
+      let runActive = false;
       const heldControls = {};
       const keyMap = {
         Digit0: "thrust0",
@@ -309,30 +309,61 @@
       }
 
       function toggleRun() {
-        if (runTimer) {
-          stopRunLoop();
+        if (runActive) {
+          void pauseServerLoop();
           return;
         }
         if (!fields.gameId.value) {
           statusEl.textContent = "Create or join a game before running";
           return;
         }
+        void startServerLoop();
+      }
+
+      async function startServerLoop() {
         const intervalMillis = Math.max(
           50,
           Number(fields.runIntervalMillis.value) || 250,
         );
         fields.runIntervalMillis.value = String(intervalMillis);
-        runStatusEl.textContent = "Running every " + intervalMillis + " ms";
+        const dtMillis = Math.max(1, Number(fields.dtMillis.value) || 1000);
+        fields.dtMillis.value = String(dtMillis);
+        const response = await fetch("/run", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            gameId: fields.gameId.value,
+            dtMillis,
+            intervalMillis,
+          }),
+        });
+        const payload = await response.json();
+        handleMessages(payload.messages);
+        runActive = true;
+        runStatusEl.textContent =
+          "Server running every " +
+          intervalMillis +
+          " ms at dt " +
+          dtMillis +
+          " ms";
         toggleRunButton.textContent = "Pause";
-        runTimer = window.setInterval(() => {
-          void stepGame();
-        }, intervalMillis);
-        void stepGame();
       }
 
-      function stopRunLoop() {
-        window.clearInterval(runTimer);
-        runTimer = 0;
+      async function pauseServerLoop() {
+        if (!fields.gameId.value) {
+          runActive = false;
+          runStatusEl.textContent = "Paused";
+          toggleRunButton.textContent = "Run";
+          return;
+        }
+        const response = await fetch("/pause", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ gameId: fields.gameId.value }),
+        });
+        const payload = await response.json();
+        handleMessages(payload.messages);
+        runActive = false;
         runStatusEl.textContent = "Paused";
         toggleRunButton.textContent = "Run";
       }
