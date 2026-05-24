@@ -129,8 +129,6 @@
         <button id="createGame">Create game</button>
         <button id="joinGame" class="secondary">Join game</button>
         <button id="connectEvents" class="secondary">Reconnect stream</button>
-        <button id="toggleBurn" class="secondary">Start forward burn</button>
-        <button id="stepGame">Step</button>
         <button id="toggleRun" class="secondary">Run</button>
       </section>
       <section>
@@ -148,7 +146,6 @@
     </main>
     <script>
       let sequence = 1;
-      let burnHeld = false;
       let events = null;
       let runActive = false;
       const heldControls = {};
@@ -189,7 +186,6 @@
       const snapshotStatusEl = document.querySelector("#snapshotStatus");
       const statusEl = document.querySelector("#status");
       const runStatusEl = document.querySelector("#runStatus");
-      const toggleBurnButton = document.querySelector("#toggleBurn");
       const toggleRunButton = document.querySelector("#toggleRun");
 
       document.querySelector("#createGame").addEventListener("click", () => {
@@ -210,8 +206,6 @@
       document
         .querySelector("#connectEvents")
         .addEventListener("click", connectEvents);
-      toggleBurnButton.addEventListener("click", toggleForwardBurn);
-      document.querySelector("#stepGame").addEventListener("click", stepGame);
       toggleRunButton.addEventListener("click", toggleRun);
       window.addEventListener(
         "keydown",
@@ -238,25 +232,6 @@
         handleMessages(payload.messages, { connectAfterJoin: true });
       }
 
-      async function stepGame() {
-        if (!fields.gameId.value) {
-          statusEl.textContent = "Create or join a game before stepping";
-          return;
-        }
-        const response = await fetch("/step", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            gameId: fields.gameId.value,
-            dtMillis: Number(fields.dtMillis.value),
-          }),
-        });
-        const payload = await response.json();
-        handleMessages(payload.messages, {
-          suppressSnapshots: Boolean(events),
-        });
-      }
-
       async function handleKeyboardInput(event, isDown) {
         if (isTextInputTarget(event.target)) return;
         const action = keyMap[event.code];
@@ -279,32 +254,6 @@
           gameId: fields.gameId.value,
           sequence: nextSequence(),
           controls: { [action]: isDown },
-        });
-      }
-
-      function toggleForwardBurn() {
-        if (!fields.gameId.value || !fields.entityId.value) {
-          statusEl.textContent = "Create or join a game before sending input";
-          return;
-        }
-        burnHeld = !burnHeld;
-        heldControls.burnForward = burnHeld;
-        if (burnHeld) heldControls.thrust5 = true;
-        toggleBurnButton.textContent = burnHeld
-          ? "Stop forward burn"
-          : "Start forward burn";
-        statusEl.textContent = burnHeld
-          ? "Forward burn held"
-          : "Forward burn released";
-        sendMessage({
-          type: "input",
-          clientId: fields.clientId.value,
-          entityId: fields.entityId.value,
-          gameId: fields.gameId.value,
-          sequence: nextSequence(),
-          controls: burnHeld
-            ? { burnForward: true, thrust5: true }
-            : { burnForward: false },
         });
       }
 
