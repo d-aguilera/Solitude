@@ -320,6 +320,18 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
         border-radius: 8px;
         padding: 16px;
       }
+      .viewer {
+        display: grid;
+        gap: 10px;
+        padding: 0;
+      }
+      canvas {
+        aspect-ratio: 16 / 9;
+        background: #030504;
+        border-radius: 8px;
+        display: block;
+        width: 100%;
+      }
       .grid {
         display: grid;
         gap: 12px;
@@ -404,6 +416,10 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
         <div id="runStatus" class="status run-state">Paused</div>
         <div id="keyStatus" class="status key-state">Keyboard controls idle</div>
       </section>
+      <section class="viewer">
+        <canvas id="snapshotCanvas" width="960" height="540"></canvas>
+        <div id="snapshotStatus" class="status">No snapshot rendered</div>
+      </section>
       <pre id="log"></pre>
     </main>
     <script>
@@ -444,6 +460,9 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
       };
       const logEl = document.querySelector("#log");
       const keyStatusEl = document.querySelector("#keyStatus");
+      const snapshotCanvas = document.querySelector("#snapshotCanvas");
+      const snapshotContext = snapshotCanvas.getContext("2d");
+      const snapshotStatusEl = document.querySelector("#snapshotStatus");
       const statusEl = document.querySelector("#status");
       const runStatusEl = document.querySelector("#runStatus");
       const toggleBurnButton = document.querySelector("#toggleBurn");
@@ -597,12 +616,105 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
             if (options.connectAfterJoin) connectEvents();
           }
           if (message.type === "snapshot") {
+            renderSnapshot(message);
             if (options.suppressSnapshots) continue;
             statusEl.textContent =
               "tick " + message.tick + " | entities " + message.snapshot.entities.length;
           }
           log(message);
         }
+      }
+
+      function renderSnapshot(message) {
+        if (!snapshotContext) return;
+        const entities = message.snapshot.entities.filter((entity) =>
+          Number.isFinite(entity.position?.[0]) &&
+          Number.isFinite(entity.position?.[1]) &&
+          Number.isFinite(entity.position?.[2])
+        );
+        const width = snapshotCanvas.width;
+        const height = snapshotCanvas.height;
+        snapshotContext.clearRect(0, 0, width, height);
+        snapshotContext.fillStyle = "#030504";
+        snapshotContext.fillRect(0, 0, width, height);
+
+        const focus = entities.find((entity) => entity.id === fields.entityId.value) ?? entities[0];
+        const focusPosition = focus?.position ?? [0, 0, 0];
+        const scale = Math.min(width, height) * 0.055;
+        const centerX = width * 0.5;
+        const centerY = height * 0.5;
+
+        drawGrid(snapshotContext, width, height);
+        for (const entity of entities) {
+          const projected = projectPosition(entity.position, focusPosition, centerX, centerY, scale);
+          if (!projected.visible) continue;
+          drawEntity(snapshotContext, entity, projected.x, projected.y);
+        }
+
+        const speed = focus ? vectorMagnitude(focus.velocity).toFixed(1) : "0.0";
+        snapshotStatusEl.textContent =
+          "rendered tick " + message.tick + " | focus " + (focus?.id ?? "none") + " | speed " + speed + " m/s";
+      }
+
+      function drawGrid(context, width, height) {
+        context.strokeStyle = "#16211d";
+        context.lineWidth = 1;
+        for (let x = width % 80; x < width; x += 80) {
+          context.beginPath();
+          context.moveTo(x, 0);
+          context.lineTo(x, height);
+          context.stroke();
+        }
+        for (let y = height % 80; y < height; y += 80) {
+          context.beginPath();
+          context.moveTo(0, y);
+          context.lineTo(width, y);
+          context.stroke();
+        }
+      }
+
+      function projectPosition(position, focusPosition, centerX, centerY, scale) {
+        const dx = position[0] - focusPosition[0];
+        const dy = position[1] - focusPosition[1];
+        const x = centerX + signedLog(dx, 1_000_000) * scale;
+        const y = centerY - signedLog(dy, 1_000_000) * scale;
+        return {
+          visible: x >= -40 && x <= snapshotCanvas.width + 40 && y >= -40 && y <= snapshotCanvas.height + 40,
+          x,
+          y,
+        };
+      }
+
+      function signedLog(value, divisor) {
+        return Math.sign(value) * Math.log1p(Math.abs(value) / divisor);
+      }
+
+      function drawEntity(context, entity, x, y) {
+        const isShip = entity.id.startsWith("ship:");
+        const radius = entity.id === fields.entityId.value ? 6 : isShip ? 5 : 4;
+        context.fillStyle = colorForEntity(entity.id);
+        context.beginPath();
+        context.arc(x, y, radius, 0, Math.PI * 2);
+        context.fill();
+        if (isShip || entity.id === fields.entityId.value) {
+          context.fillStyle = "#d7e6dc";
+          context.font = "12px ui-sans-serif, system-ui";
+          context.fillText(entity.id, x + 8, y - 8);
+        }
+      }
+
+      function colorForEntity(entityId) {
+        if (entityId.includes("sun")) return "#ffd166";
+        if (entityId.includes("earth")) return "#5eb1ff";
+        if (entityId.includes("moon")) return "#c7cbd1";
+        if (entityId === "ship:blue") return "#7db7ff";
+        if (entityId === "ship:red") return "#ff6b6b";
+        return "#d7f3de";
+      }
+
+      function vectorMagnitude(vector) {
+        if (!vector) return 0;
+        return Math.hypot(vector[0] ?? 0, vector[1] ?? 0, vector[2] ?? 0);
       }
 
       function nextSequence() {
@@ -612,8 +724,18 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
       }
 
       function log(value) {
+        const loggedValue =
+          value.type === "snapshot"
+            ? {
+                type: value.type,
+                gameId: value.gameId,
+                sequence: value.sequence,
+                tick: value.tick,
+                entities: value.snapshot.entities.length,
+              }
+            : value;
         logEl.textContent =
-          JSON.stringify(value, null, 2) + "\n\n" + logEl.textContent.slice(0, 10000);
+          JSON.stringify(loggedValue, null, 2) + "\n\n" + logEl.textContent.slice(0, 10000);
       }
     </script>
   </body>

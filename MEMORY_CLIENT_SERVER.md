@@ -84,7 +84,7 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 ## Current Slice
 
-Status: first browser-testable HTTP/SSE probe implemented; server-retained held input and browser keyboard-state messaging now make live running controls behave coherently.
+Status: first browser-testable HTTP/SSE probe implemented; server-retained held input, keyboard-state messaging, and a simple live snapshot viewport now make the demo page feel like an actual remote-client prototype.
 
 Currently available:
 
@@ -92,7 +92,7 @@ Currently available:
 - `POST /message` accepts create/join/leave/input protocol messages.
 - `POST /step` advances a game and emits an authoritative snapshot.
 - `GET /events?gameId=...` streams snapshots over server-sent events.
-- The served probe page can create/join games, auto-connect the snapshot stream, toggle forward burn, use spacecraft keyboard controls, step manually, or run/pause a browser-driven step loop.
+- The served probe page can create/join games, auto-connect the snapshot stream, toggle forward burn, use spacecraft keyboard controls, step manually, run/pause a browser-driven step loop, and render incoming snapshots into a simple canvas viewport.
 - The Vite SSR loader used by the dev script is closed before the HTTP server starts; the probe should only expose the Solitude HTTP port, not Vite's HMR port.
 
 Important current behavior:
@@ -101,6 +101,7 @@ Important current behavior:
 - Input messages patch the latest held control state for the assigned entity. They do not emit snapshots by themselves.
 - The probe's forward burn toggle sends `burnForward: true` to start and `burnForward: false` to stop; the server retains the latest value across authoritative steps.
 - The probe also sends keydown/keyup patches for spacecraft controls (`Space`, `W/A/S/D`, `Q/E`, `N/M`, `B`, `0-9`) while an entity is assigned.
+- The snapshot viewport renders directly from network snapshots with a small log-scaled top-down projection. It does not yet use `remoteWorldMirror` or the engine renderer.
 - The `Run` button is still browser-driven stepping through repeated `/step` calls, not a server-owned fixed-rate simulation loop.
 
 Next focused slice:
@@ -115,10 +116,10 @@ Next focused slice:
 ## Candidate Next Slices
 
 1. Render remote snapshots in a browser page
-   - Serve or add a probe that composes a local browser world from Solitude config.
+   - The current probe has a direct snapshot canvas, but not an engine-rendered mirrored world.
+   - Next rendering slice should compose a local browser world from Solitude config.
    - Subscribe to server snapshots and apply them with `remoteWorldMirror`.
    - Render the mirrored world using existing browser rendering adapters if a clean composition path exists.
-   - This makes the prototype visibly multiplayer-shaped.
 
 2. Extract the probe page into reusable browser modules
    - Move the remaining inline demo wiring out of the HTML string when it starts blocking larger browser slices.
@@ -157,6 +158,11 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-24: Added a live snapshot viewport to the server probe:
+  - incoming authoritative snapshots now draw into a canvas on the demo page;
+  - the viewport centers on the assigned entity and uses a log-scaled top-down projection;
+  - snapshot log entries are compact summaries instead of full entity dumps;
+  - this is intentionally a direct network-snapshot view, not the final `remoteWorldMirror` + engine renderer path.
 - 2026-05-24: Added browser client adapter and keyboard-state messaging:
   - added `@solitude/server/client` with a browser-safe HTTP/SSE protocol client and keyboard input patcher;
   - the probe now sends keydown/keyup patches for spacecraft controls while assigned to an entity;
