@@ -12,6 +12,7 @@ import {
   type SolitudeProtocolSequence,
   type SolitudeServerMessage,
 } from "./protocol";
+import { createSolitudeGameTicker } from "./ticker";
 import {
   createSolitudeInProcessTransport,
   type SolitudeInProcessTransport,
@@ -57,10 +58,10 @@ export function createSolitudeHttpRequestHandler(
   transport: SolitudeInProcessTransport,
 ): SolitudeHttpRequestHandler {
   const subscriptionsByGameId = new Map<SolitudeGameId, Set<ServerResponse>>();
-  const loopsByGameId = new Map<
-    SolitudeGameId,
-    ReturnType<typeof setInterval>
-  >();
+  const ticker = createSolitudeGameTicker({
+    onSnapshot: (snapshot) => publishSnapshot(subscriptionsByGameId, snapshot),
+    transport,
+  });
 
   const handler = async (
     request: IncomingMessage,
@@ -167,7 +168,7 @@ export function createSolitudeHttpRequestHandler(
         return;
       }
 
-      startGameLoop(transport, subscriptionsByGameId, loopsByGameId, payload);
+      ticker.runGame(payload);
       sendJson(response, 200, { messages: [] });
       return;
     }
@@ -187,7 +188,7 @@ export function createSolitudeHttpRequestHandler(
         return;
       }
 
-      stopGameLoop(loopsByGameId, payload.gameId);
+      ticker.pauseGame(payload.gameId);
       sendJson(response, 200, { messages: [] });
       return;
     }
@@ -204,9 +205,7 @@ export function createSolitudeHttpRequestHandler(
   };
 
   handler.close = () => {
-    for (const gameId of loopsByGameId.keys()) {
-      stopGameLoop(loopsByGameId, gameId);
-    }
+    ticker.pauseAll();
   };
   return handler;
 }
@@ -247,34 +246,6 @@ export async function startSolitudeHttpServer(
     server,
     url: `http://${options.hostname}:${address.port}`,
   };
-}
-
-function startGameLoop(
-  transport: SolitudeInProcessTransport,
-  subscriptionsByGameId: Map<SolitudeGameId, Set<ServerResponse>>,
-  loopsByGameId: Map<SolitudeGameId, ReturnType<typeof setInterval>>,
-  request: RunRequest,
-): void {
-  stopGameLoop(loopsByGameId, request.gameId);
-  const interval = setInterval(() => {
-    const snapshot = transport.stepGame(request.gameId, request.dtMillis);
-    if (!snapshot) {
-      stopGameLoop(loopsByGameId, request.gameId);
-      return;
-    }
-    publishSnapshot(subscriptionsByGameId, snapshot);
-  }, request.intervalMillis);
-  loopsByGameId.set(request.gameId, interval);
-}
-
-function stopGameLoop(
-  loopsByGameId: Map<SolitudeGameId, ReturnType<typeof setInterval>>,
-  gameId: SolitudeGameId,
-): void {
-  const interval = loopsByGameId.get(gameId);
-  if (!interval) return;
-  clearInterval(interval);
-  loopsByGameId.delete(gameId);
 }
 
 function setCommonHeaders(response: ServerResponse): void {

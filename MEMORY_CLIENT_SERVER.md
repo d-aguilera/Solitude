@@ -67,10 +67,11 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
    - Remaining work: browser network input adapter, held-input semantics, and disconnect/leave input clearing.
 
 4. Server package
-   - `@solitude/server` exists with runtime, protocol, sessions, transport, and HTTP/SSE probe exports.
-   - Do not import browser code.
-   - Current sessions assign clients to preallocated `ship:blue` / `ship:red`.
-   - Remaining work: real tick loop, retention/cleanup, room listing, lifecycle policy, and eventually a production transport.
+
+- `@solitude/server` exists with runtime, protocol, sessions, transport, ticker, and HTTP/SSE probe exports.
+  - Do not import browser code.
+  - Current sessions assign clients to preallocated `ship:blue` / `ship:red`.
+- Remaining work: retention/cleanup, room listing, lifecycle policy, fixed timestep/accumulator policy, and eventually a production transport.
 
 5. Browser network mode
    - Add a client runtime path that sends input over the network.
@@ -108,7 +109,7 @@ Next focused slice:
 
 - Decide whether the next browser slice should:
   - render authoritative snapshots through `remoteWorldMirror`;
-  - introduce a real-time server tick loop instead of manual `/step`;
+  - move toward a production-grade tick policy instead of the current interval ticker;
   - render authoritative snapshots through `remoteWorldMirror`;
   - consider WebSockets only after the HTTP/SSE probe exposes the next concrete need.
 - Keep browser single-player behavior on the existing global `mainFocus`/`controlInput` path.
@@ -126,9 +127,9 @@ Next focused slice:
    - Keep protocol/client state, keyboard control state, and rendering/mirror concerns separable.
    - This can be done alongside the first rendered remote mode if the inline page becomes too awkward.
 
-3. Add a server-owned tick loop
-   - Basic HTTP-adapter-owned loops exist for the probe.
-   - Remaining work: move loop ownership closer to session/runtime policy, add game lifecycle cleanup, and decide fixed timestep/accumulator behavior.
+3. Mature the server-owned tick loop
+   - A transport-agnostic `@solitude/server/ticker` owns run/pause interval lifecycle for the probe.
+   - Remaining work: add game lifecycle cleanup, room/session ownership, and fixed timestep/accumulator behavior.
 
 4. Extract a browser client protocol adapter
    - Convert local control state into protocol input messages.
@@ -156,6 +157,10 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-24: Extracted server ticking into `@solitude/server/ticker`:
+  - HTTP `/run` and `/pause` now delegate interval lifecycle to a transport-agnostic ticker;
+  - ticker exposes `runGame`, `pauseGame`, `pauseAll`, and `isRunning`;
+  - ticker tests cover snapshot emission, loop replacement, missing-game self-pause, and cleanup.
 - 2026-05-24: Added server-owned run/pause ticking to the HTTP probe:
   - `POST /run` starts an interval that steps a game and publishes snapshots over SSE;
   - `POST /pause` stops the interval;

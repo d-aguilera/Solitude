@@ -9,6 +9,7 @@
     "./protocol": "./src/protocol.ts",
     "./runtime": "./src/runtime.ts",
     "./sessions": "./src/sessions.ts",
+    "./ticker": "./src/ticker.ts",
     "./transport": "./src/transport.ts"
   },
   "dependencies": {
