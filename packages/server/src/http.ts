@@ -555,7 +555,7 @@ const DEMO_PAGE_HTML = String.raw`<!doctype html>
 
       function log(value) {
         logEl.textContent =
-          JSON.stringify(value, null, 2) + "\\n\\n" + logEl.textContent.slice(0, 10000);
+          JSON.stringify(value, null, 2) + "\n\n" + logEl.textContent.slice(0, 10000);
       }
     </script>
   </body>
