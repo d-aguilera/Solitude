@@ -24,7 +24,7 @@
 
 ## Current focus
 
-- **Primary active work**: client-server architecture; per-entity headless control routing, generic runtime snapshots, server sessions/transport, and a thin HTTP/SSE interactive probe are implemented. See `MEMORY_CLIENT_SERVER.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
+- **Primary active work**: client-server architecture; per-entity headless control routing, generic runtime snapshots, shared protocol/client helpers, server sessions/transport, and a thin HTTP/SSE interactive probe are implemented. See `MEMORY_CLIENT_SERVER.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
 - **Operator/focus boundary**: core/runtime contexts use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`.
 - **Remaining operator follow-ups**: foreground/background UX and declarative input lock policy live in `MEMORY_OPERATOR_MODEL.md`.
 - **Retired compatibility names**: keep `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming out of source.
@@ -54,6 +54,7 @@
 
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, layout, Canvas 2D, WebGL rasterizer adapters, and remote-world mirror helpers.
+- `packages/protocol/src/`: browser-safe client/server protocol types, message guards, HTTP/SSE client helpers, and keyboard input patching.
 - `packages/server/src/`: Node-oriented, non-DOM server adapter experiments for authoritative headless Solitude games.
 - `packages/solitude/src/`: Solitude app bootstrap, default config, plugin catalog, scenarios, spacecraft operator, playback, telemetry, and product-specific behavior.
 - Production and test source lives under `packages/*`; the root `src` directory has been removed.
@@ -83,6 +84,7 @@
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
 - Server runtime proof lives in `@solitude/server/runtime`; it composes `solitude/headless`, steps entity-addressed controls, and reuses runtime snapshot storage.
 - Server interactive probe lives in `@solitude/server/http`; `npm run dev:server` serves a minimal browser page that can create/join games, send input, step the authoritative world, and receive snapshots over SSE.
+- Shared browser-safe protocol/client helpers live in `@solitude/protocol`; `@solitude/server/client` and `@solitude/server/protocol` are compatibility re-exports.
 - Browser remote-world mirror proof lives in `@solitude/browser/remoteWorldMirror`; it applies authoritative runtime snapshots into a local world via a reusable indexed workspace.
 - Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`.
 - Tests have moved into owning packages; root TypeScript/Vitest tooling no longer includes `src`.

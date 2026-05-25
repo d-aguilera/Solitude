@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@solitude/browser": "0.0.0",
-    "@solitude/engine": "0.0.0"
+    "@solitude/engine": "0.0.0",
+    "@solitude/protocol": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

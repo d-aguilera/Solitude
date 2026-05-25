@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@solitude/engine": "0.0.0",
+    "@solitude/protocol": "0.0.0",
     "solitude": "0.0.0"
   },
   "scripts": {

@@ -1,0 +1,16 @@
+{
+  "name": "@solitude/protocol",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./protocol": "./src/protocol.ts"
+  },
+  "dependencies": {
+    "@solitude/engine": "0.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

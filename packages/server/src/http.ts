@@ -89,11 +89,6 @@ export function createSolitudeHttpRequestHandler(
       return;
     }
 
-    if (request.method === "GET" && requestUrl.pathname === "/probe.js") {
-      sendText(response, 200, "text/javascript; charset=utf-8", PROBE_JS);
-      return;
-    }
-
     if (request.method === "GET" && requestUrl.pathname === "/probe.css") {
       sendText(response, 200, "text/css; charset=utf-8", PROBE_CSS);
       return;
@@ -412,5 +407,4 @@ const DEMO_PAGE_HTML = readFileSync(
   new URL("./probe.html", import.meta.url),
   "utf8",
 );
-const PROBE_JS = readFileSync(new URL("./probe.js", import.meta.url), "utf8");
 const PROBE_CSS = readFileSync(new URL("./probe.css", import.meta.url), "utf8");

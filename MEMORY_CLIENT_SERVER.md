@@ -29,6 +29,7 @@ Package responsibilities:
 
 - `@solitude/engine`: generic world, physics, runtime snapshots, render data, and runtime seams.
 - `@solitude/browser`: browser rendering/rasterizers, input adapters, and remote-world rendering helpers.
+- `@solitude/protocol`: browser-safe protocol types, message constructors/guards, HTTP/SSE client adapter, and input patching helpers.
 - `solitude`: Solitude-specific config, plugins, assets, and browser client entrypoints.
 - `@solitude/server`: authoritative sessions, protocol, ticking, HTTP/WebSocket transport, and static client serving.
 
@@ -45,7 +46,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
   - `GET /games` for simple discovery.
 - `@solitude/server` owns protocol, sessions, transport, ticker, HTTP/SSE probe, and authoritative Solitude headless runtime composition.
 - Sessions currently assign clients to pre-existing `ship:blue` and `ship:red`.
-- Browser probe dynamically loads a Solitude-owned remote renderer module through Vite transforms and renders snapshots through the engine renderer.
+- Browser probe loads a Solitude-owned remote client module through Vite transforms; that module uses shared protocol/client helpers and renders snapshots through the engine renderer.
 - The dev server keeps Vite transforms on the same origin but closes Vite's websocket; only `8787` should be exposed.
 
 ## Important Semantics
@@ -107,6 +108,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Added duration-aware server input handling for brief taps during timed runs.
 - Fixed server thrust selector latching.
 - Fixed partial attitude input handling so released/missing opposite controls do not create phantom opposite yaw/roll.
+- Moved protocol/client helpers into `@solitude/protocol` and shifted the probe browser runtime into a Solitude-owned remote client module.
 
 ### 2026-05-24
 
