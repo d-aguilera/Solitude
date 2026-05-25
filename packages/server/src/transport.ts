@@ -5,7 +5,7 @@ import {
   type SolitudeGameId,
   type SolitudeProtocolSequence,
   type SolitudeServerMessage,
-} from "./protocol";
+} from "@solitude/protocol/protocol";
 import {
   createSolitudeSessionManager,
   type SolitudeGameSummary,

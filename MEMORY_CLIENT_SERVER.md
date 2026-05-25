@@ -109,6 +109,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Fixed server thrust selector latching.
 - Fixed partial attitude input handling so released/missing opposite controls do not create phantom opposite yaw/roll.
 - Moved protocol/client helpers into `@solitude/protocol` and shifted the probe browser runtime into a Solitude-owned remote client module.
+- Removed the old `@solitude/server/client` and `@solitude/server/protocol` compatibility exports; server code imports the shared protocol contract directly.
 
 ### 2026-05-24
 

@@ -1,3 +1,10 @@
+import {
+  createErrorMessage,
+  type SnapshotMessage,
+  type SolitudeGameId,
+  type SolitudeProtocolSequence,
+  type SolitudeServerMessage,
+} from "@solitude/protocol/protocol";
 import { readFileSync } from "node:fs";
 import {
   createServer,
@@ -5,13 +12,6 @@ import {
   type ServerResponse,
 } from "node:http";
 import type { AddressInfo } from "node:net";
-import {
-  createErrorMessage,
-  type SnapshotMessage,
-  type SolitudeGameId,
-  type SolitudeProtocolSequence,
-  type SolitudeServerMessage,
-} from "./protocol";
 import { createSolitudeGameTicker } from "./ticker";
 import {
   createSolitudeInProcessTransport,

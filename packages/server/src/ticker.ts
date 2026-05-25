@@ -1,4 +1,7 @@
-import type { SnapshotMessage, SolitudeGameId } from "./protocol";
+import type {
+  SnapshotMessage,
+  SolitudeGameId,
+} from "@solitude/protocol/protocol";
 import type { SolitudeInProcessTransport } from "./transport";
 
 export interface SolitudeGameTickRequest {

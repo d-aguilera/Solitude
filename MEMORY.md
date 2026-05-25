@@ -84,7 +84,7 @@
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
 - Server runtime proof lives in `@solitude/server/runtime`; it composes `solitude/headless`, steps entity-addressed controls, and reuses runtime snapshot storage.
 - Server interactive probe lives in `@solitude/server/http`; `npm run dev:server` serves a minimal browser page that can create/join games, send input, step the authoritative world, and receive snapshots over SSE.
-- Shared browser-safe protocol/client helpers live in `@solitude/protocol`; `@solitude/server/client` and `@solitude/server/protocol` are compatibility re-exports.
+- Shared browser-safe protocol/client helpers live in `@solitude/protocol`; `@solitude/server` imports that contract directly and no longer exports client/protocol shims.
 - Browser remote-world mirror proof lives in `@solitude/browser/remoteWorldMirror`; it applies authoritative runtime snapshots into a local world via a reusable indexed workspace.
 - Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`.
 - Tests have moved into owning packages; root TypeScript/Vitest tooling no longer includes `src`.

@@ -14,7 +14,7 @@ import {
   type SolitudeGameId,
   type SolitudeProtocolSequence,
   type SolitudeServerMessage,
-} from "./protocol";
+} from "@solitude/protocol/protocol";
 import { createSolitudeServerGame, type SolitudeServerGame } from "./runtime";
 
 const DEFAULT_ASSIGNABLE_ENTITY_IDS = ["ship:blue", "ship:red"] as const;

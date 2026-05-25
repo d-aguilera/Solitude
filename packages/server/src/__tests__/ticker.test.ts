@@ -1,5 +1,8 @@
+import type {
+  SnapshotMessage,
+  SolitudeGameId,
+} from "@solitude/protocol/protocol";
 import { describe, expect, it } from "vitest";
-import type { SnapshotMessage, SolitudeGameId } from "../protocol";
 import {
   createSolitudeGameTicker,
   type SolitudeGameTickerClock,
