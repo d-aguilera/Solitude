@@ -61,13 +61,16 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Manual/debug `/step` keeps a one-step pending press fallback so press/release pairs are not dropped.
 - The probe defaults are `dtMillis: 250`, `simulationStepMillis: 25`, `intervalMillis: 250`.
 - Control input objects may be partial. Code that compares opposite controls must treat missing values as `false`.
+- Explicit `leaveGame` clears the client's entity controls; games with no assigned clients are cleaned up immediately. HTTP/SSE disconnect does not imply leave yet.
 
 ## High-Value Next Steps
 
-1. Add server lifecycle cleanup:
-   - clear empty/stale games;
-   - pause/remove game tickers when sessions disappear;
-   - define leave/disconnect retention policy.
+1. Mature remote client runtime/rendering:
+   - raise or decouple render refresh from snapshot cadence;
+   - add interpolation between authoritative snapshots;
+   - decide which HUD/client-only plugins should run in remote mode;
+   - wire remote HUD/readouts/autopilot UI where they make sense;
+   - clarify server-authoritative controls versus client-only display/input plugins.
 
 2. Move transport toward production:
    - keep HTTP for static assets, health, and optional lobby/listing;
@@ -111,6 +114,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Added the first-class Solitude remote-client Vite entry and moved the probe page/style ownership out of `@solitude/server`.
 - Added production-like built-asset serving: `npm run start:server` serves `dist/remote.html`, hashed assets, and authoritative server routes from one Node process.
 - Matured server timing from interval-assumed ticks to elapsed-clock accumulation with fixed simulation substeps.
+- Added lifecycle cleanup for empty games after explicit leave and pause matching game tickers when sessions disappear.
 
 ### 2026-05-24
 

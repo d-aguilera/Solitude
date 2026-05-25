@@ -79,6 +79,54 @@ describe("Solitude session manager", () => {
     ]);
   });
 
+  it("releases a client's assigned ship when the client leaves", () => {
+    const manager = createSolitudeSessionManager();
+    manager.handleMessage({
+      type: "createGame",
+      clientId: "client:a",
+      sequence: 1,
+    });
+    manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:b",
+      gameId: "game:1",
+      sequence: 3,
+    });
+
+    manager.handleMessage({
+      type: "leaveGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 4,
+    });
+
+    expect(manager.listGames()).toEqual([
+      {
+        assignedEntityIds: ["ship:red"],
+        availableEntityIds: ["ship:blue"],
+        gameId: "game:1",
+        maxClients: 2,
+        tick: 0,
+      },
+    ]);
+    expect(
+      manager.handleMessage({
+        type: "joinGame",
+        clientId: "client:c",
+        gameId: "game:1",
+        sequence: 5,
+      }),
+    ).toEqual([
+      {
+        type: "joined",
+        clientId: "client:c",
+        entityId: "ship:blue",
+        gameId: "game:1",
+        sequence: 5,
+      },
+    ]);
+  });
+
   it("lists games with assigned and available entity ids", () => {
     const manager = createSolitudeSessionManager();
     manager.handleMessage({
@@ -342,6 +390,28 @@ describe("Solitude session manager", () => {
     expect(game.controlInputsByStep).toEqual([
       { controls: [], dtMillis: 1000 },
     ]);
+  });
+
+  it("removes games with no assigned clients during cleanup", () => {
+    const manager = createSolitudeSessionManager();
+    manager.handleMessage({
+      type: "createGame",
+      clientId: "client:a",
+      sequence: 1,
+    });
+
+    expect(manager.cleanupGames()).toEqual([]);
+
+    manager.handleMessage({
+      type: "leaveGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 3,
+    });
+
+    expect(manager.cleanupGames()).toEqual(["game:1"]);
+    expect(manager.listGames()).toEqual([]);
+    expect(manager.stepGame("game:1", 1000)).toBeNull();
   });
 
   it("rejects input for entities not assigned to the client", () => {

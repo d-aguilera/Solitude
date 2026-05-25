@@ -134,6 +134,7 @@ export function createSolitudeHttpRequestHandler({
     }
 
     if (request.method === "GET" && requestUrl.pathname === "/games") {
+      pauseRemovedGames(ticker, transport.cleanupGames());
       sendGameList(response, transport.listGames());
       return;
     }
@@ -141,8 +142,10 @@ export function createSolitudeHttpRequestHandler({
     if (request.method === "POST" && requestUrl.pathname === "/message") {
       const payload = await readJsonBody(request);
       const sequence = getFallbackSequence(payload);
+      const messages = transport.receive(payload, sequence);
+      pauseRemovedGames(ticker, transport.cleanupGames());
       sendJson(response, 200, {
-        messages: transport.receive(payload, sequence),
+        messages,
       });
       return;
     }
@@ -296,6 +299,15 @@ function setCommonHeaders(response: ServerResponse): void {
   response.setHeader("Access-Control-Allow-Headers", "content-type");
   response.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   response.setHeader("Access-Control-Allow-Origin", "*");
+}
+
+function pauseRemovedGames(
+  ticker: ReturnType<typeof createSolitudeGameTicker>,
+  gameIds: readonly SolitudeGameId[],
+): void {
+  for (const gameId of gameIds) {
+    ticker.pauseGame(gameId);
+  }
 }
 
 function sendJson(

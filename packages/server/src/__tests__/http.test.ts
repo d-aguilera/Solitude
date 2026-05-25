@@ -132,6 +132,39 @@ describe("Solitude HTTP server", () => {
     }
   });
 
+  it("cleans up empty games after clients leave", async () => {
+    const server = await startTestServer();
+    try {
+      await postJson(server, "/message", {
+        type: "createGame",
+        clientId: "client:a",
+        sequence: 1,
+      });
+      await postJson(server, "/run", {
+        dtMillis: 1000,
+        gameId: "game:1",
+        intervalMillis: 10,
+        simulationStepMillis: 1000,
+      });
+
+      await postJson(server, "/message", {
+        type: "leaveGame",
+        clientId: "client:a",
+        gameId: "game:1",
+        sequence: 3,
+      });
+
+      const response = await fetch(`${server.url}/games`);
+
+      expect(await response.json()).toEqual({ games: [] });
+      expect(await postJson(server, "/pause", { gameId: "game:1" })).toEqual({
+        messages: [],
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
   it("can delegate dev-only browser module requests", async () => {
     const server = await startSolitudeHttpServer({
       ...createDefaultSolitudeHttpServerOptions(),

@@ -84,4 +84,28 @@ describe("Solitude in-process transport", () => {
       },
     ]);
   });
+
+  it("cleans up empty session games", () => {
+    const transport = createSolitudeInProcessTransport();
+    transport.receive(
+      {
+        type: "createGame",
+        clientId: "client:a",
+        sequence: 1,
+      },
+      1,
+    );
+    transport.receive(
+      {
+        type: "leaveGame",
+        clientId: "client:a",
+        gameId: "game:1",
+        sequence: 3,
+      },
+      3,
+    );
+
+    expect(transport.cleanupGames()).toEqual(["game:1"]);
+    expect(transport.listGames()).toEqual([]);
+  });
 });

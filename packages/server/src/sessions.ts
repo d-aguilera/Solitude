@@ -49,6 +49,7 @@ export interface SolitudeInputTimeWindow {
 }
 
 export interface SolitudeSessionManager {
+  cleanupGames: () => SolitudeGameId[];
   handleMessage: (message: SolitudeClientMessage) => SolitudeServerMessage[];
   listGames: () => SolitudeGameSummary[];
   stepGame: (
@@ -72,11 +73,11 @@ export interface SolitudeGameSummary {
 
 interface ServerGameSession {
   assignedEntityByClientId: Map<SolitudeClientId, EntityId>;
+  emptySinceMillis: number | null;
   game: SolitudeServerGame;
   heldControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
   id: SolitudeGameId;
   inputEvents: QueuedInputEvent[];
-  nextEntityIndex: number;
   nextSequence: SolitudeProtocolSequence;
   pendingPressedControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
   steppedControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
@@ -103,11 +104,11 @@ export function createSolitudeSessionManager(
     nextGameNumber++;
     const session: ServerGameSession = {
       assignedEntityByClientId: new Map(),
+      emptySinceMillis: null,
       game: options.createGame(),
       heldControlInputsByEntityId: new Map(),
       id: gameId,
       inputEvents: [],
-      nextEntityIndex: 0,
       nextSequence: sequence + 2,
       pendingPressedControlInputsByEntityId: new Map(),
       steppedControlInputsByEntityId: new Map(),
@@ -174,6 +175,9 @@ export function createSolitudeSessionManager(
       session.pendingPressedControlInputsByEntityId.delete(assignedEntityId);
       session.steppedControlInputsByEntityId.delete(assignedEntityId);
       removeQueuedInputEventsForEntity(session.inputEvents, assignedEntityId);
+    }
+    if (session.assignedEntityByClientId.size === 0) {
+      session.emptySinceMillis = options.nowMillis();
     }
     return [];
   };
@@ -275,7 +279,10 @@ export function createSolitudeSessionManager(
         sequence,
       });
     }
-    const entityId = options.assignableEntityIds[session.nextEntityIndex];
+    const entityId = findAvailableEntityId(
+      options.assignableEntityIds,
+      session.assignedEntityByClientId,
+    );
     if (!entityId) {
       return createErrorMessage({
         code: "gameFull",
@@ -283,8 +290,8 @@ export function createSolitudeSessionManager(
         sequence,
       });
     }
-    session.nextEntityIndex++;
     session.assignedEntityByClientId.set(clientId, entityId);
+    session.emptySinceMillis = null;
     return createJoinedGameMessage({
       clientId,
       entityId,
@@ -296,12 +303,13 @@ export function createSolitudeSessionManager(
   const listGames = (): SolitudeGameSummary[] => {
     const summaries: SolitudeGameSummary[] = [];
     for (const session of gamesById.values()) {
+      const assignedEntityIds = Array.from(
+        session.assignedEntityByClientId.values(),
+      );
       summaries.push({
-        assignedEntityIds: Array.from(
-          session.assignedEntityByClientId.values(),
-        ),
-        availableEntityIds: options.assignableEntityIds.slice(
-          session.nextEntityIndex,
+        assignedEntityIds,
+        availableEntityIds: options.assignableEntityIds.filter(
+          (entityId) => !assignedEntityIds.includes(entityId),
         ),
         gameId: session.id,
         maxClients: options.assignableEntityIds.length,
@@ -311,7 +319,23 @@ export function createSolitudeSessionManager(
     return summaries;
   };
 
-  return { handleMessage, listGames, stepGame, stepGameWithInputWindow };
+  const cleanupGames = (): SolitudeGameId[] => {
+    const removedGameIds: SolitudeGameId[] = [];
+    for (const session of gamesById.values()) {
+      if (session.emptySinceMillis === null) continue;
+      gamesById.delete(session.id);
+      removedGameIds.push(session.id);
+    }
+    return removedGameIds;
+  };
+
+  return {
+    cleanupGames,
+    handleMessage,
+    listGames,
+    stepGame,
+    stepGameWithInputWindow,
+  };
 }
 
 function applyInputPatch(
@@ -333,6 +357,16 @@ function applyInputPatch(
       pendingPressedControls[key] = true;
     }
   }
+}
+
+function findAvailableEntityId(
+  assignableEntityIds: readonly EntityId[],
+  assignedEntityByClientId: ReadonlyMap<SolitudeClientId, EntityId>,
+): EntityId | undefined {
+  const assignedEntityIds = new Set(assignedEntityByClientId.values());
+  return assignableEntityIds.find(
+    (entityId) => !assignedEntityIds.has(entityId),
+  );
 }
 
 function getStepControlInputs(
