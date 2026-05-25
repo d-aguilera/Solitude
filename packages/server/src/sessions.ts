@@ -65,6 +65,7 @@ interface ServerGameSession {
   id: SolitudeGameId;
   nextEntityIndex: number;
   nextSequence: SolitudeProtocolSequence;
+  pendingPressedControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
   tick: number;
 }
 
@@ -87,6 +88,7 @@ export function createSolitudeSessionManager(
       id: gameId,
       nextEntityIndex: 0,
       nextSequence: sequence + 2,
+      pendingPressedControlInputsByEntityId: new Map(),
       tick: 0,
     };
     gamesById.set(gameId, session);
@@ -147,6 +149,7 @@ export function createSolitudeSessionManager(
     session.assignedEntityByClientId.delete(message.clientId);
     if (assignedEntityId) {
       session.heldControlInputsByEntityId.delete(assignedEntityId);
+      session.pendingPressedControlInputsByEntityId.delete(assignedEntityId);
     }
     return [];
   };
@@ -168,8 +171,16 @@ export function createSolitudeSessionManager(
     }
     const heldControls =
       session.heldControlInputsByEntityId.get(message.entityId) ?? {};
-    applyInputPatch(heldControls, message.controls);
+    const pendingPressedControls =
+      session.pendingPressedControlInputsByEntityId.get(message.entityId) ?? {};
+    applyInputPatch(heldControls, pendingPressedControls, message.controls);
     session.heldControlInputsByEntityId.set(message.entityId, heldControls);
+    if (hasControlInputs(pendingPressedControls)) {
+      session.pendingPressedControlInputsByEntityId.set(
+        message.entityId,
+        pendingPressedControls,
+      );
+    }
     return [];
   };
 
@@ -179,10 +190,9 @@ export function createSolitudeSessionManager(
   ): SnapshotMessage | null => {
     const session = gamesById.get(gameId);
     if (!session) return null;
-    const snapshot = session.game.step(
-      dtMillis,
-      session.heldControlInputsByEntityId,
-    );
+    const controlInputsByEntityId = getStepControlInputs(session);
+    const snapshot = session.game.step(dtMillis, controlInputsByEntityId);
+    session.pendingPressedControlInputsByEntityId.clear();
     session.tick++;
     const sequence = session.nextSequence;
     session.nextSequence++;
@@ -249,6 +259,7 @@ export function createSolitudeSessionManager(
 
 function applyInputPatch(
   heldControls: Partial<ControlInput>,
+  pendingPressedControls: Partial<ControlInput>,
   patch: Partial<ControlInput>,
 ): void {
   for (const key of Object.keys(patch)) {
@@ -261,7 +272,39 @@ function applyInputPatch(
       continue;
     }
     heldControls[key] = value;
+    if (value) {
+      pendingPressedControls[key] = true;
+    }
   }
+}
+
+function getStepControlInputs(
+  session: ServerGameSession,
+): ReadonlyMap<EntityId, Partial<ControlInput>> {
+  if (session.pendingPressedControlInputsByEntityId.size === 0) {
+    return session.heldControlInputsByEntityId;
+  }
+
+  const controlInputsByEntityId = new Map<EntityId, Partial<ControlInput>>(
+    session.heldControlInputsByEntityId,
+  );
+  for (const [
+    entityId,
+    pendingPressedControls,
+  ] of session.pendingPressedControlInputsByEntityId) {
+    controlInputsByEntityId.set(entityId, {
+      ...controlInputsByEntityId.get(entityId),
+      ...pendingPressedControls,
+    });
+  }
+  return controlInputsByEntityId;
+}
+
+function hasControlInputs(controls: Partial<ControlInput>): boolean {
+  for (const key of Object.keys(controls)) {
+    if (controls[key] !== undefined) return true;
+  }
+  return false;
 }
 
 function clearThrustControls(heldControls: Partial<ControlInput>): void {

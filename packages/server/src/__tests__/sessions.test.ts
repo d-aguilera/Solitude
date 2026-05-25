@@ -229,6 +229,40 @@ describe("Solitude session manager", () => {
     ]);
   });
 
+  it("applies brief press-and-release input on the next step", () => {
+    const game = createRecordingGame();
+    const manager = createSolitudeSessionManager(createTestOptions(game));
+    manager.handleMessage({
+      type: "createGame",
+      clientId: "client:a",
+      sequence: 1,
+    });
+
+    manager.handleMessage({
+      type: "input",
+      clientId: "client:a",
+      entityId: "ship:blue",
+      gameId: "game:1",
+      sequence: 3,
+      controls: { yawLeft: true },
+    });
+    manager.handleMessage({
+      type: "input",
+      clientId: "client:a",
+      entityId: "ship:blue",
+      gameId: "game:1",
+      sequence: 4,
+      controls: { yawLeft: false },
+    });
+    manager.stepGame("game:1", 1000);
+    manager.stepGame("game:1", 1000);
+
+    expect(game.controlInputsByStep).toEqual([
+      [["ship:blue", { yawLeft: true }]],
+      [["ship:blue", { yawLeft: false }]],
+    ]);
+  });
+
   it("clears held input when the assigned client leaves", () => {
     const game = createRecordingGame();
     const manager = createSolitudeSessionManager(createTestOptions(game));
