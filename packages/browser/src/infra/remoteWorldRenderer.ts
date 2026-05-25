@@ -66,6 +66,7 @@ export interface RemoteWorldRenderer {
     snapshot: RuntimeWorldSnapshot,
     options?: RemoteWorldRenderOptions,
   ) => boolean;
+  setFocusEntityId: (entityId: string) => boolean;
 }
 
 export function createRemoteWorldRenderer({
@@ -187,6 +188,7 @@ export function createRemoteWorldRenderer({
       renderCurrent(options);
       return true;
     },
+    setFocusEntityId: (entityId) => setFocusEntityId(mirror, entityId),
   };
 }
 
@@ -212,6 +214,19 @@ function requireViewDefinition(
     if (definition.id === viewId) return definition;
   }
   throw new Error(`Remote render view not found: ${viewId}`);
+}
+
+function setFocusEntityId(
+  mirror: RemoteWorldMirror,
+  entityId: string,
+): boolean {
+  for (const controlledBody of mirror.world.controllableBodies) {
+    if (controlledBody.id !== entityId) continue;
+    mirror.worldSetup.mainFocus.entityId = entityId;
+    mirror.worldSetup.mainFocus.controlledBody = controlledBody;
+    return true;
+  }
+  return false;
 }
 
 function createRenderedView(): RenderedView {

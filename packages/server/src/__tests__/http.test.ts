@@ -83,6 +83,26 @@ describe("Solitude HTTP server", () => {
     }
   });
 
+  it("can delegate dev-only browser module requests", async () => {
+    const server = await startSolitudeHttpServer({
+      ...createDefaultSolitudeHttpServerOptions(),
+      devAssetHandler: async (_request, response) => {
+        response.writeHead(200, { "content-type": "text/javascript" });
+        response.end("export const ok = true;");
+        return true;
+      },
+      port: 0,
+    });
+    try {
+      const response = await fetch(`${server.url}/packages/app/module.ts`);
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe("export const ok = true;");
+    } finally {
+      await server.close();
+    }
+  });
+
   it("publishes snapshots over server-sent events when a game steps", async () => {
     const server = await startTestServer();
     try {

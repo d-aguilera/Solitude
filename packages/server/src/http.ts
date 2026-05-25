@@ -21,6 +21,7 @@ import {
 const MAX_REQUEST_BODY_BYTES = 64 * 1024;
 
 export interface SolitudeHttpServerOptions {
+  devAssetHandler?: SolitudeDevAssetHandler;
   hostname: string;
   port: number;
   transport: SolitudeInProcessTransport;
@@ -35,6 +36,10 @@ export interface SolitudeHttpServer {
 export interface SolitudeHttpRequestHandler {
   (request: IncomingMessage, response: ServerResponse): Promise<void>;
   close: () => void;
+}
+
+export interface SolitudeDevAssetHandler {
+  (request: IncomingMessage, response: ServerResponse): Promise<boolean>;
 }
 
 interface StepRequest {
@@ -56,6 +61,7 @@ export function createDefaultSolitudeHttpServerOptions(): SolitudeHttpServerOpti
 
 export function createSolitudeHttpRequestHandler(
   transport: SolitudeInProcessTransport,
+  devAssetHandler?: SolitudeDevAssetHandler,
 ): SolitudeHttpRequestHandler {
   const subscriptionsByGameId = new Map<SolitudeGameId, Set<ServerResponse>>();
   const ticker = createSolitudeGameTicker({
@@ -198,6 +204,10 @@ export function createSolitudeHttpRequestHandler(
       return;
     }
 
+    if (devAssetHandler && (await devAssetHandler(request, response))) {
+      return;
+    }
+
     sendJson(response, 404, {
       messages: [
         createErrorMessage({
@@ -218,7 +228,10 @@ export function createSolitudeHttpRequestHandler(
 export async function startSolitudeHttpServer(
   options: SolitudeHttpServerOptions,
 ): Promise<SolitudeHttpServer> {
-  const handler = createSolitudeHttpRequestHandler(options.transport);
+  const handler = createSolitudeHttpRequestHandler(
+    options.transport,
+    options.devAssetHandler,
+  );
   const server = createServer((request, response) => {
     void handler(request, response).catch((error: unknown) => {
       sendJson(response, 500, {

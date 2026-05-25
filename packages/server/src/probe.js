@@ -1,6 +1,8 @@
 let sequence = 1;
 let events = null;
 let runActive = false;
+let engineRenderer = null;
+let engineRendererAvailable = true;
 
 const heldControls = {};
 
@@ -43,6 +45,18 @@ const snapshotStatusEl = document.querySelector("#snapshotStatus");
 const statusEl = document.querySelector("#status");
 const runStatusEl = document.querySelector("#runStatus");
 const toggleRunButton = document.querySelector("#toggleRun");
+
+void import("/src/remoteProbeRenderer.ts")
+  .then((module) => {
+    engineRenderer = module.createSolitudeRemoteProbeRenderer({
+      canvas: snapshotCanvas,
+      getFocusEntityId: () => fields.entityId.value,
+      statusElement: snapshotStatusEl,
+    });
+  })
+  .catch(() => {
+    engineRendererAvailable = false;
+  });
 
 document.querySelector("#createGame").addEventListener("click", () => {
   sendMessage({
@@ -277,6 +291,9 @@ function handleMessages(messages, options = {}) {
 }
 
 function renderSnapshot(message) {
+  if (engineRenderer?.renderSnapshotMessage(message)) {
+    return;
+  }
   if (!snapshotContext) return;
   const entities = message.snapshot.entities.filter((entity) =>
     isFiniteVec3(entity.position),
@@ -312,7 +329,7 @@ function renderSnapshot(message) {
 
   const speed = focus ? vectorMagnitude(focus.velocity).toFixed(1) : "0.0";
   snapshotStatusEl.textContent =
-    "rendered tick " +
+    (engineRendererAvailable ? "direct rendered tick " : "fallback tick ") +
     message.tick +
     " | focus " +
     (focus?.id ?? "none") +

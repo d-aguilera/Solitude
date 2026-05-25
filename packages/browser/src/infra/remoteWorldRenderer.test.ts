@@ -101,6 +101,26 @@ describe("remote world renderer", () => {
     expect(renderer.renderedView.segmentCount).toBe(1);
   });
 
+  it("can switch focus between mirrored controllable entities", () => {
+    const config = buildConfig([createCraft("craft:red", 8)]);
+    const renderer = createRemoteWorldRenderer({
+      config,
+      measureText,
+      plugins: [createForwardViewPlugin()],
+      surface,
+    });
+
+    expect(renderer.setFocusEntityId("craft:red")).toBe(true);
+    expect(renderer.setFocusEntityId("planet:missing")).toBe(false);
+    expect(renderer.renderSnapshot(createAuthoritativeSnapshot(config))).toBe(
+      true,
+    );
+
+    expect(renderer.mirror.worldSetup.mainFocus.entityId).toBe("craft:red");
+    expect(renderer.renderParams.mainFocus.entityId).toBe("craft:red");
+    expect(renderer.renderedView.faceCount).toBe(2);
+  });
+
   it("can rasterize an already rendered view", () => {
     const config = buildConfig();
     const renderer = createRemoteWorldRenderer({
@@ -147,10 +167,23 @@ function createForwardViewPlugin(): GamePlugin {
   };
 }
 
-function buildConfig(): WorldAndSceneConfig {
+function buildConfig(extraEntities: EntityConfig[] = []): WorldAndSceneConfig {
+  const craft = createCraft("craft:test", 0);
+
+  return {
+    entities: [craft, ...extraEntities],
+    mainFocusEntityId: craft.id,
+    render: {
+      mainViewCameraOffset: vec3.create(0, -20, 0),
+      mainViewLookState: { azimuth: 0, elevation: 0 },
+    },
+  };
+}
+
+function createCraft(id: string, x: number): EntityConfig {
   const frame = createForwardFrame();
-  const craft: EntityConfig = {
-    id: "craft:test",
+  return {
+    id,
     components: {
       controllable: { enabled: true },
       gravityMass: { density: 1, volume: 1 },
@@ -164,18 +197,9 @@ function buildConfig(): WorldAndSceneConfig {
         frame,
         kind: "direct",
         orientation: localFrame.intoMat3(mat3.zero(), frame),
-        position: vec3.zero(),
+        position: vec3.create(x, 0, 0),
         velocity: vec3.zero(),
       },
-    },
-  };
-
-  return {
-    entities: [craft],
-    mainFocusEntityId: craft.id,
-    render: {
-      mainViewCameraOffset: vec3.create(0, -20, 0),
-      mainViewLookState: { azimuth: 0, elevation: 0 },
     },
   };
 }
