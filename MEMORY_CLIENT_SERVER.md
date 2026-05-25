@@ -145,6 +145,7 @@ Important current behavior:
 - Input messages patch the latest held control state for the assigned entity. They do not emit snapshots by themselves.
 - The probe's forward burn toggle sends `burnForward: true` to start and `burnForward: false` to stop; the server retains the latest value across authoritative steps.
 - The probe also sends keydown/keyup patches for spacecraft controls (`Space`, `W/A/S/D`, `Q/E`, `N/M`, `B`, `0-9`) while an entity is assigned.
+- The server ticker can run multiple fixed simulation substeps per broadcast interval. The probe currently defaults to `dtMillis: 250`, `simulationStepMillis: 25`, and `intervalMillis: 250`.
 - The snapshot viewport attempts to render network snapshots through the Solitude remote renderer. If the dev browser module cannot load, it falls back to the small direct log-scaled top-down projection.
 - `@solitude/browser/remoteWorldRenderer` can apply a runtime snapshot to a local mirror, refresh scene/camera state, collect labels/segments, and render into a `RenderedView` using `DefaultViewRenderer`.
 - `@solitude/browser/remoteCanvasRenderer` wraps the remote world renderer with the existing Canvas rasterizer/surface.
@@ -153,8 +154,8 @@ Important current behavior:
 
 Next focused slice:
 
-- The next high-value architecture slice should improve server tick policy: run smaller fixed simulation substeps, decouple simulation step size from snapshot broadcast interval, and keep browser input responsive without giant attitude jumps.
-- This moves directly toward the final deployment shape because production multiplayer needs server-owned timing to be credible before WebSocket transport or remote app extraction can be judged accurately.
+- Exercise the smoother server tick policy interactively, then decide whether to tune defaults, add a stronger accumulator based on elapsed clock time, or start extracting the probe into a first-class remote client entry.
+- This keeps us moving toward the final deployment shape while testing whether the current HTTP/SSE transport is good enough for one more round of client UX work before WebSockets.
 
 ## Candidate Next Slices
 
@@ -170,7 +171,8 @@ Next focused slice:
 
 3. Mature the server-owned tick loop
    - A transport-agnostic `@solitude/server/ticker` owns run/pause interval lifecycle for the probe.
-   - Remaining work: fixed timestep/accumulator behavior, separate simulation substep size from snapshot broadcast cadence, add game lifecycle cleanup, and room/session ownership.
+   - Fixed simulation substeps now exist for `/run`.
+   - Remaining work: elapsed-clock accumulator behavior, add game lifecycle cleanup, and room/session ownership.
 
 4. Extract a browser client protocol adapter
    - Convert local control state into protocol input messages.
@@ -204,6 +206,11 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-25: Added fixed simulation substeps to server-owned runs:
+  - `/run` now requires `simulationStepMillis` alongside broadcast `dtMillis` and `intervalMillis`;
+  - the ticker advances as many substeps as needed to cover each broadcast `dtMillis`, publishing only the final snapshot;
+  - the probe defaults changed from one `1000 ms` simulation step to `250 ms` broadcast simulation time split into `25 ms` substeps;
+  - this should make held keyboard controls feel much less chunky without increasing snapshot broadcast cadence.
 - 2026-05-25: Wired the probe toward engine-rendered remote snapshots:
   - added `@solitude/browser/remoteCanvasRenderer`, which composes the remote world renderer with Canvas rasterization;
   - added a Solitude-owned `remoteProbeRenderer` browser module that builds the Solitude config/plugins and renders incoming snapshot messages through the engine renderer;

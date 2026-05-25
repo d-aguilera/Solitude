@@ -22,6 +22,7 @@ describe("Solitude game ticker", () => {
       dtMillis: 1000,
       gameId: "game:1",
       intervalMillis: 250,
+      simulationStepMillis: 1000,
     });
     clock.tick(0);
     clock.tick(0);
@@ -45,11 +46,13 @@ describe("Solitude game ticker", () => {
       dtMillis: 1000,
       gameId: "game:1",
       intervalMillis: 250,
+      simulationStepMillis: 1000,
     });
     ticker.runGame({
       dtMillis: 500,
       gameId: "game:1",
       intervalMillis: 125,
+      simulationStepMillis: 500,
     });
 
     expect(clock.timers[0]?.cleared).toBe(true);
@@ -69,6 +72,7 @@ describe("Solitude game ticker", () => {
       dtMillis: 1000,
       gameId: "game:missing",
       intervalMillis: 250,
+      simulationStepMillis: 1000,
     });
     clock.tick(0);
 
@@ -88,17 +92,51 @@ describe("Solitude game ticker", () => {
       dtMillis: 1000,
       gameId: "game:1",
       intervalMillis: 250,
+      simulationStepMillis: 1000,
     });
     ticker.runGame({
       dtMillis: 1000,
       gameId: "game:2",
       intervalMillis: 250,
+      simulationStepMillis: 1000,
     });
     ticker.pauseAll();
 
     expect(ticker.isRunning("game:1")).toBe(false);
     expect(ticker.isRunning("game:2")).toBe(false);
     expect(clock.timers.every((timer) => timer.cleared)).toBe(true);
+  });
+
+  it("runs fixed simulation substeps before emitting one snapshot", () => {
+    const clock = createManualClock();
+    const snapshots: SnapshotMessage[] = [];
+    const transport = createTransportStub({
+      "game:1": [
+        createSnapshot("game:1", 1),
+        createSnapshot("game:1", 2),
+        createSnapshot("game:1", 3),
+      ],
+    });
+    const ticker = createSolitudeGameTicker({
+      clock,
+      onSnapshot: (snapshot) => snapshots.push(snapshot),
+      transport,
+    });
+
+    ticker.runGame({
+      dtMillis: 100,
+      gameId: "game:1",
+      intervalMillis: 250,
+      simulationStepMillis: 40,
+    });
+    clock.tick(0);
+
+    expect(snapshots.map((snapshot) => snapshot.tick)).toEqual([3]);
+    expect(transport.steps).toEqual([
+      { dtMillis: 40, gameId: "game:1" },
+      { dtMillis: 40, gameId: "game:1" },
+      { dtMillis: 20, gameId: "game:1" },
+    ]);
   });
 });
 

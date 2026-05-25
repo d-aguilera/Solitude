@@ -147,6 +147,7 @@ describe("Solitude HTTP server", () => {
         dtMillis: 1000,
         gameId: "game:1",
         intervalMillis: 10,
+        simulationStepMillis: 1000,
       });
 
       expect(await snapshotPromise).toContain('"tick":1');

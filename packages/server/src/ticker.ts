@@ -5,6 +5,7 @@ export interface SolitudeGameTickRequest {
   dtMillis: number;
   gameId: SolitudeGameId;
   intervalMillis: number;
+  simulationStepMillis: number;
 }
 
 export interface SolitudeGameTicker {
@@ -46,10 +47,7 @@ export function createSolitudeGameTicker<
   const runGame = (request: SolitudeGameTickRequest): void => {
     pauseGame(request.gameId);
     const timer = clock.setInterval(() => {
-      const snapshot = options.transport.stepGame(
-        request.gameId,
-        request.dtMillis,
-      );
+      const snapshot = stepGameForBroadcast(options.transport, request);
       if (!snapshot) {
         pauseGame(request.gameId);
         return;
@@ -71,4 +69,21 @@ export function createSolitudeGameTicker<
     pauseGame,
     runGame,
   };
+}
+
+function stepGameForBroadcast(
+  transport: Pick<SolitudeInProcessTransport, "stepGame">,
+  request: SolitudeGameTickRequest,
+): SnapshotMessage | null {
+  let remainingMillis = request.dtMillis;
+  let snapshot: SnapshotMessage | null = null;
+
+  while (remainingMillis > 0) {
+    const stepMillis = Math.min(request.simulationStepMillis, remainingMillis);
+    snapshot = transport.stepGame(request.gameId, stepMillis);
+    if (!snapshot) return null;
+    remainingMillis -= stepMillis;
+  }
+
+  return snapshot;
 }

@@ -34,6 +34,7 @@ const fields = {
   gameId: document.querySelector("#gameId"),
   entityId: document.querySelector("#entityId"),
   dtMillis: document.querySelector("#dtMillis"),
+  simulationStepMillis: document.querySelector("#simulationStepMillis"),
   runIntervalMillis: document.querySelector("#runIntervalMillis"),
 };
 const gamesListEl = document.querySelector("#gamesList");
@@ -207,8 +208,13 @@ async function startServerLoop() {
     Number(fields.runIntervalMillis.value) || 250,
   );
   fields.runIntervalMillis.value = String(intervalMillis);
-  const dtMillis = Math.max(1, Number(fields.dtMillis.value) || 1000);
+  const dtMillis = Math.max(1, Number(fields.dtMillis.value) || 250);
   fields.dtMillis.value = String(dtMillis);
+  const simulationStepMillis = Math.max(
+    1,
+    Number(fields.simulationStepMillis.value) || 25,
+  );
+  fields.simulationStepMillis.value = String(simulationStepMillis);
   const response = await fetch("/run", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -216,13 +222,20 @@ async function startServerLoop() {
       gameId: fields.gameId.value,
       dtMillis,
       intervalMillis,
+      simulationStepMillis,
     }),
   });
   const payload = await response.json();
   handleMessages(payload.messages);
   runActive = true;
   runStatusEl.textContent =
-    "Server running every " + intervalMillis + " ms at dt " + dtMillis + " ms";
+    "Server running every " +
+    intervalMillis +
+    " ms at broadcast dt " +
+    dtMillis +
+    " ms, sim step " +
+    simulationStepMillis +
+    " ms";
   toggleRunButton.textContent = "Pause";
 }
 

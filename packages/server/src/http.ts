@@ -49,6 +49,7 @@ interface StepRequest {
 
 interface RunRequest extends StepRequest {
   intervalMillis: number;
+  simulationStepMillis: number;
 }
 
 export function createDefaultSolitudeHttpServerOptions(): SolitudeHttpServerOptions {
@@ -392,7 +393,10 @@ function isRunRequest(value: unknown): value is RunRequest {
     value.dtMillis > 0 &&
     typeof value.intervalMillis === "number" &&
     Number.isFinite(value.intervalMillis) &&
-    value.intervalMillis >= 10
+    value.intervalMillis >= 10 &&
+    typeof value.simulationStepMillis === "number" &&
+    Number.isFinite(value.simulationStepMillis) &&
+    value.simulationStepMillis > 0
   );
 }
 
