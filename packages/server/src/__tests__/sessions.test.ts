@@ -183,6 +183,52 @@ describe("Solitude session manager", () => {
     ]);
   });
 
+  it("latches thrust level input instead of treating number keys as held", () => {
+    const game = createRecordingGame();
+    const manager = createSolitudeSessionManager(createTestOptions(game));
+    manager.handleMessage({
+      type: "createGame",
+      clientId: "client:a",
+      sequence: 1,
+    });
+
+    manager.handleMessage({
+      type: "input",
+      clientId: "client:a",
+      entityId: "ship:blue",
+      gameId: "game:1",
+      sequence: 3,
+      controls: { thrust9: true },
+    });
+    manager.handleMessage({
+      type: "input",
+      clientId: "client:a",
+      entityId: "ship:blue",
+      gameId: "game:1",
+      sequence: 4,
+      controls: { thrust9: false },
+    });
+    manager.stepGame("game:1", 1000);
+
+    expect(game.controlInputsByStep[0]).toEqual([
+      ["ship:blue", { thrust9: true }],
+    ]);
+
+    manager.handleMessage({
+      type: "input",
+      clientId: "client:a",
+      entityId: "ship:blue",
+      gameId: "game:1",
+      sequence: 5,
+      controls: { thrust3: true },
+    });
+    manager.stepGame("game:1", 1000);
+
+    expect(game.controlInputsByStep[1]).toEqual([
+      ["ship:blue", { thrust3: true }],
+    ]);
+  });
+
   it("clears held input when the assigned client leaves", () => {
     const game = createRecordingGame();
     const manager = createSolitudeSessionManager(createTestOptions(game));

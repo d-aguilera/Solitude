@@ -18,6 +18,18 @@ import {
 import { createSolitudeServerGame, type SolitudeServerGame } from "./runtime";
 
 const DEFAULT_ASSIGNABLE_ENTITY_IDS = ["ship:blue", "ship:red"] as const;
+const THRUST_CONTROL_IDS = [
+  "thrust0",
+  "thrust1",
+  "thrust2",
+  "thrust3",
+  "thrust4",
+  "thrust5",
+  "thrust6",
+  "thrust7",
+  "thrust8",
+  "thrust9",
+] as const;
 
 export interface SolitudeSessionManagerOptions {
   assignableEntityIds: readonly EntityId[];
@@ -156,7 +168,7 @@ export function createSolitudeSessionManager(
     }
     const heldControls =
       session.heldControlInputsByEntityId.get(message.entityId) ?? {};
-    Object.assign(heldControls, message.controls);
+    applyInputPatch(heldControls, message.controls);
     session.heldControlInputsByEntityId.set(message.entityId, heldControls);
     return [];
   };
@@ -233,6 +245,35 @@ export function createSolitudeSessionManager(
   };
 
   return { handleMessage, listGames, stepGame };
+}
+
+function applyInputPatch(
+  heldControls: Partial<ControlInput>,
+  patch: Partial<ControlInput>,
+): void {
+  for (const key of Object.keys(patch)) {
+    const value = patch[key];
+    if (isThrustControlId(key)) {
+      if (value) {
+        clearThrustControls(heldControls);
+        heldControls[key] = true;
+      }
+      continue;
+    }
+    heldControls[key] = value;
+  }
+}
+
+function clearThrustControls(heldControls: Partial<ControlInput>): void {
+  for (const key of THRUST_CONTROL_IDS) {
+    delete heldControls[key];
+  }
+}
+
+function isThrustControlId(
+  value: string,
+): value is (typeof THRUST_CONTROL_IDS)[number] {
+  return (THRUST_CONTROL_IDS as readonly string[]).includes(value);
 }
 
 function createGameId(value: number): SolitudeGameId {

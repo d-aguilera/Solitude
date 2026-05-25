@@ -143,6 +143,7 @@ Important current behavior:
 
 - Joining the same game with the same client id is idempotent for assignment: the server returns `joined` for the existing entity and does not consume another ship.
 - Input messages patch the latest held control state for the assigned entity. They do not emit snapshots by themselves.
+- Thrust level inputs (`thrust0` ... `thrust9`) are treated as latched selectors on the server: a `true` patch selects that level and clears the previous thrust selector; release/`false` patches do not clear the selected level.
 - The probe's forward burn toggle sends `burnForward: true` to start and `burnForward: false` to stop; the server retains the latest value across authoritative steps.
 - The probe also sends keydown/keyup patches for spacecraft controls (`Space`, `W/A/S/D`, `Q/E`, `N/M`, `B`, `0-9`) while an entity is assigned.
 - The server ticker can run multiple fixed simulation substeps per broadcast interval. The probe currently defaults to `dtMillis: 250`, `simulationStepMillis: 25`, and `intervalMillis: 250`.
@@ -206,6 +207,10 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-25: Fixed remote thrust-level input semantics:
+  - number-key thrust inputs now latch on the server instead of behaving like ordinary held booleans;
+  - releasing a numeric key no longer clears the selected thrust level before the next server tick can observe it;
+  - selecting a new thrust level clears the previous selected thrust key.
 - 2026-05-25: Added fixed simulation substeps to server-owned runs:
   - `/run` now requires `simulationStepMillis` alongside broadcast `dtMillis` and `intervalMillis`;
   - the ticker advances as many substeps as needed to cover each broadcast `dtMillis`, publishing only the final snapshot;
