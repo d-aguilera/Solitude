@@ -13,26 +13,26 @@ const remoteRenderPluginIds = [
   "velocitySegments",
 ];
 
-export interface RemoteProbeSnapshotMessage {
+export interface RemoteClientSnapshotMessage {
   snapshot: RuntimeWorldSnapshot;
   tick: number;
 }
 
-export interface SolitudeRemoteProbeRendererOptions {
+export interface SolitudeRemoteClientRendererOptions {
   canvas: HTMLCanvasElement;
   getFocusEntityId: () => string;
   statusElement: Element;
 }
 
-export interface SolitudeRemoteProbeRenderer {
-  renderSnapshotMessage: (message: RemoteProbeSnapshotMessage) => boolean;
+export interface SolitudeRemoteClientRenderer {
+  renderSnapshotMessage: (message: RemoteClientSnapshotMessage) => boolean;
 }
 
-export function createSolitudeRemoteProbeRenderer({
+export function createSolitudeRemoteClientRenderer({
   canvas,
   getFocusEntityId,
   statusElement,
-}: SolitudeRemoteProbeRendererOptions): SolitudeRemoteProbeRenderer {
+}: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
   const plugins = loadPlugins(remoteRenderPluginIds);
   const config = buildWorldAndSceneConfig();
   applyWorldModelPlugins(config, plugins);

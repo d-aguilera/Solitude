@@ -14,8 +14,16 @@ describe("Solitude HTTP server", () => {
 
       expect(response.status).toBe(200);
       const page = await response.text();
-      expect(page).toContain("Solitude Server Probe");
-      expect(page).toContain("/src/remoteProbeClient.ts");
+      expect(page).toContain("Solitude Remote Client");
+      expect(page).toContain("/src/remoteClient.ts");
+
+      const remotePageResponse = await fetch(`${server.url}/remote.html`);
+      expect(await remotePageResponse.text()).toContain(
+        "Solitude Remote Client",
+      );
+
+      const stylesheetResponse = await fetch(`${server.url}/remote.css`);
+      expect(stylesheetResponse.status).toBe(200);
     } finally {
       await server.close();
     }

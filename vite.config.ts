@@ -1,10 +1,19 @@
+import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
 
+const solitudeRoot = resolve("packages/solitude");
+
 export default defineConfig({
-  root: "packages/solitude",
+  root: solitudeRoot,
   build: {
     emptyOutDir: true,
     outDir: "../../dist",
+    rollupOptions: {
+      input: {
+        index: resolve(solitudeRoot, "index.html"),
+        remote: resolve(solitudeRoot, "remote.html"),
+      },
+    },
   },
   test: {
     include: ["../**/*.test.ts", "../**/*.spec.ts"],

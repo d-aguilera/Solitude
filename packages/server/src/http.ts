@@ -84,13 +84,16 @@ export function createSolitudeHttpRequestHandler(
 
     const requestUrl = new URL(request.url ?? "/", "http://localhost");
 
-    if (request.method === "GET" && requestUrl.pathname === "/") {
-      sendText(response, 200, "text/html; charset=utf-8", DEMO_PAGE_HTML);
+    if (
+      request.method === "GET" &&
+      (requestUrl.pathname === "/" || requestUrl.pathname === "/remote.html")
+    ) {
+      sendText(response, 200, "text/html; charset=utf-8", REMOTE_CLIENT_HTML);
       return;
     }
 
-    if (request.method === "GET" && requestUrl.pathname === "/probe.css") {
-      sendText(response, 200, "text/css; charset=utf-8", PROBE_CSS);
+    if (request.method === "GET" && requestUrl.pathname === "/remote.css") {
+      sendText(response, 200, "text/css; charset=utf-8", REMOTE_CLIENT_CSS);
       return;
     }
 
@@ -403,8 +406,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-const DEMO_PAGE_HTML = readFileSync(
-  new URL("./probe.html", import.meta.url),
+const REMOTE_CLIENT_HTML = readFileSync(
+  new URL("../../solitude/remote.html", import.meta.url),
   "utf8",
 );
-const PROBE_CSS = readFileSync(new URL("./probe.css", import.meta.url), "utf8");
+const REMOTE_CLIENT_CSS = readFileSync(
+  new URL("../../solitude/remote.css", import.meta.url),
+  "utf8",
+);

@@ -8,7 +8,7 @@ import type {
   SolitudeGameId,
   SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
-import { createSolitudeRemoteProbeRenderer } from "./remoteProbeRenderer";
+import { createSolitudeRemoteClientRenderer } from "./remoteClientRenderer";
 
 interface SolitudeGameSummary {
   assignedEntityIds: string[];
@@ -40,7 +40,7 @@ const snapshotStatusEl = queryElement("#snapshotStatus");
 const statusEl = queryElement("#status");
 const toggleRunButton = queryButton("#toggleRun");
 
-const engineRenderer = createSolitudeRemoteProbeRenderer({
+const engineRenderer = createSolitudeRemoteClientRenderer({
   canvas: snapshotCanvas,
   getFocusEntityId: () => fields.entityId.value,
   statusElement: snapshotStatusEl,

@@ -46,7 +46,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
   - `GET /games` for simple discovery.
 - `@solitude/server` owns protocol, sessions, transport, ticker, HTTP/SSE probe, and authoritative Solitude headless runtime composition.
 - Sessions currently assign clients to pre-existing `ship:blue` and `ship:red`.
-- Browser probe loads a Solitude-owned remote client module through Vite transforms; that module uses shared protocol/client helpers and renders snapshots through the engine renderer.
+- Browser remote client now has a first-class Solitude Vite entry (`packages/solitude/remote.html` -> `src/remoteClient.ts`) that uses shared protocol/client helpers and renders snapshots through the engine renderer.
 - The dev server keeps Vite transforms on the same origin but closes Vite's websocket; only `8787` should be exposed.
 
 ## Important Semantics
@@ -102,7 +102,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
   - `remoteWorldMirror`;
   - `remoteWorldRenderer`;
   - `remoteCanvasRenderer`;
-  - Solitude `remoteProbeRenderer`.
+  - Solitude `remoteClientRenderer`.
 - Kept Vite transforms behind the same dev HTTP origin while closing the websocket/HMR port.
 - Added server-owned fixed simulation substeps for `/run`.
 - Added duration-aware server input handling for brief taps during timed runs.
@@ -110,6 +110,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Fixed partial attitude input handling so released/missing opposite controls do not create phantom opposite yaw/roll.
 - Moved protocol/client helpers into `@solitude/protocol` and shifted the probe browser runtime into a Solitude-owned remote client module.
 - Removed the old `@solitude/server/client` and `@solitude/server/protocol` compatibility exports; server code imports the shared protocol contract directly.
+- Added the first-class Solitude remote-client Vite entry and moved the probe page/style ownership out of `@solitude/server`.
 
 ### 2026-05-24
 

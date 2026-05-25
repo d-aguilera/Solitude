@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Solitude Server Probe</title>
+    <title>Solitude Remote Client</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="probe.css" />
+    <link rel="stylesheet" href="/remote.css" />
   </head>
   <body>
     <main>
-      <h1>Solitude Server Probe</h1>
+      <h1>Solitude Remote Client</h1>
       <section class="grid">
         <label>Client <input id="clientId" value="client:a" /></label>
         <label>Game <input id="gameId" placeholder="game:1" /></label>
@@ -49,6 +49,6 @@
         <ul id="log"></ul>
       </section>
     </main>
-    <script type="module" src="/src/remoteProbeClient.ts"></script>
+    <script type="module" src="/src/remoteClient.ts"></script>
   </body>
 </html>
