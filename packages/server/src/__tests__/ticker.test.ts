@@ -24,13 +24,23 @@ describe("Solitude game ticker", () => {
       intervalMillis: 250,
       simulationStepMillis: 1000,
     });
+    clock.advance(250);
     clock.tick(0);
+    clock.advance(250);
     clock.tick(0);
 
     expect(snapshots.map((snapshot) => snapshot.tick)).toEqual([1, 2]);
     expect(transport.steps).toEqual([
-      { dtMillis: 1000, gameId: "game:1" },
-      { dtMillis: 1000, gameId: "game:1" },
+      {
+        dtMillis: 1000,
+        gameId: "game:1",
+        inputTimeWindow: { endMillis: 250, startMillis: 0 },
+      },
+      {
+        dtMillis: 1000,
+        gameId: "game:1",
+        inputTimeWindow: { endMillis: 500, startMillis: 250 },
+      },
     ]);
   });
 
@@ -74,6 +84,7 @@ describe("Solitude game ticker", () => {
       intervalMillis: 250,
       simulationStepMillis: 1000,
     });
+    clock.advance(250);
     clock.tick(0);
 
     expect(ticker.isRunning("game:missing")).toBe(false);
@@ -129,13 +140,26 @@ describe("Solitude game ticker", () => {
       intervalMillis: 250,
       simulationStepMillis: 40,
     });
+    clock.advance(250);
     clock.tick(0);
 
     expect(snapshots.map((snapshot) => snapshot.tick)).toEqual([3]);
     expect(transport.steps).toEqual([
-      { dtMillis: 40, gameId: "game:1" },
-      { dtMillis: 40, gameId: "game:1" },
-      { dtMillis: 20, gameId: "game:1" },
+      {
+        dtMillis: 40,
+        gameId: "game:1",
+        inputTimeWindow: { endMillis: 100, startMillis: 0 },
+      },
+      {
+        dtMillis: 40,
+        gameId: "game:1",
+        inputTimeWindow: { endMillis: 200, startMillis: 100 },
+      },
+      {
+        dtMillis: 20,
+        gameId: "game:1",
+        inputTimeWindow: { endMillis: 250, startMillis: 200 },
+      },
     ]);
   });
 });
@@ -147,14 +171,20 @@ interface ManualTimer {
 }
 
 function createManualClock(): SolitudeGameTickerClock<ManualTimer> & {
+  advance: (dtMillis: number) => void;
   tick: (index: number) => void;
   timers: ManualTimer[];
 } {
   const timers: ManualTimer[] = [];
+  let nowMillis = 0;
   return {
+    advance: (dtMillis) => {
+      nowMillis += dtMillis;
+    },
     clearInterval: (timer) => {
       timer.cleared = true;
     },
+    nowMillis: () => nowMillis,
     setInterval: (callback, intervalMillis) => {
       const timer = { callback, cleared: false, intervalMillis };
       timers.push(timer);
@@ -172,16 +202,25 @@ function createManualClock(): SolitudeGameTickerClock<ManualTimer> & {
 function createTransportStub(
   snapshotsByGameId: Record<SolitudeGameId, SnapshotMessage[]>,
 ): {
-  stepGame: (
+  stepGameWithInputWindow: (
     gameId: SolitudeGameId,
     dtMillis: number,
+    inputTimeWindow: { endMillis: number; startMillis: number },
   ) => SnapshotMessage | null;
-  steps: Array<{ dtMillis: number; gameId: SolitudeGameId }>;
+  steps: Array<{
+    dtMillis: number;
+    gameId: SolitudeGameId;
+    inputTimeWindow: { endMillis: number; startMillis: number };
+  }>;
 } {
-  const steps: Array<{ dtMillis: number; gameId: SolitudeGameId }> = [];
+  const steps: Array<{
+    dtMillis: number;
+    gameId: SolitudeGameId;
+    inputTimeWindow: { endMillis: number; startMillis: number };
+  }> = [];
   return {
-    stepGame: (gameId, dtMillis) => {
-      steps.push({ dtMillis, gameId });
+    stepGameWithInputWindow: (gameId, dtMillis, inputTimeWindow) => {
+      steps.push({ dtMillis, gameId, inputTimeWindow });
       return snapshotsByGameId[gameId]?.shift() ?? null;
     },
     steps,

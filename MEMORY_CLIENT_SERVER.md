@@ -143,7 +143,8 @@ Important current behavior:
 
 - Joining the same game with the same client id is idempotent for assignment: the server returns `joined` for the existing entity and does not consume another ship.
 - Input messages patch the latest held control state for the assigned entity. They do not emit snapshots by themselves.
-- Brief boolean key taps are buffered as one-step pending presses: if the server receives `true` and then `false` before the next simulation step, the next step still observes the control as pressed once.
+- Timed server runs use server-received input edge times to split simulation steps around key transitions, so brief boolean taps are applied for roughly their observed duration instead of being rounded to a full substep or dropped.
+- Manual/debug steps still use a one-step pending press fallback: if the server receives `true` and then `false` before an untimed step, the next step still observes the control as pressed once.
 - Thrust level inputs (`thrust0` ... `thrust9`) are treated as latched selectors on the server: a `true` patch selects that level and clears the previous thrust selector; release/`false` patches do not clear the selected level.
 - The probe's forward burn toggle sends `burnForward: true` to start and `burnForward: false` to stop; the server retains the latest value across authoritative steps.
 - The probe also sends keydown/keyup patches for spacecraft controls (`Space`, `W/A/S/D`, `Q/E`, `N/M`, `B`, `0-9`) while an entity is assigned.
@@ -208,10 +209,10 @@ Next focused slice:
 
 ## Completed Slices
 
-- 2026-05-25: Added one-step buffering for brief remote key taps:
-  - server sessions now keep a pending pressed-control buffer alongside retained held controls;
-  - a press/release pair received between simulation steps is applied as pressed for the next step, then cleared;
-  - this prevents brief WASD/attitude taps from being lost when they happen between server ticks.
+- 2026-05-25: Added duration-aware handling for brief remote key taps:
+  - server sessions now queue server-received input edge times and timed server runs split simulation steps around those edges;
+  - brief WASD/attitude taps are applied for roughly their observed duration during `/run`;
+  - manual/debug steps keep a pending pressed-control fallback so press/release pairs are not dropped in untimed stepping.
 - 2026-05-25: Fixed remote thrust-level input semantics:
   - number-key thrust inputs now latch on the server instead of behaving like ordinary held booleans;
   - releasing a numeric key no longer clears the selected thrust level before the next server tick can observe it;

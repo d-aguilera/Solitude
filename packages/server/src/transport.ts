@@ -9,6 +9,7 @@ import {
 import {
   createSolitudeSessionManager,
   type SolitudeGameSummary,
+  type SolitudeInputTimeWindow,
   type SolitudeSessionManager,
 } from "./sessions";
 
@@ -22,6 +23,11 @@ export interface SolitudeInProcessTransport {
   stepGame: (
     gameId: SolitudeGameId,
     dtMillis: number,
+  ) => SnapshotMessage | null;
+  stepGameWithInputWindow: (
+    gameId: SolitudeGameId,
+    dtMillis: number,
+    inputTimeWindow: SolitudeInputTimeWindow,
   ) => SnapshotMessage | null;
 }
 
@@ -44,5 +50,7 @@ export function createSolitudeInProcessTransport(
     },
     listGames: () => sessionManager.listGames(),
     stepGame: (gameId, dtMillis) => sessionManager.stepGame(gameId, dtMillis),
+    stepGameWithInputWindow: (gameId, dtMillis, inputTimeWindow) =>
+      sessionManager.stepGameWithInputWindow(gameId, dtMillis, inputTimeWindow),
   };
 }

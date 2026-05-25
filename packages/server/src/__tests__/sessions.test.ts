@@ -164,8 +164,14 @@ describe("Solitude session manager", () => {
     manager.stepGame("game:1", 1000);
 
     expect(game.controlInputsByStep).toEqual([
-      [["ship:blue", { burnForward: true, thrust5: true }]],
-      [["ship:blue", { burnForward: true, thrust5: true }]],
+      {
+        controls: [["ship:blue", { burnForward: true, thrust5: true }]],
+        dtMillis: 1000,
+      },
+      {
+        controls: [["ship:blue", { burnForward: true, thrust5: true }]],
+        dtMillis: 1000,
+      },
     ]);
 
     manager.handleMessage({
@@ -178,9 +184,10 @@ describe("Solitude session manager", () => {
     });
     manager.stepGame("game:1", 1000);
 
-    expect(game.controlInputsByStep[2]).toEqual([
-      ["ship:blue", { burnForward: false, thrust5: true }],
-    ]);
+    expect(game.controlInputsByStep[2]).toEqual({
+      controls: [["ship:blue", { burnForward: false, thrust5: true }]],
+      dtMillis: 1000,
+    });
   });
 
   it("latches thrust level input instead of treating number keys as held", () => {
@@ -210,9 +217,10 @@ describe("Solitude session manager", () => {
     });
     manager.stepGame("game:1", 1000);
 
-    expect(game.controlInputsByStep[0]).toEqual([
-      ["ship:blue", { thrust9: true }],
-    ]);
+    expect(game.controlInputsByStep[0]).toEqual({
+      controls: [["ship:blue", { thrust9: true }]],
+      dtMillis: 1000,
+    });
 
     manager.handleMessage({
       type: "input",
@@ -224,9 +232,10 @@ describe("Solitude session manager", () => {
     });
     manager.stepGame("game:1", 1000);
 
-    expect(game.controlInputsByStep[1]).toEqual([
-      ["ship:blue", { thrust3: true }],
-    ]);
+    expect(game.controlInputsByStep[1]).toEqual({
+      controls: [["ship:blue", { thrust3: true }]],
+      dtMillis: 1000,
+    });
   });
 
   it("applies brief press-and-release input on the next step", () => {
@@ -258,8 +267,50 @@ describe("Solitude session manager", () => {
     manager.stepGame("game:1", 1000);
 
     expect(game.controlInputsByStep).toEqual([
-      [["ship:blue", { yawLeft: true }]],
-      [["ship:blue", { yawLeft: false }]],
+      { controls: [["ship:blue", { yawLeft: true }]], dtMillis: 1000 },
+      { controls: [["ship:blue", { yawLeft: false }]], dtMillis: 1000 },
+    ]);
+  });
+
+  it("splits timed steps around input edges", () => {
+    let nowMillis = 0;
+    const game = createRecordingGame();
+    const manager = createSolitudeSessionManager(
+      createTestOptions(game, () => nowMillis),
+    );
+    manager.handleMessage({
+      type: "createGame",
+      clientId: "client:a",
+      sequence: 1,
+    });
+
+    nowMillis = 10;
+    manager.handleMessage({
+      type: "input",
+      clientId: "client:a",
+      entityId: "ship:blue",
+      gameId: "game:1",
+      sequence: 3,
+      controls: { yawLeft: true },
+    });
+    nowMillis = 15;
+    manager.handleMessage({
+      type: "input",
+      clientId: "client:a",
+      entityId: "ship:blue",
+      gameId: "game:1",
+      sequence: 4,
+      controls: { yawLeft: false },
+    });
+    manager.stepGameWithInputWindow("game:1", 25, {
+      endMillis: 25,
+      startMillis: 0,
+    });
+
+    expect(game.controlInputsByStep).toEqual([
+      { controls: [], dtMillis: 10 },
+      { controls: [["ship:blue", { yawLeft: true }]], dtMillis: 5 },
+      { controls: [["ship:blue", { yawLeft: false }]], dtMillis: 10 },
     ]);
   });
 
@@ -288,7 +339,9 @@ describe("Solitude session manager", () => {
     });
     manager.stepGame("game:1", 1000);
 
-    expect(game.controlInputsByStep).toEqual([[]]);
+    expect(game.controlInputsByStep).toEqual([
+      { controls: [], dtMillis: 1000 },
+    ]);
   });
 
   it("rejects input for entities not assigned to the client", () => {
@@ -320,7 +373,10 @@ describe("Solitude session manager", () => {
 });
 
 interface RecordingGame extends SolitudeServerGame {
-  controlInputsByStep: Array<Array<[EntityId, Partial<ControlInput>]>>;
+  controlInputsByStep: Array<{
+    controls: Array<[EntityId, Partial<ControlInput>]>;
+    dtMillis: number;
+  }>;
 }
 
 function createRecordingGame(): RecordingGame {
@@ -329,13 +385,13 @@ function createRecordingGame(): RecordingGame {
     controlInputsByStep: [],
     snapshot,
     worldAndScene: {} as WorldAndScene,
-    step: (_dtMillis, controlInputsByEntityId) => {
+    step: (dtMillis, controlInputsByEntityId) => {
       const controlInputs: Array<[EntityId, Partial<ControlInput>]> = [];
       for (const [entityId, controls] of controlInputsByEntityId) {
         controlInputs.push([entityId, { ...controls }]);
       }
       controlInputs.sort(([left], [right]) => left.localeCompare(right));
-      game.controlInputsByStep.push(controlInputs);
+      game.controlInputsByStep.push({ controls: controlInputs, dtMillis });
       return snapshot;
     },
   };
@@ -344,9 +400,11 @@ function createRecordingGame(): RecordingGame {
 
 function createTestOptions(
   game: SolitudeServerGame,
+  nowMillis: () => number = Date.now,
 ): SolitudeSessionManagerOptions {
   return {
     assignableEntityIds: ["ship:blue", "ship:red"],
     createGame: () => game,
+    nowMillis,
   };
 }

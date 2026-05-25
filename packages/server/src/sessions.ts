@@ -34,12 +34,19 @@ const THRUST_CONTROL_IDS = [
 export interface SolitudeSessionManagerOptions {
   assignableEntityIds: readonly EntityId[];
   createGame: () => SolitudeServerGame;
+  nowMillis: () => number;
 }
 
 const DEFAULT_SESSION_MANAGER_OPTIONS: SolitudeSessionManagerOptions = {
   assignableEntityIds: DEFAULT_ASSIGNABLE_ENTITY_IDS,
   createGame: createSolitudeServerGame,
+  nowMillis: Date.now,
 };
+
+export interface SolitudeInputTimeWindow {
+  endMillis: number;
+  startMillis: number;
+}
 
 export interface SolitudeSessionManager {
   handleMessage: (message: SolitudeClientMessage) => SolitudeServerMessage[];
@@ -47,6 +54,11 @@ export interface SolitudeSessionManager {
   stepGame: (
     gameId: SolitudeGameId,
     dtMillis: number,
+  ) => SnapshotMessage | null;
+  stepGameWithInputWindow: (
+    gameId: SolitudeGameId,
+    dtMillis: number,
+    inputTimeWindow: SolitudeInputTimeWindow,
   ) => SnapshotMessage | null;
 }
 
@@ -63,10 +75,18 @@ interface ServerGameSession {
   game: SolitudeServerGame;
   heldControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
   id: SolitudeGameId;
+  inputEvents: QueuedInputEvent[];
   nextEntityIndex: number;
   nextSequence: SolitudeProtocolSequence;
   pendingPressedControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
+  steppedControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
   tick: number;
+}
+
+interface QueuedInputEvent {
+  controls: Partial<ControlInput>;
+  entityId: EntityId;
+  receivedAtMillis: number;
 }
 
 export function createSolitudeSessionManager(
@@ -86,9 +106,11 @@ export function createSolitudeSessionManager(
       game: options.createGame(),
       heldControlInputsByEntityId: new Map(),
       id: gameId,
+      inputEvents: [],
       nextEntityIndex: 0,
       nextSequence: sequence + 2,
       pendingPressedControlInputsByEntityId: new Map(),
+      steppedControlInputsByEntityId: new Map(),
       tick: 0,
     };
     gamesById.set(gameId, session);
@@ -150,6 +172,8 @@ export function createSolitudeSessionManager(
     if (assignedEntityId) {
       session.heldControlInputsByEntityId.delete(assignedEntityId);
       session.pendingPressedControlInputsByEntityId.delete(assignedEntityId);
+      session.steppedControlInputsByEntityId.delete(assignedEntityId);
+      removeQueuedInputEventsForEntity(session.inputEvents, assignedEntityId);
     }
     return [];
   };
@@ -175,6 +199,11 @@ export function createSolitudeSessionManager(
       session.pendingPressedControlInputsByEntityId.get(message.entityId) ?? {};
     applyInputPatch(heldControls, pendingPressedControls, message.controls);
     session.heldControlInputsByEntityId.set(message.entityId, heldControls);
+    session.inputEvents.push({
+      controls: message.controls,
+      entityId: message.entityId,
+      receivedAtMillis: options.nowMillis(),
+    });
     if (hasControlInputs(pendingPressedControls)) {
       session.pendingPressedControlInputsByEntityId.set(
         message.entityId,
@@ -193,6 +222,34 @@ export function createSolitudeSessionManager(
     const controlInputsByEntityId = getStepControlInputs(session);
     const snapshot = session.game.step(dtMillis, controlInputsByEntityId);
     session.pendingPressedControlInputsByEntityId.clear();
+    session.steppedControlInputsByEntityId = cloneControlInputMap(
+      session.heldControlInputsByEntityId,
+    );
+    session.inputEvents.length = 0;
+    return createNextSnapshotMessage(session, gameId, snapshot);
+  };
+
+  const stepGameWithInputWindow = (
+    gameId: SolitudeGameId,
+    dtMillis: number,
+    inputTimeWindow: SolitudeInputTimeWindow,
+  ): SnapshotMessage | null => {
+    const session = gamesById.get(gameId);
+    if (!session) return null;
+    const snapshot = stepSessionGameWithInputWindow(
+      session,
+      dtMillis,
+      inputTimeWindow,
+    );
+    session.pendingPressedControlInputsByEntityId.clear();
+    return createNextSnapshotMessage(session, gameId, snapshot);
+  };
+
+  const createNextSnapshotMessage = (
+    session: ServerGameSession,
+    gameId: SolitudeGameId,
+    snapshot: ReturnType<SolitudeServerGame["step"]>,
+  ): SnapshotMessage => {
     session.tick++;
     const sequence = session.nextSequence;
     session.nextSequence++;
@@ -254,7 +311,7 @@ export function createSolitudeSessionManager(
     return summaries;
   };
 
-  return { handleMessage, listGames, stepGame };
+  return { handleMessage, listGames, stepGame, stepGameWithInputWindow };
 }
 
 function applyInputPatch(
@@ -298,6 +355,126 @@ function getStepControlInputs(
     });
   }
   return controlInputsByEntityId;
+}
+
+function stepSessionGameWithInputWindow(
+  session: ServerGameSession,
+  dtMillis: number,
+  inputTimeWindow: SolitudeInputTimeWindow,
+): ReturnType<SolitudeServerGame["step"]> {
+  const events = takeInputEventsThrough(
+    session.inputEvents,
+    inputTimeWindow.endMillis,
+  );
+  if (
+    events.length === 0 ||
+    inputTimeWindow.endMillis <= inputTimeWindow.startMillis
+  ) {
+    return session.game.step(dtMillis, session.steppedControlInputsByEntityId);
+  }
+
+  const controlsByEntityId = cloneControlInputMap(
+    session.steppedControlInputsByEntityId,
+  );
+  let elapsedSimMillis = 0;
+  let snapshot: ReturnType<SolitudeServerGame["step"]> | null = null;
+
+  for (const event of events) {
+    const eventMillis = clamp(
+      event.receivedAtMillis,
+      inputTimeWindow.startMillis,
+      inputTimeWindow.endMillis,
+    );
+    const nextElapsedSimMillis = wallMillisToSimMillis(
+      eventMillis - inputTimeWindow.startMillis,
+      inputTimeWindow,
+      dtMillis,
+    );
+    const segmentDtMillis = nextElapsedSimMillis - elapsedSimMillis;
+    if (segmentDtMillis > 0) {
+      snapshot = session.game.step(segmentDtMillis, controlsByEntityId);
+      elapsedSimMillis = nextElapsedSimMillis;
+    }
+    applyInputPatchForTimedStep(controlsByEntityId, event);
+  }
+
+  const remainingDtMillis = dtMillis - elapsedSimMillis;
+  if (remainingDtMillis > 0 || !snapshot) {
+    snapshot = session.game.step(remainingDtMillis, controlsByEntityId);
+  }
+
+  session.steppedControlInputsByEntityId = controlsByEntityId;
+  return snapshot;
+}
+
+function wallMillisToSimMillis(
+  wallOffsetMillis: number,
+  inputTimeWindow: SolitudeInputTimeWindow,
+  dtMillis: number,
+): number {
+  const wallDurationMillis =
+    inputTimeWindow.endMillis - inputTimeWindow.startMillis;
+  return (wallOffsetMillis / wallDurationMillis) * dtMillis;
+}
+
+function applyInputPatchForTimedStep(
+  controlsByEntityId: Map<EntityId, Partial<ControlInput>>,
+  event: QueuedInputEvent,
+): void {
+  const controls = controlsByEntityId.get(event.entityId) ?? {};
+  applyInputPatch(controls, {}, event.controls);
+  controlsByEntityId.set(event.entityId, controls);
+}
+
+function takeInputEventsThrough(
+  inputEvents: QueuedInputEvent[],
+  endMillis: number,
+): QueuedInputEvent[] {
+  const taken: QueuedInputEvent[] = [];
+  let writeIndex = 0;
+
+  for (let readIndex = 0; readIndex < inputEvents.length; readIndex++) {
+    const event = inputEvents[readIndex];
+    if (event.receivedAtMillis <= endMillis) {
+      taken.push(event);
+    } else {
+      inputEvents[writeIndex] = event;
+      writeIndex++;
+    }
+  }
+
+  inputEvents.length = writeIndex;
+  taken.sort((left, right) => left.receivedAtMillis - right.receivedAtMillis);
+  return taken;
+}
+
+function removeQueuedInputEventsForEntity(
+  inputEvents: QueuedInputEvent[],
+  entityId: EntityId,
+): void {
+  let writeIndex = 0;
+  for (let readIndex = 0; readIndex < inputEvents.length; readIndex++) {
+    const event = inputEvents[readIndex];
+    if (event.entityId !== entityId) {
+      inputEvents[writeIndex] = event;
+      writeIndex++;
+    }
+  }
+  inputEvents.length = writeIndex;
+}
+
+function cloneControlInputMap(
+  source: ReadonlyMap<EntityId, Partial<ControlInput>>,
+): Map<EntityId, Partial<ControlInput>> {
+  const result = new Map<EntityId, Partial<ControlInput>>();
+  for (const [entityId, controls] of source) {
+    result.set(entityId, { ...controls });
+  }
+  return result;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
 }
 
 function hasControlInputs(controls: Partial<ControlInput>): boolean {
