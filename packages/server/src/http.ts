@@ -5,13 +5,15 @@ import {
   type SolitudeProtocolSequence,
   type SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
-import { readFileSync } from "node:fs";
+import { constants, readFileSync, statSync } from "node:fs";
+import { access, readFile } from "node:fs/promises";
 import {
   createServer,
   type IncomingMessage,
   type ServerResponse,
 } from "node:http";
 import type { AddressInfo } from "node:net";
+import { extname, normalize, resolve, sep } from "node:path";
 import { createSolitudeGameTicker } from "./ticker";
 import {
   createSolitudeInProcessTransport,
@@ -24,6 +26,7 @@ export interface SolitudeHttpServerOptions {
   devAssetHandler?: SolitudeDevAssetHandler;
   hostname: string;
   port: number;
+  staticAssetRoot?: string;
   transport: SolitudeInProcessTransport;
 }
 
@@ -40,6 +43,12 @@ export interface SolitudeHttpRequestHandler {
 
 export interface SolitudeDevAssetHandler {
   (request: IncomingMessage, response: ServerResponse): Promise<boolean>;
+}
+
+export interface SolitudeHttpRequestHandlerOptions {
+  devAssetHandler?: SolitudeDevAssetHandler;
+  staticAssetRoot?: string;
+  transport: SolitudeInProcessTransport;
 }
 
 interface StepRequest {
@@ -60,15 +69,19 @@ export function createDefaultSolitudeHttpServerOptions(): SolitudeHttpServerOpti
   };
 }
 
-export function createSolitudeHttpRequestHandler(
-  transport: SolitudeInProcessTransport,
-  devAssetHandler?: SolitudeDevAssetHandler,
-): SolitudeHttpRequestHandler {
+export function createSolitudeHttpRequestHandler({
+  devAssetHandler,
+  staticAssetRoot,
+  transport,
+}: SolitudeHttpRequestHandlerOptions): SolitudeHttpRequestHandler {
   const subscriptionsByGameId = new Map<SolitudeGameId, Set<ServerResponse>>();
   const ticker = createSolitudeGameTicker({
     onSnapshot: (snapshot) => publishSnapshot(subscriptionsByGameId, snapshot),
     transport,
   });
+  const resolvedStaticAssetRoot = staticAssetRoot
+    ? resolve(staticAssetRoot)
+    : null;
 
   const handler = async (
     request: IncomingMessage,
@@ -86,13 +99,18 @@ export function createSolitudeHttpRequestHandler(
 
     if (
       request.method === "GET" &&
+      !resolvedStaticAssetRoot &&
       (requestUrl.pathname === "/" || requestUrl.pathname === "/remote.html")
     ) {
       sendText(response, 200, "text/html; charset=utf-8", REMOTE_CLIENT_HTML);
       return;
     }
 
-    if (request.method === "GET" && requestUrl.pathname === "/remote.css") {
+    if (
+      request.method === "GET" &&
+      !resolvedStaticAssetRoot &&
+      requestUrl.pathname === "/remote.css"
+    ) {
       sendText(response, 200, "text/css; charset=utf-8", REMOTE_CLIENT_CSS);
       return;
     }
@@ -203,6 +221,18 @@ export function createSolitudeHttpRequestHandler(
       return;
     }
 
+    if (
+      request.method === "GET" &&
+      resolvedStaticAssetRoot &&
+      (await sendStaticAsset(
+        response,
+        resolvedStaticAssetRoot,
+        requestUrl.pathname,
+      ))
+    ) {
+      return;
+    }
+
     if (devAssetHandler && (await devAssetHandler(request, response))) {
       return;
     }
@@ -227,10 +257,7 @@ export function createSolitudeHttpRequestHandler(
 export async function startSolitudeHttpServer(
   options: SolitudeHttpServerOptions,
 ): Promise<SolitudeHttpServer> {
-  const handler = createSolitudeHttpRequestHandler(
-    options.transport,
-    options.devAssetHandler,
-  );
+  const handler = createSolitudeHttpRequestHandler(options);
   const server = createServer((request, response) => {
     void handler(request, response).catch((error: unknown) => {
       sendJson(response, 500, {
@@ -304,6 +331,84 @@ function sendText(
 ): void {
   response.writeHead(statusCode, { "content-type": contentType });
   response.end(body);
+}
+
+function sendBuffer(
+  response: ServerResponse,
+  statusCode: number,
+  contentType: string,
+  body: Buffer,
+): void {
+  response.writeHead(statusCode, { "content-type": contentType });
+  response.end(body);
+}
+
+async function sendStaticAsset(
+  response: ServerResponse,
+  root: string,
+  pathname: string,
+): Promise<boolean> {
+  const assetPath = resolveStaticAssetPath(root, pathname);
+  if (!assetPath) return false;
+
+  try {
+    await access(assetPath, constants.R_OK);
+    if (statSync(assetPath).isDirectory()) return false;
+    sendBuffer(
+      response,
+      200,
+      getContentType(assetPath),
+      await readFile(assetPath),
+    );
+    return true;
+  } catch (error) {
+    if (isNodeErrorCode(error, "ENOENT")) return false;
+    throw error;
+  }
+}
+
+function resolveStaticAssetPath(root: string, pathname: string): string | null {
+  let decodedPathname: string;
+  try {
+    decodedPathname = decodeURIComponent(pathname);
+  } catch {
+    return null;
+  }
+
+  const relativePath =
+    decodedPathname === "/" ? "remote.html" : decodedPathname.slice(1);
+  const normalizedRelativePath = normalize(relativePath);
+  if (
+    normalizedRelativePath.startsWith("..") ||
+    normalizedRelativePath.includes(`${sep}..${sep}`)
+  ) {
+    return null;
+  }
+
+  const assetPath = resolve(root, normalizedRelativePath);
+  return assetPath === root || assetPath.startsWith(`${root}${sep}`)
+    ? assetPath
+    : null;
+}
+
+function getContentType(filePath: string): string {
+  switch (extname(filePath)) {
+    case ".css":
+      return "text/css; charset=utf-8";
+    case ".html":
+      return "text/html; charset=utf-8";
+    case ".ico":
+      return "image/x-icon";
+    case ".js":
+      return "text/javascript; charset=utf-8";
+    case ".json":
+    case ".map":
+      return "application/json; charset=utf-8";
+    case ".svg":
+      return "image/svg+xml";
+    default:
+      return "application/octet-stream";
+  }
 }
 
 function subscribe(
@@ -404,6 +509,15 @@ function isPauseRequest(value: unknown): value is { gameId: SolitudeGameId } {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function isNodeErrorCode(value: unknown, code: string): boolean {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    "code" in value &&
+    value.code === code
+  );
 }
 
 const REMOTE_CLIENT_HTML = readFileSync(

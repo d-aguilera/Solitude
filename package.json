@@ -15,6 +15,7 @@
     "format:check": "prettier --check \"packages/**/*.{ts,tsx,js,jsx,json,css,html,md}\" \"scripts/**/*.{js,mjs}\" \"*.{ts,tsx,js,jsx,json,css,html,md}\"",
     "build": "vite build",
     "preview": "vite preview",
+    "start:server": "node scripts/run-server-dist.mjs",
     "typecheck": "npm run check:boundaries && npm run typecheck --workspaces",
     "test": "vitest --run",
     "serve:dist": "serve dist"

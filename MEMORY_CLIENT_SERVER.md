@@ -38,6 +38,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 ## Current Architecture
 
 - The current working proof is `npm run dev:server` on `127.0.0.1:8787`.
+- Production-like local mode is `npm run build` then `npm run start:server`; the Node server serves built `dist/remote.html` plus authoritative API routes.
 - Transport is still HTTP/SSE probe-grade:
   - `POST /message` for create/join/leave/input.
   - `POST /run` and `POST /pause` for server-owned ticking.
@@ -111,6 +112,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Moved protocol/client helpers into `@solitude/protocol` and shifted the probe browser runtime into a Solitude-owned remote client module.
 - Removed the old `@solitude/server/client` and `@solitude/server/protocol` compatibility exports; server code imports the shared protocol contract directly.
 - Added the first-class Solitude remote-client Vite entry and moved the probe page/style ownership out of `@solitude/server`.
+- Added production-like built-asset serving: `npm run start:server` serves `dist/remote.html`, hashed assets, and authoritative server routes from one Node process.
 
 ### 2026-05-24
 

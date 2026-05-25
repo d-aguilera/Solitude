@@ -1,4 +1,7 @@
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { get } from "node:http";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   createDefaultSolitudeHttpServerOptions,
@@ -26,6 +29,49 @@ describe("Solitude HTTP server", () => {
       expect(stylesheetResponse.status).toBe(200);
     } finally {
       await server.close();
+    }
+  });
+
+  it("serves built remote client assets when a static asset root is configured", async () => {
+    const assetRoot = await mkdtemp(join(tmpdir(), "solitude-dist-"));
+    await mkdir(join(assetRoot, "assets"));
+    await writeFile(
+      join(assetRoot, "remote.html"),
+      '<script type="module" src="/assets/remote.js"></script>',
+    );
+    await writeFile(
+      join(assetRoot, "index.html"),
+      '<script type="module" src="/assets/index.js"></script>',
+    );
+    await writeFile(join(assetRoot, "assets", "remote.js"), "export {};");
+    await writeFile(join(assetRoot, "games"), "not the API");
+
+    const server = await startSolitudeHttpServer({
+      ...createDefaultSolitudeHttpServerOptions(),
+      port: 0,
+      staticAssetRoot: assetRoot,
+    });
+    try {
+      const rootResponse = await fetch(`${server.url}/`);
+      expect(await rootResponse.text()).toContain("/assets/remote.js");
+
+      const remoteResponse = await fetch(`${server.url}/remote.html`);
+      expect(await remoteResponse.text()).toContain("/assets/remote.js");
+
+      const standaloneResponse = await fetch(`${server.url}/index.html`);
+      expect(await standaloneResponse.text()).toContain("/assets/index.js");
+
+      const scriptResponse = await fetch(`${server.url}/assets/remote.js`);
+      expect(scriptResponse.headers.get("content-type")).toContain(
+        "text/javascript",
+      );
+      expect(await scriptResponse.text()).toBe("export {};");
+
+      const gamesResponse = await fetch(`${server.url}/games`);
+      expect(await gamesResponse.json()).toEqual({ games: [] });
+    } finally {
+      await server.close();
+      await rm(assetRoot, { force: true, recursive: true });
     }
   });
 

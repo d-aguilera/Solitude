@@ -124,6 +124,7 @@
 - `npm run typecheck` runs TypeScript no-emit.
 - `npm run test` runs Vitest once.
 - `npm run build` / `npm run preview` cover production build/preview.
+- `npm run start:server` starts the authoritative Node server against built `dist` assets; run `npm run build` first.
 
 ## Next Steps Snapshot
 
