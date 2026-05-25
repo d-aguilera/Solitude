@@ -121,7 +121,7 @@ describe("Solitude game ticker", () => {
     expect(clock.timers.every((timer) => timer.cleared)).toBe(true);
   });
 
-  it("runs fixed simulation substeps before emitting one snapshot", () => {
+  it("runs due fixed simulation substeps before emitting one snapshot", () => {
     const clock = createManualClock();
     const snapshots: SnapshotMessage[] = [];
     const transport = createTransportStub({
@@ -146,7 +146,7 @@ describe("Solitude game ticker", () => {
     clock.advance(250);
     clock.tick(0);
 
-    expect(snapshots.map((snapshot) => snapshot.tick)).toEqual([3]);
+    expect(snapshots.map((snapshot) => snapshot.tick)).toEqual([2]);
     expect(transport.steps).toEqual([
       {
         dtMillis: 40,
@@ -158,10 +158,89 @@ describe("Solitude game ticker", () => {
         gameId: "game:1",
         inputTimeWindow: { endMillis: 200, startMillis: 100 },
       },
+    ]);
+  });
+
+  it("catches up simulation work after delayed clock intervals", () => {
+    const clock = createManualClock();
+    const snapshots: SnapshotMessage[] = [];
+    const transport = createTransportStub({
+      "game:1": [
+        createSnapshot("game:1", 1),
+        createSnapshot("game:1", 2),
+        createSnapshot("game:1", 3),
+        createSnapshot("game:1", 4),
+      ],
+    });
+    const ticker = createSolitudeGameTicker({
+      clock,
+      onSnapshot: (snapshot) => snapshots.push(snapshot),
+      transport,
+    });
+
+    ticker.runGame({
+      dtMillis: 250,
+      gameId: "game:1",
+      intervalMillis: 250,
+      simulationStepMillis: 125,
+    });
+    clock.advance(500);
+    clock.tick(0);
+
+    expect(snapshots.map((snapshot) => snapshot.tick)).toEqual([4]);
+    expect(transport.steps).toEqual([
       {
-        dtMillis: 20,
+        dtMillis: 125,
         gameId: "game:1",
-        inputTimeWindow: { endMillis: 250, startMillis: 200 },
+        inputTimeWindow: { endMillis: 125, startMillis: 0 },
+      },
+      {
+        dtMillis: 125,
+        gameId: "game:1",
+        inputTimeWindow: { endMillis: 250, startMillis: 125 },
+      },
+      {
+        dtMillis: 125,
+        gameId: "game:1",
+        inputTimeWindow: { endMillis: 375, startMillis: 250 },
+      },
+      {
+        dtMillis: 125,
+        gameId: "game:1",
+        inputTimeWindow: { endMillis: 500, startMillis: 375 },
+      },
+    ]);
+  });
+
+  it("accumulates short intervals until one fixed simulation step is due", () => {
+    const clock = createManualClock();
+    const snapshots: SnapshotMessage[] = [];
+    const transport = createTransportStub({
+      "game:1": [createSnapshot("game:1", 1)],
+    });
+    const ticker = createSolitudeGameTicker({
+      clock,
+      onSnapshot: (snapshot) => snapshots.push(snapshot),
+      transport,
+    });
+
+    ticker.runGame({
+      dtMillis: 250,
+      gameId: "game:1",
+      intervalMillis: 250,
+      simulationStepMillis: 25,
+    });
+    clock.advance(10);
+    clock.tick(0);
+    clock.advance(15);
+    clock.tick(0);
+
+    expect(snapshots.map((snapshot) => snapshot.tick)).toEqual([1]);
+    expect(transport.steps).toEqual([
+      {
+        dtMillis: 25,
+        gameId: "game:1",
+        inputTimeWindow: { endMillis: 25, startMillis: 0 },
       },
     ]);
   });

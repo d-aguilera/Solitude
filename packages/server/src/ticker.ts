@@ -52,20 +52,38 @@ export function createSolitudeGameTicker<
   const runGame = (request: SolitudeGameTickRequest): void => {
     pauseGame(request.gameId);
     let inputWindowStartMillis = clock.nowMillis();
+    let lastObservedWallMillis = inputWindowStartMillis;
+    let accumulatedSimulationMillis = 0;
     const timer = clock.setInterval(() => {
       const inputWindowEndMillis = clock.nowMillis();
-      const snapshot = stepGameForBroadcast(
+      const elapsedWallMillis = inputWindowEndMillis - lastObservedWallMillis;
+      lastObservedWallMillis = inputWindowEndMillis;
+      if (elapsedWallMillis <= 0) {
+        return;
+      }
+
+      const simulationMillisPerWallMillis =
+        request.dtMillis / request.intervalMillis;
+      accumulatedSimulationMillis +=
+        elapsedWallMillis * simulationMillisPerWallMillis;
+
+      const result = stepGameForBroadcast(
         options.transport,
         request,
+        accumulatedSimulationMillis,
+        simulationMillisPerWallMillis,
         inputWindowStartMillis,
         inputWindowEndMillis,
       );
-      if (!snapshot) {
+      if (!result.gameExists) {
         pauseGame(request.gameId);
         return;
       }
-      inputWindowStartMillis = inputWindowEndMillis;
-      options.onSnapshot(snapshot);
+      inputWindowStartMillis = result.inputWindowStartMillis;
+      accumulatedSimulationMillis = result.remainingSimulationMillis;
+      if (result.snapshot) {
+        options.onSnapshot(result.snapshot);
+      }
     }, request.intervalMillis);
     timersByGameId.set(request.gameId, timer);
   };
@@ -87,32 +105,46 @@ export function createSolitudeGameTicker<
 function stepGameForBroadcast(
   transport: Pick<SolitudeInProcessTransport, "stepGameWithInputWindow">,
   request: SolitudeGameTickRequest,
+  accumulatedSimulationMillis: number,
+  simulationMillisPerWallMillis: number,
   inputWindowStartMillis: number,
   inputWindowEndMillis: number,
-): SnapshotMessage | null {
-  let remainingMillis = request.dtMillis;
+): {
+  gameExists: boolean;
+  inputWindowStartMillis: number;
+  remainingSimulationMillis: number;
+  snapshot: SnapshotMessage | null;
+} {
+  let remainingMillis = accumulatedSimulationMillis;
   let snapshot: SnapshotMessage | null = null;
-  let elapsedMillis = 0;
-  const inputWindowDurationMillis =
-    inputWindowEndMillis - inputWindowStartMillis;
 
-  while (remainingMillis > 0) {
-    const stepMillis = Math.min(request.simulationStepMillis, remainingMillis);
-    const stepWindowStartMillis =
-      inputWindowStartMillis +
-      (elapsedMillis / request.dtMillis) * inputWindowDurationMillis;
-    const stepWindowEndMillis =
-      inputWindowStartMillis +
-      ((elapsedMillis + stepMillis) / request.dtMillis) *
-        inputWindowDurationMillis;
+  while (remainingMillis >= request.simulationStepMillis) {
+    const stepMillis = request.simulationStepMillis;
+    const stepWindowStartMillis = inputWindowStartMillis;
+    const stepWindowEndMillis = Math.min(
+      inputWindowStartMillis + stepMillis / simulationMillisPerWallMillis,
+      inputWindowEndMillis,
+    );
     snapshot = transport.stepGameWithInputWindow(request.gameId, stepMillis, {
-      endMillis: Math.min(stepWindowEndMillis, inputWindowEndMillis),
-      startMillis: Math.min(stepWindowStartMillis, inputWindowEndMillis),
+      endMillis: stepWindowEndMillis,
+      startMillis: stepWindowStartMillis,
     });
-    if (!snapshot) return null;
+    if (!snapshot) {
+      return {
+        gameExists: false,
+        inputWindowStartMillis,
+        remainingSimulationMillis: remainingMillis,
+        snapshot: null,
+      };
+    }
+    inputWindowStartMillis = stepWindowEndMillis;
     remainingMillis -= stepMillis;
-    elapsedMillis += stepMillis;
   }
 
-  return snapshot;
+  return {
+    gameExists: true,
+    inputWindowStartMillis,
+    remainingSimulationMillis: remainingMillis,
+    snapshot,
+  };
 }

@@ -224,9 +224,9 @@ async function startServerLoop(): Promise<void> {
   runStatusEl.textContent = [
     "Server running every",
     intervalMillis,
-    "ms at broadcast dt",
+    "ms at sim",
     dtMillis,
-    "ms, sim step",
+    "ms per interval, fixed step",
     simulationStepMillis,
     "ms",
   ].join(" ");

@@ -57,31 +57,28 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Input messages patch latest controls and do not emit snapshots by themselves.
 - Thrust level keys (`thrust0` ... `thrust9`) are latched selectors on the server: `true` selects a level; key release does not clear it.
 - Timed `/run` uses server-received input edge times to split simulation substeps around key transitions, so brief taps apply for roughly their observed duration.
+- `dtMillis / intervalMillis` defines the server simulation rate for `/run`; the ticker accumulates elapsed wall time, runs due fixed simulation substeps, emits the latest snapshot after one or more substeps, and carries leftover simulation time forward.
 - Manual/debug `/step` keeps a one-step pending press fallback so press/release pairs are not dropped.
 - The probe defaults are `dtMillis: 250`, `simulationStepMillis: 25`, `intervalMillis: 250`.
 - Control input objects may be partial. Code that compares opposite controls must treat missing values as `false`.
 
 ## High-Value Next Steps
 
-1. Make the remote probe more like the real app:
-   - extract protocol/client concerns from the probe page;
-   - create a first-class Solitude remote-client Vite entry.
+1. Add server lifecycle cleanup:
+   - clear empty/stale games;
+   - pause/remove game tickers when sessions disappear;
+   - define leave/disconnect retention policy.
 
-2. Mature server timing:
-   - move from interval-only ticking toward elapsed-clock accumulator behavior;
-   - decide snapshot broadcast cadence versus simulation cadence;
-   - add lifecycle cleanup for empty/stale games.
-
-3. Move transport toward production:
+2. Move transport toward production:
    - keep HTTP for static assets, health, and optional lobby/listing;
    - likely use WebSocket for join lifecycle, input, snapshots, and session events once the HTTP/SSE proof feels solid.
 
-4. Improve multiplayer model:
+3. Improve multiplayer model:
    - per-client focus/camera semantics;
    - dynamic ship creation/removal;
    - gravity/index refresh APIs if entities become dynamic.
 
-5. Optimize later:
+4. Optimize later:
    - compact snapshot deltas/versioning;
    - interpolation/prediction;
    - bandwidth and allocation review outside prototype UI paths.
@@ -113,6 +110,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Removed the old `@solitude/server/client` and `@solitude/server/protocol` compatibility exports; server code imports the shared protocol contract directly.
 - Added the first-class Solitude remote-client Vite entry and moved the probe page/style ownership out of `@solitude/server`.
 - Added production-like built-asset serving: `npm run start:server` serves `dist/remote.html`, hashed assets, and authoritative server routes from one Node process.
+- Matured server timing from interval-assumed ticks to elapsed-clock accumulation with fixed simulation substeps.
 
 ### 2026-05-24
 
