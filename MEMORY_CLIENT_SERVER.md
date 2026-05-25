@@ -2,322 +2,129 @@
 
 ## Purpose
 
-- Track the long-running effort to evolve Solitude from a browser-only app into a client-server application.
-- Use this before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
-- Goal: a Node.js headless authoritative server that hosts games, accepts multiple browser clients, assigns each client a controllable ship, advances the shared simulation, and broadcasts world state to clients.
+- Track the long-running move from browser-only Solitude to a client-server-only application.
+- Read this before changing headless runtime, snapshots, server/session/protocol code, network input, or browser remote rendering.
 
-## Current Direction
+## Target Shape
 
-- Long-term product direction: Solitude should become a client-server-only application.
-- Standalone browser mode may remain temporarily useful while migrating, but it is not the target architecture.
-- The server should sit on top of `@solitude/engine`; it should not replace the engine.
-- Treat the server as an outer adapter parallel to `@solitude/browser`.
-- Keep networking, rooms, sockets, latency policy, and session ownership out of the engine.
-- Add engine/runtime seams only where they are generic: snapshots, headless orchestration, per-entity control routing, dynamic world mutation, and curated exports.
-- Keep Solitude-specific game composition in `packages/solitude` or a Solitude-owned server package.
-
-Target layering:
+Solitude should become one deployable client-server app:
 
 ```txt
-@solitude/engine
-  ^
-@solitude/browser      packages/server
-  ^                    ^
-solitude app/plugins   solitude app/plugins
+Node server
+  - serves built browser client assets
+  - owns authoritative game/session state
+  - runs headless engine simulation
+  - receives input messages
+  - broadcasts authoritative snapshots/events
+
+Browser client
+  - loads from the Node server
+  - creates or joins games
+  - sends local input state
+  - mirrors authoritative snapshots
+  - renders through @solitude/browser
 ```
 
-## Final Deployment Target
-
-Aim for one deployable application with two runtimes:
-
-```txt
-Solitude deployment
-├─ Node server
-│  ├─ serves built browser client assets
-│  ├─ hosts authoritative game/session state
-│  ├─ runs headless engine simulation ticks
-│  ├─ receives client input messages
-│  └─ broadcasts authoritative snapshots/events
-└─ Browser client
-   ├─ loads from the Node server
-   ├─ creates or joins games
-   ├─ sends local input state to the server
-   ├─ mirrors authoritative world snapshots
-   └─ renders the mirrored world through @solitude/browser
-```
-
-Target package responsibilities:
+Package responsibilities:
 
 - `@solitude/engine`: generic world, physics, runtime snapshots, render data, and runtime seams.
-- `@solitude/browser`: browser rendering, rasterizers, input adapters, and remote-world rendering helpers.
-- `solitude`: Solitude-specific game composition, config, plugins, assets, and browser client entrypoints.
+- `@solitude/browser`: browser rendering/rasterizers, input adapters, and remote-world rendering helpers.
+- `solitude`: Solitude-specific config, plugins, assets, and browser client entrypoints.
 - `@solitude/server`: authoritative sessions, protocol, ticking, HTTP/WebSocket transport, and static client serving.
 
-Target production flow:
+Standalone browser mode is migration scaffolding, not the destination. Keep `@solitude/browser` and `@solitude/server` separate outer adapters over shared engine/Solitude composition.
 
-- Build the Solitude browser client with Vite from a remote-client entrypoint.
-- Start a Node server that serves the built client and owns all game simulation truth.
-- Use HTTP routes for static assets, health checks, and optional lobby/listing operations.
-- Use a production realtime transport, probably WebSocket first, for join lifecycle, input messages, snapshots, and session events.
-- Keep server simulation headless; the server must not import browser rendering code.
-- Keep browser clients non-authoritative; clients render mirrored snapshots and send input, but do not own simulation truth.
+## Current Architecture
 
-Dropping standalone mode simplifies the product shape, but not the layering: `@solitude/browser` and `@solitude/server` should remain separate outer adapters over shared engine and Solitude composition code.
+- The current working proof is `npm run dev:server` on `127.0.0.1:8787`.
+- Transport is still HTTP/SSE probe-grade:
+  - `POST /message` for create/join/leave/input.
+  - `POST /run` and `POST /pause` for server-owned ticking.
+  - `POST /step` for manual/debug stepping.
+  - `GET /events?gameId=...` for snapshots.
+  - `GET /games` for simple discovery.
+- `@solitude/server` owns protocol, sessions, transport, ticker, HTTP/SSE probe, and authoritative Solitude headless runtime composition.
+- Sessions currently assign clients to pre-existing `ship:blue` and `ship:red`.
+- Browser probe dynamically loads a Solitude-owned remote renderer module through Vite transforms and renders snapshots through the engine renderer.
+- The dev server keeps Vite transforms on the same origin but closes Vite's websocket; only `8787` should be exposed.
 
-## Current Assessment
+## Important Semantics
 
-- The codebase now has a browser-testable server-authoritative protocol probe, but it is still closer to an architecture prototype than a full multiplayer product.
-- The engine already owns generic world setup, gravity, collisions, spin, simulation phase ordering, plugin ports, and a basic headless loop.
-- Browser runtime is already an outer adapter that composes DOM input, layout, renderers, the game loop, and Solitude plugins.
-- Solitude already has multiple controllable ships in the default solar-system model (`ship:blue`, `ship:red`).
-- Runtime focus switching currently swaps one local foreground focus between pre-existing ships; multiplayer needs per-client/entity ownership instead of one global foreground operator.
-- Generic runtime snapshot capture/apply now lives in `@solitude/engine/runtime`.
-- Server/session/protocol code exists in `@solitude/server` and can create games, join clients to preallocated ships, accept entity-owned input, step the authoritative world, and emit snapshots.
-- A minimal HTTP/SSE probe runs with `npm run dev:server` and can be exercised from a browser. It is a probe, not the final transport architecture.
-- Browser remote-world mirror code can apply authoritative snapshots into a local engine `World`.
-- Browser remote-world renderer code can now render authoritative snapshots from that mirror into the engine `RenderedView` path, including scene init/update, labels, segments, camera updates, focus switching between controllable ships, and optional rasterization.
-- `npm run dev:server` keeps a Vite transform server available behind the same HTTP origin for browser modules, while closing Vite's websocket so the probe still exposes only `127.0.0.1:8787`.
-- The HTTP/SSE probe dynamically loads a Solitude-owned remote renderer module and uses the engine renderer when available, with the direct snapshot canvas kept as fallback.
+- Server is authoritative. Clients send input and render mirrored snapshots.
+- Current approach is authoritative snapshots, not deterministic lockstep.
+- Input messages patch latest controls and do not emit snapshots by themselves.
+- Thrust level keys (`thrust0` ... `thrust9`) are latched selectors on the server: `true` selects a level; key release does not clear it.
+- Timed `/run` uses server-received input edge times to split simulation substeps around key transitions, so brief taps apply for roughly their observed duration.
+- Manual/debug `/step` keeps a one-step pending press fallback so press/release pairs are not dropped.
+- The probe defaults are `dtMillis: 250`, `simulationStepMillis: 25`, `intervalMillis: 250`.
+- Control input objects may be partial. Code that compares opposite controls must treat missing values as `false`.
 
-## Preferred First Architecture
+## High-Value Next Steps
 
-Use an authoritative snapshot server:
+1. Make the remote probe more like the real app:
+   - remove or gate fallback rendering so engine-render failures are visible;
+   - extract protocol/client/rendering concerns from the probe page;
+   - create a first-class Solitude remote-client Vite entry.
 
-- Server owns the authoritative `World`.
-- Server receives input states from clients.
-- Server applies input to assigned controllable entities.
-- Server broadcasts compact world snapshots at a fixed rate.
-- Clients render a local copy of the world from snapshots.
-- Early clients can apply latest snapshots directly; interpolation/prediction can come later.
+2. Mature server timing:
+   - move from interval-only ticking toward elapsed-clock accumulator behavior;
+   - decide snapshot broadcast cadence versus simulation cadence;
+   - add lifecycle cleanup for empty/stale games.
 
-Avoid deterministic lockstep for the first version. It would make joining, drift, browser timing, plugin loop policy, and debugging harder than a snapshot server.
+3. Move transport toward production:
+   - keep HTTP for static assets, health, and optional lobby/listing;
+   - likely use WebSocket for join lifecycle, input, snapshots, and session events once the HTTP/SSE proof feels solid.
 
-## Major Work Streams
+4. Improve multiplayer model:
+   - per-client focus/camera semantics;
+   - dynamic ship creation/removal;
+   - gravity/index refresh APIs if entities become dynamic.
 
-1. Generic runtime snapshots
-   - Generic capture/apply exists in `@solitude/engine/runtime`.
-   - Snapshot storage and apply workspaces support reusable allocation patterns.
-   - Remaining work: compact deltas, schema/version policy, bandwidth strategy, interpolation metadata.
-
-2. Headless runtime orchestration
-   - Keep `createHeadlessLoop` useful as a small direct test stepper.
-   - Add a richer headless runtime harness when needed, closer to the non-rendering subset of `domGameLoop`.
-   - Remaining work: server-owned tick scheduling, fixed-rate policy, plugin filtering, and lifecycle cleanup.
-
-3. Per-entity control routing
-   - Entity-addressed control maps exist for headless authoritative ticks.
-   - Spacecraft operator can advance multiple manually controlled ships in one tick through that path.
-   - Remaining work: browser network input adapter, held-input semantics, and disconnect/leave input clearing.
-
-4. Server package
-
-- `@solitude/server` exists with runtime, protocol, sessions, transport, ticker, and HTTP/SSE probe exports.
-  - Do not import browser code.
-  - Current sessions assign clients to preallocated `ship:blue` / `ship:red`.
-- Remaining work: retention/cleanup, room listing, lifecycle policy, fixed timestep/accumulator policy, and eventually a production transport.
-
-5. Browser network mode
-   - Promote the remote client runtime path into the primary browser app path.
-   - Wire authoritative snapshots through `remoteWorldMirror` and `remoteWorldRenderer` into a renderable local world.
-   - Standalone browser mode can be removed once the network path covers the workflows we still care about.
-
-6. Dynamic game/session model
-   - Add create/join game support.
-   - Initially assign clients to pre-existing ships.
-   - Later add dynamic ship creation/removal and any required gravity/index refresh APIs.
-
-## Current Slice
-
-Status: first browser-testable HTTP/SSE probe implemented; server-retained held input, keyboard-state messaging, server-owned ticking, and a live engine-rendered remote viewport now make the demo page feel like an actual remote-client prototype.
-
-Currently available:
-
-- `npm run dev:server` starts a Node HTTP server on `127.0.0.1:8787`.
-- `POST /message` accepts create/join/leave/input protocol messages.
-- `POST /step` advances a game and emits an authoritative snapshot.
-- `GET /events?gameId=...` streams snapshots over server-sent events.
-- The served probe page can create/join games, list existing games, auto-connect the snapshot stream, use spacecraft keyboard controls, run/pause a server-owned step loop, and render incoming snapshots into a simple canvas viewport.
-- The Vite SSR/transform server used by the dev script stays in-process for browser module transforms, but its websocket is closed before the HTTP server starts; the probe should only expose the Solitude HTTP port, not Vite's HMR port.
-
-Important current behavior:
-
-- Joining the same game with the same client id is idempotent for assignment: the server returns `joined` for the existing entity and does not consume another ship.
-- Input messages patch the latest held control state for the assigned entity. They do not emit snapshots by themselves.
-- Timed server runs use server-received input edge times to split simulation steps around key transitions, so brief boolean taps are applied for roughly their observed duration instead of being rounded to a full substep or dropped.
-- Manual/debug steps still use a one-step pending press fallback: if the server receives `true` and then `false` before an untimed step, the next step still observes the control as pressed once.
-- Thrust level inputs (`thrust0` ... `thrust9`) are treated as latched selectors on the server: a `true` patch selects that level and clears the previous thrust selector; release/`false` patches do not clear the selected level.
-- The probe's forward burn toggle sends `burnForward: true` to start and `burnForward: false` to stop; the server retains the latest value across authoritative steps.
-- The probe also sends keydown/keyup patches for spacecraft controls (`Space`, `W/A/S/D`, `Q/E`, `N/M`, `B`, `0-9`) while an entity is assigned.
-- The server ticker can run multiple fixed simulation substeps per broadcast interval. The probe currently defaults to `dtMillis: 250`, `simulationStepMillis: 25`, and `intervalMillis: 250`.
-- The snapshot viewport attempts to render network snapshots through the Solitude remote renderer. If the dev browser module cannot load, it falls back to the small direct log-scaled top-down projection.
-- `@solitude/browser/remoteWorldRenderer` can apply a runtime snapshot to a local mirror, refresh scene/camera state, collect labels/segments, and render into a `RenderedView` using `DefaultViewRenderer`.
-- `@solitude/browser/remoteCanvasRenderer` wraps the remote world renderer with the existing Canvas rasterizer/surface.
-- The `Run` button now starts a server-owned interval via `POST /run`; `Pause` stops it via `POST /pause`. Manual `/step` remains available for debugging.
-- `GET /games` exposes current game summaries with assigned/available entity ids so clients can discover games before joining.
-
-Next focused slice:
-
-- Exercise the smoother server tick policy interactively, then decide whether to tune defaults, add a stronger accumulator based on elapsed clock time, or start extracting the probe into a first-class remote client entry.
-- This keeps us moving toward the final deployment shape while testing whether the current HTTP/SSE transport is good enough for one more round of client UX work before WebSockets.
-
-## Candidate Next Slices
-
-1. Render remote snapshots in a browser page
-   - `@solitude/browser/remoteWorldRenderer` now composes a local mirrored world, scene, view, render cache, and `DefaultViewRenderer`.
-   - The server probe now dynamically loads `solitude/src/remoteProbeRenderer.ts` through Vite transforms and rasterizes engine-rendered snapshots into the probe canvas.
-   - Remaining work: improve remote focus semantics beyond controllable ships, decide what to do with PiP views, and compare Canvas/WebGL renderer behavior in remote mode.
-
-2. Extract the probe page into reusable browser modules
-   - Move the remaining inline demo wiring out of the HTML string when it starts blocking larger browser slices.
-   - Keep protocol/client state, keyboard control state, and rendering/mirror concerns separable.
-   - This can be done alongside the first rendered remote mode if the inline page becomes too awkward.
-
-3. Mature the server-owned tick loop
-   - A transport-agnostic `@solitude/server/ticker` owns run/pause interval lifecycle for the probe.
-   - Fixed simulation substeps now exist for `/run`.
-   - Remaining work: elapsed-clock accumulator behavior, add game lifecycle cleanup, and room/session ownership.
-
-4. Extract a browser client protocol adapter
-   - Convert local control state into protocol input messages.
-   - Manage client/game/entity identity, sequence numbers, fetch/SSE calls, and reconnect hooks outside the demo HTML.
-   - This is a cleaner prerequisite for turning the probe into the primary Solitude remote client entry.
-
-5. Production deployment shape
-   - Add a real remote-client Vite entrypoint under `solitude`.
-   - Have `@solitude/server` serve built browser assets in production.
-   - Keep the current Vite transform path dev-only.
-   - Move toward WebSocket once server tick policy and the remote-rendering loop feel credible.
-
-## Open Design Questions
-
-- Should clients send only changed controls, complete control states, or both? Current probe sends changed controls into server-retained state.
-- Should the next visible browser proof live in `@solitude/server` as a probe page, in `@solitude/browser` as reusable adapter code, or in the Solitude app behind a mode flag?
-- Should clients render by mutating a local `World` via `remoteWorldMirror`, or should they render from immutable network snapshots transformed into render-frame caches?
-- How much of `domGameLoop` should be split into a reusable app/runtime harness before adding server code?
-- When should HTTP/SSE give way to WebSockets or WebTransport? Current HTTP/SSE is sufficient for probe work but not necessarily for production input latency.
+5. Optimize later:
+   - compact snapshot deltas/versioning;
+   - interpolation/prediction;
+   - bandwidth and allocation review outside prototype UI paths.
 
 ## Known Risks
 
-- Current package exports are intentionally narrow; server work must not normalize deep imports.
 - Default Solitude plugin order is behaviorally significant.
-- `mainFocus` is still a global runtime context; multiplayer needs per-client foreground focus and per-entity authoritative controls.
-- Playback, pause, time-scale, profiling, and operator-switch plugins may not all make sense on a server.
-- Dynamic entity add/remove likely requires explicit world mutation APIs and gravity-state refresh behavior.
-- Snapshot bandwidth may become a concern if full entity state is broadcast every frame.
-- The current probe allocates freely in UI/network paths; keep it out of engine hot paths and revisit before productionizing.
-- Browser-driven `/step` loops are useful for testing but are not a trustworthy server-authoritative timing model.
+- `mainFocus` remains a global runtime context in parts of the app; multiplayer needs per-client focus ownership.
+- Playback, pause, time-scale, profiling, operator-switch, and some browser-only plugins may not belong on the server.
+- The probe still allocates freely in UI/network paths. Avoid moving that allocation into engine hot paths.
+- HTTP/SSE is useful for proving architecture but is not the final latency/transport story.
 
-## Completed Slices
+## Slice Log
 
-- 2026-05-25: Added duration-aware handling for brief remote key taps:
-  - server sessions now queue server-received input edge times and timed server runs split simulation steps around those edges;
-  - brief WASD/attitude taps are applied for roughly their observed duration during `/run`;
-  - manual/debug steps keep a pending pressed-control fallback so press/release pairs are not dropped in untimed stepping.
-- 2026-05-25: Fixed remote thrust-level input semantics:
-  - number-key thrust inputs now latch on the server instead of behaving like ordinary held booleans;
-  - releasing a numeric key no longer clears the selected thrust level before the next server tick can observe it;
-  - selecting a new thrust level clears the previous selected thrust key.
-- 2026-05-25: Added fixed simulation substeps to server-owned runs:
-  - `/run` now requires `simulationStepMillis` alongside broadcast `dtMillis` and `intervalMillis`;
-  - the ticker advances as many substeps as needed to cover each broadcast `dtMillis`, publishing only the final snapshot;
-  - the probe defaults changed from one `1000 ms` simulation step to `250 ms` broadcast simulation time split into `25 ms` substeps;
-  - this should make held keyboard controls feel much less chunky without increasing snapshot broadcast cadence.
-- 2026-05-25: Wired the probe toward engine-rendered remote snapshots:
-  - added `@solitude/browser/remoteCanvasRenderer`, which composes the remote world renderer with Canvas rasterization;
-  - added a Solitude-owned `remoteProbeRenderer` browser module that builds the Solitude config/plugins and renders incoming snapshot messages through the engine renderer;
-  - the probe dynamically imports the remote renderer and falls back to the direct snapshot renderer when the module is unavailable;
-  - `npm run dev:server` now keeps Vite transforms available on the Solitude HTTP origin while closing Vite's websocket, preserving the single-port dev-server behavior.
-- 2026-05-25: Added a reusable browser remote renderer:
-  - `@solitude/browser/remoteWorldRenderer` composes `remoteWorldMirror`, `createScene`, view definitions, scene camera state, render-frame cache, and `DefaultViewRenderer`;
-  - incoming runtime snapshots can now be applied to a mirrored world and rendered into an engine `RenderedView`;
-  - render-facing plugin hooks for scene init/update, labels, segments, and view object filters are included;
-  - added `rasterizeRenderedView()` so a later browser bundle can draw the rendered view through an existing rasterizer.
-- 2026-05-24: Added game discovery:
-  - session manager and transport expose game summaries;
-  - `GET /games` returns summaries with assigned and available entity ids;
-  - the probe can refresh existing games and join them without manually typing a game id.
-- 2026-05-24: Extracted server ticking into `@solitude/server/ticker`:
-  - HTTP `/run` and `/pause` now delegate interval lifecycle to a transport-agnostic ticker;
-  - ticker exposes `runGame`, `pauseGame`, `pauseAll`, and `isRunning`;
-  - ticker tests cover snapshot emission, loop replacement, missing-game self-pause, and cleanup.
-- 2026-05-24: Added server-owned run/pause ticking to the HTTP probe:
-  - `POST /run` starts an interval that steps a game and publishes snapshots over SSE;
-  - `POST /pause` stops the interval;
-  - the probe's Run/Pause button now controls the server loop instead of using browser-side `/step` polling;
-  - manual `/step` remains available for debugging and deterministic tests.
-- 2026-05-24: Added a live snapshot viewport to the server probe:
-  - incoming authoritative snapshots now draw into a canvas on the demo page;
-  - the viewport centers on the assigned entity and uses a log-scaled top-down projection;
-  - snapshot log entries are compact summaries instead of full entity dumps;
-  - this is intentionally a direct network-snapshot view, not the final `remoteWorldMirror` + engine renderer path.
-- 2026-05-24: Added browser client adapter and keyboard-state messaging:
-  - added `@solitude/server/client` with a browser-safe HTTP/SSE protocol client and keyboard input patcher;
-  - the probe now sends keydown/keyup patches for spacecraft controls while assigned to an entity;
-  - keyboard input uses the same server-retained held-input semantics as the forward-burn toggle.
-- 2026-05-24: Added server-retained held-input semantics:
-  - input messages now patch the assigned entity's held controls instead of applying for only one step;
-  - authoritative steps reuse the latest held controls until a later input message changes them;
-  - leaving a game clears the leaving client's held entity controls;
-  - the probe's forward burn action is now a start/stop toggle that works with the run loop.
-- 2026-05-23: Added probe run/pause controls:
-  - page can repeatedly call `/step` at a configurable interval;
-  - this creates an immediately watchable live tick loop without adding server-owned scheduling yet;
-  - continuous controls are still not solved because input remains one-shot/next-step in the probe.
-  - superseded by the 2026-05-24 server-owned run/pause loop.
-- 2026-05-23: Cleaned up `npm run dev:server` port behavior:
-  - Vite is used only as a temporary SSR/TypeScript loader;
-  - Vite HMR is disabled and Vite is closed before the Solitude HTTP server starts;
-  - the dev probe should expose only the Solitude HTTP port (`127.0.0.1:8787` by default).
-- 2026-05-23: Improved the HTTP/SSE probe stream UX:
-  - create/join now auto-connects the snapshot stream;
-  - the old “Connect events” button became “Reconnect stream”;
-  - stepping while the stream is open avoids duplicate snapshot logging.
-- 2026-05-23: Added `@solitude/server/http` and a root `npm run dev:server` probe:
-  - serves a minimal browser page for create/join/input/step interaction;
-  - accepts client protocol messages via `POST /message`;
-  - steps games via `POST /step`;
-  - streams authoritative snapshot messages via server-sent events at `GET /events`;
-  - runs through Vite's SSR loader so TypeScript server code can be exercised without adding a dev runner dependency;
-  - remains a thin Node HTTP adapter over the existing in-process transport, not a replacement for engine/runtime work.
-- 2026-05-23: Added `@solitude/server/transport`:
-  - validates unknown inbound payloads with protocol guards;
-  - routes valid client messages into the in-process session manager;
-  - exposes `stepGame()` for authoritative snapshot emission;
-  - remains in-process and transport-free, but is shaped for a future WebSocket wrapper.
-- 2026-05-23: Added `@solitude/browser/remoteWorldMirror`:
-  - creates a local engine `World` from a world config;
-  - applies authoritative runtime snapshots into existing world objects;
-  - reuses the indexed runtime snapshot apply workspace;
-  - remains non-DOM and does not depend on `solitude` or `@solitude/server`.
-- 2026-05-23: Added an in-process `@solitude/server/sessions` manager:
-  - creates games backed by `createSolitudeServerGame()`;
-  - joins clients to preallocated `ship:blue` and `ship:red`;
-  - accepts protocol input messages only for the client's assigned entity;
-  - steps games and emits snapshot protocol messages;
-  - remains transport-free and WebSocket-free.
-- 2026-05-23: Added transport-agnostic `@solitude/server/protocol` message types:
-  - client messages cover `createGame`, `joinGame`, `leaveGame`, and `input`;
-  - server messages cover `gameCreated`, `joined`, `snapshot`, and `error`;
-  - protocol includes `gameId`, `clientId`, `entityId`, `sequence`, and `tick` where relevant;
-  - added small constructors for server messages and lightweight guards for ingress/egress validation;
-  - no WebSocket or transport dependency introduced.
-- 2026-05-23: Added `@solitude/server` with a non-networked authoritative runtime proof:
-  - `createSolitudeServerGame()` composes `solitude/headless`;
-  - server steps require entity-addressed control inputs;
-  - runtime snapshots are captured into reusable storage after each step;
-  - server package declares `solitude` and `@solitude/engine` dependencies and imports no browser package;
-  - package boundary tooling handled the new workspace package without changes.
-- 2026-05-22: Promoted generic entity-state snapshots into `@solitude/engine/runtime`:
-  - added `captureRuntimeSnapshot`, `applyRuntimeSnapshot`, and entity-level helpers;
-  - added reusable `createRuntimeSnapshot` / `captureRuntimeSnapshotInto` APIs so future server broadcasts can avoid per-capture object graph allocation after initial storage setup;
-  - added reusable apply workspaces and `applyRuntimeSnapshotWithWorkspace` so future client snapshot application can avoid repeated linear state lookup and per-apply map allocation;
-  - kept playback-owned metadata in Solitude while delegating generic entity capture/apply to the engine;
-  - added engine runtime snapshot tests for generic entity state plus controllable frame/angular velocity;
-  - playback snapshot tests continue to cover the Solitude metadata wrapper.
-- 2026-05-22: Added an opt-in per-entity control path for authoritative headless ticks:
-  - `TickParams` / `SimulationPhaseParams` can carry `controlInputsByEntityId`.
-  - `HeadlessLoop.stepWithEntityInputs()` accepts entity-addressed control input maps.
-  - `spacecraftOperator` uses the map when present to advance multiple manually controlled ships in one tick while preserving the existing single-focus path.
-  - `headlessServerComposition.test.ts` now proves `ship:blue` and `ship:red` can both receive controls in one headless Solitude tick.
-- 2026-05-22: Added `solitude/headless` and a server-style smoke test proving the default Solitude world can be composed headlessly through public exports and advanced with spacecraft input. This exposed the next real architecture gap as per-entity control routing, not basic server-side composition.
-- 2026-05-22: Started client-server architecture memory and set the first work path around a non-networked server/headless composition proof.
+### 2026-05-25
+
+- Documented final target as a client-server-only deployment.
+- Added real engine-rendered remote snapshots in the probe:
+  - `remoteWorldMirror`;
+  - `remoteWorldRenderer`;
+  - `remoteCanvasRenderer`;
+  - Solitude `remoteProbeRenderer`.
+- Kept Vite transforms behind the same dev HTTP origin while closing the websocket/HMR port.
+- Added server-owned fixed simulation substeps for `/run`.
+- Added duration-aware server input handling for brief taps during timed runs.
+- Fixed server thrust selector latching.
+- Fixed partial attitude input handling so released/missing opposite controls do not create phantom opposite yaw/roll.
+
+### 2026-05-24
+
+- Added game discovery (`GET /games`) and join buttons in the probe.
+- Added server-owned run/pause ticking and then extracted ticker code.
+- Added live snapshot viewport, keyboard messaging, retained held input, and probe UX improvements.
+- Added browser-safe HTTP/SSE client helpers and keyboard patcher.
+
+### 2026-05-23
+
+- Added `@solitude/server` package and authoritative headless runtime proof.
+- Added protocol, sessions, transport, HTTP/SSE probe, and dev-server runner.
+- Added browser `remoteWorldMirror`.
+- Cleaned dev-server port behavior so the probe exposes the Solitude HTTP port only.
+
+### 2026-05-22
+
+- Promoted generic runtime snapshot capture/apply into `@solitude/engine/runtime`.
+- Added reusable snapshot storage and apply workspaces.
+- Added per-entity control routing for headless authoritative stepping.

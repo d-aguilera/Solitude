@@ -136,6 +136,20 @@ describe("spacecraft vehicle dynamics plugin", () => {
     expect(telemetry.currentThrustLevel).toBe(5);
   });
 
+  it("treats released partial attitude inputs as inactive", () => {
+    const focusedBody = createBody("ship:focus");
+    const plugin = createSpacecraftVehicleDynamicsPlugin(
+      [],
+      createPluginCapabilityRegistry(),
+    );
+    const input = createControlInput();
+    input.yawLeft = false;
+
+    runVehicleDynamics(plugin, focusedBody, input, createWorld(focusedBody));
+
+    expect(focusedBody.angularVelocity.yaw).toBe(0);
+  });
+
   it("continues autonomous autopilot propulsion on unfocused controlled bodies", () => {
     const blueBody = createBody("ship:blue");
     const redBody = createBody("ship:red");

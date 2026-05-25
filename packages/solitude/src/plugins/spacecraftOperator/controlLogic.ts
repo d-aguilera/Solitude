@@ -47,18 +47,25 @@ export function updateControlState(
 }
 
 function getManualAttitudeCommand(controlInput: ControlInput): AttitudeCommand {
+  const rollLeft = Boolean(controlInput.rollLeft);
+  const rollRight = Boolean(controlInput.rollRight);
+  const pitchDown = Boolean(controlInput.pitchDown);
+  const pitchUp = Boolean(controlInput.pitchUp);
+  const yawLeft = Boolean(controlInput.yawLeft);
+  const yawRight = Boolean(controlInput.yawRight);
+
   let rollInput = 0;
-  if (controlInput.rollLeft !== controlInput.rollRight) {
-    rollInput = controlInput.rollLeft ? -1 : 1;
+  if (rollLeft !== rollRight) {
+    rollInput = rollLeft ? -1 : 1;
   }
 
   let pitchInput = 0;
-  if (controlInput.pitchDown) pitchInput += 1;
-  if (controlInput.pitchUp) pitchInput -= 1;
+  if (pitchDown) pitchInput += 1;
+  if (pitchUp) pitchInput -= 1;
 
   let yawInput = 0;
-  if (controlInput.yawLeft !== controlInput.yawRight) {
-    yawInput = controlInput.yawLeft ? 1 : -1;
+  if (yawLeft !== yawRight) {
+    yawInput = yawLeft ? 1 : -1;
   }
 
   return {
