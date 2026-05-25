@@ -8,6 +8,8 @@
 
 ## Current Direction
 
+- Long-term product direction: Solitude should become a client-server-only application.
+- Standalone browser mode may remain temporarily useful while migrating, but it is not the target architecture.
 - The server should sit on top of `@solitude/engine`; it should not replace the engine.
 - Treat the server as an outer adapter parallel to `@solitude/browser`.
 - Keep networking, rooms, sockets, latency policy, and session ownership out of the engine.
@@ -23,6 +25,44 @@ Target layering:
   ^                    ^
 solitude app/plugins   solitude app/plugins
 ```
+
+## Final Deployment Target
+
+Aim for one deployable application with two runtimes:
+
+```txt
+Solitude deployment
+├─ Node server
+│  ├─ serves built browser client assets
+│  ├─ hosts authoritative game/session state
+│  ├─ runs headless engine simulation ticks
+│  ├─ receives client input messages
+│  └─ broadcasts authoritative snapshots/events
+└─ Browser client
+   ├─ loads from the Node server
+   ├─ creates or joins games
+   ├─ sends local input state to the server
+   ├─ mirrors authoritative world snapshots
+   └─ renders the mirrored world through @solitude/browser
+```
+
+Target package responsibilities:
+
+- `@solitude/engine`: generic world, physics, runtime snapshots, render data, and runtime seams.
+- `@solitude/browser`: browser rendering, rasterizers, input adapters, and remote-world rendering helpers.
+- `solitude`: Solitude-specific game composition, config, plugins, assets, and browser client entrypoints.
+- `@solitude/server`: authoritative sessions, protocol, ticking, HTTP/WebSocket transport, and static client serving.
+
+Target production flow:
+
+- Build the Solitude browser client with Vite from a remote-client entrypoint.
+- Start a Node server that serves the built client and owns all game simulation truth.
+- Use HTTP routes for static assets, health checks, and optional lobby/listing operations.
+- Use a production realtime transport, probably WebSocket first, for join lifecycle, input messages, snapshots, and session events.
+- Keep server simulation headless; the server must not import browser rendering code.
+- Keep browser clients non-authoritative; clients render mirrored snapshots and send input, but do not own simulation truth.
+
+Dropping standalone mode simplifies the product shape, but not the layering: `@solitude/browser` and `@solitude/server` should remain separate outer adapters over shared engine and Solitude composition code.
 
 ## Current Assessment
 
@@ -77,9 +117,9 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 - Remaining work: retention/cleanup, room listing, lifecycle policy, fixed timestep/accumulator policy, and eventually a production transport.
 
 5. Browser network mode
-   - Add a client runtime path that sends input over the network.
+   - Promote the remote client runtime path into the primary browser app path.
    - Wire authoritative snapshots through `remoteWorldMirror` and `remoteWorldRenderer` into a renderable local world.
-   - Keep current standalone browser mode intact.
+   - Standalone browser mode can be removed once the network path covers the workflows we still care about.
 
 6. Dynamic game/session model
    - Add create/join game support.
@@ -113,8 +153,8 @@ Important current behavior:
 
 Next focused slice:
 
-- Exercise the engine-rendered probe interactively and decide whether the next slice should improve camera/focus semantics, add remote-mode UI polish, or start extracting the probe into a first-class Solitude remote app entry.
-- Keep browser single-player behavior on the existing global `mainFocus`/`controlInput` path.
+- The next high-value architecture slice should improve server tick policy: run smaller fixed simulation substeps, decouple simulation step size from snapshot broadcast interval, and keep browser input responsive without giant attitude jumps.
+- This moves directly toward the final deployment shape because production multiplayer needs server-owned timing to be credible before WebSocket transport or remote app extraction can be judged accurately.
 
 ## Candidate Next Slices
 
@@ -130,12 +170,18 @@ Next focused slice:
 
 3. Mature the server-owned tick loop
    - A transport-agnostic `@solitude/server/ticker` owns run/pause interval lifecycle for the probe.
-   - Remaining work: add game lifecycle cleanup, room/session ownership, and fixed timestep/accumulator behavior.
+   - Remaining work: fixed timestep/accumulator behavior, separate simulation substep size from snapshot broadcast cadence, add game lifecycle cleanup, and room/session ownership.
 
 4. Extract a browser client protocol adapter
    - Convert local control state into protocol input messages.
    - Manage client/game/entity identity, sequence numbers, fetch/SSE calls, and reconnect hooks outside the demo HTML.
-   - This is a cleaner prerequisite for wiring the real Solitude app into remote mode.
+   - This is a cleaner prerequisite for turning the probe into the primary Solitude remote client entry.
+
+5. Production deployment shape
+   - Add a real remote-client Vite entrypoint under `solitude`.
+   - Have `@solitude/server` serve built browser assets in production.
+   - Keep the current Vite transform path dev-only.
+   - Move toward WebSocket once server tick policy and the remote-rendering loop feel credible.
 
 ## Open Design Questions
 
