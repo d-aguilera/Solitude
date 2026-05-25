@@ -8,6 +8,7 @@
     "./dom/keyboardInput": "./src/infra/domKeyboardInput.ts",
     "./dom/overlayPorts": "./src/infra/overlayPorts.ts",
     "./dom/runtimeOptions": "./src/infra/domRuntimeOptions.ts",
+    "./remoteWorldRenderer": "./src/infra/remoteWorldRenderer.ts",
     "./remoteWorldMirror": "./src/infra/remoteWorldMirror.ts"
   },
   "dependencies": {

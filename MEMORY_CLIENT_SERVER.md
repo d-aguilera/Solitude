@@ -34,7 +34,9 @@ solitude app/plugins   solitude app/plugins
 - Generic runtime snapshot capture/apply now lives in `@solitude/engine/runtime`.
 - Server/session/protocol code exists in `@solitude/server` and can create games, join clients to preallocated ships, accept entity-owned input, step the authoritative world, and emit snapshots.
 - A minimal HTTP/SSE probe runs with `npm run dev:server` and can be exercised from a browser. It is a probe, not the final transport architecture.
-- Browser remote-world mirror code can apply authoritative snapshots into a local engine `World`, but it is not wired into the visual Solitude app yet.
+- Browser remote-world mirror code can apply authoritative snapshots into a local engine `World`.
+- Browser remote-world renderer code can now render authoritative snapshots from that mirror into the engine `RenderedView` path, including scene init/update, labels, segments, camera updates, and optional rasterization.
+- The HTTP/SSE probe still uses its direct snapshot canvas; it is not yet wired to the browser remote renderer because the probe is served as static assets without a browser module bundle.
 
 ## Preferred First Architecture
 
@@ -75,7 +77,7 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 5. Browser network mode
    - Add a client runtime path that sends input over the network.
-   - Wire authoritative snapshots through `remoteWorldMirror` into a renderable local world.
+   - Wire authoritative snapshots through `remoteWorldMirror` and `remoteWorldRenderer` into a renderable local world.
    - Keep current standalone browser mode intact.
 
 6. Dynamic game/session model
@@ -85,7 +87,7 @@ Avoid deterministic lockstep for the first version. It would make joining, drift
 
 ## Current Slice
 
-Status: first browser-testable HTTP/SSE probe implemented; server-retained held input, keyboard-state messaging, server-owned ticking, and a simple live snapshot viewport now make the demo page feel like an actual remote-client prototype.
+Status: first browser-testable HTTP/SSE probe implemented; server-retained held input, keyboard-state messaging, server-owned ticking, and a simple live snapshot viewport now make the demo page feel like an actual remote-client prototype. Browser-side remote rendering now has a reusable non-loop harness, but the probe page is still using its direct snapshot renderer.
 
 Currently available:
 
@@ -103,25 +105,22 @@ Important current behavior:
 - The probe's forward burn toggle sends `burnForward: true` to start and `burnForward: false` to stop; the server retains the latest value across authoritative steps.
 - The probe also sends keydown/keyup patches for spacecraft controls (`Space`, `W/A/S/D`, `Q/E`, `N/M`, `B`, `0-9`) while an entity is assigned.
 - The snapshot viewport renders directly from network snapshots with a small log-scaled top-down projection. It does not yet use `remoteWorldMirror` or the engine renderer.
+- `@solitude/browser/remoteWorldRenderer` can apply a runtime snapshot to a local mirror, refresh scene/camera state, collect labels/segments, and render into a `RenderedView` using `DefaultViewRenderer`.
 - The `Run` button now starts a server-owned interval via `POST /run`; `Pause` stops it via `POST /pause`. Manual `/step` remains available for debugging.
 - `GET /games` exposes current game summaries with assigned/available entity ids so clients can discover games before joining.
 
 Next focused slice:
 
-- Decide whether the next browser slice should:
-  - render authoritative snapshots through `remoteWorldMirror`;
-  - move toward a production-grade tick policy instead of the current interval ticker;
-  - render authoritative snapshots through `remoteWorldMirror`;
-  - consider WebSockets only after the HTTP/SSE probe exposes the next concrete need.
+- Wire the browser-testable probe to a bundled browser module path that can use `@solitude/browser/remoteWorldRenderer`, or create an equivalent remote-mode entry in the Solitude app where Vite already handles browser module loading.
 - Keep browser single-player behavior on the existing global `mainFocus`/`controlInput` path.
 
 ## Candidate Next Slices
 
 1. Render remote snapshots in a browser page
    - The current probe has a direct snapshot canvas, but not an engine-rendered mirrored world.
-   - Next rendering slice should compose a local browser world from Solitude config.
-   - Subscribe to server snapshots and apply them with `remoteWorldMirror`.
-   - Render the mirrored world using existing browser rendering adapters if a clean composition path exists.
+   - `@solitude/browser/remoteWorldRenderer` now composes a local mirrored world, scene, view, render cache, and `DefaultViewRenderer`.
+   - Remaining work: make the browser page load a real browser bundle or add a remote app entry so incoming SSE snapshots can feed `renderSnapshot()`.
+   - Then rasterize the returned `RenderedView` through Canvas/WebGL rasterizers instead of the direct top-down snapshot renderer.
 
 2. Extract the probe page into reusable browser modules
    - Move the remaining inline demo wiring out of the HTML string when it starts blocking larger browser slices.
@@ -158,6 +157,11 @@ Next focused slice:
 
 ## Completed Slices
 
+- 2026-05-25: Added a reusable browser remote renderer:
+  - `@solitude/browser/remoteWorldRenderer` composes `remoteWorldMirror`, `createScene`, view definitions, scene camera state, render-frame cache, and `DefaultViewRenderer`;
+  - incoming runtime snapshots can now be applied to a mirrored world and rendered into an engine `RenderedView`;
+  - render-facing plugin hooks for scene init/update, labels, segments, and view object filters are included;
+  - added `rasterizeRenderedView()` so a later browser bundle can draw the rendered view through an existing rasterizer.
 - 2026-05-24: Added game discovery:
   - session manager and transport expose game summaries;
   - `GET /games` returns summaries with assigned and available entity ids;
