@@ -62,8 +62,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 ## High-Value Next Steps
 
 1. Make the remote probe more like the real app:
-   - remove or gate fallback rendering so engine-render failures are visible;
-   - extract protocol/client/rendering concerns from the probe page;
+   - extract protocol/client concerns from the probe page;
    - create a first-class Solitude remote-client Vite entry.
 
 2. Mature server timing:

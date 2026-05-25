@@ -2,7 +2,6 @@ let sequence = 1;
 let events = null;
 let runActive = false;
 let engineRenderer = null;
-let engineRendererAvailable = true;
 
 const heldControls = {};
 
@@ -47,17 +46,13 @@ const statusEl = document.querySelector("#status");
 const runStatusEl = document.querySelector("#runStatus");
 const toggleRunButton = document.querySelector("#toggleRun");
 
-void import("/src/remoteProbeRenderer.ts")
-  .then((module) => {
-    engineRenderer = module.createSolitudeRemoteProbeRenderer({
-      canvas: snapshotCanvas,
-      getFocusEntityId: () => fields.entityId.value,
-      statusElement: snapshotStatusEl,
-    });
-  })
-  .catch(() => {
-    engineRendererAvailable = false;
+void import("/src/remoteProbeRenderer.ts").then((module) => {
+  engineRenderer = module.createSolitudeRemoteProbeRenderer({
+    canvas: snapshotCanvas,
+    getFocusEntityId: () => fields.entityId.value,
+    statusElement: snapshotStatusEl,
   });
+});
 
 document.querySelector("#createGame").addEventListener("click", () => {
   sendMessage({
@@ -208,13 +203,16 @@ async function startServerLoop() {
     Number(fields.runIntervalMillis.value) || 250,
   );
   fields.runIntervalMillis.value = String(intervalMillis);
+
   const dtMillis = Math.max(1, Number(fields.dtMillis.value) || 250);
   fields.dtMillis.value = String(dtMillis);
+
   const simulationStepMillis = Math.max(
     1,
     Number(fields.simulationStepMillis.value) || 25,
   );
   fields.simulationStepMillis.value = String(simulationStepMillis);
+
   const response = await fetch("/run", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -225,17 +223,23 @@ async function startServerLoop() {
       simulationStepMillis,
     }),
   });
+
   const payload = await response.json();
+
   handleMessages(payload.messages);
+
   runActive = true;
-  runStatusEl.textContent =
-    "Server running every " +
-    intervalMillis +
-    " ms at broadcast dt " +
-    dtMillis +
-    " ms, sim step " +
-    simulationStepMillis +
-    " ms";
+
+  runStatusEl.textContent = [
+    "Server running every",
+    intervalMillis,
+    "ms at broadcast dt",
+    dtMillis,
+    "ms, sim step",
+    simulationStepMillis,
+    "ms",
+  ].join(" ");
+
   toggleRunButton.textContent = "Pause";
 }
 
@@ -246,14 +250,19 @@ async function pauseServerLoop() {
     toggleRunButton.textContent = "Run";
     return;
   }
+
   const response = await fetch("/pause", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ gameId: fields.gameId.value }),
   });
+
   const payload = await response.json();
+
   handleMessages(payload.messages);
+
   runActive = false;
+
   runStatusEl.textContent = "Paused";
   toggleRunButton.textContent = "Run";
 }
@@ -264,6 +273,7 @@ function connectEvents() {
       "Create or join a game before connecting the snapshot stream";
     return;
   }
+
   if (events) events.close();
   events = new EventSource(
     "/events?gameId=" + encodeURIComponent(fields.gameId.value),
@@ -282,146 +292,29 @@ function connectEvents() {
 
 function handleMessages(messages, options = {}) {
   for (const message of messages) {
-    if (message.type === "gameCreated") {
-      fields.gameId.value = message.gameId;
-    }
-    if (message.type === "joined") {
-      fields.gameId.value = message.gameId;
-      fields.entityId.value = message.entityId;
-      if (options.connectAfterJoin) connectEvents();
-    }
-    if (message.type === "snapshot") {
-      renderSnapshot(message);
-      if (options.suppressSnapshots) continue;
-      statusEl.textContent =
-        "tick " +
-        message.tick +
-        " | entities " +
-        message.snapshot.entities.length;
+    switch (message.type) {
+      case "gameCreated":
+        fields.gameId.value = message.gameId;
+        break;
+      case "joined":
+        fields.gameId.value = message.gameId;
+        fields.entityId.value = message.entityId;
+        if (options.connectAfterJoin) connectEvents();
+        break;
+      case "snapshot":
+        engineRenderer.renderSnapshotMessage(message);
+        if (!options.suppressSnapshots) {
+          statusEl.textContent = [
+            "tick",
+            message.tick,
+            "| entities",
+            message.snapshot.entities.length,
+          ].join(" ");
+        }
+        break;
     }
     log(message);
   }
-}
-
-function renderSnapshot(message) {
-  if (engineRenderer?.renderSnapshotMessage(message)) {
-    return;
-  }
-  if (!snapshotContext) return;
-  const entities = message.snapshot.entities.filter((entity) =>
-    isFiniteVec3(entity.position),
-  );
-  const width = snapshotCanvas.width;
-  const height = snapshotCanvas.height;
-  snapshotContext.clearRect(0, 0, width, height);
-  snapshotContext.fillStyle = "#030504";
-  snapshotContext.fillRect(0, 0, width, height);
-
-  const focus =
-    entities.find((entity) => entity.id === fields.entityId.value) ??
-    entities[0];
-  const focusPosition = focus?.position ?? { x: 0, y: 0, z: 0 };
-  const scale = Math.min(width, height) * 0.055;
-  const centerX = width * 0.5;
-  const centerY = height * 0.5;
-
-  drawGrid(snapshotContext, width, height);
-  const visibleEntityIds = [];
-  for (const entity of entities) {
-    const projected = projectPosition(
-      entity.position,
-      focusPosition,
-      centerX,
-      centerY,
-      scale,
-    );
-    if (!projected.visible) continue;
-    visibleEntityIds.push(entity.id);
-    drawEntity(snapshotContext, entity, projected.x, projected.y);
-  }
-
-  const speed = focus ? vectorMagnitude(focus.velocity).toFixed(1) : "0.0";
-  snapshotStatusEl.textContent =
-    (engineRendererAvailable ? "direct rendered tick " : "fallback tick ") +
-    message.tick +
-    " | focus " +
-    (focus?.id ?? "none") +
-    " | speed " +
-    speed +
-    " m/s | visible " +
-    visibleEntityIds.join(", ");
-}
-
-function drawGrid(context, width, height) {
-  context.strokeStyle = "#16211d";
-  context.lineWidth = 1;
-  for (let x = width % 80; x < width; x += 80) {
-    context.beginPath();
-    context.moveTo(x, 0);
-    context.lineTo(x, height);
-    context.stroke();
-  }
-  for (let y = height % 80; y < height; y += 80) {
-    context.beginPath();
-    context.moveTo(0, y);
-    context.lineTo(width, y);
-    context.stroke();
-  }
-}
-
-function projectPosition(position, focusPosition, centerX, centerY, scale) {
-  const dx = position.x - focusPosition.x;
-  const dy = position.y - focusPosition.y;
-  const x = centerX + signedLog(dx, 1_000_000) * scale;
-  const y = centerY - signedLog(dy, 1_000_000) * scale;
-  return {
-    visible:
-      x >= -40 &&
-      x <= snapshotCanvas.width + 40 &&
-      y >= -40 &&
-      y <= snapshotCanvas.height + 40,
-    x,
-    y,
-  };
-}
-
-function signedLog(value, divisor) {
-  return Math.sign(value) * Math.log1p(Math.abs(value) / divisor);
-}
-
-function drawEntity(context, entity, x, y) {
-  const isShip = entity.id.startsWith("ship:");
-  const radius = entity.id === fields.entityId.value ? 6 : isShip ? 5 : 4;
-  context.fillStyle = colorForEntity(entity.id);
-  context.beginPath();
-  context.arc(x, y, radius, 0, Math.PI * 2);
-  context.fill();
-  context.fillStyle = "#d7e6dc";
-  context.font = "12px ui-sans-serif, system-ui";
-  context.fillText(entity.id, x + 8, y - 8);
-}
-
-function colorForEntity(entityId) {
-  if (entityId.includes("sun")) return "#ffd166";
-  if (entityId.includes("earth")) return "#5eb1ff";
-  if (entityId.includes("moon")) return "#c7cbd1";
-  if (entityId === "ship:blue") return "#7db7ff";
-  if (entityId === "ship:red") return "#ff6b6b";
-  return "#d7f3de";
-}
-
-function vectorMagnitude(vector) {
-  if (!vector) return 0;
-  return Math.hypot(vector.x ?? 0, vector.y ?? 0, vector.z ?? 0);
-}
-
-function isFiniteVec3(value) {
-  return (
-    value &&
-    Number.isFinite(value.x) &&
-    Number.isFinite(value.y) &&
-    Number.isFinite(value.z)
-  );
 }
 
 function isTextInputTarget(value) {
@@ -433,9 +326,8 @@ function isTextInputTarget(value) {
 }
 
 function nextSequence() {
-  const value = sequence;
-  sequence += 1;
-  return value;
+  // return current value, then increment for next call
+  return sequence++;
 }
 
 let currentLogList;
