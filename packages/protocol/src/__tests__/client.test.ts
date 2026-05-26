@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   createKeyboardInputPatcher,
   createSolitudeHttpClient,
+  createSolitudeWebSocketClient,
   solitudeSpacecraftKeyMap,
   type SolitudeEventSource,
   type SolitudeFetch,
+  type SolitudeWebSocket,
 } from "../client";
 
 describe("Solitude HTTP browser client", () => {
@@ -63,6 +65,81 @@ describe("Solitude HTTP browser client", () => {
     client.connectSnapshots({ onMessage: () => {} });
 
     expect(eventSources).toEqual(["http://server/events?gameId=game%3A2"]);
+  });
+});
+
+describe("Solitude WebSocket browser client", () => {
+  it("tracks create/join state and receives pushed snapshots", async () => {
+    const socket = createSocketStub();
+    const snapshots: unknown[] = [];
+    const client = createSolitudeWebSocketClient({
+      clientId: "client:a",
+      createWebSocket: () => socket,
+      url: "ws://server/socket",
+    });
+
+    const connectPromise = client.connect({
+      onMessage: (message) => snapshots.push(message),
+      onReady: () => {},
+    });
+    socket.open();
+    await connectPromise;
+
+    const createPromise = client.createGame();
+    await Promise.resolve();
+    expect(socket.sentMessages[0]).toEqual({
+      message: {
+        type: "createGame",
+        clientId: "client:a",
+        sequence: 1,
+      },
+      requestId: 1,
+      type: "clientMessage",
+    });
+    socket.receive({
+      type: "messages",
+      requestId: 1,
+      messages: [
+        {
+          type: "gameCreated",
+          clientId: "client:a",
+          gameId: "game:1",
+          sequence: 1,
+        },
+        {
+          type: "joined",
+          clientId: "client:a",
+          entityId: "ship:blue",
+          gameId: "game:1",
+          sequence: 2,
+        },
+      ],
+    });
+
+    expect(await createPromise).toHaveLength(2);
+    expect(client.state.gameId).toBe("game:1");
+    expect(client.state.entityId).toBe("ship:blue");
+
+    socket.receive({
+      type: "serverMessage",
+      message: {
+        type: "snapshot",
+        gameId: "game:1",
+        sequence: 3,
+        snapshot: { entities: [] },
+        tick: 1,
+      },
+    });
+
+    expect(snapshots).toEqual([
+      {
+        type: "snapshot",
+        gameId: "game:1",
+        sequence: 3,
+        snapshot: { entities: [] },
+        tick: 1,
+      },
+    ]);
   });
 });
 
@@ -139,6 +216,53 @@ function createNoopEventSource(): SolitudeEventSource {
     onerror: null,
     onmessage: null,
   };
+}
+
+function createSocketStub(): SolitudeWebSocket & {
+  open: () => void;
+  receive: (payload: unknown) => void;
+  sentMessages: unknown[];
+} {
+  const listeners: Record<
+    string,
+    Array<(event: Event | MessageEvent) => void>
+  > = {};
+  const socket = {
+    readyState: 0,
+    sentMessages: [] as unknown[],
+    addEventListener: (
+      type: "close" | "error" | "message" | "open",
+      listener: (event: Event | MessageEvent) => void,
+    ) => {
+      listeners[type] ??= [];
+      listeners[type].push(listener);
+    },
+    close: () => {
+      socket.readyState = 3;
+      emit("close", new Event("close"));
+    },
+    open: () => {
+      socket.readyState = 1;
+      emit("open", new Event("open"));
+    },
+    receive: (payload: unknown) => {
+      emit(
+        "message",
+        new MessageEvent("message", {
+          data: JSON.stringify(payload),
+        }),
+      );
+    },
+    send: (data: string) => {
+      socket.sentMessages.push(JSON.parse(data) as unknown);
+    },
+  };
+  function emit(type: string, event: Event | MessageEvent): void {
+    for (const listener of listeners[type] ?? []) {
+      listener(event);
+    }
+  }
+  return socket;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

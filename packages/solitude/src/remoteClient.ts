@@ -1,9 +1,8 @@
 import type { ControlInput } from "@solitude/engine/plugin";
 import {
   createKeyboardInputPatcher,
-  createSolitudeHttpClient,
+  createSolitudeWebSocketClient,
   solitudeSpacecraftKeyMap,
-  type SolitudeEventSource,
 } from "@solitude/protocol/client";
 import type {
   SolitudeGameId,
@@ -50,7 +49,6 @@ const engineRenderer = createSolitudeRemoteClientRenderer({
 });
 
 let client = createClient();
-let events: ReturnType<typeof client.connectSnapshots> = null;
 let runActive = false;
 let activeAutopilotAction: string | null = null;
 let lastFrameMillis = performance.now();
@@ -101,11 +99,10 @@ void refreshGames();
 requestAnimationFrame(renderRemoteFrame);
 
 function createClient() {
-  return createSolitudeHttpClient({
-    baseUrl: "",
+  return createSolitudeWebSocketClient({
     clientId: fields.clientId.value,
-    createEventSource,
-    fetch: (input, init) => fetch(input, init),
+    createWebSocket: (url) => new WebSocket(url),
+    url: createSocketUrl(),
   });
 }
 
@@ -123,8 +120,7 @@ async function joinGame(gameId: SolitudeGameId): Promise<void> {
 
 function resetClientForCurrentIdentity(): void {
   if (client.clientId === fields.clientId.value) return;
-  events?.close();
-  events = null;
+  client.close();
   client = createClient();
 }
 
@@ -258,18 +254,13 @@ async function startServerLoop(): Promise<void> {
     1,
   );
 
-  const response = await fetch("/run", {
-    body: JSON.stringify({
+  handleMessages(
+    await client.runGame({
       dtMillis,
-      gameId: requireGameId(),
       intervalMillis,
       simulationStepMillis,
     }),
-    headers: { "content-type": "application/json" },
-    method: "POST",
-  });
-  const payload = await response.json();
-  handleMessages(readMessageList(payload));
+  );
 
   runActive = true;
   runStatusEl.textContent = [
@@ -290,13 +281,7 @@ async function pauseServerLoop(): Promise<void> {
     return;
   }
 
-  const response = await fetch("/pause", {
-    body: JSON.stringify({ gameId: client.state.gameId }),
-    headers: { "content-type": "application/json" },
-    method: "POST",
-  });
-  const payload = await response.json();
-  handleMessages(readMessageList(payload));
+  handleMessages(await client.pauseGame());
   setPausedStatus();
 }
 
@@ -309,20 +294,19 @@ function setPausedStatus(): void {
 function connectEvents(): void {
   if (!client.state.gameId) {
     statusEl.textContent =
-      "Create or join a game before connecting the snapshot stream";
+      "Create or join a game before connecting the WebSocket";
     return;
   }
 
-  events?.close();
-  events = client.connectSnapshots({
+  void client.connect({
     onError: () => {
-      statusEl.textContent = "SSE reconnecting";
+      statusEl.textContent = "WebSocket error";
     },
     onMessage: (message) => {
       handleMessages([message]);
     },
     onReady: (gameId) => {
-      statusEl.textContent = "Snapshot stream connected for " + gameId;
+      statusEl.textContent = "WebSocket connected for " + gameId;
     },
   });
 }
@@ -368,20 +352,6 @@ function readPositiveInteger(
   const value = Math.max(minimum, Number(input.value) || fallback);
   input.value = String(value);
   return value;
-}
-
-function requireGameId(): SolitudeGameId {
-  if (!client.state.gameId) {
-    throw new Error("Client is not joined to a game");
-  }
-  return client.state.gameId;
-}
-
-function readMessageList(value: unknown): SolitudeServerMessage[] {
-  if (!isRecord(value) || !Array.isArray(value.messages)) {
-    throw new Error("Invalid server response");
-  }
-  return value.messages as SolitudeServerMessage[];
 }
 
 function isTextInputTarget(value: EventTarget | null): boolean {
@@ -458,29 +428,6 @@ function queryButton(selector: string): HTMLButtonElement {
   return queryElementOfType(selector, HTMLButtonElement);
 }
 
-function createEventSource(url: string): SolitudeEventSource {
-  const events = new EventSource(url);
-  const wrapper: SolitudeEventSource = {
-    addEventListener: (type, listener) => {
-      events.addEventListener(type, (event) => {
-        listener(event as MessageEvent);
-      });
-    },
-    close: () => {
-      events.close();
-    },
-    onerror: null,
-    onmessage: null,
-  };
-  events.onerror = () => {
-    wrapper.onerror?.();
-  };
-  events.onmessage = (event) => {
-    wrapper.onmessage?.(event);
-  };
-  return wrapper;
-}
-
 function formatLogTime(date: Date): string {
   return (
     timeFormatter.format(date) +
@@ -512,6 +459,7 @@ function queryElementOfType<T extends Element>(
   return element;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
+function createSocketUrl(): string {
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  return `${protocol}//${window.location.host}/socket`;
 }

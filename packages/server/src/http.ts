@@ -1,9 +1,11 @@
 import {
   createErrorMessage,
+  isSolitudeSocketClientMessage,
   type SnapshotMessage,
   type SolitudeGameId,
   type SolitudeProtocolSequence,
   type SolitudeServerMessage,
+  type SolitudeSocketClientMessage,
 } from "@solitude/protocol/protocol";
 import { constants, readFileSync, statSync } from "node:fs";
 import { access, readFile } from "node:fs/promises";
@@ -14,6 +16,8 @@ import {
 } from "node:http";
 import type { AddressInfo } from "node:net";
 import { extname, normalize, resolve, sep } from "node:path";
+import type { Duplex } from "node:stream";
+import { WebSocket, WebSocketServer, type RawData } from "ws";
 import { createSolitudeGameTicker } from "./ticker";
 import {
   createSolitudeInProcessTransport,
@@ -39,6 +43,11 @@ export interface SolitudeHttpServer {
 export interface SolitudeHttpRequestHandler {
   (request: IncomingMessage, response: ServerResponse): Promise<void>;
   close: () => void;
+  handleUpgrade: (
+    request: IncomingMessage,
+    socket: Duplex,
+    head: Buffer,
+  ) => void;
 }
 
 export interface SolitudeDevAssetHandler {
@@ -75,8 +84,13 @@ export function createSolitudeHttpRequestHandler({
   transport,
 }: SolitudeHttpRequestHandlerOptions): SolitudeHttpRequestHandler {
   const subscriptionsByGameId = new Map<SolitudeGameId, Set<ServerResponse>>();
+  const socketSubscriptionsByGameId = new Map<SolitudeGameId, Set<WebSocket>>();
+  const socketServer = new WebSocketServer({ noServer: true });
   const ticker = createSolitudeGameTicker({
-    onSnapshot: (snapshot) => publishSnapshot(subscriptionsByGameId, snapshot),
+    onSnapshot: (snapshot) => {
+      publishSnapshot(subscriptionsByGameId, snapshot);
+      publishSocketSnapshot(socketSubscriptionsByGameId, snapshot);
+    },
     transport,
   });
   const resolvedStaticAssetRoot = staticAssetRoot
@@ -139,6 +153,16 @@ export function createSolitudeHttpRequestHandler({
       return;
     }
 
+    if (request.method === "GET" && requestUrl.pathname === "/health") {
+      sendText(
+        response,
+        200,
+        "application/json; charset=utf-8",
+        JSON.stringify({ ok: true }),
+      );
+      return;
+    }
+
     if (request.method === "POST" && requestUrl.pathname === "/message") {
       const payload = await readJsonBody(request);
       const sequence = getFallbackSequence(payload);
@@ -180,6 +204,7 @@ export function createSolitudeHttpRequestHandler({
       }
 
       publishSnapshot(subscriptionsByGameId, snapshot);
+      publishSocketSnapshot(socketSubscriptionsByGameId, snapshot);
       sendJson(response, 200, { messages: [snapshot] });
       return;
     }
@@ -253,6 +278,33 @@ export function createSolitudeHttpRequestHandler({
 
   handler.close = () => {
     ticker.pauseAll();
+    socketServer.close();
+    for (const sockets of socketSubscriptionsByGameId.values()) {
+      for (const socket of sockets) {
+        socket.close();
+      }
+    }
+    socketSubscriptionsByGameId.clear();
+  };
+  handler.handleUpgrade = (
+    request: IncomingMessage,
+    socket: Duplex,
+    head: Buffer,
+  ) => {
+    const requestUrl = new URL(request.url ?? "/", "http://localhost");
+    if (requestUrl.pathname !== "/socket") {
+      socket.destroy();
+      return;
+    }
+    socketServer.handleUpgrade(request, socket, head, (webSocket) => {
+      socketServer.emit("connection", webSocket, request);
+      attachWebSocketTransport({
+        socket: webSocket,
+        socketSubscriptionsByGameId,
+        ticker,
+        transport,
+      });
+    });
   };
   return handler;
 }
@@ -275,6 +327,12 @@ export async function startSolitudeHttpServer(
       });
     });
   });
+  server.on(
+    "upgrade",
+    (request: IncomingMessage, socket: Duplex, head: Buffer) => {
+      handler.handleUpgrade(request, socket, head);
+    },
+  );
 
   await new Promise<void>((resolve) => {
     server.listen(options.port, options.hostname, resolve);
@@ -293,6 +351,89 @@ export async function startSolitudeHttpServer(
     server,
     url: `http://${options.hostname}:${address.port}`,
   };
+}
+
+interface AttachWebSocketTransportOptions {
+  socket: WebSocket;
+  socketSubscriptionsByGameId: Map<SolitudeGameId, Set<WebSocket>>;
+  ticker: ReturnType<typeof createSolitudeGameTicker>;
+  transport: SolitudeInProcessTransport;
+}
+
+function attachWebSocketTransport({
+  socket,
+  socketSubscriptionsByGameId,
+  ticker,
+  transport,
+}: AttachWebSocketTransportOptions): void {
+  socket.send(JSON.stringify({ type: "ready" }));
+  socket.on("message", (data) => {
+    const payload = readSocketPayload(data);
+    if (!isSolitudeSocketClientMessage(payload)) {
+      sendSocketMessages(socket, 0, [
+        createErrorMessage({
+          code: "invalidMessage",
+          message: "Invalid socket message",
+          sequence: 0,
+        }),
+      ]);
+      return;
+    }
+    handleSocketMessage({
+      payload,
+      socket,
+      socketSubscriptionsByGameId,
+      ticker,
+      transport,
+    });
+  });
+  socket.on("close", () => {
+    removeSocketFromAllSubscriptions(socketSubscriptionsByGameId, socket);
+  });
+}
+
+interface HandleSocketMessageOptions {
+  payload: SolitudeSocketClientMessage;
+  socket: WebSocket;
+  socketSubscriptionsByGameId: Map<SolitudeGameId, Set<WebSocket>>;
+  ticker: ReturnType<typeof createSolitudeGameTicker>;
+  transport: SolitudeInProcessTransport;
+}
+
+function handleSocketMessage({
+  payload,
+  socket,
+  socketSubscriptionsByGameId,
+  ticker,
+  transport,
+}: HandleSocketMessageOptions): void {
+  switch (payload.type) {
+    case "clientMessage": {
+      const messages = transport.receive(
+        payload.message,
+        payload.message.sequence,
+      );
+      if (payload.message.type === "leaveGame") {
+        removeSocketSubscription(
+          socketSubscriptionsByGameId,
+          socket,
+          payload.message.gameId,
+        );
+      }
+      updateSocketSubscriptions(socketSubscriptionsByGameId, socket, messages);
+      pauseRemovedGames(ticker, transport.cleanupGames());
+      sendSocketMessages(socket, payload.requestId, messages);
+      return;
+    }
+    case "runGame":
+      ticker.runGame(payload);
+      sendSocketMessages(socket, payload.requestId, []);
+      return;
+    case "pauseGame":
+      ticker.pauseGame(payload.gameId);
+      sendSocketMessages(socket, payload.requestId, []);
+      return;
+  }
 }
 
 function setCommonHeaders(response: ServerResponse): void {
@@ -353,6 +494,23 @@ function sendBuffer(
 ): void {
   response.writeHead(statusCode, { "content-type": contentType });
   response.end(body);
+}
+
+function sendSocketMessages(
+  socket: WebSocket,
+  requestId: SolitudeProtocolSequence,
+  messages: SolitudeServerMessage[],
+): void {
+  if (socket.readyState !== WebSocket.OPEN) return;
+  socket.send(JSON.stringify({ messages, requestId, type: "messages" }));
+}
+
+function sendSocketServerMessage(
+  socket: WebSocket,
+  message: SolitudeServerMessage,
+): void {
+  if (socket.readyState !== WebSocket.OPEN) return;
+  socket.send(JSON.stringify({ message, type: "serverMessage" }));
 }
 
 async function sendStaticAsset(
@@ -461,6 +619,76 @@ function publishSnapshot(
   const data = JSON.stringify(snapshot);
   for (const response of subscriptions) {
     response.write(`data: ${data}\n\n`);
+  }
+}
+
+function publishSocketSnapshot(
+  subscriptionsByGameId: Map<SolitudeGameId, Set<WebSocket>>,
+  snapshot: SnapshotMessage,
+): void {
+  const subscriptions = subscriptionsByGameId.get(snapshot.gameId);
+  if (!subscriptions) return;
+  for (const socket of subscriptions) {
+    sendSocketServerMessage(socket, snapshot);
+  }
+}
+
+function updateSocketSubscriptions(
+  subscriptionsByGameId: Map<SolitudeGameId, Set<WebSocket>>,
+  socket: WebSocket,
+  messages: readonly SolitudeServerMessage[],
+): void {
+  for (const message of messages) {
+    if (message.type === "joined") {
+      addSocketSubscription(subscriptionsByGameId, socket, message.gameId);
+    }
+  }
+}
+
+function addSocketSubscription(
+  subscriptionsByGameId: Map<SolitudeGameId, Set<WebSocket>>,
+  socket: WebSocket,
+  gameId: SolitudeGameId,
+): void {
+  let subscriptions = subscriptionsByGameId.get(gameId);
+  if (!subscriptions) {
+    subscriptions = new Set();
+    subscriptionsByGameId.set(gameId, subscriptions);
+  }
+  subscriptions.add(socket);
+}
+
+function removeSocketSubscription(
+  subscriptionsByGameId: Map<SolitudeGameId, Set<WebSocket>>,
+  socket: WebSocket,
+  gameId: SolitudeGameId,
+): void {
+  const subscriptions = subscriptionsByGameId.get(gameId);
+  if (!subscriptions) return;
+  subscriptions.delete(socket);
+  if (subscriptions.size === 0) {
+    subscriptionsByGameId.delete(gameId);
+  }
+}
+
+function removeSocketFromAllSubscriptions(
+  subscriptionsByGameId: Map<SolitudeGameId, Set<WebSocket>>,
+  socket: WebSocket,
+): void {
+  for (const [gameId, subscriptions] of subscriptionsByGameId) {
+    subscriptions.delete(socket);
+    if (subscriptions.size === 0) {
+      subscriptionsByGameId.delete(gameId);
+    }
+  }
+}
+
+function readSocketPayload(data: RawData): unknown {
+  const text = Buffer.isBuffer(data) ? data.toString("utf8") : String(data);
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return null;
   }
 }
 

@@ -13,6 +13,16 @@ export type SolitudeClientMessage =
   | LeaveGameMessage
   | InputMessage;
 
+export type SolitudeSocketClientMessage =
+  | ClientMessageSocketRequest
+  | RunGameSocketRequest
+  | PauseGameSocketRequest;
+
+export type SolitudeSocketServerMessage =
+  | MessagesSocketResponse
+  | ServerMessageSocketEvent
+  | ReadySocketEvent;
+
 export type SolitudeServerMessage =
   | GameCreatedMessage
   | JoinedGameMessage
@@ -48,6 +58,27 @@ export interface InputMessage {
   controls: Partial<ControlInput>;
 }
 
+export interface ClientMessageSocketRequest {
+  type: "clientMessage";
+  requestId: SolitudeProtocolSequence;
+  message: SolitudeClientMessage;
+}
+
+export interface RunGameSocketRequest {
+  type: "runGame";
+  requestId: SolitudeProtocolSequence;
+  gameId: SolitudeGameId;
+  dtMillis: number;
+  intervalMillis: number;
+  simulationStepMillis: number;
+}
+
+export interface PauseGameSocketRequest {
+  type: "pauseGame";
+  requestId: SolitudeProtocolSequence;
+  gameId: SolitudeGameId;
+}
+
 export interface GameCreatedMessage {
   type: "gameCreated";
   clientId: SolitudeClientId;
@@ -76,6 +107,21 @@ export interface ErrorMessage {
   code: string;
   message: string;
   sequence: SolitudeProtocolSequence;
+}
+
+export interface MessagesSocketResponse {
+  type: "messages";
+  requestId: SolitudeProtocolSequence;
+  messages: SolitudeServerMessage[];
+}
+
+export interface ServerMessageSocketEvent {
+  type: "serverMessage";
+  message: SolitudeServerMessage;
+}
+
+export interface ReadySocketEvent {
+  type: "ready";
 }
 
 export function createGameCreatedMessage(
@@ -165,6 +211,52 @@ export function isSolitudeServerMessage(
   }
 }
 
+export function isSolitudeSocketClientMessage(
+  value: unknown,
+): value is SolitudeSocketClientMessage {
+  if (!isRecord(value)) return false;
+  switch (value.type) {
+    case "clientMessage":
+      return (
+        isFiniteNumber(value.requestId) &&
+        isSolitudeClientMessage(value.message)
+      );
+    case "runGame":
+      return (
+        isFiniteNumber(value.requestId) &&
+        isString(value.gameId) &&
+        isPositiveFiniteNumber(value.dtMillis) &&
+        isPositiveFiniteNumber(value.simulationStepMillis) &&
+        isFiniteNumber(value.intervalMillis) &&
+        value.intervalMillis >= 10
+      );
+    case "pauseGame":
+      return isFiniteNumber(value.requestId) && isString(value.gameId);
+    default:
+      return false;
+  }
+}
+
+export function isSolitudeSocketServerMessage(
+  value: unknown,
+): value is SolitudeSocketServerMessage {
+  if (!isRecord(value)) return false;
+  switch (value.type) {
+    case "messages":
+      return (
+        isFiniteNumber(value.requestId) &&
+        Array.isArray(value.messages) &&
+        value.messages.every(isSolitudeServerMessage)
+      );
+    case "serverMessage":
+      return isSolitudeServerMessage(value.message);
+    case "ready":
+      return true;
+    default:
+      return false;
+  }
+}
+
 function isRuntimeWorldSnapshot(value: unknown): value is RuntimeWorldSnapshot {
   return isRecord(value) && Array.isArray(value.entities);
 }
@@ -179,4 +271,8 @@ function isString(value: unknown): value is string {
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
+}
+
+function isPositiveFiniteNumber(value: unknown): value is number {
+  return isFiniteNumber(value) && value > 0;
 }

@@ -29,7 +29,7 @@ Package responsibilities:
 
 - `@solitude/engine`: generic world, physics, runtime snapshots, render data, and runtime seams.
 - `@solitude/browser`: browser rendering/rasterizers, input adapters, and remote-world rendering helpers.
-- `@solitude/protocol`: browser-safe protocol types, message constructors/guards, HTTP/SSE client adapter, and input patching helpers.
+- `@solitude/protocol`: browser-safe protocol types, message constructors/guards, HTTP/WebSocket client adapters, and input patching helpers.
 - `solitude`: Solitude-specific config, plugins, assets, and browser client entrypoints.
 - `@solitude/server`: authoritative sessions, protocol, ticking, HTTP/WebSocket transport, and static client serving.
 
@@ -39,13 +39,12 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 
 - The current working proof is `npm run dev:server` on `127.0.0.1:8787`.
 - Production-like local mode is `npm run build` then `npm run start:server`; the Node server serves built `dist/remote.html` plus authoritative API routes.
-- Transport is still HTTP/SSE probe-grade:
-  - `POST /message` for create/join/leave/input.
-  - `POST /run` and `POST /pause` for server-owned ticking.
-  - `POST /step` for manual/debug stepping.
-  - `GET /events?gameId=...` for snapshots.
-  - `GET /games` for simple discovery.
-- `@solitude/server` owns protocol, sessions, transport, ticker, HTTP/SSE probe, and authoritative Solitude headless runtime composition.
+- Transport is now production-shaped for the interactive path:
+  - `GET /socket` upgrade for create/join/leave/input, run/pause, and authoritative snapshots.
+  - `GET /games` for simple lobby discovery.
+  - `GET /health` for deployment health checks.
+  - Legacy/debug HTTP routes remain for now: `POST /message`, `POST /run`, `POST /pause`, `POST /step`, and `GET /events?gameId=...`.
+- `@solitude/server` owns protocol, sessions, transport, ticker, HTTP/WebSocket serving, and authoritative Solitude headless runtime composition.
 - Sessions currently assign clients to pre-existing `ship:blue` and `ship:red`.
 - Browser remote client now has a first-class Solitude Vite entry (`packages/solitude/remote.html` -> `src/remoteClient.ts`) that uses shared protocol/client helpers and renders snapshots through the engine renderer.
 - Remote client rendering is decoupled from snapshot arrival: server snapshots feed a delayed interpolation buffer, while the browser renders through `requestAnimationFrame`.
@@ -63,20 +62,16 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Manual/debug `/step` keeps a one-step pending press fallback so press/release pairs are not dropped.
 - The probe defaults are `dtMillis: 250`, `simulationStepMillis: 25`, `intervalMillis: 250`.
 - Control input objects may be partial. Code that compares opposite controls must treat missing values as `false`.
-- Explicit `leaveGame` clears the client's entity controls; games with no assigned clients are cleaned up immediately. HTTP/SSE disconnect does not imply leave yet.
+- Explicit `leaveGame` clears the client's entity controls; games with no assigned clients are cleaned up immediately. Network disconnect does not imply leave yet.
 
 ## High-Value Next Steps
 
-1. Move transport toward production:
-   - keep HTTP for static assets, health, and optional lobby/listing;
-   - likely use WebSocket for join lifecycle, input, snapshots, and session events once the HTTP/SSE proof feels solid.
-
-2. Improve multiplayer model:
+1. Improve multiplayer model:
    - per-client focus/camera semantics;
    - dynamic ship creation/removal;
    - gravity/index refresh APIs if entities become dynamic.
 
-3. Optimize later:
+2. Optimize later:
    - compact snapshot deltas/versioning;
    - prediction/reconciliation;
    - bandwidth and allocation review outside prototype UI paths.
@@ -87,7 +82,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - `mainFocus` remains a global runtime context in parts of the app; multiplayer needs per-client focus ownership.
 - Playback, pause, time-scale, profiling, operator-switch, and some browser-only plugins may not belong on the server.
 - The probe still allocates freely in UI/network paths. Avoid moving that allocation into engine hot paths.
-- HTTP/SSE is useful for proving architecture but is not the final latency/transport story.
+- Legacy HTTP/SSE routes remain for debug compatibility; the interactive path should stay on WebSocket.
 
 ## Slice Log
 
@@ -111,11 +106,15 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Matured server timing from interval-assumed ticks to elapsed-clock accumulation with fixed simulation substeps.
 - Added lifecycle cleanup for empty games after explicit leave and pause matching game tickers when sessions disappear.
 - Matured remote client runtime/rendering:
-  - browser render cadence now uses `requestAnimationFrame`, independent of SSE snapshot cadence;
+  - browser render cadence now uses `requestAnimationFrame`, independent of network snapshot cadence;
   - authoritative snapshots are position/velocity/frame interpolated with a short local display delay;
   - remote HUD text is fed by render/readout-safe HUD panel providers;
   - remote autopilot controls (`V`, `C`, `X`) send server-authoritative state patches;
   - remote-mode control/display ownership is documented explicitly.
+- Moved interactive transport toward production:
+  - added `/socket` WebSocket upgrade for create/join/leave/input, run/pause, and snapshots;
+  - switched the Solitude remote client to the WebSocket adapter;
+  - kept HTTP for static assets, `/games`, `/health`, and legacy/debug routes.
 
 ### 2026-05-24
 

@@ -13,7 +13,9 @@
   "dependencies": {
     "@solitude/engine": "0.0.0",
     "@solitude/protocol": "0.0.0",
-    "solitude": "0.0.0"
+    "@types/ws": "^8.18.1",
+    "solitude": "0.0.0",
+    "ws": "^8.21.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

@@ -3,6 +3,7 @@ import { get } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { WebSocket } from "ws";
 import {
   createDefaultSolitudeHttpServerOptions,
   startSolitudeHttpServer,
@@ -132,6 +133,18 @@ describe("Solitude HTTP server", () => {
     }
   });
 
+  it("serves a health endpoint over HTTP", async () => {
+    const server = await startTestServer();
+    try {
+      const response = await fetch(`${server.url}/health`);
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ ok: true });
+    } finally {
+      await server.close();
+    }
+  });
+
   it("cleans up empty games after clients leave", async () => {
     const server = await startTestServer();
     try {
@@ -239,6 +252,67 @@ describe("Solitude HTTP server", () => {
       await server.close();
     }
   });
+
+  it("routes interactive runtime traffic over WebSocket", async () => {
+    const server = await startTestServer();
+    try {
+      const socket = await openWebSocket(`${server.url}/socket`);
+      const createResponsePromise = socket.readUntil(
+        (message) => message.type === "messages" && message.requestId === 1,
+      );
+      socket.send({
+        type: "clientMessage",
+        requestId: 1,
+        message: {
+          type: "createGame",
+          clientId: "client:a",
+          sequence: 1,
+        },
+      });
+
+      const createResponse = await createResponsePromise;
+      expect(createResponse.messages).toEqual([
+        {
+          type: "gameCreated",
+          clientId: "client:a",
+          gameId: "game:1",
+          sequence: 1,
+        },
+        {
+          type: "joined",
+          clientId: "client:a",
+          entityId: "ship:blue",
+          gameId: "game:1",
+          sequence: 2,
+        },
+      ]);
+
+      const snapshotPromise = socket.readUntil(
+        (message) =>
+          message.type === "serverMessage" &&
+          message.message?.type === "snapshot",
+      );
+      socket.send({
+        type: "runGame",
+        requestId: 2,
+        gameId: "game:1",
+        dtMillis: 1000,
+        intervalMillis: 10,
+        simulationStepMillis: 1000,
+      });
+
+      const snapshot = await snapshotPromise;
+      expect(snapshot.message.tick).toBe(1);
+      socket.send({
+        type: "pauseGame",
+        requestId: 3,
+        gameId: "game:1",
+      });
+      socket.close();
+    } finally {
+      await server.close();
+    }
+  });
 });
 
 async function startTestServer(): Promise<SolitudeHttpServer> {
@@ -301,4 +375,48 @@ async function openEventStream(url: string): Promise<{
       resolve(stream);
     });
   });
+}
+
+async function openWebSocket(url: string): Promise<{
+  close: () => void;
+  readUntil: (predicate: (message: any) => boolean) => Promise<any>;
+  send: (payload: unknown) => void;
+}> {
+  const socket = new WebSocket(url.replace(/^http/, "ws"));
+  const messages: any[] = [];
+  const waiters: Array<{
+    predicate: (message: any) => boolean;
+    resolve: (message: any) => void;
+  }> = [];
+
+  await new Promise<void>((resolve, reject) => {
+    socket.once("open", resolve);
+    socket.once("error", reject);
+  });
+
+  socket.on("message", (data) => {
+    const message = JSON.parse(data.toString()) as any;
+    messages.push(message);
+    for (let i = waiters.length - 1; i >= 0; i--) {
+      const waiter = waiters[i];
+      if (waiter.predicate(message)) {
+        waiters.splice(i, 1);
+        waiter.resolve(message);
+      }
+    }
+  });
+
+  return {
+    close: () => socket.close(),
+    readUntil: (predicate) => {
+      const existing = messages.find(predicate);
+      if (existing) return Promise.resolve(existing);
+      return new Promise((resolve) => {
+        waiters.push({ predicate, resolve });
+      });
+    },
+    send: (payload) => {
+      socket.send(JSON.stringify(payload));
+    },
+  };
 }
