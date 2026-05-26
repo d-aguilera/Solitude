@@ -24,7 +24,7 @@
 
 ## Current focus
 
-- **Primary active work**: client-server architecture; per-entity headless control routing, generic runtime snapshots, shared protocol/client helpers, server sessions/transport, and a thin HTTP/SSE interactive probe are implemented. See `MEMORY_CLIENT_SERVER.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
+- **Primary active work**: client-server architecture; per-entity headless control routing, generic runtime snapshots, shared protocol/client helpers, server sessions/transport, production-like server asset serving, and first-class remote browser rendering are implemented. See `MEMORY_CLIENT_SERVER.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
 - **Operator/focus boundary**: core/runtime contexts use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`.
 - **Remaining operator follow-ups**: foreground/background UX and declarative input lock policy live in `MEMORY_OPERATOR_MODEL.md`.
 - **Retired compatibility names**: keep `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming out of source.
@@ -83,7 +83,7 @@
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
 - Server runtime proof lives in `@solitude/server/runtime`; it composes `solitude/headless`, steps entity-addressed controls, and reuses runtime snapshot storage.
-- Server interactive probe lives in `@solitude/server/http`; `npm run dev:server` serves the Solitude-owned remote client entry that can create/join games, send input, step the authoritative world, and receive snapshots over SSE.
+- Server remote client lives in `packages/solitude/remote.html`; `npm run dev:server` serves it through `@solitude/server/http` so it can create/join games, send server-authoritative controls, run/pause the authoritative world, receive SSE snapshots, interpolate them locally, and render through `@solitude/browser`.
 - Shared browser-safe protocol/client helpers live in `@solitude/protocol`; `@solitude/server` imports that contract directly and no longer exports client/protocol shims.
 - Browser remote-world mirror proof lives in `@solitude/browser/remoteWorldMirror`; it applies authoritative runtime snapshots into a local world via a reusable indexed workspace.
 - Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`.
@@ -128,7 +128,7 @@
 
 ## Next Steps Snapshot
 
-- Active path: client-server architecture; server/session/protocol, HTTP/SSE probe, and browser remote-world mirror proofs are in place. See `MEMORY_CLIENT_SERVER.md`.
+- Active path: client-server architecture; server/session/protocol, HTTP/SSE transport proof, production-like asset serving, and browser remote rendering are in place. See `MEMORY_CLIENT_SERVER.md`.
 - Package split migration is closed; future package work is normal API curation.
 - Operator runtime focus switching series is closed; remaining operator-model work is foreground/background UX and declarative input lock policy. See `MEMORY_OPERATOR_MODEL.md`.
 - Planned future work: Solitude-owned headless playback runner. See `MEMORY_HEADLESS_PLAYBACK.md`.

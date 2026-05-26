@@ -1,3 +1,4 @@
+import type { ControlInput } from "@solitude/engine/plugin";
 import {
   createKeyboardInputPatcher,
   createSolitudeHttpClient,
@@ -35,6 +36,7 @@ const gamesListEl = queryElement("#gamesList");
 const keyStatusEl = queryElement("#keyStatus");
 const logEl = queryElement("#log");
 const runStatusEl = queryElement("#runStatus");
+const remoteHudEl = queryElement("#remoteHud");
 const snapshotCanvas = queryCanvas("#snapshotCanvas");
 const snapshotStatusEl = queryElement("#snapshotStatus");
 const statusEl = queryElement("#status");
@@ -43,20 +45,25 @@ const toggleRunButton = queryButton("#toggleRun");
 const engineRenderer = createSolitudeRemoteClientRenderer({
   canvas: snapshotCanvas,
   getFocusEntityId: () => fields.entityId.value,
+  hudElement: remoteHudEl,
   statusElement: snapshotStatusEl,
 });
 
 let client = createClient();
 let events: ReturnType<typeof client.connectSnapshots> = null;
 let runActive = false;
+let activeAutopilotAction: string | null = null;
+let lastFrameMillis = performance.now();
+
+const remoteAutopilotKeyMap: Readonly<Record<string, string>> = {
+  KeyC: "alignToBody",
+  KeyV: "alignToVelocity",
+  KeyX: "circleNow",
+};
 
 const keyboard = createKeyboardInputPatcher({
   keyMap: solitudeSpacecraftKeyMap,
-  sendInputPatch: async (controls) => {
-    const messages = await client.sendInputPatch(controls);
-    handleMessages(messages);
-    return messages;
-  },
+  sendInputPatch,
 });
 
 queryButton("#createGame").addEventListener("click", () => {
@@ -91,6 +98,7 @@ window.addEventListener(
 );
 
 void refreshGames();
+requestAnimationFrame(renderRemoteFrame);
 
 function createClient() {
   return createSolitudeHttpClient({
@@ -173,17 +181,60 @@ async function handleKeyboardInput(
   isDown: boolean,
 ): Promise<void> {
   if (isTextInputTarget(event.target)) return;
-  if (!solitudeSpacecraftKeyMap[event.code]) return;
+  const isSpacecraftKey = Boolean(solitudeSpacecraftKeyMap[event.code]);
+  const isAutopilotKey = Boolean(remoteAutopilotKeyMap[event.code]);
+  if (!isSpacecraftKey && !isAutopilotKey) return;
   event.preventDefault();
   event.stopPropagation();
   if (!client.state.gameId || !client.state.entityId) {
     keyStatusEl.textContent = "Keyboard controls waiting for assigned entity";
     return;
   }
+  if (isAutopilotKey) {
+    if (handleAutopilotKey(event.code, isDown, event.repeat)) return;
+  }
   const handled = await keyboard.handleKey(event.code, isDown, event.repeat);
   if (!handled) return;
   const action = solitudeSpacecraftKeyMap[event.code];
   keyStatusEl.textContent = action + " " + (isDown ? "held" : "released");
+}
+
+async function sendInputPatch(
+  controls: Partial<ControlInput>,
+): Promise<SolitudeServerMessage[]> {
+  engineRenderer.setControlState(controls);
+  const messages = await client.sendInputPatch(controls);
+  handleMessages(messages);
+  return messages;
+}
+
+function handleAutopilotKey(
+  code: string,
+  isDown: boolean,
+  repeat: boolean,
+): boolean {
+  const action = remoteAutopilotKeyMap[code];
+  if (!action) return false;
+  if (!isDown || repeat) return true;
+  activeAutopilotAction = activeAutopilotAction === action ? null : action;
+  const controls: Partial<ControlInput> = {
+    alignToBody: activeAutopilotAction === "alignToBody",
+    alignToVelocity: activeAutopilotAction === "alignToVelocity",
+    circleNow: activeAutopilotAction === "circleNow",
+  };
+  void sendInputPatch(controls);
+  keyStatusEl.textContent =
+    activeAutopilotAction == null
+      ? "autopilot released"
+      : activeAutopilotAction + " server-authoritative";
+  return true;
+}
+
+function renderRemoteFrame(nowMillis: number): void {
+  const dtMillis = Math.max(0, nowMillis - lastFrameMillis);
+  lastFrameMillis = nowMillis;
+  engineRenderer.renderFrame(nowMillis, dtMillis);
+  requestAnimationFrame(renderRemoteFrame);
 }
 
 function toggleRun(): void {
@@ -291,7 +342,7 @@ function handleMessages(
         if (options.connectAfterJoin) connectEvents();
         break;
       case "snapshot":
-        engineRenderer.renderSnapshotMessage(message);
+        engineRenderer.pushSnapshotMessage(message, performance.now());
         if (!options.suppressSnapshots) {
           statusEl.textContent = [
             "tick",

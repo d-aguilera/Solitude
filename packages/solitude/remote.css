@@ -36,6 +36,20 @@ section {
   gap: 10px;
   padding: 0;
 }
+.remote-hud {
+  color: #d7e6dc;
+  font:
+    13px/1.45 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace;
+  margin: 0;
+  min-height: 96px;
+  overflow-x: auto;
+  padding: 0 12px;
+  white-space: pre-wrap;
+}
 canvas {
   aspect-ratio: 16 / 9;
   background: #030504;

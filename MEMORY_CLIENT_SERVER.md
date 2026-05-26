@@ -48,6 +48,8 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - `@solitude/server` owns protocol, sessions, transport, ticker, HTTP/SSE probe, and authoritative Solitude headless runtime composition.
 - Sessions currently assign clients to pre-existing `ship:blue` and `ship:red`.
 - Browser remote client now has a first-class Solitude Vite entry (`packages/solitude/remote.html` -> `src/remoteClient.ts`) that uses shared protocol/client helpers and renders snapshots through the engine renderer.
+- Remote client rendering is decoupled from snapshot arrival: server snapshots feed a delayed interpolation buffer, while the browser renders through `requestAnimationFrame`.
+- Remote mode intentionally runs only render/readout-safe Solitude plugins in the browser. Server-authoritative spacecraft and autopilot controls are sent over protocol; browser-only display/readout state stays local.
 - The dev server keeps Vite transforms on the same origin but closes Vite's websocket; only `8787` should be exposed.
 
 ## Important Semantics
@@ -65,25 +67,18 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 
 ## High-Value Next Steps
 
-1. Mature remote client runtime/rendering:
-   - raise or decouple render refresh from snapshot cadence;
-   - add interpolation between authoritative snapshots;
-   - decide which HUD/client-only plugins should run in remote mode;
-   - wire remote HUD/readouts/autopilot UI where they make sense;
-   - clarify server-authoritative controls versus client-only display/input plugins.
-
-2. Move transport toward production:
+1. Move transport toward production:
    - keep HTTP for static assets, health, and optional lobby/listing;
    - likely use WebSocket for join lifecycle, input, snapshots, and session events once the HTTP/SSE proof feels solid.
 
-3. Improve multiplayer model:
+2. Improve multiplayer model:
    - per-client focus/camera semantics;
    - dynamic ship creation/removal;
    - gravity/index refresh APIs if entities become dynamic.
 
-4. Optimize later:
+3. Optimize later:
    - compact snapshot deltas/versioning;
-   - interpolation/prediction;
+   - prediction/reconciliation;
    - bandwidth and allocation review outside prototype UI paths.
 
 ## Known Risks
@@ -115,6 +110,12 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Added production-like built-asset serving: `npm run start:server` serves `dist/remote.html`, hashed assets, and authoritative server routes from one Node process.
 - Matured server timing from interval-assumed ticks to elapsed-clock accumulation with fixed simulation substeps.
 - Added lifecycle cleanup for empty games after explicit leave and pause matching game tickers when sessions disappear.
+- Matured remote client runtime/rendering:
+  - browser render cadence now uses `requestAnimationFrame`, independent of SSE snapshot cadence;
+  - authoritative snapshots are position/velocity/frame interpolated with a short local display delay;
+  - remote HUD text is fed by render/readout-safe HUD panel providers;
+  - remote autopilot controls (`V`, `C`, `X`) send server-authoritative state patches;
+  - remote-mode control/display ownership is documented explicitly.
 
 ### 2026-05-24
 
