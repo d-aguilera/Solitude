@@ -50,7 +50,14 @@ export type {
 } from "./domain/domainPorts";
 export { createScene } from "./setup/sceneSetup";
 export type { SceneSetup } from "./setup/sceneSetup";
-export { createHeadlessWorld, createWorld, initialFrame } from "./setup/setup";
+export {
+  addEntityConfigToWorld,
+  createHeadlessWorld,
+  createWorld,
+  initialFrame,
+  refreshWorldEntityIndex,
+  removeEntityFromWorld,
+} from "./setup/setup";
 export type { WorldConfigBase, WorldSetup } from "./setup/setup";
 export { createKeplerianBodiesFromConfig } from "./setup/setupKeplerianBodies";
 export type { KeplerianBodiesSetup } from "./setup/setupKeplerianBodies";

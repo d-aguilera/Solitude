@@ -1,6 +1,6 @@
 import type { ControlInput } from "@solitude/engine/plugin";
 import type { RuntimeWorldSnapshot } from "@solitude/engine/runtime";
-import type { EntityId } from "@solitude/engine/world";
+import type { EntityConfig, EntityId } from "@solitude/engine/world";
 
 export type SolitudeGameId = string;
 export type SolitudeClientId = string;
@@ -26,6 +26,7 @@ export type SolitudeSocketServerMessage =
 export type SolitudeServerMessage =
   | GameCreatedMessage
   | JoinedGameMessage
+  | GameModelMessage
   | SnapshotMessage
   | ErrorMessage;
 
@@ -94,6 +95,13 @@ export interface JoinedGameMessage {
   sequence: SolitudeProtocolSequence;
 }
 
+export interface GameModelMessage {
+  type: "gameModel";
+  entities: EntityConfig[];
+  gameId: SolitudeGameId;
+  sequence: SolitudeProtocolSequence;
+}
+
 export interface SnapshotMessage {
   type: "snapshot";
   gameId: SolitudeGameId;
@@ -134,6 +142,12 @@ export function createJoinedGameMessage(
   params: Omit<JoinedGameMessage, "type">,
 ): JoinedGameMessage {
   return { type: "joined", ...params };
+}
+
+export function createGameModelMessage(
+  params: Omit<GameModelMessage, "type">,
+): GameModelMessage {
+  return { type: "gameModel", ...params };
 }
 
 export function createSnapshotMessage(
@@ -190,6 +204,12 @@ export function isSolitudeServerMessage(
       return (
         isString(value.clientId) &&
         isString(value.entityId) &&
+        isString(value.gameId) &&
+        isFiniteNumber(value.sequence)
+      );
+    case "gameModel":
+      return (
+        Array.isArray(value.entities) &&
         isString(value.gameId) &&
         isFiniteNumber(value.sequence)
       );

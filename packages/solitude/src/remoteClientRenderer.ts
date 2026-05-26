@@ -6,6 +6,7 @@ import {
   createPluginCapabilityRegistry,
   type RuntimeWorldSnapshot,
 } from "@solitude/engine/runtime";
+import type { EntityConfig } from "@solitude/engine/world";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
 import { buildWorldAndSceneConfig } from "./config/worldAndSceneConfig";
 import {
@@ -45,6 +46,7 @@ export interface SolitudeRemoteClientRenderer {
     receivedAtMillis: number,
   ) => void;
   renderFrame: (nowMillis: number, dtMillis: number) => boolean;
+  setModel: (entities: readonly EntityConfig[]) => void;
   setControlState: (controls: Partial<ControlInput>) => void;
 }
 
@@ -54,20 +56,14 @@ export function createSolitudeRemoteClientRenderer({
   hudElement,
   statusElement,
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
-  const plugins = loadPlugins(remoteRenderPluginIds);
-  const config = buildWorldAndSceneConfig();
-  applyWorldModelPlugins(config, plugins);
+  const plugins = loadPlugins(remoteRenderPluginIds, { ships: "dynamic" });
   const hudProviders = collectHudPanelProviders(plugins);
   const hudGrid = createHudGrid();
   const controlInput: ControlInput = {};
   let selectedThrustLevel = 0;
-  const interpolationBuffer = createRuntimeSnapshotInterpolationBuffer();
+  let interpolationBuffer = createRuntimeSnapshotInterpolationBuffer();
 
-  const renderer = createRemoteCanvasRenderer({
-    canvas,
-    config,
-    plugins,
-  });
+  let renderer: ReturnType<typeof createRemoteCanvasRenderer> | null = null;
 
   return {
     pushSnapshotMessage: (message, receivedAtMillis) => {
@@ -79,7 +75,7 @@ export function createSolitudeRemoteClientRenderer({
     },
     renderFrame: (nowMillis, dtMillis) => {
       const snapshot = interpolationBuffer.sample(nowMillis);
-      if (!snapshot) return false;
+      if (!snapshot || !renderer) return false;
       const focusEntityId = getFocusEntityId();
       const focusChanged =
         focusEntityId.length > 0
@@ -127,7 +123,28 @@ export function createSolitudeRemoteClientRenderer({
         }
       }
     },
+    setModel: (entities) => {
+      renderer = createRenderer(plugins, entities);
+      interpolationBuffer = createRuntimeSnapshotInterpolationBuffer();
+    },
   };
+
+  function createRenderer(
+    plugins: ReturnType<typeof loadPlugins>,
+    entities: readonly EntityConfig[],
+  ) {
+    const config = buildWorldAndSceneConfig();
+    applyWorldModelPlugins(config, plugins);
+    config.entities.push(...entities);
+    const focusEntityId = getFocusEntityId();
+    config.mainFocusEntityId =
+      focusEntityId.length > 0 ? focusEntityId : (entities[0]?.id ?? "");
+    return createRemoteCanvasRenderer({
+      canvas,
+      config,
+      plugins,
+    });
+  }
 }
 
 function collectHudPanelProviders(plugins: readonly GamePlugin[]) {

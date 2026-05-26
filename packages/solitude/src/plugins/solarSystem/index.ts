@@ -1,26 +1,32 @@
-import type { GamePlugin } from "@solitude/engine/plugin";
+import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import type { EntityConfig } from "@solitude/engine/world";
-import { buildDefaultSolarSystemShipConfigs } from "./ships";
+import {
+  buildDefaultSolarSystemShipConfig,
+  buildDefaultSolarSystemShipConfigs,
+} from "./ships";
 import { buildDefaultSolarSystemConfigs } from "./solarSystem";
 
-export function createSolarSystemPlugin(): GamePlugin {
+export function createSolarSystemPlugin(
+  runtimeOptions: RuntimeOptions = {},
+): GamePlugin {
   return {
     id: "solarSystem",
     worldModel: {
       contributeWorldModel: (registry) => {
         const solarSystem = buildDefaultSolarSystemConfigs();
-        const ships = buildDefaultSolarSystemShipConfigs(solarSystem.physics);
-        registry.addEntities([
-          ...buildSolarSystemBodyEntities(solarSystem),
-          ...buildSolarSystemShipEntities(ships),
-        ]);
-        registry.setMainFocusEntityId("ship:blue");
+        const entities = buildSolarSystemBodyEntities(solarSystem);
+        if (runtimeOptions.ships !== "dynamic") {
+          const ships = buildDefaultSolarSystemShipConfigs(solarSystem.physics);
+          entities.push(...buildSolarSystemShipEntities(ships));
+          registry.setMainFocusEntityId("ship:blue");
+        }
+        registry.addEntities(entities);
       },
     },
   };
 }
 
-function buildSolarSystemBodyEntities({
+export function buildSolarSystemBodyEntities({
   physics,
   render,
 }: ReturnType<typeof buildDefaultSolarSystemConfigs>): EntityConfig[] {
@@ -66,7 +72,7 @@ function buildSolarSystemBodyEntities({
   return entities;
 }
 
-function buildSolarSystemShipEntities({
+export function buildSolarSystemShipEntities({
   initialStates,
   physics,
   render,
@@ -106,4 +112,18 @@ function buildSolarSystemShipEntities({
     });
   }
   return entities;
+}
+
+export function buildSolarSystemShipEntity(
+  physics: ReturnType<typeof buildDefaultSolarSystemConfigs>["physics"],
+  id: string,
+  index: number,
+): EntityConfig {
+  const ship = buildDefaultSolarSystemShipConfig(physics, id, index);
+  return buildSolarSystemShipEntities({
+    ...buildDefaultSolarSystemShipConfigs(physics, []),
+    initialStates: [ship.initialState],
+    physics: [ship.physics],
+    render: [ship.render],
+  })[0];
 }

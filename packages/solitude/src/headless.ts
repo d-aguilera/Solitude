@@ -4,12 +4,14 @@ import {
 } from "@solitude/engine/runtime";
 import {
   applyWorldModelPlugins,
+  type EntityConfig,
   type WorldAndSceneConfig,
 } from "@solitude/engine/world";
 import { buildWorldAndSceneConfig } from "./config/worldAndSceneConfig";
 import { defaultPluginIds, loadPlugins } from "./plugins/index";
 
 export interface SolitudeHeadlessLoopOptions {
+  extraEntities?: readonly EntityConfig[];
   pluginIds?: readonly string[];
   runtimeOptions?: Parameters<typeof loadPlugins>[1];
 }
@@ -29,6 +31,10 @@ export function createSolitudeHeadlessLoop(
   );
 
   applyWorldModelPlugins(config, plugins);
+  if (options.extraEntities) {
+    config.entities.push(...options.extraEntities);
+    config.mainFocusEntityId ||= options.extraEntities[0]?.id ?? "";
+  }
 
   return {
     config,
@@ -36,4 +42,9 @@ export function createSolitudeHeadlessLoop(
   };
 }
 
+export {
+  buildSolarSystemBodyEntities,
+  buildSolarSystemShipEntity,
+} from "./plugins/solarSystem/index";
+export { buildDefaultSolarSystemConfigs } from "./plugins/solarSystem/solarSystem";
 export { defaultPluginIds, loadPlugins };

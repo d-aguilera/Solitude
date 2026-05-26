@@ -30,6 +30,7 @@ const fields = {
   runIntervalMillis: queryInput("#runIntervalMillis"),
   simulationStepMillis: queryInput("#simulationStepMillis"),
 };
+fields.clientId.value = readClientId(fields.clientId.value);
 
 const gamesListEl = queryElement("#gamesList");
 const keyStatusEl = queryElement("#keyStatus");
@@ -325,6 +326,9 @@ function handleMessages(
         fields.entityId.value = message.entityId;
         if (options.connectAfterJoin) connectEvents();
         break;
+      case "gameModel":
+        engineRenderer.setModel(message.entities);
+        break;
       case "snapshot":
         engineRenderer.pushSnapshotMessage(message, performance.now());
         if (!options.suppressSnapshots) {
@@ -387,7 +391,14 @@ function log(value: SolitudeServerMessage): void {
           tick: value.tick,
           type: value.type,
         }
-      : value;
+      : value.type === "gameModel"
+        ? {
+            entities: value.entities.length,
+            gameId: value.gameId,
+            sequence: value.sequence,
+            type: value.type,
+          }
+        : value;
 
   const newDate = new Date();
 
@@ -462,4 +473,13 @@ function queryElementOfType<T extends Element>(
 function createSocketUrl(): string {
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   return `${protocol}//${window.location.host}/socket`;
+}
+
+function readClientId(fallback: string): string {
+  const key = "solitude.remoteClientId";
+  const existing = window.sessionStorage.getItem(key);
+  if (existing) return existing;
+  const generated = "client:" + Math.random().toString(36).slice(2, 8);
+  window.sessionStorage.setItem(key, generated);
+  return fallback === "client:a" ? generated : fallback;
 }

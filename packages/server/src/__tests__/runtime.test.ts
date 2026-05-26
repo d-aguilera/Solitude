@@ -32,6 +32,22 @@ describe("Solitude server runtime", () => {
       vec3.length(vec3.subInto(vec3.zero(), red.velocity, redBefore)),
     ).toBeGreaterThan(1000);
   });
+
+  it("moves runtime focus away from a removed focused entity", () => {
+    const game = createSolitudeServerGame();
+
+    expect(game.worldAndScene.mainFocus.entityId).toBe("ship:blue");
+
+    game.removeEntity("ship:blue");
+
+    expect(game.worldAndScene.mainFocus.entityId).toBe("ship:red");
+    expect(game.worldAndScene.mainFocus.controlledBody.id).toBe("ship:red");
+    expect(
+      game.worldAndScene.world.controllableBodies.some(
+        (body) => body.id === "ship:blue",
+      ),
+    ).toBe(false);
+  });
 });
 
 function getControlledBody(

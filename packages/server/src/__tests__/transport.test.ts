@@ -19,13 +19,15 @@ describe("Solitude in-process transport", () => {
     const transport = createSolitudeInProcessTransport();
 
     expect(
-      transport.receive(
-        {
-          type: "createGame",
-          clientId: "client:a",
-          sequence: 1,
-        },
-        1,
+      withoutGameModels(
+        transport.receive(
+          {
+            type: "createGame",
+            clientId: "client:a",
+            sequence: 1,
+          },
+          1,
+        ),
       ),
     ).toEqual([
       {
@@ -109,3 +111,12 @@ describe("Solitude in-process transport", () => {
     expect(transport.listGames()).toEqual([]);
   });
 });
+
+function withoutGameModels(messages: unknown[]): unknown[] {
+  return messages.filter(
+    (message) =>
+      !(typeof message === "object" && message !== null && "type" in message
+        ? message.type === "gameModel"
+        : false),
+  );
+}

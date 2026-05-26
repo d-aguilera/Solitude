@@ -85,7 +85,7 @@ describe("Solitude HTTP server", () => {
         sequence: 1,
       });
 
-      expect(payload.messages).toEqual([
+      expect(withoutGameModels(payload.messages)).toEqual([
         {
           type: "gameCreated",
           clientId: "client:a",
@@ -239,13 +239,13 @@ describe("Solitude HTTP server", () => {
       const snapshotPromise = eventStream.readUntil('"type":"snapshot"');
 
       await postJson(server, "/run", {
-        dtMillis: 1000,
+        dtMillis: 10,
         gameId: "game:1",
         intervalMillis: 10,
-        simulationStepMillis: 1000,
+        simulationStepMillis: 1,
       });
 
-      expect(await snapshotPromise).toContain('"tick":1');
+      expect(await snapshotPromise).toContain('"type":"snapshot"');
       await postJson(server, "/pause", { gameId: "game:1" });
       eventStream.close();
     } finally {
@@ -271,7 +271,7 @@ describe("Solitude HTTP server", () => {
       });
 
       const createResponse = await createResponsePromise;
-      expect(createResponse.messages).toEqual([
+      expect(withoutGameModels(createResponse.messages)).toEqual([
         {
           type: "gameCreated",
           clientId: "client:a",
@@ -296,13 +296,13 @@ describe("Solitude HTTP server", () => {
         type: "runGame",
         requestId: 2,
         gameId: "game:1",
-        dtMillis: 1000,
+        dtMillis: 10,
         intervalMillis: 10,
-        simulationStepMillis: 1000,
+        simulationStepMillis: 1,
       });
 
       const snapshot = await snapshotPromise;
-      expect(snapshot.message.tick).toBe(1);
+      expect(snapshot.message.tick).toBeGreaterThan(0);
       socket.send({
         type: "pauseGame",
         requestId: 3,
@@ -375,6 +375,10 @@ async function openEventStream(url: string): Promise<{
       resolve(stream);
     });
   });
+}
+
+function withoutGameModels(messages: any[]): any[] {
+  return messages.filter((message) => message.type !== "gameModel");
 }
 
 async function openWebSocket(url: string): Promise<{

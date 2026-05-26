@@ -36,67 +36,81 @@ const axisScratch = vec3.zero();
 
 export function buildDefaultSolarSystemShipConfigs(
   celestialPhysics: KeplerianBodyPhysicsConfig[],
+  shipIds: readonly string[] = ["ship:blue", "ship:red"],
 ): {
   initialStates: ControlledBodyInitialStateConfig[];
   physics: ControlledBodyPhysicsConfig[];
   render: EntityRenderConfig[];
 } {
-  const blueShipMesh = createScaledShipMesh();
-  const redShipMesh = createScaledShipMesh();
-  const blueShipVolume = computeVolumeOfTriangleMesh(
-    blueShipMesh.points,
-    blueShipMesh.faces,
-  );
-  const redShipVolume = computeVolumeOfTriangleMesh(
-    redShipMesh.points,
-    redShipMesh.faces,
+  const shipMeshes = shipIds.map(() => createScaledShipMesh());
+  const shipVolumes = shipMeshes.map((mesh) =>
+    computeVolumeOfTriangleMesh(mesh.points, mesh.faces),
   );
 
-  const physics: ControlledBodyPhysicsConfig[] = [
-    {
-      density: SHIP_DENSITY_KG_PER_M3,
-      id: "ship:blue",
-      volume: blueShipVolume,
-    },
-    {
-      density: SHIP_DENSITY_KG_PER_M3,
-      id: "ship:red",
-      volume: redShipVolume,
-    },
-  ];
+  const physics: ControlledBodyPhysicsConfig[] = shipIds.map((id, index) => ({
+    density: SHIP_DENSITY_KG_PER_M3,
+    id,
+    volume: shipVolumes[index],
+  }));
 
-  const render: EntityRenderConfig[] = [
-    {
-      color: colors.blueShip,
-      id: "ship:blue",
-      mesh: blueShipMesh,
-    },
-    {
-      color: colors.redShip,
-      id: "ship:red",
-      mesh: redShipMesh,
-    },
-  ];
+  const render: EntityRenderConfig[] = shipIds.map((id, index) => ({
+    color: getShipColor(index),
+    id,
+    mesh: shipMeshes[index],
+  }));
 
   const { earthBody, earthPhysics } = createEarthState(celestialPhysics);
-  const initialStates: ControlledBodyInitialStateConfig[] = [
-    createOrbitingShipInitialState({
-      body: earthBody,
-      direction: vec3.create(0, 0, 1),
-      id: "ship:blue",
-      physics: earthPhysics,
-      shipMass: SHIP_DENSITY_KG_PER_M3 * blueShipVolume,
-    }),
-    createOrbitingShipInitialState({
-      body: earthBody,
-      direction: vec3.create(0, 0, -1),
-      id: "ship:red",
-      physics: earthPhysics,
-      shipMass: SHIP_DENSITY_KG_PER_M3 * redShipVolume,
-    }),
-  ];
+  const initialStates: ControlledBodyInitialStateConfig[] = shipIds.map(
+    (id, index) =>
+      createOrbitingShipInitialState({
+        body: earthBody,
+        direction: vec3.create(0, 0, index % 2 === 0 ? 1 : -1),
+        id,
+        physics: earthPhysics,
+        shipMass: SHIP_DENSITY_KG_PER_M3 * shipVolumes[index],
+      }),
+  );
 
   return { initialStates, physics, render };
+}
+
+function getShipColor(index: number) {
+  if (index === 0) return colors.blueShip;
+  if (index === 1) return colors.redShip;
+  return colors.blueShip;
+}
+
+export function buildDefaultSolarSystemShipConfig(
+  celestialPhysics: KeplerianBodyPhysicsConfig[],
+  id: string,
+  index: number,
+): {
+  initialState: ControlledBodyInitialStateConfig;
+  physics: ControlledBodyPhysicsConfig;
+  render: EntityRenderConfig;
+} {
+  const mesh = createScaledShipMesh();
+  const volume = computeVolumeOfTriangleMesh(mesh.points, mesh.faces);
+  const { earthBody, earthPhysics } = createEarthState(celestialPhysics);
+  return {
+    initialState: createOrbitingShipInitialState({
+      body: earthBody,
+      direction: vec3.create(0, 0, index % 2 === 0 ? 1 : -1),
+      id,
+      physics: earthPhysics,
+      shipMass: SHIP_DENSITY_KG_PER_M3 * volume,
+    }),
+    physics: {
+      density: SHIP_DENSITY_KG_PER_M3,
+      id,
+      volume,
+    },
+    render: {
+      color: getShipColor(index),
+      id,
+      mesh,
+    },
+  };
 }
 
 function createEarthState(celestialPhysics: KeplerianBodyPhysicsConfig[]): {

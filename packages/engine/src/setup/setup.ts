@@ -87,6 +87,37 @@ export function createHeadlessWorld(config: WorldConfigBase): WorldSetup {
   return createWorld(config);
 }
 
+export function addEntityConfigToWorld(
+  world: World,
+  entityConfig: EntityConfig,
+): void {
+  const entityDerivedSetup = createSetupFromEntityConfigs([entityConfig]);
+  addGenericEntityById(
+    world,
+    entityConfig,
+    entityDerivedSetup.controllableBodies,
+    entityDerivedSetup.keplerianBodies,
+  );
+}
+
+export function removeEntityFromWorld(world: World, entityId: string): void {
+  removeById(world.entities, entityId);
+  removeById(world.entityStates, entityId);
+  removeById(world.gravityMasses, entityId);
+  removeById(world.collisionSpheres, entityId);
+  removeById(world.axialSpins, entityId);
+  removeById(world.controllableBodies, entityId);
+  removeById(world.lightEmitters, entityId);
+  refreshWorldEntityIndex(world);
+}
+
+export function refreshWorldEntityIndex(world: World): void {
+  world.entityIndex.clear();
+  for (const entity of world.entities) {
+    world.entityIndex.set(entity.id, entity);
+  }
+}
+
 function validateWorldConfig({
   entities,
   mainFocusEntityId,
@@ -339,6 +370,18 @@ function addEntityRecord(world: World, entity: EntityRecord): void {
   const record: EntityRecord = { id: entity.id };
   world.entities.push(record);
   world.entityIndex.set(record.id, record);
+}
+
+function removeById<T extends { id: string }>(list: T[], id: string): void {
+  let writeIndex = 0;
+  for (let readIndex = 0; readIndex < list.length; readIndex++) {
+    const item = list[readIndex];
+    if (item.id !== id) {
+      list[writeIndex] = item;
+      writeIndex++;
+    }
+  }
+  list.length = writeIndex;
 }
 
 function getControlledBodyById(world: World, id: string): ControlledBody {

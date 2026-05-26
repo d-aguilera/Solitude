@@ -45,8 +45,9 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
   - `GET /health` for deployment health checks.
   - Legacy/debug HTTP routes remain for now: `POST /message`, `POST /run`, `POST /pause`, `POST /step`, and `GET /events?gameId=...`.
 - `@solitude/server` owns protocol, sessions, transport, ticker, HTTP/WebSocket serving, and authoritative Solitude headless runtime composition.
-- Sessions currently assign clients to pre-existing `ship:blue` and `ship:red`.
+- Sessions create ships dynamically on join and remove them on explicit leave. The current named slots are still `ship:blue` and `ship:red`, but they are no longer pre-existing world entities.
 - Browser remote client now has a first-class Solitude Vite entry (`packages/solitude/remote.html` -> `src/remoteClient.ts`) that uses shared protocol/client helpers and renders snapshots through the engine renderer.
+- Browser tabs generate distinct default client ids, receive authoritative game-model messages for dynamic ships, and rebuild their remote render mirror when ships join or leave.
 - Remote client rendering is decoupled from snapshot arrival: server snapshots feed a delayed interpolation buffer, while the browser renders through `requestAnimationFrame`.
 - Remote mode intentionally runs only render/readout-safe Solitude plugins in the browser. Server-authoritative spacecraft and autopilot controls are sent over protocol; browser-only display/readout state stays local.
 - The dev server keeps Vite transforms on the same origin but closes Vite's websocket; only `8787` should be exposed.
@@ -66,12 +67,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 
 ## High-Value Next Steps
 
-1. Improve multiplayer model:
-   - per-client focus/camera semantics;
-   - dynamic ship creation/removal;
-   - gravity/index refresh APIs if entities become dynamic.
-
-2. Optimize later:
+1. Optimize later:
    - compact snapshot deltas/versioning;
    - prediction/reconciliation;
    - bandwidth and allocation review outside prototype UI paths.
@@ -115,6 +111,11 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
   - added `/socket` WebSocket upgrade for create/join/leave/input, run/pause, and snapshots;
   - switched the Solitude remote client to the WebSocket adapter;
   - kept HTTP for static assets, `/games`, `/health`, and legacy/debug routes.
+- Improved multiplayer model:
+  - remote browser tabs now default to unique client ids, so separate windows join as separate clients;
+  - server sessions dynamically add a client's ship on join and remove it on explicit leave;
+  - protocol gained `gameModel` messages so clients rebuild render mirrors when dynamic ship entities change;
+  - engine/world gained explicit add/remove/refresh helpers for dynamic entity indexes.
 
 ### 2026-05-24
 

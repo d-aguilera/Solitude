@@ -3,7 +3,8 @@ import type {
   RuntimeWorldSnapshot,
   WorldAndScene,
 } from "@solitude/engine/runtime";
-import type { EntityId } from "@solitude/engine/world";
+import type { EntityConfig, EntityId } from "@solitude/engine/world";
+import type { GameModelMessage } from "@solitude/protocol/protocol";
 import { describe, expect, it } from "vitest";
 import type { SolitudeServerGame } from "../runtime";
 import {
@@ -21,7 +22,7 @@ describe("Solitude session manager", () => {
       sequence: 1,
     });
 
-    expect(messages).toEqual([
+    expect(withoutGameModels(messages)).toEqual([
       {
         type: "gameCreated",
         clientId: "client:a",
@@ -36,6 +37,9 @@ describe("Solitude session manager", () => {
         sequence: 2,
       },
     ]);
+    expect(
+      requireGameModel(messages).entities.map((entity) => entity.id),
+    ).toEqual(["ship:blue"]);
   });
 
   it("joins additional clients to available ships and rejects overflow", () => {
@@ -46,14 +50,13 @@ describe("Solitude session manager", () => {
       sequence: 1,
     });
 
-    expect(
-      manager.handleMessage({
-        type: "joinGame",
-        clientId: "client:b",
-        gameId: "game:1",
-        sequence: 3,
-      }),
-    ).toEqual([
+    const messages = manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:b",
+      gameId: "game:1",
+      sequence: 3,
+    });
+    expect(withoutGameModels(messages)).toEqual([
       {
         type: "joined",
         clientId: "client:b",
@@ -62,6 +65,9 @@ describe("Solitude session manager", () => {
         sequence: 3,
       },
     ]);
+    expect(
+      requireGameModel(messages).entities.map((entity) => entity.id),
+    ).toEqual(["ship:blue", "ship:red"]);
     expect(
       manager.handleMessage({
         type: "joinGame",
@@ -110,12 +116,14 @@ describe("Solitude session manager", () => {
       },
     ]);
     expect(
-      manager.handleMessage({
-        type: "joinGame",
-        clientId: "client:c",
-        gameId: "game:1",
-        sequence: 5,
-      }),
+      withoutGameModels(
+        manager.handleMessage({
+          type: "joinGame",
+          clientId: "client:c",
+          gameId: "game:1",
+          sequence: 5,
+        }),
+      ),
     ).toEqual([
       {
         type: "joined",
@@ -186,7 +194,7 @@ describe("Solitude session manager", () => {
     const snapshot = manager.stepGame("game:1", 1000);
     expect(snapshot?.type).toBe("snapshot");
     expect(snapshot?.gameId).toBe("game:1");
-    expect(snapshot?.sequence).toBe(3);
+    expect(snapshot?.sequence).toBe(4);
     expect(snapshot?.tick).toBe(1);
     expect(snapshot?.snapshot.entities.length).toBeGreaterThan(0);
   });
@@ -453,8 +461,27 @@ function createRecordingGame(): RecordingGame {
   const snapshot: RuntimeWorldSnapshot = { entities: [] };
   const game: RecordingGame = {
     controlInputsByStep: [],
+    entityConfigs: [],
     snapshot,
     worldAndScene: {} as WorldAndScene,
+    addEntity: (entity) => {
+      game.entityConfigs.push(entity);
+    },
+    removeEntity: (entityId) => {
+      let writeIndex = 0;
+      for (
+        let readIndex = 0;
+        readIndex < game.entityConfigs.length;
+        readIndex++
+      ) {
+        const entity = game.entityConfigs[readIndex];
+        if (entity.id !== entityId) {
+          game.entityConfigs[writeIndex] = entity;
+          writeIndex++;
+        }
+      }
+      game.entityConfigs.length = writeIndex;
+    },
     step: (dtMillis, controlInputsByEntityId) => {
       const controlInputs: Array<[EntityId, Partial<ControlInput>]> = [];
       for (const [entityId, controls] of controlInputsByEntityId) {
@@ -475,6 +502,28 @@ function createTestOptions(
   return {
     assignableEntityIds: ["ship:blue", "ship:red"],
     createGame: () => game,
+    createShipEntity: (id): EntityConfig => ({ components: {}, id }),
     nowMillis,
   };
+}
+
+function withoutGameModels(messages: unknown[]): unknown[] {
+  return messages.filter(
+    (message) =>
+      !(typeof message === "object" && message !== null && "type" in message
+        ? message.type === "gameModel"
+        : false),
+  );
+}
+
+function requireGameModel(messages: unknown[]): GameModelMessage {
+  const message = messages.find(
+    (item) =>
+      typeof item === "object" &&
+      item !== null &&
+      "type" in item &&
+      item.type === "gameModel",
+  );
+  if (!message) throw new Error("Missing gameModel message");
+  return message as GameModelMessage;
 }

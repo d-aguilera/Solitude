@@ -1,8 +1,9 @@
 import type { ControlInput } from "@solitude/engine/plugin";
-import type { EntityId } from "@solitude/engine/world";
+import type { EntityConfig, EntityId } from "@solitude/engine/world";
 import {
   createErrorMessage,
   createGameCreatedMessage,
+  createGameModelMessage,
   createJoinedGameMessage,
   createSnapshotMessage,
   type InputMessage,
@@ -15,6 +16,10 @@ import {
   type SolitudeProtocolSequence,
   type SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
+import {
+  buildDefaultSolarSystemConfigs,
+  buildSolarSystemShipEntity,
+} from "solitude/headless";
 import { createSolitudeServerGame, type SolitudeServerGame } from "./runtime";
 
 const DEFAULT_ASSIGNABLE_ENTITY_IDS = ["ship:blue", "ship:red"] as const;
@@ -33,13 +38,15 @@ const THRUST_CONTROL_IDS = [
 
 export interface SolitudeSessionManagerOptions {
   assignableEntityIds: readonly EntityId[];
-  createGame: () => SolitudeServerGame;
+  createGame: (initialEntities: readonly EntityConfig[]) => SolitudeServerGame;
+  createShipEntity: (id: EntityId, index: number) => EntityConfig;
   nowMillis: () => number;
 }
 
 const DEFAULT_SESSION_MANAGER_OPTIONS: SolitudeSessionManagerOptions = {
   assignableEntityIds: DEFAULT_ASSIGNABLE_ENTITY_IDS,
   createGame: createSolitudeServerGame,
+  createShipEntity: createDefaultShipEntity,
   nowMillis: Date.now,
 };
 
@@ -91,8 +98,12 @@ interface QueuedInputEvent {
 }
 
 export function createSolitudeSessionManager(
-  options: SolitudeSessionManagerOptions = DEFAULT_SESSION_MANAGER_OPTIONS,
+  sessionOptions: Partial<SolitudeSessionManagerOptions> = {},
 ): SolitudeSessionManager {
+  const options: SolitudeSessionManagerOptions = {
+    ...DEFAULT_SESSION_MANAGER_OPTIONS,
+    ...sessionOptions,
+  };
   const gamesById = new Map<SolitudeGameId, ServerGameSession>();
   let nextGameNumber = 1;
 
@@ -102,10 +113,12 @@ export function createSolitudeSessionManager(
   ): SolitudeServerMessage[] => {
     const gameId = createGameId(nextGameNumber);
     nextGameNumber++;
+    const entityId = options.assignableEntityIds[0];
+    const entity = options.createShipEntity(entityId, 0);
     const session: ServerGameSession = {
       assignedEntityByClientId: new Map(),
       emptySinceMillis: null,
-      game: options.createGame(),
+      game: options.createGame([entity]),
       heldControlInputsByEntityId: new Map(),
       id: gameId,
       inputEvents: [],
@@ -114,6 +127,7 @@ export function createSolitudeSessionManager(
       steppedControlInputsByEntityId: new Map(),
       tick: 0,
     };
+    session.assignedEntityByClientId.set(clientId, entityId);
     gamesById.set(gameId, session);
     return [
       createGameCreatedMessage({
@@ -121,7 +135,13 @@ export function createSolitudeSessionManager(
         gameId,
         sequence,
       }),
-      joinExistingGame(session, clientId, sequence + 1),
+      createJoinedGameMessage({
+        clientId,
+        entityId,
+        gameId,
+        sequence: sequence + 1,
+      }),
+      createGameModel(session),
     ];
   };
 
@@ -158,7 +178,7 @@ export function createSolitudeSessionManager(
   ): SolitudeServerMessage[] => {
     const session = getGame(message.gameId, message.sequence);
     if (!isSession(session)) return [session];
-    return [joinExistingGame(session, message.clientId, message.sequence)];
+    return joinExistingGame(session, message.clientId, message.sequence);
   };
 
   const handleLeaveGame = (
@@ -171,6 +191,7 @@ export function createSolitudeSessionManager(
     );
     session.assignedEntityByClientId.delete(message.clientId);
     if (assignedEntityId) {
+      session.game.removeEntity(assignedEntityId);
       session.heldControlInputsByEntityId.delete(assignedEntityId);
       session.pendingPressedControlInputsByEntityId.delete(assignedEntityId);
       session.steppedControlInputsByEntityId.delete(assignedEntityId);
@@ -179,7 +200,7 @@ export function createSolitudeSessionManager(
     if (session.assignedEntityByClientId.size === 0) {
       session.emptySinceMillis = options.nowMillis();
     }
-    return [];
+    return [createGameModel(session)];
   };
 
   const handleInput = (message: InputMessage): SolitudeServerMessage[] => {
@@ -269,35 +290,48 @@ export function createSolitudeSessionManager(
     session: ServerGameSession,
     clientId: SolitudeClientId,
     sequence: SolitudeProtocolSequence,
-  ): SolitudeServerMessage => {
+  ): SolitudeServerMessage[] => {
     const existingEntityId = session.assignedEntityByClientId.get(clientId);
     if (existingEntityId) {
-      return createJoinedGameMessage({
-        clientId,
-        entityId: existingEntityId,
-        gameId: session.id,
-        sequence,
-      });
+      return [
+        createJoinedGameMessage({
+          clientId,
+          entityId: existingEntityId,
+          gameId: session.id,
+          sequence,
+        }),
+        createGameModel(session),
+      ];
     }
     const entityId = findAvailableEntityId(
       options.assignableEntityIds,
       session.assignedEntityByClientId,
     );
     if (!entityId) {
-      return createErrorMessage({
-        code: "gameFull",
-        message: `Game is full: ${session.id}`,
-        sequence,
-      });
+      return [
+        createErrorMessage({
+          code: "gameFull",
+          message: `Game is full: ${session.id}`,
+          sequence,
+        }),
+      ];
     }
+    const entity = options.createShipEntity(
+      entityId,
+      options.assignableEntityIds.indexOf(entityId),
+    );
+    session.game.addEntity(entity);
     session.assignedEntityByClientId.set(clientId, entityId);
     session.emptySinceMillis = null;
-    return createJoinedGameMessage({
-      clientId,
-      entityId,
-      gameId: session.id,
-      sequence,
-    });
+    return [
+      createJoinedGameMessage({
+        clientId,
+        entityId,
+        gameId: session.id,
+        sequence,
+      }),
+      createGameModel(session),
+    ];
   };
 
   const listGames = (): SolitudeGameSummary[] => {
@@ -336,6 +370,27 @@ export function createSolitudeSessionManager(
     stepGame,
     stepGameWithInputWindow,
   };
+}
+
+function createGameModel(session: ServerGameSession): SolitudeServerMessage {
+  const sequence = session.nextSequence;
+  session.nextSequence++;
+  const assignedEntityIds = new Set(session.assignedEntityByClientId.values());
+  return createGameModelMessage({
+    entities: session.game.entityConfigs.filter((entity) =>
+      assignedEntityIds.has(entity.id),
+    ),
+    gameId: session.id,
+    sequence,
+  });
+}
+
+function createDefaultShipEntity(id: EntityId, index: number): EntityConfig {
+  return buildSolarSystemShipEntity(
+    buildDefaultSolarSystemConfigs().physics,
+    id,
+    index,
+  );
 }
 
 function applyInputPatch(
