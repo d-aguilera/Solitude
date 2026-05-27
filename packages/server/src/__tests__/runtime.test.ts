@@ -1,5 +1,9 @@
 import { vec3 } from "@solitude/engine/math";
 import type { ControlledBody } from "@solitude/engine/world";
+import {
+  buildDefaultSolarSystemConfigs,
+  buildSolarSystemShipEntity,
+} from "solitude/headless";
 import { describe, expect, it } from "vitest";
 import { createSolitudeServerGame } from "../runtime";
 
@@ -47,6 +51,27 @@ describe("Solitude server runtime", () => {
         (body) => body.id === "ship:blue",
       ),
     ).toBe(false);
+  });
+
+  it("advances dynamically added ships through gravity integration", () => {
+    const physics = buildDefaultSolarSystemConfigs().physics;
+    const blue = buildSolarSystemShipEntity(physics, "ship:blue", 0);
+    const red = buildSolarSystemShipEntity(physics, "ship:red", 1);
+    const game = createSolitudeServerGame([blue]);
+    game.addEntity(red);
+    const redBody = getControlledBody(game.worldAndScene, "ship:red");
+    const redPositionBefore = vec3.clone(redBody.position);
+
+    game.step(
+      1000,
+      new Map([["ship:red", { burnForward: true, thrust5: true }]]),
+    );
+
+    expect(
+      vec3.length(
+        vec3.subInto(vec3.zero(), redBody.position, redPositionBefore),
+      ),
+    ).toBeGreaterThan(0);
   });
 });
 

@@ -26,6 +26,7 @@ export interface HeadlessLoopOptions {
 }
 
 export interface HeadlessLoop {
+  refreshGravityState: () => void;
   worldAndScene: WorldAndScene;
   step: (dtMillis: number, controlInput?: Partial<ControlInput>) => void;
   stepWithEntityInputs: (
@@ -143,7 +144,12 @@ export function createHeadlessLoop(
     tick();
   };
 
-  return { worldAndScene, step, stepWithEntityInputs };
+  return {
+    refreshGravityState: tick.refreshGravityState,
+    worldAndScene,
+    step,
+    stepWithEntityInputs,
+  };
 }
 
 function collectControlPlugins(

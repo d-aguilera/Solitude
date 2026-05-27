@@ -10,6 +10,15 @@ import type { Vec3 } from "./vec3";
  *  - positions array with the current world positions
  */
 export function buildInitialGravityState(world: World): GravityState {
+  const gravityState: GravityState = { bodyStates: [], positions: [] };
+  refreshGravityState(world, gravityState);
+  return gravityState;
+}
+
+export function refreshGravityState(
+  world: World,
+  gravityState: GravityState,
+): void {
   const bodyStates: BodyState[] = [];
   const positions: Vec3[] = [];
 
@@ -23,5 +32,6 @@ export function buildInitialGravityState(world: World): GravityState {
     positions.push(body.state.position); // alias for performance
   }
 
-  return { bodyStates, positions };
+  gravityState.bodyStates = bodyStates;
+  gravityState.positions = positions;
 }

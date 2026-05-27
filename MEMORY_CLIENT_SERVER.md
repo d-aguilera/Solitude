@@ -88,6 +88,9 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
   - WebSocket join/leave model changes now broadcast `gameModel` updates to already-connected clients;
   - WebSocket disconnect now releases only that socket's assigned ship and lets remaining clients continue;
   - closing a tab frees its ship slot for later joins.
+- Fixed dynamic ship motion:
+  - headless loops now expose an explicit gravity-state refresh for world add/remove;
+  - server runtime refreshes gravity aliases after dynamic ship join/leave so newly joined ships translate under thrust instead of only rotating.
 
 ### 2026-05-25
 

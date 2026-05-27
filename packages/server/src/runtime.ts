@@ -53,10 +53,12 @@ export function createSolitudeServerGame(
     addEntity: (entity) => {
       config.entities.push(entity);
       addEntityConfigToWorld(loop.worldAndScene.world, entity);
+      loop.refreshGravityState();
     },
     removeEntity: (entityId) => {
       removeEntityFromWorld(loop.worldAndScene.world, entityId);
       removeEntityConfig(config.entities, entityId);
+      loop.refreshGravityState();
       if (loop.worldAndScene.mainFocus.entityId === entityId) {
         const nextFocusEntityId =
           loop.worldAndScene.world.controllableBodies[0]?.id;

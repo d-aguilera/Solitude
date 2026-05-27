@@ -1,6 +1,9 @@
 import { resolveCollisions } from "../domain/collisions";
 import type { GravityEngine } from "../domain/domainPorts";
-import { buildInitialGravityState } from "../domain/gravityState";
+import {
+  buildInitialGravityState,
+  refreshGravityState,
+} from "../domain/gravityState";
 import type { ControlInput } from "./controlPorts";
 import {
   applyAxialSpin,
@@ -36,7 +39,7 @@ export function createTickHandler(
   /**
    * Per‑frame update/render entry called by the game loop.
    */
-  return (): void => {
+  const tick = (() => {
     simulationPhaseParams.controlInput = tickParams.controlInput;
     simulationPhaseParams.controlInputsByEntityId =
       tickParams.controlInputsByEntityId;
@@ -78,7 +81,13 @@ export function createTickHandler(
       physicsWorkspace,
     );
     applySimulationPhase(simulationPhasePlan.afterSpin, simulationPhaseParams);
+  }) as TickCallback;
+
+  tick.refreshGravityState = () => {
+    refreshGravityState(worldAndScene.world, gravityState);
   };
+
+  return tick;
 }
 
 type SimulationPhaseHook = (params: SimulationPhaseParams) => void;
