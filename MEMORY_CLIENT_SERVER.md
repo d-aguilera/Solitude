@@ -47,7 +47,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - `@solitude/server` owns protocol, sessions, transport, ticker, HTTP/WebSocket serving, and authoritative Solitude headless runtime composition.
 - Sessions create ships dynamically on join and remove them on explicit leave. The current named slots are still `ship:blue` and `ship:red`, but they are no longer pre-existing world entities.
 - Browser remote client now has a first-class Solitude Vite entry (`packages/solitude/remote.html` -> `src/remoteClient.ts`) that uses shared protocol/client helpers and renders snapshots through the engine renderer.
-- Browser tabs generate distinct default client ids, receive authoritative game-model messages for dynamic ships, and rebuild their remote render mirror when ships join or leave.
+- Browser tabs generate distinct default client ids, receive authoritative game-model messages for dynamic ships, and rebuild their remote render mirror when ships join, leave, or disconnect.
 - Remote client rendering is decoupled from snapshot arrival: server snapshots feed a delayed interpolation buffer, while the browser renders through `requestAnimationFrame`.
 - Remote mode intentionally runs only render/readout-safe Solitude plugins in the browser. Server-authoritative spacecraft and autopilot controls are sent over protocol; browser-only display/readout state stays local.
 - The dev server keeps Vite transforms on the same origin but closes Vite's websocket; only `8787` should be exposed.
@@ -63,7 +63,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Manual/debug `/step` keeps a one-step pending press fallback so press/release pairs are not dropped.
 - The probe defaults are `dtMillis: 250`, `simulationStepMillis: 25`, `intervalMillis: 250`.
 - Control input objects may be partial. Code that compares opposite controls must treat missing values as `false`.
-- Explicit `leaveGame` clears the client's entity controls; games with no assigned clients are cleaned up immediately. Network disconnect does not imply leave yet.
+- Explicit `leaveGame` and WebSocket disconnect both clear the client's entity controls; games with no assigned clients are cleaned up immediately.
 
 ## High-Value Next Steps
 
@@ -81,6 +81,13 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Legacy HTTP/SSE routes remain for debug compatibility; the interactive path should stay on WebSocket.
 
 ## Slice Log
+
+### 2026-05-27
+
+- Tightened multiplayer socket lifecycle:
+  - WebSocket join/leave model changes now broadcast `gameModel` updates to already-connected clients;
+  - WebSocket disconnect now releases only that socket's assigned ship and lets remaining clients continue;
+  - closing a tab frees its ship slot for later joins.
 
 ### 2026-05-25
 

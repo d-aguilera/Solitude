@@ -313,6 +313,119 @@ describe("Solitude HTTP server", () => {
       await server.close();
     }
   });
+
+  it("broadcasts model updates to existing sockets when another client joins", async () => {
+    const server = await startTestServer();
+    try {
+      const firstSocket = await openWebSocket(`${server.url}/socket`);
+      const secondSocket = await openWebSocket(`${server.url}/socket`);
+
+      const firstCreateResponse = firstSocket.readUntil(
+        (message) => message.type === "messages" && message.requestId === 1,
+      );
+      firstSocket.send({
+        type: "clientMessage",
+        requestId: 1,
+        message: {
+          type: "createGame",
+          clientId: "client:a",
+          sequence: 1,
+        },
+      });
+      await firstCreateResponse;
+
+      const firstModelUpdate = firstSocket.readUntil(
+        (message) =>
+          message.type === "serverMessage" &&
+          message.message?.type === "gameModel",
+      );
+      const secondJoinResponse = secondSocket.readUntil(
+        (message) => message.type === "messages" && message.requestId === 1,
+      );
+      secondSocket.send({
+        type: "clientMessage",
+        requestId: 1,
+        message: {
+          type: "joinGame",
+          clientId: "client:b",
+          gameId: "game:1",
+          sequence: 1,
+        },
+      });
+
+      const joinResponse = await secondJoinResponse;
+      const modelUpdate = await firstModelUpdate;
+
+      expect(
+        joinResponse.messages
+          .find((message: any) => message.type === "gameModel")
+          ?.entities.map((entity: any) => entity.id),
+      ).toEqual(["ship:blue", "ship:red"]);
+      expect(
+        modelUpdate.message.entities.map((entity: any) => entity.id),
+      ).toEqual(["ship:blue", "ship:red"]);
+
+      firstSocket.close();
+      secondSocket.close();
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("releases only a socket's assigned ship when the socket closes", async () => {
+    const server = await startTestServer();
+    try {
+      const firstSocket = await openWebSocket(`${server.url}/socket`);
+      const secondSocket = await openWebSocket(`${server.url}/socket`);
+
+      const createResponse = firstSocket.readUntil(
+        (message) => message.type === "messages" && message.requestId === 1,
+      );
+      firstSocket.send({
+        type: "clientMessage",
+        requestId: 1,
+        message: {
+          type: "createGame",
+          clientId: "client:a",
+          sequence: 1,
+        },
+      });
+      await createResponse;
+
+      const joinResponse = secondSocket.readUntil(
+        (message) => message.type === "messages" && message.requestId === 1,
+      );
+      secondSocket.send({
+        type: "clientMessage",
+        requestId: 1,
+        message: {
+          type: "joinGame",
+          clientId: "client:b",
+          gameId: "game:1",
+          sequence: 1,
+        },
+      });
+      await joinResponse;
+
+      await firstSocket.close();
+      const games = await waitForGameList(server, (items) =>
+        JSON.stringify(items).includes('"availableEntityIds":["ship:blue"]'),
+      );
+
+      expect(games).toEqual([
+        {
+          assignedEntityIds: ["ship:red"],
+          availableEntityIds: ["ship:blue"],
+          gameId: "game:1",
+          maxClients: 2,
+          tick: 0,
+        },
+      ]);
+      await secondSocket.close();
+    } finally {
+      await server.close();
+    }
+  });
 });
 
 async function startTestServer(): Promise<SolitudeHttpServer> {
@@ -382,7 +495,7 @@ function withoutGameModels(messages: any[]): any[] {
 }
 
 async function openWebSocket(url: string): Promise<{
-  close: () => void;
+  close: () => Promise<void>;
   readUntil: (predicate: (message: any) => boolean) => Promise<any>;
   send: (payload: unknown) => void;
 }> {
@@ -411,7 +524,18 @@ async function openWebSocket(url: string): Promise<{
   });
 
   return {
-    close: () => socket.close(),
+    close: () =>
+      new Promise<void>((resolve) => {
+        if (
+          socket.readyState === WebSocket.CLOSED ||
+          socket.readyState === WebSocket.CLOSING
+        ) {
+          resolve();
+          return;
+        }
+        socket.once("close", resolve);
+        socket.close();
+      }),
     readUntil: (predicate) => {
       const existing = messages.find(predicate);
       if (existing) return Promise.resolve(existing);
@@ -423,4 +547,19 @@ async function openWebSocket(url: string): Promise<{
       socket.send(JSON.stringify(payload));
     },
   };
+}
+
+async function waitForGameList(
+  server: SolitudeHttpServer,
+  predicate: (games: unknown[]) => boolean,
+): Promise<unknown[]> {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const response = await fetch(`${server.url}/games`);
+    const payload = (await response.json()) as { games: unknown[] };
+    if (Array.isArray(payload.games) && predicate(payload.games)) {
+      return payload.games;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  throw new Error("Timed out waiting for game list");
 }
