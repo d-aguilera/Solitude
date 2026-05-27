@@ -34,13 +34,15 @@ fields.clientId.value = readClientId(fields.clientId.value);
 
 const gamesListEl = queryElement("#gamesList");
 const keyStatusEl = queryElement("#keyStatus");
-const logEl = queryElement("#log");
 const runStatusEl = queryElement("#runStatus");
 const remoteHudEl = queryElement("#remoteHud");
 const snapshotCanvas = queryCanvas("#snapshotCanvas");
 const snapshotStatusEl = queryElement("#snapshotStatus");
 const statusEl = queryElement("#status");
-const toggleRunButton = queryButton("#toggleRun");
+const searchParams = new URLSearchParams(window.location.search);
+const initialGameId = searchParams.get("gameId");
+const shouldCreateGame = searchParams.get("create") === "1";
+const shouldAutostart = searchParams.get("autostart") === "1";
 
 const engineRenderer = createSolitudeRemoteClientRenderer({
   canvas: snapshotCanvas,
@@ -65,20 +67,9 @@ const keyboard = createKeyboardInputPatcher({
   sendInputPatch,
 });
 
-queryButton("#createGame").addEventListener("click", () => {
-  void createGame();
-});
-
-queryButton("#joinGame").addEventListener("click", () => {
-  void joinGame(fields.gameId.value);
-});
-
 queryButton("#refreshGames").addEventListener("click", () => {
   void refreshGames();
 });
-
-queryButton("#connectEvents").addEventListener("click", connectEvents);
-toggleRunButton.addEventListener("click", toggleRun);
 
 window.addEventListener(
   "keydown",
@@ -97,6 +88,12 @@ window.addEventListener(
 );
 
 void refreshGames();
+if (shouldCreateGame) {
+  void createGame({ autostart: shouldAutostart });
+} else if (initialGameId) {
+  fields.gameId.value = initialGameId;
+  void joinGame(initialGameId, { autostart: shouldAutostart });
+}
 requestAnimationFrame(renderRemoteFrame);
 
 function createClient() {
@@ -107,15 +104,26 @@ function createClient() {
   });
 }
 
-async function createGame(): Promise<void> {
+async function createGame(
+  options: { autostart?: boolean } = {},
+): Promise<void> {
   resetClientForCurrentIdentity();
   handleMessages(await client.createGame(), { connectAfterJoin: true });
+  if (options.autostart) {
+    await startServerLoop();
+  }
   await refreshGames();
 }
 
-async function joinGame(gameId: SolitudeGameId): Promise<void> {
+async function joinGame(
+  gameId: SolitudeGameId,
+  options: { autostart?: boolean } = {},
+): Promise<void> {
   resetClientForCurrentIdentity();
   handleMessages(await client.joinGame(gameId), { connectAfterJoin: true });
+  if (options.autostart) {
+    await startServerLoop();
+  }
   await refreshGames();
 }
 
@@ -155,14 +163,17 @@ function renderGames(games: readonly SolitudeGameSummary[]): void {
       " | available " +
       formatEntityList(game.availableEntityIds);
 
-    const joinButton = document.createElement("button");
-    joinButton.className = "secondary";
-    joinButton.textContent = "Join";
-    joinButton.disabled = game.availableEntityIds.length === 0;
-    joinButton.addEventListener("click", () => {
-      fields.gameId.value = game.gameId;
-      void joinGame(game.gameId);
-    });
+    const joinButton = document.createElement("a");
+    joinButton.className = "button secondary";
+    joinButton.textContent =
+      game.availableEntityIds.length === 0 ? "Full" : "Join";
+    if (game.availableEntityIds.length === 0) {
+      joinButton.removeAttribute("href");
+      joinButton.setAttribute("aria-disabled", "true");
+    } else {
+      joinButton.href =
+        "/remote.html?gameId=" + encodeURIComponent(game.gameId);
+    }
 
     item.append(summary, joinButton);
     gamesListEl.appendChild(item);
@@ -234,19 +245,8 @@ function renderRemoteFrame(nowMillis: number): void {
   requestAnimationFrame(renderRemoteFrame);
 }
 
-function toggleRun(): void {
-  if (runActive) {
-    void pauseServerLoop();
-    return;
-  }
-  if (!client.state.gameId) {
-    statusEl.textContent = "Create or join a game before running";
-    return;
-  }
-  void startServerLoop();
-}
-
 async function startServerLoop(): Promise<void> {
+  if (runActive) return;
   const intervalMillis = readPositiveInteger(fields.runIntervalMillis, 250, 50);
   const dtMillis = readPositiveInteger(fields.dtMillis, 250, 1);
   const simulationStepMillis = readPositiveInteger(
@@ -265,7 +265,7 @@ async function startServerLoop(): Promise<void> {
 
   runActive = true;
   runStatusEl.textContent = [
-    "Server running every",
+    "Running every",
     intervalMillis,
     "ms at sim",
     dtMillis,
@@ -273,23 +273,6 @@ async function startServerLoop(): Promise<void> {
     simulationStepMillis,
     "ms",
   ].join(" ");
-  toggleRunButton.textContent = "Pause";
-}
-
-async function pauseServerLoop(): Promise<void> {
-  if (!client.state.gameId) {
-    setPausedStatus();
-    return;
-  }
-
-  handleMessages(await client.pauseGame());
-  setPausedStatus();
-}
-
-function setPausedStatus(): void {
-  runActive = false;
-  runStatusEl.textContent = "Paused";
-  toggleRunButton.textContent = "Run";
 }
 
 function connectEvents(): void {
@@ -344,7 +327,6 @@ function handleMessages(
         statusEl.textContent = message.message;
         break;
     }
-    log(message);
   }
 }
 
@@ -366,85 +348,8 @@ function isTextInputTarget(value: EventTarget | null): boolean {
   );
 }
 
-let currentLogList: HTMLUListElement | null = null;
-let currentLogListMaxDate: Date | null = null;
-
-const summaryFormatter = new Intl.DateTimeFormat(undefined, {
-  day: "numeric",
-  hour: "numeric",
-  minute: "numeric",
-  month: "numeric",
-  year: "numeric",
-});
-
-const timeFormatter = new Intl.DateTimeFormat(undefined, {
-  second: "2-digit",
-});
-
-function log(value: SolitudeServerMessage): void {
-  const loggedValue =
-    value.type === "snapshot"
-      ? {
-          entities: value.snapshot.entities.length,
-          gameId: value.gameId,
-          sequence: value.sequence,
-          tick: value.tick,
-          type: value.type,
-        }
-      : value.type === "gameModel"
-        ? {
-            entities: value.entities.length,
-            gameId: value.gameId,
-            sequence: value.sequence,
-            type: value.type,
-          }
-        : value;
-
-  const newDate = new Date();
-
-  if (!currentLogListMaxDate) {
-    currentLogListMaxDate = new Date(
-      newDate.getFullYear(),
-      newDate.getMonth(),
-      newDate.getDate(),
-      newDate.getHours(),
-      newDate.getMinutes(),
-    );
-  }
-
-  if (!currentLogList || newDate > currentLogListMaxDate) {
-    const summaryEl = document.createElement("summary");
-    summaryEl.textContent = summaryFormatter.format(currentLogListMaxDate);
-    currentLogList = document.createElement("ul");
-    const detailsEl = document.createElement("details");
-    detailsEl.append(summaryEl, currentLogList);
-    const liEl = document.createElement("li");
-    liEl.appendChild(detailsEl);
-    logEl.appendChild(liEl);
-
-    currentLogListMaxDate.setMinutes(currentLogListMaxDate.getMinutes() + 1);
-  }
-
-  const timeEl = document.createElement("span");
-  timeEl.textContent = formatLogTime(newDate);
-  const textEl = document.createElement("pre");
-  textEl.textContent = JSON.stringify(loggedValue, null, 2);
-  const subliEl = document.createElement("li");
-  subliEl.append(timeEl, textEl);
-
-  currentLogList.appendChild(subliEl);
-}
-
 function queryButton(selector: string): HTMLButtonElement {
   return queryElementOfType(selector, HTMLButtonElement);
-}
-
-function formatLogTime(date: Date): string {
-  return (
-    timeFormatter.format(date) +
-    "." +
-    String(date.getMilliseconds()).padStart(3, "0")
-  );
 }
 
 function queryCanvas(selector: string): HTMLCanvasElement {

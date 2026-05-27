@@ -18,13 +18,11 @@ describe("Solitude HTTP server", () => {
 
       expect(response.status).toBe(200);
       const page = await response.text();
-      expect(page).toContain("Solitude Remote Client");
-      expect(page).toContain("/src/remoteClient.ts");
+      expect(page).toContain("Solitude");
+      expect(page).toContain("/src/remoteLobby.ts");
 
       const remotePageResponse = await fetch(`${server.url}/remote.html`);
-      expect(await remotePageResponse.text()).toContain(
-        "Solitude Remote Client",
-      );
+      expect(await remotePageResponse.text()).toContain("/src/remoteClient.ts");
 
       const stylesheetResponse = await fetch(`${server.url}/remote.css`);
       expect(stylesheetResponse.status).toBe(200);
@@ -41,6 +39,10 @@ describe("Solitude HTTP server", () => {
       '<script type="module" src="/assets/remote.js"></script>',
     );
     await writeFile(
+      join(assetRoot, "lobby.html"),
+      '<script type="module" src="/assets/lobby.js"></script>',
+    );
+    await writeFile(
       join(assetRoot, "index.html"),
       '<script type="module" src="/assets/index.js"></script>',
     );
@@ -54,7 +56,7 @@ describe("Solitude HTTP server", () => {
     });
     try {
       const rootResponse = await fetch(`${server.url}/`);
-      expect(await rootResponse.text()).toContain("/assets/remote.js");
+      expect(await rootResponse.text()).toContain("/assets/lobby.js");
 
       const remoteResponse = await fetch(`${server.url}/remote.html`);
       expect(await remoteResponse.text()).toContain("/assets/remote.js");

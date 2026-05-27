@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Solitude</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/remote.css" />
+  </head>
+  <body>
+    <main class="lobby">
+      <header class="lobby-header">
+        <h1>Solitude</h1>
+        <button id="createGame">Create game</button>
+      </header>
+      <section>
+        <div class="section-header">
+          <h2>Games</h2>
+          <button id="refreshGames" class="secondary">Refresh</button>
+        </div>
+        <ul id="gamesList"></ul>
+      </section>
+      <p id="status" class="status">Ready</p>
+    </main>
+    <script type="module" src="/src/remoteLobby.ts"></script>
+  </body>
+</html>

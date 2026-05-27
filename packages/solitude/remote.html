@@ -8,46 +8,30 @@
     <link rel="stylesheet" href="/remote.css" />
   </head>
   <body>
-    <main>
-      <h1>Solitude Remote Client</h1>
-      <section class="grid">
-        <label>Client <input id="clientId" value="client:a" /></label>
-        <label>Game <input id="gameId" placeholder="game:1" /></label>
-        <label>Entity <input id="entityId" placeholder="ship:blue" /></label>
-        <label
-          >Sim millis / interval <input id="dtMillis" type="number" value="250"
-        /></label>
-        <label
-          >Sim step <input id="simulationStepMillis" type="number" value="25"
-        /></label>
-        <label
-          >Run interval <input id="runIntervalMillis" type="number" value="250"
-        /></label>
-      </section>
-      <section class="actions">
-        <button id="createGame">Create game</button>
-        <button id="joinGame" class="secondary">Join game</button>
-        <button id="refreshGames" class="secondary">Refresh games</button>
-        <button id="connectEvents" class="secondary">Reconnect socket</button>
-        <button id="toggleRun" class="secondary">Run</button>
-      </section>
+    <main class="play">
+      <input id="clientId" type="hidden" value="client:a" />
+      <input id="gameId" type="hidden" />
+      <input id="entityId" type="hidden" />
+      <input id="dtMillis" type="hidden" value="250" />
+      <input id="simulationStepMillis" type="hidden" value="25" />
+      <input id="runIntervalMillis" type="hidden" value="250" />
       <section>
-        <ul id="gamesList"></ul>
-      </section>
-      <section>
-        <div id="status" class="status">Snapshot stream waiting for a game</div>
-        <div id="runStatus" class="status run-state">Paused</div>
-        <div id="keyStatus" class="status key-state">
-          Keyboard controls idle
+        <div class="section-header">
+          <h1>Games</h1>
+          <a class="button secondary" href="/">New</a>
+          <button id="refreshGames" class="secondary">Refresh</button>
         </div>
+        <ul id="gamesList"></ul>
       </section>
       <section class="viewer">
         <canvas id="snapshotCanvas" width="960" height="540"></canvas>
         <pre id="remoteHud" class="remote-hud">HUD waiting</pre>
-        <div id="snapshotStatus" class="status">No snapshot rendered</div>
-      </section>
-      <section>
-        <ul id="log"></ul>
+        <div class="viewer-status">
+          <span id="status" class="status">Choose a game</span>
+          <span id="runStatus" class="status run-state">Waiting</span>
+          <span id="keyStatus" class="status key-state">Keyboard idle</span>
+          <span id="snapshotStatus" class="status">No snapshot rendered</span>
+        </div>
       </section>
     </main>
     <script type="module" src="/src/remoteClient.ts"></script>

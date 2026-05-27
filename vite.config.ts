@@ -11,6 +11,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: resolve(solitudeRoot, "index.html"),
+        lobby: resolve(solitudeRoot, "lobby.html"),
         remote: resolve(solitudeRoot, "remote.html"),
       },
     },

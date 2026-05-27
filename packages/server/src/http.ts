@@ -116,7 +116,16 @@ export function createSolitudeHttpRequestHandler({
     if (
       request.method === "GET" &&
       !resolvedStaticAssetRoot &&
-      (requestUrl.pathname === "/" || requestUrl.pathname === "/remote.html")
+      requestUrl.pathname === "/"
+    ) {
+      sendText(response, 200, "text/html; charset=utf-8", LOBBY_CLIENT_HTML);
+      return;
+    }
+
+    if (
+      request.method === "GET" &&
+      !resolvedStaticAssetRoot &&
+      requestUrl.pathname === "/remote.html"
     ) {
       sendText(response, 200, "text/html; charset=utf-8", REMOTE_CLIENT_HTML);
       return;
@@ -590,7 +599,7 @@ function resolveStaticAssetPath(root: string, pathname: string): string | null {
   }
 
   const relativePath =
-    decodedPathname === "/" ? "remote.html" : decodedPathname.slice(1);
+    decodedPathname === "/" ? "lobby.html" : decodedPathname.slice(1);
   const normalizedRelativePath = normalize(relativePath);
   if (
     normalizedRelativePath.startsWith("..") ||
@@ -841,6 +850,10 @@ function isNodeErrorCode(value: unknown, code: string): boolean {
   );
 }
 
+const LOBBY_CLIENT_HTML = readFileSync(
+  new URL("../../solitude/lobby.html", import.meta.url),
+  "utf8",
+);
 const REMOTE_CLIENT_HTML = readFileSync(
   new URL("../../solitude/remote.html", import.meta.url),
   "utf8",
