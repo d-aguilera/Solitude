@@ -9,7 +9,7 @@ import {
   type SolitudeServerMessage,
   type SolitudeSocketClientMessage,
   isSolitudeSocketServerMessage,
-} from "./protocol";
+} from "@solitude/protocol/protocol";
 
 export interface SolitudeHttpClientOptions {
   baseUrl: string;

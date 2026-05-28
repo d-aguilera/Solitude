@@ -54,8 +54,8 @@
 
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, layout, Canvas 2D, WebGL rasterizer adapters, and remote-world mirror helpers.
-- `packages/protocol/src/`: browser-safe client/server protocol types, message guards, HTTP/WebSocket client helpers, and keyboard input patching.
-- `packages/client/src/`: deployable remote browser client, server URL adapter, authoritative snapshot interpolation, and remote rendering composition.
+- `packages/protocol/src/`: browser-safe client/server protocol types and message guards.
+- `packages/client/src/`: deployable remote browser client, server URL adapter, HTTP/WebSocket client helpers, keyboard input patching, authoritative snapshot interpolation, and remote rendering composition.
 - `packages/server/src/`: Node-oriented, non-DOM server adapter experiments for authoritative headless Solitude games.
 - `packages/solitude/src/`: Solitude app bootstrap, default config, plugin catalog, scenarios, spacecraft operator, playback, telemetry, and product-specific behavior.
 - Production and test source lives under `packages/*`; the root `src` directory has been removed.
@@ -85,7 +85,7 @@
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
 - Server runtime proof lives in `packages/server/src/runtime.ts`; it composes server-local headless Solitude code, steps entity-addressed controls, and reuses runtime snapshot storage.
 - Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, receives authoritative model/snapshot messages over WebSocket, sends server-authoritative controls for its assigned ship, interpolates locally, and renders through `@solitude/browser`.
-- Shared browser-safe protocol/client helpers live in `@solitude/protocol`; `@solitude/server` imports that contract directly and no longer exports client/protocol shims.
+- Shared browser-safe protocol contract lives in `@solitude/protocol`; browser client adapters live in `@solitude/client`.
 - Browser remote-world mirror proof lives in `@solitude/browser/remoteWorldMirror`; it applies authoritative runtime snapshots into a local world via a reusable indexed workspace.
 - Server-safe Solitude headless composition lives in `packages/server/src/solitude/`; `@solitude/server` intentionally does not depend on the browser-facing `solitude` package.
 - Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`.

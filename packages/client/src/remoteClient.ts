@@ -1,13 +1,13 @@
 import type { ControlInput } from "@solitude/engine/plugin";
-import {
-  createKeyboardInputPatcher,
-  createSolitudeWebSocketClient,
-  solitudeSpacecraftKeyMap,
-} from "@solitude/protocol/client";
 import type {
   SolitudeGameId,
   SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
+import {
+  createKeyboardInputPatcher,
+  createSolitudeWebSocketClient,
+  solitudeSpacecraftKeyMap,
+} from "./client";
 import { createSolitudeRemoteClientRenderer } from "./remoteClientRenderer";
 
 interface SolitudeGameSummary {

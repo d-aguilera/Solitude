@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./client": "./src/client.ts",
     "./protocol": "./src/protocol.ts"
   },
   "dependencies": {
