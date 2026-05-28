@@ -95,7 +95,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
   - removed the `@solitude/server` dependency on `solitude`;
   - removed the old `solitude/headless` export;
   - server-side Solitude composition now lives in `packages/server/src/solitude/`;
-  - `@solitude/server/headless` is the public server-side headless export.
+  - removed unused `@solitude/server` public subpath exports so server internals stay private.
 
 ### 2026-05-27
 

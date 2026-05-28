@@ -5,8 +5,8 @@ import type {
   ControlledBody,
   WorldAndSceneConfig,
 } from "@solitude/engine/world";
-import { createSpacecraftOperatorPlugin } from "solitude/plugins/spacecraftOperator/index";
 import { describe, expect, it } from "vitest";
+import { createSpacecraftOperatorPlugin } from "../plugins/spacecraftOperator/index";
 
 function createBody(id: string, upX: number): ControlledBody {
   return {

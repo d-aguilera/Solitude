@@ -1,6 +1,6 @@
 import { __domKeyboardInputTest } from "@solitude/browser/dom/keyboardInput";
-import { createSpacecraftOperatorPlugin } from "solitude/plugins/spacecraftOperator/index";
 import { describe, expect, it } from "vitest";
+import { createSpacecraftOperatorPlugin } from "../plugins/spacecraftOperator/index";
 
 describe("spacecraft keyboard input", () => {
   it("gets spacecraft key bindings from the spacecraft operator plugin", () => {

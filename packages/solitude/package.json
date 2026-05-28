@@ -3,9 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": {
-    "./plugins/spacecraftOperator/index": "./src/plugins/spacecraftOperator/index.ts"
-  },
   "dependencies": {
     "@solitude/browser": "0.0.0",
     "@solitude/engine": "0.0.0",

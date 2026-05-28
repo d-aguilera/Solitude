@@ -360,13 +360,13 @@ Notes:
 
 What changed:
 
-1. Updated root app/infra tests that compose the Solitude spacecraft operator to import it through `solitude/plugins/spacecraftOperator/index`.
+1. Updated root app/infra tests that compose the Solitude spacecraft operator to import it through the temporary Solitude spacecraft-operator package export.
 2. Removed the remaining root `src/plugins` compatibility shims.
 
 Notes:
 
 - The root `src/bootstrap.ts` side-effect shim remains because it is harmless old-path compatibility for TypeScript consumers.
-- Solitude plugin source and package exports are now the only in-repo plugin import path.
+- Historical note: that temporary spacecraft-operator export was later removed when no external package needed it.
 
 ### Completed Slice: Package Split 15
 
