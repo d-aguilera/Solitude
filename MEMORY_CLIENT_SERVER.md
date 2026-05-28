@@ -38,7 +38,11 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 ## Current Architecture
 
 - The current working proof is `npm run dev:server` on `127.0.0.1:8787`.
-- Production-like local mode is `npm run build` then `npm run start:server`; the Node server serves built `dist/remote.html` plus authoritative API routes.
+- Production-like local mode is `npm run build` then `npm run start:server`; the Node server runs from `dist/server/main.js` and serves the built remote client from `dist/client`.
+- Deployable outputs are intentionally split:
+  - `dist/server`: bundled authoritative Node server, no Vite runtime dependency;
+  - `dist/client`: lobby/viewer assets for the client-server app;
+  - `dist/standalone`: static standalone browser app.
 - Transport is now production-shaped for the interactive path:
   - `GET /socket` upgrade for create/join/leave/input, run/pause, and authoritative snapshots.
   - `GET /games` for simple lobby discovery.
@@ -97,6 +101,10 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
   - `/` is now a lobby/create page;
   - the play page removed the manual join/run controls, probe setup panel, middle status section, and log;
   - newly created games open the viewer and start the server ticker automatically.
+- Split deployment artifacts:
+  - `npm run build` now produces `dist/server`, `dist/client`, and `dist/standalone`;
+  - production `npm run start:server` executes the server bundle directly instead of loading TS through Vite;
+  - Fly Docker runtime stage installs production dependencies only and serves `dist/client`.
 
 ### 2026-05-25
 

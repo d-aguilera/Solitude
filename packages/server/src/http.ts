@@ -118,7 +118,7 @@ export function createSolitudeHttpRequestHandler({
       !resolvedStaticAssetRoot &&
       requestUrl.pathname === "/"
     ) {
-      sendText(response, 200, "text/html; charset=utf-8", LOBBY_CLIENT_HTML);
+      sendText(response, 200, "text/html; charset=utf-8", getLobbyClientHtml());
       return;
     }
 
@@ -127,7 +127,12 @@ export function createSolitudeHttpRequestHandler({
       !resolvedStaticAssetRoot &&
       requestUrl.pathname === "/remote.html"
     ) {
-      sendText(response, 200, "text/html; charset=utf-8", REMOTE_CLIENT_HTML);
+      sendText(
+        response,
+        200,
+        "text/html; charset=utf-8",
+        getRemoteClientHtml(),
+      );
       return;
     }
 
@@ -136,7 +141,7 @@ export function createSolitudeHttpRequestHandler({
       !resolvedStaticAssetRoot &&
       requestUrl.pathname === "/remote.css"
     ) {
-      sendText(response, 200, "text/css; charset=utf-8", REMOTE_CLIENT_CSS);
+      sendText(response, 200, "text/css; charset=utf-8", getRemoteClientCss());
       return;
     }
 
@@ -850,15 +855,23 @@ function isNodeErrorCode(value: unknown, code: string): boolean {
   );
 }
 
-const LOBBY_CLIENT_HTML = readFileSync(
-  new URL("../../solitude/lobby.html", import.meta.url),
-  "utf8",
-);
-const REMOTE_CLIENT_HTML = readFileSync(
-  new URL("../../solitude/remote.html", import.meta.url),
-  "utf8",
-);
-const REMOTE_CLIENT_CSS = readFileSync(
-  new URL("../../solitude/remote.css", import.meta.url),
-  "utf8",
-);
+function getLobbyClientHtml(): string {
+  return readFileSync(
+    new URL("../../solitude/lobby.html", import.meta.url),
+    "utf8",
+  );
+}
+
+function getRemoteClientHtml(): string {
+  return readFileSync(
+    new URL("../../solitude/remote.html", import.meta.url),
+    "utf8",
+  );
+}
+
+function getRemoteClientCss(): string {
+  return readFileSync(
+    new URL("../../solitude/remote.css", import.meta.url),
+    "utf8",
+  );
+}
