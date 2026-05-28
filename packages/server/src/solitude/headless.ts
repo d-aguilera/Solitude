@@ -7,13 +7,13 @@ import {
   type EntityConfig,
   type WorldAndSceneConfig,
 } from "@solitude/engine/world";
-import { buildWorldAndSceneConfig } from "./config/worldAndSceneConfig";
-import { defaultPluginIds, loadPlugins } from "./plugins/index";
+import { defaultHeadlessPluginIds, loadHeadlessPlugins } from "./plugins/index";
+import { buildWorldAndSceneConfig } from "./worldAndSceneConfig";
 
 export interface SolitudeHeadlessLoopOptions {
   extraEntities?: readonly EntityConfig[];
   pluginIds?: readonly string[];
-  runtimeOptions?: Parameters<typeof loadPlugins>[1];
+  runtimeOptions?: Parameters<typeof loadHeadlessPlugins>[1];
 }
 
 export interface SolitudeHeadlessLoop {
@@ -25,8 +25,8 @@ export function createSolitudeHeadlessLoop(
   options: SolitudeHeadlessLoopOptions = {},
 ): SolitudeHeadlessLoop {
   const config = buildWorldAndSceneConfig();
-  const plugins = loadPlugins(
-    [...(options.pluginIds ?? defaultPluginIds)],
+  const plugins = loadHeadlessPlugins(
+    [...(options.pluginIds ?? defaultHeadlessPluginIds)],
     options.runtimeOptions,
   );
 
@@ -47,4 +47,4 @@ export {
   buildSolarSystemShipEntity,
 } from "./plugins/solarSystem/index";
 export { buildDefaultSolarSystemConfigs } from "./plugins/solarSystem/solarSystem";
-export { defaultPluginIds, loadPlugins };
+export { defaultHeadlessPluginIds, loadHeadlessPlugins };

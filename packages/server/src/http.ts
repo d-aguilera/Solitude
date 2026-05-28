@@ -8,7 +8,7 @@ import {
   type SolitudeServerMessage,
   type SolitudeSocketClientMessage,
 } from "@solitude/protocol/protocol";
-import { constants, readFileSync, statSync } from "node:fs";
+import { constants, statSync } from "node:fs";
 import { access, readFile } from "node:fs/promises";
 import {
   createServer,
@@ -112,38 +112,6 @@ export function createSolitudeHttpRequestHandler({
     }
 
     const requestUrl = new URL(request.url ?? "/", "http://localhost");
-
-    if (
-      request.method === "GET" &&
-      !resolvedStaticAssetRoot &&
-      requestUrl.pathname === "/"
-    ) {
-      sendText(response, 200, "text/html; charset=utf-8", getLobbyClientHtml());
-      return;
-    }
-
-    if (
-      request.method === "GET" &&
-      !resolvedStaticAssetRoot &&
-      requestUrl.pathname === "/remote.html"
-    ) {
-      sendText(
-        response,
-        200,
-        "text/html; charset=utf-8",
-        getRemoteClientHtml(),
-      );
-      return;
-    }
-
-    if (
-      request.method === "GET" &&
-      !resolvedStaticAssetRoot &&
-      requestUrl.pathname === "/remote.css"
-    ) {
-      sendText(response, 200, "text/css; charset=utf-8", getRemoteClientCss());
-      return;
-    }
 
     if (request.method === "GET" && requestUrl.pathname === "/events") {
       const gameId = requestUrl.searchParams.get("gameId");
@@ -852,26 +820,5 @@ function isNodeErrorCode(value: unknown, code: string): boolean {
     typeof value === "object" &&
     "code" in value &&
     value.code === code
-  );
-}
-
-function getLobbyClientHtml(): string {
-  return readFileSync(
-    new URL("../../solitude/lobby.html", import.meta.url),
-    "utf8",
-  );
-}
-
-function getRemoteClientHtml(): string {
-  return readFileSync(
-    new URL("../../solitude/remote.html", import.meta.url),
-    "utf8",
-  );
-}
-
-function getRemoteClientCss(): string {
-  return readFileSync(
-    new URL("../../solitude/remote.css", import.meta.url),
-    "utf8",
   );
 }

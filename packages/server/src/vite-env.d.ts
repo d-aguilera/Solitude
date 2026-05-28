@@ -1,4 +1,4 @@
 declare module "*.obj?raw" {
-  const content: string;
-  export default content;
+  const text: string;
+  export default text;
 }

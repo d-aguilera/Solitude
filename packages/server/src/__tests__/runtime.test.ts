@@ -1,11 +1,11 @@
 import { vec3 } from "@solitude/engine/math";
 import type { ControlledBody } from "@solitude/engine/world";
+import { describe, expect, it } from "vitest";
+import { createSolitudeServerGame } from "../runtime";
 import {
   buildDefaultSolarSystemConfigs,
   buildSolarSystemShipEntity,
-} from "solitude/headless";
-import { describe, expect, it } from "vitest";
-import { createSolitudeServerGame } from "../runtime";
+} from "../solitude/headless";
 
 describe("Solitude server runtime", () => {
   it("steps the default headless game with entity-addressed controls and reuses snapshots", () => {

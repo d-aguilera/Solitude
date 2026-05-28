@@ -1,7 +1,7 @@
 import { vec3 } from "@solitude/engine/math";
 import type { ControlledBody } from "@solitude/engine/world";
-import { createSolitudeHeadlessLoop } from "solitude/headless";
 import { describe, expect, it } from "vitest";
+import { createSolitudeHeadlessLoop } from "../solitude/headless";
 
 describe("server-style headless Solitude composition", () => {
   it("builds the default Solitude world through public exports and advances spacecraft dynamics", () => {

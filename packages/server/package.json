@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./headless": "./src/solitude/headless.ts",
     "./http": "./src/http.ts",
     "./runtime": "./src/runtime.ts",
     "./sessions": "./src/sessions.ts",
@@ -14,7 +15,6 @@
     "@solitude/engine": "0.0.0",
     "@solitude/protocol": "0.0.0",
     "@types/ws": "^8.18.1",
-    "solitude": "0.0.0",
     "ws": "^8.21.0"
   },
   "scripts": {

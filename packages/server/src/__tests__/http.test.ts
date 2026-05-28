@@ -12,7 +12,30 @@ import {
 
 describe("Solitude HTTP server", () => {
   it("serves the interactive probe page", async () => {
-    const server = await startTestServer();
+    const server = await startSolitudeHttpServer({
+      ...createDefaultSolitudeHttpServerOptions(),
+      devAssetHandler: async (request, response) => {
+        if (request.url === "/") {
+          response.writeHead(200, { "content-type": "text/html" });
+          response.end(
+            'Solitude<script type="module" src="/src/remoteLobby.ts">',
+          );
+          return true;
+        }
+        if (request.url === "/remote.html") {
+          response.writeHead(200, { "content-type": "text/html" });
+          response.end('<script type="module" src="/src/remoteClient.ts">');
+          return true;
+        }
+        if (request.url === "/remote.css") {
+          response.writeHead(200, { "content-type": "text/css" });
+          response.end("body{}");
+          return true;
+        }
+        return false;
+      },
+      port: 0,
+    });
     try {
       const response = await fetch(`${server.url}/`);
 

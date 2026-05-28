@@ -82,10 +82,11 @@
 - Core owns generic focus, primary-view plumbing, simulation phase order, gravity, spin, collision, setup, render preparation, and plugin port/capability contracts.
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
-- Server runtime proof lives in `@solitude/server/runtime`; it composes `solitude/headless`, steps entity-addressed controls, and reuses runtime snapshot storage.
+- Server runtime proof lives in `@solitude/server/runtime`; it composes `@solitude/server/headless`, steps entity-addressed controls, and reuses runtime snapshot storage.
 - Server remote client lives in `packages/solitude/lobby.html` and `packages/solitude/remote.html`; `npm run dev:server` serves the lobby at `/` and the viewer at `/remote.html` so separate tabs join as distinct clients, receive authoritative model/snapshot messages over WebSocket, send server-authoritative controls for their assigned ship, release ships on disconnect, interpolate locally, and render through `@solitude/browser`.
 - Shared browser-safe protocol/client helpers live in `@solitude/protocol`; `@solitude/server` imports that contract directly and no longer exports client/protocol shims.
 - Browser remote-world mirror proof lives in `@solitude/browser/remoteWorldMirror`; it applies authoritative runtime snapshots into a local world via a reusable indexed workspace.
+- Server-safe Solitude headless composition lives in `packages/server/src/solitude/`; `@solitude/server` intentionally does not depend on the browser-facing `solitude` package.
 - Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`.
 - Tests have moved into owning packages; root TypeScript/Vitest tooling no longer includes `src`.
 

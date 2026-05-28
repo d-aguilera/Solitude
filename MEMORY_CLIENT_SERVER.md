@@ -49,6 +49,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
   - `GET /health` for deployment health checks.
   - Legacy/debug HTTP routes remain for now: `POST /message`, `POST /run`, `POST /pause`, `POST /step`, and `GET /events?gameId=...`.
 - `@solitude/server` owns protocol, sessions, transport, ticker, HTTP/WebSocket serving, and authoritative Solitude headless runtime composition.
+- `@solitude/server` must not depend on the browser-facing `solitude` package. Its server-safe Solitude composition lives under `packages/server/src/solitude/` and includes only the headless world model, spacecraft dynamics, and autopilot pieces needed by the authoritative runtime.
 - Sessions create ships dynamically on join and remove them on explicit leave. The current named slots are still `ship:blue` and `ship:red`, but they are no longer pre-existing world entities.
 - Browser remote client now has first-class Solitude Vite entries:
   - `packages/solitude/lobby.html` -> `src/remoteLobby.ts` for creating/listing games;
@@ -87,6 +88,14 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Legacy HTTP/SSE routes remain for debug compatibility; the interactive path should stay on WebSocket.
 
 ## Slice Log
+
+### 2026-05-28
+
+- Moved server headless ownership into `@solitude/server`:
+  - removed the `@solitude/server` dependency on `solitude`;
+  - removed the old `solitude/headless` export;
+  - server-side Solitude composition now lives in `packages/server/src/solitude/`;
+  - `@solitude/server/headless` is the public server-side headless export.
 
 ### 2026-05-27
 
