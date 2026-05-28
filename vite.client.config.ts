@@ -1,17 +1,17 @@
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
-const solitudeRoot = resolve("packages/solitude");
+const serverClientRoot = resolve("packages/server/client");
 
 export default defineConfig({
-  root: solitudeRoot,
+  root: serverClientRoot,
   build: {
     emptyOutDir: true,
-    outDir: "../../dist/client",
+    outDir: "../../../dist/client",
     rollupOptions: {
       input: {
-        lobby: resolve(solitudeRoot, "lobby.html"),
-        remote: resolve(solitudeRoot, "remote.html"),
+        lobby: resolve(serverClientRoot, "lobby.html"),
+        remote: resolve(serverClientRoot, "remote.html"),
       },
     },
   },

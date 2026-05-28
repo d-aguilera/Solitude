@@ -8,7 +8,7 @@ import type {
   SolitudeGameId,
   SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
-import { createSolitudeRemoteClientRenderer } from "./remoteClientRenderer";
+import { createSolitudeRemoteClientRenderer } from "../../../solitude/src/remoteClientRenderer";
 
 interface SolitudeGameSummary {
   assignedEntityIds: string[];

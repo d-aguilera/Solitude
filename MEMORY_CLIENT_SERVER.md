@@ -52,8 +52,8 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - `@solitude/server` must not depend on the browser-facing `solitude` package. Its server-safe Solitude composition lives under `packages/server/src/solitude/` and includes only the headless world model, spacecraft dynamics, and autopilot pieces needed by the authoritative runtime.
 - Sessions create ships dynamically on join and remove them on explicit leave. The current named slots are still `ship:blue` and `ship:red`, but they are no longer pre-existing world entities.
 - Browser remote client now has first-class Solitude Vite entries:
-  - `packages/solitude/lobby.html` -> `src/remoteLobby.ts` for creating/listing games;
-  - `packages/solitude/remote.html` -> `src/remoteClient.ts` for joining, auto-running newly created games, and rendering snapshots.
+  - `packages/server/client/lobby.html` -> `src/remoteLobby.ts` for creating/listing games;
+  - `packages/server/client/remote.html` -> `src/remoteClient.ts` for joining, auto-running newly created games, and rendering snapshots.
 - Browser tabs generate distinct default client ids, receive authoritative game-model messages for dynamic ships, and rebuild their remote render mirror when ships join, leave, or disconnect.
 - Remote client rendering is decoupled from snapshot arrival: server snapshots feed a delayed interpolation buffer, while the browser renders through `requestAnimationFrame`.
 - Remote mode intentionally runs only render/readout-safe Solitude plugins in the browser. Server-authoritative spacecraft and autopilot controls are sent over protocol; browser-only display/readout state stays local.
@@ -131,7 +131,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Moved protocol/client helpers into `@solitude/protocol` and shifted the probe browser runtime into a Solitude-owned remote client module.
 - Removed the old `@solitude/server/client` and `@solitude/server/protocol` compatibility exports; server code imports the shared protocol contract directly.
 - Added the first-class Solitude remote-client Vite entry and moved the probe page/style ownership out of `@solitude/server`.
-- Added production-like built-asset serving: `npm run start:server` serves `dist/remote.html`, hashed assets, and authoritative server routes from one Node process.
+- Added production-like built-asset serving: `npm run start:server` serves `dist/client/remote.html`, hashed assets, and authoritative server routes from one Node process.
 - Matured server timing from interval-assumed ticks to elapsed-clock accumulation with fixed simulation substeps.
 - Added lifecycle cleanup for empty games after explicit leave and pause matching game tickers when sessions disappear.
 - Matured remote client runtime/rendering:
