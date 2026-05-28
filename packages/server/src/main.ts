@@ -1,4 +1,3 @@
-import { access } from "node:fs/promises";
 import { resolve } from "node:path";
 import {
   createDefaultSolitudeHttpServerOptions,
@@ -7,19 +6,13 @@ import {
 
 const port = Number(process.env.PORT ?? 8787);
 const hostname = process.env.HOST ?? "127.0.0.1";
-const staticAssetRoot = resolve(process.env.DIST_DIR ?? "dist/client");
+const staticAssetRoot = process.env.DIST_DIR
+  ? resolve(process.env.DIST_DIR)
+  : undefined;
 
 void main();
 
 async function main(): Promise<void> {
-  try {
-    await access(resolve(staticAssetRoot, "remote.html"));
-  } catch {
-    throw new Error(
-      `Built remote client not found in ${staticAssetRoot}. Run npm run build:client first.`,
-    );
-  }
-
   const server = await startSolitudeHttpServer({
     ...createDefaultSolitudeHttpServerOptions(),
     hostname,
@@ -28,7 +21,9 @@ async function main(): Promise<void> {
   });
 
   console.log(`Solitude server listening at ${server.url}`);
-  console.log(`Serving built remote client from ${staticAssetRoot}`);
+  if (staticAssetRoot) {
+    console.log(`Serving built client from ${staticAssetRoot}`);
+  }
 
   const shutdown = async () => {
     await server.close();

@@ -11,6 +11,7 @@
     "check:boundaries": "node scripts/check-package-boundaries.mjs",
     "check:boundaries:self-test": "node scripts/check-package-boundaries.mjs --self-test",
     "clean:dist": "node scripts/clean-dist.mjs",
+    "dev:client": "vite -c vite.client.config.ts --host",
     "dev:server": "node scripts/run-server-dev.mjs",
     "format": "prettier --write \"packages/**/*.{ts,tsx,js,jsx,json,css,html,md}\" \"scripts/**/*.{js,mjs}\" \"*.{ts,tsx,js,jsx,json,css,html,md}\"",
     "format:check": "prettier --check \"packages/**/*.{ts,tsx,js,jsx,json,css,html,md}\" \"scripts/**/*.{js,mjs}\" \"*.{ts,tsx,js,jsx,json,css,html,md}\"",
@@ -24,7 +25,7 @@
     "start:server": "node dist/server/main.js",
     "typecheck": "npm run check:boundaries && npm run typecheck --workspaces",
     "test": "vitest --run",
-    "serve:client": "serve dist/client",
+    "serve:client": "serve -c ../../packages/client/serve.json dist/client",
     "serve:dist": "serve dist",
     "serve:standalone": "serve dist/standalone"
   },

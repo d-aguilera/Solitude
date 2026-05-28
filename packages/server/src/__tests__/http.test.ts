@@ -62,10 +62,6 @@ describe("Solitude HTTP server", () => {
       '<script type="module" src="/assets/remote.js"></script>',
     );
     await writeFile(
-      join(assetRoot, "lobby.html"),
-      '<script type="module" src="/assets/lobby.js"></script>',
-    );
-    await writeFile(
       join(assetRoot, "index.html"),
       '<script type="module" src="/assets/index.js"></script>',
     );
@@ -79,13 +75,13 @@ describe("Solitude HTTP server", () => {
     });
     try {
       const rootResponse = await fetch(`${server.url}/`);
-      expect(await rootResponse.text()).toContain("/assets/lobby.js");
+      expect(await rootResponse.text()).toContain("/assets/index.js");
 
       const remoteResponse = await fetch(`${server.url}/remote.html`);
       expect(await remoteResponse.text()).toContain("/assets/remote.js");
 
-      const standaloneResponse = await fetch(`${server.url}/index.html`);
-      expect(await standaloneResponse.text()).toContain("/assets/index.js");
+      const indexResponse = await fetch(`${server.url}/index.html`);
+      expect(await indexResponse.text()).toContain("/assets/index.js");
 
       const scriptResponse = await fetch(`${server.url}/assets/remote.js`);
       expect(scriptResponse.headers.get("content-type")).toContain(

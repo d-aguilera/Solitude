@@ -24,7 +24,6 @@ COPY --from=builder /app/dist ./dist
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=8080
-ENV DIST_DIR=dist/client
 
 EXPOSE 8080
 

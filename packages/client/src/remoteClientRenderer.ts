@@ -8,14 +8,14 @@ import {
 } from "@solitude/engine/runtime";
 import type { EntityConfig } from "@solitude/engine/world";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
-import { buildWorldAndSceneConfig } from "./config/worldAndSceneConfig";
+import { buildWorldAndSceneConfig } from "solitude/config/worldAndSceneConfig";
 import {
   hudPanelCapability,
   isHudPanelProvider,
   type HudPanelProvider,
-} from "./plugins/hud/capabilities";
-import { clearHudGrid, createHudGrid } from "./plugins/hud/grid";
-import { loadPlugins } from "./plugins/index";
+} from "solitude/plugins/hud/capabilities";
+import { clearHudGrid, createHudGrid } from "solitude/plugins/hud/grid";
+import { loadPlugins } from "solitude/plugins/index";
 import { createRuntimeSnapshotInterpolationBuffer } from "./remoteSnapshotInterpolator";
 
 const remoteRenderPluginIds = [

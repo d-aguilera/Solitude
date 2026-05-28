@@ -55,10 +55,11 @@
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, layout, Canvas 2D, WebGL rasterizer adapters, and remote-world mirror helpers.
 - `packages/protocol/src/`: browser-safe client/server protocol types, message guards, HTTP/WebSocket client helpers, and keyboard input patching.
+- `packages/client/src/`: deployable remote browser client, server URL adapter, authoritative snapshot interpolation, and remote rendering composition.
 - `packages/server/src/`: Node-oriented, non-DOM server adapter experiments for authoritative headless Solitude games.
 - `packages/solitude/src/`: Solitude app bootstrap, default config, plugin catalog, scenarios, spacecraft operator, playback, telemetry, and product-specific behavior.
 - Production and test source lives under `packages/*`; the root `src` directory has been removed.
-- Root Vite config uses `packages/solitude` as the app root and still builds to root `dist`.
+- Root Vite config uses `packages/solitude` as the standalone app root; dedicated Vite configs build `dist/client`, `dist/server`, and `dist/standalone`.
 
 ## Runtime Flow
 
@@ -83,7 +84,7 @@
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
 - Server runtime proof lives in `packages/server/src/runtime.ts`; it composes server-local headless Solitude code, steps entity-addressed controls, and reuses runtime snapshot storage.
-- Server remote client lives in `packages/server/client/`; `npm run dev:server` serves the lobby at `/` and the viewer at `/remote.html` so separate tabs join as distinct clients, receive authoritative model/snapshot messages over WebSocket, send server-authoritative controls for their assigned ship, release ships on disconnect, interpolate locally, and render through `@solitude/browser`.
+- Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, receives authoritative model/snapshot messages over WebSocket, sends server-authoritative controls for its assigned ship, interpolates locally, and renders through `@solitude/browser`.
 - Shared browser-safe protocol/client helpers live in `@solitude/protocol`; `@solitude/server` imports that contract directly and no longer exports client/protocol shims.
 - Browser remote-world mirror proof lives in `@solitude/browser/remoteWorldMirror`; it applies authoritative runtime snapshots into a local world via a reusable indexed workspace.
 - Server-safe Solitude headless composition lives in `packages/server/src/solitude/`; `@solitude/server` intentionally does not depend on the browser-facing `solitude` package.
@@ -122,11 +123,12 @@
 ## Local Dev Workflow
 
 - `npm run dev` runs `typecheck` + `vitest run` first, then starts Vite with `--host`.
+- `npm run dev:server` starts the API/WebSocket server only; `npm run dev:client` starts the remote browser client and can point at the server with `?server=http://127.0.0.1:8787` or `VITE_SOLITUDE_SERVER_URL`.
 - `npm run typecheck` runs TypeScript no-emit.
 - `npm run test` runs Vitest once.
 - `npm run build` produces three deployables: `dist/server`, `dist/client`, and `dist/standalone`.
 - `npm run build:client`, `npm run build:server`, and `npm run build:standalone` build those targets independently.
-- `npm run start:server` starts the authoritative Node server bundle against built `dist/client` assets; run `npm run build` first.
+- `npm run start:server` starts the authoritative Node server bundle; set `DIST_DIR=dist/client` only for optional single-origin serving of built client assets.
 
 ## Next Steps Snapshot
 

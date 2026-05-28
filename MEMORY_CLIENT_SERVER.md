@@ -30,15 +30,16 @@ Package responsibilities:
 - `@solitude/engine`: generic world, physics, runtime snapshots, render data, and runtime seams.
 - `@solitude/browser`: browser rendering/rasterizers, input adapters, and remote-world rendering helpers.
 - `@solitude/protocol`: browser-safe protocol types, message constructors/guards, HTTP/WebSocket client adapters, and input patching helpers.
-- `solitude`: Solitude-specific config, plugins, assets, and browser client entrypoints.
-- `@solitude/server`: authoritative sessions, protocol, ticking, HTTP/WebSocket transport, and static client serving.
+- `solitude`: Solitude-specific standalone app, config, plugins, assets, and shared product composition used by the client where needed.
+- `@solitude/client`: deployable static browser client for lobby/viewer, configurable server URL, authoritative snapshot interpolation, and remote rendering composition.
+- `@solitude/server`: authoritative sessions, protocol, ticking, and HTTP/WebSocket transport.
 
 Standalone browser mode is migration scaffolding, not the destination. Keep `@solitude/browser` and `@solitude/server` separate outer adapters over shared engine/Solitude composition.
 
 ## Current Architecture
 
-- The current working proof is `npm run dev:server` on `127.0.0.1:8787`.
-- Production-like local mode is `npm run build` then `npm run start:server`; the Node server runs from `dist/server/main.js` and serves the built remote client from `dist/client`.
+- The current working proof is `npm run dev:server` for the API/WebSocket server plus `npm run dev:client` for the remote browser client. In separate-origin dev, pass `?server=http://127.0.0.1:8787` or set `VITE_SOLITUDE_SERVER_URL`.
+- Production-like local mode is `npm run build` then `npm run start:server`; the Node server runs from `dist/server/main.js`. The static client deployable is `dist/client` and points at the server through `VITE_SOLITUDE_SERVER_URL` or a `?server=` query parameter.
 - Deployable outputs are intentionally split:
   - `dist/server`: bundled authoritative Node server, no Vite runtime dependency;
   - `dist/client`: lobby/viewer assets for the client-server app;
@@ -49,15 +50,16 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
   - `GET /health` for deployment health checks.
   - Legacy/debug HTTP routes remain for now: `POST /message`, `POST /run`, `POST /pause`, `POST /step`, and `GET /events?gameId=...`.
 - `@solitude/server` owns protocol, sessions, transport, ticker, HTTP/WebSocket serving, and authoritative Solitude headless runtime composition.
+- `@solitude/client` owns the remote lobby/viewer deployable, server URL selection, browser-side snapshot interpolation, and remote render composition.
 - `@solitude/server` must not depend on the browser-facing `solitude` package. Its server-safe Solitude composition lives under `packages/server/src/solitude/` and includes only the headless world model, spacecraft dynamics, and autopilot pieces needed by the authoritative runtime.
 - Sessions create ships dynamically on join and remove them on explicit leave. The current named slots are still `ship:blue` and `ship:red`, but they are no longer pre-existing world entities.
-- Browser remote client now has first-class Solitude Vite entries:
-  - `packages/server/client/lobby.html` -> `src/remoteLobby.ts` for creating/listing games;
-  - `packages/server/client/remote.html` -> `src/remoteClient.ts` for joining, auto-running newly created games, and rendering snapshots.
+- Browser remote client now has first-class Vite entries:
+  - `packages/client/index.html` -> `src/remoteLobby.ts` for creating/listing games;
+  - `packages/client/remote.html` -> `src/remoteClient.ts` for joining, auto-running newly created games, and rendering snapshots.
 - Browser tabs generate distinct default client ids, receive authoritative game-model messages for dynamic ships, and rebuild their remote render mirror when ships join, leave, or disconnect.
 - Remote client rendering is decoupled from snapshot arrival: server snapshots feed a delayed interpolation buffer, while the browser renders through `requestAnimationFrame`.
 - Remote mode intentionally runs only render/readout-safe Solitude plugins in the browser. Server-authoritative spacecraft and autopilot controls are sent over protocol; browser-only display/readout state stays local.
-- The dev server keeps Vite transforms on the same origin but closes Vite's websocket; only `8787` should be exposed.
+- Local development now uses separate server/client origins by default; CORS headers are enabled on server HTTP routes.
 
 ## Important Semantics
 
@@ -96,6 +98,10 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
   - removed the old `solitude/headless` export;
   - server-side Solitude composition now lives in `packages/server/src/solitude/`;
   - removed unused `@solitude/server` public subpath exports so server internals stay private.
+- Promoted the remote browser app into `@solitude/client`:
+  - moved lobby/viewer HTML, CSS, remote entrypoints, snapshot interpolation, and remote render composition into `packages/client`;
+  - added configurable server URLs through `VITE_SOLITUDE_SERVER_URL` or `?server=...`;
+  - made `@solitude/server` API/WebSocket-only by default, with `DIST_DIR` as an optional single-origin asset serving compatibility mode.
 
 ### 2026-05-27
 
@@ -113,16 +119,16 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Split deployment artifacts:
   - `npm run build` now produces `dist/server`, `dist/client`, and `dist/standalone`;
   - production `npm run start:server` executes the server bundle directly instead of loading TS through Vite;
-  - Fly Docker runtime stage installs production dependencies only and serves `dist/client`.
+  - Fly Docker runtime stage installs production dependencies only and runs the server deployable.
 
 ### 2026-05-25
 
 - Documented final target as a client-server-only deployment.
-- Added real engine-rendered remote snapshots in the probe:
+- Added real engine-rendered remote snapshots in the client:
   - `remoteWorldMirror`;
   - `remoteWorldRenderer`;
   - `remoteCanvasRenderer`;
-  - Solitude `remoteClientRenderer`.
+  - `@solitude/client` remote render composition.
 - Kept Vite transforms behind the same dev HTTP origin while closing the websocket/HMR port.
 - Added server-owned fixed simulation substeps for `/run`.
 - Added duration-aware server input handling for brief taps during timed runs.

@@ -8,7 +8,7 @@ import type {
   SolitudeGameId,
   SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
-import { createSolitudeRemoteClientRenderer } from "../../../solitude/src/remoteClientRenderer";
+import { createSolitudeRemoteClientRenderer } from "./remoteClientRenderer";
 
 interface SolitudeGameSummary {
   assignedEntityIds: string[];
@@ -34,12 +34,14 @@ fields.clientId.value = readClientId(fields.clientId.value);
 
 const gamesListEl = queryElement("#gamesList");
 const keyStatusEl = queryElement("#keyStatus");
+const newGameLink = queryAnchor("#newGameLink");
 const runStatusEl = queryElement("#runStatus");
 const remoteHudEl = queryElement("#remoteHud");
 const snapshotCanvas = queryCanvas("#snapshotCanvas");
 const snapshotStatusEl = queryElement("#snapshotStatus");
 const statusEl = queryElement("#status");
 const searchParams = new URLSearchParams(window.location.search);
+const serverBaseUrl = readServerBaseUrl(searchParams);
 const initialGameId = searchParams.get("gameId");
 const shouldCreateGame = searchParams.get("create") === "1";
 const shouldAutostart = searchParams.get("autostart") === "1";
@@ -50,6 +52,7 @@ const engineRenderer = createSolitudeRemoteClientRenderer({
   hudElement: remoteHudEl,
   statusElement: snapshotStatusEl,
 });
+newGameLink.href = createLobbyHref();
 
 let client = createClient();
 let runActive = false;
@@ -134,7 +137,7 @@ function resetClientForCurrentIdentity(): void {
 }
 
 async function refreshGames(): Promise<void> {
-  const response = await fetch("/games");
+  const response = await fetch(createHttpUrl("/games"));
   const payload = (await response.json()) as SolitudeGameListResponse;
   renderGames(payload.games ?? []);
 }
@@ -171,8 +174,7 @@ function renderGames(games: readonly SolitudeGameSummary[]): void {
       joinButton.removeAttribute("href");
       joinButton.setAttribute("aria-disabled", "true");
     } else {
-      joinButton.href =
-        "/remote.html?gameId=" + encodeURIComponent(game.gameId);
+      joinButton.href = createRemoteHref({ gameId: game.gameId });
     }
 
     item.append(summary, joinButton);
@@ -352,6 +354,10 @@ function queryButton(selector: string): HTMLButtonElement {
   return queryElementOfType(selector, HTMLButtonElement);
 }
 
+function queryAnchor(selector: string): HTMLAnchorElement {
+  return queryElementOfType(selector, HTMLAnchorElement);
+}
+
 function queryCanvas(selector: string): HTMLCanvasElement {
   return queryElementOfType(selector, HTMLCanvasElement);
 }
@@ -376,8 +382,49 @@ function queryElementOfType<T extends Element>(
 }
 
 function createSocketUrl(): string {
-  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  return `${protocol}//${window.location.host}/socket`;
+  const socketUrl = new URL(serverBaseUrl.href);
+  socketUrl.protocol = socketUrl.protocol === "https:" ? "wss:" : "ws:";
+  socketUrl.pathname = "/socket";
+  socketUrl.search = "";
+  socketUrl.hash = "";
+  return socketUrl.href;
+}
+
+function createHttpUrl(pathname: string): string {
+  const url = new URL(serverBaseUrl.href);
+  url.pathname = pathname;
+  url.search = "";
+  url.hash = "";
+  return url.href;
+}
+
+function createLobbyHref(): string {
+  const url = new URL("/", window.location.href);
+  if (shouldPersistServerUrl()) {
+    url.searchParams.set("server", serverBaseUrl.href);
+  }
+  return url.href;
+}
+
+function createRemoteHref(params: Record<string, string>): string {
+  const url = new URL("/remote.html", window.location.href);
+  if (shouldPersistServerUrl()) {
+    url.searchParams.set("server", serverBaseUrl.href);
+  }
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.set(key, value);
+  }
+  return url.href;
+}
+
+function readServerBaseUrl(searchParams: URLSearchParams): URL {
+  const fromQuery = searchParams.get("server");
+  const fromBuild = import.meta.env.VITE_SOLITUDE_SERVER_URL;
+  return new URL(fromQuery || fromBuild || window.location.origin);
+}
+
+function shouldPersistServerUrl(): boolean {
+  return serverBaseUrl.origin !== window.location.origin;
 }
 
 function readClientId(fallback: string): string {

@@ -1,17 +1,17 @@
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
-const serverClientRoot = resolve("packages/server/client");
+const clientRoot = resolve("packages/client");
 
 export default defineConfig({
-  root: serverClientRoot,
+  root: clientRoot,
   build: {
     emptyOutDir: true,
-    outDir: "../../../dist/client",
+    outDir: "../../dist/client",
     rollupOptions: {
       input: {
-        lobby: resolve(serverClientRoot, "lobby.html"),
-        remote: resolve(serverClientRoot, "remote.html"),
+        index: resolve(clientRoot, "index.html"),
+        remote: resolve(clientRoot, "remote.html"),
       },
     },
   },

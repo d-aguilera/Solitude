@@ -14,6 +14,8 @@ interface SolitudeGameListResponse {
 
 const CLIENT_ID_STORAGE_KEY = "solitude.remoteClientId";
 
+const searchParams = new URLSearchParams(window.location.search);
+const serverBaseUrl = readServerBaseUrl(searchParams);
 const createGameButton = queryButton("#createGame");
 const gamesListEl = queryElement("#gamesList");
 const refreshGamesButton = queryButton("#refreshGames");
@@ -33,11 +35,11 @@ function createGame(): void {
   createGameButton.disabled = true;
   statusEl.textContent = "Opening game";
   readClientId();
-  window.location.href = "/remote.html?create=1&autostart=1";
+  window.location.href = createRemoteHref({ autostart: "1", create: "1" });
 }
 
 async function refreshGames(): Promise<void> {
-  const response = await fetch("/games");
+  const response = await fetch(createHttpUrl("/games"));
   const payload = (await response.json()) as SolitudeGameListResponse;
   renderGames(payload.games ?? []);
 }
@@ -74,7 +76,7 @@ function renderGames(games: readonly SolitudeGameSummary[]): void {
       joinLink.removeAttribute("href");
       joinLink.setAttribute("aria-disabled", "true");
     } else {
-      joinLink.href = "/remote.html?gameId=" + encodeURIComponent(game.gameId);
+      joinLink.href = createRemoteHref({ gameId: game.gameId });
     }
 
     item.append(summary, joinLink);
@@ -92,6 +94,35 @@ function readClientId(): string {
   const generated = "client:" + Math.random().toString(36).slice(2, 8);
   window.sessionStorage.setItem(CLIENT_ID_STORAGE_KEY, generated);
   return generated;
+}
+
+function createHttpUrl(pathname: string): string {
+  const url = new URL(serverBaseUrl.href);
+  url.pathname = pathname;
+  url.search = "";
+  url.hash = "";
+  return url.href;
+}
+
+function createRemoteHref(params: Record<string, string>): string {
+  const url = new URL("/remote.html", window.location.href);
+  if (shouldPersistServerUrl()) {
+    url.searchParams.set("server", serverBaseUrl.href);
+  }
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.set(key, value);
+  }
+  return url.href;
+}
+
+function readServerBaseUrl(searchParams: URLSearchParams): URL {
+  const fromQuery = searchParams.get("server");
+  const fromBuild = import.meta.env.VITE_SOLITUDE_SERVER_URL;
+  return new URL(fromQuery || fromBuild || window.location.origin);
+}
+
+function shouldPersistServerUrl(): boolean {
+  return serverBaseUrl.origin !== window.location.origin;
 }
 
 function queryButton(selector: string): HTMLButtonElement {

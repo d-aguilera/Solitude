@@ -10,7 +10,6 @@ primary_region = 'iad'
   dockerfile = 'Dockerfile'
 
 [env]
-  DIST_DIR = 'dist/client'
   HOST = '0.0.0.0'
   NODE_ENV = 'production'
   PORT = '8080'

@@ -572,7 +572,7 @@ function resolveStaticAssetPath(root: string, pathname: string): string | null {
   }
 
   const relativePath =
-    decodedPathname === "/" ? "lobby.html" : decodedPathname.slice(1);
+    decodedPathname === "/" ? "index.html" : decodedPathname.slice(1);
   const normalizedRelativePath = normalize(relativePath);
   if (
     normalizedRelativePath.startsWith("..") ||
