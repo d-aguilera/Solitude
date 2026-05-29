@@ -16,13 +16,6 @@ export default defineConfig({
     target: "node22",
   },
   ssr: {
-    noExternal: [
-      "@solitude/browser",
-      "@solitude/engine",
-      "@solitude/protocol",
-      "@solitude/server",
-      "@solitude/sim",
-      "solitude",
-    ],
+    noExternal: true,
   },
 });
