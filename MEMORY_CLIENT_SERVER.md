@@ -39,15 +39,16 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 
 ## Current Architecture
 
-- The current working proof is `npm run dev:server` for the API/WebSocket server plus `npm run dev:client` for the remote browser client. In separate-origin dev, pass `?server=http://127.0.0.1:8787` or set `VITE_SOLITUDE_SERVER_URL`.
-- Production-like local mode is `npm run build` then `npm run start:server`; the Node server runs from `dist/server/main.js`. The static client deployable is `dist/client` and points at the server through `VITE_SOLITUDE_SERVER_URL` or a `?server=` query parameter.
+- The current working proof is `npm run dev:server`, which starts the API/WebSocket server and serves the Vite-backed client landing/viewer pages from the same origin. `npm run dev:client` can still start a separate-origin remote browser client; pass `?server=http://127.0.0.1:8787` or set `VITE_SOLITUDE_SERVER_URL`.
+- Production-like local mode is `npm run build` then `npm run start:server`; the Node server runs from `dist/server/main.js` and serves `dist/client` from the same origin when it exists. `DIST_DIR` can override the built client asset directory.
 - Deployable outputs are intentionally split:
   - `dist/server`: bundled authoritative Node server, no Vite runtime dependency;
   - `dist/client`: lobby/viewer assets for the client-server app;
   - `dist/standalone`: static standalone browser app.
 - Transport is now production-shaped for the interactive path:
   - `GET /socket` upgrade for create/join/leave/input, run/pause, and authoritative snapshots.
-  - `GET /games` for simple lobby discovery.
+  - `GET /games` for lobby discovery, including running/stopped state.
+  - `DELETE /games/:gameId` for deleting games from the server landing page.
   - `GET /health` for deployment health checks.
   - Legacy/debug HTTP routes remain for now: `POST /message`, `POST /run`, `POST /pause`, `POST /step`, and `GET /events?gameId=...`.
 - `@solitude/server` owns protocol, sessions, transport, ticker, HTTP/WebSocket serving, and authoritative Solitude headless runtime composition.
@@ -57,6 +58,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Browser remote client now has first-class Vite entries:
   - `packages/client/index.html` -> `src/remoteLobby.ts` for creating/listing games;
   - `packages/client/remote.html` -> `src/remoteClient.ts` for joining, auto-running newly created games, and rendering snapshots.
+- The landing page at `/` lists games, shows running/stopped state, opens new games, pauses running games, and deletes games.
 - Browser tabs generate distinct default client ids, receive authoritative game-model messages for dynamic ships, and rebuild their remote render mirror when ships join, leave, or disconnect.
 - Remote client rendering is decoupled from snapshot arrival: server snapshots feed a delayed interpolation buffer, while the browser renders through `requestAnimationFrame`.
 - Remote mode intentionally runs only render/readout-safe Solitude plugins in the browser. Server-authoritative spacecraft and autopilot controls are sent over protocol; browser-only display/readout state stays local.
@@ -93,6 +95,15 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 ## Slice Log
 
 ### 2026-05-29
+
+- Added the server landing page management flow:
+  - `npm run dev:server` now serves the Vite-backed client landing/viewer pages from the API server origin;
+  - `npm run start:server` serves `dist/client` by default when present;
+  - the Fly Docker build produces both `dist/client` and `dist/server`, then the runtime image copies all of `dist`;
+  - the bundled server build forces `ws` to skip optional native `bufferutil`/UTF-8 validation addons because Vite's optional-peer shim can otherwise make `ws` call a missing `unmask` function in production bundles;
+  - `/games` includes running/stopped state;
+  - `DELETE /games/:gameId` deletes games and pauses their ticker;
+  - the client landing page can stop/delete listed games.
 
 - Removed duplication between browser Solitude and server-local Solitude composition:
   - added `@solitude/sim` as the shared browser-safe/Node-safe Solitude simulation package;

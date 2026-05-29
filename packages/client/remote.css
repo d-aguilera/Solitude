@@ -172,8 +172,30 @@ a.button[aria-disabled="true"] {
   grid-template-columns: minmax(0, 1fr) auto;
   padding: 10px;
 }
+.game-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
 .game-summary {
   color: #d7e6dc;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
+}
+button.danger {
+  background: #efb5b0;
+  color: #220908;
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+@media (max-width: 720px) {
+  .game-row {
+    grid-template-columns: 1fr;
+  }
+  .game-actions {
+    justify-content: flex-start;
+  }
 }

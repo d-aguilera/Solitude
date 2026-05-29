@@ -145,6 +145,7 @@ describe("Solitude HTTP server", () => {
             availableEntityIds: ["ship:red"],
             gameId: "game:1",
             maxClients: 2,
+            running: false,
             tick: 0,
           },
         ],
@@ -181,6 +182,43 @@ describe("Solitude HTTP server", () => {
         simulationStepMillis: 1000,
       });
 
+      const runningResponse = await fetch(`${server.url}/games`);
+      expect(await runningResponse.json()).toEqual({
+        games: [
+          {
+            assignedEntityIds: ["ship:blue"],
+            availableEntityIds: ["ship:red"],
+            gameId: "game:1",
+            maxClients: 2,
+            running: true,
+            tick: 0,
+          },
+        ],
+      });
+
+      await postJson(server, "/pause", { gameId: "game:1" });
+
+      const stoppedResponse = await fetch(`${server.url}/games`);
+      expect(await stoppedResponse.json()).toEqual({
+        games: [
+          {
+            assignedEntityIds: ["ship:blue"],
+            availableEntityIds: ["ship:red"],
+            gameId: "game:1",
+            maxClients: 2,
+            running: false,
+            tick: 0,
+          },
+        ],
+      });
+
+      await postJson(server, "/run", {
+        dtMillis: 1000,
+        gameId: "game:1",
+        intervalMillis: 10,
+        simulationStepMillis: 1000,
+      });
+
       await postJson(server, "/message", {
         type: "leaveGame",
         clientId: "client:a",
@@ -194,6 +232,42 @@ describe("Solitude HTTP server", () => {
       expect(await postJson(server, "/pause", { gameId: "game:1" })).toEqual({
         messages: [],
       });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("deletes games through HTTP and pauses their run loop", async () => {
+    const server = await startTestServer();
+    try {
+      await postJson(server, "/message", {
+        type: "createGame",
+        clientId: "client:a",
+        sequence: 1,
+      });
+      await postJson(server, "/run", {
+        dtMillis: 1000,
+        gameId: "game:1",
+        intervalMillis: 10,
+        simulationStepMillis: 1000,
+      });
+
+      const response = await fetch(
+        `${server.url}/games/${encodeURIComponent("game:1")}`,
+        { method: "DELETE" },
+      );
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ games: [] });
+      expect(await postJson(server, "/pause", { gameId: "game:1" })).toEqual({
+        messages: [],
+      });
+
+      const missingResponse = await fetch(
+        `${server.url}/games/${encodeURIComponent("game:1")}`,
+        { method: "DELETE" },
+      );
+      expect(missingResponse.status).toBe(404);
     } finally {
       await server.close();
     }
@@ -439,6 +513,7 @@ describe("Solitude HTTP server", () => {
           availableEntityIds: ["ship:blue"],
           gameId: "game:1",
           maxClients: 2,
+          running: false,
           tick: 0,
         },
       ]);

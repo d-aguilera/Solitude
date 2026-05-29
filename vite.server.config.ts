@@ -15,6 +15,10 @@ export default defineConfig({
     ssr: true,
     target: "node22",
   },
+  define: {
+    "process.env.WS_NO_BUFFER_UTIL": JSON.stringify("true"),
+    "process.env.WS_NO_UTF_8_VALIDATE": JSON.stringify("true"),
+  },
   ssr: {
     noExternal: true,
   },

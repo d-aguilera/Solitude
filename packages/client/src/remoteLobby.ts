@@ -5,6 +5,7 @@ interface SolitudeGameSummary {
   availableEntityIds: string[];
   gameId: SolitudeGameId;
   maxClients: number;
+  running?: boolean;
   tick: number;
 }
 
@@ -39,9 +40,15 @@ function createGame(): void {
 }
 
 async function refreshGames(): Promise<void> {
-  const response = await fetch(createHttpUrl("/games"));
-  const payload = (await response.json()) as SolitudeGameListResponse;
-  renderGames(payload.games ?? []);
+  try {
+    const response = await fetch(createHttpUrl("/games"));
+    const payload = (await response.json()) as SolitudeGameListResponse;
+    renderGames(payload.games ?? []);
+    statusEl.textContent = "Ready";
+  } catch (error) {
+    statusEl.textContent =
+      error instanceof Error ? error.message : "Refresh failed";
+  }
 }
 
 function renderGames(games: readonly SolitudeGameSummary[]): void {
@@ -61,6 +68,8 @@ function renderGames(games: readonly SolitudeGameSummary[]): void {
     summary.className = "game-summary";
     summary.textContent =
       game.gameId +
+      " | " +
+      (game.running ? "running" : "stopped") +
       " | tick " +
       game.tick +
       " | assigned " +
@@ -79,9 +88,60 @@ function renderGames(games: readonly SolitudeGameSummary[]): void {
       joinLink.href = createRemoteHref({ gameId: game.gameId });
     }
 
-    item.append(summary, joinLink);
+    const stopButton = document.createElement("button");
+    stopButton.className = "secondary";
+    stopButton.textContent = "Stop";
+    stopButton.disabled = !game.running;
+    stopButton.addEventListener("click", () => {
+      void stopGame(game.gameId);
+    });
+
+    const deleteButton = document.createElement("button");
+    deleteButton.className = "danger";
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", () => {
+      void deleteGame(game.gameId);
+    });
+
+    const actions = document.createElement("div");
+    actions.className = "game-actions";
+    actions.append(joinLink, stopButton, deleteButton);
+
+    item.append(summary, actions);
     gamesListEl.appendChild(item);
   }
+}
+
+async function stopGame(gameId: SolitudeGameId): Promise<void> {
+  statusEl.textContent = "Stopping " + gameId;
+  await postJson("/pause", { gameId });
+  await refreshGames();
+}
+
+async function deleteGame(gameId: SolitudeGameId): Promise<void> {
+  statusEl.textContent = "Deleting " + gameId;
+  const response = await fetch(
+    createHttpUrl("/games/" + encodeURIComponent(gameId)),
+    { method: "DELETE" },
+  );
+  if (!response.ok) {
+    const payload = (await response.json()) as {
+      messages?: Array<{ message?: string }>;
+    };
+    statusEl.textContent =
+      payload.messages?.[0]?.message ?? "Delete failed: " + gameId;
+    return;
+  }
+  await refreshGames();
+}
+
+async function postJson(pathname: string, body: unknown): Promise<unknown> {
+  const response = await fetch(createHttpUrl(pathname), {
+    body: JSON.stringify(body),
+    headers: { "content-type": "application/json" },
+    method: "POST",
+  });
+  return response.json();
 }
 
 function formatEntityList(entityIds: readonly string[]): string {

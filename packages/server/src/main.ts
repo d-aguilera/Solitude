@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   createDefaultSolitudeHttpServerOptions,
@@ -6,8 +7,9 @@ import {
 
 const port = Number(process.env.PORT ?? 8787);
 const hostname = process.env.HOST ?? "127.0.0.1";
-const staticAssetRoot = process.env.DIST_DIR
-  ? resolve(process.env.DIST_DIR)
+const staticAssetRootCandidate = resolve(process.env.DIST_DIR ?? "dist/client");
+const staticAssetRoot = existsSync(staticAssetRootCandidate)
+  ? staticAssetRootCandidate
   : undefined;
 
 void main();

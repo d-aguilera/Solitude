@@ -71,6 +71,15 @@ interface RunRequest extends StepRequest {
   simulationStepMillis: number;
 }
 
+interface GameListEntry {
+  assignedEntityIds: string[];
+  availableEntityIds: string[];
+  gameId: SolitudeGameId;
+  maxClients: number;
+  running: boolean;
+  tick: number;
+}
+
 export function createDefaultSolitudeHttpServerOptions(): SolitudeHttpServerOptions {
   return {
     hostname: "127.0.0.1",
@@ -133,7 +142,48 @@ export function createSolitudeHttpRequestHandler({
 
     if (request.method === "GET" && requestUrl.pathname === "/games") {
       pauseRemovedGames(ticker, transport.cleanupGames());
-      sendGameList(response, transport.listGames());
+      sendGameList(response, createGameList(transport, ticker));
+      return;
+    }
+
+    if (
+      request.method === "DELETE" &&
+      requestUrl.pathname.startsWith("/games/")
+    ) {
+      const gameId = readGameIdFromPath(requestUrl.pathname);
+      if (!gameId) {
+        sendJson(response, 400, {
+          messages: [
+            createErrorMessage({
+              code: "invalidRequest",
+              message: "Missing gameId",
+              sequence: 0,
+            }),
+          ],
+        });
+        return;
+      }
+      ticker.pauseGame(gameId);
+      const deleted = transport.deleteGame(gameId);
+      if (!deleted) {
+        sendJson(response, 404, {
+          messages: [
+            createErrorMessage({
+              code: "gameNotFound",
+              message: `Game not found: ${gameId}`,
+              sequence: 0,
+            }),
+          ],
+        });
+        return;
+      }
+      closeGameConnections(
+        gameId,
+        subscriptionsByGameId,
+        socketSubscriptionsByGameId,
+        socketSessionsBySocket,
+      );
+      sendGameList(response, createGameList(transport, ticker));
       return;
     }
 
@@ -464,7 +514,7 @@ function handleSocketMessage({
 
 function setCommonHeaders(response: ServerResponse): void {
   response.setHeader("Access-Control-Allow-Headers", "content-type");
-  response.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  response.setHeader("Access-Control-Allow-Methods", "DELETE,GET,POST,OPTIONS");
   response.setHeader("Access-Control-Allow-Origin", "*");
 }
 
@@ -475,6 +525,16 @@ function pauseRemovedGames(
   for (const gameId of gameIds) {
     ticker.pauseGame(gameId);
   }
+}
+
+function createGameList(
+  transport: SolitudeInProcessTransport,
+  ticker: ReturnType<typeof createSolitudeGameTicker>,
+): GameListEntry[] {
+  return transport.listGames().map((game) => ({
+    ...game,
+    running: ticker.isRunning(game.gameId),
+  }));
 }
 
 function sendJson(
@@ -492,7 +552,7 @@ function sendJson(
 
 function sendGameList(
   response: ServerResponse,
-  games: ReturnType<SolitudeInProcessTransport["listGames"]>,
+  games: readonly GameListEntry[],
 ): void {
   sendText(
     response,
@@ -500,6 +560,39 @@ function sendGameList(
     "application/json; charset=utf-8",
     JSON.stringify({ games }),
   );
+}
+
+function readGameIdFromPath(pathname: string): SolitudeGameId | null {
+  const encoded = pathname.slice("/games/".length);
+  if (!encoded || encoded.includes("/")) return null;
+  try {
+    return decodeURIComponent(encoded);
+  } catch {
+    return null;
+  }
+}
+
+function closeGameConnections(
+  gameId: SolitudeGameId,
+  subscriptionsByGameId: Map<SolitudeGameId, Set<ServerResponse>>,
+  socketSubscriptionsByGameId: Map<SolitudeGameId, Set<WebSocket>>,
+  socketSessionsBySocket: Map<WebSocket, SocketSession>,
+): void {
+  const eventSubscriptions = subscriptionsByGameId.get(gameId);
+  if (eventSubscriptions) {
+    for (const response of eventSubscriptions) {
+      response.end();
+    }
+    subscriptionsByGameId.delete(gameId);
+  }
+
+  const socketSubscriptions = socketSubscriptionsByGameId.get(gameId);
+  if (!socketSubscriptions) return;
+  for (const socket of [...socketSubscriptions]) {
+    socketSessionsBySocket.delete(socket);
+    socket.close();
+  }
+  socketSubscriptionsByGameId.delete(gameId);
 }
 
 function sendText(

@@ -125,12 +125,12 @@
 ## Local Dev Workflow
 
 - `npm run dev` runs `typecheck` + `vitest run` first, then starts Vite with `--host`.
-- `npm run dev:server` starts the API/WebSocket server only; `npm run dev:client` starts the remote browser client and can point at the server with `?server=http://127.0.0.1:8787` or `VITE_SOLITUDE_SERVER_URL`.
+- `npm run dev:server` starts the API/WebSocket server and serves the Vite-backed client landing/viewer pages from the same origin; `npm run dev:client` can still start the remote browser client separately and point at the server with `?server=http://127.0.0.1:8787` or `VITE_SOLITUDE_SERVER_URL`.
 - `npm run typecheck` runs TypeScript no-emit.
 - `npm run test` runs Vitest once.
 - `npm run build` produces three deployables: `dist/server`, `dist/client`, and `dist/standalone`.
 - `npm run build:client`, `npm run build:server`, and `npm run build:standalone` build those targets independently.
-- `npm run start:server` starts the authoritative Node server bundle; set `DIST_DIR=dist/client` only for optional single-origin serving of built client assets.
+- `npm run start:server` starts the authoritative Node server bundle and serves `dist/client` from the same origin when it exists; set `DIST_DIR` to override the built client asset directory.
 
 ## Next Steps Snapshot
 
