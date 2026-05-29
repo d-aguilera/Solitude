@@ -53,11 +53,12 @@
 ## Package Snapshot
 
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
+- `packages/sim/src/`: browser-safe and Node-safe Solitude simulation library: default world config, solar-system entity builders/assets, spacecraft operator dynamics, autopilot logic, and headless Solitude composition shared by server and browser/product packages.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, layout, Canvas 2D, WebGL rasterizer adapters, and remote-world mirror helpers.
 - `packages/protocol/src/`: browser-safe client/server protocol types and message guards.
 - `packages/client/src/`: deployable remote browser client, server URL adapter, HTTP/WebSocket client helpers, keyboard input patching, authoritative snapshot interpolation, and remote rendering composition.
-- `packages/server/src/`: Node-oriented, non-DOM server adapter experiments for authoritative headless Solitude games.
-- `packages/solitude/src/`: Solitude app bootstrap, default config, plugin catalog, scenarios, spacecraft operator, playback, telemetry, and product-specific behavior.
+- `packages/server/src/`: Node-oriented authoritative sessions, ticking, protocol transport, and HTTP/WebSocket serving for headless Solitude games.
+- `packages/solitude/src/`: Solitude standalone browser app bootstrap, browser/display plugin catalog, playback, telemetry, HUD/readout behavior, and product-specific browser UX.
 - Production and test source lives under `packages/*`; the root `src` directory has been removed.
 - Root Vite config uses `packages/solitude` as the standalone app root; dedicated Vite configs build `dist/client`, `dist/server`, and `dist/standalone`.
 
@@ -67,27 +68,27 @@
 - Solitude bootstrap builds config, loads the product plugin set, and calls browser runtime bootstrap.
 - `packages/browser/src/infra/domBootstrap.ts` wires DOM input, layout, renderers, game loop, and gravity engine.
 - `packages/engine/src/app/game.ts` runs per-tick simulation phases.
-- Solitude plugins provide spacecraft controls, vehicle dynamics, camera rigs, HUD overlay/readout behavior, playback behavior, and scenario/world-model content.
+- Shared Solitude simulation plugins from `@solitude/sim` provide spacecraft controls, vehicle dynamics, autopilot behavior, and scenario/world-model content; browser-only Solitude plugins provide camera rigs, HUD overlay/readout behavior, playback behavior, and standalone UX.
 - Solitude plugin order is runtime behavior; later loop/frame-policy plugins can override earlier ones, and DOM input handlers are consulted in reverse plugin order.
 
 ## Current State
 
 - Core loop works: input → physics → scene update → render → browser overlays.
 - Runtime world state is generic entity/capability based.
-- Solar-system content is contributed by `packages/solitude/src/plugins/solarSystem/`.
+- Solar-system content is owned by `@solitude/sim` and re-exported through browser Solitude wrappers where needed.
 - Body label content is contributed by `packages/solitude/src/plugins/bodyLabels/`; engine owns generic scene-label layout.
 - Main-view lookaround input/camera-offset controls live in `packages/solitude/src/plugins/mainViewLookaround/`.
-- Spacecraft propulsion/RCS/attitude, input bindings, spacecraft operator state, and the primary forward camera rig live in `packages/solitude/src/plugins/spacecraftOperator/`.
+- Spacecraft propulsion/RCS/attitude, input bindings, spacecraft operator state, and the primary forward camera rig live in `@solitude/sim` and are re-exported through browser Solitude wrappers where needed.
 - Runtime focus switching lives in `packages/solitude/src/plugins/operatorSwitch/`; `Tab` swaps foreground focus between `ship:blue` and `ship:red`.
 - During playback, `Tab` may switch the viewed focus while recorded controls continue applying to the entity focused when each playback phase was recorded.
 - Core owns generic focus, primary-view plumbing, simulation phase order, gravity, spin, collision, setup, render preparation, and plugin port/capability contracts.
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
-- Server runtime proof lives in `packages/server/src/runtime.ts`; it composes server-local headless Solitude code, steps entity-addressed controls, and reuses runtime snapshot storage.
+- Server runtime proof lives in `packages/server/src/runtime.ts`; it composes shared `@solitude/sim` headless Solitude code, steps entity-addressed controls, and reuses runtime snapshot storage.
 - Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, receives authoritative model/snapshot messages over WebSocket, sends server-authoritative controls for its assigned ship, interpolates locally, and renders through `@solitude/browser`.
 - Shared browser-safe protocol contract lives in `@solitude/protocol`; browser client adapters live in `@solitude/client`.
 - Browser remote-world mirror proof lives in `@solitude/browser/remoteWorldMirror`; it applies authoritative runtime snapshots into a local world via a reusable indexed workspace.
-- Server-safe Solitude headless composition lives in `packages/server/src/solitude/`; `@solitude/server` intentionally does not depend on the browser-facing `solitude` package.
+- Server-safe Solitude headless composition lives in `@solitude/sim`; `@solitude/server` intentionally does not depend on the browser-facing `solitude` package.
 - Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`.
 - Tests have moved into owning packages; root TypeScript/Vitest tooling no longer includes `src`.
 
@@ -99,6 +100,7 @@
 - `packages/engine/src/render/DefaultViewRenderer.ts`: projection + draw list assembly.
 - `packages/browser/src/infra/domBootstrap.ts`: browser runtime composition.
 - `packages/browser/src/infra/remoteWorldMirror.ts`: non-DOM authoritative snapshot apply mirror for future network clients.
+- `packages/sim/src/headless.ts`: shared server-safe/browser-safe Solitude headless composition.
 - `packages/server/src/runtime.ts`: non-networked authoritative server runtime proof.
 - `packages/solitude/src/bootstrap.ts`: Solitude browser app composition.
 - `packages/solitude/src/plugins/spacecraftOperator/`: spacecraft controls, dynamics, telemetry state, and forward camera rig.

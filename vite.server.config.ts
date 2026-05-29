@@ -21,6 +21,7 @@ export default defineConfig({
       "@solitude/engine",
       "@solitude/protocol",
       "@solitude/server",
+      "@solitude/sim",
       "solitude",
     ],
   },

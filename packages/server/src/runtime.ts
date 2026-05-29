@@ -14,7 +14,7 @@ import {
   removeEntityFromWorld,
   type EntityConfig,
 } from "@solitude/engine/world";
-import { createSolitudeHeadlessLoop } from "./solitude/headless";
+import { createSolitudeHeadlessLoop } from "@solitude/sim/headless";
 
 export type SolitudeServerControlInputs = ReadonlyMap<
   EntityId,

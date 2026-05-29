@@ -16,11 +16,11 @@ import {
   type SolitudeProtocolSequence,
   type SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
-import { createSolitudeServerGame, type SolitudeServerGame } from "./runtime";
 import {
   buildDefaultSolarSystemConfigs,
   buildSolarSystemShipEntity,
-} from "./solitude/headless";
+} from "@solitude/sim/headless";
+import { createSolitudeServerGame, type SolitudeServerGame } from "./runtime";
 
 const DEFAULT_ASSIGNABLE_ENTITY_IDS = ["ship:blue", "ship:red"] as const;
 const THRUST_CONTROL_IDS = [

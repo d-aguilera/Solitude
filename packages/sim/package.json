@@ -1,0 +1,33 @@
+{
+  "name": "@solitude/sim",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./config/worldAndSceneConfig": "./src/worldAndSceneConfig.ts",
+    "./headless": "./src/headless.ts",
+    "./plugins/autopilot": "./src/plugins/autopilot/index.ts",
+    "./plugins/autopilot/core": "./src/plugins/autopilot/core.ts",
+    "./plugins/autopilot/input": "./src/plugins/autopilot/input.ts",
+    "./plugins/autopilot/logic": "./src/plugins/autopilot/logic.ts",
+    "./plugins/autopilot/spacecraftPropulsion": "./src/plugins/autopilot/spacecraftPropulsion.ts",
+    "./plugins/index": "./src/plugins/index.ts",
+    "./plugins/pluginComposition": "./src/plugins/pluginComposition.ts",
+    "./plugins/solarSystem": "./src/plugins/solarSystem/index.ts",
+    "./plugins/solarSystem/colors": "./src/plugins/solarSystem/colors.ts",
+    "./plugins/solarSystem/ships": "./src/plugins/solarSystem/ships.ts",
+    "./plugins/solarSystem/solarSystem": "./src/plugins/solarSystem/solarSystem.ts",
+    "./plugins/spacecraftOperator": "./src/plugins/spacecraftOperator/index.ts",
+    "./plugins/spacecraftOperator/capabilities": "./src/plugins/spacecraftOperator/capabilities.ts",
+    "./plugins/spacecraftOperator/controlLogic": "./src/plugins/spacecraftOperator/controlLogic.ts",
+    "./plugins/spacecraftOperator/core": "./src/plugins/spacecraftOperator/core.ts",
+    "./plugins/spacecraftOperator/input": "./src/plugins/spacecraftOperator/input.ts",
+    "./plugins/spacecraftOperator/telemetry": "./src/plugins/spacecraftOperator/telemetry.ts"
+  },
+  "dependencies": {
+    "@solitude/engine": "0.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

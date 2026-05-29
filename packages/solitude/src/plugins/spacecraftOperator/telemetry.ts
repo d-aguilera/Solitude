@@ -1,11 +1,4 @@
-export interface SpacecraftOperatorTelemetry {
-  currentThrustLevel: number;
-  currentRcsLevel: number;
-}
-
-export function createSpacecraftOperatorTelemetry(): SpacecraftOperatorTelemetry {
-  return {
-    currentRcsLevel: 0,
-    currentThrustLevel: 0,
-  };
-}
+export {
+  createSpacecraftOperatorTelemetry,
+  type SpacecraftOperatorTelemetry,
+} from "@solitude/sim/plugins/spacecraftOperator/telemetry";

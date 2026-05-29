@@ -28,9 +28,10 @@ Browser client
 Package responsibilities:
 
 - `@solitude/engine`: generic world, physics, runtime snapshots, render data, and runtime seams.
+- `@solitude/sim`: Solitude-specific, browser-safe and Node-safe simulation library shared by server and browser/product packages; owns default world config, solar-system entities/assets, spacecraft dynamics, autopilot logic, and headless Solitude composition.
 - `@solitude/browser`: browser rendering/rasterizers, input adapters, and remote-world rendering helpers.
 - `@solitude/protocol`: browser-safe protocol types and message constructors/guards.
-- `solitude`: Solitude-specific standalone app, config, plugins, assets, and shared product composition used by the client where needed.
+- `solitude`: Solitude-specific standalone browser app, browser/display plugin catalog, HUD/readout/playback behavior, and product UX used by the client where needed.
 - `@solitude/client`: deployable static browser client for lobby/viewer, HTTP/WebSocket client adapters, keyboard input patching, configurable server URL, authoritative snapshot interpolation, and remote rendering composition.
 - `@solitude/server`: authoritative sessions, protocol, ticking, and HTTP/WebSocket transport.
 
@@ -51,7 +52,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
   - Legacy/debug HTTP routes remain for now: `POST /message`, `POST /run`, `POST /pause`, `POST /step`, and `GET /events?gameId=...`.
 - `@solitude/server` owns protocol, sessions, transport, ticker, HTTP/WebSocket serving, and authoritative Solitude headless runtime composition.
 - `@solitude/client` owns the remote lobby/viewer deployable, browser client adapters, keyboard input patching, server URL selection, browser-side snapshot interpolation, and remote render composition.
-- `@solitude/server` must not depend on the browser-facing `solitude` package. Its server-safe Solitude composition lives under `packages/server/src/solitude/` and includes only the headless world model, spacecraft dynamics, and autopilot pieces needed by the authoritative runtime.
+- `@solitude/server` must not depend on the browser-facing `solitude` package. Its server-safe Solitude composition comes from `@solitude/sim`, which includes only the shared world model, spacecraft dynamics, and autopilot pieces needed by the authoritative runtime.
 - Sessions create ships dynamically on join and remove them on explicit leave. The current named slots are still `ship:blue` and `ship:red`, but they are no longer pre-existing world entities.
 - Browser remote client now has first-class Vite entries:
   - `packages/client/index.html` -> `src/remoteLobby.ts` for creating/listing games;
@@ -91,12 +92,20 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 
 ## Slice Log
 
+### 2026-05-29
+
+- Removed duplication between browser Solitude and server-local Solitude composition:
+  - added `@solitude/sim` as the shared browser-safe/Node-safe Solitude simulation package;
+  - moved default world config, solar-system entity builders/assets, spacecraft operator dynamics, autopilot logic, and headless Solitude composition into `packages/sim`;
+  - rewired `@solitude/server` to compose authoritative games from `@solitude/sim` instead of `packages/server/src/solitude`;
+  - kept browser-only Solitude HUD/readout/plugin wrappers in the browser-facing `solitude` package.
+
 ### 2026-05-28
 
-- Moved server headless ownership into `@solitude/server`:
+- Moved server headless ownership into `@solitude/server` as an intermediate step:
   - removed the `@solitude/server` dependency on `solitude`;
   - removed the old `solitude/headless` export;
-  - server-side Solitude composition now lives in `packages/server/src/solitude/`;
+  - server-side Solitude composition temporarily moved to `packages/server/src/solitude/` before the later `@solitude/sim` extraction;
   - removed unused `@solitude/server` public subpath exports so server internals stay private.
 - Promoted the remote browser app into `@solitude/client`:
   - moved lobby/viewer HTML, CSS, remote entrypoints, snapshot interpolation, and remote render composition into `packages/client`;
