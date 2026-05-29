@@ -6,9 +6,9 @@ import {
   createScene,
   createWorld,
 } from "@solitude/engine/world";
+import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
 import { describe, expect, it, vi } from "vitest";
-import { buildWorldAndSceneConfig } from "../../config/worldAndSceneConfig";
-import { createSolarSystemPlugin } from "./index";
+import { buildWorldAndSceneConfig } from "../../worldAndSceneConfig";
 
 describe("solarSystem plugin", () => {
   it("contributes world content through generic entities", () => {

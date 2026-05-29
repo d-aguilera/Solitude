@@ -1,4 +1,6 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
+import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
+import { createSpacecraftOperatorPlugin } from "@solitude/sim/plugins/spacecraftOperator";
 import { createAutopilotPlugin } from "./autopilot/index";
 import { createAxialViewsPlugin } from "./axialViews/index";
 import { createBodyLabelsPlugin } from "./bodyLabels/index";
@@ -16,8 +18,6 @@ import {
 import { createProfilingPlugin } from "./profiling/index";
 import { createRuntimeTelemetryPlugin } from "./runtimeTelemetry/index";
 import { createShipTelemetryPlugin } from "./shipTelemetry/index";
-import { createSolarSystemPlugin } from "./solarSystem/index";
-import { createSpacecraftOperatorPlugin } from "./spacecraftOperator/index";
 import { createTimeScalePlugin } from "./timeScale/index";
 import { createTrajectoriesPlugin } from "./trajectories/index";
 import { createVelocitySegmentsPlugin } from "./velocitySegments/index";

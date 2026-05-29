@@ -8,7 +8,7 @@ import {
 } from "@solitude/engine/runtime";
 import type { EntityConfig } from "@solitude/engine/world";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
-import { buildWorldAndSceneConfig } from "solitude/config/worldAndSceneConfig";
+import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
 import {
   hudPanelCapability,
   isHudPanelProvider,

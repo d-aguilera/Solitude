@@ -41,10 +41,3 @@ export function createSolitudeHeadlessLoop(
     loop: createHeadlessLoop(config, { plugins }),
   };
 }
-
-export {
-  buildSolarSystemBodyEntities,
-  buildSolarSystemShipEntity,
-} from "./plugins/solarSystem/index";
-export { buildDefaultSolarSystemConfigs } from "./plugins/solarSystem/solarSystem";
-export { defaultHeadlessPluginIds, loadHeadlessPlugins };

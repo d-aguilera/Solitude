@@ -16,10 +16,8 @@ import {
   type SolitudeProtocolSequence,
   type SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
-import {
-  buildDefaultSolarSystemConfigs,
-  buildSolarSystemShipEntity,
-} from "@solitude/sim/headless";
+import { buildSolarSystemShipEntity } from "@solitude/sim/plugins/solarSystem";
+import { buildDefaultSolarSystemConfigs } from "@solitude/sim/plugins/solarSystem/solarSystem";
 import { createSolitudeServerGame, type SolitudeServerGame } from "./runtime";
 
 const DEFAULT_ASSIGNABLE_ENTITY_IDS = ["ship:blue", "ship:red"] as const;

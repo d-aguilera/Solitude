@@ -75,10 +75,10 @@
 
 - Core loop works: input → physics → scene update → render → browser overlays.
 - Runtime world state is generic entity/capability based.
-- Solar-system content is owned by `@solitude/sim` and re-exported through browser Solitude wrappers where needed.
+- Solar-system content is owned by `@solitude/sim`; browser/server/client code import it directly from `@solitude/sim`.
 - Body label content is contributed by `packages/solitude/src/plugins/bodyLabels/`; engine owns generic scene-label layout.
 - Main-view lookaround input/camera-offset controls live in `packages/solitude/src/plugins/mainViewLookaround/`.
-- Spacecraft propulsion/RCS/attitude, input bindings, spacecraft operator state, and the primary forward camera rig live in `@solitude/sim` and are re-exported through browser Solitude wrappers where needed.
+- Spacecraft propulsion/RCS/attitude, input bindings, spacecraft operator state, and the primary forward camera rig live in `@solitude/sim`; browser/server/client code import them directly from `@solitude/sim`.
 - Runtime focus switching lives in `packages/solitude/src/plugins/operatorSwitch/`; `Tab` swaps foreground focus between `ship:blue` and `ship:red`.
 - During playback, `Tab` may switch the viewed focus while recorded controls continue applying to the entity focused when each playback phase was recorded.
 - Core owns generic focus, primary-view plumbing, simulation phase order, gravity, spin, collision, setup, render preparation, and plugin port/capability contracts.
@@ -103,9 +103,9 @@
 - `packages/sim/src/headless.ts`: shared server-safe/browser-safe Solitude headless composition.
 - `packages/server/src/runtime.ts`: non-networked authoritative server runtime proof.
 - `packages/solitude/src/bootstrap.ts`: Solitude browser app composition.
-- `packages/solitude/src/plugins/spacecraftOperator/`: spacecraft controls, dynamics, telemetry state, and forward camera rig.
+- `packages/sim/src/plugins/spacecraftOperator/`: spacecraft controls, dynamics, telemetry state, and forward camera rig.
 - `packages/solitude/src/plugins/operatorSwitch/`: default runtime focus switching between controllable ships.
-- `packages/solitude/src/plugins/autopilot/logic.ts`: align-to-velocity/body and “circle now”.
+- `packages/sim/src/plugins/autopilot/logic.ts`: align-to-velocity/body and “circle now”.
 - `packages/solitude/src/plugins/playback/`: diagnostic capture/playback and repeatable scenario logs.
 
 ## Controls Quick Reference

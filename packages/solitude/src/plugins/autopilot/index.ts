@@ -1,12 +1,12 @@
 import type { GamePlugin } from "@solitude/engine/plugin";
-import { createHudPanelProvider } from "../hud/capabilities";
 import {
   createAutonomousControlProvider,
   createControlPlugin,
   createPropulsionResolverProvider,
-} from "./core";
+} from "@solitude/sim/plugins/autopilot/core";
+import { createInputPlugin } from "@solitude/sim/plugins/autopilot/input";
+import { createHudPanelProvider } from "../hud/capabilities";
 import { createHudPanel } from "./hud";
-import { createInputPlugin } from "./input";
 
 export function createAutopilotPlugin(): GamePlugin {
   return {

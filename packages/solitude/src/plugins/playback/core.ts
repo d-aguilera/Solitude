@@ -7,7 +7,8 @@ import type {
 import type { FocusContext } from "@solitude/engine/runtime";
 import { updateFocusContext } from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
-import { createPlaybackLogger, type PlaybackLogger } from "./loggers/index";
+import { createPlaybackLogger } from "./loggers/index";
+import type { PlaybackLogger } from "./loggers/types";
 import {
   applyCompiledPhaseControls,
   clearPlaybackControls,

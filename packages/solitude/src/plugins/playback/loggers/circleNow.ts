@@ -15,7 +15,7 @@ import type {
 import {
   maxRcsTranslationAcceleration,
   maxThrustAcceleration,
-} from "../../spacecraftOperator/controlLogic";
+} from "@solitude/sim/plugins/spacecraftOperator/controlLogic";
 import type { CompiledPlaybackScript } from "../types";
 import type {
   PlaybackLogger,

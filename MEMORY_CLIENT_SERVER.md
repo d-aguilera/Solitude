@@ -98,7 +98,8 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
   - added `@solitude/sim` as the shared browser-safe/Node-safe Solitude simulation package;
   - moved default world config, solar-system entity builders/assets, spacecraft operator dynamics, autopilot logic, and headless Solitude composition into `packages/sim`;
   - rewired `@solitude/server` to compose authoritative games from `@solitude/sim` instead of `packages/server/src/solitude`;
-  - kept browser-only Solitude HUD/readout/plugin wrappers in the browser-facing `solitude` package.
+  - removed browser Solitude re-export wrappers for sim-owned modules so browser/server/client code import shared simulation code directly from `@solitude/sim`;
+  - kept browser-only Solitude HUD/readout/plugin composition in the browser-facing `solitude` package.
 
 ### 2026-05-28
 

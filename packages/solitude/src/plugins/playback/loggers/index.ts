@@ -12,5 +12,3 @@ export function createPlaybackLogger(
   }
   return null;
 }
-
-export type { PlaybackLogger } from "./types";

@@ -1,7 +1,7 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
+import { createSpacecraftOperatorTelemetry } from "@solitude/sim/plugins/spacecraftOperator/telemetry";
 import { createHudPanelProvider } from "../hud/capabilities";
 import type { PluginCompositionContext } from "../pluginComposition";
-import { createSpacecraftOperatorTelemetry } from "../spacecraftOperator/telemetry";
 import { createHudPanel } from "./hud";
 
 export function createShipTelemetryPlugin(

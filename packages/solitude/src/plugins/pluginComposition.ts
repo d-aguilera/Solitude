@@ -1,7 +1,7 @@
 import {
   createSpacecraftOperatorTelemetry,
   type SpacecraftOperatorTelemetry,
-} from "./spacecraftOperator/telemetry";
+} from "@solitude/sim/plugins/spacecraftOperator/telemetry";
 
 export interface PluginCompositionContext {
   spacecraftOperatorTelemetry: SpacecraftOperatorTelemetry;

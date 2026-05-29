@@ -20,4 +20,16 @@ describe("domKeyboardInput", () => {
     expect(actions).toContain("testFire");
     expect(actions).toContain("testTrim");
   });
+
+  it("collects actions declared only through plugin key maps", () => {
+    const input: InputPlugin = {
+      keyMap: {
+        KeyF: "testFire",
+      },
+    };
+
+    const actions = __domKeyboardInputTest.collectControlActions([input]);
+
+    expect(actions).toContain("testFire");
+  });
 });

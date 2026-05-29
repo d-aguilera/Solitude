@@ -1,9 +1,7 @@
 import { vec3 } from "@solitude/engine/math";
 import type { ControlledBody } from "@solitude/engine/world";
-import {
-  buildDefaultSolarSystemConfigs,
-  buildSolarSystemShipEntity,
-} from "@solitude/sim/headless";
+import { buildSolarSystemShipEntity } from "@solitude/sim/plugins/solarSystem";
+import { buildDefaultSolarSystemConfigs } from "@solitude/sim/plugins/solarSystem/solarSystem";
 import { describe, expect, it } from "vitest";
 import { createSolitudeServerGame } from "../runtime";
 
