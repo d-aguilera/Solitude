@@ -57,7 +57,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - Sessions create ships dynamically on join and remove them on explicit leave. The current named slots are still `ship:blue` and `ship:red`, but they are no longer pre-existing world entities.
 - Browser remote client now has first-class Vite entries:
   - `packages/client/index.html` -> `src/remoteLobby.ts` for creating/listing games;
-  - `packages/client/remote.html` -> `src/remoteClient.ts` for joining, auto-running newly created games, and rendering snapshots.
+  - `packages/client/game.html` -> `src/remoteClient.ts` for joining, auto-running newly created games, and rendering snapshots.
 - The landing page at `/` lists games, shows running/stopped state, opens new games, pauses running games, and deletes games.
 - Browser tabs generate distinct default client ids, receive authoritative game-model messages for dynamic ships, and rebuild their remote render mirror when ships join, leave, or disconnect.
 - Remote client rendering is decoupled from snapshot arrival: server snapshots feed a delayed interpolation buffer, while the browser renders through `requestAnimationFrame`.

@@ -11,7 +11,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: resolve(clientRoot, "index.html"),
-        remote: resolve(clientRoot, "remote.html"),
+        game: resolve(clientRoot, "game.html"),
       },
     },
   },

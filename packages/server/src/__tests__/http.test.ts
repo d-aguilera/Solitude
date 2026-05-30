@@ -17,17 +17,15 @@ describe("Solitude HTTP server", () => {
       devAssetHandler: async (request, response) => {
         if (request.url === "/") {
           response.writeHead(200, { "content-type": "text/html" });
-          response.end(
-            'Solitude<script type="module" src="/src/remoteLobby.ts">',
-          );
+          response.end('Solitude<script type="module" src="/src/lobby.ts">');
           return true;
         }
-        if (request.url === "/remote.html") {
+        if (request.url === "/game.html") {
           response.writeHead(200, { "content-type": "text/html" });
           response.end('<script type="module" src="/src/remoteClient.ts">');
           return true;
         }
-        if (request.url === "/remote.css") {
+        if (request.url === "/game.css") {
           response.writeHead(200, { "content-type": "text/css" });
           response.end("body{}");
           return true;
@@ -42,12 +40,12 @@ describe("Solitude HTTP server", () => {
       expect(response.status).toBe(200);
       const page = await response.text();
       expect(page).toContain("Solitude");
-      expect(page).toContain("/src/remoteLobby.ts");
+      expect(page).toContain("/src/lobby.ts");
 
-      const remotePageResponse = await fetch(`${server.url}/remote.html`);
-      expect(await remotePageResponse.text()).toContain("/src/remoteClient.ts");
+      const gamePageResponse = await fetch(`${server.url}/game.html`);
+      expect(await gamePageResponse.text()).toContain("/src/remoteClient.ts");
 
-      const stylesheetResponse = await fetch(`${server.url}/remote.css`);
+      const stylesheetResponse = await fetch(`${server.url}/game.css`);
       expect(stylesheetResponse.status).toBe(200);
     } finally {
       await server.close();
@@ -58,14 +56,14 @@ describe("Solitude HTTP server", () => {
     const assetRoot = await mkdtemp(join(tmpdir(), "solitude-dist-"));
     await mkdir(join(assetRoot, "assets"));
     await writeFile(
-      join(assetRoot, "remote.html"),
-      '<script type="module" src="/assets/remote.js"></script>',
+      join(assetRoot, "game.html"),
+      '<script type="module" src="/assets/game.js"></script>',
     );
     await writeFile(
       join(assetRoot, "index.html"),
       '<script type="module" src="/assets/index.js"></script>',
     );
-    await writeFile(join(assetRoot, "assets", "remote.js"), "export {};");
+    await writeFile(join(assetRoot, "assets", "game.js"), "export {};");
     await writeFile(join(assetRoot, "games"), "not the API");
 
     const server = await startSolitudeHttpServer({
@@ -77,13 +75,13 @@ describe("Solitude HTTP server", () => {
       const rootResponse = await fetch(`${server.url}/`);
       expect(await rootResponse.text()).toContain("/assets/index.js");
 
-      const remoteResponse = await fetch(`${server.url}/remote.html`);
-      expect(await remoteResponse.text()).toContain("/assets/remote.js");
+      const gameResponse = await fetch(`${server.url}/game.html`);
+      expect(await gameResponse.text()).toContain("/assets/game.js");
 
       const indexResponse = await fetch(`${server.url}/index.html`);
       expect(await indexResponse.text()).toContain("/assets/index.js");
 
-      const scriptResponse = await fetch(`${server.url}/assets/remote.js`);
+      const scriptResponse = await fetch(`${server.url}/assets/game.js`);
       expect(scriptResponse.headers.get("content-type")).toContain(
         "text/javascript",
       );

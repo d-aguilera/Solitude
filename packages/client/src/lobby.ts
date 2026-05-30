@@ -13,7 +13,7 @@ interface SolitudeGameListResponse {
   games?: SolitudeGameSummary[];
 }
 
-const CLIENT_ID_STORAGE_KEY = "solitude.remoteClientId";
+const CLIENT_ID_STORAGE_KEY = "solitude.clientId";
 
 const searchParams = new URLSearchParams(window.location.search);
 const serverBaseUrl = readServerBaseUrl(searchParams);
@@ -36,7 +36,7 @@ function createGame(): void {
   createGameButton.disabled = true;
   statusEl.textContent = "Opening game";
   readClientId();
-  window.location.href = createRemoteHref({ autostart: "1", create: "1" });
+  window.location.href = createGameHref({ autostart: "1", create: "1" });
 }
 
 async function refreshGames(): Promise<void> {
@@ -85,7 +85,7 @@ function renderGames(games: readonly SolitudeGameSummary[]): void {
       joinLink.removeAttribute("href");
       joinLink.setAttribute("aria-disabled", "true");
     } else {
-      joinLink.href = createRemoteHref({ gameId: game.gameId });
+      joinLink.href = createGameHref({ gameId: game.gameId });
     }
 
     const stopButton = document.createElement("button");
@@ -164,8 +164,8 @@ function createHttpUrl(pathname: string): string {
   return url.href;
 }
 
-function createRemoteHref(params: Record<string, string>): string {
-  const url = new URL("/remote.html", window.location.href);
+function createGameHref(params: Record<string, string>): string {
+  const url = new URL("/game.html", window.location.href);
   if (shouldPersistServerUrl()) {
     url.searchParams.set("server", serverBaseUrl.href);
   }

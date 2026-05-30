@@ -48,17 +48,16 @@ function createDevAssetHandler(vite, root) {
   return async (request, response) => {
     if (request.method !== "GET") return false;
     const requestUrl = new URL(request.url ?? "/", "http://localhost");
-    if (requestUrl.pathname === "/" || requestUrl.pathname === "/remote.html") {
-      const filename =
-        requestUrl.pathname === "/" ? "index.html" : "remote.html";
+    if (requestUrl.pathname === "/" || requestUrl.pathname === "/game.html") {
+      const filename = requestUrl.pathname === "/" ? "index.html" : "game.html";
       const source = await readFile(resolve(root, filename), "utf8");
       const html = await vite.transformIndexHtml(requestUrl.pathname, source);
       response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
       response.end(html);
       return true;
     }
-    if (requestUrl.pathname === "/remote.css") {
-      const css = await readFile(resolve(root, "remote.css"), "utf8");
+    if (requestUrl.pathname === "/game.css") {
+      const css = await readFile(resolve(root, "game.css"), "utf8");
       response.writeHead(200, { "content-type": "text/css; charset=utf-8" });
       response.end(css);
       return true;

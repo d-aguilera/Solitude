@@ -36,7 +36,7 @@ const gamesListEl = queryElement("#gamesList");
 const keyStatusEl = queryElement("#keyStatus");
 const newGameLink = queryAnchor("#newGameLink");
 const runStatusEl = queryElement("#runStatus");
-const remoteHudEl = queryElement("#remoteHud");
+const hudEl = queryElement("#hud");
 const snapshotCanvas = queryCanvas("#snapshotCanvas");
 const snapshotStatusEl = queryElement("#snapshotStatus");
 const statusEl = queryElement("#status");
@@ -49,7 +49,7 @@ const shouldAutostart = searchParams.get("autostart") === "1";
 const engineRenderer = createSolitudeRemoteClientRenderer({
   canvas: snapshotCanvas,
   getFocusEntityId: () => fields.entityId.value,
-  hudElement: remoteHudEl,
+  hudElement: hudEl,
   statusElement: snapshotStatusEl,
 });
 newGameLink.href = createLobbyHref();
@@ -174,7 +174,7 @@ function renderGames(games: readonly SolitudeGameSummary[]): void {
       joinButton.removeAttribute("href");
       joinButton.setAttribute("aria-disabled", "true");
     } else {
-      joinButton.href = createRemoteHref({ gameId: game.gameId });
+      joinButton.href = createGameHref({ gameId: game.gameId });
     }
 
     item.append(summary, joinButton);
@@ -406,7 +406,7 @@ function createLobbyHref(): string {
   return url.href;
 }
 
-function createRemoteHref(params: Record<string, string>): string {
+function createGameHref(params: Record<string, string>): string {
   const url = new URL("/remote.html", window.location.href);
   if (shouldPersistServerUrl()) {
     url.searchParams.set("server", serverBaseUrl.href);
