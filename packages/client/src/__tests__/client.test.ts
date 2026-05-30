@@ -26,14 +26,8 @@ describe("Solitude HTTP browser client", () => {
         gameId: "game:1",
         sequence: 1,
       },
-      {
-        type: "joined",
-        clientId: "client:a",
-        entityId: "ship:blue",
-        gameId: "game:1",
-        sequence: 2,
-      },
     ]);
+    await client.joinGame("game:1");
     await client.sendInputPatch({ burnForward: true });
 
     expect(client.state.gameId).toBe("game:1");
@@ -43,7 +37,7 @@ describe("Solitude HTTP browser client", () => {
       clientId: "client:a",
       entityId: "ship:blue",
       gameId: "game:1",
-      sequence: 2,
+      sequence: 3,
       controls: { burnForward: true },
     });
   });
@@ -106,6 +100,19 @@ describe("Solitude WebSocket browser client", () => {
           gameId: "game:1",
           sequence: 1,
         },
+      ],
+    });
+
+    expect(await createPromise).toHaveLength(1);
+    expect(client.state.gameId).toBe("game:1");
+    expect(client.state.entityId).toBeNull();
+
+    const joinPromise = client.joinGame("game:1");
+    await Promise.resolve();
+    socket.receive({
+      type: "messages",
+      requestId: 2,
+      messages: [
         {
           type: "joined",
           clientId: "client:a",
@@ -115,9 +122,7 @@ describe("Solitude WebSocket browser client", () => {
         },
       ],
     });
-
-    expect(await createPromise).toHaveLength(2);
-    expect(client.state.gameId).toBe("game:1");
+    await joinPromise;
     expect(client.state.entityId).toBe("ship:blue");
 
     socket.receive({
@@ -178,13 +183,6 @@ function createFetchStub(
               clientId: body.clientId,
               gameId: "game:1",
               sequence: body.sequence,
-            },
-            {
-              type: "joined",
-              clientId: body.clientId,
-              entityId: "ship:blue",
-              gameId: "game:1",
-              sequence: Number(body.sequence) + 1,
             },
           ],
         }),

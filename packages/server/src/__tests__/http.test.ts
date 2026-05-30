@@ -25,7 +25,7 @@ describe("Solitude HTTP server", () => {
           response.end('<script type="module" src="/src/remoteClient.ts">');
           return true;
         }
-        if (request.url === "/game.css") {
+        if (request.url === "/game.css" || request.url === "/lobby.css") {
           response.writeHead(200, { "content-type": "text/css" });
           response.end("body{}");
           return true;
@@ -47,6 +47,8 @@ describe("Solitude HTTP server", () => {
 
       const stylesheetResponse = await fetch(`${server.url}/game.css`);
       expect(stylesheetResponse.status).toBe(200);
+      const lobbyStylesheetResponse = await fetch(`${server.url}/lobby.css`);
+      expect(lobbyStylesheetResponse.status).toBe(200);
     } finally {
       await server.close();
     }
@@ -111,13 +113,6 @@ describe("Solitude HTTP server", () => {
           gameId: "game:1",
           sequence: 1,
         },
-        {
-          type: "joined",
-          clientId: "client:a",
-          entityId: "ship:blue",
-          gameId: "game:1",
-          sequence: 2,
-        },
       ]);
     } finally {
       await server.close();
@@ -139,8 +134,8 @@ describe("Solitude HTTP server", () => {
       expect(await response.json()).toEqual({
         games: [
           {
-            assignedEntityIds: ["ship:blue"],
-            availableEntityIds: ["ship:red"],
+            assignedEntityIds: [],
+            availableEntityIds: ["ship:blue", "ship:red"],
             gameId: "game:1",
             maxClients: 2,
             running: false,
@@ -172,6 +167,12 @@ describe("Solitude HTTP server", () => {
         type: "createGame",
         clientId: "client:a",
         sequence: 1,
+      });
+      await postJson(server, "/message", {
+        type: "joinGame",
+        clientId: "client:a",
+        gameId: "game:1",
+        sequence: 2,
       });
       await postJson(server, "/run", {
         dtMillis: 1000,
@@ -371,6 +372,22 @@ describe("Solitude HTTP server", () => {
           gameId: "game:1",
           sequence: 1,
         },
+      ]);
+
+      const joinResponsePromise = socket.readUntil(
+        (message) => message.type === "messages" && message.requestId === 2,
+      );
+      socket.send({
+        type: "clientMessage",
+        requestId: 2,
+        message: {
+          type: "joinGame",
+          clientId: "client:a",
+          gameId: "game:1",
+          sequence: 2,
+        },
+      });
+      expect(withoutGameModels((await joinResponsePromise).messages)).toEqual([
         {
           type: "joined",
           clientId: "client:a",
@@ -387,7 +404,7 @@ describe("Solitude HTTP server", () => {
       );
       socket.send({
         type: "runGame",
-        requestId: 2,
+        requestId: 3,
         gameId: "game:1",
         dtMillis: 10,
         intervalMillis: 10,
@@ -398,7 +415,7 @@ describe("Solitude HTTP server", () => {
       expect(snapshot.message.tick).toBeGreaterThan(0);
       socket.send({
         type: "pauseGame",
-        requestId: 3,
+        requestId: 4,
         gameId: "game:1",
       });
       socket.close();
@@ -426,6 +443,21 @@ describe("Solitude HTTP server", () => {
         },
       });
       await firstCreateResponse;
+
+      const firstJoinResponse = firstSocket.readUntil(
+        (message) => message.type === "messages" && message.requestId === 2,
+      );
+      firstSocket.send({
+        type: "clientMessage",
+        requestId: 2,
+        message: {
+          type: "joinGame",
+          clientId: "client:a",
+          gameId: "game:1",
+          sequence: 2,
+        },
+      });
+      await firstJoinResponse;
 
       const firstModelUpdate = firstSocket.readUntil(
         (message) =>
@@ -484,6 +516,21 @@ describe("Solitude HTTP server", () => {
         },
       });
       await createResponse;
+
+      const firstJoinResponse = firstSocket.readUntil(
+        (message) => message.type === "messages" && message.requestId === 2,
+      );
+      firstSocket.send({
+        type: "clientMessage",
+        requestId: 2,
+        message: {
+          type: "joinGame",
+          clientId: "client:a",
+          gameId: "game:1",
+          sequence: 2,
+        },
+      });
+      await firstJoinResponse;
 
       const joinResponse = secondSocket.readUntil(
         (message) => message.type === "messages" && message.requestId === 1,

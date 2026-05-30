@@ -13,7 +13,7 @@ import {
 } from "../sessions";
 
 describe("Solitude session manager", () => {
-  it("creates a game and assigns the creator to the first ship", () => {
+  it("creates a game without assigning the creator to a ship", () => {
     const manager = createSolitudeSessionManager();
 
     const messages = manager.handleMessage({
@@ -29,17 +29,10 @@ describe("Solitude session manager", () => {
         gameId: "game:1",
         sequence: 1,
       },
-      {
-        type: "joined",
-        clientId: "client:a",
-        entityId: "ship:blue",
-        gameId: "game:1",
-        sequence: 2,
-      },
     ]);
     expect(
       requireGameModel(messages).entities.map((entity) => entity.id),
-    ).toEqual(["ship:blue"]);
+    ).toEqual([]);
   });
 
   it("joins additional clients to available ships and rejects overflow", () => {
@@ -48,6 +41,12 @@ describe("Solitude session manager", () => {
       type: "createGame",
       clientId: "client:a",
       sequence: 1,
+    });
+    manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
     });
 
     const messages = manager.handleMessage({
@@ -91,6 +90,12 @@ describe("Solitude session manager", () => {
       type: "createGame",
       clientId: "client:a",
       sequence: 1,
+    });
+    manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
     });
     manager.handleMessage({
       type: "joinGame",
@@ -145,14 +150,20 @@ describe("Solitude session manager", () => {
 
     expect(manager.listGames()).toEqual([
       {
-        assignedEntityIds: ["ship:blue"],
-        availableEntityIds: ["ship:red"],
+        assignedEntityIds: [],
+        availableEntityIds: ["ship:blue", "ship:red"],
         gameId: "game:1",
         maxClients: 2,
         tick: 0,
       },
     ]);
 
+    manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
+    });
     manager.handleMessage({
       type: "joinGame",
       clientId: "client:b",
@@ -178,6 +189,12 @@ describe("Solitude session manager", () => {
       type: "createGame",
       clientId: "client:a",
       sequence: 1,
+    });
+    manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
     });
 
     expect(
@@ -206,6 +223,12 @@ describe("Solitude session manager", () => {
       type: "createGame",
       clientId: "client:a",
       sequence: 1,
+    });
+    manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
     });
 
     manager.handleMessage({
@@ -253,6 +276,12 @@ describe("Solitude session manager", () => {
       type: "createGame",
       clientId: "client:a",
       sequence: 1,
+    });
+    manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
     });
 
     manager.handleMessage({
@@ -302,6 +331,12 @@ describe("Solitude session manager", () => {
       clientId: "client:a",
       sequence: 1,
     });
+    manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
+    });
 
     manager.handleMessage({
       type: "input",
@@ -338,6 +373,12 @@ describe("Solitude session manager", () => {
       type: "createGame",
       clientId: "client:a",
       sequence: 1,
+    });
+    manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
     });
 
     nowMillis = 10;
@@ -379,6 +420,12 @@ describe("Solitude session manager", () => {
       sequence: 1,
     });
     manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
+    });
+    manager.handleMessage({
       type: "input",
       clientId: "client:a",
       entityId: "ship:blue",
@@ -411,6 +458,12 @@ describe("Solitude session manager", () => {
     expect(manager.cleanupGames()).toEqual([]);
 
     manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
+    });
+    manager.handleMessage({
       type: "leaveGame",
       clientId: "client:a",
       gameId: "game:1",
@@ -428,6 +481,12 @@ describe("Solitude session manager", () => {
       type: "createGame",
       clientId: "client:a",
       sequence: 1,
+    });
+    manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
     });
 
     expect(

@@ -12,17 +12,16 @@
       <input id="clientId" type="hidden" value="client:a" />
       <input id="gameId" type="hidden" />
       <input id="entityId" type="hidden" />
-      <input id="dtMillis" type="hidden" value="250" />
-      <input id="simulationStepMillis" type="hidden" value="25" />
-      <input id="runIntervalMillis" type="hidden" value="250" />
-      <section>
-        <div class="section-header">
-          <h1>Games</h1>
-          <a id="newGameLink" class="button secondary" href="/">New</a>
-          <button id="refreshGames" class="secondary">Refresh</button>
+      <header class="game-header">
+        <div>
+          <h1>Solitude</h1>
+          <div class="game-meta">
+            <span id="gameLabel">Game waiting</span>
+            <span id="entityLabel">Entity waiting</span>
+          </div>
         </div>
-        <ul id="gamesList"></ul>
-      </section>
+        <a id="lobbyLink" class="button secondary" href="/">Lobby</a>
+      </header>
       <section class="viewer">
         <canvas id="snapshotCanvas" width="960" height="540"></canvas>
         <pre id="hud" class="hud">HUD waiting</pre>

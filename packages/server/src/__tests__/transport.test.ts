@@ -36,6 +36,21 @@ describe("Solitude in-process transport", () => {
         gameId: "game:1",
         sequence: 1,
       },
+    ]);
+
+    expect(
+      withoutGameModels(
+        transport.receive(
+          {
+            type: "joinGame",
+            clientId: "client:a",
+            gameId: "game:1",
+            sequence: 2,
+          },
+          2,
+        ),
+      ),
+    ).toEqual([
       {
         type: "joined",
         clientId: "client:a",
@@ -78,8 +93,8 @@ describe("Solitude in-process transport", () => {
 
     expect(transport.listGames()).toEqual([
       {
-        assignedEntityIds: ["ship:blue"],
-        availableEntityIds: ["ship:red"],
+        assignedEntityIds: [],
+        availableEntityIds: ["ship:blue", "ship:red"],
         gameId: "game:1",
         maxClients: 2,
         tick: 0,
@@ -96,6 +111,15 @@ describe("Solitude in-process transport", () => {
         sequence: 1,
       },
       1,
+    );
+    transport.receive(
+      {
+        type: "joinGame",
+        clientId: "client:a",
+        gameId: "game:1",
+        sequence: 2,
+      },
+      2,
     );
     transport.receive(
       {

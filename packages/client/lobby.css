@@ -1,0 +1,133 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background: #111615;
+  color: #eef3ef;
+}
+body {
+  margin: 0;
+}
+main.lobby {
+  align-content: start;
+  display: grid;
+  gap: 18px;
+  margin: 0 auto;
+  max-width: 980px;
+  min-height: calc(100vh - 56px);
+  padding: 28px;
+}
+h1 {
+  font-size: 24px;
+  font-weight: 650;
+  margin: 0;
+}
+h2 {
+  font-size: 16px;
+  font-weight: 650;
+  margin: 0;
+}
+section {
+  border: 1px solid #2c3936;
+  border-radius: 8px;
+  padding: 16px;
+}
+.lobby-header,
+.section-header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.lobby-header {
+  justify-content: space-between;
+}
+.section-header {
+  margin-bottom: 12px;
+}
+button {
+  background: #d7f3de;
+  border: 0;
+  border-radius: 6px;
+  color: #0b120d;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+  min-height: 40px;
+  padding: 9px 13px;
+}
+a.button {
+  align-items: center;
+  background: #d7f3de;
+  border-radius: 6px;
+  color: #0b120d;
+  display: inline-flex;
+  font: inherit;
+  font-weight: 650;
+  min-height: 40px;
+  padding: 0 13px;
+  text-decoration: none;
+}
+button.secondary,
+a.button.secondary {
+  background: #263430;
+  color: #eef3ef;
+}
+a.button[aria-disabled="true"] {
+  cursor: default;
+  opacity: 0.5;
+  pointer-events: none;
+}
+button.danger {
+  background: #efb5b0;
+  color: #220908;
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.status {
+  color: #a9bab2;
+  font-variant-numeric: tabular-nums;
+}
+#gamesList {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.game-row {
+  align-items: center;
+  border: 1px solid #263430;
+  border-radius: 6px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 10px;
+}
+.game-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.game-summary {
+  color: #d7e6dc;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 720px) {
+  .game-row {
+    grid-template-columns: 1fr;
+  }
+  .game-actions {
+    justify-content: flex-start;
+  }
+}
