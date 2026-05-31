@@ -103,7 +103,7 @@ Deliver the real-time authoritative loop first:
 - Fixed-rate authoritative snapshot broadcast.
 - Snapshot messages with authoritative simulation time.
 - Latest-snapshot rendering is in place while the protocol stream is made leaner.
-- Static/dynamic message split.
+- Static/dynamic message split is in place.
 - Protocol payload and cadence review.
 
 Then deliver predicted local flight:
@@ -117,11 +117,11 @@ Then deliver predicted local flight:
 
 ## Clear Next Step
 
-Split static model data from high-frequency dynamic state:
+Review bandwidth, allocation, cadence, and protocol shape:
 
-- `gameModel` owns static or slow-changing entity configuration;
-- `snapshot` owns high-frequency position, velocity, orientation, and control-facing dynamic state;
-- avoid repeatedly sending static scenario data once the model is known.
+- measure payload size and cadence after the static/dynamic split;
+- look for allocation pressure in the socket and render hot paths;
+- decide whether compact deltas, entity versioning, or binary-friendly encoding is worth doing before prediction.
 
 ## Things To Watch
 

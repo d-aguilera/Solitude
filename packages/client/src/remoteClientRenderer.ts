@@ -28,8 +28,8 @@ const remoteRenderPluginIds = [
 ];
 
 export interface RemoteClientSnapshotMessage {
+  entities: RuntimeWorldSnapshot["entities"];
   simulationTimeMillis: number;
-  snapshot: RuntimeWorldSnapshot;
   tick: number;
 }
 
@@ -63,7 +63,7 @@ export function createSolitudeRemoteClientRenderer({
 
   return {
     pushSnapshotMessage: (message) => {
-      latestSnapshot = message.snapshot;
+      latestSnapshot = { entities: message.entities };
       messageSimulationTimeMillis = message.simulationTimeMillis;
     },
     renderFrame: (nowMillis, dtMillis) => {

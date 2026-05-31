@@ -22,7 +22,7 @@ describe("Solitude session manager", () => {
       sequence: 1,
     });
 
-    expect(withoutGameModels(messages)).toEqual([
+    expect(messages).toEqual([
       {
         type: "gameCreated",
         clientId: "client:a",
@@ -30,9 +30,6 @@ describe("Solitude session manager", () => {
         sequence: 1,
       },
     ]);
-    expect(
-      requireGameModel(messages).entities.map((entity) => entity.id),
-    ).toEqual([]);
   });
 
   it("joins additional clients to available ships and rejects overflow", () => {
@@ -214,7 +211,7 @@ describe("Solitude session manager", () => {
     expect(snapshot?.sequence).toBe(4);
     expect(snapshot?.simulationTimeMillis).toBe(1000);
     expect(snapshot?.tick).toBe(1);
-    expect(snapshot?.snapshot.entities.length).toBeGreaterThan(0);
+    expect(snapshot?.entities.length).toBeGreaterThan(0);
   });
 
   it("retains assigned input across steps and merges later patches", () => {

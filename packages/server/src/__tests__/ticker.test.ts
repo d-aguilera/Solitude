@@ -307,10 +307,10 @@ function createTransportStub(
 function createSnapshot(gameId: SolitudeGameId, tick: number): SnapshotMessage {
   return {
     type: "snapshot",
+    entities: [],
     gameId,
     sequence: tick,
     simulationTimeMillis: tick * 1000,
-    snapshot: { entities: [] },
     tick,
   };
 }

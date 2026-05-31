@@ -1,5 +1,5 @@
 import type { ControlInput } from "@solitude/engine/plugin";
-import type { RuntimeWorldSnapshot } from "@solitude/engine/runtime";
+import type { RuntimeEntitySnapshot } from "@solitude/engine/runtime";
 import type { EntityConfig, EntityId } from "@solitude/engine/world";
 
 export type SolitudeGameId = string;
@@ -87,10 +87,10 @@ export interface GameModelMessage {
 
 export interface SnapshotMessage {
   type: "snapshot";
+  entities: RuntimeEntitySnapshot[];
   gameId: SolitudeGameId;
   sequence: SolitudeProtocolSequence;
   simulationTimeMillis: SolitudeSimulationTimeMillis;
-  snapshot: RuntimeWorldSnapshot;
   tick: SolitudeSimulationTick;
 }
 
@@ -199,10 +199,10 @@ export function isSolitudeServerMessage(
       );
     case "snapshot":
       return (
+        Array.isArray(value.entities) &&
         isString(value.gameId) &&
         isFiniteNumber(value.sequence) &&
         isFiniteNumber(value.simulationTimeMillis) &&
-        isRuntimeWorldSnapshot(value.snapshot) &&
         isFiniteNumber(value.tick)
       );
     case "error":
@@ -249,10 +249,6 @@ export function isSolitudeSocketServerMessage(
     default:
       return false;
   }
-}
-
-function isRuntimeWorldSnapshot(value: unknown): value is RuntimeWorldSnapshot {
-  return isRecord(value) && Array.isArray(value.entities);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

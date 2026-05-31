@@ -134,7 +134,6 @@ export function createSolitudeSessionManager(
         gameId,
         sequence,
       }),
-      createGameModel(session),
     ];
   };
 
@@ -193,7 +192,7 @@ export function createSolitudeSessionManager(
     if (session.assignedEntityByClientId.size === 0) {
       session.emptySinceMillis = options.nowMillis();
     }
-    return [createGameModel(session)];
+    return [createGameModel(session, message.sequence)];
   };
 
   const handleInput = (message: InputMessage): SolitudeServerMessage[] => {
@@ -274,10 +273,10 @@ export function createSolitudeSessionManager(
     const sequence = session.nextSequence;
     session.nextSequence++;
     return createSnapshotMessage({
+      entities: snapshot.entities,
       gameId,
       sequence,
       simulationTimeMillis: session.simulationTimeMillis,
-      snapshot,
       tick: session.tick,
     });
   };
@@ -296,7 +295,7 @@ export function createSolitudeSessionManager(
           gameId: session.id,
           sequence,
         }),
-        createGameModel(session),
+        createGameModel(session, sequence),
       ];
     }
     const entityId = findAvailableEntityId(
@@ -322,7 +321,7 @@ export function createSolitudeSessionManager(
         gameId: session.id,
         sequence,
       }),
-      createGameModel(session),
+      createGameModel(session, sequence),
     ];
   };
 
@@ -379,9 +378,11 @@ function ensureEntityExists(
   session.game.addEntity(entity);
 }
 
-function createGameModel(session: ServerGameSession): SolitudeServerMessage {
-  const sequence = session.nextSequence;
-  session.nextSequence++;
+function createGameModel(
+  session: ServerGameSession,
+  afterSequence: SolitudeProtocolSequence,
+): SolitudeServerMessage {
+  const sequence = takeNextSequenceAfter(session, afterSequence);
   const assignedEntityIds = new Set(session.assignedEntityByClientId.values());
   return createGameModelMessage({
     entities: session.game.entityConfigs.filter((entity) =>
@@ -390,6 +391,16 @@ function createGameModel(session: ServerGameSession): SolitudeServerMessage {
     gameId: session.id,
     sequence,
   });
+}
+
+function takeNextSequenceAfter(
+  session: ServerGameSession,
+  afterSequence: SolitudeProtocolSequence,
+): SolitudeProtocolSequence {
+  session.nextSequence = Math.max(session.nextSequence, afterSequence + 1);
+  const sequence = session.nextSequence;
+  session.nextSequence++;
+  return sequence;
 }
 
 function createDefaultShipEntity(id: EntityId, index: number): EntityConfig {

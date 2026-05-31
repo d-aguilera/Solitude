@@ -74,10 +74,10 @@ describe("Solitude protocol", () => {
 
   it("recognizes server egress messages", () => {
     const snapshotMessage = createSnapshotMessage({
+      entities: [],
       gameId: "game:test",
       sequence: 4,
       simulationTimeMillis: 200,
-      snapshot: { entities: [] },
       tick: 12,
     });
 
@@ -85,10 +85,10 @@ describe("Solitude protocol", () => {
     expect(
       isSolitudeServerMessage({
         type: "snapshot",
+        entities: null,
         gameId: "game:test",
         sequence: 4,
         simulationTimeMillis: 200,
-        snapshot: null,
         tick: 12,
       }),
     ).toBe(false);

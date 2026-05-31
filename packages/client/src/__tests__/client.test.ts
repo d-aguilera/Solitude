@@ -73,10 +73,10 @@ describe("Solitude WebSocket browser client", () => {
       type: "serverMessage",
       message: {
         type: "snapshot",
+        entities: [],
         gameId: "game:1",
         sequence: 3,
         simulationTimeMillis: 1000 / 60,
-        snapshot: { entities: [] },
         tick: 1,
       },
     });
@@ -84,10 +84,10 @@ describe("Solitude WebSocket browser client", () => {
     expect(snapshots).toEqual([
       {
         type: "snapshot",
+        entities: [],
         gameId: "game:1",
         sequence: 3,
         simulationTimeMillis: 1000 / 60,
-        snapshot: { entities: [] },
         tick: 1,
       },
     ]);
