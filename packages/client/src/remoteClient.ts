@@ -44,7 +44,6 @@ const engineRenderer = createSolitudeRemoteClientRenderer({
 lobbyLink.href = createLobbyHref(serverBaseUrl);
 
 let client = createClient();
-let runActive = false;
 let activeAutopilotAction: string | null = null;
 let lastFrameMillis = performance.now();
 
@@ -96,7 +95,6 @@ async function joinGame(gameId: SolitudeGameId): Promise<void> {
   resetClientForCurrentIdentity();
   try {
     handleMessages(await client.joinGame(gameId), true);
-    await startServerLoop();
   } catch (error) {
     console.error(error instanceof Error ? error.message : "Join failed");
   }
@@ -160,17 +158,6 @@ function renderRemoteFrame(nowMillis: number): void {
   lastFrameMillis = nowMillis;
   engineRenderer.renderFrame(nowMillis, dtMillis);
   requestAnimationFrame(renderRemoteFrame);
-}
-
-async function startServerLoop(): Promise<void> {
-  if (runActive) return;
-
-  if (!client.state.gameId) {
-    throw new Error("Client is not joined to a game");
-  }
-  handleMessages(await client.runGame(client.state.gameId), false);
-
-  runActive = true;
 }
 
 function connectEvents(): void {

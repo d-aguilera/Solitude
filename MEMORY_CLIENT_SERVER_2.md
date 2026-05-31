@@ -42,7 +42,7 @@ Browser client
 1. Make WebSocket the only gameplay transport.
    - Keep HTTP for `GET /`, static assets, `GET /games`, and `GET /health`.
    - Remove or isolate legacy/debug gameplay routes: `POST /message`, `POST /run`, `POST /pause`, `POST /step`, and `GET /events`.
-   - Keep one gameplay protocol path for create, join, leave, input, start/stop, model updates, and snapshots.
+   - Keep one gameplay protocol path for create, join, leave, input, model updates, and snapshots; created games run automatically.
 
 2. Replace client-selected run parameters with server-owned policy.
    - Remove client-provided `dtMillis`, `intervalMillis`, and `simulationStepMillis`.

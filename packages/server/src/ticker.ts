@@ -16,9 +16,9 @@ export interface SolitudeGameTickPolicy {
 
 export interface SolitudeGameTicker {
   isRunning: (gameId: SolitudeGameId) => boolean;
-  pauseAll: () => void;
-  pauseGame: (gameId: SolitudeGameId) => void;
   runGame: (request: SolitudeGameTickRequest) => void;
+  stopAll: () => void;
+  stopGame: (gameId: SolitudeGameId) => void;
 }
 
 export interface SolitudeGameTickerClock<Timer> {
@@ -52,7 +52,7 @@ export function createSolitudeGameTicker<
     } as unknown as SolitudeGameTickerClock<Timer>);
   const timersByGameId = new Map<SolitudeGameId, Timer>();
 
-  const pauseGame = (gameId: SolitudeGameId): void => {
+  const stopGame = (gameId: SolitudeGameId): void => {
     const timer = timersByGameId.get(gameId);
     if (!timer) return;
     clock.clearInterval(timer);
@@ -60,7 +60,7 @@ export function createSolitudeGameTicker<
   };
 
   const runGame = (request: SolitudeGameTickRequest): void => {
-    pauseGame(request.gameId);
+    stopGame(request.gameId);
     let inputWindowStartMillis = clock.nowMillis();
     let lastObservedWallMillis = inputWindowStartMillis;
     let accumulatedSimulationMillis = 0;
@@ -84,7 +84,7 @@ export function createSolitudeGameTicker<
         inputWindowEndMillis,
       );
       if (!result.gameExists) {
-        pauseGame(request.gameId);
+        stopGame(request.gameId);
         return;
       }
       inputWindowStartMillis = result.inputWindowStartMillis;
@@ -96,17 +96,17 @@ export function createSolitudeGameTicker<
     timersByGameId.set(request.gameId, timer);
   };
 
-  const pauseAll = (): void => {
+  const stopAll = (): void => {
     for (const gameId of timersByGameId.keys()) {
-      pauseGame(gameId);
+      stopGame(gameId);
     }
   };
 
   return {
     isRunning: (gameId) => timersByGameId.has(gameId),
-    pauseAll,
-    pauseGame,
     runGame,
+    stopAll,
+    stopGame,
   };
 }
 

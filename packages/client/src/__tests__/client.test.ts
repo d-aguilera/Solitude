@@ -69,20 +69,6 @@ describe("Solitude WebSocket browser client", () => {
     await joinPromise;
     expect(client.state.entityId).toBe("ship:blue");
 
-    const runPromise = client.runGame("game:1");
-    await Promise.resolve();
-    expect(socket.sentMessages[2]).toEqual({
-      gameId: "game:1",
-      requestId: 3,
-      type: "runGame",
-    });
-    socket.receive({
-      type: "messages",
-      requestId: 3,
-      messages: [],
-    });
-    await runPromise;
-
     socket.receive({
       type: "serverMessage",
       message: {

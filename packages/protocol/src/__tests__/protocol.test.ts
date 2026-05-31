@@ -92,14 +92,7 @@ describe("Solitude protocol", () => {
     ).toBe(false);
   });
 
-  it("recognizes socket run requests without client timing policy", () => {
-    expect(
-      isSolitudeSocketClientMessage({
-        type: "runGame",
-        gameId: "game:test",
-        requestId: 5,
-      }),
-    ).toBe(true);
+  it("rejects direct socket run requests", () => {
     expect(
       isSolitudeSocketClientMessage({
         type: "runGame",

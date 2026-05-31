@@ -13,9 +13,7 @@ export type SolitudeClientMessage =
   | LeaveGameMessage
   | InputMessage;
 
-export type SolitudeSocketClientMessage =
-  | ClientMessageSocketRequest
-  | RunGameSocketRequest;
+export type SolitudeSocketClientMessage = ClientMessageSocketRequest;
 
 export type SolitudeSocketServerMessage =
   | MessagesSocketResponse
@@ -62,12 +60,6 @@ export interface ClientMessageSocketRequest {
   type: "clientMessage";
   requestId: SolitudeProtocolSequence;
   message: SolitudeClientMessage;
-}
-
-export interface RunGameSocketRequest {
-  type: "runGame";
-  requestId: SolitudeProtocolSequence;
-  gameId: SolitudeGameId;
 }
 
 export interface GameCreatedMessage {
@@ -231,12 +223,6 @@ export function isSolitudeSocketClientMessage(
         isFiniteNumber(value.requestId) &&
         isSolitudeClientMessage(value.message)
       );
-    case "runGame":
-      return (
-        hasOnlyKeys(value, ["gameId", "requestId", "type"]) &&
-        isFiniteNumber(value.requestId) &&
-        isString(value.gameId)
-      );
     default:
       return false;
   }
@@ -268,14 +254,6 @@ function isRuntimeWorldSnapshot(value: unknown): value is RuntimeWorldSnapshot {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
-}
-
-function hasOnlyKeys(
-  value: Record<string, unknown>,
-  allowedKeys: readonly string[],
-): boolean {
-  const allowed = new Set(allowedKeys);
-  return Object.keys(value).every((key) => allowed.has(key));
 }
 
 function isString(value: unknown): value is string {

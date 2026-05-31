@@ -113,7 +113,7 @@ export function createSolitudeHttpRequestHandler({
     const requestUrl = new URL(request.url ?? "/", "http://localhost");
 
     if (request.method === "GET" && requestUrl.pathname === "/games") {
-      pauseRemovedGames(ticker, transport.cleanupGames());
+      stopCleanedUpGames(ticker, transport.cleanupGames());
       sendGameList(response, createGameList(transport, ticker));
       return;
     }
@@ -156,7 +156,7 @@ export function createSolitudeHttpRequestHandler({
   };
 
   handler.close = () => {
-    ticker.pauseAll();
+    ticker.stopAll();
     socketServer.close();
     for (const sockets of socketSubscriptionsByGameId.values()) {
       for (const socket of sockets) {
@@ -294,7 +294,7 @@ function attachWebSocketTransport({
         session.gameId,
         messages,
       );
-      pauseRemovedGames(ticker, transport.cleanupGames());
+      stopCleanedUpGames(ticker, transport.cleanupGames());
     }
   });
 }
@@ -342,14 +342,15 @@ function handleSocketMessage({
         messages,
         socket,
       );
-      pauseRemovedGames(ticker, transport.cleanupGames());
+      for (const message of messages) {
+        if (message.type === "gameCreated") {
+          ticker.runGame({ gameId: message.gameId });
+        }
+      }
+      stopCleanedUpGames(ticker, transport.cleanupGames());
       sendSocketMessages(socket, payload.requestId, messages);
       return;
     }
-    case "runGame":
-      ticker.runGame({ gameId: payload.gameId });
-      sendSocketMessages(socket, payload.requestId, []);
-      return;
   }
 }
 
@@ -359,12 +360,12 @@ function setCommonHeaders(response: ServerResponse): void {
   response.setHeader("Access-Control-Allow-Origin", "*");
 }
 
-function pauseRemovedGames(
+function stopCleanedUpGames(
   ticker: ReturnType<typeof createSolitudeGameTicker>,
   gameIds: readonly SolitudeGameId[],
 ): void {
   for (const gameId of gameIds) {
-    ticker.pauseGame(gameId);
+    ticker.stopGame(gameId);
   }
 }
 

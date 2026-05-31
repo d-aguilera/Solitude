@@ -69,7 +69,7 @@ describe("Solitude game ticker", () => {
     expect(ticker.isRunning("game:1")).toBe(true);
   });
 
-  it("pauses loops when a game cannot be stepped", () => {
+  it("stops loops when a game cannot be stepped", () => {
     const clock = createManualClock();
     const ticker = createSolitudeGameTicker({
       clock,
@@ -90,7 +90,7 @@ describe("Solitude game ticker", () => {
     expect(clock.timers[0]?.cleared).toBe(true);
   });
 
-  it("pauses all running loops", () => {
+  it("stops all running loops", () => {
     const clock = createManualClock();
     const ticker = createSolitudeGameTicker({
       clock,
@@ -105,7 +105,7 @@ describe("Solitude game ticker", () => {
 
     ticker.runGame({ gameId: "game:1" });
     ticker.runGame({ gameId: "game:2" });
-    ticker.pauseAll();
+    ticker.stopAll();
 
     expect(ticker.isRunning("game:1")).toBe(false);
     expect(ticker.isRunning("game:2")).toBe(false);

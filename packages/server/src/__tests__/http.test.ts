@@ -136,8 +136,8 @@ describe("Solitude HTTP server", () => {
             availableEntityIds: ["ship:blue", "ship:red"],
             gameId: "game:1",
             maxClients: 2,
-            running: false,
-            tick: 0,
+            running: true,
+            tick: expect.any(Number),
           },
         ],
       });
@@ -165,7 +165,6 @@ describe("Solitude HTTP server", () => {
       const socket = await openWebSocket(`${server.url}/socket`);
       await createGameOverSocket(socket, "client:a", 1);
       await joinGameOverSocket(socket, "client:a", 2, 2);
-      await runGameOverSocket(socket, 3);
 
       const runningResponse = await fetch(`${server.url}/games`);
       expect(await runningResponse.json()).toEqual({
@@ -181,7 +180,7 @@ describe("Solitude HTTP server", () => {
         ],
       });
 
-      await leaveGameOverSocket(socket, "client:a", 4, 4);
+      await leaveGameOverSocket(socket, "client:a", 3, 3);
 
       const response = await fetch(`${server.url}/games`);
 
@@ -267,11 +266,6 @@ describe("Solitude HTTP server", () => {
           message.type === "serverMessage" &&
           message.message?.type === "snapshot",
       );
-      socket.send({
-        type: "runGame",
-        requestId: 3,
-        gameId: "game:1",
-      });
 
       const snapshot = await snapshotPromise;
       expect(snapshot.message.tick).toBeGreaterThan(0);
@@ -415,8 +409,8 @@ describe("Solitude HTTP server", () => {
           availableEntityIds: ["ship:blue"],
           gameId: "game:1",
           maxClients: 2,
-          running: false,
-          tick: 0,
+          running: true,
+          tick: expect.any(Number),
         },
       ]);
       await secondSocket.close();
@@ -567,21 +561,6 @@ async function leaveGameOverSocket(
       gameId: "game:1",
       sequence,
     },
-  });
-  await response;
-}
-
-async function runGameOverSocket(
-  socket: Awaited<ReturnType<typeof openWebSocket>>,
-  requestId: number,
-): Promise<void> {
-  const response = socket.readUntil(
-    (message) => message.type === "messages" && message.requestId === requestId,
-  );
-  socket.send({
-    type: "runGame",
-    requestId,
-    gameId: "game:1",
   });
   await response;
 }
