@@ -4,6 +4,7 @@ import type { EntityConfig, EntityId } from "@solitude/engine/world";
 
 export type SolitudeGameId = string;
 export type SolitudeClientId = string;
+export type SolitudeModelVersion = number;
 export type SolitudeProtocolSequence = number;
 export type SolitudeSimulationTimeMillis = number;
 export type SolitudeSimulationTick = number;
@@ -82,6 +83,7 @@ export interface GameModelMessage {
   type: "gameModel";
   entities: EntityConfig[];
   gameId: SolitudeGameId;
+  modelVersion: SolitudeModelVersion;
   sequence: SolitudeProtocolSequence;
 }
 
@@ -89,6 +91,7 @@ export interface SnapshotMessage {
   type: "snapshot";
   entities: RuntimeEntitySnapshot[];
   gameId: SolitudeGameId;
+  modelVersion: SolitudeModelVersion;
   sequence: SolitudeProtocolSequence;
   simulationTimeMillis: SolitudeSimulationTimeMillis;
   tick: SolitudeSimulationTick;
@@ -195,12 +198,14 @@ export function isSolitudeServerMessage(
       return (
         Array.isArray(value.entities) &&
         isString(value.gameId) &&
+        isFiniteNumber(value.modelVersion) &&
         isFiniteNumber(value.sequence)
       );
     case "snapshot":
       return (
         Array.isArray(value.entities) &&
         isString(value.gameId) &&
+        isFiniteNumber(value.modelVersion) &&
         isFiniteNumber(value.sequence) &&
         isFiniteNumber(value.simulationTimeMillis) &&
         isFiniteNumber(value.tick)

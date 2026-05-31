@@ -193,7 +193,7 @@ function handleMessages(
         if (connectAfterJoin) connectEvents();
         break;
       case "gameModel":
-        engineRenderer.setModel(message.entities);
+        engineRenderer.setModel(message.entities, message.modelVersion);
         break;
       case "snapshot":
         engineRenderer.pushSnapshotMessage(message);

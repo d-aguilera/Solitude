@@ -115,7 +115,7 @@ Deliver the real-time authoritative loop first:
 - Latest-snapshot rendering is in place while the protocol stream is made leaner.
 - Static/dynamic message split is in place.
 - Server stream instrumentation is in place.
-- Model versioning and stream recovery rules.
+- Model versioning and stream recovery rules are in place.
 - Compact dynamic encoding review.
 
 Then deliver predicted local flight:
@@ -129,11 +129,11 @@ Then deliver predicted local flight:
 
 ## Clear Next Step
 
-Add model versioning and stream recovery rules:
+Review compact dynamic encoding:
 
-- `gameModel` should publish a model version;
-- `snapshot` should identify the model version it depends on;
-- the client should reject, buffer, or recover when dynamic updates outrun static model state.
+- measure before choosing between compact JSON shape, quantization, deltas, or binary-friendly arrays;
+- use `/metrics` to compare payload and cadence before/after;
+- keep the first encoding change simple enough to evaluate quickly.
 
 ## Things To Watch
 

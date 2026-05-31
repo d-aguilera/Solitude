@@ -76,6 +76,7 @@ describe("Solitude in-process transport", () => {
 
     const snapshot = transport.stepGame("game:1", 1000);
     expect(snapshot?.type).toBe("snapshot");
+    expect(snapshot?.modelVersion).toBe(1);
     expect(snapshot?.simulationTimeMillis).toBe(1000);
     expect(snapshot?.tick).toBe(1);
     expect(snapshot?.entities.length).toBeGreaterThan(0);

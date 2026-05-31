@@ -29,6 +29,7 @@ const remoteRenderPluginIds = [
 
 export interface RemoteClientSnapshotMessage {
   entities: RuntimeWorldSnapshot["entities"];
+  modelVersion: number;
   simulationTimeMillis: number;
   tick: number;
 }
@@ -42,7 +43,7 @@ export interface SolitudeRemoteClientRendererOptions {
 export interface SolitudeRemoteClientRenderer {
   pushSnapshotMessage: (message: RemoteClientSnapshotMessage) => void;
   renderFrame: (nowMillis: number, dtMillis: number) => boolean;
-  setModel: (entities: readonly EntityConfig[]) => void;
+  setModel: (entities: readonly EntityConfig[], modelVersion: number) => void;
   setControlState: (controls: Partial<ControlInput>) => void;
 }
 
@@ -58,11 +59,13 @@ export function createSolitudeRemoteClientRenderer({
   let selectedThrustLevel = 0;
   let latestSnapshot: RuntimeWorldSnapshot | null = null;
   let messageSimulationTimeMillis = 0;
+  let modelVersion = 0;
 
   let renderer: ReturnType<typeof createRemoteCanvasRenderer> | null = null;
 
   return {
     pushSnapshotMessage: (message) => {
+      if (message.modelVersion !== modelVersion) return;
       latestSnapshot = { entities: message.entities };
       messageSimulationTimeMillis = message.simulationTimeMillis;
     },
@@ -100,7 +103,8 @@ export function createSolitudeRemoteClientRenderer({
         }
       }
     },
-    setModel: (entities) => {
+    setModel: (entities, nextModelVersion) => {
+      modelVersion = nextModelVersion;
       renderer = createRenderer(plugins, entities);
       latestSnapshot = null;
       messageSimulationTimeMillis = 0;

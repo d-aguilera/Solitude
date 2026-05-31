@@ -83,6 +83,7 @@ interface ServerGameSession {
   heldControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
   id: SolitudeGameId;
   inputEvents: QueuedInputEvent[];
+  modelVersion: number;
   nextSequence: SolitudeProtocolSequence;
   pendingPressedControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
   simulationTimeMillis: number;
@@ -121,6 +122,7 @@ export function createSolitudeSessionManager(
       heldControlInputsByEntityId: new Map(),
       id: gameId,
       inputEvents: [],
+      modelVersion: 0,
       nextSequence: sequence + 1,
       pendingPressedControlInputsByEntityId: new Map(),
       simulationTimeMillis: 0,
@@ -184,6 +186,7 @@ export function createSolitudeSessionManager(
     session.assignedEntityByClientId.delete(message.clientId);
     if (assignedEntityId) {
       session.game.removeEntity(assignedEntityId);
+      session.modelVersion++;
       session.heldControlInputsByEntityId.delete(assignedEntityId);
       session.pendingPressedControlInputsByEntityId.delete(assignedEntityId);
       session.steppedControlInputsByEntityId.delete(assignedEntityId);
@@ -275,6 +278,7 @@ export function createSolitudeSessionManager(
     return createSnapshotMessage({
       entities: snapshot.entities,
       gameId,
+      modelVersion: session.modelVersion,
       sequence,
       simulationTimeMillis: session.simulationTimeMillis,
       tick: session.tick,
@@ -314,6 +318,7 @@ export function createSolitudeSessionManager(
     ensureEntityExists(session, entityId, options);
     session.assignedEntityByClientId.set(clientId, entityId);
     session.emptySinceMillis = null;
+    session.modelVersion++;
     return [
       createJoinedGameMessage({
         clientId,
@@ -389,6 +394,7 @@ function createGameModel(
       assignedEntityIds.has(entity.id),
     ),
     gameId: session.id,
+    modelVersion: session.modelVersion,
     sequence,
   });
 }

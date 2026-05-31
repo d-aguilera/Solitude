@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createErrorMessage,
   createGameCreatedMessage,
+  createGameModelMessage,
   createJoinedGameMessage,
   createSnapshotMessage,
   isSolitudeClientMessage,
@@ -76,17 +77,26 @@ describe("Solitude protocol", () => {
     const snapshotMessage = createSnapshotMessage({
       entities: [],
       gameId: "game:test",
+      modelVersion: 2,
       sequence: 4,
       simulationTimeMillis: 200,
       tick: 12,
     });
+    const gameModelMessage = createGameModelMessage({
+      entities: [],
+      gameId: "game:test",
+      modelVersion: 2,
+      sequence: 3,
+    });
 
+    expect(isSolitudeServerMessage(gameModelMessage)).toBe(true);
     expect(isSolitudeServerMessage(snapshotMessage)).toBe(true);
     expect(
       isSolitudeServerMessage({
         type: "snapshot",
         entities: null,
         gameId: "game:test",
+        modelVersion: 2,
         sequence: 4,
         simulationTimeMillis: 200,
         tick: 12,

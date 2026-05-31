@@ -64,6 +64,7 @@ describe("Solitude session manager", () => {
     expect(
       requireGameModel(messages).entities.map((entity) => entity.id),
     ).toEqual(["ship:blue", "ship:red"]);
+    expect(requireGameModel(messages).modelVersion).toBe(2);
     expect(
       manager.handleMessage({
         type: "joinGame",
@@ -208,6 +209,7 @@ describe("Solitude session manager", () => {
     const snapshot = manager.stepGame("game:1", 1000);
     expect(snapshot?.type).toBe("snapshot");
     expect(snapshot?.gameId).toBe("game:1");
+    expect(snapshot?.modelVersion).toBe(1);
     expect(snapshot?.sequence).toBe(4);
     expect(snapshot?.simulationTimeMillis).toBe(1000);
     expect(snapshot?.tick).toBe(1);
@@ -403,6 +405,7 @@ describe("Solitude session manager", () => {
     });
 
     expect(snapshot?.simulationTimeMillis).toBe(25);
+    expect(snapshot?.modelVersion).toBe(1);
     expect(manager.listGames()[0]?.tick).toBe(1);
     expect(game.controlInputsByStep).toEqual([
       { controls: [], dtMillis: 10 },

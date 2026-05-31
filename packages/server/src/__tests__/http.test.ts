@@ -315,6 +315,7 @@ describe("Solitude HTTP server", () => {
       );
 
       const snapshot = await snapshotPromise;
+      expect(snapshot.message.modelVersion).toBe(1);
       expect(snapshot.message.tick).toBeGreaterThan(0);
       socket.close();
     } finally {
@@ -380,10 +381,16 @@ describe("Solitude HTTP server", () => {
       const modelUpdate = await firstModelUpdate;
 
       expect(
+        joinResponse.messages.find(
+          (message: any) => message.type === "gameModel",
+        )?.modelVersion,
+      ).toBe(2);
+      expect(
         joinResponse.messages
           .find((message: any) => message.type === "gameModel")
           ?.entities.map((entity: any) => entity.id),
       ).toEqual(["ship:blue", "ship:red"]);
+      expect(modelUpdate.message.modelVersion).toBe(2);
       expect(
         modelUpdate.message.entities.map((entity: any) => entity.id),
       ).toEqual(["ship:blue", "ship:red"]);
