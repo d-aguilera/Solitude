@@ -2,6 +2,7 @@ import type {
   SnapshotMessage,
   SolitudeGameId,
 } from "@solitude/protocol/protocol";
+import type { SolitudeServerMetrics } from "./metrics";
 import type { SolitudeInProcessTransport } from "./transport";
 
 export interface SolitudeGameTickRequest {
@@ -29,6 +30,7 @@ export interface SolitudeGameTickerClock<Timer> {
 
 export interface SolitudeGameTickerOptions<Timer> {
   clock?: SolitudeGameTickerClock<Timer>;
+  metrics: Pick<SolitudeServerMetrics, "recordSnapshotStep">;
   onSnapshot: (snapshot: SnapshotMessage) => void;
   policy: SolitudeGameTickPolicy;
   transport: Pick<SolitudeInProcessTransport, "stepGameWithInputWindow">;
@@ -79,9 +81,11 @@ export function createSolitudeGameTicker<
         options.transport,
         request,
         options.policy,
+        options.metrics,
         accumulatedSimulationMillis,
         inputWindowStartMillis,
         inputWindowEndMillis,
+        clock.nowMillis,
       );
       if (!result.gameExists) {
         stopGame(request.gameId);
@@ -114,9 +118,11 @@ function stepGameForBroadcast(
   transport: Pick<SolitudeInProcessTransport, "stepGameWithInputWindow">,
   request: SolitudeGameTickRequest,
   policy: SolitudeGameTickPolicy,
+  metrics: Pick<SolitudeServerMetrics, "recordSnapshotStep">,
   accumulatedSimulationMillis: number,
   inputWindowStartMillis: number,
   inputWindowEndMillis: number,
+  nowMillis: () => number,
 ): {
   gameExists: boolean;
   inputWindowStartMillis: number;
@@ -134,6 +140,7 @@ function stepGameForBroadcast(
         stepMillis / policy.simulationMillisPerWallMillis,
       inputWindowEndMillis,
     );
+    const stepStartMillis = nowMillis();
     snapshot = transport.stepGameWithInputWindow(request.gameId, stepMillis, {
       endMillis: stepWindowEndMillis,
       startMillis: stepWindowStartMillis,
@@ -146,6 +153,11 @@ function stepGameForBroadcast(
         snapshot: null,
       };
     }
+    metrics.recordSnapshotStep({
+      durationMillis: Math.max(0, nowMillis() - stepStartMillis),
+      entityCount: snapshot.entities.length,
+      gameId: request.gameId,
+    });
     inputWindowStartMillis = stepWindowEndMillis;
     remainingMillis -= stepMillis;
   }

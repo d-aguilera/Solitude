@@ -71,23 +71,33 @@ Browser client
    - `snapshot` owns high-frequency position, velocity, orientation, and control-facing dynamic state.
    - Avoid repeatedly sending static scenario data once the model is known.
 
-7. Review bandwidth, allocation, cadence, and protocol shape.
-   - Compact deltas, entity versioning, and binary-friendly encodings belong after the real-time stream is structurally sound.
+7. Add server stream instrumentation.
+   - Track snapshot cadence, payload size, fanout, simulation step timing, and socket counts.
+   - Expose rolling metrics over HTTP so optimization work has a scoreboard.
+   - Keep the metrics close to runner/socket boundaries instead of engine hot paths.
+
+8. Add model versioning and stream recovery rules.
+   - `gameModel` should publish a model version.
+   - `snapshot` should identify the model version it depends on.
+   - The client should reject, buffer, or recover when dynamic updates outrun static model state.
+
+9. Review compact dynamic encoding.
+   - Measure before choosing between compact JSON shape, quantization, deltas, or binary-friendly arrays.
    - Do not move prototype UI/network allocation patterns into engine hot paths.
 
-8. Make inputs sequence-aware.
-   - Input messages should include a client input sequence.
-   - Authoritative snapshots should acknowledge the last processed input sequence per controlled entity.
-   - The client should replay unacknowledged local inputs after reconciliation.
+10. Make inputs sequence-aware.
+    - Input messages should include a client input sequence.
+    - Authoritative snapshots should acknowledge the last processed input sequence per controlled entity.
+    - The client should replay unacknowledged local inputs after reconciliation.
 
-9. Replace the two-snapshot client interpolator with an ordered buffer.
-   - Keep a small ring of recent authoritative snapshots.
-   - Drop stale or out-of-order snapshots.
-   - Sample by target authoritative simulation time.
-   - Interpolate between nearest snapshots.
-   - Allow only short bounded extrapolation when the buffer underruns.
+11. Replace the two-snapshot client interpolator with an ordered buffer.
+    - Keep a small ring of recent authoritative snapshots.
+    - Drop stale or out-of-order snapshots.
+    - Sample by target authoritative simulation time.
+    - Interpolate between nearest snapshots.
+    - Allow only short bounded extrapolation when the buffer underruns.
 
-10. Add client prediction for the locally controlled ship.
+12. Add client prediction for the locally controlled ship.
     - Local controls must affect the assigned ship immediately.
     - Reuse Solitude simulation/control logic where practical.
     - Reconcile predicted state against authoritative snapshots.
@@ -104,7 +114,9 @@ Deliver the real-time authoritative loop first:
 - Snapshot messages with authoritative simulation time.
 - Latest-snapshot rendering is in place while the protocol stream is made leaner.
 - Static/dynamic message split is in place.
-- Protocol payload and cadence review.
+- Server stream instrumentation is in place.
+- Model versioning and stream recovery rules.
+- Compact dynamic encoding review.
 
 Then deliver predicted local flight:
 
@@ -117,11 +129,11 @@ Then deliver predicted local flight:
 
 ## Clear Next Step
 
-Review bandwidth, allocation, cadence, and protocol shape:
+Add model versioning and stream recovery rules:
 
-- measure payload size and cadence after the static/dynamic split;
-- look for allocation pressure in the socket and render hot paths;
-- decide whether compact deltas, entity versioning, or binary-friendly encoding is worth doing before prediction.
+- `gameModel` should publish a model version;
+- `snapshot` should identify the model version it depends on;
+- the client should reject, buffer, or recover when dynamic updates outrun static model state.
 
 ## Things To Watch
 

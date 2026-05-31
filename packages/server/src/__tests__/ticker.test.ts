@@ -3,6 +3,7 @@ import type {
   SolitudeGameId,
 } from "@solitude/protocol/protocol";
 import { describe, expect, it } from "vitest";
+import { createNoopSolitudeServerMetrics } from "../metrics";
 import {
   createSolitudeGameTicker,
   type SolitudeGameTickPolicy,
@@ -18,6 +19,7 @@ describe("Solitude game ticker", () => {
     });
     const ticker = createSolitudeGameTicker({
       clock,
+      metrics: createNoopSolitudeServerMetrics(),
       onSnapshot: (snapshot) => snapshots.push(snapshot),
       policy: createPolicy({
         broadcastIntervalMillis: 250,
@@ -52,6 +54,7 @@ describe("Solitude game ticker", () => {
     const clock = createManualClock();
     const ticker = createSolitudeGameTicker({
       clock,
+      metrics: createNoopSolitudeServerMetrics(),
       onSnapshot: () => {},
       policy: createPolicy({
         broadcastIntervalMillis: 250,
@@ -73,6 +76,7 @@ describe("Solitude game ticker", () => {
     const clock = createManualClock();
     const ticker = createSolitudeGameTicker({
       clock,
+      metrics: createNoopSolitudeServerMetrics(),
       onSnapshot: () => {},
       policy: createPolicy({
         broadcastIntervalMillis: 250,
@@ -94,6 +98,7 @@ describe("Solitude game ticker", () => {
     const clock = createManualClock();
     const ticker = createSolitudeGameTicker({
       clock,
+      metrics: createNoopSolitudeServerMetrics(),
       onSnapshot: () => {},
       policy: createPolicy({
         broadcastIntervalMillis: 250,
@@ -124,6 +129,7 @@ describe("Solitude game ticker", () => {
     });
     const ticker = createSolitudeGameTicker({
       clock,
+      metrics: createNoopSolitudeServerMetrics(),
       onSnapshot: (snapshot) => snapshots.push(snapshot),
       policy: createPolicy({
         broadcastIntervalMillis: 250,
@@ -165,6 +171,7 @@ describe("Solitude game ticker", () => {
     });
     const ticker = createSolitudeGameTicker({
       clock,
+      metrics: createNoopSolitudeServerMetrics(),
       onSnapshot: (snapshot) => snapshots.push(snapshot),
       policy: createPolicy({
         broadcastIntervalMillis: 250,
@@ -211,6 +218,7 @@ describe("Solitude game ticker", () => {
     });
     const ticker = createSolitudeGameTicker({
       clock,
+      metrics: createNoopSolitudeServerMetrics(),
       onSnapshot: (snapshot) => snapshots.push(snapshot),
       policy: createPolicy({
         broadcastIntervalMillis: 250,

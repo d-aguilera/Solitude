@@ -159,6 +159,53 @@ describe("Solitude HTTP server", () => {
     }
   });
 
+  it("serves rolling stream metrics", async () => {
+    const server = await startTestServer();
+    try {
+      const socket = await openWebSocket(`${server.url}/socket`);
+      await createGameOverSocket(socket, "client:a", 1);
+      await joinGameOverSocket(socket, "client:a", 2, 2);
+      await socket.readUntil(
+        (message) =>
+          message.type === "serverMessage" &&
+          message.message?.type === "snapshot",
+      );
+
+      const response = await fetch(`${server.url}/metrics`);
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({
+        games: [
+          {
+            clients: 1,
+            entityCountAvg: expect.any(Number),
+            gameId: "game:1",
+            running: true,
+            snapshotPayloadBytesAvg: expect.any(Number),
+            snapshotRateHz: expect.any(Number),
+            snapshotSerializeDurationMillisAvg: expect.any(Number),
+            snapshotSerializeDurationMillisP95: expect.any(Number),
+            snapshotStepDurationMillisAvg: expect.any(Number),
+            snapshotStepDurationMillisP95: expect.any(Number),
+            snapshotWireBytesPerSecond: expect.any(Number),
+            tick: expect.any(Number),
+          },
+        ],
+        process: {
+          heapUsedBytes: expect.any(Number),
+          rssBytes: expect.any(Number),
+        },
+        sockets: {
+          connected: 1,
+        },
+        windowMillis: 5000,
+      });
+      await socket.close();
+    } finally {
+      await server.close();
+    }
+  });
+
   it("cleans up empty games after clients leave", async () => {
     const server = await startTestServer();
     try {

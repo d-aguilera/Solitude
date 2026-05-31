@@ -3,6 +3,7 @@ import type {
   SolitudeProtocolSequence,
   SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
+import type { SolitudeServerMetrics } from "./metrics";
 import type { SolitudeGameSummary } from "./sessions";
 import {
   DEFAULT_SOLITUDE_GAME_TICK_POLICY,
@@ -28,6 +29,7 @@ export interface SolitudeGameRunnerFactory {
 }
 
 export interface SolitudeGameRunnerFactoryOptions {
+  metrics: SolitudeServerMetrics;
   onSnapshot: (snapshot: SnapshotMessage) => void;
 }
 
@@ -41,11 +43,13 @@ export interface SolitudeRunningGameSummary extends SolitudeGameSummary {
 }
 
 export function createDefaultSolitudeGameRunner({
+  metrics,
   onSnapshot,
 }: SolitudeGameRunnerFactoryOptions): SolitudeGameRunner {
   const transport = createSolitudeInProcessTransport();
   return createSolitudeGameRunner({
     ticker: createSolitudeGameTicker({
+      metrics,
       onSnapshot,
       policy: DEFAULT_SOLITUDE_GAME_TICK_POLICY,
       transport,

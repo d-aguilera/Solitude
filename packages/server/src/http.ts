@@ -20,6 +20,11 @@ import { extname, normalize, resolve, sep } from "node:path";
 import type { Duplex } from "node:stream";
 import { WebSocket, WebSocketServer, type RawData } from "ws";
 import {
+  DEFAULT_SOLITUDE_METRICS_WINDOW_MILLIS,
+  createSolitudeServerMetrics,
+  type SolitudeServerMetrics,
+} from "./metrics";
+import {
   createDefaultSolitudeGameRunner,
   type SolitudeGameRunner,
   type SolitudeGameRunnerFactory,
@@ -76,9 +81,14 @@ export function createSolitudeHttpRequestHandler({
   const socketSubscriptionsByGameId = new Map<SolitudeGameId, Set<WebSocket>>();
   const socketSessionsBySocket = new Map<WebSocket, SocketSession>();
   const socketServer = new WebSocketServer({ noServer: true });
+  const metrics = createSolitudeServerMetrics({
+    nowMillis: Date.now,
+    windowMillis: DEFAULT_SOLITUDE_METRICS_WINDOW_MILLIS,
+  });
   const runner = createRunner({
+    metrics,
     onSnapshot: (snapshot) => {
-      publishSocketSnapshot(socketSubscriptionsByGameId, snapshot);
+      publishSocketSnapshot(socketSubscriptionsByGameId, metrics, snapshot);
     },
   });
   const resolvedStaticAssetRoot = staticAssetRoot
@@ -105,11 +115,20 @@ export function createSolitudeHttpRequestHandler({
     }
 
     if (request.method === "GET" && requestUrl.pathname === "/health") {
-      sendText(
+      sendJson(response, 200, { ok: true });
+      return;
+    }
+
+    if (request.method === "GET" && requestUrl.pathname === "/metrics") {
+      sendJson(
         response,
         200,
-        "application/json; charset=utf-8",
-        JSON.stringify({ ok: true }),
+        metrics.createReport({
+          connectedSockets: socketServer.clients.size,
+          games: runner.listGames(),
+          getClientCount: (gameId) =>
+            socketSubscriptionsByGameId.get(gameId)?.size ?? 0,
+        }),
       );
       return;
     }
@@ -336,7 +355,7 @@ function setCommonHeaders(response: ServerResponse): void {
 function sendJson(
   response: ServerResponse,
   statusCode: number,
-  payload: { messages: SolitudeServerMessage[] },
+  payload: unknown,
 ): void {
   sendText(
     response,
@@ -383,16 +402,22 @@ function sendSocketMessages(
   requestId: SolitudeProtocolSequence,
   messages: SolitudeServerMessage[],
 ): void {
-  if (socket.readyState !== WebSocket.OPEN) return;
-  socket.send(JSON.stringify({ messages, requestId, type: "messages" }));
+  sendSocketText(
+    socket,
+    JSON.stringify({ messages, requestId, type: "messages" }),
+  );
 }
 
 function sendSocketServerMessage(
   socket: WebSocket,
   message: SolitudeServerMessage,
 ): void {
+  sendSocketText(socket, JSON.stringify({ message, type: "serverMessage" }));
+}
+
+function sendSocketText(socket: WebSocket, text: string): void {
   if (socket.readyState !== WebSocket.OPEN) return;
-  socket.send(JSON.stringify({ message, type: "serverMessage" }));
+  socket.send(text);
 }
 
 async function sendStaticAsset(
@@ -465,12 +490,21 @@ function getContentType(filePath: string): string {
 
 function publishSocketSnapshot(
   subscriptionsByGameId: Map<SolitudeGameId, Set<WebSocket>>,
+  metrics: SolitudeServerMetrics,
   snapshot: SnapshotMessage,
 ): void {
   const subscriptions = subscriptionsByGameId.get(snapshot.gameId);
   if (!subscriptions) return;
+  const serializeStartMillis = Date.now();
+  const payload = JSON.stringify({ message: snapshot, type: "serverMessage" });
+  metrics.recordSnapshotBroadcast({
+    byteLength: Buffer.byteLength(payload),
+    clientCount: subscriptions.size,
+    gameId: snapshot.gameId,
+    serializeDurationMillis: Math.max(0, Date.now() - serializeStartMillis),
+  });
   for (const socket of subscriptions) {
-    sendSocketServerMessage(socket, snapshot);
+    sendSocketText(socket, payload);
   }
 }
 
