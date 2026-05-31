@@ -22,6 +22,7 @@ import { WebSocket, WebSocketServer, type RawData } from "ws";
 import {
   DEFAULT_SOLITUDE_METRICS_WINDOW_MILLIS,
   createSolitudeServerMetrics,
+  measureSnapshotEncodingByteLengths,
   type SolitudeServerMetrics,
 } from "./metrics";
 import {
@@ -497,9 +498,14 @@ function publishSocketSnapshot(
   if (!subscriptions) return;
   const serializeStartMillis = Date.now();
   const payload = JSON.stringify({ message: snapshot, type: "serverMessage" });
+  const byteLength = Buffer.byteLength(payload);
   metrics.recordSnapshotBroadcast({
-    byteLength: Buffer.byteLength(payload),
+    byteLength,
     clientCount: subscriptions.size,
+    encodingByteLengths: measureSnapshotEncodingByteLengths(
+      snapshot,
+      byteLength,
+    ),
     gameId: snapshot.gameId,
     serializeDurationMillis: Math.max(0, Date.now() - serializeStartMillis),
   });

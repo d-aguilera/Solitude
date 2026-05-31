@@ -85,19 +85,24 @@ Browser client
    - Measure before choosing between compact JSON shape, quantization, deltas, or binary-friendly arrays.
    - Do not move prototype UI/network allocation patterns into engine hot paths.
 
-10. Make inputs sequence-aware.
+10. Apply the first compact dynamic encoding.
+    - Use `/metrics` shadow encoding results to choose the first live protocol change.
+    - Prefer one high-confidence encoding change over several speculative micro-optimizations.
+    - Keep the live protocol shape easy to inspect until binary earns its complexity.
+
+11. Make inputs sequence-aware.
     - Input messages should include a client input sequence.
     - Authoritative snapshots should acknowledge the last processed input sequence per controlled entity.
     - The client should replay unacknowledged local inputs after reconciliation.
 
-11. Replace the two-snapshot client interpolator with an ordered buffer.
+12. Replace the two-snapshot client interpolator with an ordered buffer.
     - Keep a small ring of recent authoritative snapshots.
     - Drop stale or out-of-order snapshots.
     - Sample by target authoritative simulation time.
     - Interpolate between nearest snapshots.
     - Allow only short bounded extrapolation when the buffer underruns.
 
-12. Add client prediction for the locally controlled ship.
+13. Add client prediction for the locally controlled ship.
     - Local controls must affect the assigned ship immediately.
     - Reuse Solitude simulation/control logic where practical.
     - Reconcile predicted state against authoritative snapshots.
@@ -116,7 +121,8 @@ Deliver the real-time authoritative loop first:
 - Static/dynamic message split is in place.
 - Server stream instrumentation is in place.
 - Model versioning and stream recovery rules are in place.
-- Compact dynamic encoding review.
+- Compact dynamic encoding review is in place.
+- First compact dynamic encoding change.
 
 Then deliver predicted local flight:
 
@@ -129,11 +135,11 @@ Then deliver predicted local flight:
 
 ## Clear Next Step
 
-Review compact dynamic encoding:
+Apply the first compact dynamic encoding:
 
-- measure before choosing between compact JSON shape, quantization, deltas, or binary-friendly arrays;
-- use `/metrics` to compare payload and cadence before/after;
-- keep the first encoding change simple enough to evaluate quickly.
+- use `/metrics` shadow encoding results to choose the first live protocol change;
+- compare payload and cadence before/after;
+- keep the live shape easy to inspect until binary earns its complexity.
 
 ## Things To Watch
 
