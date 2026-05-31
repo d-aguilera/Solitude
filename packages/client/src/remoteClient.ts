@@ -29,13 +29,9 @@ fields.clientId.value = readClientId(fields.clientId.value);
 
 const gameLabelEl = queryElement("#gameLabel");
 const entityLabelEl = queryElement("#entityLabel");
-const keyStatusEl = queryElement("#keyStatus");
 const lobbyLink = queryAnchor("#lobbyLink");
-const runStatusEl = queryElement("#runStatus");
 const hudEl = queryElement("#hud");
 const snapshotCanvas = queryCanvas("#snapshotCanvas");
-const snapshotStatusEl = queryElement("#snapshotStatus");
-const statusEl = queryElement("#status");
 const searchParams = new URLSearchParams(window.location.search);
 const serverBaseUrl = readServerBaseUrl(searchParams);
 const initialGameId = searchParams.get("gameId");
@@ -44,7 +40,6 @@ const engineRenderer = createSolitudeRemoteClientRenderer({
   canvas: snapshotCanvas,
   getFocusEntityId: () => fields.entityId.value,
   hudElement: hudEl,
-  statusElement: snapshotStatusEl,
 });
 lobbyLink.href = createLobbyHref(serverBaseUrl);
 
@@ -85,7 +80,6 @@ if (initialGameId) {
   gameLabelEl.textContent = "Game " + initialGameId;
   void joinGame(initialGameId);
 } else {
-  statusEl.textContent = "Missing game ID";
   gameLabelEl.textContent = "No game selected";
 }
 requestAnimationFrame(renderRemoteFrame);
@@ -101,11 +95,10 @@ function createClient() {
 async function joinGame(gameId: SolitudeGameId): Promise<void> {
   resetClientForCurrentIdentity();
   try {
-    handleMessages(await client.joinGame(gameId), true, false);
+    handleMessages(await client.joinGame(gameId), true);
     await startServerLoop();
   } catch (error) {
-    statusEl.textContent =
-      error instanceof Error ? error.message : "Join failed";
+    console.error(error instanceof Error ? error.message : "Join failed");
   }
 }
 
@@ -126,7 +119,6 @@ async function handleKeyboardInput(
   event.preventDefault();
   event.stopPropagation();
   if (!client.state.gameId || !client.state.entityId) {
-    keyStatusEl.textContent = "Keyboard controls waiting for assigned entity";
     return;
   }
   if (isAutopilotKey) {
@@ -134,8 +126,6 @@ async function handleKeyboardInput(
   }
   const handled = await keyboard.handleKey(event.code, isDown, event.repeat);
   if (!handled) return;
-  const action = solitudeSpacecraftKeyMap[event.code];
-  keyStatusEl.textContent = action + " " + (isDown ? "held" : "released");
 }
 
 async function sendInputPatch(
@@ -143,7 +133,7 @@ async function sendInputPatch(
 ): Promise<SolitudeServerMessage[]> {
   engineRenderer.setControlState(controls);
   const messages = await client.sendInputPatch(controls);
-  handleMessages(messages, false, false);
+  handleMessages(messages, false);
   return messages;
 }
 
@@ -162,10 +152,6 @@ function handleAutopilotKey(
     circleNow: activeAutopilotAction === "circleNow",
   };
   void sendInputPatch(controls);
-  keyStatusEl.textContent =
-    activeAutopilotAction == null
-      ? "autopilot released"
-      : activeAutopilotAction + " server-authoritative";
   return true;
 }
 
@@ -182,27 +168,22 @@ async function startServerLoop(): Promise<void> {
   if (!client.state.gameId) {
     throw new Error("Client is not joined to a game");
   }
-  handleMessages(await client.runGame(client.state.gameId), false, false);
+  handleMessages(await client.runGame(client.state.gameId), false);
 
   runActive = true;
-  runStatusEl.textContent = "Running with server-owned timing";
 }
 
 function connectEvents(): void {
   if (!client.state.gameId) {
-    statusEl.textContent = "Join a game before connecting the WebSocket";
     return;
   }
 
   void client.connect({
     onError: () => {
-      statusEl.textContent = "WebSocket error";
+      console.error("WebSocket error");
     },
     onMessage: (message) => {
-      handleMessages([message], false, false);
-    },
-    onReady: (gameId) => {
-      statusEl.textContent = "WebSocket connected for " + gameId;
+      handleMessages([message], false);
     },
   });
 }
@@ -210,7 +191,6 @@ function connectEvents(): void {
 function handleMessages(
   messages: readonly SolitudeServerMessage[],
   connectAfterJoin: boolean,
-  suppressSnapshots: boolean,
 ): void {
   for (const message of messages) {
     switch (message.type) {
@@ -230,17 +210,9 @@ function handleMessages(
         break;
       case "snapshot":
         engineRenderer.pushSnapshotMessage(message, performance.now());
-        if (!suppressSnapshots) {
-          statusEl.textContent = [
-            "tick",
-            message.tick,
-            "| entities",
-            message.snapshot.entities.length,
-          ].join(" ");
-        }
         break;
       case "error":
-        statusEl.textContent = message.message;
+        console.error(message.message);
         break;
     }
   }

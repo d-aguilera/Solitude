@@ -37,7 +37,6 @@ export interface SolitudeRemoteClientRendererOptions {
   canvas: HTMLCanvasElement;
   getFocusEntityId: () => string;
   hudElement: Element;
-  statusElement: Element;
 }
 
 export interface SolitudeRemoteClientRenderer {
@@ -54,7 +53,6 @@ export function createSolitudeRemoteClientRenderer({
   canvas,
   getFocusEntityId,
   hudElement,
-  statusElement,
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
   const plugins = loadPlugins(remoteRenderPluginIds, { ships: "dynamic" });
   const hudProviders = collectHudPanelProviders(plugins);
@@ -77,10 +75,9 @@ export function createSolitudeRemoteClientRenderer({
       const snapshot = interpolationBuffer.sample(nowMillis);
       if (!snapshot || !renderer) return false;
       const focusEntityId = getFocusEntityId();
-      const focusChanged =
-        focusEntityId.length > 0
-          ? renderer.setFocusEntityId(focusEntityId)
-          : false;
+      if (focusEntityId.length > 0) {
+        renderer.setFocusEntityId(focusEntityId);
+      }
       const rendered = renderer.renderSnapshot(snapshot, {
         dtMillis,
         dtSimMillis: dtMillis,
@@ -99,20 +96,6 @@ export function createSolitudeRemoteClientRenderer({
         },
         selectedThrustLevel,
       );
-
-      statusElement.textContent =
-        "engine rendered tick " +
-        interpolationBuffer.latestTick +
-        " | focus " +
-        (focusChanged
-          ? focusEntityId
-          : renderer.worldRenderer.renderParams.mainFocus.entityId) +
-        " | faces " +
-        renderer.renderedView.faceCount +
-        " | labels " +
-        renderer.renderedView.sceneLabelCount +
-        " | segments " +
-        renderer.renderedView.segmentCount;
       return true;
     },
     setControlState: (controls) => {

@@ -26,8 +26,7 @@ h1 {
   font-weight: 650;
   margin: 0;
 }
-.game-header,
-.viewer-status {
+.game-header {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
@@ -43,9 +42,6 @@ h1 {
   font-variant-numeric: tabular-nums;
   gap: 10px;
   margin-top: 6px;
-}
-.viewer-status {
-  padding: 0 12px 12px;
 }
 .viewer {
   border: 1px solid #2c3936;
@@ -90,14 +86,4 @@ a.button {
 a.button.secondary {
   background: #263430;
   color: #eef3ef;
-}
-.status {
-  color: #a9bab2;
-  font-variant-numeric: tabular-nums;
-}
-.run-state {
-  color: #d7f3de;
-}
-.key-state {
-  color: #d7e6dc;
 }
