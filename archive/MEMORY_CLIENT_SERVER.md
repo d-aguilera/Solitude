@@ -1,5 +1,13 @@
 # Client-Server Architecture Memory
 
+## Final Update
+
+This memory doc is finished and archived.
+
+It records the proof-of-concept era of Solitude's client-server migration: package boundaries, deployable server/client shape, WebSocket transport, dynamic join/leave sessions, remote rendering, and the first authoritative snapshot path.
+
+The next phase no longer keeps a chronological slice log. The living plan has moved to `MEMORY_CLIENT_SERVER_2.md`, which should stay current as a roadmap with one clear next step and a small watch list.
+
 ## Purpose
 
 - Track the long-running move from browser-only Solitude to a client-server-only application.
