@@ -78,19 +78,6 @@ export async function fetchGameList(
   return (await response.json()) as SolitudeGameListResponse;
 }
 
-export async function postJson(
-  serverBaseUrl: URL,
-  pathname: string,
-  body: unknown,
-): Promise<unknown> {
-  const response = await fetch(createHttpUrl(serverBaseUrl, pathname), {
-    body: JSON.stringify(body),
-    headers: { "content-type": "application/json" },
-    method: "POST",
-  });
-  return response.json();
-}
-
 export function formatEntityList(entityIds: readonly string[]): string {
   return entityIds.length === 0 ? "none" : entityIds.join(", ");
 }

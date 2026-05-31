@@ -7,7 +7,6 @@ import {
   createSocketUrl,
   fetchGameList,
   formatEntityList,
-  postJson,
   queryButton,
   queryElement,
   readClientId,
@@ -55,7 +54,10 @@ async function createGame(): Promise<void> {
     client.close();
     client = createClient();
     await client.createGame();
-    await client.runGame(DEFAULT_RUN_PARAMS);
+    if (!client.state.gameId) {
+      throw new Error("Game creation did not assign a game id");
+    }
+    await client.runGame(client.state.gameId, DEFAULT_RUN_PARAMS);
     await refreshGames();
     statusEl.textContent = "Game created";
   } catch (error) {
@@ -142,7 +144,7 @@ function renderGames(games: readonly SolitudeGameSummary[]): void {
 
 async function stopGame(gameId: SolitudeGameId): Promise<void> {
   statusEl.textContent = "Stopping " + gameId;
-  await postJson(serverBaseUrl, "/pause", { gameId });
+  await client.pauseGame(gameId);
   await refreshGames();
 }
 

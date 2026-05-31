@@ -25,8 +25,6 @@ import {
   type SolitudeInProcessTransport,
 } from "./transport";
 
-const MAX_REQUEST_BODY_BYTES = 64 * 1024;
-
 export interface SolitudeHttpServerOptions {
   devAssetHandler?: SolitudeDevAssetHandler;
   hostname: string;
@@ -61,16 +59,6 @@ export interface SolitudeHttpRequestHandlerOptions {
   transport: SolitudeInProcessTransport;
 }
 
-interface StepRequest {
-  dtMillis: number;
-  gameId: SolitudeGameId;
-}
-
-interface RunRequest extends StepRequest {
-  intervalMillis: number;
-  simulationStepMillis: number;
-}
-
 interface GameListEntry {
   assignedEntityIds: string[];
   availableEntityIds: string[];
@@ -93,13 +81,11 @@ export function createSolitudeHttpRequestHandler({
   staticAssetRoot,
   transport,
 }: SolitudeHttpRequestHandlerOptions): SolitudeHttpRequestHandler {
-  const subscriptionsByGameId = new Map<SolitudeGameId, Set<ServerResponse>>();
   const socketSubscriptionsByGameId = new Map<SolitudeGameId, Set<WebSocket>>();
   const socketSessionsBySocket = new Map<WebSocket, SocketSession>();
   const socketServer = new WebSocketServer({ noServer: true });
   const ticker = createSolitudeGameTicker({
     onSnapshot: (snapshot) => {
-      publishSnapshot(subscriptionsByGameId, snapshot);
       publishSocketSnapshot(socketSubscriptionsByGameId, snapshot);
     },
     transport,
@@ -121,24 +107,6 @@ export function createSolitudeHttpRequestHandler({
     }
 
     const requestUrl = new URL(request.url ?? "/", "http://localhost");
-
-    if (request.method === "GET" && requestUrl.pathname === "/events") {
-      const gameId = requestUrl.searchParams.get("gameId");
-      if (!gameId) {
-        sendJson(response, 400, {
-          messages: [
-            createErrorMessage({
-              code: "invalidRequest",
-              message: "Missing gameId",
-              sequence: 0,
-            }),
-          ],
-        });
-        return;
-      }
-      subscribe(response, request, subscriptionsByGameId, gameId);
-      return;
-    }
 
     if (request.method === "GET" && requestUrl.pathname === "/games") {
       pauseRemovedGames(ticker, transport.cleanupGames());
@@ -179,7 +147,6 @@ export function createSolitudeHttpRequestHandler({
       }
       closeGameConnections(
         gameId,
-        subscriptionsByGameId,
         socketSubscriptionsByGameId,
         socketSessionsBySocket,
       );
@@ -194,92 +161,6 @@ export function createSolitudeHttpRequestHandler({
         "application/json; charset=utf-8",
         JSON.stringify({ ok: true }),
       );
-      return;
-    }
-
-    if (request.method === "POST" && requestUrl.pathname === "/message") {
-      const payload = await readJsonBody(request);
-      const sequence = getFallbackSequence(payload);
-      const messages = transport.receive(payload, sequence);
-      pauseRemovedGames(ticker, transport.cleanupGames());
-      sendJson(response, 200, {
-        messages,
-      });
-      return;
-    }
-
-    if (request.method === "POST" && requestUrl.pathname === "/step") {
-      const payload = await readJsonBody(request);
-      if (!isStepRequest(payload)) {
-        sendJson(response, 400, {
-          messages: [
-            createErrorMessage({
-              code: "invalidRequest",
-              message: "Invalid step request",
-              sequence: 0,
-            }),
-          ],
-        });
-        return;
-      }
-
-      const snapshot = transport.stepGame(payload.gameId, payload.dtMillis);
-      if (!snapshot) {
-        sendJson(response, 404, {
-          messages: [
-            createErrorMessage({
-              code: "gameNotFound",
-              message: `Game not found: ${payload.gameId}`,
-              sequence: 0,
-            }),
-          ],
-        });
-        return;
-      }
-
-      publishSnapshot(subscriptionsByGameId, snapshot);
-      publishSocketSnapshot(socketSubscriptionsByGameId, snapshot);
-      sendJson(response, 200, { messages: [snapshot] });
-      return;
-    }
-
-    if (request.method === "POST" && requestUrl.pathname === "/run") {
-      const payload = await readJsonBody(request);
-      if (!isRunRequest(payload)) {
-        sendJson(response, 400, {
-          messages: [
-            createErrorMessage({
-              code: "invalidRequest",
-              message: "Invalid run request",
-              sequence: 0,
-            }),
-          ],
-        });
-        return;
-      }
-
-      ticker.runGame(payload);
-      sendJson(response, 200, { messages: [] });
-      return;
-    }
-
-    if (request.method === "POST" && requestUrl.pathname === "/pause") {
-      const payload = await readJsonBody(request);
-      if (!isPauseRequest(payload)) {
-        sendJson(response, 400, {
-          messages: [
-            createErrorMessage({
-              code: "invalidRequest",
-              message: "Invalid pause request",
-              sequence: 0,
-            }),
-          ],
-        });
-        return;
-      }
-
-      ticker.pauseGame(payload.gameId);
-      sendJson(response, 200, { messages: [] });
       return;
     }
 
@@ -514,7 +395,7 @@ function handleSocketMessage({
 
 function setCommonHeaders(response: ServerResponse): void {
   response.setHeader("Access-Control-Allow-Headers", "content-type");
-  response.setHeader("Access-Control-Allow-Methods", "DELETE,GET,POST,OPTIONS");
+  response.setHeader("Access-Control-Allow-Methods", "DELETE,GET,OPTIONS");
   response.setHeader("Access-Control-Allow-Origin", "*");
 }
 
@@ -574,18 +455,9 @@ function readGameIdFromPath(pathname: string): SolitudeGameId | null {
 
 function closeGameConnections(
   gameId: SolitudeGameId,
-  subscriptionsByGameId: Map<SolitudeGameId, Set<ServerResponse>>,
   socketSubscriptionsByGameId: Map<SolitudeGameId, Set<WebSocket>>,
   socketSessionsBySocket: Map<WebSocket, SocketSession>,
 ): void {
-  const eventSubscriptions = subscriptionsByGameId.get(gameId);
-  if (eventSubscriptions) {
-    for (const response of eventSubscriptions) {
-      response.end();
-    }
-    subscriptionsByGameId.delete(gameId);
-  }
-
   const socketSubscriptions = socketSubscriptionsByGameId.get(gameId);
   if (!socketSubscriptions) return;
   for (const socket of [...socketSubscriptions]) {
@@ -700,47 +572,6 @@ function getContentType(filePath: string): string {
   }
 }
 
-function subscribe(
-  response: ServerResponse,
-  request: IncomingMessage,
-  subscriptionsByGameId: Map<SolitudeGameId, Set<ServerResponse>>,
-  gameId: SolitudeGameId,
-): void {
-  let subscriptions = subscriptionsByGameId.get(gameId);
-  if (!subscriptions) {
-    subscriptions = new Set();
-    subscriptionsByGameId.set(gameId, subscriptions);
-  }
-  subscriptions.add(response);
-
-  response.writeHead(200, {
-    "cache-control": "no-cache",
-    connection: "keep-alive",
-    "content-type": "text/event-stream",
-  });
-  response.flushHeaders();
-  response.write(`event: ready\ndata: ${JSON.stringify({ gameId })}\n\n`);
-
-  request.on("close", () => {
-    subscriptions?.delete(response);
-    if (subscriptions?.size === 0) {
-      subscriptionsByGameId.delete(gameId);
-    }
-  });
-}
-
-function publishSnapshot(
-  subscriptionsByGameId: Map<SolitudeGameId, Set<ServerResponse>>,
-  snapshot: SnapshotMessage,
-): void {
-  const subscriptions = subscriptionsByGameId.get(snapshot.gameId);
-  if (!subscriptions) return;
-  const data = JSON.stringify(snapshot);
-  for (const response of subscriptions) {
-    response.write(`data: ${data}\n\n`);
-  }
-}
-
 function publishSocketSnapshot(
   subscriptionsByGameId: Map<SolitudeGameId, Set<WebSocket>>,
   snapshot: SnapshotMessage,
@@ -846,65 +677,6 @@ function readSocketPayload(data: RawData): unknown {
   } catch {
     return null;
   }
-}
-
-async function readJsonBody(request: IncomingMessage): Promise<unknown> {
-  const chunks: Buffer[] = [];
-  let byteLength = 0;
-
-  for await (const chunk of request) {
-    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
-    byteLength += buffer.byteLength;
-    if (byteLength > MAX_REQUEST_BODY_BYTES) {
-      throw new Error("Request body is too large");
-    }
-    chunks.push(buffer);
-  }
-
-  if (chunks.length === 0) return {};
-  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
-}
-
-function getFallbackSequence(payload: unknown): SolitudeProtocolSequence {
-  if (!isRecord(payload)) return 0;
-  return typeof payload.sequence === "number" &&
-    Number.isFinite(payload.sequence)
-    ? payload.sequence
-    : 0;
-}
-
-function isStepRequest(value: unknown): value is StepRequest {
-  return (
-    isRecord(value) &&
-    typeof value.gameId === "string" &&
-    typeof value.dtMillis === "number" &&
-    Number.isFinite(value.dtMillis) &&
-    value.dtMillis > 0
-  );
-}
-
-function isRunRequest(value: unknown): value is RunRequest {
-  return (
-    isRecord(value) &&
-    typeof value.gameId === "string" &&
-    typeof value.dtMillis === "number" &&
-    Number.isFinite(value.dtMillis) &&
-    value.dtMillis > 0 &&
-    typeof value.intervalMillis === "number" &&
-    Number.isFinite(value.intervalMillis) &&
-    value.intervalMillis >= 10 &&
-    typeof value.simulationStepMillis === "number" &&
-    Number.isFinite(value.simulationStepMillis) &&
-    value.simulationStepMillis > 0
-  );
-}
-
-function isPauseRequest(value: unknown): value is { gameId: SolitudeGameId } {
-  return isRecord(value) && typeof value.gameId === "string";
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }
 
 function isNodeErrorCode(value: unknown, code: string): boolean {

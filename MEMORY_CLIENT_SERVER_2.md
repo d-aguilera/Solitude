@@ -92,7 +92,7 @@ Browser client
 
 Deliver the real-time authoritative loop first:
 
-- WebSocket-only gameplay path.
+- WebSocket-only gameplay path is in place.
 - Server-owned fixed 60 Hz simulation policy.
 - Server-owned active game runner.
 - Fixed-rate authoritative snapshot broadcast.

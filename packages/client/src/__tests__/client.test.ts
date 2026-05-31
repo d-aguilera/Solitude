@@ -1,66 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   createKeyboardInputPatcher,
-  createSolitudeHttpClient,
   createSolitudeWebSocketClient,
   solitudeSpacecraftKeyMap,
-  type SolitudeEventSource,
-  type SolitudeFetch,
   type SolitudeWebSocket,
 } from "../client";
-
-describe("Solitude HTTP browser client", () => {
-  it("tracks create/join state and sends sequenced input patches", async () => {
-    const requests: Array<{ body: unknown; url: string }> = [];
-    const client = createSolitudeHttpClient({
-      baseUrl: "",
-      clientId: "client:a",
-      createEventSource: createNoopEventSource,
-      fetch: createFetchStub(requests),
-    });
-
-    expect(await client.createGame()).toEqual([
-      {
-        type: "gameCreated",
-        clientId: "client:a",
-        gameId: "game:1",
-        sequence: 1,
-      },
-    ]);
-    await client.joinGame("game:1");
-    await client.sendInputPatch({ burnForward: true });
-
-    expect(client.state.gameId).toBe("game:1");
-    expect(client.state.entityId).toBe("ship:blue");
-    expect(requests[requests.length - 1]?.body).toEqual({
-      type: "input",
-      clientId: "client:a",
-      entityId: "ship:blue",
-      gameId: "game:1",
-      sequence: 3,
-      controls: { burnForward: true },
-    });
-  });
-
-  it("connects snapshots only after joining a game", async () => {
-    const eventSources: string[] = [];
-    const client = createSolitudeHttpClient({
-      baseUrl: "http://server",
-      clientId: "client:a",
-      createEventSource: (url) => {
-        eventSources.push(url);
-        return createNoopEventSource();
-      },
-      fetch: createFetchStub([]),
-    });
-
-    expect(client.connectSnapshots({ onMessage: () => {} })).toBeNull();
-    await client.joinGame("game:2");
-    client.connectSnapshots({ onMessage: () => {} });
-
-    expect(eventSources).toEqual(["http://server/events?gameId=game%3A2"]);
-  });
-});
 
 describe("Solitude WebSocket browser client", () => {
   it("tracks create/join state and receives pushed snapshots", async () => {
@@ -125,6 +69,27 @@ describe("Solitude WebSocket browser client", () => {
     await joinPromise;
     expect(client.state.entityId).toBe("ship:blue");
 
+    const runPromise = client.runGame("game:1", {
+      dtMillis: 10,
+      intervalMillis: 10,
+      simulationStepMillis: 1,
+    });
+    await Promise.resolve();
+    expect(socket.sentMessages[2]).toEqual({
+      dtMillis: 10,
+      gameId: "game:1",
+      intervalMillis: 10,
+      requestId: 3,
+      simulationStepMillis: 1,
+      type: "runGame",
+    });
+    socket.receive({
+      type: "messages",
+      requestId: 3,
+      messages: [],
+    });
+    await runPromise;
+
     socket.receive({
       type: "serverMessage",
       message: {
@@ -145,6 +110,20 @@ describe("Solitude WebSocket browser client", () => {
         tick: 1,
       },
     ]);
+
+    const pausePromise = client.pauseGame("game:1");
+    await Promise.resolve();
+    expect(socket.sentMessages[3]).toEqual({
+      gameId: "game:1",
+      requestId: 4,
+      type: "pauseGame",
+    });
+    socket.receive({
+      type: "messages",
+      requestId: 4,
+      messages: [],
+    });
+    await pausePromise;
   });
 });
 
@@ -167,54 +146,6 @@ describe("Solitude keyboard input patcher", () => {
     expect(patches).toEqual([{ burnForward: true }, { burnForward: false }]);
   });
 });
-
-function createFetchStub(
-  requests: Array<{ body: unknown; url: string }>,
-): SolitudeFetch {
-  return async (url, init) => {
-    const body = init?.body ? (JSON.parse(init.body) as unknown) : {};
-    requests.push({ body, url });
-    if (isRecord(body) && body.type === "createGame") {
-      return {
-        json: async () => ({
-          messages: [
-            {
-              type: "gameCreated",
-              clientId: body.clientId,
-              gameId: "game:1",
-              sequence: body.sequence,
-            },
-          ],
-        }),
-      };
-    }
-    if (isRecord(body) && body.type === "joinGame") {
-      return {
-        json: async () => ({
-          messages: [
-            {
-              type: "joined",
-              clientId: body.clientId,
-              entityId: "ship:blue",
-              gameId: body.gameId,
-              sequence: body.sequence,
-            },
-          ],
-        }),
-      };
-    }
-    return { json: async () => ({ messages: [] }) };
-  };
-}
-
-function createNoopEventSource(): SolitudeEventSource {
-  return {
-    addEventListener: () => {},
-    close: () => {},
-    onerror: null,
-    onmessage: null,
-  };
-}
 
 function createSocketStub(): SolitudeWebSocket & {
   open: () => void;
@@ -261,8 +192,4 @@ function createSocketStub(): SolitudeWebSocket & {
     }
   }
   return socket;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
 }

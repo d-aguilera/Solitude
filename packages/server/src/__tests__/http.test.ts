@@ -1,5 +1,4 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { get } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -97,23 +96,21 @@ describe("Solitude HTTP server", () => {
     }
   });
 
-  it("routes client messages through HTTP", async () => {
+  it("does not expose legacy HTTP gameplay routes", async () => {
     const server = await startTestServer();
     try {
-      const payload = await postJson(server, "/message", {
-        type: "createGame",
-        clientId: "client:a",
-        sequence: 1,
-      });
-
-      expect(withoutGameModels(payload.messages)).toEqual([
-        {
-          type: "gameCreated",
-          clientId: "client:a",
-          gameId: "game:1",
-          sequence: 1,
-        },
-      ]);
+      for (const path of ["/message", "/step", "/run", "/pause"]) {
+        const response = await fetch(`${server.url}${path}`, {
+          body: "{}",
+          headers: { "content-type": "application/json" },
+          method: "POST",
+        });
+        expect(response.status).toBe(404);
+      }
+      const eventsResponse = await fetch(
+        `${server.url}/events?gameId=game%3A1`,
+      );
+      expect(eventsResponse.status).toBe(404);
     } finally {
       await server.close();
     }
@@ -122,11 +119,8 @@ describe("Solitude HTTP server", () => {
   it("serves game summaries", async () => {
     const server = await startTestServer();
     try {
-      await postJson(server, "/message", {
-        type: "createGame",
-        clientId: "client:a",
-        sequence: 1,
-      });
+      const socket = await openWebSocket(`${server.url}/socket`);
+      await createGameOverSocket(socket, "client:a", 1);
 
       const response = await fetch(`${server.url}/games`);
 
@@ -143,6 +137,7 @@ describe("Solitude HTTP server", () => {
           },
         ],
       });
+      await socket.close();
     } finally {
       await server.close();
     }
@@ -163,23 +158,10 @@ describe("Solitude HTTP server", () => {
   it("cleans up empty games after clients leave", async () => {
     const server = await startTestServer();
     try {
-      await postJson(server, "/message", {
-        type: "createGame",
-        clientId: "client:a",
-        sequence: 1,
-      });
-      await postJson(server, "/message", {
-        type: "joinGame",
-        clientId: "client:a",
-        gameId: "game:1",
-        sequence: 2,
-      });
-      await postJson(server, "/run", {
-        dtMillis: 1000,
-        gameId: "game:1",
-        intervalMillis: 10,
-        simulationStepMillis: 1000,
-      });
+      const socket = await openWebSocket(`${server.url}/socket`);
+      await createGameOverSocket(socket, "client:a", 1);
+      await joinGameOverSocket(socket, "client:a", 2, 2);
+      await runGameOverSocket(socket, 3);
 
       const runningResponse = await fetch(`${server.url}/games`);
       expect(await runningResponse.json()).toEqual({
@@ -195,7 +177,7 @@ describe("Solitude HTTP server", () => {
         ],
       });
 
-      await postJson(server, "/pause", { gameId: "game:1" });
+      await pauseGameOverSocket(socket, 4);
 
       const stoppedResponse = await fetch(`${server.url}/games`);
       expect(await stoppedResponse.json()).toEqual({
@@ -211,26 +193,13 @@ describe("Solitude HTTP server", () => {
         ],
       });
 
-      await postJson(server, "/run", {
-        dtMillis: 1000,
-        gameId: "game:1",
-        intervalMillis: 10,
-        simulationStepMillis: 1000,
-      });
-
-      await postJson(server, "/message", {
-        type: "leaveGame",
-        clientId: "client:a",
-        gameId: "game:1",
-        sequence: 3,
-      });
+      await runGameOverSocket(socket, 5);
+      await leaveGameOverSocket(socket, "client:a", 6, 6);
 
       const response = await fetch(`${server.url}/games`);
 
       expect(await response.json()).toEqual({ games: [] });
-      expect(await postJson(server, "/pause", { gameId: "game:1" })).toEqual({
-        messages: [],
-      });
+      await socket.close();
     } finally {
       await server.close();
     }
@@ -239,17 +208,9 @@ describe("Solitude HTTP server", () => {
   it("deletes games through HTTP and pauses their run loop", async () => {
     const server = await startTestServer();
     try {
-      await postJson(server, "/message", {
-        type: "createGame",
-        clientId: "client:a",
-        sequence: 1,
-      });
-      await postJson(server, "/run", {
-        dtMillis: 1000,
-        gameId: "game:1",
-        intervalMillis: 10,
-        simulationStepMillis: 1000,
-      });
+      const socket = await openWebSocket(`${server.url}/socket`);
+      await createGameOverSocket(socket, "client:a", 1);
+      await runGameOverSocket(socket, 2);
 
       const response = await fetch(
         `${server.url}/games/${encodeURIComponent("game:1")}`,
@@ -258,9 +219,7 @@ describe("Solitude HTTP server", () => {
 
       expect(response.status).toBe(200);
       expect(await response.json()).toEqual({ games: [] });
-      expect(await postJson(server, "/pause", { gameId: "game:1" })).toEqual({
-        messages: [],
-      });
+      await socket.close();
 
       const missingResponse = await fetch(
         `${server.url}/games/${encodeURIComponent("game:1")}`,
@@ -287,61 +246,6 @@ describe("Solitude HTTP server", () => {
 
       expect(response.status).toBe(200);
       expect(await response.text()).toBe("export const ok = true;");
-    } finally {
-      await server.close();
-    }
-  });
-
-  it("publishes snapshots over server-sent events when a game steps", async () => {
-    const server = await startTestServer();
-    try {
-      await postJson(server, "/message", {
-        type: "createGame",
-        clientId: "client:a",
-        sequence: 1,
-      });
-
-      const eventStream = await openEventStream(
-        `${server.url}/events?gameId=game%3A1`,
-      );
-      const snapshotPromise = eventStream.readUntil('"type":"snapshot"');
-
-      await postJson(server, "/step", {
-        dtMillis: 1000,
-        gameId: "game:1",
-      });
-
-      expect(await snapshotPromise).toContain('"tick":1');
-      eventStream.close();
-    } finally {
-      await server.close();
-    }
-  });
-
-  it("publishes snapshots from a server-owned run loop", async () => {
-    const server = await startTestServer();
-    try {
-      await postJson(server, "/message", {
-        type: "createGame",
-        clientId: "client:a",
-        sequence: 1,
-      });
-
-      const eventStream = await openEventStream(
-        `${server.url}/events?gameId=game%3A1`,
-      );
-      const snapshotPromise = eventStream.readUntil('"type":"snapshot"');
-
-      await postJson(server, "/run", {
-        dtMillis: 10,
-        gameId: "game:1",
-        intervalMillis: 10,
-        simulationStepMillis: 1,
-      });
-
-      expect(await snapshotPromise).toContain('"type":"snapshot"');
-      await postJson(server, "/pause", { gameId: "game:1" });
-      eventStream.close();
     } finally {
       await server.close();
     }
@@ -576,61 +480,6 @@ async function startTestServer(): Promise<SolitudeHttpServer> {
   });
 }
 
-async function postJson(
-  server: SolitudeHttpServer,
-  path: string,
-  payload: unknown,
-): Promise<{ messages: unknown[] }> {
-  const response = await fetch(`${server.url}${path}`, {
-    body: JSON.stringify(payload),
-    headers: { "content-type": "application/json" },
-    method: "POST",
-  });
-  return (await response.json()) as { messages: unknown[] };
-}
-
-async function openEventStream(url: string): Promise<{
-  close: () => void;
-  readUntil: (text: string) => Promise<string>;
-}> {
-  let received = "";
-  const waiters: Array<{
-    resolve: (value: string) => void;
-    text: string;
-  }> = [];
-
-  const request = get(url);
-  const stream = {
-    close: () => {
-      request.destroy();
-    },
-    readUntil: (text: string) => {
-      if (received.includes(text)) return Promise.resolve(received);
-      return new Promise<string>((resolve) => {
-        waiters.push({ resolve, text });
-      });
-    },
-  };
-
-  return new Promise((resolve, reject) => {
-    request.on("error", reject);
-    request.on("response", (response) => {
-      response.setEncoding("utf8");
-      response.on("data", (chunk: string) => {
-        received += chunk;
-        for (let i = waiters.length - 1; i >= 0; i--) {
-          const waiter = waiters[i];
-          if (received.includes(waiter.text)) {
-            waiters.splice(i, 1);
-            waiter.resolve(received);
-          }
-        }
-      });
-      resolve(stream);
-    });
-  });
-}
-
 function withoutGameModels(messages: any[]): any[] {
   return messages.filter((message) => message.type !== "gameModel");
 }
@@ -703,4 +552,101 @@ async function waitForGameList(
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
   throw new Error("Timed out waiting for game list");
+}
+
+async function createGameOverSocket(
+  socket: Awaited<ReturnType<typeof openWebSocket>>,
+  clientId: string,
+  requestId: number,
+): Promise<void> {
+  const response = socket.readUntil(
+    (message) => message.type === "messages" && message.requestId === requestId,
+  );
+  socket.send({
+    type: "clientMessage",
+    requestId,
+    message: {
+      type: "createGame",
+      clientId,
+      sequence: requestId,
+    },
+  });
+  await response;
+}
+
+async function joinGameOverSocket(
+  socket: Awaited<ReturnType<typeof openWebSocket>>,
+  clientId: string,
+  requestId: number,
+  sequence: number,
+): Promise<void> {
+  const response = socket.readUntil(
+    (message) => message.type === "messages" && message.requestId === requestId,
+  );
+  socket.send({
+    type: "clientMessage",
+    requestId,
+    message: {
+      type: "joinGame",
+      clientId,
+      gameId: "game:1",
+      sequence,
+    },
+  });
+  await response;
+}
+
+async function leaveGameOverSocket(
+  socket: Awaited<ReturnType<typeof openWebSocket>>,
+  clientId: string,
+  requestId: number,
+  sequence: number,
+): Promise<void> {
+  const response = socket.readUntil(
+    (message) => message.type === "messages" && message.requestId === requestId,
+  );
+  socket.send({
+    type: "clientMessage",
+    requestId,
+    message: {
+      type: "leaveGame",
+      clientId,
+      gameId: "game:1",
+      sequence,
+    },
+  });
+  await response;
+}
+
+async function runGameOverSocket(
+  socket: Awaited<ReturnType<typeof openWebSocket>>,
+  requestId: number,
+): Promise<void> {
+  const response = socket.readUntil(
+    (message) => message.type === "messages" && message.requestId === requestId,
+  );
+  socket.send({
+    type: "runGame",
+    requestId,
+    gameId: "game:1",
+    dtMillis: 1000,
+    intervalMillis: 10,
+    simulationStepMillis: 1000,
+  });
+  await response;
+}
+
+async function pauseGameOverSocket(
+  socket: Awaited<ReturnType<typeof openWebSocket>>,
+  requestId: number,
+): Promise<void> {
+  const response = socket.readUntil(
+    (message) => message.type === "messages" && message.requestId === requestId,
+  );
+  socket.send({
+    type: "pauseGame",
+    requestId,
+    gameId: "game:1",
+  });
+  await response;
 }

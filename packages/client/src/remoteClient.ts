@@ -180,7 +180,14 @@ function renderRemoteFrame(nowMillis: number): void {
 async function startServerLoop(): Promise<void> {
   if (runActive) return;
 
-  handleMessages(await client.runGame(DEFAULT_RUN_PARAMS), false, false);
+  if (!client.state.gameId) {
+    throw new Error("Client is not joined to a game");
+  }
+  handleMessages(
+    await client.runGame(client.state.gameId, DEFAULT_RUN_PARAMS),
+    false,
+    false,
+  );
 
   runActive = true;
   runStatusEl.textContent = [
