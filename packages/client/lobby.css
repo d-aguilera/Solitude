@@ -84,10 +84,6 @@ a.button[aria-disabled="true"] {
   opacity: 0.5;
   pointer-events: none;
 }
-button.danger {
-  background: #efb5b0;
-  color: #220908;
-}
 button:disabled {
   cursor: default;
   opacity: 0.5;

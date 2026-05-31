@@ -55,7 +55,6 @@ export interface SolitudeInputTimeWindow {
 
 export interface SolitudeSessionManager {
   cleanupGames: () => SolitudeGameId[];
-  deleteGame: (gameId: SolitudeGameId) => boolean;
   handleMessage: (message: SolitudeClientMessage) => SolitudeServerMessage[];
   listGames: () => SolitudeGameSummary[];
   stepGame: (
@@ -353,7 +352,6 @@ export function createSolitudeSessionManager(
 
   return {
     cleanupGames,
-    deleteGame: (gameId) => gamesById.delete(gameId),
     handleMessage,
     listGames,
     stepGame,

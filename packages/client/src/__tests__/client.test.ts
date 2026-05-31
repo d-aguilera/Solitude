@@ -103,20 +103,6 @@ describe("Solitude WebSocket browser client", () => {
         tick: 1,
       },
     ]);
-
-    const pausePromise = client.pauseGame("game:1");
-    await Promise.resolve();
-    expect(socket.sentMessages[3]).toEqual({
-      gameId: "game:1",
-      requestId: 4,
-      type: "pauseGame",
-    });
-    socket.receive({
-      type: "messages",
-      requestId: 4,
-      messages: [],
-    });
-    await pausePromise;
   });
 });
 

@@ -1,8 +1,6 @@
-import type { SolitudeGameId } from "@solitude/protocol/protocol";
 import { createSolitudeWebSocketClient } from "./client";
 import {
   createGameHref,
-  createHttpUrl,
   createSocketUrl,
   fetchGameList,
   formatEntityList,
@@ -97,8 +95,6 @@ function renderGames(games: readonly SolitudeGameSummary[]): void {
     summary.className = "game-summary";
     summary.textContent =
       game.gameId +
-      " | " +
-      (game.running ? "running" : "stopped") +
       " | tick " +
       game.tick +
       " | assigned " +
@@ -117,51 +113,11 @@ function renderGames(games: readonly SolitudeGameSummary[]): void {
       joinLink.href = createGameHref(serverBaseUrl, { gameId: game.gameId });
     }
 
-    const stopButton = document.createElement("button");
-    stopButton.className = "secondary";
-    stopButton.textContent = "Stop";
-    stopButton.disabled = !game.running;
-    stopButton.addEventListener("click", () => {
-      void stopGame(game.gameId);
-    });
-
-    const deleteButton = document.createElement("button");
-    deleteButton.className = "danger";
-    deleteButton.textContent = "Delete";
-    deleteButton.addEventListener("click", () => {
-      void deleteGame(game.gameId);
-    });
-
     const actions = document.createElement("div");
     actions.className = "game-actions";
-    actions.append(joinLink, stopButton, deleteButton);
+    actions.append(joinLink);
 
     item.append(summary, actions);
     gamesListEl.appendChild(item);
   }
-}
-
-async function stopGame(gameId: SolitudeGameId): Promise<void> {
-  statusEl.textContent = "Stopping " + gameId;
-  await client.pauseGame(gameId);
-  await refreshGames();
-}
-
-async function deleteGame(gameId: SolitudeGameId): Promise<void> {
-  statusEl.textContent = "Deleting " + gameId;
-  const response = await fetch(
-    createHttpUrl(serverBaseUrl, "/games/" + encodeURIComponent(gameId)),
-    { method: "DELETE" },
-  );
-  if (!response.ok) {
-    const payload = (await response.json()) as {
-      messages: Array<{ message: string }>;
-    };
-    statusEl.textContent =
-      payload.messages.length > 0
-        ? payload.messages[0].message
-        : "Delete failed: " + gameId;
-    return;
-  }
-  await refreshGames();
 }

@@ -25,7 +25,6 @@ export interface SolitudeRemoteClient {
   createGame: () => Promise<SolitudeServerMessage[]>;
   joinGame: (gameId: SolitudeGameId) => Promise<SolitudeServerMessage[]>;
   leaveGame: () => Promise<SolitudeServerMessage[]>;
-  pauseGame: (gameId: SolitudeGameId) => Promise<SolitudeServerMessage[]>;
   runGame: (gameId: SolitudeGameId) => Promise<SolitudeServerMessage[]>;
   sendInputPatch: (
     controls: Partial<ControlInput>,
@@ -274,12 +273,6 @@ export function createSolitudeWebSocketClient(
       state.gameId = null;
       return messages;
     },
-    pauseGame: (gameId) =>
-      sendSocketRequest({
-        gameId,
-        requestId: nextSequence(state),
-        type: "pauseGame",
-      }),
     runGame: (gameId) =>
       sendSocketRequest({
         gameId,

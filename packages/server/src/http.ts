@@ -118,46 +118,6 @@ export function createSolitudeHttpRequestHandler({
       return;
     }
 
-    if (
-      request.method === "DELETE" &&
-      requestUrl.pathname.startsWith("/games/")
-    ) {
-      const gameId = readGameIdFromPath(requestUrl.pathname);
-      if (!gameId) {
-        sendJson(response, 400, {
-          messages: [
-            createErrorMessage({
-              code: "invalidRequest",
-              message: "Missing gameId",
-              sequence: 0,
-            }),
-          ],
-        });
-        return;
-      }
-      ticker.pauseGame(gameId);
-      const deleted = transport.deleteGame(gameId);
-      if (!deleted) {
-        sendJson(response, 404, {
-          messages: [
-            createErrorMessage({
-              code: "gameNotFound",
-              message: `Game not found: ${gameId}`,
-              sequence: 0,
-            }),
-          ],
-        });
-        return;
-      }
-      closeGameConnections(
-        gameId,
-        socketSubscriptionsByGameId,
-        socketSessionsBySocket,
-      );
-      sendGameList(response, createGameList(transport, ticker));
-      return;
-    }
-
     if (request.method === "GET" && requestUrl.pathname === "/health") {
       sendText(
         response,
@@ -390,16 +350,12 @@ function handleSocketMessage({
       ticker.runGame({ gameId: payload.gameId });
       sendSocketMessages(socket, payload.requestId, []);
       return;
-    case "pauseGame":
-      ticker.pauseGame(payload.gameId);
-      sendSocketMessages(socket, payload.requestId, []);
-      return;
   }
 }
 
 function setCommonHeaders(response: ServerResponse): void {
   response.setHeader("Access-Control-Allow-Headers", "content-type");
-  response.setHeader("Access-Control-Allow-Methods", "DELETE,GET,OPTIONS");
+  response.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   response.setHeader("Access-Control-Allow-Origin", "*");
 }
 
@@ -445,30 +401,6 @@ function sendGameList(
     "application/json; charset=utf-8",
     JSON.stringify({ games }),
   );
-}
-
-function readGameIdFromPath(pathname: string): SolitudeGameId | null {
-  const encoded = pathname.slice("/games/".length);
-  if (!encoded || encoded.includes("/")) return null;
-  try {
-    return decodeURIComponent(encoded);
-  } catch {
-    return null;
-  }
-}
-
-function closeGameConnections(
-  gameId: SolitudeGameId,
-  socketSubscriptionsByGameId: Map<SolitudeGameId, Set<WebSocket>>,
-  socketSessionsBySocket: Map<WebSocket, SocketSession>,
-): void {
-  const socketSubscriptions = socketSubscriptionsByGameId.get(gameId);
-  if (!socketSubscriptions) return;
-  for (const socket of [...socketSubscriptions]) {
-    socketSessionsBySocket.delete(socket);
-    socket.close();
-  }
-  socketSubscriptionsByGameId.delete(gameId);
 }
 
 function sendText(

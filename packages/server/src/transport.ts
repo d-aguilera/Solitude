@@ -16,7 +16,6 @@ import {
 export interface SolitudeInProcessTransport {
   readonly sessionManager: SolitudeSessionManager;
   cleanupGames: () => SolitudeGameId[];
-  deleteGame: (gameId: SolitudeGameId) => boolean;
   receive: (
     payload: unknown,
     fallbackSequence: SolitudeProtocolSequence,
@@ -39,7 +38,6 @@ export function createSolitudeInProcessTransport(
   return {
     sessionManager,
     cleanupGames: () => sessionManager.cleanupGames(),
-    deleteGame: (gameId) => sessionManager.deleteGame(gameId),
     receive: (payload, fallbackSequence) => {
       if (!isSolitudeClientMessage(payload)) {
         return [

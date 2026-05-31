@@ -15,8 +15,7 @@ export type SolitudeClientMessage =
 
 export type SolitudeSocketClientMessage =
   | ClientMessageSocketRequest
-  | RunGameSocketRequest
-  | PauseGameSocketRequest;
+  | RunGameSocketRequest;
 
 export type SolitudeSocketServerMessage =
   | MessagesSocketResponse
@@ -67,12 +66,6 @@ export interface ClientMessageSocketRequest {
 
 export interface RunGameSocketRequest {
   type: "runGame";
-  requestId: SolitudeProtocolSequence;
-  gameId: SolitudeGameId;
-}
-
-export interface PauseGameSocketRequest {
-  type: "pauseGame";
   requestId: SolitudeProtocolSequence;
   gameId: SolitudeGameId;
 }
@@ -244,8 +237,6 @@ export function isSolitudeSocketClientMessage(
         isFiniteNumber(value.requestId) &&
         isString(value.gameId)
       );
-    case "pauseGame":
-      return isFiniteNumber(value.requestId) && isString(value.gameId);
     default:
       return false;
   }

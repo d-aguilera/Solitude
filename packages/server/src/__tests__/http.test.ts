@@ -111,6 +111,10 @@ describe("Solitude HTTP server", () => {
         `${server.url}/events?gameId=game%3A1`,
       );
       expect(eventsResponse.status).toBe(404);
+      const deleteResponse = await fetch(`${server.url}/games/game%3A1`, {
+        method: "DELETE",
+      });
+      expect(deleteResponse.status).toBe(404);
     } finally {
       await server.close();
     }
@@ -177,55 +181,12 @@ describe("Solitude HTTP server", () => {
         ],
       });
 
-      await pauseGameOverSocket(socket, 4);
-
-      const stoppedResponse = await fetch(`${server.url}/games`);
-      expect(await stoppedResponse.json()).toEqual({
-        games: [
-          {
-            assignedEntityIds: ["ship:blue"],
-            availableEntityIds: ["ship:red"],
-            gameId: "game:1",
-            maxClients: 2,
-            running: false,
-            tick: expect.any(Number),
-          },
-        ],
-      });
-
-      await runGameOverSocket(socket, 5);
-      await leaveGameOverSocket(socket, "client:a", 6, 6);
+      await leaveGameOverSocket(socket, "client:a", 4, 4);
 
       const response = await fetch(`${server.url}/games`);
 
       expect(await response.json()).toEqual({ games: [] });
       await socket.close();
-    } finally {
-      await server.close();
-    }
-  });
-
-  it("deletes games through HTTP and pauses their run loop", async () => {
-    const server = await startTestServer();
-    try {
-      const socket = await openWebSocket(`${server.url}/socket`);
-      await createGameOverSocket(socket, "client:a", 1);
-      await runGameOverSocket(socket, 2);
-
-      const response = await fetch(
-        `${server.url}/games/${encodeURIComponent("game:1")}`,
-        { method: "DELETE" },
-      );
-
-      expect(response.status).toBe(200);
-      expect(await response.json()).toEqual({ games: [] });
-      await socket.close();
-
-      const missingResponse = await fetch(
-        `${server.url}/games/${encodeURIComponent("game:1")}`,
-        { method: "DELETE" },
-      );
-      expect(missingResponse.status).toBe(404);
     } finally {
       await server.close();
     }
@@ -314,11 +275,6 @@ describe("Solitude HTTP server", () => {
 
       const snapshot = await snapshotPromise;
       expect(snapshot.message.tick).toBeGreaterThan(0);
-      socket.send({
-        type: "pauseGame",
-        requestId: 4,
-        gameId: "game:1",
-      });
       socket.close();
     } finally {
       await server.close();
@@ -624,21 +580,6 @@ async function runGameOverSocket(
   );
   socket.send({
     type: "runGame",
-    requestId,
-    gameId: "game:1",
-  });
-  await response;
-}
-
-async function pauseGameOverSocket(
-  socket: Awaited<ReturnType<typeof openWebSocket>>,
-  requestId: number,
-): Promise<void> {
-  const response = socket.readUntil(
-    (message) => message.type === "messages" && message.requestId === requestId,
-  );
-  socket.send({
-    type: "pauseGame",
     requestId,
     gameId: "game:1",
   });

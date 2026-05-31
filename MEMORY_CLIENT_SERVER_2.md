@@ -40,7 +40,7 @@ Browser client
 ## Roadmap
 
 1. Make WebSocket the only gameplay transport.
-   - Keep HTTP for `GET /`, static assets, `GET /games`, `DELETE /games/:gameId`, and `GET /health`.
+   - Keep HTTP for `GET /`, static assets, `GET /games`, and `GET /health`.
    - Remove or isolate legacy/debug gameplay routes: `POST /message`, `POST /run`, `POST /pause`, `POST /step`, and `GET /events`.
    - Keep one gameplay protocol path for create, join, leave, input, start/stop, model updates, and snapshots.
 
