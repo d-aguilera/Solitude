@@ -196,7 +196,7 @@ function handleMessages(
         engineRenderer.setModel(message.entities);
         break;
       case "snapshot":
-        engineRenderer.pushSnapshotMessage(message, performance.now());
+        engineRenderer.pushSnapshotMessage(message);
         break;
       case "error":
         console.error(message.message);

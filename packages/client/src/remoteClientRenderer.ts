@@ -16,7 +16,6 @@ import {
 } from "solitude/plugins/hud/capabilities";
 import { clearHudGrid, createHudGrid } from "solitude/plugins/hud/grid";
 import { loadPlugins } from "solitude/plugins/index";
-import { createRuntimeSnapshotInterpolationBuffer } from "./remoteSnapshotInterpolator";
 
 const remoteRenderPluginIds = [
   "solarSystem",
@@ -41,10 +40,7 @@ export interface SolitudeRemoteClientRendererOptions {
 }
 
 export interface SolitudeRemoteClientRenderer {
-  pushSnapshotMessage: (
-    message: RemoteClientSnapshotMessage,
-    receivedAtMillis: number,
-  ) => void;
+  pushSnapshotMessage: (message: RemoteClientSnapshotMessage) => void;
   renderFrame: (nowMillis: number, dtMillis: number) => boolean;
   setModel: (entities: readonly EntityConfig[]) => void;
   setControlState: (controls: Partial<ControlInput>) => void;
@@ -60,28 +56,23 @@ export function createSolitudeRemoteClientRenderer({
   const hudGrid = createHudGrid();
   const controlInput: ControlInput = {};
   let selectedThrustLevel = 0;
-  let interpolationBuffer = createRuntimeSnapshotInterpolationBuffer();
+  let latestSnapshot: RuntimeWorldSnapshot | null = null;
   let messageSimulationTimeMillis = 0;
 
   let renderer: ReturnType<typeof createRemoteCanvasRenderer> | null = null;
 
   return {
-    pushSnapshotMessage: (message, receivedAtMillis) => {
+    pushSnapshotMessage: (message) => {
+      latestSnapshot = message.snapshot;
       messageSimulationTimeMillis = message.simulationTimeMillis;
-      interpolationBuffer.push(
-        message.snapshot,
-        message.tick,
-        receivedAtMillis,
-      );
     },
     renderFrame: (nowMillis, dtMillis) => {
-      const snapshot = interpolationBuffer.sample(nowMillis);
-      if (!snapshot || !renderer) return false;
+      if (!latestSnapshot || !renderer) return false;
       const focusEntityId = getFocusEntityId();
       if (focusEntityId.length > 0) {
         renderer.setFocusEntityId(focusEntityId);
       }
-      const rendered = renderer.renderSnapshot(snapshot, {
+      const rendered = renderer.renderSnapshot(latestSnapshot, {
         dtMillis,
         dtSimMillis: dtMillis,
       });
@@ -111,7 +102,8 @@ export function createSolitudeRemoteClientRenderer({
     },
     setModel: (entities) => {
       renderer = createRenderer(plugins, entities);
-      interpolationBuffer = createRuntimeSnapshotInterpolationBuffer();
+      latestSnapshot = null;
+      messageSimulationTimeMillis = 0;
     },
   };
 

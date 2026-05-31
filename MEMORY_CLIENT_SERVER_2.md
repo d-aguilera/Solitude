@@ -102,7 +102,7 @@ Deliver the real-time authoritative loop first:
 - Server-owned active game runner is in place.
 - Fixed-rate authoritative snapshot broadcast.
 - Snapshot messages with authoritative simulation time.
-- Latest-snapshot rendering while the protocol stream is made leaner.
+- Latest-snapshot rendering is in place while the protocol stream is made leaner.
 - Static/dynamic message split.
 - Protocol payload and cadence review.
 
@@ -117,11 +117,11 @@ Then deliver predicted local flight:
 
 ## Clear Next Step
 
-Disable client interpolation while tightening the protocol:
+Split static model data from high-frequency dynamic state:
 
-- render the latest authoritative snapshot directly;
-- use the raw client/server feel to expose stream problems clearly;
-- keep interpolation and prediction until after protocol efficiency work.
+- `gameModel` owns static or slow-changing entity configuration;
+- `snapshot` owns high-frequency position, velocity, orientation, and control-facing dynamic state;
+- avoid repeatedly sending static scenario data once the model is known.
 
 ## Things To Watch
 
