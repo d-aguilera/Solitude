@@ -94,7 +94,7 @@ Deliver the real-time authoritative loop first:
 
 - WebSocket-only gameplay path is in place.
 - Server-owned fixed 60 Hz simulation policy is in place.
-- Server-owned active game runner.
+- Server-owned active game runner is in place.
 - Fixed-rate authoritative snapshot broadcast.
 - Snapshot messages with authoritative simulation time.
 - Client interpolation buffer based on simulation time instead of arrival time.
@@ -109,12 +109,12 @@ Then deliver predicted local flight:
 
 ## Clear Next Step
 
-Promote the authoritative runner to a first-class server subsystem:
+Add authoritative time semantics to snapshots:
 
-- session manager owns game/session state;
-- game runner owns ticking active games;
-- transport forwards protocol messages and broadcasts runner output;
-- snapshot production comes from the runner, not from request-shaped ticking.
+- snapshot messages carry authoritative simulation time;
+- arrival time does not define simulation time;
+- sequence/tick metadata stays useful for ordering and diagnostics;
+- client interpolation samples snapshots by server simulation time.
 
 ## Things To Watch
 

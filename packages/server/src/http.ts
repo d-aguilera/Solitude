@@ -20,20 +20,18 @@ import { extname, normalize, resolve, sep } from "node:path";
 import type { Duplex } from "node:stream";
 import { WebSocket, WebSocketServer, type RawData } from "ws";
 import {
-  DEFAULT_SOLITUDE_GAME_TICK_POLICY,
-  createSolitudeGameTicker,
-} from "./ticker";
-import {
-  createSolitudeInProcessTransport,
-  type SolitudeInProcessTransport,
-} from "./transport";
+  createDefaultSolitudeGameRunner,
+  type SolitudeGameRunner,
+  type SolitudeGameRunnerFactory,
+  type SolitudeRunningGameSummary,
+} from "./runner";
 
 export interface SolitudeHttpServerOptions {
+  createRunner: SolitudeGameRunnerFactory;
   devAssetHandler?: SolitudeDevAssetHandler;
   hostname: string;
   port: number;
   staticAssetRoot?: string;
-  transport: SolitudeInProcessTransport;
 }
 
 export interface SolitudeHttpServer {
@@ -57,42 +55,31 @@ export interface SolitudeDevAssetHandler {
 }
 
 export interface SolitudeHttpRequestHandlerOptions {
+  createRunner: SolitudeGameRunnerFactory;
   devAssetHandler?: SolitudeDevAssetHandler;
   staticAssetRoot?: string;
-  transport: SolitudeInProcessTransport;
-}
-
-interface GameListEntry {
-  assignedEntityIds: string[];
-  availableEntityIds: string[];
-  gameId: SolitudeGameId;
-  maxClients: number;
-  running: boolean;
-  tick: number;
 }
 
 export function createDefaultSolitudeHttpServerOptions(): SolitudeHttpServerOptions {
   return {
+    createRunner: createDefaultSolitudeGameRunner,
     hostname: "127.0.0.1",
     port: 8787,
-    transport: createSolitudeInProcessTransport(),
   };
 }
 
 export function createSolitudeHttpRequestHandler({
+  createRunner,
   devAssetHandler,
   staticAssetRoot,
-  transport,
 }: SolitudeHttpRequestHandlerOptions): SolitudeHttpRequestHandler {
   const socketSubscriptionsByGameId = new Map<SolitudeGameId, Set<WebSocket>>();
   const socketSessionsBySocket = new Map<WebSocket, SocketSession>();
   const socketServer = new WebSocketServer({ noServer: true });
-  const ticker = createSolitudeGameTicker({
+  const runner = createRunner({
     onSnapshot: (snapshot) => {
       publishSocketSnapshot(socketSubscriptionsByGameId, snapshot);
     },
-    policy: DEFAULT_SOLITUDE_GAME_TICK_POLICY,
-    transport,
   });
   const resolvedStaticAssetRoot = staticAssetRoot
     ? resolve(staticAssetRoot)
@@ -113,8 +100,7 @@ export function createSolitudeHttpRequestHandler({
     const requestUrl = new URL(request.url ?? "/", "http://localhost");
 
     if (request.method === "GET" && requestUrl.pathname === "/games") {
-      stopCleanedUpGames(ticker, transport.cleanupGames());
-      sendGameList(response, createGameList(transport, ticker));
+      sendGameList(response, runner.listGames());
       return;
     }
 
@@ -156,7 +142,7 @@ export function createSolitudeHttpRequestHandler({
   };
 
   handler.close = () => {
-    ticker.stopAll();
+    runner.close();
     socketServer.close();
     for (const sockets of socketSubscriptionsByGameId.values()) {
       for (const socket of sockets) {
@@ -178,11 +164,10 @@ export function createSolitudeHttpRequestHandler({
     socketServer.handleUpgrade(request, socket, head, (webSocket) => {
       socketServer.emit("connection", webSocket, request);
       attachWebSocketTransport({
+        runner,
         socket: webSocket,
         socketSessionsBySocket,
         socketSubscriptionsByGameId,
-        ticker,
-        transport,
       });
     });
   };
@@ -234,11 +219,10 @@ export async function startSolitudeHttpServer(
 }
 
 interface AttachWebSocketTransportOptions {
+  runner: SolitudeGameRunner;
   socket: WebSocket;
   socketSessionsBySocket: Map<WebSocket, SocketSession>;
   socketSubscriptionsByGameId: Map<SolitudeGameId, Set<WebSocket>>;
-  ticker: ReturnType<typeof createSolitudeGameTicker>;
-  transport: SolitudeInProcessTransport;
 }
 
 interface SocketSession {
@@ -247,11 +231,10 @@ interface SocketSession {
 }
 
 function attachWebSocketTransport({
+  runner,
   socket,
   socketSessionsBySocket,
   socketSubscriptionsByGameId,
-  ticker,
-  transport,
 }: AttachWebSocketTransportOptions): void {
   socket.send(JSON.stringify({ type: "ready" }));
   socket.on("message", (data) => {
@@ -268,11 +251,10 @@ function attachWebSocketTransport({
     }
     handleSocketMessage({
       payload,
+      runner,
       socket,
       socketSessionsBySocket,
       socketSubscriptionsByGameId,
-      ticker,
-      transport,
     });
   });
   socket.on("close", () => {
@@ -280,7 +262,7 @@ function attachWebSocketTransport({
     socketSessionsBySocket.delete(socket);
     removeSocketFromAllSubscriptions(socketSubscriptionsByGameId, socket);
     if (session) {
-      const messages = transport.receive(
+      const messages = runner.receive(
         {
           type: "leaveGame",
           clientId: session.clientId,
@@ -294,31 +276,28 @@ function attachWebSocketTransport({
         session.gameId,
         messages,
       );
-      stopCleanedUpGames(ticker, transport.cleanupGames());
     }
   });
 }
 
 interface HandleSocketMessageOptions {
   payload: SolitudeSocketClientMessage;
+  runner: SolitudeGameRunner;
   socket: WebSocket;
   socketSessionsBySocket: Map<WebSocket, SocketSession>;
   socketSubscriptionsByGameId: Map<SolitudeGameId, Set<WebSocket>>;
-  ticker: ReturnType<typeof createSolitudeGameTicker>;
-  transport: SolitudeInProcessTransport;
 }
 
 function handleSocketMessage({
   payload,
+  runner,
   socket,
   socketSessionsBySocket,
   socketSubscriptionsByGameId,
-  ticker,
-  transport,
 }: HandleSocketMessageOptions): void {
   switch (payload.type) {
     case "clientMessage": {
-      const messages = transport.receive(
+      const messages = runner.receive(
         payload.message,
         payload.message.sequence,
       );
@@ -342,12 +321,6 @@ function handleSocketMessage({
         messages,
         socket,
       );
-      for (const message of messages) {
-        if (message.type === "gameCreated") {
-          ticker.runGame({ gameId: message.gameId });
-        }
-      }
-      stopCleanedUpGames(ticker, transport.cleanupGames());
       sendSocketMessages(socket, payload.requestId, messages);
       return;
     }
@@ -358,25 +331,6 @@ function setCommonHeaders(response: ServerResponse): void {
   response.setHeader("Access-Control-Allow-Headers", "content-type");
   response.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   response.setHeader("Access-Control-Allow-Origin", "*");
-}
-
-function stopCleanedUpGames(
-  ticker: ReturnType<typeof createSolitudeGameTicker>,
-  gameIds: readonly SolitudeGameId[],
-): void {
-  for (const gameId of gameIds) {
-    ticker.stopGame(gameId);
-  }
-}
-
-function createGameList(
-  transport: SolitudeInProcessTransport,
-  ticker: ReturnType<typeof createSolitudeGameTicker>,
-): GameListEntry[] {
-  return transport.listGames().map((game) => ({
-    ...game,
-    running: ticker.isRunning(game.gameId),
-  }));
 }
 
 function sendJson(
@@ -394,7 +348,7 @@ function sendJson(
 
 function sendGameList(
   response: ServerResponse,
-  games: readonly GameListEntry[],
+  games: readonly SolitudeRunningGameSummary[],
 ): void {
   sendText(
     response,
