@@ -309,6 +309,7 @@ function createSnapshot(gameId: SolitudeGameId, tick: number): SnapshotMessage {
     type: "snapshot",
     gameId,
     sequence: tick,
+    simulationTimeMillis: tick * 1000,
     snapshot: { entities: [] },
     tick,
   };

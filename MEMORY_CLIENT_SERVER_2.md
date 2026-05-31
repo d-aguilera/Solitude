@@ -61,32 +61,37 @@ Browser client
    - Arrival time should not define simulation time.
    - Keep sequence/tick metadata suitable for ordering and diagnostics.
 
-5. Replace the two-snapshot client interpolator with an ordered buffer.
+5. Disable client interpolation while tightening the protocol.
+   - Render the latest authoritative snapshot directly.
+   - Let protocol cadence, payload weight, ordering, and jitter be plainly visible.
+   - Keep interpolation/prediction out of the diagnostic loop until the server stream is structurally better.
+
+6. Split static model data from high-frequency dynamic state.
+   - `gameModel` owns static or slow-changing entity configuration.
+   - `snapshot` owns high-frequency position, velocity, orientation, and control-facing dynamic state.
+   - Avoid repeatedly sending static scenario data once the model is known.
+
+7. Review bandwidth, allocation, cadence, and protocol shape.
+   - Compact deltas, entity versioning, and binary-friendly encodings belong after the real-time stream is structurally sound.
+   - Do not move prototype UI/network allocation patterns into engine hot paths.
+
+8. Make inputs sequence-aware.
+   - Input messages should include a client input sequence.
+   - Authoritative snapshots should acknowledge the last processed input sequence per controlled entity.
+   - The client should replay unacknowledged local inputs after reconciliation.
+
+9. Replace the two-snapshot client interpolator with an ordered buffer.
    - Keep a small ring of recent authoritative snapshots.
    - Drop stale or out-of-order snapshots.
    - Sample by target authoritative simulation time.
    - Interpolate between nearest snapshots.
    - Allow only short bounded extrapolation when the buffer underruns.
 
-6. Add client prediction for the locally controlled ship.
-   - Local controls must affect the assigned ship immediately.
-   - Reuse Solitude simulation/control logic where practical.
-   - Reconcile predicted state against authoritative snapshots.
-   - Keep other entities interpolated from server state.
-
-7. Make inputs sequence-aware.
-   - Input messages should include a client input sequence.
-   - Authoritative snapshots should acknowledge the last processed input sequence per controlled entity.
-   - The client should replay unacknowledged local inputs after reconciliation.
-
-8. Split static model data from high-frequency dynamic state.
-   - `gameModel` owns static or slow-changing entity configuration.
-   - `snapshot` owns high-frequency position, velocity, orientation, and control-facing dynamic state.
-   - Avoid repeatedly sending static scenario data once the model is known.
-
-9. Review bandwidth, allocation, and protocol shape after feel improves.
-   - Compact deltas, entity versioning, and binary-friendly encodings belong after the real-time feel path is structurally sound.
-   - Do not move prototype UI/network allocation patterns into engine hot paths.
+10. Add client prediction for the locally controlled ship.
+    - Local controls must affect the assigned ship immediately.
+    - Reuse Solitude simulation/control logic where practical.
+    - Reconcile predicted state against authoritative snapshots.
+    - Keep other entities interpolated from server state.
 
 ## Current Plan
 
@@ -97,11 +102,14 @@ Deliver the real-time authoritative loop first:
 - Server-owned active game runner is in place.
 - Fixed-rate authoritative snapshot broadcast.
 - Snapshot messages with authoritative simulation time.
-- Client interpolation buffer based on simulation time instead of arrival time.
+- Latest-snapshot rendering while the protocol stream is made leaner.
+- Static/dynamic message split.
+- Protocol payload and cadence review.
 
 Then deliver predicted local flight:
 
 - Sequenced input messages.
+- Ordered interpolation buffer based on simulation time.
 - Snapshot acknowledgements for processed input.
 - Client-side prediction for the assigned ship.
 - Smooth reconciliation against server state.
@@ -109,12 +117,11 @@ Then deliver predicted local flight:
 
 ## Clear Next Step
 
-Add authoritative time semantics to snapshots:
+Disable client interpolation while tightening the protocol:
 
-- snapshot messages carry authoritative simulation time;
-- arrival time does not define simulation time;
-- sequence/tick metadata stays useful for ordering and diagnostics;
-- client interpolation samples snapshots by server simulation time.
+- render the latest authoritative snapshot directly;
+- use the raw client/server feel to expose stream problems clearly;
+- keep interpolation and prediction until after protocol efficiency work.
 
 ## Things To Watch
 

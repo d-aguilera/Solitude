@@ -76,6 +76,7 @@ describe("Solitude protocol", () => {
     const snapshotMessage = createSnapshotMessage({
       gameId: "game:test",
       sequence: 4,
+      simulationTimeMillis: 200,
       snapshot: { entities: [] },
       tick: 12,
     });
@@ -86,6 +87,7 @@ describe("Solitude protocol", () => {
         type: "snapshot",
         gameId: "game:test",
         sequence: 4,
+        simulationTimeMillis: 200,
         snapshot: null,
         tick: 12,
       }),

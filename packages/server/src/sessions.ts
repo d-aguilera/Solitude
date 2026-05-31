@@ -85,6 +85,7 @@ interface ServerGameSession {
   inputEvents: QueuedInputEvent[];
   nextSequence: SolitudeProtocolSequence;
   pendingPressedControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
+  simulationTimeMillis: number;
   steppedControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
   tick: number;
 }
@@ -122,6 +123,7 @@ export function createSolitudeSessionManager(
       inputEvents: [],
       nextSequence: sequence + 1,
       pendingPressedControlInputsByEntityId: new Map(),
+      simulationTimeMillis: 0,
       steppedControlInputsByEntityId: new Map(),
       tick: 0,
     };
@@ -242,6 +244,7 @@ export function createSolitudeSessionManager(
       session.heldControlInputsByEntityId,
     );
     session.inputEvents.length = 0;
+    session.simulationTimeMillis += dtMillis;
     return createNextSnapshotMessage(session, gameId, snapshot);
   };
 
@@ -258,6 +261,7 @@ export function createSolitudeSessionManager(
       inputTimeWindow,
     );
     session.pendingPressedControlInputsByEntityId.clear();
+    session.simulationTimeMillis += dtMillis;
     return createNextSnapshotMessage(session, gameId, snapshot);
   };
 
@@ -272,6 +276,7 @@ export function createSolitudeSessionManager(
     return createSnapshotMessage({
       gameId,
       sequence,
+      simulationTimeMillis: session.simulationTimeMillis,
       snapshot,
       tick: session.tick,
     });

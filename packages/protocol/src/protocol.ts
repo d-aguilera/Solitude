@@ -5,6 +5,7 @@ import type { EntityConfig, EntityId } from "@solitude/engine/world";
 export type SolitudeGameId = string;
 export type SolitudeClientId = string;
 export type SolitudeProtocolSequence = number;
+export type SolitudeSimulationTimeMillis = number;
 export type SolitudeSimulationTick = number;
 
 export type SolitudeClientMessage =
@@ -88,6 +89,7 @@ export interface SnapshotMessage {
   type: "snapshot";
   gameId: SolitudeGameId;
   sequence: SolitudeProtocolSequence;
+  simulationTimeMillis: SolitudeSimulationTimeMillis;
   snapshot: RuntimeWorldSnapshot;
   tick: SolitudeSimulationTick;
 }
@@ -199,6 +201,7 @@ export function isSolitudeServerMessage(
       return (
         isString(value.gameId) &&
         isFiniteNumber(value.sequence) &&
+        isFiniteNumber(value.simulationTimeMillis) &&
         isRuntimeWorldSnapshot(value.snapshot) &&
         isFiniteNumber(value.tick)
       );

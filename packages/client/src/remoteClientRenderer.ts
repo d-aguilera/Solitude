@@ -29,6 +29,7 @@ const remoteRenderPluginIds = [
 ];
 
 export interface RemoteClientSnapshotMessage {
+  simulationTimeMillis: number;
   snapshot: RuntimeWorldSnapshot;
   tick: number;
 }
@@ -60,11 +61,13 @@ export function createSolitudeRemoteClientRenderer({
   const controlInput: ControlInput = {};
   let selectedThrustLevel = 0;
   let interpolationBuffer = createRuntimeSnapshotInterpolationBuffer();
+  let messageSimulationTimeMillis = 0;
 
   let renderer: ReturnType<typeof createRemoteCanvasRenderer> | null = null;
 
   return {
     pushSnapshotMessage: (message, receivedAtMillis) => {
+      messageSimulationTimeMillis = message.simulationTimeMillis;
       interpolationBuffer.push(
         message.snapshot,
         message.tick,
@@ -90,7 +93,7 @@ export function createSolitudeRemoteClientRenderer({
         {
           controlInput,
           nowMs: nowMillis,
-          simTimeMillis: interpolationBuffer.latestTick,
+          simTimeMillis: messageSimulationTimeMillis,
           world: renderer.worldRenderer.mirror.world,
           mainFocus: renderer.worldRenderer.renderParams.mainFocus,
         },

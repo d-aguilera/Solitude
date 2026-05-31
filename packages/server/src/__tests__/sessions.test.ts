@@ -212,6 +212,7 @@ describe("Solitude session manager", () => {
     expect(snapshot?.type).toBe("snapshot");
     expect(snapshot?.gameId).toBe("game:1");
     expect(snapshot?.sequence).toBe(4);
+    expect(snapshot?.simulationTimeMillis).toBe(1000);
     expect(snapshot?.tick).toBe(1);
     expect(snapshot?.snapshot.entities.length).toBeGreaterThan(0);
   });
@@ -399,11 +400,13 @@ describe("Solitude session manager", () => {
       sequence: 4,
       controls: { yawLeft: false },
     });
-    manager.stepGameWithInputWindow("game:1", 25, {
+    const snapshot = manager.stepGameWithInputWindow("game:1", 25, {
       endMillis: 25,
       startMillis: 0,
     });
 
+    expect(snapshot?.simulationTimeMillis).toBe(25);
+    expect(manager.listGames()[0]?.tick).toBe(1);
     expect(game.controlInputsByStep).toEqual([
       { controls: [], dtMillis: 10 },
       { controls: [["ship:blue", { yawLeft: true }]], dtMillis: 5 },
