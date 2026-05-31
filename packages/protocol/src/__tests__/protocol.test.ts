@@ -6,6 +6,7 @@ import {
   createSnapshotMessage,
   isSolitudeClientMessage,
   isSolitudeServerMessage,
+  isSolitudeSocketClientMessage,
 } from "../protocol";
 
 describe("Solitude protocol", () => {
@@ -87,6 +88,26 @@ describe("Solitude protocol", () => {
         sequence: 4,
         snapshot: null,
         tick: 12,
+      }),
+    ).toBe(false);
+  });
+
+  it("recognizes socket run requests without client timing policy", () => {
+    expect(
+      isSolitudeSocketClientMessage({
+        type: "runGame",
+        gameId: "game:test",
+        requestId: 5,
+      }),
+    ).toBe(true);
+    expect(
+      isSolitudeSocketClientMessage({
+        type: "runGame",
+        gameId: "game:test",
+        requestId: 5,
+        dtMillis: 10,
+        intervalMillis: 10,
+        simulationStepMillis: 1,
       }),
     ).toBe(false);
   });

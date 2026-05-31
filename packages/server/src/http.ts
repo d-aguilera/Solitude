@@ -19,7 +19,10 @@ import type { AddressInfo } from "node:net";
 import { extname, normalize, resolve, sep } from "node:path";
 import type { Duplex } from "node:stream";
 import { WebSocket, WebSocketServer, type RawData } from "ws";
-import { createSolitudeGameTicker } from "./ticker";
+import {
+  DEFAULT_SOLITUDE_GAME_TICK_POLICY,
+  createSolitudeGameTicker,
+} from "./ticker";
 import {
   createSolitudeInProcessTransport,
   type SolitudeInProcessTransport,
@@ -88,6 +91,7 @@ export function createSolitudeHttpRequestHandler({
     onSnapshot: (snapshot) => {
       publishSocketSnapshot(socketSubscriptionsByGameId, snapshot);
     },
+    policy: DEFAULT_SOLITUDE_GAME_TICK_POLICY,
     transport,
   });
   const resolvedStaticAssetRoot = staticAssetRoot
@@ -383,7 +387,7 @@ function handleSocketMessage({
       return;
     }
     case "runGame":
-      ticker.runGame(payload);
+      ticker.runGame({ gameId: payload.gameId });
       sendSocketMessages(socket, payload.requestId, []);
       return;
     case "pauseGame":

@@ -69,18 +69,11 @@ describe("Solitude WebSocket browser client", () => {
     await joinPromise;
     expect(client.state.entityId).toBe("ship:blue");
 
-    const runPromise = client.runGame("game:1", {
-      dtMillis: 10,
-      intervalMillis: 10,
-      simulationStepMillis: 1,
-    });
+    const runPromise = client.runGame("game:1");
     await Promise.resolve();
     expect(socket.sentMessages[2]).toEqual({
-      dtMillis: 10,
       gameId: "game:1",
-      intervalMillis: 10,
       requestId: 3,
-      simulationStepMillis: 1,
       type: "runGame",
     });
     socket.receive({

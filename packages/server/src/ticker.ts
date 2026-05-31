@@ -5,9 +5,12 @@ import type {
 import type { SolitudeInProcessTransport } from "./transport";
 
 export interface SolitudeGameTickRequest {
-  dtMillis: number;
   gameId: SolitudeGameId;
-  intervalMillis: number;
+}
+
+export interface SolitudeGameTickPolicy {
+  broadcastIntervalMillis: number;
+  simulationMillisPerWallMillis: number;
   simulationStepMillis: number;
 }
 
@@ -27,8 +30,15 @@ export interface SolitudeGameTickerClock<Timer> {
 export interface SolitudeGameTickerOptions<Timer> {
   clock?: SolitudeGameTickerClock<Timer>;
   onSnapshot: (snapshot: SnapshotMessage) => void;
+  policy: SolitudeGameTickPolicy;
   transport: Pick<SolitudeInProcessTransport, "stepGameWithInputWindow">;
 }
+
+export const DEFAULT_SOLITUDE_GAME_TICK_POLICY: SolitudeGameTickPolicy = {
+  broadcastIntervalMillis: 1000 / 60,
+  simulationMillisPerWallMillis: 1,
+  simulationStepMillis: 1000 / 60,
+};
 
 export function createSolitudeGameTicker<
   Timer = ReturnType<typeof setInterval>,
@@ -62,16 +72,14 @@ export function createSolitudeGameTicker<
         return;
       }
 
-      const simulationMillisPerWallMillis =
-        request.dtMillis / request.intervalMillis;
       accumulatedSimulationMillis +=
-        elapsedWallMillis * simulationMillisPerWallMillis;
+        elapsedWallMillis * options.policy.simulationMillisPerWallMillis;
 
       const result = stepGameForBroadcast(
         options.transport,
         request,
+        options.policy,
         accumulatedSimulationMillis,
-        simulationMillisPerWallMillis,
         inputWindowStartMillis,
         inputWindowEndMillis,
       );
@@ -84,7 +92,7 @@ export function createSolitudeGameTicker<
       if (result.snapshot) {
         options.onSnapshot(result.snapshot);
       }
-    }, request.intervalMillis);
+    }, options.policy.broadcastIntervalMillis);
     timersByGameId.set(request.gameId, timer);
   };
 
@@ -105,8 +113,8 @@ export function createSolitudeGameTicker<
 function stepGameForBroadcast(
   transport: Pick<SolitudeInProcessTransport, "stepGameWithInputWindow">,
   request: SolitudeGameTickRequest,
+  policy: SolitudeGameTickPolicy,
   accumulatedSimulationMillis: number,
-  simulationMillisPerWallMillis: number,
   inputWindowStartMillis: number,
   inputWindowEndMillis: number,
 ): {
@@ -118,11 +126,12 @@ function stepGameForBroadcast(
   let remainingMillis = accumulatedSimulationMillis;
   let snapshot: SnapshotMessage | null = null;
 
-  while (remainingMillis >= request.simulationStepMillis) {
-    const stepMillis = request.simulationStepMillis;
+  while (remainingMillis >= policy.simulationStepMillis) {
+    const stepMillis = policy.simulationStepMillis;
     const stepWindowStartMillis = inputWindowStartMillis;
     const stepWindowEndMillis = Math.min(
-      inputWindowStartMillis + stepMillis / simulationMillisPerWallMillis,
+      inputWindowStartMillis +
+        stepMillis / policy.simulationMillisPerWallMillis,
       inputWindowEndMillis,
     );
     snapshot = transport.stepGameWithInputWindow(request.gameId, stepMillis, {

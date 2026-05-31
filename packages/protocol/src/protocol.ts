@@ -69,9 +69,6 @@ export interface RunGameSocketRequest {
   type: "runGame";
   requestId: SolitudeProtocolSequence;
   gameId: SolitudeGameId;
-  dtMillis: number;
-  intervalMillis: number;
-  simulationStepMillis: number;
 }
 
 export interface PauseGameSocketRequest {
@@ -243,12 +240,9 @@ export function isSolitudeSocketClientMessage(
       );
     case "runGame":
       return (
+        hasOnlyKeys(value, ["gameId", "requestId", "type"]) &&
         isFiniteNumber(value.requestId) &&
-        isString(value.gameId) &&
-        isPositiveFiniteNumber(value.dtMillis) &&
-        isPositiveFiniteNumber(value.simulationStepMillis) &&
-        isFiniteNumber(value.intervalMillis) &&
-        value.intervalMillis >= 10
+        isString(value.gameId)
       );
     case "pauseGame":
       return isFiniteNumber(value.requestId) && isString(value.gameId);
@@ -285,14 +279,18 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function hasOnlyKeys(
+  value: Record<string, unknown>,
+  allowedKeys: readonly string[],
+): boolean {
+  const allowed = new Set(allowedKeys);
+  return Object.keys(value).every((key) => allowed.has(key));
+}
+
 function isString(value: unknown): value is string {
   return typeof value === "string";
 }
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
-}
-
-function isPositiveFiniteNumber(value: unknown): value is number {
-  return isFiniteNumber(value) && value > 0;
 }

@@ -26,10 +26,7 @@ export interface SolitudeRemoteClient {
   joinGame: (gameId: SolitudeGameId) => Promise<SolitudeServerMessage[]>;
   leaveGame: () => Promise<SolitudeServerMessage[]>;
   pauseGame: (gameId: SolitudeGameId) => Promise<SolitudeServerMessage[]>;
-  runGame: (
-    gameId: SolitudeGameId,
-    params: SolitudeRunGameParams,
-  ) => Promise<SolitudeServerMessage[]>;
+  runGame: (gameId: SolitudeGameId) => Promise<SolitudeServerMessage[]>;
   sendInputPatch: (
     controls: Partial<ControlInput>,
   ) => Promise<SolitudeServerMessage[]>;
@@ -55,12 +52,6 @@ export interface SolitudeWebSocket {
   close: () => void;
   readyState: number;
   send: (data: string) => void;
-}
-
-export interface SolitudeRunGameParams {
-  dtMillis: number;
-  intervalMillis: number;
-  simulationStepMillis: number;
 }
 
 export interface KeyboardInputPatcherOptions {
@@ -289,9 +280,8 @@ export function createSolitudeWebSocketClient(
         requestId: nextSequence(state),
         type: "pauseGame",
       }),
-    runGame: (gameId, params) =>
+    runGame: (gameId) =>
       sendSocketRequest({
-        ...params,
         gameId,
         requestId: nextSequence(state),
         type: "runGame",

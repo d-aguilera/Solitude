@@ -172,7 +172,7 @@ describe("Solitude HTTP server", () => {
             gameId: "game:1",
             maxClients: 2,
             running: true,
-            tick: 0,
+            tick: expect.any(Number),
           },
         ],
       });
@@ -188,7 +188,7 @@ describe("Solitude HTTP server", () => {
             gameId: "game:1",
             maxClients: 2,
             running: false,
-            tick: 0,
+            tick: expect.any(Number),
           },
         ],
       });
@@ -310,9 +310,6 @@ describe("Solitude HTTP server", () => {
         type: "runGame",
         requestId: 3,
         gameId: "game:1",
-        dtMillis: 10,
-        intervalMillis: 10,
-        simulationStepMillis: 1,
       });
 
       const snapshot = await snapshotPromise;
@@ -629,9 +626,6 @@ async function runGameOverSocket(
     type: "runGame",
     requestId,
     gameId: "game:1",
-    dtMillis: 1000,
-    intervalMillis: 10,
-    simulationStepMillis: 1000,
   });
   await response;
 }

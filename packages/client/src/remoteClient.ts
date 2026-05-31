@@ -9,7 +9,6 @@ import {
   solitudeSpacecraftKeyMap,
 } from "./client";
 import {
-  DEFAULT_RUN_PARAMS,
   createLobbyHref,
   createSocketUrl,
   queryAnchor,
@@ -183,22 +182,10 @@ async function startServerLoop(): Promise<void> {
   if (!client.state.gameId) {
     throw new Error("Client is not joined to a game");
   }
-  handleMessages(
-    await client.runGame(client.state.gameId, DEFAULT_RUN_PARAMS),
-    false,
-    false,
-  );
+  handleMessages(await client.runGame(client.state.gameId), false, false);
 
   runActive = true;
-  runStatusEl.textContent = [
-    "Running every",
-    DEFAULT_RUN_PARAMS.intervalMillis,
-    "ms at sim",
-    DEFAULT_RUN_PARAMS.dtMillis,
-    "ms per interval, fixed step",
-    DEFAULT_RUN_PARAMS.simulationStepMillis,
-    "ms",
-  ].join(" ");
+  runStatusEl.textContent = "Running with server-owned timing";
 }
 
 function connectEvents(): void {

@@ -1,7 +1,6 @@
 import type { SolitudeGameId } from "@solitude/protocol/protocol";
 import { createSolitudeWebSocketClient } from "./client";
 import {
-  DEFAULT_RUN_PARAMS,
   createGameHref,
   createHttpUrl,
   createSocketUrl,
@@ -57,7 +56,7 @@ async function createGame(): Promise<void> {
     if (!client.state.gameId) {
       throw new Error("Game creation did not assign a game id");
     }
-    await client.runGame(client.state.gameId, DEFAULT_RUN_PARAMS);
+    await client.runGame(client.state.gameId);
     await refreshGames();
     statusEl.textContent = "Game created";
   } catch (error) {

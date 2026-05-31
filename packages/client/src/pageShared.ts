@@ -1,5 +1,4 @@
 import type { SolitudeGameId } from "@solitude/protocol/protocol";
-import type { SolitudeRunGameParams } from "./client";
 
 export interface SolitudeGameSummary {
   assignedEntityIds: string[];
@@ -13,12 +12,6 @@ export interface SolitudeGameSummary {
 export interface SolitudeGameListResponse {
   games: SolitudeGameSummary[];
 }
-
-export const DEFAULT_RUN_PARAMS: SolitudeRunGameParams = {
-  dtMillis: 250,
-  intervalMillis: 250,
-  simulationStepMillis: 25,
-};
 
 const CLIENT_ID_STORAGE_KEY = "solitude.clientId";
 

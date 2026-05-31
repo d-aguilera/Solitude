@@ -5,6 +5,7 @@ import type {
 import { describe, expect, it } from "vitest";
 import {
   createSolitudeGameTicker,
+  type SolitudeGameTickPolicy,
   type SolitudeGameTickerClock,
 } from "../ticker";
 
@@ -18,15 +19,15 @@ describe("Solitude game ticker", () => {
     const ticker = createSolitudeGameTicker({
       clock,
       onSnapshot: (snapshot) => snapshots.push(snapshot),
+      policy: createPolicy({
+        broadcastIntervalMillis: 250,
+        simulationMillisPerWallMillis: 4,
+        simulationStepMillis: 1000,
+      }),
       transport,
     });
 
-    ticker.runGame({
-      dtMillis: 1000,
-      gameId: "game:1",
-      intervalMillis: 250,
-      simulationStepMillis: 1000,
-    });
+    ticker.runGame({ gameId: "game:1" });
     clock.advance(250);
     clock.tick(0);
     clock.advance(250);
@@ -52,24 +53,19 @@ describe("Solitude game ticker", () => {
     const ticker = createSolitudeGameTicker({
       clock,
       onSnapshot: () => {},
+      policy: createPolicy({
+        broadcastIntervalMillis: 250,
+        simulationMillisPerWallMillis: 4,
+        simulationStepMillis: 1000,
+      }),
       transport: createTransportStub({ "game:1": [] }),
     });
 
-    ticker.runGame({
-      dtMillis: 1000,
-      gameId: "game:1",
-      intervalMillis: 250,
-      simulationStepMillis: 1000,
-    });
-    ticker.runGame({
-      dtMillis: 500,
-      gameId: "game:1",
-      intervalMillis: 125,
-      simulationStepMillis: 500,
-    });
+    ticker.runGame({ gameId: "game:1" });
+    ticker.runGame({ gameId: "game:1" });
 
     expect(clock.timers[0]?.cleared).toBe(true);
-    expect(clock.timers[1]?.intervalMillis).toBe(125);
+    expect(clock.timers[1]?.intervalMillis).toBe(250);
     expect(ticker.isRunning("game:1")).toBe(true);
   });
 
@@ -78,15 +74,15 @@ describe("Solitude game ticker", () => {
     const ticker = createSolitudeGameTicker({
       clock,
       onSnapshot: () => {},
+      policy: createPolicy({
+        broadcastIntervalMillis: 250,
+        simulationMillisPerWallMillis: 4,
+        simulationStepMillis: 1000,
+      }),
       transport: createTransportStub({}),
     });
 
-    ticker.runGame({
-      dtMillis: 1000,
-      gameId: "game:missing",
-      intervalMillis: 250,
-      simulationStepMillis: 1000,
-    });
+    ticker.runGame({ gameId: "game:missing" });
     clock.advance(250);
     clock.tick(0);
 
@@ -99,21 +95,16 @@ describe("Solitude game ticker", () => {
     const ticker = createSolitudeGameTicker({
       clock,
       onSnapshot: () => {},
+      policy: createPolicy({
+        broadcastIntervalMillis: 250,
+        simulationMillisPerWallMillis: 4,
+        simulationStepMillis: 1000,
+      }),
       transport: createTransportStub({ "game:1": [], "game:2": [] }),
     });
 
-    ticker.runGame({
-      dtMillis: 1000,
-      gameId: "game:1",
-      intervalMillis: 250,
-      simulationStepMillis: 1000,
-    });
-    ticker.runGame({
-      dtMillis: 1000,
-      gameId: "game:2",
-      intervalMillis: 250,
-      simulationStepMillis: 1000,
-    });
+    ticker.runGame({ gameId: "game:1" });
+    ticker.runGame({ gameId: "game:2" });
     ticker.pauseAll();
 
     expect(ticker.isRunning("game:1")).toBe(false);
@@ -134,15 +125,15 @@ describe("Solitude game ticker", () => {
     const ticker = createSolitudeGameTicker({
       clock,
       onSnapshot: (snapshot) => snapshots.push(snapshot),
+      policy: createPolicy({
+        broadcastIntervalMillis: 250,
+        simulationMillisPerWallMillis: 0.4,
+        simulationStepMillis: 40,
+      }),
       transport,
     });
 
-    ticker.runGame({
-      dtMillis: 100,
-      gameId: "game:1",
-      intervalMillis: 250,
-      simulationStepMillis: 40,
-    });
+    ticker.runGame({ gameId: "game:1" });
     clock.advance(250);
     clock.tick(0);
 
@@ -175,15 +166,15 @@ describe("Solitude game ticker", () => {
     const ticker = createSolitudeGameTicker({
       clock,
       onSnapshot: (snapshot) => snapshots.push(snapshot),
+      policy: createPolicy({
+        broadcastIntervalMillis: 250,
+        simulationMillisPerWallMillis: 1,
+        simulationStepMillis: 125,
+      }),
       transport,
     });
 
-    ticker.runGame({
-      dtMillis: 250,
-      gameId: "game:1",
-      intervalMillis: 250,
-      simulationStepMillis: 125,
-    });
+    ticker.runGame({ gameId: "game:1" });
     clock.advance(500);
     clock.tick(0);
 
@@ -221,15 +212,15 @@ describe("Solitude game ticker", () => {
     const ticker = createSolitudeGameTicker({
       clock,
       onSnapshot: (snapshot) => snapshots.push(snapshot),
+      policy: createPolicy({
+        broadcastIntervalMillis: 250,
+        simulationMillisPerWallMillis: 1,
+        simulationStepMillis: 25,
+      }),
       transport,
     });
 
-    ticker.runGame({
-      dtMillis: 250,
-      gameId: "game:1",
-      intervalMillis: 250,
-      simulationStepMillis: 25,
-    });
+    ticker.runGame({ gameId: "game:1" });
     clock.advance(10);
     clock.tick(0);
     clock.advance(15);
@@ -245,6 +236,10 @@ describe("Solitude game ticker", () => {
     ]);
   });
 });
+
+function createPolicy(policy: SolitudeGameTickPolicy): SolitudeGameTickPolicy {
+  return policy;
+}
 
 interface ManualTimer {
   callback: () => void;

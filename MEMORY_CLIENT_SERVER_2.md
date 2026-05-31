@@ -93,7 +93,7 @@ Browser client
 Deliver the real-time authoritative loop first:
 
 - WebSocket-only gameplay path is in place.
-- Server-owned fixed 60 Hz simulation policy.
+- Server-owned fixed 60 Hz simulation policy is in place.
 - Server-owned active game runner.
 - Fixed-rate authoritative snapshot broadcast.
 - Snapshot messages with authoritative simulation time.
@@ -109,12 +109,12 @@ Then deliver predicted local flight:
 
 ## Clear Next Step
 
-Replace client-selected run timing with server-owned real-time policy:
+Promote the authoritative runner to a first-class server subsystem:
 
-- remove `dtMillis`, `intervalMillis`, and `simulationStepMillis` from the socket run request;
-- make the server runner own fixed simulation and broadcast cadence;
-- update the remote client to start games without sending timing parameters;
-- update tests around ticker/session/transport expectations.
+- session manager owns game/session state;
+- game runner owns ticking active games;
+- transport forwards protocol messages and broadcasts runner output;
+- snapshot production comes from the runner, not from request-shaped ticking.
 
 ## Things To Watch
 
