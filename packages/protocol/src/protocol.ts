@@ -5,6 +5,7 @@ import type { EntityConfig, EntityId } from "@solitude/engine/world";
 export type SolitudeGameId = string;
 export type SolitudeClientId = string;
 export type SolitudeModelVersion = number;
+export type SolitudeInputSequence = number;
 export type SolitudeProtocolSequence = number;
 export type SolitudeSimulationTimeMillis = number;
 export type SolitudeSimulationTick = number;
@@ -54,6 +55,7 @@ export interface InputMessage {
   clientId: SolitudeClientId;
   gameId: SolitudeGameId;
   entityId: EntityId;
+  inputSequence: SolitudeInputSequence;
   sequence: SolitudeProtocolSequence;
   controls: Partial<ControlInput>;
 }
@@ -91,6 +93,7 @@ export interface SnapshotMessage {
   type: "snapshot";
   entities: RuntimeEntitySnapshot[];
   gameId: SolitudeGameId;
+  lastProcessedInputSequences: Record<EntityId, SolitudeInputSequence>;
   modelVersion: SolitudeModelVersion;
   sequence: SolitudeProtocolSequence;
   simulationTimeMillis: SolitudeSimulationTimeMillis;
@@ -168,6 +171,7 @@ export function isSolitudeClientMessage(
         isString(value.clientId) &&
         isString(value.gameId) &&
         isString(value.entityId) &&
+        isFiniteNumber(value.inputSequence) &&
         isFiniteNumber(value.sequence) &&
         isRecord(value.controls)
       );
@@ -205,6 +209,7 @@ export function isSolitudeServerMessage(
       return (
         Array.isArray(value.entities) &&
         isString(value.gameId) &&
+        isInputSequenceRecord(value.lastProcessedInputSequences) &&
         isFiniteNumber(value.modelVersion) &&
         isFiniteNumber(value.sequence) &&
         isFiniteNumber(value.simulationTimeMillis) &&
@@ -258,6 +263,13 @@ export function isSolitudeSocketServerMessage(
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function isInputSequenceRecord(
+  value: unknown,
+): value is Record<string, number> {
+  if (!isRecord(value)) return false;
+  return Object.values(value).every(isFiniteNumber);
 }
 
 function isString(value: unknown): value is string {

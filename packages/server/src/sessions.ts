@@ -13,6 +13,7 @@ import {
   type SolitudeClientId,
   type SolitudeClientMessage,
   type SolitudeGameId,
+  type SolitudeInputSequence,
   type SolitudeProtocolSequence,
   type SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
@@ -87,6 +88,8 @@ interface ServerGameSession {
   heldControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
   id: SolitudeGameId;
   inputEvents: QueuedInputEvent[];
+  lastProcessedInputSequenceByEntityId: Map<EntityId, SolitudeInputSequence>;
+  lastReceivedInputSequenceByEntityId: Map<EntityId, SolitudeInputSequence>;
   modelVersion: number;
   nextSequence: SolitudeProtocolSequence;
   pendingPressedControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
@@ -98,6 +101,7 @@ interface ServerGameSession {
 interface QueuedInputEvent {
   controls: Partial<ControlInput>;
   entityId: EntityId;
+  inputSequence: SolitudeInputSequence;
   receivedAtMillis: number;
 }
 
@@ -126,6 +130,8 @@ export function createSolitudeSessionManager(
       heldControlInputsByEntityId: new Map(),
       id: gameId,
       inputEvents: [],
+      lastProcessedInputSequenceByEntityId: new Map(),
+      lastReceivedInputSequenceByEntityId: new Map(),
       modelVersion: 0,
       nextSequence: sequence + 1,
       pendingPressedControlInputsByEntityId: new Map(),
@@ -192,6 +198,8 @@ export function createSolitudeSessionManager(
       session.game.removeEntity(assignedEntityId);
       session.modelVersion++;
       session.heldControlInputsByEntityId.delete(assignedEntityId);
+      session.lastProcessedInputSequenceByEntityId.delete(assignedEntityId);
+      session.lastReceivedInputSequenceByEntityId.delete(assignedEntityId);
       session.pendingPressedControlInputsByEntityId.delete(assignedEntityId);
       session.steppedControlInputsByEntityId.delete(assignedEntityId);
       removeQueuedInputEventsForEntity(session.inputEvents, assignedEntityId);
@@ -217,6 +225,13 @@ export function createSolitudeSessionManager(
         }),
       ];
     }
+    const lastReceivedInputSequence =
+      session.lastReceivedInputSequenceByEntityId.get(message.entityId) ?? 0;
+    if (message.inputSequence <= lastReceivedInputSequence) return [];
+    session.lastReceivedInputSequenceByEntityId.set(
+      message.entityId,
+      message.inputSequence,
+    );
     const heldControls =
       session.heldControlInputsByEntityId.get(message.entityId) ?? {};
     const pendingPressedControls =
@@ -226,6 +241,7 @@ export function createSolitudeSessionManager(
     session.inputEvents.push({
       controls: message.controls,
       entityId: message.entityId,
+      inputSequence: message.inputSequence,
       receivedAtMillis: options.nowMillis(),
     });
     if (hasControlInputs(pendingPressedControls)) {
@@ -245,6 +261,7 @@ export function createSolitudeSessionManager(
     if (!session) return null;
     const controlInputsByEntityId = getStepControlInputs(session);
     const snapshot = session.game.step(dtMillis, controlInputsByEntityId);
+    acknowledgeReceivedInputs(session);
     session.pendingPressedControlInputsByEntityId.clear();
     session.steppedControlInputsByEntityId = cloneControlInputMap(
       session.heldControlInputsByEntityId,
@@ -282,6 +299,7 @@ export function createSolitudeSessionManager(
     return createSnapshotMessage({
       entities: compactSnapshotEntities(snapshot.entities),
       gameId,
+      lastProcessedInputSequences: createInputSequenceAcknowledgements(session),
       modelVersion: session.modelVersion,
       sequence,
       simulationTimeMillis: session.simulationTimeMillis,
@@ -487,14 +505,14 @@ function stepSessionGameWithInputWindow(
   dtMillis: number,
   inputTimeWindow: SolitudeInputTimeWindow,
 ): ReturnType<SolitudeServerGame["step"]> {
+  if (inputTimeWindow.endMillis <= inputTimeWindow.startMillis) {
+    return session.game.step(dtMillis, session.steppedControlInputsByEntityId);
+  }
   const events = takeInputEventsThrough(
     session.inputEvents,
     inputTimeWindow.endMillis,
   );
-  if (
-    events.length === 0 ||
-    inputTimeWindow.endMillis <= inputTimeWindow.startMillis
-  ) {
+  if (events.length === 0) {
     return session.game.step(dtMillis, session.steppedControlInputsByEntityId);
   }
 
@@ -521,6 +539,7 @@ function stepSessionGameWithInputWindow(
       elapsedSimMillis = nextElapsedSimMillis;
     }
     applyInputPatchForTimedStep(controlsByEntityId, event);
+    acknowledgeInputEvent(session, event);
   }
 
   const remainingDtMillis = dtMillis - elapsedSimMillis;
@@ -551,6 +570,38 @@ function applyInputPatchForTimedStep(
   controlsByEntityId.set(event.entityId, controls);
 }
 
+function acknowledgeReceivedInputs(session: ServerGameSession): void {
+  for (const [
+    entityId,
+    inputSequence,
+  ] of session.lastReceivedInputSequenceByEntityId) {
+    session.lastProcessedInputSequenceByEntityId.set(entityId, inputSequence);
+  }
+}
+
+function acknowledgeInputEvent(
+  session: ServerGameSession,
+  event: QueuedInputEvent,
+): void {
+  session.lastProcessedInputSequenceByEntityId.set(
+    event.entityId,
+    event.inputSequence,
+  );
+}
+
+function createInputSequenceAcknowledgements(
+  session: ServerGameSession,
+): Record<EntityId, SolitudeInputSequence> {
+  const acknowledgements: Record<EntityId, SolitudeInputSequence> = {};
+  for (const [
+    entityId,
+    inputSequence,
+  ] of session.lastProcessedInputSequenceByEntityId) {
+    acknowledgements[entityId] = inputSequence;
+  }
+  return acknowledgements;
+}
+
 function takeInputEventsThrough(
   inputEvents: QueuedInputEvent[],
   endMillis: number,
@@ -569,7 +620,11 @@ function takeInputEventsThrough(
   }
 
   inputEvents.length = writeIndex;
-  taken.sort((left, right) => left.receivedAtMillis - right.receivedAtMillis);
+  taken.sort(
+    (left, right) =>
+      left.receivedAtMillis - right.receivedAtMillis ||
+      left.inputSequence - right.inputSequence,
+  );
   return taken;
 }
 

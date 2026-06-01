@@ -253,6 +253,7 @@ describe("Solitude session manager", () => {
         clientId: "client:a",
         entityId: "ship:blue",
         gameId: "game:1",
+        inputSequence: 1,
         sequence: 3,
         controls: { burnForward: true, thrust5: true },
       }),
@@ -262,6 +263,7 @@ describe("Solitude session manager", () => {
     expect(snapshot?.type).toBe("snapshot");
     expect(snapshot?.gameId).toBe("game:1");
     expect(snapshot?.modelVersion).toBe(1);
+    expect(snapshot?.lastProcessedInputSequences).toEqual({ "ship:blue": 1 });
     expect(snapshot?.sequence).toBe(4);
     expect(snapshot?.simulationTimeMillis).toBe(1000);
     expect(snapshot?.tick).toBe(1);
@@ -288,6 +290,7 @@ describe("Solitude session manager", () => {
       clientId: "client:a",
       entityId: "ship:blue",
       gameId: "game:1",
+      inputSequence: 1,
       sequence: 3,
       controls: { burnForward: true, thrust5: true },
     });
@@ -310,6 +313,7 @@ describe("Solitude session manager", () => {
       clientId: "client:a",
       entityId: "ship:blue",
       gameId: "game:1",
+      inputSequence: 2,
       sequence: 4,
       controls: { burnForward: false },
     });
@@ -319,6 +323,48 @@ describe("Solitude session manager", () => {
       controls: [["ship:blue", { burnForward: false, thrust5: true }]],
       dtMillis: 1000,
     });
+  });
+
+  it("ignores stale input sequences for an assigned entity", () => {
+    const game = createRecordingGame();
+    const manager = createSolitudeSessionManager(createTestOptions(game));
+    manager.handleMessage({
+      type: "createGame",
+      clientId: "client:a",
+      sequence: 1,
+    });
+    manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
+    });
+
+    manager.handleMessage({
+      type: "input",
+      clientId: "client:a",
+      entityId: "ship:blue",
+      gameId: "game:1",
+      inputSequence: 2,
+      sequence: 3,
+      controls: { yawLeft: true },
+    });
+    manager.handleMessage({
+      type: "input",
+      clientId: "client:a",
+      entityId: "ship:blue",
+      gameId: "game:1",
+      inputSequence: 1,
+      sequence: 4,
+      controls: { yawLeft: false },
+    });
+
+    const snapshot = manager.stepGame("game:1", 1000);
+
+    expect(snapshot?.lastProcessedInputSequences).toEqual({ "ship:blue": 2 });
+    expect(game.controlInputsByStep).toEqual([
+      { controls: [["ship:blue", { yawLeft: true }]], dtMillis: 1000 },
+    ]);
   });
 
   it("latches thrust level input instead of treating number keys as held", () => {
@@ -341,6 +387,7 @@ describe("Solitude session manager", () => {
       clientId: "client:a",
       entityId: "ship:blue",
       gameId: "game:1",
+      inputSequence: 1,
       sequence: 3,
       controls: { thrust9: true },
     });
@@ -349,6 +396,7 @@ describe("Solitude session manager", () => {
       clientId: "client:a",
       entityId: "ship:blue",
       gameId: "game:1",
+      inputSequence: 2,
       sequence: 4,
       controls: { thrust9: false },
     });
@@ -364,6 +412,7 @@ describe("Solitude session manager", () => {
       clientId: "client:a",
       entityId: "ship:blue",
       gameId: "game:1",
+      inputSequence: 3,
       sequence: 5,
       controls: { thrust3: true },
     });
@@ -395,6 +444,7 @@ describe("Solitude session manager", () => {
       clientId: "client:a",
       entityId: "ship:blue",
       gameId: "game:1",
+      inputSequence: 1,
       sequence: 3,
       controls: { yawLeft: true },
     });
@@ -403,6 +453,7 @@ describe("Solitude session manager", () => {
       clientId: "client:a",
       entityId: "ship:blue",
       gameId: "game:1",
+      inputSequence: 2,
       sequence: 4,
       controls: { yawLeft: false },
     });
@@ -439,6 +490,7 @@ describe("Solitude session manager", () => {
       clientId: "client:a",
       entityId: "ship:blue",
       gameId: "game:1",
+      inputSequence: 1,
       sequence: 3,
       controls: { yawLeft: true },
     });
@@ -448,6 +500,7 @@ describe("Solitude session manager", () => {
       clientId: "client:a",
       entityId: "ship:blue",
       gameId: "game:1",
+      inputSequence: 2,
       sequence: 4,
       controls: { yawLeft: false },
     });
@@ -458,6 +511,7 @@ describe("Solitude session manager", () => {
 
     expect(snapshot?.simulationTimeMillis).toBe(25);
     expect(snapshot?.modelVersion).toBe(1);
+    expect(snapshot?.lastProcessedInputSequences).toEqual({ "ship:blue": 2 });
     expect(manager.listGames()[0]?.tick).toBe(1);
     expect(game.controlInputsByStep).toEqual([
       { controls: [], dtMillis: 10 },
@@ -485,6 +539,7 @@ describe("Solitude session manager", () => {
       clientId: "client:a",
       entityId: "ship:blue",
       gameId: "game:1",
+      inputSequence: 1,
       sequence: 3,
       controls: { burnForward: true },
     });
@@ -550,6 +605,7 @@ describe("Solitude session manager", () => {
         clientId: "client:a",
         entityId: "ship:red",
         gameId: "game:1",
+        inputSequence: 1,
         sequence: 3,
         controls: { burnForward: true },
       }),

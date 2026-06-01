@@ -69,14 +69,37 @@ describe("Solitude WebSocket browser client", () => {
     await joinPromise;
     expect(client.state.entityId).toBe("ship:blue");
 
+    const inputPromise = client.sendInputPatch({ burnForward: true });
+    await Promise.resolve();
+    expect(socket.sentMessages[2]).toEqual({
+      message: {
+        type: "input",
+        clientId: "client:a",
+        entityId: "ship:blue",
+        gameId: "game:1",
+        inputSequence: 1,
+        sequence: 3,
+        controls: { burnForward: true },
+      },
+      requestId: 3,
+      type: "clientMessage",
+    });
+    socket.receive({
+      type: "messages",
+      requestId: 3,
+      messages: [],
+    });
+    await inputPromise;
+
     socket.receive({
       type: "serverMessage",
       message: {
         type: "snapshot",
         entities: [],
         gameId: "game:1",
+        lastProcessedInputSequences: { "ship:blue": 1 },
         modelVersion: 1,
-        sequence: 3,
+        sequence: 4,
         simulationTimeMillis: 1000 / 60,
         tick: 1,
       },
@@ -87,8 +110,9 @@ describe("Solitude WebSocket browser client", () => {
         type: "snapshot",
         entities: [],
         gameId: "game:1",
+        lastProcessedInputSequences: { "ship:blue": 1 },
         modelVersion: 1,
-        sequence: 3,
+        sequence: 4,
         simulationTimeMillis: 1000 / 60,
         tick: 1,
       },

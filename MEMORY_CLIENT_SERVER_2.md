@@ -129,23 +129,22 @@ Deliver the real-time authoritative loop first:
 - Compact dynamic encoding review is in place.
 - First compact dynamic encoding change is in place.
 - Pressure-test multiplayer capacity is in place.
+- Sequenced input messages and snapshot input acknowledgements are in place.
 
 Then deliver predicted local flight:
 
-- Sequenced input messages.
 - Ordered interpolation buffer based on simulation time.
-- Snapshot acknowledgements for processed input.
 - Client-side prediction for the assigned ship.
 - Smooth reconciliation against server state.
 - Interpolated remote entities.
 
 ## Clear Next Step
 
-Capture pressure metrics, then make inputs sequence-aware:
+Replace the two-snapshot client interpolator with an ordered buffer:
 
-- verify pressure metrics with 4, 8, and 16 joined load clients;
-- then add client input sequence numbers to input messages;
-- have authoritative snapshots acknowledge the last processed input sequence per controlled entity.
+- keep a small ring of authoritative snapshots ordered by simulation time;
+- drop stale or out-of-order snapshots;
+- sample by target authoritative simulation time with only bounded extrapolation.
 
 ## Things To Watch
 

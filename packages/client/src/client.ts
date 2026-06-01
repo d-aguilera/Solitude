@@ -5,6 +5,7 @@ import {
   type SolitudeClientId,
   type SolitudeClientMessage,
   type SolitudeGameId,
+  type SolitudeInputSequence,
   type SolitudeProtocolSequence,
   type SolitudeServerMessage,
   type SolitudeSocketClientMessage,
@@ -33,6 +34,7 @@ export interface SolitudeRemoteClient {
 export interface SolitudeClientState {
   entityId: EntityId | null;
   gameId: SolitudeGameId | null;
+  nextInputSequence: SolitudeInputSequence;
   nextSequence: SolitudeProtocolSequence;
 }
 
@@ -100,6 +102,7 @@ export function createSolitudeWebSocketClient(
   const state: SolitudeClientState = {
     entityId: null,
     gameId: null,
+    nextInputSequence: 1,
     nextSequence: 1,
   };
   let socket: SolitudeWebSocket | null = null;
@@ -278,6 +281,7 @@ export function createSolitudeWebSocketClient(
         clientId: options.clientId,
         entityId: requireEntityId(),
         gameId: requireGameId(),
+        inputSequence: nextInputSequence(state),
         sequence: nextSequence(state),
         controls,
       }),
@@ -313,6 +317,12 @@ function applyJoinMessage(
 function nextSequence(state: SolitudeClientState): SolitudeProtocolSequence {
   const sequence = state.nextSequence;
   state.nextSequence++;
+  return sequence;
+}
+
+function nextInputSequence(state: SolitudeClientState): SolitudeInputSequence {
+  const sequence = state.nextInputSequence;
+  state.nextInputSequence++;
   return sequence;
 }
 

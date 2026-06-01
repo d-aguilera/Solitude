@@ -67,6 +67,7 @@ try {
     assignments.push({
       clientId,
       entityId: joined.entityId,
+      nextInputSequence: 1,
       socket: sockets[index],
     });
   }
@@ -122,6 +123,7 @@ async function runLoad({
             },
             entityId: assignment.entityId,
             gameId,
+            inputSequence: assignment.nextInputSequence++,
             sequence: requestId++,
             type: "input",
           }),
