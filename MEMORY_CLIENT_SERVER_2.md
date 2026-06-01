@@ -86,8 +86,8 @@ Browser client
    - Do not move prototype UI/network allocation patterns into engine hot paths.
 
 10. Apply the first compact dynamic encoding.
-    - Use `/metrics` shadow encoding results to choose the first live protocol change.
-    - Prefer one high-confidence encoding change over several speculative micro-optimizations.
+    - Round snapshot positions to integer world units.
+    - Round remaining high-frequency motion numbers to six decimals.
     - Keep the live protocol shape easy to inspect until binary earns its complexity.
 
 11. Make inputs sequence-aware.
@@ -122,7 +122,7 @@ Deliver the real-time authoritative loop first:
 - Server stream instrumentation is in place.
 - Model versioning and stream recovery rules are in place.
 - Compact dynamic encoding review is in place.
-- First compact dynamic encoding change.
+- First compact dynamic encoding change is in place.
 
 Then deliver predicted local flight:
 
@@ -135,11 +135,11 @@ Then deliver predicted local flight:
 
 ## Clear Next Step
 
-Apply the first compact dynamic encoding:
+Make inputs sequence-aware:
 
-- use `/metrics` shadow encoding results to choose the first live protocol change;
-- compare payload and cadence before/after;
-- keep the live shape easy to inspect until binary earns its complexity.
+- add client input sequence numbers to input messages;
+- have authoritative snapshots acknowledge the last processed input sequence per controlled entity;
+- keep the protocol ready for client replay/reconciliation.
 
 ## Things To Watch
 

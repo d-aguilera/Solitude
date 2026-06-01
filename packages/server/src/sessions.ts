@@ -19,6 +19,7 @@ import {
 import { buildSolarSystemShipEntity } from "@solitude/sim/plugins/solarSystem";
 import { buildDefaultSolarSystemConfigs } from "@solitude/sim/plugins/solarSystem/solarSystem";
 import { createSolitudeServerGame, type SolitudeServerGame } from "./runtime";
+import { compactSnapshotEntities } from "./snapshotEncoding";
 
 const DEFAULT_ASSIGNABLE_ENTITY_IDS = ["ship:blue", "ship:red"] as const;
 const THRUST_CONTROL_IDS = [
@@ -276,7 +277,7 @@ export function createSolitudeSessionManager(
     const sequence = session.nextSequence;
     session.nextSequence++;
     return createSnapshotMessage({
-      entities: snapshot.entities,
+      entities: compactSnapshotEntities(snapshot.entities),
       gameId,
       modelVersion: session.modelVersion,
       sequence,
