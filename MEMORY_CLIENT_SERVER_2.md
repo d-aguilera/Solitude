@@ -130,6 +130,7 @@ Deliver the real-time authoritative loop first:
 - First compact dynamic encoding change is in place.
 - Pressure-test multiplayer capacity is in place.
 - Sequenced input messages and snapshot input acknowledgements are in place.
+- Load harness input latency mode is in place.
 
 Then deliver predicted local flight:
 
@@ -140,11 +141,11 @@ Then deliver predicted local flight:
 
 ## Clear Next Step
 
-Replace the two-snapshot client interpolator with an ordered buffer:
+Measure deployed input latency before smoothing over it:
 
-- keep a small ring of authoritative snapshots ordered by simulation time;
-- drop stale or out-of-order snapshots;
-- sample by target authoritative simulation time with only bounded extrapolation.
+- run the load harness with `--latency` against local and deployed servers;
+- compare input response latency against input-to-snapshot-ack latency;
+- decide whether deployment geography, protocol cadence, or client prediction should be the next move.
 
 ## Things To Watch
 

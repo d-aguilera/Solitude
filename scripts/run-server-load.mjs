@@ -8,6 +8,7 @@ const {
     clients: clientsArg,
     duration: durationArg,
     "input-hz": inputHzArg,
+    latency,
     "metrics-hz": metricsHzArg,
     url,
   },
@@ -16,6 +17,7 @@ const {
     clients: { default: "8", type: "string" },
     duration: { default: "15", type: "string" },
     "input-hz": { default: "4", type: "string" },
+    latency: { default: false, type: "boolean" },
     "metrics-hz": { default: "1", type: "string" },
     url: { default: "http://127.0.0.1:8787", type: "string" },
   },
@@ -28,6 +30,7 @@ const metricsHz = parsePositiveNumber(metricsHzArg, "metrics-hz");
 
 const sockets = [];
 const assignments = [];
+const latencyTracker = createInputLatencyTracker();
 let requestId = 1;
 
 try {
@@ -64,12 +67,17 @@ try {
         `Client ${clientId} failed to join: ${JSON.stringify(response)}`,
       );
     }
-    assignments.push({
+    const assignment = {
       clientId,
       entityId: joined.entityId,
       nextInputSequence: 1,
+      pendingInputs: [],
       socket: sockets[index],
+    };
+    assignment.socket.observe((message) => {
+      latencyTracker.recordSocketMessage(assignment, message, Date.now());
     });
+    assignments.push(assignment);
   }
 
   console.log(
@@ -82,6 +90,7 @@ try {
       durationSeconds,
       gameId,
       inputHz,
+      latency,
       url,
     }),
   );
@@ -90,6 +99,7 @@ try {
     durationMillis: durationSeconds * 1000,
     gameId,
     inputIntervalMillis: inputHz === 0 ? 0 : 1000 / inputHz,
+    latency,
     metricsIntervalMillis: 1000 / metricsHz,
   });
 } finally {
@@ -100,6 +110,7 @@ async function runLoad({
   durationMillis,
   gameId,
   inputIntervalMillis,
+  latency,
   metricsIntervalMillis,
 }) {
   const endMillis = Date.now() + durationMillis;
@@ -113,8 +124,10 @@ async function runLoad({
     if (inputIntervalMillis > 0 && now >= nextInputMillis) {
       inputPulse = !inputPulse;
       await Promise.all(
-        assignments.map((assignment) =>
-          sendClientMessage(assignment.socket, {
+        assignments.map(async (assignment) => {
+          const inputSequence = assignment.nextInputSequence++;
+          latencyTracker.recordInputSent(assignment, inputSequence, Date.now());
+          await sendClientMessage(assignment.socket, {
             clientId: assignment.clientId,
             controls: {
               burnForward: true,
@@ -123,11 +136,16 @@ async function runLoad({
             },
             entityId: assignment.entityId,
             gameId,
-            inputSequence: assignment.nextInputSequence++,
+            inputSequence,
             sequence: requestId++,
             type: "input",
-          }),
-        ),
+          });
+          latencyTracker.recordInputResponse(
+            assignment,
+            inputSequence,
+            Date.now(),
+          );
+        }),
       );
       nextInputMillis += inputIntervalMillis;
     }
@@ -135,6 +153,7 @@ async function runLoad({
     if (now >= nextMetricsMillis) {
       const response = await fetch(`${url}/metrics`);
       console.log(JSON.stringify(await response.json()));
+      if (latency) console.log(JSON.stringify(latencyTracker.takeReport()));
       nextMetricsMillis += metricsIntervalMillis;
     }
 
@@ -143,11 +162,13 @@ async function runLoad({
 
   const response = await fetch(`${url}/metrics`);
   console.log(JSON.stringify(await response.json()));
+  if (latency) console.log(JSON.stringify(latencyTracker.takeReport()));
 }
 
 async function openSocket(socketUrl) {
   const socket = new WebSocket(socketUrl);
   const messages = [];
+  const observers = [];
   const waiters = [];
 
   await new Promise((resolve, reject) => {
@@ -158,6 +179,7 @@ async function openSocket(socketUrl) {
   socket.on("message", (data) => {
     const message = JSON.parse(data.toString());
     messages.push(message);
+    for (const observer of observers) observer(message);
     for (let index = waiters.length - 1; index >= 0; index--) {
       const waiter = waiters[index];
       if (waiter.predicate(message)) {
@@ -180,6 +202,9 @@ async function openSocket(socketUrl) {
         socket.once("close", resolve);
         socket.close();
       }),
+    observe: (observer) => {
+      observers.push(observer);
+    },
     readUntil: (predicate) => {
       const existing = messages.find(predicate);
       if (existing) return Promise.resolve(existing);
@@ -204,6 +229,95 @@ async function sendClientMessage(socket, message) {
     type: "clientMessage",
   });
   return response;
+}
+
+function createInputLatencyTracker() {
+  const ackLatencies = [];
+  const responseLatencies = [];
+
+  return {
+    recordInputSent: (assignment, inputSequence, sentAtMillis) => {
+      assignment.pendingInputs.push({ inputSequence, sentAtMillis });
+    },
+    recordInputResponse: (assignment, inputSequence, receivedAtMillis) => {
+      const pending = assignment.pendingInputs.find(
+        (input) => input.inputSequence === inputSequence,
+      );
+      if (!pending) return;
+      responseLatencies.push(receivedAtMillis - pending.sentAtMillis);
+    },
+    recordSocketMessage: (assignment, message, receivedAtMillis) => {
+      if (
+        message.type !== "serverMessage" ||
+        message.message?.type !== "snapshot"
+      ) {
+        return;
+      }
+
+      const lastProcessedInputSequence =
+        message.message.lastProcessedInputSequences[assignment.entityId] ?? 0;
+      if (lastProcessedInputSequence <= 0) return;
+
+      let writeIndex = 0;
+      for (
+        let readIndex = 0;
+        readIndex < assignment.pendingInputs.length;
+        readIndex++
+      ) {
+        const input = assignment.pendingInputs[readIndex];
+        if (input.inputSequence <= lastProcessedInputSequence) {
+          ackLatencies.push(receivedAtMillis - input.sentAtMillis);
+        } else {
+          assignment.pendingInputs[writeIndex] = input;
+          writeIndex++;
+        }
+      }
+      assignment.pendingInputs.length = writeIndex;
+    },
+    takeReport: () => {
+      const report = {
+        inputAckLatencyMillis: summarizeLatencies(ackLatencies),
+        inputResponseLatencyMillis: summarizeLatencies(responseLatencies),
+        pendingInputAcks: assignments.reduce(
+          (total, assignment) => total + assignment.pendingInputs.length,
+          0,
+        ),
+        type: "inputLatency",
+      };
+      ackLatencies.length = 0;
+      responseLatencies.length = 0;
+      return report;
+    },
+  };
+}
+
+function summarizeLatencies(latencies) {
+  if (latencies.length === 0) {
+    return {
+      avg: 0,
+      count: 0,
+      max: 0,
+      p50: 0,
+      p95: 0,
+    };
+  }
+
+  const sorted = [...latencies].sort((left, right) => left - right);
+  return {
+    avg: sorted.reduce((total, value) => total + value, 0) / sorted.length,
+    count: sorted.length,
+    max: sorted[sorted.length - 1],
+    p50: percentile(sorted, 0.5),
+    p95: percentile(sorted, 0.95),
+  };
+}
+
+function percentile(sortedValues, rank) {
+  const index = Math.min(
+    sortedValues.length - 1,
+    Math.ceil(sortedValues.length * rank) - 1,
+  );
+  return sortedValues[index];
 }
 
 function parsePositiveInteger(value, name) {
