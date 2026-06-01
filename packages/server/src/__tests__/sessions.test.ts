@@ -32,7 +32,7 @@ describe("Solitude session manager", () => {
     ]);
   });
 
-  it("joins additional clients to available ships and rejects overflow", () => {
+  it("joins additional clients to the server-owned ship pool", () => {
     const manager = createSolitudeSessionManager();
     manager.handleMessage({
       type: "createGame",
@@ -65,21 +65,25 @@ describe("Solitude session manager", () => {
       requireGameModel(messages).entities.map((entity) => entity.id),
     ).toEqual(["ship:blue", "ship:red"]);
     expect(requireGameModel(messages).modelVersion).toBe(2);
-    expect(
-      manager.handleMessage({
-        type: "joinGame",
-        clientId: "client:c",
-        gameId: "game:1",
-        sequence: 4,
-      }),
-    ).toEqual([
+
+    const thirdMessages = manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:c",
+      gameId: "game:1",
+      sequence: 4,
+    });
+    expect(withoutGameModels(thirdMessages)).toEqual([
       {
-        type: "error",
-        code: "gameFull",
-        message: "Game is full: game:1",
+        type: "joined",
+        clientId: "client:c",
+        entityId: "ship:3",
+        gameId: "game:1",
         sequence: 4,
       },
     ]);
+    expect(
+      requireGameModel(thirdMessages).entities.map((entity) => entity.id),
+    ).toEqual(["ship:blue", "ship:red", "ship:3"]);
   });
 
   it("releases a client's assigned ship when the client leaves", () => {
@@ -112,9 +116,25 @@ describe("Solitude session manager", () => {
     expect(manager.listGames()).toEqual([
       {
         assignedEntityIds: ["ship:red"],
-        availableEntityIds: ["ship:blue"],
+        availableEntityIds: [
+          "ship:blue",
+          "ship:3",
+          "ship:4",
+          "ship:5",
+          "ship:6",
+          "ship:7",
+          "ship:8",
+          "ship:9",
+          "ship:10",
+          "ship:11",
+          "ship:12",
+          "ship:13",
+          "ship:14",
+          "ship:15",
+          "ship:16",
+        ],
         gameId: "game:1",
-        maxClients: 2,
+        maxClients: 16,
         tick: 0,
       },
     ]);
@@ -149,9 +169,26 @@ describe("Solitude session manager", () => {
     expect(manager.listGames()).toEqual([
       {
         assignedEntityIds: [],
-        availableEntityIds: ["ship:blue", "ship:red"],
+        availableEntityIds: [
+          "ship:blue",
+          "ship:red",
+          "ship:3",
+          "ship:4",
+          "ship:5",
+          "ship:6",
+          "ship:7",
+          "ship:8",
+          "ship:9",
+          "ship:10",
+          "ship:11",
+          "ship:12",
+          "ship:13",
+          "ship:14",
+          "ship:15",
+          "ship:16",
+        ],
         gameId: "game:1",
-        maxClients: 2,
+        maxClients: 16,
         tick: 0,
       },
     ]);
@@ -173,9 +210,24 @@ describe("Solitude session manager", () => {
     expect(manager.listGames()).toEqual([
       {
         assignedEntityIds: ["ship:blue", "ship:red"],
-        availableEntityIds: [],
+        availableEntityIds: [
+          "ship:3",
+          "ship:4",
+          "ship:5",
+          "ship:6",
+          "ship:7",
+          "ship:8",
+          "ship:9",
+          "ship:10",
+          "ship:11",
+          "ship:12",
+          "ship:13",
+          "ship:14",
+          "ship:15",
+          "ship:16",
+        ],
         gameId: "game:1",
-        maxClients: 2,
+        maxClients: 16,
         tick: 1,
       },
     ]);

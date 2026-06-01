@@ -21,7 +21,10 @@ import { buildDefaultSolarSystemConfigs } from "@solitude/sim/plugins/solarSyste
 import { createSolitudeServerGame, type SolitudeServerGame } from "./runtime";
 import { compactSnapshotEntities } from "./snapshotEncoding";
 
-const DEFAULT_ASSIGNABLE_ENTITY_IDS = ["ship:blue", "ship:red"] as const;
+const DEFAULT_ASSIGNABLE_SHIP_COUNT = 16;
+const DEFAULT_ASSIGNABLE_ENTITY_IDS = createDefaultAssignableEntityIds(
+  DEFAULT_ASSIGNABLE_SHIP_COUNT,
+);
 const THRUST_CONTROL_IDS = [
   "thrust0",
   "thrust1",
@@ -416,6 +419,14 @@ function createDefaultShipEntity(id: EntityId, index: number): EntityConfig {
     id,
     index,
   );
+}
+
+function createDefaultAssignableEntityIds(count: number): EntityId[] {
+  const ids = ["ship:blue", "ship:red"];
+  for (let index = ids.length; index < count; index++) {
+    ids.push(`ship:${index + 1}`);
+  }
+  return ids;
 }
 
 function applyInputPatch(

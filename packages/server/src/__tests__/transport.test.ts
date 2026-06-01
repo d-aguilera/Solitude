@@ -96,9 +96,26 @@ describe("Solitude in-process transport", () => {
     expect(transport.listGames()).toEqual([
       {
         assignedEntityIds: [],
-        availableEntityIds: ["ship:blue", "ship:red"],
+        availableEntityIds: [
+          "ship:blue",
+          "ship:red",
+          "ship:3",
+          "ship:4",
+          "ship:5",
+          "ship:6",
+          "ship:7",
+          "ship:8",
+          "ship:9",
+          "ship:10",
+          "ship:11",
+          "ship:12",
+          "ship:13",
+          "ship:14",
+          "ship:15",
+          "ship:16",
+        ],
         gameId: "game:1",
-        maxClients: 2,
+        maxClients: 16,
         tick: 0,
       },
     ]);

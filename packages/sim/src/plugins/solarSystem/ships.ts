@@ -30,6 +30,7 @@ import shipObjText from "./ship.obj?raw";
 
 const SHIP_DENSITY_KG_PER_M3 = 2700;
 const SHIP_START_ALTITUDE_M = 100 * km;
+const DEFAULT_SHIP_RING_COUNT = 16;
 const EARTH_ID = "planet:earth";
 
 const axisScratch = vec3.zero();
@@ -64,7 +65,7 @@ export function buildDefaultSolarSystemShipConfigs(
     (id, index) =>
       createOrbitingShipInitialState({
         body: earthBody,
-        direction: vec3.create(0, 0, index % 2 === 0 ? 1 : -1),
+        direction: createShipRingDirection(index, shipIds.length),
         id,
         physics: earthPhysics,
         shipMass: SHIP_DENSITY_KG_PER_M3 * shipVolumes[index],
@@ -95,7 +96,7 @@ export function buildDefaultSolarSystemShipConfig(
   return {
     initialState: createOrbitingShipInitialState({
       body: earthBody,
-      direction: vec3.create(0, 0, index % 2 === 0 ? 1 : -1),
+      direction: createShipRingDirection(index, DEFAULT_SHIP_RING_COUNT),
       id,
       physics: earthPhysics,
       shipMass: SHIP_DENSITY_KG_PER_M3 * volume,
@@ -111,6 +112,11 @@ export function buildDefaultSolarSystemShipConfig(
       mesh,
     },
   };
+}
+
+function createShipRingDirection(index: number, shipCount: number): Vec3 {
+  const angle = (index / shipCount) * Math.PI * 2;
+  return vec3.create(Math.cos(angle), Math.sin(angle), 0);
 }
 
 function createEarthState(celestialPhysics: KeplerianBodyPhysicsConfig[]): {

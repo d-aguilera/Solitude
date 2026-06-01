@@ -90,19 +90,24 @@ Browser client
     - Round remaining high-frequency motion numbers to six decimals.
     - Keep the live protocol shape easy to inspect until binary earns its complexity.
 
-11. Make inputs sequence-aware.
+11. Add pressure-test multiplayer capacity.
+    - Expand server-owned assignable ships beyond two.
+    - Spawn lazily joined ships around Earth at distributed meridians with stable starting velocities.
+    - Add a headless WebSocket load harness that joins N clients, sends basic input, and samples `/metrics`.
+
+12. Make inputs sequence-aware.
     - Input messages should include a client input sequence.
     - Authoritative snapshots should acknowledge the last processed input sequence per controlled entity.
     - The client should replay unacknowledged local inputs after reconciliation.
 
-12. Replace the two-snapshot client interpolator with an ordered buffer.
+13. Replace the two-snapshot client interpolator with an ordered buffer.
     - Keep a small ring of recent authoritative snapshots.
     - Drop stale or out-of-order snapshots.
     - Sample by target authoritative simulation time.
     - Interpolate between nearest snapshots.
     - Allow only short bounded extrapolation when the buffer underruns.
 
-13. Add client prediction for the locally controlled ship.
+14. Add client prediction for the locally controlled ship.
     - Local controls must affect the assigned ship immediately.
     - Reuse Solitude simulation/control logic where practical.
     - Reconcile predicted state against authoritative snapshots.
@@ -123,6 +128,7 @@ Deliver the real-time authoritative loop first:
 - Model versioning and stream recovery rules are in place.
 - Compact dynamic encoding review is in place.
 - First compact dynamic encoding change is in place.
+- Pressure-test multiplayer capacity is in place.
 
 Then deliver predicted local flight:
 
@@ -135,11 +141,11 @@ Then deliver predicted local flight:
 
 ## Clear Next Step
 
-Make inputs sequence-aware:
+Capture pressure metrics, then make inputs sequence-aware:
 
-- add client input sequence numbers to input messages;
-- have authoritative snapshots acknowledge the last processed input sequence per controlled entity;
-- keep the protocol ready for client replay/reconciliation.
+- verify pressure metrics with 4, 8, and 16 joined load clients;
+- then add client input sequence numbers to input messages;
+- have authoritative snapshots acknowledge the last processed input sequence per controlled entity.
 
 ## Things To Watch
 

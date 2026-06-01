@@ -18,6 +18,7 @@
     "dev:server": "node scripts/run-server-dev.mjs",
     "format": "prettier --write \"packages/**/*.{ts,tsx,js,jsx,json,css,html,md}\" \"scripts/**/*.{js,mjs}\" \"*.{ts,tsx,js,jsx,json,css,html,md}\"",
     "format:check": "prettier --check \"packages/**/*.{ts,tsx,js,jsx,json,css,html,md}\" \"scripts/**/*.{js,mjs}\" \"*.{ts,tsx,js,jsx,json,css,html,md}\"",
+    "load:server": "node scripts/run-server-load.mjs",
     "serve:client": "serve -c ../../packages/client/serve.json dist/client",
     "serve:standalone": "serve dist/standalone",
     "start:server": "node dist/server/main.js",
