@@ -7,9 +7,9 @@ import {
 import { createControlInput } from "@solitude/engine/plugin";
 import type { ControlledBody, World } from "@solitude/engine/world";
 import type { HudContext, HudGrid } from "@solitude/sim/hud/provider";
+import { createHudPanel as createAutopilotHudPanel } from "@solitude/sim/plugins/autopilot/hud";
 import { createSpacecraftOperatorTelemetry } from "@solitude/sim/plugins/spacecraftOperator/telemetry";
 import { describe, expect, it } from "vitest";
-import { createHudPanel as createAutopilotHudPanel } from "../autopilot/hud";
 import { createHudPanel as createOrbitTelemetryHudPanel } from "../orbitTelemetry/hud";
 import { createHudPanel as createRuntimeTelemetryHudPanel } from "../runtimeTelemetry/hud";
 import { createRuntimeTelemetryController } from "../runtimeTelemetry/logic";

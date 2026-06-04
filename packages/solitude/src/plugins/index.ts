@@ -1,8 +1,8 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
+import { createAutopilotPlugin } from "@solitude/sim/plugins/autopilot";
 import { createPolyFighterPlugin } from "@solitude/sim/plugins/polyFighter";
 import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
 import { createSpacecraftOperatorPlugin } from "@solitude/sim/plugins/spacecraftOperator";
-import { createAutopilotPlugin } from "./autopilot/index";
 import { createAxialViewsPlugin } from "./axialViews/index";
 import { createBodyLabelsPlugin } from "./bodyLabels/index";
 import { createHudPlugin } from "./hud/index";

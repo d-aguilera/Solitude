@@ -11,6 +11,7 @@
     "./hud/provider": "./src/hud/provider.ts",
     "./plugins/autopilot": "./src/plugins/autopilot/index.ts",
     "./plugins/autopilot/core": "./src/plugins/autopilot/core.ts",
+    "./plugins/autopilot/hud": "./src/plugins/autopilot/hud.ts",
     "./plugins/autopilot/input": "./src/plugins/autopilot/input.ts",
     "./plugins/autopilot/logic": "./src/plugins/autopilot/logic.ts",
     "./plugins/autopilot/spacecraftPropulsion": "./src/plugins/autopilot/spacecraftPropulsion.ts",

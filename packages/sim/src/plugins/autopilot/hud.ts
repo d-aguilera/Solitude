@@ -6,7 +6,7 @@ import {
 } from "@solitude/engine/math";
 import type { ControlledBody, World } from "@solitude/engine/world";
 import type { HudPanelProvider } from "@solitude/sim/hud/provider";
-import { getAutopilotMode } from "@solitude/sim/plugins/autopilot/logic";
+import { getAutopilotMode } from "./logic";
 
 export function createHudPanel(): HudPanelProvider {
   const circleNowTracker = createCircleNowDebugTracker();
