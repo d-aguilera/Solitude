@@ -30,7 +30,6 @@ fields.clientId.value = readClientId(fields.clientId.value);
 const gameLabelEl = queryElement("#gameLabel");
 const entityLabelEl = queryElement("#entityLabel");
 const lobbyLink = queryAnchor("#lobbyLink");
-const hudEl = queryElement("#hud");
 const snapshotCanvas = queryCanvas("#snapshotCanvas");
 const searchParams = new URLSearchParams(window.location.search);
 const serverBaseUrl = readServerBaseUrl(searchParams);
@@ -39,7 +38,6 @@ const initialGameId = searchParams.get("gameId");
 const engineRenderer = createSolitudeRemoteClientRenderer({
   canvas: snapshotCanvas,
   getFocusEntityId: () => fields.entityId.value,
-  hudElement: hudEl,
 });
 lobbyLink.href = createLobbyHref(serverBaseUrl);
 

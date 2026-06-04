@@ -51,9 +51,9 @@ import {
 } from "@solitude/engine/world";
 import type { RunLoopParams, RunLoopView } from "./infraPorts";
 import {
-  browserOverlayCapability,
+  applyBrowserOverlayProviders,
+  collectBrowserOverlayProviders,
   type BrowserOverlayContext,
-  type BrowserOverlayProvider,
   type OverlayRasterizer,
 } from "./overlayPorts";
 
@@ -503,35 +503,6 @@ function getPrimaryOverlayRasterizer(
 
 function isViewEnabled(renderDebug: RenderDebug, viewId: string): boolean {
   return renderDebug.views[viewId] !== false;
-}
-
-function collectBrowserOverlayProviders(
-  capabilityRegistry: PluginCapabilityRegistry,
-): BrowserOverlayProvider[] {
-  return capabilityRegistry
-    .getAll(browserOverlayCapability)
-    .filter(isBrowserOverlayProvider);
-}
-
-function isBrowserOverlayProvider(
-  value: unknown,
-): value is BrowserOverlayProvider {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "renderOverlay" in value &&
-    typeof value.renderOverlay === "function"
-  );
-}
-
-function applyBrowserOverlayProviders(
-  providers: BrowserOverlayProvider[],
-  context: Parameters<BrowserOverlayProvider["renderOverlay"]>[0],
-  capabilityRegistry: PluginCapabilityRegistry,
-): void {
-  for (const provider of providers) {
-    provider.renderOverlay(context, capabilityRegistry);
-  }
 }
 
 function collectScenePlugins(plugins: GamePlugin[]): ScenePlugin[] {

@@ -1,7 +1,9 @@
+import {
+  applyBrowserOverlayProviders,
+  collectBrowserOverlayProviders,
+} from "@solitude/browser/dom/overlayPorts";
 import { createRemoteCanvasRenderer } from "@solitude/browser/remoteCanvasRenderer";
-import { vec3 } from "@solitude/engine/math";
-import type { ControlInput, GamePlugin } from "@solitude/engine/plugin";
-import { formatSpeed } from "@solitude/engine/render";
+import type { ControlInput, FramePolicy } from "@solitude/engine/plugin";
 import {
   createPluginCapabilityRegistry,
   type RuntimeWorldSnapshot,
@@ -9,18 +11,12 @@ import {
 import type { EntityConfig } from "@solitude/engine/world";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
-import {
-  clearHudGrid,
-  createHudGrid,
-  hudPanelCapability,
-  isHudPanelProvider,
-  type HudPanelProvider,
-} from "@solitude/sim/hud/provider";
 import { loadPlugins } from "solitude/plugins/index";
 
 const remoteRenderPluginIds = [
   "solarSystem",
   "spacecraftOperator",
+  "hud",
   "orbitTelemetry",
   "bodyLabels",
   "axialViews",
@@ -38,7 +34,6 @@ export interface RemoteClientSnapshotMessage {
 export interface SolitudeRemoteClientRendererOptions {
   canvas: HTMLCanvasElement;
   getFocusEntityId: () => string;
-  hudElement: Element;
 }
 
 export interface SolitudeRemoteClientRenderer {
@@ -51,13 +46,18 @@ export interface SolitudeRemoteClientRenderer {
 export function createSolitudeRemoteClientRenderer({
   canvas,
   getFocusEntityId,
-  hudElement,
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
   const plugins = loadPlugins(remoteRenderPluginIds);
-  const hudProviders = collectHudPanelProviders(plugins);
-  const hudGrid = createHudGrid();
+  const capabilityRegistry = createPluginCapabilityRegistry(
+    plugins.flatMap((plugin) => plugin.capabilities ?? []),
+  );
+  const overlayProviders = collectBrowserOverlayProviders(capabilityRegistry);
   const controlInput: ControlInput = {};
-  let selectedThrustLevel = 0;
+  const framePolicy: FramePolicy = {
+    advanceOverlay: true,
+    advanceScene: true,
+    advanceSim: false,
+  };
   let latestSnapshot: RuntimeWorldSnapshot | null = null;
   let messageSimulationTimeMillis = 0;
   let modelVersion = 0;
@@ -81,27 +81,25 @@ export function createSolitudeRemoteClientRenderer({
         dtSimMillis: dtMillis,
       });
       if (!rendered) return false;
-      renderHud(
-        hudElement,
-        hudGrid,
-        hudProviders,
+      applyBrowserOverlayProviders(
+        overlayProviders,
         {
+          advanceOverlay: true,
           controlInput,
+          framePolicy,
+          mainFocus: renderer.worldRenderer.renderParams.mainFocus,
           nowMs: nowMillis,
+          primaryOverlayRasterizer: renderer.overlayRasterizer,
           simTimeMillis: messageSimulationTimeMillis,
           world: renderer.worldRenderer.mirror.world,
-          mainFocus: renderer.worldRenderer.renderParams.mainFocus,
         },
-        selectedThrustLevel,
+        capabilityRegistry,
       );
       return true;
     },
     setControlState: (controls) => {
       for (const [action, value] of Object.entries(controls)) {
         if (value !== undefined) controlInput[action] = value;
-        if (value === true && action.startsWith("thrust")) {
-          selectedThrustLevel = Number(action.slice("thrust".length));
-        }
       }
     },
     setModel: (entities, nextModelVersion) => {
@@ -128,48 +126,4 @@ export function createSolitudeRemoteClientRenderer({
       plugins,
     });
   }
-}
-
-function collectHudPanelProviders(plugins: readonly GamePlugin[]) {
-  const capabilityRegistry = createPluginCapabilityRegistry(
-    plugins.flatMap((plugin) => plugin.capabilities ?? []),
-  );
-  return capabilityRegistry
-    .getAll(hudPanelCapability)
-    .filter(isHudPanelProvider);
-}
-
-function renderHud(
-  element: Element,
-  grid: ReturnType<typeof createHudGrid>,
-  providers: readonly HudPanelProvider[],
-  context: Parameters<HudPanelProvider["writeHud"]>[1],
-  selectedThrustLevel: number,
-): void {
-  clearHudGrid(grid);
-  for (const provider of providers) {
-    provider.writeHud(grid, context);
-  }
-
-  const lines: string[] = [];
-  lines.push(
-    "Ship: speed " +
-      formatSpeed(vec3.length(context.mainFocus.controlledBody.velocity)) +
-      " | thrust " +
-      selectedThrustLevel +
-      " | autopilot " +
-      formatRemoteAutopilotMode(context.controlInput),
-  );
-  for (const row of grid) {
-    const cells = row.filter(Boolean);
-    if (cells.length > 0) lines.push(cells.join(" | "));
-  }
-  element.textContent = lines.length > 0 ? lines.join("\n") : "HUD waiting";
-}
-
-function formatRemoteAutopilotMode(controlInput: ControlInput): string {
-  if (controlInput.circleNow) return "circle";
-  if (controlInput.alignToBody) return "body";
-  if (controlInput.alignToVelocity) return "velocity";
-  return "off";
 }

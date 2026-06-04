@@ -39,3 +39,32 @@ export function createBrowserOverlayProvider(
     value: provider,
   };
 }
+
+export function collectBrowserOverlayProviders(
+  capabilityRegistry: PluginCapabilityRegistry,
+): BrowserOverlayProvider[] {
+  return capabilityRegistry
+    .getAll(browserOverlayCapability)
+    .filter(isBrowserOverlayProvider);
+}
+
+export function applyBrowserOverlayProviders(
+  providers: readonly BrowserOverlayProvider[],
+  context: BrowserOverlayContext,
+  capabilityRegistry: PluginCapabilityRegistry,
+): void {
+  for (const provider of providers) {
+    provider.renderOverlay(context, capabilityRegistry);
+  }
+}
+
+function isBrowserOverlayProvider(
+  value: unknown,
+): value is BrowserOverlayProvider {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "renderOverlay" in value &&
+    typeof value.renderOverlay === "function"
+  );
+}

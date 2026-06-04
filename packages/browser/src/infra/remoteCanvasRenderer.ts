@@ -1,7 +1,9 @@
 import type { RenderedView, RenderSurface2D } from "@solitude/engine/render";
 import type { RuntimeWorldSnapshot } from "@solitude/engine/runtime";
+import { CanvasHudRasterizer } from "../rasterize/canvas/CanvasHudRasterizer";
 import { CanvasRasterizer } from "../rasterize/canvas/CanvasRasterizer";
 import { CanvasSurface } from "../rasterize/canvas/CanvasSurface";
+import type { OverlayRasterizer } from "./overlayPorts";
 import {
   createRemoteWorldRenderer,
   rasterizeRenderedView,
@@ -18,6 +20,7 @@ export type RemoteCanvasRendererOptions = Omit<
 };
 
 export interface RemoteCanvasRenderer {
+  readonly overlayRasterizer: OverlayRasterizer;
   readonly renderedView: RenderedView;
   readonly surface: RenderSurface2D;
   readonly worldRenderer: RemoteWorldRenderer;
@@ -39,6 +42,7 @@ export function createRemoteCanvasRenderer({
   }
 
   const rasterizer = new CanvasRasterizer(context);
+  const overlayRasterizer = new CanvasHudRasterizer(context);
   const surface = new CanvasSurface(context);
   const worldRenderer = createRemoteWorldRenderer({
     ...options,
@@ -51,6 +55,7 @@ export function createRemoteCanvasRenderer({
   };
 
   return {
+    overlayRasterizer,
     renderedView: worldRenderer.renderedView,
     surface,
     worldRenderer,
