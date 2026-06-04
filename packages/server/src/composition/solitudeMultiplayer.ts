@@ -1,7 +1,13 @@
 import { km } from "@solitude/engine/math";
+import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { EntityConfig, EntityId } from "@solitude/engine/world";
+import {
+  controllableEntityProviderCapability,
+  isControllableEntityProvider,
+} from "@solitude/sim/controllableEntities/provider";
+import { createPolyFighterPlugin } from "@solitude/sim/plugins/polyFighter";
 import { createSolarSystemCelestialBodyProvider } from "@solitude/sim/plugins/solarSystem/celestialBodyProvider";
-import { createOrbitingSpacecraftEntity } from "@solitude/sim/spacecraft/entityFactory";
+import { createOrbitingPlacement } from "@solitude/sim/spacecraft/orbitalPlacement";
 import { createSolitudeServerGame } from "../runtime";
 import {
   createSolitudeSessionManager,
@@ -14,10 +20,11 @@ import {
 
 const DEFAULT_ASSIGNABLE_ENTITY_COUNT = 16;
 const EARTH_ID = "planet:earth";
-const SPACECRAFT_DENSITY_KG_PER_M3 = 2700;
+const POLY_FIGHTER_PROVIDER_ID = "polyFighter";
 const SPACECRAFT_START_ALTITUDE_M = 100 * km;
-const SPACECRAFT_MESH_SCALE = 150_000;
 const defaultCelestialBodyProvider = createSolarSystemCelestialBodyProvider();
+const defaultControllableEntityProvider =
+  createDefaultControllableEntityProvider();
 
 export function createDefaultSolitudeInProcessTransport(): SolitudeInProcessTransport {
   return createSolitudeInProcessTransport(
@@ -53,16 +60,34 @@ export function createDefaultMultiplayerSpacecraftEntity({
 }): EntityConfig {
   const earth = defaultCelestialBodyProvider.getCelestialBody(EARTH_ID);
   if (!earth) throw new Error(`Missing celestial body: ${EARTH_ID}`);
-  return createOrbitingSpacecraftEntity({
-    altitudeMeters: SPACECRAFT_START_ALTITUDE_M,
-    anchorBody: earth,
+  return defaultControllableEntityProvider.createEntity({
     color: getMultiplayerSpacecraftColor(index),
-    densityKgPerM3: SPACECRAFT_DENSITY_KG_PER_M3,
     id,
-    meshScale: SPACECRAFT_MESH_SCALE,
-    ringCount: entityCount,
-    ringIndex: index,
+    placement: createOrbitingPlacement({
+      altitudeMeters: SPACECRAFT_START_ALTITUDE_M,
+      anchorBody: earth,
+      entityMass: defaultControllableEntityProvider.mass,
+      ringCount: entityCount,
+      ringIndex: index,
+    }),
   });
+}
+
+function createDefaultControllableEntityProvider() {
+  const plugins = [createPolyFighterPlugin()];
+  const capabilityRegistry = createPluginCapabilityRegistry(
+    plugins.flatMap((plugin) => plugin.capabilities ?? []),
+  );
+  const provider = capabilityRegistry
+    .getAll(controllableEntityProviderCapability)
+    .filter(isControllableEntityProvider)
+    .find((item) => item.id === POLY_FIGHTER_PROVIDER_ID);
+  if (!provider) {
+    throw new Error(
+      `Missing controllable entity provider: ${POLY_FIGHTER_PROVIDER_ID}`,
+    );
+  }
+  return provider;
 }
 
 function createDefaultAssignableEntityIds(count: number): EntityId[] {

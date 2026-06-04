@@ -5,6 +5,7 @@ import {
   createWorld,
 } from "@solitude/engine/world";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
+import { createPolyFighterPlugin } from "@solitude/sim/plugins/polyFighter";
 import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
 import { describe, expect, it } from "vitest";
 import { createShipsPlugin } from "./index";
@@ -14,6 +15,7 @@ describe("ships plugin", () => {
     const config = buildWorldAndSceneConfig();
     applyWorldModelPlugins(config, [
       createSolarSystemPlugin(),
+      createPolyFighterPlugin(),
       createShipsPlugin(),
     ]);
 

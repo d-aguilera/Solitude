@@ -1,7 +1,5 @@
-import { parseObjMesh } from "@solitude/engine/assets";
 import {
   circularSpeedAtRadius,
-  computeVolumeOfTriangleMesh,
   DOT_PARALLEL_COS,
   EPS_LEN,
   EPS_LEN_STRICT,
@@ -11,93 +9,31 @@ import {
   type LocalFrame,
   type Vec3,
 } from "@solitude/engine/math";
-import type { RGB } from "@solitude/engine/render";
-import type { EntityConfig, EntityId } from "@solitude/engine/world";
 import { initialFrame } from "@solitude/engine/world";
 import type { CelestialBody } from "../celestialBodies/provider";
-import shipObjText from "./ship.obj?raw";
+import type { DirectControllableEntityPlacement } from "../controllableEntities/provider";
 
-export interface OrbitingSpacecraftEntityParams {
+export interface OrbitingPlacementParams {
   altitudeMeters: number;
   anchorBody: CelestialBody;
-  color: RGB;
-  densityKgPerM3: number;
-  id: EntityId;
-  meshScale: number;
+  entityMass: number;
   ringCount: number;
   ringIndex: number;
 }
 
 const axisScratch = vec3.zero();
 
-export function createOrbitingSpacecraftEntity({
+export function createOrbitingPlacement({
   altitudeMeters,
   anchorBody,
-  color,
-  densityKgPerM3,
-  id,
-  meshScale,
+  entityMass,
   ringCount,
   ringIndex,
-}: OrbitingSpacecraftEntityParams): EntityConfig {
-  const mesh = createScaledShipMesh(meshScale);
-  const volume = computeVolumeOfTriangleMesh(mesh.points, mesh.faces);
-  const shipMass = densityKgPerM3 * volume;
-  const initialState = createOrbitingSpacecraftInitialState({
-    altitudeMeters,
-    anchorBody,
-    direction: createRingDirection(ringIndex, ringCount),
-    id,
-    shipMass,
-  });
-
-  return {
-    id,
-    components: {
-      controllable: {
-        enabled: true,
-      },
-      gravityMass: {
-        density: densityKgPerM3,
-        volume,
-      },
-      renderable: {
-        color,
-        mesh,
-        role: "controlledBody",
-      },
-      state: {
-        angularVelocity: initialState.angularVelocity,
-        frame: initialState.frame,
-        kind: "direct",
-        orientation: initialState.orientation,
-        position: initialState.position,
-        velocity: initialState.velocity,
-      },
-    },
-  };
-}
-
-function createRingDirection(index: number, count: number): Vec3 {
-  const angle = (index / count) * Math.PI * 2;
-  return vec3.create(Math.cos(angle), Math.sin(angle), 0);
-}
-
-function createOrbitingSpacecraftInitialState({
-  altitudeMeters,
-  anchorBody,
-  direction,
-  id,
-  shipMass,
-}: {
-  altitudeMeters: number;
-  anchorBody: CelestialBody;
-  direction: Vec3;
-  id: string;
-  shipMass: number;
-}) {
-  const radialDirection = vec3.normalizeInto(direction);
-  const position = computeShipStartPosition(
+}: OrbitingPlacementParams): DirectControllableEntityPlacement {
+  const radialDirection = vec3.normalizeInto(
+    createRingDirection(ringIndex, ringCount),
+  );
+  const position = computeStartPosition(
     anchorBody.position,
     anchorBody.physicalRadius,
     altitudeMeters,
@@ -108,7 +44,7 @@ function createOrbitingSpacecraftInitialState({
     anchorBody.position,
     anchorBody.velocity,
     anchorBody.mass,
-    shipMass,
+    entityMass,
   );
   const frame = getFrameFromVelocity(velocity);
   const orientation = localFrame.intoMat3(mat3.zero(), frame);
@@ -116,23 +52,15 @@ function createOrbitingSpacecraftInitialState({
   return {
     angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
     frame,
-    id,
     orientation,
     position,
     velocity,
   };
 }
 
-function createScaledShipMesh(meshScale: number) {
-  const points = shipModel.points.map(vec3.clone);
-  for (const point of points) {
-    vec3.scaleInto(point, meshScale, point);
-  }
-
-  return {
-    faces: shipModel.faces,
-    points,
-  };
+function createRingDirection(index: number, count: number): Vec3 {
+  const angle = (index / count) * Math.PI * 2;
+  return vec3.create(Math.cos(angle), Math.sin(angle), 0);
 }
 
 function getFrameFromVelocity(velocity: Vec3): LocalFrame {
@@ -166,7 +94,7 @@ function getFrameFromVelocity(velocity: Vec3): LocalFrame {
   return frame;
 }
 
-function computeShipStartPosition(
+function computeStartPosition(
   planetPosition: Vec3,
   planetRadius: number,
   altitude: number,
@@ -186,7 +114,7 @@ function computeOrbitVelocity(
   planetPosition: Vec3,
   planetVelocity: Vec3,
   planetMass: number,
-  shipMass: number,
+  entityMass: number,
 ): Vec3 {
   const vPlanet = vec3.clone(planetVelocity);
   const offset = vec3.subInto(vec3.zero(), objectPosition, planetPosition);
@@ -220,9 +148,7 @@ function computeOrbitVelocity(
     tangentialDir = tangential;
   }
 
-  const vRelMag = circularSpeedAtRadius(planetMass + shipMass, r);
+  const vRelMag = circularSpeedAtRadius(planetMass + entityMass, r);
   const vRel = vec3.scaleInto(tangentialDir, vRelMag, tangentialDir);
   return vec3.addInto(vRel, vPlanet, vRel);
 }
-
-const shipModel = parseObjMesh(shipObjText);

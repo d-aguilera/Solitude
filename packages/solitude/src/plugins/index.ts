@@ -1,4 +1,5 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
+import { createPolyFighterPlugin } from "@solitude/sim/plugins/polyFighter";
 import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
 import { createSpacecraftOperatorPlugin } from "@solitude/sim/plugins/spacecraftOperator";
 import { createAutopilotPlugin } from "./autopilot/index";
@@ -32,6 +33,7 @@ export type PluginFactory = (
 // override earlier ones, and input handlers are consulted in reverse order.
 export const defaultPluginIds = [
   "solarSystem",
+  "polyFighter",
   "ships",
   "mainViewLookaround",
   "spacecraftOperator",
@@ -63,6 +65,7 @@ export const availablePlugins: Record<string, PluginFactory> = {
   operatorSwitch: createOperatorSwitchPlugin,
   pause: createPausePlugin,
   playback: createPlaybackPlugin,
+  polyFighter: createPolyFighterPlugin,
   profiling: createProfilingPlugin,
   runtimeTelemetry: createRuntimeTelemetryPlugin,
   shipTelemetry: createShipTelemetryPlugin,

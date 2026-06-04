@@ -4,12 +4,15 @@ import {
   celestialBodyProviderCapability,
   isCelestialBodyProvider,
 } from "@solitude/sim/celestialBodies/provider";
-import { createOrbitingSpacecraftEntity } from "@solitude/sim/spacecraft/entityFactory";
+import {
+  controllableEntityProviderCapability,
+  isControllableEntityProvider,
+} from "@solitude/sim/controllableEntities/provider";
+import { createOrbitingPlacement } from "@solitude/sim/spacecraft/orbitalPlacement";
 
 const EARTH_ID = "planet:earth";
-const SHIP_DENSITY_KG_PER_M3 = 2700;
+const POLY_FIGHTER_PROVIDER_ID = "polyFighter";
 const SHIP_START_ALTITUDE_M = 100 * km;
-const SHIP_MESH_SCALE = 150_000;
 const STANDALONE_SHIPS = [
   {
     color: { r: 0, g: 255, b: 255 },
@@ -36,18 +39,28 @@ export function createShipsPlugin(): GamePlugin {
         if (!earth) {
           throw new Error(`Ships plugin requires celestial body: ${EARTH_ID}`);
         }
+        const polyFighter = capabilityRegistry
+          .getAll(controllableEntityProviderCapability)
+          .filter(isControllableEntityProvider)
+          .find((provider) => provider.id === POLY_FIGHTER_PROVIDER_ID);
+        if (!polyFighter) {
+          throw new Error(
+            `Ships plugin requires controllable entity provider: ${POLY_FIGHTER_PROVIDER_ID}`,
+          );
+        }
 
         registry.addEntities(
           STANDALONE_SHIPS.map((ship, index) =>
-            createOrbitingSpacecraftEntity({
-              altitudeMeters: SHIP_START_ALTITUDE_M,
-              anchorBody: earth,
+            polyFighter.createEntity({
               color: ship.color,
-              densityKgPerM3: SHIP_DENSITY_KG_PER_M3,
               id: ship.id,
-              meshScale: SHIP_MESH_SCALE,
-              ringCount: STANDALONE_SHIPS.length,
-              ringIndex: index,
+              placement: createOrbitingPlacement({
+                altitudeMeters: SHIP_START_ALTITUDE_M,
+                anchorBody: earth,
+                entityMass: polyFighter.mass,
+                ringCount: STANDALONE_SHIPS.length,
+                ringIndex: index,
+              }),
             }),
           ),
         );
