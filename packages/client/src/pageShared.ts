@@ -27,12 +27,6 @@ export function createGameHref(
   return url.href;
 }
 
-export function createLobbyHref(serverBaseUrl: URL): string {
-  const url = new URL("/", window.location.href);
-  persistServerUrl(url, serverBaseUrl);
-  return url.href;
-}
-
 export function createHttpUrl(serverBaseUrl: URL, pathname: string): string {
   const url = new URL(serverBaseUrl.href);
   url.pathname = pathname;
@@ -73,10 +67,6 @@ export async function fetchGameList(
 
 export function formatEntityList(entityIds: readonly string[]): string {
   return entityIds.length === 0 ? "none" : entityIds.join(", ");
-}
-
-export function queryAnchor(selector: string): HTMLAnchorElement {
-  return queryElementOfType(selector, HTMLAnchorElement);
 }
 
 export function queryButton(selector: string): HTMLButtonElement {

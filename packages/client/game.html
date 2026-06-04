@@ -12,19 +12,7 @@
       <input id="clientId" type="hidden" value="client:a" />
       <input id="gameId" type="hidden" />
       <input id="entityId" type="hidden" />
-      <header class="game-header">
-        <div>
-          <h1>Solitude</h1>
-          <div class="game-meta">
-            <span id="gameLabel">Game waiting</span>
-            <span id="entityLabel">Entity waiting</span>
-          </div>
-        </div>
-        <a id="lobbyLink" class="button secondary" href="/">Lobby</a>
-      </header>
-      <section class="viewer">
-        <canvas id="snapshotCanvas" width="960" height="540"></canvas>
-      </section>
+      <canvas id="snapshotCanvas"></canvas>
     </main>
     <script type="module" src="/src/remoteClient.ts"></script>
   </body>

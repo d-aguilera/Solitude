@@ -9,16 +9,14 @@ import {
   solitudeSpacecraftKeyMap,
 } from "./client";
 import {
-  createLobbyHref,
   createSocketUrl,
-  queryAnchor,
   queryCanvas,
-  queryElement,
   queryInput,
   readClientId,
   readServerBaseUrl,
 } from "./pageShared";
 import { createSolitudeRemoteClientRenderer } from "./remoteClientRenderer";
+import { createRemoteIdentityHudPlugin } from "./remoteIdentityHud";
 
 const fields = {
   clientId: queryInput("#clientId"),
@@ -27,9 +25,6 @@ const fields = {
 };
 fields.clientId.value = readClientId(fields.clientId.value);
 
-const gameLabelEl = queryElement("#gameLabel");
-const entityLabelEl = queryElement("#entityLabel");
-const lobbyLink = queryAnchor("#lobbyLink");
 const snapshotCanvas = queryCanvas("#snapshotCanvas");
 const searchParams = new URLSearchParams(window.location.search);
 const serverBaseUrl = readServerBaseUrl(searchParams);
@@ -38,8 +33,13 @@ const initialGameId = searchParams.get("gameId");
 const engineRenderer = createSolitudeRemoteClientRenderer({
   canvas: snapshotCanvas,
   getFocusEntityId: () => fields.entityId.value,
+  plugins: [
+    createRemoteIdentityHudPlugin({
+      getEntityId: () => fields.entityId.value,
+      getGameId: () => fields.gameId.value,
+    }),
+  ],
 });
-lobbyLink.href = createLobbyHref(serverBaseUrl);
 
 let client = createClient();
 let activeAutopilotAction: string | null = null;
@@ -74,10 +74,7 @@ window.addEventListener(
 
 if (initialGameId) {
   fields.gameId.value = initialGameId;
-  gameLabelEl.textContent = "Game " + initialGameId;
   void joinGame(initialGameId);
-} else {
-  gameLabelEl.textContent = "No game selected";
 }
 requestAnimationFrame(renderRemoteFrame);
 
@@ -181,13 +178,10 @@ function handleMessages(
     switch (message.type) {
       case "gameCreated":
         fields.gameId.value = message.gameId;
-        gameLabelEl.textContent = "Game " + message.gameId;
         break;
       case "joined":
         fields.gameId.value = message.gameId;
         fields.entityId.value = message.entityId;
-        gameLabelEl.textContent = "Game " + message.gameId;
-        entityLabelEl.textContent = "Entity " + message.entityId;
         if (connectAfterJoin) connectEvents();
         break;
       case "gameModel":

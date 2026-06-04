@@ -54,6 +54,8 @@ export const remoteRenderPluginIds = [
   "spacecraftOperator",
   "hud",
   "orbitTelemetry",
+  "shipTelemetry",
+  "autopilot",
   "bodyLabels",
   "axialViews",
   "trajectories",

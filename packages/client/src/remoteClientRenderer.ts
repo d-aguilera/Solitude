@@ -32,6 +32,7 @@ export interface RemoteClientSnapshotMessage {
 export interface SolitudeRemoteClientRendererOptions {
   canvas: HTMLCanvasElement;
   getFocusEntityId: () => string;
+  plugins?: GamePlugin[];
 }
 
 export interface SolitudeRemoteClientRenderer {
@@ -44,12 +45,13 @@ export interface SolitudeRemoteClientRenderer {
 export function createSolitudeRemoteClientRenderer({
   canvas,
   getFocusEntityId,
+  plugins: clientPlugins = [],
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
   const plugins = loadPlugins({
     catalog: solitudePluginCatalog,
     context: createPluginCompositionContext(),
     ids: remoteRenderPluginIds,
-  });
+  }).concat(clientPlugins);
   const capabilityRegistry = createPluginCapabilityRegistry(
     plugins.flatMap((plugin) => plugin.capabilities ?? []),
   );
@@ -74,6 +76,7 @@ export function createSolitudeRemoteClientRenderer({
     },
     renderFrame: (nowMillis, dtMillis) => {
       if (!latestSnapshot || !renderer) return false;
+      resizeCanvasToDisplaySize(canvas);
       const focusEntityId = getFocusEntityId();
       if (focusEntityId.length > 0) {
         renderer.setFocusEntityId(focusEntityId);
@@ -128,4 +131,18 @@ export function createSolitudeRemoteClientRenderer({
       plugins,
     });
   }
+}
+
+function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement): void {
+  const cssWidth = canvas.clientWidth;
+  const cssHeight = canvas.clientHeight;
+  if (cssWidth <= 0 || cssHeight <= 0) return;
+
+  const dpr = window.devicePixelRatio || 1;
+  const deviceWidth = Math.round(cssWidth * dpr);
+  const deviceHeight = Math.round(cssHeight * dpr);
+  if (canvas.width === deviceWidth && canvas.height === deviceHeight) return;
+
+  canvas.width = deviceWidth;
+  canvas.height = deviceHeight;
 }
