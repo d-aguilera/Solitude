@@ -8,7 +8,10 @@ import {
   type EntityConfig,
   type WorldAndSceneConfig,
 } from "@solitude/engine/world";
-import { defaultHeadlessPluginIds, loadHeadlessPlugins } from "./plugins/index";
+import {
+  defaultHeadlessPluginIds,
+  loadHeadlessPlugins,
+} from "./plugins/catalog";
 import { buildWorldAndSceneConfig } from "./worldAndSceneConfig";
 
 export interface SolitudeHeadlessLoopOptions {

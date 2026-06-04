@@ -25,24 +25,15 @@ Each plugin lives in its own folder. A typical split is:
 - `worldModel.ts`: pre-runtime world/scenario model contribution
 - `index.ts`: composes the above into a `GamePlugin`
 
-Loop plugins can also influence per-frame policies such as whether the sim,
-scene, or browser overlays advance for a given tick, can request a fixed real
-tick delta for diagnostics, and may run post-frame cleanup. When multiple loop
-plugins write the same frame-policy field, later plugins in the bootstrap order
-win.
+Loop plugins can also influence per-frame policies such as whether the sim, scene, or browser overlays advance for a given tick, can request a fixed real tick delta for diagnostics, and may run post-frame cleanup. When multiple loop plugins write the same frame-policy field, later plugins in the bootstrap order win.
 
 View plugins register named views and main-view camera rigs through the view registry. The primary canvas, layout plumbing, and primary `ViewDefinition` are core-owned, but the active primary camera rig is supplied by plugins. Optional views such as picture-in-picture cameras are registered as full plugin views. Infra owns the canvas elements and their DOM IDs.
 
-The `hud` plugin owns the preallocated HUD grid and browser overlay rendering.
-Telemetry plugins publish `solitude.hud.panel.v1` providers that write into that
-grid. Keep each provider focused on one telemetry group, and avoid allocating
-per-cell objects in the HUD refresh path.
+The `hud` plugin owns the preallocated HUD grid and browser overlay rendering. Telemetry plugins publish `solitude.hud.panel.v1` providers that write into that grid. Keep each provider focused on one telemetry group, and avoid allocating per-cell objects in the HUD refresh path.
 
 Simulation plugins run inside the fixed tick order. Vehicle or operator behavior that mutates focused entities should be contributed through simulation phases rather than hard-coded into core tick logic.
 
-Input plugins contribute action names and key bindings. Browser input has no
-product default actions; the default main-view lookaround controls are
-plugin-owned rather than browser or engine defaults.
+Input plugins contribute action names and key bindings. Browser input has no product default actions; the default main-view lookaround controls are plugin-owned rather than browser or engine defaults.
 
 Plugins may declare focused-entity requirements. Infra validates those requirements against the assembled world and `mainFocus` during setup, before simulation, overlay, and scene hooks run. Missing hard requirements fail startup with the plugin id, focus entity id, and missing capability.
 
@@ -50,16 +41,9 @@ Plugins may also publish operator-specific capabilities through opaque app-level
 
 ## Registration
 
-Available plugins are exported from `packages/solitude/src/plugins/index.ts`.
-Solitude bootstrap chooses which plugins to enable via `loadPlugins`. Browser
-infra passes runtime URL options to plugins as a raw string map; each plugin owns
-validation and interpretation of its own option keys.
+Available standalone plugins are exported from `packages/solitude/src/plugins/catalog.ts`. Solitude bootstrap chooses which plugin ids to enable and asks the engine-level `loadPlugins` helper to assemble them from that catalog. Browser infra passes runtime URL options to plugins as a raw string map; each plugin owns validation and interpretation of its own option keys.
 
-`loadPlugins` may also create composition-local shared state for plugins that are
-intentionally paired by the selected catalog. Keep that state in
-`packages/solitude/src/plugins` and pass it into plugin factories; do not route
-plugin-specific readouts through app/core contexts just to let another plugin
-display them.
+Catalogs may also create composition-local shared state for plugins that are intentionally paired by that selected catalog. Keep solitude-specific state in `packages/solitude/src/plugins` and pass it into plugin factories; do not route plugin-specific readouts through app/core contexts just to let another plugin display them.
 
 ## World model
 

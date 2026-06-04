@@ -4,7 +4,7 @@ import { createControlInput } from "@solitude/engine/plugin";
 import type { FocusContext } from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
 import { describe, expect, it } from "vitest";
-import { defaultPluginIds } from "../index";
+import { defaultPluginIds } from "../catalog";
 import { __operatorSwitchTest, createOperatorSwitchPlugin } from "./index";
 
 function createBody(id: string): ControlledBody {

@@ -3,7 +3,12 @@ import {
   collectBrowserOverlayProviders,
 } from "@solitude/browser/dom/overlayPorts";
 import { createRemoteCanvasRenderer } from "@solitude/browser/remoteCanvasRenderer";
-import type { ControlInput, FramePolicy } from "@solitude/engine/plugin";
+import {
+  loadPlugins,
+  type ControlInput,
+  type FramePolicy,
+  type GamePlugin,
+} from "@solitude/engine/plugin";
 import {
   createPluginCapabilityRegistry,
   type RuntimeWorldSnapshot,
@@ -11,18 +16,11 @@ import {
 import type { EntityConfig } from "@solitude/engine/world";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
-import { loadPlugins } from "solitude/plugins/index";
-
-const remoteRenderPluginIds = [
-  "solarSystem",
-  "spacecraftOperator",
-  "hud",
-  "orbitTelemetry",
-  "bodyLabels",
-  "axialViews",
-  "trajectories",
-  "velocitySegments",
-];
+import {
+  createPluginCompositionContext,
+  remoteRenderPluginIds,
+  solitudePluginCatalog,
+} from "solitude/plugins/catalog";
 
 export interface RemoteClientSnapshotMessage {
   entities: RuntimeWorldSnapshot["entities"];
@@ -47,7 +45,11 @@ export function createSolitudeRemoteClientRenderer({
   canvas,
   getFocusEntityId,
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
-  const plugins = loadPlugins(remoteRenderPluginIds);
+  const plugins = loadPlugins({
+    catalog: solitudePluginCatalog,
+    context: createPluginCompositionContext(),
+    ids: remoteRenderPluginIds,
+  });
   const capabilityRegistry = createPluginCapabilityRegistry(
     plugins.flatMap((plugin) => plugin.capabilities ?? []),
   );
@@ -111,7 +113,7 @@ export function createSolitudeRemoteClientRenderer({
   };
 
   function createRenderer(
-    plugins: ReturnType<typeof loadPlugins>,
+    plugins: GamePlugin[],
     entities: readonly EntityConfig[],
   ) {
     const config = buildWorldAndSceneConfig();

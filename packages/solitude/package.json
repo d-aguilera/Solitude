@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./plugins/index": "./src/plugins/index.ts"
+    "./plugins/catalog": "./src/plugins/catalog.ts"
   },
   "dependencies": {
     "@solitude/browser": "0.0.0",

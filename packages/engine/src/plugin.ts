@@ -7,6 +7,8 @@ export type {
   EntityControlInputs,
   MutableControlState,
 } from "./app/controlPorts";
+export { loadPlugins } from "./app/pluginLoader";
+export type { PluginCatalog, PluginFactory } from "./app/pluginLoader";
 export type {
   AttitudeCommandParams,
   ControlPlugin,

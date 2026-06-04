@@ -15,7 +15,7 @@
     "./plugins/autopilot/input": "./src/plugins/autopilot/input.ts",
     "./plugins/autopilot/logic": "./src/plugins/autopilot/logic.ts",
     "./plugins/autopilot/spacecraftPropulsion": "./src/plugins/autopilot/spacecraftPropulsion.ts",
-    "./plugins/index": "./src/plugins/index.ts",
+    "./plugins/catalog": "./src/plugins/catalog.ts",
     "./plugins/pluginComposition": "./src/plugins/pluginComposition.ts",
     "./plugins/polyFighter": "./src/plugins/polyFighter/index.ts",
     "./plugins/solarSystem": "./src/plugins/solarSystem/index.ts",

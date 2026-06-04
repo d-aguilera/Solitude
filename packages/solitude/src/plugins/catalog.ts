@@ -1,4 +1,4 @@
-import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
+import type { PluginCatalog } from "@solitude/engine/plugin";
 import { createAutopilotPlugin } from "@solitude/sim/plugins/autopilot";
 import { createPolyFighterPlugin } from "@solitude/sim/plugins/polyFighter";
 import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
@@ -23,11 +23,6 @@ import { createShipsPlugin } from "./ships/index";
 import { createTimeScalePlugin } from "./timeScale/index";
 import { createTrajectoriesPlugin } from "./trajectories/index";
 import { createVelocitySegmentsPlugin } from "./velocitySegments/index";
-
-export type PluginFactory = (
-  runtimeOptions: RuntimeOptions,
-  context: PluginCompositionContext,
-) => GamePlugin;
 
 // Plugin order is runtime behavior: later loop/frame-policy plugins can
 // override earlier ones, and input handlers are consulted in reverse order.
@@ -54,7 +49,18 @@ export const defaultPluginIds = [
   "velocitySegments",
 ];
 
-export const availablePlugins: Record<string, PluginFactory> = {
+export const remoteRenderPluginIds = [
+  "solarSystem",
+  "spacecraftOperator",
+  "hud",
+  "orbitTelemetry",
+  "bodyLabels",
+  "axialViews",
+  "trajectories",
+  "velocitySegments",
+];
+
+export const solitudePluginCatalog: PluginCatalog<PluginCompositionContext> = {
   autopilot: createAutopilotPlugin,
   axialViews: createAxialViewsPlugin,
   bodyLabels: createBodyLabelsPlugin,
@@ -77,16 +83,4 @@ export const availablePlugins: Record<string, PluginFactory> = {
   velocitySegments: createVelocitySegmentsPlugin,
 };
 
-export function loadPlugins(
-  ids: string[],
-  runtimeOptions: RuntimeOptions = {},
-): GamePlugin[] {
-  const plugins: GamePlugin[] = [];
-  const context = createPluginCompositionContext();
-  for (const id of ids) {
-    const factory = availablePlugins[id];
-    if (!factory) continue;
-    plugins.push(factory(runtimeOptions, context));
-  }
-  return plugins;
-}
+export { createPluginCompositionContext };
