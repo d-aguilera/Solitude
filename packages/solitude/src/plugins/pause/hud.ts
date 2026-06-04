@@ -1,4 +1,4 @@
-import type { HudPanelProvider } from "../hud/capabilities";
+import type { HudPanelProvider } from "@solitude/sim/hud/provider";
 import type { PauseController } from "./logic";
 
 const pausedText = "PAUSED";

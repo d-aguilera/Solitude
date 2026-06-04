@@ -1,5 +1,5 @@
 import { formatSimTime } from "@solitude/engine/render";
-import type { HudPanelProvider } from "../hud/capabilities";
+import type { HudPanelProvider } from "@solitude/sim/hud/provider";
 import type { RuntimeTelemetryController } from "./logic";
 
 const fpsPrefix = "FPS: ";

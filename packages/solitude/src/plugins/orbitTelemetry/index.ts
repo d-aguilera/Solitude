@@ -1,5 +1,5 @@
 import type { GamePlugin } from "@solitude/engine/plugin";
-import { createHudPanelProvider } from "../hud/capabilities";
+import { createHudPanelProvider } from "@solitude/sim/hud/provider";
 import { createHudPanel } from "./hud";
 
 export function createOrbitTelemetryPlugin(): GamePlugin {

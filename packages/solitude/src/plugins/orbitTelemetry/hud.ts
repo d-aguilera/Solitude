@@ -1,5 +1,5 @@
 import { formatDistance, formatSimTime } from "@solitude/engine/render";
-import type { HudPanelProvider } from "../hud/capabilities";
+import type { HudPanelProvider } from "@solitude/sim/hud/provider";
 import { computeOrbitReadoutInto, createOrbitReadout } from "./orbitReadout";
 
 const orbitPrefix = "Orbit: ";

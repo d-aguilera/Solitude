@@ -4,7 +4,16 @@ import type {
 } from "@solitude/engine/plugin";
 import type { FocusContext } from "@solitude/engine/runtime";
 import type { World } from "@solitude/engine/world";
-import type { HudGrid } from "./grid";
+
+export type HudGridRow = [string, string, string, string, string];
+
+export type HudGrid = [
+  HudGridRow,
+  HudGridRow,
+  HudGridRow,
+  HudGridRow,
+  HudGridRow,
+];
 
 export const hudPanelCapability = "solitude.hud.panel.v1";
 
@@ -18,6 +27,27 @@ export interface HudContext {
 
 export interface HudPanelProvider {
   writeHud: (grid: HudGrid, context: HudContext) => void;
+}
+
+export function createHudGrid(): HudGrid {
+  return [
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+  ];
+}
+
+export function clearHudGrid(grid: HudGrid): void {
+  for (let rowIndex = 0; rowIndex < grid.length; rowIndex++) {
+    const row = grid[rowIndex];
+    row[0] = "";
+    row[1] = "";
+    row[2] = "";
+    row[3] = "";
+    row[4] = "";
+  }
 }
 
 export function createHudPanelProvider(

@@ -1,7 +1,7 @@
 import { vec3 } from "@solitude/engine/math";
 import { formatSpeed } from "@solitude/engine/render";
+import type { HudPanelProvider } from "@solitude/sim/hud/provider";
 import type { SpacecraftOperatorTelemetry } from "@solitude/sim/plugins/spacecraftOperator/telemetry";
-import type { HudPanelProvider } from "../hud/capabilities";
 
 const speedPrefix = "Speed: ";
 const thrustPrefix = "Thrust: ";

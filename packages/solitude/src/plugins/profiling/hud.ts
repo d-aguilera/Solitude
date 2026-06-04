@@ -1,4 +1,4 @@
-import type { HudPanelProvider } from "../hud/capabilities";
+import type { HudPanelProvider } from "@solitude/sim/hud/provider";
 import type { ProfilingController } from "./logic";
 
 const profilingText = "PROFILING";

@@ -1,11 +1,12 @@
 import { createBrowserOverlayProvider } from "@solitude/browser/dom/overlayPorts";
 import type { GamePlugin } from "@solitude/engine/plugin";
 import {
+  clearHudGrid,
+  createHudGrid,
   hudPanelCapability,
   isHudPanelProvider,
   type HudPanelProvider,
-} from "./capabilities";
-import { clearHudGrid, createHudGrid } from "./grid";
+} from "@solitude/sim/hud/provider";
 
 export function createHudPlugin(): GamePlugin {
   const grid = createHudGrid();

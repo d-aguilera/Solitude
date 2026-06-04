@@ -4,8 +4,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./plugins/hud/capabilities": "./src/plugins/hud/capabilities.ts",
-    "./plugins/hud/grid": "./src/plugins/hud/grid.ts",
     "./plugins/index": "./src/plugins/index.ts"
   },
   "dependencies": {

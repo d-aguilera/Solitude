@@ -1,5 +1,5 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
-import { createHudPanelProvider } from "../hud/capabilities";
+import { createHudPanelProvider } from "@solitude/sim/hud/provider";
 import { createPlaybackController } from "./core";
 import { createHudPanel } from "./hud";
 import { createInputPlugin } from "./input";

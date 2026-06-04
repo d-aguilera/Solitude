@@ -6,11 +6,10 @@ import {
 } from "@solitude/engine/math";
 import { createControlInput } from "@solitude/engine/plugin";
 import type { ControlledBody, World } from "@solitude/engine/world";
+import type { HudContext, HudGrid } from "@solitude/sim/hud/provider";
 import { createSpacecraftOperatorTelemetry } from "@solitude/sim/plugins/spacecraftOperator/telemetry";
 import { describe, expect, it } from "vitest";
 import { createHudPanel as createAutopilotHudPanel } from "../autopilot/hud";
-import type { HudContext } from "../hud/capabilities";
-import type { HudGrid } from "../hud/grid";
 import { createHudPanel as createOrbitTelemetryHudPanel } from "../orbitTelemetry/hud";
 import { createHudPanel as createRuntimeTelemetryHudPanel } from "../runtimeTelemetry/hud";
 import { createRuntimeTelemetryController } from "../runtimeTelemetry/logic";

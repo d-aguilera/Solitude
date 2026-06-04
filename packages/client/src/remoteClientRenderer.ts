@@ -10,11 +10,12 @@ import type { EntityConfig } from "@solitude/engine/world";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
 import {
+  clearHudGrid,
+  createHudGrid,
   hudPanelCapability,
   isHudPanelProvider,
   type HudPanelProvider,
-} from "solitude/plugins/hud/capabilities";
-import { clearHudGrid, createHudGrid } from "solitude/plugins/hud/grid";
+} from "@solitude/sim/hud/provider";
 import { loadPlugins } from "solitude/plugins/index";
 
 const remoteRenderPluginIds = [
