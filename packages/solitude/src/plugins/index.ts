@@ -18,6 +18,7 @@ import {
 import { createProfilingPlugin } from "./profiling/index";
 import { createRuntimeTelemetryPlugin } from "./runtimeTelemetry/index";
 import { createShipTelemetryPlugin } from "./shipTelemetry/index";
+import { createShipsPlugin } from "./ships/index";
 import { createTimeScalePlugin } from "./timeScale/index";
 import { createTrajectoriesPlugin } from "./trajectories/index";
 import { createVelocitySegmentsPlugin } from "./velocitySegments/index";
@@ -31,6 +32,7 @@ export type PluginFactory = (
 // override earlier ones, and input handlers are consulted in reverse order.
 export const defaultPluginIds = [
   "solarSystem",
+  "ships",
   "mainViewLookaround",
   "spacecraftOperator",
   "hud",
@@ -66,6 +68,7 @@ export const availablePlugins: Record<string, PluginFactory> = {
   shipTelemetry: createShipTelemetryPlugin,
   solarSystem: createSolarSystemPlugin,
   spacecraftOperator: createSpacecraftOperatorPlugin,
+  ships: createShipsPlugin,
   timeScale: createTimeScalePlugin,
   trajectories: createTrajectoriesPlugin,
   velocitySegments: createVelocitySegmentsPlugin,

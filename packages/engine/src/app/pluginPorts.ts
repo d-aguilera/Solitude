@@ -240,6 +240,7 @@ export interface WorldModelRegistry {
 }
 
 export interface WorldModelContributionParams {
+  capabilityRegistry: PluginCapabilityRegistry;
   config: WorldAndSceneConfig;
 }
 

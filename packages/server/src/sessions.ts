@@ -17,15 +17,9 @@ import {
   type SolitudeProtocolSequence,
   type SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
-import { buildSolarSystemShipEntity } from "@solitude/sim/plugins/solarSystem";
-import { buildDefaultSolarSystemConfigs } from "@solitude/sim/plugins/solarSystem/solarSystem";
-import { createSolitudeServerGame, type SolitudeServerGame } from "./runtime";
+import type { SolitudeServerGame } from "./runtime";
 import { compactSnapshotEntities } from "./snapshotEncoding";
 
-const DEFAULT_ASSIGNABLE_SHIP_COUNT = 16;
-const DEFAULT_ASSIGNABLE_ENTITY_IDS = createDefaultAssignableEntityIds(
-  DEFAULT_ASSIGNABLE_SHIP_COUNT,
-);
 const THRUST_CONTROL_IDS = [
   "thrust0",
   "thrust1",
@@ -41,17 +35,10 @@ const THRUST_CONTROL_IDS = [
 
 export interface SolitudeSessionManagerOptions {
   assignableEntityIds: readonly EntityId[];
+  createAssignableEntity: (id: EntityId, index: number) => EntityConfig;
   createGame: (initialEntities: readonly EntityConfig[]) => SolitudeServerGame;
-  createShipEntity: (id: EntityId, index: number) => EntityConfig;
   nowMillis: () => number;
 }
-
-const DEFAULT_SESSION_MANAGER_OPTIONS: SolitudeSessionManagerOptions = {
-  assignableEntityIds: DEFAULT_ASSIGNABLE_ENTITY_IDS,
-  createGame: createSolitudeServerGame,
-  createShipEntity: createDefaultShipEntity,
-  nowMillis: Date.now,
-};
 
 export interface SolitudeInputTimeWindow {
   endMillis: number;
@@ -106,12 +93,8 @@ interface QueuedInputEvent {
 }
 
 export function createSolitudeSessionManager(
-  sessionOptions: Partial<SolitudeSessionManagerOptions> = {},
+  options: SolitudeSessionManagerOptions,
 ): SolitudeSessionManager {
-  const options: SolitudeSessionManagerOptions = {
-    ...DEFAULT_SESSION_MANAGER_OPTIONS,
-    ...sessionOptions,
-  };
   const gamesById = new Map<SolitudeGameId, ServerGameSession>();
   let nextGameNumber = 1;
 
@@ -122,7 +105,7 @@ export function createSolitudeSessionManager(
     const gameId = createGameId(nextGameNumber);
     nextGameNumber++;
     const entityId = options.assignableEntityIds[0];
-    const entity = options.createShipEntity(entityId, 0);
+    const entity = options.createAssignableEntity(entityId, 0);
     const session: ServerGameSession = {
       assignedEntityByClientId: new Map(),
       emptySinceMillis: null,
@@ -398,7 +381,7 @@ function ensureEntityExists(
   if (session.game.entityConfigs.some((entity) => entity.id === entityId)) {
     return;
   }
-  const entity = options.createShipEntity(
+  const entity = options.createAssignableEntity(
     entityId,
     options.assignableEntityIds.indexOf(entityId),
   );
@@ -429,22 +412,6 @@ function takeNextSequenceAfter(
   const sequence = session.nextSequence;
   session.nextSequence++;
   return sequence;
-}
-
-function createDefaultShipEntity(id: EntityId, index: number): EntityConfig {
-  return buildSolarSystemShipEntity(
-    buildDefaultSolarSystemConfigs().physics,
-    id,
-    index,
-  );
-}
-
-function createDefaultAssignableEntityIds(count: number): EntityId[] {
-  const ids = ["ship:blue", "ship:red"];
-  for (let index = ids.length; index < count; index++) {
-    ids.push(`ship:${index + 1}`);
-  }
-  return ids;
 }
 
 function applyInputPatch(

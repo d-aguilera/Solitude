@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createSolitudeInProcessTransport } from "../transport";
+import { createDefaultSolitudeInProcessTransport } from "../composition/solitudeMultiplayer";
 
 describe("Solitude in-process transport", () => {
   it("validates inbound payloads before routing them to sessions", () => {
-    const transport = createSolitudeInProcessTransport();
+    const transport = createDefaultSolitudeInProcessTransport();
 
     expect(transport.receive({ type: "createGame" }, 99)).toEqual([
       {
@@ -16,7 +16,7 @@ describe("Solitude in-process transport", () => {
   });
 
   it("routes valid client messages and steps games", () => {
-    const transport = createSolitudeInProcessTransport();
+    const transport = createDefaultSolitudeInProcessTransport();
 
     expect(
       withoutGameModels(
@@ -85,7 +85,7 @@ describe("Solitude in-process transport", () => {
   });
 
   it("lists session games", () => {
-    const transport = createSolitudeInProcessTransport();
+    const transport = createDefaultSolitudeInProcessTransport();
     transport.receive(
       {
         type: "createGame",
@@ -124,7 +124,7 @@ describe("Solitude in-process transport", () => {
   });
 
   it("cleans up empty session games", () => {
-    const transport = createSolitudeInProcessTransport();
+    const transport = createDefaultSolitudeInProcessTransport();
     transport.receive(
       {
         type: "createGame",

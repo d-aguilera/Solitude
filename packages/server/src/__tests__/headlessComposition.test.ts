@@ -2,10 +2,13 @@ import { vec3 } from "@solitude/engine/math";
 import type { ControlledBody } from "@solitude/engine/world";
 import { createSolitudeHeadlessLoop } from "@solitude/sim/headless";
 import { describe, expect, it } from "vitest";
+import { createDefaultMultiplayerSpacecraftEntity } from "../composition/solitudeMultiplayer";
 
 describe("server-style headless Solitude composition", () => {
   it("builds the default Solitude world through public exports and advances spacecraft dynamics", () => {
-    const { config, loop } = createSolitudeHeadlessLoop();
+    const { config, loop } = createSolitudeHeadlessLoop({
+      extraEntities: createDefaultShipEntities(),
+    });
     const world = loop.worldAndScene.world;
     const focus = loop.worldAndScene.mainFocus;
 
@@ -27,7 +30,9 @@ describe("server-style headless Solitude composition", () => {
   });
 
   it("can route controls to multiple ships in one authoritative headless tick", () => {
-    const { loop } = createSolitudeHeadlessLoop();
+    const { loop } = createSolitudeHeadlessLoop({
+      extraEntities: createDefaultShipEntities(),
+    });
     const blue = getControlledBody(loop.worldAndScene.world, "ship:blue");
     const red = getControlledBody(loop.worldAndScene.world, "ship:red");
     const blueBefore = vec3.clone(blue.velocity);
@@ -51,6 +56,21 @@ describe("server-style headless Solitude composition", () => {
     expect(redVelocityDelta).toBeGreaterThan(1000);
   });
 });
+
+function createDefaultShipEntities() {
+  return [
+    createDefaultMultiplayerSpacecraftEntity({
+      entityCount: 16,
+      id: "ship:blue",
+      index: 0,
+    }),
+    createDefaultMultiplayerSpacecraftEntity({
+      entityCount: 16,
+      id: "ship:red",
+      index: 1,
+    }),
+  ];
+}
 
 function getControlledBody(
   world: { controllableBodies: ControlledBody[] },

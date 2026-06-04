@@ -1,15 +1,15 @@
 import type { SolitudeGameId } from "@solitude/protocol/protocol";
 import { describe, expect, it } from "vitest";
+import { createDefaultSolitudeInProcessTransport } from "../composition/solitudeMultiplayer";
 import { createSolitudeGameRunner } from "../runner";
 import type { SolitudeGameTickRequest, SolitudeGameTicker } from "../ticker";
-import { createSolitudeInProcessTransport } from "../transport";
 
 describe("Solitude game runner", () => {
   it("starts created games immediately", () => {
     const ticker = createTickerStub();
     const runner = createSolitudeGameRunner({
       ticker,
-      transport: createSolitudeInProcessTransport(),
+      transport: createDefaultSolitudeInProcessTransport(),
     });
 
     runner.receive(
@@ -55,7 +55,7 @@ describe("Solitude game runner", () => {
     const ticker = createTickerStub();
     const runner = createSolitudeGameRunner({
       ticker,
-      transport: createSolitudeInProcessTransport(),
+      transport: createDefaultSolitudeInProcessTransport(),
     });
 
     runner.receive(
@@ -93,7 +93,7 @@ describe("Solitude game runner", () => {
     const ticker = createTickerStub();
     const runner = createSolitudeGameRunner({
       ticker,
-      transport: createSolitudeInProcessTransport(),
+      transport: createDefaultSolitudeInProcessTransport(),
     });
 
     runner.receive(

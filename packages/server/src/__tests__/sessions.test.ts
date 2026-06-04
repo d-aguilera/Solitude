@@ -14,7 +14,7 @@ import {
 
 describe("Solitude session manager", () => {
   it("creates a game without assigning the creator to a ship", () => {
-    const manager = createSolitudeSessionManager();
+    const manager = createDefaultTestSessionManager();
 
     const messages = manager.handleMessage({
       type: "createGame",
@@ -33,7 +33,7 @@ describe("Solitude session manager", () => {
   });
 
   it("joins additional clients to the server-owned ship pool", () => {
-    const manager = createSolitudeSessionManager();
+    const manager = createDefaultTestSessionManager();
     manager.handleMessage({
       type: "createGame",
       clientId: "client:a",
@@ -87,7 +87,7 @@ describe("Solitude session manager", () => {
   });
 
   it("releases a client's assigned ship when the client leaves", () => {
-    const manager = createSolitudeSessionManager();
+    const manager = createDefaultTestSessionManager();
     manager.handleMessage({
       type: "createGame",
       clientId: "client:a",
@@ -159,7 +159,7 @@ describe("Solitude session manager", () => {
   });
 
   it("lists games with assigned and available entity ids", () => {
-    const manager = createSolitudeSessionManager();
+    const manager = createDefaultTestSessionManager();
     manager.handleMessage({
       type: "createGame",
       clientId: "client:a",
@@ -234,7 +234,7 @@ describe("Solitude session manager", () => {
   });
 
   it("accepts assigned input and emits a snapshot on step", () => {
-    const manager = createSolitudeSessionManager();
+    const manager = createDefaultTestSessionManager();
     manager.handleMessage({
       type: "createGame",
       clientId: "client:a",
@@ -267,7 +267,6 @@ describe("Solitude session manager", () => {
     expect(snapshot?.sequence).toBe(4);
     expect(snapshot?.simulationTimeMillis).toBe(1000);
     expect(snapshot?.tick).toBe(1);
-    expect(snapshot?.entities.length).toBeGreaterThan(0);
   });
 
   it("retains assigned input across steps and merges later patches", () => {
@@ -558,7 +557,7 @@ describe("Solitude session manager", () => {
   });
 
   it("removes games with no assigned clients during cleanup", () => {
-    const manager = createSolitudeSessionManager();
+    const manager = createDefaultTestSessionManager();
     manager.handleMessage({
       type: "createGame",
       clientId: "client:a",
@@ -586,7 +585,7 @@ describe("Solitude session manager", () => {
   });
 
   it("rejects input for entities not assigned to the client", () => {
-    const manager = createSolitudeSessionManager();
+    const manager = createDefaultTestSessionManager();
     manager.handleMessage({
       type: "createGame",
       clientId: "client:a",
@@ -665,16 +664,37 @@ function createRecordingGame(): RecordingGame {
   return game;
 }
 
+function createDefaultTestSessionManager() {
+  return createSolitudeSessionManager({
+    assignableEntityIds: createTestAssignableEntityIds(16),
+    createAssignableEntity: (id): EntityConfig => ({ components: {}, id }),
+    createGame: (initialEntities) => {
+      const game = createRecordingGame();
+      game.entityConfigs.push(...initialEntities);
+      return game;
+    },
+    nowMillis: Date.now,
+  });
+}
+
 function createTestOptions(
   game: SolitudeServerGame,
   nowMillis: () => number = Date.now,
 ): SolitudeSessionManagerOptions {
   return {
     assignableEntityIds: ["ship:blue", "ship:red"],
+    createAssignableEntity: (id): EntityConfig => ({ components: {}, id }),
     createGame: () => game,
-    createShipEntity: (id): EntityConfig => ({ components: {}, id }),
     nowMillis,
   };
+}
+
+function createTestAssignableEntityIds(count: number): EntityId[] {
+  const ids = ["ship:blue", "ship:red"];
+  for (let index = ids.length; index < count; index++) {
+    ids.push(`ship:${index + 1}`);
+  }
+  return ids;
 }
 
 function withoutGameModels(messages: unknown[]): unknown[] {

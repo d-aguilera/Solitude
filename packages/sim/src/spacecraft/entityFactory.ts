@@ -5,162 +5,109 @@ import {
   DOT_PARALLEL_COS,
   EPS_LEN,
   EPS_LEN_STRICT,
-  km,
   localFrame,
   mat3,
   vec3,
   type LocalFrame,
   type Vec3,
 } from "@solitude/engine/math";
-import type { Mesh } from "@solitude/engine/render";
-import type {
-  ControlledBodyInitialStateConfig,
-  ControlledBodyPhysicsConfig,
-  EntityRenderConfig,
-  KeplerianBodyPhysicsConfig,
-  RotatingBody,
-  SphericalBodyPhysics,
-} from "@solitude/engine/world";
-import {
-  createKeplerianBodiesFromConfig,
-  initialFrame,
-} from "@solitude/engine/world";
-import { colors } from "./colors";
+import type { RGB } from "@solitude/engine/render";
+import type { EntityConfig, EntityId } from "@solitude/engine/world";
+import { initialFrame } from "@solitude/engine/world";
+import type { CelestialBody } from "../celestialBodies/provider";
 import shipObjText from "./ship.obj?raw";
 
-const SHIP_DENSITY_KG_PER_M3 = 2700;
-const SHIP_START_ALTITUDE_M = 100 * km;
-const DEFAULT_SHIP_RING_COUNT = 16;
-const EARTH_ID = "planet:earth";
+export interface OrbitingSpacecraftEntityParams {
+  altitudeMeters: number;
+  anchorBody: CelestialBody;
+  color: RGB;
+  densityKgPerM3: number;
+  id: EntityId;
+  meshScale: number;
+  ringCount: number;
+  ringIndex: number;
+}
 
 const axisScratch = vec3.zero();
 
-export function buildDefaultSolarSystemShipConfigs(
-  celestialPhysics: KeplerianBodyPhysicsConfig[],
-  shipIds: readonly string[] = ["ship:blue", "ship:red"],
-): {
-  initialStates: ControlledBodyInitialStateConfig[];
-  physics: ControlledBodyPhysicsConfig[];
-  render: EntityRenderConfig[];
-} {
-  const shipMeshes = shipIds.map(() => createScaledShipMesh());
-  const shipVolumes = shipMeshes.map((mesh) =>
-    computeVolumeOfTriangleMesh(mesh.points, mesh.faces),
-  );
-
-  const physics: ControlledBodyPhysicsConfig[] = shipIds.map((id, index) => ({
-    density: SHIP_DENSITY_KG_PER_M3,
-    id,
-    volume: shipVolumes[index],
-  }));
-
-  const render: EntityRenderConfig[] = shipIds.map((id, index) => ({
-    color: getShipColor(index),
-    id,
-    mesh: shipMeshes[index],
-  }));
-
-  const { earthBody, earthPhysics } = createEarthState(celestialPhysics);
-  const initialStates: ControlledBodyInitialStateConfig[] = shipIds.map(
-    (id, index) =>
-      createOrbitingShipInitialState({
-        body: earthBody,
-        direction: createShipRingDirection(index, shipIds.length),
-        id,
-        physics: earthPhysics,
-        shipMass: SHIP_DENSITY_KG_PER_M3 * shipVolumes[index],
-      }),
-  );
-
-  return { initialStates, physics, render };
-}
-
-function getShipColor(index: number) {
-  if (index === 0) return colors.blueShip;
-  if (index === 1) return colors.redShip;
-  return colors.blueShip;
-}
-
-export function buildDefaultSolarSystemShipConfig(
-  celestialPhysics: KeplerianBodyPhysicsConfig[],
-  id: string,
-  index: number,
-): {
-  initialState: ControlledBodyInitialStateConfig;
-  physics: ControlledBodyPhysicsConfig;
-  render: EntityRenderConfig;
-} {
-  const mesh = createScaledShipMesh();
+export function createOrbitingSpacecraftEntity({
+  altitudeMeters,
+  anchorBody,
+  color,
+  densityKgPerM3,
+  id,
+  meshScale,
+  ringCount,
+  ringIndex,
+}: OrbitingSpacecraftEntityParams): EntityConfig {
+  const mesh = createScaledShipMesh(meshScale);
   const volume = computeVolumeOfTriangleMesh(mesh.points, mesh.faces);
-  const { earthBody, earthPhysics } = createEarthState(celestialPhysics);
+  const shipMass = densityKgPerM3 * volume;
+  const initialState = createOrbitingSpacecraftInitialState({
+    altitudeMeters,
+    anchorBody,
+    direction: createRingDirection(ringIndex, ringCount),
+    id,
+    shipMass,
+  });
+
   return {
-    initialState: createOrbitingShipInitialState({
-      body: earthBody,
-      direction: createShipRingDirection(index, DEFAULT_SHIP_RING_COUNT),
-      id,
-      physics: earthPhysics,
-      shipMass: SHIP_DENSITY_KG_PER_M3 * volume,
-    }),
-    physics: {
-      density: SHIP_DENSITY_KG_PER_M3,
-      id,
-      volume,
-    },
-    render: {
-      color: getShipColor(index),
-      id,
-      mesh,
+    id,
+    components: {
+      controllable: {
+        enabled: true,
+      },
+      gravityMass: {
+        density: densityKgPerM3,
+        volume,
+      },
+      renderable: {
+        color,
+        mesh,
+        role: "controlledBody",
+      },
+      state: {
+        angularVelocity: initialState.angularVelocity,
+        frame: initialState.frame,
+        kind: "direct",
+        orientation: initialState.orientation,
+        position: initialState.position,
+        velocity: initialState.velocity,
+      },
     },
   };
 }
 
-function createShipRingDirection(index: number, shipCount: number): Vec3 {
-  const angle = (index / shipCount) * Math.PI * 2;
+function createRingDirection(index: number, count: number): Vec3 {
+  const angle = (index / count) * Math.PI * 2;
   return vec3.create(Math.cos(angle), Math.sin(angle), 0);
 }
 
-function createEarthState(celestialPhysics: KeplerianBodyPhysicsConfig[]): {
-  earthBody: RotatingBody;
-  earthPhysics: SphericalBodyPhysics;
-} {
-  const setup = createKeplerianBodiesFromConfig(celestialPhysics);
-
-  const earthIndex = setup.bodies.findIndex((body) => body.id === EARTH_ID);
-  if (earthIndex < 0) {
-    throw new Error(`Solar system plugin requires body: ${EARTH_ID}`);
-  }
-
-  return {
-    earthBody: setup.bodies[earthIndex],
-    earthPhysics: setup.physics[earthIndex],
-  };
-}
-
-function createOrbitingShipInitialState({
-  body,
+function createOrbitingSpacecraftInitialState({
+  altitudeMeters,
+  anchorBody,
   direction,
   id,
-  physics,
   shipMass,
 }: {
-  body: RotatingBody;
+  altitudeMeters: number;
+  anchorBody: CelestialBody;
   direction: Vec3;
   id: string;
-  physics: SphericalBodyPhysics;
   shipMass: number;
-}): ControlledBodyInitialStateConfig {
+}) {
   const radialDirection = vec3.normalizeInto(direction);
   const position = computeShipStartPosition(
-    body.position,
-    physics.physicalRadius,
-    SHIP_START_ALTITUDE_M,
+    anchorBody.position,
+    anchorBody.physicalRadius,
+    altitudeMeters,
     radialDirection,
   );
   const velocity = computeOrbitVelocity(
     position,
-    body.position,
-    body.velocity,
-    physics.mass,
+    anchorBody.position,
+    anchorBody.velocity,
+    anchorBody.mass,
     shipMass,
   );
   const frame = getFrameFromVelocity(velocity);
@@ -176,10 +123,10 @@ function createOrbitingShipInitialState({
   };
 }
 
-function createScaledShipMesh(): Mesh {
+function createScaledShipMesh(meshScale: number) {
   const points = shipModel.points.map(vec3.clone);
   for (const point of points) {
-    vec3.scaleInto(point, 150_000, point);
+    vec3.scaleInto(point, meshScale, point);
   }
 
   return {

@@ -6,11 +6,10 @@ import {
   type SolitudeProtocolSequence,
   type SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
-import {
-  createSolitudeSessionManager,
-  type SolitudeGameSummary,
-  type SolitudeInputTimeWindow,
-  type SolitudeSessionManager,
+import type {
+  SolitudeGameSummary,
+  SolitudeInputTimeWindow,
+  SolitudeSessionManager,
 } from "./sessions";
 
 export interface SolitudeInProcessTransport {
@@ -33,7 +32,7 @@ export interface SolitudeInProcessTransport {
 }
 
 export function createSolitudeInProcessTransport(
-  sessionManager: SolitudeSessionManager = createSolitudeSessionManager(),
+  sessionManager: SolitudeSessionManager,
 ): SolitudeInProcessTransport {
   return {
     sessionManager,

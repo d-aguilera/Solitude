@@ -34,15 +34,11 @@ export interface SolitudeServerGame {
 }
 
 export function createSolitudeServerGame(
-  initialEntities?: readonly EntityConfig[],
+  initialEntities: readonly EntityConfig[],
 ): SolitudeServerGame {
-  const { config, loop } =
-    initialEntities === undefined
-      ? createSolitudeHeadlessLoop()
-      : createSolitudeHeadlessLoop({
-          extraEntities: initialEntities,
-          runtimeOptions: { ships: "dynamic" },
-        });
+  const { config, loop } = createSolitudeHeadlessLoop({
+    extraEntities: initialEntities,
+  });
   const snapshot = createRuntimeSnapshot();
   captureRuntimeSnapshotInto(snapshot, loop.worldAndScene.world);
 

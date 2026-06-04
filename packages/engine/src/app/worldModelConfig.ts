@@ -1,6 +1,7 @@
 import type { WorldAndSceneConfig } from "./configPorts";
 import { buildEntityConfigIndex } from "./entityConfig";
 import type { EntityConfig } from "./entityConfigPorts";
+import { createPluginCapabilityRegistry } from "./pluginCapabilities";
 import type {
   GamePlugin,
   WorldModelPlugin,
@@ -11,6 +12,9 @@ export function applyWorldModelPlugins(
   config: WorldAndSceneConfig,
   plugins: GamePlugin[],
 ): void {
+  const capabilityRegistry = createPluginCapabilityRegistry(
+    plugins.flatMap((plugin) => plugin.capabilities ?? []),
+  );
   const worldModelPlugins = collectWorldModelPlugins(plugins);
   const registry: WorldModelRegistry = {
     addEntities: (entities: EntityConfig[]) => {
@@ -22,7 +26,7 @@ export function applyWorldModelPlugins(
   };
 
   for (const plugin of worldModelPlugins) {
-    plugin.contributeWorldModel(registry, { config });
+    plugin.contributeWorldModel(registry, { capabilityRegistry, config });
   }
 
   buildEntityConfigIndex(config.entities);

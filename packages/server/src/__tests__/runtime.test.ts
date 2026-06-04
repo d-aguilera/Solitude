@@ -1,13 +1,12 @@
 import { vec3 } from "@solitude/engine/math";
 import type { ControlledBody } from "@solitude/engine/world";
-import { buildSolarSystemShipEntity } from "@solitude/sim/plugins/solarSystem";
-import { buildDefaultSolarSystemConfigs } from "@solitude/sim/plugins/solarSystem/solarSystem";
 import { describe, expect, it } from "vitest";
+import { createDefaultMultiplayerSpacecraftEntity } from "../composition/solitudeMultiplayer";
 import { createSolitudeServerGame } from "../runtime";
 
 describe("Solitude server runtime", () => {
   it("steps the default headless game with entity-addressed controls and reuses snapshots", () => {
-    const game = createSolitudeServerGame();
+    const game = createSolitudeServerGame(createDefaultShipEntities());
     const blue = getControlledBody(game.worldAndScene, "ship:blue");
     const red = getControlledBody(game.worldAndScene, "ship:red");
     const blueBefore = vec3.clone(blue.velocity);
@@ -36,7 +35,7 @@ describe("Solitude server runtime", () => {
   });
 
   it("moves runtime focus away from a removed focused entity", () => {
-    const game = createSolitudeServerGame();
+    const game = createSolitudeServerGame(createDefaultShipEntities());
 
     expect(game.worldAndScene.mainFocus.entityId).toBe("ship:blue");
 
@@ -52,9 +51,16 @@ describe("Solitude server runtime", () => {
   });
 
   it("advances dynamically added ships through gravity integration", () => {
-    const physics = buildDefaultSolarSystemConfigs().physics;
-    const blue = buildSolarSystemShipEntity(physics, "ship:blue", 0);
-    const red = buildSolarSystemShipEntity(physics, "ship:red", 1);
+    const blue = createDefaultMultiplayerSpacecraftEntity({
+      entityCount: 16,
+      id: "ship:blue",
+      index: 0,
+    });
+    const red = createDefaultMultiplayerSpacecraftEntity({
+      entityCount: 16,
+      id: "ship:red",
+      index: 1,
+    });
     const game = createSolitudeServerGame([blue]);
     game.addEntity(red);
     const redBody = getControlledBody(game.worldAndScene, "ship:red");
@@ -72,6 +78,21 @@ describe("Solitude server runtime", () => {
     ).toBeGreaterThan(0);
   });
 });
+
+function createDefaultShipEntities() {
+  return [
+    createDefaultMultiplayerSpacecraftEntity({
+      entityCount: 16,
+      id: "ship:blue",
+      index: 0,
+    }),
+    createDefaultMultiplayerSpacecraftEntity({
+      entityCount: 16,
+      id: "ship:red",
+      index: 1,
+    }),
+  ];
+}
 
 function getControlledBody(
   worldAndScene: {

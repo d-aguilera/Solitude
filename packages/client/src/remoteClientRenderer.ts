@@ -52,7 +52,7 @@ export function createSolitudeRemoteClientRenderer({
   getFocusEntityId,
   hudElement,
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
-  const plugins = loadPlugins(remoteRenderPluginIds, { ships: "dynamic" });
+  const plugins = loadPlugins(remoteRenderPluginIds);
   const hudProviders = collectHudPanelProviders(plugins);
   const hudGrid = createHudGrid();
   const controlInput: ControlInput = {};

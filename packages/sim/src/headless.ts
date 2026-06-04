@@ -1,3 +1,4 @@
+import type { RuntimeOptions } from "@solitude/engine/plugin";
 import {
   createHeadlessLoop,
   type HeadlessLoop,
@@ -13,7 +14,7 @@ import { buildWorldAndSceneConfig } from "./worldAndSceneConfig";
 export interface SolitudeHeadlessLoopOptions {
   extraEntities?: readonly EntityConfig[];
   pluginIds?: readonly string[];
-  runtimeOptions?: Parameters<typeof loadHeadlessPlugins>[1];
+  runtimeOptions?: RuntimeOptions;
 }
 
 export interface SolitudeHeadlessLoop {
