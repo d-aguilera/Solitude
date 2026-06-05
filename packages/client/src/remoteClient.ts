@@ -124,7 +124,8 @@ async function handleKeyboardInput(
 async function sendInputPatch(
   controls: Partial<ControlInput>,
 ): Promise<SolitudeServerMessage[]> {
-  engineRenderer.setControlState(controls);
+  const inputSequence = client.state.nextInputSequence;
+  engineRenderer.setControlState(controls, inputSequence);
   const messages = await client.sendInputPatch(controls);
   handleMessages(messages, false);
   return messages;
