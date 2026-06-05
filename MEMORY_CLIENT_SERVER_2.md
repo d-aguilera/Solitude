@@ -132,21 +132,21 @@ Deliver the real-time authoritative loop first:
 - Sequenced input messages and snapshot input acknowledgements are in place.
 - Load harness input latency mode is in place.
 - First client-side prediction slice is in place for the locally controlled ship.
+- Visual reconciliation smoothing and prediction error metrics are in place.
 
 Then deliver predicted local flight:
 
 - Ordered interpolation buffer based on simulation time.
 - Broader client-side prediction and reconciliation for the assigned ship.
-- Smooth reconciliation against server state.
 - Interpolated remote entities.
 
 ## Clear Next Step
 
-Verify the first local prediction slice against deployed latency:
+Verify local prediction reconciliation quality:
 
 - test quick attitude inputs locally and against the GRU deployment;
-- compare perceived input response against load-harness input acknowledgement latency;
-- decide whether the next slice should improve reconciliation, prediction breadth, or remote interpolation.
+- inspect `window.__solitudePredictionMetrics` while deliberately creating correction snaps;
+- decide whether the next slice should make prediction replay more exact or restore remote interpolation.
 
 ## Things To Watch
 

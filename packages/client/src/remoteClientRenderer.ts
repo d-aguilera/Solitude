@@ -12,9 +12,14 @@ import {
 import {
   createPhysicsWorkspace,
   createPluginCapabilityRegistry,
+  type RuntimeEntitySnapshot,
   type RuntimeWorldSnapshot,
 } from "@solitude/engine/runtime";
-import type { EntityConfig, EntityId } from "@solitude/engine/world";
+import type {
+  ControlledBody,
+  EntityConfig,
+  EntityId,
+} from "@solitude/engine/world";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
 import type { SolitudeInputSequence } from "@solitude/protocol/protocol";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
@@ -31,6 +36,21 @@ import {
   hasActiveLocalPrediction,
   recordLocalInput,
 } from "./localPrediction";
+import {
+  applyLocalVisualCorrection,
+  captureLocalShipVisualState,
+  copyLocalPredictionErrorMetrics,
+  createLocalReconciliationState,
+  reconcileLocalShipVisualState,
+  type LocalPredictionErrorMetrics,
+  type LocalShipVisualState,
+} from "./localReconciliation";
+
+declare global {
+  interface Window {
+    __solitudePredictionMetrics?: LocalPredictionErrorMetrics;
+  }
+}
 
 export interface RemoteClientSnapshotMessage {
   entities: RuntimeWorldSnapshot["entities"];
@@ -86,12 +106,16 @@ export function createSolitudeRemoteClientRenderer({
   let renderer: ReturnType<typeof createRemoteCanvasRenderer> | null = null;
   const predictionControlState: SpacecraftControlState = { thrustLevel: 1 };
   const predictionPhysicsWorkspace = createPhysicsWorkspace();
+  const reconciliationState = createLocalReconciliationState();
+  let lastPredictedLocalState: LocalShipVisualState | null = null;
+  let lastRenderedLocalState: LocalShipVisualState | null = null;
 
   return {
     pushSnapshotMessage: (message) => {
       if (message.modelVersion !== modelVersion) return;
+      const nowMillis = performance.now();
       latestSnapshot = { entities: message.entities };
-      latestSnapshotReceivedAtMillis = performance.now();
+      latestSnapshotReceivedAtMillis = nowMillis;
       messageSimulationTimeMillis = message.simulationTimeMillis;
       const focusEntityId = getFocusEntityId();
       if (focusEntityId.length > 0) {
@@ -100,6 +124,20 @@ export function createSolitudeRemoteClientRenderer({
           focusEntityId,
           message.lastProcessedInputSequences,
         );
+        const authoritativeState = findSnapshotEntity(
+          message.entities,
+          focusEntityId,
+        );
+        if (authoritativeState) {
+          reconcileLocalShipVisualState(
+            reconciliationState,
+            lastPredictedLocalState,
+            lastRenderedLocalState,
+            authoritativeState,
+            nowMillis,
+          );
+          publishPredictionMetrics();
+        }
       }
     },
     renderFrame: (nowMillis, dtMillis) => {
@@ -116,6 +154,7 @@ export function createSolitudeRemoteClientRenderer({
         focusEntityId,
         predictionMillis,
         dtMillis,
+        nowMillis,
       );
       if (!rendered) return false;
       applyBrowserOverlayProviders(
@@ -149,6 +188,9 @@ export function createSolitudeRemoteClientRenderer({
       );
       predictionState.controlInput = {};
       predictionControlState.thrustLevel = 1;
+      reconciliationState.correction.active = false;
+      lastPredictedLocalState = null;
+      lastRenderedLocalState = null;
     },
   };
 
@@ -158,11 +200,11 @@ export function createSolitudeRemoteClientRenderer({
     focusEntityId: string,
     predictionMillis: number,
     dtMillis: number,
+    nowMillis: number,
   ): boolean {
     if (
       focusEntityId.length === 0 ||
-      predictionMillis <= 0 ||
-      !hasActiveLocalPrediction(predictionState)
+      !shouldUseLocalRenderPath(predictionMillis)
     ) {
       return renderer.renderSnapshot(snapshot, {
         dtMillis,
@@ -171,7 +213,26 @@ export function createSolitudeRemoteClientRenderer({
     }
 
     if (!renderer.worldRenderer.mirror.applySnapshot(snapshot)) return false;
-    applyLocalPrediction(renderer, focusEntityId, predictionMillis);
+    const controlledBody = findControlledBody(renderer, focusEntityId);
+    if (!controlledBody) {
+      return renderer.renderSnapshot(snapshot, {
+        dtMillis,
+        dtSimMillis: dtMillis,
+      });
+    }
+
+    if (shouldPredictLocalShip(predictionMillis)) {
+      applyLocalPrediction(renderer, controlledBody, predictionMillis);
+    }
+    lastPredictedLocalState = captureLocalShipVisualState(
+      lastPredictedLocalState,
+      controlledBody,
+    );
+    applyLocalVisualCorrection(reconciliationState, controlledBody, nowMillis);
+    lastRenderedLocalState = captureLocalShipVisualState(
+      lastRenderedLocalState,
+      controlledBody,
+    );
     renderer.renderCurrent({
       dtMillis,
       dtSimMillis: predictionMillis,
@@ -181,14 +242,10 @@ export function createSolitudeRemoteClientRenderer({
 
   function applyLocalPrediction(
     renderer: ReturnType<typeof createRemoteCanvasRenderer>,
-    focusEntityId: string,
+    controlledBody: ControlledBody,
     predictionMillis: number,
   ): void {
     const world = renderer.worldRenderer.mirror.world;
-    const controlledBody = world.controllableBodies.find(
-      (body) => body.id === focusEntityId,
-    );
-    if (!controlledBody) return;
     applySpacecraftVehicleDynamics({
       controlInput: predictionState.controlInput,
       controlPlugins: [],
@@ -199,6 +256,39 @@ export function createSolitudeRemoteClientRenderer({
       propulsionResolvers: [],
       world,
     });
+  }
+
+  function shouldUseLocalRenderPath(predictionMillis: number): boolean {
+    return (
+      shouldPredictLocalShip(predictionMillis) ||
+      reconciliationState.correction.active
+    );
+  }
+
+  function shouldPredictLocalShip(predictionMillis: number): boolean {
+    return predictionMillis > 0 && hasActiveLocalPrediction(predictionState);
+  }
+
+  function findControlledBody(
+    renderer: ReturnType<typeof createRemoteCanvasRenderer>,
+    focusEntityId: string,
+  ) {
+    return renderer.worldRenderer.mirror.world.controllableBodies.find(
+      (body) => body.id === focusEntityId,
+    );
+  }
+
+  function findSnapshotEntity(
+    entities: readonly RuntimeEntitySnapshot[],
+    entityId: EntityId,
+  ): RuntimeEntitySnapshot | undefined {
+    return entities.find((entity) => entity.id === entityId);
+  }
+
+  function publishPredictionMetrics(): void {
+    window.__solitudePredictionMetrics = copyLocalPredictionErrorMetrics(
+      reconciliationState.metrics,
+    );
   }
 
   function getPredictionMillis(nowMillis: number): number {
