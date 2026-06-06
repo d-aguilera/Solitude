@@ -5,7 +5,7 @@
 - **App**: Solitude — browser-based spaceflight + orbital mechanics sandbox with pilot and picture-in-picture axial views.
 - **Core value**: real-ish Newtonian gravity and a controllable spacecraft, rendered in 2D/3D projections.
 - **Primary user**: someone exploring orbital dynamics and spacecraft controls.
-- **Current strategic direction**: keep the engine generic; keep Solitude-specific spacecraft, solar-system, playback, and operator behavior in the Solitude package/plugins.
+- **Current strategic direction**: keep the engine generic; keep Solitude-specific spacecraft, solar-system, playback, operator behavior, and client/server gameplay feel work in owning packages/plugins.
 
 ## How To Use This File
 
@@ -25,7 +25,7 @@
 
 ## Current focus
 
-- **Primary active work**: client/server gameplay feel; the proof-of-concept architecture is in place, and the next phase is a real-time authoritative loop, authoritative snapshot timing/buffering, and local prediction for the controlled ship. See `MEMORY_CLIENT_SERVER_2.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
+- **Primary active work**: client/server gameplay feel; the server-owned real-time loop, compact snapshots, load metrics, sequenced inputs, local prediction, and render-only reconciliation are in place. The next phase is restoring smooth remote-entity interpolation without disturbing predicted local flight. See `MEMORY_CLIENT_SERVER_2.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
 - **Operator/focus boundary**: core/runtime contexts use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`.
 - **Remaining operator follow-ups**: foreground/background UX and declarative input lock policy live in `MEMORY_OPERATOR_MODEL.md`.
 - **Retired compatibility names**: keep `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming out of source.
@@ -85,8 +85,8 @@
 - Core owns generic focus, primary-view plumbing, simulation phase order, gravity, spin, collision, setup, render preparation, and plugin port/capability contracts.
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
-- Server runtime proof lives in `packages/server/src/runtime.ts`; it composes shared `@solitude/sim` headless Solitude code, steps entity-addressed controls, and reuses runtime snapshot storage.
-- Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, receives authoritative model/snapshot messages over WebSocket, sends server-authoritative controls for its assigned ship, interpolates locally, and renders through `@solitude/browser`.
+- Server runtime lives in `packages/server/src/runtime.ts`; it composes shared `@solitude/sim` headless Solitude code, steps entity-addressed controls, and reuses runtime snapshot storage.
+- Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, receives authoritative model/snapshot messages over WebSocket, sends sequenced server-authoritative controls for its assigned ship, predicts the locally controlled ship immediately, smooths reconciliation visually, exposes prediction metrics on `window.__solitudePredictionMetrics`, and renders through `@solitude/browser`.
 - Shared browser-safe protocol contract lives in `@solitude/protocol`; browser client adapters live in `@solitude/client`.
 - Browser remote-world mirror proof lives in `@solitude/browser/remoteWorldMirror`; it applies authoritative runtime snapshots into a local world via a reusable indexed workspace.
 - Server-safe Solitude headless composition lives in `@solitude/sim`; `@solitude/server` intentionally does not depend on the browser-facing `solitude` package.
@@ -102,7 +102,11 @@
 - `packages/browser/src/infra/domBootstrap.ts`: browser runtime composition.
 - `packages/browser/src/infra/remoteWorldMirror.ts`: non-DOM authoritative snapshot apply mirror for future network clients.
 - `packages/sim/src/headless.ts`: shared server-safe/browser-safe Solitude headless composition.
-- `packages/server/src/runtime.ts`: non-networked authoritative server runtime proof.
+- `packages/server/src/runtime.ts`: authoritative server runtime composition.
+- `packages/server/src/metrics.ts`: rolling server stream metrics for snapshot cadence, payload size, fanout, step timing, and socket counts.
+- `packages/client/src/localPrediction.ts`: client-side input prediction state for the assigned ship.
+- `packages/client/src/localReconciliation.ts`: prediction error metrics and render-only visual correction smoothing.
+- `scripts/run-server-load.mjs`: headless WebSocket load and input-latency harness for local or deployed servers.
 - `packages/solitude/src/bootstrap.ts`: Solitude browser app composition.
 - `packages/sim/src/plugins/spacecraftOperator/`: spacecraft controls, dynamics, telemetry state, and forward camera rig.
 - `packages/solitude/src/plugins/operatorSwitch/`: default runtime focus switching between controllable ships.
@@ -135,7 +139,7 @@
 
 ## Next Steps Snapshot
 
-- Active path: client/server gameplay feel; move from proof-of-concept remote snapshots toward a server-owned real-time loop and predicted local flight. See `MEMORY_CLIENT_SERVER_2.md`.
+- Active path: client/server gameplay feel; keep local prediction/reconciliation stable and restore smooth remote-entity interpolation with an ordered authoritative snapshot buffer. See `MEMORY_CLIENT_SERVER_2.md`.
 - Package split migration is closed; future package work is normal API curation.
 - Operator runtime focus switching series is closed; remaining operator-model work is foreground/background UX and declarative input lock policy. See `MEMORY_OPERATOR_MODEL.md`.
 - Planned future work: Solitude-owned headless playback runner. See `MEMORY_HEADLESS_PLAYBACK.md`.

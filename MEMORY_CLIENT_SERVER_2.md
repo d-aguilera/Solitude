@@ -106,6 +106,7 @@ Browser client
     - Sample by target authoritative simulation time.
     - Interpolate between nearest snapshots.
     - Allow only short bounded extrapolation when the buffer underruns.
+    - This was intentionally pushed behind local prediction because perceived input latency was the larger gameplay problem.
 
 14. Add client prediction for the locally controlled ship.
     - Local controls must affect the assigned ship immediately.
@@ -113,9 +114,15 @@ Browser client
     - Reconcile predicted state against authoritative snapshots.
     - Keep other entities interpolated from server state.
 
+15. Harden prediction/reconciliation feel.
+    - Keep visual correction smoothing for the assigned ship.
+    - Keep prediction metrics available through `window.__solitudePredictionMetrics`.
+    - Keep reconciliation render-only so HUD/projection/autopilot readouts are not polluted by temporary visual correction.
+    - Tune only against interactive feel plus metrics; avoid special-case release patches unless the measured model demands them.
+
 ## Current Plan
 
-Deliver the real-time authoritative loop first:
+Delivered authoritative loop foundation:
 
 - WebSocket-only gameplay path is in place.
 - Server-owned fixed 60 Hz simulation policy is in place.
@@ -129,24 +136,30 @@ Deliver the real-time authoritative loop first:
 - Compact dynamic encoding review is in place.
 - First compact dynamic encoding change is in place.
 - Pressure-test multiplayer capacity is in place.
+
+Delivered local input/prediction feel:
+
 - Sequenced input messages and snapshot input acknowledgements are in place.
 - Load harness input latency mode is in place.
-- First client-side prediction slice is in place for the locally controlled ship.
+- Client-side prediction is in place for the locally controlled ship.
 - Visual reconciliation smoothing and prediction error metrics are in place.
+- Reconciliation is render-only for the controlled ship, so HUD/projection readouts observe the restored local state.
 
-Then deliver predicted local flight:
+Next, restore smooth remote presentation:
 
 - Ordered interpolation buffer based on simulation time.
-- Broader client-side prediction and reconciliation for the assigned ship.
 - Interpolated remote entities.
+- Bounded extrapolation only when the buffer underruns.
+- Keep the local controlled ship on the prediction/reconciliation path, not on the remote interpolation path.
 
 ## Clear Next Step
 
-Verify local prediction reconciliation quality:
+Restore remote entity interpolation without disturbing local prediction:
 
-- test quick attitude inputs locally and against the GRU deployment;
-- inspect `window.__solitudePredictionMetrics` while deliberately creating correction snaps;
-- decide whether the next slice should make prediction replay more exact or restore remote interpolation.
+- introduce an ordered snapshot buffer keyed by authoritative simulation time;
+- render non-controlled entities from buffered/interpolated authority;
+- keep the locally controlled ship predicted immediately and reconciled visually;
+- verify local feel, remote smoothness, and `window.__solitudePredictionMetrics` together.
 
 ## Things To Watch
 
@@ -155,3 +168,5 @@ Verify local prediction reconciliation quality:
 - Browser-only plugins should not leak into the authoritative server runtime.
 - Snapshot cadence increases can expose bandwidth, serialization, and GC pressure quickly.
 - Client prediction must avoid inventing a second spacecraft model that drifts from server behavior.
+- Prediction/reconciliation fixes should be tested near high-contrast geometry like the Moon; pitch-release snaps were easier to see there than in empty space.
+- Visual correction must not leak into HUD/projection/autopilot readouts; restore the local ship state after render-only smoothing.
