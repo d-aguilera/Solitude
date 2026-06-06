@@ -103,6 +103,19 @@ export function captureLocalShipVisualState(
   return state;
 }
 
+export function restoreLocalShipVisualState(
+  body: ControlledBody,
+  state: LocalShipVisualState,
+): void {
+  vec3.copyInto(body.position, state.position);
+  vec3.copyInto(body.velocity, state.velocity);
+  mat3.copy(state.orientation, body.orientation);
+  localFrame.copyInto(body.frame, state.frame);
+  body.angularVelocity.roll = state.angularVelocity.roll;
+  body.angularVelocity.pitch = state.angularVelocity.pitch;
+  body.angularVelocity.yaw = state.angularVelocity.yaw;
+}
+
 export function reconcileLocalShipVisualState(
   reconciliation: LocalReconciliationState,
   predictedState: LocalShipVisualState | null,

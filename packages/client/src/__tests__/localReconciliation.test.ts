@@ -7,6 +7,7 @@ import {
   captureLocalShipVisualState,
   createLocalReconciliationState,
   reconcileLocalShipVisualState,
+  restoreLocalShipVisualState,
 } from "../localReconciliation";
 
 describe("local reconciliation", () => {
@@ -117,6 +118,26 @@ describe("local reconciliation", () => {
 
     expect(currentPredictedBody.frame.right.x).toBeCloseTo(0);
     expect(currentPredictedBody.frame.right.y).toBeCloseTo(1);
+  });
+
+  it("restores the local ship state after visual-only correction", () => {
+    const predictedBody = createBody(600, Math.PI / 8);
+    predictedBody.angularVelocity.pitch = 0.5;
+    const captured = captureLocalShipVisualState(null, predictedBody);
+
+    predictedBody.position.x = 1000;
+    predictedBody.frame = createFrame(Math.PI / 3);
+    predictedBody.orientation = localFrame.intoMat3(
+      mat3.zero(),
+      predictedBody.frame,
+    );
+    predictedBody.angularVelocity.pitch = -0.5;
+
+    restoreLocalShipVisualState(predictedBody, captured);
+
+    expect(predictedBody.position.x).toBe(600);
+    expect(predictedBody.frame.right.x).toBeCloseTo(Math.cos(Math.PI / 8));
+    expect(predictedBody.angularVelocity.pitch).toBe(0.5);
   });
 });
 

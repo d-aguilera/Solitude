@@ -42,6 +42,7 @@ import {
   copyLocalPredictionErrorMetrics,
   createLocalReconciliationState,
   reconcileLocalShipVisualState,
+  restoreLocalShipVisualState,
   type LocalPredictionErrorMetrics,
   type LocalShipVisualState,
 } from "./localReconciliation";
@@ -237,6 +238,7 @@ export function createSolitudeRemoteClientRenderer({
       dtMillis,
       dtSimMillis: predictionMillis,
     });
+    restoreLocalShipVisualState(controlledBody, lastPredictedLocalState);
     return true;
   }
 
