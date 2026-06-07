@@ -1,0 +1,28 @@
+{
+  "name": "@solitude/display",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./plugins/axialViews": "./src/plugins/axialViews/index.ts",
+    "./plugins/bodyLabels": "./src/plugins/bodyLabels/index.ts",
+    "./plugins/catalog": "./src/plugins/catalog.ts",
+    "./plugins/hud": "./src/plugins/hud/index.ts",
+    "./plugins/orbitTelemetry": "./src/plugins/orbitTelemetry/index.ts",
+    "./plugins/orbitTelemetry/hud": "./src/plugins/orbitTelemetry/hud.ts",
+    "./plugins/orbitTelemetry/orbitReadout": "./src/plugins/orbitTelemetry/orbitReadout.ts",
+    "./plugins/shipTelemetry": "./src/plugins/shipTelemetry/index.ts",
+    "./plugins/shipTelemetry/hud": "./src/plugins/shipTelemetry/hud.ts",
+    "./plugins/trajectories": "./src/plugins/trajectories/index.ts",
+    "./plugins/trajectories/trajectoryPlan": "./src/plugins/trajectories/trajectoryPlan.ts",
+    "./plugins/velocitySegments": "./src/plugins/velocitySegments/index.ts"
+  },
+  "dependencies": {
+    "@solitude/browser": "0.0.0",
+    "@solitude/engine": "0.0.0",
+    "@solitude/sim": "0.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

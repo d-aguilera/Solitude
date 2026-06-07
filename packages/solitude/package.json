@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@solitude/browser": "0.0.0",
+    "@solitude/display": "0.0.0",
     "@solitude/engine": "0.0.0",
     "@solitude/protocol": "0.0.0",
     "@solitude/sim": "0.0.0"

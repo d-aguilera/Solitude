@@ -1,12 +1,15 @@
+import {
+  remoteRenderPluginCatalog,
+  remoteRenderPluginIds,
+} from "@solitude/display/plugins/catalog";
 import { loadPlugins } from "@solitude/engine/plugin";
 import { hudPanelCapability } from "@solitude/sim/hud/provider";
 import { describe, expect, it } from "vitest";
-import { remoteRenderPluginIds, solitudePluginCatalog } from "../catalog";
 
 describe("remote render plugin catalog", () => {
   it("includes remote-compatible HUD providers", () => {
     const plugins = loadPlugins({
-      catalog: solitudePluginCatalog,
+      catalog: remoteRenderPluginCatalog,
       ids: remoteRenderPluginIds,
     });
 

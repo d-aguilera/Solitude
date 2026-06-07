@@ -1,3 +1,5 @@
+import { createHudPanel as createOrbitTelemetryHudPanel } from "@solitude/display/plugins/orbitTelemetry/hud";
+import { createHudPanel as createShipTelemetryHudPanel } from "@solitude/display/plugins/shipTelemetry/hud";
 import {
   circularSpeedAtRadius,
   localFrame,
@@ -15,10 +17,8 @@ import { createHudPanel as createAutopilotHudPanel } from "@solitude/sim/plugins
 import { createSpacecraftOperatorTelemetryProvider } from "@solitude/sim/plugins/spacecraftOperator/capabilities";
 import { createSpacecraftOperatorTelemetry } from "@solitude/sim/plugins/spacecraftOperator/telemetry";
 import { describe, expect, it } from "vitest";
-import { createHudPanel as createOrbitTelemetryHudPanel } from "../orbitTelemetry/hud";
 import { createHudPanel as createRuntimeTelemetryHudPanel } from "../runtimeTelemetry/hud";
 import { createRuntimeTelemetryController } from "../runtimeTelemetry/logic";
-import { createHudPanel as createShipTelemetryHudPanel } from "../shipTelemetry/hud";
 
 function createHudGrid(): HudGrid {
   return [

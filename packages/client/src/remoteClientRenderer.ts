@@ -4,6 +4,10 @@ import {
 } from "@solitude/browser/dom/overlayPorts";
 import { createRemoteCanvasRenderer } from "@solitude/browser/remoteCanvasRenderer";
 import {
+  remoteRenderPluginCatalog,
+  remoteRenderPluginIds,
+} from "@solitude/display/plugins/catalog";
+import {
   loadPlugins,
   type ControlInput,
   type FramePolicy,
@@ -41,10 +45,6 @@ import {
   type LocalPredictionErrorMetrics,
   type LocalShipVisualState,
 } from "./localReconciliation";
-import {
-  remoteRenderPluginCatalog,
-  remoteRenderPluginIds,
-} from "./remoteRenderCatalog";
 
 declare global {
   interface Window {
