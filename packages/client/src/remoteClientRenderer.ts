@@ -26,10 +26,6 @@ import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConf
 import type { SpacecraftControlState } from "@solitude/sim/plugins/spacecraftOperator/controlLogic";
 import { applySpacecraftVehicleDynamics } from "@solitude/sim/plugins/spacecraftOperator/core";
 import {
-  remoteRenderPluginIds,
-  solitudePluginCatalog,
-} from "solitude/plugins/catalog";
-import {
   acknowledgeLocalInputs,
   createLocalPredictionState,
   hasActiveLocalPrediction,
@@ -45,6 +41,10 @@ import {
   type LocalPredictionErrorMetrics,
   type LocalShipVisualState,
 } from "./localReconciliation";
+import {
+  remoteRenderPluginCatalog,
+  remoteRenderPluginIds,
+} from "./remoteRenderCatalog";
 
 declare global {
   interface Window {
@@ -84,7 +84,7 @@ export function createSolitudeRemoteClientRenderer({
   plugins: clientPlugins = [],
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
   const plugins = loadPlugins({
-    catalog: solitudePluginCatalog,
+    catalog: remoteRenderPluginCatalog,
     ids: remoteRenderPluginIds,
   }).concat(clientPlugins);
   const capabilityRegistry = createPluginCapabilityRegistry(
