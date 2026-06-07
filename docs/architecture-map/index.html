@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Solitude Architecture Map</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <header class="sidebar-header">
+          <h1>Architecture Map</h1>
+          <p id="summary">Loading architecture.json</p>
+        </header>
+
+        <label class="search">
+          <span>Search</span>
+          <input id="search" type="search" autocomplete="off" />
+        </label>
+
+        <section class="filters" aria-label="Edge filters">
+          <label
+            ><input type="checkbox" value="dependency" checked /> package
+            dependency</label
+          >
+          <label
+            ><input type="checkbox" value="module-import" checked /> module
+            import</label
+          >
+          <label
+            ><input type="checkbox" value="symbol-reference" checked /> symbol
+            reference</label
+          >
+        </section>
+
+        <nav id="tree" class="tree" aria-label="Architecture tree"></nav>
+      </aside>
+
+      <section class="workspace">
+        <div class="toolbar">
+          <button id="expand-level-1" type="button">Level 1</button>
+          <button id="expand-level-2" type="button">Level 2</button>
+          <button id="expand-all" type="button">Expand All</button>
+          <button id="collapse-all" type="button">Collapse All</button>
+          <button id="fit" type="button">Fit</button>
+          <span id="selection" class="selection">Select a node</span>
+        </div>
+        <div id="graph" class="graph" aria-label="Architecture graph"></div>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>
