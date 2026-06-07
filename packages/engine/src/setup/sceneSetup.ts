@@ -4,7 +4,7 @@ import {
 } from "../app/configPorts";
 import type { Scene } from "../app/scenePorts";
 import type { World } from "../domain/domainPorts";
-import { createSceneFromWorld } from "../render/sceneAdapter";
+import { createSceneFromWorld } from "./sceneAdapter";
 
 export interface SceneSetup {
   scene: Scene;

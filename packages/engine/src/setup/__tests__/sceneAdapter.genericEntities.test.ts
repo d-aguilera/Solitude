@@ -10,7 +10,7 @@ import type {
 import { localFrame } from "../../domain/localFrame";
 import { mat3 } from "../../domain/mat3";
 import { vec3 } from "../../domain/vec3";
-import { createScene } from "../../setup/sceneSetup";
+import { createScene } from "../sceneSetup";
 
 const mesh: Mesh = {
   faces: [],
