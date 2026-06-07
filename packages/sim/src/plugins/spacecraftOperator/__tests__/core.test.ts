@@ -7,9 +7,9 @@ import { describe, expect, it } from "vitest";
 import {
   createAutonomousControlProvider,
   createControlPlugin as createAutopilotControlPlugin,
-} from "../autopilot/core";
-import { createSpacecraftVehicleDynamicsPlugin } from "./core";
-import { createSpacecraftOperatorTelemetry } from "./telemetry";
+} from "../../autopilot/core";
+import { createSpacecraftVehicleDynamicsPlugin } from "../core";
+import { createSpacecraftOperatorTelemetry } from "../telemetry";
 
 const EMPTY_ENTITY_CONTROL_INPUTS = new Map();
 

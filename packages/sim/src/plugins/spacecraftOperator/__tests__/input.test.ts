@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createInputPlugin } from "./input";
+import { createInputPlugin } from "../input";
 
 describe("spacecraft operator input", () => {
   it("declares spacecraft control actions and key bindings", () => {

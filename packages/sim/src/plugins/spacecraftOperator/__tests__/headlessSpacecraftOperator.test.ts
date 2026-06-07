@@ -2,7 +2,7 @@ import { localFrame, mat3, vec3 } from "@solitude/engine/math";
 import { createHeadlessLoop } from "@solitude/engine/runtime";
 import type { EntityConfig, WorldConfigBase } from "@solitude/engine/world";
 import { describe, expect, it } from "vitest";
-import { createSpacecraftOperatorPlugin } from "./index";
+import { createSpacecraftOperatorPlugin } from "../index";
 
 function buildHeadlessConfig(): WorldConfigBase {
   const sunId = "body:primary";
