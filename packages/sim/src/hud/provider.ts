@@ -1,6 +1,7 @@
 import type {
   ControlInput,
   PluginCapabilityProvider,
+  PluginCapabilityRegistry,
 } from "@solitude/engine/plugin";
 import type { FocusContext } from "@solitude/engine/runtime";
 import type { World } from "@solitude/engine/world";
@@ -18,6 +19,7 @@ export type HudGrid = [
 export const hudPanelCapability = "solitude.hud.panel.v1";
 
 export interface HudContext {
+  capabilityRegistry: PluginCapabilityRegistry;
   nowMs: number;
   world: World;
   mainFocus: FocusContext;

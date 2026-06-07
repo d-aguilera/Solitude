@@ -12,10 +12,6 @@ import { createOperatorSwitchPlugin } from "./operatorSwitch/index";
 import { createOrbitTelemetryPlugin } from "./orbitTelemetry/index";
 import { createPausePlugin } from "./pause/index";
 import { createPlaybackPlugin } from "./playback/index";
-import {
-  createPluginCompositionContext,
-  type PluginCompositionContext,
-} from "./pluginComposition";
 import { createProfilingPlugin } from "./profiling/index";
 import { createRuntimeTelemetryPlugin } from "./runtimeTelemetry/index";
 import { createShipTelemetryPlugin } from "./shipTelemetry/index";
@@ -62,7 +58,7 @@ export const remoteRenderPluginIds = [
   "velocitySegments",
 ];
 
-export const solitudePluginCatalog: PluginCatalog<PluginCompositionContext> = {
+export const solitudePluginCatalog: PluginCatalog = {
   autopilot: createAutopilotPlugin,
   axialViews: createAxialViewsPlugin,
   bodyLabels: createBodyLabelsPlugin,
@@ -84,5 +80,3 @@ export const solitudePluginCatalog: PluginCatalog<PluginCompositionContext> = {
   trajectories: createTrajectoriesPlugin,
   velocitySegments: createVelocitySegmentsPlugin,
 };
-
-export { createPluginCompositionContext };

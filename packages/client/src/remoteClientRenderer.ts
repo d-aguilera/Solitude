@@ -26,7 +26,6 @@ import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConf
 import type { SpacecraftControlState } from "@solitude/sim/plugins/spacecraftOperator/controlLogic";
 import { applySpacecraftVehicleDynamics } from "@solitude/sim/plugins/spacecraftOperator/core";
 import {
-  createPluginCompositionContext,
   remoteRenderPluginIds,
   solitudePluginCatalog,
 } from "solitude/plugins/catalog";
@@ -86,7 +85,6 @@ export function createSolitudeRemoteClientRenderer({
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
   const plugins = loadPlugins({
     catalog: solitudePluginCatalog,
-    context: createPluginCompositionContext(),
     ids: remoteRenderPluginIds,
   }).concat(clientPlugins);
   const capabilityRegistry = createPluginCapabilityRegistry(

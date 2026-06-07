@@ -3,11 +3,7 @@ import { parseRuntimeOptionsFromSearch } from "@solitude/browser/dom/runtimeOpti
 import { loadPlugins } from "@solitude/engine/plugin";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
-import {
-  createPluginCompositionContext,
-  defaultPluginIds,
-  solitudePluginCatalog,
-} from "./plugins/catalog";
+import { defaultPluginIds, solitudePluginCatalog } from "./plugins/catalog";
 
 /**
  * Top‑level composition entry for the browser runtime.
@@ -16,7 +12,6 @@ function main(): void {
   const runtimeOptions = parseRuntimeOptionsFromSearch(window.location.search);
   const plugins = loadPlugins({
     catalog: solitudePluginCatalog,
-    context: createPluginCompositionContext(),
     ids: defaultPluginIds,
     runtimeOptions,
   });

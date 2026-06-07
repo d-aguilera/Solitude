@@ -1,22 +1,15 @@
 import type { GamePlugin, RuntimeOptions } from "./pluginPorts";
 
-export type PluginFactory<Context> = (
-  runtimeOptions: RuntimeOptions,
-  context: Context,
-) => GamePlugin;
+export type PluginFactory = (runtimeOptions: RuntimeOptions) => GamePlugin;
 
-export type PluginCatalog<Context> = Readonly<
-  Record<string, PluginFactory<Context>>
->;
+export type PluginCatalog = Readonly<Record<string, PluginFactory>>;
 
-export function loadPlugins<Context>({
+export function loadPlugins({
   catalog,
-  context,
   ids,
   runtimeOptions = {},
 }: {
-  catalog: PluginCatalog<Context>;
-  context: Context;
+  catalog: PluginCatalog;
   ids: readonly string[];
   runtimeOptions?: RuntimeOptions;
 }): GamePlugin[] {
@@ -24,7 +17,7 @@ export function loadPlugins<Context>({
   for (const id of ids) {
     const factory = catalog[id];
     if (!factory) continue;
-    plugins.push(factory(runtimeOptions, context));
+    plugins.push(factory(runtimeOptions));
   }
   return plugins;
 }

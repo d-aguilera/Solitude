@@ -2,14 +2,18 @@ import type {
   ControlInput,
   ControlledBodyState,
   MutableControlState,
+  PluginCapabilityProvider,
   PluginCapabilityRegistry,
 } from "@solitude/engine/plugin";
 import type { World } from "@solitude/engine/world";
+import type { SpacecraftOperatorTelemetry } from "./telemetry";
 
 const spacecraftPropulsionResolverCapabilityId =
   "spacecraft.propulsionResolver.v1";
 const spacecraftAutonomousControlCapabilityId =
   "spacecraft.autonomousControl.v1";
+const spacecraftOperatorTelemetryCapabilityId =
+  "spacecraft.operatorTelemetry.v1";
 
 export interface SpacecraftThrustCommand {
   /** Signed main-engine thrust percent in [-1, 1]. */
@@ -48,6 +52,19 @@ export interface SpacecraftAutonomousControl {
     controlInput: ControlInput,
     controlState: MutableControlState,
   ) => void;
+}
+
+export interface SpacecraftOperatorTelemetryProvider {
+  readonly telemetry: SpacecraftOperatorTelemetry;
+}
+
+export function createSpacecraftOperatorTelemetryProvider(
+  telemetry: SpacecraftOperatorTelemetry,
+): PluginCapabilityProvider {
+  return {
+    id: spacecraftOperatorTelemetryCapabilityId,
+    value: { telemetry },
+  };
 }
 
 export function getSpacecraftPropulsionResolvers(

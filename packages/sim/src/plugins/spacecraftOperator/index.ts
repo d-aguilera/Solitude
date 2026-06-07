@@ -1,19 +1,18 @@
 import { localFrame } from "@solitude/engine/math";
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import type { ViewFrameUpdateParams } from "@solitude/engine/render";
-import type { PluginCompositionContext } from "../pluginComposition";
+import { createSpacecraftOperatorTelemetryProvider } from "./capabilities";
 import { createSpacecraftVehicleDynamicsPlugin } from "./core";
 import { createInputPlugin } from "./input";
 import { createSpacecraftOperatorTelemetry } from "./telemetry";
 
 export function createSpacecraftOperatorPlugin(
   _runtimeOptions: RuntimeOptions = {},
-  context?: PluginCompositionContext,
 ): GamePlugin {
-  const telemetry =
-    context?.spacecraftOperatorTelemetry ?? createSpacecraftOperatorTelemetry();
+  const telemetry = createSpacecraftOperatorTelemetry();
   return {
     id: "spacecraftOperator",
+    capabilities: [createSpacecraftOperatorTelemetryProvider(telemetry)],
     input: createInputPlugin(),
     requirements: {
       mainFocus: [

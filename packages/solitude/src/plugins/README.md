@@ -37,13 +37,11 @@ Input plugins contribute action names and key bindings. Browser input has no pro
 
 Plugins may declare focused-entity requirements. Infra validates those requirements against the assembled world and `mainFocus` during setup, before simulation, overlay, and scene hooks run. Missing hard requirements fail startup with the plugin id, focus entity id, and missing capability.
 
-Plugins may also publish operator-specific capabilities through opaque app-level ids. Infra assembles these into a generic registry and passes the registry to plugin contribution factories; core does not inspect capability payloads. A plugin must not import a peer plugin or shared plugin-layer protocol module just to speak a capability protocol. Providers and consumers keep local structural views of the runtime contract and consumers validate unknown payloads before use.
+Plugins may also publish operator-specific capabilities through opaque app-level ids. Infra assembles these into a generic registry and passes the registry to plugin contribution and overlay paths; core does not inspect capability payloads. A plugin must not import a peer plugin just to speak a capability protocol. Providers and consumers keep local structural views of the runtime contract and consumers validate unknown payloads before use.
 
 ## Registration
 
 Available standalone plugins are exported from `packages/solitude/src/plugins/catalog.ts`. Solitude bootstrap chooses which plugin ids to enable and asks the engine-level `loadPlugins` helper to assemble them from that catalog. Browser infra passes runtime URL options to plugins as a raw string map; each plugin owns validation and interpretation of its own option keys.
-
-Catalogs may also create composition-local shared state for plugins that are intentionally paired by that selected catalog. Keep solitude-specific state in `packages/solitude/src/plugins` and pass it into plugin factories; do not route plugin-specific readouts through app/core contexts just to let another plugin display them.
 
 ## World model
 

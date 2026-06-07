@@ -1,19 +1,13 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import { createHudPanelProvider } from "@solitude/sim/hud/provider";
-import type { PluginCompositionContext } from "../pluginComposition";
 import { createHudPanel } from "./hud";
 
 export function createShipTelemetryPlugin(
-  _runtimeOptions: RuntimeOptions,
-  context: PluginCompositionContext,
+  _runtimeOptions: RuntimeOptions = {},
 ): GamePlugin {
   return {
     id: "shipTelemetry",
-    capabilities: [
-      createHudPanelProvider(
-        createHudPanel(context.spacecraftOperatorTelemetry),
-      ),
-    ],
+    capabilities: [createHudPanelProvider(createHudPanel())],
     requirements: {
       mainFocus: ["controlledBody", "motionState"],
     },

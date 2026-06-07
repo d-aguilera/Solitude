@@ -4,10 +4,6 @@ import {
   type RuntimeOptions,
 } from "@solitude/engine/plugin";
 import { createAutopilotPlugin } from "./autopilot/index";
-import {
-  createPluginCompositionContext,
-  type PluginCompositionContext,
-} from "./pluginComposition";
 import { createSolarSystemPlugin } from "./solarSystem/index";
 import { createSpacecraftOperatorPlugin } from "./spacecraftOperator/index";
 
@@ -17,7 +13,7 @@ export const defaultHeadlessPluginIds = [
   "autopilot",
 ];
 
-export const headlessPluginCatalog: PluginCatalog<PluginCompositionContext> = {
+export const headlessPluginCatalog: PluginCatalog = {
   autopilot: createAutopilotPlugin,
   solarSystem: createSolarSystemPlugin,
   spacecraftOperator: createSpacecraftOperatorPlugin,
@@ -29,7 +25,6 @@ export function loadHeadlessPlugins(
 ) {
   return loadPlugins({
     catalog: headlessPluginCatalog,
-    context: createPluginCompositionContext(),
     ids,
     runtimeOptions,
   });
