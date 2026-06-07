@@ -1,9 +1,7 @@
+import { startSolitudeHttpServer } from "@solitude/server/http";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import {
-  createDefaultSolitudeHttpServerOptions,
-  startSolitudeHttpServer,
-} from "./http";
+import { createDefaultSolitudeHttpServerOptions } from "./serverOptions";
 
 const port = Number(process.env.PORT ?? 8787);
 const hostname = process.env.HOST ?? "127.0.0.1";

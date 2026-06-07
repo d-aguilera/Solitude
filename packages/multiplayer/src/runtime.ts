@@ -1,8 +1,3 @@
-import type { ControlInput } from "@solitude/engine/plugin";
-import type {
-  RuntimeWorldSnapshot,
-  WorldAndScene,
-} from "@solitude/engine/runtime";
 import {
   captureRuntimeSnapshotInto,
   createRuntimeSnapshot,
@@ -14,24 +9,8 @@ import {
   removeEntityFromWorld,
   type EntityConfig,
 } from "@solitude/engine/world";
+import type { SolitudeServerGame } from "@solitude/server/game";
 import { createSolitudeHeadlessLoop } from "@solitude/sim/headless";
-
-export type SolitudeServerControlInputs = ReadonlyMap<
-  EntityId,
-  Partial<ControlInput>
->;
-
-export interface SolitudeServerGame {
-  readonly entityConfigs: EntityConfig[];
-  readonly snapshot: RuntimeWorldSnapshot;
-  readonly worldAndScene: WorldAndScene;
-  addEntity: (entity: EntityConfig) => void;
-  removeEntity: (entityId: EntityId) => void;
-  step: (
-    dtMillis: number,
-    controlInputsByEntityId: SolitudeServerControlInputs,
-  ) => RuntimeWorldSnapshot;
-}
 
 export function createSolitudeServerGame(
   initialEntities: readonly EntityConfig[],

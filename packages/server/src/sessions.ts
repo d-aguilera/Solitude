@@ -17,7 +17,7 @@ import {
   type SolitudeProtocolSequence,
   type SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
-import type { SolitudeServerGame } from "./runtime";
+import type { SolitudeServerGame } from "./gamePorts";
 import { compactSnapshotEntities } from "./snapshotEncoding";
 
 const THRUST_CONTROL_IDS = [

@@ -25,7 +25,6 @@ import {
   type SolitudeServerMetrics,
 } from "./metrics";
 import {
-  createDefaultSolitudeGameRunner,
   type SolitudeGameRunner,
   type SolitudeGameRunnerFactory,
   type SolitudeRunningGameSummary,
@@ -63,14 +62,6 @@ export interface SolitudeHttpRequestHandlerOptions {
   createRunner: SolitudeGameRunnerFactory;
   devAssetHandler?: SolitudeDevAssetHandler;
   staticAssetRoot?: string;
-}
-
-export function createDefaultSolitudeHttpServerOptions(): SolitudeHttpServerOptions {
-  return {
-    createRunner: createDefaultSolitudeGameRunner,
-    hostname: "127.0.0.1",
-    port: 8787,
-  };
 }
 
 export function createSolitudeHttpRequestHandler({

@@ -6,7 +6,7 @@ import type {
 import type { EntityConfig, EntityId } from "@solitude/engine/world";
 import type { GameModelMessage } from "@solitude/protocol/protocol";
 import { describe, expect, it } from "vitest";
-import type { SolitudeServerGame } from "../runtime";
+import type { SolitudeServerGame } from "../gamePorts";
 import {
   createSolitudeSessionManager,
   type SolitudeSessionManagerOptions,

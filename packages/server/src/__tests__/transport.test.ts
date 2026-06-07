@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createDefaultSolitudeInProcessTransport } from "../composition/solitudeMultiplayer";
+import { createDefaultTestInProcessTransport } from "./testServerDefaults";
 
 describe("Solitude in-process transport", () => {
   it("validates inbound payloads before routing them to sessions", () => {
-    const transport = createDefaultSolitudeInProcessTransport();
+    const transport = createDefaultTestInProcessTransport();
 
     expect(transport.receive({ type: "createGame" }, 99)).toEqual([
       {
@@ -16,7 +16,7 @@ describe("Solitude in-process transport", () => {
   });
 
   it("routes valid client messages and steps games", () => {
-    const transport = createDefaultSolitudeInProcessTransport();
+    const transport = createDefaultTestInProcessTransport();
 
     expect(
       withoutGameModels(
@@ -85,7 +85,7 @@ describe("Solitude in-process transport", () => {
   });
 
   it("lists session games", () => {
-    const transport = createDefaultSolitudeInProcessTransport();
+    const transport = createDefaultTestInProcessTransport();
     transport.receive(
       {
         type: "createGame",
@@ -124,7 +124,7 @@ describe("Solitude in-process transport", () => {
   });
 
   it("cleans up empty session games", () => {
-    const transport = createDefaultSolitudeInProcessTransport();
+    const transport = createDefaultTestInProcessTransport();
     transport.receive(
       {
         type: "createGame",

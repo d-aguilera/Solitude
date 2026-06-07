@@ -2,6 +2,14 @@ import { km } from "@solitude/engine/math";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { EntityConfig, EntityId } from "@solitude/engine/world";
 import {
+  createSolitudeSessionManager,
+  type SolitudeSessionManager,
+} from "@solitude/server/sessions";
+import {
+  createSolitudeInProcessTransport,
+  type SolitudeInProcessTransport,
+} from "@solitude/server/transport";
+import {
   controllableEntityProviderCapability,
   isControllableEntityProvider,
 } from "@solitude/sim/controllableEntities/provider";
@@ -9,14 +17,6 @@ import { createPolyFighterPlugin } from "@solitude/sim/plugins/polyFighter";
 import { createSolarSystemCelestialBodyProvider } from "@solitude/sim/plugins/solarSystem/celestialBodyProvider";
 import { createOrbitingPlacement } from "@solitude/sim/spacecraft/orbitalPlacement";
 import { createSolitudeServerGame } from "../runtime";
-import {
-  createSolitudeSessionManager,
-  type SolitudeSessionManager,
-} from "../sessions";
-import {
-  createSolitudeInProcessTransport,
-  type SolitudeInProcessTransport,
-} from "../transport";
 
 const DEFAULT_ASSIGNABLE_ENTITY_COUNT = 16;
 const EARTH_ID = "planet:earth";

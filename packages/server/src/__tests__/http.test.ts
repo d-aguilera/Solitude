@@ -3,16 +3,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { WebSocket } from "ws";
-import {
-  createDefaultSolitudeHttpServerOptions,
-  startSolitudeHttpServer,
-  type SolitudeHttpServer,
-} from "../http";
+import { startSolitudeHttpServer, type SolitudeHttpServer } from "../http";
+import { createDefaultTestHttpServerOptions } from "./testServerDefaults";
 
 describe("Solitude HTTP server", () => {
   it("serves the interactive probe page", async () => {
     const server = await startSolitudeHttpServer({
-      ...createDefaultSolitudeHttpServerOptions(),
+      ...createDefaultTestHttpServerOptions(),
       devAssetHandler: async (request, response) => {
         if (request.url === "/") {
           response.writeHead(200, { "content-type": "text/html" });
@@ -68,7 +65,7 @@ describe("Solitude HTTP server", () => {
     await writeFile(join(assetRoot, "games"), "not the API");
 
     const server = await startSolitudeHttpServer({
-      ...createDefaultSolitudeHttpServerOptions(),
+      ...createDefaultTestHttpServerOptions(),
       port: 0,
       staticAssetRoot: assetRoot,
     });
@@ -273,7 +270,7 @@ describe("Solitude HTTP server", () => {
 
   it("can delegate dev-only browser module requests", async () => {
     const server = await startSolitudeHttpServer({
-      ...createDefaultSolitudeHttpServerOptions(),
+      ...createDefaultTestHttpServerOptions(),
       devAssetHandler: async (_request, response) => {
         response.writeHead(200, { "content-type": "text/javascript" });
         response.end("export const ok = true;");
@@ -527,7 +524,7 @@ describe("Solitude HTTP server", () => {
 
 async function startTestServer(): Promise<SolitudeHttpServer> {
   return startSolitudeHttpServer({
-    ...createDefaultSolitudeHttpServerOptions(),
+    ...createDefaultTestHttpServerOptions(),
     port: 0,
   });
 }

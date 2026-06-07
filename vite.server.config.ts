@@ -7,7 +7,7 @@ export default defineConfig({
     minify: false,
     outDir: "dist/server",
     rollupOptions: {
-      input: resolve("packages/server/src/main.ts"),
+      input: resolve("packages/multiplayer/src/main.ts"),
       output: {
         entryFileNames: "main.js",
       },

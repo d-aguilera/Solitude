@@ -18,8 +18,12 @@ const vite = await createViteServer({
   },
 });
 
-const { createDefaultSolitudeHttpServerOptions, startSolitudeHttpServer } =
-  await vite.ssrLoadModule(resolve("packages/server/src/http.ts"));
+const { startSolitudeHttpServer } = await vite.ssrLoadModule(
+  resolve("packages/server/src/http.ts"),
+);
+const { createDefaultSolitudeHttpServerOptions } = await vite.ssrLoadModule(
+  resolve("packages/multiplayer/src/serverOptions.ts"),
+);
 await vite.ws.close();
 
 const server = await startSolitudeHttpServer({
