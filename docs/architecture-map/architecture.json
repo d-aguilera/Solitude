@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-07T21:22:37.541Z",
+  "generatedAt": "2026-06-09T19:09:15.100Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -29,13 +29,6 @@
       "label": "./celestialBodies/provider",
       "packageName": "@solitude/sim",
       "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "kind": "module",
-      "label": "./composition/solitudeMultiplayer",
-      "packageName": "@solitude/multiplayer",
-      "parent": "pkg:@solitude/multiplayer"
     },
     {
       "id": "module:@solitude/sim:./config/worldAndSceneConfig",
@@ -386,20 +379,6 @@
       "label": "./runtime",
       "packageName": "@solitude/engine",
       "parent": "pkg:@solitude/engine"
-    },
-    {
-      "id": "module:@solitude/multiplayer:./runtime",
-      "kind": "module",
-      "label": "./runtime",
-      "packageName": "@solitude/multiplayer",
-      "parent": "pkg:@solitude/multiplayer"
-    },
-    {
-      "id": "module:@solitude/multiplayer:./serverOptions",
-      "kind": "module",
-      "label": "./serverOptions",
-      "packageName": "@solitude/multiplayer",
-      "parent": "pkg:@solitude/multiplayer"
     },
     {
       "id": "module:@solitude/server:./sessions",
@@ -1075,46 +1054,6 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultMultiplayerSpacecraftEntity",
-      "kind": "symbol",
-      "label": "createDefaultMultiplayerSpacecraftEntity",
-      "packageName": "@solitude/multiplayer",
-      "parent": "module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner",
-      "kind": "symbol",
-      "label": "createDefaultSolitudeGameRunner",
-      "packageName": "@solitude/multiplayer",
-      "parent": "module:@solitude/multiplayer:./serverOptions",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeHttpServerOptions",
-      "kind": "symbol",
-      "label": "createDefaultSolitudeHttpServerOptions",
-      "packageName": "@solitude/multiplayer",
-      "parent": "module:@solitude/multiplayer:./serverOptions",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeInProcessTransport",
-      "kind": "symbol",
-      "label": "createDefaultSolitudeInProcessTransport",
-      "packageName": "@solitude/multiplayer",
-      "parent": "module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeSessionManager",
-      "kind": "symbol",
-      "label": "createDefaultSolitudeSessionManager",
-      "packageName": "@solitude/multiplayer",
-      "parent": "module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/protocol:./protocol:createErrorMessage",
       "kind": "symbol",
       "label": "createErrorMessage",
@@ -1456,14 +1395,6 @@
       "label": "createSolitudeInProcessTransport",
       "packageName": "@solitude/server",
       "parent": "module:@solitude/server:./transport",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame",
-      "kind": "symbol",
-      "label": "createSolitudeServerGame",
-      "packageName": "@solitude/multiplayer",
-      "parent": "module:@solitude/multiplayer:./runtime",
       "symbolKind": "function"
     },
     {
@@ -4403,114 +4334,6 @@
       "from": "module:@solitude/display:./plugins/velocitySegments",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./composition/solitudeMultiplayer->module:@solitude/engine:./math",
-      "from": "module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./composition/solitudeMultiplayer->module:@solitude/engine:./runtime",
-      "from": "module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./runtime"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./composition/solitudeMultiplayer->module:@solitude/engine:./world",
-      "from": "module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./composition/solitudeMultiplayer->module:@solitude/multiplayer:./runtime",
-      "from": "module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "kind": "module-import",
-      "to": "module:@solitude/multiplayer:./runtime"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./composition/solitudeMultiplayer->module:@solitude/server:./sessions",
-      "from": "module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "kind": "module-import",
-      "to": "module:@solitude/server:./sessions"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./composition/solitudeMultiplayer->module:@solitude/server:./transport",
-      "from": "module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "kind": "module-import",
-      "to": "module:@solitude/server:./transport"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./composition/solitudeMultiplayer->module:@solitude/sim:./controllableEntities/provider",
-      "from": "module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./controllableEntities/provider"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./composition/solitudeMultiplayer->module:@solitude/sim:./plugins/polyFighter",
-      "from": "module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/polyFighter"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./composition/solitudeMultiplayer->module:@solitude/sim:./plugins/solarSystem/celestialBodyProvider",
-      "from": "module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/solarSystem/celestialBodyProvider"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./composition/solitudeMultiplayer->module:@solitude/sim:./spacecraft/orbitalPlacement",
-      "from": "module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./spacecraft/orbitalPlacement"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./runtime->module:@solitude/engine:./runtime",
-      "from": "module:@solitude/multiplayer:./runtime",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./runtime"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./runtime->module:@solitude/engine:./world",
-      "from": "module:@solitude/multiplayer:./runtime",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./runtime->module:@solitude/server:./game",
-      "from": "module:@solitude/multiplayer:./runtime",
-      "kind": "module-import",
-      "to": "module:@solitude/server:./game"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./runtime->module:@solitude/sim:./headless",
-      "from": "module:@solitude/multiplayer:./runtime",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./headless"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./serverOptions->module:@solitude/multiplayer:./composition/solitudeMultiplayer",
-      "from": "module:@solitude/multiplayer:./serverOptions",
-      "kind": "module-import",
-      "to": "module:@solitude/multiplayer:./composition/solitudeMultiplayer"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./serverOptions->module:@solitude/server:./http",
-      "from": "module:@solitude/multiplayer:./serverOptions",
-      "kind": "module-import",
-      "to": "module:@solitude/server:./http"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./serverOptions->module:@solitude/server:./runner",
-      "from": "module:@solitude/multiplayer:./serverOptions",
-      "kind": "module-import",
-      "to": "module:@solitude/server:./runner"
-    },
-    {
-      "id": "module-import:module:@solitude/multiplayer:./serverOptions->module:@solitude/server:./ticker",
-      "from": "module:@solitude/multiplayer:./serverOptions",
-      "kind": "module-import",
-      "to": "module:@solitude/server:./ticker"
     },
     {
       "id": "module-import:module:@solitude/protocol:./protocol->module:@solitude/engine:./plugin",
@@ -8723,162 +8546,6 @@
       "from": "symbol:@solitude/engine:./world:WorldSetup",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./world:World"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultMultiplayerSpacecraftEntity->symbol:@solitude/engine:./world:EntityConfig",
-      "from": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultMultiplayerSpacecraftEntity",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:EntityConfig"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultMultiplayerSpacecraftEntity->symbol:@solitude/engine:./world:EntityId",
-      "from": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultMultiplayerSpacecraftEntity",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:EntityId"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultMultiplayerSpacecraftEntity->symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement",
-      "from": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultMultiplayerSpacecraftEntity",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeInProcessTransport->symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeSessionManager",
-      "from": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeInProcessTransport",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeSessionManager"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeInProcessTransport->symbol:@solitude/server:./transport:createSolitudeInProcessTransport",
-      "from": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeInProcessTransport",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/server:./transport:createSolitudeInProcessTransport"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeInProcessTransport->symbol:@solitude/server:./transport:SolitudeInProcessTransport",
-      "from": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeInProcessTransport",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/server:./transport:SolitudeInProcessTransport"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeSessionManager->symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultMultiplayerSpacecraftEntity",
-      "from": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeSessionManager",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultMultiplayerSpacecraftEntity"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeSessionManager->symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame",
-      "from": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeSessionManager",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeSessionManager->symbol:@solitude/server:./sessions:createSolitudeSessionManager",
-      "from": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeSessionManager",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/server:./sessions:createSolitudeSessionManager"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeSessionManager->symbol:@solitude/server:./sessions:SolitudeSessionManager",
-      "from": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeSessionManager",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/server:./sessions:SolitudeSessionManager"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame->symbol:@solitude/engine:./runtime:captureRuntimeSnapshotInto",
-      "from": "symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./runtime:captureRuntimeSnapshotInto"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame->symbol:@solitude/engine:./runtime:createRuntimeSnapshot",
-      "from": "symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./runtime:createRuntimeSnapshot"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame->symbol:@solitude/engine:./runtime:updateFocusContext",
-      "from": "symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./runtime:updateFocusContext"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame->symbol:@solitude/engine:./world:addEntityConfigToWorld",
-      "from": "symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:addEntityConfigToWorld"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame->symbol:@solitude/engine:./world:EntityConfig",
-      "from": "symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:EntityConfig"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame->symbol:@solitude/engine:./world:removeEntityFromWorld",
-      "from": "symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:removeEntityFromWorld"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame->symbol:@solitude/server:./game:SolitudeServerGame",
-      "from": "symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/server:./game:SolitudeServerGame"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame->symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop",
-      "from": "symbol:@solitude/multiplayer:./runtime:createSolitudeServerGame",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner->symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeInProcessTransport",
-      "from": "symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/multiplayer:./composition/solitudeMultiplayer:createDefaultSolitudeInProcessTransport"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner->symbol:@solitude/server:./runner:createSolitudeGameRunner",
-      "from": "symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/server:./runner:createSolitudeGameRunner"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner->symbol:@solitude/server:./runner:SolitudeGameRunner",
-      "from": "symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/server:./runner:SolitudeGameRunner"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner->symbol:@solitude/server:./runner:SolitudeGameRunnerFactoryOptions",
-      "from": "symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/server:./runner:SolitudeGameRunnerFactoryOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner->symbol:@solitude/server:./ticker:createSolitudeGameTicker",
-      "from": "symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/server:./ticker:createSolitudeGameTicker"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner->symbol:@solitude/server:./ticker:DEFAULT_SOLITUDE_GAME_TICK_POLICY",
-      "from": "symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/server:./ticker:DEFAULT_SOLITUDE_GAME_TICK_POLICY"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeHttpServerOptions->symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner",
-      "from": "symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeHttpServerOptions",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeGameRunner"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeHttpServerOptions->symbol:@solitude/server:./http:SolitudeHttpServerOptions",
-      "from": "symbol:@solitude/multiplayer:./serverOptions:createDefaultSolitudeHttpServerOptions",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/server:./http:SolitudeHttpServerOptions"
     },
     {
       "id": "symbol-reference:symbol:@solitude/protocol:./protocol:ClientMessageSocketRequest->symbol:@solitude/protocol:./protocol:SolitudeClientMessage",

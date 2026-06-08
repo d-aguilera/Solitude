@@ -1,7 +1,7 @@
 import { vec3 } from "@solitude/engine/math";
 import type { ControlledBody } from "@solitude/engine/world";
 import { describe, expect, it } from "vitest";
-import { createDefaultMultiplayerSpacecraftEntity } from "../composition/solitudeMultiplayer";
+import { createDefaultMultiplayerSpacecraftEntity } from "../composition";
 import { createSolitudeServerGame } from "../runtime";
 
 describe("Solitude server runtime", () => {

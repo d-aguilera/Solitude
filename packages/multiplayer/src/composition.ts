@@ -16,7 +16,7 @@ import {
 import { createPolyFighterPlugin } from "@solitude/sim/plugins/polyFighter";
 import { createSolarSystemCelestialBodyProvider } from "@solitude/sim/plugins/solarSystem/celestialBodyProvider";
 import { createOrbitingPlacement } from "@solitude/sim/spacecraft/orbitalPlacement";
-import { createSolitudeServerGame } from "../runtime";
+import { createSolitudeServerGame } from "./runtime";
 
 const DEFAULT_ASSIGNABLE_ENTITY_COUNT = 16;
 const EARTH_ID = "planet:earth";

@@ -8,7 +8,7 @@ import {
   DEFAULT_SOLITUDE_GAME_TICK_POLICY,
   createSolitudeGameTicker,
 } from "@solitude/server/ticker";
-import { createDefaultSolitudeInProcessTransport } from "./composition/solitudeMultiplayer";
+import { createDefaultSolitudeInProcessTransport } from "./composition";
 
 export function createDefaultSolitudeGameRunner({
   metrics,
