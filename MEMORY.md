@@ -15,13 +15,18 @@
 
 ## Spin-off memory docs
 
-- `MEMORY_PACKAGE_SPLIT.md`: archived package-split record for `@solitude/engine`, `@solitude/browser`, and `solitude`; consult before package boundary/export changes.
-- `MEMORY_OPERATOR_MODEL.md`: strategy for moving main ship/control/camera behavior into plugin-defined operator modes around a generic focused entity.
-- `archive/MEMORY_ENTITY_MODEL.md`: archived strategy/context for replacing ships/planets/stars core buckets with generic entities/components.
+### Active
+
 - `MEMORY_CLIENT_SERVER_2.md`: current client/server gameplay-feel roadmap: real-time authoritative loop, snapshot timing/buffering, and local prediction.
-- `archive/MEMORY_CLIENT_SERVER.md`: archived proof-of-concept client/server migration record and slice log.
 - `MEMORY_HEADLESS_PLAYBACK.md`: planned work for running recorded playback scenarios end-to-end without the browser.
-- `MEMORY_PLUGIN_EXTRACTION.md`: older audit notes and candidate list for moving non-core code into plugins.
+
+### Complete / Archived
+
+- `archive/MEMORY_PACKAGE_SPLIT.md`: archived package-split record for `@solitude/engine`, `@solitude/browser`, and `solitude`; consult before package boundary/export changes.
+- `archive/MEMORY_OPERATOR_MODEL.md`: archived strategy for moving main ship/control/camera behavior into plugin-defined operator modes around a generic focused entity.
+- `archive/MEMORY_ENTITY_MODEL.md`: archived strategy/context for replacing ships/planets/stars core buckets with generic entities/components.
+- `archive/MEMORY_CLIENT_SERVER.md`: archived proof-of-concept client/server migration record and slice log.
+- `archive/MEMORY_PLUGIN_EXTRACTION.md`: archived audit notes and candidate list for moving non-core code into plugins.
 
 ## Current focus
 

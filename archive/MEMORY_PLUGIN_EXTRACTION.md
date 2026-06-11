@@ -1,5 +1,9 @@
 # Plugin Extraction Memory
 
+## Final Update
+
+This memory doc is finished and archived.
+
 ## Purpose
 
 - Dedicated context for identifying non-core Solitude code that should move into plugins.
