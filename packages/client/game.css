@@ -14,9 +14,18 @@ main.play {
   overflow: hidden;
 }
 
+.canvas-container {
+  height: 100vh;
+  position: relative;
+  width: 100vw;
+}
+
 canvas {
   background: #030504;
   display: block;
-  height: 100vh;
-  width: 100vw;
+  position: absolute;
+}
+
+.pip-canvas {
+  border: 1px solid rgba(184, 220, 200, 0.28);
 }

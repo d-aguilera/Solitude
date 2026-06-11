@@ -10,7 +10,7 @@ import {
 } from "./client";
 import {
   createSocketUrl,
-  queryCanvas,
+  queryElement,
   queryInput,
   readClientId,
   readServerBaseUrl,
@@ -25,13 +25,13 @@ const fields = {
 };
 fields.clientId.value = readClientId(fields.clientId.value);
 
-const snapshotCanvas = queryCanvas("#snapshotCanvas");
+const canvasContainer = queryElement(".canvas-container");
 const searchParams = new URLSearchParams(window.location.search);
 const serverBaseUrl = readServerBaseUrl(searchParams);
 const initialGameId = searchParams.get("gameId");
 
 const engineRenderer = createSolitudeRemoteClientRenderer({
-  canvas: snapshotCanvas,
+  container: canvasContainer,
   getFocusEntityId: () => fields.entityId.value,
   plugins: [
     createRemoteIdentityHudPlugin({

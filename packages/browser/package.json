@@ -6,6 +6,7 @@
   "exports": {
     "./dom/canvasBootstrap": "./src/infra/domCanvasBootstrap.ts",
     "./dom/keyboardInput": "./src/infra/domKeyboardInput.ts",
+    "./dom/layout": "./src/infra/domLayout.ts",
     "./dom/overlayPorts": "./src/infra/overlayPorts.ts",
     "./dom/runtimeOptions": "./src/infra/domRuntimeOptions.ts",
     "./remoteCanvasRenderer": "./src/infra/remoteCanvasRenderer.ts",

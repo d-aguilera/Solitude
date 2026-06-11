@@ -15,6 +15,10 @@ export function initLayout(container: Element, views: LayoutView[]) {
   });
 }
 
+export function resizeLayout(container: Element, views: LayoutView[]): void {
+  resizeCanvases(container, views);
+}
+
 function resizeCanvasToCssBox(
   canvas: HTMLCanvasElement,
   cssWidth: number,

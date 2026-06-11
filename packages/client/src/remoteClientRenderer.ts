@@ -1,8 +1,13 @@
 import {
+  initLayout,
+  resizeLayout,
+  type LayoutView,
+} from "@solitude/browser/dom/layout";
+import {
   applyBrowserOverlayProviders,
   collectBrowserOverlayProviders,
 } from "@solitude/browser/dom/overlayPorts";
-import { createRemoteCanvasRenderer } from "@solitude/browser/remoteCanvasRenderer";
+import { createRemoteMultiCanvasRenderer } from "@solitude/browser/remoteCanvasRenderer";
 import {
   remoteRenderPluginCatalog,
   remoteRenderPluginIds,
@@ -13,6 +18,11 @@ import {
   type FramePolicy,
   type GamePlugin,
 } from "@solitude/engine/plugin";
+import {
+  buildViewDefinitions,
+  type ViewDefinition,
+  type ViewLayout,
+} from "@solitude/engine/render";
 import {
   createPhysicsWorkspace,
   createPluginCapabilityRegistry,
@@ -61,7 +71,7 @@ export interface RemoteClientSnapshotMessage {
 }
 
 export interface SolitudeRemoteClientRendererOptions {
-  canvas: HTMLCanvasElement;
+  container: Element;
   getFocusEntityId: () => string;
   plugins?: GamePlugin[];
 }
@@ -79,7 +89,7 @@ export interface SolitudeRemoteClientRenderer {
 const maxPredictionMillis = 250;
 
 export function createSolitudeRemoteClientRenderer({
-  canvas,
+  container,
   getFocusEntityId,
   plugins: clientPlugins = [],
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
@@ -102,7 +112,11 @@ export function createSolitudeRemoteClientRenderer({
   let messageSimulationTimeMillis = 0;
   let modelVersion = 0;
 
-  let renderer: ReturnType<typeof createRemoteCanvasRenderer> | null = null;
+  let renderer: ReturnType<typeof createRemoteMultiCanvasRenderer> | null =
+    null;
+  let rendererCanvases: readonly HTMLCanvasElement[] = [];
+  const layoutViews: LayoutView[] = [];
+  let layoutInitialized = false;
   const predictionControlState: SpacecraftControlState = { thrustLevel: 1 };
   const predictionPhysicsWorkspace = createPhysicsWorkspace();
   const reconciliationState = createLocalReconciliationState();
@@ -141,7 +155,7 @@ export function createSolitudeRemoteClientRenderer({
     },
     renderFrame: (nowMillis, dtMillis) => {
       if (!latestSnapshot || !renderer) return false;
-      resizeCanvasToDisplaySize(canvas);
+      resizeCanvasesToDisplaySize(rendererCanvases);
       const focusEntityId = getFocusEntityId();
       if (focusEntityId.length > 0) {
         renderer.setFocusEntityId(focusEntityId);
@@ -162,7 +176,7 @@ export function createSolitudeRemoteClientRenderer({
           advanceOverlay: true,
           controlInput: predictionState.controlInput,
           framePolicy,
-          mainFocus: renderer.worldRenderer.renderParams.mainFocus,
+          mainFocus: renderer.worldRenderer.primaryView.renderParams.mainFocus,
           nowMs: nowMillis,
           primaryOverlayRasterizer: renderer.overlayRasterizer,
           simTimeMillis: messageSimulationTimeMillis + predictionMillis,
@@ -178,6 +192,7 @@ export function createSolitudeRemoteClientRenderer({
     setModel: (entities, nextModelVersion) => {
       modelVersion = nextModelVersion;
       renderer = createRenderer(plugins, entities);
+      rendererCanvases = renderer.views.map((view) => view.canvas);
       latestSnapshot = null;
       latestSnapshotReceivedAtMillis = 0;
       messageSimulationTimeMillis = 0;
@@ -194,7 +209,7 @@ export function createSolitudeRemoteClientRenderer({
   };
 
   function renderPredictedSnapshot(
-    renderer: ReturnType<typeof createRemoteCanvasRenderer>,
+    renderer: ReturnType<typeof createRemoteMultiCanvasRenderer>,
     snapshot: RuntimeWorldSnapshot,
     focusEntityId: string,
     predictionMillis: number,
@@ -241,7 +256,7 @@ export function createSolitudeRemoteClientRenderer({
   }
 
   function applyLocalPrediction(
-    renderer: ReturnType<typeof createRemoteCanvasRenderer>,
+    renderer: ReturnType<typeof createRemoteMultiCanvasRenderer>,
     controlledBody: ControlledBody,
     predictionMillis: number,
   ): void {
@@ -270,7 +285,7 @@ export function createSolitudeRemoteClientRenderer({
   }
 
   function findControlledBody(
-    renderer: ReturnType<typeof createRemoteCanvasRenderer>,
+    renderer: ReturnType<typeof createRemoteMultiCanvasRenderer>,
     focusEntityId: string,
   ) {
     return renderer.worldRenderer.mirror.world.controllableBodies.find(
@@ -309,11 +324,109 @@ export function createSolitudeRemoteClientRenderer({
     const focusEntityId = getFocusEntityId();
     config.mainFocusEntityId =
       focusEntityId.length > 0 ? focusEntityId : (entities[0]?.id ?? "");
-    return createRemoteCanvasRenderer({
-      canvas,
+    const viewDefinitions = buildViewDefinitions(config, plugins);
+    const viewCanvases = createViewCanvases(container, viewDefinitions);
+    replaceLayoutViews(layoutViews, viewCanvases);
+    if (layoutInitialized) {
+      resizeLayout(container, layoutViews);
+    } else {
+      initLayout(container, layoutViews);
+      layoutInitialized = true;
+    }
+    return createRemoteMultiCanvasRenderer({
       config,
       plugins,
+      views: viewCanvases.map((view) => ({
+        canvas: view.canvas,
+        viewId: view.definition.id,
+      })),
     });
+  }
+}
+
+function createViewCanvases(
+  container: Element,
+  definitions: readonly ViewDefinition[],
+): {
+  canvas: HTMLCanvasElement;
+  definition: ViewDefinition;
+  layout: ViewLayout;
+}[] {
+  const views: {
+    canvas: HTMLCanvasElement;
+    definition: ViewDefinition;
+    layout: ViewLayout;
+  }[] = [];
+  let index = 0;
+  for (const definition of primaryDefinitionsFirst(definitions)) {
+    const canvas = getOrCreateViewCanvas(
+      container,
+      createViewCanvasId(index),
+      definition,
+    );
+    views.push({ canvas, definition, layout: definition.layout });
+    index++;
+  }
+  removeExtraViewCanvases(container, index);
+  return views;
+}
+
+function replaceLayoutViews(
+  into: LayoutView[],
+  views: readonly LayoutView[],
+): void {
+  into.length = 0;
+  into.push(...views);
+}
+
+function primaryDefinitionsFirst(
+  definitions: readonly ViewDefinition[],
+): ViewDefinition[] {
+  const ordered: ViewDefinition[] = [];
+  for (const definition of definitions) {
+    if (definition.layout.kind === "primary") ordered.push(definition);
+  }
+  for (const definition of definitions) {
+    if (definition.layout.kind !== "primary") ordered.push(definition);
+  }
+  return ordered;
+}
+
+function getOrCreateViewCanvas(
+  container: Element,
+  elementId: string,
+  definition: ViewDefinition,
+): HTMLCanvasElement {
+  let canvas = document.getElementById(elementId) as HTMLCanvasElement | null;
+  if (!canvas) {
+    canvas = document.createElement("canvas");
+    canvas.id = elementId;
+  }
+
+  canvas.classList.toggle("pip-canvas", definition.layout.kind === "pip");
+  if (canvas.parentElement !== container) {
+    container.appendChild(canvas);
+  }
+
+  return canvas;
+}
+
+function removeExtraViewCanvases(container: Element, nextIndex: number): void {
+  for (;;) {
+    const canvas = document.getElementById(createViewCanvasId(nextIndex));
+    if (!canvas || canvas.parentElement !== container) return;
+    canvas.remove();
+    nextIndex++;
+  }
+}
+
+function createViewCanvasId(index: number): string {
+  return `sceneViewCanvas-${index}`;
+}
+
+function resizeCanvasesToDisplaySize(canvases: readonly HTMLCanvasElement[]) {
+  for (const canvas of canvases) {
+    resizeCanvasToDisplaySize(canvas);
   }
 }
 

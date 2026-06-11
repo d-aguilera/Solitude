@@ -15,7 +15,9 @@ import type {
   RenderSurface2D,
   SceneState,
   SceneViewId,
+  SceneViewState,
   TextMetrics,
+  ViewDefinition,
   ViewRenderer,
   ViewRenderParams,
 } from "@solitude/engine/render";
@@ -67,6 +69,37 @@ export interface RemoteWorldRenderer {
     options?: RemoteWorldRenderOptions,
   ) => boolean;
   setFocusEntityId: (entityId: string) => boolean;
+}
+
+export interface RemoteWorldMultiViewOptions {
+  measureText: (text: string, font: string) => TextMetrics;
+  surface: RenderSurface2D;
+  viewId: SceneViewId;
+}
+
+export interface RemoteWorldRenderedView {
+  readonly renderedView: RenderedView;
+  readonly renderParams: ViewRenderParams;
+  readonly viewId: SceneViewId;
+}
+
+export interface RemoteWorldMultiRenderer {
+  readonly mirror: RemoteWorldMirror;
+  readonly primaryView: RemoteWorldRenderedView;
+  readonly sceneState: SceneState;
+  readonly views: readonly RemoteWorldRenderedView[];
+  renderCurrent: (options?: RemoteWorldRenderOptions) => void;
+  renderSnapshot: (
+    snapshot: RuntimeWorldSnapshot,
+    options?: RemoteWorldRenderOptions,
+  ) => boolean;
+  setFocusEntityId: (entityId: string) => boolean;
+}
+
+export interface RemoteWorldMultiRendererOptions {
+  config: WorldAndSceneConfig;
+  plugins: GamePlugin[];
+  views: RemoteWorldMultiViewOptions[];
 }
 
 export function createRemoteWorldRenderer({
@@ -192,6 +225,117 @@ export function createRemoteWorldRenderer({
   };
 }
 
+export function createRemoteWorldMultiRenderer({
+  config,
+  plugins,
+  views,
+}: RemoteWorldMultiRendererOptions): RemoteWorldMultiRenderer {
+  if (!views.length) {
+    throw new Error("At least one remote render view is required");
+  }
+
+  const mirror = createRemoteWorldMirror(config);
+  validatePluginRequirements({
+    mainFocus: mirror.worldSetup.mainFocus,
+    plugins,
+    world: mirror.world,
+  });
+
+  const sceneSetup = createScene(mirror.world, config);
+  const worldAndScene = {
+    ...mirror.worldSetup,
+    scene: sceneSetup.scene,
+  };
+  const scenePlugins = collectScenePlugins(plugins);
+  const labelPlugins = collectLabelPlugins(plugins);
+  const segmentPlugins = collectSegmentPlugins(plugins);
+
+  applySceneInitPlugins(scenePlugins, {
+    config,
+    mainFocus: worldAndScene.mainFocus,
+    scene: worldAndScene.scene,
+    world: worldAndScene.world,
+  });
+
+  const viewDefinitions = buildViewDefinitions(config, plugins);
+  const configuredDefinitions = views.map((view) =>
+    requireViewDefinition(viewDefinitions, view.viewId),
+  );
+  const sceneViews = createSceneViewStates(configuredDefinitions);
+  const sceneState: SceneState = {
+    primaryView: getRequiredPrimaryViewState(sceneViews),
+    views: sceneViews,
+  };
+  const mainViewLookState = getMainViewLookState(config.render);
+  const renderCache = createRenderFrameCache();
+  const renderedViews = createRemoteRenderedViews({
+    config,
+    mirror,
+    renderCache,
+    scene: worldAndScene.scene,
+    scenePlugins,
+    sceneViews,
+    views,
+  });
+  const primaryView = requirePrimaryRenderedView(renderedViews);
+
+  const renderCurrent = (options: RemoteWorldRenderOptions = {}) => {
+    updateSceneViewCameras(
+      sceneState,
+      worldAndScene.mainFocus,
+      mainViewLookState,
+    );
+    applyScenePlugins(scenePlugins, {
+      dtMillis: options.dtMillis ?? 0,
+      dtSimMillis: options.dtSimMillis ?? options.dtMillis ?? 0,
+      mainFocus: worldAndScene.mainFocus,
+      scene: worldAndScene.scene,
+      world: worldAndScene.world,
+    });
+    updateRenderFrameCache(renderCache, worldAndScene.scene);
+
+    for (const view of renderedViews) {
+      const definition = view.sceneView.definition;
+      applySegmentPlugins(segmentPlugins, view.worldSegments, {
+        config,
+        mainFocus: worldAndScene.mainFocus,
+        scene: worldAndScene.scene,
+        viewId: definition.id,
+        world: worldAndScene.world,
+      });
+      applyLabelPlugins(labelPlugins, view.sceneLabelCandidates, {
+        config,
+        labelMode: definition.labelMode,
+        mainFocus: worldAndScene.mainFocus,
+        scene: worldAndScene.scene,
+        viewId: definition.id,
+        world: worldAndScene.world,
+      });
+
+      view.renderParams.renderFaces = options.renderFaces ?? true;
+      view.renderParams.renderPolylines = options.renderPolylines ?? true;
+      view.renderParams.renderSceneLabels = options.renderSceneLabels ?? true;
+      view.renderParams.renderSegments = options.renderSegments ?? true;
+      view.renderParams.sortFaces = options.sortFaces ?? true;
+      view.renderer.renderInto(view.renderedView, view.renderParams);
+    }
+  };
+
+  return {
+    mirror,
+    primaryView,
+    sceneState,
+    views: renderedViews,
+    renderCurrent,
+    renderSnapshot: (snapshot, options) => {
+      if (!mirror.applySnapshot(snapshot)) return false;
+      renderCurrent(options);
+      return true;
+    },
+    setFocusEntityId: (entityId) => setFocusEntityId(mirror, entityId),
+  };
+}
+
 export function rasterizeRenderedView(
   view: RenderedView,
   rasterizer: Rasterizer,
@@ -206,10 +350,80 @@ export function rasterizeRenderedView(
   rasterizer.drawSceneLabels(view.sceneLabels, view.sceneLabelCount);
 }
 
+type InternalRemoteWorldRenderedView = RemoteWorldRenderedView & {
+  readonly renderer: ViewRenderer;
+  readonly sceneLabelCandidates: SceneLabelCandidate[];
+  readonly sceneView: SceneViewState;
+  readonly worldSegments: WorldSegment[];
+};
+
+function createRemoteRenderedViews({
+  config,
+  mirror,
+  renderCache,
+  scene,
+  scenePlugins,
+  sceneViews,
+  views,
+}: {
+  config: WorldAndSceneConfig;
+  mirror: RemoteWorldMirror;
+  renderCache: ReturnType<typeof createRenderFrameCache>;
+  scene: ReturnType<typeof createScene>["scene"];
+  scenePlugins: ScenePlugin[];
+  sceneViews: SceneViewState[];
+  views: RemoteWorldMultiViewOptions[];
+}): InternalRemoteWorldRenderedView[] {
+  return sceneViews.map((sceneView, index) => {
+    const view = views[index];
+    const sceneLabelCandidates: SceneLabelCandidate[] = [];
+    const worldSegments: WorldSegment[] = [];
+    const objectsFilter = buildSceneObjectsFilter(scenePlugins, {
+      config,
+      mainFocus: mirror.worldSetup.mainFocus,
+      scene,
+      viewId: sceneView.definition.id,
+      world: mirror.world,
+    });
+    const renderedView = createRenderedView();
+    const renderer: ViewRenderer = new DefaultViewRenderer(
+      view.measureText,
+      sceneView.definition.labelMode,
+    );
+    return {
+      renderedView,
+      renderer,
+      renderParams: {
+        camera: sceneView.camera,
+        mainFocus: mirror.worldSetup.mainFocus,
+        objectsFilter,
+        renderCache,
+        scene,
+        sceneLabelCandidates,
+        surface: view.surface,
+        worldSegments,
+      },
+      sceneLabelCandidates,
+      sceneView,
+      viewId: sceneView.definition.id,
+      worldSegments,
+    };
+  });
+}
+
+function requirePrimaryRenderedView(
+  views: readonly InternalRemoteWorldRenderedView[],
+): InternalRemoteWorldRenderedView {
+  for (const view of views) {
+    if (view.sceneView.definition.layout.kind === "primary") return view;
+  }
+  throw new Error("Required primary remote render view not found");
+}
+
 function requireViewDefinition(
   definitions: ReturnType<typeof buildViewDefinitions>,
   viewId: SceneViewId,
-) {
+): ViewDefinition {
   for (const definition of definitions) {
     if (definition.id === viewId) return definition;
   }
