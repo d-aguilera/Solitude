@@ -68,5 +68,6 @@ export interface EntityComponentsConfig {
 
 export interface EntityConfig {
   components: EntityComponentsConfig;
+  displayName?: string;
   id: EntityId;
 }

@@ -53,6 +53,7 @@ function createEntitySceneObject(
   if (role === "controlledBody") {
     return {
       id: entity.id,
+      displayName: entity.displayName,
       kind: "controlledBody",
       mesh: renderable.mesh,
       position: state.position,
@@ -95,6 +96,7 @@ function createOrbitalBodySceneObject(
   const entityState = entity.components.state;
   return {
     id: entity.id,
+    displayName: entity.displayName,
     kind: "orbitalBody",
     centralEntityId:
       entityState?.kind === "keplerian"

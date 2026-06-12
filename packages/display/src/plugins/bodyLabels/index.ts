@@ -4,7 +4,15 @@ import type {
   SceneLabelCandidate,
   SceneLabelPlugin,
 } from "@solitude/engine/plugin";
-import { formatDistance, formatSpeed } from "@solitude/engine/render";
+import {
+  formatDistance,
+  formatSpeed,
+  type BodySceneObject,
+  type ControlledBodySceneObject,
+  type LightEmitterSceneObject,
+  type SceneObject,
+} from "@solitude/engine/render";
+import type { EntityId, World } from "@solitude/engine/world";
 
 const distanceScratch: Vec3 = vec3.zero();
 
@@ -27,22 +35,30 @@ function createSceneLabelPlugin(): SceneLabelPlugin {
     appendLabels: (into, params) => {
       const referencePosition = params.mainFocus.controlledBody.position;
       for (const object of params.scene.objects) {
-        if (object.kind !== "orbitalBody" && object.kind !== "lightEmitter") {
+        if (!isLabelledObject(object)) {
+          continue;
+        }
+        if (
+          object.kind === "controlledBody" &&
+          object.id === params.mainFocus.entityId
+        ) {
           continue;
         }
 
         vec3.subInto(distanceScratch, object.position, referencePosition);
         const distance = vec3.length(distanceScratch);
+        const velocity = getObjectVelocity(params.world, object);
         const candidate = getCandidate(candidatesById, object.id);
         candidate.anchor = object.position;
-        candidate.parentId = object.centralEntityId;
+        candidate.parentId =
+          object.kind === "controlledBody" ? undefined : object.centralEntityId;
         candidate.priority = -distance;
         writeLabelLines(
           candidate.lines,
           params.labelMode,
-          getDisplayName(displayNamesById, object.id),
+          getDisplayName(displayNamesById, object),
           distance,
-          vec3.length(object.velocity),
+          velocity ? vec3.length(velocity) : 0,
         );
         into.push(candidate);
       }
@@ -83,11 +99,15 @@ function writeLabelLines(
   into.length = 3;
 }
 
-function getDisplayName(displayNamesById: Map<string, string>, id: string) {
-  let displayName = displayNamesById.get(id);
+function getDisplayName(
+  displayNamesById: Map<string, string>,
+  object: SceneObject,
+) {
+  if (object.displayName) return object.displayName;
+  let displayName = displayNamesById.get(object.id);
   if (!displayName) {
-    displayName = displayNameForBodyId(id);
-    displayNamesById.set(id, displayName);
+    displayName = displayNameForBodyId(object.id);
+    displayNamesById.set(object.id, displayName);
   }
   return displayName;
 }
@@ -96,4 +116,33 @@ function displayNameForBodyId(id: string): string {
   const parts = id.split(":");
   const raw = parts[parts.length - 1] || id;
   return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
+function isLabelledObject(
+  object: SceneObject,
+): object is
+  | BodySceneObject
+  | ControlledBodySceneObject
+  | LightEmitterSceneObject {
+  return (
+    object.kind === "controlledBody" ||
+    object.kind === "orbitalBody" ||
+    object.kind === "lightEmitter"
+  );
+}
+
+function getObjectVelocity(
+  world: World,
+  object: BodySceneObject | ControlledBodySceneObject | LightEmitterSceneObject,
+): Vec3 | null {
+  if (object.kind !== "controlledBody") return object.velocity;
+  const body = findControlledBody(world, object.id);
+  return body?.velocity ?? null;
+}
+
+function findControlledBody(world: World, id: EntityId) {
+  for (const body of world.controllableBodies) {
+    if (body.id === id) return body;
+  }
+  return null;
 }

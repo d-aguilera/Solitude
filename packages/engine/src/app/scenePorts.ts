@@ -5,6 +5,7 @@ import type { Vec3 } from "../domain/vec3";
 
 export interface BaseSceneObject {
   id: string;
+  displayName?: string;
   kind: SceneObjectKind;
   position: Vec3;
   orientation: Mat3;

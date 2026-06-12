@@ -25,6 +25,24 @@ const SPACECRAFT_START_ALTITUDE_M = 100 * km;
 const defaultCelestialBodyProvider = createSolarSystemCelestialBodyProvider();
 const defaultControllableEntityProvider =
   createDefaultControllableEntityProvider();
+const multiplayerSpacecraftSlots = [
+  { color: { r: 64, g: 180, b: 255 }, name: "Blue" },
+  { color: { r: 255, g: 80, b: 80 }, name: "Red" },
+  { color: { r: 255, g: 210, b: 64 }, name: "Gold" },
+  { color: { r: 90, g: 220, b: 125 }, name: "Green" },
+  { color: { r: 190, g: 135, b: 255 }, name: "Violet" },
+  { color: { r: 255, g: 145, b: 60 }, name: "Orange" },
+  { color: { r: 255, g: 105, b: 190 }, name: "Magenta" },
+  { color: { r: 220, g: 240, b: 255 }, name: "White" },
+  { color: { r: 80, g: 230, b: 215 }, name: "Teal" },
+  { color: { r: 180, g: 235, b: 80 }, name: "Lime" },
+  { color: { r: 120, g: 155, b: 255 }, name: "Indigo" },
+  { color: { r: 255, g: 180, b: 135 }, name: "Coral" },
+  { color: { r: 155, g: 235, b: 255 }, name: "Ice" },
+  { color: { r: 240, g: 150, b: 255 }, name: "Rose" },
+  { color: { r: 210, g: 190, b: 150 }, name: "Stone" },
+  { color: { r: 150, g: 255, b: 170 }, name: "Mint" },
+] as const;
 
 export function createDefaultSolitudeInProcessTransport(): SolitudeInProcessTransport {
   return createSolitudeInProcessTransport(
@@ -60,7 +78,7 @@ export function createDefaultMultiplayerSpacecraftEntity({
 }): EntityConfig {
   const earth = defaultCelestialBodyProvider.getCelestialBody(EARTH_ID);
   if (!earth) throw new Error(`Missing celestial body: ${EARTH_ID}`);
-  return defaultControllableEntityProvider.createEntity({
+  const entity = defaultControllableEntityProvider.createEntity({
     color: getMultiplayerSpacecraftColor(index),
     id,
     placement: createOrbitingPlacement({
@@ -71,6 +89,8 @@ export function createDefaultMultiplayerSpacecraftEntity({
       ringIndex: index,
     }),
   });
+  entity.displayName = getMultiplayerSpacecraftName(index);
+  return entity;
 }
 
 function createDefaultControllableEntityProvider() {
@@ -99,7 +119,13 @@ function createDefaultAssignableEntityIds(count: number): EntityId[] {
 }
 
 function getMultiplayerSpacecraftColor(index: number) {
-  if (index === 0) return { r: 0, g: 255, b: 255 };
-  if (index === 1) return { r: 255, g: 64, b: 64 };
-  return { r: 0, g: 255, b: 255 };
+  return multiplayerSpacecraftSlots[index % multiplayerSpacecraftSlots.length]
+    .color;
+}
+
+function getMultiplayerSpacecraftName(index: number): string {
+  const slot =
+    multiplayerSpacecraftSlots[index % multiplayerSpacecraftSlots.length];
+  const cycle = Math.floor(index / multiplayerSpacecraftSlots.length);
+  return cycle === 0 ? slot.name : `${slot.name} ${cycle + 1}`;
 }

@@ -55,6 +55,37 @@ describe("server-style headless Solitude composition", () => {
     expect(blueVelocityDelta).toBeGreaterThan(1000);
     expect(redVelocityDelta).toBeGreaterThan(1000);
   });
+
+  it("assigns distinct display colors and names to joined ships", () => {
+    const ships = [
+      createDefaultMultiplayerSpacecraftEntity({
+        entityCount: 16,
+        id: "ship:blue",
+        index: 0,
+      }),
+      createDefaultMultiplayerSpacecraftEntity({
+        entityCount: 16,
+        id: "ship:red",
+        index: 1,
+      }),
+      createDefaultMultiplayerSpacecraftEntity({
+        entityCount: 16,
+        id: "ship:3",
+        index: 2,
+      }),
+    ];
+
+    expect(ships.map((ship) => ship.displayName)).toEqual([
+      "Blue",
+      "Red",
+      "Gold",
+    ]);
+    expect(ships.map((ship) => ship.components.renderable?.color)).toEqual([
+      { r: 64, g: 180, b: 255 },
+      { r: 255, g: 80, b: 80 },
+      { r: 255, g: 210, b: 64 },
+    ]);
+  });
 });
 
 function createDefaultShipEntities() {
