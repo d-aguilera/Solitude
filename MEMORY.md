@@ -85,6 +85,7 @@
 - Body label content is contributed by `packages/solitude/src/plugins/bodyLabels/`; engine owns generic scene-label layout.
 - Main-view lookaround input/camera-offset controls live in `packages/solitude/src/plugins/mainViewLookaround/`.
 - Spacecraft propulsion/RCS/attitude, input bindings, spacecraft operator state, and the primary forward camera rig live in `@solitude/sim`; browser/server/client code import them directly from `@solitude/sim`.
+- Autopilot `circleNow` uses `autopilot.mode.v2`: a continuous dominant-body circularization controller that aims the main thrust axis at orbital correction while unstable, blends back to inward-facing once stable, and keeps roll referenced to the orbital tangent to avoid stable-orbit roll oscillation. `alignToVelocity` and `alignToBody` remain behavior-compatible with v1.
 - Runtime focus switching lives in `packages/solitude/src/plugins/operatorSwitch/`; `Tab` swaps foreground focus between `ship:blue` and `ship:red`.
 - During playback, `Tab` may switch the viewed focus while recorded controls continue applying to the entity focused when each playback phase was recorded.
 - Core owns generic focus, primary-view plumbing, simulation phase order, gravity, spin, collision, setup, render preparation, and plugin port/capability contracts.

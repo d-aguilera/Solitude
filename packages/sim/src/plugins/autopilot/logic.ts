@@ -48,6 +48,9 @@ const circleVRelScratch: Vec3 = vec3.zero();
 const circleTScratch: Vec3 = vec3.zero();
 const circleDeltaVScratch: Vec3 = vec3.zero();
 const circleAccelScratch: Vec3 = vec3.zero();
+const circleTargetForwardScratch: Vec3 = vec3.zero();
+const circleCorrectionDirScratch: Vec3 = vec3.zero();
+const circleInwardScratch: Vec3 = vec3.zero();
 const omegaWorldScratch: Vec3 = vec3.zero();
 const circleProjScratch: Vec3 = vec3.zero();
 
@@ -69,6 +72,8 @@ const circleStateScratch: CircleNowState = {
 const alignToTangentMaxAngularSpeed = 1.6; // rad/s
 const alignToTangentKp = 3.0;
 const alignToTangentKd = 1.0;
+const circleNowStableRelativeError = 0.002;
+const circleNowActiveRelativeError = 0.03;
 
 const RAD_TO_DEG = 180 / Math.PI;
 
@@ -94,12 +99,23 @@ interface CircleNowGuidance {
   tangentialRollAlignmentDeg: number;
 }
 
+interface CircleNowControlGuidance {
+  circularSpeed: number;
+  deltaVMag: number;
+  hasTangentialDir: boolean;
+}
+
 const circleGuidanceScratch: CircleNowGuidance = {
   actuatorPlaneScore: NaN,
   circularSpeed: NaN,
   inwardAlignmentDeg: NaN,
   primaryId: "",
   tangentialRollAlignmentDeg: NaN,
+};
+const circleControlGuidanceScratch: CircleNowControlGuidance = {
+  circularSpeed: NaN,
+  deltaVMag: NaN,
+  hasTangentialDir: false,
 };
 
 export function createCircleNowControllerState(): CircleNowControllerState {
@@ -227,18 +243,26 @@ export function computeCircleNowAttitudeCommand(
   ship: ControlledBodyState,
   world: World,
 ): AttitudeCommand | null {
-  const inward = getDominantBodyDirection(ship, world);
+  const guidance = computeCircleNowControlGuidance(ship, world);
+  if (!guidance) return null;
+
+  const targetForward = computeCircleNowTargetForward(
+    guidance.deltaVMag,
+    guidance.circularSpeed,
+  );
+
+  const inward = targetForward ?? getDominantBodyDirection(ship, world);
   let command: AttitudeCommand | null = null;
   if (inward) {
     command = computeAlignToDirectionCommand(dtMillis, ship, inward);
   }
 
-  const tangential = getTangentialDirection(ship, world);
-  if (tangential) {
+  const rollTarget = computeCircleNowRollTarget(guidance);
+  if (rollTarget) {
     const rollScale = 1;
     const rollCommand =
       rollScale > 0
-        ? computeRollToDirectionCommand(dtMillis, ship, tangential)
+        ? computeRollToDirectionCommand(dtMillis, ship, rollTarget)
         : null;
     if (rollCommand) {
       command = command
@@ -418,6 +442,98 @@ function computeCircleNowGuidance(
   return circleGuidanceScratch;
 }
 
+function computeCircleNowControlGuidance(
+  ship: ControlledBodyState,
+  world: World,
+): CircleNowControlGuidance | null {
+  const primary = getDominantBodyPrimary(world, ship.position);
+  if (!primary) return null;
+
+  const state = computeCircleNowState(ship, primary);
+  if (!state) return null;
+
+  const mu = parameters.newtonG * primary.mass;
+  if (mu === 0) return null;
+
+  const circularSpeed = Math.sqrt(mu / state.r);
+  const deltaVMag = computeCircleDeltaV(
+    state.radialSpeed,
+    state.tangentialSpeed,
+    state.hasTangentialDir,
+    circularSpeed,
+    circleRHatScratch,
+    circleTScratch,
+    circleDeltaVScratch,
+  );
+
+  circleControlGuidanceScratch.circularSpeed = circularSpeed;
+  circleControlGuidanceScratch.deltaVMag = deltaVMag;
+  circleControlGuidanceScratch.hasTangentialDir = state.hasTangentialDir;
+  return circleControlGuidanceScratch;
+}
+
+function computeCircleNowTargetForward(
+  deltaVMag: number,
+  circularSpeed: number,
+): Vec3 | null {
+  vec3.scaleInto(circleInwardScratch, -1, circleRHatScratch);
+  if (deltaVMag < EPS_DELTA_V) {
+    return circleInwardScratch;
+  }
+
+  vec3.scaleInto(
+    circleCorrectionDirScratch,
+    1 / deltaVMag,
+    circleDeltaVScratch,
+  );
+  const stableBlend = computeCircleNowStableBlend(deltaVMag, circularSpeed);
+  if (stableBlend <= 0) {
+    return circleCorrectionDirScratch;
+  }
+
+  vec3.lerpInto(
+    circleTargetForwardScratch,
+    circleCorrectionDirScratch,
+    circleInwardScratch,
+    stableBlend,
+  );
+  const len = vec3.length(circleTargetForwardScratch);
+  if (len < EPS_LEN) {
+    return stableBlend >= 0.5
+      ? circleInwardScratch
+      : circleCorrectionDirScratch;
+  }
+
+  vec3.scaleInto(
+    circleTargetForwardScratch,
+    1 / len,
+    circleTargetForwardScratch,
+  );
+  return circleTargetForwardScratch;
+}
+
+function computeCircleNowStableBlend(
+  deltaVMag: number,
+  circularSpeed: number,
+): number {
+  const speedScale = Math.max(circularSpeed, 1);
+  const relativeError = deltaVMag / speedScale;
+  if (relativeError <= circleNowStableRelativeError) return 1;
+  if (relativeError >= circleNowActiveRelativeError) return 0;
+
+  const t =
+    (circleNowActiveRelativeError - relativeError) /
+    (circleNowActiveRelativeError - circleNowStableRelativeError);
+  return t * t * (3 - 2 * t);
+}
+
+function computeCircleNowRollTarget(
+  guidance: CircleNowControlGuidance,
+): Vec3 | null {
+  if (!guidance.hasTangentialDir) return null;
+  return circleTScratch;
+}
+
 function computeInwardAlignmentDeg(ship: ControlledBodyState): number {
   const dot = -vec3.dot(ship.frame.forward, circleRHatScratch);
   return Math.acos(clamp(dot, -1, 1)) * RAD_TO_DEG;
@@ -563,25 +679,10 @@ function computeCircleNowThrust(
   const dtSec = dtMillis / 1000;
   if (dtSec === 0) return circleZeroPropulsion;
 
-  const primary = getDominantBodyPrimary(world, ship.position);
-  if (!primary) return circleZeroPropulsion;
+  const guidance = computeCircleNowControlGuidance(ship, world);
+  if (!guidance) return circleZeroPropulsion;
 
-  const state = computeCircleNowState(ship, primary);
-  if (!state) return circleZeroPropulsion;
-
-  const mu = parameters.newtonG * primary.mass;
-  if (mu === 0) return circleZeroPropulsion;
-
-  const circularSpeed = Math.sqrt(mu / state.r);
-  const deltaVMag = computeCircleDeltaV(
-    state.radialSpeed,
-    state.tangentialSpeed,
-    state.hasTangentialDir,
-    circularSpeed,
-    circleRHatScratch,
-    circleTScratch,
-    circleDeltaVScratch,
-  );
+  const deltaVMag = guidance.deltaVMag;
   if (deltaVMag < EPS_DELTA_V) return circleZeroPropulsion;
 
   const hasAcceleration = computeCircleAcceleration(

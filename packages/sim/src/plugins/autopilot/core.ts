@@ -35,7 +35,7 @@ export function createControlPlugin(): ControlPlugin {
   };
 }
 
-const autopilotModeStateKey = "autopilot.mode.v1";
+const autopilotModeStateKey = "autopilot.mode.v2";
 const spacecraftAutonomousControlCapabilityId =
   "spacecraft.autonomousControl.v1";
 
