@@ -19,8 +19,9 @@ const FOCUS_SWAP_LOOP_UPDATE: LoopUpdateResult = {
 };
 
 export function createOperatorSwitchPlugin(
-  _runtimeOptions: RuntimeOptions = {},
+  runtimeOptions: RuntimeOptions = {},
 ): GamePlugin {
+  void runtimeOptions;
   const controller = createOperatorSwitchController(defaultFocusTargets);
   return {
     id: "operatorSwitch",

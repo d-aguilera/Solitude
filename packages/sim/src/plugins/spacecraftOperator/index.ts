@@ -7,8 +7,9 @@ import { createInputPlugin } from "./input";
 import { createSpacecraftOperatorTelemetry } from "./telemetry";
 
 export function createSpacecraftOperatorPlugin(
-  _runtimeOptions: RuntimeOptions = {},
+  runtimeOptions: RuntimeOptions = {},
 ): GamePlugin {
+  void runtimeOptions;
   const telemetry = createSpacecraftOperatorTelemetry();
   return {
     id: "spacecraftOperator",

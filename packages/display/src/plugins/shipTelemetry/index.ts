@@ -3,8 +3,9 @@ import { createHudPanelProvider } from "@solitude/sim/hud/provider";
 import { createHudPanel } from "./hud";
 
 export function createShipTelemetryPlugin(
-  _runtimeOptions: RuntimeOptions = {},
+  runtimeOptions: RuntimeOptions = {},
 ): GamePlugin {
+  void runtimeOptions;
   return {
     id: "shipTelemetry",
     capabilities: [createHudPanelProvider(createHudPanel())],
