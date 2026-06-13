@@ -12,7 +12,13 @@ import {
 } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
-import type { HudContext, HudGrid } from "@solitude/sim/hud/provider";
+import {
+  createHudGrid,
+  getHudColumnIndex,
+  type HudColumnId,
+  type HudContext,
+  type HudGrid,
+} from "@solitude/sim/hud/provider";
 import { createSolitudeLocalization } from "@solitude/sim/localization";
 import { createHudPanel as createAutopilotHudPanel } from "@solitude/sim/plugins/autopilot/hud";
 import { createSpacecraftOperatorTelemetryProvider } from "@solitude/sim/plugins/spacecraftOperator/capabilities";
@@ -20,16 +26,6 @@ import { createSpacecraftOperatorTelemetry } from "@solitude/sim/plugins/spacecr
 import { describe, expect, it } from "vitest";
 import { createHudPanel as createRuntimeTelemetryHudPanel } from "../runtimeTelemetry/hud";
 import { createRuntimeTelemetryController } from "../runtimeTelemetry/logic";
-
-function createHudGrid(): HudGrid {
-  return [
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-  ];
-}
 
 function createWorldAndShip(): { world: World; ship: ControlledBody } {
   const planetId = "planet:earth";
@@ -115,9 +111,11 @@ describe("telemetry HUD plugins", () => {
 
     createShipTelemetryHudPanel(localization).writeHud(grid, context);
 
-    expect(grid[0][4]).toBe("Speed: 36 km/h");
-    expect(grid[1][4]).toBe("Thrust:  5");
-    expect(grid[2][4]).toBe("RCS: -1.00");
+    expect(columnTexts(grid, "right")).toEqual([
+      "Speed: 36 km/h",
+      "Thrust:  5",
+      "RCS: -1.00",
+    ]);
   });
 
   it("shipTelemetry writes localized speed without thousands separators", () => {
@@ -133,8 +131,11 @@ describe("telemetry HUD plugins", () => {
 
     createShipTelemetryHudPanel(localization).writeHud(grid, context);
 
-    expect(grid[0][4]).toBe("Velocidad: 106487 km/h");
-    expect(grid[2][4]).toBe("RCS:  1,25");
+    expect(columnTexts(grid, "right")).toEqual([
+      "Velocidad: 106487 km/h",
+      "Empuje:  0",
+      "RCS:  1,25",
+    ]);
   });
 
   it("shipTelemetry reads the focused body instead of the legacy main body", () => {
@@ -146,9 +147,7 @@ describe("telemetry HUD plugins", () => {
 
     createShipTelemetryHudPanel(localization).writeHud(grid, context);
 
-    expect(grid[0][4]).toBe("Speed: 36 km/h");
-    expect(grid[1][4]).toBe("");
-    expect(grid[2][4]).toBe("");
+    expect(columnTexts(grid, "right")).toEqual(["Speed: 36 km/h"]);
   });
 
   it("shipTelemetry caches the spacecraft operator telemetry provider", () => {
@@ -174,7 +173,7 @@ describe("telemetry HUD plugins", () => {
     panel.writeHud(grid, context);
 
     expect(lookupCount).toBe(1);
-    expect(grid[1][4]).toBe("Thrust:  7");
+    expect(columnTexts(grid, "right")).toContain("Thrust:  7");
   });
 
   it("runtimeTelemetry writes simulation time and fps cells", () => {
@@ -187,8 +186,7 @@ describe("telemetry HUD plugins", () => {
     const panel = createRuntimeTelemetryHudPanel(controller, localization);
     panel.writeHud(grid, context);
 
-    expect(grid[3][4]).toBe("Time: 01m 05s");
-    expect(grid[4][4]).toBe("FPS: 60.0");
+    expect(columnTexts(grid, "center")).toEqual(["Time: 01m 05s", "FPS: 60.0"]);
   });
 
   it("orbitTelemetry writes orbit and circularization cells", () => {
@@ -198,12 +196,12 @@ describe("telemetry HUD plugins", () => {
     const context = createHudContext(world, ship);
     createOrbitTelemetryHudPanel(localization).writeHud(grid, context);
 
-    expect(grid[0][0]).toBe("Orbit: Earth (bound)");
-    expect(grid[1][0]).toContain("Pe/Ap: ");
-    expect(grid[2][0]).toBe("e: 0.000");
-    expect(grid[3][0]).toBe("i: 0.0°");
-    expect(grid[0][1]).toContain("Δv Rad: ");
-    expect(grid[1][1]).toContain("Δv Tan: ");
+    expect(columnTexts(grid, "left")[0]).toBe("Orbit: Earth (bound)");
+    expect(columnTexts(grid, "left")[1]).toContain("Pe/Ap: ");
+    expect(columnTexts(grid, "left")[2]).toBe("e: 0.000");
+    expect(columnTexts(grid, "left")[3]).toBe("i: 0.0°");
+    expect(columnTexts(grid, "leftCenter")[0]).toContain("Δv Rad: ");
+    expect(columnTexts(grid, "leftCenter")[1]).toContain("Δv Tan: ");
   });
 
   it("orbitTelemetry localizes primary body names", () => {
@@ -213,9 +211,9 @@ describe("telemetry HUD plugins", () => {
     const context = createHudContext(world, ship);
     createOrbitTelemetryHudPanel(localization).writeHud(grid, context);
 
-    expect(grid[0][0]).toBe("Órbita: Tierra (ligada)");
-    expect(grid[2][0]).toBe("e: 0,000");
-    expect(grid[3][0]).toBe("i: 0,0°");
+    expect(columnTexts(grid, "left")[0]).toBe("Órbita: Tierra (ligada)");
+    expect(columnTexts(grid, "left")[2]).toBe("e: 0,000");
+    expect(columnTexts(grid, "left")[3]).toBe("i: 0,0°");
   });
 
   it("orbitTelemetry leaves cells untouched when no primary is available", () => {
@@ -224,16 +222,12 @@ describe("telemetry HUD plugins", () => {
     world.gravityMasses.length = 0;
     const localization = createSolitudeLocalization("en");
     const grid = createHudGrid();
-    grid[0][0] = "existing";
-    grid[1][0] = "existing pe/ap";
     const context = createHudContext(world, ship);
 
     createOrbitTelemetryHudPanel(localization).writeHud(grid, context);
 
-    expect(grid[0][0]).toBe("existing");
-    expect(grid[1][0]).toBe("existing pe/ap");
-    expect(grid[0][1]).toBe("");
-    expect(grid[1][1]).toBe("");
+    expect(columnTexts(grid, "left")).toEqual([]);
+    expect(columnTexts(grid, "leftCenter")).toEqual([]);
   });
 
   it("autopilot HUD reads circle-now diagnostics from the focused body", () => {
@@ -245,7 +239,23 @@ describe("telemetry HUD plugins", () => {
 
     createAutopilotHudPanel(localization).writeHud(grid, context);
 
-    expect(grid[0][3]).toBe("AP: VEL BODY [CN]");
-    expect(grid[4][2]).toBe("");
+    expect(columnTexts(grid, "rightCenter")).toEqual(["AP: VEL BODY [CN]"]);
+    expect(columnTexts(grid, "center")).toEqual([]);
+  });
+
+  it("HUD lines with the same key update or append in place", () => {
+    const grid = createHudGrid();
+
+    grid.addLine("rightCenter", "runtime.timeScale", "Scale: 2");
+    grid.addLine("rightCenter", "runtime.timeScale", "Scale: 4");
+    grid.appendLine("center", "runtime.status", "PAUSE");
+    grid.appendLine("center", "runtime.status", "PROFILING");
+
+    expect(columnTexts(grid, "rightCenter")).toEqual(["Scale: 4"]);
+    expect(columnTexts(grid, "center")).toEqual(["PAUSE PROFILING"]);
   });
 });
+
+function columnTexts(grid: HudGrid, column: HudColumnId): string[] {
+  return grid.columns[getHudColumnIndex(column)].map((line) => line.text);
+}

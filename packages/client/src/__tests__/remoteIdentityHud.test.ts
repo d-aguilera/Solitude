@@ -1,7 +1,9 @@
 import {
   createHudGrid,
+  getHudColumnIndex,
   hudPanelCapability,
   isHudPanelProvider,
+  type HudColumnId,
 } from "@solitude/sim/hud/provider";
 import { createSolitudeLocalization } from "@solitude/sim/localization";
 import { describe, expect, it } from "vitest";
@@ -24,7 +26,16 @@ describe("remote identity HUD", () => {
     const grid = createHudGrid();
     provider.writeHud(grid, {} as never);
 
-    expect(grid[3][0]).toBe("Game: game:2");
-    expect(grid[4][0]).toBe("Entity: ship:red");
+    expect(columnTexts(grid, "center")).toEqual([
+      "Game: game:2",
+      "Entity: ship:red",
+    ]);
   });
 });
+
+function columnTexts(
+  grid: ReturnType<typeof createHudGrid>,
+  column: HudColumnId,
+): string[] {
+  return grid.columns[getHudColumnIndex(column)].map((line) => line.text);
+}

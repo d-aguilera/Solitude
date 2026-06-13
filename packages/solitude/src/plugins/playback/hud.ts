@@ -11,12 +11,16 @@ export function createHudPanel(
     writeHud: (grid) => {
       const timeScale = controller.getEffectiveTimeScale();
       if (timeScale != null) {
-        grid[3][3] = hud.timeScalePrefix.concat(timeScale.toString());
+        grid.addLine(
+          "rightCenter",
+          "runtime.timeScale",
+          hud.timeScalePrefix.concat(timeScale.toString()),
+        );
       }
 
       const text = controller.getStatusText();
       if (!text) return;
-      grid[4][3] = text;
+      grid.addLine("rightCenter", "playback.status", text);
     },
   };
 }

@@ -6,15 +6,39 @@ import type {
 import type { FocusContext } from "@solitude/engine/runtime";
 import type { World } from "@solitude/engine/world";
 
-export type HudGridRow = [string, string, string, string, string];
+export const hudColumnIds = [
+  "left",
+  "leftCenter",
+  "center",
+  "rightCenter",
+  "right",
+] as const;
 
-export type HudGrid = [
-  HudGridRow,
-  HudGridRow,
-  HudGridRow,
-  HudGridRow,
-  HudGridRow,
+export type HudColumnId = (typeof hudColumnIds)[number];
+
+export interface HudLine {
+  readonly key: string;
+  text: string;
+}
+
+export type HudColumns = [
+  HudLine[],
+  HudLine[],
+  HudLine[],
+  HudLine[],
+  HudLine[],
 ];
+
+export interface HudGrid {
+  readonly columns: HudColumns;
+  addLine: (column: HudColumnId, key: string, text: string) => void;
+  appendLine: (
+    column: HudColumnId,
+    key: string,
+    text: string,
+    separator?: string,
+  ) => void;
+}
 
 export const hudPanelCapability = "solitude.hud.panel.v1";
 
@@ -32,23 +56,54 @@ export interface HudPanelProvider {
 }
 
 export function createHudGrid(): HudGrid {
-  return [
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-    ["", "", "", "", ""],
-  ];
+  const columns: HudColumns = [[], [], [], [], []];
+  return {
+    columns,
+    addLine: (column, key, text) => {
+      if (text.length === 0) return;
+
+      const lines = columns[getHudColumnIndex(column)];
+      const existing = lines.find((line) => line.key === key);
+      if (existing) {
+        existing.text = text;
+        return;
+      }
+
+      lines.push({ key, text });
+    },
+    appendLine: (column, key, text, separator = " ") => {
+      if (text.length === 0) return;
+
+      const lines = columns[getHudColumnIndex(column)];
+      const existing = lines.find((line) => line.key === key);
+      if (existing) {
+        existing.text = existing.text.concat(separator, text);
+        return;
+      }
+
+      lines.push({ key, text });
+    },
+  };
 }
 
 export function clearHudGrid(grid: HudGrid): void {
-  for (let rowIndex = 0; rowIndex < grid.length; rowIndex++) {
-    const row = grid[rowIndex];
-    row[0] = "";
-    row[1] = "";
-    row[2] = "";
-    row[3] = "";
-    row[4] = "";
+  for (const column of grid.columns) {
+    column.length = 0;
+  }
+}
+
+export function getHudColumnIndex(column: HudColumnId): number {
+  switch (column) {
+    case "left":
+      return 0;
+    case "leftCenter":
+      return 1;
+    case "center":
+      return 2;
+    case "rightCenter":
+      return 3;
+    case "right":
+      return 4;
   }
 }
 

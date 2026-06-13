@@ -25,7 +25,11 @@ export function createHudPanel(
   return {
     writeHud: (grid, context) => {
       const speedMps = vec3.length(context.mainFocus.controlledBody.velocity);
-      grid[0][4] = hud.speedPrefix.concat(localization.formatSpeed(speedMps));
+      grid.addLine(
+        "right",
+        "ship.speed",
+        hud.speedPrefix.concat(localization.formatSpeed(speedMps)),
+      );
 
       if (!telemetryResolved) {
         telemetry = resolveTelemetry(context.capabilityRegistry);
@@ -34,15 +38,23 @@ export function createHudPanel(
       if (!telemetry) return;
 
       const thrustPadding = telemetry.currentThrustLevel < 0 ? "" : " ";
-      grid[1][4] = hud.thrustPrefix.concat(
-        thrustPadding,
-        telemetry.currentThrustLevel.toString(),
+      grid.addLine(
+        "right",
+        "ship.thrust",
+        hud.thrustPrefix.concat(
+          thrustPadding,
+          telemetry.currentThrustLevel.toString(),
+        ),
       );
 
       const rcsPadding = telemetry.currentRcsLevel < 0 ? "" : " ";
-      grid[2][4] = hud.rcsPrefix.concat(
-        rcsPadding,
-        localization.formatFixed(telemetry.currentRcsLevel, 2),
+      grid.addLine(
+        "right",
+        "ship.rcs",
+        hud.rcsPrefix.concat(
+          rcsPadding,
+          localization.formatFixed(telemetry.currentRcsLevel, 2),
+        ),
       );
     },
   };

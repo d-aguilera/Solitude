@@ -32,54 +32,84 @@ export function createHudPanel(
         );
       }
 
-      grid[0][0] = hud.orbitPrefix.concat(
-        primaryDisplayName,
-        " (",
-        orbitReadout.isBound ? hud.orbitBound : hud.orbitEscape,
-        ")",
-      );
-      grid[1][0] = orbitReadout.isBound
-        ? hud.periapsisApoapsis(
-            formatSignedDistance(
-              orbitReadout.periapsis - orbitReadout.primaryRadius,
-              localization,
-            ),
-            formatSignedDistance(
-              orbitReadout.apoapsis - orbitReadout.primaryRadius,
-              localization,
-            ),
-          )
-        : hud.peApEmpty;
-      grid[2][0] = hud.eccentricityPrefix.concat(
-        localization.formatFixed(orbitReadout.eccentricity, 3),
-      );
-      grid[3][0] = hud.inclinationPrefix.concat(
-        localization.formatFixed(
-          (orbitReadout.inclinationRad * 180) / Math.PI,
-          1,
+      grid.addLine(
+        "left",
+        "orbit.primary",
+        hud.orbitPrefix.concat(
+          primaryDisplayName,
+          " (",
+          orbitReadout.isBound ? hud.orbitBound : hud.orbitEscape,
+          ")",
         ),
-        "°",
+      );
+      grid.addLine(
+        "left",
+        "orbit.peAp",
+        orbitReadout.isBound
+          ? hud.periapsisApoapsis(
+              formatSignedDistance(
+                orbitReadout.periapsis - orbitReadout.primaryRadius,
+                localization,
+              ),
+              formatSignedDistance(
+                orbitReadout.apoapsis - orbitReadout.primaryRadius,
+                localization,
+              ),
+            )
+          : hud.peApEmpty,
+      );
+      grid.addLine(
+        "left",
+        "orbit.eccentricity",
+        hud.eccentricityPrefix.concat(
+          localization.formatFixed(orbitReadout.eccentricity, 3),
+        ),
+      );
+      grid.addLine(
+        "left",
+        "orbit.inclination",
+        hud.inclinationPrefix.concat(
+          localization.formatFixed(
+            (orbitReadout.inclinationRad * 180) / Math.PI,
+            1,
+          ),
+          "°",
+        ),
       );
 
-      grid[0][1] = hud.deltaVRadialPrefix.concat(
-        localization.formatDeltaV(Math.abs(radDv)),
-        " ",
-        radDv >= 0 ? hud.outbound : hud.inbound,
+      grid.addLine(
+        "leftCenter",
+        "orbit.deltaVRadial",
+        hud.deltaVRadialPrefix.concat(
+          localization.formatDeltaV(Math.abs(radDv)),
+          " ",
+          radDv >= 0 ? hud.outbound : hud.inbound,
+        ),
       );
-      grid[1][1] = hud.deltaVTangentialPrefix.concat(
-        localization.formatDeltaV(Math.abs(tanDv)),
-        " ",
-        tanDv >= 0 ? hud.prograde : hud.retrograde,
+      grid.addLine(
+        "leftCenter",
+        "orbit.deltaVTangential",
+        hud.deltaVTangentialPrefix.concat(
+          localization.formatDeltaV(Math.abs(tanDv)),
+          " ",
+          tanDv >= 0 ? hud.prograde : hud.retrograde,
+        ),
       );
 
-      grid[0][2] =
+      grid.addLine(
+        "leftCenter",
+        "orbit.timeToPeriapsis",
         timeToPe == null
           ? hud.periapsisTimeEmpty
-          : hud.periapsisIn(formatSimTime(timeToPe));
-      grid[1][2] =
+          : hud.periapsisIn(formatSimTime(timeToPe)),
+      );
+      grid.addLine(
+        "leftCenter",
+        "orbit.timeToApoapsis",
         timeToAp == null
           ? hud.apoapsisTimeEmpty
-          : hud.apoapsisIn(formatSimTime(timeToAp));
+          : hud.apoapsisIn(formatSimTime(timeToAp)),
+      );
     },
   };
 }

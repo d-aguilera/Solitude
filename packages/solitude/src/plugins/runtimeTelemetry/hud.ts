@@ -10,11 +10,15 @@ export function createHudPanel(
   const { hud } = localization;
   return {
     writeHud: (grid, context) => {
-      grid[3][4] = hud.timePrefix.concat(
-        formatSimTime(context.simTimeMillis / 1000),
+      grid.addLine(
+        "center",
+        "runtime.time",
+        hud.timePrefix.concat(formatSimTime(context.simTimeMillis / 1000)),
       );
-      grid[4][4] = hud.fpsPrefix.concat(
-        localization.formatFixed(controller.getFps(), 1),
+      grid.addLine(
+        "center",
+        "runtime.fps",
+        hud.fpsPrefix.concat(localization.formatFixed(controller.getFps(), 1)),
       );
     },
   };

@@ -52,6 +52,7 @@ export class CanvasRasterizer implements Rasterizer {
     ctx = this.ctx;
 
     ctx.font = LABEL_FONT;
+    ctx.textAlign = "left";
     ctx.textBaseline = "middle";
 
     for (let i = 0; i < count; i++) {

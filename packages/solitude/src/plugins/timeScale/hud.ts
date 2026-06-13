@@ -11,7 +11,11 @@ export function createHudPanel(
     writeHud: (grid) => {
       const scale = controller.getScale();
       if (scale === 1) return;
-      grid[3][3] = hud.timeScalePrefix.concat(scale.toString());
+      grid.addLine(
+        "rightCenter",
+        "runtime.timeScale",
+        hud.timeScalePrefix.concat(scale.toString()),
+      );
     },
   };
 }

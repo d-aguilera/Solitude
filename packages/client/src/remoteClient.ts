@@ -23,6 +23,7 @@ import {
 } from "./pageShared";
 import { createSolitudeRemoteClientRenderer } from "./remoteClientRenderer";
 import { createRemoteIdentityHudPlugin } from "./remoteIdentityHud";
+import { createRemoteRuntimeTelemetryHudPlugin } from "./remoteRuntimeTelemetryHud";
 
 const fields = {
   clientId: queryInput("#clientId"),
@@ -43,6 +44,8 @@ const localization = createSolitudeLocalization(
   resolveSolitudeLocale(runtimeOptions),
 );
 document.documentElement.lang = localization.htmlLang;
+const remoteRuntimeTelemetryHud =
+  createRemoteRuntimeTelemetryHudPlugin(localization);
 
 const engineRenderer = createSolitudeRemoteClientRenderer({
   container: canvasContainer,
@@ -54,6 +57,7 @@ const engineRenderer = createSolitudeRemoteClientRenderer({
       getGameId: () => fields.gameId.value,
       localization,
     }),
+    remoteRuntimeTelemetryHud.plugin,
   ],
 });
 
@@ -168,6 +172,7 @@ function handleAutopilotKey(
 function renderRemoteFrame(nowMillis: number): void {
   const dtMillis = Math.max(0, nowMillis - lastFrameMillis);
   lastFrameMillis = nowMillis;
+  remoteRuntimeTelemetryHud.updateFps(dtMillis);
   engineRenderer.renderFrame(nowMillis, dtMillis);
   requestAnimationFrame(renderRemoteFrame);
 }

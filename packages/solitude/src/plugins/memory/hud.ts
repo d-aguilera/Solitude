@@ -7,7 +7,7 @@ export function createHudPanel(
   return {
     writeHud: (grid) => {
       if (!controller.isEnabled()) return;
-      grid[4][3] = controller.getHudText();
+      grid.addLine("center", "memory.heap", controller.getHudText());
     },
   };
 }

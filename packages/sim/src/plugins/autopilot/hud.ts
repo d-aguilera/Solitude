@@ -23,11 +23,15 @@ export function createHudPanel(
         context.nowMs,
       );
       const autopilotMode = getAutopilotMode(context.controlInput);
-      grid[0][3] = formatAutopilotStatus(autopilotMode, localization);
+      grid.addLine(
+        "rightCenter",
+        "autopilot.mode",
+        formatAutopilotStatus(autopilotMode, localization),
+      );
 
       const warning = formatCircleNowWarnings(circleNowTracker.debug);
       if (warning) {
-        grid[4][2] = warning;
+        grid.addLine("rightCenter", "autopilot.circleNowWarning", warning);
       }
     },
   };

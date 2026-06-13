@@ -10,7 +10,7 @@ export function createHudPanel(
   return {
     writeHud: (grid) => {
       if (!controller.isEnabled()) return;
-      grid[2][2] = hud.profiling;
+      grid.appendLine("center", "runtime.status", hud.profiling);
     },
   };
 }

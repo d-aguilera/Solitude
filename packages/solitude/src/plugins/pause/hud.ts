@@ -10,7 +10,7 @@ export function createHudPanel(
   return {
     writeHud: (grid) => {
       if (!controller.isPaused()) return;
-      grid[2][1] = hud.paused;
+      grid.appendLine("center", "runtime.status", hud.paused);
     },
   };
 }

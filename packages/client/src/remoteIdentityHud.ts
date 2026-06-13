@@ -21,12 +21,18 @@ export function createRemoteIdentityHudPlugin({
         writeHud: (grid) => {
           const gameId = getGameId();
           const entityId = getEntityId();
-          grid[3][0] =
-            gameId.length > 0 ? hud.gamePrefix.concat(gameId) : hud.gameNone;
-          grid[4][0] =
+          grid.addLine(
+            "center",
+            "remote.game",
+            gameId.length > 0 ? hud.gamePrefix.concat(gameId) : hud.gameNone,
+          );
+          grid.addLine(
+            "center",
+            "remote.entity",
             entityId.length > 0
               ? hud.entityPrefix.concat(entityId)
-              : hud.entityPrefix.concat(hud.none);
+              : hud.entityPrefix.concat(hud.none),
+          );
         },
       }),
     ],
