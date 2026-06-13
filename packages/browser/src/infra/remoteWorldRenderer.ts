@@ -31,7 +31,10 @@ import {
   updateSceneViewCameras,
 } from "@solitude/engine/render";
 import type { RuntimeWorldSnapshot } from "@solitude/engine/runtime";
-import { validatePluginRequirements } from "@solitude/engine/runtime";
+import {
+  createPluginCapabilityRegistry,
+  validatePluginRequirements,
+} from "@solitude/engine/runtime";
 import type { WorldAndSceneConfig } from "@solitude/engine/world";
 import { createScene, getMainViewLookState } from "@solitude/engine/world";
 import {
@@ -124,6 +127,9 @@ export function createRemoteWorldRenderer({
   const scenePlugins = collectScenePlugins(plugins);
   const labelPlugins = collectLabelPlugins(plugins);
   const segmentPlugins = collectSegmentPlugins(plugins);
+  const capabilityRegistry = createPluginCapabilityRegistry(
+    plugins.flatMap((plugin) => plugin.capabilities ?? []),
+  );
 
   applySceneInitPlugins(scenePlugins, {
     config,
@@ -193,6 +199,7 @@ export function createRemoteWorldRenderer({
       world: worldAndScene.world,
     });
     applyLabelPlugins(labelPlugins, sceneLabelCandidates, {
+      capabilityRegistry,
       config,
       labelMode: viewDefinition.labelMode,
       mainFocus: worldAndScene.mainFocus,
@@ -249,6 +256,9 @@ export function createRemoteWorldMultiRenderer({
   const scenePlugins = collectScenePlugins(plugins);
   const labelPlugins = collectLabelPlugins(plugins);
   const segmentPlugins = collectSegmentPlugins(plugins);
+  const capabilityRegistry = createPluginCapabilityRegistry(
+    plugins.flatMap((plugin) => plugin.capabilities ?? []),
+  );
 
   applySceneInitPlugins(scenePlugins, {
     config,
@@ -304,6 +314,7 @@ export function createRemoteWorldMultiRenderer({
         world: worldAndScene.world,
       });
       applyLabelPlugins(labelPlugins, view.sceneLabelCandidates, {
+        capabilityRegistry,
         config,
         labelMode: definition.labelMode,
         mainFocus: worldAndScene.mainFocus,

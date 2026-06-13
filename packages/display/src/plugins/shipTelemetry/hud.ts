@@ -1,7 +1,7 @@
 import { vec3 } from "@solitude/engine/math";
 import type { PluginCapabilityRegistry } from "@solitude/engine/plugin";
 import type { HudPanelProvider } from "@solitude/sim/hud/provider";
-import { type SolitudeLocalization } from "@solitude/sim/localization";
+import type { ShipTelemetryLocalization } from "./localization";
 
 const spacecraftOperatorTelemetryCapabilityId =
   "spacecraft.operatorTelemetry.v1";
@@ -16,9 +16,8 @@ interface SpacecraftOperatorTelemetryProvider {
 }
 
 export function createHudPanel(
-  localization: SolitudeLocalization,
+  localization: ShipTelemetryLocalization,
 ): HudPanelProvider {
-  const { hud } = localization;
   let telemetry: SpacecraftOperatorTelemetryReadout | null = null;
   let telemetryResolved = false;
 
@@ -28,7 +27,7 @@ export function createHudPanel(
       grid.addLine(
         "right",
         "ship.speed",
-        hud.speedPrefix.concat(localization.formatSpeed(speedMps)),
+        localization.speedPrefix.concat(localization.formatSpeed(speedMps)),
       );
 
       if (!telemetryResolved) {
@@ -41,7 +40,7 @@ export function createHudPanel(
       grid.addLine(
         "right",
         "ship.thrust",
-        hud.thrustPrefix.concat(
+        localization.thrustPrefix.concat(
           thrustPadding,
           telemetry.currentThrustLevel.toString(),
         ),
@@ -51,7 +50,7 @@ export function createHudPanel(
       grid.addLine(
         "right",
         "ship.rcs",
-        hud.rcsPrefix.concat(
+        localization.rcsPrefix.concat(
           rcsPadding,
           localization.formatFixed(telemetry.currentRcsLevel, 2),
         ),

@@ -127,6 +127,7 @@ export interface SceneLabelProviderParams {
   world: World;
   mainFocus: FocusContext;
   config: WorldAndSceneConfig;
+  capabilityRegistry: PluginCapabilityRegistry;
 }
 
 export interface SceneLabelPlugin {

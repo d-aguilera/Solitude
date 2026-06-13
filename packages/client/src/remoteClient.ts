@@ -6,7 +6,6 @@ import type {
 } from "@solitude/protocol/protocol";
 import {
   createRuntimeOptionsWithResolvedLocale,
-  createSolitudeLocalization,
   resolveSolitudeLocale,
 } from "@solitude/sim/localization";
 import {
@@ -14,6 +13,7 @@ import {
   createSolitudeWebSocketClient,
   solitudeSpacecraftKeyMap,
 } from "./client";
+import { createClientLocalization } from "./localization";
 import {
   createSocketUrl,
   queryElement,
@@ -40,7 +40,7 @@ const runtimeOptions = createRuntimeOptionsWithResolvedLocale(
   parseRuntimeOptionsFromSearch(window.location.search),
   navigator.languages,
 );
-const localization = createSolitudeLocalization(
+const localization = createClientLocalization(
   resolveSolitudeLocale(runtimeOptions),
 );
 document.documentElement.lang = localization.htmlLang;

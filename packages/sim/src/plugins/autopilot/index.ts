@@ -1,9 +1,6 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import { createHudPanelProvider } from "../../hud/provider";
-import {
-  createSolitudeLocalization,
-  readLocaleRuntimeOption,
-} from "../../localization";
+import { readLocaleRuntimeOption } from "../../localization";
 import {
   createAutonomousControlProvider,
   createControlPlugin,
@@ -11,11 +8,12 @@ import {
 } from "./core";
 import { createHudPanel } from "./hud";
 import { createInputPlugin } from "./input";
+import { createAutopilotLocalization } from "./localization";
 
 export function createAutopilotPlugin(
   runtimeOptions: RuntimeOptions = {},
 ): GamePlugin {
-  const localization = createSolitudeLocalization(
+  const localization = createAutopilotLocalization(
     readLocaleRuntimeOption(runtimeOptions),
   );
   return {

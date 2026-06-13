@@ -5,8 +5,8 @@ import {
   isHudPanelProvider,
   type HudColumnId,
 } from "@solitude/sim/hud/provider";
-import { createSolitudeLocalization } from "@solitude/sim/localization";
 import { describe, expect, it } from "vitest";
+import { createClientLocalization } from "../localization";
 import { createRemoteIdentityHudPlugin } from "../remoteIdentityHud";
 
 describe("remote identity HUD", () => {
@@ -14,7 +14,7 @@ describe("remote identity HUD", () => {
     const plugin = createRemoteIdentityHudPlugin({
       getEntityId: () => "ship:red",
       getGameId: () => "game:2",
-      localization: createSolitudeLocalization("en"),
+      localization: createClientLocalization("en"),
     });
     const provider = plugin.capabilities?.find(
       (capability) => capability.id === hudPanelCapability,

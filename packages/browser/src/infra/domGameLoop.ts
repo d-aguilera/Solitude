@@ -222,6 +222,7 @@ export function runLoop({
     views,
     sceneViews,
     scenePlugins,
+    capabilityRegistry,
     renderCache,
     worldAndScene,
     config,
@@ -422,6 +423,7 @@ function createLoopViews(
   views: RunLoopView[],
   sceneViews: SceneViewState[],
   scenePlugins: ScenePlugin[],
+  capabilityRegistry: PluginCapabilityRegistry,
   renderCache: ReturnType<typeof createRenderFrameCache>,
   worldAndScene: WorldAndScene,
   config: RunLoopParams["config"],
@@ -444,6 +446,7 @@ function createLoopViews(
     result.push({
       ...view,
       labelParams: {
+        capabilityRegistry,
         viewId,
         labelMode: view.definition.labelMode,
         scene: worldAndScene.scene,

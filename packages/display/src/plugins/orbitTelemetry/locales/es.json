@@ -1,0 +1,19 @@
+{
+  "apoapsisIn": "Ap en: {time}",
+  "apoapsisTimeEmpty": "Ap en: --",
+  "deltaVRadialPrefix": "Δv Rad: ",
+  "deltaVTangentialPrefix": "Δv Tan: ",
+  "eccentricityPrefix": "e: ",
+  "inbound": "entrante",
+  "inclinationPrefix": "i: ",
+  "orbitBound": "ligada",
+  "orbitEscape": "escape",
+  "orbitPrefix": "Órbita: ",
+  "outbound": "saliente",
+  "peApEmpty": "Pe/Ap: --",
+  "periapsisApoapsis": "Pe/Ap: {periapsis} / {apoapsis}",
+  "periapsisIn": "Pe en: {time}",
+  "periapsisTimeEmpty": "Pe en: --",
+  "prograde": "progrado",
+  "retrograde": "retrógrado"
+}

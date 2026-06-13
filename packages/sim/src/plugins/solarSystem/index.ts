@@ -1,16 +1,20 @@
-import type { GamePlugin } from "@solitude/engine/plugin";
+import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import type { EntityConfig } from "@solitude/engine/world";
 import { celestialBodyProviderCapability } from "../../celestialBodies/provider";
 import { createSolarSystemCelestialBodyProvider } from "./celestialBodyProvider";
+import { createSolarSystemEntityNameProvider } from "./localization";
 import { buildDefaultSolarSystemConfigs } from "./solarSystem";
 
-export function createSolarSystemPlugin(): GamePlugin {
+export function createSolarSystemPlugin(
+  runtimeOptions: RuntimeOptions = {},
+): GamePlugin {
   return {
     capabilities: [
       {
         id: celestialBodyProviderCapability,
         value: createSolarSystemCelestialBodyProvider(),
       },
+      createSolarSystemEntityNameProvider(runtimeOptions),
     ],
     id: "solarSystem",
     worldModel: {

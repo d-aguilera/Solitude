@@ -1,19 +1,17 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import { createHudPanelProvider } from "@solitude/sim/hud/provider";
-import {
-  createSolitudeLocalization,
-  readLocaleRuntimeOption,
-} from "@solitude/sim/localization";
+import { readLocaleRuntimeOption } from "@solitude/sim/localization";
 import { createPlaybackController } from "./core";
 import { createHudPanel } from "./hud";
 import { createInputPlugin } from "./input";
+import { createPlaybackLocalization } from "./localization";
 import { parsePlaybackRuntimeOptions } from "./options";
 
 export function createPlaybackPlugin(
   runtimeOptions: RuntimeOptions = {},
 ): GamePlugin {
   const options = parsePlaybackRuntimeOptions(runtimeOptions);
-  const localization = createSolitudeLocalization(
+  const localization = createPlaybackLocalization(
     readLocaleRuntimeOption(runtimeOptions),
   );
   const controller = createPlaybackController(

@@ -4,14 +4,14 @@ import {
   hudPanelCapability,
   isHudPanelProvider,
 } from "@solitude/sim/hud/provider";
-import { createSolitudeLocalization } from "@solitude/sim/localization";
 import { describe, expect, it } from "vitest";
+import { createClientLocalization } from "../localization";
 import { createRemoteRuntimeTelemetryHudPlugin } from "../remoteRuntimeTelemetryHud";
 
 describe("remote runtime telemetry HUD", () => {
   it("publishes simulation time and fps in the center column", () => {
     const telemetry = createRemoteRuntimeTelemetryHudPlugin(
-      createSolitudeLocalization("en"),
+      createClientLocalization("en"),
     );
     telemetry.updateFps(1000 / 60);
 

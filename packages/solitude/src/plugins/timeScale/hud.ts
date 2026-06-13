@@ -1,12 +1,11 @@
 import type { HudPanelProvider } from "@solitude/sim/hud/provider";
-import { type SolitudeLocalization } from "@solitude/sim/localization";
+import type { TimeScaleLocalization } from "./localization";
 import type { TimeScaleController } from "./logic";
 
 export function createHudPanel(
   controller: TimeScaleController,
-  localization: SolitudeLocalization,
+  localization: TimeScaleLocalization,
 ): HudPanelProvider {
-  const { hud } = localization;
   return {
     writeHud: (grid) => {
       const scale = controller.getScale();
@@ -14,7 +13,7 @@ export function createHudPanel(
       grid.addLine(
         "rightCenter",
         "runtime.timeScale",
-        hud.timeScalePrefix.concat(scale.toString()),
+        localization.timeScalePrefix.concat(scale.toString()),
       );
     },
   };

@@ -1,11 +1,11 @@
 import { parseRuntimeOptionsFromSearch } from "@solitude/browser/dom/runtimeOptions";
 import {
   createRuntimeOptionsWithResolvedLocale,
-  createSolitudeLocalization,
   resolveSolitudeLocale,
   type SolitudeLocale,
 } from "@solitude/sim/localization";
 import { createSolitudeWebSocketClient } from "./client";
+import { createClientLocalization } from "./localization";
 import {
   createGameHref,
   createSocketUrl,
@@ -33,7 +33,7 @@ const runtimeOptions = createRuntimeOptionsWithResolvedLocale(
   parseRuntimeOptionsFromSearch(window.location.search),
   navigator.languages,
 );
-let localization = createSolitudeLocalization(
+let localization = createClientLocalization(
   resolveSolitudeLocale(runtimeOptions),
 );
 
@@ -45,7 +45,7 @@ createGameButton.addEventListener("click", () => {
   void createGame();
 });
 localeSelect.addEventListener("change", () => {
-  localization = createSolitudeLocalization(readSelectedLocale());
+  localization = createClientLocalization(readSelectedLocale());
   persistSelectedLocale();
   applyLocalizedShellText();
   void refreshGames();

@@ -1,6 +1,7 @@
 import { vec3, type Vec3 } from "@solitude/engine/math";
 import type {
   GamePlugin,
+  PluginCapabilityRegistry,
   RuntimeOptions,
   SceneLabelCandidate,
   SceneLabelPlugin,
@@ -13,10 +14,13 @@ import {
 } from "@solitude/engine/render";
 import type { EntityId, World } from "@solitude/engine/world";
 import {
-  createSolitudeLocalization,
+  formatEntityName,
   readLocaleRuntimeOption,
-  type SolitudeLocalization,
 } from "@solitude/sim/localization";
+import {
+  createBodyLabelLocalization,
+  type BodyLabelLocalization,
+} from "./localization";
 
 const distanceScratch: Vec3 = vec3.zero();
 
@@ -27,7 +31,7 @@ type MutableSceneLabelCandidate = SceneLabelCandidate & {
 export function createBodyLabelsPlugin(
   runtimeOptions: RuntimeOptions = {},
 ): GamePlugin {
-  const localization = createSolitudeLocalization(
+  const localization = createBodyLabelLocalization(
     readLocaleRuntimeOption(runtimeOptions),
   );
   return {
@@ -37,7 +41,7 @@ export function createBodyLabelsPlugin(
 }
 
 function createSceneLabelPlugin(
-  localization: SolitudeLocalization,
+  localization: BodyLabelLocalization,
 ): SceneLabelPlugin {
   const candidatesById = new Map<string, MutableSceneLabelCandidate>();
   const displayNamesById = new Map<string, string>();
@@ -67,7 +71,7 @@ function createSceneLabelPlugin(
         writeLabelLines(
           candidate.lines,
           params.labelMode,
-          getDisplayName(displayNamesById, object, localization),
+          getDisplayName(displayNamesById, object, params.capabilityRegistry),
           distance,
           velocity ? vec3.length(velocity) : 0,
           localization,
@@ -100,28 +104,27 @@ function writeLabelLines(
   displayName: string,
   distance: number,
   speed: number,
-  localization: SolitudeLocalization,
+  localization: BodyLabelLocalization,
 ): void {
-  const { hud } = localization;
   into[0] = displayName;
   if (labelMode === "nameOnly") {
     into.length = 1;
     return;
   }
-  into[1] = hud.distanceLabel(localization.formatDistance(distance));
-  into[2] = hud.velocityLabel(localization.formatSpeed(speed));
+  into[1] = localization.distanceLabel(localization.formatDistance(distance));
+  into[2] = localization.velocityLabel(localization.formatSpeed(speed));
   into.length = 3;
 }
 
 function getDisplayName(
   displayNamesById: Map<string, string>,
   object: SceneObject,
-  localization: SolitudeLocalization,
+  capabilityRegistry: PluginCapabilityRegistry,
 ) {
   if (object.displayName) return object.displayName;
   let displayName = displayNamesById.get(object.id);
   if (!displayName) {
-    displayName = localization.formatEntityName(object.id, undefined);
+    displayName = formatEntityName(capabilityRegistry, object.id, undefined);
     displayNamesById.set(object.id, displayName);
   }
   return displayName;

@@ -1,0 +1,21 @@
+{
+  "lobby.createGame": "Créer une partie",
+  "lobby.creatingGame": "Création de la partie",
+  "lobby.createFailed": "Échec de la création",
+  "lobby.full": "Complet",
+  "lobby.gameCreated": "Partie créée",
+  "lobby.gamesHeading": "Parties",
+  "lobby.gameSummary": "{gameId} | tick {tick} | assignés {assigned} | disponibles {available}",
+  "lobby.join": "Rejoindre",
+  "lobby.languageLabel": "Langue",
+  "lobby.noGamesYet": "Aucune partie",
+  "lobby.ready": "Prêt",
+  "lobby.refreshFailed": "Échec de l'actualisation",
+  "lobby.refreshingGames": "Actualisation des parties",
+  "common.none": "aucun",
+  "remoteIdentity.entityPrefix": "Entité : ",
+  "remoteIdentity.gameNone": "Partie : aucune",
+  "remoteIdentity.gamePrefix": "Partie : ",
+  "remoteRuntime.fpsPrefix": "IPS : ",
+  "remoteRuntime.timePrefix": "Temps : "
+}

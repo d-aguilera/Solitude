@@ -1,0 +1,21 @@
+{
+  "lobby.createGame": "Create game",
+  "lobby.creatingGame": "Creating game",
+  "lobby.createFailed": "Create failed",
+  "lobby.full": "Full",
+  "lobby.gameCreated": "Game created",
+  "lobby.gamesHeading": "Games",
+  "lobby.gameSummary": "{gameId} | tick {tick} | assigned {assigned} | available {available}",
+  "lobby.join": "Join",
+  "lobby.languageLabel": "Language",
+  "lobby.noGamesYet": "No games yet",
+  "lobby.ready": "Ready",
+  "lobby.refreshFailed": "Refresh failed",
+  "lobby.refreshingGames": "Refreshing games",
+  "common.none": "none",
+  "remoteIdentity.entityPrefix": "Entity: ",
+  "remoteIdentity.gameNone": "Game: none",
+  "remoteIdentity.gamePrefix": "Game: ",
+  "remoteRuntime.fpsPrefix": "FPS: ",
+  "remoteRuntime.timePrefix": "Time: "
+}

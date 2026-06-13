@@ -1,0 +1,21 @@
+{
+  "lobby.createGame": "Crear partida",
+  "lobby.creatingGame": "Creando partida",
+  "lobby.createFailed": "No se pudo crear",
+  "lobby.full": "Llena",
+  "lobby.gameCreated": "Partida creada",
+  "lobby.gamesHeading": "Partidas",
+  "lobby.gameSummary": "{gameId} | tick {tick} | asignados {assigned} | disponibles {available}",
+  "lobby.join": "Unirse",
+  "lobby.languageLabel": "Idioma",
+  "lobby.noGamesYet": "Aún no hay partidas",
+  "lobby.ready": "Listo",
+  "lobby.refreshFailed": "No se pudo actualizar",
+  "lobby.refreshingGames": "Actualizando partidas",
+  "common.none": "ninguno",
+  "remoteIdentity.entityPrefix": "Entidad: ",
+  "remoteIdentity.gameNone": "Partida: ninguna",
+  "remoteIdentity.gamePrefix": "Partida: ",
+  "remoteRuntime.fpsPrefix": "FPS: ",
+  "remoteRuntime.timePrefix": "Tiempo: "
+}

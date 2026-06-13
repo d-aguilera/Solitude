@@ -1,16 +1,15 @@
 import type { HudPanelProvider } from "@solitude/sim/hud/provider";
-import type { SolitudeLocalization } from "@solitude/sim/localization";
+import type { PauseLocalization } from "./localization";
 import type { PauseController } from "./logic";
 
 export function createHudPanel(
   controller: PauseController,
-  localization: SolitudeLocalization,
+  localization: PauseLocalization,
 ): HudPanelProvider {
-  const { hud } = localization;
   return {
     writeHud: (grid) => {
       if (!controller.isPaused()) return;
-      grid.appendLine("center", "runtime.status", hud.paused);
+      grid.appendLine("center", "runtime.status", localization.paused);
     },
   };
 }

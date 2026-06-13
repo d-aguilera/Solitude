@@ -1,7 +1,7 @@
 import type { GamePlugin } from "@solitude/engine/plugin";
 import { formatSimTime } from "@solitude/engine/render";
 import { createHudPanelProvider } from "@solitude/sim/hud/provider";
-import type { SolitudeLocalization } from "@solitude/sim/localization";
+import type { ClientLocalization } from "./localization";
 
 const fpsHistoryCapacity = 300;
 
@@ -11,9 +11,9 @@ export interface RemoteRuntimeTelemetryHud {
 }
 
 export function createRemoteRuntimeTelemetryHudPlugin(
-  localization: SolitudeLocalization,
+  localization: ClientLocalization,
 ): RemoteRuntimeTelemetryHud {
-  const { hud } = localization;
+  const { remoteRuntime } = localization;
   const history = new Array<number>();
   let tail = -1;
   let sum = 0;
@@ -28,14 +28,14 @@ export function createRemoteRuntimeTelemetryHudPlugin(
             grid.addLine(
               "center",
               "runtime.time",
-              hud.timePrefix.concat(
+              remoteRuntime.timePrefix.concat(
                 formatSimTime(context.simTimeMillis / 1000),
               ),
             );
             grid.addLine(
               "center",
               "runtime.fps",
-              hud.fpsPrefix.concat(localization.formatFixed(fps, 1)),
+              remoteRuntime.fpsPrefix.concat(localization.formatFixed(fps, 1)),
             );
           },
         }),

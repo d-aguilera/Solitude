@@ -4,7 +4,9 @@ import type {
   SceneLabelProviderParams,
 } from "@solitude/engine/plugin";
 import type { Scene, SceneObject } from "@solitude/engine/render";
+import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { World } from "@solitude/engine/world";
+import { createEntityNameProvider } from "@solitude/sim/localization";
 import { describe, expect, it } from "vitest";
 import { createBodyLabelsPlugin } from "./index";
 
@@ -89,7 +91,16 @@ describe("body label plugin", () => {
     };
 
     plugin.labels?.appendLabels?.(labels, {
-      ...createParams(scene),
+      ...createParams(
+        scene,
+        "ship:test",
+        createPluginCapabilityRegistry([
+          createEntityNameProvider({
+            formatEntityName: (entityId) =>
+              entityId === "planet:earth" ? "Tierra" : null,
+          }),
+        ]),
+      ),
       labelMode: "nameOnly",
     });
 
@@ -120,8 +131,10 @@ describe("body label plugin", () => {
 function createParams(
   scene: Scene,
   focusEntityId = "ship:test",
+  capabilityRegistry = createPluginCapabilityRegistry(),
 ): SceneLabelProviderParams {
   return {
+    capabilityRegistry,
     config: {} as SceneLabelProviderParams["config"],
     labelMode: "full",
     mainFocus: {

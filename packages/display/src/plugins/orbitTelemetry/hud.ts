@@ -1,12 +1,12 @@
 import { formatSimTime } from "@solitude/engine/render";
 import type { HudPanelProvider } from "@solitude/sim/hud/provider";
-import { type SolitudeLocalization } from "@solitude/sim/localization";
+import { formatEntityName } from "@solitude/sim/localization";
+import type { OrbitTelemetryLocalization } from "./localization";
 import { computeOrbitReadoutInto, createOrbitReadout } from "./orbitReadout";
 
 export function createHudPanel(
-  localization: SolitudeLocalization,
+  localization: OrbitTelemetryLocalization,
 ): HudPanelProvider {
-  const { hud } = localization;
   const orbitReadout = createOrbitReadout();
   let primaryDisplayNameId = "";
   let primaryDisplayName = "";
@@ -26,7 +26,8 @@ export function createHudPanel(
       const timeToAp = orbitReadout.timeToApoapsisSec;
       if (primaryDisplayNameId !== orbitReadout.primaryId) {
         primaryDisplayNameId = orbitReadout.primaryId;
-        primaryDisplayName = localization.formatEntityName(
+        primaryDisplayName = formatEntityName(
+          context.capabilityRegistry,
           orbitReadout.primaryId,
           undefined,
         );
@@ -35,10 +36,12 @@ export function createHudPanel(
       grid.addLine(
         "left",
         "orbit.primary",
-        hud.orbitPrefix.concat(
+        localization.orbitPrefix.concat(
           primaryDisplayName,
           " (",
-          orbitReadout.isBound ? hud.orbitBound : hud.orbitEscape,
+          orbitReadout.isBound
+            ? localization.orbitBound
+            : localization.orbitEscape,
           ")",
         ),
       );
@@ -46,7 +49,7 @@ export function createHudPanel(
         "left",
         "orbit.peAp",
         orbitReadout.isBound
-          ? hud.periapsisApoapsis(
+          ? localization.periapsisApoapsis(
               formatSignedDistance(
                 orbitReadout.periapsis - orbitReadout.primaryRadius,
                 localization,
@@ -56,19 +59,19 @@ export function createHudPanel(
                 localization,
               ),
             )
-          : hud.peApEmpty,
+          : localization.peApEmpty,
       );
       grid.addLine(
         "left",
         "orbit.eccentricity",
-        hud.eccentricityPrefix.concat(
+        localization.eccentricityPrefix.concat(
           localization.formatFixed(orbitReadout.eccentricity, 3),
         ),
       );
       grid.addLine(
         "left",
         "orbit.inclination",
-        hud.inclinationPrefix.concat(
+        localization.inclinationPrefix.concat(
           localization.formatFixed(
             (orbitReadout.inclinationRad * 180) / Math.PI,
             1,
@@ -80,19 +83,19 @@ export function createHudPanel(
       grid.addLine(
         "leftCenter",
         "orbit.deltaVRadial",
-        hud.deltaVRadialPrefix.concat(
+        localization.deltaVRadialPrefix.concat(
           localization.formatDeltaV(Math.abs(radDv)),
           " ",
-          radDv >= 0 ? hud.outbound : hud.inbound,
+          radDv >= 0 ? localization.outbound : localization.inbound,
         ),
       );
       grid.addLine(
         "leftCenter",
         "orbit.deltaVTangential",
-        hud.deltaVTangentialPrefix.concat(
+        localization.deltaVTangentialPrefix.concat(
           localization.formatDeltaV(Math.abs(tanDv)),
           " ",
-          tanDv >= 0 ? hud.prograde : hud.retrograde,
+          tanDv >= 0 ? localization.prograde : localization.retrograde,
         ),
       );
 
@@ -100,15 +103,15 @@ export function createHudPanel(
         "leftCenter",
         "orbit.timeToPeriapsis",
         timeToPe == null
-          ? hud.periapsisTimeEmpty
-          : hud.periapsisIn(formatSimTime(timeToPe)),
+          ? localization.periapsisTimeEmpty
+          : localization.periapsisIn(formatSimTime(timeToPe)),
       );
       grid.addLine(
         "leftCenter",
         "orbit.timeToApoapsis",
         timeToAp == null
-          ? hud.apoapsisTimeEmpty
-          : hud.apoapsisIn(formatSimTime(timeToAp)),
+          ? localization.apoapsisTimeEmpty
+          : localization.apoapsisIn(formatSimTime(timeToAp)),
       );
     },
   };
@@ -116,7 +119,7 @@ export function createHudPanel(
 
 function formatSignedDistance(
   distanceMeters: number,
-  localization: SolitudeLocalization,
+  localization: OrbitTelemetryLocalization,
 ): string {
   return distanceMeters < 0
     ? "-".concat(localization.formatDistance(-distanceMeters))
