@@ -13,6 +13,7 @@ import {
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
 import type { HudContext, HudGrid } from "@solitude/sim/hud/provider";
+import { createSolitudeLocalization } from "@solitude/sim/localization";
 import { createHudPanel as createAutopilotHudPanel } from "@solitude/sim/plugins/autopilot/hud";
 import { createSpacecraftOperatorTelemetryProvider } from "@solitude/sim/plugins/spacecraftOperator/capabilities";
 import { createSpacecraftOperatorTelemetry } from "@solitude/sim/plugins/spacecraftOperator/telemetry";
@@ -103,6 +104,7 @@ describe("telemetry HUD plugins", () => {
   it("shipTelemetry writes ship state and control cells", () => {
     const { world, ship } = createWorldAndShip();
     ship.velocity = vec3.create(10, 0, 0);
+    const localization = createSolitudeLocalization("en");
     const grid = createHudGrid();
     const telemetry = createSpacecraftOperatorTelemetry();
     telemetry.currentThrustLevel = 5;
@@ -111,20 +113,38 @@ describe("telemetry HUD plugins", () => {
       createSpacecraftOperatorTelemetryProvider(telemetry),
     ]);
 
-    createShipTelemetryHudPanel().writeHud(grid, context);
+    createShipTelemetryHudPanel(localization).writeHud(grid, context);
 
     expect(grid[0][4]).toBe("Speed: 36 km/h");
     expect(grid[1][4]).toBe("Thrust:  5");
     expect(grid[2][4]).toBe("RCS: -1.00");
   });
 
+  it("shipTelemetry writes localized speed without thousands separators", () => {
+    const { world, ship } = createWorldAndShip();
+    ship.velocity = vec3.create(29_579.72, 0, 0);
+    const localization = createSolitudeLocalization("es");
+    const grid = createHudGrid();
+    const telemetry = createSpacecraftOperatorTelemetry();
+    telemetry.currentRcsLevel = 1.25;
+    const context = createHudContext(world, ship, [
+      createSpacecraftOperatorTelemetryProvider(telemetry),
+    ]);
+
+    createShipTelemetryHudPanel(localization).writeHud(grid, context);
+
+    expect(grid[0][4]).toBe("Velocidad: 106487 km/h");
+    expect(grid[2][4]).toBe("RCS:  1,25");
+  });
+
   it("shipTelemetry reads the focused body instead of the legacy main body", () => {
     const { world, ship } = createWorldAndShip();
     ship.velocity = vec3.create(10, 0, 0);
+    const localization = createSolitudeLocalization("en");
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
 
-    createShipTelemetryHudPanel().writeHud(grid, context);
+    createShipTelemetryHudPanel(localization).writeHud(grid, context);
 
     expect(grid[0][4]).toBe("Speed: 36 km/h");
     expect(grid[1][4]).toBe("");
@@ -147,7 +167,8 @@ describe("telemetry HUD plugins", () => {
           : [];
       },
     };
-    const panel = createShipTelemetryHudPanel();
+    const localization = createSolitudeLocalization("en");
+    const panel = createShipTelemetryHudPanel(localization);
 
     panel.writeHud(grid, context);
     panel.writeHud(grid, context);
@@ -158,12 +179,13 @@ describe("telemetry HUD plugins", () => {
 
   it("runtimeTelemetry writes simulation time and fps cells", () => {
     const { world, ship } = createWorldAndShip();
+    const localization = createSolitudeLocalization("en");
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
     const controller = createRuntimeTelemetryController();
-
     controller.updateFps(1000 / 60);
-    createRuntimeTelemetryHudPanel(controller).writeHud(grid, context);
+    const panel = createRuntimeTelemetryHudPanel(controller, localization);
+    panel.writeHud(grid, context);
 
     expect(grid[3][4]).toBe("Time: 01m 05s");
     expect(grid[4][4]).toBe("FPS: 60.0");
@@ -171,10 +193,10 @@ describe("telemetry HUD plugins", () => {
 
   it("orbitTelemetry writes orbit and circularization cells", () => {
     const { world, ship } = createWorldAndShip();
+    const localization = createSolitudeLocalization("en");
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
-
-    createOrbitTelemetryHudPanel().writeHud(grid, context);
+    createOrbitTelemetryHudPanel(localization).writeHud(grid, context);
 
     expect(grid[0][0]).toBe("Orbit: Earth (bound)");
     expect(grid[1][0]).toContain("Pe/Ap: ");
@@ -184,16 +206,29 @@ describe("telemetry HUD plugins", () => {
     expect(grid[1][1]).toContain("Δv Tan: ");
   });
 
+  it("orbitTelemetry localizes primary body names", () => {
+    const { world, ship } = createWorldAndShip();
+    const localization = createSolitudeLocalization("es");
+    const grid = createHudGrid();
+    const context = createHudContext(world, ship);
+    createOrbitTelemetryHudPanel(localization).writeHud(grid, context);
+
+    expect(grid[0][0]).toBe("Órbita: Tierra (ligada)");
+    expect(grid[2][0]).toBe("e: 0,000");
+    expect(grid[3][0]).toBe("i: 0,0°");
+  });
+
   it("orbitTelemetry leaves cells untouched when no primary is available", () => {
     const { world, ship } = createWorldAndShip();
     world.collisionSpheres.length = 0;
     world.gravityMasses.length = 0;
+    const localization = createSolitudeLocalization("en");
     const grid = createHudGrid();
     grid[0][0] = "existing";
     grid[1][0] = "existing pe/ap";
     const context = createHudContext(world, ship);
 
-    createOrbitTelemetryHudPanel().writeHud(grid, context);
+    createOrbitTelemetryHudPanel(localization).writeHud(grid, context);
 
     expect(grid[0][0]).toBe("existing");
     expect(grid[1][0]).toBe("existing pe/ap");
@@ -203,11 +238,12 @@ describe("telemetry HUD plugins", () => {
 
   it("autopilot HUD reads circle-now diagnostics from the focused body", () => {
     const { world, ship } = createWorldAndShip();
+    const localization = createSolitudeLocalization("en");
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
     context.controlInput.circleNow = true;
 
-    createAutopilotHudPanel().writeHud(grid, context);
+    createAutopilotHudPanel(localization).writeHud(grid, context);
 
     expect(grid[0][3]).toBe("AP: VEL BODY [CN]");
     expect(grid[4][2]).toBe("");

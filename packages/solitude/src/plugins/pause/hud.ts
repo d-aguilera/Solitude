@@ -1,13 +1,16 @@
 import type { HudPanelProvider } from "@solitude/sim/hud/provider";
+import type { SolitudeLocalization } from "@solitude/sim/localization";
 import type { PauseController } from "./logic";
 
-const pausedText = "PAUSED";
-
-export function createHudPanel(controller: PauseController): HudPanelProvider {
+export function createHudPanel(
+  controller: PauseController,
+  localization: SolitudeLocalization,
+): HudPanelProvider {
+  const { hud } = localization;
   return {
     writeHud: (grid) => {
       if (!controller.isPaused()) return;
-      grid[2][1] = pausedText;
+      grid[2][1] = hud.paused;
     },
   };
 }

@@ -17,6 +17,7 @@ import {
   type ControlInput,
   type FramePolicy,
   type GamePlugin,
+  type RuntimeOptions,
 } from "@solitude/engine/plugin";
 import {
   buildViewDefinitions,
@@ -74,6 +75,7 @@ export interface SolitudeRemoteClientRendererOptions {
   container: Element;
   getFocusEntityId: () => string;
   plugins?: GamePlugin[];
+  runtimeOptions?: RuntimeOptions;
 }
 
 export interface SolitudeRemoteClientRenderer {
@@ -92,10 +94,12 @@ export function createSolitudeRemoteClientRenderer({
   container,
   getFocusEntityId,
   plugins: clientPlugins = [],
+  runtimeOptions = {},
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
   const plugins = loadPlugins({
     catalog: remoteRenderPluginCatalog,
     ids: remoteRenderPluginIds,
+    runtimeOptions,
   }).concat(clientPlugins);
   const capabilityRegistry = createPluginCapabilityRegistry(
     plugins.flatMap((plugin) => plugin.capabilities ?? []),

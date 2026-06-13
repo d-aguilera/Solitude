@@ -1,11 +1,8 @@
 import { vec3 } from "@solitude/engine/math";
 import type { PluginCapabilityRegistry } from "@solitude/engine/plugin";
-import { formatSpeed } from "@solitude/engine/render";
 import type { HudPanelProvider } from "@solitude/sim/hud/provider";
+import { type SolitudeLocalization } from "@solitude/sim/localization";
 
-const speedPrefix = "Speed: ";
-const thrustPrefix = "Thrust: ";
-const rcsPrefix = "RCS: ";
 const spacecraftOperatorTelemetryCapabilityId =
   "spacecraft.operatorTelemetry.v1";
 
@@ -18,14 +15,17 @@ interface SpacecraftOperatorTelemetryProvider {
   readonly telemetry: SpacecraftOperatorTelemetryReadout;
 }
 
-export function createHudPanel(): HudPanelProvider {
+export function createHudPanel(
+  localization: SolitudeLocalization,
+): HudPanelProvider {
+  const { hud } = localization;
   let telemetry: SpacecraftOperatorTelemetryReadout | null = null;
   let telemetryResolved = false;
 
   return {
     writeHud: (grid, context) => {
       const speedMps = vec3.length(context.mainFocus.controlledBody.velocity);
-      grid[0][4] = speedPrefix.concat(formatSpeed(speedMps));
+      grid[0][4] = hud.speedPrefix.concat(localization.formatSpeed(speedMps));
 
       if (!telemetryResolved) {
         telemetry = resolveTelemetry(context.capabilityRegistry);
@@ -34,15 +34,15 @@ export function createHudPanel(): HudPanelProvider {
       if (!telemetry) return;
 
       const thrustPadding = telemetry.currentThrustLevel < 0 ? "" : " ";
-      grid[1][4] = thrustPrefix.concat(
+      grid[1][4] = hud.thrustPrefix.concat(
         thrustPadding,
         telemetry.currentThrustLevel.toString(),
       );
 
       const rcsPadding = telemetry.currentRcsLevel < 0 ? "" : " ";
-      grid[2][4] = rcsPrefix.concat(
+      grid[2][4] = hud.rcsPrefix.concat(
         rcsPadding,
-        telemetry.currentRcsLevel.toFixed(2),
+        localization.formatFixed(telemetry.currentRcsLevel, 2),
       );
     },
   };

@@ -59,7 +59,7 @@
 ## Package Snapshot
 
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
-- `packages/sim/src/`: browser-safe and Node-safe Solitude simulation library: default world config, solar-system entity builders/assets, spacecraft operator dynamics, autopilot logic, and headless Solitude composition shared by server and browser/product packages.
+- `packages/sim/src/`: browser-safe and Node-safe Solitude simulation library: default world config, solar-system entity builders/assets, spacecraft operator dynamics, autopilot logic, localization helpers/messages, and headless Solitude composition shared by server and browser/product packages.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, layout, Canvas 2D, WebGL rasterizer adapters, and remote-world mirror helpers.
 - `packages/protocol/src/`: browser-safe client/server protocol types and message guards.
 - `packages/client/src/`: deployable remote browser client, server URL adapter, HTTP/WebSocket client helpers, keyboard input patching, authoritative snapshot interpolation, and remote rendering composition.
@@ -93,6 +93,8 @@
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
 - Server runtime lives in `packages/server/src/runtime.ts`; it composes shared `@solitude/sim` headless Solitude code, steps entity-addressed controls, and reuses runtime snapshot storage.
 - Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, receives authoritative model/snapshot messages over WebSocket, sends sequenced server-authoritative controls for its assigned ship, predicts the locally controlled ship immediately, smooths reconciliation visually, exposes prediction metrics on `window.__solitudePredictionMetrics`, and renders through `@solitude/browser`.
+- Localization is client-side and server-neutral. `@solitude/sim/localization` resolves `?locale=` or browser-preferred language to `en`/`es`/`fr`, loads JSON messages from `packages/sim/src/locales/`, formats numbers/units without thousands grouping, and localizes built-in solar-system names via `formatEntityName`. The multiplayer lobby offers a language selector and passes locale through game links; standalone resolves from browser locale unless `?locale=` overrides it.
+- Entity `displayName` remains a literal authored override for scene/body labels. Built-in solar-system names should be localized by id in locale JSON; custom ids fall back to generated names. Orbit telemetry localizes by id but does not yet receive explicit `displayName` overrides.
 - Shared browser-safe protocol contract lives in `@solitude/protocol`; browser client adapters live in `@solitude/client`.
 - Browser remote-world mirror proof lives in `@solitude/browser/remoteWorldMirror`; it applies authoritative runtime snapshots into a local world via a reusable indexed workspace.
 - Server-safe Solitude headless composition lives in `@solitude/sim`; `@solitude/server` intentionally does not depend on the browser-facing `solitude` package.
@@ -108,6 +110,7 @@
 - `packages/browser/src/infra/domBootstrap.ts`: browser runtime composition.
 - `packages/browser/src/infra/remoteWorldMirror.ts`: non-DOM authoritative snapshot apply mirror for future network clients.
 - `packages/sim/src/headless.ts`: shared server-safe/browser-safe Solitude headless composition.
+- `packages/sim/src/localization.ts` and `packages/sim/src/locales/*.json`: Solitude locale resolution, localized messages, unit formatting, and built-in entity-name translations.
 - `packages/server/src/runtime.ts`: authoritative server runtime composition.
 - `packages/server/src/metrics.ts`: rolling server stream metrics for snapshot cadence, payload size, fanout, step timing, and socket counts.
 - `packages/client/src/localPrediction.ts`: client-side input prediction state for the assigned ship.

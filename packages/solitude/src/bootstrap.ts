@@ -3,13 +3,17 @@ import { parseRuntimeOptionsFromSearch } from "@solitude/browser/dom/runtimeOpti
 import { loadPlugins } from "@solitude/engine/plugin";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
+import { createRuntimeOptionsWithResolvedLocale } from "@solitude/sim/localization";
 import { defaultPluginIds, solitudePluginCatalog } from "./plugins/catalog";
 
 /**
  * Top‑level composition entry for the browser runtime.
  */
 function main(): void {
-  const runtimeOptions = parseRuntimeOptionsFromSearch(window.location.search);
+  const runtimeOptions = createRuntimeOptionsWithResolvedLocale(
+    parseRuntimeOptionsFromSearch(window.location.search),
+    navigator.languages,
+  );
   const plugins = loadPlugins({
     catalog: solitudePluginCatalog,
     ids: defaultPluginIds,

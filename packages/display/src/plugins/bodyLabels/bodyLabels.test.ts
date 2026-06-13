@@ -80,6 +80,22 @@ describe("body label plugin", () => {
     expect(labels[0].lines).toEqual(["Earth"]);
   });
 
+  it("localizes built-in solar-system names", () => {
+    const plugin = createBodyLabelsPlugin({ locale: "es" });
+    const labels: SceneLabelCandidate[] = [];
+    const scene: Scene = {
+      lights: [],
+      objects: [createOrbitalBody("planet:earth")],
+    };
+
+    plugin.labels?.appendLabels?.(labels, {
+      ...createParams(scene),
+      labelMode: "nameOnly",
+    });
+
+    expect(labels[0].lines).toEqual(["Tierra"]);
+  });
+
   it("labels other controlled bodies by display name", () => {
     const plugin = createBodyLabelsPlugin();
     const labels: SceneLabelCandidate[] = [];

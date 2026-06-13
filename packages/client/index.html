@@ -11,11 +11,17 @@
     <main class="lobby">
       <header class="lobby-header">
         <h1>Solitude</h1>
-        <button id="createGame">Create game</button>
+        <div class="lobby-actions">
+          <label class="locale-picker">
+            <span id="languageLabel">Language</span>
+            <select id="localeSelect"></select>
+          </label>
+          <button id="createGame">Create game</button>
+        </div>
       </header>
       <section>
         <div class="section-header">
-          <h2>Games</h2>
+          <h2 id="gamesHeading">Games</h2>
         </div>
         <ul id="gamesList"></ul>
       </section>

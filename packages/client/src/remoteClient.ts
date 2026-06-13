@@ -1,8 +1,14 @@
+import { parseRuntimeOptionsFromSearch } from "@solitude/browser/dom/runtimeOptions";
 import type { ControlInput } from "@solitude/engine/plugin";
 import type {
   SolitudeGameId,
   SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
+import {
+  createRuntimeOptionsWithResolvedLocale,
+  createSolitudeLocalization,
+  resolveSolitudeLocale,
+} from "@solitude/sim/localization";
 import {
   createKeyboardInputPatcher,
   createSolitudeWebSocketClient,
@@ -29,14 +35,24 @@ const canvasContainer = queryElement(".canvas-container");
 const searchParams = new URLSearchParams(window.location.search);
 const serverBaseUrl = readServerBaseUrl(searchParams);
 const initialGameId = searchParams.get("gameId");
+const runtimeOptions = createRuntimeOptionsWithResolvedLocale(
+  parseRuntimeOptionsFromSearch(window.location.search),
+  navigator.languages,
+);
+const localization = createSolitudeLocalization(
+  resolveSolitudeLocale(runtimeOptions),
+);
+document.documentElement.lang = localization.htmlLang;
 
 const engineRenderer = createSolitudeRemoteClientRenderer({
   container: canvasContainer,
   getFocusEntityId: () => fields.entityId.value,
+  runtimeOptions,
   plugins: [
     createRemoteIdentityHudPlugin({
       getEntityId: () => fields.entityId.value,
       getGameId: () => fields.gameId.value,
+      localization,
     }),
   ],
 });

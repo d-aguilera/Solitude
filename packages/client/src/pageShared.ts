@@ -85,6 +85,10 @@ export function queryInput(selector: string): HTMLInputElement {
   return queryElementOfType(selector, HTMLInputElement);
 }
 
+export function querySelect(selector: string): HTMLSelectElement {
+  return queryElementOfType(selector, HTMLSelectElement);
+}
+
 function persistServerUrl(url: URL, serverBaseUrl: URL): void {
   if (serverBaseUrl.origin === window.location.origin) return;
   url.searchParams.set("server", serverBaseUrl.href);

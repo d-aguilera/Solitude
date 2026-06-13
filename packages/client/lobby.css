@@ -48,6 +48,28 @@ section {
 .lobby-header {
   justify-content: space-between;
 }
+.lobby-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.locale-picker {
+  align-items: center;
+  color: #a9bab2;
+  display: inline-flex;
+  gap: 8px;
+}
+select {
+  background: #18211e;
+  border: 1px solid #2c3936;
+  border-radius: 6px;
+  color: #eef3ef;
+  font: inherit;
+  min-height: 40px;
+  padding: 0 30px 0 10px;
+}
 .section-header {
   margin-bottom: 12px;
 }

@@ -9,6 +9,7 @@
     "./controllableEntities/provider": "./src/controllableEntities/provider.ts",
     "./headless": "./src/headless.ts",
     "./hud/provider": "./src/hud/provider.ts",
+    "./localization": "./src/localization.ts",
     "./plugins/autopilot": "./src/plugins/autopilot/index.ts",
     "./plugins/autopilot/core": "./src/plugins/autopilot/core.ts",
     "./plugins/autopilot/hud": "./src/plugins/autopilot/hud.ts",

@@ -1,17 +1,12 @@
-import { formatDistance, formatSimTime } from "@solitude/engine/render";
+import { formatSimTime } from "@solitude/engine/render";
 import type { HudPanelProvider } from "@solitude/sim/hud/provider";
+import { type SolitudeLocalization } from "@solitude/sim/localization";
 import { computeOrbitReadoutInto, createOrbitReadout } from "./orbitReadout";
 
-const orbitPrefix = "Orbit: ";
-const peApEmpty = "Pe/Ap: --";
-const eccentricityPrefix = "e: ";
-const inclinationPrefix = "i: ";
-const deltaVRadPrefix = "Δv Rad: ";
-const deltaVTanPrefix = "Δv Tan: ";
-const periapsisTimeEmpty = "Pe in: --";
-const apoapsisTimeEmpty = "Ap in: --";
-
-export function createHudPanel(): HudPanelProvider {
+export function createHudPanel(
+  localization: SolitudeLocalization,
+): HudPanelProvider {
+  const { hud } = localization;
   const orbitReadout = createOrbitReadout();
   let primaryDisplayNameId = "";
   let primaryDisplayName = "";
@@ -31,72 +26,69 @@ export function createHudPanel(): HudPanelProvider {
       const timeToAp = orbitReadout.timeToApoapsisSec;
       if (primaryDisplayNameId !== orbitReadout.primaryId) {
         primaryDisplayNameId = orbitReadout.primaryId;
-        primaryDisplayName = formatDisplayNameFromId(orbitReadout.primaryId);
+        primaryDisplayName = localization.formatEntityName(
+          orbitReadout.primaryId,
+          undefined,
+        );
       }
 
-      grid[0][0] = orbitPrefix.concat(
+      grid[0][0] = hud.orbitPrefix.concat(
         primaryDisplayName,
         " (",
-        orbitReadout.isBound ? "bound" : "escape",
+        orbitReadout.isBound ? hud.orbitBound : hud.orbitEscape,
         ")",
       );
       grid[1][0] = orbitReadout.isBound
-        ? "Pe/Ap: ".concat(
+        ? hud.periapsisApoapsis(
             formatSignedDistance(
               orbitReadout.periapsis - orbitReadout.primaryRadius,
+              localization,
             ),
-            " / ",
             formatSignedDistance(
               orbitReadout.apoapsis - orbitReadout.primaryRadius,
+              localization,
             ),
           )
-        : peApEmpty;
-      grid[2][0] = eccentricityPrefix.concat(
-        orbitReadout.eccentricity.toFixed(3),
+        : hud.peApEmpty;
+      grid[2][0] = hud.eccentricityPrefix.concat(
+        localization.formatFixed(orbitReadout.eccentricity, 3),
       );
-      grid[3][0] = inclinationPrefix.concat(
-        ((orbitReadout.inclinationRad * 180) / Math.PI).toFixed(1),
+      grid[3][0] = hud.inclinationPrefix.concat(
+        localization.formatFixed(
+          (orbitReadout.inclinationRad * 180) / Math.PI,
+          1,
+        ),
         "°",
       );
 
-      grid[0][1] = deltaVRadPrefix.concat(
-        formatDeltaV(Math.abs(radDv)),
+      grid[0][1] = hud.deltaVRadialPrefix.concat(
+        localization.formatDeltaV(Math.abs(radDv)),
         " ",
-        radDv >= 0 ? "out" : "in",
+        radDv >= 0 ? hud.outbound : hud.inbound,
       );
-      grid[1][1] = deltaVTanPrefix.concat(
-        formatDeltaV(Math.abs(tanDv)),
+      grid[1][1] = hud.deltaVTangentialPrefix.concat(
+        localization.formatDeltaV(Math.abs(tanDv)),
         " ",
-        tanDv >= 0 ? "pro" : "retro",
+        tanDv >= 0 ? hud.prograde : hud.retrograde,
       );
 
       grid[0][2] =
         timeToPe == null
-          ? periapsisTimeEmpty
-          : "Pe in: ".concat(formatSimTime(timeToPe));
+          ? hud.periapsisTimeEmpty
+          : hud.periapsisIn(formatSimTime(timeToPe));
       grid[1][2] =
         timeToAp == null
-          ? apoapsisTimeEmpty
-          : "Ap in: ".concat(formatSimTime(timeToAp));
+          ? hud.apoapsisTimeEmpty
+          : hud.apoapsisIn(formatSimTime(timeToAp));
     },
   };
 }
 
-function formatDisplayNameFromId(id: string): string {
-  const separatorIndex = id.lastIndexOf(":");
-  const raw = separatorIndex >= 0 ? id.slice(separatorIndex + 1) : id;
-  return raw.charAt(0).toUpperCase() + raw.slice(1);
-}
-
-function formatSignedDistance(distanceMeters: number): string {
+function formatSignedDistance(
+  distanceMeters: number,
+  localization: SolitudeLocalization,
+): string {
   return distanceMeters < 0
-    ? "-".concat(formatDistance(-distanceMeters))
-    : formatDistance(distanceMeters);
-}
-
-function formatDeltaV(speedMps: number): string {
-  if (speedMps >= 1000) {
-    return (speedMps / 1000).toFixed(2).concat(" km/s");
-  }
-  return speedMps.toFixed(2).concat(" m/s");
+    ? "-".concat(localization.formatDistance(-distanceMeters))
+    : localization.formatDistance(distanceMeters);
 }

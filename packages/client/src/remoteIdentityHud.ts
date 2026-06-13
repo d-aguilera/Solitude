@@ -1,15 +1,19 @@
 import type { GamePlugin } from "@solitude/engine/plugin";
 import { createHudPanelProvider } from "@solitude/sim/hud/provider";
+import type { SolitudeLocalization } from "@solitude/sim/localization";
 
 export interface RemoteIdentityHudOptions {
   getEntityId: () => string;
   getGameId: () => string;
+  localization: SolitudeLocalization;
 }
 
 export function createRemoteIdentityHudPlugin({
   getEntityId,
   getGameId,
+  localization,
 }: RemoteIdentityHudOptions): GamePlugin {
+  const { hud } = localization;
   return {
     id: "remoteIdentityHud",
     capabilities: [
@@ -17,9 +21,12 @@ export function createRemoteIdentityHudPlugin({
         writeHud: (grid) => {
           const gameId = getGameId();
           const entityId = getEntityId();
-          grid[3][0] = gameId.length > 0 ? `Game: ${gameId}` : "Game: none";
+          grid[3][0] =
+            gameId.length > 0 ? hud.gamePrefix.concat(gameId) : hud.gameNone;
           grid[4][0] =
-            entityId.length > 0 ? `Entity: ${entityId}` : "Entity: none";
+            entityId.length > 0
+              ? hud.entityPrefix.concat(entityId)
+              : hud.entityPrefix.concat(hud.none);
         },
       }),
     ],

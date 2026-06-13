@@ -6,9 +6,12 @@ import {
 } from "@solitude/engine/math";
 import type { ControlledBody, World } from "@solitude/engine/world";
 import type { HudPanelProvider } from "@solitude/sim/hud/provider";
+import { type SolitudeLocalization } from "@solitude/sim/localization";
 import { getAutopilotMode } from "./logic";
 
-export function createHudPanel(): HudPanelProvider {
+export function createHudPanel(
+  localization: SolitudeLocalization,
+): HudPanelProvider {
   const circleNowTracker = createCircleNowDebugTracker();
 
   return {
@@ -20,7 +23,7 @@ export function createHudPanel(): HudPanelProvider {
         context.nowMs,
       );
       const autopilotMode = getAutopilotMode(context.controlInput);
-      grid[0][3] = formatAutopilotStatus(autopilotMode);
+      grid[0][3] = formatAutopilotStatus(autopilotMode, localization);
 
       const warning = formatCircleNowWarnings(circleNowTracker.debug);
       if (warning) {
@@ -185,11 +188,22 @@ interface CircleNowHudDebug {
 
 function formatAutopilotStatus(
   mode: ReturnType<typeof getAutopilotMode>,
+  localization: SolitudeLocalization,
 ): string {
-  const vel = mode === "alignToVelocity" ? "[VEL]" : "VEL";
-  const body = mode === "alignToBody" ? "[BODY]" : "BODY";
-  const circle = mode === "circleNow" ? "[CN]" : "CN";
-  return "AP: ".concat(vel, " ", body, " ", circle);
+  const { hud } = localization;
+  const vel =
+    mode === "alignToVelocity"
+      ? "[".concat(hud.autopilotVelocity, "]")
+      : hud.autopilotVelocity;
+  const body =
+    mode === "alignToBody"
+      ? "[".concat(hud.autopilotBody, "]")
+      : hud.autopilotBody;
+  const circle =
+    mode === "circleNow"
+      ? "[".concat(hud.autopilotCircleNow, "]")
+      : hud.autopilotCircleNow;
+  return hud.autopilotPrefix.concat(vel, " ", body, " ", circle);
 }
 
 function formatCircleNowWarnings(
