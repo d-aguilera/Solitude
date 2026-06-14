@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 const IMPORT_RE =
-  /\bimport\s+(?:type\s+)?(?:[\s\S]*?\s+from\s+)?["']([^"']+)["']|\bexport\s+(?:type\s+)?(?:[\s\S]*?\s+from\s+)["']([^"']+)["']|\bimport\s*\(\s*["']([^"']+)["']\s*\)/g;
+  /(?:^|[\r\n])\s*(?:import\s+(?:type\s+)?(?:[\s\S]*?\s+from\s+)?["']([^"']+)["']|export\s+(?:type\s+)?(?:\{[\s\S]*?\}|\*)\s+from\s+["']([^"']+)["'])|\bimport\s*\(\s*["']([^"']+)["']\s*\)/g;
 
 const sourceExtensions = new Set([
   ".ts",
@@ -24,6 +24,24 @@ const sourceExtensions = new Set([
 ]);
 
 const repoRoot = process.cwd();
+const failKnownPluginImports = process.argv.includes(
+  "--fail-known-plugin-imports",
+);
+
+const pluginCompositionFiles = new Set([
+  "packages/display/src/plugins/catalog.ts",
+  "packages/multiplayer/src/composition.ts",
+  "packages/sim/src/plugins/catalog.ts",
+  "packages/solitude/src/plugins/catalog.ts",
+]);
+
+// Temporary baseline for plugin-policy violations that existed before this
+// rule. Run with --fail-known-plugin-imports while burning these down.
+const knownPluginImportViolations = new Set([
+  "packages/client/src/remoteClientRenderer.ts -> @solitude/sim/plugins/spacecraftOperator/controlLogic",
+  "packages/client/src/remoteClientRenderer.ts -> @solitude/sim/plugins/spacecraftOperator/core",
+  "packages/solitude/src/plugins/playback/loggers/circleNow.ts -> @solitude/sim/plugins/spacecraftOperator/controlLogic",
+]);
 
 if (process.argv.includes("--self-test")) {
   await runSelfTest();
@@ -34,7 +52,6 @@ if (process.argv.includes("--self-test")) {
 
 async function checkWorkspace(root) {
   const packages = await loadWorkspacePackages(root);
-  const packageByRoot = new Map(packages.map((pkg) => [pkg.root, pkg]));
   const packageByName = new Map(packages.map((pkg) => [pkg.name, pkg]));
   const packageNames = [...packageByName.keys()].sort(
     (a, b) => b.length - a.length,
@@ -59,6 +76,15 @@ async function checkWorkspace(root) {
               message: `relative import escapes package: ${specifier}`,
             });
           }
+          validatePluginImport({
+            errors,
+            file,
+            importedPackage: pkg.name,
+            packageByName,
+            repoRoot: root,
+            specifier,
+            targetFile: target,
+          });
           continue;
         }
 
@@ -79,6 +105,14 @@ async function checkWorkspace(root) {
             packageByName,
             specifier,
           });
+          validatePluginImport({
+            errors,
+            file,
+            importedPackage,
+            packageByName,
+            repoRoot: root,
+            specifier,
+          });
           continue;
         }
 
@@ -94,6 +128,14 @@ async function checkWorkspace(root) {
           file,
           importedPackage,
           packageByName,
+          specifier,
+        });
+        validatePluginImport({
+          errors,
+          file,
+          importedPackage,
+          packageByName,
+          repoRoot: root,
           specifier,
         });
       }
@@ -215,6 +257,109 @@ function validatePackageExport({
   }
 }
 
+function validatePluginImport({
+  errors,
+  file,
+  importedPackage,
+  packageByName,
+  repoRoot,
+  specifier,
+  targetFile,
+}) {
+  const imported = packageByName.get(importedPackage);
+  if (!imported) return;
+
+  const pluginModule =
+    targetFile === undefined
+      ? getPluginModuleFromSpecifier(importedPackage, specifier)
+      : getPluginModuleFromFile(imported.root, targetFile);
+  if (!pluginModule) return;
+
+  const importerPlugin = getPluginModuleFromFile(
+    findPackageRoot(file, packageByName),
+    file,
+  );
+  if (
+    importerPlugin &&
+    importerPlugin.packageName === pluginModule.packageName &&
+    importerPlugin.pluginName === pluginModule.pluginName
+  ) {
+    return;
+  }
+
+  const relativeFile = normalizePath(path.relative(repoRoot, file));
+  if (isTestFile(relativeFile)) return;
+
+  if (isPluginCompositionFile(relativeFile)) return;
+
+  const violationKey = `${relativeFile} -> ${specifier}`;
+  if (
+    !failKnownPluginImports &&
+    knownPluginImportViolations.has(violationKey)
+  ) {
+    return;
+  }
+
+  errors.push({
+    file,
+    message: `plugin module import is restricted to same-plugin code, tests, or composition modules: ${specifier}`,
+  });
+}
+
+function getPluginModuleFromSpecifier(packageName, specifier) {
+  if (specifier === packageName) return null;
+  const subpath = specifier.slice(packageName.length + 1);
+  const parts = subpath.split("/");
+  if (parts[0] !== "plugins" || !parts[1] || parts[1].endsWith(".ts")) {
+    return null;
+  }
+  if (parts[1] === "catalog" || parts[1] === "catalog.ts") return null;
+  return {
+    packageName,
+    pluginName: parts[1],
+  };
+}
+
+function getPluginModuleFromFile(packageRoot, file) {
+  if (!packageRoot) return null;
+  const relative = normalizePath(
+    path.relative(path.join(packageRoot, "src"), file),
+  );
+  const parts = relative.split("/");
+  if (parts[0] !== "plugins" || !parts[1] || parts[1].endsWith(".ts")) {
+    return null;
+  }
+  if (parts[1] === "catalog" || parts[1] === "catalog.ts") return null;
+  const manifest = readJson(path.join(packageRoot, "package.json"));
+  return {
+    packageName: manifest.name,
+    pluginName: parts[1],
+  };
+}
+
+function findPackageRoot(file, packageByName) {
+  for (const pkg of packageByName.values()) {
+    if (isInsidePackage(file, pkg.root)) return pkg.root;
+  }
+  return null;
+}
+
+function isTestFile(file) {
+  return file.includes("/__tests__/") || file.endsWith(".test.ts");
+}
+
+function isPluginCompositionFile(file) {
+  return (
+    pluginCompositionFiles.has(file) ||
+    file.endsWith("/src/plugins/catalog.ts") ||
+    file.endsWith("/src/composition.ts")
+  );
+}
+
+function normalizePath(file) {
+  return file.split(path.sep).join("/");
+}
+
 function isInsidePackage(target, packageRoot) {
   const relative = path.relative(packageRoot, target);
   return (
@@ -263,15 +408,57 @@ async function runSelfTest() {
       dependencies: { "@fixture/engine": "0.0.0" },
       exports: { "./public": "./src/public.ts" },
     });
+    writePackageFixture(tempRoot, "sim", "@fixture/sim", {
+      dependencies: { "@fixture/engine": "0.0.0" },
+      exports: {
+        "./plugins/catalog": "./src/plugins/catalog.ts",
+        "./plugins/drive": "./src/plugins/drive/index.ts",
+        "./plugins/drive/core": "./src/plugins/drive/core.ts",
+      },
+    });
     writePackageFixture(tempRoot, "app", "fixture-app", {
       dependencies: {
         "@fixture/browser": "0.0.0",
         "@fixture/engine": "0.0.0",
+        "@fixture/sim": "0.0.0",
       },
       exports: { "./public": "./src/public.ts" },
     });
+    mkdirSync(path.join(tempRoot, "packages/sim/src/plugins/drive"), {
+      recursive: true,
+    });
+    mkdirSync(path.join(tempRoot, "packages/sim/src/plugins/drive/__tests__"), {
+      recursive: true,
+    });
+    mkdirSync(path.join(tempRoot, "packages/app/src/plugins"), {
+      recursive: true,
+    });
+    writeFileSync(
+      path.join(tempRoot, "packages/sim/src/plugins/drive/core.ts"),
+      "export const driveCore = 1;\n",
+    );
+    writeFileSync(
+      path.join(tempRoot, "packages/sim/src/plugins/drive/index.ts"),
+      'import { driveCore } from "./core";\nexport const drivePlugin = driveCore;\n',
+    );
+    writeFileSync(
+      path.join(tempRoot, "packages/sim/src/plugins/catalog.ts"),
+      'import { drivePlugin } from "./drive/index";\nexport const catalog = { drivePlugin };\n',
+    );
+    writeFileSync(
+      path.join(
+        tempRoot,
+        "packages/sim/src/plugins/drive/__tests__/drive.test.ts",
+      ),
+      'import { driveCore } from "@fixture/sim/plugins/drive/core";\nexport const testValue = driveCore;\n',
+    );
+    writeFileSync(
+      path.join(tempRoot, "packages/app/src/plugins/catalog.ts"),
+      'import { drivePlugin } from "@fixture/sim/plugins/drive";\nexport const catalog = { drivePlugin };\n',
+    );
 
     const browserSource = path.join(tempRoot, "packages/browser/src/public.ts");
+    const appSource = path.join(tempRoot, "packages/app/src/public.ts");
     writeFileSync(
       browserSource,
       'import { value } from "@fixture/engine/public";\nexport const browserValue = value;\n',
@@ -309,6 +496,29 @@ async function runSelfTest() {
       await checkWorkspace(tempRoot),
       "not a declared dependency",
       "expected reverse package dependencies to fail",
+    );
+
+    writeFileSync(
+      path.join(tempRoot, "packages/engine/src/public.ts"),
+      "export const value = 1;\n",
+    );
+    writeFileSync(
+      appSource,
+      'import { driveCore } from "@fixture/sim/plugins/drive/core";\nexport const value = driveCore;\n',
+    );
+    assertHasError(
+      await checkWorkspace(tempRoot),
+      "plugin module import is restricted",
+      "expected non-composition plugin module imports to fail",
+    );
+
+    writeFileSync(
+      appSource,
+      'import { catalog } from "@fixture/sim/plugins/catalog";\nexport const value = catalog;\n',
+    );
+    assertNoErrors(
+      await checkWorkspace(tempRoot),
+      "expected plugin catalog imports to pass",
     );
 
     console.log("Package boundary self-test OK");
