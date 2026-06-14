@@ -8,6 +8,7 @@
     "./config/worldAndSceneConfig": "./src/worldAndSceneConfig.ts",
     "./controllableEntities/provider": "./src/controllableEntities/provider.ts",
     "./headless": "./src/headless.ts",
+    "./localPrediction": "./src/localPrediction.ts",
     "./localization": "./src/localization.ts",
     "./plugins/autopilot": "./src/plugins/autopilot/index.ts",
     "./plugins/autopilot/core": "./src/plugins/autopilot/core.ts",

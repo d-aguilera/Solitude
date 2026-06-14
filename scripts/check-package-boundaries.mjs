@@ -38,8 +38,6 @@ const pluginCompositionFiles = new Set([
 // Temporary baseline for plugin-policy violations that existed before this
 // rule. Run with --fail-known-plugin-imports while burning these down.
 const knownPluginImportViolations = new Set([
-  "packages/client/src/remoteClientRenderer.ts -> @solitude/sim/plugins/spacecraftOperator/controlLogic",
-  "packages/client/src/remoteClientRenderer.ts -> @solitude/sim/plugins/spacecraftOperator/core",
   "packages/solitude/src/plugins/playback/loggers/circleNow.ts -> @solitude/sim/plugins/spacecraftOperator/controlLogic",
 ]);
 

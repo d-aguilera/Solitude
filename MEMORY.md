@@ -96,6 +96,7 @@
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
 - Server runtime lives in `packages/server/src/runtime.ts`; it composes shared `@solitude/sim` headless Solitude code, steps entity-addressed controls, and reuses runtime snapshot storage.
 - Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, receives authoritative model/snapshot messages over WebSocket, sends sequenced server-authoritative controls for its assigned ship, predicts the locally controlled ship immediately, smooths reconciliation visually, exposes prediction metrics on `window.__solitudePredictionMetrics`, and renders through `@solitude/browser`.
+- Remote client composition lives in `packages/client/src/composition.ts`; local prediction is driven through `@solitude/sim/localPrediction` plugin capabilities, not direct plugin-internal imports.
 - Localization is client-side and server-neutral. `@solitude/sim/localization` resolves `?locale=` or browser-preferred language to `en`/`es`/`fr`, formats numbers/units without thousands grouping, provides message interpolation, and defines generic entity-name-provider capabilities. JSON message bundles live with the client/plugin/content package that owns each string. The multiplayer lobby offers a language selector and passes locale through game links; standalone resolves from browser locale unless `?locale=` overrides it.
 - Entity `displayName` remains a literal authored override for scene/body labels. Entity-contributing plugins can provide localized names through `solitude.entityNameProvider.v1`; built-in solar-system names are owned by the solar-system plugin, and custom ids fall back to generated names.
 - Shared browser-safe protocol contract lives in `@solitude/protocol`; browser client adapters live in `@solitude/client`.
@@ -117,6 +118,7 @@
 - `packages/server/src/runtime.ts`: authoritative server runtime composition.
 - `packages/server/src/metrics.ts`: rolling server stream metrics for snapshot cadence, payload size, fanout, step timing, and socket counts.
 - `packages/client/src/localPrediction.ts`: client-side input prediction state for the assigned ship.
+- `packages/sim/src/localPrediction.ts`: generic Solitude local-prediction capability contract used by remote clients.
 - `packages/client/src/localReconciliation.ts`: prediction error metrics and render-only visual correction smoothing.
 - `scripts/run-server-load.mjs`: headless WebSocket load and input-latency harness for local or deployed servers.
 - `packages/solitude/src/bootstrap.ts`: Solitude browser app composition.

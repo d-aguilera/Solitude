@@ -8,7 +8,10 @@ import {
   createAutonomousControlProvider,
   createControlPlugin as createAutopilotControlPlugin,
 } from "../../autopilot/core";
-import { createSpacecraftVehicleDynamicsPlugin } from "../core";
+import {
+  createSpacecraftLocalPredictionProvider,
+  createSpacecraftVehicleDynamicsPlugin,
+} from "../core";
 import { createSpacecraftOperatorTelemetry } from "../telemetry";
 
 const EMPTY_ENTITY_CONTROL_INPUTS = new Map();
@@ -86,6 +89,26 @@ describe("spacecraft vehicle dynamics plugin", () => {
 
     expect(telemetry.currentThrustLevel).toBe(1);
     expect(telemetry.currentRcsLevel).toBe(0);
+  });
+
+  it("provides local prediction for controllable spacecraft bodies", () => {
+    const focusedBody = createBody("ship:focus");
+    const world = createWorld(focusedBody);
+    const provider = createSpacecraftLocalPredictionProvider();
+    const controlInput = createControlInput();
+    controlInput.thrust5 = true;
+    controlInput.burnForward = true;
+
+    expect(provider.canPredictEntity(focusedBody, world)).toBe(true);
+
+    provider.predictEntity({
+      controlInput,
+      controlledBody: focusedBody,
+      dtMillis: 1000,
+      world,
+    });
+
+    expect(vec3.length(focusedBody.velocity)).toBeGreaterThan(0);
   });
 
   it("uses spacecraft propulsion resolver capabilities", () => {

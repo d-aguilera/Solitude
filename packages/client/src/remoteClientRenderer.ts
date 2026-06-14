@@ -1,20 +1,11 @@
-import { createHudOverlayPlugin } from "@solitude/browser/dom/hudOverlayPlugin";
 import {
   initLayout,
   resizeLayout,
   type LayoutView,
 } from "@solitude/browser/dom/layout";
-import {
-  applyBrowserOverlayProviders,
-  collectBrowserOverlayProviders,
-} from "@solitude/browser/dom/overlayPorts";
+import { applyBrowserOverlayProviders } from "@solitude/browser/dom/overlayPorts";
 import { createRemoteMultiCanvasRenderer } from "@solitude/browser/remoteCanvasRenderer";
 import {
-  remoteRenderPluginCatalog,
-  remoteRenderPluginIds,
-} from "@solitude/display/plugins/catalog";
-import {
-  loadPlugins,
   type ControlInput,
   type FramePolicy,
   type GamePlugin,
@@ -26,8 +17,6 @@ import {
   type ViewLayout,
 } from "@solitude/engine/render";
 import {
-  createPhysicsWorkspace,
-  createPluginCapabilityRegistry,
   type RuntimeEntitySnapshot,
   type RuntimeWorldSnapshot,
 } from "@solitude/engine/runtime";
@@ -35,12 +24,13 @@ import type {
   ControlledBody,
   EntityConfig,
   EntityId,
+  World,
 } from "@solitude/engine/world";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
 import type { SolitudeInputSequence } from "@solitude/protocol/protocol";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
-import type { SpacecraftControlState } from "@solitude/sim/plugins/spacecraftOperator/controlLogic";
-import { applySpacecraftVehicleDynamics } from "@solitude/sim/plugins/spacecraftOperator/core";
+import type { LocalEntityPredictionProvider } from "@solitude/sim/localPrediction";
+import { createRemoteClientComposition } from "./composition";
 import {
   acknowledgeLocalInputs,
   createLocalPredictionState,
@@ -97,18 +87,15 @@ export function createSolitudeRemoteClientRenderer({
   plugins: clientPlugins = [],
   runtimeOptions = {},
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
-  const plugins = loadPlugins({
-    catalog: {
-      ...remoteRenderPluginCatalog,
-      hud: createHudOverlayPlugin,
-    },
-    ids: ["hud", ...remoteRenderPluginIds],
+  const {
+    capabilityRegistry,
+    localPredictionProviders,
+    overlayProviders,
+    plugins,
+  } = createRemoteClientComposition({
+    clientPlugins,
     runtimeOptions,
-  }).concat(clientPlugins);
-  const capabilityRegistry = createPluginCapabilityRegistry(
-    plugins.flatMap((plugin) => plugin.capabilities ?? []),
-  );
-  const overlayProviders = collectBrowserOverlayProviders(capabilityRegistry);
+  });
   const predictionState = createLocalPredictionState();
   const framePolicy: FramePolicy = {
     advanceOverlay: true,
@@ -125,8 +112,6 @@ export function createSolitudeRemoteClientRenderer({
   let rendererCanvases: readonly HTMLCanvasElement[] = [];
   const layoutViews: LayoutView[] = [];
   let layoutInitialized = false;
-  const predictionControlState: SpacecraftControlState = { thrustLevel: 1 };
-  const predictionPhysicsWorkspace = createPhysicsWorkspace();
   const reconciliationState = createLocalReconciliationState();
   let lastPredictedLocalState: LocalShipVisualState | null = null;
   let lastRenderedLocalState: LocalShipVisualState | null = null;
@@ -209,7 +194,7 @@ export function createSolitudeRemoteClientRenderer({
         predictionState.pendingInputs.length,
       );
       predictionState.controlInput = {};
-      predictionControlState.thrustLevel = 1;
+      resetLocalPredictionProviders(localPredictionProviders);
       reconciliationState.correction.active = false;
       lastPredictedLocalState = null;
       lastRenderedLocalState = null;
@@ -269,14 +254,16 @@ export function createSolitudeRemoteClientRenderer({
     predictionMillis: number,
   ): void {
     const world = renderer.worldRenderer.mirror.world;
-    applySpacecraftVehicleDynamics({
+    const provider = findLocalPredictionProvider(
+      localPredictionProviders,
+      controlledBody,
+      world,
+    );
+    if (!provider) return;
+    provider.predictEntity({
       controlInput: predictionState.controlInput,
-      controlPlugins: [],
-      controlState: predictionControlState,
       controlledBody,
       dtMillis: predictionMillis,
-      physicsWorkspace: predictionPhysicsWorkspace,
-      propulsionResolvers: [],
       world,
     });
   }
@@ -349,6 +336,25 @@ export function createSolitudeRemoteClientRenderer({
         viewId: view.definition.id,
       })),
     });
+  }
+}
+
+function findLocalPredictionProvider(
+  providers: readonly LocalEntityPredictionProvider[],
+  controlledBody: ControlledBody,
+  world: World,
+): LocalEntityPredictionProvider | null {
+  for (const provider of providers) {
+    if (provider.canPredictEntity(controlledBody, world)) return provider;
+  }
+  return null;
+}
+
+function resetLocalPredictionProviders(
+  providers: readonly LocalEntityPredictionProvider[],
+): void {
+  for (const provider of providers) {
+    provider.resetPrediction();
   }
 }
 

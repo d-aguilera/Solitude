@@ -13,6 +13,7 @@ import {
   type PhysicsWorkspace,
 } from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
+import type { LocalEntityPredictionProvider } from "../../localPrediction";
 import {
   getSpacecraftAutonomousControls,
   getSpacecraftPropulsionResolvers,
@@ -39,6 +40,8 @@ import {
 
 const velocityDeltaScratch = vec3.zero();
 const backgroundControlInput = {} as ControlInput;
+const emptyControlPlugins: ControlPlugin[] = [];
+const emptyPropulsionResolvers: readonly SpacecraftPropulsionResolver[] = [];
 
 export interface SpacecraftVehicleDynamicsParams {
   controlInput: ControlInput;
@@ -180,6 +183,31 @@ export function createSpacecraftVehicleDynamicsPlugin(
           world: params.world,
         });
       }
+    },
+  };
+}
+
+export function createSpacecraftLocalPredictionProvider(): LocalEntityPredictionProvider {
+  const controlState: SpacecraftControlState = { thrustLevel: 1 };
+  const physicsWorkspace = createPhysicsWorkspace();
+
+  return {
+    canPredictEntity: (controlledBody, world) =>
+      world.controllableBodies.includes(controlledBody),
+    predictEntity: (params) => {
+      applySpacecraftVehicleDynamics({
+        controlInput: params.controlInput,
+        controlPlugins: emptyControlPlugins,
+        controlState,
+        controlledBody: params.controlledBody,
+        dtMillis: params.dtMillis,
+        physicsWorkspace,
+        propulsionResolvers: emptyPropulsionResolvers,
+        world: params.world,
+      });
+    },
+    resetPrediction: () => {
+      controlState.thrustLevel = 1;
     },
   };
 }
