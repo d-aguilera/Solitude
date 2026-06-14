@@ -10,6 +10,8 @@ export function createHudPanel(
   const orbitReadout = createOrbitReadout();
   let primaryDisplayNameId = "";
   let primaryDisplayName = "";
+  let radialDirection: DeltaVDirection | null = null;
+  let tangentialDirection: DeltaVDirection | null = null;
 
   return {
     writeHud: (grid, context) => {
@@ -31,7 +33,11 @@ export function createHudPanel(
           orbitReadout.primaryId,
           undefined,
         );
+        radialDirection = null;
+        tangentialDirection = null;
       }
+      radialDirection = resolveDeltaVDirection(radDv, radialDirection);
+      tangentialDirection = resolveDeltaVDirection(tanDv, tangentialDirection);
 
       grid.addLine(
         "left",
@@ -86,7 +92,9 @@ export function createHudPanel(
         localization.deltaVRadialPrefix.concat(
           localization.formatDeltaV(Math.abs(radDv)),
           " ",
-          radDv >= 0 ? localization.outbound : localization.inbound,
+          radialDirection === "positive"
+            ? localization.outbound
+            : localization.inbound,
         ),
       );
       grid.addLine(
@@ -95,7 +103,9 @@ export function createHudPanel(
         localization.deltaVTangentialPrefix.concat(
           localization.formatDeltaV(Math.abs(tanDv)),
           " ",
-          tanDv >= 0 ? localization.prograde : localization.retrograde,
+          tangentialDirection === "positive"
+            ? localization.prograde
+            : localization.retrograde,
         ),
       );
 
@@ -115,6 +125,24 @@ export function createHudPanel(
       );
     },
   };
+}
+
+type DeltaVDirection = "negative" | "positive";
+
+const deltaVDirectionDeadbandMps = 0.01;
+
+function resolveDeltaVDirection(
+  deltaV: number,
+  previous: DeltaVDirection | null,
+): DeltaVDirection {
+  if (
+    previous &&
+    Number.isFinite(deltaV) &&
+    Math.abs(deltaV) <= deltaVDirectionDeadbandMps
+  ) {
+    return previous;
+  }
+  return deltaV >= 0 ? "positive" : "negative";
 }
 
 function formatSignedDistance(

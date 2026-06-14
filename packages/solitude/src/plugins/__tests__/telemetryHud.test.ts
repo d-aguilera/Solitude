@@ -208,6 +208,33 @@ describe("telemetry HUD plugins", () => {
     expect(columnTexts(grid, "leftCenter")[1]).toContain("Δv Tan: ");
   });
 
+  it("orbitTelemetry keeps delta-v direction labels stable inside the deadband", () => {
+    const { world, ship } = createWorldAndShip();
+    const orbitRadius = vec3.length(ship.position);
+    const circularSpeed = circularSpeedAtRadius(5.972e24, orbitRadius);
+    const panel = getHudPanel(createOrbitTelemetryPlugin({ locale: "en" }));
+    const grid = createHudGrid();
+    const context = createHudContext(world, ship);
+
+    ship.velocity = vec3.create(-1, circularSpeed - 1, 0);
+    panel.writeHud(grid, context);
+
+    expect(columnTexts(grid, "leftCenter")[0]).toContain(" out");
+    expect(columnTexts(grid, "leftCenter")[1]).toContain(" pro");
+
+    ship.velocity = vec3.create(0.000001, circularSpeed + 0.000001, 0);
+    panel.writeHud(grid, context);
+
+    expect(columnTexts(grid, "leftCenter")[0]).toContain(" out");
+    expect(columnTexts(grid, "leftCenter")[1]).toContain(" pro");
+
+    ship.velocity = vec3.create(0.02, circularSpeed + 0.02, 0);
+    panel.writeHud(grid, context);
+
+    expect(columnTexts(grid, "leftCenter")[0]).toContain(" in");
+    expect(columnTexts(grid, "leftCenter")[1]).toContain(" retro");
+  });
+
   it("orbitTelemetry localizes primary body names", () => {
     const { world, ship } = createWorldAndShip();
     const panel = getHudPanel(createOrbitTelemetryPlugin({ locale: "es" }));
