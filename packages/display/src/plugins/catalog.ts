@@ -4,14 +4,12 @@ import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
 import { createSpacecraftOperatorPlugin } from "@solitude/sim/plugins/spacecraftOperator";
 import { createAxialViewsPlugin } from "./axialViews/index";
 import { createBodyLabelsPlugin } from "./bodyLabels/index";
-import { createHudPlugin } from "./hud/index";
 import { createOrbitTelemetryPlugin } from "./orbitTelemetry/index";
 import { createShipTelemetryPlugin } from "./shipTelemetry/index";
 import { createTrajectoriesPlugin } from "./trajectories/index";
 import { createVelocitySegmentsPlugin } from "./velocitySegments/index";
 
 export const displayPluginIds = [
-  "hud",
   "bodyLabels",
   "axialViews",
   "orbitTelemetry",
@@ -23,7 +21,6 @@ export const displayPluginIds = [
 export const remoteRenderPluginIds = [
   "solarSystem",
   "spacecraftOperator",
-  "hud",
   "orbitTelemetry",
   "shipTelemetry",
   "autopilot",
@@ -36,7 +33,6 @@ export const remoteRenderPluginIds = [
 export const displayPluginCatalog: PluginCatalog = {
   axialViews: createAxialViewsPlugin,
   bodyLabels: createBodyLabelsPlugin,
-  hud: createHudPlugin,
   orbitTelemetry: createOrbitTelemetryPlugin,
   shipTelemetry: createShipTelemetryPlugin,
   trajectories: createTrajectoriesPlugin,

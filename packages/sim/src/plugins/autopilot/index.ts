@@ -1,5 +1,5 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
-import { createHudPanelProvider } from "../../hud/provider";
+import { createHudPanelProvider } from "@solitude/hud/provider";
 import { readLocaleRuntimeOption } from "../../localization";
 import {
   createAutonomousControlProvider,

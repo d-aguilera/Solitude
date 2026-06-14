@@ -36,7 +36,7 @@ export interface HudGrid {
     column: HudColumnId,
     key: string,
     text: string,
-    separator?: string,
+    separator: string,
   ) => void;
 }
 
@@ -71,7 +71,7 @@ export function createHudGrid(): HudGrid {
 
       lines.push({ key, text });
     },
-    appendLine: (column, key, text, separator = " ") => {
+    appendLine: (column, key, text, separator) => {
       if (text.length === 0) return;
 
       const lines = columns[getHudColumnIndex(column)];

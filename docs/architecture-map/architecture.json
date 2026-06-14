@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-09T19:09:15.100Z",
+  "generatedAt": "2026-06-14T02:45:55.771Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -52,9 +52,23 @@
       "parent": "pkg:@solitude/browser"
     },
     {
+      "id": "module:@solitude/browser:./dom/hudOverlayPlugin",
+      "kind": "module",
+      "label": "./dom/hudOverlayPlugin",
+      "packageName": "@solitude/browser",
+      "parent": "pkg:@solitude/browser"
+    },
+    {
       "id": "module:@solitude/browser:./dom/keyboardInput",
       "kind": "module",
       "label": "./dom/keyboardInput",
+      "packageName": "@solitude/browser",
+      "parent": "pkg:@solitude/browser"
+    },
+    {
+      "id": "module:@solitude/browser:./dom/layout",
+      "kind": "module",
+      "label": "./dom/layout",
       "packageName": "@solitude/browser",
       "parent": "pkg:@solitude/browser"
     },
@@ -94,9 +108,9 @@
       "parent": "pkg:@solitude/server"
     },
     {
-      "id": "module:@solitude/sim:./hud/provider",
+      "id": "module:@solitude/sim:./localization",
       "kind": "module",
-      "label": "./hud/provider",
+      "label": "./localization",
       "packageName": "@solitude/sim",
       "parent": "pkg:@solitude/sim"
     },
@@ -190,13 +204,6 @@
       "label": "./plugins/catalog",
       "packageName": "solitude",
       "parent": "pkg:solitude"
-    },
-    {
-      "id": "module:@solitude/display:./plugins/hud",
-      "kind": "module",
-      "label": "./plugins/hud",
-      "packageName": "@solitude/display",
-      "parent": "pkg:@solitude/display"
     },
     {
       "id": "module:@solitude/display:./plugins/orbitTelemetry",
@@ -339,6 +346,13 @@
       "parent": "pkg:@solitude/protocol"
     },
     {
+      "id": "module:@solitude/hud:./provider",
+      "kind": "module",
+      "label": "./provider",
+      "packageName": "@solitude/hud",
+      "parent": "pkg:@solitude/hud"
+    },
+    {
       "id": "module:@solitude/browser:./remoteCanvasRenderer",
       "kind": "module",
       "label": "./remoteCanvasRenderer",
@@ -438,6 +452,12 @@
       "kind": "package",
       "label": "@solitude/engine",
       "packageName": "@solitude/engine"
+    },
+    {
+      "id": "pkg:@solitude/hud",
+      "kind": "package",
+      "label": "@solitude/hud",
+      "packageName": "@solitude/hud"
     },
     {
       "id": "pkg:@solitude/multiplayer",
@@ -798,11 +818,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./hud/provider:clearHudGrid",
+      "id": "symbol:@solitude/hud:./provider:clearHudGrid",
       "kind": "symbol",
       "label": "clearHudGrid",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./hud/provider",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./provider",
       "symbolKind": "function"
     },
     {
@@ -1054,6 +1074,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/sim:./localization:createEntityNameProvider",
+      "kind": "symbol",
+      "label": "createEntityNameProvider",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./localization",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/protocol:./protocol:createErrorMessage",
       "kind": "symbol",
       "label": "createErrorMessage",
@@ -1102,11 +1130,19 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./hud/provider:createHudGrid",
+      "id": "symbol:@solitude/hud:./provider:createHudGrid",
       "kind": "symbol",
       "label": "createHudGrid",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./hud/provider",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./provider",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "kind": "symbol",
+      "label": "createHudOverlayPlugin",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./dom/hudOverlayPlugin",
       "symbolKind": "function"
     },
     {
@@ -1134,19 +1170,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./hud/provider:createHudPanelProvider",
+      "id": "symbol:@solitude/hud:./provider:createHudPanelProvider",
       "kind": "symbol",
       "label": "createHudPanelProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./hud/provider",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/hud:createHudPlugin",
-      "kind": "symbol",
-      "label": "createHudPlugin",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/hud",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./provider",
       "symbolKind": "function"
     },
     {
@@ -1262,11 +1290,27 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/browser:./remoteCanvasRenderer:createRemoteMultiCanvasRenderer",
+      "kind": "symbol",
+      "label": "createRemoteMultiCanvasRenderer",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./remoteCanvasRenderer",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/browser:./remoteWorldMirror:createRemoteWorldMirror",
       "kind": "symbol",
       "label": "createRemoteWorldMirror",
       "packageName": "@solitude/browser",
       "parent": "module:@solitude/browser:./remoteWorldMirror",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol",
+      "label": "createRemoteWorldMultiRenderer",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./remoteWorldRenderer",
       "symbolKind": "function"
     },
     {
@@ -1291,6 +1335,14 @@
       "label": "createRuntimeEntitySnapshot",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./runtime",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/sim:./localization:createRuntimeOptionsWithResolvedLocale",
+      "kind": "symbol",
+      "label": "createRuntimeOptionsWithResolvedLocale",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./localization",
       "symbolKind": "function"
     },
     {
@@ -1395,6 +1447,14 @@
       "label": "createSolitudeInProcessTransport",
       "packageName": "@solitude/server",
       "parent": "module:@solitude/server:./transport",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/sim:./localization:createSolitudeLocalization",
+      "kind": "symbol",
+      "label": "createSolitudeLocalization",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./localization",
       "symbolKind": "function"
     },
     {
@@ -1654,6 +1714,22 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/sim:./localization:EntityNameProvider",
+      "kind": "symbol",
+      "label": "EntityNameProvider",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./localization",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/sim:./localization:entityNameProviderCapability",
+      "kind": "symbol",
+      "label": "entityNameProviderCapability",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./localization",
+      "symbolKind": "const"
+    },
+    {
       "id": "symbol:@solitude/engine:./world:EntityRecord",
       "kind": "symbol",
       "label": "EntityRecord",
@@ -1806,6 +1882,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/sim:./localization:formatEntityName",
+      "kind": "symbol",
+      "label": "formatEntityName",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./localization",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/engine:./render:formatSimTime",
       "kind": "symbol",
       "label": "formatSimTime",
@@ -1907,6 +1991,14 @@
       "label": "getDominantBodyPrimary",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./math",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/hud:./provider:getHudColumnIndex",
+      "kind": "symbol",
+      "label": "getHudColumnIndex",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./provider",
       "symbolKind": "function"
     },
     {
@@ -2038,43 +2130,67 @@
       "symbolKind": "const"
     },
     {
-      "id": "symbol:@solitude/sim:./hud/provider:HudContext",
+      "id": "symbol:@solitude/hud:./provider:HudColumnId",
       "kind": "symbol",
-      "label": "HudContext",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./hud/provider",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./hud/provider:HudGrid",
-      "kind": "symbol",
-      "label": "HudGrid",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./hud/provider",
+      "label": "HudColumnId",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./provider",
       "symbolKind": "type"
     },
     {
-      "id": "symbol:@solitude/sim:./hud/provider:HudGridRow",
+      "id": "symbol:@solitude/hud:./provider:hudColumnIds",
       "kind": "symbol",
-      "label": "HudGridRow",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./hud/provider",
-      "symbolKind": "type"
-    },
-    {
-      "id": "symbol:@solitude/sim:./hud/provider:hudPanelCapability",
-      "kind": "symbol",
-      "label": "hudPanelCapability",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./hud/provider",
+      "label": "hudColumnIds",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./provider",
       "symbolKind": "const"
     },
     {
-      "id": "symbol:@solitude/sim:./hud/provider:HudPanelProvider",
+      "id": "symbol:@solitude/hud:./provider:HudColumns",
+      "kind": "symbol",
+      "label": "HudColumns",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./provider",
+      "symbolKind": "type"
+    },
+    {
+      "id": "symbol:@solitude/hud:./provider:HudContext",
+      "kind": "symbol",
+      "label": "HudContext",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./provider",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/hud:./provider:HudGrid",
+      "kind": "symbol",
+      "label": "HudGrid",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./provider",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/hud:./provider:HudLine",
+      "kind": "symbol",
+      "label": "HudLine",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./provider",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/hud:./provider:hudPanelCapability",
+      "kind": "symbol",
+      "label": "hudPanelCapability",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./provider",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/hud:./provider:HudPanelProvider",
       "kind": "symbol",
       "label": "HudPanelProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./hud/provider",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./provider",
       "symbolKind": "interface"
     },
     {
@@ -2091,6 +2207,14 @@
       "label": "initInput",
       "packageName": "@solitude/browser",
       "parent": "module:@solitude/browser:./dom/keyboardInput",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/browser:./dom/layout:initLayout",
+      "kind": "symbol",
+      "label": "initLayout",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./dom/layout",
       "symbolKind": "function"
     },
     {
@@ -2126,11 +2250,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./hud/provider:isHudPanelProvider",
+      "id": "symbol:@solitude/hud:./provider:isHudPanelProvider",
       "kind": "symbol",
       "label": "isHudPanelProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./hud/provider",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./provider",
       "symbolKind": "function"
     },
     {
@@ -2244,6 +2368,14 @@
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render",
       "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/browser:./dom/layout:LayoutView",
+      "kind": "symbol",
+      "label": "LayoutView",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./dom/layout",
+      "symbolKind": "interface"
     },
     {
       "id": "symbol:@solitude/protocol:./protocol:LeaveGameMessage",
@@ -2404,6 +2536,14 @@
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render",
       "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/sim:./localization:MessageParams",
+      "kind": "symbol",
+      "label": "MessageParams",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./localization",
+      "symbolKind": "type"
     },
     {
       "id": "symbol:@solitude/protocol:./protocol:MessagesSocketResponse",
@@ -2638,6 +2778,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
+      "kind": "symbol",
+      "label": "readLocaleRuntimeOption",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./localization",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/protocol:./protocol:ReadySocketEvent",
       "kind": "symbol",
       "label": "ReadySocketEvent",
@@ -2662,6 +2810,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteCanvasRenderedView",
+      "kind": "symbol",
+      "label": "RemoteCanvasRenderedView",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./remoteCanvasRenderer",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteCanvasRenderer",
       "kind": "symbol",
       "label": "RemoteCanvasRenderer",
@@ -2673,6 +2829,22 @@
       "id": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteCanvasRendererOptions",
       "kind": "symbol",
       "label": "RemoteCanvasRendererOptions",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./remoteCanvasRenderer",
+      "symbolKind": "type"
+    },
+    {
+      "id": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRenderer",
+      "kind": "symbol",
+      "label": "RemoteMultiCanvasRenderer",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./remoteCanvasRenderer",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRendererOptions",
+      "kind": "symbol",
+      "label": "RemoteMultiCanvasRendererOptions",
       "packageName": "@solitude/browser",
       "parent": "module:@solitude/browser:./remoteCanvasRenderer",
       "symbolKind": "type"
@@ -2699,6 +2871,38 @@
       "label": "RemoteWorldMirror",
       "packageName": "@solitude/browser",
       "parent": "module:@solitude/browser:./remoteWorldMirror",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer",
+      "kind": "symbol",
+      "label": "RemoteWorldMultiRenderer",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./remoteWorldRenderer",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRendererOptions",
+      "kind": "symbol",
+      "label": "RemoteWorldMultiRendererOptions",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./remoteWorldRenderer",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiViewOptions",
+      "kind": "symbol",
+      "label": "RemoteWorldMultiViewOptions",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./remoteWorldRenderer",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView",
+      "kind": "symbol",
+      "label": "RemoteWorldRenderedView",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./remoteWorldRenderer",
       "symbolKind": "interface"
     },
     {
@@ -2822,6 +3026,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/browser:./dom/layout:resizeLayout",
+      "kind": "symbol",
+      "label": "resizeLayout",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./dom/layout",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/sim:./plugins/autopilot/logic:resolveAutopilotPropulsionCommand",
       "kind": "symbol",
       "label": "resolveAutopilotPropulsionCommand",
@@ -2835,6 +3047,14 @@
       "label": "resolvePropulsionCommandWithPlugins",
       "packageName": "@solitude/sim",
       "parent": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/sim:./localization:resolveSolitudeLocale",
+      "kind": "symbol",
+      "label": "resolveSolitudeLocale",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./localization",
       "symbolKind": "function"
     },
     {
@@ -3307,6 +3527,38 @@
       "label": "SolitudeInputTimeWindow",
       "packageName": "@solitude/server",
       "parent": "module:@solitude/server:./sessions",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/sim:./localization:SolitudeLocale",
+      "kind": "symbol",
+      "label": "SolitudeLocale",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./localization",
+      "symbolKind": "type"
+    },
+    {
+      "id": "symbol:@solitude/sim:./localization:SolitudeLocaleOption",
+      "kind": "symbol",
+      "label": "SolitudeLocaleOption",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./localization",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/sim:./localization:solitudeLocaleOptions",
+      "kind": "symbol",
+      "label": "solitudeLocaleOptions",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./localization",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/sim:./localization:SolitudeLocalization",
+      "kind": "symbol",
+      "label": "SolitudeLocalization",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./localization",
       "symbolKind": "interface"
     },
     {
@@ -3862,6 +4114,12 @@
       "to": "pkg:@solitude/engine"
     },
     {
+      "id": "dependency:pkg:@solitude/browser->pkg:@solitude/hud",
+      "from": "pkg:@solitude/browser",
+      "kind": "dependency",
+      "to": "pkg:@solitude/hud"
+    },
+    {
       "id": "dependency:pkg:@solitude/client->pkg:@solitude/browser",
       "from": "pkg:@solitude/client",
       "kind": "dependency",
@@ -3880,6 +4138,12 @@
       "to": "pkg:@solitude/engine"
     },
     {
+      "id": "dependency:pkg:@solitude/client->pkg:@solitude/hud",
+      "from": "pkg:@solitude/client",
+      "kind": "dependency",
+      "to": "pkg:@solitude/hud"
+    },
+    {
       "id": "dependency:pkg:@solitude/client->pkg:@solitude/protocol",
       "from": "pkg:@solitude/client",
       "kind": "dependency",
@@ -3892,22 +4156,28 @@
       "to": "pkg:@solitude/sim"
     },
     {
-      "id": "dependency:pkg:@solitude/display->pkg:@solitude/browser",
-      "from": "pkg:@solitude/display",
-      "kind": "dependency",
-      "to": "pkg:@solitude/browser"
-    },
-    {
       "id": "dependency:pkg:@solitude/display->pkg:@solitude/engine",
       "from": "pkg:@solitude/display",
       "kind": "dependency",
       "to": "pkg:@solitude/engine"
     },
     {
+      "id": "dependency:pkg:@solitude/display->pkg:@solitude/hud",
+      "from": "pkg:@solitude/display",
+      "kind": "dependency",
+      "to": "pkg:@solitude/hud"
+    },
+    {
       "id": "dependency:pkg:@solitude/display->pkg:@solitude/sim",
       "from": "pkg:@solitude/display",
       "kind": "dependency",
       "to": "pkg:@solitude/sim"
+    },
+    {
+      "id": "dependency:pkg:@solitude/hud->pkg:@solitude/engine",
+      "from": "pkg:@solitude/hud",
+      "kind": "dependency",
+      "to": "pkg:@solitude/engine"
     },
     {
       "id": "dependency:pkg:@solitude/multiplayer->pkg:@solitude/engine",
@@ -3952,6 +4222,12 @@
       "to": "pkg:@solitude/engine"
     },
     {
+      "id": "dependency:pkg:@solitude/sim->pkg:@solitude/hud",
+      "from": "pkg:@solitude/sim",
+      "kind": "dependency",
+      "to": "pkg:@solitude/hud"
+    },
+    {
       "id": "dependency:pkg:solitude->pkg:@solitude/browser",
       "from": "pkg:solitude",
       "kind": "dependency",
@@ -3968,6 +4244,12 @@
       "from": "pkg:solitude",
       "kind": "dependency",
       "to": "pkg:@solitude/engine"
+    },
+    {
+      "id": "dependency:pkg:solitude->pkg:@solitude/hud",
+      "from": "pkg:solitude",
+      "kind": "dependency",
+      "to": "pkg:@solitude/hud"
     },
     {
       "id": "dependency:pkg:solitude->pkg:@solitude/sim",
@@ -4000,10 +4282,34 @@
       "to": "module:@solitude/engine:./world"
     },
     {
+      "id": "module-import:module:@solitude/browser:./dom/hudOverlayPlugin->module:@solitude/browser:./dom/overlayPorts",
+      "from": "module:@solitude/browser:./dom/hudOverlayPlugin",
+      "kind": "module-import",
+      "to": "module:@solitude/browser:./dom/overlayPorts"
+    },
+    {
+      "id": "module-import:module:@solitude/browser:./dom/hudOverlayPlugin->module:@solitude/engine:./plugin",
+      "from": "module:@solitude/browser:./dom/hudOverlayPlugin",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./plugin"
+    },
+    {
+      "id": "module-import:module:@solitude/browser:./dom/hudOverlayPlugin->module:@solitude/hud:./provider",
+      "from": "module:@solitude/browser:./dom/hudOverlayPlugin",
+      "kind": "module-import",
+      "to": "module:@solitude/hud:./provider"
+    },
+    {
       "id": "module-import:module:@solitude/browser:./dom/keyboardInput->module:@solitude/engine:./plugin",
       "from": "module:@solitude/browser:./dom/keyboardInput",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
+    },
+    {
+      "id": "module-import:module:@solitude/browser:./dom/layout->module:@solitude/engine:./render",
+      "from": "module:@solitude/browser:./dom/layout",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./render"
     },
     {
       "id": "module-import:module:@solitude/browser:./dom/overlayPorts->module:@solitude/engine:./plugin",
@@ -4132,6 +4438,18 @@
       "to": "module:@solitude/engine:./render"
     },
     {
+      "id": "module-import:module:@solitude/display:./plugins/bodyLabels->module:@solitude/engine:./world",
+      "from": "module:@solitude/display:./plugins/bodyLabels",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./world"
+    },
+    {
+      "id": "module-import:module:@solitude/display:./plugins/bodyLabels->module:@solitude/sim:./localization",
+      "from": "module:@solitude/display:./plugins/bodyLabels",
+      "kind": "module-import",
+      "to": "module:@solitude/sim:./localization"
+    },
+    {
       "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/axialViews",
       "from": "module:@solitude/display:./plugins/catalog",
       "kind": "module-import",
@@ -4142,12 +4460,6 @@
       "from": "module:@solitude/display:./plugins/catalog",
       "kind": "module-import",
       "to": "module:@solitude/display:./plugins/bodyLabels"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/hud",
-      "from": "module:@solitude/display:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/display:./plugins/hud"
     },
     {
       "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/orbitTelemetry",
@@ -4198,24 +4510,6 @@
       "to": "module:@solitude/sim:./plugins/spacecraftOperator"
     },
     {
-      "id": "module-import:module:@solitude/display:./plugins/hud->module:@solitude/browser:./dom/overlayPorts",
-      "from": "module:@solitude/display:./plugins/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/browser:./dom/overlayPorts"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/hud->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/display:./plugins/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/hud->module:@solitude/sim:./hud/provider",
-      "from": "module:@solitude/display:./plugins/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./hud/provider"
-    },
-    {
       "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry->module:@solitude/display:./plugins/orbitTelemetry/hud",
       "from": "module:@solitude/display:./plugins/orbitTelemetry",
       "kind": "module-import",
@@ -4228,10 +4522,16 @@
       "to": "module:@solitude/engine:./plugin"
     },
     {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry->module:@solitude/sim:./hud/provider",
+      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry->module:@solitude/hud:./provider",
       "from": "module:@solitude/display:./plugins/orbitTelemetry",
       "kind": "module-import",
-      "to": "module:@solitude/sim:./hud/provider"
+      "to": "module:@solitude/hud:./provider"
+    },
+    {
+      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry->module:@solitude/sim:./localization",
+      "from": "module:@solitude/display:./plugins/orbitTelemetry",
+      "kind": "module-import",
+      "to": "module:@solitude/sim:./localization"
     },
     {
       "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/hud->module:@solitude/display:./plugins/orbitTelemetry/orbitReadout",
@@ -4246,10 +4546,16 @@
       "to": "module:@solitude/engine:./render"
     },
     {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/hud->module:@solitude/sim:./hud/provider",
+      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/hud->module:@solitude/hud:./provider",
       "from": "module:@solitude/display:./plugins/orbitTelemetry/hud",
       "kind": "module-import",
-      "to": "module:@solitude/sim:./hud/provider"
+      "to": "module:@solitude/hud:./provider"
+    },
+    {
+      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/hud->module:@solitude/sim:./localization",
+      "from": "module:@solitude/display:./plugins/orbitTelemetry/hud",
+      "kind": "module-import",
+      "to": "module:@solitude/sim:./localization"
     },
     {
       "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/orbitReadout->module:@solitude/engine:./math",
@@ -4282,10 +4588,16 @@
       "to": "module:@solitude/engine:./plugin"
     },
     {
-      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry->module:@solitude/sim:./hud/provider",
+      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry->module:@solitude/hud:./provider",
       "from": "module:@solitude/display:./plugins/shipTelemetry",
       "kind": "module-import",
-      "to": "module:@solitude/sim:./hud/provider"
+      "to": "module:@solitude/hud:./provider"
+    },
+    {
+      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry->module:@solitude/sim:./localization",
+      "from": "module:@solitude/display:./plugins/shipTelemetry",
+      "kind": "module-import",
+      "to": "module:@solitude/sim:./localization"
     },
     {
       "id": "module-import:module:@solitude/display:./plugins/shipTelemetry/hud->module:@solitude/engine:./math",
@@ -4300,16 +4612,10 @@
       "to": "module:@solitude/engine:./plugin"
     },
     {
-      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry/hud->module:@solitude/engine:./render",
+      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry/hud->module:@solitude/hud:./provider",
       "from": "module:@solitude/display:./plugins/shipTelemetry/hud",
       "kind": "module-import",
-      "to": "module:@solitude/engine:./render"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry/hud->module:@solitude/sim:./hud/provider",
-      "from": "module:@solitude/display:./plugins/shipTelemetry/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./hud/provider"
+      "to": "module:@solitude/hud:./provider"
     },
     {
       "id": "module-import:module:@solitude/display:./plugins/trajectories->module:@solitude/engine:./plugin",
@@ -4334,6 +4640,24 @@
       "from": "module:@solitude/display:./plugins/velocitySegments",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
+    },
+    {
+      "id": "module-import:module:@solitude/hud:./provider->module:@solitude/engine:./plugin",
+      "from": "module:@solitude/hud:./provider",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./plugin"
+    },
+    {
+      "id": "module-import:module:@solitude/hud:./provider->module:@solitude/engine:./runtime",
+      "from": "module:@solitude/hud:./provider",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./runtime"
+    },
+    {
+      "id": "module-import:module:@solitude/hud:./provider->module:@solitude/engine:./world",
+      "from": "module:@solitude/hud:./provider",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./world"
     },
     {
       "id": "module-import:module:@solitude/protocol:./protocol->module:@solitude/engine:./plugin",
@@ -4528,22 +4852,10 @@
       "to": "module:@solitude/sim:./plugins/catalog"
     },
     {
-      "id": "module-import:module:@solitude/sim:./hud/provider->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./hud/provider",
+      "id": "module-import:module:@solitude/sim:./localization->module:@solitude/engine:./plugin",
+      "from": "module:@solitude/sim:./localization",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./hud/provider->module:@solitude/engine:./runtime",
-      "from": "module:@solitude/sim:./hud/provider",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./runtime"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./hud/provider->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./hud/provider",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
     },
     {
       "id": "module-import:module:@solitude/sim:./plugins/autopilot->module:@solitude/engine:./plugin",
@@ -4552,10 +4864,16 @@
       "to": "module:@solitude/engine:./plugin"
     },
     {
-      "id": "module-import:module:@solitude/sim:./plugins/autopilot->module:@solitude/sim:./hud/provider",
+      "id": "module-import:module:@solitude/sim:./plugins/autopilot->module:@solitude/hud:./provider",
       "from": "module:@solitude/sim:./plugins/autopilot",
       "kind": "module-import",
-      "to": "module:@solitude/sim:./hud/provider"
+      "to": "module:@solitude/hud:./provider"
+    },
+    {
+      "id": "module-import:module:@solitude/sim:./plugins/autopilot->module:@solitude/sim:./localization",
+      "from": "module:@solitude/sim:./plugins/autopilot",
+      "kind": "module-import",
+      "to": "module:@solitude/sim:./localization"
     },
     {
       "id": "module-import:module:@solitude/sim:./plugins/autopilot->module:@solitude/sim:./plugins/autopilot/core",
@@ -4606,10 +4924,10 @@
       "to": "module:@solitude/engine:./world"
     },
     {
-      "id": "module-import:module:@solitude/sim:./plugins/autopilot/hud->module:@solitude/sim:./hud/provider",
+      "id": "module-import:module:@solitude/sim:./plugins/autopilot/hud->module:@solitude/hud:./provider",
       "from": "module:@solitude/sim:./plugins/autopilot/hud",
       "kind": "module-import",
-      "to": "module:@solitude/sim:./hud/provider"
+      "to": "module:@solitude/hud:./provider"
     },
     {
       "id": "module-import:module:@solitude/sim:./plugins/autopilot/hud->module:@solitude/sim:./plugins/autopilot/logic",
@@ -4954,6 +5272,12 @@
       "to": "module:@solitude/sim:./controllableEntities/provider"
     },
     {
+      "id": "module-import:module:solitude:./plugins/catalog->module:@solitude/browser:./dom/hudOverlayPlugin",
+      "from": "module:solitude:./plugins/catalog",
+      "kind": "module-import",
+      "to": "module:@solitude/browser:./dom/hudOverlayPlugin"
+    },
+    {
       "id": "module-import:module:solitude:./plugins/catalog->module:@solitude/display:./plugins/catalog",
       "from": "module:solitude:./plugins/catalog",
       "kind": "module-import",
@@ -5002,6 +5326,72 @@
       "to": "symbol:@solitude/engine:./world:WorldAndSceneConfig"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayContext",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayContext"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayProvider",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/browser:./dom/overlayPorts:createPluginCapabilityProvider",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/overlayPorts:createPluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/hud:./provider:clearHudGrid",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:clearHudGrid"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/hud:./provider:createHudGrid",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:createHudGrid"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/hud:./provider:HudContext",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:HudContext"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/hud:./provider:hudPanelCapability",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:hudPanelCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/hud:./provider:HudPanelProvider",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:HudPanelProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/hud:./provider:isHudPanelProvider",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:isHudPanelProvider"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/keyboardInput:initInput->symbol:@solitude/engine:./plugin:ControlInput",
       "from": "symbol:@solitude/browser:./dom/keyboardInput:initInput",
       "kind": "symbol-reference",
@@ -5018,6 +5408,24 @@
       "from": "symbol:@solitude/browser:./dom/keyboardInput:initInput",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:GamePlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/layout:initLayout->symbol:@solitude/browser:./dom/layout:LayoutView",
+      "from": "symbol:@solitude/browser:./dom/layout:initLayout",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/layout:LayoutView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/layout:LayoutView->symbol:@solitude/engine:./render:ViewLayout",
+      "from": "symbol:@solitude/browser:./dom/layout:LayoutView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:ViewLayout"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/layout:resizeLayout->symbol:@solitude/browser:./dom/layout:LayoutView",
+      "from": "symbol:@solitude/browser:./dom/layout:resizeLayout",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/layout:LayoutView"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/overlayPorts:applyBrowserOverlayProviders->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayContext",
@@ -5146,6 +5554,36 @@
       "to": "symbol:@solitude/browser:./remoteWorldRenderer:rasterizeRenderedView"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteCanvasRenderer:createRemoteMultiCanvasRenderer->symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRenderer",
+      "from": "symbol:@solitude/browser:./remoteCanvasRenderer:createRemoteMultiCanvasRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRenderer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteCanvasRenderer:createRemoteMultiCanvasRenderer->symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRendererOptions",
+      "from": "symbol:@solitude/browser:./remoteCanvasRenderer:createRemoteMultiCanvasRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRendererOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteCanvasRenderer:createRemoteMultiCanvasRenderer->symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "from": "symbol:@solitude/browser:./remoteCanvasRenderer:createRemoteMultiCanvasRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteCanvasRenderer:createRemoteMultiCanvasRenderer->symbol:@solitude/browser:./remoteWorldRenderer:rasterizeRenderedView",
+      "from": "symbol:@solitude/browser:./remoteCanvasRenderer:createRemoteMultiCanvasRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteWorldRenderer:rasterizeRenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteCanvasRenderer:RemoteCanvasRenderedView->symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView",
+      "from": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteCanvasRenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteCanvasRenderer:RemoteCanvasRenderer->symbol:@solitude/browser:./dom/overlayPorts:OverlayRasterizer",
       "from": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteCanvasRenderer",
       "kind": "symbol-reference",
@@ -5186,6 +5624,42 @@
       "from": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteCanvasRendererOptions",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRendererOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRenderer->symbol:@solitude/browser:./dom/overlayPorts:OverlayRasterizer",
+      "from": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/overlayPorts:OverlayRasterizer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRenderer->symbol:@solitude/browser:./remoteCanvasRenderer:RemoteCanvasRenderedView",
+      "from": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteCanvasRenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRenderer->symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer",
+      "from": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRenderer->symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderOptions",
+      "from": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRenderer->symbol:@solitude/engine:./runtime:RuntimeWorldSnapshot",
+      "from": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:RuntimeWorldSnapshot"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRendererOptions->symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRendererOptions",
+      "from": "symbol:@solitude/browser:./remoteCanvasRenderer:RemoteMultiCanvasRendererOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRendererOptions"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldMirror:createRemoteWorldMirror->symbol:@solitude/browser:./remoteWorldMirror:RemoteWorldMirror",
@@ -5246,6 +5720,96 @@
       "from": "symbol:@solitude/browser:./remoteWorldMirror:RemoteWorldMirror",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./world:WorldSetup"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/browser:./remoteWorldMirror:createRemoteWorldMirror",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteWorldMirror:createRemoteWorldMirror"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRendererOptions",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRendererOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderOptions",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./render:buildViewDefinitions",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:buildViewDefinitions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./render:createRenderFrameCache",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:createRenderFrameCache"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./render:createSceneViewStates",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:createSceneViewStates"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./render:getRequiredPrimaryViewState",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:getRequiredPrimaryViewState"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./render:SceneState",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:SceneState"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./render:updateRenderFrameCache",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:updateRenderFrameCache"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./render:updateSceneViewCameras",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:updateSceneViewCameras"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./runtime:createPluginCapabilityRegistry",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:createPluginCapabilityRegistry"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./runtime:validatePluginRequirements",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:validatePluginRequirements"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./world:createScene",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:createScene"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./world:getMainViewLookState",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:getMainViewLookState"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/browser:./remoteWorldMirror:createRemoteWorldMirror",
@@ -5344,6 +5908,12 @@
       "to": "symbol:@solitude/engine:./render:ViewRenderParams"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./runtime:createPluginCapabilityRegistry",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:createPluginCapabilityRegistry"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./runtime:validatePluginRequirements",
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
       "kind": "symbol-reference",
@@ -5372,6 +5942,90 @@
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:rasterizeRenderedView",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer->symbol:@solitude/browser:./remoteWorldMirror:RemoteWorldMirror",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteWorldMirror:RemoteWorldMirror"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer->symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer->symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderOptions",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer->symbol:@solitude/engine:./render:SceneState",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:SceneState"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer->symbol:@solitude/engine:./runtime:RuntimeWorldSnapshot",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:RuntimeWorldSnapshot"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRendererOptions->symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiViewOptions",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRendererOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiViewOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRendererOptions->symbol:@solitude/engine:./plugin:GamePlugin",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRendererOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRendererOptions->symbol:@solitude/engine:./world:WorldAndSceneConfig",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRendererOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:WorldAndSceneConfig"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiViewOptions->symbol:@solitude/engine:./render:RenderSurface2D",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiViewOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderSurface2D"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiViewOptions->symbol:@solitude/engine:./render:SceneViewId",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiViewOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:SceneViewId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiViewOptions->symbol:@solitude/engine:./render:TextMetrics",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiViewOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:TextMetrics"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView->symbol:@solitude/engine:./render:RenderedView",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView->symbol:@solitude/engine:./render:SceneViewId",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:SceneViewId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView->symbol:@solitude/engine:./render:ViewRenderParams",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:ViewRenderParams"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderer->symbol:@solitude/browser:./remoteWorldMirror:RemoteWorldMirror",
@@ -5458,6 +6112,18 @@
       "to": "symbol:@solitude/engine:./plugin:GamePlugin"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
+      "from": "symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin->symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
+      "from": "symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/axialViews:createAxialViewsPlugin",
       "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
       "kind": "symbol-reference",
@@ -5468,12 +6134,6 @@
       "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/hud:createHudPlugin",
-      "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/hud:createHudPlugin"
     },
     {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
@@ -5536,72 +6196,6 @@
       "to": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/hud:createHudPlugin->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayContext",
-      "from": "symbol:@solitude/display:./plugins/hud:createHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayContext"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/hud:createHudPlugin->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayProvider",
-      "from": "symbol:@solitude/display:./plugins/hud:createHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/hud:createHudPlugin->symbol:@solitude/browser:./dom/overlayPorts:createPluginCapabilityProvider",
-      "from": "symbol:@solitude/display:./plugins/hud:createHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/overlayPorts:createPluginCapabilityProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/hud:createHudPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/display:./plugins/hud:createHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/hud:createHudPlugin->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
-      "from": "symbol:@solitude/display:./plugins/hud:createHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/hud:createHudPlugin->symbol:@solitude/sim:./hud/provider:clearHudGrid",
-      "from": "symbol:@solitude/display:./plugins/hud:createHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:clearHudGrid"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/hud:createHudPlugin->symbol:@solitude/sim:./hud/provider:createHudGrid",
-      "from": "symbol:@solitude/display:./plugins/hud:createHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:createHudGrid"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/hud:createHudPlugin->symbol:@solitude/sim:./hud/provider:HudContext",
-      "from": "symbol:@solitude/display:./plugins/hud:createHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:HudContext"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/hud:createHudPlugin->symbol:@solitude/sim:./hud/provider:hudPanelCapability",
-      "from": "symbol:@solitude/display:./plugins/hud:createHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:hudPanelCapability"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/hud:createHudPlugin->symbol:@solitude/sim:./hud/provider:HudPanelProvider",
-      "from": "symbol:@solitude/display:./plugins/hud:createHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:HudPanelProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/hud:createHudPlugin->symbol:@solitude/sim:./hud/provider:isHudPanelProvider",
-      "from": "symbol:@solitude/display:./plugins/hud:createHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:isHudPanelProvider"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin->symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel",
       "from": "symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
       "kind": "symbol-reference",
@@ -5614,10 +6208,22 @@
       "to": "symbol:@solitude/engine:./plugin:GamePlugin"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin->symbol:@solitude/sim:./hud/provider:createHudPanelProvider",
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
       "from": "symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:createHudPanelProvider"
+      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin->symbol:@solitude/hud:./provider:createHudPanelProvider",
+      "from": "symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:createHudPanelProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin->symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
+      "from": "symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption"
     },
     {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel->symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto",
@@ -5638,10 +6244,16 @@
       "to": "symbol:@solitude/engine:./render:formatSimTime"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel->symbol:@solitude/sim:./hud/provider:HudPanelProvider",
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel->symbol:@solitude/hud:./provider:HudPanelProvider",
       "from": "symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:HudPanelProvider"
+      "to": "symbol:@solitude/hud:./provider:HudPanelProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel->symbol:@solitude/sim:./localization:formatEntityName",
+      "from": "symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:formatEntityName"
     },
     {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto->symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:OrbitReadout",
@@ -5710,10 +6322,16 @@
       "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin->symbol:@solitude/sim:./hud/provider:createHudPanelProvider",
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin->symbol:@solitude/hud:./provider:createHudPanelProvider",
       "from": "symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:createHudPanelProvider"
+      "to": "symbol:@solitude/hud:./provider:createHudPanelProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin->symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
+      "from": "symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption"
     },
     {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry/hud:createHudPanel->symbol:@solitude/engine:./math:vec3",
@@ -5722,16 +6340,10 @@
       "to": "symbol:@solitude/engine:./math:vec3"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry/hud:createHudPanel->symbol:@solitude/engine:./render:formatSpeed",
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry/hud:createHudPanel->symbol:@solitude/hud:./provider:HudPanelProvider",
       "from": "symbol:@solitude/display:./plugins/shipTelemetry/hud:createHudPanel",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:formatSpeed"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry/hud:createHudPanel->symbol:@solitude/sim:./hud/provider:HudPanelProvider",
-      "from": "symbol:@solitude/display:./plugins/shipTelemetry/hud:createHudPanel",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:HudPanelProvider"
+      "to": "symbol:@solitude/hud:./provider:HudPanelProvider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/trajectories:createTrajectoriesPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
@@ -6224,6 +6836,12 @@
       "from": "symbol:@solitude/engine:./plugin:SceneLabelPlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:SceneLabelProviderParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:SceneLabelProviderParams->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
+      "from": "symbol:@solitude/engine:./plugin:SceneLabelProviderParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:SceneLabelProviderParams->symbol:@solitude/engine:./render:Scene",
@@ -8548,6 +9166,120 @@
       "to": "symbol:@solitude/engine:./world:World"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:clearHudGrid->symbol:@solitude/hud:./provider:HudGrid",
+      "from": "symbol:@solitude/hud:./provider:clearHudGrid",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:HudGrid"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:createHudGrid->symbol:@solitude/hud:./provider:getHudColumnIndex",
+      "from": "symbol:@solitude/hud:./provider:createHudGrid",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:getHudColumnIndex"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:createHudGrid->symbol:@solitude/hud:./provider:HudColumns",
+      "from": "symbol:@solitude/hud:./provider:createHudGrid",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:HudColumns"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:createHudGrid->symbol:@solitude/hud:./provider:HudGrid",
+      "from": "symbol:@solitude/hud:./provider:createHudGrid",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:HudGrid"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:createHudPanelProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
+      "from": "symbol:@solitude/hud:./provider:createHudPanelProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:createHudPanelProvider->symbol:@solitude/hud:./provider:hudPanelCapability",
+      "from": "symbol:@solitude/hud:./provider:createHudPanelProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:hudPanelCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:createHudPanelProvider->symbol:@solitude/hud:./provider:HudPanelProvider",
+      "from": "symbol:@solitude/hud:./provider:createHudPanelProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:HudPanelProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:getHudColumnIndex->symbol:@solitude/hud:./provider:HudColumnId",
+      "from": "symbol:@solitude/hud:./provider:getHudColumnIndex",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:HudColumnId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:HudColumnId->symbol:@solitude/hud:./provider:hudColumnIds",
+      "from": "symbol:@solitude/hud:./provider:HudColumnId",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:hudColumnIds"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:HudColumns->symbol:@solitude/hud:./provider:HudLine",
+      "from": "symbol:@solitude/hud:./provider:HudColumns",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:HudLine"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:HudContext->symbol:@solitude/engine:./plugin:ControlInput",
+      "from": "symbol:@solitude/hud:./provider:HudContext",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:ControlInput"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:HudContext->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
+      "from": "symbol:@solitude/hud:./provider:HudContext",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:HudContext->symbol:@solitude/engine:./runtime:FocusContext",
+      "from": "symbol:@solitude/hud:./provider:HudContext",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:FocusContext"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:HudContext->symbol:@solitude/engine:./world:World",
+      "from": "symbol:@solitude/hud:./provider:HudContext",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:World"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:HudGrid->symbol:@solitude/hud:./provider:HudColumnId",
+      "from": "symbol:@solitude/hud:./provider:HudGrid",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:HudColumnId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:HudGrid->symbol:@solitude/hud:./provider:HudColumns",
+      "from": "symbol:@solitude/hud:./provider:HudGrid",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:HudColumns"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:HudPanelProvider->symbol:@solitude/hud:./provider:HudContext",
+      "from": "symbol:@solitude/hud:./provider:HudPanelProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:HudContext"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:HudPanelProvider->symbol:@solitude/hud:./provider:HudGrid",
+      "from": "symbol:@solitude/hud:./provider:HudPanelProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:HudGrid"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./provider:isHudPanelProvider->symbol:@solitude/hud:./provider:HudPanelProvider",
+      "from": "symbol:@solitude/hud:./provider:isHudPanelProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:HudPanelProvider"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/protocol:./protocol:ClientMessageSocketRequest->symbol:@solitude/protocol:./protocol:SolitudeClientMessage",
       "from": "symbol:@solitude/protocol:./protocol:ClientMessageSocketRequest",
       "kind": "symbol-reference",
@@ -9592,82 +10324,130 @@
       "to": "symbol:@solitude/engine:./world:EntityConfig"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./hud/provider:clearHudGrid->symbol:@solitude/sim:./hud/provider:HudGrid",
-      "from": "symbol:@solitude/sim:./hud/provider:clearHudGrid",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:HudGrid"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./hud/provider:createHudGrid->symbol:@solitude/sim:./hud/provider:HudGrid",
-      "from": "symbol:@solitude/sim:./hud/provider:createHudGrid",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:HudGrid"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./hud/provider:createHudPanelProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
-      "from": "symbol:@solitude/sim:./hud/provider:createHudPanelProvider",
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:createEntityNameProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
+      "from": "symbol:@solitude/sim:./localization:createEntityNameProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./hud/provider:createHudPanelProvider->symbol:@solitude/sim:./hud/provider:hudPanelCapability",
-      "from": "symbol:@solitude/sim:./hud/provider:createHudPanelProvider",
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:createEntityNameProvider->symbol:@solitude/sim:./localization:EntityNameProvider",
+      "from": "symbol:@solitude/sim:./localization:createEntityNameProvider",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:hudPanelCapability"
+      "to": "symbol:@solitude/sim:./localization:EntityNameProvider"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./hud/provider:createHudPanelProvider->symbol:@solitude/sim:./hud/provider:HudPanelProvider",
-      "from": "symbol:@solitude/sim:./hud/provider:createHudPanelProvider",
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:createEntityNameProvider->symbol:@solitude/sim:./localization:entityNameProviderCapability",
+      "from": "symbol:@solitude/sim:./localization:createEntityNameProvider",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:HudPanelProvider"
+      "to": "symbol:@solitude/sim:./localization:entityNameProviderCapability"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./hud/provider:HudContext->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./hud/provider:HudContext",
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:createRuntimeOptionsWithResolvedLocale->symbol:@solitude/engine:./plugin:RuntimeOptions",
+      "from": "symbol:@solitude/sim:./localization:createRuntimeOptionsWithResolvedLocale",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
+      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./hud/provider:HudContext->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
-      "from": "symbol:@solitude/sim:./hud/provider:HudContext",
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:createRuntimeOptionsWithResolvedLocale->symbol:@solitude/sim:./localization:resolveSolitudeLocale",
+      "from": "symbol:@solitude/sim:./localization:createRuntimeOptionsWithResolvedLocale",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:resolveSolitudeLocale"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:createSolitudeLocalization->symbol:@solitude/sim:./localization:SolitudeLocale",
+      "from": "symbol:@solitude/sim:./localization:createSolitudeLocalization",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:SolitudeLocale"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:createSolitudeLocalization->symbol:@solitude/sim:./localization:solitudeLocaleOptions",
+      "from": "symbol:@solitude/sim:./localization:createSolitudeLocalization",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:solitudeLocaleOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:createSolitudeLocalization->symbol:@solitude/sim:./localization:SolitudeLocalization",
+      "from": "symbol:@solitude/sim:./localization:createSolitudeLocalization",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:SolitudeLocalization"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:EntityNameProvider->symbol:@solitude/sim:./localization:formatEntityName",
+      "from": "symbol:@solitude/sim:./localization:EntityNameProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:formatEntityName"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:formatEntityName->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
+      "from": "symbol:@solitude/sim:./localization:formatEntityName",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./hud/provider:HudContext->symbol:@solitude/engine:./runtime:FocusContext",
-      "from": "symbol:@solitude/sim:./hud/provider:HudContext",
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:formatEntityName->symbol:@solitude/sim:./localization:entityNameProviderCapability",
+      "from": "symbol:@solitude/sim:./localization:formatEntityName",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./runtime:FocusContext"
+      "to": "symbol:@solitude/sim:./localization:entityNameProviderCapability"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./hud/provider:HudContext->symbol:@solitude/engine:./world:World",
-      "from": "symbol:@solitude/sim:./hud/provider:HudContext",
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:readLocaleRuntimeOption->symbol:@solitude/engine:./plugin:RuntimeOptions",
+      "from": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:World"
+      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./hud/provider:HudGrid->symbol:@solitude/sim:./hud/provider:HudGridRow",
-      "from": "symbol:@solitude/sim:./hud/provider:HudGrid",
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:readLocaleRuntimeOption->symbol:@solitude/sim:./localization:resolveSolitudeLocale",
+      "from": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:HudGridRow"
+      "to": "symbol:@solitude/sim:./localization:resolveSolitudeLocale"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./hud/provider:HudPanelProvider->symbol:@solitude/sim:./hud/provider:HudContext",
-      "from": "symbol:@solitude/sim:./hud/provider:HudPanelProvider",
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:readLocaleRuntimeOption->symbol:@solitude/sim:./localization:SolitudeLocale",
+      "from": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:HudContext"
+      "to": "symbol:@solitude/sim:./localization:SolitudeLocale"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./hud/provider:HudPanelProvider->symbol:@solitude/sim:./hud/provider:HudGrid",
-      "from": "symbol:@solitude/sim:./hud/provider:HudPanelProvider",
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:resolveSolitudeLocale->symbol:@solitude/engine:./plugin:RuntimeOptions",
+      "from": "symbol:@solitude/sim:./localization:resolveSolitudeLocale",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:HudGrid"
+      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./hud/provider:isHudPanelProvider->symbol:@solitude/sim:./hud/provider:HudPanelProvider",
-      "from": "symbol:@solitude/sim:./hud/provider:isHudPanelProvider",
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:resolveSolitudeLocale->symbol:@solitude/sim:./localization:SolitudeLocale",
+      "from": "symbol:@solitude/sim:./localization:resolveSolitudeLocale",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:HudPanelProvider"
+      "to": "symbol:@solitude/sim:./localization:SolitudeLocale"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:SolitudeLocaleOption->symbol:@solitude/sim:./localization:SolitudeLocale",
+      "from": "symbol:@solitude/sim:./localization:SolitudeLocaleOption",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:SolitudeLocale"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:solitudeLocaleOptions->symbol:@solitude/sim:./localization:SolitudeLocaleOption",
+      "from": "symbol:@solitude/sim:./localization:solitudeLocaleOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:SolitudeLocaleOption"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:SolitudeLocalization->symbol:@solitude/sim:./localization:MessageParams",
+      "from": "symbol:@solitude/sim:./localization:SolitudeLocalization",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:MessageParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:SolitudeLocalization->symbol:@solitude/sim:./localization:SolitudeLocale",
+      "from": "symbol:@solitude/sim:./localization:SolitudeLocalization",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:SolitudeLocale"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./localization:SolitudeLocalization->symbol:@solitude/sim:./localization:SolitudeLocaleOption",
+      "from": "symbol:@solitude/sim:./localization:SolitudeLocalization",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:SolitudeLocaleOption"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
@@ -9676,10 +10456,22 @@
       "to": "symbol:@solitude/engine:./plugin:GamePlugin"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/sim:./hud/provider:createHudPanelProvider",
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
       "from": "symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:createHudPanelProvider"
+      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/hud:./provider:createHudPanelProvider",
+      "from": "symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./provider:createHudPanelProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
+      "from": "symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/sim:./plugins/autopilot/core:createAutonomousControlProvider",
@@ -9742,10 +10534,10 @@
       "to": "symbol:@solitude/sim:./plugins/autopilot/spacecraftPropulsion:createSpacecraftPropulsionResolverProvider"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot/hud:createHudPanel->symbol:@solitude/sim:./hud/provider:HudPanelProvider",
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot/hud:createHudPanel->symbol:@solitude/hud:./provider:HudPanelProvider",
       "from": "symbol:@solitude/sim:./plugins/autopilot/hud:createHudPanel",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./hud/provider:HudPanelProvider"
+      "to": "symbol:@solitude/hud:./provider:HudPanelProvider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot/hud:createHudPanel->symbol:@solitude/sim:./plugins/autopilot/logic:getAutopilotMode",
@@ -9836,12 +10628,6 @@
       "from": "symbol:@solitude/sim:./plugins/autopilot/logic:computeCircleNowAttitudeCommand",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/sim:./plugins/autopilot/logic:getDominantBodyDirection"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot/logic:computeCircleNowAttitudeCommand->symbol:@solitude/sim:./plugins/autopilot/logic:getTangentialDirection",
-      "from": "symbol:@solitude/sim:./plugins/autopilot/logic:computeCircleNowAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/autopilot/logic:getTangentialDirection"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot/logic:computeRollToDirectionCommand->symbol:@solitude/engine:./math:EPS_ANGLE_RAD",
@@ -10244,6 +11030,12 @@
       "from": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:GamePlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
+      "from": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin->symbol:@solitude/sim:./celestialBodies/provider:celestialBodyProviderCapability",
@@ -10784,6 +11576,12 @@
       "from": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:OrbitingPlacementParams",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBody"
+    },
+    {
+      "id": "symbol-reference:symbol:solitude:./plugins/catalog:solitudePluginCatalog->symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "from": "symbol:solitude:./plugins/catalog:solitudePluginCatalog",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin"
     },
     {
       "id": "symbol-reference:symbol:solitude:./plugins/catalog:solitudePluginCatalog->symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",

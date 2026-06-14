@@ -1,5 +1,5 @@
 import type { GamePlugin } from "@solitude/engine/plugin";
-import { createHudPanelProvider } from "@solitude/sim/hud/provider";
+import { createHudPanelProvider } from "@solitude/hud/provider";
 import type { ClientLocalization } from "./localization";
 
 export interface RemoteIdentityHudOptions {

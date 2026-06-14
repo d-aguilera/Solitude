@@ -5,7 +5,7 @@ import {
   vec3,
 } from "@solitude/engine/math";
 import type { ControlledBody, World } from "@solitude/engine/world";
-import type { HudPanelProvider } from "@solitude/sim/hud/provider";
+import type { HudPanelProvider } from "@solitude/hud/provider";
 import type { AutopilotLocalization } from "./localization";
 import { getAutopilotMode } from "./logic";
 

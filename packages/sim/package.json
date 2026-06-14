@@ -8,7 +8,6 @@
     "./config/worldAndSceneConfig": "./src/worldAndSceneConfig.ts",
     "./controllableEntities/provider": "./src/controllableEntities/provider.ts",
     "./headless": "./src/headless.ts",
-    "./hud/provider": "./src/hud/provider.ts",
     "./localization": "./src/localization.ts",
     "./plugins/autopilot": "./src/plugins/autopilot/index.ts",
     "./plugins/autopilot/core": "./src/plugins/autopilot/core.ts",
@@ -31,7 +30,8 @@
     "./plugins/spacecraftOperator/telemetry": "./src/plugins/spacecraftOperator/telemetry.ts"
   },
   "dependencies": {
-    "@solitude/engine": "0.0.0"
+    "@solitude/engine": "0.0.0",
+    "@solitude/hud": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

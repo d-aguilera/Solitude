@@ -1,3 +1,4 @@
+import { createHudOverlayPlugin } from "@solitude/browser/dom/hudOverlayPlugin";
 import {
   initLayout,
   resizeLayout,
@@ -97,8 +98,11 @@ export function createSolitudeRemoteClientRenderer({
   runtimeOptions = {},
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
   const plugins = loadPlugins({
-    catalog: remoteRenderPluginCatalog,
-    ids: remoteRenderPluginIds,
+    catalog: {
+      ...remoteRenderPluginCatalog,
+      hud: createHudOverlayPlugin,
+    },
+    ids: ["hud", ...remoteRenderPluginIds],
     runtimeOptions,
   }).concat(clientPlugins);
   const capabilityRegistry = createPluginCapabilityRegistry(

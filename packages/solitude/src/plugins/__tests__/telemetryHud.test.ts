@@ -22,7 +22,7 @@ import {
   type HudContext,
   type HudGrid,
   type HudPanelProvider,
-} from "@solitude/sim/hud/provider";
+} from "@solitude/hud/provider";
 import { createEntityNameProvider } from "@solitude/sim/localization";
 import { createAutopilotPlugin } from "@solitude/sim/plugins/autopilot";
 import { createSpacecraftOperatorTelemetryProvider } from "@solitude/sim/plugins/spacecraftOperator/capabilities";
@@ -257,8 +257,8 @@ describe("telemetry HUD plugins", () => {
 
     grid.addLine("rightCenter", "runtime.timeScale", "Scale: 2");
     grid.addLine("rightCenter", "runtime.timeScale", "Scale: 4");
-    grid.appendLine("center", "runtime.status", "PAUSE");
-    grid.appendLine("center", "runtime.status", "PROFILING");
+    grid.appendLine("center", "runtime.status", "PAUSE", " ");
+    grid.appendLine("center", "runtime.status", "PROFILING", " ");
 
     expect(columnTexts(grid, "rightCenter")).toEqual(["Scale: 4"]);
     expect(columnTexts(grid, "center")).toEqual(["PAUSE PROFILING"]);

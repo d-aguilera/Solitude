@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./dom/canvasBootstrap": "./src/infra/domCanvasBootstrap.ts",
+    "./dom/hudOverlayPlugin": "./src/infra/hudOverlayPlugin.ts",
     "./dom/keyboardInput": "./src/infra/domKeyboardInput.ts",
     "./dom/layout": "./src/infra/domLayout.ts",
     "./dom/overlayPorts": "./src/infra/overlayPorts.ts",
@@ -14,7 +15,8 @@
     "./remoteWorldMirror": "./src/infra/remoteWorldMirror.ts"
   },
   "dependencies": {
-    "@solitude/engine": "0.0.0"
+    "@solitude/engine": "0.0.0",
+    "@solitude/hud": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

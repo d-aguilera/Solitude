@@ -1,5 +1,5 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
-import { createHudPanelProvider } from "@solitude/sim/hud/provider";
+import { createHudPanelProvider } from "@solitude/hud/provider";
 import { readLocaleRuntimeOption } from "@solitude/sim/localization";
 import { createHudPanel } from "./hud";
 import { createOrbitTelemetryLocalization } from "./localization";

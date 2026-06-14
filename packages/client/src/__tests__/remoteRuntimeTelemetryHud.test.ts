@@ -3,7 +3,7 @@ import {
   getHudColumnIndex,
   hudPanelCapability,
   isHudPanelProvider,
-} from "@solitude/sim/hud/provider";
+} from "@solitude/hud/provider";
 import { describe, expect, it } from "vitest";
 import { createClientLocalization } from "../localization";
 import { createRemoteRuntimeTelemetryHudPlugin } from "../remoteRuntimeTelemetryHud";

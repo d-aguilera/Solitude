@@ -1,3 +1,4 @@
+import { createHudOverlayPlugin } from "@solitude/browser/dom/hudOverlayPlugin";
 import { displayPluginCatalog } from "@solitude/display/plugins/catalog";
 import type { PluginCatalog } from "@solitude/engine/plugin";
 import { createAutopilotPlugin } from "@solitude/sim/plugins/autopilot";
@@ -42,6 +43,7 @@ export const defaultPluginIds = [
 export const solitudePluginCatalog: PluginCatalog = {
   ...displayPluginCatalog,
   autopilot: createAutopilotPlugin,
+  hud: createHudOverlayPlugin,
   mainViewLookaround: createMainViewLookaroundPlugin,
   memory: createMemoryPlugin,
   operatorSwitch: createOperatorSwitchPlugin,

@@ -4,7 +4,7 @@ import {
   hudPanelCapability,
   isHudPanelProvider,
   type HudColumnId,
-} from "@solitude/sim/hud/provider";
+} from "@solitude/hud/provider";
 import { describe, expect, it } from "vitest";
 import { createClientLocalization } from "../localization";
 import { createRemoteIdentityHudPlugin } from "../remoteIdentityHud";

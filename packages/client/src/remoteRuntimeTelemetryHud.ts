@@ -1,6 +1,6 @@
 import type { GamePlugin } from "@solitude/engine/plugin";
 import { formatSimTime } from "@solitude/engine/render";
-import { createHudPanelProvider } from "@solitude/sim/hud/provider";
+import { createHudPanelProvider } from "@solitude/hud/provider";
 import type { ClientLocalization } from "./localization";
 
 const fpsHistoryCapacity = 300;

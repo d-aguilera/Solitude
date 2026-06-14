@@ -59,6 +59,7 @@
 ## Package Snapshot
 
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
+- `packages/hud/src/`: generic HUD grid and HUD panel capability contracts shared by display, browser, sim, client, and Solitude plugins.
 - `packages/sim/src/`: browser-safe and Node-safe Solitude simulation library: default world config, solar-system entity builders/assets, spacecraft operator dynamics, autopilot logic, localization helpers/messages, and headless Solitude composition shared by server and browser/product packages.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, layout, Canvas 2D, WebGL rasterizer adapters, and remote-world mirror helpers.
 - `packages/protocol/src/`: browser-safe client/server protocol types and message guards.
@@ -83,6 +84,7 @@
 - Runtime world state is generic entity/capability based.
 - Solar-system content is owned by `@solitude/sim`; browser/server/client code import it directly from `@solitude/sim`.
 - Body label content is contributed by `packages/solitude/src/plugins/bodyLabels/`; engine owns generic scene-label layout.
+- HUD panel contracts are owned by `@solitude/hud`; browser owns the canvas overlay adapter that rasterizes HUD grids.
 - Main-view lookaround input/camera-offset controls live in `packages/solitude/src/plugins/mainViewLookaround/`.
 - Spacecraft propulsion/RCS/attitude, input bindings, spacecraft operator state, and the primary forward camera rig live in `@solitude/sim`; browser/server/client code import them directly from `@solitude/sim`.
 - Autopilot `circleNow` uses `autopilot.mode.v2`: a continuous dominant-body circularization controller that aims the main thrust axis at orbital correction while unstable, blends back to inward-facing once stable, and keeps roll referenced to the orbital tangent to avoid stable-orbit roll oscillation. `alignToVelocity` and `alignToBody` remain behavior-compatible with v1.

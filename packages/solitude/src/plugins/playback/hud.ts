@@ -1,4 +1,4 @@
-import type { HudPanelProvider } from "@solitude/sim/hud/provider";
+import type { HudPanelProvider } from "@solitude/hud/provider";
 import type { PlaybackController } from "./core";
 import type { PlaybackLocalization } from "./localization";
 

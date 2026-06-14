@@ -3,7 +3,7 @@ import {
   remoteRenderPluginIds,
 } from "@solitude/display/plugins/catalog";
 import { loadPlugins } from "@solitude/engine/plugin";
-import { hudPanelCapability } from "@solitude/sim/hud/provider";
+import { hudPanelCapability } from "@solitude/hud/provider";
 import { describe, expect, it } from "vitest";
 
 describe("remote render plugin catalog", () => {

@@ -1,6 +1,6 @@
 import { vec3 } from "@solitude/engine/math";
 import type { PluginCapabilityRegistry } from "@solitude/engine/plugin";
-import type { HudPanelProvider } from "@solitude/sim/hud/provider";
+import type { HudPanelProvider } from "@solitude/hud/provider";
 import type { ShipTelemetryLocalization } from "./localization";
 
 const spacecraftOperatorTelemetryCapabilityId =

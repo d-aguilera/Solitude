@@ -1,8 +1,3 @@
-import {
-  createPluginCapabilityProvider,
-  type BrowserOverlayContext,
-  type BrowserOverlayProvider,
-} from "@solitude/browser/dom/overlayPorts";
 import type {
   GamePlugin,
   PluginCapabilityRegistry,
@@ -14,9 +9,14 @@ import {
   isHudPanelProvider,
   type HudContext,
   type HudPanelProvider,
-} from "@solitude/sim/hud/provider";
+} from "@solitude/hud/provider";
+import {
+  createPluginCapabilityProvider,
+  type BrowserOverlayContext,
+  type BrowserOverlayProvider,
+} from "./overlayPorts";
 
-export function createHudPlugin(): GamePlugin {
+export function createHudOverlayPlugin(): GamePlugin {
   const grid = createHudGrid();
   const hudContextScratch = {} as HudContext;
   let providers: readonly HudPanelProvider[] | null = null;
