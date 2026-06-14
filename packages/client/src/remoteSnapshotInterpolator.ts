@@ -6,12 +6,15 @@ import type {
 
 export interface TimedRuntimeWorldSnapshot {
   receivedAtMillis: number;
+  simulationTimeMillis: number;
   snapshot: RuntimeWorldSnapshot;
   tick: number;
 }
 
 export interface RuntimeSnapshotInterpolationBufferOptions {
+  capacity?: number;
   delayMillis?: number;
+  maxExtrapolationMillis?: number;
 }
 
 export interface RuntimeSnapshotInterpolationBuffer {
@@ -19,19 +22,28 @@ export interface RuntimeSnapshotInterpolationBuffer {
   push: (
     snapshot: RuntimeWorldSnapshot,
     tick: number,
+    simulationTimeMillis: number,
     receivedAtMillis: number,
   ) => void;
-  sample: (nowMillis: number) => RuntimeWorldSnapshot | null;
+  sample: (
+    latestSimulationTimeMillis: number,
+    latestReceivedAtMillis: number,
+    nowMillis: number,
+  ) => RuntimeWorldSnapshot | null;
 }
 
-const defaultInterpolationDelayMillis = 300;
+const defaultCapacity = 8;
+const defaultInterpolationDelayMillis = 75;
+const defaultMaxExtrapolationMillis = 50;
 
 export function createRuntimeSnapshotInterpolationBuffer(
   options: RuntimeSnapshotInterpolationBufferOptions = {},
 ): RuntimeSnapshotInterpolationBuffer {
+  const capacity = Math.max(2, Math.floor(options.capacity ?? defaultCapacity));
   const delayMillis = options.delayMillis ?? defaultInterpolationDelayMillis;
-  let previous: TimedRuntimeWorldSnapshot | null = null;
-  let next: TimedRuntimeWorldSnapshot | null = null;
+  const maxExtrapolationMillis =
+    options.maxExtrapolationMillis ?? defaultMaxExtrapolationMillis;
+  const snapshots: TimedRuntimeWorldSnapshot[] = [];
   const interpolated = createRuntimeSnapshotStorage();
   let latestTick = 0;
 
@@ -39,24 +51,58 @@ export function createRuntimeSnapshotInterpolationBuffer(
     get latestTick() {
       return latestTick;
     },
-    push: (snapshot, tick, receivedAtMillis) => {
+    push: (snapshot, tick, simulationTimeMillis, receivedAtMillis) => {
+      if (tick <= latestTick) return;
       latestTick = tick;
-      previous = next;
-      next = { receivedAtMillis, snapshot, tick };
+      insertOrdered(snapshots, {
+        receivedAtMillis,
+        simulationTimeMillis,
+        snapshot,
+        tick,
+      });
+      if (snapshots.length > capacity) {
+        snapshots.splice(0, snapshots.length - capacity);
+      }
     },
-    sample: (nowMillis) => {
-      if (!next) return null;
-      if (!previous || previous.receivedAtMillis >= next.receivedAtMillis) {
-        return next.snapshot;
+    sample: (latestSimulationTimeMillis, latestReceivedAtMillis, nowMillis) => {
+      const latest = snapshots[snapshots.length - 1];
+      if (!latest) return null;
+
+      const estimatedSimulationTimeMillis =
+        latestSimulationTimeMillis +
+        Math.max(0, nowMillis - latestReceivedAtMillis);
+      const targetMillis = estimatedSimulationTimeMillis - delayMillis;
+      const first = snapshots[0];
+      if (targetMillis <= first.simulationTimeMillis) {
+        return first.snapshot;
       }
 
-      const targetMillis = nowMillis - delayMillis;
-      if (targetMillis <= previous.receivedAtMillis) return previous.snapshot;
-      if (targetMillis >= next.receivedAtMillis) return next.snapshot;
+      if (targetMillis >= latest.simulationTimeMillis) {
+        if (
+          targetMillis >
+          latest.simulationTimeMillis + maxExtrapolationMillis
+        ) {
+          return latest.snapshot;
+        }
+        const previous = snapshots[snapshots.length - 2];
+        if (!previous) return latest.snapshot;
+        return interpolateRuntimeWorldSnapshotInto(
+          interpolated,
+          previous.snapshot,
+          latest.snapshot,
+          (targetMillis - previous.simulationTimeMillis) /
+            (latest.simulationTimeMillis - previous.simulationTimeMillis),
+        );
+      }
+
+      const nextIndex = findNextSnapshotIndex(snapshots, targetMillis);
+      const previous = snapshots[nextIndex - 1];
+      const next = snapshots[nextIndex];
+      if (!previous || !next) return latest.snapshot;
 
       const alpha =
-        (targetMillis - previous.receivedAtMillis) /
-        (next.receivedAtMillis - previous.receivedAtMillis);
+        (targetMillis - previous.simulationTimeMillis) /
+        (next.simulationTimeMillis - previous.simulationTimeMillis);
       return interpolateRuntimeWorldSnapshotInto(
         interpolated,
         previous.snapshot,
@@ -65,6 +111,30 @@ export function createRuntimeSnapshotInterpolationBuffer(
       );
     },
   };
+}
+
+function insertOrdered(
+  snapshots: TimedRuntimeWorldSnapshot[],
+  snapshot: TimedRuntimeWorldSnapshot,
+): void {
+  let index = snapshots.length;
+  while (
+    index > 0 &&
+    snapshots[index - 1].simulationTimeMillis > snapshot.simulationTimeMillis
+  ) {
+    index--;
+  }
+  snapshots.splice(index, 0, snapshot);
+}
+
+function findNextSnapshotIndex(
+  snapshots: readonly TimedRuntimeWorldSnapshot[],
+  simulationTimeMillis: number,
+): number {
+  for (let i = 0; i < snapshots.length; i++) {
+    if (snapshots[i].simulationTimeMillis >= simulationTimeMillis) return i;
+  }
+  return snapshots.length - 1;
 }
 
 export function interpolateRuntimeWorldSnapshotInto(
@@ -150,7 +220,7 @@ function createRuntimeEntitySnapshotStorage(): RuntimeEntitySnapshot {
   };
 }
 
-function copyRuntimeEntitySnapshotInto(
+export function copyRuntimeEntitySnapshotInto(
   into: RuntimeEntitySnapshot,
   source: RuntimeEntitySnapshot,
 ): RuntimeEntitySnapshot {

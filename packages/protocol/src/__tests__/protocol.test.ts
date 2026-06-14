@@ -120,4 +120,21 @@ describe("Solitude protocol", () => {
       }),
     ).toBe(false);
   });
+
+  it("recognizes one-way socket client messages", () => {
+    expect(
+      isSolitudeSocketClientMessage({
+        type: "clientMessageEvent",
+        message: {
+          type: "input",
+          clientId: "client:a",
+          entityId: "ship:blue",
+          gameId: "game:test",
+          inputSequence: 1,
+          sequence: 2,
+          controls: { burnForward: true },
+        },
+      }),
+    ).toBe(true);
+  });
 });

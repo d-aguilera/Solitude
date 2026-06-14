@@ -16,7 +16,9 @@ export type SolitudeClientMessage =
   | LeaveGameMessage
   | InputMessage;
 
-export type SolitudeSocketClientMessage = ClientMessageSocketRequest;
+export type SolitudeSocketClientMessage =
+  | ClientMessageSocketRequest
+  | ClientMessageSocketEvent;
 
 export type SolitudeSocketServerMessage =
   | MessagesSocketResponse
@@ -63,6 +65,11 @@ export interface InputMessage {
 export interface ClientMessageSocketRequest {
   type: "clientMessage";
   requestId: SolitudeProtocolSequence;
+  message: SolitudeClientMessage;
+}
+
+export interface ClientMessageSocketEvent {
+  type: "clientMessageEvent";
   message: SolitudeClientMessage;
 }
 
@@ -236,6 +243,8 @@ export function isSolitudeSocketClientMessage(
         isFiniteNumber(value.requestId) &&
         isSolitudeClientMessage(value.message)
       );
+    case "clientMessageEvent":
+      return isSolitudeClientMessage(value.message);
     default:
       return false;
   }

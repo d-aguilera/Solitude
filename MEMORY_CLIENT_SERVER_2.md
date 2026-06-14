@@ -144,22 +144,22 @@ Delivered local input/prediction feel:
 - Client-side prediction is in place for the locally controlled ship.
 - Visual reconciliation smoothing and prediction error metrics are in place.
 - Reconciliation is render-only for the controlled ship, so HUD/projection readouts observe the restored local state.
+- Gameplay input now uses one-way WebSocket messages; snapshots remain the acknowledgement path.
 
-Next, restore smooth remote presentation:
+Delivered remote presentation smoothing:
 
 - Ordered interpolation buffer based on simulation time.
-- Interpolated remote entities.
+- Interpolated remote entities with a small default presentation delay.
 - Bounded extrapolation only when the buffer underruns.
-- Keep the local controlled ship on the prediction/reconciliation path, not on the remote interpolation path.
+- The local controlled ship stays on the latest-authority prediction/reconciliation path, not the delayed remote interpolation path.
 
 ## Clear Next Step
 
-Restore remote entity interpolation without disturbing local prediction:
+Tune and measure multiplayer feel after the one-way input and simulation-time interpolation slice:
 
-- introduce an ordered snapshot buffer keyed by authoritative simulation time;
-- render non-controlled entities from buffered/interpolated authority;
-- keep the locally controlled ship predicted immediately and reconciled visually;
-- verify local feel, remote smoothness, and `window.__solitudePredictionMetrics` together.
+- verify local feel, remote smoothness, and `window.__solitudePredictionMetrics` together;
+- measure snapshot inter-arrival jitter and input send-to-ack p50/p95 under load;
+- use those metrics to decide whether to tune interpolation delay, broadcast cadence, or payload/fanout next.
 
 ## Things To Watch
 

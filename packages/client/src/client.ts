@@ -1,6 +1,7 @@
 import type { ControlInput } from "@solitude/engine/plugin";
 import type { EntityId } from "@solitude/engine/world";
 import {
+  type ClientMessageSocketRequest,
   type JoinedGameMessage,
   type SolitudeClientId,
   type SolitudeClientMessage,
@@ -8,7 +9,6 @@ import {
   type SolitudeInputSequence,
   type SolitudeProtocolSequence,
   type SolitudeServerMessage,
-  type SolitudeSocketClientMessage,
   isSolitudeSocketServerMessage,
 } from "@solitude/protocol/protocol";
 
@@ -175,7 +175,7 @@ export function createSolitudeWebSocketClient(
   };
 
   const sendSocketRequest = async (
-    request: SolitudeSocketClientMessage,
+    request: ClientMessageSocketRequest,
   ): Promise<SolitudeServerMessage[]> => {
     if (!handlers) {
       handlers = defaultHandlers;
@@ -202,6 +202,26 @@ export function createSolitudeWebSocketClient(
       requestId: message.sequence,
       type: "clientMessage",
     });
+
+  const sendClientMessageEvent = async (
+    message: SolitudeClientMessage,
+  ): Promise<SolitudeServerMessage[]> => {
+    if (!handlers) {
+      handlers = defaultHandlers;
+    }
+    await connect(handlers);
+    const activeSocket = socket;
+    if (!activeSocket || activeSocket.readyState !== WebSocketOpen) {
+      throw new Error("Solitude WebSocket is not open");
+    }
+    activeSocket.send(
+      JSON.stringify({
+        message,
+        type: "clientMessageEvent",
+      }),
+    );
+    return [];
+  };
 
   const handleSocketMessage = (data: unknown): void => {
     const payload = JSON.parse(String(data)) as unknown;
@@ -276,7 +296,7 @@ export function createSolitudeWebSocketClient(
       return messages;
     },
     sendInputPatch: (controls) =>
-      sendClientMessage({
+      sendClientMessageEvent({
         type: "input",
         clientId: options.clientId,
         entityId: requireEntityId(),

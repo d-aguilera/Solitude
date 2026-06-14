@@ -334,6 +334,33 @@ function handleSocketMessage({
       sendSocketMessages(socket, payload.requestId, messages);
       return;
     }
+    case "clientMessageEvent": {
+      const messages = runner.receive(
+        payload.message,
+        payload.message.sequence,
+      );
+      if (payload.message.type === "leaveGame") {
+        removeSocketSubscription(
+          socketSubscriptionsByGameId,
+          socket,
+          payload.message.gameId,
+        );
+        socketSessionsBySocket.delete(socket);
+      }
+      updateSocketSubscriptions(
+        socketSubscriptionsByGameId,
+        socketSessionsBySocket,
+        socket,
+        messages,
+      );
+      publishSocketModelMessages(
+        socketSubscriptionsByGameId,
+        getModelBroadcastGameId(payload.message, messages),
+        messages,
+        socket,
+      );
+      return;
+    }
   }
 }
 

@@ -5,6 +5,7 @@ import {
 } from "@solitude/browser/dom/layout";
 import { applyBrowserOverlayProviders } from "@solitude/browser/dom/overlayPorts";
 import { createRemoteMultiCanvasRenderer } from "@solitude/browser/remoteCanvasRenderer";
+import { mat3, vec3 } from "@solitude/engine/math";
 import {
   type ControlInput,
   type FramePolicy,
@@ -47,6 +48,10 @@ import {
   type LocalPredictionErrorMetrics,
   type LocalShipVisualState,
 } from "./localReconciliation";
+import {
+  copyRuntimeEntitySnapshotInto,
+  createRuntimeSnapshotInterpolationBuffer,
+} from "./remoteSnapshotInterpolator";
 
 declare global {
   interface Window {
@@ -106,6 +111,8 @@ export function createSolitudeRemoteClientRenderer({
   let latestSnapshotReceivedAtMillis = 0;
   let messageSimulationTimeMillis = 0;
   let modelVersion = 0;
+  let interpolationBuffer = createRuntimeSnapshotInterpolationBuffer();
+  const mixedSnapshot: RuntimeWorldSnapshot = { entities: [] };
 
   let renderer: ReturnType<typeof createRemoteMultiCanvasRenderer> | null =
     null;
@@ -123,6 +130,12 @@ export function createSolitudeRemoteClientRenderer({
       latestSnapshot = { entities: message.entities };
       latestSnapshotReceivedAtMillis = nowMillis;
       messageSimulationTimeMillis = message.simulationTimeMillis;
+      interpolationBuffer.push(
+        latestSnapshot,
+        message.tick,
+        message.simulationTimeMillis,
+        nowMillis,
+      );
       const focusEntityId = getFocusEntityId();
       if (focusEntityId.length > 0) {
         acknowledgeLocalInputs(
@@ -154,9 +167,21 @@ export function createSolitudeRemoteClientRenderer({
         renderer.setFocusEntityId(focusEntityId);
       }
       const predictionMillis = getPredictionMillis(nowMillis);
+      const interpolatedSnapshot =
+        interpolationBuffer.sample(
+          messageSimulationTimeMillis,
+          latestSnapshotReceivedAtMillis,
+          nowMillis,
+        ) ?? latestSnapshot;
+      const renderSnapshot = createRenderSnapshot(
+        renderer,
+        interpolatedSnapshot,
+        latestSnapshot,
+        focusEntityId,
+      );
       const rendered = renderPredictedSnapshot(
         renderer,
-        latestSnapshot,
+        renderSnapshot,
         focusEntityId,
         predictionMillis,
         dtMillis,
@@ -189,6 +214,7 @@ export function createSolitudeRemoteClientRenderer({
       latestSnapshot = null;
       latestSnapshotReceivedAtMillis = 0;
       messageSimulationTimeMillis = 0;
+      interpolationBuffer = createRuntimeSnapshotInterpolationBuffer();
       predictionState.pendingInputs.splice(
         0,
         predictionState.pendingInputs.length,
@@ -248,6 +274,64 @@ export function createSolitudeRemoteClientRenderer({
     return true;
   }
 
+  function createRenderSnapshot(
+    renderer: ReturnType<typeof createRemoteMultiCanvasRenderer>,
+    remoteSnapshot: RuntimeWorldSnapshot,
+    authoritativeSnapshot: RuntimeWorldSnapshot,
+    focusEntityId: string,
+  ): RuntimeWorldSnapshot {
+    if (focusEntityId.length === 0) return remoteSnapshot;
+    const authoritativeEntity = findSnapshotEntity(
+      authoritativeSnapshot.entities,
+      focusEntityId,
+    );
+    if (!authoritativeEntity) return remoteSnapshot;
+
+    mixedSnapshot.entities.length = remoteSnapshot.entities.length;
+    let found = false;
+    for (let i = 0; i < remoteSnapshot.entities.length; i++) {
+      const remoteEntity = remoteSnapshot.entities[i];
+      const authoritativeSource =
+        remoteEntity.id === focusEntityId
+          ? authoritativeEntity
+          : findSnapshotEntity(authoritativeSnapshot.entities, remoteEntity.id);
+      const source = shouldInterpolateRemoteEntity(
+        renderer,
+        remoteEntity.id,
+        focusEntityId,
+      )
+        ? remoteEntity
+        : (authoritativeSource ?? remoteEntity);
+      if (source.id === focusEntityId) found = true;
+      mixedSnapshot.entities[i] = copyRuntimeEntitySnapshotInto(
+        mixedSnapshot.entities[i] ?? createRuntimeEntitySnapshotStorage(),
+        source,
+      );
+    }
+    if (!found) {
+      mixedSnapshot.entities.push(
+        copyRuntimeEntitySnapshotInto(
+          createRuntimeEntitySnapshotStorage(),
+          authoritativeEntity,
+        ),
+      );
+    }
+    return mixedSnapshot;
+  }
+
+  function shouldInterpolateRemoteEntity(
+    renderer: ReturnType<typeof createRemoteMultiCanvasRenderer>,
+    entityId: EntityId,
+    focusEntityId: EntityId,
+  ): boolean {
+    return (
+      entityId !== focusEntityId &&
+      renderer.worldRenderer.mirror.world.controllableBodies.some(
+        (body) => body.id === entityId,
+      )
+    );
+  }
+
   function applyLocalPrediction(
     renderer: ReturnType<typeof createRemoteMultiCanvasRenderer>,
     controlledBody: ControlledBody,
@@ -293,6 +377,15 @@ export function createSolitudeRemoteClientRenderer({
     entityId: EntityId,
   ): RuntimeEntitySnapshot | undefined {
     return entities.find((entity) => entity.id === entityId);
+  }
+
+  function createRuntimeEntitySnapshotStorage(): RuntimeEntitySnapshot {
+    return {
+      id: "",
+      orientation: mat3.zero(),
+      position: vec3.zero(),
+      velocity: vec3.zero(),
+    };
   }
 
   function publishPredictionMetrics(): void {

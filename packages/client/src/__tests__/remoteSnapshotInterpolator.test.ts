@@ -9,18 +9,49 @@ import {
 describe("remote snapshot interpolation", () => {
   it("samples a delayed position between authoritative snapshots", () => {
     const buffer = createRuntimeSnapshotInterpolationBuffer({
-      delayMillis: 100,
+      delayMillis: 50,
     });
     const first = createSnapshot(0, 0);
     const second = createSnapshot(100, 10);
 
-    buffer.push(first, 1, 1000);
-    buffer.push(second, 2, 1200);
+    buffer.push(first, 1, 0, 1000);
+    buffer.push(second, 2, 100, 1200);
 
-    const sample = buffer.sample(1200);
+    const sample = buffer.sample(100, 1200, 1200);
 
     expect(sample?.entities[0].position.x).toBe(50);
     expect(sample?.entities[0].velocity.y).toBe(5);
+  });
+
+  it("samples by simulation time instead of arrival time", () => {
+    const buffer = createRuntimeSnapshotInterpolationBuffer({
+      delayMillis: 50,
+    });
+    const first = createSnapshot(0, 0);
+    const second = createSnapshot(100, 10);
+
+    buffer.push(first, 1, 0, 1000);
+    buffer.push(second, 2, 100, 1400);
+
+    const sample = buffer.sample(100, 1400, 1400);
+
+    expect(sample?.entities[0].position.x).toBe(50);
+    expect(sample?.entities[0].velocity.y).toBe(5);
+  });
+
+  it("drops stale snapshots", () => {
+    const buffer = createRuntimeSnapshotInterpolationBuffer({
+      delayMillis: 50,
+    });
+    const first = createSnapshot(0, 0);
+    const second = createSnapshot(100, 10);
+
+    buffer.push(second, 2, 100, 1200);
+    buffer.push(first, 1, 0, 1000);
+
+    const sample = buffer.sample(100, 1200, 1300);
+
+    expect(sample?.entities[0].position.x).toBe(100);
   });
 
   it("reuses output storage while preserving endpoint snapshots", () => {

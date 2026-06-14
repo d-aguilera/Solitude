@@ -81,13 +81,7 @@ describe("Solitude WebSocket browser client", () => {
         sequence: 3,
         controls: { burnForward: true },
       },
-      requestId: 3,
-      type: "clientMessage",
-    });
-    socket.receive({
-      type: "messages",
-      requestId: 3,
-      messages: [],
+      type: "clientMessageEvent",
     });
     await inputPromise;
 
