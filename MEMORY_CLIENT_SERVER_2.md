@@ -149,7 +149,7 @@ Delivered local input/prediction feel:
 Delivered remote presentation smoothing:
 
 - Ordered interpolation buffer based on simulation time.
-- Interpolated remote entities with a small default presentation delay.
+- Interpolated remote entities with a small default presentation delay, currently 75 ms; Fly.io GRU browser metrics still show occasional extrapolated/clamped samples at this delay, so local-only measurements are not enough to lower it.
 - Bounded extrapolation only when the buffer underruns.
 - The local controlled ship stays on the latest-authority prediction/reconciliation path, not the delayed remote interpolation path.
 - Client interpolation metrics are exposed on `window.__solitudeInterpolationMetrics`, including snapshot inter-arrival timing, render delay, underrun, extrapolation, clamping, and dropped-snapshot counts.
@@ -157,11 +157,12 @@ Delivered remote presentation smoothing:
 
 ## Clear Next Step
 
-Tune and measure multiplayer feel after the one-way input and simulation-time interpolation slice:
+Implement adaptive interpolation delay:
 
-- verify local feel, remote smoothness, `window.__solitudePredictionMetrics`, and `window.__solitudeInterpolationMetrics` together;
-- run `scripts/run-server-load.mjs --latency` to measure snapshot inter-arrival jitter and input send-to-ack p50/p95 under load;
-- use those metrics to decide whether to tune interpolation delay, broadcast cadence, or payload/fanout next.
+- use recent snapshot inter-arrival timing plus underrun, extrapolation, and clamping metrics to adjust the remote-entity presentation delay;
+- keep the deployed-safe 75 ms default/fallback because Fly.io GRU metrics still showed occasional extrapolated/clamped samples at that delay;
+- allow cleaner connections, such as localhost, to settle toward a lower delay instead of forcing the WAN-safe default;
+- keep the locally controlled ship on the latest-authority prediction/reconciliation path while adapting only remote-entity presentation.
 
 ## Things To Watch
 
