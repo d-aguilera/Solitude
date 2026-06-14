@@ -19,6 +19,7 @@ export interface RuntimeSnapshotInterpolationBufferOptions {
 
 export interface RuntimeSnapshotInterpolationBuffer {
   readonly latestTick: number;
+  readonly metrics: RuntimeSnapshotInterpolationMetrics;
   push: (
     snapshot: RuntimeWorldSnapshot,
     tick: number,
@@ -30,6 +31,29 @@ export interface RuntimeSnapshotInterpolationBuffer {
     latestReceivedAtMillis: number,
     nowMillis: number,
   ) => RuntimeWorldSnapshot | null;
+}
+
+export type RuntimeSnapshotInterpolationSampleMode =
+  | "clamped"
+  | "empty"
+  | "extrapolated"
+  | "interpolated"
+  | "underrun";
+
+export interface RuntimeSnapshotInterpolationMetrics {
+  averageInterArrivalMillis: number;
+  clampedSampleCount: number;
+  droppedSnapshotCount: number;
+  extrapolatedSampleCount: number;
+  interpolatedSampleCount: number;
+  lastInterArrivalMillis: number;
+  lastRenderDelayMillis: number;
+  latestSampleMode: RuntimeSnapshotInterpolationSampleMode;
+  maxInterArrivalMillis: number;
+  maxRenderDelayMillis: number;
+  sampleCount: number;
+  snapshotCount: number;
+  underrunSampleCount: number;
 }
 
 const defaultCapacity = 8;
@@ -45,15 +69,37 @@ export function createRuntimeSnapshotInterpolationBuffer(
     options.maxExtrapolationMillis ?? defaultMaxExtrapolationMillis;
   const snapshots: TimedRuntimeWorldSnapshot[] = [];
   const interpolated = createRuntimeSnapshotStorage();
+  const metrics = createRuntimeSnapshotInterpolationMetrics();
   let latestTick = 0;
+  let interArrivalTotalMillis = 0;
 
   return {
     get latestTick() {
       return latestTick;
     },
+    metrics,
     push: (snapshot, tick, simulationTimeMillis, receivedAtMillis) => {
-      if (tick <= latestTick) return;
+      if (tick <= latestTick) {
+        metrics.droppedSnapshotCount++;
+        return;
+      }
+      const previousLatest = snapshots[snapshots.length - 1];
+      if (previousLatest) {
+        const interArrivalMillis = Math.max(
+          0,
+          receivedAtMillis - previousLatest.receivedAtMillis,
+        );
+        metrics.lastInterArrivalMillis = interArrivalMillis;
+        metrics.maxInterArrivalMillis = Math.max(
+          metrics.maxInterArrivalMillis,
+          interArrivalMillis,
+        );
+        interArrivalTotalMillis += interArrivalMillis;
+        metrics.averageInterArrivalMillis =
+          interArrivalTotalMillis / metrics.snapshotCount;
+      }
       latestTick = tick;
+      metrics.snapshotCount++;
       insertOrdered(snapshots, {
         receivedAtMillis,
         simulationTimeMillis,
@@ -66,7 +112,10 @@ export function createRuntimeSnapshotInterpolationBuffer(
     },
     sample: (latestSimulationTimeMillis, latestReceivedAtMillis, nowMillis) => {
       const latest = snapshots[snapshots.length - 1];
-      if (!latest) return null;
+      if (!latest) {
+        recordSample(metrics, "empty", 0);
+        return null;
+      }
 
       const estimatedSimulationTimeMillis =
         latestSimulationTimeMillis +
@@ -74,6 +123,11 @@ export function createRuntimeSnapshotInterpolationBuffer(
       const targetMillis = estimatedSimulationTimeMillis - delayMillis;
       const first = snapshots[0];
       if (targetMillis <= first.simulationTimeMillis) {
+        recordSample(
+          metrics,
+          "underrun",
+          estimatedSimulationTimeMillis - first.simulationTimeMillis,
+        );
         return first.snapshot;
       }
 
@@ -82,10 +136,23 @@ export function createRuntimeSnapshotInterpolationBuffer(
           targetMillis >
           latest.simulationTimeMillis + maxExtrapolationMillis
         ) {
+          recordSample(
+            metrics,
+            "clamped",
+            estimatedSimulationTimeMillis - latest.simulationTimeMillis,
+          );
           return latest.snapshot;
         }
         const previous = snapshots[snapshots.length - 2];
-        if (!previous) return latest.snapshot;
+        if (!previous) {
+          recordSample(
+            metrics,
+            "clamped",
+            estimatedSimulationTimeMillis - latest.simulationTimeMillis,
+          );
+          return latest.snapshot;
+        }
+        recordSample(metrics, "extrapolated", delayMillis);
         return interpolateRuntimeWorldSnapshotInto(
           interpolated,
           previous.snapshot,
@@ -98,11 +165,19 @@ export function createRuntimeSnapshotInterpolationBuffer(
       const nextIndex = findNextSnapshotIndex(snapshots, targetMillis);
       const previous = snapshots[nextIndex - 1];
       const next = snapshots[nextIndex];
-      if (!previous || !next) return latest.snapshot;
+      if (!previous || !next) {
+        recordSample(
+          metrics,
+          "clamped",
+          estimatedSimulationTimeMillis - latest.simulationTimeMillis,
+        );
+        return latest.snapshot;
+      }
 
       const alpha =
         (targetMillis - previous.simulationTimeMillis) /
         (next.simulationTimeMillis - previous.simulationTimeMillis);
+      recordSample(metrics, "interpolated", delayMillis);
       return interpolateRuntimeWorldSnapshotInto(
         interpolated,
         previous.snapshot,
@@ -111,6 +186,60 @@ export function createRuntimeSnapshotInterpolationBuffer(
       );
     },
   };
+}
+
+export function copyRuntimeSnapshotInterpolationMetrics(
+  metrics: RuntimeSnapshotInterpolationMetrics,
+): RuntimeSnapshotInterpolationMetrics {
+  return { ...metrics };
+}
+
+function createRuntimeSnapshotInterpolationMetrics(): RuntimeSnapshotInterpolationMetrics {
+  return {
+    averageInterArrivalMillis: 0,
+    clampedSampleCount: 0,
+    droppedSnapshotCount: 0,
+    extrapolatedSampleCount: 0,
+    interpolatedSampleCount: 0,
+    lastInterArrivalMillis: 0,
+    lastRenderDelayMillis: 0,
+    latestSampleMode: "empty",
+    maxInterArrivalMillis: 0,
+    maxRenderDelayMillis: 0,
+    sampleCount: 0,
+    snapshotCount: 0,
+    underrunSampleCount: 0,
+  };
+}
+
+function recordSample(
+  metrics: RuntimeSnapshotInterpolationMetrics,
+  mode: RuntimeSnapshotInterpolationSampleMode,
+  renderDelayMillis: number,
+): void {
+  metrics.sampleCount++;
+  metrics.latestSampleMode = mode;
+  metrics.lastRenderDelayMillis = Math.max(0, renderDelayMillis);
+  metrics.maxRenderDelayMillis = Math.max(
+    metrics.maxRenderDelayMillis,
+    metrics.lastRenderDelayMillis,
+  );
+  switch (mode) {
+    case "clamped":
+      metrics.clampedSampleCount++;
+      return;
+    case "extrapolated":
+      metrics.extrapolatedSampleCount++;
+      return;
+    case "interpolated":
+      metrics.interpolatedSampleCount++;
+      return;
+    case "underrun":
+      metrics.underrunSampleCount++;
+      return;
+    case "empty":
+      return;
+  }
 }
 
 function insertOrdered(

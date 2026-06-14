@@ -152,13 +152,15 @@ Delivered remote presentation smoothing:
 - Interpolated remote entities with a small default presentation delay.
 - Bounded extrapolation only when the buffer underruns.
 - The local controlled ship stays on the latest-authority prediction/reconciliation path, not the delayed remote interpolation path.
+- Client interpolation metrics are exposed on `window.__solitudeInterpolationMetrics`, including snapshot inter-arrival timing, render delay, underrun, extrapolation, clamping, and dropped-snapshot counts.
+- The load harness sends gameplay input as one-way WebSocket events and reports snapshot inter-arrival timing plus input send-to-snapshot-ack latency when `--latency` is enabled.
 
 ## Clear Next Step
 
 Tune and measure multiplayer feel after the one-way input and simulation-time interpolation slice:
 
-- verify local feel, remote smoothness, and `window.__solitudePredictionMetrics` together;
-- measure snapshot inter-arrival jitter and input send-to-ack p50/p95 under load;
+- verify local feel, remote smoothness, `window.__solitudePredictionMetrics`, and `window.__solitudeInterpolationMetrics` together;
+- run `scripts/run-server-load.mjs --latency` to measure snapshot inter-arrival jitter and input send-to-ack p50/p95 under load;
 - use those metrics to decide whether to tune interpolation delay, broadcast cadence, or payload/fanout next.
 
 ## Things To Watch

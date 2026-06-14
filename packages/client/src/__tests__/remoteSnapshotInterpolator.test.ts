@@ -2,6 +2,7 @@ import { localFrame, mat3, vec3 } from "@solitude/engine/math";
 import type { RuntimeWorldSnapshot } from "@solitude/engine/runtime";
 import { describe, expect, it } from "vitest";
 import {
+  copyRuntimeSnapshotInterpolationMetrics,
   createRuntimeSnapshotInterpolationBuffer,
   interpolateRuntimeWorldSnapshotInto,
 } from "../remoteSnapshotInterpolator";
@@ -52,6 +53,39 @@ describe("remote snapshot interpolation", () => {
     const sample = buffer.sample(100, 1200, 1300);
 
     expect(sample?.entities[0].position.x).toBe(100);
+  });
+
+  it("records interpolation timing and sample-mode metrics", () => {
+    const buffer = createRuntimeSnapshotInterpolationBuffer({
+      delayMillis: 50,
+      maxExtrapolationMillis: 25,
+    });
+    const first = createSnapshot(0, 0);
+    const second = createSnapshot(100, 10);
+
+    buffer.push(first, 1, 0, 1000);
+    buffer.push(second, 2, 100, 1020);
+    buffer.push(first, 1, 0, 1010);
+
+    buffer.sample(100, 1020, 1020);
+    buffer.sample(100, 1020, 1080);
+    buffer.sample(100, 1020, 1200);
+
+    expect(copyRuntimeSnapshotInterpolationMetrics(buffer.metrics)).toEqual({
+      averageInterArrivalMillis: 20,
+      clampedSampleCount: 1,
+      droppedSnapshotCount: 1,
+      extrapolatedSampleCount: 1,
+      interpolatedSampleCount: 1,
+      lastInterArrivalMillis: 20,
+      lastRenderDelayMillis: 180,
+      latestSampleMode: "clamped",
+      maxInterArrivalMillis: 20,
+      maxRenderDelayMillis: 180,
+      sampleCount: 3,
+      snapshotCount: 2,
+      underrunSampleCount: 0,
+    });
   });
 
   it("reuses output storage while preserving endpoint snapshots", () => {

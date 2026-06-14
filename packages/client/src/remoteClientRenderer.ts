@@ -50,11 +50,14 @@ import {
 } from "./localReconciliation";
 import {
   copyRuntimeEntitySnapshotInto,
+  copyRuntimeSnapshotInterpolationMetrics,
   createRuntimeSnapshotInterpolationBuffer,
+  type RuntimeSnapshotInterpolationMetrics,
 } from "./remoteSnapshotInterpolator";
 
 declare global {
   interface Window {
+    __solitudeInterpolationMetrics?: RuntimeSnapshotInterpolationMetrics;
     __solitudePredictionMetrics?: LocalPredictionErrorMetrics;
   }
 }
@@ -173,6 +176,7 @@ export function createSolitudeRemoteClientRenderer({
           latestSnapshotReceivedAtMillis,
           nowMillis,
         ) ?? latestSnapshot;
+      publishInterpolationMetrics();
       const renderSnapshot = createRenderSnapshot(
         renderer,
         interpolatedSnapshot,
@@ -392,6 +396,11 @@ export function createSolitudeRemoteClientRenderer({
     window.__solitudePredictionMetrics = copyLocalPredictionErrorMetrics(
       reconciliationState.metrics,
     );
+  }
+
+  function publishInterpolationMetrics(): void {
+    window.__solitudeInterpolationMetrics =
+      copyRuntimeSnapshotInterpolationMetrics(interpolationBuffer.metrics);
   }
 
   function getPredictionMillis(nowMillis: number): number {

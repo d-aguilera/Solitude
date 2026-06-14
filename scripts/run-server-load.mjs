@@ -123,30 +123,23 @@ async function runLoad({
 
     if (inputIntervalMillis > 0 && now >= nextInputMillis) {
       inputPulse = !inputPulse;
-      await Promise.all(
-        assignments.map(async (assignment) => {
-          const inputSequence = assignment.nextInputSequence++;
-          latencyTracker.recordInputSent(assignment, inputSequence, Date.now());
-          await sendClientMessage(assignment.socket, {
-            clientId: assignment.clientId,
-            controls: {
-              burnForward: true,
-              thrust5: true,
-              yawLeft: inputPulse,
-            },
-            entityId: assignment.entityId,
-            gameId,
-            inputSequence,
-            sequence: requestId++,
-            type: "input",
-          });
-          latencyTracker.recordInputResponse(
-            assignment,
-            inputSequence,
-            Date.now(),
-          );
-        }),
-      );
+      for (const assignment of assignments) {
+        const inputSequence = assignment.nextInputSequence++;
+        latencyTracker.recordInputSent(assignment, inputSequence, Date.now());
+        sendClientMessageEvent(assignment.socket, {
+          clientId: assignment.clientId,
+          controls: {
+            burnForward: true,
+            thrust5: true,
+            yawLeft: inputPulse,
+          },
+          entityId: assignment.entityId,
+          gameId,
+          inputSequence,
+          sequence: requestId++,
+          type: "input",
+        });
+      }
       nextInputMillis += inputIntervalMillis;
     }
 
@@ -231,20 +224,20 @@ async function sendClientMessage(socket, message) {
   return response;
 }
 
+function sendClientMessageEvent(socket, message) {
+  socket.send({
+    message,
+    type: "clientMessageEvent",
+  });
+}
+
 function createInputLatencyTracker() {
   const ackLatencies = [];
-  const responseLatencies = [];
+  const snapshotInterArrivalMillis = [];
 
   return {
     recordInputSent: (assignment, inputSequence, sentAtMillis) => {
       assignment.pendingInputs.push({ inputSequence, sentAtMillis });
-    },
-    recordInputResponse: (assignment, inputSequence, receivedAtMillis) => {
-      const pending = assignment.pendingInputs.find(
-        (input) => input.inputSequence === inputSequence,
-      );
-      if (!pending) return;
-      responseLatencies.push(receivedAtMillis - pending.sentAtMillis);
     },
     recordSocketMessage: (assignment, message, receivedAtMillis) => {
       if (
@@ -253,6 +246,12 @@ function createInputLatencyTracker() {
       ) {
         return;
       }
+      if (assignment.lastSnapshotReceivedAtMillis !== undefined) {
+        snapshotInterArrivalMillis.push(
+          receivedAtMillis - assignment.lastSnapshotReceivedAtMillis,
+        );
+      }
+      assignment.lastSnapshotReceivedAtMillis = receivedAtMillis;
 
       const lastProcessedInputSequence =
         message.message.lastProcessedInputSequences[assignment.entityId] ?? 0;
@@ -277,15 +276,17 @@ function createInputLatencyTracker() {
     takeReport: () => {
       const report = {
         inputAckLatencyMillis: summarizeLatencies(ackLatencies),
-        inputResponseLatencyMillis: summarizeLatencies(responseLatencies),
         pendingInputAcks: assignments.reduce(
           (total, assignment) => total + assignment.pendingInputs.length,
           0,
         ),
+        snapshotInterArrivalMillis: summarizeLatencies(
+          snapshotInterArrivalMillis,
+        ),
         type: "inputLatency",
       };
       ackLatencies.length = 0;
-      responseLatencies.length = 0;
+      snapshotInterArrivalMillis.length = 0;
       return report;
     },
   };
