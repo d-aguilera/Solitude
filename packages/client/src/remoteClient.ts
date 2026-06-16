@@ -64,6 +64,10 @@ const engineRenderer = createSolitudeRemoteClientRenderer({
 let client = createClient();
 let activeAutopilotAction: string | null = null;
 let lastFrameMillis = performance.now();
+let serverSimulationRate = 1;
+
+const minServerSimulationRate = 1;
+const maxServerSimulationRate = 1024;
 
 const remoteAutopilotKeyMap: Readonly<Record<string, string>> = {
   KeyC: "alignToBody",
@@ -72,8 +76,16 @@ const remoteAutopilotKeyMap: Readonly<Record<string, string>> = {
 };
 
 const remoteDebugKeyMap: Readonly<
-  Record<string, "interpolation" | "prediction">
+  Record<
+    string,
+    | "decreaseSimulationRate"
+    | "increaseSimulationRate"
+    | "interpolation"
+    | "prediction"
+  >
 > = {
+  BracketLeft: "decreaseSimulationRate",
+  BracketRight: "increaseSimulationRate",
   KeyI: "interpolation",
   KeyP: "prediction",
 };
@@ -187,8 +199,25 @@ function handleRemoteDebugKey(event: KeyboardEvent, isDown: boolean): boolean {
   const enabled =
     action === "interpolation"
       ? engineRenderer.toggleInterpolation()
-      : engineRenderer.togglePrediction();
-  console.info(`Remote ${action} ${enabled ? "on" : "off"}`);
+      : action === "prediction"
+        ? engineRenderer.togglePrediction()
+        : null;
+  if (enabled !== null) {
+    console.info(`Remote ${action} ${enabled ? "on" : "off"}`);
+    return true;
+  }
+
+  const nextRate =
+    action === "increaseSimulationRate"
+      ? Math.min(maxServerSimulationRate, serverSimulationRate * 2)
+      : Math.max(minServerSimulationRate, serverSimulationRate / 2);
+  if (nextRate !== serverSimulationRate) {
+    serverSimulationRate = nextRate;
+    if (client.state.gameId) {
+      void client.setSimulationRate(nextRate);
+    }
+  }
+  console.info(`Remote simulation rate x${serverSimulationRate}`);
   return true;
 }
 
@@ -233,6 +262,8 @@ function handleMessages(
         engineRenderer.setModel(message.entities, message.modelVersion);
         break;
       case "snapshot":
+        serverSimulationRate =
+          message.simulationMillisPerWallMillis ?? serverSimulationRate;
         engineRenderer.pushSnapshotMessage(message);
         break;
       case "error":

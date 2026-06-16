@@ -1,4 +1,5 @@
 import type {
+  SetSimulationRateMessage,
   SnapshotMessage,
   SolitudeProtocolSequence,
   SolitudeServerMessage,
@@ -55,6 +56,18 @@ export function createSolitudeGameRunner({
     }
   };
 
+  const handleSimulationRateMessage = (
+    message: SetSimulationRateMessage,
+  ): SolitudeServerMessage[] => {
+    if (!transport.listGames().some((game) => game.gameId === message.gameId)) {
+      return [];
+    }
+    ticker.setSimulationMillisPerWallMillis(
+      message.simulationMillisPerWallMillis,
+    );
+    return [];
+  };
+
   return {
     close: () => {
       ticker.stopAll();
@@ -67,10 +80,35 @@ export function createSolitudeGameRunner({
       }));
     },
     receive: (payload, fallbackSequence) => {
+      if (isSetSimulationRateMessage(payload)) {
+        return handleSimulationRateMessage(payload);
+      }
       const messages = transport.receive(payload, fallbackSequence);
       runCreatedGames(messages);
       stopCleanedUpGames();
       return messages;
     },
   };
+}
+
+function isSetSimulationRateMessage(
+  value: unknown,
+): value is SetSimulationRateMessage {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "type" in value &&
+    value.type === "setSimulationRate" &&
+    "simulationMillisPerWallMillis" in value &&
+    typeof value.simulationMillisPerWallMillis === "number" &&
+    Number.isFinite(value.simulationMillisPerWallMillis) &&
+    value.simulationMillisPerWallMillis > 0 &&
+    "gameId" in value &&
+    typeof value.gameId === "string" &&
+    "clientId" in value &&
+    typeof value.clientId === "string" &&
+    "sequence" in value &&
+    typeof value.sequence === "number" &&
+    Number.isFinite(value.sequence)
+  );
 }

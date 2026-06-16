@@ -29,6 +29,9 @@ export interface SolitudeRemoteClient {
   sendInputPatch: (
     controls: Partial<ControlInput>,
   ) => Promise<SolitudeServerMessage[]>;
+  setSimulationRate: (
+    simulationMillisPerWallMillis: number,
+  ) => Promise<SolitudeServerMessage[]>;
 }
 
 export interface SolitudeClientState {
@@ -304,6 +307,14 @@ export function createSolitudeWebSocketClient(
         inputSequence: nextInputSequence(state),
         sequence: nextSequence(state),
         controls,
+      }),
+    setSimulationRate: (simulationMillisPerWallMillis) =>
+      sendClientMessageEvent({
+        type: "setSimulationRate",
+        clientId: options.clientId,
+        gameId: requireGameId(),
+        sequence: nextSequence(state),
+        simulationMillisPerWallMillis,
       }),
   };
 }

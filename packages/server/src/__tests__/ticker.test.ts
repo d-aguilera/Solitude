@@ -288,6 +288,45 @@ describe("Solitude game ticker", () => {
       },
     ]);
   });
+
+  it("updates simulation rate for subsequent steps", () => {
+    const clock = createManualClock();
+    const transport = createTransportStub({
+      "game:1": [createSnapshot("game:1", 1), createSnapshot("game:1", 2)],
+    });
+    const ticker = createSolitudeGameTicker({
+      clock,
+      metrics: createNoopSolitudeServerMetrics(),
+      onSnapshot: () => {},
+      policy: createPolicy({
+        broadcastIntervalMillis: 250,
+        simulationMillisPerWallMillis: 1,
+        simulationStepMillis: 1000,
+      }),
+      transport,
+    });
+
+    ticker.runGame({ gameId: "game:1" });
+    clock.advance(500);
+    clock.tick(0);
+    ticker.setSimulationMillisPerWallMillis(4);
+    clock.advance(250);
+    clock.tick(1);
+
+    expect(ticker.getSimulationMillisPerWallMillis()).toBe(4);
+    expect(transport.steps).toEqual([
+      {
+        dtMillis: 1000,
+        gameId: "game:1",
+        inputTimeWindow: {
+          controlDurationMillis: 250,
+          endMillis: 750,
+          simulationMillisPerWallMillis: 4,
+          startMillis: 500,
+        },
+      },
+    ]);
+  });
 });
 
 function createPolicy(policy: SolitudeGameTickPolicy): SolitudeGameTickPolicy {

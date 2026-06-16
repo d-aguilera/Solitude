@@ -501,12 +501,19 @@ export function shouldUseRemoteSnapshotInterpolation(
 export function shouldUseLocalPrediction(
   runtimeOptions: RuntimeOptions = {},
 ): boolean {
-  return isRuntimeOptionEnabled(runtimeOptions[predictionRuntimeOption]);
+  return isRuntimeOptionEnabledDefaultOff(
+    runtimeOptions[predictionRuntimeOption],
+  );
 }
 
 function isRuntimeOptionEnabled(value: string | undefined): boolean {
   const normalized = value?.toLowerCase();
   return normalized !== "off" && normalized !== "false" && normalized !== "0";
+}
+
+function isRuntimeOptionEnabledDefaultOff(value: string | undefined): boolean {
+  const normalized = value?.toLowerCase();
+  return normalized === "on" || normalized === "true" || normalized === "1";
 }
 
 function findLocalPredictionProvider(

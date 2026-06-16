@@ -14,7 +14,8 @@ export type SolitudeClientMessage =
   | CreateGameMessage
   | JoinGameMessage
   | LeaveGameMessage
-  | InputMessage;
+  | InputMessage
+  | SetSimulationRateMessage;
 
 export type SolitudeSocketClientMessage =
   | ClientMessageSocketRequest
@@ -60,6 +61,14 @@ export interface InputMessage {
   inputSequence: SolitudeInputSequence;
   sequence: SolitudeProtocolSequence;
   controls: Partial<ControlInput>;
+}
+
+export interface SetSimulationRateMessage {
+  type: "setSimulationRate";
+  clientId: SolitudeClientId;
+  gameId: SolitudeGameId;
+  sequence: SolitudeProtocolSequence;
+  simulationMillisPerWallMillis: number;
 }
 
 export interface ClientMessageSocketRequest {
@@ -182,6 +191,14 @@ export function isSolitudeClientMessage(
         isFiniteNumber(value.inputSequence) &&
         isFiniteNumber(value.sequence) &&
         isRecord(value.controls)
+      );
+    case "setSimulationRate":
+      return (
+        isString(value.clientId) &&
+        isString(value.gameId) &&
+        isFiniteNumber(value.sequence) &&
+        isFiniteNumber(value.simulationMillisPerWallMillis) &&
+        value.simulationMillisPerWallMillis > 0
       );
     default:
       return false;

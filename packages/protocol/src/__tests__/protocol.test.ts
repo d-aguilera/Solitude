@@ -73,6 +73,24 @@ describe("Solitude protocol", () => {
         controls: null,
       }),
     ).toBe(false);
+    expect(
+      isSolitudeClientMessage({
+        type: "setSimulationRate",
+        clientId: "client:a",
+        gameId: "game:test",
+        sequence: 3,
+        simulationMillisPerWallMillis: 32,
+      }),
+    ).toBe(true);
+    expect(
+      isSolitudeClientMessage({
+        type: "setSimulationRate",
+        clientId: "client:a",
+        gameId: "game:test",
+        sequence: 3,
+        simulationMillisPerWallMillis: 0,
+      }),
+    ).toBe(false);
   });
 
   it("recognizes server egress messages", () => {

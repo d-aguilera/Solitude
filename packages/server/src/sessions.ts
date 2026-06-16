@@ -146,6 +146,8 @@ export function createSolitudeSessionManager(
         return handleLeaveGame(message);
       case "input":
         return handleInput(message);
+      case "setSimulationRate":
+        return [];
     }
   };
 

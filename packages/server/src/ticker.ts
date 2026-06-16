@@ -16,8 +16,12 @@ export interface SolitudeGameTickPolicy {
 }
 
 export interface SolitudeGameTicker {
+  getSimulationMillisPerWallMillis: () => number;
   isRunning: (gameId: SolitudeGameId) => boolean;
   runGame: (request: SolitudeGameTickRequest) => void;
+  setSimulationMillisPerWallMillis: (
+    simulationMillisPerWallMillis: number,
+  ) => void;
   stopAll: () => void;
   stopGame: (gameId: SolitudeGameId) => void;
 }
@@ -53,16 +57,20 @@ export function createSolitudeGameTicker<
       setInterval,
     } as unknown as SolitudeGameTickerClock<Timer>);
   const timersByGameId = new Map<SolitudeGameId, Timer>();
+  const requestsByGameId = new Map<SolitudeGameId, SolitudeGameTickRequest>();
+  const policy: SolitudeGameTickPolicy = { ...options.policy };
 
   const stopGame = (gameId: SolitudeGameId): void => {
     const timer = timersByGameId.get(gameId);
     if (!timer) return;
     clock.clearInterval(timer);
     timersByGameId.delete(gameId);
+    requestsByGameId.delete(gameId);
   };
 
   const runGame = (request: SolitudeGameTickRequest): void => {
     stopGame(request.gameId);
+    requestsByGameId.set(request.gameId, request);
     let inputWindowStartMillis = clock.nowMillis();
     let lastObservedWallMillis = inputWindowStartMillis;
     let accumulatedSimulationMillis = 0;
@@ -75,12 +83,12 @@ export function createSolitudeGameTicker<
       }
 
       accumulatedSimulationMillis +=
-        elapsedWallMillis * options.policy.simulationMillisPerWallMillis;
+        elapsedWallMillis * policy.simulationMillisPerWallMillis;
 
       const result = stepGameForBroadcast(
         options.transport,
         request,
-        options.policy,
+        policy,
         options.metrics,
         accumulatedSimulationMillis,
         inputWindowStartMillis,
@@ -96,7 +104,7 @@ export function createSolitudeGameTicker<
       if (result.snapshot) {
         options.onSnapshot(result.snapshot);
       }
-    }, options.policy.broadcastIntervalMillis);
+    }, policy.broadcastIntervalMillis);
     timersByGameId.set(request.gameId, timer);
   };
 
@@ -107,8 +115,22 @@ export function createSolitudeGameTicker<
   };
 
   return {
+    getSimulationMillisPerWallMillis: () =>
+      policy.simulationMillisPerWallMillis,
     isRunning: (gameId) => timersByGameId.has(gameId),
     runGame,
+    setSimulationMillisPerWallMillis: (simulationMillisPerWallMillis) => {
+      if (
+        !Number.isFinite(simulationMillisPerWallMillis) ||
+        simulationMillisPerWallMillis <= 0
+      ) {
+        return;
+      }
+      policy.simulationMillisPerWallMillis = simulationMillisPerWallMillis;
+      for (const request of Array.from(requestsByGameId.values())) {
+        runGame(request);
+      }
+    },
     stopAll,
     stopGame,
   };

@@ -109,6 +109,35 @@ describe("Solitude game runner", () => {
     expect(ticker.stopAllCount).toBe(1);
     expect(ticker.runningGameIds()).toEqual([]);
   });
+
+  it("applies diagnostic simulation-rate messages to the ticker", () => {
+    const ticker = createTickerStub();
+    const runner = createSolitudeGameRunner({
+      ticker,
+      transport: createDefaultTestInProcessTransport(),
+    });
+
+    runner.receive(
+      {
+        type: "createGame",
+        clientId: "client:a",
+        sequence: 1,
+      },
+      1,
+    );
+    runner.receive(
+      {
+        type: "setSimulationRate",
+        clientId: "client:a",
+        gameId: "game:1",
+        sequence: 2,
+        simulationMillisPerWallMillis: 32,
+      },
+      2,
+    );
+
+    expect(ticker.simulationMillisPerWallMillis).toBe(32);
+  });
 });
 
 function createTickerStub(): SolitudeGameTicker & {
@@ -116,9 +145,12 @@ function createTickerStub(): SolitudeGameTicker & {
   startedGameIds: SolitudeGameId[];
   stopAllCount: number;
   stoppedGameIds: SolitudeGameId[];
+  simulationMillisPerWallMillis: number;
 } {
   const runningGameIds = new Set<SolitudeGameId>();
   const ticker = {
+    getSimulationMillisPerWallMillis: () =>
+      ticker.simulationMillisPerWallMillis,
     isRunning: (gameId: SolitudeGameId) => runningGameIds.has(gameId),
     runGame: (request: SolitudeGameTickRequest) => {
       ticker.startedGameIds.push(request.gameId);
@@ -126,6 +158,12 @@ function createTickerStub(): SolitudeGameTicker & {
     },
     runningGameIds: () => Array.from(runningGameIds),
     startedGameIds: [] as SolitudeGameId[],
+    setSimulationMillisPerWallMillis: (
+      simulationMillisPerWallMillis: number,
+    ) => {
+      ticker.simulationMillisPerWallMillis = simulationMillisPerWallMillis;
+    },
+    simulationMillisPerWallMillis: 1,
     stopAll: () => {
       ticker.stopAllCount++;
       runningGameIds.clear();

@@ -85,6 +85,20 @@ describe("Solitude WebSocket browser client", () => {
     });
     await inputPromise;
 
+    const simRatePromise = client.setSimulationRate(32);
+    await Promise.resolve();
+    expect(socket.sentMessages[3]).toEqual({
+      message: {
+        type: "setSimulationRate",
+        clientId: "client:a",
+        gameId: "game:1",
+        sequence: 4,
+        simulationMillisPerWallMillis: 32,
+      },
+      type: "clientMessageEvent",
+    });
+    await simRatePromise;
+
     socket.receive({
       type: "serverMessage",
       message: {

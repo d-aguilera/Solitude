@@ -24,12 +24,14 @@ describe("remote client renderer", () => {
     );
   });
 
-  it("enables local prediction by default", () => {
-    expect(shouldUseLocalPrediction()).toBe(true);
-    expect(shouldUseLocalPrediction({ prediction: "on" })).toBe(true);
+  it("disables local prediction by default", () => {
+    expect(shouldUseLocalPrediction()).toBe(false);
   });
 
-  it("can disable local prediction through runtime options", () => {
+  it("can enable and disable local prediction through runtime options", () => {
+    expect(shouldUseLocalPrediction({ prediction: "on" })).toBe(true);
+    expect(shouldUseLocalPrediction({ prediction: "true" })).toBe(true);
+    expect(shouldUseLocalPrediction({ prediction: "1" })).toBe(true);
     expect(shouldUseLocalPrediction({ prediction: "off" })).toBe(false);
     expect(shouldUseLocalPrediction({ prediction: "false" })).toBe(false);
     expect(shouldUseLocalPrediction({ prediction: "0" })).toBe(false);
