@@ -46,8 +46,12 @@ export function createSolitudeServerGame(
         }
       }
     },
-    step: (dtMillis, controlInputsByEntityId) => {
-      loop.stepWithEntityInputs(dtMillis, controlInputsByEntityId);
+    step: (dtMillis, controlDtMillis, controlInputsByEntityId) => {
+      loop.stepWithEntityInputsAndSimDt(
+        controlDtMillis,
+        dtMillis,
+        controlInputsByEntityId,
+      );
       return captureRuntimeSnapshotInto(snapshot, loop.worldAndScene.world);
     },
   };

@@ -59,6 +59,7 @@ declare global {
   interface Window {
     __solitudeInterpolationMetrics?: RuntimeSnapshotInterpolationMetrics;
     __solitudePredictionMetrics?: LocalPredictionErrorMetrics;
+    __solitudeRemoteRenderState?: SolitudeRemoteRenderDebugState;
   }
 }
 
@@ -66,6 +67,7 @@ export interface RemoteClientSnapshotMessage {
   entities: RuntimeWorldSnapshot["entities"];
   lastProcessedInputSequences: Record<EntityId, SolitudeInputSequence>;
   modelVersion: number;
+  simulationMillisPerWallMillis?: number;
   simulationTimeMillis: number;
   tick: number;
 }
@@ -78,6 +80,7 @@ export interface SolitudeRemoteClientRendererOptions {
 }
 
 export interface SolitudeRemoteClientRenderer {
+  getDebugState: () => SolitudeRemoteRenderDebugState;
   pushSnapshotMessage: (message: RemoteClientSnapshotMessage) => void;
   renderFrame: (nowMillis: number, dtMillis: number) => boolean;
   setModel: (entities: readonly EntityConfig[], modelVersion: number) => void;
@@ -85,9 +88,18 @@ export interface SolitudeRemoteClientRenderer {
     controls: Partial<ControlInput>,
     inputSequence: SolitudeInputSequence,
   ) => void;
+  toggleInterpolation: () => boolean;
+  togglePrediction: () => boolean;
+}
+
+export interface SolitudeRemoteRenderDebugState {
+  interpolationEnabled: boolean;
+  predictionEnabled: boolean;
 }
 
 const maxPredictionMillis = 250;
+const interpolationRuntimeOption = "interpolation";
+const predictionRuntimeOption = "prediction";
 
 export function createSolitudeRemoteClientRenderer({
   container,
@@ -114,6 +126,9 @@ export function createSolitudeRemoteClientRenderer({
   let latestSnapshotReceivedAtMillis = 0;
   let messageSimulationTimeMillis = 0;
   let modelVersion = 0;
+  let interpolateRemoteSnapshots =
+    shouldUseRemoteSnapshotInterpolation(runtimeOptions);
+  let predictLocalShip = shouldUseLocalPrediction(runtimeOptions);
   let interpolationBuffer = createRuntimeSnapshotInterpolationBuffer();
   const mixedSnapshot: RuntimeWorldSnapshot = { entities: [] };
 
@@ -126,7 +141,10 @@ export function createSolitudeRemoteClientRenderer({
   let lastPredictedLocalState: LocalShipVisualState | null = null;
   let lastRenderedLocalState: LocalShipVisualState | null = null;
 
+  publishRemoteRenderDebugState();
+
   return {
+    getDebugState: () => createRemoteRenderDebugState(),
     pushSnapshotMessage: (message) => {
       if (message.modelVersion !== modelVersion) return;
       const nowMillis = performance.now();
@@ -138,6 +156,7 @@ export function createSolitudeRemoteClientRenderer({
         message.tick,
         message.simulationTimeMillis,
         nowMillis,
+        message.simulationMillisPerWallMillis,
       );
       const focusEntityId = getFocusEntityId();
       if (focusEntityId.length > 0) {
@@ -150,7 +169,7 @@ export function createSolitudeRemoteClientRenderer({
           message.entities,
           focusEntityId,
         );
-        if (authoritativeState) {
+        if (predictLocalShip && authoritativeState) {
           reconcileLocalShipVisualState(
             reconciliationState,
             lastPredictedLocalState,
@@ -170,13 +189,14 @@ export function createSolitudeRemoteClientRenderer({
         renderer.setFocusEntityId(focusEntityId);
       }
       const predictionMillis = getPredictionMillis(nowMillis);
-      const interpolatedSnapshot =
-        interpolationBuffer.sample(
-          messageSimulationTimeMillis,
-          latestSnapshotReceivedAtMillis,
-          nowMillis,
-        ) ?? latestSnapshot;
-      publishInterpolationMetrics();
+      const interpolatedSnapshot = interpolateRemoteSnapshots
+        ? (interpolationBuffer.sample(
+            messageSimulationTimeMillis,
+            latestSnapshotReceivedAtMillis,
+            nowMillis,
+          ) ?? latestSnapshot)
+        : latestSnapshot;
+      if (interpolateRemoteSnapshots) publishInterpolationMetrics();
       const renderSnapshot = createRenderSnapshot(
         renderer,
         interpolatedSnapshot,
@@ -228,6 +248,21 @@ export function createSolitudeRemoteClientRenderer({
       reconciliationState.correction.active = false;
       lastPredictedLocalState = null;
       lastRenderedLocalState = null;
+    },
+    toggleInterpolation: () => {
+      interpolateRemoteSnapshots = !interpolateRemoteSnapshots;
+      publishRemoteRenderDebugState();
+      return interpolateRemoteSnapshots;
+    },
+    togglePrediction: () => {
+      predictLocalShip = !predictLocalShip;
+      if (!predictLocalShip) {
+        reconciliationState.correction.active = false;
+        lastPredictedLocalState = null;
+        lastRenderedLocalState = null;
+      }
+      publishRemoteRenderDebugState();
+      return predictLocalShip;
     },
   };
 
@@ -358,13 +393,18 @@ export function createSolitudeRemoteClientRenderer({
 
   function shouldUseLocalRenderPath(predictionMillis: number): boolean {
     return (
-      shouldPredictLocalShip(predictionMillis) ||
-      reconciliationState.correction.active
+      predictLocalShip &&
+      (shouldPredictLocalShip(predictionMillis) ||
+        reconciliationState.correction.active)
     );
   }
 
   function shouldPredictLocalShip(predictionMillis: number): boolean {
-    return predictionMillis > 0 && hasActiveLocalPrediction(predictionState);
+    return (
+      predictLocalShip &&
+      predictionMillis > 0 &&
+      hasActiveLocalPrediction(predictionState)
+    );
   }
 
   function findControlledBody(
@@ -403,6 +443,17 @@ export function createSolitudeRemoteClientRenderer({
       copyRuntimeSnapshotInterpolationMetrics(interpolationBuffer.metrics);
   }
 
+  function publishRemoteRenderDebugState(): void {
+    window.__solitudeRemoteRenderState = createRemoteRenderDebugState();
+  }
+
+  function createRemoteRenderDebugState(): SolitudeRemoteRenderDebugState {
+    return {
+      interpolationEnabled: interpolateRemoteSnapshots,
+      predictionEnabled: predictLocalShip,
+    };
+  }
+
   function getPredictionMillis(nowMillis: number): number {
     if (latestSnapshotReceivedAtMillis <= 0) return 0;
     return Math.min(
@@ -439,6 +490,23 @@ export function createSolitudeRemoteClientRenderer({
       })),
     });
   }
+}
+
+export function shouldUseRemoteSnapshotInterpolation(
+  runtimeOptions: RuntimeOptions = {},
+): boolean {
+  return isRuntimeOptionEnabled(runtimeOptions[interpolationRuntimeOption]);
+}
+
+export function shouldUseLocalPrediction(
+  runtimeOptions: RuntimeOptions = {},
+): boolean {
+  return isRuntimeOptionEnabled(runtimeOptions[predictionRuntimeOption]);
+}
+
+function isRuntimeOptionEnabled(value: string | undefined): boolean {
+  const normalized = value?.toLowerCase();
+  return normalized !== "off" && normalized !== "false" && normalized !== "0";
 }
 
 function findLocalPredictionProvider(

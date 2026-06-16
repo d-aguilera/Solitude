@@ -71,6 +71,13 @@ const remoteAutopilotKeyMap: Readonly<Record<string, string>> = {
   KeyX: "circleNow",
 };
 
+const remoteDebugKeyMap: Readonly<
+  Record<string, "interpolation" | "prediction">
+> = {
+  KeyI: "interpolation",
+  KeyP: "prediction",
+};
+
 const keyboard = createKeyboardInputPatcher({
   keyMap: solitudeSpacecraftKeyMap,
   sendInputPatch,
@@ -126,6 +133,7 @@ async function handleKeyboardInput(
   isDown: boolean,
 ): Promise<void> {
   if (isTextInputTarget(event.target)) return;
+  if (handleRemoteDebugKey(event, isDown)) return;
   const isSpacecraftKey = Boolean(solitudeSpacecraftKeyMap[event.code]);
   const isAutopilotKey = Boolean(remoteAutopilotKeyMap[event.code]);
   if (!isSpacecraftKey && !isAutopilotKey) return;
@@ -166,6 +174,21 @@ function handleAutopilotKey(
     circleNow: activeAutopilotAction === "circleNow",
   };
   void sendInputPatch(controls);
+  return true;
+}
+
+function handleRemoteDebugKey(event: KeyboardEvent, isDown: boolean): boolean {
+  const action = remoteDebugKeyMap[event.code];
+  if (!action) return false;
+  event.preventDefault();
+  event.stopPropagation();
+  if (!isDown || event.repeat) return true;
+
+  const enabled =
+    action === "interpolation"
+      ? engineRenderer.toggleInterpolation()
+      : engineRenderer.togglePrediction();
+  console.info(`Remote ${action} ${enabled ? "on" : "off"}`);
   return true;
 }
 

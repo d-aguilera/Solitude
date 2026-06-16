@@ -41,7 +41,9 @@ export interface SolitudeSessionManagerOptions {
 }
 
 export interface SolitudeInputTimeWindow {
+  controlDurationMillis: number;
   endMillis: number;
+  simulationMillisPerWallMillis: number;
   startMillis: number;
 }
 
@@ -243,7 +245,11 @@ export function createSolitudeSessionManager(
     const session = gamesById.get(gameId);
     if (!session) return null;
     const controlInputsByEntityId = getStepControlInputs(session);
-    const snapshot = session.game.step(dtMillis, controlInputsByEntityId);
+    const snapshot = session.game.step(
+      dtMillis,
+      dtMillis,
+      controlInputsByEntityId,
+    );
     acknowledgeReceivedInputs(session);
     session.pendingPressedControlInputsByEntityId.clear();
     session.steppedControlInputsByEntityId = cloneControlInputMap(
@@ -251,7 +257,7 @@ export function createSolitudeSessionManager(
     );
     session.inputEvents.length = 0;
     session.simulationTimeMillis += dtMillis;
-    return createNextSnapshotMessage(session, gameId, snapshot);
+    return createNextSnapshotMessage(session, gameId, snapshot, 1);
   };
 
   const stepGameWithInputWindow = (
@@ -268,13 +274,19 @@ export function createSolitudeSessionManager(
     );
     session.pendingPressedControlInputsByEntityId.clear();
     session.simulationTimeMillis += dtMillis;
-    return createNextSnapshotMessage(session, gameId, snapshot);
+    return createNextSnapshotMessage(
+      session,
+      gameId,
+      snapshot,
+      inputTimeWindow.simulationMillisPerWallMillis,
+    );
   };
 
   const createNextSnapshotMessage = (
     session: ServerGameSession,
     gameId: SolitudeGameId,
     snapshot: ReturnType<SolitudeServerGame["step"]>,
+    simulationMillisPerWallMillis: number,
   ): SnapshotMessage => {
     session.tick++;
     const sequence = session.nextSequence;
@@ -285,6 +297,7 @@ export function createSolitudeSessionManager(
       lastProcessedInputSequences: createInputSequenceAcknowledgements(session),
       modelVersion: session.modelVersion,
       sequence,
+      simulationMillisPerWallMillis,
       simulationTimeMillis: session.simulationTimeMillis,
       tick: session.tick,
     });
@@ -472,20 +485,34 @@ function stepSessionGameWithInputWindow(
   dtMillis: number,
   inputTimeWindow: SolitudeInputTimeWindow,
 ): ReturnType<SolitudeServerGame["step"]> {
+  const controlDurationMillis = clamp(
+    inputTimeWindow.controlDurationMillis,
+    0,
+    dtMillis,
+  );
   if (inputTimeWindow.endMillis <= inputTimeWindow.startMillis) {
-    return session.game.step(dtMillis, session.steppedControlInputsByEntityId);
+    return session.game.step(
+      dtMillis,
+      controlDurationMillis,
+      session.steppedControlInputsByEntityId,
+    );
   }
   const events = takeInputEventsThrough(
     session.inputEvents,
     inputTimeWindow.endMillis,
   );
   if (events.length === 0) {
-    return session.game.step(dtMillis, session.steppedControlInputsByEntityId);
+    return session.game.step(
+      dtMillis,
+      controlDurationMillis,
+      session.steppedControlInputsByEntityId,
+    );
   }
 
   const controlsByEntityId = cloneControlInputMap(
     session.steppedControlInputsByEntityId,
   );
+  let elapsedControlMillis = 0;
   let elapsedSimMillis = 0;
   let snapshot: ReturnType<SolitudeServerGame["step"]> | null = null;
 
@@ -495,27 +522,54 @@ function stepSessionGameWithInputWindow(
       inputTimeWindow.startMillis,
       inputTimeWindow.endMillis,
     );
+    const nextElapsedControlMillis = wallMillisToControlMillis(
+      eventMillis - inputTimeWindow.startMillis,
+      inputTimeWindow,
+      controlDurationMillis,
+    );
     const nextElapsedSimMillis = wallMillisToSimMillis(
       eventMillis - inputTimeWindow.startMillis,
       inputTimeWindow,
       dtMillis,
     );
-    const segmentDtMillis = nextElapsedSimMillis - elapsedSimMillis;
-    if (segmentDtMillis > 0) {
-      snapshot = session.game.step(segmentDtMillis, controlsByEntityId);
+    const segmentSimMillis = nextElapsedSimMillis - elapsedSimMillis;
+    const segmentControlMillis =
+      nextElapsedControlMillis - elapsedControlMillis;
+    if (segmentSimMillis > 0 || segmentControlMillis > 0) {
+      snapshot = session.game.step(
+        segmentSimMillis,
+        segmentControlMillis,
+        controlsByEntityId,
+      );
+      elapsedControlMillis = nextElapsedControlMillis;
       elapsedSimMillis = nextElapsedSimMillis;
     }
     applyInputPatchForTimedStep(controlsByEntityId, event);
     acknowledgeInputEvent(session, event);
   }
 
-  const remainingDtMillis = dtMillis - elapsedSimMillis;
-  if (remainingDtMillis > 0 || !snapshot) {
-    snapshot = session.game.step(remainingDtMillis, controlsByEntityId);
+  const remainingSimMillis = dtMillis - elapsedSimMillis;
+  const remainingControlMillis = controlDurationMillis - elapsedControlMillis;
+  if (remainingSimMillis > 0 || !snapshot) {
+    snapshot = session.game.step(
+      remainingSimMillis,
+      remainingControlMillis,
+      controlsByEntityId,
+    );
   }
 
   session.steppedControlInputsByEntityId = controlsByEntityId;
   return snapshot;
+}
+
+function wallMillisToControlMillis(
+  wallOffsetMillis: number,
+  inputTimeWindow: SolitudeInputTimeWindow,
+  controlDurationMillis: number,
+): number {
+  const wallDurationMillis =
+    inputTimeWindow.endMillis - inputTimeWindow.startMillis;
+  return (wallOffsetMillis / wallDurationMillis) * controlDurationMillis;
 }
 
 function wallMillisToSimMillis(

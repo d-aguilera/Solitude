@@ -15,8 +15,8 @@ describe("remote snapshot interpolation", () => {
     const first = createSnapshot(0, 0);
     const second = createSnapshot(100, 10);
 
-    buffer.push(first, 1, 0, 1000);
-    buffer.push(second, 2, 100, 1200);
+    buffer.push(first, 1, 0, 1000, 1);
+    buffer.push(second, 2, 100, 1200, 1);
 
     const sample = buffer.sample(100, 1200, 1200);
 
@@ -31,8 +31,8 @@ describe("remote snapshot interpolation", () => {
     const first = createSnapshot(0, 0);
     const second = createSnapshot(100, 10);
 
-    buffer.push(first, 1, 0, 1000);
-    buffer.push(second, 2, 100, 1400);
+    buffer.push(first, 1, 0, 1000, 1);
+    buffer.push(second, 2, 100, 1400, 1);
 
     const sample = buffer.sample(100, 1400, 1400);
 
@@ -47,8 +47,8 @@ describe("remote snapshot interpolation", () => {
     const first = createSnapshot(0, 0);
     const second = createSnapshot(100, 10);
 
-    buffer.push(second, 2, 100, 1200);
-    buffer.push(first, 1, 0, 1000);
+    buffer.push(second, 2, 100, 1200, 1);
+    buffer.push(first, 1, 0, 1000, 1);
 
     const sample = buffer.sample(100, 1200, 1300);
 
@@ -63,9 +63,9 @@ describe("remote snapshot interpolation", () => {
     const first = createSnapshot(0, 0);
     const second = createSnapshot(100, 10);
 
-    buffer.push(first, 1, 0, 1000);
-    buffer.push(second, 2, 100, 1020);
-    buffer.push(first, 1, 0, 1010);
+    buffer.push(first, 1, 0, 1000, 1);
+    buffer.push(second, 2, 100, 1020, 1);
+    buffer.push(first, 1, 0, 1010, 1);
 
     buffer.sample(100, 1020, 1020);
     buffer.sample(100, 1020, 1080);
@@ -83,9 +83,26 @@ describe("remote snapshot interpolation", () => {
       maxInterArrivalMillis: 20,
       maxRenderDelayMillis: 180,
       sampleCount: 3,
+      simulationMillisPerWallMillis: 1,
       snapshotCount: 2,
       underrunSampleCount: 0,
     });
+  });
+
+  it("converts wall-clock interpolation delay into accelerated simulation time", () => {
+    const buffer = createRuntimeSnapshotInterpolationBuffer({
+      delayMillis: 75,
+    });
+
+    buffer.push(createSnapshot(0, 0), 1, 0, 1000, 32);
+    buffer.push(createSnapshot(1600, 0), 2, 1600, 1050, 32);
+    buffer.push(createSnapshot(3200, 0), 3, 3200, 1100, 32);
+    buffer.push(createSnapshot(4800, 0), 4, 4800, 1150, 32);
+
+    const sample = buffer.sample(4800, 1150, 1162.5);
+
+    expect(sample?.entities[0].position.x).toBe(2800);
+    expect(buffer.metrics.simulationMillisPerWallMillis).toBe(32);
   });
 
   it("reuses output storage while preserving endpoint snapshots", () => {

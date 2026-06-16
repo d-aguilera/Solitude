@@ -33,6 +33,11 @@ export interface HeadlessLoop {
     dtMillis: number,
     controlInputsByEntityId: ReadonlyMap<EntityId, Partial<ControlInput>>,
   ) => void;
+  stepWithEntityInputsAndSimDt: (
+    dtMillis: number,
+    dtMillisSim: number,
+    controlInputsByEntityId: ReadonlyMap<EntityId, Partial<ControlInput>>,
+  ) => void;
 }
 
 const EMPTY_SCENE: Scene = { objects: [], lights: [] };
@@ -133,8 +138,20 @@ export function createHeadlessLoop(
     dtMillis: number,
     controlInputsByEntityId: ReadonlyMap<EntityId, Partial<ControlInput>>,
   ): void => {
+    stepWithEntityInputsAndSimDt(
+      dtMillis,
+      dtMillis * timeScale,
+      controlInputsByEntityId,
+    );
+  };
+
+  const stepWithEntityInputsAndSimDt = (
+    dtMillis: number,
+    dtMillisSim: number,
+    controlInputsByEntityId: ReadonlyMap<EntityId, Partial<ControlInput>>,
+  ): void => {
     tickParams.dtMillis = dtMillis;
-    tickParams.dtMillisSim = dtMillis * timeScale;
+    tickParams.dtMillisSim = dtMillisSim;
     tickParams.controlInput = baseControlInput;
     tickParams.controlInputsByEntityId = mergeEntityControlInputs(
       baseControlInput,
@@ -149,6 +166,7 @@ export function createHeadlessLoop(
     worldAndScene,
     step,
     stepWithEntityInputs,
+    stepWithEntityInputsAndSimDt,
   };
 }
 

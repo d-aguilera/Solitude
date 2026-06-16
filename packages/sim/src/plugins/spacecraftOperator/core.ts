@@ -50,6 +50,7 @@ export interface SpacecraftVehicleDynamicsParams {
   controlledBody: ControlledBody;
   dtMillis: number;
   physicsWorkspace?: PhysicsWorkspace;
+  propulsionDtMillis: number;
   propulsionResolvers: readonly SpacecraftPropulsionResolver[];
   updateControlStateFromInput?: boolean;
   world: World;
@@ -59,7 +60,7 @@ export function applySpacecraftVehicleDynamics(
   params: SpacecraftVehicleDynamicsParams,
 ): SpacecraftPropulsionCommand {
   const propulsionCommand = getPropulsionCommandForTick(
-    params.dtMillis,
+    params.propulsionDtMillis,
     params.controlInput,
     params.controlState,
     params.controlledBody,
@@ -82,13 +83,13 @@ export function applySpacecraftVehicleDynamics(
     params.physicsWorkspace,
   );
   applyThrust(
-    params.dtMillis,
+    params.propulsionDtMillis,
     params.controlledBody,
     propulsionCommand.main,
     maxThrustAcceleration,
   );
   applyRcsTranslation(
-    params.dtMillis,
+    params.propulsionDtMillis,
     params.controlledBody,
     propulsionCommand.rcs,
     maxRcsTranslationAcceleration,
@@ -148,6 +149,7 @@ export function createSpacecraftVehicleDynamicsPlugin(
         controlledBody: params.mainFocus.controlledBody,
         dtMillis: params.dtMillis,
         physicsWorkspace,
+        propulsionDtMillis: params.dtMillisSim,
         propulsionResolvers,
         world: params.world,
       });
@@ -178,6 +180,7 @@ export function createSpacecraftVehicleDynamicsPlugin(
           controlledBody,
           dtMillis: params.dtMillis,
           physicsWorkspace,
+          propulsionDtMillis: params.dtMillisSim,
           propulsionResolvers,
           updateControlStateFromInput: false,
           world: params.world,
@@ -202,6 +205,7 @@ export function createSpacecraftLocalPredictionProvider(): LocalEntityPrediction
         controlledBody: params.controlledBody,
         dtMillis: params.dtMillis,
         physicsWorkspace,
+        propulsionDtMillis: params.dtMillis,
         propulsionResolvers: emptyPropulsionResolvers,
         world: params.world,
       });
@@ -241,6 +245,7 @@ function applyEntityControlVehicleDynamics(
         controlledBody,
         dtMillis: params.dtMillis,
         physicsWorkspace,
+        propulsionDtMillis: params.dtMillisSim,
         propulsionResolvers,
         world: params.world,
       });
@@ -257,6 +262,7 @@ function applyEntityControlVehicleDynamics(
         controlledBody,
         dtMillis: params.dtMillis,
         physicsWorkspace,
+        propulsionDtMillis: params.dtMillisSim,
         propulsionResolvers,
         updateControlStateFromInput: false,
         world: params.world,

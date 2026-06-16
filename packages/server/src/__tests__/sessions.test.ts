@@ -298,10 +298,12 @@ describe("Solitude session manager", () => {
 
     expect(game.controlInputsByStep).toEqual([
       {
+        controlDtMillis: 1000,
         controls: [["ship:blue", { burnForward: true, thrust5: true }]],
         dtMillis: 1000,
       },
       {
+        controlDtMillis: 1000,
         controls: [["ship:blue", { burnForward: true, thrust5: true }]],
         dtMillis: 1000,
       },
@@ -319,6 +321,7 @@ describe("Solitude session manager", () => {
     manager.stepGame("game:1", 1000);
 
     expect(game.controlInputsByStep[2]).toEqual({
+      controlDtMillis: 1000,
       controls: [["ship:blue", { burnForward: false, thrust5: true }]],
       dtMillis: 1000,
     });
@@ -362,7 +365,11 @@ describe("Solitude session manager", () => {
 
     expect(snapshot?.lastProcessedInputSequences).toEqual({ "ship:blue": 2 });
     expect(game.controlInputsByStep).toEqual([
-      { controls: [["ship:blue", { yawLeft: true }]], dtMillis: 1000 },
+      {
+        controlDtMillis: 1000,
+        controls: [["ship:blue", { yawLeft: true }]],
+        dtMillis: 1000,
+      },
     ]);
   });
 
@@ -402,6 +409,7 @@ describe("Solitude session manager", () => {
     manager.stepGame("game:1", 1000);
 
     expect(game.controlInputsByStep[0]).toEqual({
+      controlDtMillis: 1000,
       controls: [["ship:blue", { thrust9: true }]],
       dtMillis: 1000,
     });
@@ -418,6 +426,7 @@ describe("Solitude session manager", () => {
     manager.stepGame("game:1", 1000);
 
     expect(game.controlInputsByStep[1]).toEqual({
+      controlDtMillis: 1000,
       controls: [["ship:blue", { thrust3: true }]],
       dtMillis: 1000,
     });
@@ -460,8 +469,16 @@ describe("Solitude session manager", () => {
     manager.stepGame("game:1", 1000);
 
     expect(game.controlInputsByStep).toEqual([
-      { controls: [["ship:blue", { yawLeft: true }]], dtMillis: 1000 },
-      { controls: [["ship:blue", { yawLeft: false }]], dtMillis: 1000 },
+      {
+        controlDtMillis: 1000,
+        controls: [["ship:blue", { yawLeft: true }]],
+        dtMillis: 1000,
+      },
+      {
+        controlDtMillis: 1000,
+        controls: [["ship:blue", { yawLeft: false }]],
+        dtMillis: 1000,
+      },
     ]);
   });
 
@@ -504,7 +521,9 @@ describe("Solitude session manager", () => {
       controls: { yawLeft: false },
     });
     const snapshot = manager.stepGameWithInputWindow("game:1", 25, {
+      controlDurationMillis: 25,
       endMillis: 25,
+      simulationMillisPerWallMillis: 1,
       startMillis: 0,
     });
 
@@ -513,9 +532,61 @@ describe("Solitude session manager", () => {
     expect(snapshot?.lastProcessedInputSequences).toEqual({ "ship:blue": 2 });
     expect(manager.listGames()[0]?.tick).toBe(1);
     expect(game.controlInputsByStep).toEqual([
-      { controls: [], dtMillis: 10 },
-      { controls: [["ship:blue", { yawLeft: true }]], dtMillis: 5 },
-      { controls: [["ship:blue", { yawLeft: false }]], dtMillis: 10 },
+      { controlDtMillis: 10, controls: [], dtMillis: 10 },
+      {
+        controlDtMillis: 5,
+        controls: [["ship:blue", { yawLeft: true }]],
+        dtMillis: 5,
+      },
+      {
+        controlDtMillis: 10,
+        controls: [["ship:blue", { yawLeft: false }]],
+        dtMillis: 10,
+      },
+    ]);
+  });
+
+  it("keeps player input duration on wall time when simulation time is accelerated", () => {
+    let nowMillis = 0;
+    const game = createRecordingGame();
+    const manager = createSolitudeSessionManager(
+      createTestOptions(game, () => nowMillis),
+    );
+    manager.handleMessage({
+      type: "createGame",
+      clientId: "client:a",
+      sequence: 1,
+    });
+    manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
+    });
+    manager.handleMessage({
+      type: "input",
+      clientId: "client:a",
+      entityId: "ship:blue",
+      gameId: "game:1",
+      inputSequence: 1,
+      sequence: 3,
+      controls: { yawLeft: true },
+    });
+
+    const snapshot = manager.stepGameWithInputWindow("game:1", 25, {
+      controlDurationMillis: 5,
+      endMillis: 5,
+      simulationMillisPerWallMillis: 5,
+      startMillis: 0,
+    });
+
+    expect(snapshot?.simulationMillisPerWallMillis).toBe(5);
+    expect(game.controlInputsByStep).toEqual([
+      {
+        controlDtMillis: 5,
+        controls: [["ship:blue", { yawLeft: true }]],
+        dtMillis: 25,
+      },
     ]);
   });
 
@@ -552,7 +623,7 @@ describe("Solitude session manager", () => {
     manager.stepGame("game:1", 1000);
 
     expect(game.controlInputsByStep).toEqual([
-      { controls: [], dtMillis: 1000 },
+      { controlDtMillis: 1000, controls: [], dtMillis: 1000 },
     ]);
   });
 
@@ -621,6 +692,7 @@ describe("Solitude session manager", () => {
 
 interface RecordingGame extends SolitudeServerGame {
   controlInputsByStep: Array<{
+    controlDtMillis: number;
     controls: Array<[EntityId, Partial<ControlInput>]>;
     dtMillis: number;
   }>;
@@ -651,13 +723,17 @@ function createRecordingGame(): RecordingGame {
       }
       game.entityConfigs.length = writeIndex;
     },
-    step: (dtMillis, controlInputsByEntityId) => {
+    step: (dtMillis, controlDtMillis, controlInputsByEntityId) => {
       const controlInputs: Array<[EntityId, Partial<ControlInput>]> = [];
       for (const [entityId, controls] of controlInputsByEntityId) {
         controlInputs.push([entityId, { ...controls }]);
       }
       controlInputs.sort(([left], [right]) => left.localeCompare(right));
-      game.controlInputsByStep.push({ controls: controlInputs, dtMillis });
+      game.controlInputsByStep.push({
+        controlDtMillis,
+        controls: controlInputs,
+        dtMillis,
+      });
       return snapshot;
     },
   };

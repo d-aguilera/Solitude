@@ -126,6 +126,10 @@ Delivered authoritative loop foundation:
 
 - WebSocket-only gameplay path is in place.
 - Server-owned fixed 60 Hz simulation policy is in place.
+- Multiplayer server time acceleration can be overridden for local/debug travel with `SOLITUDE_SIM_RATE`; this maps to `simulationMillisPerWallMillis` while preserving the fixed simulation step size. Server ticks carry separate simulation and control durations: attitude/rotation stays wall-clock scaled for controllability, while propulsion uses simulation time so engines and circle-now keep physical authority relative to gravity at high sim rates.
+- Snapshot messages carry `simulationMillisPerWallMillis`, and remote interpolation converts wall-clock render delay/extrapolation windows into simulation time so high-rate travel does not sawtooth between stale interpolation targets and new authoritative snapshots.
+- Remote snapshot interpolation can be temporarily disabled from the client URL with `?interpolation=off` for high-sim-rate jitter diagnosis; this leaves local prediction/reconciliation intact.
+- Multiplayer client debug hotkeys: `I` toggles remote snapshot interpolation and `P` toggles local prediction/reconciliation for the focused ship. Current state is exposed as `window.__solitudeRemoteRenderState`.
 - Server-owned active game runner is in place.
 - Fixed-rate authoritative snapshot broadcast.
 - Snapshot messages with authoritative simulation time.

@@ -103,6 +103,7 @@ export interface SnapshotMessage {
   lastProcessedInputSequences: Record<EntityId, SolitudeInputSequence>;
   modelVersion: SolitudeModelVersion;
   sequence: SolitudeProtocolSequence;
+  simulationMillisPerWallMillis?: number;
   simulationTimeMillis: SolitudeSimulationTimeMillis;
   tick: SolitudeSimulationTick;
 }
@@ -219,6 +220,8 @@ export function isSolitudeServerMessage(
         isInputSequenceRecord(value.lastProcessedInputSequences) &&
         isFiniteNumber(value.modelVersion) &&
         isFiniteNumber(value.sequence) &&
+        (value.simulationMillisPerWallMillis === undefined ||
+          isFiniteNumber(value.simulationMillisPerWallMillis)) &&
         isFiniteNumber(value.simulationTimeMillis) &&
         isFiniteNumber(value.tick)
       );

@@ -56,6 +56,79 @@ describe("server-style headless Solitude composition", () => {
     expect(redVelocityDelta).toBeGreaterThan(1000);
   });
 
+  it("can advance simulation time independently from control time", () => {
+    const noBurnLoop = createSolitudeHeadlessLoop({
+      extraEntities: createDefaultShipEntities(),
+    }).loop;
+    const shortBurnLoop = createSolitudeHeadlessLoop({
+      extraEntities: createDefaultShipEntities(),
+    }).loop;
+    const fullBurnLoop = createSolitudeHeadlessLoop({
+      extraEntities: createDefaultShipEntities(),
+    }).loop;
+    const shortYawLoop = createSolitudeHeadlessLoop({
+      extraEntities: createDefaultShipEntities(),
+    }).loop;
+    const fullYawLoop = createSolitudeHeadlessLoop({
+      extraEntities: createDefaultShipEntities(),
+    }).loop;
+
+    noBurnLoop.stepWithEntityInputsAndSimDt(100, 1000, new Map());
+    shortBurnLoop.stepWithEntityInputsAndSimDt(
+      100,
+      1000,
+      new Map([["ship:blue", { burnForward: true, thrust5: true }]]),
+    );
+    fullBurnLoop.stepWithEntityInputsAndSimDt(
+      1000,
+      1000,
+      new Map([["ship:blue", { burnForward: true, thrust5: true }]]),
+    );
+    shortYawLoop.stepWithEntityInputsAndSimDt(
+      100,
+      1000,
+      new Map([["ship:blue", { yawLeft: true }]]),
+    );
+    fullYawLoop.stepWithEntityInputsAndSimDt(
+      1000,
+      1000,
+      new Map([["ship:blue", { yawLeft: true }]]),
+    );
+
+    const noBurnBlue = getControlledBody(
+      noBurnLoop.worldAndScene.world,
+      "ship:blue",
+    );
+    const shortBurnBlue = getControlledBody(
+      shortBurnLoop.worldAndScene.world,
+      "ship:blue",
+    );
+    const fullBurnBlue = getControlledBody(
+      fullBurnLoop.worldAndScene.world,
+      "ship:blue",
+    );
+    const shortYawBlue = getControlledBody(
+      shortYawLoop.worldAndScene.world,
+      "ship:blue",
+    );
+    const fullYawBlue = getControlledBody(
+      fullYawLoop.worldAndScene.world,
+      "ship:blue",
+    );
+    const shortBurnVelocityDelta = vec3.length(
+      vec3.subInto(vec3.zero(), shortBurnBlue.velocity, noBurnBlue.velocity),
+    );
+    const fullBurnVelocityDelta = vec3.length(
+      vec3.subInto(vec3.zero(), fullBurnBlue.velocity, noBurnBlue.velocity),
+    );
+
+    expect(shortBurnVelocityDelta).toBeGreaterThan(0);
+    expect(shortBurnVelocityDelta).toBeCloseTo(fullBurnVelocityDelta);
+    expect(Math.abs(shortYawBlue.angularVelocity.yaw)).toBeLessThan(
+      Math.abs(fullYawBlue.angularVelocity.yaw),
+    );
+  });
+
   it("assigns distinct display colors and names to joined ships", () => {
     const ships = [
       createDefaultMultiplayerSpacecraftEntity({

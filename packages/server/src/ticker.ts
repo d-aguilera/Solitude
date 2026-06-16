@@ -140,9 +140,15 @@ function stepGameForBroadcast(
         stepMillis / policy.simulationMillisPerWallMillis,
       inputWindowEndMillis,
     );
+    const controlDurationMillis = Math.min(
+      stepMillis,
+      stepWindowEndMillis - stepWindowStartMillis,
+    );
     const stepStartMillis = nowMillis();
     snapshot = transport.stepGameWithInputWindow(request.gameId, stepMillis, {
+      controlDurationMillis,
       endMillis: stepWindowEndMillis,
+      simulationMillisPerWallMillis: policy.simulationMillisPerWallMillis,
       startMillis: stepWindowStartMillis,
     });
     if (!snapshot) {

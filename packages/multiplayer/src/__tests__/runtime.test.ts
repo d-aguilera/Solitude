@@ -17,6 +17,7 @@ describe("Solitude server runtime", () => {
 
     const nextSnapshot = game.step(
       1000,
+      1000,
       new Map([
         ["ship:blue", { burnForward: true, thrust5: true }],
         ["ship:red", { burnRight: true }],
@@ -67,6 +68,7 @@ describe("Solitude server runtime", () => {
     const redPositionBefore = vec3.clone(redBody.position);
 
     game.step(
+      1000,
       1000,
       new Map([["ship:red", { burnForward: true, thrust5: true }]]),
     );

@@ -111,6 +111,51 @@ describe("spacecraft vehicle dynamics plugin", () => {
     expect(vec3.length(focusedBody.velocity)).toBeGreaterThan(0);
   });
 
+  it("uses simulation time for thrust while keeping attitude on control time", () => {
+    const wallStepBody = createBody("ship:wall");
+    const simStepBody = createBody("ship:sim");
+    const wallStepPlugin = createSpacecraftVehicleDynamicsPlugin(
+      [],
+      createPluginCapabilityRegistry(),
+    );
+    const simStepPlugin = createSpacecraftVehicleDynamicsPlugin(
+      [],
+      createPluginCapabilityRegistry(),
+    );
+    const wallStepInput = createControlInput();
+    wallStepInput.thrust9 = true;
+    wallStepInput.burnForward = true;
+    wallStepInput.yawLeft = true;
+    const simStepInput = createControlInput();
+    simStepInput.thrust9 = true;
+    simStepInput.burnForward = true;
+    simStepInput.yawLeft = true;
+
+    runVehicleDynamics(
+      wallStepPlugin,
+      wallStepBody,
+      wallStepInput,
+      createWorld(wallStepBody),
+      100,
+      100,
+    );
+    runVehicleDynamics(
+      simStepPlugin,
+      simStepBody,
+      simStepInput,
+      createWorld(simStepBody),
+      100,
+      1000,
+    );
+
+    expect(vec3.length(simStepBody.velocity)).toBeGreaterThan(
+      vec3.length(wallStepBody.velocity) * 5,
+    );
+    expect(simStepBody.angularVelocity.yaw).toBeCloseTo(
+      wallStepBody.angularVelocity.yaw,
+    );
+  });
+
   it("uses spacecraft propulsion resolver capabilities", () => {
     const focusedBody = createBody("ship:focus");
     const plugin = createSpacecraftVehicleDynamicsPlugin(
@@ -224,12 +269,14 @@ function runVehicleDynamics(
   focusedBody: ControlledBody,
   controlInput: ReturnType<typeof createControlInput>,
   world: World,
+  dtMillis = 1000,
+  dtMillisSim = 1000,
 ): void {
   plugin.updateVehicleDynamics?.({
     controlInput,
     controlInputsByEntityId: EMPTY_ENTITY_CONTROL_INPUTS,
-    dtMillis: 1000,
-    dtMillisSim: 1000,
+    dtMillis,
+    dtMillisSim,
     mainFocus: {
       controlledBody: focusedBody,
       entityId: focusedBody.id,

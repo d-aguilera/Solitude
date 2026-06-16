@@ -25,6 +25,7 @@ export interface RuntimeSnapshotInterpolationBuffer {
     tick: number,
     simulationTimeMillis: number,
     receivedAtMillis: number,
+    simulationMillisPerWallMillis?: number,
   ) => void;
   sample: (
     latestSimulationTimeMillis: number,
@@ -52,6 +53,7 @@ export interface RuntimeSnapshotInterpolationMetrics {
   maxInterArrivalMillis: number;
   maxRenderDelayMillis: number;
   sampleCount: number;
+  simulationMillisPerWallMillis: number;
   snapshotCount: number;
   underrunSampleCount: number;
 }
@@ -78,10 +80,23 @@ export function createRuntimeSnapshotInterpolationBuffer(
       return latestTick;
     },
     metrics,
-    push: (snapshot, tick, simulationTimeMillis, receivedAtMillis) => {
+    push: (
+      snapshot,
+      tick,
+      simulationTimeMillis,
+      receivedAtMillis,
+      simulationMillisPerWallMillis,
+    ) => {
       if (tick <= latestTick) {
         metrics.droppedSnapshotCount++;
         return;
+      }
+      if (
+        simulationMillisPerWallMillis !== undefined &&
+        Number.isFinite(simulationMillisPerWallMillis) &&
+        simulationMillisPerWallMillis > 0
+      ) {
+        metrics.simulationMillisPerWallMillis = simulationMillisPerWallMillis;
       }
       const previousLatest = snapshots[snapshots.length - 1];
       if (previousLatest) {
@@ -97,6 +112,18 @@ export function createRuntimeSnapshotInterpolationBuffer(
         interArrivalTotalMillis += interArrivalMillis;
         metrics.averageInterArrivalMillis =
           interArrivalTotalMillis / metrics.snapshotCount;
+        if (
+          simulationMillisPerWallMillis === undefined &&
+          interArrivalMillis > 0
+        ) {
+          const inferredSimulationMillisPerWallMillis =
+            (simulationTimeMillis - previousLatest.simulationTimeMillis) /
+            interArrivalMillis;
+          if (inferredSimulationMillisPerWallMillis > 0) {
+            metrics.simulationMillisPerWallMillis =
+              inferredSimulationMillisPerWallMillis;
+          }
+        }
       }
       latestTick = tick;
       metrics.snapshotCount++;
@@ -119,14 +146,21 @@ export function createRuntimeSnapshotInterpolationBuffer(
 
       const estimatedSimulationTimeMillis =
         latestSimulationTimeMillis +
-        Math.max(0, nowMillis - latestReceivedAtMillis);
-      const targetMillis = estimatedSimulationTimeMillis - delayMillis;
+        Math.max(0, nowMillis - latestReceivedAtMillis) *
+          metrics.simulationMillisPerWallMillis;
+      const simulationDelayMillis =
+        delayMillis * metrics.simulationMillisPerWallMillis;
+      const simulationMaxExtrapolationMillis =
+        maxExtrapolationMillis * metrics.simulationMillisPerWallMillis;
+      const targetMillis =
+        estimatedSimulationTimeMillis - simulationDelayMillis;
       const first = snapshots[0];
       if (targetMillis <= first.simulationTimeMillis) {
         recordSample(
           metrics,
           "underrun",
-          estimatedSimulationTimeMillis - first.simulationTimeMillis,
+          (estimatedSimulationTimeMillis - first.simulationTimeMillis) /
+            metrics.simulationMillisPerWallMillis,
         );
         return first.snapshot;
       }
@@ -134,12 +168,13 @@ export function createRuntimeSnapshotInterpolationBuffer(
       if (targetMillis >= latest.simulationTimeMillis) {
         if (
           targetMillis >
-          latest.simulationTimeMillis + maxExtrapolationMillis
+          latest.simulationTimeMillis + simulationMaxExtrapolationMillis
         ) {
           recordSample(
             metrics,
             "clamped",
-            estimatedSimulationTimeMillis - latest.simulationTimeMillis,
+            (estimatedSimulationTimeMillis - latest.simulationTimeMillis) /
+              metrics.simulationMillisPerWallMillis,
           );
           return latest.snapshot;
         }
@@ -148,7 +183,8 @@ export function createRuntimeSnapshotInterpolationBuffer(
           recordSample(
             metrics,
             "clamped",
-            estimatedSimulationTimeMillis - latest.simulationTimeMillis,
+            (estimatedSimulationTimeMillis - latest.simulationTimeMillis) /
+              metrics.simulationMillisPerWallMillis,
           );
           return latest.snapshot;
         }
@@ -169,7 +205,8 @@ export function createRuntimeSnapshotInterpolationBuffer(
         recordSample(
           metrics,
           "clamped",
-          estimatedSimulationTimeMillis - latest.simulationTimeMillis,
+          (estimatedSimulationTimeMillis - latest.simulationTimeMillis) /
+            metrics.simulationMillisPerWallMillis,
         );
         return latest.snapshot;
       }
@@ -207,6 +244,7 @@ function createRuntimeSnapshotInterpolationMetrics(): RuntimeSnapshotInterpolati
     maxInterArrivalMillis: 0,
     maxRenderDelayMillis: 0,
     sampleCount: 0,
+    simulationMillisPerWallMillis: 1,
     snapshotCount: 0,
     underrunSampleCount: 0,
   };

@@ -40,12 +40,22 @@ describe("Solitude game ticker", () => {
       {
         dtMillis: 1000,
         gameId: "game:1",
-        inputTimeWindow: { endMillis: 250, startMillis: 0 },
+        inputTimeWindow: {
+          controlDurationMillis: 250,
+          endMillis: 250,
+          simulationMillisPerWallMillis: 4,
+          startMillis: 0,
+        },
       },
       {
         dtMillis: 1000,
         gameId: "game:1",
-        inputTimeWindow: { endMillis: 500, startMillis: 250 },
+        inputTimeWindow: {
+          controlDurationMillis: 250,
+          endMillis: 500,
+          simulationMillisPerWallMillis: 4,
+          startMillis: 250,
+        },
       },
     ]);
   });
@@ -148,12 +158,22 @@ describe("Solitude game ticker", () => {
       {
         dtMillis: 40,
         gameId: "game:1",
-        inputTimeWindow: { endMillis: 100, startMillis: 0 },
+        inputTimeWindow: {
+          controlDurationMillis: 40,
+          endMillis: 100,
+          simulationMillisPerWallMillis: 0.4,
+          startMillis: 0,
+        },
       },
       {
         dtMillis: 40,
         gameId: "game:1",
-        inputTimeWindow: { endMillis: 200, startMillis: 100 },
+        inputTimeWindow: {
+          controlDurationMillis: 40,
+          endMillis: 200,
+          simulationMillisPerWallMillis: 0.4,
+          startMillis: 100,
+        },
       },
     ]);
   });
@@ -190,22 +210,42 @@ describe("Solitude game ticker", () => {
       {
         dtMillis: 125,
         gameId: "game:1",
-        inputTimeWindow: { endMillis: 125, startMillis: 0 },
+        inputTimeWindow: {
+          controlDurationMillis: 125,
+          endMillis: 125,
+          simulationMillisPerWallMillis: 1,
+          startMillis: 0,
+        },
       },
       {
         dtMillis: 125,
         gameId: "game:1",
-        inputTimeWindow: { endMillis: 250, startMillis: 125 },
+        inputTimeWindow: {
+          controlDurationMillis: 125,
+          endMillis: 250,
+          simulationMillisPerWallMillis: 1,
+          startMillis: 125,
+        },
       },
       {
         dtMillis: 125,
         gameId: "game:1",
-        inputTimeWindow: { endMillis: 375, startMillis: 250 },
+        inputTimeWindow: {
+          controlDurationMillis: 125,
+          endMillis: 375,
+          simulationMillisPerWallMillis: 1,
+          startMillis: 250,
+        },
       },
       {
         dtMillis: 125,
         gameId: "game:1",
-        inputTimeWindow: { endMillis: 500, startMillis: 375 },
+        inputTimeWindow: {
+          controlDurationMillis: 125,
+          endMillis: 500,
+          simulationMillisPerWallMillis: 1,
+          startMillis: 375,
+        },
       },
     ]);
   });
@@ -239,7 +279,12 @@ describe("Solitude game ticker", () => {
       {
         dtMillis: 25,
         gameId: "game:1",
-        inputTimeWindow: { endMillis: 25, startMillis: 0 },
+        inputTimeWindow: {
+          controlDurationMillis: 25,
+          endMillis: 25,
+          simulationMillisPerWallMillis: 1,
+          startMillis: 0,
+        },
       },
     ]);
   });
@@ -290,18 +335,33 @@ function createTransportStub(
   stepGameWithInputWindow: (
     gameId: SolitudeGameId,
     dtMillis: number,
-    inputTimeWindow: { endMillis: number; startMillis: number },
+    inputTimeWindow: {
+      controlDurationMillis: number;
+      endMillis: number;
+      simulationMillisPerWallMillis: number;
+      startMillis: number;
+    },
   ) => SnapshotMessage | null;
   steps: Array<{
     dtMillis: number;
     gameId: SolitudeGameId;
-    inputTimeWindow: { endMillis: number; startMillis: number };
+    inputTimeWindow: {
+      controlDurationMillis: number;
+      endMillis: number;
+      simulationMillisPerWallMillis: number;
+      startMillis: number;
+    };
   }>;
 } {
   const steps: Array<{
     dtMillis: number;
     gameId: SolitudeGameId;
-    inputTimeWindow: { endMillis: number; startMillis: number };
+    inputTimeWindow: {
+      controlDurationMillis: number;
+      endMillis: number;
+      simulationMillisPerWallMillis: number;
+      startMillis: number;
+    };
   }> = [];
   return {
     stepGameWithInputWindow: (gameId, dtMillis, inputTimeWindow) => {

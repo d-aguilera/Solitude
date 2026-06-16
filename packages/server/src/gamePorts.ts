@@ -18,6 +18,7 @@ export interface SolitudeServerGame {
   removeEntity: (entityId: EntityId) => void;
   step: (
     dtMillis: number,
+    controlDtMillis: number,
     controlInputsByEntityId: SolitudeServerControlInputs,
   ) => RuntimeWorldSnapshot;
 }

@@ -86,6 +86,7 @@ function createRecordingGame(
     },
     step: (
       _dtMillis: number,
+      _controlDtMillis: number,
       _controlInputsByEntityId: ReadonlyMap<EntityId, Partial<ControlInput>>,
     ) => snapshot,
   };
