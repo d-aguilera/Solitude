@@ -5,7 +5,6 @@ import type {
   Scene,
   SceneObject,
 } from "../app/scenePorts";
-import { AU } from "../domain/units";
 import { type Vec3, vec3 } from "../domain/vec3";
 import { alloc } from "../global/allocProfiler";
 import { isBodyAtOrBeyondOnePixelThreshold } from "./bodyLod";
@@ -16,13 +15,14 @@ import {
   getCachedWorldFaceNormals,
   getCachedWorldPoints,
 } from "./renderFrameCache";
+import {
+  renderAmbientFactor,
+  renderDiffuseFactor,
+  renderExposure,
+  renderGamma,
+} from "./renderParameters";
 import type { RenderedFace } from "./renderPorts";
 import { type ScreenPoint, scrn } from "./scrn";
-
-// E = I / (4π r²) at 1 AU from the Sun.
-const SUN_LUMINOSITY = 3.828e26; // W
-const EARTH_ORBIT_RADIUS_2 = AU * AU;
-const E_SUN_AT_EARTH = SUN_LUMINOSITY / (4 * Math.PI * EARTH_ORBIT_RADIUS_2);
 
 export type ClippedTriangleScratch = [
   [Vec3, Vec3, Vec3],
@@ -293,7 +293,7 @@ function writeFaceInto(
   p1: ScreenPoint,
   p2: ScreenPoint,
 ): void {
-  const k = 0.2 + 0.8 * intensity;
+  const k = renderAmbientFactor + renderDiffuseFactor * intensity;
   const r = Math.round(baseColor.r * k);
   const g = Math.round(baseColor.g * k);
   const b = Math.round(baseColor.b * k);
@@ -355,15 +355,12 @@ function computeIrradianceAtPoint(
 }
 
 // Simple exposure/tone-mapping constants.
-const EXPOSURE = 10 / E_SUN_AT_EARTH;
-
 function toneMapIrradiance(E: number): number {
-  const hdr = EXPOSURE * E;
+  const hdr = renderExposure * E;
   const mapped = hdr / (1 + hdr); // Reinhard
 
   // Mild gamma to lift darks
-  const gamma = 1.0 / 1.3;
-  const ldr = Math.pow(mapped, gamma);
+  const ldr = Math.pow(mapped, renderGamma);
 
   return Math.max(0, Math.min(1, ldr));
 }

@@ -1,3 +1,8 @@
+import {
+  createCanvasRendererHref,
+  showRenderFailurePanel,
+} from "@solitude/browser/dom/renderFailurePanel";
+import type { RenderFailure } from "@solitude/browser/dom/rendererBackend";
 import { parseRuntimeOptionsFromSearch } from "@solitude/browser/dom/runtimeOptions";
 import type { ControlInput } from "@solitude/engine/plugin";
 import type {
@@ -50,6 +55,7 @@ const remoteRuntimeTelemetryHud =
 const engineRenderer = createSolitudeRemoteClientRenderer({
   container: canvasContainer,
   getFocusEntityId: () => fields.entityId.value,
+  onFatalError: showFatalRenderError,
   runtimeOptions,
   plugins: [
     createRemoteIdentityHudPlugin({
@@ -60,6 +66,23 @@ const engineRenderer = createSolitudeRemoteClientRenderer({
     remoteRuntimeTelemetryHud.plugin,
   ],
 });
+
+function showFatalRenderError(failure: RenderFailure): void {
+  const messages = localization.rendererFailure;
+  const message =
+    failure.code === "webgl-context-lost"
+      ? messages.contextLost
+      : failure.code === "webgl2-unavailable"
+        ? messages.unavailable
+        : messages.program;
+  showRenderFailurePanel({
+    canvasHref: createCanvasRendererHref(window.location),
+    container: canvasContainer,
+    message,
+    recoveryLabel: messages.recovery,
+    title: messages.title,
+  });
+}
 
 let client = createClient();
 let activeAutopilotAction: string | null = null;

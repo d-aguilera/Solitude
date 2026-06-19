@@ -75,7 +75,7 @@ export interface RemoteWorldRenderer {
 }
 
 export interface RemoteWorldMultiViewOptions {
-  measureText: (text: string, font: string) => TextMetrics;
+  renderer: ViewRenderer;
   surface: RenderSurface2D;
   viewId: SceneViewId;
 }
@@ -397,13 +397,9 @@ function createRemoteRenderedViews({
       world: mirror.world,
     });
     const renderedView = createRenderedView();
-    const renderer: ViewRenderer = new DefaultViewRenderer(
-      view.measureText,
-      sceneView.definition.labelMode,
-    );
     return {
       renderedView,
-      renderer,
+      renderer: view.renderer,
       renderParams: {
         camera: sceneView.camera,
         mainFocus: mirror.worldSetup.mainFocus,

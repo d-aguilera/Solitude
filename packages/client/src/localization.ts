@@ -42,6 +42,13 @@ export interface ClientLocalization extends SolitudeLocalization {
     readonly fpsPrefix: string;
     readonly timePrefix: string;
   };
+  readonly rendererFailure: {
+    readonly contextLost: string;
+    readonly program: string;
+    readonly recovery: string;
+    readonly title: string;
+    readonly unavailable: string;
+  };
 }
 
 const messagesByLocale = {
@@ -95,6 +102,13 @@ export function createClientLocalization(
     remoteRuntime: {
       fpsPrefix: messages["remoteRuntime.fpsPrefix"],
       timePrefix: messages["remoteRuntime.timePrefix"],
+    },
+    rendererFailure: {
+      contextLost: messages["renderer.failure.contextLost"],
+      program: messages["renderer.failure.program"],
+      recovery: messages["renderer.failure.recovery"],
+      title: messages["renderer.failure.title"],
+      unavailable: messages["renderer.failure.unavailable"],
     },
   };
 }

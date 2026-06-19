@@ -18,6 +18,7 @@
 ### Active
 
 - `MEMORY_CLIENT_SERVER_2.md`: current client/server gameplay-feel roadmap: real-time authoritative loop, snapshot timing/buffering, and local prediction.
+- `MEMORY_GPU_RENDERING.md`: active WebGL2-native rendering roadmap covering shared browser presentation, GPU mesh rendering, Canvas overlays, and rollout.
 - `MEMORY_HEADLESS_PLAYBACK.md`: planned work for running recorded playback scenarios end-to-end without the browser.
 
 ### Complete / Archived
@@ -31,6 +32,7 @@
 ## Current focus
 
 - **Primary active work**: client/server gameplay feel; the server-owned real-time loop, compact snapshots, load metrics, sequenced inputs, local prediction, and render-only reconciliation are in place. The next phase is restoring smooth remote-entity interpolation without disturbing predicted local flight. See `MEMORY_CLIENT_SERVER_2.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
+- **GPU rendering work**: the true WebGL2 scene renderer is implemented for standalone and remote play, with Canvas overlays and an explicit Canvas backend; interactive hardware parity verification is next. See `MEMORY_GPU_RENDERING.md` before changing browser view presentation, rasterization, render package exports, or client renderer composition.
 - **Operator/focus boundary**: core/runtime contexts use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`.
 - **Remaining operator follow-ups**: foreground/background UX and declarative input lock policy live in `MEMORY_OPERATOR_MODEL.md`.
 - **Retired compatibility names**: keep `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming out of source.
@@ -52,7 +54,7 @@
 - **Physics**: Newtonian N-body with leapfrog integration for stability.
 - **Solar-system data**: use real-ish values (AU, km, approximate J2000 elements) for plausibility.
 - **Entity model direction**: core should not know scenario categories such as planet/star/ship. Prefer generic bodies/components/capabilities.
-- **Rendering**: default Canvas 2D for portability; WebGL path exists but is not wired by default.
+- **Rendering**: WebGL2-native solid-mesh rendering is the default; `?renderer=canvas` selects Canvas 2D. Lines, labels, and HUD remain on Canvas overlays in WebGL mode.
 - **Math helpers**: always use math helpers when available for vector/matrix/trig instead of inlining the math.
 - **Epsilons**: use shared constants in `packages/engine/src/domain/epsilon.ts` instead of inline literals.
 - **Optional arguments**: avoid optional runtime/plumbing arguments unless absence is semantically meaningful. Prefer required parameters with empty collections or default objects so call sites and implementations do not grow defensive branches.
@@ -62,7 +64,7 @@
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
 - `packages/hud/src/`: generic HUD grid and HUD panel capability contracts shared by display, browser, sim, client, and Solitude plugins.
 - `packages/sim/src/`: browser-safe and Node-safe Solitude simulation library: default world config, solar-system entity builders/assets, spacecraft operator dynamics, autopilot logic, localization helpers/messages, and headless Solitude composition shared by server and browser/product packages.
-- `packages/browser/src/`: DOM/runtime adapters, keyboard input, layout, Canvas 2D, WebGL rasterizer adapters, and remote-world mirror helpers.
+- `packages/browser/src/`: DOM/runtime adapters, keyboard input, layered view layout, Canvas presentation, GPU-native WebGL2 presentation, and remote-world mirror helpers.
 - `packages/protocol/src/`: browser-safe client/server protocol types and message guards.
 - `packages/client/src/`: deployable remote browser client, server URL adapter, HTTP/WebSocket client helpers, keyboard input patching, authoritative snapshot interpolation, and remote rendering composition.
 - `packages/server/src/`: Node-oriented authoritative sessions, ticking, protocol transport, and HTTP/WebSocket serving for headless Solitude games.
@@ -97,6 +99,7 @@
 - Server runtime lives in `packages/server/src/runtime.ts`; it composes shared `@solitude/sim` headless Solitude code, steps entity-addressed controls, and reuses runtime snapshot storage.
 - Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, receives authoritative model/snapshot messages over WebSocket, sends sequenced server-authoritative controls for its assigned ship, predicts the locally controlled ship immediately, smooths reconciliation visually, exposes prediction metrics on `window.__solitudePredictionMetrics`, and renders through `@solitude/browser`.
 - Remote client composition lives in `packages/client/src/composition.ts`; local prediction is driven through `@solitude/sim/localPrediction` plugin capabilities, not direct plugin-internal imports.
+- Standalone and remote rendering share browser-owned layered view presenters. WebGL renders solid meshes natively from renderer-neutral scene meshes; Canvas overlays preserve trajectories, segments, labels, and HUD.
 - Localization is client-side and server-neutral. `@solitude/sim/localization` resolves `?locale=` or browser-preferred language to `en`/`es`/`fr`, formats numbers/units without thousands grouping, provides message interpolation, and defines generic entity-name-provider capabilities. JSON message bundles live with the client/plugin/content package that owns each string. The multiplayer lobby offers a language selector and passes locale through game links; standalone resolves from browser locale unless `?locale=` overrides it.
 - Entity `displayName` remains a literal authored override for scene/body labels. Entity-contributing plugins can provide localized names through `solitude.entityNameProvider.v1`; built-in solar-system names are owned by the solar-system plugin, and custom ids fall back to generated names.
 - Shared browser-safe protocol contract lives in `@solitude/protocol`; browser client adapters live in `@solitude/client`.
@@ -154,6 +157,7 @@
 ## Next Steps Snapshot
 
 - Active path: client/server gameplay feel; keep local prediction/reconciliation stable and restore smooth remote-entity interpolation with an ordered authoritative snapshot buffer. See `MEMORY_CLIENT_SERVER_2.md`.
+- Active rendering follow-up: verify WebGL2/Canvas visual parity interactively on real hardware while retaining `?renderer=canvas`. See `MEMORY_GPU_RENDERING.md`.
 - Package split migration is closed; future package work is normal API curation.
 - Operator runtime focus switching series is closed; remaining operator-model work is foreground/background UX and declarative input lock policy. See `MEMORY_OPERATOR_MODEL.md`.
 - Planned future work: Solitude-owned headless playback runner. See `MEMORY_HEADLESS_PLAYBACK.md`.
@@ -164,5 +168,5 @@
 - Some plugin features still use spacecraft or solar-system vocabulary; keep that out of engine/browser unless it is truly generic.
 - Default Solitude plugin order is behaviorally significant; preserve ordering-sensitive tests when moving playback, operator switch, pause, profiling, or input plugins.
 - Gravity uses fixed sub-steps for stability; high time scales can still destabilize.
-- WebGL path is present but not wired in the default entry.
+- WebGL2 availability and runtime context loss are hard failures with localized recovery UX; users can explicitly reload with `?renderer=canvas`.
 - Controls are keyboard-only with no in-app help; consider a help overlay or onboarding prompt.

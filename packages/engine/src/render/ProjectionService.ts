@@ -5,22 +5,17 @@ import { type Vec3, vec3 } from "../domain/vec3";
 import { alloc } from "../global/allocProfiler";
 import { type NdcPoint, ndc } from "./ndc";
 import type { ProjectedSegment } from "./renderInternals";
+import {
+  getRenderFocalLengthX,
+  renderFocalLengthY,
+  renderNearDepth,
+} from "./renderParameters";
 
 /**
  * Camera-space forward threshold.
  */
-const NEAR = 0.01;
+const NEAR = renderNearDepth;
 const FAR = Number.POSITIVE_INFINITY;
-
-/**
- * Vertical field of view in degrees.
- * The camera is parameterized in terms of a vertical field of view
- * and a “circle condition” so that a sphere centered on the view axis
- * appears circular in screen space, even when canvasWidth != canvasHeight.
- */
-const VERTICAL_FOV = 30;
-const vFovRad = (VERTICAL_FOV * Math.PI) / 180;
-const focalLengthY = 1 / Math.tan(vFovRad / 2);
 
 export interface ProjectionWorkspace {
   cameraPointPool: Vec3[];
@@ -117,6 +112,7 @@ const OUT_BOTTOM = 1 << 5;
  */
 export class ProjectionService {
   private focalLengthX: number;
+  private focalLengthY: number;
   private tanHalfFovX: number;
   private tanHalfFovY: number;
 
@@ -130,8 +126,9 @@ export class ProjectionService {
     canvasHeight: number,
     private readonly workspace: ProjectionWorkspace = createProjectionWorkspace(),
   ) {
-    this.focalLengthX = focalLengthY * (canvasHeight / canvasWidth);
-    this.tanHalfFovY = 1 / focalLengthY;
+    this.focalLengthX = getRenderFocalLengthX(canvasWidth, canvasHeight);
+    this.focalLengthY = renderFocalLengthY;
+    this.tanHalfFovY = 1 / this.focalLengthY;
     this.tanHalfFovX = 1 / this.focalLengthX;
 
     this.R_localFromWorld = mat3.zero();
@@ -146,8 +143,9 @@ export class ProjectionService {
     canvasWidth: number,
     canvasHeight: number,
   ): void {
-    this.focalLengthX = focalLengthY * (canvasHeight / canvasWidth);
-    this.tanHalfFovY = 1 / focalLengthY;
+    this.focalLengthX = getRenderFocalLengthX(canvasWidth, canvasHeight);
+    this.focalLengthY = renderFocalLengthY;
+    this.tanHalfFovY = 1 / this.focalLengthY;
     this.tanHalfFovX = 1 / this.focalLengthX;
 
     localFrame.intoMat3(this.R_localFromWorld, pose.frame);
@@ -217,7 +215,7 @@ export class ProjectionService {
   projectCameraPointToNdcInto(into: NdcPoint, cameraPoint: Vec3): void {
     const depth = cameraPoint.y;
     into.x = (cameraPoint.x * this.focalLengthX) / depth;
-    into.y = (cameraPoint.z * focalLengthY) / depth;
+    into.y = (cameraPoint.z * this.focalLengthY) / depth;
     into.depth = depth;
   }
 
@@ -244,7 +242,7 @@ export class ProjectionService {
     }
 
     // pixelDiameter = diameterWorld * focalLengthY * screenHeight / depth
-    return (diameterWorld * focalLengthY * screenHeight) / diameterPixels;
+    return (diameterWorld * this.focalLengthY * screenHeight) / diameterPixels;
   }
 
   /**

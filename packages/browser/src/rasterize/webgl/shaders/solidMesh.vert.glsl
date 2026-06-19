@@ -1,0 +1,61 @@
+#version 300 es
+precision highp float;
+precision highp int;
+
+in vec3 aPosition;
+in vec3 aNormal;
+in vec3 aFaceAnchor;
+
+uniform mat3 uModelOrientation;
+uniform vec3 uModelTranslation;
+uniform vec3 uCameraRight;
+uniform vec3 uCameraForward;
+uniform vec3 uCameraUp;
+uniform vec2 uFocalLength;
+uniform float uNearDepth;
+uniform sampler2D uLights;
+uniform int uLightCount;
+uniform int uEmissive;
+uniform float uExposure;
+uniform float uGamma;
+
+flat out float vIntensity;
+out float vCameraDepth;
+
+void main() {
+  vec3 worldRelative = uModelOrientation * aPosition + uModelTranslation;
+  vec3 cameraPoint = vec3(
+    dot(worldRelative, uCameraRight),
+    dot(worldRelative, uCameraForward),
+    dot(worldRelative, uCameraUp)
+  );
+  gl_Position = vec4(
+    cameraPoint.x * uFocalLength.x,
+    cameraPoint.z * uFocalLength.y,
+    cameraPoint.y - 2.0 * uNearDepth,
+    cameraPoint.y
+  );
+  vCameraDepth = cameraPoint.y;
+
+  if (uEmissive == 1) {
+    vIntensity = 1.0;
+    return;
+  }
+
+  vec3 normal = normalize(uModelOrientation * aNormal);
+  vec3 anchor = uModelOrientation * aFaceAnchor + uModelTranslation;
+  float irradiance = 0.0;
+  for (int lightIndex = 0; lightIndex < uLightCount; lightIndex++) {
+    vec4 light = texelFetch(uLights, ivec2(lightIndex, 0), 0);
+    vec3 toLight = light.xyz - anchor;
+    float distanceSquared = dot(toLight, toLight);
+    if (distanceSquared <= 0.0) continue;
+    float normalLight = dot(normal, toLight * inversesqrt(distanceSquared));
+    if (normalLight <= 0.0) continue;
+    irradiance += (light.w / (12.566370614359172 * distanceSquared)) * normalLight;
+  }
+  float hdr = uExposure * irradiance;
+  float mapped = hdr / (1.0 + hdr);
+  vIntensity = pow(clamp(mapped, 0.0, 1.0), uGamma);
+}
+

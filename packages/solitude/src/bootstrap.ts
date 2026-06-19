@@ -1,10 +1,20 @@
-import { bootstrap } from "@solitude/browser/dom/canvasBootstrap";
+import {
+  createCanvasRendererHref,
+  showRenderFailurePanel,
+} from "@solitude/browser/dom/renderFailurePanel";
+import type { RenderFailure } from "@solitude/browser/dom/rendererBackend";
+import { resolveRendererBackend } from "@solitude/browser/dom/rendererBackend";
+import { bootstrapRendering } from "@solitude/browser/dom/renderingBootstrap";
 import { parseRuntimeOptionsFromSearch } from "@solitude/browser/dom/runtimeOptions";
 import { loadPlugins } from "@solitude/engine/plugin";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
-import { createRuntimeOptionsWithResolvedLocale } from "@solitude/sim/localization";
+import {
+  createRuntimeOptionsWithResolvedLocale,
+  resolveSolitudeLocale,
+} from "@solitude/sim/localization";
 import { defaultPluginIds, solitudePluginCatalog } from "./plugins/catalog";
+import { getRendererFailureMessages } from "./rendererFailureLocalization";
 
 /**
  * Top‑level composition entry for the browser runtime.
@@ -21,7 +31,38 @@ function main(): void {
   });
   const config = buildWorldAndSceneConfig();
   applyWorldModelPlugins(config, plugins);
-  bootstrap(config, plugins);
+  const container = document.querySelector(".canvas-container");
+  if (!container) throw new Error("Required '.canvas-container' not found");
+  bootstrapRendering({
+    backend: resolveRendererBackend(runtimeOptions),
+    config,
+    onFatalError: (failure) =>
+      showFatalRenderError(container, runtimeOptions, failure),
+    plugins,
+  });
+}
+
+function showFatalRenderError(
+  container: Element,
+  runtimeOptions: ReturnType<typeof parseRuntimeOptionsFromSearch>,
+  failure: RenderFailure,
+): void {
+  const messages = getRendererFailureMessages(
+    resolveSolitudeLocale(runtimeOptions),
+  );
+  const message =
+    failure.code === "webgl-context-lost"
+      ? messages["renderer.failure.contextLost"]
+      : failure.code === "webgl2-unavailable"
+        ? messages["renderer.failure.unavailable"]
+        : messages["renderer.failure.program"];
+  showRenderFailurePanel({
+    canvasHref: createCanvasRendererHref(window.location),
+    container,
+    message,
+    recoveryLabel: messages["renderer.failure.recovery"],
+    title: messages["renderer.failure.title"],
+  });
 }
 
 main();

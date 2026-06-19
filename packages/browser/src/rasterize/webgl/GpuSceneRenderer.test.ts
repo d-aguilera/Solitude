@@ -1,0 +1,196 @@
+import { localFrame, mat3, vec3 } from "@solitude/engine/math";
+import type {
+  ControlledBodySceneObject,
+  ViewRenderParams,
+} from "@solitude/engine/render";
+import { describe, expect, it } from "vitest";
+import { GpuSceneRenderer } from "./GpuSceneRenderer";
+
+describe("GPU scene renderer", () => {
+  it("uploads unchanged geometry once and releases it", () => {
+    const recording = createRecordingGl();
+    const failures: unknown[] = [];
+    const renderer = new GpuSceneRenderer({
+      gl: recording.gl,
+      onFatalError: (failure) => failures.push(failure),
+    });
+    const object = createObject();
+    const params = createRenderParams(object);
+
+    renderer.render(params);
+    renderer.render(params);
+    renderer.dispose();
+
+    expect(recording.staticBufferUploads).toBe(1);
+    expect(recording.drawCalls).toBe(2);
+    expect(recording.deletedBuffers).toBe(1);
+    expect(failures).toEqual([]);
+  });
+
+  it("reports context loss and stops issuing draws", () => {
+    const recording = createRecordingGl();
+    const failures: { code: string }[] = [];
+    const renderer = new GpuSceneRenderer({
+      gl: recording.gl,
+      onFatalError: (failure) => failures.push(failure),
+    });
+    const params = createRenderParams(createObject());
+    renderer.render(params);
+
+    recording.loseContext();
+    renderer.render(params);
+
+    expect(recording.drawCalls).toBe(1);
+    expect(failures).toEqual([
+      { code: "webgl-context-lost", cause: expect.anything() },
+    ]);
+  });
+});
+
+function createObject(): ControlledBodySceneObject {
+  return {
+    applyTransform: true,
+    backFaceCulling: false,
+    color: { b: 30, g: 20, r: 10 },
+    id: "craft:test",
+    kind: "controlledBody",
+    lineWidth: 1,
+    mesh: {
+      faces: [[0, 1, 2]],
+      points: [
+        vec3.create(-1, 0, -1),
+        vec3.create(1, 0, -1),
+        vec3.create(0, 0, 1),
+      ],
+    },
+    orientation: mat3.copy(mat3.identity, mat3.zero()),
+    position: vec3.create(0, 10, 0),
+    wireframeOnly: false,
+  };
+}
+
+function createRenderParams(
+  object: ControlledBodySceneObject,
+): ViewRenderParams {
+  return {
+    camera: {
+      frame: localFrame.clone({
+        right: vec3.create(1, 0, 0),
+        forward: vec3.create(0, 1, 0),
+        up: vec3.create(0, 0, 1),
+      }),
+      position: vec3.zero(),
+    },
+    mainFocus: {} as ViewRenderParams["mainFocus"],
+    renderCache: { entries: new WeakMap(), frameId: 0 },
+    scene: { lights: [], objects: [object] },
+    sceneLabelCandidates: [],
+    surface: { height: 600, width: 800 },
+    worldSegments: [],
+  };
+}
+
+function createRecordingGl(): {
+  deletedBuffers: number;
+  drawCalls: number;
+  gl: WebGL2RenderingContext;
+  loseContext: () => void;
+  staticBufferUploads: number;
+} {
+  const state = {
+    deletedBuffers: 0,
+    drawCalls: 0,
+    staticBufferUploads: 0,
+  };
+  let contextLostListener: ((event: Event) => void) | null = null;
+  const canvas = {
+    addEventListener: (name: string, listener: (event: Event) => void) => {
+      if (name === "webglcontextlost") contextLostListener = listener;
+    },
+    removeEventListener: (name: string) => {
+      if (name === "webglcontextlost") contextLostListener = null;
+    },
+  };
+  const gl = {
+    ARRAY_BUFFER: 1,
+    BACK: 2,
+    CLAMP_TO_EDGE: 3,
+    COLOR_BUFFER_BIT: 4,
+    COMPILE_STATUS: 5,
+    CULL_FACE: 6,
+    DEPTH_BUFFER_BIT: 8,
+    DEPTH_TEST: 7,
+    FLOAT: 9,
+    FRAGMENT_SHADER: 10,
+    LEQUAL: 11,
+    LINEAR: 12,
+    LINK_STATUS: 13,
+    NEAREST: 14,
+    RGBA: 15,
+    RGBA32F: 16,
+    STATIC_DRAW: 17,
+    TEXTURE0: 18,
+    TEXTURE_2D: 19,
+    TEXTURE_MAG_FILTER: 20,
+    TEXTURE_MIN_FILTER: 21,
+    TEXTURE_WRAP_S: 22,
+    TEXTURE_WRAP_T: 23,
+    TRIANGLES: 24,
+    UNSIGNED_SHORT: 25,
+    VERTEX_SHADER: 26,
+    canvas,
+    activeTexture: () => {},
+    attachShader: () => {},
+    bindBuffer: () => {},
+    bindTexture: () => {},
+    bindVertexArray: () => {},
+    bufferData: (_target: number, _data: unknown, usage: number) => {
+      if (usage === 17) state.staticBufferUploads++;
+    },
+    clear: () => {},
+    clearColor: () => {},
+    clearDepth: () => {},
+    compileShader: () => {},
+    createBuffer: () => ({}),
+    createProgram: () => ({}),
+    createShader: () => ({}),
+    createTexture: () => ({}),
+    createVertexArray: () => ({}),
+    cullFace: () => {},
+    deleteBuffer: () => state.deletedBuffers++,
+    deleteProgram: () => {},
+    deleteShader: () => {},
+    deleteTexture: () => {},
+    deleteVertexArray: () => {},
+    depthFunc: () => {},
+    disable: () => {},
+    drawArrays: () => state.drawCalls++,
+    enable: () => {},
+    enableVertexAttribArray: () => {},
+    frontFace: () => {},
+    getAttribLocation: () => 0,
+    getProgramInfoLog: () => "",
+    getProgramParameter: () => true,
+    getShaderInfoLog: () => "",
+    getShaderParameter: () => true,
+    getUniformLocation: () => ({}),
+    linkProgram: () => {},
+    shaderSource: () => {},
+    texImage2D: () => {},
+    texParameteri: () => {},
+    texSubImage2D: () => {},
+    uniform1f: () => {},
+    uniform1i: () => {},
+    uniform2f: () => {},
+    uniform3f: () => {},
+    uniformMatrix3fv: () => {},
+    useProgram: () => {},
+    vertexAttribPointer: () => {},
+    viewport: () => {},
+  } as unknown as WebGL2RenderingContext;
+  return Object.assign(state, {
+    gl,
+    loseContext: () =>
+      contextLostListener?.({ preventDefault: () => {} } as Event),
+  });
+}

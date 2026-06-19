@@ -10,6 +10,7 @@ import type { World } from "@solitude/engine/world";
 export const browserOverlayCapability = "solitude.browser.overlay.v1";
 
 export interface OverlayRasterizer {
+  beginFrame: () => void;
   drawHud: (hud: unknown) => void;
 }
 

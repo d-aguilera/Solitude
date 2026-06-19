@@ -4,7 +4,21 @@ import {
   type LayoutView,
 } from "@solitude/browser/dom/layout";
 import { applyBrowserOverlayProviders } from "@solitude/browser/dom/overlayPorts";
-import { createRemoteMultiCanvasRenderer } from "@solitude/browser/remoteCanvasRenderer";
+import {
+  resolveRendererBackend,
+  type RendererBackend,
+  type RenderFailure,
+} from "@solitude/browser/dom/rendererBackend";
+import {
+  getOrCreateDomViewLayers,
+  orderViewDefinitionsPrimaryFirst,
+  removeExtraDomViews,
+} from "@solitude/browser/dom/view";
+import { createBrowserViewPresenter } from "@solitude/browser/dom/viewPresenter";
+import {
+  createRemoteViewPresenterRenderer,
+  type RemoteViewPresenterRenderer,
+} from "@solitude/browser/remoteViewPresenter";
 import { mat3, vec3 } from "@solitude/engine/math";
 import {
   type ControlInput,
@@ -12,11 +26,7 @@ import {
   type GamePlugin,
   type RuntimeOptions,
 } from "@solitude/engine/plugin";
-import {
-  buildViewDefinitions,
-  type ViewDefinition,
-  type ViewLayout,
-} from "@solitude/engine/render";
+import { buildViewDefinitions } from "@solitude/engine/render";
 import {
   type RuntimeEntitySnapshot,
   type RuntimeWorldSnapshot,
@@ -75,8 +85,9 @@ export interface RemoteClientSnapshotMessage {
 export interface SolitudeRemoteClientRendererOptions {
   container: Element;
   getFocusEntityId: () => string;
-  plugins?: GamePlugin[];
-  runtimeOptions?: RuntimeOptions;
+  onFatalError: (failure: RenderFailure) => void;
+  plugins: GamePlugin[];
+  runtimeOptions: RuntimeOptions;
 }
 
 export interface SolitudeRemoteClientRenderer {
@@ -93,6 +104,8 @@ export interface SolitudeRemoteClientRenderer {
 }
 
 export interface SolitudeRemoteRenderDebugState {
+  backend: RendererBackend;
+  fatalError: RenderFailure["code"] | null;
   interpolationEnabled: boolean;
   predictionEnabled: boolean;
 }
@@ -104,9 +117,11 @@ const predictionRuntimeOption = "prediction";
 export function createSolitudeRemoteClientRenderer({
   container,
   getFocusEntityId,
-  plugins: clientPlugins = [],
-  runtimeOptions = {},
+  onFatalError,
+  plugins: clientPlugins,
+  runtimeOptions,
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
+  const backend = resolveRendererBackend(runtimeOptions);
   const {
     capabilityRegistry,
     localPredictionProviders,
@@ -132,9 +147,8 @@ export function createSolitudeRemoteClientRenderer({
   let interpolationBuffer = createRuntimeSnapshotInterpolationBuffer();
   const mixedSnapshot: RuntimeWorldSnapshot = { entities: [] };
 
-  let renderer: ReturnType<typeof createRemoteMultiCanvasRenderer> | null =
-    null;
-  let rendererCanvases: readonly HTMLCanvasElement[] = [];
+  let renderer: RemoteViewPresenterRenderer | null = null;
+  let fatalError: RenderFailure["code"] | null = null;
   const layoutViews: LayoutView[] = [];
   let layoutInitialized = false;
   const reconciliationState = createLocalReconciliationState();
@@ -183,7 +197,7 @@ export function createSolitudeRemoteClientRenderer({
     },
     renderFrame: (nowMillis, dtMillis) => {
       if (!latestSnapshot || !renderer) return false;
-      resizeCanvasesToDisplaySize(rendererCanvases);
+      renderer.resizeToDisplaySize(window.devicePixelRatio || 1);
       const focusEntityId = getFocusEntityId();
       if (focusEntityId.length > 0) {
         renderer.setFocusEntityId(focusEntityId);
@@ -233,8 +247,8 @@ export function createSolitudeRemoteClientRenderer({
     },
     setModel: (entities, nextModelVersion) => {
       modelVersion = nextModelVersion;
+      renderer?.dispose();
       renderer = createRenderer(plugins, entities);
-      rendererCanvases = renderer.views.map((view) => view.canvas);
       latestSnapshot = null;
       latestSnapshotReceivedAtMillis = 0;
       messageSimulationTimeMillis = 0;
@@ -267,7 +281,7 @@ export function createSolitudeRemoteClientRenderer({
   };
 
   function renderPredictedSnapshot(
-    renderer: ReturnType<typeof createRemoteMultiCanvasRenderer>,
+    renderer: RemoteViewPresenterRenderer,
     snapshot: RuntimeWorldSnapshot,
     focusEntityId: string,
     predictionMillis: number,
@@ -314,7 +328,7 @@ export function createSolitudeRemoteClientRenderer({
   }
 
   function createRenderSnapshot(
-    renderer: ReturnType<typeof createRemoteMultiCanvasRenderer>,
+    renderer: RemoteViewPresenterRenderer,
     remoteSnapshot: RuntimeWorldSnapshot,
     authoritativeSnapshot: RuntimeWorldSnapshot,
     focusEntityId: string,
@@ -359,7 +373,7 @@ export function createSolitudeRemoteClientRenderer({
   }
 
   function shouldInterpolateRemoteEntity(
-    renderer: ReturnType<typeof createRemoteMultiCanvasRenderer>,
+    renderer: RemoteViewPresenterRenderer,
     entityId: EntityId,
     focusEntityId: EntityId,
   ): boolean {
@@ -372,7 +386,7 @@ export function createSolitudeRemoteClientRenderer({
   }
 
   function applyLocalPrediction(
-    renderer: ReturnType<typeof createRemoteMultiCanvasRenderer>,
+    renderer: RemoteViewPresenterRenderer,
     controlledBody: ControlledBody,
     predictionMillis: number,
   ): void {
@@ -408,7 +422,7 @@ export function createSolitudeRemoteClientRenderer({
   }
 
   function findControlledBody(
-    renderer: ReturnType<typeof createRemoteMultiCanvasRenderer>,
+    renderer: RemoteViewPresenterRenderer,
     focusEntityId: string,
   ) {
     return renderer.worldRenderer.mirror.world.controllableBodies.find(
@@ -449,6 +463,8 @@ export function createSolitudeRemoteClientRenderer({
 
   function createRemoteRenderDebugState(): SolitudeRemoteRenderDebugState {
     return {
+      backend,
+      fatalError,
       interpolationEnabled: interpolateRemoteSnapshots,
       predictionEnabled: predictLocalShip,
     };
@@ -473,22 +489,48 @@ export function createSolitudeRemoteClientRenderer({
     config.mainFocusEntityId =
       focusEntityId.length > 0 ? focusEntityId : (entities[0]?.id ?? "");
     const viewDefinitions = buildViewDefinitions(config, plugins);
-    const viewCanvases = createViewCanvases(container, viewDefinitions);
-    replaceLayoutViews(layoutViews, viewCanvases);
+    const presentedViews = orderViewDefinitionsPrimaryFirst(
+      viewDefinitions,
+    ).map((definition, index) => {
+      const layers = getOrCreateDomViewLayers(container, index, definition);
+      const presenter = createBrowserViewPresenter({
+        backend,
+        labelMode: definition.labelMode,
+        onFatalError: handleFatalError,
+        overlayCanvas: layers.overlayCanvas,
+        sceneCanvas: layers.sceneCanvas,
+      });
+      return { definition, layers, presenter };
+    });
+    removeExtraDomViews(container, presentedViews.length);
+    replaceLayoutViews(
+      layoutViews,
+      presentedViews.map(({ definition, layers, presenter }) => ({
+        element: layers.element,
+        layout: definition.layout,
+        resize: presenter.resize,
+      })),
+    );
     if (layoutInitialized) {
       resizeLayout(container, layoutViews);
     } else {
       initLayout(container, layoutViews);
       layoutInitialized = true;
     }
-    return createRemoteMultiCanvasRenderer({
+    return createRemoteViewPresenterRenderer({
       config,
       plugins,
-      views: viewCanvases.map((view) => ({
-        canvas: view.canvas,
-        viewId: view.definition.id,
+      views: presentedViews.map(({ definition, presenter }) => ({
+        presenter,
+        viewId: definition.id,
       })),
     });
+  }
+
+  function handleFatalError(failure: RenderFailure): void {
+    fatalError = failure.code;
+    publishRemoteRenderDebugState();
+    onFatalError(failure);
   }
 }
 
@@ -535,102 +577,10 @@ function resetLocalPredictionProviders(
   }
 }
 
-function createViewCanvases(
-  container: Element,
-  definitions: readonly ViewDefinition[],
-): {
-  canvas: HTMLCanvasElement;
-  definition: ViewDefinition;
-  layout: ViewLayout;
-}[] {
-  const views: {
-    canvas: HTMLCanvasElement;
-    definition: ViewDefinition;
-    layout: ViewLayout;
-  }[] = [];
-  let index = 0;
-  for (const definition of primaryDefinitionsFirst(definitions)) {
-    const canvas = getOrCreateViewCanvas(
-      container,
-      createViewCanvasId(index),
-      definition,
-    );
-    views.push({ canvas, definition, layout: definition.layout });
-    index++;
-  }
-  removeExtraViewCanvases(container, index);
-  return views;
-}
-
 function replaceLayoutViews(
   into: LayoutView[],
   views: readonly LayoutView[],
 ): void {
   into.length = 0;
   into.push(...views);
-}
-
-function primaryDefinitionsFirst(
-  definitions: readonly ViewDefinition[],
-): ViewDefinition[] {
-  const ordered: ViewDefinition[] = [];
-  for (const definition of definitions) {
-    if (definition.layout.kind === "primary") ordered.push(definition);
-  }
-  for (const definition of definitions) {
-    if (definition.layout.kind !== "primary") ordered.push(definition);
-  }
-  return ordered;
-}
-
-function getOrCreateViewCanvas(
-  container: Element,
-  elementId: string,
-  definition: ViewDefinition,
-): HTMLCanvasElement {
-  let canvas = document.getElementById(elementId) as HTMLCanvasElement | null;
-  if (!canvas) {
-    canvas = document.createElement("canvas");
-    canvas.id = elementId;
-  }
-
-  canvas.classList.toggle("pip-canvas", definition.layout.kind === "pip");
-  if (canvas.parentElement !== container) {
-    container.appendChild(canvas);
-  }
-
-  return canvas;
-}
-
-function removeExtraViewCanvases(container: Element, nextIndex: number): void {
-  for (;;) {
-    const canvas = document.getElementById(createViewCanvasId(nextIndex));
-    if (!canvas || canvas.parentElement !== container) return;
-    canvas.remove();
-    nextIndex++;
-  }
-}
-
-function createViewCanvasId(index: number): string {
-  return `sceneViewCanvas-${index}`;
-}
-
-function resizeCanvasesToDisplaySize(canvases: readonly HTMLCanvasElement[]) {
-  for (const canvas of canvases) {
-    resizeCanvasToDisplaySize(canvas);
-  }
-}
-
-function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement): void {
-  const cssWidth = canvas.clientWidth;
-  const cssHeight = canvas.clientHeight;
-  if (cssWidth <= 0 || cssHeight <= 0) return;
-
-  const dpr = window.devicePixelRatio || 1;
-  const deviceWidth = Math.round(cssWidth * dpr);
-  const deviceHeight = Math.round(cssHeight * dpr);
-  if (canvas.width === deviceWidth && canvas.height === deviceHeight) return;
-
-  canvas.width = deviceWidth;
-  canvas.height = deviceHeight;
 }

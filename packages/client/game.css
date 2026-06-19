@@ -26,6 +26,6 @@ canvas {
   position: absolute;
 }
 
-.pip-canvas {
+.pip-view {
   border: 1px solid rgba(184, 220, 200, 0.28);
 }

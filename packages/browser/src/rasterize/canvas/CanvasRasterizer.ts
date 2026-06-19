@@ -38,14 +38,21 @@ let textY: number;
  * Canvas2D rasterizer.
  */
 export class CanvasRasterizer implements Rasterizer {
-  constructor(private readonly ctx: CanvasRenderingContext2D) {}
+  constructor(
+    private readonly ctx: CanvasRenderingContext2D,
+    private readonly clearMode: "opaque" | "transparent",
+  ) {}
 
   clear(color: string): void {
     ctx = this.ctx;
     const canvas = ctx.canvas;
 
-    ctx.fillStyle = color;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (this.clearMode === "transparent") {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
   }
 
   drawSceneLabels(labels: RenderedSceneLabel[], count: number): void {

@@ -1,13 +1,6 @@
 import type { GamePlugin } from "@solitude/engine/plugin";
-import type {
-  Rasterizer,
-  RenderSurface2D,
-  ViewDefinition,
-} from "@solitude/engine/render";
-import {
-  buildViewDefinitions,
-  DefaultViewRenderer,
-} from "@solitude/engine/render";
+import type { ViewDefinition } from "@solitude/engine/render";
+import { buildViewDefinitions } from "@solitude/engine/render";
 import { NewtonianGravityEngine, parameters } from "@solitude/engine/runtime";
 import type {
   GravityEngine,
@@ -16,20 +9,19 @@ import type {
 import { runLoop } from "./domGameLoop";
 import { initInput } from "./domKeyboardInput";
 import { initLayout, type LayoutView } from "./domLayout";
+import { getOrCreateDomViewLayers } from "./domView";
 import type { RunLoopView } from "./infraPorts";
-import type { OverlayRasterizer } from "./overlayPorts";
+import type { RenderFailure, RendererBackend } from "./rendererBackend";
+import { createBrowserViewPresenter } from "./viewPresenter";
 
 /**
  * DOM-level bootstrap
  */
 export function bootstrapWith(
   config: WorldAndSceneConfig,
-  makeSurface: (canvas: HTMLCanvasElement) => RenderSurface2D,
-  makeRasterizer: (canvas: HTMLCanvasElement) => Rasterizer,
-  makeOverlayRasterizer: (
-    canvas: HTMLCanvasElement,
-  ) => OverlayRasterizer | null,
   plugins: GamePlugin[],
+  backend: RendererBackend,
+  onFatalError: (failure: RenderFailure) => void,
 ): void {
   const container = document.querySelector(".canvas-container");
   if (!container) {
@@ -37,19 +29,24 @@ export function bootstrapWith(
   }
 
   const viewDefinitions = buildViewDefinitions(config, plugins);
-  const viewCanvases = createViewCanvases(container, viewDefinitions);
-  initLayout(container, viewCanvases);
+  const views = createRunLoopViews(
+    container,
+    viewDefinitions,
+    backend,
+    onFatalError,
+  );
+  initLayout(container, views);
+  window.addEventListener(
+    "pagehide",
+    () => {
+      for (const view of views) view.dispose();
+    },
+    { once: true },
+  );
 
   const gravityEngine: GravityEngine = new NewtonianGravityEngine(
     parameters.newtonG,
     parameters.softeningLength,
-  );
-
-  const views = createRunLoopViews(
-    viewCanvases,
-    makeSurface,
-    makeRasterizer,
-    makeOverlayRasterizer,
   );
 
   const { controlInput } = initInput(plugins);
@@ -63,24 +60,34 @@ export function bootstrapWith(
   });
 }
 
-type LayoutViewPlusDefinition = LayoutView & { definition: ViewDefinition };
-
-function createViewCanvases(
+function createRunLoopViews(
   container: Element,
   definitions: ViewDefinition[],
-): LayoutViewPlusDefinition[] {
-  const views: LayoutViewPlusDefinition[] = [];
+  backend: RendererBackend,
+  onFatalError: (failure: RenderFailure) => void,
+): (RunLoopView & LayoutView)[] {
+  const views: (RunLoopView & LayoutView)[] = [];
   let index = 0;
   for (const definition of primaryDefinitionsFirst(definitions)) {
-    const canvas = getOrCreateViewCanvas(
-      container,
-      createViewCanvasId(index),
-      definition,
-    );
+    const layers = getOrCreateDomViewLayers(container, index, definition);
+    const presenter = createBrowserViewPresenter({
+      backend,
+      labelMode: definition.labelMode,
+      onFatalError,
+      overlayCanvas: layers.overlayCanvas,
+      sceneCanvas: layers.sceneCanvas,
+    });
     views.push({
-      canvas,
+      backend: presenter.backend,
       definition,
+      dispose: presenter.dispose,
+      element: layers.element,
       layout: definition.layout,
+      overlayRasterizer: presenter.overlayRasterizer,
+      rasterizer: presenter.rasterizer,
+      renderer: presenter,
+      resize: presenter.resize,
+      surface: presenter.surface,
     });
     index++;
   }
@@ -98,52 +105,4 @@ function primaryDefinitionsFirst(
     if (definition.layout.kind !== "primary") ordered.push(definition);
   }
   return ordered;
-}
-
-function getOrCreateViewCanvas(
-  container: Element,
-  elementId: string,
-  definition: ViewDefinition,
-): HTMLCanvasElement {
-  let canvas = document.getElementById(elementId) as HTMLCanvasElement | null;
-  if (!canvas) {
-    canvas = document.createElement("canvas");
-    canvas.id = elementId;
-  }
-
-  canvas.classList.toggle("pip-canvas", definition.layout.kind === "pip");
-  if (canvas.parentElement !== container) {
-    container.appendChild(canvas);
-  }
-
-  return canvas;
-}
-
-function createViewCanvasId(index: number): string {
-  return `sceneViewCanvas-${index}`;
-}
-
-function createRunLoopViews(
-  views: LayoutViewPlusDefinition[],
-  makeSurface: (canvas: HTMLCanvasElement) => RenderSurface2D,
-  makeRasterizer: (canvas: HTMLCanvasElement) => Rasterizer,
-  makeOverlayRasterizer: (
-    canvas: HTMLCanvasElement,
-  ) => OverlayRasterizer | null,
-): RunLoopView[] {
-  const result: RunLoopView[] = [];
-  for (const view of views) {
-    const rasterizer = makeRasterizer(view.canvas);
-    result.push({
-      definition: view.definition,
-      overlayRasterizer: makeOverlayRasterizer(view.canvas),
-      rasterizer,
-      renderer: new DefaultViewRenderer(
-        (text: string, font: string) => rasterizer.measureText(text, font),
-        view.definition.labelMode,
-      ),
-      surface: makeSurface(view.canvas),
-    });
-  }
-  return result;
 }

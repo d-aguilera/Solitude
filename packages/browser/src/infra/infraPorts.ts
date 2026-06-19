@@ -12,7 +12,9 @@ import type {
 import type { OverlayRasterizer } from "./overlayPorts";
 
 export interface RunLoopView {
+  backend: "canvas" | "webgl";
   definition: ViewDefinition;
+  dispose: () => void;
   overlayRasterizer: OverlayRasterizer | null;
   rasterizer: Rasterizer;
   renderer: ViewRenderer;

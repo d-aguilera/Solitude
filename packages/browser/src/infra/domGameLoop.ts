@@ -329,10 +329,12 @@ export function runLoop({
     const polylines = passes.polylines;
     const segments = passes.segments;
     const sceneLabels = passes.sceneLabels;
+    primaryOverlayRasterizer?.beginFrame();
 
     for (const view of loopViews) {
       const renderParams = view.renderParams;
-      renderParams.renderFaces = facesBuild;
+      renderParams.renderFaces =
+        view.backend === "webgl" ? facesBuild && facesRaster : facesBuild;
       renderParams.sortFaces = facesSort;
       renderParams.renderPolylines = polylines;
       renderParams.renderSegments = segments;

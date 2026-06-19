@@ -8,6 +8,9 @@
     "./math": "./src/math.ts",
     "./plugin": "./src/plugin.ts",
     "./render": "./src/render.ts",
+    "./render/bodyLod": "./src/render/bodyLod.ts",
+    "./render/parameters": "./src/render/renderParameters.ts",
+    "./render/projectionService": "./src/render/ProjectionService.ts",
     "./runtime": "./src/runtime.ts",
     "./world": "./src/world.ts"
   },

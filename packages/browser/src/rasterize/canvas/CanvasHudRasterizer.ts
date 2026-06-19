@@ -21,7 +21,16 @@ let hudCanvasHeight = -1;
 let hudCharacterWidth = 0;
 
 export class CanvasHudRasterizer implements OverlayRasterizer {
-  constructor(private readonly ctx: CanvasRenderingContext2D) {}
+  constructor(
+    private readonly ctx: CanvasRenderingContext2D,
+    private readonly clearAtFrameStart: boolean,
+  ) {}
+
+  beginFrame(): void {
+    if (!this.clearAtFrameStart) return;
+    const canvas = this.ctx.canvas;
+    this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
 
   drawHud(hud: unknown): void {
     if (!isHudGrid(hud)) return;

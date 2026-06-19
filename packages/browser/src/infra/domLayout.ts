@@ -3,8 +3,9 @@ import type { ViewLayout } from "@solitude/engine/render";
 let remove: (() => void) | null = null;
 
 export interface LayoutView {
-  canvas: HTMLCanvasElement;
+  element: HTMLElement;
   layout: ViewLayout;
+  resize: (cssWidth: number, cssHeight: number, pixelRatio: number) => void;
 }
 
 export function initLayout(container: Element, views: LayoutView[]) {
@@ -19,22 +20,15 @@ export function resizeLayout(container: Element, views: LayoutView[]): void {
   resizeCanvases(container, views);
 }
 
-function resizeCanvasToCssBox(
-  canvas: HTMLCanvasElement,
+function resizeViewToCssBox(
+  view: LayoutView,
   cssWidth: number,
   cssHeight: number,
 ): void {
-  canvas.style.width = `${cssWidth}px`;
-  canvas.style.height = `${cssHeight}px`;
-
+  view.element.style.width = `${cssWidth}px`;
+  view.element.style.height = `${cssHeight}px`;
   const dpr = window.devicePixelRatio || 1;
-  const deviceWidth = Math.round(cssWidth * dpr);
-  const deviceHeight = Math.round(cssHeight * dpr);
-
-  if (canvas.width === deviceWidth && canvas.height === deviceHeight) return;
-
-  canvas.width = deviceWidth;
-  canvas.height = deviceHeight;
+  view.resize(cssWidth, cssHeight, dpr);
 }
 
 function resizeCanvases(container: Element, views: LayoutView[]): void {
@@ -54,11 +48,11 @@ function resizeCanvases(container: Element, views: LayoutView[]): void {
 
   const primaryView = views.find((view) => view.layout.kind === "primary");
   if (primaryView) {
-    primaryView.canvas.style.left = "0";
-    primaryView.canvas.style.right = "auto";
-    primaryView.canvas.style.top = "0";
-    primaryView.canvas.style.bottom = "auto";
-    resizeCanvasToCssBox(primaryView.canvas, primaryWidth, primaryHeight);
+    primaryView.element.style.left = "0";
+    primaryView.element.style.right = "auto";
+    primaryView.element.style.top = "0";
+    primaryView.element.style.bottom = "auto";
+    resizeViewToCssBox(primaryView, primaryWidth, primaryHeight);
   }
 
   // PiP views: 20% of container width, fixed aspect ratio.
@@ -70,12 +64,12 @@ function resizeCanvases(container: Element, views: LayoutView[]): void {
 
   for (const view of views) {
     if (view.layout.kind !== "pip") continue;
-    const canvas = view.canvas;
+    const element = view.element;
     const layout = view.layout;
-    canvas.style.left = "auto";
-    canvas.style.right = "auto";
-    canvas.style.top = "auto";
-    canvas.style.bottom = "auto";
+    element.style.left = "auto";
+    element.style.right = "auto";
+    element.style.top = "auto";
+    element.style.bottom = "auto";
 
     const verticalInset =
       layout.vertical === "top" && layout.avoidHud
@@ -83,18 +77,18 @@ function resizeCanvases(container: Element, views: LayoutView[]): void {
         : pipMargin;
 
     if (layout.horizontal === "left") {
-      canvas.style.left = `${pipMargin}px`;
+      element.style.left = `${pipMargin}px`;
     } else {
-      canvas.style.right = `${pipMargin}px`;
+      element.style.right = `${pipMargin}px`;
     }
 
     if (layout.vertical === "top") {
-      canvas.style.top = `${verticalInset}px`;
+      element.style.top = `${verticalInset}px`;
     } else {
-      canvas.style.bottom = `${verticalInset}px`;
+      element.style.bottom = `${verticalInset}px`;
     }
 
-    resizeCanvasToCssBox(canvas, pipWidth, pipHeight);
+    resizeViewToCssBox(view, pipWidth, pipHeight);
   }
 }
 
