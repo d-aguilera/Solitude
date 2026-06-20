@@ -28,13 +28,6 @@ const failKnownPluginImports = process.argv.includes(
   "--fail-known-plugin-imports",
 );
 
-const pluginCompositionFiles = new Set([
-  "packages/display/src/plugins/catalog.ts",
-  "packages/multiplayer/src/composition.ts",
-  "packages/sim/src/plugins/catalog.ts",
-  "packages/solitude/src/plugins/catalog.ts",
-]);
-
 // Temporary baseline for plugin-policy violations that existed before this
 // rule. Run with --fail-known-plugin-imports while burning these down.
 const knownPluginImportViolations = new Set([
@@ -348,7 +341,6 @@ function isTestFile(file) {
 
 function isPluginCompositionFile(file) {
   return (
-    pluginCompositionFiles.has(file) ||
     file.endsWith("/src/plugins/catalog.ts") ||
     file.endsWith("/src/composition.ts")
   );

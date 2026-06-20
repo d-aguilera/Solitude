@@ -1,7 +1,6 @@
 import { createHudOverlayPlugin } from "@solitude/browser/dom/hudOverlayPlugin";
 import { displayPluginCatalog } from "@solitude/display/plugins/catalog";
 import type { PluginCatalog } from "@solitude/engine/plugin";
-import { createAutopilotPlugin } from "@solitude/sim/plugins/autopilot";
 import { createPolyFighterPlugin } from "@solitude/sim/plugins/polyFighter";
 import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
 import { createSpacecraftOperatorPlugin } from "@solitude/sim/plugins/spacecraftOperator";
@@ -42,7 +41,6 @@ export const defaultPluginIds = [
 
 export const solitudePluginCatalog: PluginCatalog = {
   ...displayPluginCatalog,
-  autopilot: createAutopilotPlugin,
   hud: createHudOverlayPlugin,
   mainViewLookaround: createMainViewLookaroundPlugin,
   memory: createMemoryPlugin,

@@ -1,3 +1,4 @@
+import { createAutopilotPlugin } from "@solitude/display/plugins/autopilot";
 import { createOrbitTelemetryPlugin } from "@solitude/display/plugins/orbitTelemetry";
 import { createShipTelemetryPlugin } from "@solitude/display/plugins/shipTelemetry";
 import {
@@ -24,7 +25,6 @@ import {
   type HudPanelProvider,
 } from "@solitude/hud/provider";
 import { createEntityNameProvider } from "@solitude/sim/localization";
-import { createAutopilotPlugin } from "@solitude/sim/plugins/autopilot";
 import { createSpacecraftOperatorTelemetryProvider } from "@solitude/sim/plugins/spacecraftOperator/capabilities";
 import { createSpacecraftOperatorTelemetry } from "@solitude/sim/plugins/spacecraftOperator/telemetry";
 import { describe, expect, it } from "vitest";

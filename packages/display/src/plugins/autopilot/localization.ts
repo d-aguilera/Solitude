@@ -2,7 +2,7 @@ import {
   createSolitudeLocalization,
   type SolitudeLocale,
   type SolitudeLocalization,
-} from "../../localization";
+} from "@solitude/sim/localization";
 import enMessages from "./locales/en.json";
 import esMessages from "./locales/es.json";
 import frMessages from "./locales/fr.json";

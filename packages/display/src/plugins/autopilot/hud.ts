@@ -6,8 +6,8 @@ import {
 } from "@solitude/engine/math";
 import type { ControlledBody, World } from "@solitude/engine/world";
 import type { HudPanelProvider } from "@solitude/hud/provider";
+import { getAutopilotMode } from "@solitude/sim/autopilot/mode";
 import type { AutopilotLocalization } from "./localization";
-import { getAutopilotMode } from "./logic";
 
 export function createHudPanel(
   localization: AutopilotLocalization,

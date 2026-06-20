@@ -62,8 +62,9 @@
 ## Package Snapshot
 
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
-- `packages/hud/src/`: generic HUD grid and HUD panel capability contracts shared by display, browser, sim, client, and Solitude plugins.
-- `packages/sim/src/`: browser-safe and Node-safe Solitude simulation library: default world config, solar-system entity builders/assets, spacecraft operator dynamics, autopilot logic, localization helpers/messages, and headless Solitude composition shared by server and browser/product packages.
+- `packages/hud/src/`: generic HUD grid and HUD panel capability contracts shared by display, browser, client, and Solitude plugins.
+- `packages/sim/src/`: browser-safe and Node-safe Solitude simulation library: default world config, solar-system entity builders/assets, spacecraft operator dynamics, headless autopilot behavior, localization helpers/messages, and headless Solitude composition shared by server and browser/product packages.
+- `packages/display/src/`: browser-safe presentation plugins shared by standalone and remote rendering, including views, labels, telemetry, trajectories, and the input/HUD wrapper around headless autopilot behavior.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, layered view layout, Canvas presentation, GPU-native WebGL2 presentation, and remote-world mirror helpers.
 - `packages/protocol/src/`: browser-safe client/server protocol types and message guards.
 - `packages/client/src/`: deployable remote browser client, server URL adapter, HTTP/WebSocket client helpers, keyboard input patching, authoritative snapshot interpolation, and remote rendering composition.
@@ -80,7 +81,7 @@
 - `packages/engine/src/infra/configuredGamePipeline.ts` constructs the standalone world/scene and creates the engine-owned application pipeline.
 - `packages/engine/src/app/gamePipeline.ts` owns plugin assembly, frame policy, simulation, scene/view updates, and per-view render contributions; `packages/engine/src/app/game.ts` runs the per-tick simulation phases.
 - `packages/browser/src/infra/domGameLoop.ts` schedules animation frames, invokes the engine pipeline, renders through generic view renderers, and rasterizes scene/HUD overlays.
-- Shared Solitude simulation plugins from `@solitude/sim` provide spacecraft controls, vehicle dynamics, autopilot behavior, and scenario/world-model content; browser-only Solitude plugins provide camera rigs, HUD overlay/readout behavior, playback behavior, and standalone UX.
+- Shared Solitude simulation plugins from `@solitude/sim` provide spacecraft controls, vehicle dynamics, headless autopilot behavior, and scenario/world-model content. `@solitude/display` composes autopilot input/HUD presentation around that behavior and owns shared visual plugins; browser-only Solitude plugins provide remaining camera, playback, and standalone UX.
 - Solitude plugin order is runtime behavior; later loop/frame-policy plugins can override earlier ones, and DOM input handlers are consulted in reverse plugin order.
 
 ## Current State
@@ -93,6 +94,7 @@
 - Main-view lookaround input/camera-offset controls live in `packages/solitude/src/plugins/mainViewLookaround/`.
 - Spacecraft propulsion/RCS/attitude, input bindings, spacecraft operator state, and the primary forward camera rig live in `@solitude/sim`; browser/server/client code import them directly from `@solitude/sim`.
 - Autopilot `circleNow` uses `autopilot.mode.v2`: a continuous dominant-body circularization controller that aims the main thrust axis at orbital correction while unstable, blends back to inward-facing once stable, and keeps roll referenced to the orbital tangent to avoid stable-orbit roll oscillation. `alignToVelocity` and `alignToBody` remain behavior-compatible with v1.
+- The headless autopilot plugin in `@solitude/sim` contributes only control behavior and capabilities. `@solitude/display` owns its keyboard input, localized HUD panel, and message bundles; server/headless composition does not instantiate presentation behavior and `@solitude/sim` does not depend on `@solitude/hud`.
 - Runtime focus switching lives in `packages/solitude/src/plugins/operatorSwitch/`; `Tab` swaps foreground focus between `ship:blue` and `ship:red`.
 - During playback, `Tab` may switch the viewed focus while recorded controls continue applying to the entity focused when each playback phase was recorded.
 - Core owns generic focus, primary-view plumbing, simulation phase order, gravity, spin, collision, setup, render preparation, and plugin port/capability contracts.
@@ -134,7 +136,8 @@
 - `packages/solitude/src/bootstrap.ts`: Solitude browser app composition.
 - `packages/sim/src/plugins/spacecraftOperator/`: spacecraft controls, dynamics, telemetry state, and forward camera rig.
 - `packages/solitude/src/plugins/operatorSwitch/`: default runtime focus switching between controllable ships.
-- `packages/sim/src/plugins/autopilot/logic.ts`: align-to-velocity/body and “circle now”.
+- `packages/sim/src/autopilot/`: reusable headless autopilot behavior, input contract, control logic, and propulsion integration APIs.
+- `packages/display/src/plugins/autopilot/`: standalone/remote autopilot input, localization, and HUD composition.
 - `packages/solitude/src/plugins/playback/`: diagnostic capture/playback and repeatable scenario logs.
 
 ## Controls Quick Reference

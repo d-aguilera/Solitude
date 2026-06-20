@@ -1,7 +1,7 @@
 import type { PluginCatalog } from "@solitude/engine/plugin";
-import { createAutopilotPlugin } from "@solitude/sim/plugins/autopilot";
 import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
 import { createSpacecraftOperatorPlugin } from "@solitude/sim/plugins/spacecraftOperator";
+import { createAutopilotPlugin } from "./autopilot/index";
 import { createAxialViewsPlugin } from "./axialViews/index";
 import { createBodyLabelsPlugin } from "./bodyLabels/index";
 import { createOrbitTelemetryPlugin } from "./orbitTelemetry/index";
@@ -31,6 +31,7 @@ export const remoteRenderPluginIds = [
 ];
 
 export const displayPluginCatalog: PluginCatalog = {
+  autopilot: createAutopilotPlugin,
   axialViews: createAxialViewsPlugin,
   bodyLabels: createBodyLabelsPlugin,
   orbitTelemetry: createOrbitTelemetryPlugin,
@@ -41,7 +42,6 @@ export const displayPluginCatalog: PluginCatalog = {
 
 export const remoteRenderPluginCatalog: PluginCatalog = {
   ...displayPluginCatalog,
-  autopilot: createAutopilotPlugin,
   solarSystem: createSolarSystemPlugin,
   spacecraftOperator: createSpacecraftOperatorPlugin,
 };

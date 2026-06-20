@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 import {
   createAutonomousControlProvider,
   createControlPlugin as createAutopilotControlPlugin,
-} from "../../autopilot/core";
+} from "../../../autopilot/core";
 import {
   createSpacecraftLocalPredictionProvider,
   createSpacecraftVehicleDynamicsPlugin,

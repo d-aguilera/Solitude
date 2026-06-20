@@ -22,6 +22,7 @@ import type {
   SpacecraftRcsCommand,
   SpacecraftThrustCommand,
 } from "./spacecraftPropulsion";
+export { getAutopilotMode, type AutopilotMode } from "./mode";
 
 // Max rate at which the ship can reorient itself toward its velocity vector.
 const alignToVelocityMaxAngularSpeed = 2.0; // rad/s
@@ -738,19 +739,6 @@ export function resolveAutopilotPropulsionCommand(
     maxThrustAcceleration,
     maxRcsTranslationAcceleration,
   );
-}
-
-export type AutopilotMode =
-  | "none"
-  | "alignToVelocity"
-  | "alignToBody"
-  | "circleNow";
-
-export function getAutopilotMode(controlInput: ControlInput): AutopilotMode {
-  if (controlInput.circleNow) return "circleNow";
-  if (controlInput.alignToBody) return "alignToBody";
-  if (controlInput.alignToVelocity) return "alignToVelocity";
-  return "none";
 }
 
 export function disengageOnManualActuation(
