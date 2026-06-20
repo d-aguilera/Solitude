@@ -76,8 +76,10 @@
 
 - `packages/solitude/index.html` loads `packages/solitude/src/bootstrap.ts`.
 - Solitude bootstrap builds config, loads the product plugin set, and calls browser runtime bootstrap.
-- `packages/browser/src/infra/domBootstrap.ts` wires DOM input, layout, renderers, game loop, and gravity engine.
-- `packages/engine/src/app/game.ts` runs per-tick simulation phases.
+- `packages/browser/src/infra/domBootstrap.ts` wires DOM input, layout, renderers, browser frame scheduling, and the gravity engine.
+- `packages/engine/src/infra/configuredGamePipeline.ts` constructs the standalone world/scene and creates the engine-owned application pipeline.
+- `packages/engine/src/app/gamePipeline.ts` owns plugin assembly, frame policy, simulation, scene/view updates, and per-view render contributions; `packages/engine/src/app/game.ts` runs the per-tick simulation phases.
+- `packages/browser/src/infra/domGameLoop.ts` schedules animation frames, invokes the engine pipeline, renders through generic view renderers, and rasterizes scene/HUD overlays.
 - Shared Solitude simulation plugins from `@solitude/sim` provide spacecraft controls, vehicle dynamics, autopilot behavior, and scenario/world-model content; browser-only Solitude plugins provide camera rigs, HUD overlay/readout behavior, playback behavior, and standalone UX.
 - Solitude plugin order is runtime behavior; later loop/frame-policy plugins can override earlier ones, and DOM input handlers are consulted in reverse plugin order.
 
@@ -94,6 +96,8 @@
 - Runtime focus switching lives in `packages/solitude/src/plugins/operatorSwitch/`; `Tab` swaps foreground focus between `ship:blue` and `ship:red`.
 - During playback, `Tab` may switch the viewed focus while recorded controls continue applying to the entity focused when each playback phase was recorded.
 - Core owns generic focus, primary-view plumbing, simulation phase order, gravity, spin, collision, setup, render preparation, and plugin port/capability contracts.
+- The engine-owned configured game pipeline constructs standalone runtime state and coordinates frame policy, simulation, scene/view updates, and render contributions. Browser runtime code is limited to frame scheduling and presentation adapters.
+- Standalone and headless runtimes share simulation-plugin capability/control assembly through `packages/engine/src/app/pluginRuntime.ts`.
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
 - Server runtime lives in `packages/server/src/runtime.ts`; it composes shared `@solitude/sim` headless Solitude code, steps entity-addressed controls, and reuses runtime snapshot storage.
@@ -111,6 +115,9 @@
 ## Key Files
 
 - `packages/engine/src/infra/NewtonianGravityEngine.ts`: N-body gravity with leapfrog integration.
+- `packages/engine/src/app/gamePipeline.ts`: application-level standalone frame pipeline and per-view contribution preparation.
+- `packages/engine/src/app/pluginRuntime.ts`: shared simulation-plugin capability, control, and simulation assembly used by standalone and headless runtimes.
+- `packages/engine/src/infra/configuredGamePipeline.ts`: engine composition factory that constructs the world/scene and application pipeline.
 - `packages/engine/src/infra/headlessGameLoop.ts`: generic headless stepper; callers pass Solitude plugins explicitly when needed.
 - `packages/engine/src/setup/sceneSetup.ts`: generic scene graph + trajectory setup.
 - `packages/engine/src/render/SceneOverlayRenderer.ts`: renderer-neutral projection and layout for scene overlays only.

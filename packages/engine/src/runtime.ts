@@ -1,5 +1,10 @@
 export { updateFocusContext } from "./app/focus";
 export { createTickHandler } from "./app/game";
+export type {
+  GamePipeline,
+  GamePipelineFrame,
+  GamePipelineView,
+} from "./app/gamePipeline";
 export {
   applyAxialSpin,
   applyControlledBodyRotation,
@@ -37,6 +42,8 @@ export type {
 } from "./app/runtimeSnapshot";
 export { parameters } from "./global/parameters";
 export { profiler, profilerController } from "./global/profiling";
+export { createConfiguredGamePipeline } from "./infra/configuredGamePipeline";
+export type { ConfiguredGamePipelineParams } from "./infra/configuredGamePipeline";
 export { createHeadlessLoop } from "./infra/headlessGameLoop";
 export type {
   HeadlessLoop,

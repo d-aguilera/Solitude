@@ -5,10 +5,10 @@ import type {
   ControlPlugin,
   GamePlugin,
   PluginCapabilityProvider,
-  PluginCapabilityRegistry,
   SimulationPlugin,
 } from "../app/pluginPorts";
 import { validatePluginRequirements } from "../app/pluginRequirements";
+import { assembleSimulationPlugins } from "../app/pluginRuntime";
 import type { TickParams, WorldAndScene } from "../app/runtimePorts";
 import type { Scene } from "../app/scenePorts";
 import type { EntityId, GravityEngine } from "../domain/domainPorts";
@@ -89,22 +89,22 @@ export function createHeadlessLoop(
 
   const timeScale = options.timeScale ?? 1;
   const plugins = options.plugins ?? [];
-  const controlPlugins = [
-    ...collectControlPlugins(plugins),
-    ...(options.controlPlugins ?? []),
-  ];
+  const simulationAssembly = assembleSimulationPlugins(
+    plugins,
+    options.capabilityProviders ?? [],
+    options.controlPlugins ?? [],
+    options.simulationPlugins ?? [],
+  );
   const capabilityRegistry = createPluginCapabilityRegistry(
-    collectCapabilityProviders(plugins, options.capabilityProviders),
+    simulationAssembly.capabilityProviders,
   );
   validatePluginRequirements({
     mainFocus: worldSetup.mainFocus,
     plugins,
     world: worldSetup.world,
   });
-  const simulationPlugins = [
-    ...collectSimulationPlugins(plugins, controlPlugins, capabilityRegistry),
-    ...(options.simulationPlugins ?? []),
-  ];
+  const simulationPlugins =
+    simulationAssembly.createSimulationPlugins(capabilityRegistry);
 
   const baseControlInput = createControlInput();
 
@@ -168,49 +168,4 @@ export function createHeadlessLoop(
     stepWithEntityInputs,
     stepWithEntityInputsAndSimDt,
   };
-}
-
-function collectControlPlugins(
-  plugins: readonly GamePlugin[],
-): ControlPlugin[] {
-  const controlPlugins: ControlPlugin[] = [];
-  for (const plugin of plugins) {
-    if (plugin.controls) {
-      controlPlugins.push(plugin.controls);
-    }
-  }
-  return controlPlugins;
-}
-
-function collectCapabilityProviders(
-  plugins: readonly GamePlugin[],
-  additionalProviders: readonly PluginCapabilityProvider[] | undefined,
-): PluginCapabilityProvider[] {
-  const providers: PluginCapabilityProvider[] = [];
-  for (const plugin of plugins) {
-    if (plugin.capabilities) {
-      providers.push(...plugin.capabilities);
-    }
-  }
-  if (additionalProviders) {
-    providers.push(...additionalProviders);
-  }
-  return providers;
-}
-
-function collectSimulationPlugins(
-  plugins: readonly GamePlugin[],
-  controlPlugins: ControlPlugin[],
-  capabilityRegistry: PluginCapabilityRegistry,
-): SimulationPlugin[] {
-  const simulationPlugins: SimulationPlugin[] = [];
-  for (const plugin of plugins) {
-    if (!plugin.simulation) continue;
-    simulationPlugins.push(
-      typeof plugin.simulation === "function"
-        ? plugin.simulation({ capabilityRegistry, controlPlugins })
-        : plugin.simulation,
-    );
-  }
-  return simulationPlugins;
 }
