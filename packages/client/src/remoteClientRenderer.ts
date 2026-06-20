@@ -128,7 +128,7 @@ export function createSolitudeRemoteClientRenderer({
   });
   const predictionState = createLocalPredictionState();
   const framePolicy: FramePolicy = {
-    advanceOverlay: true,
+    advancePresentation: true,
     advanceScene: true,
     advanceSim: false,
   };

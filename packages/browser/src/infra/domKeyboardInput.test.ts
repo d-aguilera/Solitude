@@ -1,10 +1,10 @@
-import type { InputPlugin } from "@solitude/engine/plugin";
+import type { KeyboardInputProvider } from "@solitude/input/keyboard";
 import { describe, expect, it } from "vitest";
 import { __domKeyboardInputTest } from "./domKeyboardInput";
 
 describe("domKeyboardInput", () => {
   it("adds plugin key bindings and actions", () => {
-    const input: InputPlugin = {
+    const input: KeyboardInputProvider = {
       actions: ["testFire", "testTrim"],
       keyMap: {
         KeyF: "testFire",
@@ -22,7 +22,7 @@ describe("domKeyboardInput", () => {
   });
 
   it("collects actions declared only through plugin key maps", () => {
-    const input: InputPlugin = {
+    const input: KeyboardInputProvider = {
       keyMap: {
         KeyF: "testFire",
       },

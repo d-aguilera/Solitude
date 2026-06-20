@@ -1,4 +1,5 @@
 import type { WorldSegment } from "../app/pluginPorts";
+import { rgbToQuantizedCss } from "./color";
 import { ndc } from "./ndc";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals";
 import type { RenderedSegment } from "./renderPorts";
@@ -23,13 +24,13 @@ export function renderWorldSegmentsInto(
     if (entry) {
       scrn.copy(projectedScratch.a, entry.start);
       scrn.copy(projectedScratch.b, entry.end);
-      entry.cssColor = seg.cssColor;
+      entry.cssColor = rgbToQuantizedCss(seg.color);
       entry.lineWidth = seg.lineWidth;
     } else {
       entry = into[count] = {
         start: scrn.copy(projectedScratch.a, scrn.zero()),
         end: scrn.copy(projectedScratch.b, scrn.zero()),
-        cssColor: seg.cssColor,
+        cssColor: rgbToQuantizedCss(seg.color),
         lineWidth: seg.lineWidth,
       };
     }

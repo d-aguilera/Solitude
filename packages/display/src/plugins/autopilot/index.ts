@@ -1,5 +1,6 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import { createHudPanelProvider } from "@solitude/hud/provider";
+import { createKeyboardInputProvider } from "@solitude/input/keyboard";
 import { createAutopilotBehaviorPlugin } from "@solitude/sim/autopilot/behavior";
 import { createInputPlugin as createAutopilotInputPlugin } from "@solitude/sim/autopilot/input";
 import { readLocaleRuntimeOption } from "@solitude/sim/localization";
@@ -18,7 +19,7 @@ export function createAutopilotPlugin(
     capabilities: [
       ...(behavior.capabilities ?? []),
       createHudPanelProvider(createHudPanel(localization)),
+      createKeyboardInputProvider(createAutopilotInputPlugin()),
     ],
-    input: createAutopilotInputPlugin(),
   };
 }

@@ -1,0 +1,15 @@
+{
+  "name": "@solitude/input",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./keyboard": "./src/keyboard.ts"
+  },
+  "dependencies": {
+    "@solitude/engine": "0.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

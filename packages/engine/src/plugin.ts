@@ -16,8 +16,6 @@ export type {
   FocusCapabilityRequirement,
   FramePolicy,
   GamePlugin,
-  InputPlugin,
-  KeyHandler,
   LoopInitParams,
   LoopPlugin,
   LoopState,

@@ -63,6 +63,7 @@
 
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
 - `packages/hud/src/`: generic HUD grid and HUD panel capability contracts shared by display, browser, client, and Solitude plugins.
+- `packages/input/src/`: outer keyboard input-provider contracts; plugins publish bindings/handlers through generic engine capabilities and browser adapters consume them.
 - `packages/sim/src/`: browser-safe and Node-safe Solitude simulation library: default world config, solar-system entity builders/assets, spacecraft operator dynamics, headless autopilot behavior, localization helpers/messages, and headless Solitude composition shared by server and browser/product packages.
 - `packages/display/src/`: browser-safe presentation plugins shared by standalone and remote rendering, including views, labels, telemetry, trajectories, and the input/HUD wrapper around headless autopilot behavior.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, layered view layout, Canvas presentation, GPU-native WebGL2 presentation, and remote-world mirror helpers.
@@ -82,7 +83,7 @@
 - `packages/engine/src/app/gamePipeline.ts` owns plugin assembly, frame policy, simulation, scene/view updates, and per-view render contributions; `packages/engine/src/app/game.ts` runs the per-tick simulation phases.
 - `packages/browser/src/infra/domGameLoop.ts` schedules animation frames, invokes the engine pipeline, renders through generic view renderers, and rasterizes scene/HUD overlays.
 - Shared Solitude simulation plugins from `@solitude/sim` provide spacecraft controls, vehicle dynamics, headless autopilot behavior, and scenario/world-model content. `@solitude/display` composes autopilot input/HUD presentation around that behavior and owns shared visual plugins; browser-only Solitude plugins provide remaining camera, playback, and standalone UX.
-- Solitude plugin order is runtime behavior; later loop/frame-policy plugins can override earlier ones, and DOM input handlers are consulted in reverse plugin order.
+- Solitude plugin order is runtime behavior; later loop/frame-policy plugins can override earlier ones, and capability-backed DOM input handlers are consulted in reverse plugin order.
 
 ## Current State
 
@@ -91,6 +92,7 @@
 - Solar-system content is owned by `@solitude/sim`; browser/server/client code import it directly from `@solitude/sim`.
 - Body label content is contributed by `packages/solitude/src/plugins/bodyLabels/`; engine owns generic scene-label layout.
 - HUD panel contracts are owned by `@solitude/hud`; browser owns the canvas overlay adapter that rasterizes HUD grids.
+- Keyboard maps and key handlers are owned by `@solitude/input`, published as plugin capabilities, and consumed by browser DOM input. Engine plugin contracts know semantic control actions but not keyboard/device bindings.
 - Main-view lookaround input/camera-offset controls live in `packages/solitude/src/plugins/mainViewLookaround/`.
 - Spacecraft propulsion/RCS/attitude, input bindings, spacecraft operator state, and the primary forward camera rig live in `@solitude/sim`; browser/server/client code import them directly from `@solitude/sim`.
 - Autopilot `circleNow` uses `autopilot.mode.v2`: a continuous dominant-body circularization controller that aims the main thrust axis at orbital correction while unstable, blends back to inward-facing once stable, and keeps roll referenced to the orbital tangent to avoid stable-orbit roll oscillation. `alignToVelocity` and `alignToBody` remain behavior-compatible with v1.
@@ -106,6 +108,7 @@
 - Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, receives authoritative model/snapshot messages over WebSocket, sends sequenced server-authoritative controls for its assigned ship, predicts the locally controlled ship immediately, smooths reconciliation visually, exposes prediction metrics on `window.__solitudePredictionMetrics`, and renders through `@solitude/browser`.
 - Remote client composition lives in `packages/client/src/composition.ts`; local prediction is driven through `@solitude/sim/localPrediction` plugin capabilities, not direct plugin-internal imports.
 - Standalone and remote rendering share browser-owned layered view presenters. WebGL renders solid meshes natively from renderer-neutral scene meshes; Canvas overlays preserve trajectories, segments, labels, and HUD.
+- Engine world-segment contributions use renderer-neutral numeric RGB; CSS conversion occurs in the render layer. Engine frame policy uses generic presentation terminology while browser overlays retain browser-owned naming.
 - Localization is client-side and server-neutral. `@solitude/sim/localization` resolves `?locale=` or browser-preferred language to `en`/`es`/`fr`, formats numbers/units without thousands grouping, provides message interpolation, and defines generic entity-name-provider capabilities. JSON message bundles live with the client/plugin/content package that owns each string. The multiplayer lobby offers a language selector and passes locale through game links; standalone resolves from browser locale unless `?locale=` overrides it.
 - Entity `displayName` remains a literal authored override for scene/body labels. Entity-contributing plugins can provide localized names through `solitude.entityNameProvider.v1`; built-in solar-system names are owned by the solar-system plugin, and custom ids fall back to generated names.
 - Shared browser-safe protocol contract lives in `@solitude/protocol`; browser client adapters live in `@solitude/client`.

@@ -86,7 +86,7 @@ export function runLoop({
     }
     if (renderDebug.hud) {
       overlayContext.advanceOverlay =
-        shouldAdvanceOverlay && frame.framePolicy.advanceOverlay;
+        shouldAdvanceOverlay && frame.framePolicy.advancePresentation;
       overlayContext.framePolicy = frame.framePolicy;
       overlayContext.nowMs = nowMs;
       overlayContext.simTimeMillis = frame.simTimeMillis;
@@ -225,7 +225,7 @@ function isViewEnabled(renderDebug: RenderDebug, viewId: string): boolean {
 
 function createOverlayFramePolicy(): FramePolicy {
   return {
-    advanceOverlay: true,
+    advancePresentation: true,
     advanceScene: true,
     advanceSim: true,
   };

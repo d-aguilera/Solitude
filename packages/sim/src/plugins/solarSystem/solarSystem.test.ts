@@ -2,8 +2,8 @@ import type { WorldModelRegistry } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { EntityConfig } from "@solitude/engine/world";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
-import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
 import { describe, expect, it, vi } from "vitest";
+import { createSolarSystemPlugin } from "../../plugins/solarSystem";
 import { buildWorldAndSceneConfig } from "../../worldAndSceneConfig";
 
 describe("solarSystem plugin", () => {

@@ -32,7 +32,8 @@
     "./plugins/spacecraftOperator/telemetry": "./src/plugins/spacecraftOperator/telemetry.ts"
   },
   "dependencies": {
-    "@solitude/engine": "0.0.0"
+    "@solitude/engine": "0.0.0",
+    "@solitude/input": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

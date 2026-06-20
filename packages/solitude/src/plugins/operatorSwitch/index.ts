@@ -7,6 +7,7 @@ import type {
 import type { FocusContext } from "@solitude/engine/runtime";
 import { updateFocusContext } from "@solitude/engine/runtime";
 import type { World } from "@solitude/engine/world";
+import { createKeyboardInputProvider } from "@solitude/input/keyboard";
 
 const swapFocusAction = "operatorSwapFocus";
 const defaultFocusTargets = ["ship:blue", "ship:red"] as const;
@@ -14,7 +15,7 @@ const autopilotActions = ["alignToVelocity", "alignToBody", "circleNow"];
 const FOCUS_SWAP_LOOP_UPDATE: LoopUpdateResult = {
   framePolicy: {
     advanceScene: true,
-    advanceOverlay: true,
+    advancePresentation: true,
   },
 };
 
@@ -25,21 +26,23 @@ export function createOperatorSwitchPlugin(
   const controller = createOperatorSwitchController(defaultFocusTargets);
   return {
     id: "operatorSwitch",
-    input: {
-      actions: [swapFocusAction],
-      keyMap: { Tab: swapFocusAction },
-      createKeyHandler: (controlInput) => ({
-        handleKeyDown: (action, isRepeat) => {
-          if (action !== swapFocusAction) return false;
-          if (!isRepeat) {
-            clearAutopilotActions(controlInput);
-            controller.requestSwap();
-          }
-          return true;
-        },
-        handleKeyUp: (action) => action === swapFocusAction,
+    capabilities: [
+      createKeyboardInputProvider({
+        actions: [swapFocusAction],
+        keyMap: { Tab: swapFocusAction },
+        createKeyHandler: (controlInput) => ({
+          handleKeyDown: (action, isRepeat) => {
+            if (action !== swapFocusAction) return false;
+            if (!isRepeat) {
+              clearAutopilotActions(controlInput);
+              controller.requestSwap();
+            }
+            return true;
+          },
+          handleKeyUp: (action) => action === swapFocusAction,
+        }),
       }),
-    },
+    ],
     loop: createOperatorSwitchLoop(controller),
   };
 }

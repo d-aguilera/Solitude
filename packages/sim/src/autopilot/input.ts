@@ -1,9 +1,8 @@
+import type { ControlAction, ControlInput } from "@solitude/engine/plugin";
 import type {
-  ControlAction,
-  ControlInput,
-  InputPlugin,
+  KeyboardInputProvider,
   KeyHandler,
-} from "@solitude/engine/plugin";
+} from "@solitude/input/keyboard";
 
 const autopilotToggleActions: Set<ControlAction> = new Set([
   "alignToBody",
@@ -17,7 +16,7 @@ const autopilotKeyMap: Record<string, ControlAction> = {
   KeyX: "circleNow",
 };
 
-export function createInputPlugin(): InputPlugin {
+export function createInputPlugin(): KeyboardInputProvider {
   return {
     keyMap: autopilotKeyMap,
     createKeyHandler,

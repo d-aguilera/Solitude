@@ -80,7 +80,7 @@ describe("remote world renderer", () => {
           segments: {
             appendSegments: (into, params) => {
               into.push({
-                cssColor: "white",
+                color: { r: 255, g: 255, b: 255 },
                 end: vec3.create(0, 10, 0),
                 lineWidth: 1,
                 start: params.mainFocus.controlledBody.position,

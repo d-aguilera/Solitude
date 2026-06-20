@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-20T22:04:02.100Z",
+  "generatedAt": "2026-06-20T22:59:44.613Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -176,6 +176,13 @@
       "label": "./http",
       "packageName": "@solitude/server",
       "parent": "pkg:@solitude/server"
+    },
+    {
+      "id": "module:@solitude/input:./keyboard",
+      "kind": "module",
+      "label": "./keyboard",
+      "packageName": "@solitude/input",
+      "parent": "pkg:@solitude/input"
     },
     {
       "id": "module:@solitude/sim:./localization",
@@ -549,6 +556,12 @@
       "kind": "package",
       "label": "@solitude/hud",
       "packageName": "@solitude/hud"
+    },
+    {
+      "id": "pkg:@solitude/input",
+      "kind": "package",
+      "label": "@solitude/input",
+      "packageName": "@solitude/input"
     },
     {
       "id": "pkg:@solitude/multiplayer",
@@ -965,6 +978,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/input:./keyboard:collectKeyboardInputProviders",
+      "kind": "symbol",
+      "label": "collectKeyboardInputProviders",
+      "packageName": "@solitude/input",
+      "parent": "module:@solitude/input:./keyboard",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/sim:./localPrediction:collectLocalEntityPredictionProviders",
       "kind": "symbol",
       "label": "collectLocalEntityPredictionProviders",
@@ -1378,6 +1399,14 @@
       "label": "createKeplerianBodiesFromConfig",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./world",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider",
+      "kind": "symbol",
+      "label": "createKeyboardInputProvider",
+      "packageName": "@solitude/input",
+      "parent": "module:@solitude/input:./keyboard",
       "symbolKind": "function"
     },
     {
@@ -2421,14 +2450,6 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/engine:./plugin:InputPlugin",
-      "kind": "symbol",
-      "label": "InputPlugin",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./plugin",
-      "symbolKind": "interface"
-    },
-    {
       "id": "symbol:@solitude/engine:./render/bodyLod:isBodyAtOrBeyondOnePixelThreshold",
       "kind": "symbol",
       "label": "isBodyAtOrBeyondOnePixelThreshold",
@@ -2549,11 +2570,27 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/engine:./plugin:KeyHandler",
+      "id": "symbol:@solitude/input:./keyboard:keyboardInputCapability",
+      "kind": "symbol",
+      "label": "keyboardInputCapability",
+      "packageName": "@solitude/input",
+      "parent": "module:@solitude/input:./keyboard",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/input:./keyboard:KeyboardInputProvider",
+      "kind": "symbol",
+      "label": "KeyboardInputProvider",
+      "packageName": "@solitude/input",
+      "parent": "module:@solitude/input:./keyboard",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/input:./keyboard:KeyHandler",
       "kind": "symbol",
       "label": "KeyHandler",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./plugin",
+      "packageName": "@solitude/input",
+      "parent": "module:@solitude/input:./keyboard",
       "symbolKind": "interface"
     },
     {
@@ -4531,6 +4568,12 @@
       "to": "pkg:@solitude/hud"
     },
     {
+      "id": "dependency:pkg:@solitude/browser->pkg:@solitude/input",
+      "from": "pkg:@solitude/browser",
+      "kind": "dependency",
+      "to": "pkg:@solitude/input"
+    },
+    {
       "id": "dependency:pkg:@solitude/client->pkg:@solitude/browser",
       "from": "pkg:@solitude/client",
       "kind": "dependency",
@@ -4579,6 +4622,12 @@
       "to": "pkg:@solitude/hud"
     },
     {
+      "id": "dependency:pkg:@solitude/display->pkg:@solitude/input",
+      "from": "pkg:@solitude/display",
+      "kind": "dependency",
+      "to": "pkg:@solitude/input"
+    },
+    {
       "id": "dependency:pkg:@solitude/display->pkg:@solitude/sim",
       "from": "pkg:@solitude/display",
       "kind": "dependency",
@@ -4587,6 +4636,12 @@
     {
       "id": "dependency:pkg:@solitude/hud->pkg:@solitude/engine",
       "from": "pkg:@solitude/hud",
+      "kind": "dependency",
+      "to": "pkg:@solitude/engine"
+    },
+    {
+      "id": "dependency:pkg:@solitude/input->pkg:@solitude/engine",
+      "from": "pkg:@solitude/input",
       "kind": "dependency",
       "to": "pkg:@solitude/engine"
     },
@@ -4633,6 +4688,12 @@
       "to": "pkg:@solitude/engine"
     },
     {
+      "id": "dependency:pkg:@solitude/sim->pkg:@solitude/input",
+      "from": "pkg:@solitude/sim",
+      "kind": "dependency",
+      "to": "pkg:@solitude/input"
+    },
+    {
       "id": "dependency:pkg:solitude->pkg:@solitude/browser",
       "from": "pkg:solitude",
       "kind": "dependency",
@@ -4655,6 +4716,12 @@
       "from": "pkg:solitude",
       "kind": "dependency",
       "to": "pkg:@solitude/hud"
+    },
+    {
+      "id": "dependency:pkg:solitude->pkg:@solitude/input",
+      "from": "pkg:solitude",
+      "kind": "dependency",
+      "to": "pkg:@solitude/input"
     },
     {
       "id": "dependency:pkg:solitude->pkg:@solitude/sim",
@@ -4685,6 +4752,12 @@
       "from": "module:@solitude/browser:./dom/keyboardInput",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
+    },
+    {
+      "id": "module-import:module:@solitude/browser:./dom/keyboardInput->module:@solitude/input:./keyboard",
+      "from": "module:@solitude/browser:./dom/keyboardInput",
+      "kind": "module-import",
+      "to": "module:@solitude/input:./keyboard"
     },
     {
       "id": "module-import:module:@solitude/browser:./dom/layout->module:@solitude/engine:./render",
@@ -4865,6 +4938,12 @@
       "from": "module:@solitude/display:./plugins/autopilot",
       "kind": "module-import",
       "to": "module:@solitude/hud:./provider"
+    },
+    {
+      "id": "module-import:module:@solitude/display:./plugins/autopilot->module:@solitude/input:./keyboard",
+      "from": "module:@solitude/display:./plugins/autopilot",
+      "kind": "module-import",
+      "to": "module:@solitude/input:./keyboard"
     },
     {
       "id": "module-import:module:@solitude/display:./plugins/autopilot->module:@solitude/sim:./autopilot/behavior",
@@ -5197,6 +5276,12 @@
       "to": "module:@solitude/engine:./world"
     },
     {
+      "id": "module-import:module:@solitude/input:./keyboard->module:@solitude/engine:./plugin",
+      "from": "module:@solitude/input:./keyboard",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./plugin"
+    },
+    {
       "id": "module-import:module:@solitude/protocol:./protocol->module:@solitude/engine:./plugin",
       "from": "module:@solitude/protocol:./protocol",
       "kind": "module-import",
@@ -5351,6 +5436,12 @@
       "from": "module:@solitude/sim:./autopilot/input",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
+    },
+    {
+      "id": "module-import:module:@solitude/sim:./autopilot/input->module:@solitude/input:./keyboard",
+      "from": "module:@solitude/sim:./autopilot/input",
+      "kind": "module-import",
+      "to": "module:@solitude/input:./keyboard"
     },
     {
       "id": "module-import:module:@solitude/sim:./autopilot/logic->module:@solitude/engine:./math",
@@ -5665,6 +5756,12 @@
       "to": "module:@solitude/engine:./render"
     },
     {
+      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator->module:@solitude/input:./keyboard",
+      "from": "module:@solitude/sim:./plugins/spacecraftOperator",
+      "kind": "module-import",
+      "to": "module:@solitude/input:./keyboard"
+    },
+    {
       "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator->module:@solitude/sim:./localPrediction",
       "from": "module:@solitude/sim:./plugins/spacecraftOperator",
       "kind": "module-import",
@@ -5783,6 +5880,12 @@
       "from": "module:@solitude/sim:./plugins/spacecraftOperator/input",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
+    },
+    {
+      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/input->module:@solitude/input:./keyboard",
+      "from": "module:@solitude/sim:./plugins/spacecraftOperator/input",
+      "kind": "module-import",
+      "to": "module:@solitude/input:./keyboard"
     },
     {
       "id": "module-import:module:@solitude/sim:./spacecraft/orbitalPlacement->module:@solitude/engine:./math",
@@ -5927,6 +6030,12 @@
       "from": "symbol:@solitude/browser:./dom/keyboardInput:initInput",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:GamePlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/keyboardInput:initInput->symbol:@solitude/input:./keyboard:collectKeyboardInputProviders",
+      "from": "symbol:@solitude/browser:./dom/keyboardInput:initInput",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:collectKeyboardInputProviders"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/layout:initLayout->symbol:@solitude/browser:./dom/layout:LayoutView",
@@ -6769,6 +6878,12 @@
       "to": "symbol:@solitude/hud:./provider:createHudPanelProvider"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/input:./keyboard:createKeyboardInputProvider",
+      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin",
       "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
       "kind": "symbol-reference",
@@ -7303,12 +7418,6 @@
       "to": "symbol:@solitude/engine:./plugin:ControlPlugin"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./plugin:GamePlugin->symbol:@solitude/engine:./plugin:InputPlugin",
-      "from": "symbol:@solitude/engine:./plugin:GamePlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:InputPlugin"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:GamePlugin->symbol:@solitude/engine:./plugin:LoopPlugin",
       "from": "symbol:@solitude/engine:./plugin:GamePlugin",
       "kind": "symbol-reference",
@@ -7367,30 +7476,6 @@
       "from": "symbol:@solitude/engine:./plugin:GamePlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:WorldModelPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./plugin:InputPlugin->symbol:@solitude/engine:./plugin:ControlAction",
-      "from": "symbol:@solitude/engine:./plugin:InputPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlAction"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./plugin:InputPlugin->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/engine:./plugin:InputPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./plugin:InputPlugin->symbol:@solitude/engine:./plugin:KeyHandler",
-      "from": "symbol:@solitude/engine:./plugin:InputPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:KeyHandler"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./plugin:KeyHandler->symbol:@solitude/engine:./plugin:ControlAction",
-      "from": "symbol:@solitude/engine:./plugin:KeyHandler",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlAction"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:loadPlugins->symbol:@solitude/engine:./plugin:GamePlugin",
@@ -7859,6 +7944,12 @@
       "from": "symbol:@solitude/engine:./plugin:WorldSegment",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:WorldSegment->symbol:@solitude/engine:./render:RGB",
+      "from": "symbol:@solitude/engine:./plugin:WorldSegment",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RGB"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render:BaseSceneObject->symbol:@solitude/engine:./math:Mat3",
@@ -10417,6 +10508,66 @@
       "to": "symbol:@solitude/hud:./provider:HudPanelProvider"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:collectKeyboardInputProviders->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
+      "from": "symbol:@solitude/input:./keyboard:collectKeyboardInputProviders",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:collectKeyboardInputProviders->symbol:@solitude/input:./keyboard:keyboardInputCapability",
+      "from": "symbol:@solitude/input:./keyboard:collectKeyboardInputProviders",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:keyboardInputCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:collectKeyboardInputProviders->symbol:@solitude/input:./keyboard:KeyboardInputProvider",
+      "from": "symbol:@solitude/input:./keyboard:collectKeyboardInputProviders",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:KeyboardInputProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:createKeyboardInputProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
+      "from": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:createKeyboardInputProvider->symbol:@solitude/input:./keyboard:keyboardInputCapability",
+      "from": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:keyboardInputCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:createKeyboardInputProvider->symbol:@solitude/input:./keyboard:KeyboardInputProvider",
+      "from": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:KeyboardInputProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:KeyboardInputProvider->symbol:@solitude/engine:./plugin:ControlAction",
+      "from": "symbol:@solitude/input:./keyboard:KeyboardInputProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:ControlAction"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:KeyboardInputProvider->symbol:@solitude/engine:./plugin:ControlInput",
+      "from": "symbol:@solitude/input:./keyboard:KeyboardInputProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:ControlInput"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:KeyboardInputProvider->symbol:@solitude/input:./keyboard:KeyHandler",
+      "from": "symbol:@solitude/input:./keyboard:KeyboardInputProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:KeyHandler"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:KeyHandler->symbol:@solitude/engine:./plugin:ControlAction",
+      "from": "symbol:@solitude/input:./keyboard:KeyHandler",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:ControlAction"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/protocol:./protocol:ClientMessageSocketEvent->symbol:@solitude/protocol:./protocol:SolitudeClientMessage",
       "from": "symbol:@solitude/protocol:./protocol:ClientMessageSocketEvent",
       "kind": "symbol-reference",
@@ -11413,10 +11564,10 @@
       "to": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:createSpacecraftPropulsionResolverProvider"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/input:createInputPlugin->symbol:@solitude/engine:./plugin:InputPlugin",
+      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/input:createInputPlugin->symbol:@solitude/input:./keyboard:KeyboardInputProvider",
       "from": "symbol:@solitude/sim:./autopilot/input:createInputPlugin",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:InputPlugin"
+      "to": "symbol:@solitude/input:./keyboard:KeyboardInputProvider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:AutopilotMode->symbol:@solitude/sim:./autopilot/mode:AutopilotMode",
@@ -12433,6 +12584,12 @@
       "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin->symbol:@solitude/input:./keyboard:createKeyboardInputProvider",
+      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin->symbol:@solitude/sim:./localPrediction:createLocalEntityPredictionProvider",
       "from": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
       "kind": "symbol-reference",
@@ -12859,10 +13016,10 @@
       "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/input:createInputPlugin->symbol:@solitude/engine:./plugin:InputPlugin",
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/input:createInputPlugin->symbol:@solitude/input:./keyboard:KeyboardInputProvider",
       "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/input:createInputPlugin",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:InputPlugin"
+      "to": "symbol:@solitude/input:./keyboard:KeyboardInputProvider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:createSpacecraftOperatorTelemetry->symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:SpacecraftOperatorTelemetry",

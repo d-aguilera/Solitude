@@ -245,7 +245,7 @@ describe("playback controller", () => {
       simTimeMillis: 20,
       state: {
         framePolicy: {
-          advanceOverlay: true,
+          advancePresentation: true,
           advanceScene: true,
           advanceSim: true,
           simDtMillis: 20,

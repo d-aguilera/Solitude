@@ -1,4 +1,4 @@
-import type { InputPlugin } from "@solitude/engine/plugin";
+import type { KeyboardInputProvider } from "@solitude/input/keyboard";
 
 export const mainViewLookaroundActions = [
   "lookLeft",
@@ -12,7 +12,7 @@ export const mainViewLookaroundActions = [
   "camDown",
 ] as const;
 
-export function createInputPlugin(): InputPlugin {
+export function createInputPlugin(): KeyboardInputProvider {
   return {
     actions: mainViewLookaroundActions,
     keyMap: {

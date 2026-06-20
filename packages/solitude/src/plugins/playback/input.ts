@@ -1,8 +1,8 @@
+import type { ControlAction } from "@solitude/engine/plugin";
 import type {
-  ControlAction,
-  InputPlugin,
+  KeyboardInputProvider,
   KeyHandler,
-} from "@solitude/engine/plugin";
+} from "@solitude/input/keyboard";
 import type { PlaybackController } from "./core";
 import type { DiagnosticRuntimeOptions } from "./options";
 
@@ -14,7 +14,7 @@ const profilingToggleAction: ControlAction = "profilingToggle";
 export function createInputPlugin(
   diagnostic: DiagnosticRuntimeOptions | undefined,
   controller: PlaybackController,
-): InputPlugin {
+): KeyboardInputProvider {
   if (diagnostic?.mode === "capture") {
     return {
       actions: [captureToggleAction],

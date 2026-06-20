@@ -5,8 +5,8 @@ import type { ControlledBody } from "@solitude/engine/world";
 const VELOCITY_SEGMENT_LENGTH = 500000; // meters
 const VELOCITY_SEGMENT_INNER_RADIUS = 7; // meters
 const VELOCITY_SEGMENT_LINE_WIDTH = 4;
-const VELOCITY_SEGMENT_FORWARD_COLOR = "lime";
-const VELOCITY_SEGMENT_BACKWARD_COLOR = "red";
+const VELOCITY_SEGMENT_FORWARD_COLOR = { r: 0, g: 255, b: 0 };
+const VELOCITY_SEGMENT_BACKWARD_COLOR = { r: 255, g: 0, b: 0 };
 
 export function createSegmentsPlugin(): SegmentPlugin {
   return {
@@ -58,14 +58,14 @@ const velocityScratch: Vec3 = vec3.zero();
 const forwardSegment: WorldSegment = {
   start: vec3.zero(),
   end: vec3.zero(),
-  cssColor: VELOCITY_SEGMENT_FORWARD_COLOR,
+  color: VELOCITY_SEGMENT_FORWARD_COLOR,
   lineWidth: VELOCITY_SEGMENT_LINE_WIDTH,
 };
 
 const backwardSegment: WorldSegment = {
   start: vec3.zero(),
   end: vec3.zero(),
-  cssColor: VELOCITY_SEGMENT_BACKWARD_COLOR,
+  color: VELOCITY_SEGMENT_BACKWARD_COLOR,
   lineWidth: VELOCITY_SEGMENT_LINE_WIDTH,
 };
 

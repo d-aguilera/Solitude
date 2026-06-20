@@ -1,5 +1,6 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import { createHudPanelProvider } from "@solitude/hud/provider";
+import { createKeyboardInputProvider } from "@solitude/input/keyboard";
 import { readLocaleRuntimeOption } from "@solitude/sim/localization";
 import { createPlaybackController } from "./core";
 import { createHudPanel } from "./hud";
@@ -27,13 +28,15 @@ export function createPlaybackPlugin(
     id: "playback",
     capabilities: [
       createHudPanelProvider(createHudPanel(controller, localization)),
+      createKeyboardInputProvider(
+        createInputPlugin(options.diagnostic, controller),
+      ),
     ],
     controls: {
       updateControlState: ({ controlInput, controlState }) => {
         controller.updateControlState(controlInput, controlState);
       },
     },
-    input: createInputPlugin(options.diagnostic, controller),
     loop: {
       getInitialSimTimeMillis: () => controller.getInitialSimTimeMillis(),
       updateLoopState: ({

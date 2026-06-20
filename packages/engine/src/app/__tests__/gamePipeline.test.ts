@@ -43,7 +43,7 @@ describe("gamePipeline", () => {
         appendSegments: (into) => {
           events.push("segments");
           into.push({
-            cssColor: "white",
+            color: { r: 255, g: 255, b: 255 },
             end: vec3.zero(),
             lineWidth: 1,
             start: vec3.zero(),

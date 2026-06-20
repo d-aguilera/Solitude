@@ -3,6 +3,7 @@ import type { LoopPlugin } from "@solitude/engine/plugin";
 import { createControlInput } from "@solitude/engine/plugin";
 import type { FocusContext } from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
+import { collectKeyboardInputProviders } from "@solitude/input/keyboard";
 import { describe, expect, it } from "vitest";
 import { defaultPluginIds } from "../catalog";
 import { __operatorSwitchTest, createOperatorSwitchPlugin } from "./index";
@@ -60,7 +61,7 @@ function applyLoop(plugin: LoopPlugin, world: World, mainFocus: FocusContext) {
     simTimeMillis: 0,
     state: {
       framePolicy: {
-        advanceOverlay: true,
+        advancePresentation: true,
         advanceScene: true,
         advanceSim: true,
       },
@@ -85,11 +86,10 @@ describe("operator switch plugin", () => {
     ]);
     controlInput.circleNow = true;
     const plugin = createOperatorSwitchPlugin();
-    const handler = plugin.input!.createKeyHandler!(controlInput);
+    const input = collectKeyboardInputProviders(plugin.capabilities ?? [])[0];
+    const handler = input.createKeyHandler!(controlInput);
 
-    expect(plugin.input!.keyMap!.Tab).toBe(
-      __operatorSwitchTest.swapFocusAction,
-    );
+    expect(input.keyMap!.Tab).toBe(__operatorSwitchTest.swapFocusAction);
     expect(
       handler.handleKeyDown(__operatorSwitchTest.swapFocusAction, true),
     ).toBe(true);
@@ -110,7 +110,7 @@ describe("operator switch plugin", () => {
     expect(mainFocus.entityId).toBe("ship:red");
     expect(mainFocus.controlledBody).toBe(red);
     expect(swapResult?.framePolicy).toEqual({
-      advanceOverlay: true,
+      advancePresentation: true,
       advanceScene: true,
     });
   });

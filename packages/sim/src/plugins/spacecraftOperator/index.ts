@@ -1,6 +1,7 @@
 import { localFrame } from "@solitude/engine/math";
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import type { ViewFrameUpdateParams } from "@solitude/engine/render";
+import { createKeyboardInputProvider } from "@solitude/input/keyboard";
 import { createLocalEntityPredictionProvider } from "../../localPrediction";
 import { createSpacecraftOperatorTelemetryProvider } from "./capabilities";
 import {
@@ -22,8 +23,8 @@ export function createSpacecraftOperatorPlugin(
       createLocalEntityPredictionProvider(
         createSpacecraftLocalPredictionProvider(),
       ),
+      createKeyboardInputProvider(createInputPlugin()),
     ],
-    input: createInputPlugin(),
     requirements: {
       mainFocus: [
         "controlledBody",

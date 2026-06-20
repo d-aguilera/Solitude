@@ -1,4 +1,5 @@
-import type { ControlAction, InputPlugin } from "@solitude/engine/plugin";
+import type { ControlAction } from "@solitude/engine/plugin";
+import type { KeyboardInputProvider } from "@solitude/input/keyboard";
 
 const spacecraftActions = [
   "rollLeft",
@@ -46,7 +47,7 @@ const spacecraftKeyMap: Record<string, ControlAction> = {
   Space: "burnForward",
 };
 
-export function createInputPlugin(): InputPlugin {
+export function createInputPlugin(): KeyboardInputProvider {
   return {
     actions: spacecraftActions,
     keyMap: spacecraftKeyMap,

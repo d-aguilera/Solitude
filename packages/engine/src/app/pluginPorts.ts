@@ -3,7 +3,6 @@ import type { Vec3 } from "../domain/vec3";
 import type { WorldAndSceneConfig } from "./configPorts";
 import type {
   AttitudeCommand,
-  ControlAction,
   ControlInput,
   ControlledBodyState,
   EntityControlInputs,
@@ -11,7 +10,7 @@ import type {
 } from "./controlPorts";
 import type { EntityConfig } from "./entityConfigPorts";
 import type { FocusContext } from "./runtimePorts";
-import type { Scene, SceneControlState, SceneObject } from "./scenePorts";
+import type { RGB, Scene, SceneControlState, SceneObject } from "./scenePorts";
 import type {
   MainViewCameraRig,
   SceneState,
@@ -21,17 +20,6 @@ import type {
 } from "./viewPorts";
 
 export type RuntimeOptions = Readonly<Record<string, string>>;
-
-export interface KeyHandler {
-  handleKeyDown: (action: ControlAction, isRepeat: boolean) => boolean;
-  handleKeyUp: (action: ControlAction) => boolean;
-}
-
-export interface InputPlugin {
-  actions?: readonly ControlAction[];
-  keyMap?: Record<string, ControlAction>;
-  createKeyHandler?: (controlInput: ControlInput) => KeyHandler;
-}
 
 export interface ControlStateUpdateParams {
   controlInput: ControlInput;
@@ -93,7 +81,7 @@ export type SimulationContribution =
 export interface WorldSegment {
   start: Vec3;
   end: Vec3;
-  cssColor: string;
+  color: RGB;
   lineWidth: number;
 }
 
@@ -173,7 +161,7 @@ export interface SceneViewFilterParams {
 export interface FramePolicy {
   advanceSim: boolean;
   advanceScene: boolean;
-  advanceOverlay: boolean;
+  advancePresentation: boolean;
   tickDtMillis?: number;
   simDtMillis?: number;
 }
@@ -269,7 +257,6 @@ export interface GamePlugin {
   id: string;
   capabilities?: readonly PluginCapabilityProvider[];
   controls?: ControlPlugin;
-  input?: InputPlugin;
   loop?: LoopPlugin;
   segments?: SegmentPlugin;
   scene?: ScenePlugin;

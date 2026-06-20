@@ -306,8 +306,8 @@ function applyLoopPlugins(
   for (const plugin of plugins) {
     const policy = plugin.updateLoopState?.(params)?.framePolicy;
     if (!policy) continue;
-    if (policy.advanceOverlay !== undefined) {
-      params.state.framePolicy.advanceOverlay = policy.advanceOverlay;
+    if (policy.advancePresentation !== undefined) {
+      params.state.framePolicy.advancePresentation = policy.advancePresentation;
     }
     if (policy.advanceScene !== undefined) {
       params.state.framePolicy.advanceScene = policy.advanceScene;
@@ -325,11 +325,11 @@ function applyLoopPlugins(
 }
 
 function createDefaultFramePolicy(): FramePolicy {
-  return { advanceOverlay: true, advanceScene: true, advanceSim: true };
+  return { advancePresentation: true, advanceScene: true, advanceSim: true };
 }
 
 function resetFramePolicy(policy: FramePolicy): void {
-  policy.advanceOverlay = true;
+  policy.advancePresentation = true;
   policy.advanceScene = true;
   policy.advanceSim = true;
   policy.simDtMillis = undefined;

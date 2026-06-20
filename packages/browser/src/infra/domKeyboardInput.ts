@@ -2,10 +2,13 @@ import type {
   ControlAction,
   ControlInput,
   GamePlugin,
-  InputPlugin,
-  KeyHandler,
 } from "@solitude/engine/plugin";
 import { createControlInput } from "@solitude/engine/plugin";
+import {
+  collectKeyboardInputProviders,
+  type KeyboardInputProvider,
+  type KeyHandler,
+} from "@solitude/input/keyboard";
 
 /**
  * Initialize keyboard listeners and keep the actions state updated.
@@ -13,7 +16,9 @@ import { createControlInput } from "@solitude/engine/plugin";
 export function initInput(plugins: GamePlugin[] = []): {
   controlInput: ControlInput;
 } {
-  const inputPlugins = collectInputPlugins(plugins);
+  const inputPlugins = collectKeyboardInputProviders(
+    plugins.flatMap((plugin) => plugin.capabilities ?? []),
+  );
   const pluginActions = collectControlActions(inputPlugins);
   const controlInput = createControlInput(pluginActions);
   const keyHandlers = collectKeyHandlers(inputPlugins, controlInput);
@@ -58,17 +63,7 @@ function updateInputs(
 
 const baseKeyMap: Record<string, ControlAction> = {};
 
-function collectInputPlugins(plugins: GamePlugin[]): InputPlugin[] {
-  const inputPlugins: InputPlugin[] = [];
-  for (const plugin of plugins) {
-    if (plugin.input) {
-      inputPlugins.push(plugin.input);
-    }
-  }
-  return inputPlugins;
-}
-
-function collectControlActions(plugins: InputPlugin[]): string[] {
+function collectControlActions(plugins: KeyboardInputProvider[]): string[] {
   const actions = new Set<string>();
   for (const plugin of plugins) {
     if (plugin.actions) {
@@ -86,7 +81,7 @@ function collectControlActions(plugins: InputPlugin[]): string[] {
 }
 
 function collectKeyHandlers(
-  plugins: InputPlugin[],
+  plugins: KeyboardInputProvider[],
   controlInput: ControlInput,
 ): KeyHandler[] {
   const handlers: KeyHandler[] = [];
@@ -100,7 +95,9 @@ function collectKeyHandlers(
   return handlers;
 }
 
-function buildKeyMap(plugins: InputPlugin[]): Record<string, ControlAction> {
+function buildKeyMap(
+  plugins: KeyboardInputProvider[],
+): Record<string, ControlAction> {
   const keyMap: Record<string, ControlAction> = { ...baseKeyMap };
   for (const plugin of plugins) {
     if (!plugin.keyMap) continue;

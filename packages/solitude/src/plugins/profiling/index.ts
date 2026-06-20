@@ -1,5 +1,6 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import { createHudPanelProvider } from "@solitude/hud/provider";
+import { createKeyboardInputProvider } from "@solitude/input/keyboard";
 import { readLocaleRuntimeOption } from "@solitude/sim/localization";
 import { createLoopPlugin } from "./core";
 import { createHudPanel } from "./hud";
@@ -17,8 +18,8 @@ export function createProfilingPlugin(
     id: "profiling",
     capabilities: [
       createHudPanelProvider(createHudPanel(controller, localization)),
+      createKeyboardInputProvider(createInputPlugin()),
     ],
-    input: createInputPlugin(),
     loop: plugin,
   };
 }

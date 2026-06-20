@@ -5,7 +5,7 @@ const RUNNING_LOOP_UPDATE: LoopUpdateResult = {
   framePolicy: {
     advanceSim: true,
     advanceScene: true,
-    advanceOverlay: true,
+    advancePresentation: true,
   },
 };
 
@@ -13,7 +13,7 @@ const PAUSED_LOOP_UPDATE: LoopUpdateResult = {
   framePolicy: {
     advanceSim: false,
     advanceScene: false,
-    advanceOverlay: true,
+    advancePresentation: true,
   },
 };
 
