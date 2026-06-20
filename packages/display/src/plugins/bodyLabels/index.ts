@@ -16,7 +16,7 @@ import type { EntityId, World } from "@solitude/engine/world";
 import {
   formatEntityName,
   readLocaleRuntimeOption,
-} from "@solitude/sim/localization";
+} from "@solitude/localization";
 import {
   createBodyLabelLocalization,
   type BodyLabelLocalization,

@@ -2,14 +2,14 @@ import type { RenderFailure } from "@solitude/browser/dom/renderFailure";
 import { showRenderFailurePanel } from "@solitude/browser/dom/renderFailurePanel";
 import { parseRuntimeOptionsFromSearch } from "@solitude/browser/dom/runtimeOptions";
 import type { ControlInput } from "@solitude/engine/plugin";
+import {
+  createRuntimeOptionsWithResolvedLocale,
+  resolveSolitudeLocale,
+} from "@solitude/localization";
 import type {
   SolitudeGameId,
   SolitudeServerMessage,
 } from "@solitude/protocol/protocol";
-import {
-  createRuntimeOptionsWithResolvedLocale,
-  resolveSolitudeLocale,
-} from "@solitude/sim/localization";
 import {
   createKeyboardInputPatcher,
   createSolitudeWebSocketClient,

@@ -1,7 +1,7 @@
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import { createHudPanelProvider } from "@solitude/hud/provider";
 import { createKeyboardInputProvider } from "@solitude/input/keyboard";
-import { readLocaleRuntimeOption } from "@solitude/sim/localization";
+import { readLocaleRuntimeOption } from "@solitude/localization";
 import { createPlaybackController } from "./core";
 import { createHudPanel } from "./hud";
 import { createInputPlugin } from "./input";

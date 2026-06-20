@@ -6,7 +6,7 @@ import type {
 import type { Scene, SceneObject } from "@solitude/engine/render";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { World } from "@solitude/engine/world";
-import { createEntityNameProvider } from "@solitude/sim/localization";
+import { createEntityNameProvider } from "@solitude/localization";
 import { describe, expect, it } from "vitest";
 import { createBodyLabelsPlugin } from "./index";
 

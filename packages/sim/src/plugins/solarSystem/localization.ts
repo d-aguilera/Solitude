@@ -3,7 +3,7 @@ import {
   createEntityNameProvider,
   readLocaleRuntimeOption,
   type SolitudeLocale,
-} from "../../localization";
+} from "@solitude/localization";
 import enMessages from "./locales/en.json";
 import esMessages from "./locales/es.json";
 import frMessages from "./locales/fr.json";

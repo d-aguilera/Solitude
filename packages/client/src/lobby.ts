@@ -3,7 +3,7 @@ import {
   createRuntimeOptionsWithResolvedLocale,
   resolveSolitudeLocale,
   type SolitudeLocale,
-} from "@solitude/sim/localization";
+} from "@solitude/localization";
 import { createSolitudeWebSocketClient } from "./client";
 import { createClientLocalization } from "./localization";
 import {

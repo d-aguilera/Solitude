@@ -24,7 +24,7 @@ import {
   type HudGrid,
   type HudPanelProvider,
 } from "@solitude/hud/provider";
-import { createEntityNameProvider } from "@solitude/sim/localization";
+import { createEntityNameProvider } from "@solitude/localization";
 import { createSpacecraftOperatorTelemetryProvider } from "@solitude/sim/plugins/spacecraftOperator/capabilities";
 import { createSpacecraftOperatorTelemetry } from "@solitude/sim/plugins/spacecraftOperator/telemetry";
 import { describe, expect, it } from "vitest";

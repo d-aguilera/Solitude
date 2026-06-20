@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-20T22:59:44.613Z",
+  "generatedAt": "2026-06-20T23:20:36.734Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -16,6 +16,13 @@
     "typedoc": "installed for future API documentation exports"
   },
   "nodes": [
+    {
+      "id": "module:@solitude/localization:.",
+      "kind": "module",
+      "label": ".",
+      "packageName": "@solitude/localization",
+      "parent": "pkg:@solitude/localization"
+    },
     {
       "id": "module:@solitude/engine:./assets",
       "kind": "module",
@@ -183,13 +190,6 @@
       "label": "./keyboard",
       "packageName": "@solitude/input",
       "parent": "pkg:@solitude/input"
-    },
-    {
-      "id": "module:@solitude/sim:./localization",
-      "kind": "module",
-      "label": "./localization",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
     },
     {
       "id": "module:@solitude/sim:./localPrediction",
@@ -562,6 +562,12 @@
       "kind": "package",
       "label": "@solitude/input",
       "packageName": "@solitude/input"
+    },
+    {
+      "id": "pkg:@solitude/localization",
+      "kind": "package",
+      "label": "@solitude/localization",
+      "packageName": "@solitude/localization"
     },
     {
       "id": "pkg:@solitude/multiplayer",
@@ -1266,11 +1272,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./localization:createEntityNameProvider",
+      "id": "symbol:@solitude/localization:.:createEntityNameProvider",
       "kind": "symbol",
       "label": "createEntityNameProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./localization",
+      "packageName": "@solitude/localization",
+      "parent": "module:@solitude/localization:.",
       "symbolKind": "function"
     },
     {
@@ -1538,11 +1544,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./localization:createRuntimeOptionsWithResolvedLocale",
+      "id": "symbol:@solitude/localization:.:createRuntimeOptionsWithResolvedLocale",
       "kind": "symbol",
       "label": "createRuntimeOptionsWithResolvedLocale",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./localization",
+      "packageName": "@solitude/localization",
+      "parent": "module:@solitude/localization:.",
       "symbolKind": "function"
     },
     {
@@ -1650,11 +1656,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./localization:createSolitudeLocalization",
+      "id": "symbol:@solitude/localization:.:createSolitudeLocalization",
       "kind": "symbol",
       "label": "createSolitudeLocalization",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./localization",
+      "packageName": "@solitude/localization",
+      "parent": "module:@solitude/localization:.",
       "symbolKind": "function"
     },
     {
@@ -1906,19 +1912,19 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./localization:EntityNameProvider",
+      "id": "symbol:@solitude/localization:.:EntityNameProvider",
       "kind": "symbol",
       "label": "EntityNameProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./localization",
+      "packageName": "@solitude/localization",
+      "parent": "module:@solitude/localization:.",
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./localization:entityNameProviderCapability",
+      "id": "symbol:@solitude/localization:.:entityNameProviderCapability",
       "kind": "symbol",
       "label": "entityNameProviderCapability",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./localization",
+      "packageName": "@solitude/localization",
+      "parent": "module:@solitude/localization:.",
       "symbolKind": "const"
     },
     {
@@ -2074,11 +2080,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./localization:formatEntityName",
+      "id": "symbol:@solitude/localization:.:formatEntityName",
       "kind": "symbol",
       "label": "formatEntityName",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./localization",
+      "packageName": "@solitude/localization",
+      "parent": "module:@solitude/localization:.",
       "symbolKind": "function"
     },
     {
@@ -2802,11 +2808,11 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./localization:MessageParams",
+      "id": "symbol:@solitude/localization:.:MessageParams",
       "kind": "symbol",
       "label": "MessageParams",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./localization",
+      "packageName": "@solitude/localization",
+      "parent": "module:@solitude/localization:.",
       "symbolKind": "type"
     },
     {
@@ -3066,11 +3072,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
+      "id": "symbol:@solitude/localization:.:readLocaleRuntimeOption",
       "kind": "symbol",
       "label": "readLocaleRuntimeOption",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./localization",
+      "packageName": "@solitude/localization",
+      "parent": "module:@solitude/localization:.",
       "symbolKind": "function"
     },
     {
@@ -3442,11 +3448,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./localization:resolveSolitudeLocale",
+      "id": "symbol:@solitude/localization:.:resolveSolitudeLocale",
       "kind": "symbol",
       "label": "resolveSolitudeLocale",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./localization",
+      "packageName": "@solitude/localization",
+      "parent": "module:@solitude/localization:.",
       "symbolKind": "function"
     },
     {
@@ -3962,35 +3968,35 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./localization:SolitudeLocale",
+      "id": "symbol:@solitude/localization:.:SolitudeLocale",
       "kind": "symbol",
       "label": "SolitudeLocale",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./localization",
+      "packageName": "@solitude/localization",
+      "parent": "module:@solitude/localization:.",
       "symbolKind": "type"
     },
     {
-      "id": "symbol:@solitude/sim:./localization:SolitudeLocaleOption",
+      "id": "symbol:@solitude/localization:.:SolitudeLocaleOption",
       "kind": "symbol",
       "label": "SolitudeLocaleOption",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./localization",
+      "packageName": "@solitude/localization",
+      "parent": "module:@solitude/localization:.",
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./localization:solitudeLocaleOptions",
+      "id": "symbol:@solitude/localization:.:solitudeLocaleOptions",
       "kind": "symbol",
       "label": "solitudeLocaleOptions",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./localization",
+      "packageName": "@solitude/localization",
+      "parent": "module:@solitude/localization:.",
       "symbolKind": "const"
     },
     {
-      "id": "symbol:@solitude/sim:./localization:SolitudeLocalization",
+      "id": "symbol:@solitude/localization:.:SolitudeLocalization",
       "kind": "symbol",
       "label": "SolitudeLocalization",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./localization",
+      "packageName": "@solitude/localization",
+      "parent": "module:@solitude/localization:.",
       "symbolKind": "interface"
     },
     {
@@ -4598,6 +4604,12 @@
       "to": "pkg:@solitude/hud"
     },
     {
+      "id": "dependency:pkg:@solitude/client->pkg:@solitude/localization",
+      "from": "pkg:@solitude/client",
+      "kind": "dependency",
+      "to": "pkg:@solitude/localization"
+    },
+    {
       "id": "dependency:pkg:@solitude/client->pkg:@solitude/protocol",
       "from": "pkg:@solitude/client",
       "kind": "dependency",
@@ -4628,6 +4640,12 @@
       "to": "pkg:@solitude/input"
     },
     {
+      "id": "dependency:pkg:@solitude/display->pkg:@solitude/localization",
+      "from": "pkg:@solitude/display",
+      "kind": "dependency",
+      "to": "pkg:@solitude/localization"
+    },
+    {
       "id": "dependency:pkg:@solitude/display->pkg:@solitude/sim",
       "from": "pkg:@solitude/display",
       "kind": "dependency",
@@ -4642,6 +4660,12 @@
     {
       "id": "dependency:pkg:@solitude/input->pkg:@solitude/engine",
       "from": "pkg:@solitude/input",
+      "kind": "dependency",
+      "to": "pkg:@solitude/engine"
+    },
+    {
+      "id": "dependency:pkg:@solitude/localization->pkg:@solitude/engine",
+      "from": "pkg:@solitude/localization",
       "kind": "dependency",
       "to": "pkg:@solitude/engine"
     },
@@ -4694,6 +4718,12 @@
       "to": "pkg:@solitude/input"
     },
     {
+      "id": "dependency:pkg:@solitude/sim->pkg:@solitude/localization",
+      "from": "pkg:@solitude/sim",
+      "kind": "dependency",
+      "to": "pkg:@solitude/localization"
+    },
+    {
       "id": "dependency:pkg:solitude->pkg:@solitude/browser",
       "from": "pkg:solitude",
       "kind": "dependency",
@@ -4722,6 +4752,12 @@
       "from": "pkg:solitude",
       "kind": "dependency",
       "to": "pkg:@solitude/input"
+    },
+    {
+      "id": "dependency:pkg:solitude->pkg:@solitude/localization",
+      "from": "pkg:solitude",
+      "kind": "dependency",
+      "to": "pkg:@solitude/localization"
     },
     {
       "id": "dependency:pkg:solitude->pkg:@solitude/sim",
@@ -4946,6 +4982,12 @@
       "to": "module:@solitude/input:./keyboard"
     },
     {
+      "id": "module-import:module:@solitude/display:./plugins/autopilot->module:@solitude/localization:.",
+      "from": "module:@solitude/display:./plugins/autopilot",
+      "kind": "module-import",
+      "to": "module:@solitude/localization:."
+    },
+    {
       "id": "module-import:module:@solitude/display:./plugins/autopilot->module:@solitude/sim:./autopilot/behavior",
       "from": "module:@solitude/display:./plugins/autopilot",
       "kind": "module-import",
@@ -4956,12 +4998,6 @@
       "from": "module:@solitude/display:./plugins/autopilot",
       "kind": "module-import",
       "to": "module:@solitude/sim:./autopilot/input"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/autopilot->module:@solitude/sim:./localization",
-      "from": "module:@solitude/display:./plugins/autopilot",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./localization"
     },
     {
       "id": "module-import:module:@solitude/display:./plugins/autopilot/hud->module:@solitude/engine:./math",
@@ -5030,10 +5066,10 @@
       "to": "module:@solitude/engine:./world"
     },
     {
-      "id": "module-import:module:@solitude/display:./plugins/bodyLabels->module:@solitude/sim:./localization",
+      "id": "module-import:module:@solitude/display:./plugins/bodyLabels->module:@solitude/localization:.",
       "from": "module:@solitude/display:./plugins/bodyLabels",
       "kind": "module-import",
-      "to": "module:@solitude/sim:./localization"
+      "to": "module:@solitude/localization:."
     },
     {
       "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/autopilot",
@@ -5114,10 +5150,10 @@
       "to": "module:@solitude/hud:./provider"
     },
     {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry->module:@solitude/sim:./localization",
+      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry->module:@solitude/localization:.",
       "from": "module:@solitude/display:./plugins/orbitTelemetry",
       "kind": "module-import",
-      "to": "module:@solitude/sim:./localization"
+      "to": "module:@solitude/localization:."
     },
     {
       "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/hud->module:@solitude/display:./plugins/orbitTelemetry/orbitReadout",
@@ -5138,10 +5174,10 @@
       "to": "module:@solitude/hud:./provider"
     },
     {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/hud->module:@solitude/sim:./localization",
+      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/hud->module:@solitude/localization:.",
       "from": "module:@solitude/display:./plugins/orbitTelemetry/hud",
       "kind": "module-import",
-      "to": "module:@solitude/sim:./localization"
+      "to": "module:@solitude/localization:."
     },
     {
       "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/orbitReadout->module:@solitude/engine:./math",
@@ -5180,10 +5216,10 @@
       "to": "module:@solitude/hud:./provider"
     },
     {
-      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry->module:@solitude/sim:./localization",
+      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry->module:@solitude/localization:.",
       "from": "module:@solitude/display:./plugins/shipTelemetry",
       "kind": "module-import",
-      "to": "module:@solitude/sim:./localization"
+      "to": "module:@solitude/localization:."
     },
     {
       "id": "module-import:module:@solitude/display:./plugins/shipTelemetry/hud->module:@solitude/engine:./math",
@@ -5278,6 +5314,12 @@
     {
       "id": "module-import:module:@solitude/input:./keyboard->module:@solitude/engine:./plugin",
       "from": "module:@solitude/input:./keyboard",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./plugin"
+    },
+    {
+      "id": "module-import:module:@solitude/localization:.->module:@solitude/engine:./plugin",
+      "from": "module:@solitude/localization:.",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
     },
@@ -5568,12 +5610,6 @@
       "from": "module:@solitude/sim:./headless",
       "kind": "module-import",
       "to": "module:@solitude/sim:./plugins/catalog"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./localization->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./localization",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
     },
     {
       "id": "module-import:module:@solitude/sim:./localPrediction->module:@solitude/engine:./plugin",
@@ -6884,6 +6920,12 @@
       "to": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/localization:.:readLocaleRuntimeOption",
+      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:readLocaleRuntimeOption"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin",
       "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
       "kind": "symbol-reference",
@@ -6894,12 +6936,6 @@
       "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/sim:./autopilot/input:createInputPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
-      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption"
     },
     {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot/hud:createHudPanel->symbol:@solitude/hud:./provider:HudPanelProvider",
@@ -6938,10 +6974,10 @@
       "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin->symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin->symbol:@solitude/localization:.:readLocaleRuntimeOption",
       "from": "symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption"
+      "to": "symbol:@solitude/localization:.:readLocaleRuntimeOption"
     },
     {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
@@ -7040,10 +7076,10 @@
       "to": "symbol:@solitude/hud:./provider:createHudPanelProvider"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin->symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin->symbol:@solitude/localization:.:readLocaleRuntimeOption",
       "from": "symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption"
+      "to": "symbol:@solitude/localization:.:readLocaleRuntimeOption"
     },
     {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel->symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto",
@@ -7070,10 +7106,10 @@
       "to": "symbol:@solitude/hud:./provider:HudPanelProvider"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel->symbol:@solitude/sim:./localization:formatEntityName",
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel->symbol:@solitude/localization:.:formatEntityName",
       "from": "symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:formatEntityName"
+      "to": "symbol:@solitude/localization:.:formatEntityName"
     },
     {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto->symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:OrbitReadout",
@@ -7148,10 +7184,10 @@
       "to": "symbol:@solitude/hud:./provider:createHudPanelProvider"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin->symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin->symbol:@solitude/localization:.:readLocaleRuntimeOption",
       "from": "symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption"
+      "to": "symbol:@solitude/localization:.:readLocaleRuntimeOption"
     },
     {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry/hud:createHudPanel->symbol:@solitude/engine:./math:vec3",
@@ -10568,6 +10604,132 @@
       "to": "symbol:@solitude/engine:./plugin:ControlAction"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/localization:.:createEntityNameProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
+      "from": "symbol:@solitude/localization:.:createEntityNameProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:createEntityNameProvider->symbol:@solitude/localization:.:EntityNameProvider",
+      "from": "symbol:@solitude/localization:.:createEntityNameProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:EntityNameProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:createEntityNameProvider->symbol:@solitude/localization:.:entityNameProviderCapability",
+      "from": "symbol:@solitude/localization:.:createEntityNameProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:entityNameProviderCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:createRuntimeOptionsWithResolvedLocale->symbol:@solitude/engine:./plugin:RuntimeOptions",
+      "from": "symbol:@solitude/localization:.:createRuntimeOptionsWithResolvedLocale",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:createRuntimeOptionsWithResolvedLocale->symbol:@solitude/localization:.:resolveSolitudeLocale",
+      "from": "symbol:@solitude/localization:.:createRuntimeOptionsWithResolvedLocale",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:resolveSolitudeLocale"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:createSolitudeLocalization->symbol:@solitude/localization:.:SolitudeLocale",
+      "from": "symbol:@solitude/localization:.:createSolitudeLocalization",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:SolitudeLocale"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:createSolitudeLocalization->symbol:@solitude/localization:.:solitudeLocaleOptions",
+      "from": "symbol:@solitude/localization:.:createSolitudeLocalization",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:solitudeLocaleOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:createSolitudeLocalization->symbol:@solitude/localization:.:SolitudeLocalization",
+      "from": "symbol:@solitude/localization:.:createSolitudeLocalization",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:SolitudeLocalization"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:EntityNameProvider->symbol:@solitude/localization:.:formatEntityName",
+      "from": "symbol:@solitude/localization:.:EntityNameProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:formatEntityName"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:formatEntityName->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
+      "from": "symbol:@solitude/localization:.:formatEntityName",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:formatEntityName->symbol:@solitude/localization:.:entityNameProviderCapability",
+      "from": "symbol:@solitude/localization:.:formatEntityName",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:entityNameProviderCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:readLocaleRuntimeOption->symbol:@solitude/engine:./plugin:RuntimeOptions",
+      "from": "symbol:@solitude/localization:.:readLocaleRuntimeOption",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:readLocaleRuntimeOption->symbol:@solitude/localization:.:resolveSolitudeLocale",
+      "from": "symbol:@solitude/localization:.:readLocaleRuntimeOption",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:resolveSolitudeLocale"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:readLocaleRuntimeOption->symbol:@solitude/localization:.:SolitudeLocale",
+      "from": "symbol:@solitude/localization:.:readLocaleRuntimeOption",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:SolitudeLocale"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:resolveSolitudeLocale->symbol:@solitude/engine:./plugin:RuntimeOptions",
+      "from": "symbol:@solitude/localization:.:resolveSolitudeLocale",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:resolveSolitudeLocale->symbol:@solitude/localization:.:SolitudeLocale",
+      "from": "symbol:@solitude/localization:.:resolveSolitudeLocale",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:SolitudeLocale"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:SolitudeLocaleOption->symbol:@solitude/localization:.:SolitudeLocale",
+      "from": "symbol:@solitude/localization:.:SolitudeLocaleOption",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:SolitudeLocale"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:solitudeLocaleOptions->symbol:@solitude/localization:.:SolitudeLocaleOption",
+      "from": "symbol:@solitude/localization:.:solitudeLocaleOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:SolitudeLocaleOption"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:SolitudeLocalization->symbol:@solitude/localization:.:MessageParams",
+      "from": "symbol:@solitude/localization:.:SolitudeLocalization",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:MessageParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:SolitudeLocalization->symbol:@solitude/localization:.:SolitudeLocale",
+      "from": "symbol:@solitude/localization:.:SolitudeLocalization",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:SolitudeLocale"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/localization:.:SolitudeLocalization->symbol:@solitude/localization:.:SolitudeLocaleOption",
+      "from": "symbol:@solitude/localization:.:SolitudeLocalization",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:SolitudeLocaleOption"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/protocol:./protocol:ClientMessageSocketEvent->symbol:@solitude/protocol:./protocol:SolitudeClientMessage",
       "from": "symbol:@solitude/protocol:./protocol:ClientMessageSocketEvent",
       "kind": "symbol-reference",
@@ -12168,132 +12330,6 @@
       "from": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./world:EntityConfig"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:createEntityNameProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
-      "from": "symbol:@solitude/sim:./localization:createEntityNameProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:createEntityNameProvider->symbol:@solitude/sim:./localization:EntityNameProvider",
-      "from": "symbol:@solitude/sim:./localization:createEntityNameProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:EntityNameProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:createEntityNameProvider->symbol:@solitude/sim:./localization:entityNameProviderCapability",
-      "from": "symbol:@solitude/sim:./localization:createEntityNameProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:entityNameProviderCapability"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:createRuntimeOptionsWithResolvedLocale->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/sim:./localization:createRuntimeOptionsWithResolvedLocale",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:createRuntimeOptionsWithResolvedLocale->symbol:@solitude/sim:./localization:resolveSolitudeLocale",
-      "from": "symbol:@solitude/sim:./localization:createRuntimeOptionsWithResolvedLocale",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:resolveSolitudeLocale"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:createSolitudeLocalization->symbol:@solitude/sim:./localization:SolitudeLocale",
-      "from": "symbol:@solitude/sim:./localization:createSolitudeLocalization",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:SolitudeLocale"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:createSolitudeLocalization->symbol:@solitude/sim:./localization:solitudeLocaleOptions",
-      "from": "symbol:@solitude/sim:./localization:createSolitudeLocalization",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:solitudeLocaleOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:createSolitudeLocalization->symbol:@solitude/sim:./localization:SolitudeLocalization",
-      "from": "symbol:@solitude/sim:./localization:createSolitudeLocalization",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:SolitudeLocalization"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:EntityNameProvider->symbol:@solitude/sim:./localization:formatEntityName",
-      "from": "symbol:@solitude/sim:./localization:EntityNameProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:formatEntityName"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:formatEntityName->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
-      "from": "symbol:@solitude/sim:./localization:formatEntityName",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:formatEntityName->symbol:@solitude/sim:./localization:entityNameProviderCapability",
-      "from": "symbol:@solitude/sim:./localization:formatEntityName",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:entityNameProviderCapability"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:readLocaleRuntimeOption->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:readLocaleRuntimeOption->symbol:@solitude/sim:./localization:resolveSolitudeLocale",
-      "from": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:resolveSolitudeLocale"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:readLocaleRuntimeOption->symbol:@solitude/sim:./localization:SolitudeLocale",
-      "from": "symbol:@solitude/sim:./localization:readLocaleRuntimeOption",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:SolitudeLocale"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:resolveSolitudeLocale->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/sim:./localization:resolveSolitudeLocale",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:resolveSolitudeLocale->symbol:@solitude/sim:./localization:SolitudeLocale",
-      "from": "symbol:@solitude/sim:./localization:resolveSolitudeLocale",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:SolitudeLocale"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:SolitudeLocaleOption->symbol:@solitude/sim:./localization:SolitudeLocale",
-      "from": "symbol:@solitude/sim:./localization:SolitudeLocaleOption",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:SolitudeLocale"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:solitudeLocaleOptions->symbol:@solitude/sim:./localization:SolitudeLocaleOption",
-      "from": "symbol:@solitude/sim:./localization:solitudeLocaleOptions",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:SolitudeLocaleOption"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:SolitudeLocalization->symbol:@solitude/sim:./localization:MessageParams",
-      "from": "symbol:@solitude/sim:./localization:SolitudeLocalization",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:MessageParams"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:SolitudeLocalization->symbol:@solitude/sim:./localization:SolitudeLocale",
-      "from": "symbol:@solitude/sim:./localization:SolitudeLocalization",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:SolitudeLocale"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./localization:SolitudeLocalization->symbol:@solitude/sim:./localization:SolitudeLocaleOption",
-      "from": "symbol:@solitude/sim:./localization:SolitudeLocalization",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localization:SolitudeLocaleOption"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./localPrediction:collectLocalEntityPredictionProviders->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",

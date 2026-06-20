@@ -4,11 +4,11 @@ import { bootstrapRendering } from "@solitude/browser/dom/renderingBootstrap";
 import { parseRuntimeOptionsFromSearch } from "@solitude/browser/dom/runtimeOptions";
 import { loadPlugins } from "@solitude/engine/plugin";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
-import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
 import {
   createRuntimeOptionsWithResolvedLocale,
   resolveSolitudeLocale,
-} from "@solitude/sim/localization";
+} from "@solitude/localization";
+import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
 import { defaultPluginIds, solitudePluginCatalog } from "./plugins/catalog";
 import { getRendererFailureMessages } from "./rendererFailureLocalization";
 

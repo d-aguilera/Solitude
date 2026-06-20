@@ -1,4 +1,4 @@
-import type { SolitudeLocale } from "@solitude/sim/localization";
+import type { SolitudeLocale } from "@solitude/localization";
 import enMessages from "./locales/en.json";
 import esMessages from "./locales/es.json";
 import frMessages from "./locales/fr.json";

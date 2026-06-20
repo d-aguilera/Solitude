@@ -15,7 +15,6 @@
     "./controllableEntities/provider": "./src/controllableEntities/provider.ts",
     "./headless": "./src/headless.ts",
     "./localPrediction": "./src/localPrediction.ts",
-    "./localization": "./src/localization.ts",
     "./plugins/autopilot": "./src/plugins/autopilot/index.ts",
     "./plugins/catalog": "./src/plugins/catalog.ts",
     "./plugins/polyFighter": "./src/plugins/polyFighter/index.ts",
@@ -33,7 +32,8 @@
   },
   "dependencies": {
     "@solitude/engine": "0.0.0",
-    "@solitude/input": "0.0.0"
+    "@solitude/input": "0.0.0",
+    "@solitude/localization": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

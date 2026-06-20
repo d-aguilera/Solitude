@@ -8,6 +8,7 @@
     "@solitude/display": "0.0.0",
     "@solitude/engine": "0.0.0",
     "@solitude/hud": "0.0.0",
+    "@solitude/localization": "0.0.0",
     "@solitude/protocol": "0.0.0",
     "@solitude/sim": "0.0.0"
   },
