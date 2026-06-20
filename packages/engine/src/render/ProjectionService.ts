@@ -2,7 +2,6 @@ import type { DomainCameraPose } from "../app/scenePorts";
 import { localFrame } from "../domain/localFrame";
 import { type Mat3, mat3 } from "../domain/mat3";
 import { type Vec3, vec3 } from "../domain/vec3";
-import { alloc } from "../global/allocProfiler";
 import { type NdcPoint, ndc } from "./ndc";
 import type { ProjectedSegment } from "./renderInternals";
 import {
@@ -18,7 +17,6 @@ const NEAR = renderNearDepth;
 const FAR = Number.POSITIVE_INFINITY;
 
 export interface ProjectionWorkspace {
-  cameraPointPool: Vec3[];
   deltaScratch: Vec3;
   cameraPointScratch: Vec3;
   aCamScratch: Vec3;
@@ -26,20 +24,10 @@ export interface ProjectionWorkspace {
   ndcAScratch: NdcPoint;
   ndcBScratch: NdcPoint;
   clipChangedScratch: { value: boolean };
-  polyInScratch: Vec3[];
-  polyOutScratch: Vec3[];
 }
 
 export function createProjectionWorkspace(): ProjectionWorkspace {
-  const polyInScratch: Vec3[] = [];
-  const polyOutScratch: Vec3[] = [];
-  for (let i = 0; i < MAX_CLIPPED_VERTS; i++) {
-    polyInScratch.push(vec3.zero());
-    polyOutScratch.push(vec3.zero());
-  }
-
   return {
-    cameraPointPool: [],
     deltaScratch: vec3.zero(),
     cameraPointScratch: vec3.zero(),
     aCamScratch: vec3.zero(),
@@ -47,42 +35,12 @@ export function createProjectionWorkspace(): ProjectionWorkspace {
     ndcAScratch: ndc.zero(),
     ndcBScratch: ndc.zero(),
     clipChangedScratch: { value: false },
-    polyInScratch,
-    polyOutScratch,
   };
-}
-
-/** Ensure the workspace camera-point pool can hold at least `n` Vec3s. */
-function ensureCameraPointPoolCapacity(pool: Vec3[], n: number): void {
-  const length = pool.length;
-  if (length < n) {
-    alloc.withName(ensureCameraPointPoolCapacity.name, () => {
-      for (let i = length; i < n; i++) {
-        pool.push(vec3.zero());
-      }
-    });
-  }
 }
 
 let x1: number, y1: number, z1: number;
 let x2: number, y2: number, z2: number;
 let dx: number, dy: number, dz: number;
-
-/**
- * Scratch polygons used during triangle clipping.
- */
-const MAX_CLIPPED_VERTS = 9;
-
-type FrustumPlane = "NEAR" | "FAR" | "LEFT" | "RIGHT" | "TOP" | "BOTTOM";
-
-const planes: FrustumPlane[] = [
-  "NEAR",
-  "FAR",
-  "LEFT",
-  "RIGHT",
-  "TOP",
-  "BOTTOM",
-];
 
 /**
  * Per-point frustum outcode bits in camera space.
@@ -169,30 +127,6 @@ export class ProjectionService {
     return true;
   }
 
-  worldPointsToCameraPointsNoClip(worldPoints: Vec3[]): Vec3[] {
-    const n = worldPoints.length;
-    const cameraPointPool = this.workspace.cameraPointPool;
-    const deltaScratch = this.workspace.deltaScratch;
-
-    // 1) Ensure the workspace pool is large enough (allocates only when it grows).
-    ensureCameraPointPoolCapacity(cameraPointPool, n);
-
-    // 2) Use the first n entries from the workspace pool as our scratch array.
-    const R_localFromWorld = this.R_localFromWorld;
-    const position = this.cameraPosition;
-
-    for (let i = 0; i < n; i++) {
-      // delta = worldPoint - cameraPosition
-      vec3.subInto(deltaScratch, worldPoints[i], position);
-
-      // cameraPoints[i] = R_localFromWorld * delta
-      mat3.mulVec3Into(cameraPointPool[i], R_localFromWorld, deltaScratch);
-    }
-
-    // Callers must treat only the first n elements as valid for this call.
-    return cameraPointPool;
-  }
-
   /**
    * World-space -> camera-space for a single point, without clipping.
    */
@@ -243,272 +177,6 @@ export class ProjectionService {
 
     // pixelDiameter = diameterWorld * focalLengthY * screenHeight / depth
     return (diameterWorld * this.focalLengthY * screenHeight) / diameterPixels;
-  }
-
-  /**
-   * Return true if a camera-space point is inside the half-space of a given plane.
-   */
-  private isInsidePlane(p: Vec3, plane: FrustumPlane): boolean {
-    let limitX: number;
-    let limitY: number;
-    let limitZ: number;
-
-    switch (plane) {
-      case "NEAR":
-        limitY = NEAR;
-        return p.y >= limitY;
-      case "FAR":
-        limitY = FAR;
-        return p.y <= limitY;
-      case "LEFT": {
-        if (p.y <= 0 || !Number.isFinite(p.y)) return false;
-        limitX = p.y * this.tanHalfFovX;
-        return p.x >= -limitX;
-      }
-      case "RIGHT": {
-        if (p.y <= 0 || !Number.isFinite(p.y)) return false;
-        limitX = p.y * this.tanHalfFovX;
-        return p.x <= limitX;
-      }
-      case "TOP": {
-        if (p.y <= 0 || !Number.isFinite(p.y)) return false;
-        limitZ = p.y * this.tanHalfFovY;
-        return p.z >= -limitZ;
-      }
-      case "BOTTOM": {
-        if (p.y <= 0 || !Number.isFinite(p.y)) return false;
-        limitZ = p.y * this.tanHalfFovY;
-        return p.z <= limitZ;
-      }
-    }
-  }
-
-  /**
-   * Intersect segment [p,q] with a given frustum plane, writing into dst.
-   * Assumes p and q are not both on the same side of the plane.
-   */
-  private intersectWithPlane(
-    dst: Vec3,
-    p: Vec3,
-    q: Vec3,
-    plane: FrustumPlane,
-  ): void {
-    x1 = p.x;
-    y1 = p.y;
-    z1 = p.z;
-    x2 = q.x;
-    y2 = q.y;
-    z2 = q.z;
-    dx = x2 - x1;
-    dy = y2 - y1;
-    dz = z2 - z1;
-
-    let denom: number;
-    let t = 0;
-
-    switch (plane) {
-      case "NEAR": {
-        denom = dy;
-        if (denom === 0) {
-          // Degenerate: just clamp to plane
-          dst.x = x1;
-          dst.y = NEAR;
-          dst.z = z1;
-          return;
-        }
-        t = (NEAR - y1) / denom;
-        break;
-      }
-      case "FAR": {
-        denom = dy;
-        if (denom === 0) {
-          dst.x = x1;
-          dst.y = FAR;
-          dst.z = z1;
-          return;
-        }
-        t = (FAR - y1) / denom;
-        break;
-      }
-      case "LEFT": {
-        const tx = this.tanHalfFovX;
-        denom = dx + dy * tx;
-        if (denom === 0) {
-          dst.x = -y1 * tx;
-          dst.y = y1;
-          dst.z = z1;
-          return;
-        }
-        t = -(x1 + y1 * tx) / denom;
-        break;
-      }
-      case "RIGHT": {
-        const tx = this.tanHalfFovX;
-        denom = dx - dy * tx;
-        if (denom === 0) {
-          dst.x = y1 * tx;
-          dst.y = y1;
-          dst.z = z1;
-          return;
-        }
-        t = (y1 * tx - x1) / denom;
-        break;
-      }
-      case "TOP": {
-        const tz = this.tanHalfFovY;
-        denom = dz + dy * tz;
-        if (denom === 0) {
-          dst.x = x1;
-          dst.y = y1;
-          dst.z = -y1 * tz;
-          return;
-        }
-        t = -(z1 + y1 * tz) / denom;
-        break;
-      }
-      case "BOTTOM": {
-        const tz = this.tanHalfFovY;
-        denom = dz - dy * tz;
-        if (denom === 0) {
-          dst.x = x1;
-          dst.y = y1;
-          dst.z = y1 * tz;
-          return;
-        }
-        t = (y1 * tz - z1) / denom;
-        break;
-      }
-    }
-
-    // Clamp t to [0,1] defensively.
-    if (!Number.isFinite(t) || t < 0) {
-      t = 0;
-    } else if (t > 1) {
-      t = 1;
-    }
-
-    dst.x = x1 + dx * t;
-    dst.y = y1 + dy * t;
-    dst.z = z1 + dz * t;
-  }
-
-  /**
-   * Clip a convex polygon (triangle) in camera space against a single frustum plane.
-   *
-   * inVerts:  array of vertices
-   * inCount:  number of valid vertices in inVerts (<= inVerts.length)
-   * outVerts: destination array; may alias inVerts (we still use indices)
-   *
-   * Returns new vertex count.
-   */
-  private clipPolygonAgainstPlane(
-    inVerts: Vec3[],
-    inCount: number,
-    outVerts: Vec3[],
-    plane: FrustumPlane,
-  ): number {
-    if (inCount === 0) return 0;
-
-    let outCount = 0;
-
-    // Start with the last vertex as the "previous" one to close the polygon.
-    let prev = inVerts[inCount - 1];
-    let prevInside = this.isInsidePlane(prev, plane);
-
-    for (let i = 0; i < inCount; i++) {
-      const curr = inVerts[i];
-      const currInside = this.isInsidePlane(curr, plane);
-
-      if (currInside) {
-        if (prevInside) {
-          // in -> in : keep curr
-          vec3.copyInto(outVerts[outCount], curr);
-          outCount++;
-        } else {
-          // out -> in : emit intersection, then curr
-          this.intersectWithPlane(outVerts[outCount], prev, curr, plane);
-          outCount++;
-          vec3.copyInto(outVerts[outCount], curr);
-          outCount++;
-        }
-      } else if (prevInside) {
-        // in -> out : emit intersection
-        this.intersectWithPlane(outVerts[outCount], prev, curr, plane);
-        outCount++;
-      }
-
-      prev = curr;
-      prevInside = currInside;
-    }
-
-    return outCount;
-  }
-
-  /**
-   * Clip a camera-space triangle against the full view frustum (6 planes).
-   *
-   * into: up to 6 resulting triangles in camera space. It would be 7 if
-   * the FAR plane was not set at infinity.
-   * Returns 0..5 (number of triangles written).
-   *
-   * The Vec3s in `into` refer to internal scratch storage that is only valid
-   * until the next call. Callers must consume immediately.
-   */
-  clipTriangleAgainstFrustumCamera(
-    into: [
-      [Vec3, Vec3, Vec3],
-      [Vec3, Vec3, Vec3],
-      [Vec3, Vec3, Vec3],
-      [Vec3, Vec3, Vec3],
-      [Vec3, Vec3, Vec3],
-      [Vec3, Vec3, Vec3],
-    ],
-    a: Vec3,
-    b: Vec3,
-    c: Vec3,
-  ): number {
-    // Initialize polygon with original triangle
-    const inVerts = this.workspace.polyInScratch;
-    const outVerts = this.workspace.polyOutScratch;
-
-    vec3.copyInto(inVerts[0], a);
-    vec3.copyInto(inVerts[1], b);
-    vec3.copyInto(inVerts[2], c);
-    let count = 3;
-
-    let src = inVerts;
-    let dst = outVerts;
-
-    for (let i = 0; i < planes.length; i++) {
-      const plane = planes[i];
-      count = this.clipPolygonAgainstPlane(src, count, dst, plane);
-      if (count === 0) {
-        return 0;
-      }
-      const tmp = src;
-      src = dst;
-      dst = tmp;
-    }
-
-    // Now src[0..count-1] is the final polygon
-    const triangles = count - 2;
-    const v0 = src[0];
-
-    for (let t = 0; t < triangles; t++) {
-      const tri = into[t];
-      const T0 = tri[0];
-      const T1 = tri[1];
-      const T2 = tri[2];
-      vec3.copyInto(T0, v0);
-      vec3.copyInto(T1, src[t + 1]);
-      vec3.copyInto(T2, src[t + 2]);
-    }
-
-    if (triangles === 6) {
-      console.log({ a, b, c });
-    }
-
-    return triangles;
   }
 
   /**

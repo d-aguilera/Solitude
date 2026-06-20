@@ -4,7 +4,7 @@ import type { WorldAndSceneConfig } from "@solitude/engine/world";
 import type { OverlayRasterizer } from "./overlayPorts";
 import {
   createRemoteWorldMultiRenderer,
-  rasterizeRenderedView,
+  rasterizeSceneOverlay,
   type RemoteWorldMultiRenderer,
   type RemoteWorldRenderedView,
   type RemoteWorldRenderOptions,
@@ -67,9 +67,9 @@ export function createRemoteViewPresenterRenderer({
 
   const rasterizeCurrent = () => {
     for (const view of presentedViews) {
-      rasterizeRenderedView(
+      rasterizeSceneOverlay(
         view.renderedView.renderedView,
-        view.presenter.rasterizer,
+        view.presenter.sceneOverlayRasterizer,
       );
     }
   };

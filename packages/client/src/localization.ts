@@ -45,7 +45,6 @@ export interface ClientLocalization extends SolitudeLocalization {
   readonly rendererFailure: {
     readonly contextLost: string;
     readonly program: string;
-    readonly recovery: string;
     readonly title: string;
     readonly unavailable: string;
   };
@@ -106,7 +105,6 @@ export function createClientLocalization(
     rendererFailure: {
       contextLost: messages["renderer.failure.contextLost"],
       program: messages["renderer.failure.program"],
-      recovery: messages["renderer.failure.recovery"],
       title: messages["renderer.failure.title"],
       unavailable: messages["renderer.failure.unavailable"],
     },

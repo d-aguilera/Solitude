@@ -4,11 +4,7 @@ import {
   type LayoutView,
 } from "@solitude/browser/dom/layout";
 import { applyBrowserOverlayProviders } from "@solitude/browser/dom/overlayPorts";
-import {
-  resolveRendererBackend,
-  type RendererBackend,
-  type RenderFailure,
-} from "@solitude/browser/dom/rendererBackend";
+import type { RenderFailure } from "@solitude/browser/dom/renderFailure";
 import {
   getOrCreateDomViewLayers,
   orderViewDefinitionsPrimaryFirst,
@@ -104,7 +100,7 @@ export interface SolitudeRemoteClientRenderer {
 }
 
 export interface SolitudeRemoteRenderDebugState {
-  backend: RendererBackend;
+  backend: "webgl";
   fatalError: RenderFailure["code"] | null;
   interpolationEnabled: boolean;
   predictionEnabled: boolean;
@@ -121,7 +117,6 @@ export function createSolitudeRemoteClientRenderer({
   plugins: clientPlugins,
   runtimeOptions,
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
-  const backend = resolveRendererBackend(runtimeOptions);
   const {
     capabilityRegistry,
     localPredictionProviders,
@@ -232,7 +227,7 @@ export function createSolitudeRemoteClientRenderer({
           advanceOverlay: true,
           controlInput: predictionState.controlInput,
           framePolicy,
-          mainFocus: renderer.worldRenderer.primaryView.renderParams.mainFocus,
+          mainFocus: renderer.worldRenderer.mirror.worldSetup.mainFocus,
           nowMs: nowMillis,
           primaryOverlayRasterizer: renderer.overlayRasterizer,
           simTimeMillis: messageSimulationTimeMillis + predictionMillis,
@@ -463,7 +458,7 @@ export function createSolitudeRemoteClientRenderer({
 
   function createRemoteRenderDebugState(): SolitudeRemoteRenderDebugState {
     return {
-      backend,
+      backend: "webgl",
       fatalError,
       interpolationEnabled: interpolateRemoteSnapshots,
       predictionEnabled: predictLocalShip,
@@ -494,7 +489,6 @@ export function createSolitudeRemoteClientRenderer({
     ).map((definition, index) => {
       const layers = getOrCreateDomViewLayers(container, index, definition);
       const presenter = createBrowserViewPresenter({
-        backend,
         labelMode: definition.labelMode,
         onFatalError: handleFatalError,
         overlayCanvas: layers.overlayCanvas,

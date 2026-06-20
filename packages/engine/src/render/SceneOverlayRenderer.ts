@@ -2,7 +2,6 @@ import type { ViewLabelMode } from "../app/viewPorts";
 import type { Vec3 } from "../domain/vec3";
 import type { NdcPoint } from "./ndc";
 import { ProjectionService } from "./ProjectionService";
-import { createRenderFacesWorkspace, renderFacesInto } from "./renderFaces";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals";
 import { renderPolylinesInto } from "./renderPolylines";
 import type {
@@ -11,7 +10,6 @@ import type {
   ViewRenderer,
   ViewRenderParams,
 } from "./renderPorts";
-import { drawMode } from "./renderPorts";
 import type { LabelLayoutCache } from "./renderSceneLabels";
 import {
   createLabelLayoutCache,
@@ -19,8 +17,7 @@ import {
 } from "./renderSceneLabels";
 import { renderWorldSegmentsInto } from "./renderSegments";
 
-export class DefaultViewRenderer implements ViewRenderer {
-  private readonly faceWorkspace;
+export class SceneOverlayRenderer implements ViewRenderer {
   private readonly labelLayoutCache: LabelLayoutCache;
   private readonly labelMode: ViewLabelMode;
   private projectionService?: ProjectionService;
@@ -45,7 +42,6 @@ export class DefaultViewRenderer implements ViewRenderer {
     private readonly measureText: (text: string, font: string) => TextMetrics,
     labelMode: ViewLabelMode = "full",
   ) {
-    this.faceWorkspace = createRenderFacesWorkspace();
     this.labelLayoutCache = createLabelLayoutCache(this.measureText);
     this.labelMode = labelMode;
   }
@@ -56,12 +52,9 @@ export class DefaultViewRenderer implements ViewRenderer {
       objectsFilter,
       surface,
       scene,
-      renderCache,
-      renderFaces = true,
-      sortFaces = true,
-      renderPolylines = true,
-      renderSegments = true,
-      renderSceneLabels = true,
+      renderPolylines,
+      renderSegments,
+      renderSceneLabels,
     } = params;
     const screenWidth = surface.width;
     const screenHeight = surface.height;
@@ -77,24 +70,6 @@ export class DefaultViewRenderer implements ViewRenderer {
         screenHeight,
       );
     }
-    const projectionService = this.requireProjectionService();
-
-    into.faceCount =
-      renderFaces && drawMode === "faces"
-        ? renderFacesInto(
-            into.faces,
-            scene,
-            camera,
-            screenWidth,
-            screenHeight,
-            renderCache,
-            projectionService,
-            this.faceWorkspace,
-            objectsFilter,
-            sortFaces,
-          )
-        : 0;
-
     into.polylineCount = renderPolylines
       ? renderPolylinesInto(
           into.polylines,

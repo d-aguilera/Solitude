@@ -1,8 +1,5 @@
-import {
-  createCanvasRendererHref,
-  showRenderFailurePanel,
-} from "@solitude/browser/dom/renderFailurePanel";
-import type { RenderFailure } from "@solitude/browser/dom/rendererBackend";
+import type { RenderFailure } from "@solitude/browser/dom/renderFailure";
+import { showRenderFailurePanel } from "@solitude/browser/dom/renderFailurePanel";
 import { parseRuntimeOptionsFromSearch } from "@solitude/browser/dom/runtimeOptions";
 import type { ControlInput } from "@solitude/engine/plugin";
 import type {
@@ -76,10 +73,8 @@ function showFatalRenderError(failure: RenderFailure): void {
         ? messages.unavailable
         : messages.program;
   showRenderFailurePanel({
-    canvasHref: createCanvasRendererHref(window.location),
     container: canvasContainer,
     message,
-    recoveryLabel: messages.recovery,
     title: messages.title,
   });
 }

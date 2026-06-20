@@ -10,7 +10,7 @@ import { createWorld } from "@solitude/engine/world";
 import { describe, expect, it } from "vitest";
 import {
   createRemoteWorldRenderer,
-  rasterizeRenderedView,
+  rasterizeSceneOverlay,
 } from "./remoteWorldRenderer";
 
 const surface = {
@@ -37,7 +37,7 @@ function measureText(text: string, _font: string): TextMetrics {
 }
 
 describe("remote world renderer", () => {
-  it("renders an authoritative snapshot through the engine renderer", () => {
+  it("applies an authoritative snapshot before projecting overlays", () => {
     const config = buildConfig();
     const renderer = createRemoteWorldRenderer({
       config,
@@ -56,8 +56,7 @@ describe("remote world renderer", () => {
     expect(
       renderer.mirror.worldSetup.mainFocus.controlledBody.position,
     ).toEqual(expect.objectContaining({ x: 25, y: 10, z: 5 }));
-    expect(renderer.renderedView.faceCount).toBe(1);
-    expect(renderer.renderedView.faces[0].p0.x).toBeGreaterThan(0);
+    expect(renderer.renderedView.polylineCount).toBe(0);
   });
 
   it("applies scene labels and segments before rendering", () => {
@@ -117,11 +116,9 @@ describe("remote world renderer", () => {
     );
 
     expect(renderer.mirror.worldSetup.mainFocus.entityId).toBe("craft:red");
-    expect(renderer.renderParams.mainFocus.entityId).toBe("craft:red");
-    expect(renderer.renderedView.faceCount).toBe(2);
   });
 
-  it("can rasterize an already rendered view", () => {
+  it("can rasterize an already projected scene overlay", () => {
     const config = buildConfig();
     const renderer = createRemoteWorldRenderer({
       config,
@@ -132,22 +129,14 @@ describe("remote world renderer", () => {
     const calls: string[] = [];
     renderer.renderSnapshot(createAuthoritativeSnapshot(config));
 
-    rasterizeRenderedView(renderer.renderedView, {
-      clear: (color) => calls.push(`clear:${color}`),
-      drawFaces: (_faces, count) => calls.push(`faces:${count}`),
+    rasterizeSceneOverlay(renderer.renderedView, {
+      clear: () => calls.push("clear"),
       drawPolylines: (_polylines, count) => calls.push(`polylines:${count}`),
       drawSceneLabels: (_labels, count) => calls.push(`labels:${count}`),
       drawSegments: (_segments, count) => calls.push(`segments:${count}`),
-      measureText,
     });
 
-    expect(calls).toEqual([
-      "clear:#000000",
-      "faces:1",
-      "polylines:0",
-      "segments:0",
-      "labels:0",
-    ]);
+    expect(calls).toEqual(["clear", "polylines:0", "segments:0", "labels:0"]);
   });
 });
 

@@ -8,7 +8,7 @@
     "./dom/keyboardInput": "./src/infra/domKeyboardInput.ts",
     "./dom/layout": "./src/infra/domLayout.ts",
     "./dom/renderingBootstrap": "./src/infra/domRenderingBootstrap.ts",
-    "./dom/rendererBackend": "./src/infra/rendererBackend.ts",
+    "./dom/renderFailure": "./src/infra/renderFailure.ts",
     "./dom/renderFailurePanel": "./src/infra/renderFailurePanel.ts",
     "./dom/view": "./src/infra/domView.ts",
     "./dom/viewPresenter": "./src/infra/viewPresenter.ts",

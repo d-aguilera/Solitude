@@ -4,28 +4,24 @@ import type {
   ViewRenderer,
   ViewRenderParams,
 } from "@solitude/engine/render";
-import { DefaultViewRenderer } from "@solitude/engine/render";
 import { CanvasHudRasterizer } from "../rasterize/canvas/CanvasHudRasterizer";
-import { CanvasRasterizer } from "../rasterize/canvas/CanvasRasterizer";
-import { CanvasSurface } from "../rasterize/canvas/CanvasSurface";
+import { CanvasSceneOverlayRasterizer } from "../rasterize/canvas/CanvasSceneOverlayRasterizer";
 import { GpuSceneRenderer } from "../rasterize/webgl/GpuSceneRenderer";
 import { WebGLSurface } from "../rasterize/webgl/WebGLSurface";
 import { WebGLViewRenderer } from "../rasterize/webgl/WebGLViewRenderer";
 import type { OverlayRasterizer } from "./overlayPorts";
-import type { RendererBackend, RenderFailure } from "./rendererBackend";
+import type { RenderFailure } from "./renderFailure";
 
 export interface BrowserViewPresenter extends ViewRenderer {
-  readonly backend: RendererBackend;
   readonly overlayRasterizer: OverlayRasterizer;
-  readonly rasterizer: CanvasRasterizer;
-  readonly surface: CanvasSurface | WebGLSurface;
+  readonly sceneOverlayRasterizer: CanvasSceneOverlayRasterizer;
+  readonly surface: WebGLSurface;
   dispose: () => void;
   resize: (cssWidth: number, cssHeight: number, pixelRatio: number) => void;
   resizeToDisplaySize: (pixelRatio: number) => void;
 }
 
 export interface BrowserViewPresenterOptions {
-  backend: RendererBackend;
   labelMode: ViewLabelMode;
   onFatalError: (failure: RenderFailure) => void;
   overlayCanvas: HTMLCanvasElement;
@@ -33,30 +29,12 @@ export interface BrowserViewPresenterOptions {
 }
 
 export function createBrowserViewPresenter({
-  backend,
   labelMode,
   onFatalError,
   overlayCanvas,
   sceneCanvas,
 }: BrowserViewPresenterOptions): BrowserViewPresenter {
   const overlayContext = requireCanvasContext(overlayCanvas);
-  if (backend === "canvas") {
-    const sceneContext = requireCanvasContext(sceneCanvas);
-    return createPresenter(
-      backend,
-      sceneCanvas,
-      overlayCanvas,
-      new CanvasSurface(sceneContext),
-      new CanvasRasterizer(sceneContext, "opaque"),
-      new CanvasHudRasterizer(overlayContext, true),
-      new DefaultViewRenderer((text, font) => {
-        sceneContext.font = font;
-        return sceneContext.measureText(text);
-      }, labelMode),
-      () => {},
-    );
-  }
-
   const gl = sceneCanvas.getContext("webgl2");
   if (!gl) {
     const failure: RenderFailure = {
@@ -67,40 +45,18 @@ export function createBrowserViewPresenter({
     throw failure.cause;
   }
   const gpuRenderer = new GpuSceneRenderer({ gl, onFatalError });
-  return createPresenter(
-    backend,
-    sceneCanvas,
-    overlayCanvas,
-    new WebGLSurface(gl),
-    new CanvasRasterizer(overlayContext, "transparent"),
-    new CanvasHudRasterizer(overlayContext, false),
-    new WebGLViewRenderer(
-      gpuRenderer,
-      (text, font) => {
-        overlayContext.font = font;
-        return overlayContext.measureText(text);
-      },
-      labelMode,
-    ),
-    () => gpuRenderer.dispose(),
+  const renderer = new WebGLViewRenderer(
+    gpuRenderer,
+    (text, font) => {
+      overlayContext.font = font;
+      return overlayContext.measureText(text);
+    },
+    labelMode,
   );
-}
 
-function createPresenter(
-  backend: RendererBackend,
-  sceneCanvas: HTMLCanvasElement,
-  overlayCanvas: HTMLCanvasElement,
-  surface: CanvasSurface | WebGLSurface,
-  rasterizer: CanvasRasterizer,
-  overlayRasterizer: OverlayRasterizer,
-  renderer: DefaultViewRenderer | WebGLViewRenderer,
-  dispose: () => void,
-): BrowserViewPresenter {
   return {
-    backend,
-    dispose,
-    overlayRasterizer,
-    rasterizer,
+    dispose: () => gpuRenderer.dispose(),
+    overlayRasterizer: new CanvasHudRasterizer(overlayContext, false),
     renderInto: (into: RenderedView, params: ViewRenderParams) =>
       renderer.renderInto(into, params),
     resize: (cssWidth, cssHeight, pixelRatio) => {
@@ -115,7 +71,8 @@ function createPresenter(
         resizeCanvas(overlayCanvas, width, height, pixelRatio);
       }
     },
-    surface,
+    sceneOverlayRasterizer: new CanvasSceneOverlayRasterizer(overlayContext),
+    surface: new WebGLSurface(gl),
   };
 }
 
@@ -136,6 +93,6 @@ function requireCanvasContext(
   canvas: HTMLCanvasElement,
 ): CanvasRenderingContext2D {
   const context = canvas.getContext("2d");
-  if (!context) throw new Error("Failed to get a Canvas 2D context");
+  if (!context) throw new Error("Failed to get Canvas 2D context");
   return context;
 }

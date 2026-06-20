@@ -15,7 +15,6 @@
   "common.none": "ninguno",
   "renderer.failure.contextLost": "Se perdió el contexto gráfico.",
   "renderer.failure.program": "No se pudo crear la canalización gráfica.",
-  "renderer.failure.recovery": "Recargar usando el renderizador Canvas",
   "renderer.failure.title": "El renderizado WebGL se detuvo",
   "renderer.failure.unavailable": "WebGL 2 no está disponible en este navegador o dispositivo.",
   "remoteIdentity.entityPrefix": "Entidad: ",

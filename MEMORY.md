@@ -32,7 +32,7 @@
 ## Current focus
 
 - **Primary active work**: client/server gameplay feel; the server-owned real-time loop, compact snapshots, load metrics, sequenced inputs, local prediction, and render-only reconciliation are in place. The next phase is restoring smooth remote-entity interpolation without disturbing predicted local flight. See `MEMORY_CLIENT_SERVER_2.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
-- **GPU rendering work**: the true WebGL2 scene renderer is implemented for standalone and remote play, with Canvas overlays and an explicit Canvas backend; interactive hardware parity verification is next. See `MEMORY_GPU_RENDERING.md` before changing browser view presentation, rasterization, render package exports, or client renderer composition.
+- **GPU rendering work**: WebGL2 is the sole solid-mesh renderer for standalone and remote play. Canvas remains only for projected scene overlays and HUD; the engine CPU-face pipeline and Canvas backend have been removed. See `MEMORY_GPU_RENDERING.md` before changing browser view presentation, rasterization, render package exports, or client renderer composition.
 - **Operator/focus boundary**: core/runtime contexts use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`.
 - **Remaining operator follow-ups**: foreground/background UX and declarative input lock policy live in `MEMORY_OPERATOR_MODEL.md`.
 - **Retired compatibility names**: keep `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming out of source.
@@ -54,7 +54,7 @@
 - **Physics**: Newtonian N-body with leapfrog integration for stability.
 - **Solar-system data**: use real-ish values (AU, km, approximate J2000 elements) for plausibility.
 - **Entity model direction**: core should not know scenario categories such as planet/star/ship. Prefer generic bodies/components/capabilities.
-- **Rendering**: WebGL2-native solid-mesh rendering is the default; `?renderer=canvas` selects Canvas 2D. Lines, labels, and HUD remain on Canvas overlays in WebGL mode.
+- **Rendering**: WebGL2-native solid-mesh rendering is required. `SceneOverlayRenderer` projects lines, segments, and labels in the engine; `CanvasSceneOverlayRasterizer` plus the HUD rasterizer draw the transparent Canvas overlay.
 - **Math helpers**: always use math helpers when available for vector/matrix/trig instead of inlining the math.
 - **Epsilons**: use shared constants in `packages/engine/src/domain/epsilon.ts` instead of inline literals.
 - **Optional arguments**: avoid optional runtime/plumbing arguments unless absence is semantically meaningful. Prefer required parameters with empty collections or default objects so call sites and implementations do not grow defensive branches.
@@ -113,7 +113,7 @@
 - `packages/engine/src/infra/NewtonianGravityEngine.ts`: N-body gravity with leapfrog integration.
 - `packages/engine/src/infra/headlessGameLoop.ts`: generic headless stepper; callers pass Solitude plugins explicitly when needed.
 - `packages/engine/src/setup/sceneSetup.ts`: generic scene graph + trajectory setup.
-- `packages/engine/src/render/DefaultViewRenderer.ts`: projection + draw list assembly.
+- `packages/engine/src/render/SceneOverlayRenderer.ts`: renderer-neutral projection and layout for scene overlays only.
 - `packages/browser/src/infra/domBootstrap.ts`: browser runtime composition.
 - `packages/browser/src/infra/remoteWorldMirror.ts`: non-DOM authoritative snapshot apply mirror for future network clients.
 - `packages/sim/src/headless.ts`: shared server-safe/browser-safe Solitude headless composition.
@@ -157,7 +157,7 @@
 ## Next Steps Snapshot
 
 - Active path: client/server gameplay feel; keep local prediction/reconciliation stable and restore smooth remote-entity interpolation with an ordered authoritative snapshot buffer. See `MEMORY_CLIENT_SERVER_2.md`.
-- Active rendering follow-up: verify WebGL2/Canvas visual parity interactively on real hardware while retaining `?renderer=canvas`. See `MEMORY_GPU_RENDERING.md`.
+- Active rendering follow-up: verify WebGL2 meshes and Canvas overlays interactively on real hardware. See `MEMORY_GPU_RENDERING.md`.
 - Package split migration is closed; future package work is normal API curation.
 - Operator runtime focus switching series is closed; remaining operator-model work is foreground/background UX and declarative input lock policy. See `MEMORY_OPERATOR_MODEL.md`.
 - Planned future work: Solitude-owned headless playback runner. See `MEMORY_HEADLESS_PLAYBACK.md`.
@@ -168,5 +168,5 @@
 - Some plugin features still use spacecraft or solar-system vocabulary; keep that out of engine/browser unless it is truly generic.
 - Default Solitude plugin order is behaviorally significant; preserve ordering-sensitive tests when moving playback, operator switch, pause, profiling, or input plugins.
 - Gravity uses fixed sub-steps for stability; high time scales can still destabilize.
-- WebGL2 availability and runtime context loss are hard failures with localized recovery UX; users can explicitly reload with `?renderer=canvas`.
+- WebGL2 availability and runtime context loss are hard failures with localized WebGL-required UX; there is no fallback solid-mesh backend.
 - Controls are keyboard-only with no in-app help; consider a help overlay or onboarding prompt.

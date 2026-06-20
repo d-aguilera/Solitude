@@ -1,9 +1,5 @@
-import {
-  createCanvasRendererHref,
-  showRenderFailurePanel,
-} from "@solitude/browser/dom/renderFailurePanel";
-import type { RenderFailure } from "@solitude/browser/dom/rendererBackend";
-import { resolveRendererBackend } from "@solitude/browser/dom/rendererBackend";
+import type { RenderFailure } from "@solitude/browser/dom/renderFailure";
+import { showRenderFailurePanel } from "@solitude/browser/dom/renderFailurePanel";
 import { bootstrapRendering } from "@solitude/browser/dom/renderingBootstrap";
 import { parseRuntimeOptionsFromSearch } from "@solitude/browser/dom/runtimeOptions";
 import { loadPlugins } from "@solitude/engine/plugin";
@@ -34,7 +30,6 @@ function main(): void {
   const container = document.querySelector(".canvas-container");
   if (!container) throw new Error("Required '.canvas-container' not found");
   bootstrapRendering({
-    backend: resolveRendererBackend(runtimeOptions),
     config,
     onFatalError: (failure) =>
       showFatalRenderError(container, runtimeOptions, failure),
@@ -57,10 +52,8 @@ function showFatalRenderError(
         ? messages["renderer.failure.unavailable"]
         : messages["renderer.failure.program"];
   showRenderFailurePanel({
-    canvasHref: createCanvasRendererHref(window.location),
     container,
     message,
-    recoveryLabel: messages["renderer.failure.recovery"],
     title: messages["renderer.failure.title"],
   });
 }

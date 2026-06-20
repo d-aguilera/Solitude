@@ -1,7 +1,6 @@
 {
   "renderer.failure.contextLost": "Le contexte graphique a été perdu.",
   "renderer.failure.program": "Le pipeline graphique n’a pas pu être créé.",
-  "renderer.failure.recovery": "Recharger avec le moteur de rendu Canvas",
   "renderer.failure.title": "Le rendu WebGL s’est arrêté",
   "renderer.failure.unavailable": "WebGL 2 n’est pas disponible dans ce navigateur ou sur cet appareil."
 }

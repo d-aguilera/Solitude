@@ -19,7 +19,6 @@ import type {
   WorldSegment,
 } from "@solitude/engine/plugin";
 import type {
-  Rasterizer,
   RenderedView,
   SceneControlState,
   SceneState,
@@ -27,12 +26,11 @@ import type {
   ViewRenderParams,
 } from "@solitude/engine/render";
 import {
-  createRenderFrameCache,
   createSceneViewStates,
   getRequiredPrimaryViewState,
-  updateRenderFrameCache,
   updateSceneViewCameras,
 } from "@solitude/engine/render";
+import type { SceneOverlayRasterizer } from "@solitude/engine/render/ports";
 import type {
   TickCallback,
   TickParams,
@@ -58,10 +56,6 @@ import {
 } from "./overlayPorts";
 
 type RenderPassDebug = {
-  faces: boolean;
-  facesBuild: boolean;
-  facesRaster: boolean;
-  facesSort: boolean;
   polylines: boolean;
   segments: boolean;
   sceneLabels: boolean;
@@ -74,10 +68,6 @@ type RenderDebug = {
 };
 
 const defaultRenderPassDebug: RenderPassDebug = {
-  faces: true,
-  facesBuild: true,
-  facesRaster: true,
-  facesSort: true,
   polylines: true,
   segments: true,
   sceneLabels: true,
@@ -208,22 +198,17 @@ export function runLoop({
     simulationPlugins,
   );
 
-  const renderCache = createRenderFrameCache();
-
   updateSceneViewCameras(
     sceneState,
     worldAndScene.mainFocus,
     sceneControlState.mainViewLookState,
   );
 
-  updateRenderFrameCache(renderCache, worldAndScene.scene);
-
   const loopViews = createLoopViews(
     views,
     sceneViews,
     scenePlugins,
     capabilityRegistry,
-    renderCache,
     worldAndScene,
     config,
   );
@@ -310,22 +295,7 @@ export function runLoop({
       applyScenePlugins(scenePlugins, sceneUpdateParams);
     }
 
-    if (framePolicy.advanceSim || framePolicy.advanceScene) {
-      if (profiler.begin("render", "frameCacheUpdate")) {
-        try {
-          updateRenderFrameCache(renderCache, worldAndScene.scene);
-        } finally {
-          profiler.end("render", "frameCacheUpdate");
-        }
-      } else {
-        updateRenderFrameCache(renderCache, worldAndScene.scene);
-      }
-    }
-
     const passes = renderDebug.passes;
-    const facesBuild = passes.faces && passes.facesBuild;
-    const facesRaster = passes.faces && passes.facesRaster;
-    const facesSort = passes.faces && passes.facesSort;
     const polylines = passes.polylines;
     const segments = passes.segments;
     const sceneLabels = passes.sceneLabels;
@@ -333,9 +303,6 @@ export function runLoop({
 
     for (const view of loopViews) {
       const renderParams = view.renderParams;
-      renderParams.renderFaces =
-        view.backend === "webgl" ? facesBuild && facesRaster : facesBuild;
-      renderParams.sortFaces = facesSort;
       renderParams.renderPolylines = polylines;
       renderParams.renderSegments = segments;
       renderParams.renderSceneLabels = sceneLabels;
@@ -375,7 +342,7 @@ export function runLoop({
 
     for (const view of loopViews) {
       if (!isViewEnabled(renderDebug, view.definition.id)) continue;
-      rasterizeView(view.renderedView, view.rasterizer, facesRaster);
+      rasterizeView(view.renderedView, view.sceneOverlayRasterizer);
     }
     if (renderDebug.hud) {
       overlayContext.advanceOverlay =
@@ -407,15 +374,8 @@ export function runLoop({
   requestAnimationFrame(first);
 }
 
-function rasterizeView(
-  view: RenderedView,
-  rasterizer: Rasterizer,
-  drawFaces: boolean,
-) {
-  rasterizer.clear("#000000");
-  if (drawFaces) {
-    rasterizer.drawFaces(view.faces, view.faceCount);
-  }
+function rasterizeView(view: RenderedView, rasterizer: SceneOverlayRasterizer) {
+  rasterizer.clear();
   rasterizer.drawPolylines(view.polylines, view.polylineCount);
   rasterizer.drawSegments(view.segments, view.segmentCount);
   rasterizer.drawSceneLabels(view.sceneLabels, view.sceneLabelCount);
@@ -426,7 +386,6 @@ function createLoopViews(
   sceneViews: SceneViewState[],
   scenePlugins: ScenePlugin[],
   capabilityRegistry: PluginCapabilityRegistry,
-  renderCache: ReturnType<typeof createRenderFrameCache>,
   worldAndScene: WorldAndScene,
   config: RunLoopParams["config"],
 ): LoopView[] {
@@ -451,18 +410,19 @@ function createLoopViews(
         capabilityRegistry,
         viewId,
         labelMode: view.definition.labelMode,
+        mainFocus: worldAndScene.mainFocus,
         scene: worldAndScene.scene,
         world: worldAndScene.world,
-        mainFocus: worldAndScene.mainFocus,
         config,
       },
       objectsFilter,
       renderedView: createRenderedView(),
       renderParams: {
         camera: sceneView.camera,
-        mainFocus: worldAndScene.mainFocus,
         objectsFilter,
-        renderCache,
+        renderPolylines: true,
+        renderSceneLabels: true,
+        renderSegments: true,
         scene: worldAndScene.scene,
         sceneLabelCandidates,
         surface: view.surface,
@@ -484,8 +444,6 @@ function createLoopViews(
 
 function createRenderedView(): RenderedView {
   return {
-    faces: [],
-    faceCount: 0,
     polylines: [],
     polylineCount: 0,
     sceneLabels: [],

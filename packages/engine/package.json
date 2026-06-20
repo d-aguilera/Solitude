@@ -10,7 +10,9 @@
     "./render": "./src/render.ts",
     "./render/bodyLod": "./src/render/bodyLod.ts",
     "./render/parameters": "./src/render/renderParameters.ts",
+    "./render/ports": "./src/render/renderPorts.ts",
     "./render/projectionService": "./src/render/ProjectionService.ts",
+    "./render/sceneOverlayRenderer": "./src/render/SceneOverlayRenderer.ts",
     "./runtime": "./src/runtime.ts",
     "./world": "./src/world.ts"
   },

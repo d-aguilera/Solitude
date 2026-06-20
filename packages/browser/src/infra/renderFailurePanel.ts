@@ -1,16 +1,12 @@
 export interface RenderFailurePanelOptions {
-  canvasHref: string;
   container: Element;
   message: string;
-  recoveryLabel: string;
   title: string;
 }
 
 export function showRenderFailurePanel({
-  canvasHref,
   container,
   message,
-  recoveryLabel,
   title,
 }: RenderFailurePanelOptions): void {
   container.replaceChildren();
@@ -31,16 +27,6 @@ export function showRenderFailurePanel({
   heading.textContent = title;
   const detail = document.createElement("p");
   detail.textContent = message;
-  const recovery = document.createElement("a");
-  recovery.href = canvasHref;
-  recovery.textContent = recoveryLabel;
-  recovery.style.color = "#9fe6c0";
-  panel.append(heading, detail, recovery);
+  panel.append(heading, detail);
   container.appendChild(panel);
-}
-
-export function createCanvasRendererHref(location: Location): string {
-  const url = new URL(location.href);
-  url.searchParams.set("renderer", "canvas");
-  return url.toString();
 }

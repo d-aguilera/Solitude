@@ -4,7 +4,7 @@
 
 - Add a true WebGL2 scene renderer for standalone and remote play.
 - Keep the authoritative protocol renderer-neutral: game models provide static meshes and snapshots provide changing state.
-- Preserve the Canvas renderer as an explicit `?renderer=canvas` comparison and recovery backend.
+- Use WebGL2 as the sole solid-mesh renderer; Canvas is reserved for projected scene overlays and HUD.
 
 ## Non-negotiables
 
@@ -16,7 +16,7 @@
 
 ## Decisions
 
-- WebGL is the default for standalone and remote play; only `renderer=canvas` selects Canvas.
+- WebGL is required for standalone and remote play; there is no Canvas solid-mesh backend or renderer-selection option.
 - GPU failures are visible and never silently fall back. The failure UI links to the Canvas override.
 - Solid meshes use native WebGL2 projection, lighting, clipping, depth testing, and rasterization.
 - Lines, trajectories, scene labels, and HUD remain on a transparent Canvas overlay initially.
@@ -28,12 +28,11 @@
 
 ```txt
 shared world + scene + camera
-  -> Canvas presenter
-       -> DefaultViewRenderer
-       -> Canvas scene + Canvas HUD overlay
-  -> WebGL presenter
+  -> browser WebGL presenter
        -> GPU-native solid mesh renderer
-       -> Canvas lines/labels/HUD overlay
+       -> engine SceneOverlayRenderer
+            -> browser CanvasSceneOverlayRasterizer
+       -> browser Canvas HUD overlay
 ```
 
 ## Milestones
@@ -43,18 +42,21 @@ shared world + scene + camera
 3. Complete: remote-client integration without protocol, interpolation, prediction, or reconciliation changes.
 4. Complete: standalone integration, WebGL default selection, and explicit Canvas override.
 5. Complete in code: localized fatal GPU UX, diagnostics, automated parity seams, and removal of the screen-space WebGL rasterizer.
+6. Complete: WebGL-only presentation, removal of the engine CPU-face pipeline, and explicit scene-overlay naming.
 
 ## Delivered State
 
-- Browser presentation owns layered DOM views, synchronized device-pixel sizing, backend selection, rendering, overlays, and disposal.
+- Browser presentation owns layered DOM views, synchronized device-pixel sizing, WebGL rendering, Canvas overlays, and disposal.
 - The native renderer uploads packed object-local triangles once per mesh/context and sends only camera-relative transforms, lights, and uniforms per frame.
 - GPU shaders perform object transforms, camera projection, near clipping, flat lighting, tone mapping, and logarithmic depth-tested rasterization using a conservative per-frame far range derived from object bounds.
 - Vertex and fragment shader sources live in dedicated `.vert.glsl` and `.frag.glsl` assets imported as raw text by the browser adapter.
-- The CPU `DefaultViewRenderer` remains responsible for Canvas rendering and WebGL line/label overlays.
-- Standalone and remote compositions default to WebGL; `?renderer=canvas` selects the retained Canvas path.
-- WebGL initialization/program/context-loss failures publish diagnostics and show localized recovery UI without silent fallback.
-- Unit coverage includes backend resolution, mesh packing/cache reuse, one-time GPU uploads, disposal, context loss, and existing remote-render behavior.
-- Typecheck, package boundaries, unit tests, and all production builds pass. Interactive browser visual-parity verification remains a hands-on follow-up.
+- The engine `SceneOverlayRenderer` projects renderer-neutral polylines, segments, and labels; the browser `CanvasSceneOverlayRasterizer` draws them.
+- The engine no longer generates, clips, sorts, caches, or exposes CPU-rendered triangle faces.
+- Standalone and remote compositions require WebGL2. Unknown `renderer` query values, including the former `renderer=canvas`, have no rendering effect.
+- WebGL initialization/program/context-loss failures publish diagnostics and show localized fatal UI without advertising a fallback backend.
+- Unit coverage includes mesh packing/cache reuse, one-time GPU uploads, disposal, context loss, scene overlays, and existing remote-render behavior.
+- Typecheck, package boundaries, unit tests, and all production builds pass. Interactive browser verification remains a hands-on follow-up.
+- Removing the CPU-face/Canvas backend reduced the production standalone JavaScript bundle from 201.05 kB to 191.93 kB and the remote game bundle from 126.86 kB to 118.21 kB in the validating build.
 
 ## Acceptance
 
@@ -62,9 +64,8 @@ shared world + scene + camera
 - Remote interpolation and local prediction/reconciliation remain behavior-compatible.
 - Unchanged mesh geometry uploads once per WebGL context and is disposed with its presenter.
 - Large orbital coordinates remain visually stable through camera-relative GPU inputs.
-- `?renderer=canvas` retains the current Canvas presentation.
-- WebGL initialization, program, and context-loss failures stop rendering and show a visible recovery link.
+- WebGL initialization, program, and context-loss failures stop rendering and show a visible WebGL-required error.
 
 ## Current Next Step
 
-- Run interactive standalone and remote parity checks on real WebGL2 hardware, especially Earth/Moon lighting, near-plane intersections, PiP overlays, context loss, and large-coordinate stability; fix only measured discrepancies.
+- Run interactive standalone and remote checks on real WebGL2 hardware, especially primary/PiP overlays, context loss, and large-coordinate stability; fix only measured discrepancies.

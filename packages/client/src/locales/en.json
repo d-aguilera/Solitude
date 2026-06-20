@@ -15,7 +15,6 @@
   "common.none": "none",
   "renderer.failure.contextLost": "The graphics context was lost.",
   "renderer.failure.program": "The graphics pipeline could not be created.",
-  "renderer.failure.recovery": "Reload using the Canvas renderer",
   "renderer.failure.title": "WebGL rendering stopped",
   "renderer.failure.unavailable": "WebGL 2 is unavailable in this browser or device.",
   "remoteIdentity.entityPrefix": "Entity: ",

@@ -1,19 +1,6 @@
 import type { SceneLabelCandidate, WorldSegment } from "../app/pluginPorts";
-import type { FocusContext } from "../app/runtimePorts";
-import type {
-  DomainCameraPose,
-  Mesh,
-  RGB,
-  Scene,
-  SceneObject,
-} from "../app/scenePorts";
-import type { Vec3 } from "../domain/vec3";
-import type { RenderFrameCache } from "./renderFrameCache";
+import type { DomainCameraPose, Scene, SceneObject } from "../app/scenePorts";
 import type { ScreenPoint } from "./scrn";
-
-export type DrawMode = "faces" | "lines";
-
-export const drawMode: DrawMode = "faces";
 
 export interface Point {
   x: number;
@@ -21,22 +8,13 @@ export interface Point {
 }
 
 /**
- * Rasterizer abstraction.
+ * Rasterizer for projected scene overlays.
  */
-export interface Rasterizer {
-  clear(color: string): void;
+export interface SceneOverlayRasterizer {
+  clear(): void;
   drawSceneLabels(labels: RenderedSceneLabel[], count: number): void;
-  drawFaces(faces: RenderedFace[], count: number): void;
   drawPolylines(polylines: RenderedPolyline[], count: number): void;
   drawSegments(segments: RenderedSegment[], count: number): void;
-  measureText(text: string, font: string): TextMetrics;
-}
-
-export interface Renderable {
-  mesh: Mesh;
-  worldPoints: Vec3[];
-  lineWidth: number;
-  baseColor: RGB;
 }
 
 export interface RenderedSceneLabel {
@@ -48,14 +26,6 @@ export interface RenderedSceneLabel {
   padding: Size;
   position: Point;
   size: Size;
-}
-
-export interface RenderedFace {
-  p0: ScreenPoint;
-  p1: ScreenPoint;
-  p2: ScreenPoint;
-  color: RGB;
-  depth: number;
 }
 
 export interface RenderedPolyline {
@@ -75,8 +45,6 @@ export interface RenderedSegment {
 export interface RenderedView {
   sceneLabels: RenderedSceneLabel[];
   sceneLabelCount: number;
-  faces: RenderedFace[];
-  faceCount: number;
   polylines: RenderedPolyline[];
   polylineCount: number;
   segments: RenderedSegment[];
@@ -125,15 +93,11 @@ export interface ViewRenderer {
 
 export interface ViewRenderParams {
   camera: DomainCameraPose;
-  mainFocus: FocusContext;
   objectsFilter?: (obj: SceneObject) => boolean;
-  renderFaces?: boolean;
-  renderPolylines?: boolean;
-  renderSegments?: boolean;
-  renderSceneLabels?: boolean;
+  renderPolylines: boolean;
+  renderSegments: boolean;
+  renderSceneLabels: boolean;
   sceneLabelCandidates: SceneLabelCandidate[];
-  sortFaces?: boolean;
-  renderCache: RenderFrameCache;
   scene: Scene;
   surface: RenderSurface2D;
   worldSegments: WorldSegment[];

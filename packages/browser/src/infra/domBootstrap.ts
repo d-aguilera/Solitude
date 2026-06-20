@@ -11,7 +11,7 @@ import { initInput } from "./domKeyboardInput";
 import { initLayout, type LayoutView } from "./domLayout";
 import { getOrCreateDomViewLayers } from "./domView";
 import type { RunLoopView } from "./infraPorts";
-import type { RenderFailure, RendererBackend } from "./rendererBackend";
+import type { RenderFailure } from "./renderFailure";
 import { createBrowserViewPresenter } from "./viewPresenter";
 
 /**
@@ -20,7 +20,6 @@ import { createBrowserViewPresenter } from "./viewPresenter";
 export function bootstrapWith(
   config: WorldAndSceneConfig,
   plugins: GamePlugin[],
-  backend: RendererBackend,
   onFatalError: (failure: RenderFailure) => void,
 ): void {
   const container = document.querySelector(".canvas-container");
@@ -29,12 +28,7 @@ export function bootstrapWith(
   }
 
   const viewDefinitions = buildViewDefinitions(config, plugins);
-  const views = createRunLoopViews(
-    container,
-    viewDefinitions,
-    backend,
-    onFatalError,
-  );
+  const views = createRunLoopViews(container, viewDefinitions, onFatalError);
   initLayout(container, views);
   window.addEventListener(
     "pagehide",
@@ -63,7 +57,6 @@ export function bootstrapWith(
 function createRunLoopViews(
   container: Element,
   definitions: ViewDefinition[],
-  backend: RendererBackend,
   onFatalError: (failure: RenderFailure) => void,
 ): (RunLoopView & LayoutView)[] {
   const views: (RunLoopView & LayoutView)[] = [];
@@ -71,20 +64,18 @@ function createRunLoopViews(
   for (const definition of primaryDefinitionsFirst(definitions)) {
     const layers = getOrCreateDomViewLayers(container, index, definition);
     const presenter = createBrowserViewPresenter({
-      backend,
       labelMode: definition.labelMode,
       onFatalError,
       overlayCanvas: layers.overlayCanvas,
       sceneCanvas: layers.sceneCanvas,
     });
     views.push({
-      backend: presenter.backend,
       definition,
       dispose: presenter.dispose,
       element: layers.element,
       layout: definition.layout,
       overlayRasterizer: presenter.overlayRasterizer,
-      rasterizer: presenter.rasterizer,
+      sceneOverlayRasterizer: presenter.sceneOverlayRasterizer,
       renderer: presenter,
       resize: presenter.resize,
       surface: presenter.surface,

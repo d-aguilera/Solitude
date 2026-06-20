@@ -34,28 +34,15 @@ export {
   getRequiredPrimaryViewState,
 } from "./app/viewRegistry";
 export { rgbToCss, rgbToQuantizedCss } from "./render/color";
-export { DefaultViewRenderer } from "./render/DefaultViewRenderer";
 export {
   formatDistance,
   formatSimTime,
   formatSpeed,
 } from "./render/formatters";
 export { LABEL_FONT } from "./render/labelStyle";
-export {
-  createRenderFrameCache,
-  getCachedWorldFaceNormals,
-  getCachedWorldPoints,
-  updateRenderFrameCache,
-} from "./render/renderFrameCache";
-export type { RenderFrameCache } from "./render/renderFrameCache";
-export { drawMode } from "./render/renderPorts";
 export type {
-  DrawMode,
   Point,
-  Rasterizer,
   RenderSurface2D,
-  Renderable,
-  RenderedFace,
   RenderedPolyline,
   RenderedSceneLabel,
   RenderedSegment,

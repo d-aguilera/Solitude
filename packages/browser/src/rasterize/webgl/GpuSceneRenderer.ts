@@ -16,7 +16,7 @@ import {
 } from "@solitude/engine/render/parameters";
 import { ProjectionService } from "@solitude/engine/render/projectionService";
 import { profiler } from "@solitude/engine/runtime";
-import type { RenderFailure } from "../../infra/rendererBackend";
+import type { RenderFailure } from "../../infra/renderFailure";
 import { getPackedGpuMesh } from "./meshPacking";
 import fragmentShaderSource from "./shaders/solidMesh.frag.glsl?raw";
 import vertexShaderSource from "./shaders/solidMesh.vert.glsl?raw";
@@ -128,8 +128,6 @@ export class GpuSceneRenderer {
     gl.clearColor(0, 0, 0, 1);
     gl.clearDepth(1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    if (params.renderFaces === false) return;
-
     this.projectionService.reset(params.camera, width, height);
     this.uploadLights(params);
 

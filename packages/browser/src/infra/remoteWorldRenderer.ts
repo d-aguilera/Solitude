@@ -10,7 +10,6 @@ import type {
   WorldSegment,
 } from "@solitude/engine/plugin";
 import type {
-  Rasterizer,
   RenderedView,
   RenderSurface2D,
   SceneState,
@@ -23,13 +22,12 @@ import type {
 } from "@solitude/engine/render";
 import {
   buildViewDefinitions,
-  createRenderFrameCache,
   createSceneViewStates,
-  DefaultViewRenderer,
   getRequiredPrimaryViewState,
-  updateRenderFrameCache,
   updateSceneViewCameras,
 } from "@solitude/engine/render";
+import type { SceneOverlayRasterizer } from "@solitude/engine/render/ports";
+import { SceneOverlayRenderer } from "@solitude/engine/render/sceneOverlayRenderer";
 import type { RuntimeWorldSnapshot } from "@solitude/engine/runtime";
 import {
   createPluginCapabilityRegistry,
@@ -53,11 +51,9 @@ export interface RemoteWorldRendererOptions {
 export interface RemoteWorldRenderOptions {
   dtMillis?: number;
   dtSimMillis?: number;
-  renderFaces?: boolean;
   renderPolylines?: boolean;
   renderSceneLabels?: boolean;
   renderSegments?: boolean;
-  sortFaces?: boolean;
 }
 
 export interface RemoteWorldRenderer {
@@ -151,7 +147,6 @@ export function createRemoteWorldRenderer({
   };
   const sceneView = sceneViews[0];
   const mainViewLookState = getMainViewLookState(config.render);
-  const renderCache = createRenderFrameCache();
   const sceneLabelCandidates: SceneLabelCandidate[] = [];
   const worldSegments: WorldSegment[] = [];
   const objectsFilter = buildSceneObjectsFilter(scenePlugins, {
@@ -162,15 +157,16 @@ export function createRemoteWorldRenderer({
     world: worldAndScene.world,
   });
   const renderedView = createRenderedView();
-  const renderer: ViewRenderer = new DefaultViewRenderer(
+  const renderer: ViewRenderer = new SceneOverlayRenderer(
     measureText,
     viewDefinition.labelMode,
   );
   const renderParams: ViewRenderParams = {
     camera: sceneView.camera,
-    mainFocus: worldAndScene.mainFocus,
     objectsFilter,
-    renderCache,
+    renderPolylines: true,
+    renderSceneLabels: true,
+    renderSegments: true,
     scene: worldAndScene.scene,
     sceneLabelCandidates,
     surface,
@@ -190,7 +186,6 @@ export function createRemoteWorldRenderer({
       scene: worldAndScene.scene,
       world: worldAndScene.world,
     });
-    updateRenderFrameCache(renderCache, worldAndScene.scene);
     applySegmentPlugins(segmentPlugins, worldSegments, {
       config,
       mainFocus: worldAndScene.mainFocus,
@@ -208,11 +203,9 @@ export function createRemoteWorldRenderer({
       world: worldAndScene.world,
     });
 
-    renderParams.renderFaces = options.renderFaces ?? true;
     renderParams.renderPolylines = options.renderPolylines ?? true;
     renderParams.renderSceneLabels = options.renderSceneLabels ?? true;
     renderParams.renderSegments = options.renderSegments ?? true;
-    renderParams.sortFaces = options.sortFaces ?? true;
     renderer.renderInto(renderedView, renderParams);
   };
 
@@ -277,11 +270,9 @@ export function createRemoteWorldMultiRenderer({
     views: sceneViews,
   };
   const mainViewLookState = getMainViewLookState(config.render);
-  const renderCache = createRenderFrameCache();
   const renderedViews = createRemoteRenderedViews({
     config,
     mirror,
-    renderCache,
     scene: worldAndScene.scene,
     scenePlugins,
     sceneViews,
@@ -302,8 +293,6 @@ export function createRemoteWorldMultiRenderer({
       scene: worldAndScene.scene,
       world: worldAndScene.world,
     });
-    updateRenderFrameCache(renderCache, worldAndScene.scene);
-
     for (const view of renderedViews) {
       const definition = view.sceneView.definition;
       applySegmentPlugins(segmentPlugins, view.worldSegments, {
@@ -323,11 +312,9 @@ export function createRemoteWorldMultiRenderer({
         world: worldAndScene.world,
       });
 
-      view.renderParams.renderFaces = options.renderFaces ?? true;
       view.renderParams.renderPolylines = options.renderPolylines ?? true;
       view.renderParams.renderSceneLabels = options.renderSceneLabels ?? true;
       view.renderParams.renderSegments = options.renderSegments ?? true;
-      view.renderParams.sortFaces = options.sortFaces ?? true;
       view.renderer.renderInto(view.renderedView, view.renderParams);
     }
   };
@@ -347,15 +334,11 @@ export function createRemoteWorldMultiRenderer({
   };
 }
 
-export function rasterizeRenderedView(
+export function rasterizeSceneOverlay(
   view: RenderedView,
-  rasterizer: Rasterizer,
-  drawFaces = true,
+  rasterizer: SceneOverlayRasterizer,
 ): void {
-  rasterizer.clear("#000000");
-  if (drawFaces) {
-    rasterizer.drawFaces(view.faces, view.faceCount);
-  }
+  rasterizer.clear();
   rasterizer.drawPolylines(view.polylines, view.polylineCount);
   rasterizer.drawSegments(view.segments, view.segmentCount);
   rasterizer.drawSceneLabels(view.sceneLabels, view.sceneLabelCount);
@@ -371,7 +354,6 @@ type InternalRemoteWorldRenderedView = RemoteWorldRenderedView & {
 function createRemoteRenderedViews({
   config,
   mirror,
-  renderCache,
   scene,
   scenePlugins,
   sceneViews,
@@ -379,7 +361,6 @@ function createRemoteRenderedViews({
 }: {
   config: WorldAndSceneConfig;
   mirror: RemoteWorldMirror;
-  renderCache: ReturnType<typeof createRenderFrameCache>;
   scene: ReturnType<typeof createScene>["scene"];
   scenePlugins: ScenePlugin[];
   sceneViews: SceneViewState[];
@@ -402,9 +383,10 @@ function createRemoteRenderedViews({
       renderer: view.renderer,
       renderParams: {
         camera: sceneView.camera,
-        mainFocus: mirror.worldSetup.mainFocus,
         objectsFilter,
-        renderCache,
+        renderPolylines: true,
+        renderSceneLabels: true,
+        renderSegments: true,
         scene,
         sceneLabelCandidates,
         surface: view.surface,
@@ -452,8 +434,6 @@ function setFocusEntityId(
 
 function createRenderedView(): RenderedView {
   return {
-    faces: [],
-    faceCount: 0,
     polylines: [],
     polylineCount: 0,
     sceneLabels: [],

@@ -1,23 +1,16 @@
 import type {
   Point,
-  Rasterizer,
-  RenderedFace,
   RenderedPolyline,
   RenderedSceneLabel,
   RenderedSegment,
   Size,
-  TextMetrics,
 } from "@solitude/engine/render";
-import { LABEL_FONT, rgbToQuantizedCss } from "@solitude/engine/render";
+import { LABEL_FONT } from "@solitude/engine/render";
+import type { SceneOverlayRasterizer } from "@solitude/engine/render/ports";
 
 // scratch
 let ctx: CanvasRenderingContext2D;
 let p: Point;
-let p0: Point;
-let p1: Point;
-let p2: Point;
-let cssColor: string;
-let textMetrics: TextMetrics;
 let label: RenderedSceneLabel;
 let anchor: Point;
 let lineHeight: number;
@@ -37,22 +30,13 @@ let textY: number;
 /**
  * Canvas2D rasterizer.
  */
-export class CanvasRasterizer implements Rasterizer {
-  constructor(
-    private readonly ctx: CanvasRenderingContext2D,
-    private readonly clearMode: "opaque" | "transparent",
-  ) {}
+export class CanvasSceneOverlayRasterizer implements SceneOverlayRasterizer {
+  constructor(private readonly ctx: CanvasRenderingContext2D) {}
 
-  clear(color: string): void {
+  clear(): void {
     ctx = this.ctx;
     const canvas = ctx.canvas;
-
-    if (this.clearMode === "transparent") {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    } else {
-      ctx.fillStyle = color;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
 
   drawSceneLabels(labels: RenderedSceneLabel[], count: number): void {
@@ -99,28 +83,6 @@ export class CanvasRasterizer implements Rasterizer {
     }
   }
 
-  drawFaces(faces: RenderedFace[], count: number): void {
-    ctx = this.ctx;
-
-    let face: RenderedFace;
-    for (let i = 0; i < count; i++) {
-      face = faces[i];
-      p0 = face.p0;
-      p1 = face.p1;
-      p2 = face.p2;
-      cssColor = rgbToQuantizedCss(face.color);
-      ctx.fillStyle = cssColor;
-      ctx.strokeStyle = cssColor;
-      ctx.beginPath();
-      ctx.moveTo(p0.x, p0.y);
-      ctx.lineTo(p1.x, p1.y);
-      ctx.lineTo(p2.x, p2.y);
-      ctx.fill();
-      // solves the gaps between triangles but it's slow
-      // ctx.stroke();
-    }
-  }
-
   drawPolylines(polylines: RenderedPolyline[], count: number): void {
     ctx = this.ctx;
     let polyline: RenderedPolyline;
@@ -156,16 +118,5 @@ export class CanvasRasterizer implements Rasterizer {
       ctx.lineTo(end.x, end.y);
       ctx.stroke();
     }
-  }
-
-  measureText(text: string, font: string): TextMetrics {
-    ctx = this.ctx;
-
-    ctx.save();
-    ctx.font = font;
-    textMetrics = ctx.measureText(text);
-    ctx.restore();
-
-    return textMetrics;
   }
 }

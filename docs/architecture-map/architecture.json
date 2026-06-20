@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-19T22:05:24.068Z",
+  "generatedAt": "2026-06-20T15:16:26.844Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -73,9 +73,9 @@
       "parent": "pkg:@solitude/browser"
     },
     {
-      "id": "module:@solitude/browser:./dom/rendererBackend",
+      "id": "module:@solitude/browser:./dom/renderFailure",
       "kind": "module",
-      "label": "./dom/rendererBackend",
+      "label": "./dom/renderFailure",
       "packageName": "@solitude/browser",
       "parent": "pkg:@solitude/browser"
     },
@@ -430,9 +430,23 @@
       "parent": "pkg:@solitude/engine"
     },
     {
+      "id": "module:@solitude/engine:./render/ports",
+      "kind": "module",
+      "label": "./render/ports",
+      "packageName": "@solitude/engine",
+      "parent": "pkg:@solitude/engine"
+    },
+    {
       "id": "module:@solitude/engine:./render/projectionService",
       "kind": "module",
       "label": "./render/projectionService",
+      "packageName": "@solitude/engine",
+      "parent": "pkg:@solitude/engine"
+    },
+    {
+      "id": "module:@solitude/engine:./render/sceneOverlayRenderer",
+      "kind": "module",
+      "label": "./render/sceneOverlayRenderer",
       "packageName": "@solitude/engine",
       "parent": "pkg:@solitude/engine"
     },
@@ -1146,14 +1160,6 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/browser:./dom/renderFailurePanel:createCanvasRendererHref",
-      "kind": "symbol",
-      "label": "createCanvasRendererHref",
-      "packageName": "@solitude/browser",
-      "parent": "module:@solitude/browser:./dom/renderFailurePanel",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/sim:./plugins/autopilot/logic:createCircleNowControllerState",
       "kind": "symbol",
       "label": "createCircleNowControllerState",
@@ -1434,14 +1440,6 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/engine:./render:createRenderFrameCache",
-      "kind": "symbol",
-      "label": "createRenderFrameCache",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./render",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/engine:./runtime:createRuntimeEntitySnapshot",
       "kind": "symbol",
       "label": "createRuntimeEntitySnapshot",
@@ -1682,14 +1680,6 @@
       "symbolKind": "const"
     },
     {
-      "id": "symbol:@solitude/engine:./render:DefaultViewRenderer",
-      "kind": "symbol",
-      "label": "DefaultViewRenderer",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./render",
-      "symbolKind": "class"
-    },
-    {
       "id": "symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement",
       "kind": "symbol",
       "label": "DirectControllableEntityPlacement",
@@ -1752,22 +1742,6 @@
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./math",
       "symbolKind": "const"
-    },
-    {
-      "id": "symbol:@solitude/engine:./render:drawMode",
-      "kind": "symbol",
-      "label": "drawMode",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./render",
-      "symbolKind": "const"
-    },
-    {
-      "id": "symbol:@solitude/engine:./render:DrawMode",
-      "kind": "symbol",
-      "label": "DrawMode",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./render",
-      "symbolKind": "type"
     },
     {
       "id": "symbol:@solitude/engine:./world:EntityAxialSpin",
@@ -2079,22 +2053,6 @@
       "label": "getAutopilotMode",
       "packageName": "@solitude/sim",
       "parent": "module:@solitude/sim:./plugins/autopilot/logic",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/engine:./render:getCachedWorldFaceNormals",
-      "kind": "symbol",
-      "label": "getCachedWorldFaceNormals",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./render",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/engine:./render:getCachedWorldPoints",
-      "kind": "symbol",
-      "label": "getCachedWorldPoints",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./render",
       "symbolKind": "function"
     },
     {
@@ -2906,6 +2864,14 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/engine:./render/ports:Point",
+      "kind": "symbol",
+      "label": "Point",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render/ports",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/engine:./render:PointLight",
       "kind": "symbol",
       "label": "PointLight",
@@ -2962,17 +2928,9 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/engine:./render:Rasterizer",
+      "id": "symbol:@solitude/browser:./remoteWorldRenderer:rasterizeSceneOverlay",
       "kind": "symbol",
-      "label": "Rasterizer",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./render",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/browser:./remoteWorldRenderer:rasterizeRenderedView",
-      "kind": "symbol",
-      "label": "rasterizeRenderedView",
+      "label": "rasterizeSceneOverlay",
       "packageName": "@solitude/browser",
       "parent": "module:@solitude/browser:./remoteWorldRenderer",
       "symbolKind": "function"
@@ -3130,14 +3088,6 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/engine:./render:Renderable",
-      "kind": "symbol",
-      "label": "Renderable",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./render",
-      "symbolKind": "interface"
-    },
-    {
       "id": "symbol:@solitude/engine:./world:RenderableConfig",
       "kind": "symbol",
       "label": "RenderableConfig",
@@ -3170,19 +3120,19 @@
       "symbolKind": "const"
     },
     {
-      "id": "symbol:@solitude/engine:./render:RenderedFace",
-      "kind": "symbol",
-      "label": "RenderedFace",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./render",
-      "symbolKind": "interface"
-    },
-    {
       "id": "symbol:@solitude/engine:./render:RenderedPolyline",
       "kind": "symbol",
       "label": "RenderedPolyline",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/engine:./render/ports:RenderedPolyline",
+      "kind": "symbol",
+      "label": "RenderedPolyline",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render/ports",
       "symbolKind": "interface"
     },
     {
@@ -3194,11 +3144,27 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/engine:./render/ports:RenderedSceneLabel",
+      "kind": "symbol",
+      "label": "RenderedSceneLabel",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render/ports",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/engine:./render:RenderedSegment",
       "kind": "symbol",
       "label": "RenderedSegment",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/engine:./render/ports:RenderedSegment",
+      "kind": "symbol",
+      "label": "RenderedSegment",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render/ports",
       "symbolKind": "interface"
     },
     {
@@ -3210,12 +3176,12 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/browser:./dom/rendererBackend:RendererBackend",
+      "id": "symbol:@solitude/engine:./render/ports:RenderedView",
       "kind": "symbol",
-      "label": "RendererBackend",
-      "packageName": "@solitude/browser",
-      "parent": "module:@solitude/browser:./dom/rendererBackend",
-      "symbolKind": "type"
+      "label": "RenderedView",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render/ports",
+      "symbolKind": "interface"
     },
     {
       "id": "symbol:@solitude/browser:./dom/renderingBootstrap:RendererDebugState",
@@ -3234,19 +3200,19 @@
       "symbolKind": "const"
     },
     {
-      "id": "symbol:@solitude/browser:./dom/rendererBackend:RenderFailure",
+      "id": "symbol:@solitude/browser:./dom/renderFailure:RenderFailure",
       "kind": "symbol",
       "label": "RenderFailure",
       "packageName": "@solitude/browser",
-      "parent": "module:@solitude/browser:./dom/rendererBackend",
+      "parent": "module:@solitude/browser:./dom/renderFailure",
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/browser:./dom/rendererBackend:RenderFailureCode",
+      "id": "symbol:@solitude/browser:./dom/renderFailure:RenderFailureCode",
       "kind": "symbol",
       "label": "RenderFailureCode",
       "packageName": "@solitude/browser",
-      "parent": "module:@solitude/browser:./dom/rendererBackend",
+      "parent": "module:@solitude/browser:./dom/renderFailure",
       "symbolKind": "type"
     },
     {
@@ -3264,14 +3230,6 @@
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render/parameters",
       "symbolKind": "const"
-    },
-    {
-      "id": "symbol:@solitude/engine:./render:RenderFrameCache",
-      "kind": "symbol",
-      "label": "RenderFrameCache",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./render",
-      "symbolKind": "interface"
     },
     {
       "id": "symbol:@solitude/engine:./render/parameters:renderGamma",
@@ -3303,6 +3261,14 @@
       "label": "RenderSurface2D",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/engine:./render/ports:RenderSurface2D",
+      "kind": "symbol",
+      "label": "RenderSurface2D",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render/ports",
       "symbolKind": "interface"
     },
     {
@@ -3343,14 +3309,6 @@
       "label": "resolvePropulsionCommandWithPlugins",
       "packageName": "@solitude/sim",
       "parent": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/browser:./dom/rendererBackend:resolveRendererBackend",
-      "kind": "symbol",
-      "label": "resolveRendererBackend",
-      "packageName": "@solitude/browser",
-      "parent": "module:@solitude/browser:./dom/rendererBackend",
       "symbolKind": "function"
     },
     {
@@ -3496,6 +3454,22 @@
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render",
       "symbolKind": "type"
+    },
+    {
+      "id": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
+      "kind": "symbol",
+      "label": "SceneOverlayRasterizer",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render/ports",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer",
+      "kind": "symbol",
+      "label": "SceneOverlayRenderer",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render/sceneOverlayRenderer",
+      "symbolKind": "class"
     },
     {
       "id": "symbol:@solitude/engine:./plugin:ScenePlugin",
@@ -3647,6 +3621,14 @@
       "label": "Size",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/engine:./render/ports:Size",
+      "kind": "symbol",
+      "label": "Size",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render/ports",
       "symbolKind": "interface"
     },
     {
@@ -4130,6 +4112,14 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/engine:./render/ports:TextMetrics",
+      "kind": "symbol",
+      "label": "TextMetrics",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render/ports",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/engine:./runtime:TickCallback",
       "kind": "symbol",
       "label": "TickCallback",
@@ -4207,14 +4197,6 @@
       "label": "updateFocusContext",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./runtime",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/engine:./render:updateRenderFrameCache",
-      "kind": "symbol",
-      "label": "updateRenderFrameCache",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./render",
       "symbolKind": "function"
     },
     {
@@ -4330,11 +4312,27 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/engine:./render/ports:ViewRenderer",
+      "kind": "symbol",
+      "label": "ViewRenderer",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render/ports",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/engine:./render:ViewRenderParams",
       "kind": "symbol",
       "label": "ViewRenderParams",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "kind": "symbol",
+      "label": "ViewRenderParams",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render/ports",
       "symbolKind": "interface"
     },
     {
@@ -4626,16 +4624,10 @@
       "to": "module:@solitude/engine:./world"
     },
     {
-      "id": "module-import:module:@solitude/browser:./dom/rendererBackend->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/browser:./dom/rendererBackend",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/browser:./dom/renderingBootstrap->module:@solitude/browser:./dom/rendererBackend",
+      "id": "module-import:module:@solitude/browser:./dom/renderingBootstrap->module:@solitude/browser:./dom/renderFailure",
       "from": "module:@solitude/browser:./dom/renderingBootstrap",
       "kind": "module-import",
-      "to": "module:@solitude/browser:./dom/rendererBackend"
+      "to": "module:@solitude/browser:./dom/renderFailure"
     },
     {
       "id": "module-import:module:@solitude/browser:./dom/renderingBootstrap->module:@solitude/engine:./plugin",
@@ -4668,10 +4660,10 @@
       "to": "module:@solitude/browser:./dom/overlayPorts"
     },
     {
-      "id": "module-import:module:@solitude/browser:./dom/viewPresenter->module:@solitude/browser:./dom/rendererBackend",
+      "id": "module-import:module:@solitude/browser:./dom/viewPresenter->module:@solitude/browser:./dom/renderFailure",
       "from": "module:@solitude/browser:./dom/viewPresenter",
       "kind": "module-import",
-      "to": "module:@solitude/browser:./dom/rendererBackend"
+      "to": "module:@solitude/browser:./dom/renderFailure"
     },
     {
       "id": "module-import:module:@solitude/browser:./dom/viewPresenter->module:@solitude/engine:./render",
@@ -4744,6 +4736,18 @@
       "from": "module:@solitude/browser:./remoteWorldRenderer",
       "kind": "module-import",
       "to": "module:@solitude/engine:./render"
+    },
+    {
+      "id": "module-import:module:@solitude/browser:./remoteWorldRenderer->module:@solitude/engine:./render/ports",
+      "from": "module:@solitude/browser:./remoteWorldRenderer",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./render/ports"
+    },
+    {
+      "id": "module-import:module:@solitude/browser:./remoteWorldRenderer->module:@solitude/engine:./render/sceneOverlayRenderer",
+      "from": "module:@solitude/browser:./remoteWorldRenderer",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./render/sceneOverlayRenderer"
     },
     {
       "id": "module-import:module:@solitude/browser:./remoteWorldRenderer->module:@solitude/engine:./runtime",
@@ -4998,6 +5002,12 @@
       "to": "module:@solitude/engine:./plugin"
     },
     {
+      "id": "module-import:module:@solitude/engine:./render->module:@solitude/engine:./render/ports",
+      "from": "module:@solitude/engine:./render",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./render/ports"
+    },
+    {
       "id": "module-import:module:@solitude/engine:./render/bodyLod->module:@solitude/engine:./render/projectionService",
       "from": "module:@solitude/engine:./render/bodyLod",
       "kind": "module-import",
@@ -5008,6 +5018,18 @@
       "from": "module:@solitude/engine:./render/projectionService",
       "kind": "module-import",
       "to": "module:@solitude/engine:./render/parameters"
+    },
+    {
+      "id": "module-import:module:@solitude/engine:./render/sceneOverlayRenderer->module:@solitude/engine:./render/ports",
+      "from": "module:@solitude/engine:./render/sceneOverlayRenderer",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./render/ports"
+    },
+    {
+      "id": "module-import:module:@solitude/engine:./render/sceneOverlayRenderer->module:@solitude/engine:./render/projectionService",
+      "from": "module:@solitude/engine:./render/sceneOverlayRenderer",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./render/projectionService"
     },
     {
       "id": "module-import:module:@solitude/hud:./provider->module:@solitude/engine:./plugin",
@@ -5904,22 +5926,10 @@
       "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/rendererBackend:RenderFailure->symbol:@solitude/browser:./dom/rendererBackend:RenderFailureCode",
-      "from": "symbol:@solitude/browser:./dom/rendererBackend:RenderFailure",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/renderFailure:RenderFailure->symbol:@solitude/browser:./dom/renderFailure:RenderFailureCode",
+      "from": "symbol:@solitude/browser:./dom/renderFailure:RenderFailure",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/rendererBackend:RenderFailureCode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/rendererBackend:resolveRendererBackend->symbol:@solitude/browser:./dom/rendererBackend:RendererBackend",
-      "from": "symbol:@solitude/browser:./dom/rendererBackend:resolveRendererBackend",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/rendererBackend:RendererBackend"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/rendererBackend:resolveRendererBackend->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/browser:./dom/rendererBackend:resolveRendererBackend",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
+      "to": "symbol:@solitude/browser:./dom/renderFailure:RenderFailureCode"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/renderFailurePanel:showRenderFailurePanel->symbol:@solitude/browser:./dom/renderFailurePanel:RenderFailurePanelOptions",
@@ -5934,28 +5944,16 @@
       "to": "symbol:@solitude/browser:./dom/renderingBootstrap:RenderingBootstrapOptions"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/renderingBootstrap:RendererDebugState->symbol:@solitude/browser:./dom/rendererBackend:RendererBackend",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/renderingBootstrap:RendererDebugState->symbol:@solitude/browser:./dom/renderFailure:RenderFailure",
       "from": "symbol:@solitude/browser:./dom/renderingBootstrap:RendererDebugState",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/rendererBackend:RendererBackend"
+      "to": "symbol:@solitude/browser:./dom/renderFailure:RenderFailure"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/renderingBootstrap:RendererDebugState->symbol:@solitude/browser:./dom/rendererBackend:RenderFailure",
-      "from": "symbol:@solitude/browser:./dom/renderingBootstrap:RendererDebugState",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/rendererBackend:RenderFailure"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/renderingBootstrap:RenderingBootstrapOptions->symbol:@solitude/browser:./dom/rendererBackend:RendererBackend",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/renderingBootstrap:RenderingBootstrapOptions->symbol:@solitude/browser:./dom/renderFailure:RenderFailure",
       "from": "symbol:@solitude/browser:./dom/renderingBootstrap:RenderingBootstrapOptions",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/rendererBackend:RendererBackend"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/renderingBootstrap:RenderingBootstrapOptions->symbol:@solitude/browser:./dom/rendererBackend:RenderFailure",
-      "from": "symbol:@solitude/browser:./dom/renderingBootstrap:RenderingBootstrapOptions",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/rendererBackend:RenderFailure"
+      "to": "symbol:@solitude/browser:./dom/renderFailure:RenderFailure"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/renderingBootstrap:RenderingBootstrapOptions->symbol:@solitude/engine:./plugin:GamePlugin",
@@ -6000,28 +5998,22 @@
       "to": "symbol:@solitude/browser:./dom/overlayPorts:OverlayRasterizer"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenter->symbol:@solitude/browser:./dom/rendererBackend:RendererBackend",
-      "from": "symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenter",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/rendererBackend:RendererBackend"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenter->symbol:@solitude/engine:./render:ViewRenderer",
       "from": "symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenter",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:ViewRenderer"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenterOptions->symbol:@solitude/browser:./dom/rendererBackend:RendererBackend",
-      "from": "symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenterOptions",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenter->symbol:@solitude/engine:./render/ports:ViewRenderer",
+      "from": "symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenter",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/rendererBackend:RendererBackend"
+      "to": "symbol:@solitude/engine:./render/ports:ViewRenderer"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenterOptions->symbol:@solitude/browser:./dom/rendererBackend:RenderFailure",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenterOptions->symbol:@solitude/browser:./dom/renderFailure:RenderFailure",
       "from": "symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenterOptions",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/rendererBackend:RenderFailure"
+      "to": "symbol:@solitude/browser:./dom/renderFailure:RenderFailure"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenterOptions->symbol:@solitude/engine:./render:ViewLabelMode",
@@ -6030,10 +6022,10 @@
       "to": "symbol:@solitude/engine:./render:ViewLabelMode"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter->symbol:@solitude/browser:./dom/rendererBackend:RenderFailure",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter->symbol:@solitude/browser:./dom/renderFailure:RenderFailure",
       "from": "symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/rendererBackend:RenderFailure"
+      "to": "symbol:@solitude/browser:./dom/renderFailure:RenderFailure"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter->symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenter",
@@ -6048,10 +6040,28 @@
       "to": "symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenterOptions"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter->symbol:@solitude/engine:./render:DefaultViewRenderer",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter->symbol:@solitude/engine:./render:RenderedView",
       "from": "symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:DefaultViewRenderer"
+      "to": "symbol:@solitude/engine:./render:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter->symbol:@solitude/engine:./render:ViewRenderParams",
+      "from": "symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:ViewRenderParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter->symbol:@solitude/engine:./render/ports:RenderedView",
+      "from": "symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter->symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "from": "symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:ViewRenderParams"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteViewPresenter:createRemoteViewPresenterRenderer->symbol:@solitude/browser:./remoteViewPresenter:RemoteViewPresenterRenderer",
@@ -6072,10 +6082,10 @@
       "to": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./remoteViewPresenter:createRemoteViewPresenterRenderer->symbol:@solitude/browser:./remoteWorldRenderer:rasterizeRenderedView",
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteViewPresenter:createRemoteViewPresenterRenderer->symbol:@solitude/browser:./remoteWorldRenderer:rasterizeSceneOverlay",
       "from": "symbol:@solitude/browser:./remoteViewPresenter:createRemoteViewPresenterRenderer",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./remoteWorldRenderer:rasterizeRenderedView"
+      "to": "symbol:@solitude/browser:./remoteWorldRenderer:rasterizeSceneOverlay"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteViewPresenter:RemotePresentedView->symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenter",
@@ -6228,12 +6238,6 @@
       "to": "symbol:@solitude/engine:./render:buildViewDefinitions"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./render:createRenderFrameCache",
-      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:createRenderFrameCache"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./render:createSceneViewStates",
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
       "kind": "symbol-reference",
@@ -6250,12 +6254,6 @@
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:SceneState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./render:updateRenderFrameCache",
-      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:updateRenderFrameCache"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./render:updateSceneViewCameras",
@@ -6330,22 +6328,10 @@
       "to": "symbol:@solitude/engine:./render:buildViewDefinitions"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./render:createRenderFrameCache",
-      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:createRenderFrameCache"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./render:createSceneViewStates",
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:createSceneViewStates"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./render:DefaultViewRenderer",
-      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:DefaultViewRenderer"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./render:getRequiredPrimaryViewState",
@@ -6358,12 +6344,6 @@
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:SceneState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./render:updateRenderFrameCache",
-      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:updateRenderFrameCache"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./render:updateSceneViewCameras",
@@ -6382,6 +6362,24 @@
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:ViewRenderParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./render/ports:ViewRenderer",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:ViewRenderer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:ViewRenderParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./runtime:createPluginCapabilityRegistry",
@@ -6408,16 +6406,22 @@
       "to": "symbol:@solitude/engine:./world:getMainViewLookState"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:rasterizeRenderedView->symbol:@solitude/engine:./render:Rasterizer",
-      "from": "symbol:@solitude/browser:./remoteWorldRenderer:rasterizeRenderedView",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:Rasterizer"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:rasterizeRenderedView->symbol:@solitude/engine:./render:RenderedView",
-      "from": "symbol:@solitude/browser:./remoteWorldRenderer:rasterizeRenderedView",
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:rasterizeSceneOverlay->symbol:@solitude/engine:./render:RenderedView",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:rasterizeSceneOverlay",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:rasterizeSceneOverlay->symbol:@solitude/engine:./render/ports:RenderedView",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:rasterizeSceneOverlay",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:rasterizeSceneOverlay->symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:rasterizeSceneOverlay",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiRenderer->symbol:@solitude/browser:./remoteWorldMirror:RemoteWorldMirror",
@@ -6486,6 +6490,18 @@
       "to": "symbol:@solitude/engine:./render:ViewRenderer"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiViewOptions->symbol:@solitude/engine:./render/ports:RenderSurface2D",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiViewOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderSurface2D"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiViewOptions->symbol:@solitude/engine:./render/ports:ViewRenderer",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldMultiViewOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:ViewRenderer"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView->symbol:@solitude/engine:./render:RenderedView",
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView",
       "kind": "symbol-reference",
@@ -6502,6 +6518,18 @@
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:ViewRenderParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView->symbol:@solitude/engine:./render/ports:RenderedView",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView->symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:ViewRenderParams"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderer->symbol:@solitude/browser:./remoteWorldMirror:RemoteWorldMirror",
@@ -6540,6 +6568,18 @@
       "to": "symbol:@solitude/engine:./render:ViewRenderParams"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderer->symbol:@solitude/engine:./render/ports:RenderedView",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderer->symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:ViewRenderParams"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderer->symbol:@solitude/engine:./runtime:RuntimeWorldSnapshot",
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderer",
       "kind": "symbol-reference",
@@ -6568,6 +6608,18 @@
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRendererOptions",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:TextMetrics"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRendererOptions->symbol:@solitude/engine:./render/ports:RenderSurface2D",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRendererOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderSurface2D"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRendererOptions->symbol:@solitude/engine:./render/ports:TextMetrics",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRendererOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:TextMetrics"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRendererOptions->symbol:@solitude/engine:./world:WorldAndSceneConfig",
@@ -7716,12 +7768,6 @@
       "to": "symbol:@solitude/engine:./render:SolidSceneObject"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:createRenderFrameCache->symbol:@solitude/engine:./render:RenderFrameCache",
-      "from": "symbol:@solitude/engine:./render:createRenderFrameCache",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderFrameCache"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:createSceneViewStates->symbol:@solitude/engine:./math:vec3",
       "from": "symbol:@solitude/engine:./render:createSceneViewStates",
       "kind": "symbol-reference",
@@ -7740,54 +7786,6 @@
       "to": "symbol:@solitude/engine:./render:ViewDefinition"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:DefaultViewRenderer->symbol:@solitude/engine:./math:Vec3",
-      "from": "symbol:@solitude/engine:./render:DefaultViewRenderer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:Vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:DefaultViewRenderer->symbol:@solitude/engine:./render:drawMode",
-      "from": "symbol:@solitude/engine:./render:DefaultViewRenderer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:drawMode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:DefaultViewRenderer->symbol:@solitude/engine:./render:RenderedView",
-      "from": "symbol:@solitude/engine:./render:DefaultViewRenderer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderedView"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:DefaultViewRenderer->symbol:@solitude/engine:./render:TextMetrics",
-      "from": "symbol:@solitude/engine:./render:DefaultViewRenderer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:TextMetrics"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:DefaultViewRenderer->symbol:@solitude/engine:./render:ViewLabelMode",
-      "from": "symbol:@solitude/engine:./render:DefaultViewRenderer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:ViewLabelMode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:DefaultViewRenderer->symbol:@solitude/engine:./render:ViewRenderer",
-      "from": "symbol:@solitude/engine:./render:DefaultViewRenderer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:ViewRenderer"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:DefaultViewRenderer->symbol:@solitude/engine:./render:ViewRenderParams",
-      "from": "symbol:@solitude/engine:./render:DefaultViewRenderer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:ViewRenderParams"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:DefaultViewRenderer->symbol:@solitude/engine:./render/projectionService:ProjectionService",
-      "from": "symbol:@solitude/engine:./render:DefaultViewRenderer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render/projectionService:ProjectionService"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:DomainCameraPose->symbol:@solitude/engine:./math:LocalFrame",
       "from": "symbol:@solitude/engine:./render:DomainCameraPose",
       "kind": "symbol-reference",
@@ -7800,12 +7798,6 @@
       "to": "symbol:@solitude/engine:./math:Vec3"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:drawMode->symbol:@solitude/engine:./render:DrawMode",
-      "from": "symbol:@solitude/engine:./render:drawMode",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:DrawMode"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:formatDistance->symbol:@solitude/engine:./math:AU",
       "from": "symbol:@solitude/engine:./render:formatDistance",
       "kind": "symbol-reference",
@@ -7816,42 +7808,6 @@
       "from": "symbol:@solitude/engine:./render:formatDistance",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./math:km"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:getCachedWorldFaceNormals->symbol:@solitude/engine:./math:Vec3",
-      "from": "symbol:@solitude/engine:./render:getCachedWorldFaceNormals",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:Vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:getCachedWorldFaceNormals->symbol:@solitude/engine:./render:RenderFrameCache",
-      "from": "symbol:@solitude/engine:./render:getCachedWorldFaceNormals",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderFrameCache"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:getCachedWorldFaceNormals->symbol:@solitude/engine:./render:SceneObject",
-      "from": "symbol:@solitude/engine:./render:getCachedWorldFaceNormals",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:SceneObject"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:getCachedWorldPoints->symbol:@solitude/engine:./math:Vec3",
-      "from": "symbol:@solitude/engine:./render:getCachedWorldPoints",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:Vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:getCachedWorldPoints->symbol:@solitude/engine:./render:RenderFrameCache",
-      "from": "symbol:@solitude/engine:./render:getCachedWorldPoints",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderFrameCache"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:getCachedWorldPoints->symbol:@solitude/engine:./render:SceneObject",
-      "from": "symbol:@solitude/engine:./render:getCachedWorldPoints",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:SceneObject"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render:getRequiredPrimaryViewState->symbol:@solitude/engine:./render:SceneViewState",
@@ -7902,6 +7858,12 @@
       "to": "symbol:@solitude/engine:./world:EntityId"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:Point->symbol:@solitude/engine:./render/ports:Point",
+      "from": "symbol:@solitude/engine:./render:Point",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:Point"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:PointLight->symbol:@solitude/engine:./math:Vec3",
       "from": "symbol:@solitude/engine:./render:PointLight",
       "kind": "symbol-reference",
@@ -7914,70 +7876,16 @@
       "to": "symbol:@solitude/engine:./render:BaseSceneObject"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:Rasterizer->symbol:@solitude/engine:./render:RenderedFace",
-      "from": "symbol:@solitude/engine:./render:Rasterizer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderedFace"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:Rasterizer->symbol:@solitude/engine:./render:RenderedPolyline",
-      "from": "symbol:@solitude/engine:./render:Rasterizer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderedPolyline"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:Rasterizer->symbol:@solitude/engine:./render:RenderedSceneLabel",
-      "from": "symbol:@solitude/engine:./render:Rasterizer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderedSceneLabel"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:Rasterizer->symbol:@solitude/engine:./render:RenderedSegment",
-      "from": "symbol:@solitude/engine:./render:Rasterizer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderedSegment"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:Rasterizer->symbol:@solitude/engine:./render:TextMetrics",
-      "from": "symbol:@solitude/engine:./render:Rasterizer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:TextMetrics"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:Renderable->symbol:@solitude/engine:./math:Vec3",
-      "from": "symbol:@solitude/engine:./render:Renderable",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:Vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:Renderable->symbol:@solitude/engine:./render:Mesh",
-      "from": "symbol:@solitude/engine:./render:Renderable",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:Mesh"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:Renderable->symbol:@solitude/engine:./render:RGB",
-      "from": "symbol:@solitude/engine:./render:Renderable",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RGB"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedFace->symbol:@solitude/engine:./render:RGB",
-      "from": "symbol:@solitude/engine:./render:RenderedFace",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RGB"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedFace->symbol:@solitude/engine:./render:ScreenPoint",
-      "from": "symbol:@solitude/engine:./render:RenderedFace",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:ScreenPoint"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedPolyline->symbol:@solitude/engine:./render:ScreenPoint",
       "from": "symbol:@solitude/engine:./render:RenderedPolyline",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:ScreenPoint"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedPolyline->symbol:@solitude/engine:./render/ports:RenderedPolyline",
+      "from": "symbol:@solitude/engine:./render:RenderedPolyline",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedPolyline"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedSceneLabel->symbol:@solitude/engine:./render:Point",
@@ -7992,16 +7900,34 @@
       "to": "symbol:@solitude/engine:./render:Size"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedSceneLabel->symbol:@solitude/engine:./render/ports:Point",
+      "from": "symbol:@solitude/engine:./render:RenderedSceneLabel",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:Point"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedSceneLabel->symbol:@solitude/engine:./render/ports:RenderedSceneLabel",
+      "from": "symbol:@solitude/engine:./render:RenderedSceneLabel",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedSceneLabel"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedSceneLabel->symbol:@solitude/engine:./render/ports:Size",
+      "from": "symbol:@solitude/engine:./render:RenderedSceneLabel",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:Size"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedSegment->symbol:@solitude/engine:./render:ScreenPoint",
       "from": "symbol:@solitude/engine:./render:RenderedSegment",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:ScreenPoint"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedView->symbol:@solitude/engine:./render:RenderedFace",
-      "from": "symbol:@solitude/engine:./render:RenderedView",
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedSegment->symbol:@solitude/engine:./render/ports:RenderedSegment",
+      "from": "symbol:@solitude/engine:./render:RenderedSegment",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderedFace"
+      "to": "symbol:@solitude/engine:./render/ports:RenderedSegment"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedView->symbol:@solitude/engine:./render:RenderedPolyline",
@@ -8022,10 +7948,34 @@
       "to": "symbol:@solitude/engine:./render:RenderedSegment"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderFrameCache->symbol:@solitude/engine:./render:SceneObject",
-      "from": "symbol:@solitude/engine:./render:RenderFrameCache",
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedView->symbol:@solitude/engine:./render/ports:RenderedPolyline",
+      "from": "symbol:@solitude/engine:./render:RenderedView",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:SceneObject"
+      "to": "symbol:@solitude/engine:./render/ports:RenderedPolyline"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedView->symbol:@solitude/engine:./render/ports:RenderedSceneLabel",
+      "from": "symbol:@solitude/engine:./render:RenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedSceneLabel"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedView->symbol:@solitude/engine:./render/ports:RenderedSegment",
+      "from": "symbol:@solitude/engine:./render:RenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedSegment"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedView->symbol:@solitude/engine:./render/ports:RenderedView",
+      "from": "symbol:@solitude/engine:./render:RenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderSurface2D->symbol:@solitude/engine:./render/ports:RenderSurface2D",
+      "from": "symbol:@solitude/engine:./render:RenderSurface2D",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderSurface2D"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render:rgbToCss->symbol:@solitude/engine:./render:RGB",
@@ -8106,22 +8056,22 @@
       "to": "symbol:@solitude/engine:./render:ViewDefinition"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:Size->symbol:@solitude/engine:./render/ports:Size",
+      "from": "symbol:@solitude/engine:./render:Size",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:Size"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:SolidSceneObject->symbol:@solitude/engine:./render:BaseSceneObject",
       "from": "symbol:@solitude/engine:./render:SolidSceneObject",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:BaseSceneObject"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:updateRenderFrameCache->symbol:@solitude/engine:./render:RenderFrameCache",
-      "from": "symbol:@solitude/engine:./render:updateRenderFrameCache",
+      "id": "symbol-reference:symbol:@solitude/engine:./render:TextMetrics->symbol:@solitude/engine:./render/ports:TextMetrics",
+      "from": "symbol:@solitude/engine:./render:TextMetrics",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderFrameCache"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:updateRenderFrameCache->symbol:@solitude/engine:./render:Scene",
-      "from": "symbol:@solitude/engine:./render:updateRenderFrameCache",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:Scene"
+      "to": "symbol:@solitude/engine:./render/ports:TextMetrics"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render:updateSceneViewCameras->symbol:@solitude/engine:./render:MainViewLookState",
@@ -8202,6 +8152,24 @@
       "to": "symbol:@solitude/engine:./render:ViewRenderParams"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:ViewRenderer->symbol:@solitude/engine:./render/ports:RenderedView",
+      "from": "symbol:@solitude/engine:./render:ViewRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:ViewRenderer->symbol:@solitude/engine:./render/ports:ViewRenderer",
+      "from": "symbol:@solitude/engine:./render:ViewRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:ViewRenderer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:ViewRenderer->symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "from": "symbol:@solitude/engine:./render:ViewRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:ViewRenderParams"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:ViewRenderParams->symbol:@solitude/engine:./plugin:SceneLabelCandidate",
       "from": "symbol:@solitude/engine:./render:ViewRenderParams",
       "kind": "symbol-reference",
@@ -8218,12 +8186,6 @@
       "from": "symbol:@solitude/engine:./render:ViewRenderParams",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:DomainCameraPose"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:ViewRenderParams->symbol:@solitude/engine:./render:RenderFrameCache",
-      "from": "symbol:@solitude/engine:./render:ViewRenderParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderFrameCache"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render:ViewRenderParams->symbol:@solitude/engine:./render:RenderSurface2D",
@@ -8244,10 +8206,16 @@
       "to": "symbol:@solitude/engine:./render:SceneObject"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:ViewRenderParams->symbol:@solitude/engine:./runtime:FocusContext",
+      "id": "symbol-reference:symbol:@solitude/engine:./render:ViewRenderParams->symbol:@solitude/engine:./render/ports:RenderSurface2D",
       "from": "symbol:@solitude/engine:./render:ViewRenderParams",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./runtime:FocusContext"
+      "to": "symbol:@solitude/engine:./render/ports:RenderSurface2D"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:ViewRenderParams->symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "from": "symbol:@solitude/engine:./render:ViewRenderParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:ViewRenderParams"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render/bodyLod:isBodyAtOrBeyondOnePixelThreshold->symbol:@solitude/engine:./render:SceneObject",
@@ -8274,16 +8242,244 @@
       "to": "symbol:@solitude/engine:./render/parameters:renderVerticalFovDegrees"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:Point->symbol:@solitude/engine:./render:Point",
+      "from": "symbol:@solitude/engine:./render/ports:Point",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:Point"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedPolyline->symbol:@solitude/engine:./render:RenderedPolyline",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedPolyline",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedPolyline"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedPolyline->symbol:@solitude/engine:./render:ScreenPoint",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedPolyline",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:ScreenPoint"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedSceneLabel->symbol:@solitude/engine:./render:Point",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedSceneLabel",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:Point"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedSceneLabel->symbol:@solitude/engine:./render:RenderedSceneLabel",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedSceneLabel",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedSceneLabel"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedSceneLabel->symbol:@solitude/engine:./render:Size",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedSceneLabel",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:Size"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedSceneLabel->symbol:@solitude/engine:./render/ports:Point",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedSceneLabel",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:Point"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedSceneLabel->symbol:@solitude/engine:./render/ports:Size",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedSceneLabel",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:Size"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedSegment->symbol:@solitude/engine:./render:RenderedSegment",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedSegment",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedSegment"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedSegment->symbol:@solitude/engine:./render:ScreenPoint",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedSegment",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:ScreenPoint"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render:RenderedPolyline",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedPolyline"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render:RenderedSceneLabel",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedSceneLabel"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render:RenderedSegment",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedSegment"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render:RenderedView",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render/ports:RenderedPolyline",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedPolyline"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render/ports:RenderedSceneLabel",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedSceneLabel"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render/ports:RenderedSegment",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedSegment"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderSurface2D->symbol:@solitude/engine:./render:RenderSurface2D",
+      "from": "symbol:@solitude/engine:./render/ports:RenderSurface2D",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderSurface2D"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render:RenderedPolyline",
+      "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedPolyline"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render:RenderedSceneLabel",
+      "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedSceneLabel"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render:RenderedSegment",
+      "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedSegment"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render/ports:RenderedPolyline",
+      "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedPolyline"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render/ports:RenderedSceneLabel",
+      "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedSceneLabel"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render/ports:RenderedSegment",
+      "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedSegment"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:Size->symbol:@solitude/engine:./render:Size",
+      "from": "symbol:@solitude/engine:./render/ports:Size",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:Size"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:TextMetrics->symbol:@solitude/engine:./render:TextMetrics",
+      "from": "symbol:@solitude/engine:./render/ports:TextMetrics",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:TextMetrics"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderer->symbol:@solitude/engine:./render:RenderedView",
+      "from": "symbol:@solitude/engine:./render/ports:ViewRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderer->symbol:@solitude/engine:./render:ViewRenderer",
+      "from": "symbol:@solitude/engine:./render/ports:ViewRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:ViewRenderer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderer->symbol:@solitude/engine:./render:ViewRenderParams",
+      "from": "symbol:@solitude/engine:./render/ports:ViewRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:ViewRenderParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderer->symbol:@solitude/engine:./render/ports:RenderedView",
+      "from": "symbol:@solitude/engine:./render/ports:ViewRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderer->symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "from": "symbol:@solitude/engine:./render/ports:ViewRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:ViewRenderParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderParams->symbol:@solitude/engine:./plugin:SceneLabelCandidate",
+      "from": "symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:SceneLabelCandidate"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderParams->symbol:@solitude/engine:./plugin:WorldSegment",
+      "from": "symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldSegment"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderParams->symbol:@solitude/engine:./render:DomainCameraPose",
+      "from": "symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:DomainCameraPose"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderParams->symbol:@solitude/engine:./render:RenderSurface2D",
+      "from": "symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderSurface2D"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderParams->symbol:@solitude/engine:./render:Scene",
+      "from": "symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:Scene"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderParams->symbol:@solitude/engine:./render:SceneObject",
+      "from": "symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:SceneObject"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderParams->symbol:@solitude/engine:./render:ViewRenderParams",
+      "from": "symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:ViewRenderParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderParams->symbol:@solitude/engine:./render/ports:RenderSurface2D",
+      "from": "symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderSurface2D"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render/projectionService:createProjectionWorkspace->symbol:@solitude/engine:./math:vec3",
       "from": "symbol:@solitude/engine:./render/projectionService:createProjectionWorkspace",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./math:vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render/projectionService:createProjectionWorkspace->symbol:@solitude/engine:./math:Vec3",
-      "from": "symbol:@solitude/engine:./render/projectionService:createProjectionWorkspace",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:Vec3"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render/projectionService:createProjectionWorkspace->symbol:@solitude/engine:./render/projectionService:ProjectionWorkspace",
@@ -8356,6 +8552,72 @@
       "from": "symbol:@solitude/engine:./render/projectionService:ProjectionWorkspace",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer->symbol:@solitude/engine:./math:Vec3",
+      "from": "symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer->symbol:@solitude/engine:./render:RenderedView",
+      "from": "symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer->symbol:@solitude/engine:./render:TextMetrics",
+      "from": "symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:TextMetrics"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer->symbol:@solitude/engine:./render:ViewLabelMode",
+      "from": "symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:ViewLabelMode"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer->symbol:@solitude/engine:./render:ViewRenderer",
+      "from": "symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:ViewRenderer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer->symbol:@solitude/engine:./render:ViewRenderParams",
+      "from": "symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:ViewRenderParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer->symbol:@solitude/engine:./render/ports:RenderedView",
+      "from": "symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer->symbol:@solitude/engine:./render/ports:TextMetrics",
+      "from": "symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:TextMetrics"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer->symbol:@solitude/engine:./render/ports:ViewRenderer",
+      "from": "symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:ViewRenderer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer->symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "from": "symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:ViewRenderParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer->symbol:@solitude/engine:./render/projectionService:ProjectionService",
+      "from": "symbol:@solitude/engine:./render/sceneOverlayRenderer:SceneOverlayRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/projectionService:ProjectionService"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./runtime:applyAxialSpin->symbol:@solitude/engine:./runtime:PhysicsWorkspace",
