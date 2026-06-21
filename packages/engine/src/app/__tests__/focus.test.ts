@@ -37,7 +37,7 @@ function createWorld(): {
   mainFocus: FocusContext;
   world: World;
 } {
-  const blue = createControlledBody("ship:blue");
+  const blue = createControlledBody("ship:1");
   const red = createControlledBody("ship:red");
   const planet = createMotionState("planet:test");
   const world: World = {

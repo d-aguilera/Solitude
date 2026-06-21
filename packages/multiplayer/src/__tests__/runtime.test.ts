@@ -7,7 +7,7 @@ import { createSolitudeServerGame } from "../runtime";
 describe("Solitude server runtime", () => {
   it("steps the default headless game with entity-addressed controls and reuses snapshots", () => {
     const game = createSolitudeServerGame(createDefaultShipEntities());
-    const blue = getControlledBody(game.worldAndScene, "ship:blue");
+    const blue = getControlledBody(game.worldAndScene, "ship:1");
     const red = getControlledBody(game.worldAndScene, "ship:red");
     const blueBefore = vec3.clone(blue.velocity);
     const redBefore = vec3.clone(red.velocity);
@@ -19,7 +19,7 @@ describe("Solitude server runtime", () => {
       1000,
       1000,
       new Map([
-        ["ship:blue", { burnForward: true, thrust5: true }],
+        ["ship:1", { burnForward: true, thrust5: true }],
         ["ship:red", { burnRight: true }],
       ]),
     );
@@ -38,15 +38,15 @@ describe("Solitude server runtime", () => {
   it("moves runtime focus away from a removed focused entity", () => {
     const game = createSolitudeServerGame(createDefaultShipEntities());
 
-    expect(game.worldAndScene.mainFocus.entityId).toBe("ship:blue");
+    expect(game.worldAndScene.mainFocus.entityId).toBe("ship:1");
 
-    game.removeEntity("ship:blue");
+    game.removeEntity("ship:1");
 
     expect(game.worldAndScene.mainFocus.entityId).toBe("ship:red");
     expect(game.worldAndScene.mainFocus.controlledBody.id).toBe("ship:red");
     expect(
       game.worldAndScene.world.controllableBodies.some(
-        (body) => body.id === "ship:blue",
+        (body) => body.id === "ship:1",
       ),
     ).toBe(false);
   });
@@ -54,7 +54,7 @@ describe("Solitude server runtime", () => {
   it("advances dynamically added ships through gravity integration", () => {
     const blue = createDefaultMultiplayerSpacecraftEntity({
       entityCount: 16,
-      id: "ship:blue",
+      id: "ship:1",
       index: 0,
     });
     const red = createDefaultMultiplayerSpacecraftEntity({
@@ -85,7 +85,7 @@ function createDefaultShipEntities() {
   return [
     createDefaultMultiplayerSpacecraftEntity({
       entityCount: 16,
-      id: "ship:blue",
+      id: "ship:1",
       index: 0,
     }),
     createDefaultMultiplayerSpacecraftEntity({

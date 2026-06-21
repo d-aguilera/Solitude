@@ -54,7 +54,7 @@ describe("Solitude in-process transport", () => {
       {
         type: "joined",
         clientId: "client:a",
-        entityId: "ship:blue",
+        entityId: "ship:1",
         gameId: "game:1",
         sequence: 2,
       },
@@ -65,7 +65,7 @@ describe("Solitude in-process transport", () => {
         {
           type: "input",
           clientId: "client:a",
-          entityId: "ship:blue",
+          entityId: "ship:1",
           gameId: "game:1",
           inputSequence: 1,
           sequence: 3,
@@ -77,7 +77,7 @@ describe("Solitude in-process transport", () => {
 
     const snapshot = transport.stepGame("game:1", 1000);
     expect(snapshot?.type).toBe("snapshot");
-    expect(snapshot?.lastProcessedInputSequences).toEqual({ "ship:blue": 1 });
+    expect(snapshot?.lastProcessedInputSequences).toEqual({ "ship:1": 1 });
     expect(snapshot?.modelVersion).toBe(1);
     expect(snapshot?.simulationTimeMillis).toBe(1000);
     expect(snapshot?.tick).toBe(1);
@@ -99,7 +99,7 @@ describe("Solitude in-process transport", () => {
       {
         assignedEntityIds: [],
         availableEntityIds: [
-          "ship:blue",
+          "ship:1",
           "ship:red",
           "ship:3",
           "ship:4",

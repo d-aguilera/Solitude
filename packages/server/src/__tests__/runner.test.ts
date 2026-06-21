@@ -26,7 +26,7 @@ describe("Solitude game runner", () => {
       {
         assignedEntityIds: [],
         availableEntityIds: [
-          "ship:blue",
+          "ship:1",
           "ship:red",
           "ship:3",
           "ship:4",

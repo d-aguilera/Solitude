@@ -37,7 +37,7 @@ describe("Solitude server metrics", () => {
       connectedSockets: 2,
       games: [
         {
-          assignedEntityIds: ["ship:blue"],
+          assignedEntityIds: ["ship:1"],
           availableEntityIds: [],
           gameId: "game:1",
           maxClients: 1,

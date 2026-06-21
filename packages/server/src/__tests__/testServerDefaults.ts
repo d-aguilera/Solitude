@@ -123,7 +123,7 @@ function removeEntityConfig(
 }
 
 function createTestAssignableEntityIds(count: number): EntityId[] {
-  const ids = ["ship:blue", "ship:red"];
+  const ids = ["ship:1", "ship:red"];
   for (let index = ids.length; index < count; index++) {
     ids.push(`ship:${index + 1}`);
   }

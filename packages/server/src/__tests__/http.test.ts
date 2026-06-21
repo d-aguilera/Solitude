@@ -131,7 +131,7 @@ describe("Solitude HTTP server", () => {
           {
             assignedEntityIds: [],
             availableEntityIds: [
-              "ship:blue",
+              "ship:1",
               "ship:red",
               "ship:3",
               "ship:4",
@@ -231,7 +231,7 @@ describe("Solitude HTTP server", () => {
       expect(await runningResponse.json()).toEqual({
         games: [
           {
-            assignedEntityIds: ["ship:blue"],
+            assignedEntityIds: ["ship:1"],
             availableEntityIds: [
               "ship:red",
               "ship:3",
@@ -332,7 +332,7 @@ describe("Solitude HTTP server", () => {
         {
           type: "joined",
           clientId: "client:a",
-          entityId: "ship:blue",
+          entityId: "ship:1",
           gameId: "game:1",
           sequence: 2,
         },
@@ -419,11 +419,11 @@ describe("Solitude HTTP server", () => {
         joinResponse.messages
           .find((message: any) => message.type === "gameModel")
           ?.entities.map((entity: any) => entity.id),
-      ).toEqual(["ship:blue", "ship:red"]);
+      ).toEqual(["ship:1", "ship:red"]);
       expect(modelUpdate.message.modelVersion).toBe(2);
       expect(
         modelUpdate.message.entities.map((entity: any) => entity.id),
-      ).toEqual(["ship:blue", "ship:red"]);
+      ).toEqual(["ship:1", "ship:red"]);
 
       firstSocket.close();
       secondSocket.close();
@@ -485,7 +485,7 @@ describe("Solitude HTTP server", () => {
       await firstSocket.close();
       const games = await waitForGameList(server, (items) =>
         JSON.stringify(items).includes(
-          '"availableEntityIds":["ship:blue","ship:3"',
+          '"availableEntityIds":["ship:1","ship:3"',
         ),
       );
 
@@ -493,7 +493,7 @@ describe("Solitude HTTP server", () => {
         {
           assignedEntityIds: ["ship:red"],
           availableEntityIds: [
-            "ship:blue",
+            "ship:1",
             "ship:3",
             "ship:4",
             "ship:5",

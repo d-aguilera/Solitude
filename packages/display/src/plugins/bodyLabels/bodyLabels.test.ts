@@ -113,12 +113,12 @@ describe("body label plugin", () => {
     const scene: Scene = {
       lights: [],
       objects: [
-        createControlledBody("ship:blue", "Blue"),
+        createControlledBody("ship:1", "Blue"),
         createControlledBody("ship:red", "Red"),
       ],
     };
 
-    plugin.labels?.appendLabels?.(labels, createParams(scene, "ship:blue"));
+    plugin.labels?.appendLabels?.(labels, createParams(scene, "ship:1"));
 
     expect(labels).toHaveLength(1);
     expect(labels[0].id).toBe("ship:red");
@@ -149,7 +149,7 @@ function createParams(
     world: {
       controllableBodies: [
         {
-          id: "ship:blue",
+          id: "ship:1",
           position: vec3.zero(),
           velocity: vec3.zero(),
         },

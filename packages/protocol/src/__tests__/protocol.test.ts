@@ -28,7 +28,7 @@ describe("Solitude protocol", () => {
     expect(
       createJoinedGameMessage({
         clientId: "client:a",
-        entityId: "ship:blue",
+        entityId: "ship:1",
         gameId: "game:test",
         sequence: 2,
       }).type,
@@ -55,7 +55,7 @@ describe("Solitude protocol", () => {
       isSolitudeClientMessage({
         type: "input",
         clientId: "client:a",
-        entityId: "ship:blue",
+        entityId: "ship:1",
         gameId: "game:test",
         inputSequence: 1,
         sequence: 2,
@@ -66,7 +66,7 @@ describe("Solitude protocol", () => {
       isSolitudeClientMessage({
         type: "input",
         clientId: "client:a",
-        entityId: "ship:blue",
+        entityId: "ship:1",
         gameId: "game:test",
         inputSequence: 1,
         sequence: 2,
@@ -97,7 +97,7 @@ describe("Solitude protocol", () => {
     const snapshotMessage = createSnapshotMessage({
       entities: [],
       gameId: "game:test",
-      lastProcessedInputSequences: { "ship:blue": 3 },
+      lastProcessedInputSequences: { "ship:1": 3 },
       modelVersion: 2,
       sequence: 4,
       simulationTimeMillis: 200,
@@ -146,7 +146,7 @@ describe("Solitude protocol", () => {
         message: {
           type: "input",
           clientId: "client:a",
-          entityId: "ship:blue",
+          entityId: "ship:1",
           gameId: "game:test",
           inputSequence: 1,
           sequence: 2,

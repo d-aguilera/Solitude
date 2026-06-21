@@ -31,18 +31,15 @@ export function createSolitudeServerGame(
       loop.refreshGravityState();
     },
     removeEntity: (entityId) => {
-      removeEntityFromWorld(loop.worldAndScene.world, entityId);
+      const worldAndScene = loop.worldAndScene;
+      const world = worldAndScene.world;
+      removeEntityFromWorld(world, entityId);
       removeEntityConfig(config.entities, entityId);
       loop.refreshGravityState();
-      if (loop.worldAndScene.mainFocus.entityId === entityId) {
-        const nextFocusEntityId =
-          loop.worldAndScene.world.controllableBodies[0]?.id;
+      if (worldAndScene.mainFocus.entityId === entityId) {
+        const nextFocusEntityId = world.controllableBodies[0]?.id;
         if (nextFocusEntityId) {
-          updateFocusContext(
-            loop.worldAndScene.world,
-            loop.worldAndScene.mainFocus,
-            nextFocusEntityId,
-          );
+          updateFocusContext(world, worldAndScene.mainFocus, nextFocusEntityId);
         }
       }
     },
@@ -64,10 +61,8 @@ function removeEntityConfig(
   let writeIndex = 0;
   for (let readIndex = 0; readIndex < entities.length; readIndex++) {
     const entity = entities[readIndex];
-    if (entity.id !== entityId) {
-      entities[writeIndex] = entity;
-      writeIndex++;
-    }
+    if (entity.id === entityId) continue;
+    entities[writeIndex++] = entity;
   }
   entities.length = writeIndex;
 }

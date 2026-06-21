@@ -182,7 +182,7 @@ describe("spacecraft vehicle dynamics plugin", () => {
   });
 
   it("keeps spacecraft control state per focused entity", () => {
-    const blueBody = createBody("ship:blue");
+    const blueBody = createBody("ship:1");
     const redBody = createBody("ship:red");
     const world = createWorld(blueBody, redBody);
     const telemetry = createSpacecraftOperatorTelemetry();
@@ -219,7 +219,7 @@ describe("spacecraft vehicle dynamics plugin", () => {
   });
 
   it("continues autonomous autopilot propulsion on unfocused controlled bodies", () => {
-    const blueBody = createBody("ship:blue");
+    const blueBody = createBody("ship:1");
     const redBody = createBody("ship:red");
     const world = createWorld(blueBody, redBody);
     const plugin = createSpacecraftVehicleDynamicsPlugin(
@@ -242,7 +242,7 @@ describe("spacecraft vehicle dynamics plugin", () => {
   });
 
   it("restores the focused body's stored autopilot mode on focus return", () => {
-    const blueBody = createBody("ship:blue");
+    const blueBody = createBody("ship:1");
     const redBody = createBody("ship:red");
     const world = createWorld(blueBody, redBody);
     const plugin = createSpacecraftVehicleDynamicsPlugin(

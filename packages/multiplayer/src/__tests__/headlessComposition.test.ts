@@ -12,12 +12,12 @@ describe("server-style headless Solitude composition", () => {
     const world = loop.worldAndScene.world;
     const focus = loop.worldAndScene.mainFocus;
 
-    expect(config.mainFocusEntityId).toBe("ship:blue");
+    expect(config.mainFocusEntityId).toBe("ship:1");
     expect(world.controllableBodies.map((body) => body.id)).toEqual([
-      "ship:blue",
+      "ship:1",
       "ship:red",
     ]);
-    expect(focus.entityId).toBe("ship:blue");
+    expect(focus.entityId).toBe("ship:1");
 
     const before = vec3.clone(focus.controlledBody.velocity);
 
@@ -33,7 +33,7 @@ describe("server-style headless Solitude composition", () => {
     const { loop } = createSolitudeHeadlessLoop({
       extraEntities: createDefaultShipEntities(),
     });
-    const blue = getControlledBody(loop.worldAndScene.world, "ship:blue");
+    const blue = getControlledBody(loop.worldAndScene.world, "ship:1");
     const red = getControlledBody(loop.worldAndScene.world, "ship:red");
     const blueBefore = vec3.clone(blue.velocity);
     const redBefore = vec3.clone(red.velocity);
@@ -41,7 +41,7 @@ describe("server-style headless Solitude composition", () => {
     loop.stepWithEntityInputs(
       1000,
       new Map([
-        ["ship:blue", { burnForward: true, thrust5: true }],
+        ["ship:1", { burnForward: true, thrust5: true }],
         ["ship:red", { burnRight: true }],
       ]),
     );
@@ -77,43 +77,43 @@ describe("server-style headless Solitude composition", () => {
     shortBurnLoop.stepWithEntityInputsAndSimDt(
       100,
       1000,
-      new Map([["ship:blue", { burnForward: true, thrust5: true }]]),
+      new Map([["ship:1", { burnForward: true, thrust5: true }]]),
     );
     fullBurnLoop.stepWithEntityInputsAndSimDt(
       1000,
       1000,
-      new Map([["ship:blue", { burnForward: true, thrust5: true }]]),
+      new Map([["ship:1", { burnForward: true, thrust5: true }]]),
     );
     shortYawLoop.stepWithEntityInputsAndSimDt(
       100,
       1000,
-      new Map([["ship:blue", { yawLeft: true }]]),
+      new Map([["ship:1", { yawLeft: true }]]),
     );
     fullYawLoop.stepWithEntityInputsAndSimDt(
       1000,
       1000,
-      new Map([["ship:blue", { yawLeft: true }]]),
+      new Map([["ship:1", { yawLeft: true }]]),
     );
 
     const noBurnBlue = getControlledBody(
       noBurnLoop.worldAndScene.world,
-      "ship:blue",
+      "ship:1",
     );
     const shortBurnBlue = getControlledBody(
       shortBurnLoop.worldAndScene.world,
-      "ship:blue",
+      "ship:1",
     );
     const fullBurnBlue = getControlledBody(
       fullBurnLoop.worldAndScene.world,
-      "ship:blue",
+      "ship:1",
     );
     const shortYawBlue = getControlledBody(
       shortYawLoop.worldAndScene.world,
-      "ship:blue",
+      "ship:1",
     );
     const fullYawBlue = getControlledBody(
       fullYawLoop.worldAndScene.world,
-      "ship:blue",
+      "ship:1",
     );
     const shortBurnVelocityDelta = vec3.length(
       vec3.subInto(vec3.zero(), shortBurnBlue.velocity, noBurnBlue.velocity),
@@ -133,7 +133,7 @@ describe("server-style headless Solitude composition", () => {
     const ships = [
       createDefaultMultiplayerSpacecraftEntity({
         entityCount: 16,
-        id: "ship:blue",
+        id: "ship:1",
         index: 0,
       }),
       createDefaultMultiplayerSpacecraftEntity({
@@ -165,7 +165,7 @@ function createDefaultShipEntities() {
   return [
     createDefaultMultiplayerSpacecraftEntity({
       entityCount: 16,
-      id: "ship:blue",
+      id: "ship:1",
       index: 0,
     }),
     createDefaultMultiplayerSpacecraftEntity({

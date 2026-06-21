@@ -63,7 +63,7 @@ describe("Solitude session manager", () => {
     ]);
     expect(
       requireGameModel(messages).entities.map((entity) => entity.id),
-    ).toEqual(["ship:blue", "ship:red"]);
+    ).toEqual(["ship:1", "ship:red"]);
     expect(requireGameModel(messages).modelVersion).toBe(2);
 
     const thirdMessages = manager.handleMessage({
@@ -83,7 +83,7 @@ describe("Solitude session manager", () => {
     ]);
     expect(
       requireGameModel(thirdMessages).entities.map((entity) => entity.id),
-    ).toEqual(["ship:blue", "ship:red", "ship:3"]);
+    ).toEqual(["ship:1", "ship:red", "ship:3"]);
   });
 
   it("releases a client's assigned ship when the client leaves", () => {
@@ -117,7 +117,7 @@ describe("Solitude session manager", () => {
       {
         assignedEntityIds: ["ship:red"],
         availableEntityIds: [
-          "ship:blue",
+          "ship:1",
           "ship:3",
           "ship:4",
           "ship:5",
@@ -151,7 +151,7 @@ describe("Solitude session manager", () => {
       {
         type: "joined",
         clientId: "client:c",
-        entityId: "ship:blue",
+        entityId: "ship:1",
         gameId: "game:1",
         sequence: 5,
       },
@@ -170,7 +170,7 @@ describe("Solitude session manager", () => {
       {
         assignedEntityIds: [],
         availableEntityIds: [
-          "ship:blue",
+          "ship:1",
           "ship:red",
           "ship:3",
           "ship:4",
@@ -209,7 +209,7 @@ describe("Solitude session manager", () => {
 
     expect(manager.listGames()).toEqual([
       {
-        assignedEntityIds: ["ship:blue", "ship:red"],
+        assignedEntityIds: ["ship:1", "ship:red"],
         availableEntityIds: [
           "ship:3",
           "ship:4",
@@ -251,7 +251,7 @@ describe("Solitude session manager", () => {
       manager.handleMessage({
         type: "input",
         clientId: "client:a",
-        entityId: "ship:blue",
+        entityId: "ship:1",
         gameId: "game:1",
         inputSequence: 1,
         sequence: 3,
@@ -263,7 +263,7 @@ describe("Solitude session manager", () => {
     expect(snapshot?.type).toBe("snapshot");
     expect(snapshot?.gameId).toBe("game:1");
     expect(snapshot?.modelVersion).toBe(1);
-    expect(snapshot?.lastProcessedInputSequences).toEqual({ "ship:blue": 1 });
+    expect(snapshot?.lastProcessedInputSequences).toEqual({ "ship:1": 1 });
     expect(snapshot?.sequence).toBe(4);
     expect(snapshot?.simulationTimeMillis).toBe(1000);
     expect(snapshot?.tick).toBe(1);
@@ -287,7 +287,7 @@ describe("Solitude session manager", () => {
     manager.handleMessage({
       type: "input",
       clientId: "client:a",
-      entityId: "ship:blue",
+      entityId: "ship:1",
       gameId: "game:1",
       inputSequence: 1,
       sequence: 3,
@@ -299,12 +299,12 @@ describe("Solitude session manager", () => {
     expect(game.controlInputsByStep).toEqual([
       {
         controlDtMillis: 1000,
-        controls: [["ship:blue", { burnForward: true, thrust5: true }]],
+        controls: [["ship:1", { burnForward: true, thrust5: true }]],
         dtMillis: 1000,
       },
       {
         controlDtMillis: 1000,
-        controls: [["ship:blue", { burnForward: true, thrust5: true }]],
+        controls: [["ship:1", { burnForward: true, thrust5: true }]],
         dtMillis: 1000,
       },
     ]);
@@ -312,7 +312,7 @@ describe("Solitude session manager", () => {
     manager.handleMessage({
       type: "input",
       clientId: "client:a",
-      entityId: "ship:blue",
+      entityId: "ship:1",
       gameId: "game:1",
       inputSequence: 2,
       sequence: 4,
@@ -322,7 +322,7 @@ describe("Solitude session manager", () => {
 
     expect(game.controlInputsByStep[2]).toEqual({
       controlDtMillis: 1000,
-      controls: [["ship:blue", { burnForward: false, thrust5: true }]],
+      controls: [["ship:1", { burnForward: false, thrust5: true }]],
       dtMillis: 1000,
     });
   });
@@ -345,7 +345,7 @@ describe("Solitude session manager", () => {
     manager.handleMessage({
       type: "input",
       clientId: "client:a",
-      entityId: "ship:blue",
+      entityId: "ship:1",
       gameId: "game:1",
       inputSequence: 2,
       sequence: 3,
@@ -354,7 +354,7 @@ describe("Solitude session manager", () => {
     manager.handleMessage({
       type: "input",
       clientId: "client:a",
-      entityId: "ship:blue",
+      entityId: "ship:1",
       gameId: "game:1",
       inputSequence: 1,
       sequence: 4,
@@ -363,11 +363,11 @@ describe("Solitude session manager", () => {
 
     const snapshot = manager.stepGame("game:1", 1000);
 
-    expect(snapshot?.lastProcessedInputSequences).toEqual({ "ship:blue": 2 });
+    expect(snapshot?.lastProcessedInputSequences).toEqual({ "ship:1": 2 });
     expect(game.controlInputsByStep).toEqual([
       {
         controlDtMillis: 1000,
-        controls: [["ship:blue", { yawLeft: true }]],
+        controls: [["ship:1", { yawLeft: true }]],
         dtMillis: 1000,
       },
     ]);
@@ -391,7 +391,7 @@ describe("Solitude session manager", () => {
     manager.handleMessage({
       type: "input",
       clientId: "client:a",
-      entityId: "ship:blue",
+      entityId: "ship:1",
       gameId: "game:1",
       inputSequence: 1,
       sequence: 3,
@@ -400,7 +400,7 @@ describe("Solitude session manager", () => {
     manager.handleMessage({
       type: "input",
       clientId: "client:a",
-      entityId: "ship:blue",
+      entityId: "ship:1",
       gameId: "game:1",
       inputSequence: 2,
       sequence: 4,
@@ -410,14 +410,14 @@ describe("Solitude session manager", () => {
 
     expect(game.controlInputsByStep[0]).toEqual({
       controlDtMillis: 1000,
-      controls: [["ship:blue", { thrust9: true }]],
+      controls: [["ship:1", { thrust9: true }]],
       dtMillis: 1000,
     });
 
     manager.handleMessage({
       type: "input",
       clientId: "client:a",
-      entityId: "ship:blue",
+      entityId: "ship:1",
       gameId: "game:1",
       inputSequence: 3,
       sequence: 5,
@@ -427,7 +427,7 @@ describe("Solitude session manager", () => {
 
     expect(game.controlInputsByStep[1]).toEqual({
       controlDtMillis: 1000,
-      controls: [["ship:blue", { thrust3: true }]],
+      controls: [["ship:1", { thrust3: true }]],
       dtMillis: 1000,
     });
   });
@@ -450,7 +450,7 @@ describe("Solitude session manager", () => {
     manager.handleMessage({
       type: "input",
       clientId: "client:a",
-      entityId: "ship:blue",
+      entityId: "ship:1",
       gameId: "game:1",
       inputSequence: 1,
       sequence: 3,
@@ -459,7 +459,7 @@ describe("Solitude session manager", () => {
     manager.handleMessage({
       type: "input",
       clientId: "client:a",
-      entityId: "ship:blue",
+      entityId: "ship:1",
       gameId: "game:1",
       inputSequence: 2,
       sequence: 4,
@@ -471,12 +471,12 @@ describe("Solitude session manager", () => {
     expect(game.controlInputsByStep).toEqual([
       {
         controlDtMillis: 1000,
-        controls: [["ship:blue", { yawLeft: true }]],
+        controls: [["ship:1", { yawLeft: true }]],
         dtMillis: 1000,
       },
       {
         controlDtMillis: 1000,
-        controls: [["ship:blue", { yawLeft: false }]],
+        controls: [["ship:1", { yawLeft: false }]],
         dtMillis: 1000,
       },
     ]);
@@ -504,7 +504,7 @@ describe("Solitude session manager", () => {
     manager.handleMessage({
       type: "input",
       clientId: "client:a",
-      entityId: "ship:blue",
+      entityId: "ship:1",
       gameId: "game:1",
       inputSequence: 1,
       sequence: 3,
@@ -514,7 +514,7 @@ describe("Solitude session manager", () => {
     manager.handleMessage({
       type: "input",
       clientId: "client:a",
-      entityId: "ship:blue",
+      entityId: "ship:1",
       gameId: "game:1",
       inputSequence: 2,
       sequence: 4,
@@ -529,18 +529,18 @@ describe("Solitude session manager", () => {
 
     expect(snapshot?.simulationTimeMillis).toBe(25);
     expect(snapshot?.modelVersion).toBe(1);
-    expect(snapshot?.lastProcessedInputSequences).toEqual({ "ship:blue": 2 });
+    expect(snapshot?.lastProcessedInputSequences).toEqual({ "ship:1": 2 });
     expect(manager.listGames()[0]?.tick).toBe(1);
     expect(game.controlInputsByStep).toEqual([
       { controlDtMillis: 10, controls: [], dtMillis: 10 },
       {
         controlDtMillis: 5,
-        controls: [["ship:blue", { yawLeft: true }]],
+        controls: [["ship:1", { yawLeft: true }]],
         dtMillis: 5,
       },
       {
         controlDtMillis: 10,
-        controls: [["ship:blue", { yawLeft: false }]],
+        controls: [["ship:1", { yawLeft: false }]],
         dtMillis: 10,
       },
     ]);
@@ -566,7 +566,7 @@ describe("Solitude session manager", () => {
     manager.handleMessage({
       type: "input",
       clientId: "client:a",
-      entityId: "ship:blue",
+      entityId: "ship:1",
       gameId: "game:1",
       inputSequence: 1,
       sequence: 3,
@@ -584,7 +584,7 @@ describe("Solitude session manager", () => {
     expect(game.controlInputsByStep).toEqual([
       {
         controlDtMillis: 5,
-        controls: [["ship:blue", { yawLeft: true }]],
+        controls: [["ship:1", { yawLeft: true }]],
         dtMillis: 25,
       },
     ]);
@@ -607,7 +607,7 @@ describe("Solitude session manager", () => {
     manager.handleMessage({
       type: "input",
       clientId: "client:a",
-      entityId: "ship:blue",
+      entityId: "ship:1",
       gameId: "game:1",
       inputSequence: 1,
       sequence: 3,
@@ -758,7 +758,7 @@ function createTestOptions(
   nowMillis: () => number = Date.now,
 ): SolitudeSessionManagerOptions {
   return {
-    assignableEntityIds: ["ship:blue", "ship:red"],
+    assignableEntityIds: ["ship:1", "ship:red"],
     createAssignableEntity: (id): EntityConfig => ({ components: {}, id }),
     createGame: () => game,
     nowMillis,
@@ -766,7 +766,7 @@ function createTestOptions(
 }
 
 function createTestAssignableEntityIds(count: number): EntityId[] {
-  const ids = ["ship:blue", "ship:red"];
+  const ids = ["ship:1", "ship:red"];
   for (let index = ids.length; index < count; index++) {
     ids.push(`ship:${index + 1}`);
   }

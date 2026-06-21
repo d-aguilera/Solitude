@@ -19,14 +19,14 @@ describe("local prediction state", () => {
     ]);
     expect(hasActiveLocalPrediction(state)).toBe(true);
 
-    acknowledgeLocalInputs(state, "ship:blue", { "ship:blue": 1 });
+    acknowledgeLocalInputs(state, "ship:1", { "ship:1": 1 });
 
     expect(state.pendingInputs.map((input) => input.inputSequence)).toEqual([
       2,
     ]);
     expect(hasActiveLocalPrediction(state)).toBe(true);
 
-    acknowledgeLocalInputs(state, "ship:blue", { "ship:blue": 2 });
+    acknowledgeLocalInputs(state, "ship:1", { "ship:1": 2 });
 
     expect(state.pendingInputs).toHaveLength(0);
     expect(hasActiveLocalPrediction(state)).toBe(false);
@@ -36,7 +36,7 @@ describe("local prediction state", () => {
     const state = createLocalPredictionState();
 
     recordLocalInput(state, { burnForward: true }, 1);
-    acknowledgeLocalInputs(state, "ship:blue", { "ship:blue": 1 });
+    acknowledgeLocalInputs(state, "ship:1", { "ship:1": 1 });
 
     expect(state.pendingInputs).toHaveLength(0);
     expect(hasActiveLocalPrediction(state)).toBe(true);

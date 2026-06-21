@@ -62,7 +62,7 @@ Standalone browser mode is migration scaffolding, not the destination. Keep `@so
 - `@solitude/server` owns protocol, sessions, transport, ticker, HTTP/WebSocket serving, and authoritative Solitude headless runtime composition.
 - `@solitude/client` owns the remote lobby/viewer deployable, browser client adapters, keyboard input patching, server URL selection, browser-side snapshot interpolation, and remote render composition.
 - `@solitude/server` must not depend on the browser-facing `solitude` package. Its server-safe Solitude composition comes from `@solitude/sim`, which includes only the shared world model, spacecraft dynamics, and autopilot pieces needed by the authoritative runtime.
-- Sessions create ships dynamically on join and remove them on explicit leave. The current named slots are still `ship:blue` and `ship:red`, but they are no longer pre-existing world entities.
+- Sessions create ships dynamically on join and remove them on explicit leave.
 - Browser remote client now has first-class Vite entries:
   - `packages/client/index.html` -> `src/remoteLobby.ts` for creating/listing games;
   - `packages/client/game.html` -> `src/remoteClient.ts` for joining, auto-running newly created games, and rendering snapshots.

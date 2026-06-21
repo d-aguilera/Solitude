@@ -111,7 +111,7 @@ function createDefaultControllableEntityProvider() {
 }
 
 function createDefaultAssignableEntityIds(count: number): EntityId[] {
-  const ids = ["ship:blue", "ship:red"];
+  const ids = [];
   for (let index = ids.length; index < count; index++) {
     ids.push(`ship:${index + 1}`);
   }
