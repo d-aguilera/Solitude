@@ -140,7 +140,7 @@ function fitHudText(text: string, width: number): string {
 
   const maxCharacters = Math.floor(width / hudCharacterWidth);
   if (text.length <= maxCharacters) return text;
-  if (maxCharacters <= 3) return "";
+  if (maxCharacters <= 1) return "";
 
-  return text.slice(0, maxCharacters - 3).concat("...");
+  return text.slice(0, maxCharacters - 1).concat("…");
 }
