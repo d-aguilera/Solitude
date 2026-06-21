@@ -35,6 +35,10 @@ export function createHttpUrl(serverBaseUrl: URL, pathname: string): string {
   return url.href;
 }
 
+export function createClientId(): string {
+  return "client:" + Math.random().toString(36).slice(2, 8);
+}
+
 export function createSocketUrl(serverBaseUrl: URL): string {
   const socketUrl = new URL(serverBaseUrl.href);
   socketUrl.protocol = socketUrl.protocol === "https:" ? "wss:" : "ws:";
@@ -53,7 +57,7 @@ export function readServerBaseUrl(searchParams: URLSearchParams): URL {
 export function readClientId(fallback: string): string {
   const existing = window.sessionStorage.getItem(CLIENT_ID_STORAGE_KEY);
   if (existing) return existing;
-  const generated = "client:" + Math.random().toString(36).slice(2, 8);
+  const generated = createClientId();
   window.sessionStorage.setItem(CLIENT_ID_STORAGE_KEY, generated);
   return fallback === "client:a" ? generated : fallback;
 }

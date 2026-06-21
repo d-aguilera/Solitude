@@ -28,15 +28,16 @@ import { createRemoteIdentityHudPlugin } from "./remoteIdentityHud";
 import { createRemoteRuntimeTelemetryHudPlugin } from "./remoteRuntimeTelemetryHud";
 import { createShipColorNamesPlugin } from "./shipColorNames";
 
+const searchParams = new URLSearchParams(window.location.search);
 const fields = {
   clientId: queryInput("#clientId"),
   entityId: queryInput("#entityId"),
   gameId: queryInput("#gameId"),
 };
-fields.clientId.value = readClientId(fields.clientId.value);
+fields.clientId.value =
+  searchParams.get("clientId") || readClientId(fields.clientId.value);
 
 const canvasContainer = queryElement(".canvas-container");
-const searchParams = new URLSearchParams(window.location.search);
 const serverBaseUrl = readServerBaseUrl(searchParams);
 const initialGameId = searchParams.get("gameId");
 const runtimeOptions = createRuntimeOptionsWithResolvedLocale(

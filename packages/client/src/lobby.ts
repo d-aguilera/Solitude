@@ -7,6 +7,7 @@ import {
 import { createSolitudeWebSocketClient } from "./client";
 import { createClientLocalization } from "./localization";
 import {
+  createClientId,
   createGameHref,
   createSocketUrl,
   fetchGameList,
@@ -124,10 +125,16 @@ function renderGames(games: readonly SolitudeGameSummary[]): void {
       joinLink.removeAttribute("href");
       joinLink.setAttribute("aria-disabled", "true");
     } else {
-      joinLink.href = createGameHref(serverBaseUrl, {
-        gameId: game.gameId,
-        locale: readSelectedLocale(),
-      });
+      const assignFreshJoinHref = () => {
+        joinLink.href = createGameHref(serverBaseUrl, {
+          clientId: createClientId(),
+          gameId: game.gameId,
+          locale: readSelectedLocale(),
+        });
+      };
+      assignFreshJoinHref();
+      joinLink.addEventListener("click", assignFreshJoinHref);
+      joinLink.addEventListener("contextmenu", assignFreshJoinHref);
     }
 
     const actions = document.createElement("div");
