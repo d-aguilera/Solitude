@@ -1,10 +1,13 @@
 {
-  "name": "@solitude/localization",
+  "name": "@solitude/entity-names",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/localization.ts"
+    ".": "./src/entityNames.ts"
+  },
+  "dependencies": {
+    "@solitude/engine": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

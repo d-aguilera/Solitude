@@ -14,6 +14,7 @@ import {
 } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
+import { createEntityNameProvider } from "@solitude/entity-names";
 import {
   createHudGrid,
   getHudColumnIndex,
@@ -24,7 +25,6 @@ import {
   type HudGrid,
   type HudPanelProvider,
 } from "@solitude/hud/provider";
-import { createEntityNameProvider } from "@solitude/localization";
 import { createSpacecraftOperatorTelemetryProvider } from "@solitude/sim/plugins/spacecraftOperator/capabilities";
 import { createSpacecraftOperatorTelemetry } from "@solitude/sim/plugins/spacecraftOperator/telemetry";
 import { describe, expect, it } from "vitest";

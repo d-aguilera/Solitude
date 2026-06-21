@@ -1,6 +1,6 @@
 import type { RuntimeOptions } from "@solitude/engine/plugin";
+import { createEntityNameProvider } from "@solitude/entity-names";
 import {
-  createEntityNameProvider,
   readLocaleRuntimeOption,
   type SolitudeLocale,
 } from "@solitude/localization";
@@ -21,8 +21,7 @@ export function createSolarSystemEntityNameProvider(
 ) {
   const messages = messagesByLocale[readLocaleRuntimeOption(runtimeOptions)];
   return createEntityNameProvider({
-    formatEntityName: (entityId, explicitDisplayName) => {
-      if (explicitDisplayName) return explicitDisplayName;
+    formatEntityName: (entityId) => {
       return (messages as Readonly<Record<string, string>>)[entityId] ?? null;
     },
   });

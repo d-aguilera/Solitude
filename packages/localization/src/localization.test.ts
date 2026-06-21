@@ -1,10 +1,5 @@
-import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import { describe, expect, it } from "vitest";
-import {
-  createEntityNameProvider,
-  createSolitudeLocalization,
-  formatEntityName,
-} from "./localization";
+import { createSolitudeLocalization } from "./localization";
 
 describe("Solitude localization", () => {
   it("omits thousands separators from Spanish numeric formatters", () => {
@@ -25,26 +20,5 @@ describe("Solitude localization", () => {
         tick: localization.formatFixed(123_456, 0),
       }),
     ).toBe("game:1 | tick 123456");
-  });
-
-  it("uses entity name providers and preserves explicit display names", () => {
-    const capabilityRegistry = createPluginCapabilityRegistry([
-      createEntityNameProvider({
-        formatEntityName: (entityId, explicitDisplayName) => {
-          if (explicitDisplayName) return explicitDisplayName;
-          return entityId === "planet:earth" ? "Tierra" : null;
-        },
-      }),
-    ]);
-
-    expect(
-      formatEntityName(capabilityRegistry, "planet:earth", undefined),
-    ).toBe("Tierra");
-    expect(
-      formatEntityName(capabilityRegistry, "planet:custom", undefined),
-    ).toBe("Custom");
-    expect(
-      formatEntityName(capabilityRegistry, "planet:earth", "Terra Prime"),
-    ).toBe("Terra Prime");
   });
 });

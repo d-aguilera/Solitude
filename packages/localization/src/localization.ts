@@ -1,10 +1,6 @@
-import type {
-  PluginCapabilityProvider,
-  PluginCapabilityRegistry,
-  RuntimeOptions,
-} from "@solitude/engine/plugin";
-
 export type SolitudeLocale = "en" | "es" | "fr";
+
+export type LocalizationRuntimeOptions = Readonly<Record<string, string>>;
 
 export interface SolitudeLocaleOption {
   readonly label: string;
@@ -22,16 +18,7 @@ export interface SolitudeLocalization {
   readonly formatMessage: (template: string, params: MessageParams) => string;
 }
 
-export interface EntityNameProvider {
-  formatEntityName: (
-    entityId: string,
-    explicitDisplayName: string | undefined,
-  ) => string | null;
-}
-
 export type MessageParams = Readonly<Record<string, string>>;
-
-export const entityNameProviderCapability = "solitude.entityNameProvider.v1";
 
 const localeRuntimeOptionKey = "locale";
 const oneAstronomicalUnitMeters = 149_597_870_700;
@@ -47,7 +34,7 @@ export const solitudeLocaleOptions: readonly SolitudeLocaleOption[] = [
 const supportedLocales = solitudeLocaleOptions.map(({ locale }) => locale);
 
 export function resolveSolitudeLocale(
-  runtimeOptions: RuntimeOptions = {},
+  runtimeOptions: LocalizationRuntimeOptions = {},
   preferredLocales: readonly string[] = [],
 ): SolitudeLocale {
   return (
@@ -58,9 +45,9 @@ export function resolveSolitudeLocale(
 }
 
 export function createRuntimeOptionsWithResolvedLocale(
-  runtimeOptions: RuntimeOptions = {},
+  runtimeOptions: LocalizationRuntimeOptions = {},
   preferredLocales: readonly string[] = [],
-): RuntimeOptions {
+): LocalizationRuntimeOptions {
   return {
     ...runtimeOptions,
     [localeRuntimeOptionKey]: resolveSolitudeLocale(
@@ -102,36 +89,9 @@ export function createSolitudeLocalization(
 }
 
 export function readLocaleRuntimeOption(
-  runtimeOptions: RuntimeOptions = {},
+  runtimeOptions: LocalizationRuntimeOptions = {},
 ): SolitudeLocale {
   return resolveSolitudeLocale(runtimeOptions);
-}
-
-export function createEntityNameProvider(
-  provider: EntityNameProvider,
-): PluginCapabilityProvider {
-  return {
-    id: entityNameProviderCapability,
-    value: provider,
-  };
-}
-
-export function formatEntityName(
-  capabilityRegistry: PluginCapabilityRegistry,
-  entityId: string,
-  explicitDisplayName: string | undefined,
-): string {
-  if (explicitDisplayName) return explicitDisplayName;
-
-  for (const provider of capabilityRegistry.getAll(
-    entityNameProviderCapability,
-  )) {
-    if (!isEntityNameProvider(provider)) continue;
-    const formatted = provider.formatEntityName(entityId, explicitDisplayName);
-    if (formatted != null) return formatted;
-  }
-
-  return displayNameFromEntityId(entityId);
 }
 
 function findFirstSupportedLocale(
@@ -166,21 +126,6 @@ function formatMessage(template: string, params: MessageParams): string {
     formatted = formatted.split("{".concat(key, "}")).join(value);
   }
   return formatted;
-}
-
-function isEntityNameProvider(value: unknown): value is EntityNameProvider {
-  const candidate = value as Partial<EntityNameProvider> | null;
-  return (
-    typeof candidate === "object" &&
-    candidate !== null &&
-    typeof candidate.formatEntityName === "function"
-  );
-}
-
-function displayNameFromEntityId(id: string): string {
-  const separatorIndex = id.lastIndexOf(":");
-  const raw = separatorIndex >= 0 ? id.slice(separatorIndex + 1) : id;
-  return raw.charAt(0).toUpperCase() + raw.slice(1);
 }
 
 function formatDistance(

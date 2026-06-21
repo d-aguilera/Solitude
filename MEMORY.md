@@ -64,7 +64,8 @@
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
 - `packages/hud/src/`: generic HUD grid and HUD panel capability contracts shared by display, browser, client, and Solitude plugins.
 - `packages/input/src/`: outer keyboard input-provider contracts; plugins publish bindings/handlers through generic engine capabilities and browser adapters consume them.
-- `packages/localization/src/`: shared Solitude locale resolution, number/unit/message formatting, and entity-name-provider capability contracts; message bundles remain with their owning client/plugin/content package.
+- `packages/entity-names/src/`: neutral entity-name provider capability contract and lookup policy; content plugins own provider implementations and localized name bundles.
+- `packages/localization/src/`: dependency-free shared Solitude locale resolution and number/unit/message formatting; message bundles remain with their owning client/plugin/content package.
 - `packages/sim/src/`: browser-safe and Node-safe Solitude simulation library: default world config, solar-system entity builders/assets and localized names, spacecraft operator dynamics, headless autopilot behavior, and headless Solitude composition shared by server and browser/product packages.
 - `packages/display/src/`: browser-safe presentation plugins shared by standalone and remote rendering, including views, labels, telemetry, trajectories, and the input/HUD wrapper around headless autopilot behavior.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, layered view layout, Canvas presentation, GPU-native WebGL2 presentation, and remote-world mirror helpers.
@@ -110,8 +111,8 @@
 - Remote client composition lives in `packages/client/src/composition.ts`; local prediction is driven through `@solitude/sim/localPrediction` plugin capabilities, not direct plugin-internal imports.
 - Standalone and remote rendering share browser-owned layered view presenters. WebGL renders solid meshes natively from renderer-neutral scene meshes; Canvas overlays preserve trajectories, segments, labels, and HUD.
 - Engine world-segment contributions use renderer-neutral numeric RGB; CSS conversion occurs in the render layer. Engine frame policy uses generic presentation terminology while browser overlays retain browser-owned naming.
-- Localization is client-side and server-neutral. `@solitude/localization` resolves `?locale=` or browser-preferred language to `en`/`es`/`fr`, formats numbers/units without thousands grouping, provides message interpolation, and defines generic entity-name-provider capabilities. JSON message bundles live with the client/plugin/content package that owns each string. The multiplayer lobby offers a language selector and passes locale through game links; standalone resolves from browser locale unless `?locale=` overrides it.
-- Entity `displayName` remains a literal authored override for scene/body labels. Entity-contributing plugins can provide localized names through `solitude.entityNameProvider.v1`; built-in solar-system names are owned by the solar-system plugin, and custom ids fall back to generated names.
+- Localization is client-side and server-neutral. Dependency-free `@solitude/localization` resolves `?locale=` or browser-preferred language to `en`/`es`/`fr`, formats numbers/units without thousands grouping, and provides message interpolation. JSON message bundles live with the client/plugin/content package that owns each string. The multiplayer lobby offers a language selector and passes locale through game links; standalone resolves from browser locale unless `?locale=` overrides it.
+- Entity `displayName` remains a literal authored override for scene/body labels. The neutral `@solitude/entity-names` port lets entity-contributing plugins provide localized names through `solitude.entityNameProvider.v1`; built-in solar-system names are owned by the solar-system plugin, and custom ids fall back to generated names.
 - Shared browser-safe protocol contract lives in `@solitude/protocol`; browser client adapters live in `@solitude/client`.
 - Browser remote-world mirror proof lives in `@solitude/browser/remoteWorldMirror`; it applies authoritative runtime snapshots into a local world via a reusable indexed workspace.
 - Server-safe Solitude headless composition lives in `@solitude/sim`; `@solitude/server` intentionally does not depend on the browser-facing `solitude` package.
@@ -130,7 +131,8 @@
 - `packages/browser/src/infra/domBootstrap.ts`: browser runtime composition.
 - `packages/browser/src/infra/remoteWorldMirror.ts`: non-DOM authoritative snapshot apply mirror for future network clients.
 - `packages/sim/src/headless.ts`: shared server-safe/browser-safe Solitude headless composition.
-- `packages/localization/src/localization.ts`: Solitude locale resolution, unit formatting, message interpolation, and generic entity-name-provider helpers. Client/plugin JSON bundles live in their owning package directories.
+- `packages/entity-names/src/entityNames.ts`: neutral entity-name provider capability contract, lookup orchestration, explicit-name precedence, and generated fallback names.
+- `packages/localization/src/localization.ts`: dependency-free Solitude locale resolution, unit formatting, and message interpolation. Client/plugin JSON bundles live in their owning package directories.
 - `packages/server/src/runtime.ts`: authoritative server runtime composition.
 - `packages/server/src/metrics.ts`: rolling server stream metrics for snapshot cadence, payload size, fanout, step timing, and socket counts.
 - `packages/client/src/localPrediction.ts`: client-side input prediction state for the assigned ship.

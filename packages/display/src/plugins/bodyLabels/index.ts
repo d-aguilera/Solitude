@@ -13,10 +13,8 @@ import {
   type SceneObject,
 } from "@solitude/engine/render";
 import type { EntityId, World } from "@solitude/engine/world";
-import {
-  formatEntityName,
-  readLocaleRuntimeOption,
-} from "@solitude/localization";
+import { formatEntityName } from "@solitude/entity-names";
+import { readLocaleRuntimeOption } from "@solitude/localization";
 import {
   createBodyLabelLocalization,
   type BodyLabelLocalization,
