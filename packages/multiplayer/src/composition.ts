@@ -25,23 +25,23 @@ const SPACECRAFT_START_ALTITUDE_M = 100 * km;
 const defaultCelestialBodyProvider = createSolarSystemCelestialBodyProvider();
 const defaultControllableEntityProvider =
   createDefaultControllableEntityProvider();
-const multiplayerSpacecraftSlots = [
-  { color: { r: 64, g: 180, b: 255 }, name: "Blue" },
-  { color: { r: 255, g: 80, b: 80 }, name: "Red" },
-  { color: { r: 255, g: 210, b: 64 }, name: "Gold" },
-  { color: { r: 90, g: 220, b: 125 }, name: "Green" },
-  { color: { r: 190, g: 135, b: 255 }, name: "Violet" },
-  { color: { r: 255, g: 145, b: 60 }, name: "Orange" },
-  { color: { r: 255, g: 105, b: 190 }, name: "Magenta" },
-  { color: { r: 220, g: 240, b: 255 }, name: "White" },
-  { color: { r: 80, g: 230, b: 215 }, name: "Teal" },
-  { color: { r: 180, g: 235, b: 80 }, name: "Lime" },
-  { color: { r: 120, g: 155, b: 255 }, name: "Indigo" },
-  { color: { r: 255, g: 180, b: 135 }, name: "Coral" },
-  { color: { r: 155, g: 235, b: 255 }, name: "Ice" },
-  { color: { r: 240, g: 150, b: 255 }, name: "Rose" },
-  { color: { r: 210, g: 190, b: 150 }, name: "Stone" },
-  { color: { r: 150, g: 255, b: 170 }, name: "Mint" },
+const multiplayerSpacecraftColors = [
+  { r: 64, g: 180, b: 255 },
+  { r: 255, g: 80, b: 80 },
+  { r: 255, g: 210, b: 64 },
+  { r: 90, g: 220, b: 125 },
+  { r: 190, g: 135, b: 255 },
+  { r: 255, g: 145, b: 60 },
+  { r: 255, g: 105, b: 190 },
+  { r: 220, g: 240, b: 255 },
+  { r: 80, g: 230, b: 215 },
+  { r: 180, g: 235, b: 80 },
+  { r: 120, g: 155, b: 255 },
+  { r: 255, g: 180, b: 135 },
+  { r: 155, g: 235, b: 255 },
+  { r: 240, g: 150, b: 255 },
+  { r: 210, g: 190, b: 150 },
+  { r: 150, g: 255, b: 170 },
 ] as const;
 
 export function createDefaultSolitudeInProcessTransport(): SolitudeInProcessTransport {
@@ -89,7 +89,6 @@ export function createDefaultMultiplayerSpacecraftEntity({
       ringIndex: index,
     }),
   });
-  entity.displayName = getMultiplayerSpacecraftName(index);
   return entity;
 }
 
@@ -119,13 +118,7 @@ function createDefaultAssignableEntityIds(count: number): EntityId[] {
 }
 
 function getMultiplayerSpacecraftColor(index: number) {
-  return multiplayerSpacecraftSlots[index % multiplayerSpacecraftSlots.length]
-    .color;
-}
-
-function getMultiplayerSpacecraftName(index: number): string {
-  const slot =
-    multiplayerSpacecraftSlots[index % multiplayerSpacecraftSlots.length];
-  const cycle = Math.floor(index / multiplayerSpacecraftSlots.length);
-  return cycle === 0 ? slot.name : `${slot.name} ${cycle + 1}`;
+  return multiplayerSpacecraftColors[
+    index % multiplayerSpacecraftColors.length
+  ];
 }

@@ -107,7 +107,7 @@
 - Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
 - Server runtime lives in `packages/server/src/runtime.ts`; it composes shared `@solitude/sim` headless Solitude code, steps entity-addressed controls, and reuses runtime snapshot storage.
-- Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, receives authoritative model/snapshot messages over WebSocket, sends sequenced server-authoritative controls for its assigned ship, predicts the locally controlled ship immediately, smooths reconciliation visually, exposes prediction metrics on `window.__solitudePredictionMetrics`, and renders through `@solitude/browser`.
+- Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, uses per-join participant IDs carried in game links, receives authoritative model/snapshot messages over WebSocket, sends sequenced server-authoritative controls for its assigned ship, predicts the locally controlled ship immediately, smooths reconciliation visually, derives localized ship names from server-assigned display colors, exposes prediction metrics on `window.__solitudePredictionMetrics`, and renders through `@solitude/browser`.
 - Remote client composition lives in `packages/client/src/composition.ts`; local prediction is driven through `@solitude/sim/localPrediction` plugin capabilities, not direct plugin-internal imports.
 - Standalone and remote rendering share browser-owned layered view presenters. WebGL renders solid meshes natively from renderer-neutral scene meshes; Canvas overlays preserve trajectories, segments, labels, and HUD.
 - Engine world-segment contributions use renderer-neutral numeric RGB; CSS conversion occurs in the render layer. Engine frame policy uses generic presentation terminology while browser overlays retain browser-owned naming.
@@ -136,6 +136,7 @@
 - `packages/server/src/runtime.ts`: authoritative server runtime composition.
 - `packages/server/src/metrics.ts`: rolling server stream metrics for snapshot cadence, payload size, fanout, step timing, and socket counts.
 - `packages/client/src/localPrediction.ts`: client-side input prediction state for the assigned ship.
+- `packages/client/src/shipColorNames.ts`: remote-client scene plugin that indexes server-assigned ship colors and contributes localized entity names without exposing color through the entity-name port.
 - `packages/sim/src/localPrediction.ts`: generic Solitude local-prediction capability contract used by remote clients.
 - `packages/client/src/localReconciliation.ts`: prediction error metrics and render-only visual correction smoothing.
 - `scripts/run-server-load.mjs`: headless WebSocket load and input-latency harness for local or deployed servers.

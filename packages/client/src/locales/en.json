@@ -21,5 +21,21 @@
   "remoteIdentity.gameNone": "Game: none",
   "remoteIdentity.gamePrefix": "Game: ",
   "remoteRuntime.fpsPrefix": "FPS: ",
-  "remoteRuntime.timePrefix": "Time: "
+  "remoteRuntime.timePrefix": "Time: ",
+  "shipColor.blue": "Blue",
+  "shipColor.coral": "Coral",
+  "shipColor.gold": "Gold",
+  "shipColor.green": "Green",
+  "shipColor.ice": "Ice",
+  "shipColor.indigo": "Indigo",
+  "shipColor.lime": "Lime",
+  "shipColor.magenta": "Magenta",
+  "shipColor.mint": "Mint",
+  "shipColor.orange": "Orange",
+  "shipColor.red": "Red",
+  "shipColor.rose": "Rose",
+  "shipColor.stone": "Stone",
+  "shipColor.teal": "Teal",
+  "shipColor.violet": "Violet",
+  "shipColor.white": "White"
 }

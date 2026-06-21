@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-21T16:22:54.719Z",
+  "generatedAt": "2026-06-21T19:45:21.480Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -4617,6 +4617,12 @@
       "from": "pkg:@solitude/client",
       "kind": "dependency",
       "to": "pkg:@solitude/engine"
+    },
+    {
+      "id": "dependency:pkg:@solitude/client->pkg:@solitude/entity-names",
+      "from": "pkg:@solitude/client",
+      "kind": "dependency",
+      "to": "pkg:@solitude/entity-names"
     },
     {
       "id": "dependency:pkg:@solitude/client->pkg:@solitude/hud",

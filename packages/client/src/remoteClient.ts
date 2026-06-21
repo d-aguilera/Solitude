@@ -26,6 +26,7 @@ import {
 import { createSolitudeRemoteClientRenderer } from "./remoteClientRenderer";
 import { createRemoteIdentityHudPlugin } from "./remoteIdentityHud";
 import { createRemoteRuntimeTelemetryHudPlugin } from "./remoteRuntimeTelemetryHud";
+import { createShipColorNamesPlugin } from "./shipColorNames";
 
 const fields = {
   clientId: queryInput("#clientId"),
@@ -55,6 +56,7 @@ const engineRenderer = createSolitudeRemoteClientRenderer({
   onFatalError: showFatalRenderError,
   runtimeOptions,
   plugins: [
+    createShipColorNamesPlugin(localization.shipColorNames),
     createRemoteIdentityHudPlugin({
       getEntityId: () => fields.entityId.value,
       getGameId: () => fields.gameId.value,

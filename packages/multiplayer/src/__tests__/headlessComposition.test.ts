@@ -129,7 +129,7 @@ describe("server-style headless Solitude composition", () => {
     );
   });
 
-  it("assigns distinct display colors and names to joined ships", () => {
+  it("assigns distinct display colors without server-authored names", () => {
     const ships = [
       createDefaultMultiplayerSpacecraftEntity({
         entityCount: 16,
@@ -149,9 +149,9 @@ describe("server-style headless Solitude composition", () => {
     ];
 
     expect(ships.map((ship) => ship.displayName)).toEqual([
-      "Blue",
-      "Red",
-      "Gold",
+      undefined,
+      undefined,
+      undefined,
     ]);
     expect(ships.map((ship) => ship.components.renderable?.color)).toEqual([
       { r: 64, g: 180, b: 255 },
