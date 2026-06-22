@@ -85,6 +85,16 @@ export interface WorldSegment {
   lineWidth: number;
 }
 
+export type WorldMarkerShape = "cross" | "dot" | "ring";
+
+export interface WorldMarker {
+  position: Vec3;
+  color: RGB;
+  radius: number;
+  lineWidth: number;
+  shape: WorldMarkerShape;
+}
+
 export interface SegmentProviderParams {
   viewId: SceneViewId;
   scene: Scene;
@@ -98,6 +108,10 @@ export interface SegmentPlugin {
     into: WorldSegment[],
     params: SegmentProviderParams,
   ) => void;
+}
+
+export interface MarkerPlugin {
+  appendMarkers?: (into: WorldMarker[], params: SegmentProviderParams) => void;
 }
 
 export interface SceneLabelCandidate {
@@ -258,6 +272,7 @@ export interface GamePlugin {
   capabilities?: readonly PluginCapabilityProvider[];
   controls?: ControlPlugin;
   loop?: LoopPlugin;
+  markers?: MarkerPlugin;
   segments?: SegmentPlugin;
   scene?: ScenePlugin;
   labels?: SceneLabelPlugin;

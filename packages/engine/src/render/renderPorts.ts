@@ -1,4 +1,9 @@
-import type { SceneLabelCandidate, WorldSegment } from "../app/pluginPorts";
+import type {
+  SceneLabelCandidate,
+  WorldMarker,
+  WorldMarkerShape,
+  WorldSegment,
+} from "../app/pluginPorts";
 import type { DomainCameraPose, Scene, SceneObject } from "../app/scenePorts";
 import type { ScreenPoint } from "./scrn";
 
@@ -13,8 +18,17 @@ export interface Point {
 export interface SceneOverlayRasterizer {
   clear(): void;
   drawSceneLabels(labels: RenderedSceneLabel[], count: number): void;
+  drawMarkers(markers: RenderedMarker[], count: number): void;
   drawPolylines(polylines: RenderedPolyline[], count: number): void;
   drawSegments(segments: RenderedSegment[], count: number): void;
+}
+
+export interface RenderedMarker {
+  position: ScreenPoint;
+  cssColor: string;
+  radius: number;
+  lineWidth: number;
+  shape: WorldMarkerShape;
 }
 
 export interface RenderedSceneLabel {
@@ -43,6 +57,8 @@ export interface RenderedSegment {
 }
 
 export interface RenderedView {
+  markers: RenderedMarker[];
+  markerCount: number;
   sceneLabels: RenderedSceneLabel[];
   sceneLabelCount: number;
   polylines: RenderedPolyline[];
@@ -101,4 +117,5 @@ export interface ViewRenderParams {
   scene: Scene;
   surface: RenderSurface2D;
   worldSegments: WorldSegment[];
+  worldMarkers: WorldMarker[];
 }

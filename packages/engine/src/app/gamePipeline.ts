@@ -16,6 +16,7 @@ import type {
   SceneViewFilterParams,
   SegmentProviderParams,
   ViewControlPlugin,
+  WorldMarker,
   WorldSegment,
 } from "./pluginPorts";
 import { validatePluginRequirements } from "./pluginRequirements";
@@ -54,6 +55,7 @@ export interface GamePipelineView {
   sceneView: SceneViewState;
   segmentParams: SegmentProviderParams;
   worldSegments: WorldSegment[];
+  worldMarkers: WorldMarker[];
 }
 
 export interface GamePipeline {
@@ -98,6 +100,9 @@ export function createGamePipeline({
   );
   const segmentPlugins = plugins.flatMap((plugin) =>
     plugin.segments ? [plugin.segments] : [],
+  );
+  const markerPlugins = plugins.flatMap((plugin) =>
+    plugin.markers ? [plugin.markers] : [],
   );
   const simulationPlugins =
     simulationAssembly.createSimulationPlugins(capabilityRegistry);
@@ -230,9 +235,13 @@ export function createGamePipeline({
         }
       }
       view.worldSegments.length = 0;
+      view.worldMarkers.length = 0;
       if (includeSegments) {
         for (const plugin of segmentPlugins) {
           plugin.appendSegments?.(view.worldSegments, view.segmentParams);
+        }
+        for (const plugin of markerPlugins) {
+          plugin.appendMarkers?.(view.worldMarkers, view.segmentParams);
         }
       }
     },
@@ -265,6 +274,7 @@ function createPipelineViews(
       : undefined;
     const sceneLabelCandidates: SceneLabelCandidate[] = [];
     const worldSegments: WorldSegment[] = [];
+    const worldMarkers: WorldMarker[] = [];
     return {
       definition,
       labelParams: {
@@ -287,6 +297,7 @@ function createPipelineViews(
         world: worldAndScene.world,
       },
       worldSegments,
+      worldMarkers,
     };
   });
 }

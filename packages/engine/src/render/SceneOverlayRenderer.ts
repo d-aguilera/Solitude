@@ -3,6 +3,7 @@ import type { Vec3 } from "../domain/vec3";
 import type { NdcPoint } from "./ndc";
 import { ProjectionService } from "./ProjectionService";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals";
+import { renderWorldMarkersInto } from "./renderMarkers";
 import { renderPolylinesInto } from "./renderPolylines";
 import type {
   RenderedView,
@@ -84,6 +85,16 @@ export class SceneOverlayRenderer implements ViewRenderer {
           into.segments,
           params.worldSegments,
           this.projectSegmentInto,
+        )
+      : 0;
+
+    into.markerCount = renderSegments
+      ? renderWorldMarkersInto(
+          into.markers,
+          params.worldMarkers,
+          screenWidth,
+          screenHeight,
+          this.projectInto,
         )
       : 0;
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-21T19:45:21.480Z",
+  "generatedAt": "2026-06-22T23:38:34.599Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -386,6 +386,13 @@
       "label": "./plugins/spacecraftOperator/telemetry",
       "packageName": "@solitude/sim",
       "parent": "pkg:@solitude/sim"
+    },
+    {
+      "id": "module:@solitude/display:./plugins/targetingLaser",
+      "kind": "module",
+      "label": "./plugins/targetingLaser",
+      "packageName": "@solitude/display",
+      "parent": "pkg:@solitude/display"
     },
     {
       "id": "module:@solitude/display:./plugins/trajectories",
@@ -1421,6 +1428,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher",
+      "kind": "symbol",
+      "label": "createKeyboardHandlerDispatcher",
+      "packageName": "@solitude/input",
+      "parent": "module:@solitude/input:./keyboard",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider",
       "kind": "symbol",
       "label": "createKeyboardInputProvider",
@@ -1730,6 +1745,14 @@
       "label": "createSpacecraftVehicleDynamicsPlugin",
       "packageName": "@solitude/sim",
       "parent": "module:@solitude/sim:./plugins/spacecraftOperator/core",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/display:./plugins/targetingLaser:createTargetingLaserPlugin",
+      "kind": "symbol",
+      "label": "createTargetingLaserPlugin",
+      "packageName": "@solitude/display",
+      "parent": "module:@solitude/display:./plugins/targetingLaser",
       "symbolKind": "function"
     },
     {
@@ -2589,6 +2612,14 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/input:./keyboard:KeyboardHandlerDispatcher",
+      "kind": "symbol",
+      "label": "KeyboardHandlerDispatcher",
+      "packageName": "@solitude/input",
+      "parent": "module:@solitude/input:./keyboard",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/input:./keyboard:keyboardInputCapability",
       "kind": "symbol",
       "label": "keyboardInputCapability",
@@ -2786,6 +2817,14 @@
       "label": "MainViewLookState",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/engine:./plugin:MarkerPlugin",
+      "kind": "symbol",
+      "label": "MarkerPlugin",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./plugin",
       "symbolKind": "interface"
     },
     {
@@ -3093,6 +3132,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/engine:./math:raySphereFirstHitDistance",
+      "kind": "symbol",
+      "label": "raySphereFirstHitDistance",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./math",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/localization:.:readLocaleRuntimeOption",
       "kind": "symbol",
       "label": "readLocaleRuntimeOption",
@@ -3275,6 +3322,22 @@
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render/parameters",
       "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/engine:./render:RenderedMarker",
+      "kind": "symbol",
+      "label": "RenderedMarker",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/engine:./render/ports:RenderedMarker",
+      "kind": "symbol",
+      "label": "RenderedMarker",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render/ports",
+      "symbolKind": "interface"
     },
     {
       "id": "symbol:@solitude/engine:./render:RenderedPolyline",
@@ -4533,6 +4596,22 @@
       "symbolKind": "type"
     },
     {
+      "id": "symbol:@solitude/engine:./plugin:WorldMarker",
+      "kind": "symbol",
+      "label": "WorldMarker",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./plugin",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/engine:./plugin:WorldMarkerShape",
+      "kind": "symbol",
+      "label": "WorldMarkerShape",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./plugin",
+      "symbolKind": "type"
+    },
+    {
       "id": "symbol:@solitude/engine:./plugin:WorldModelContributionParams",
       "kind": "symbol",
       "label": "WorldModelContributionParams",
@@ -4629,6 +4708,12 @@
       "from": "pkg:@solitude/client",
       "kind": "dependency",
       "to": "pkg:@solitude/hud"
+    },
+    {
+      "id": "dependency:pkg:@solitude/client->pkg:@solitude/input",
+      "from": "pkg:@solitude/client",
+      "kind": "dependency",
+      "to": "pkg:@solitude/input"
     },
     {
       "id": "dependency:pkg:@solitude/client->pkg:@solitude/localization",
@@ -5153,6 +5238,12 @@
       "to": "module:@solitude/display:./plugins/shipTelemetry"
     },
     {
+      "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/targetingLaser",
+      "from": "module:@solitude/display:./plugins/catalog",
+      "kind": "module-import",
+      "to": "module:@solitude/display:./plugins/targetingLaser"
+    },
+    {
       "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/trajectories",
       "from": "module:@solitude/display:./plugins/catalog",
       "kind": "module-import",
@@ -5289,6 +5380,18 @@
       "from": "module:@solitude/display:./plugins/shipTelemetry/hud",
       "kind": "module-import",
       "to": "module:@solitude/hud:./provider"
+    },
+    {
+      "id": "module-import:module:@solitude/display:./plugins/targetingLaser->module:@solitude/engine:./plugin",
+      "from": "module:@solitude/display:./plugins/targetingLaser",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./plugin"
+    },
+    {
+      "id": "module-import:module:@solitude/display:./plugins/targetingLaser->module:@solitude/input:./keyboard",
+      "from": "module:@solitude/display:./plugins/targetingLaser",
+      "kind": "module-import",
+      "to": "module:@solitude/input:./keyboard"
     },
     {
       "id": "module-import:module:@solitude/display:./plugins/trajectories->module:@solitude/engine:./plugin",
@@ -6629,6 +6732,12 @@
       "to": "symbol:@solitude/engine:./plugin:SceneLabelCandidate"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./plugin:WorldMarker",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldMarker"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./plugin:WorldSegment",
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
       "kind": "symbol-reference",
@@ -7061,6 +7170,12 @@
       "to": "symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/targetingLaser:createTargetingLaserPlugin",
+      "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/display:./plugins/targetingLaser:createTargetingLaserPlugin"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/trajectories:createTrajectoriesPlugin",
       "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
       "kind": "symbol-reference",
@@ -7253,6 +7368,18 @@
       "to": "symbol:@solitude/hud:./provider:HudPanelProvider"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/targetingLaser:createTargetingLaserPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
+      "from": "symbol:@solitude/display:./plugins/targetingLaser:createTargetingLaserPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/targetingLaser:createTargetingLaserPlugin->symbol:@solitude/input:./keyboard:createKeyboardInputProvider",
+      "from": "symbol:@solitude/display:./plugins/targetingLaser:createTargetingLaserPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/trajectories:createTrajectoriesPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
       "from": "symbol:@solitude/display:./plugins/trajectories:createTrajectoriesPlugin",
       "kind": "symbol-reference",
@@ -7403,6 +7530,18 @@
       "to": "symbol:@solitude/engine:./math:Vec3"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./math:raySphereFirstHitDistance->symbol:@solitude/engine:./math:vec3",
+      "from": "symbol:@solitude/engine:./math:raySphereFirstHitDistance",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./math:raySphereFirstHitDistance->symbol:@solitude/engine:./math:Vec3",
+      "from": "symbol:@solitude/engine:./math:raySphereFirstHitDistance",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:Vec3"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:AttitudeCommandParams->symbol:@solitude/engine:./plugin:ControlInput",
       "from": "symbol:@solitude/engine:./plugin:AttitudeCommandParams",
       "kind": "symbol-reference",
@@ -7509,6 +7648,12 @@
       "from": "symbol:@solitude/engine:./plugin:GamePlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:LoopPlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:GamePlugin->symbol:@solitude/engine:./plugin:MarkerPlugin",
+      "from": "symbol:@solitude/engine:./plugin:GamePlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:MarkerPlugin"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:GamePlugin->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
@@ -7641,6 +7786,18 @@
       "from": "symbol:@solitude/engine:./plugin:LoopUpdateResult",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:FramePolicy"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:MarkerPlugin->symbol:@solitude/engine:./plugin:SegmentProviderParams",
+      "from": "symbol:@solitude/engine:./plugin:MarkerPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:SegmentProviderParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:MarkerPlugin->symbol:@solitude/engine:./plugin:WorldMarker",
+      "from": "symbol:@solitude/engine:./plugin:MarkerPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldMarker"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:PluginCatalog->symbol:@solitude/engine:./plugin:PluginFactory",
@@ -7991,6 +8148,24 @@
       "to": "symbol:@solitude/engine:./render:ViewDefinition"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:WorldMarker->symbol:@solitude/engine:./math:Vec3",
+      "from": "symbol:@solitude/engine:./plugin:WorldMarker",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:WorldMarker->symbol:@solitude/engine:./plugin:WorldMarkerShape",
+      "from": "symbol:@solitude/engine:./plugin:WorldMarker",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldMarkerShape"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:WorldMarker->symbol:@solitude/engine:./render:RGB",
+      "from": "symbol:@solitude/engine:./plugin:WorldMarker",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RGB"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:WorldModelContributionParams->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
       "from": "symbol:@solitude/engine:./plugin:WorldModelContributionParams",
       "kind": "symbol-reference",
@@ -8231,6 +8406,24 @@
       "to": "symbol:@solitude/engine:./render:BaseSceneObject"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedMarker->symbol:@solitude/engine:./plugin:WorldMarkerShape",
+      "from": "symbol:@solitude/engine:./render:RenderedMarker",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldMarkerShape"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedMarker->symbol:@solitude/engine:./render:ScreenPoint",
+      "from": "symbol:@solitude/engine:./render:RenderedMarker",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:ScreenPoint"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedMarker->symbol:@solitude/engine:./render/ports:RenderedMarker",
+      "from": "symbol:@solitude/engine:./render:RenderedMarker",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedMarker"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedPolyline->symbol:@solitude/engine:./render:ScreenPoint",
       "from": "symbol:@solitude/engine:./render:RenderedPolyline",
       "kind": "symbol-reference",
@@ -8285,6 +8478,12 @@
       "to": "symbol:@solitude/engine:./render/ports:RenderedSegment"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedView->symbol:@solitude/engine:./render:RenderedMarker",
+      "from": "symbol:@solitude/engine:./render:RenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedMarker"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedView->symbol:@solitude/engine:./render:RenderedPolyline",
       "from": "symbol:@solitude/engine:./render:RenderedView",
       "kind": "symbol-reference",
@@ -8301,6 +8500,12 @@
       "from": "symbol:@solitude/engine:./render:RenderedView",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:RenderedSegment"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedView->symbol:@solitude/engine:./render/ports:RenderedMarker",
+      "from": "symbol:@solitude/engine:./render:RenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedMarker"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedView->symbol:@solitude/engine:./render/ports:RenderedPolyline",
@@ -8531,6 +8736,12 @@
       "to": "symbol:@solitude/engine:./plugin:SceneLabelCandidate"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:ViewRenderParams->symbol:@solitude/engine:./plugin:WorldMarker",
+      "from": "symbol:@solitude/engine:./render:ViewRenderParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldMarker"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:ViewRenderParams->symbol:@solitude/engine:./plugin:WorldSegment",
       "from": "symbol:@solitude/engine:./render:ViewRenderParams",
       "kind": "symbol-reference",
@@ -8603,6 +8814,24 @@
       "to": "symbol:@solitude/engine:./render:Point"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedMarker->symbol:@solitude/engine:./plugin:WorldMarkerShape",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedMarker",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldMarkerShape"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedMarker->symbol:@solitude/engine:./render:RenderedMarker",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedMarker",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedMarker"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedMarker->symbol:@solitude/engine:./render:ScreenPoint",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedMarker",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:ScreenPoint"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedPolyline->symbol:@solitude/engine:./render:RenderedPolyline",
       "from": "symbol:@solitude/engine:./render/ports:RenderedPolyline",
       "kind": "symbol-reference",
@@ -8657,6 +8886,12 @@
       "to": "symbol:@solitude/engine:./render:ScreenPoint"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render:RenderedMarker",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedMarker"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render:RenderedPolyline",
       "from": "symbol:@solitude/engine:./render/ports:RenderedView",
       "kind": "symbol-reference",
@@ -8679,6 +8914,12 @@
       "from": "symbol:@solitude/engine:./render/ports:RenderedView",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render/ports:RenderedMarker",
+      "from": "symbol:@solitude/engine:./render/ports:RenderedView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedMarker"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render/ports:RenderedPolyline",
@@ -8705,6 +8946,12 @@
       "to": "symbol:@solitude/engine:./render:RenderSurface2D"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render:RenderedMarker",
+      "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderedMarker"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render:RenderedPolyline",
       "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
       "kind": "symbol-reference",
@@ -8721,6 +8968,12 @@
       "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:RenderedSegment"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render/ports:RenderedMarker",
+      "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render/ports:RenderedMarker"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render/ports:RenderedPolyline",
@@ -8787,6 +9040,12 @@
       "from": "symbol:@solitude/engine:./render/ports:ViewRenderParams",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:SceneLabelCandidate"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderParams->symbol:@solitude/engine:./plugin:WorldMarker",
+      "from": "symbol:@solitude/engine:./render/ports:ViewRenderParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldMarker"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render/ports:ViewRenderParams->symbol:@solitude/engine:./plugin:WorldSegment",
@@ -9555,6 +9814,12 @@
       "from": "symbol:@solitude/engine:./runtime:GamePipelineView",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:SegmentProviderParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./runtime:GamePipelineView->symbol:@solitude/engine:./plugin:WorldMarker",
+      "from": "symbol:@solitude/engine:./runtime:GamePipelineView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldMarker"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./runtime:GamePipelineView->symbol:@solitude/engine:./plugin:WorldSegment",
@@ -10647,6 +10912,36 @@
       "from": "symbol:@solitude/input:./keyboard:collectKeyboardInputProviders",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/input:./keyboard:KeyboardInputProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher->symbol:@solitude/engine:./plugin:ControlAction",
+      "from": "symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:ControlAction"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher->symbol:@solitude/engine:./plugin:ControlInput",
+      "from": "symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:ControlInput"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher->symbol:@solitude/input:./keyboard:KeyboardHandlerDispatcher",
+      "from": "symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:KeyboardHandlerDispatcher"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher->symbol:@solitude/input:./keyboard:KeyboardInputProvider",
+      "from": "symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:KeyboardInputProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher->symbol:@solitude/input:./keyboard:KeyHandler",
+      "from": "symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:KeyHandler"
     },
     {
       "id": "symbol-reference:symbol:@solitude/input:./keyboard:createKeyboardInputProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",

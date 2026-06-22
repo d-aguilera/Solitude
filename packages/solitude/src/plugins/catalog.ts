@@ -35,6 +35,7 @@ export const defaultPluginIds = [
   "timeScale",
   "playback",
   "operatorSwitch",
+  "targetingLaser",
   "trajectories",
   "velocitySegments",
 ];

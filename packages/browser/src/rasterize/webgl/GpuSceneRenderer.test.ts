@@ -87,6 +87,7 @@ function createRenderParams(
     scene: { lights: [], objects: [object] },
     sceneLabelCandidates: [],
     surface: { height: 600, width: 800 },
+    worldMarkers: [],
     worldSegments: [],
   };
 }

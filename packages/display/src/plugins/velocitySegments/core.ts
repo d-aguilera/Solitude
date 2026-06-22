@@ -2,7 +2,7 @@ import { EPS_SPEED_SQ, type Vec3, vec3 } from "@solitude/engine/math";
 import type { SegmentPlugin, WorldSegment } from "@solitude/engine/plugin";
 import type { ControlledBody } from "@solitude/engine/world";
 
-const VELOCITY_SEGMENT_LENGTH = 500000; // meters
+const VELOCITY_SEGMENT_LENGTH = 500_000; // meters
 const VELOCITY_SEGMENT_INNER_RADIUS = 7; // meters
 const VELOCITY_SEGMENT_LINE_WIDTH = 4;
 const VELOCITY_SEGMENT_FORWARD_COLOR = { r: 0, g: 255, b: 0 };

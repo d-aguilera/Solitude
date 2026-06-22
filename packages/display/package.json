@@ -14,6 +14,7 @@
     "./plugins/orbitTelemetry/orbitReadout": "./src/plugins/orbitTelemetry/orbitReadout.ts",
     "./plugins/shipTelemetry": "./src/plugins/shipTelemetry/index.ts",
     "./plugins/shipTelemetry/hud": "./src/plugins/shipTelemetry/hud.ts",
+    "./plugins/targetingLaser": "./src/plugins/targetingLaser/index.ts",
     "./plugins/trajectories": "./src/plugins/trajectories/index.ts",
     "./plugins/trajectories/trajectoryPlan": "./src/plugins/trajectories/trajectoryPlan.ts",
     "./plugins/velocitySegments": "./src/plugins/velocitySegments/index.ts"

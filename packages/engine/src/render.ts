@@ -43,6 +43,7 @@ export { LABEL_FONT } from "./render/labelStyle";
 export type {
   Point,
   RenderSurface2D,
+  RenderedMarker,
   RenderedPolyline,
   RenderedSceneLabel,
   RenderedSegment,

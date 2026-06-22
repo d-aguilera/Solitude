@@ -34,6 +34,10 @@ import type {
   World,
 } from "@solitude/engine/world";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
+import {
+  collectKeyboardInputProviders,
+  createKeyboardHandlerDispatcher,
+} from "@solitude/input/keyboard";
 import type { SolitudeInputSequence } from "@solitude/protocol/protocol";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
 import type { LocalEntityPredictionProvider } from "@solitude/sim/localPrediction";
@@ -88,6 +92,7 @@ export interface SolitudeRemoteClientRendererOptions {
 
 export interface SolitudeRemoteClientRenderer {
   getDebugState: () => SolitudeRemoteRenderDebugState;
+  handleLocalKey: (code: string, isDown: boolean, isRepeat: boolean) => boolean;
   pushSnapshotMessage: (message: RemoteClientSnapshotMessage) => void;
   renderFrame: (nowMillis: number, dtMillis: number) => boolean;
   setModel: (entities: readonly EntityConfig[], modelVersion: number) => void;
@@ -126,6 +131,11 @@ export function createSolitudeRemoteClientRenderer({
     clientPlugins,
     runtimeOptions,
   });
+  const keyboardDispatcher = createKeyboardHandlerDispatcher(
+    collectKeyboardInputProviders(
+      plugins.flatMap((plugin) => plugin.capabilities ?? []),
+    ),
+  );
   const predictionState = createLocalPredictionState();
   const framePolicy: FramePolicy = {
     advancePresentation: true,
@@ -154,6 +164,8 @@ export function createSolitudeRemoteClientRenderer({
 
   return {
     getDebugState: () => createRemoteRenderDebugState(),
+    handleLocalKey: (code, isDown, isRepeat) =>
+      keyboardDispatcher.handleKey(code, isDown, isRepeat),
     pushSnapshotMessage: (message) => {
       if (message.modelVersion !== modelVersion) return;
       const nowMillis = performance.now();

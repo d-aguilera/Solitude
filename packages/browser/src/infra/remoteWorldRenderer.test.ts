@@ -131,12 +131,19 @@ describe("remote world renderer", () => {
 
     rasterizeSceneOverlay(renderer.renderedView, {
       clear: () => calls.push("clear"),
+      drawMarkers: (_markers, count) => calls.push(`markers:${count}`),
       drawPolylines: (_polylines, count) => calls.push(`polylines:${count}`),
       drawSceneLabels: (_labels, count) => calls.push(`labels:${count}`),
       drawSegments: (_segments, count) => calls.push(`segments:${count}`),
     });
 
-    expect(calls).toEqual(["clear", "polylines:0", "segments:0", "labels:0"]);
+    expect(calls).toEqual([
+      "clear",
+      "polylines:0",
+      "segments:0",
+      "markers:0",
+      "labels:0",
+    ]);
   });
 });
 

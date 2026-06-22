@@ -1,5 +1,6 @@
 import type {
   GamePlugin,
+  MarkerPlugin,
   SceneLabelCandidate,
   SceneLabelPlugin,
   SceneObjectFilter,
@@ -7,6 +8,7 @@ import type {
   SceneViewFilterParams,
   SegmentPlugin,
   SegmentProviderParams,
+  WorldMarker,
   WorldSegment,
 } from "@solitude/engine/plugin";
 import type {
@@ -123,6 +125,7 @@ export function createRemoteWorldRenderer({
   const scenePlugins = collectScenePlugins(plugins);
   const labelPlugins = collectLabelPlugins(plugins);
   const segmentPlugins = collectSegmentPlugins(plugins);
+  const markerPlugins = collectMarkerPlugins(plugins);
   const capabilityRegistry = createPluginCapabilityRegistry(
     plugins.flatMap((plugin) => plugin.capabilities ?? []),
   );
@@ -149,6 +152,7 @@ export function createRemoteWorldRenderer({
   const mainViewLookState = getMainViewLookState(config.render);
   const sceneLabelCandidates: SceneLabelCandidate[] = [];
   const worldSegments: WorldSegment[] = [];
+  const worldMarkers: WorldMarker[] = [];
   const objectsFilter = buildSceneObjectsFilter(scenePlugins, {
     config,
     mainFocus: worldAndScene.mainFocus,
@@ -171,6 +175,7 @@ export function createRemoteWorldRenderer({
     sceneLabelCandidates,
     surface,
     worldSegments,
+    worldMarkers,
   };
 
   const renderCurrent = (options: RemoteWorldRenderOptions = {}) => {
@@ -187,6 +192,13 @@ export function createRemoteWorldRenderer({
       world: worldAndScene.world,
     });
     applySegmentPlugins(segmentPlugins, worldSegments, {
+      config,
+      mainFocus: worldAndScene.mainFocus,
+      scene: worldAndScene.scene,
+      viewId: viewDefinition.id,
+      world: worldAndScene.world,
+    });
+    applyMarkerPlugins(markerPlugins, worldMarkers, {
       config,
       mainFocus: worldAndScene.mainFocus,
       scene: worldAndScene.scene,
@@ -249,6 +261,7 @@ export function createRemoteWorldMultiRenderer({
   const scenePlugins = collectScenePlugins(plugins);
   const labelPlugins = collectLabelPlugins(plugins);
   const segmentPlugins = collectSegmentPlugins(plugins);
+  const markerPlugins = collectMarkerPlugins(plugins);
   const capabilityRegistry = createPluginCapabilityRegistry(
     plugins.flatMap((plugin) => plugin.capabilities ?? []),
   );
@@ -302,6 +315,13 @@ export function createRemoteWorldMultiRenderer({
         viewId: definition.id,
         world: worldAndScene.world,
       });
+      applyMarkerPlugins(markerPlugins, view.worldMarkers, {
+        config,
+        mainFocus: worldAndScene.mainFocus,
+        scene: worldAndScene.scene,
+        viewId: definition.id,
+        world: worldAndScene.world,
+      });
       applyLabelPlugins(labelPlugins, view.sceneLabelCandidates, {
         capabilityRegistry,
         config,
@@ -341,6 +361,7 @@ export function rasterizeSceneOverlay(
   rasterizer.clear();
   rasterizer.drawPolylines(view.polylines, view.polylineCount);
   rasterizer.drawSegments(view.segments, view.segmentCount);
+  rasterizer.drawMarkers(view.markers, view.markerCount);
   rasterizer.drawSceneLabels(view.sceneLabels, view.sceneLabelCount);
 }
 
@@ -349,6 +370,7 @@ type InternalRemoteWorldRenderedView = RemoteWorldRenderedView & {
   readonly sceneLabelCandidates: SceneLabelCandidate[];
   readonly sceneView: SceneViewState;
   readonly worldSegments: WorldSegment[];
+  readonly worldMarkers: WorldMarker[];
 };
 
 function createRemoteRenderedViews({
@@ -370,6 +392,7 @@ function createRemoteRenderedViews({
     const view = views[index];
     const sceneLabelCandidates: SceneLabelCandidate[] = [];
     const worldSegments: WorldSegment[] = [];
+    const worldMarkers: WorldMarker[] = [];
     const objectsFilter = buildSceneObjectsFilter(scenePlugins, {
       config,
       mainFocus: mirror.worldSetup.mainFocus,
@@ -391,11 +414,13 @@ function createRemoteRenderedViews({
         sceneLabelCandidates,
         surface: view.surface,
         worldSegments,
+        worldMarkers,
       },
       sceneLabelCandidates,
       sceneView,
       viewId: sceneView.definition.id,
       worldSegments,
+      worldMarkers,
     };
   });
 }
@@ -434,6 +459,8 @@ function setFocusEntityId(
 
 function createRenderedView(): RenderedView {
   return {
+    markers: [],
+    markerCount: 0,
     polylines: [],
     polylineCount: 0,
     sceneLabels: [],
@@ -441,6 +468,14 @@ function createRenderedView(): RenderedView {
     segments: [],
     segmentCount: 0,
   };
+}
+
+function collectMarkerPlugins(plugins: GamePlugin[]): MarkerPlugin[] {
+  const markerPlugins: MarkerPlugin[] = [];
+  for (const plugin of plugins) {
+    if (plugin.markers) markerPlugins.push(plugin.markers);
+  }
+  return markerPlugins;
 }
 
 function collectScenePlugins(plugins: GamePlugin[]): ScenePlugin[] {
@@ -530,5 +565,16 @@ function applySegmentPlugins(
   segments.length = 0;
   for (const plugin of plugins) {
     plugin.appendSegments?.(segments, params);
+  }
+}
+
+function applyMarkerPlugins(
+  plugins: MarkerPlugin[],
+  markers: WorldMarker[],
+  params: SegmentProviderParams,
+): void {
+  markers.length = 0;
+  for (const plugin of plugins) {
+    plugin.appendMarkers?.(markers, params);
   }
 }

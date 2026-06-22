@@ -1,5 +1,6 @@
 import type {
   Point,
+  RenderedMarker,
   RenderedPolyline,
   RenderedSceneLabel,
   RenderedSegment,
@@ -20,6 +21,7 @@ let padding: Size;
 let position: Point;
 let positionX: number;
 let positionY: number;
+let radius: number;
 let size: Size;
 let sizeWidth: number;
 let sizeHeight: number;
@@ -101,6 +103,35 @@ export class CanvasSceneOverlayRasterizer implements SceneOverlayRasterizer {
         ctx.lineTo(p.x, p.y);
       }
       ctx.stroke();
+    }
+  }
+
+  drawMarkers(markers: RenderedMarker[], count: number): void {
+    ctx = this.ctx;
+    let marker: RenderedMarker;
+    for (let i = 0; i < count; i++) {
+      marker = markers[i];
+      position = marker.position;
+      radius = marker.radius;
+      positionX = position.x;
+      positionY = position.y;
+      ctx.strokeStyle = marker.cssColor;
+      ctx.fillStyle = marker.cssColor;
+      ctx.lineWidth = marker.lineWidth;
+      ctx.beginPath();
+      if (marker.shape === "dot") {
+        ctx.arc(positionX, positionY, radius, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (marker.shape === "ring") {
+        ctx.arc(positionX, positionY, radius, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        ctx.moveTo(positionX - radius, positionY - radius);
+        ctx.lineTo(positionX + radius, positionY + radius);
+        ctx.moveTo(positionX + radius, positionY - radius);
+        ctx.lineTo(positionX - radius, positionY + radius);
+        ctx.stroke();
+      }
     }
   }
 

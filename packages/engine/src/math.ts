@@ -21,6 +21,7 @@ export { computeVolumeOfTriangleMesh } from "./domain/meshVolume";
 export { getDominantBody, getDominantBodyPrimary } from "./domain/orbit";
 export type { GravityPrimary } from "./domain/orbit";
 export { circularSpeedAtRadius } from "./domain/phys";
+export { raySphereFirstHitDistance } from "./domain/raySphere";
 export { AU, C, km } from "./domain/units";
 export { vec3 } from "./domain/vec3";
 export type { Vec3 } from "./domain/vec3";

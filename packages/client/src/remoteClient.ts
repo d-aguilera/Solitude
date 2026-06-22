@@ -169,6 +169,15 @@ async function handleKeyboardInput(
   if (handleRemoteDebugKey(event, isDown)) return;
   const isSpacecraftKey = Boolean(solitudeSpacecraftKeyMap[event.code]);
   const isAutopilotKey = Boolean(remoteAutopilotKeyMap[event.code]);
+  if (
+    !isSpacecraftKey &&
+    !isAutopilotKey &&
+    engineRenderer.handleLocalKey(event.code, isDown, event.repeat)
+  ) {
+    event.preventDefault();
+    event.stopPropagation();
+    return;
+  }
   if (!isSpacecraftKey && !isAutopilotKey) return;
   event.preventDefault();
   event.stopPropagation();

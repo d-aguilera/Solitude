@@ -129,6 +129,7 @@ function createLoopViews(
         scene: worldAndScene.scene,
         sceneLabelCandidates: pipelineView.sceneLabelCandidates,
         surface: view.surface,
+        worldMarkers: pipelineView.worldMarkers,
         worldSegments: pipelineView.worldSegments,
       },
     };
@@ -167,11 +168,14 @@ function rasterizeView(view: RenderedView, rasterizer: SceneOverlayRasterizer) {
   rasterizer.clear();
   rasterizer.drawPolylines(view.polylines, view.polylineCount);
   rasterizer.drawSegments(view.segments, view.segmentCount);
+  rasterizer.drawMarkers(view.markers, view.markerCount);
   rasterizer.drawSceneLabels(view.sceneLabels, view.sceneLabelCount);
 }
 
 function createRenderedView(): RenderedView {
   return {
+    markers: [],
+    markerCount: 0,
     polylines: [],
     polylineCount: 0,
     sceneLabels: [],

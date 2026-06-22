@@ -6,6 +6,7 @@ import { createAxialViewsPlugin } from "./axialViews/index";
 import { createBodyLabelsPlugin } from "./bodyLabels/index";
 import { createOrbitTelemetryPlugin } from "./orbitTelemetry/index";
 import { createShipTelemetryPlugin } from "./shipTelemetry/index";
+import { createTargetingLaserPlugin } from "./targetingLaser/index";
 import { createTrajectoriesPlugin } from "./trajectories/index";
 import { createVelocitySegmentsPlugin } from "./velocitySegments/index";
 
@@ -14,6 +15,7 @@ export const displayPluginIds = [
   "axialViews",
   "orbitTelemetry",
   "shipTelemetry",
+  "targetingLaser",
   "trajectories",
   "velocitySegments",
 ];
@@ -26,6 +28,7 @@ export const remoteRenderPluginIds = [
   "autopilot",
   "bodyLabels",
   "axialViews",
+  "targetingLaser",
   "trajectories",
   "velocitySegments",
 ];
@@ -36,6 +39,7 @@ export const displayPluginCatalog: PluginCatalog = {
   bodyLabels: createBodyLabelsPlugin,
   orbitTelemetry: createOrbitTelemetryPlugin,
   shipTelemetry: createShipTelemetryPlugin,
+  targetingLaser: createTargetingLaserPlugin,
   trajectories: createTrajectoriesPlugin,
   velocitySegments: createVelocitySegmentsPlugin,
 };
