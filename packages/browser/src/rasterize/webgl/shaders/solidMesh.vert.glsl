@@ -21,7 +21,7 @@ uniform int uSmoothSphereShading;
 uniform float uExposure;
 uniform float uGamma;
 
-flat out float vIntensity;
+out float vIntensity;
 out float vCameraDepth;
 
 void main() {

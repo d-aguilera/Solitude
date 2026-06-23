@@ -6,7 +6,7 @@ uniform float uAmbient;
 uniform float uDiffuse;
 uniform float uLogDepthRange;
 uniform float uNearDepth;
-flat in float vIntensity;
+in float vIntensity;
 in float vCameraDepth;
 out vec4 outColor;
 
