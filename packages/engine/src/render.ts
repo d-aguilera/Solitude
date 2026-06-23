@@ -7,6 +7,7 @@ export type {
   LightEmitterSceneObject,
   MainViewLookState,
   Mesh,
+  MeshLod,
   OrbitalBodySceneObject,
   PointLight,
   PolylineSceneObject,

@@ -10,6 +10,7 @@ export interface BaseSceneObject {
   position: Vec3;
   orientation: Mat3;
   mesh: Mesh;
+  meshLod: MeshLod;
   meshScale: number;
   color: RGB;
   lineWidth: number;
@@ -35,6 +36,10 @@ export interface Mesh {
   faces: number[][];
   faceNormals?: Vec3[];
 }
+
+export type MeshLod =
+  | { kind: "none" }
+  | { kind: "unitIcosphere"; maxSubdivisions: number };
 
 /**
  * Main view look state relative to the focused entity.

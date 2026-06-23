@@ -1,13 +1,12 @@
-import { parseObjMesh } from "@solitude/engine/assets";
-import { AU, km, vec3, type Vec3 } from "@solitude/engine/math";
+import { AU, km } from "@solitude/engine/math";
 import type { Mesh } from "@solitude/engine/render";
+import { createUnitIcosphereMesh } from "@solitude/engine/render/icosphere";
 import type {
   EntityRenderConfig,
   KeplerianBodyPhysicsConfig,
   KeplerianOrbit,
 } from "@solitude/engine/world";
 import { colors } from "./colors";
-import icoObjText from "./ico.obj?raw";
 
 // --- Generated from JPL Horizons at epoch J2000.0 ---
 
@@ -251,6 +250,7 @@ export function buildDefaultSolarSystemConfigs(): {
       centralEntityId: sunId,
       color: colors.sun,
       mesh: planetPrototype,
+      meshLod: planetMeshLod,
       meshScale: radii.sun,
       luminosity: luminosities.sun,
       obliquityRad: degToRad(obliquitiesDeg.sun),
@@ -271,6 +271,7 @@ export function buildDefaultSolarSystemConfigs(): {
       centralEntityId: sunId,
       color: colors.mercury,
       mesh: planetPrototype,
+      meshLod: planetMeshLod,
       meshScale: radii.mercury,
       obliquityRad: degToRad(obliquitiesDeg.mercury),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mercury),
@@ -290,6 +291,7 @@ export function buildDefaultSolarSystemConfigs(): {
       centralEntityId: sunId,
       color: colors.venus,
       mesh: planetPrototype,
+      meshLod: planetMeshLod,
       meshScale: radii.venus,
       obliquityRad: degToRad(obliquitiesDeg.venus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.venus),
@@ -309,6 +311,7 @@ export function buildDefaultSolarSystemConfigs(): {
       centralEntityId: sunId,
       color: colors.earth,
       mesh: planetPrototype,
+      meshLod: planetMeshLod,
       meshScale: radii.earth,
       obliquityRad: degToRad(obliquitiesDeg.earth),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.earth),
@@ -328,6 +331,7 @@ export function buildDefaultSolarSystemConfigs(): {
       centralEntityId: sunId,
       color: colors.mars,
       mesh: planetPrototype,
+      meshLod: planetMeshLod,
       meshScale: radii.mars,
       obliquityRad: degToRad(obliquitiesDeg.mars),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mars),
@@ -347,6 +351,7 @@ export function buildDefaultSolarSystemConfigs(): {
       centralEntityId: sunId,
       color: colors.jupiter,
       mesh: planetPrototype,
+      meshLod: planetMeshLod,
       meshScale: radii.jupiter,
       obliquityRad: degToRad(obliquitiesDeg.jupiter),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.jupiter),
@@ -366,6 +371,7 @@ export function buildDefaultSolarSystemConfigs(): {
       centralEntityId: sunId,
       color: colors.saturn,
       mesh: planetPrototype,
+      meshLod: planetMeshLod,
       meshScale: radii.saturn,
       obliquityRad: degToRad(obliquitiesDeg.saturn),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.saturn),
@@ -385,6 +391,7 @@ export function buildDefaultSolarSystemConfigs(): {
       centralEntityId: sunId,
       color: colors.uranus,
       mesh: planetPrototype,
+      meshLod: planetMeshLod,
       meshScale: radii.uranus,
       obliquityRad: degToRad(obliquitiesDeg.uranus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.uranus),
@@ -404,6 +411,7 @@ export function buildDefaultSolarSystemConfigs(): {
       centralEntityId: sunId,
       color: colors.neptune,
       mesh: planetPrototype,
+      meshLod: planetMeshLod,
       meshScale: radii.neptune,
       obliquityRad: degToRad(obliquitiesDeg.neptune),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.neptune),
@@ -423,6 +431,7 @@ export function buildDefaultSolarSystemConfigs(): {
       centralEntityId: "planet:earth",
       color: colors.moon,
       mesh: planetPrototype,
+      meshLod: planetMeshLod,
       meshScale: radii.moon,
       obliquityRad: degToRad(obliquitiesDeg.moon),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.moon),
@@ -442,6 +451,7 @@ export function buildDefaultSolarSystemConfigs(): {
       centralEntityId: "planet:mars",
       color: colors.phobos,
       mesh: planetPrototype,
+      meshLod: planetMeshLod,
       meshScale: radii.phobos,
       obliquityRad: degToRad(obliquitiesDeg.phobos),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.phobos),
@@ -461,6 +471,7 @@ export function buildDefaultSolarSystemConfigs(): {
       centralEntityId: "planet:mars",
       color: colors.deimos,
       mesh: planetPrototype,
+      meshLod: planetMeshLod,
       meshScale: radii.deimos,
       obliquityRad: degToRad(obliquitiesDeg.deimos),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.deimos),
@@ -487,6 +498,7 @@ export function buildDefaultSolarSystemConfigs(): {
       centralEntityId: cfg.centralEntityId,
       color: cfg.color,
       mesh: cfg.mesh,
+      meshLod: cfg.meshLod,
       meshScale: cfg.meshScale,
     });
   }
@@ -494,97 +506,7 @@ export function buildDefaultSolarSystemConfigs(): {
   return { physics, render };
 }
 
-const icosahedronModel = parseObjMesh(icoObjText);
-
-const planetPrototype: Mesh = generatePlanetMesh();
-
-function generatePlanetMesh(subdivisions = 4): Mesh {
-  // Single reusable scratch vector for midpoint computation.
-  const midpointScratch: Vec3 = vec3.zero();
-
-  const getMidpointIndex = (i1: number, i2: number): number => {
-    const cacheKey = i1 < i2 ? `${i1}_${i2}` : `${i2}_${i1}`;
-    let idx = midpointCache[cacheKey];
-    if (idx === undefined) {
-      // Compute the midpoint on the unit sphere between vertices[i1] and vertices[i2]
-      const v1 = vertices[i1];
-      const v2 = vertices[i2];
-
-      // midpointScratch = v1 + v2
-      vec3.addInto(midpointScratch, v1, v2);
-      const v = vec3.normalizeInto(midpointScratch);
-
-      idx = vertices.push(vec3.create(v.x, v.y, v.z)) - 1;
-      midpointCache[cacheKey] = idx;
-    }
-    return idx;
-  };
-
-  // Start from a deep clone of the base icosahedron mesh
-  let vertices: Vec3[] = icosahedronModel.points.map(vec3.clone);
-  let faces: number[][] = icosahedronModel.faces.map((f) => [...f]);
-  let midpointCache: { [key: string]: number } = {};
-
-  for (let s = 0; s < subdivisions; s++) {
-    const newFaces: number[][] = [];
-    for (const [a, b, c] of faces) {
-      // split each side of the triangle in 2 halfs
-      const ab = getMidpointIndex(a, b);
-      const bc = getMidpointIndex(b, c);
-      const ca = getMidpointIndex(c, a);
-      // and create 4 smaller triangles
-      newFaces.push([a, ab, ca]);
-      newFaces.push([b, bc, ab]);
-      newFaces.push([c, ca, bc]);
-      newFaces.push([ab, bc, ca]);
-    }
-
-    midpointCache = {};
-    faces = newFaces;
-  }
-
-  const points: Vec3[] = vertices.map(vec3.clone);
-  const faceNormals: Vec3[] = new Array(faces.length);
-
-  // Reusable scratch vectors for face normal computation.
-  const e1Scratch: Vec3 = vec3.zero();
-  const e2Scratch: Vec3 = vec3.zero();
-  const normalScratch: Vec3 = vec3.zero();
-
-  const getFaceNormal = (face: number[]): Vec3 => {
-    const v0 = points[face[0]];
-    const v1 = points[face[1]];
-    const v2 = points[face[2]];
-
-    // e1 = v1 - v0
-    vec3.subInto(e1Scratch, v1, v0);
-    // e2 = v2 - v0
-    vec3.subInto(e2Scratch, v2, v0);
-    // normalScratch = e1 × e2
-    vec3.crossInto(normalScratch, e1Scratch, e2Scratch);
-
-    return normalScratch;
-  };
-
-  // Ensure face normals point outward from the origin (unit sphere)
-  for (let i = 0; i < faces.length; i++) {
-    const face = faces[i];
-    let n = getFaceNormal(face);
-    if (vec3.dot(n, points[face[0]]) < 0) {
-      // if not, flip winding
-      const aux = face[1];
-      face[1] = face[2];
-      face[2] = aux;
-      n = getFaceNormal(face);
-    }
-
-    // Store a normalized copy for this face using a reusable scratch.
-    faceNormals[i] = vec3.clone(vec3.normalizeInto(n));
-  }
-
-  return {
-    points,
-    faces,
-    faceNormals,
-  };
-}
+const planetMeshLod = { kind: "unitIcosphere", maxSubdivisions: 4 } as const;
+const planetPrototype: Mesh = createUnitIcosphereMesh(
+  planetMeshLod.maxSubdivisions,
+);

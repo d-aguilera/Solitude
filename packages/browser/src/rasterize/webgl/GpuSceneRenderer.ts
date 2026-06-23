@@ -20,6 +20,7 @@ import type { RenderFailure } from "../../infra/renderFailure";
 import { getPackedGpuMesh } from "./meshPacking";
 import fragmentShaderSource from "./shaders/solidMesh.frag.glsl?raw";
 import vertexShaderSource from "./shaders/solidMesh.vert.glsl?raw";
+import { selectGpuMeshForObject } from "./sphereLod";
 
 interface GpuMesh {
   boundingRadius: number;
@@ -201,7 +202,12 @@ export class GpuSceneRenderer {
 
   private drawObject(object: SceneObject, params: ViewRenderParams): void {
     const gl = this.gl;
-    const mesh = this.getGpuMesh(object.mesh);
+    const selectedMesh = selectGpuMeshForObject(
+      object,
+      this.projectionService,
+      params.surface.height,
+    );
+    const mesh = this.getGpuMesh(selectedMesh);
     writeMatrixColumnMajor(this.objectOrientation, object.orientation);
     gl.uniformMatrix3fv(
       this.uniforms.modelOrientation,
@@ -277,10 +283,15 @@ export class GpuSceneRenderer {
         relativeX * cameraForward.x +
         relativeY * cameraForward.y +
         relativeZ * cameraForward.z;
+      const selectedMesh = selectGpuMeshForObject(
+        object,
+        this.projectionService,
+        params.surface.height,
+      );
       farDepth = Math.max(
         farDepth,
         centerDepth +
-          getPackedGpuMesh(object.mesh).boundingRadius * object.meshScale,
+          getPackedGpuMesh(selectedMesh).boundingRadius * object.meshScale,
       );
     }
     return farDepth * 1.01;

@@ -102,6 +102,7 @@ function createPolylineSceneObject(
     id,
     kind: "polyline",
     mesh: { points: [], faces: [] },
+    meshLod: { kind: "none" },
     meshScale: 1,
     position, // alias
     orientation: mat3.identity,

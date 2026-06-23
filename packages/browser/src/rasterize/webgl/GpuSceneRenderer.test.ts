@@ -1,8 +1,10 @@
 import { localFrame, mat3, vec3 } from "@solitude/engine/math";
 import type {
+  BodySceneObject,
   ControlledBodySceneObject,
   ViewRenderParams,
 } from "@solitude/engine/render";
+import { createUnitIcosphereMesh } from "@solitude/engine/render/icosphere";
 import { describe, expect, it } from "vitest";
 import { GpuSceneRenderer } from "./GpuSceneRenderer";
 
@@ -44,6 +46,20 @@ describe("GPU scene renderer", () => {
     expect(recording.modelScales).toEqual([2, 5]);
   });
 
+  it("draws lower sphere LODs for small projected bodies", () => {
+    const recording = createRecordingGl();
+    const renderer = new GpuSceneRenderer({
+      gl: recording.gl,
+      onFatalError: () => {},
+    });
+    const farBody = createIcosphereBody("body:far", 2_000);
+    const nearBody = createIcosphereBody("body:near", 20);
+
+    renderer.render(createRenderParams([farBody, nearBody]));
+
+    expect(recording.drawVertexCounts).toEqual([240, 15_360]);
+  });
+
   it("reports context loss and stops issuing draws", () => {
     const recording = createRecordingGl();
     const failures: { code: string }[] = [];
@@ -83,6 +99,7 @@ function createObject(
         vec3.create(0, 0, 1),
       ],
     },
+    meshLod: { kind: "none" },
     meshScale,
     orientation: mat3.copy(mat3.identity, mat3.zero()),
     position: vec3.create(0, 10, 0),
@@ -90,8 +107,29 @@ function createObject(
   };
 }
 
+function createIcosphereBody(id: string, depth: number): BodySceneObject {
+  return {
+    applyTransform: true,
+    backFaceCulling: true,
+    centralEntityId: "body:primary",
+    color: { b: 30, g: 20, r: 10 },
+    id,
+    kind: "orbitalBody",
+    lineWidth: 1,
+    mesh: createUnitIcosphereMesh(4),
+    meshLod: { kind: "unitIcosphere", maxSubdivisions: 4 },
+    meshScale: 10,
+    orientation: mat3.copy(mat3.identity, mat3.zero()),
+    position: vec3.create(0, depth, 0),
+    velocity: vec3.zero(),
+    wireframeOnly: false,
+  };
+}
+
 function createRenderParams(
-  objectOrObjects: ControlledBodySceneObject | ControlledBodySceneObject[],
+  objectOrObjects:
+    | ViewRenderParams["scene"]["objects"][number]
+    | ViewRenderParams["scene"]["objects"],
 ): ViewRenderParams {
   const objects = Array.isArray(objectOrObjects)
     ? objectOrObjects
@@ -119,6 +157,7 @@ function createRenderParams(
 function createRecordingGl(): {
   deletedBuffers: number;
   drawCalls: number;
+  drawVertexCounts: number[];
   gl: WebGL2RenderingContext;
   loseContext: () => void;
   modelScales: number[];
@@ -127,6 +166,7 @@ function createRecordingGl(): {
   const state = {
     deletedBuffers: 0,
     drawCalls: 0,
+    drawVertexCounts: [] as number[],
     modelScales: [] as number[],
     staticBufferUploads: 0,
   };
@@ -192,7 +232,10 @@ function createRecordingGl(): {
     deleteVertexArray: () => {},
     depthFunc: () => {},
     disable: () => {},
-    drawArrays: () => state.drawCalls++,
+    drawArrays: (_mode: number, _first: number, count: number) => {
+      state.drawCalls++;
+      state.drawVertexCounts.push(count);
+    },
     enable: () => {},
     enableVertexAttribArray: () => {},
     frontFace: () => {},

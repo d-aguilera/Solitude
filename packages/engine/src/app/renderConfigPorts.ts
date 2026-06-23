@@ -1,12 +1,13 @@
 import type { EntityId } from "../domain/domainPorts";
 import type { Vec3 } from "../domain/vec3";
-import type { MainViewLookState, Mesh, RGB } from "./scenePorts";
+import type { MainViewLookState, Mesh, MeshLod, RGB } from "./scenePorts";
 
 export interface EntityRenderConfig {
   id: string;
   centralEntityId?: EntityId;
   color: RGB;
   mesh: Mesh;
+  meshLod: MeshLod;
   meshScale: number;
 }
 

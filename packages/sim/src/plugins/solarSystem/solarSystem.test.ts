@@ -82,5 +82,12 @@ describe("solarSystem plugin", () => {
     expect(
       new Set(renderables.map((renderable) => renderable.meshScale)).size,
     ).toBeGreaterThan(1);
+    expect(
+      renderables.every(
+        (renderable) =>
+          renderable.meshLod.kind === "unitIcosphere" &&
+          renderable.meshLod.maxSubdivisions === 4,
+      ),
+    ).toBe(true);
   });
 });
