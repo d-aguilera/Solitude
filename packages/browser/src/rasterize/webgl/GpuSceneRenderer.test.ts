@@ -60,6 +60,23 @@ describe("GPU scene renderer", () => {
     expect(recording.drawVertexCounts).toEqual([240, 15_360]);
   });
 
+  it("selects flat and smooth sphere shading per object", () => {
+    const recording = createRecordingGl();
+    const renderer = new GpuSceneRenderer({
+      gl: recording.gl,
+      onFatalError: () => {},
+    });
+
+    renderer.render(
+      createRenderParams([
+        createObject(),
+        createIcosphereBody("body:smooth", 20),
+      ]),
+    );
+
+    expect(recording.smoothSphereShading).toEqual([0, 1]);
+  });
+
   it("reports context loss and stops issuing draws", () => {
     const recording = createRecordingGl();
     const failures: { code: string }[] = [];
@@ -100,6 +117,7 @@ function createObject(
       ],
     },
     meshLod: { kind: "none" },
+    meshShading: { kind: "flat" },
     meshScale,
     orientation: mat3.copy(mat3.identity, mat3.zero()),
     position: vec3.create(0, 10, 0),
@@ -118,6 +136,7 @@ function createIcosphereBody(id: string, depth: number): BodySceneObject {
     lineWidth: 1,
     mesh: createUnitIcosphereMesh(4),
     meshLod: { kind: "unitIcosphere", maxSubdivisions: 4 },
+    meshShading: { kind: "smoothSphere" },
     meshScale: 10,
     orientation: mat3.copy(mat3.identity, mat3.zero()),
     position: vec3.create(0, depth, 0),
@@ -161,6 +180,7 @@ function createRecordingGl(): {
   gl: WebGL2RenderingContext;
   loseContext: () => void;
   modelScales: number[];
+  smoothSphereShading: number[];
   staticBufferUploads: number;
 } {
   const state = {
@@ -168,6 +188,7 @@ function createRecordingGl(): {
     drawCalls: 0,
     drawVertexCounts: [] as number[],
     modelScales: [] as number[],
+    smoothSphereShading: [] as number[],
     staticBufferUploads: 0,
   };
   let contextLostListener: ((event: Event) => void) | null = null;
@@ -253,7 +274,11 @@ function createRecordingGl(): {
     uniform1f: (location: unknown, value: number) => {
       if (location === "uModelScale") state.modelScales.push(value);
     },
-    uniform1i: () => {},
+    uniform1i: (location: unknown, value: number) => {
+      if (location === "uSmoothSphereShading") {
+        state.smoothSphereShading.push(value);
+      }
+    },
     uniform2f: () => {},
     uniform3f: () => {},
     uniformMatrix3fv: () => {},

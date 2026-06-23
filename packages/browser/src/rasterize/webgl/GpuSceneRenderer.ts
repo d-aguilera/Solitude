@@ -71,6 +71,7 @@ export class GpuSceneRenderer {
     modelScale: WebGLUniformLocation;
     modelTranslation: WebGLUniformLocation;
     nearDepth: WebGLUniformLocation;
+    smoothSphereShading: WebGLUniformLocation;
   };
 
   constructor({ gl, onFatalError }: GpuSceneRendererOptions) {
@@ -221,6 +222,10 @@ export class GpuSceneRenderer {
       object.position.z - params.camera.position.z,
     );
     gl.uniform1f(this.uniforms.modelScale, object.meshScale);
+    gl.uniform1i(
+      this.uniforms.smoothSphereShading,
+      object.meshShading.kind === "smoothSphere" ? 1 : 0,
+    );
     gl.uniform3f(
       this.uniforms.baseColor,
       object.color.r / 255,
@@ -437,6 +442,7 @@ function collectUniforms(gl: WebGL2RenderingContext, program: WebGLProgram) {
     modelScale: requireUniform(gl, program, "uModelScale"),
     modelTranslation: requireUniform(gl, program, "uModelTranslation"),
     nearDepth: requireUniform(gl, program, "uNearDepth"),
+    smoothSphereShading: requireUniform(gl, program, "uSmoothSphereShading"),
   };
 }
 

@@ -33,6 +33,7 @@ export const polyFighterProvider: ControllableEntityProvider = {
         color,
         mesh: polyFighterMesh,
         meshLod: { kind: "none" },
+        meshShading: { kind: "flat" },
         meshScale: 1,
         role: "controlledBody",
       },

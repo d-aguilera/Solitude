@@ -8,6 +8,7 @@ export type {
   MainViewLookState,
   Mesh,
   MeshLod,
+  MeshShading,
   OrbitalBodySceneObject,
   PointLight,
   PolylineSceneObject,

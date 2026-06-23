@@ -17,6 +17,7 @@ uniform float uNearDepth;
 uniform sampler2D uLights;
 uniform int uLightCount;
 uniform int uEmissive;
+uniform int uSmoothSphereShading;
 uniform float uExposure;
 uniform float uGamma;
 
@@ -44,7 +45,8 @@ void main() {
     return;
   }
 
-  vec3 normal = normalize(uModelOrientation * aNormal);
+  vec3 localNormal = uSmoothSphereShading == 1 ? normalize(aPosition) : aNormal;
+  vec3 normal = normalize(uModelOrientation * localNormal);
   vec3 anchor =
     uModelOrientation * (aFaceAnchor * uModelScale) + uModelTranslation;
   float irradiance = 0.0;

@@ -52,6 +52,7 @@ describe("createScene", () => {
             color: { r: 1, g: 1, b: 0 },
             mesh,
             meshLod: { kind: "unitIcosphere", maxSubdivisions: 2 },
+            meshShading: { kind: "smoothSphere" },
             meshScale: 2,
             role: "lightEmitter",
           },
@@ -76,6 +77,7 @@ describe("createScene", () => {
             color: { r: 0, g: 0, b: 1 },
             mesh,
             meshLod: { kind: "none" },
+            meshShading: { kind: "flat" },
             meshScale: 3,
             role: "orbitalBody",
           },
@@ -101,6 +103,7 @@ describe("createScene", () => {
             color: { r: 1, g: 1, b: 1 },
             mesh,
             meshLod: { kind: "none" },
+            meshShading: { kind: "flat" },
             meshScale: 4,
             role: "controlledBody",
           },
@@ -152,6 +155,11 @@ describe("createScene", () => {
       { kind: "unitIcosphere", maxSubdivisions: 2 },
       { kind: "none" },
       { kind: "none" },
+    ]);
+    expect(scene.objects.map((object) => object.meshShading)).toEqual([
+      { kind: "smoothSphere" },
+      { kind: "flat" },
+      { kind: "flat" },
     ]);
   });
 });

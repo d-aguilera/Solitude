@@ -59,6 +59,7 @@ export function buildSolarSystemBodyEntities({
               color: renderConfig.color,
               mesh: renderConfig.mesh,
               meshLod: renderConfig.meshLod,
+              meshShading: renderConfig.meshShading,
               meshScale: renderConfig.meshScale,
               role:
                 body.luminosity !== undefined ? "lightEmitter" : "orbitalBody",

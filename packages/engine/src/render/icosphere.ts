@@ -46,8 +46,6 @@ export function createUnitIcosphereMesh(subdivisions: number): Mesh {
     throw new Error(`Icosphere subdivisions must be a non-negative integer`);
   }
 
-  console.log("createUnitIcosphereMesh");
-
   const vertices: Vec3[] = baseVertices.map(([x, y, z]) =>
     vec3.normalizeInto(vec3.create(x, y, z)),
   );

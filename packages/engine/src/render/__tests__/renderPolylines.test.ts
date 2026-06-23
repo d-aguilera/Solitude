@@ -14,6 +14,7 @@ function createPolyline(count: number, tail: number): PolylineSceneObject {
       faces: [],
     },
     meshLod: { kind: "none" },
+    meshShading: { kind: "flat" },
     meshScale: 1,
     position: vec3.zero(),
     orientation: mat3.identity,

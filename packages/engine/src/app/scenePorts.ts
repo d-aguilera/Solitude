@@ -11,6 +11,7 @@ export interface BaseSceneObject {
   orientation: Mat3;
   mesh: Mesh;
   meshLod: MeshLod;
+  meshShading: MeshShading;
   meshScale: number;
   color: RGB;
   lineWidth: number;
@@ -40,6 +41,8 @@ export interface Mesh {
 export type MeshLod =
   | { kind: "none" }
   | { kind: "unitIcosphere"; maxSubdivisions: number };
+
+export type MeshShading = { kind: "flat" } | { kind: "smoothSphere" };
 
 /**
  * Main view look state relative to the focused entity.

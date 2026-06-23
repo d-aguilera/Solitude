@@ -25,6 +25,7 @@
 - Solid meshes write logarithmic fragment depth over a visible-scene range so nearby and orbital-scale bodies occlude correctly without sacrificing the existing near-plane clipping behavior.
 - Solid scene objects carry an explicit renderer-neutral uniform `meshScale`; solar-system bodies share one subdivision-4 unit sphere mesh and render at their physical radii through this scale.
 - Adaptive GPU sphere LOD is selected from projected screen diameter. LOD-capable objects declare renderer-neutral `meshLod`; solar-system bodies use shared unit icospheres up to subdivision 4, while ships and polylines opt out with `meshLod: { kind: "none" }`.
+- Solar-system bodies use explicit renderer-neutral smooth-sphere shading so LOD changes do not pop flat face lighting; ships and polylines keep flat shading.
 
 ## Target Shape
 
@@ -52,6 +53,7 @@ shared world + scene + camera
 - The native renderer uploads packed object-local triangles once per mesh/context and sends only camera-relative transforms, lights, and uniforms per frame.
 - Shared mesh identities are preserved across differently scaled objects; WebGL uploads one buffer per mesh/context and applies `meshScale` in the shader.
 - Sphere LOD meshes are shared per browser context and lower subdivision levels are used only when the projected diameter is small enough that detail is not visible.
+- WebGL flat shading uses packed face normals; smooth-sphere shading uses normalized object-local vertex position as the lighting normal.
 - GPU shaders perform object transforms, camera projection, near clipping, flat lighting, tone mapping, and logarithmic depth-tested rasterization using a conservative per-frame far range derived from object bounds.
 - Vertex and fragment shader sources live in dedicated `.vert.glsl` and `.frag.glsl` assets imported as raw text by the browser adapter.
 - The engine `SceneOverlayRenderer` projects renderer-neutral polylines, segments, and labels; the browser `CanvasSceneOverlayRasterizer` draws them.

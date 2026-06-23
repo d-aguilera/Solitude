@@ -251,6 +251,7 @@ export function buildDefaultSolarSystemConfigs(): {
       color: colors.sun,
       mesh: planetPrototype,
       meshLod: planetMeshLod,
+      meshShading: planetMeshShading,
       meshScale: radii.sun,
       luminosity: luminosities.sun,
       obliquityRad: degToRad(obliquitiesDeg.sun),
@@ -272,6 +273,7 @@ export function buildDefaultSolarSystemConfigs(): {
       color: colors.mercury,
       mesh: planetPrototype,
       meshLod: planetMeshLod,
+      meshShading: planetMeshShading,
       meshScale: radii.mercury,
       obliquityRad: degToRad(obliquitiesDeg.mercury),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mercury),
@@ -292,6 +294,7 @@ export function buildDefaultSolarSystemConfigs(): {
       color: colors.venus,
       mesh: planetPrototype,
       meshLod: planetMeshLod,
+      meshShading: planetMeshShading,
       meshScale: radii.venus,
       obliquityRad: degToRad(obliquitiesDeg.venus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.venus),
@@ -312,6 +315,7 @@ export function buildDefaultSolarSystemConfigs(): {
       color: colors.earth,
       mesh: planetPrototype,
       meshLod: planetMeshLod,
+      meshShading: planetMeshShading,
       meshScale: radii.earth,
       obliquityRad: degToRad(obliquitiesDeg.earth),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.earth),
@@ -332,6 +336,7 @@ export function buildDefaultSolarSystemConfigs(): {
       color: colors.mars,
       mesh: planetPrototype,
       meshLod: planetMeshLod,
+      meshShading: planetMeshShading,
       meshScale: radii.mars,
       obliquityRad: degToRad(obliquitiesDeg.mars),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mars),
@@ -352,6 +357,7 @@ export function buildDefaultSolarSystemConfigs(): {
       color: colors.jupiter,
       mesh: planetPrototype,
       meshLod: planetMeshLod,
+      meshShading: planetMeshShading,
       meshScale: radii.jupiter,
       obliquityRad: degToRad(obliquitiesDeg.jupiter),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.jupiter),
@@ -372,6 +378,7 @@ export function buildDefaultSolarSystemConfigs(): {
       color: colors.saturn,
       mesh: planetPrototype,
       meshLod: planetMeshLod,
+      meshShading: planetMeshShading,
       meshScale: radii.saturn,
       obliquityRad: degToRad(obliquitiesDeg.saturn),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.saturn),
@@ -392,6 +399,7 @@ export function buildDefaultSolarSystemConfigs(): {
       color: colors.uranus,
       mesh: planetPrototype,
       meshLod: planetMeshLod,
+      meshShading: planetMeshShading,
       meshScale: radii.uranus,
       obliquityRad: degToRad(obliquitiesDeg.uranus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.uranus),
@@ -412,6 +420,7 @@ export function buildDefaultSolarSystemConfigs(): {
       color: colors.neptune,
       mesh: planetPrototype,
       meshLod: planetMeshLod,
+      meshShading: planetMeshShading,
       meshScale: radii.neptune,
       obliquityRad: degToRad(obliquitiesDeg.neptune),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.neptune),
@@ -432,6 +441,7 @@ export function buildDefaultSolarSystemConfigs(): {
       color: colors.moon,
       mesh: planetPrototype,
       meshLod: planetMeshLod,
+      meshShading: planetMeshShading,
       meshScale: radii.moon,
       obliquityRad: degToRad(obliquitiesDeg.moon),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.moon),
@@ -452,6 +462,7 @@ export function buildDefaultSolarSystemConfigs(): {
       color: colors.phobos,
       mesh: planetPrototype,
       meshLod: planetMeshLod,
+      meshShading: planetMeshShading,
       meshScale: radii.phobos,
       obliquityRad: degToRad(obliquitiesDeg.phobos),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.phobos),
@@ -472,6 +483,7 @@ export function buildDefaultSolarSystemConfigs(): {
       color: colors.deimos,
       mesh: planetPrototype,
       meshLod: planetMeshLod,
+      meshShading: planetMeshShading,
       meshScale: radii.deimos,
       obliquityRad: degToRad(obliquitiesDeg.deimos),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.deimos),
@@ -499,6 +511,7 @@ export function buildDefaultSolarSystemConfigs(): {
       color: cfg.color,
       mesh: cfg.mesh,
       meshLod: cfg.meshLod,
+      meshShading: cfg.meshShading,
       meshScale: cfg.meshScale,
     });
   }
@@ -507,6 +520,7 @@ export function buildDefaultSolarSystemConfigs(): {
 }
 
 const planetMeshLod = { kind: "unitIcosphere", maxSubdivisions: 4 } as const;
+const planetMeshShading = { kind: "smoothSphere" } as const;
 const planetPrototype: Mesh = createUnitIcosphereMesh(
   planetMeshLod.maxSubdivisions,
 );

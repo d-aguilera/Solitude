@@ -86,7 +86,8 @@ describe("solarSystem plugin", () => {
       renderables.every(
         (renderable) =>
           renderable.meshLod.kind === "unitIcosphere" &&
-          renderable.meshLod.maxSubdivisions === 4,
+          renderable.meshLod.maxSubdivisions === 4 &&
+          renderable.meshShading.kind === "smoothSphere",
       ),
     ).toBe(true);
   });

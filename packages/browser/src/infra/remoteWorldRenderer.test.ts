@@ -187,6 +187,7 @@ function createCraft(id: string, x: number): EntityConfig {
         color: { b: 80, g: 140, r: 220 },
         mesh: createTriangleMesh(),
         meshLod: { kind: "none" },
+        meshShading: { kind: "flat" },
         meshScale: 1,
         role: "controlledBody",
       },
