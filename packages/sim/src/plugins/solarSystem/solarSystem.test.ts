@@ -64,4 +64,23 @@ describe("solarSystem plugin", () => {
       config.entities.some((entity) => entity.components.controllable),
     ).toBe(false);
   });
+
+  it("shares one unit sphere mesh across solar bodies and scales per entity", () => {
+    const config = buildWorldAndSceneConfig();
+
+    applyWorldModelPlugins(config, [createSolarSystemPlugin()]);
+
+    const renderables = config.entities.map((entity) => {
+      const renderable = entity.components.renderable;
+      if (!renderable) throw new Error(`Missing renderable: ${entity.id}`);
+      return renderable;
+    });
+    const firstMesh = renderables[0].mesh;
+    expect(
+      renderables.every((renderable) => renderable.mesh === firstMesh),
+    ).toBe(true);
+    expect(
+      new Set(renderables.map((renderable) => renderable.meshScale)).size,
+    ).toBeGreaterThan(1);
+  });
 });

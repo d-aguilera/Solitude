@@ -26,7 +26,7 @@ export function getBodyDiameterWorld(
     if (r2 > maxRadiusSq) maxRadiusSq = r2;
   }
 
-  const diameter = 2 * Math.sqrt(maxRadiusSq);
+  const diameter = 2 * Math.sqrt(maxRadiusSq) * obj.meshScale;
   objectDiameterWorldScratch.set(obj, diameter);
   return diameter;
 }

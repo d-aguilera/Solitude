@@ -250,7 +250,8 @@ export function buildDefaultSolarSystemConfigs(): {
       density: densities.sun,
       centralEntityId: sunId,
       color: colors.sun,
-      mesh: cloneAndScalePrototype(radii.sun),
+      mesh: planetPrototype,
+      meshScale: radii.sun,
       luminosity: luminosities.sun,
       obliquityRad: degToRad(obliquitiesDeg.sun),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.sun),
@@ -269,7 +270,8 @@ export function buildDefaultSolarSystemConfigs(): {
       density: densities.mercury,
       centralEntityId: sunId,
       color: colors.mercury,
-      mesh: cloneAndScalePrototype(radii.mercury),
+      mesh: planetPrototype,
+      meshScale: radii.mercury,
       obliquityRad: degToRad(obliquitiesDeg.mercury),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mercury),
     },
@@ -287,7 +289,8 @@ export function buildDefaultSolarSystemConfigs(): {
       density: densities.venus,
       centralEntityId: sunId,
       color: colors.venus,
-      mesh: cloneAndScalePrototype(radii.venus),
+      mesh: planetPrototype,
+      meshScale: radii.venus,
       obliquityRad: degToRad(obliquitiesDeg.venus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.venus),
     },
@@ -305,7 +308,8 @@ export function buildDefaultSolarSystemConfigs(): {
       density: densities.earth,
       centralEntityId: sunId,
       color: colors.earth,
-      mesh: cloneAndScalePrototype(radii.earth),
+      mesh: planetPrototype,
+      meshScale: radii.earth,
       obliquityRad: degToRad(obliquitiesDeg.earth),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.earth),
     },
@@ -323,7 +327,8 @@ export function buildDefaultSolarSystemConfigs(): {
       density: densities.mars,
       centralEntityId: sunId,
       color: colors.mars,
-      mesh: cloneAndScalePrototype(radii.mars),
+      mesh: planetPrototype,
+      meshScale: radii.mars,
       obliquityRad: degToRad(obliquitiesDeg.mars),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.mars),
     },
@@ -341,7 +346,8 @@ export function buildDefaultSolarSystemConfigs(): {
       density: densities.jupiter,
       centralEntityId: sunId,
       color: colors.jupiter,
-      mesh: cloneAndScalePrototype(radii.jupiter),
+      mesh: planetPrototype,
+      meshScale: radii.jupiter,
       obliquityRad: degToRad(obliquitiesDeg.jupiter),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.jupiter),
     },
@@ -359,7 +365,8 @@ export function buildDefaultSolarSystemConfigs(): {
       density: densities.saturn,
       centralEntityId: sunId,
       color: colors.saturn,
-      mesh: cloneAndScalePrototype(radii.saturn),
+      mesh: planetPrototype,
+      meshScale: radii.saturn,
       obliquityRad: degToRad(obliquitiesDeg.saturn),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.saturn),
     },
@@ -377,7 +384,8 @@ export function buildDefaultSolarSystemConfigs(): {
       density: densities.uranus,
       centralEntityId: sunId,
       color: colors.uranus,
-      mesh: cloneAndScalePrototype(radii.uranus),
+      mesh: planetPrototype,
+      meshScale: radii.uranus,
       obliquityRad: degToRad(obliquitiesDeg.uranus),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.uranus),
     },
@@ -395,7 +403,8 @@ export function buildDefaultSolarSystemConfigs(): {
       density: densities.neptune,
       centralEntityId: sunId,
       color: colors.neptune,
-      mesh: cloneAndScalePrototype(radii.neptune),
+      mesh: planetPrototype,
+      meshScale: radii.neptune,
       obliquityRad: degToRad(obliquitiesDeg.neptune),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.neptune),
     },
@@ -413,7 +422,8 @@ export function buildDefaultSolarSystemConfigs(): {
       density: densities.moon,
       centralEntityId: "planet:earth",
       color: colors.moon,
-      mesh: cloneAndScalePrototype(radii.moon),
+      mesh: planetPrototype,
+      meshScale: radii.moon,
       obliquityRad: degToRad(obliquitiesDeg.moon),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.moon),
     },
@@ -431,7 +441,8 @@ export function buildDefaultSolarSystemConfigs(): {
       density: densities.phobos,
       centralEntityId: "planet:mars",
       color: colors.phobos,
-      mesh: cloneAndScalePrototype(radii.phobos),
+      mesh: planetPrototype,
+      meshScale: radii.phobos,
       obliquityRad: degToRad(obliquitiesDeg.phobos),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.phobos),
     },
@@ -449,7 +460,8 @@ export function buildDefaultSolarSystemConfigs(): {
       density: densities.deimos,
       centralEntityId: "planet:mars",
       color: colors.deimos,
-      mesh: cloneAndScalePrototype(radii.deimos),
+      mesh: planetPrototype,
+      meshScale: radii.deimos,
       obliquityRad: degToRad(obliquitiesDeg.deimos),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.deimos),
     },
@@ -475,6 +487,7 @@ export function buildDefaultSolarSystemConfigs(): {
       centralEntityId: cfg.centralEntityId,
       color: cfg.color,
       mesh: cfg.mesh,
+      meshScale: cfg.meshScale,
     });
   }
 
@@ -485,20 +498,7 @@ const icosahedronModel = parseObjMesh(icoObjText);
 
 const planetPrototype: Mesh = generatePlanetMesh();
 
-function cloneAndScalePrototype(radius: number): Mesh {
-  const points = planetPrototype.points.map(vec3.clone);
-  const clone: Mesh = {
-    faces: planetPrototype.faces, // safe to alias here
-    points,
-    faceNormals: planetPrototype.faceNormals?.map(vec3.clone),
-  };
-  for (let p of points) {
-    vec3.scaleInto(p, radius, p);
-  }
-  return clone;
-}
-
-function generatePlanetMesh(subdivisions = 3): Mesh {
+function generatePlanetMesh(subdivisions = 4): Mesh {
   // Single reusable scratch vector for midpoint computation.
   const midpointScratch: Vec3 = vec3.zero();
 

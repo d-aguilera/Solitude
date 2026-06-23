@@ -10,6 +10,7 @@ export interface BaseSceneObject {
   position: Vec3;
   orientation: Mat3;
   mesh: Mesh;
+  meshScale: number;
   color: RGB;
   lineWidth: number;
   wireframeOnly: boolean;

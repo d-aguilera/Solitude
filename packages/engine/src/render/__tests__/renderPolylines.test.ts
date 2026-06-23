@@ -13,6 +13,7 @@ function createPolyline(count: number, tail: number): PolylineSceneObject {
       points: [vec3.zero(), vec3.zero()],
       faces: [],
     },
+    meshScale: 1,
     position: vec3.zero(),
     orientation: mat3.identity,
     color: { r: 255, g: 255, b: 255 },

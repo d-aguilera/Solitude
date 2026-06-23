@@ -56,6 +56,7 @@ function createEntitySceneObject(
       displayName: entity.displayName,
       kind: "controlledBody",
       mesh: renderable.mesh,
+      meshScale: renderable.meshScale,
       position: state.position,
       orientation: state.orientation,
       color: renderable.color,
@@ -103,6 +104,7 @@ function createOrbitalBodySceneObject(
         ? entityState.centralEntityId
         : undefined,
     mesh: renderable.mesh,
+    meshScale: renderable.meshScale,
     position: state.position,
     orientation: state.orientation,
     color: renderable.color,

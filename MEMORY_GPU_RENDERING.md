@@ -23,6 +23,8 @@
 - Each view owns its WebGL context and GPU buffers; packed CPU mesh data is shared across views.
 - Camera-relative translations are calculated in JavaScript doubles before upload to preserve astronomical precision.
 - Solid meshes write logarithmic fragment depth over a visible-scene range so nearby and orbital-scale bodies occlude correctly without sacrificing the existing near-plane clipping behavior.
+- Solid scene objects carry an explicit renderer-neutral uniform `meshScale`; solar-system bodies share one subdivision-4 unit sphere mesh and render at their physical radii through this scale.
+- GPU LOD remains deferred. Projected screen size should remain the unit of measure when LOD is added.
 
 ## Target Shape
 
@@ -48,6 +50,7 @@ shared world + scene + camera
 
 - Browser presentation owns layered DOM views, synchronized device-pixel sizing, WebGL rendering, Canvas overlays, and disposal.
 - The native renderer uploads packed object-local triangles once per mesh/context and sends only camera-relative transforms, lights, and uniforms per frame.
+- Shared mesh identities are preserved across differently scaled objects; WebGL uploads one buffer per mesh/context and applies `meshScale` in the shader.
 - GPU shaders perform object transforms, camera projection, near clipping, flat lighting, tone mapping, and logarithmic depth-tested rasterization using a conservative per-frame far range derived from object bounds.
 - Vertex and fragment shader sources live in dedicated `.vert.glsl` and `.frag.glsl` assets imported as raw text by the browser adapter.
 - The engine `SceneOverlayRenderer` projects renderer-neutral polylines, segments, and labels; the browser `CanvasSceneOverlayRasterizer` draws them.

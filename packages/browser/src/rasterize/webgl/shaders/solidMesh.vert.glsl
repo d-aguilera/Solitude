@@ -7,6 +7,7 @@ in vec3 aNormal;
 in vec3 aFaceAnchor;
 
 uniform mat3 uModelOrientation;
+uniform float uModelScale;
 uniform vec3 uModelTranslation;
 uniform vec3 uCameraRight;
 uniform vec3 uCameraForward;
@@ -23,7 +24,8 @@ flat out float vIntensity;
 out float vCameraDepth;
 
 void main() {
-  vec3 worldRelative = uModelOrientation * aPosition + uModelTranslation;
+  vec3 worldRelative =
+    uModelOrientation * (aPosition * uModelScale) + uModelTranslation;
   vec3 cameraPoint = vec3(
     dot(worldRelative, uCameraRight),
     dot(worldRelative, uCameraForward),
@@ -43,7 +45,8 @@ void main() {
   }
 
   vec3 normal = normalize(uModelOrientation * aNormal);
-  vec3 anchor = uModelOrientation * aFaceAnchor + uModelTranslation;
+  vec3 anchor =
+    uModelOrientation * (aFaceAnchor * uModelScale) + uModelTranslation;
   float irradiance = 0.0;
   for (int lightIndex = 0; lightIndex < uLightCount; lightIndex++) {
     vec4 light = texelFetch(uLights, ivec2(lightIndex, 0), 0);
@@ -58,4 +61,3 @@ void main() {
   float mapped = hdr / (1.0 + hdr);
   vIntensity = pow(clamp(mapped, 0.0, 1.0), uGamma);
 }
-

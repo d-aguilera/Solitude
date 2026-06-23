@@ -51,6 +51,7 @@ describe("createScene", () => {
           renderable: {
             color: { r: 1, g: 1, b: 0 },
             mesh,
+            meshScale: 2,
             role: "lightEmitter",
           },
           state: {
@@ -73,6 +74,7 @@ describe("createScene", () => {
           renderable: {
             color: { r: 0, g: 0, b: 1 },
             mesh,
+            meshScale: 3,
             role: "orbitalBody",
           },
           state: {
@@ -96,6 +98,7 @@ describe("createScene", () => {
           renderable: {
             color: { r: 1, g: 1, b: 1 },
             mesh,
+            meshScale: 4,
             role: "controlledBody",
           },
         },
@@ -141,5 +144,6 @@ describe("createScene", () => {
     ]);
     expect(scene.objects[0].position).toBe(lightEmitter.position);
     expect(scene.objects[2].position).toBe(controlledBody.position);
+    expect(scene.objects.map((object) => object.meshScale)).toEqual([2, 3, 4]);
   });
 });

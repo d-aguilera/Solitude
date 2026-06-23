@@ -7,6 +7,7 @@ export interface EntityRenderConfig {
   centralEntityId?: EntityId;
   color: RGB;
   mesh: Mesh;
+  meshScale: number;
 }
 
 export interface WorldRenderConfig {

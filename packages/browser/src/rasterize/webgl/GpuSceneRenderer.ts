@@ -67,6 +67,7 @@ export class GpuSceneRenderer {
     lights: WebGLUniformLocation;
     logDepthRange: WebGLUniformLocation;
     modelOrientation: WebGLUniformLocation;
+    modelScale: WebGLUniformLocation;
     modelTranslation: WebGLUniformLocation;
     nearDepth: WebGLUniformLocation;
   };
@@ -213,6 +214,7 @@ export class GpuSceneRenderer {
       object.position.y - params.camera.position.y,
       object.position.z - params.camera.position.z,
     );
+    gl.uniform1f(this.uniforms.modelScale, object.meshScale);
     gl.uniform3f(
       this.uniforms.baseColor,
       object.color.r / 255,
@@ -277,7 +279,8 @@ export class GpuSceneRenderer {
         relativeZ * cameraForward.z;
       farDepth = Math.max(
         farDepth,
-        centerDepth + getPackedGpuMesh(object.mesh).boundingRadius,
+        centerDepth +
+          getPackedGpuMesh(object.mesh).boundingRadius * object.meshScale,
       );
     }
     return farDepth * 1.01;
@@ -420,6 +423,7 @@ function collectUniforms(gl: WebGL2RenderingContext, program: WebGLProgram) {
     lights: requireUniform(gl, program, "uLights"),
     logDepthRange: requireUniform(gl, program, "uLogDepthRange"),
     modelOrientation: requireUniform(gl, program, "uModelOrientation"),
+    modelScale: requireUniform(gl, program, "uModelScale"),
     modelTranslation: requireUniform(gl, program, "uModelTranslation"),
     nearDepth: requireUniform(gl, program, "uNearDepth"),
   };

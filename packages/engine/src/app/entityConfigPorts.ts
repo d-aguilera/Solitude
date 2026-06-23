@@ -38,6 +38,7 @@ export interface CollisionSphereConfig {
 export interface RenderableConfig {
   color: RGB;
   mesh: Mesh;
+  meshScale: number;
   role: RenderableRole;
 }
 

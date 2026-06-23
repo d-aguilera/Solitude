@@ -27,6 +27,23 @@ describe("GPU scene renderer", () => {
     expect(failures).toEqual([]);
   });
 
+  it("reuses one mesh buffer for differently scaled objects", () => {
+    const recording = createRecordingGl();
+    const renderer = new GpuSceneRenderer({
+      gl: recording.gl,
+      onFatalError: () => {},
+    });
+    const small = createObject("body:small", 2);
+    const large = createObject("body:large", 5);
+    large.mesh = small.mesh;
+
+    renderer.render(createRenderParams([small, large]));
+
+    expect(recording.staticBufferUploads).toBe(1);
+    expect(recording.drawCalls).toBe(2);
+    expect(recording.modelScales).toEqual([2, 5]);
+  });
+
   it("reports context loss and stops issuing draws", () => {
     const recording = createRecordingGl();
     const failures: { code: string }[] = [];
@@ -47,12 +64,15 @@ describe("GPU scene renderer", () => {
   });
 });
 
-function createObject(): ControlledBodySceneObject {
+function createObject(
+  id = "craft:test",
+  meshScale = 1,
+): ControlledBodySceneObject {
   return {
     applyTransform: true,
     backFaceCulling: false,
     color: { b: 30, g: 20, r: 10 },
-    id: "craft:test",
+    id,
     kind: "controlledBody",
     lineWidth: 1,
     mesh: {
@@ -63,6 +83,7 @@ function createObject(): ControlledBodySceneObject {
         vec3.create(0, 0, 1),
       ],
     },
+    meshScale,
     orientation: mat3.copy(mat3.identity, mat3.zero()),
     position: vec3.create(0, 10, 0),
     wireframeOnly: false,
@@ -70,8 +91,11 @@ function createObject(): ControlledBodySceneObject {
 }
 
 function createRenderParams(
-  object: ControlledBodySceneObject,
+  objectOrObjects: ControlledBodySceneObject | ControlledBodySceneObject[],
 ): ViewRenderParams {
+  const objects = Array.isArray(objectOrObjects)
+    ? objectOrObjects
+    : [objectOrObjects];
   return {
     camera: {
       frame: localFrame.clone({
@@ -84,7 +108,7 @@ function createRenderParams(
     renderPolylines: true,
     renderSceneLabels: true,
     renderSegments: true,
-    scene: { lights: [], objects: [object] },
+    scene: { lights: [], objects },
     sceneLabelCandidates: [],
     surface: { height: 600, width: 800 },
     worldMarkers: [],
@@ -97,11 +121,13 @@ function createRecordingGl(): {
   drawCalls: number;
   gl: WebGL2RenderingContext;
   loseContext: () => void;
+  modelScales: number[];
   staticBufferUploads: number;
 } {
   const state = {
     deletedBuffers: 0,
     drawCalls: 0,
+    modelScales: [] as number[],
     staticBufferUploads: 0,
   };
   let contextLostListener: ((event: Event) => void) | null = null;
@@ -175,13 +201,15 @@ function createRecordingGl(): {
     getProgramParameter: () => true,
     getShaderInfoLog: () => "",
     getShaderParameter: () => true,
-    getUniformLocation: () => ({}),
+    getUniformLocation: (_program: unknown, name: string) => name,
     linkProgram: () => {},
     shaderSource: () => {},
     texImage2D: () => {},
     texParameteri: () => {},
     texSubImage2D: () => {},
-    uniform1f: () => {},
+    uniform1f: (location: unknown, value: number) => {
+      if (location === "uModelScale") state.modelScales.push(value);
+    },
     uniform1i: () => {},
     uniform2f: () => {},
     uniform3f: () => {},
