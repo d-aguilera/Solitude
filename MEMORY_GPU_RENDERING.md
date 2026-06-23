@@ -75,3 +75,7 @@ shared world + scene + camera
 ## Current Next Step
 
 - Run interactive standalone and remote checks on real WebGL2 hardware, especially primary/PiP overlays, context loss, and large-coordinate stability; fix only measured discrepancies.
+
+## Related Follow-Up
+
+- Depth-tested WebGL trajectory ribbons and future GPU segment/marker overlay work live in `MEMORY_GPU_POLYLINES.md`.

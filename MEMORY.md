@@ -19,6 +19,7 @@
 
 - `MEMORY_CLIENT_SERVER_2.md`: current client/server gameplay-feel roadmap: real-time authoritative loop, snapshot timing/buffering, and local prediction.
 - `MEMORY_GPU_RENDERING.md`: active WebGL2-native rendering roadmap covering shared browser presentation, GPU mesh rendering, Canvas overlays, and rollout.
+- `MEMORY_GPU_POLYLINES.md`: planned depth-tested WebGL trajectory ribbons and future GPU segment/marker overlay work.
 - `MEMORY_HEADLESS_PLAYBACK.md`: planned work for running recorded playback scenarios end-to-end without the browser.
 
 ### Complete / Archived
@@ -32,7 +33,7 @@
 ## Current focus
 
 - **Primary active work**: client/server gameplay feel; the server-owned real-time loop, compact snapshots, load metrics, sequenced inputs, local prediction, and render-only reconciliation are in place. The next phase is restoring smooth remote-entity interpolation without disturbing predicted local flight. See `MEMORY_CLIENT_SERVER_2.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
-- **GPU rendering work**: WebGL2 is the sole solid-mesh renderer for standalone and remote play. Canvas remains only for projected scene overlays and HUD; the engine CPU-face pipeline and Canvas backend have been removed. See `MEMORY_GPU_RENDERING.md` before changing browser view presentation, rasterization, render package exports, or client renderer composition.
+- **GPU rendering work**: WebGL2 is the sole solid-mesh renderer for standalone and remote play. Canvas remains only for projected scene overlays and HUD; the engine CPU-face pipeline and Canvas backend have been removed. See `MEMORY_GPU_RENDERING.md` before changing browser view presentation, rasterization, render package exports, or client renderer composition. See `MEMORY_GPU_POLYLINES.md` before changing trajectory, world-segment, or marker overlay rendering.
 - **Operator/focus boundary**: core/runtime contexts use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`.
 - **Remaining operator follow-ups**: foreground/background UX and declarative input lock policy live in `MEMORY_OPERATOR_MODEL.md`.
 - **Retired compatibility names**: keep `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming out of source.
