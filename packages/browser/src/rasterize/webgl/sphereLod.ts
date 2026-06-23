@@ -6,10 +6,11 @@ import type { ProjectionService } from "@solitude/engine/render/projectionServic
 const sphereLodMeshes = new Map<number, Mesh>();
 
 const lodThresholds = [
-  { maxProjectedDiameterPixels: 12, subdivisions: 0 },
-  { maxProjectedDiameterPixels: 40, subdivisions: 1 },
-  { maxProjectedDiameterPixels: 140, subdivisions: 2 },
-  { maxProjectedDiameterPixels: 480, subdivisions: 3 },
+  { maxProjectedDiameterPixels: 16, subdivisions: 0 },
+  { maxProjectedDiameterPixels: 48, subdivisions: 1 },
+  { maxProjectedDiameterPixels: 160, subdivisions: 2 },
+  { maxProjectedDiameterPixels: 420, subdivisions: 3 },
+  { maxProjectedDiameterPixels: 720, subdivisions: 4 },
 ] as const;
 
 export function selectGpuMeshForObject(

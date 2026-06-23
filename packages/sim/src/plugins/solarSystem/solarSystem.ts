@@ -519,7 +519,7 @@ export function buildDefaultSolarSystemConfigs(): {
   return { physics, render };
 }
 
-const planetMeshLod = { kind: "unitIcosphere", maxSubdivisions: 4 } as const;
+const planetMeshLod = { kind: "unitIcosphere", maxSubdivisions: 5 } as const;
 const planetMeshShading = { kind: "smoothSphere" } as const;
 const planetPrototype: Mesh = createUnitIcosphereMesh(
   planetMeshLod.maxSubdivisions,
