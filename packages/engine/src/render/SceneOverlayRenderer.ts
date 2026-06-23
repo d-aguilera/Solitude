@@ -4,7 +4,6 @@ import type { NdcPoint } from "./ndc";
 import { ProjectionService } from "./ProjectionService";
 import type { ProjectedSegment, SegmentProjector } from "./renderInternals";
 import { renderWorldMarkersInto } from "./renderMarkers";
-import { renderPolylinesInto } from "./renderPolylines";
 import type {
   RenderedView,
   TextMetrics,
@@ -50,10 +49,7 @@ export class SceneOverlayRenderer implements ViewRenderer {
   renderInto(into: RenderedView, params: ViewRenderParams): void {
     const {
       camera,
-      objectsFilter,
       surface,
-      scene,
-      renderPolylines,
       renderSegments,
       renderSceneLabels,
     } = params;
@@ -71,15 +67,6 @@ export class SceneOverlayRenderer implements ViewRenderer {
         screenHeight,
       );
     }
-    into.polylineCount = renderPolylines
-      ? renderPolylinesInto(
-          into.polylines,
-          scene.objects,
-          this.projectSegmentInto,
-          objectsFilter,
-        )
-      : 0;
-
     into.segmentCount = renderSegments
       ? renderWorldSegmentsInto(
           into.segments,

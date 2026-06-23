@@ -46,7 +46,6 @@ export type {
   Point,
   RenderSurface2D,
   RenderedMarker,
-  RenderedPolyline,
   RenderedSceneLabel,
   RenderedSegment,
   RenderedView,

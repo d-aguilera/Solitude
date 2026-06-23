@@ -20,14 +20,8 @@ export class WebGLViewRenderer implements ViewRenderer {
   }
 
   renderInto(into: RenderedView, params: ViewRenderParams): void {
-    const renderPolylines = params.renderPolylines;
     this.gpuRenderer.render(params);
-    params.renderPolylines = false;
-    try {
-      this.overlayRenderer.renderInto(into, params);
-    } finally {
-      params.renderPolylines = renderPolylines;
-    }
+    this.overlayRenderer.renderInto(into, params);
   }
 
   dispose(): void {

@@ -56,7 +56,7 @@ describe("remote world renderer", () => {
     expect(
       renderer.mirror.worldSetup.mainFocus.controlledBody.position,
     ).toEqual(expect.objectContaining({ x: 25, y: 10, z: 5 }));
-    expect(renderer.renderedView.polylineCount).toBe(0);
+    expect(renderer.renderedView.segmentCount).toBe(0);
   });
 
   it("applies scene labels and segments before rendering", () => {
@@ -132,18 +132,11 @@ describe("remote world renderer", () => {
     rasterizeSceneOverlay(renderer.renderedView, {
       clear: () => calls.push("clear"),
       drawMarkers: (_markers, count) => calls.push(`markers:${count}`),
-      drawPolylines: (_polylines, count) => calls.push(`polylines:${count}`),
       drawSceneLabels: (_labels, count) => calls.push(`labels:${count}`),
       drawSegments: (_segments, count) => calls.push(`segments:${count}`),
     });
 
-    expect(calls).toEqual([
-      "clear",
-      "polylines:0",
-      "segments:0",
-      "markers:0",
-      "labels:0",
-    ]);
+    expect(calls).toEqual(["clear", "segments:0", "markers:0", "labels:0"]);
   });
 });
 

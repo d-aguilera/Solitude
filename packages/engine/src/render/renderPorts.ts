@@ -19,7 +19,6 @@ export interface SceneOverlayRasterizer {
   clear(): void;
   drawSceneLabels(labels: RenderedSceneLabel[], count: number): void;
   drawMarkers(markers: RenderedMarker[], count: number): void;
-  drawPolylines(polylines: RenderedPolyline[], count: number): void;
   drawSegments(segments: RenderedSegment[], count: number): void;
 }
 
@@ -42,13 +41,6 @@ export interface RenderedSceneLabel {
   size: Size;
 }
 
-export interface RenderedPolyline {
-  points: ScreenPoint[];
-  pointCount: number;
-  cssColor: string;
-  lineWidth: number;
-}
-
 export interface RenderedSegment {
   start: ScreenPoint;
   end: ScreenPoint;
@@ -61,8 +53,6 @@ export interface RenderedView {
   markerCount: number;
   sceneLabels: RenderedSceneLabel[];
   sceneLabelCount: number;
-  polylines: RenderedPolyline[];
-  polylineCount: number;
   segments: RenderedSegment[];
   segmentCount: number;
 }

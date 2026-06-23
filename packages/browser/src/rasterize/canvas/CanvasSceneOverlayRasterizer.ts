@@ -1,7 +1,6 @@
 import type {
   Point,
   RenderedMarker,
-  RenderedPolyline,
   RenderedSceneLabel,
   RenderedSegment,
   Size,
@@ -11,7 +10,6 @@ import type { SceneOverlayRasterizer } from "@solitude/engine/render/ports";
 
 // scratch
 let ctx: CanvasRenderingContext2D;
-let p: Point;
 let label: RenderedSceneLabel;
 let anchor: Point;
 let lineHeight: number;
@@ -82,27 +80,6 @@ export class CanvasSceneOverlayRasterizer implements SceneOverlayRasterizer {
       for (let i = 0; i < linesLength; i++) {
         ctx.fillText(lines[i], textX, textY + lineHeight * (i + 0.5));
       }
-    }
-  }
-
-  drawPolylines(polylines: RenderedPolyline[], count: number): void {
-    ctx = this.ctx;
-    let polyline: RenderedPolyline;
-    for (let i = 0; i < count; i++) {
-      polyline = polylines[i];
-      const pointCount = polyline.pointCount;
-      if (pointCount < 2) continue;
-      ctx.strokeStyle = polyline.cssColor;
-      ctx.lineWidth = polyline.lineWidth;
-      ctx.beginPath();
-      const points = polyline.points;
-      p = points[0];
-      ctx.moveTo(p.x, p.y);
-      for (let i = 1; i < pointCount; i++) {
-        p = points[i];
-        ctx.lineTo(p.x, p.y);
-      }
-      ctx.stroke();
     }
   }
 

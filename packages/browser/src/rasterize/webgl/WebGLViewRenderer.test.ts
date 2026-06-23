@@ -10,7 +10,7 @@ import type { GpuSceneRenderer } from "./GpuSceneRenderer";
 import { WebGLViewRenderer } from "./WebGLViewRenderer";
 
 describe("WebGL view renderer", () => {
-  it("lets the GPU own polylines without also projecting them for Canvas", () => {
+  it("passes polyline rendering through to the GPU renderer", () => {
     const gpuRenderFlags: boolean[] = [];
     const gpuRenderer = {
       dispose: () => {},
@@ -24,7 +24,6 @@ describe("WebGL view renderer", () => {
     renderer.renderInto(renderedView, params);
 
     expect(gpuRenderFlags).toEqual([true]);
-    expect(renderedView.polylineCount).toBe(0);
     expect(params.renderPolylines).toBe(true);
   });
 });
@@ -54,8 +53,6 @@ function createRenderedView(): RenderedView {
   return {
     markers: [],
     markerCount: 0,
-    polylines: [],
-    polylineCount: 0,
     sceneLabels: [],
     sceneLabelCount: 0,
     segments: [],

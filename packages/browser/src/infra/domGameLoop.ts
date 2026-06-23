@@ -166,7 +166,6 @@ function renderViews(
 
 function rasterizeView(view: RenderedView, rasterizer: SceneOverlayRasterizer) {
   rasterizer.clear();
-  rasterizer.drawPolylines(view.polylines, view.polylineCount);
   rasterizer.drawSegments(view.segments, view.segmentCount);
   rasterizer.drawMarkers(view.markers, view.markerCount);
   rasterizer.drawSceneLabels(view.sceneLabels, view.sceneLabelCount);
@@ -176,8 +175,6 @@ function createRenderedView(): RenderedView {
   return {
     markers: [],
     markerCount: 0,
-    polylines: [],
-    polylineCount: 0,
     sceneLabels: [],
     sceneLabelCount: 0,
     segments: [],
