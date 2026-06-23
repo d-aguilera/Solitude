@@ -71,5 +71,11 @@ describe("buildTrajectoryPlan", () => {
       trajectoryIdForShip(ship.id),
       trajectoryIdForPlanet(planet.id),
     ]);
+    expect(
+      plan.find((entry) => entry.pathId === trajectoryIdForShip(ship.id)),
+    ).toMatchObject({
+      capacity: 720,
+      intervalMillis: 2 * 60 * 1000,
+    });
   });
 });

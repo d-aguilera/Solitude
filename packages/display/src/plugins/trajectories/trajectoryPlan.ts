@@ -15,6 +15,8 @@ export const TRAJECTORY_ID_PREFIX = "traj:";
 
 const SHIP_TRAJECTORY_PREFIX = `${TRAJECTORY_ID_PREFIX}ship:`;
 const PLANET_TRAJECTORY_PREFIX = `${TRAJECTORY_ID_PREFIX}planet:`;
+const shipTrajectoryCapacity = 720;
+const shipTrajectoryIntervalMillis = 2 * 60 * 1000;
 
 export function trajectoryIdForShip(shipId: string): string {
   return `${SHIP_TRAJECTORY_PREFIX}${shipId}`;
@@ -48,8 +50,8 @@ export function buildTrajectoryPlan(
   for (const ship of world.controllableBodies) {
     plan.push({
       pathId: trajectoryIdForShip(ship.id),
-      capacity: 3 * 24 * 10, // 720 point capacity = 10 days
-      intervalMillis: 20 * 60 * 1000, // 20-minute interval = 72 samples per day
+      capacity: shipTrajectoryCapacity,
+      intervalMillis: shipTrajectoryIntervalMillis,
     });
   }
 

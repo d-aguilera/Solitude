@@ -17,10 +17,16 @@ import {
 import { ProjectionService } from "@solitude/engine/render/projectionService";
 import { profiler } from "@solitude/engine/runtime";
 import type { RenderFailure } from "../../infra/renderFailure";
+import { GpuPolylineRenderer } from "./GpuPolylineRenderer";
 import { getPackedGpuMesh } from "./meshPacking";
 import fragmentShaderSource from "./shaders/solidMesh.frag.glsl?raw";
 import vertexShaderSource from "./shaders/solidMesh.vert.glsl?raw";
 import { selectGpuMeshForObject } from "./sphereLod";
+import {
+  createProgramFromSources,
+  requireResource,
+  requireUniform,
+} from "./webglProgram";
 
 interface GpuMesh {
   boundingRadius: number;
@@ -50,6 +56,7 @@ export class GpuSceneRenderer {
   private lightStorageAllocated = false;
   private lightTextureWidth = 1;
   private readonly lightTexture: WebGLTexture;
+  private readonly polylineRenderer: GpuPolylineRenderer;
   private failed = false;
   private readonly contextLostListener: (event: Event) => void;
 
@@ -77,9 +84,14 @@ export class GpuSceneRenderer {
   constructor({ gl, onFatalError }: GpuSceneRendererOptions) {
     this.gl = gl;
     try {
-      this.program = createProgram(gl);
+      this.program = createProgramFromSources(
+        gl,
+        vertexShaderSource,
+        fragmentShaderSource,
+      );
       this.vao = requireResource(gl.createVertexArray(), "vertex array");
       this.lightTexture = requireResource(gl.createTexture(), "light texture");
+      this.polylineRenderer = new GpuPolylineRenderer(gl);
       this.uniforms = collectUniforms(gl, this.program);
     } catch (cause) {
       onFatalError({ code: "webgl-program-failed", cause });
@@ -150,10 +162,8 @@ export class GpuSceneRenderer {
       renderFocalLengthY,
     );
     gl.uniform1f(this.uniforms.nearDepth, renderNearDepth);
-    gl.uniform1f(
-      this.uniforms.logDepthRange,
-      Math.log2(this.getFarDepth(params) / renderNearDepth),
-    );
+    const logDepthRange = Math.log2(this.getFarDepth(params) / renderNearDepth);
+    gl.uniform1f(this.uniforms.logDepthRange, logDepthRange);
     gl.uniform3f(
       this.uniforms.cameraRight,
       frame.right.x,
@@ -189,6 +199,14 @@ export class GpuSceneRenderer {
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
     gl.bindVertexArray(null);
     gl.useProgram(null);
+
+    if (params.renderPolylines) {
+      this.polylineRenderer.render(
+        params,
+        this.projectionService,
+        logDepthRange,
+      );
+    }
   }
 
   dispose(): void {
@@ -197,6 +215,7 @@ export class GpuSceneRenderer {
     for (const mesh of this.meshBuffers.values()) gl.deleteBuffer(mesh.buffer);
     this.meshBuffers.clear();
     gl.deleteTexture(this.lightTexture);
+    this.polylineRenderer.dispose();
     gl.deleteVertexArray(this.vao);
     gl.deleteProgram(this.program);
   }
@@ -351,39 +370,6 @@ export class GpuSceneRenderer {
   }
 }
 
-function createProgram(gl: WebGL2RenderingContext): WebGLProgram {
-  const vertex = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-  const fragment = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-  const program = requireResource(gl.createProgram(), "shader program");
-  gl.attachShader(program, vertex);
-  gl.attachShader(program, fragment);
-  gl.linkProgram(program);
-  gl.deleteShader(vertex);
-  gl.deleteShader(fragment);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    const message = gl.getProgramInfoLog(program) ?? "Unknown program error";
-    gl.deleteProgram(program);
-    throw new Error(`WebGL program link failed: ${message}`);
-  }
-  return program;
-}
-
-function compileShader(
-  gl: WebGL2RenderingContext,
-  type: GLenum,
-  source: string,
-): WebGLShader {
-  const shader = requireResource(gl.createShader(type), "shader");
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    const message = gl.getShaderInfoLog(shader) ?? "Unknown shader error";
-    gl.deleteShader(shader);
-    throw new Error(`WebGL shader compilation failed: ${message}`);
-  }
-  return shader;
-}
-
 function configureAttributes(
   gl: WebGL2RenderingContext,
   program: WebGLProgram,
@@ -444,22 +430,6 @@ function collectUniforms(gl: WebGL2RenderingContext, program: WebGLProgram) {
     nearDepth: requireUniform(gl, program, "uNearDepth"),
     smoothSphereShading: requireUniform(gl, program, "uSmoothSphereShading"),
   };
-}
-
-function requireUniform(
-  gl: WebGL2RenderingContext,
-  program: WebGLProgram,
-  name: string,
-): WebGLUniformLocation {
-  return requireResource(
-    gl.getUniformLocation(program, name),
-    `uniform ${name}`,
-  );
-}
-
-function requireResource<T>(value: T | null, name: string): T {
-  if (value === null) throw new Error(`Failed to create WebGL ${name}`);
-  return value;
 }
 
 function writeMatrixColumnMajor(into: Float32Array, matrix: Mat3): void {

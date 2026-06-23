@@ -2,6 +2,7 @@ import { localFrame, mat3, vec3 } from "@solitude/engine/math";
 import type {
   BodySceneObject,
   ControlledBodySceneObject,
+  PolylineSceneObject,
   ViewRenderParams,
 } from "@solitude/engine/render";
 import { createUnitIcosphereMesh } from "@solitude/engine/render/icosphere";
@@ -25,7 +26,7 @@ describe("GPU scene renderer", () => {
 
     expect(recording.staticBufferUploads).toBe(1);
     expect(recording.drawCalls).toBe(2);
-    expect(recording.deletedBuffers).toBe(1);
+    expect(recording.deletedBuffers).toBe(2);
     expect(failures).toEqual([]);
   });
 
@@ -75,6 +76,49 @@ describe("GPU scene renderer", () => {
     );
 
     expect(recording.smoothSphereShading).toEqual([0, 1]);
+  });
+
+  it("draws trajectory ribbons after solid meshes", () => {
+    const recording = createRecordingGl();
+    const renderer = new GpuSceneRenderer({
+      gl: recording.gl,
+      onFatalError: () => {},
+    });
+
+    renderer.render(createRenderParams([createObject(), createPolyline()]));
+
+    expect(recording.drawVertexCounts).toEqual([3, 6]);
+    expect(recording.dynamicBufferUploads).toBe(1);
+  });
+
+  it("gates trajectory ribbons with renderPolylines", () => {
+    const recording = createRecordingGl();
+    const renderer = new GpuSceneRenderer({
+      gl: recording.gl,
+      onFatalError: () => {},
+    });
+    const params = createRenderParams([createObject(), createPolyline()]);
+    params.renderPolylines = false;
+
+    renderer.render(params);
+
+    expect(recording.drawVertexCounts).toEqual([3]);
+    expect(recording.dynamicBufferUploads).toBe(0);
+  });
+
+  it("applies object filters to trajectory ribbons", () => {
+    const recording = createRecordingGl();
+    const renderer = new GpuSceneRenderer({
+      gl: recording.gl,
+      onFatalError: () => {},
+    });
+    const params = createRenderParams([createObject(), createPolyline()]);
+    params.objectsFilter = (object) => object.kind !== "polyline";
+
+    renderer.render(params);
+
+    expect(recording.drawVertexCounts).toEqual([3]);
+    expect(recording.dynamicBufferUploads).toBe(0);
   });
 
   it("reports context loss and stops issuing draws", () => {
@@ -145,6 +189,29 @@ function createIcosphereBody(id: string, depth: number): BodySceneObject {
   };
 }
 
+function createPolyline(): PolylineSceneObject {
+  return {
+    applyTransform: false,
+    backFaceCulling: false,
+    color: { b: 0, g: 128, r: 255 },
+    count: 1,
+    id: "trajectory:test",
+    kind: "polyline",
+    lineWidth: 2,
+    mesh: {
+      faces: [],
+      points: [vec3.create(1, 10, 0)],
+    },
+    meshLod: { kind: "none" },
+    meshScale: 1,
+    meshShading: { kind: "flat" },
+    orientation: mat3.copy(mat3.identity, mat3.zero()),
+    position: vec3.create(-1, 10, 0),
+    tail: 0,
+    wireframeOnly: true,
+  };
+}
+
 function createRenderParams(
   objectOrObjects:
     | ViewRenderParams["scene"]["objects"][number]
@@ -177,6 +244,7 @@ function createRecordingGl(): {
   deletedBuffers: number;
   drawCalls: number;
   drawVertexCounts: number[];
+  dynamicBufferUploads: number;
   gl: WebGL2RenderingContext;
   loseContext: () => void;
   modelScales: number[];
@@ -187,6 +255,7 @@ function createRecordingGl(): {
     deletedBuffers: 0,
     drawCalls: 0,
     drawVertexCounts: [] as number[],
+    dynamicBufferUploads: 0,
     modelScales: [] as number[],
     smoothSphereShading: [] as number[],
     staticBufferUploads: 0,
@@ -209,6 +278,7 @@ function createRecordingGl(): {
     CULL_FACE: 6,
     DEPTH_BUFFER_BIT: 8,
     DEPTH_TEST: 7,
+    DYNAMIC_DRAW: 27,
     FLOAT: 9,
     FRAGMENT_SHADER: 10,
     LEQUAL: 11,
@@ -235,6 +305,7 @@ function createRecordingGl(): {
     bindVertexArray: () => {},
     bufferData: (_target: number, _data: unknown, usage: number) => {
       if (usage === 17) state.staticBufferUploads++;
+      if (usage === 27) state.dynamicBufferUploads++;
     },
     clear: () => {},
     clearColor: () => {},
@@ -252,6 +323,7 @@ function createRecordingGl(): {
     deleteTexture: () => {},
     deleteVertexArray: () => {},
     depthFunc: () => {},
+    depthMask: () => {},
     disable: () => {},
     drawArrays: (_mode: number, _first: number, count: number) => {
       state.drawCalls++;

@@ -6,6 +6,14 @@
 - Start with trajectory `PolylineSceneObject`s, then expand deliberately to world segments and markers if the same occlusion behavior is useful.
 - Preserve renderer-neutral engine contracts while keeping WebGL resource ownership in `@solitude/browser`.
 
+## Current State
+
+- First slice is implemented in code: WebGL-backed views render `PolylineSceneObject` trajectories as depth-tested screen-space ribbons through `GpuPolylineRenderer`.
+- `WebGLViewRenderer` suppresses Canvas polyline projection after the GPU pass, while Canvas still owns labels, markers, world segments, and HUD.
+- Ship trajectory sampling now records every 2 simulated minutes with the same 720-point capacity, so piloted craft accumulate visible history much sooner than the former 20-minute cadence.
+- Unit coverage exists for ribbon building, WebGL pass ordering/gating/filtering/disposal, and Canvas polyline suppression.
+- Still needs manual browser validation against real scenes, especially planet-center trajectory occlusion, far-trail readability, and primary/PiP consistency.
+
 ## Current Problem
 
 - Trajectories are `PolylineSceneObject`s backed by sampled 3D world points, but the current WebGL view still sends them through `SceneOverlayRenderer` and `CanvasSceneOverlayRasterizer`.
