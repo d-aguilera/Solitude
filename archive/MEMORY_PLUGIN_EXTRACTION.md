@@ -98,14 +98,14 @@ What changed:
 
 - Added a view descriptor/registry path.
 - Kept the primary view as the built-in core view.
-- Added `src/plugins/axialViews/` to register `top`, `rear`, `left`, and `right` PiP views.
+- Added `src/plugins/axialViews/` to register `top`, `front`, `left`, and `right` PiP views.
 - Moved auxiliary camera offsets out of `src/config/worldAndSceneConfig.ts` into the axial views plugin.
 - Changed `src/infra/domBootstrap.ts` and `src/infra/domGameLoop.ts` to operate over registered view arrays instead of fixed per-view fields.
 - Changed `src/infra/domBootstrap.ts` to create canvases for registered views on demand.
 - Kept canvas element IDs owned by bootstrap instead of plugin view definitions.
 - Removed hard-coded view canvases from `index.html`; it now only contains the canvas container.
-- Removed top/left/right/rear camera fields from `WorldSetup`, `WorldAndScene`, `SceneState`, and `SceneControlState`.
-- Moved top/left/right/rear frame-update strategies out of core camera helpers and into the axial views plugin.
+- Removed top/left/right/front camera fields from `WorldSetup`, `WorldAndScene`, `SceneState`, and `SceneControlState`.
+- Moved top/left/right/front frame-update strategies out of core camera helpers and into the axial views plugin.
 
 Known remaining static pieces:
 

@@ -1,11 +1,18 @@
 import { vec3 } from "@solitude/engine/math";
-import type { GamePlugin } from "@solitude/engine/plugin";
+import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import type {
   ViewDefinition,
   ViewFrameUpdateParams,
 } from "@solitude/engine/render";
+import { readLocaleRuntimeOption } from "@solitude/localization";
+import { createAxialViewsLocalization } from "./localization";
 
-export function createAxialViewsPlugin(): GamePlugin {
+export function createAxialViewsPlugin(
+  runtimeOptions: RuntimeOptions = {},
+): GamePlugin {
+  const localization = createAxialViewsLocalization(
+    readLocaleRuntimeOption(runtimeOptions),
+  );
   return {
     id: "axialViews",
     requirements: {
@@ -13,7 +20,7 @@ export function createAxialViewsPlugin(): GamePlugin {
     },
     views: {
       registerViews: (registry) => {
-        for (const view of createAxialViewDefinitions()) {
+        for (const view of createAxialViewDefinitions(localization)) {
           registry.addView(view);
         }
       },
@@ -21,10 +28,13 @@ export function createAxialViewsPlugin(): GamePlugin {
   };
 }
 
-function createAxialViewDefinitions(): ViewDefinition[] {
+function createAxialViewDefinitions(
+  localization: ReturnType<typeof createAxialViewsLocalization>,
+): ViewDefinition[] {
   return [
     {
       id: "top",
+      title: localization.top,
       labelMode: "nameOnly",
       initialCameraOffset: vec3.create(0, 0, 500_000),
       layout: {
@@ -35,7 +45,8 @@ function createAxialViewDefinitions(): ViewDefinition[] {
       updateFrame: updateTopViewFrame,
     },
     {
-      id: "rear",
+      id: "front",
+      title: localization.front,
       labelMode: "nameOnly",
       initialCameraOffset: vec3.create(0, 500_000, 4_850),
       layout: {
@@ -43,12 +54,13 @@ function createAxialViewDefinitions(): ViewDefinition[] {
         horizontal: "left",
         vertical: "bottom",
       },
-      updateFrame: updateRearViewFrame,
+      updateFrame: updateFrontViewFrame,
     },
     {
       id: "left",
+      title: localization.left,
       labelMode: "nameOnly",
-      initialCameraOffset: vec3.create(500_000, 51_000, 4_850),
+      initialCameraOffset: vec3.create(-500_000, 0, 4_850),
       layout: {
         kind: "pip",
         horizontal: "left",
@@ -59,8 +71,9 @@ function createAxialViewDefinitions(): ViewDefinition[] {
     },
     {
       id: "right",
+      title: localization.right,
       labelMode: "nameOnly",
-      initialCameraOffset: vec3.create(-500_000, 51_000, 4_850),
+      initialCameraOffset: vec3.create(500_000, 0, 4_850),
       layout: {
         kind: "pip",
         horizontal: "right",
@@ -85,9 +98,9 @@ function updateLeftViewFrame({
 }: ViewFrameUpdateParams): void {
   const controlledBodyFrame = mainFocus.controlledBody.frame;
   vec3.copyInto(frame.up, controlledBodyFrame.up);
-  vec3.copyInto(frame.forward, controlledBodyFrame.right);
-  vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -right
+  vec3.copyInto(frame.forward, controlledBodyFrame.right); // forward = right
   vec3.copyInto(frame.right, controlledBodyFrame.forward);
+  vec3.scaleInto(frame.right, -1, frame.right); // right = -forward
 }
 
 function updateRightViewFrame({
@@ -96,12 +109,12 @@ function updateRightViewFrame({
 }: ViewFrameUpdateParams): void {
   const controlledBodyFrame = mainFocus.controlledBody.frame;
   vec3.copyInto(frame.up, controlledBodyFrame.up);
-  vec3.copyInto(frame.forward, controlledBodyFrame.right); // forward = right
+  vec3.copyInto(frame.forward, controlledBodyFrame.right);
+  vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -right
   vec3.copyInto(frame.right, controlledBodyFrame.forward);
-  vec3.scaleInto(frame.right, -1, frame.right); // right = -forward
 }
 
-function updateRearViewFrame({
+function updateFrontViewFrame({
   frame,
   mainFocus,
 }: ViewFrameUpdateParams): void {

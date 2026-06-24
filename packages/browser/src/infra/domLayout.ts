@@ -39,12 +39,7 @@ function resizeCanvases(container: Element, views: LayoutView[]): void {
   const aspectRatio = 16 / 9;
 
   let primaryWidth = containerWidth;
-  let primaryHeight = containerHeight; // primaryWidth / aspectRatio;
-
-  // if (primaryHeight > containerHeight) {
-  //   primaryHeight = containerHeight;
-  //   primaryWidth = primaryHeight * aspectRatio;
-  // }
+  let primaryHeight = containerHeight;
 
   const primaryView = views.find((view) => view.layout.kind === "primary");
   if (primaryView) {

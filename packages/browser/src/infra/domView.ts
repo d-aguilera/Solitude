@@ -27,6 +27,9 @@ export function getOrCreateDomViewLayers(
     `${elementId}-overlay`,
     "overlay",
   );
+
+  addTitleElement(element, definition);
+
   if (element.parentElement !== container) container.appendChild(element);
   return { element, overlayCanvas, sceneCanvas };
 }
@@ -58,6 +61,32 @@ export function orderViewDefinitionsPrimaryFirst(
 
 function createViewElementId(index: number): string {
   return `sceneView-${index}`;
+}
+
+function addTitleElement(
+  parent: HTMLDivElement,
+  definition: ViewDefinition,
+): void {
+  if (!definition.title) return;
+  const titleElement = document.createElement("span");
+  titleElement.className = "scene-view-title";
+  titleElement.textContent = definition.title;
+  titleElement.style.position = "absolute";
+  titleElement.style.top = "0";
+  if (definition.layout.kind === "pip") {
+    if (definition.layout.horizontal === "left") {
+      titleElement.style.left = "0";
+    } else {
+      titleElement.style.right = "0";
+    }
+  }
+  titleElement.style.padding = ".1ex 1ex";
+  titleElement.style.background = "rgba(0, 0, 0, 0.5)";
+  titleElement.style.color = "white";
+  titleElement.style.fontFamily = "monospace";
+  titleElement.style.fontSize = "14px";
+  titleElement.style.pointerEvents = "none";
+  parent.appendChild(titleElement);
 }
 
 function getOrCreateCanvas(

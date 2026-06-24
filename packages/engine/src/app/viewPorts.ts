@@ -33,6 +33,7 @@ export interface MainViewCameraRig {
 
 export interface ViewDefinition {
   id: SceneViewId;
+  title?: string;
   labelMode: ViewLabelMode;
   initialCameraOffset: Vec3;
   layout: ViewLayout;
