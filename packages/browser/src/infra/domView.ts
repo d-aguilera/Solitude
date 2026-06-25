@@ -28,7 +28,7 @@ export function getOrCreateDomViewLayers(
     "overlay",
   );
 
-  addTitleElement(element, definition);
+  syncViewTitleElement(element, `${elementId}-title`, definition);
 
   if (element.parentElement !== container) container.appendChild(element);
   return { element, overlayCanvas, sceneCanvas };
@@ -63,30 +63,39 @@ function createViewElementId(index: number): string {
   return `sceneView-${index}`;
 }
 
-function addTitleElement(
+function syncViewTitleElement(
   parent: HTMLDivElement,
-  definition: ViewDefinition,
+  id: string,
+  { layout, title }: ViewDefinition,
 ): void {
-  if (!definition.title) return;
-  const titleElement = document.createElement("span");
-  titleElement.className = "scene-view-title";
-  titleElement.textContent = definition.title;
-  titleElement.style.position = "absolute";
-  titleElement.style.top = "0";
-  if (definition.layout.kind === "pip") {
-    if (definition.layout.horizontal === "left") {
-      titleElement.style.left = "0";
-    } else {
-      titleElement.style.right = "0";
-    }
+  let element = document.getElementById(id) as HTMLSpanElement | null;
+  if (!title) {
+    element?.remove();
+    return;
   }
-  titleElement.style.padding = ".1ex 1ex";
-  titleElement.style.background = "rgba(0, 0, 0, 0.5)";
-  titleElement.style.color = "white";
-  titleElement.style.fontFamily = "monospace";
-  titleElement.style.fontSize = "14px";
-  titleElement.style.pointerEvents = "none";
-  parent.appendChild(titleElement);
+  if (!element) {
+    element = document.createElement("span");
+    element.id = id;
+  }
+  element.className = "scene-view-title";
+  element.textContent = title;
+  const style = element.style;
+  style.position = "absolute";
+  style.top = "0";
+  style.left = "";
+  style.right = "";
+  if (layout.kind === "pip" && layout.horizontal === "right") {
+    style.right = "0";
+  } else {
+    style.left = "0";
+  }
+  style.padding = ".1ex 1ex";
+  style.background = "rgba(0, 0, 0, 0.5)";
+  style.color = "white";
+  style.fontFamily = "monospace";
+  style.fontSize = "14px";
+  style.pointerEvents = "none";
+  if (element.parentElement !== parent) parent.appendChild(element);
 }
 
 function getOrCreateCanvas(
@@ -94,26 +103,28 @@ function getOrCreateCanvas(
   id: string,
   layer: "overlay" | "scene",
 ): HTMLCanvasElement {
-  let canvas = document.getElementById(id) as HTMLCanvasElement | null;
-  if (!canvas) {
-    canvas = document.createElement("canvas");
-    canvas.id = id;
+  let element = document.getElementById(id) as HTMLCanvasElement | null;
+  if (!element) {
+    element = document.createElement("canvas");
+    element.id = id;
   }
-  canvas.dataset.layer = layer;
-  canvas.style.position = "absolute";
-  canvas.style.inset = "0";
-  canvas.style.width = "100%";
-  canvas.style.height = "100%";
-  canvas.style.display = "block";
-  canvas.style.pointerEvents = "none";
-  canvas.style.background = layer === "overlay" ? "transparent" : "black";
-  if (canvas.parentElement !== parent) parent.appendChild(canvas);
-  return canvas;
+  element.dataset.layer = layer;
+  const style = element.style;
+  style.position = "absolute";
+  style.inset = "0";
+  style.width = "100%";
+  style.height = "100%";
+  style.display = "block";
+  style.pointerEvents = "none";
+  style.background = layer === "overlay" ? "transparent" : "black";
+  if (element.parentElement !== parent) parent.appendChild(element);
+  return element;
 }
 
 function applyViewElementStyle(element: HTMLDivElement): void {
-  element.style.position = "absolute";
-  element.style.overflow = "hidden";
-  element.style.background = "black";
-  element.style.pointerEvents = "none";
+  const style = element.style;
+  style.position = "absolute";
+  style.overflow = "hidden";
+  style.background = "black";
+  style.pointerEvents = "none";
 }
