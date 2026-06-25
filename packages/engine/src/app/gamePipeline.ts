@@ -219,13 +219,17 @@ export function createGamePipeline({
         );
         sceneParams.dtMillis = tickDtMillis;
         sceneParams.dtSimMillis = simDtMillis;
-        for (const plugin of scenePlugins) plugin.updateScene?.(sceneParams);
+        for (const plugin of scenePlugins) {
+          plugin.updateScene?.(sceneParams);
+        }
       }
       return { framePolicy, simTimeMillis };
     },
     endFrame: () => {
       loopParams.simTimeMillis = simTimeMillis;
-      for (const plugin of loopPlugins) plugin.afterFrame?.(loopParams);
+      for (const plugin of loopPlugins) {
+        plugin.afterFrame?.(loopParams)
+      };
     },
     prepareView: (view, includeLabels, includeSegments) => {
       view.sceneLabelCandidates.length = 0;

@@ -24,10 +24,10 @@ export function createTickHandler(
   tickParams: Readonly<TickParams>,
   simulationPlugins: SimulationPlugin[] = [],
 ): TickCallback {
-  const simulationPhasePlan = createSimulationPhasePlan(simulationPlugins);
+  const simPhasePlan = createSimulationPhasePlan(simulationPlugins);
   const physicsWorkspace = createPhysicsWorkspace();
   const gravityState = buildInitialGravityState(worldAndScene.world);
-  const simulationPhaseParams: SimulationPhaseParams = {
+  const simPhaseParams: SimulationPhaseParams = {
     controlInput: {} as ControlInput,
     controlInputsByEntityId: EMPTY_ENTITY_CONTROL_INPUTS,
     dtMillis: 0,
@@ -39,49 +39,30 @@ export function createTickHandler(
   /**
    * Per‑frame update/render entry called by the game loop.
    */
-  const tick = (() => {
-    simulationPhaseParams.controlInput = tickParams.controlInput;
-    simulationPhaseParams.controlInputsByEntityId =
-      tickParams.controlInputsByEntityId;
-    simulationPhaseParams.dtMillis = tickParams.dtMillis;
-    simulationPhaseParams.dtMillisSim = tickParams.dtMillisSim;
+  const tick: TickCallback = () => {
+    simPhaseParams.controlInput = tickParams.controlInput;
+    simPhaseParams.controlInputsByEntityId = tickParams.controlInputsByEntityId;
+    simPhaseParams.dtMillis = tickParams.dtMillis;
+    simPhaseParams.dtMillisSim = tickParams.dtMillisSim;
 
-    applySimulationPhase(
-      simulationPhasePlan.beforeVehicleDynamics,
-      simulationPhaseParams,
-    );
-    applySimulationPhase(
-      simulationPhasePlan.updateVehicleDynamics,
-      simulationPhaseParams,
-    );
-    applySimulationPhase(
-      simulationPhasePlan.afterVehicleDynamics,
-      simulationPhaseParams,
-    );
+    applySimulationPhase(simPhasePlan.beforeVehicleDynamics, simPhaseParams);
+    applySimulationPhase(simPhasePlan.updateVehicleDynamics, simPhaseParams);
+    applySimulationPhase(simPhasePlan.afterVehicleDynamics, simPhaseParams);
 
-    applySimulationPhase(
-      simulationPhasePlan.beforeGravity,
-      simulationPhaseParams,
-    );
+    applySimulationPhase(simPhasePlan.beforeGravity, simPhaseParams);
     applyGravity(tickParams.dtMillisSim, gravityEngine, gravityState);
-    applySimulationPhase(
-      simulationPhasePlan.afterGravity,
-      simulationPhaseParams,
-    );
+    applySimulationPhase(simPhasePlan.afterGravity, simPhaseParams);
 
     resolveCollisions(worldAndScene.world);
-    applySimulationPhase(
-      simulationPhasePlan.afterCollisions,
-      simulationPhaseParams,
-    );
+    applySimulationPhase(simPhasePlan.afterCollisions, simPhaseParams);
 
     applyAxialSpin(
       tickParams.dtMillisSim,
       worldAndScene.world,
       physicsWorkspace,
     );
-    applySimulationPhase(simulationPhasePlan.afterSpin, simulationPhaseParams);
-  }) as TickCallback;
+    applySimulationPhase(simPhasePlan.afterSpin, simPhaseParams);
+  };
 
   tick.refreshGravityState = () => {
     refreshGravityState(worldAndScene.world, gravityState);

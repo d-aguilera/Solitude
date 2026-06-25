@@ -82,20 +82,25 @@ export class NewtonianGravityEngine implements GravityEngine {
     }
 
     // Reset all accelerations once, then accumulate pair interactions.
+    let accel: Vec3;
     for (let i = 0; i < n; i++) {
-      const a = accelerations[i];
-      a.x = 0;
-      a.y = 0;
-      a.z = 0;
+      accel = accelerations[i];
+      accel.x = 0;
+      accel.y = 0;
+      accel.z = 0;
     }
 
     const softeningLengthSq = this.softeningLength * this.softeningLength;
 
+    let pi: Vec3;
+    let ai: Vec3;
+    let mi: number;
+
     // Compute each pair (i, j) exactly once and update both bodies.
     for (let i = 0; i < n; i++) {
-      const pi = positions[i];
-      const ai = accelerations[i];
-      const mi = bodies[i].mass;
+      pi = positions[i];
+      ai = accelerations[i];
+      mi = bodies[i].mass;
 
       for (let j = i + 1; j < n; j++) {
         vec3.subInto(scratchD, positions[j], pi);
