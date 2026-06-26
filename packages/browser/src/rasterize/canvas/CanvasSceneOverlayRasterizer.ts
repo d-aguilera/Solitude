@@ -2,7 +2,6 @@ import type {
   Point,
   RenderedMarker,
   RenderedSceneLabel,
-  RenderedSegment,
   Size,
 } from "@solitude/engine/render";
 import { LABEL_FONT } from "@solitude/engine/render";
@@ -109,22 +108,6 @@ export class CanvasSceneOverlayRasterizer implements SceneOverlayRasterizer {
         ctx.lineTo(positionX - radius, positionY + radius);
         ctx.stroke();
       }
-    }
-  }
-
-  drawSegments(segments: RenderedSegment[], count: number): void {
-    ctx = this.ctx;
-    let segment: RenderedSegment;
-    for (let i = 0; i < count; i++) {
-      segment = segments[i];
-      const start = segment.start;
-      const end = segment.end;
-      ctx.strokeStyle = segment.cssColor;
-      ctx.lineWidth = segment.lineWidth;
-      ctx.beginPath();
-      ctx.moveTo(start.x, start.y);
-      ctx.lineTo(end.x, end.y);
-      ctx.stroke();
     }
   }
 }

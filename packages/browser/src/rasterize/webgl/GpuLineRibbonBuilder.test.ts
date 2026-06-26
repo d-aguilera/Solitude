@@ -6,11 +6,11 @@ import type {
 import { renderNearDepth } from "@solitude/engine/render/parameters";
 import { ProjectionService } from "@solitude/engine/render/projectionService";
 import { describe, expect, it } from "vitest";
-import { GpuPolylineRibbonBuilder } from "./GpuPolylineRibbonBuilder";
+import { GpuLineRibbonBuilder } from "./GpuLineRibbonBuilder";
 
-describe("GPU polyline ribbon builder", () => {
+describe("GPU line ribbon builder", () => {
   it("emits one quad for a single visible trajectory sample", () => {
-    const builder = new GpuPolylineRibbonBuilder();
+    const builder = new GpuLineRibbonBuilder();
     const polyline = createPolyline({
       count: 1,
       points: [vec3.create(1, 10, 0)],
@@ -25,7 +25,7 @@ describe("GPU polyline ribbon builder", () => {
   });
 
   it("walks the whole trajectory ring instead of only live-to-tail", () => {
-    const builder = new GpuPolylineRibbonBuilder();
+    const builder = new GpuLineRibbonBuilder();
     const polyline = createPolyline({
       count: 3,
       points: [
@@ -44,7 +44,7 @@ describe("GPU polyline ribbon builder", () => {
   });
 
   it("keeps ribbon width in screen space", () => {
-    const builder = new GpuPolylineRibbonBuilder();
+    const builder = new GpuLineRibbonBuilder();
     const polyline = createPolyline({
       count: 1,
       lineWidth: 2,
@@ -63,7 +63,7 @@ describe("GPU polyline ribbon builder", () => {
   });
 
   it("clips segments crossing the near plane", () => {
-    const builder = new GpuPolylineRibbonBuilder();
+    const builder = new GpuLineRibbonBuilder();
     const polyline = createPolyline({
       count: 1,
       points: [vec3.create(1, 10, 0)],
@@ -77,7 +77,7 @@ describe("GPU polyline ribbon builder", () => {
   });
 
   it("skips empty, invalid, filtered, and zero-width polylines", () => {
-    const builder = new GpuPolylineRibbonBuilder();
+    const builder = new GpuLineRibbonBuilder();
     const valid = createPolyline({
       count: 1,
       id: "trajectory:visible",
@@ -113,6 +113,65 @@ describe("GPU polyline ribbon builder", () => {
 
     expect(builder.getVertexCount()).toBe(0);
   });
+
+  it("emits one quad for a visible world segment", () => {
+    const builder = new GpuLineRibbonBuilder();
+
+    builder.build(
+      createBuildParams([], {
+        worldSegments: [
+          {
+            color: { b: 0, g: 255, r: 255 },
+            end: vec3.create(1, 10, 0),
+            lineWidth: 3,
+            start: vec3.create(-1, 10, 0),
+          },
+        ],
+      }),
+    );
+
+    expect(builder.getVertexCount()).toBe(6);
+  });
+
+  it("gates polylines and world segments independently", () => {
+    const builder = new GpuLineRibbonBuilder();
+    const polyline = createPolyline({
+      count: 1,
+      points: [vec3.create(1, 10, 0)],
+      position: vec3.create(-1, 10, 0),
+      tail: 0,
+    });
+
+    builder.build(
+      createBuildParams(polyline, {
+        renderPolylines: false,
+        worldSegments: [
+          {
+            color: { b: 0, g: 255, r: 255 },
+            end: vec3.create(1, 10, 0),
+            lineWidth: 3,
+            start: vec3.create(-1, 10, 0),
+          },
+        ],
+      }),
+    );
+    expect(builder.getVertexCount()).toBe(6);
+
+    builder.build(
+      createBuildParams(polyline, {
+        renderSegments: false,
+        worldSegments: [
+          {
+            color: { b: 0, g: 255, r: 255 },
+            end: vec3.create(1, 10, 0),
+            lineWidth: 3,
+            start: vec3.create(-1, 10, 0),
+          },
+        ],
+      }),
+    );
+    expect(builder.getVertexCount()).toBe(6);
+  });
 });
 
 function createBuildParams(
@@ -120,7 +179,10 @@ function createBuildParams(
   options: {
     height?: number;
     objectsFilter?: ViewRenderParams["objectsFilter"];
+    renderPolylines?: boolean;
+    renderSegments?: boolean;
     width?: number;
+    worldSegments?: ViewRenderParams["worldSegments"];
   } = {},
 ) {
   const width = options.width ?? 800;
@@ -139,8 +201,11 @@ function createBuildParams(
       : [objectOrObjects],
     objectsFilter: options.objectsFilter,
     projectionService: new ProjectionService(camera, width, height),
+    renderPolylines: options.renderPolylines ?? true,
+    renderSegments: options.renderSegments ?? true,
     surfaceHeight: height,
     surfaceWidth: width,
+    worldSegments: options.worldSegments ?? [],
   };
 }
 

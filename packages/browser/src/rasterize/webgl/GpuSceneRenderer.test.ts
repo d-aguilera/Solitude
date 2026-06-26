@@ -78,16 +78,18 @@ describe("GPU scene renderer", () => {
     expect(recording.smoothSphereShading).toEqual([0, 1]);
   });
 
-  it("draws trajectory ribbons after solid meshes", () => {
+  it("draws line ribbons after solid meshes", () => {
     const recording = createRecordingGl();
     const renderer = new GpuSceneRenderer({
       gl: recording.gl,
       onFatalError: () => {},
     });
+    const params = createRenderParams([createObject(), createPolyline()]);
+    params.worldSegments.push(createWorldSegment());
 
-    renderer.render(createRenderParams([createObject(), createPolyline()]));
+    renderer.render(params);
 
-    expect(recording.drawVertexCounts).toEqual([3, 6]);
+    expect(recording.drawVertexCounts).toEqual([3, 12]);
     expect(recording.dynamicBufferUploads).toBe(1);
   });
 
@@ -99,6 +101,22 @@ describe("GPU scene renderer", () => {
     });
     const params = createRenderParams([createObject(), createPolyline()]);
     params.renderPolylines = false;
+
+    renderer.render(params);
+
+    expect(recording.drawVertexCounts).toEqual([3]);
+    expect(recording.dynamicBufferUploads).toBe(0);
+  });
+
+  it("gates world segment ribbons with renderSegments", () => {
+    const recording = createRecordingGl();
+    const renderer = new GpuSceneRenderer({
+      gl: recording.gl,
+      onFatalError: () => {},
+    });
+    const params = createRenderParams(createObject());
+    params.worldSegments.push(createWorldSegment());
+    params.renderSegments = false;
 
     renderer.render(params);
 
@@ -209,6 +227,15 @@ function createPolyline(): PolylineSceneObject {
     position: vec3.create(-1, 10, 0),
     tail: 0,
     wireframeOnly: true,
+  };
+}
+
+function createWorldSegment(): ViewRenderParams["worldSegments"][number] {
+  return {
+    color: { b: 0, g: 255, r: 255 },
+    end: vec3.create(1, 10, 0),
+    lineWidth: 2,
+    start: vec3.create(-1, 10, 0),
   };
 }
 

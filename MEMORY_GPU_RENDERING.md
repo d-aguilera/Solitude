@@ -19,7 +19,7 @@
 - WebGL is required for standalone and remote play; there is no Canvas solid-mesh backend or renderer-selection option.
 - GPU failures are visible and never silently fall back. The failure UI links to the Canvas override.
 - Solid meshes use native WebGL2 projection, lighting, clipping, depth testing, and rasterization.
-- Lines, trajectories, scene labels, and HUD remain on a transparent Canvas overlay initially.
+- Scene labels, markers, and HUD remain on a transparent Canvas overlay initially.
 - Each view owns its WebGL context and GPU buffers; packed CPU mesh data is shared across views.
 - Camera-relative translations are calculated in JavaScript doubles before upload to preserve astronomical precision.
 - Solid meshes write logarithmic fragment depth over a visible-scene range so nearby and orbital-scale bodies occlude correctly without sacrificing the existing near-plane clipping behavior.
@@ -52,7 +52,8 @@ shared world + scene + camera
 - Browser presentation owns layered DOM views, synchronized device-pixel sizing, WebGL rendering, Canvas overlays, and disposal.
 - The native renderer uploads packed object-local triangles once per mesh/context and sends only camera-relative transforms, lights, and uniforms per frame.
 - Shared mesh identities are preserved across differently scaled objects; WebGL uploads one buffer per mesh/context and applies `meshScale` in the shader.
-- Browser WebGL scene rendering is split into a frame coordinator plus dedicated mesh and polyline renderers; `GpuMeshRenderer` owns the solid-mesh program, VAO, mesh buffers, LOD-aware far-depth calculation, and solid draw calls.
+- Browser WebGL scene rendering is split into a frame coordinator plus dedicated mesh and line renderers; `GpuMeshRenderer` owns the solid-mesh program, VAO, mesh buffers, LOD-aware far-depth calculation, and solid draw calls.
+- `GpuLineRenderer` batches trajectory polylines and world segments into screen-width WebGL ribbons. Canvas segment drawing has been removed; segments are WebGL-only.
 - Sphere LOD meshes are shared per browser context and lower subdivision levels are used only when the projected diameter is small enough that detail is not visible.
 - WebGL flat shading uses packed face normals; smooth-sphere shading uses normalized object-local vertex position as the lighting normal.
 - GPU shaders perform object transforms, camera projection, near clipping, flat lighting, tone mapping, and logarithmic depth-tested rasterization using a conservative per-frame far range derived from object bounds.

@@ -2,8 +2,8 @@ import type { ViewRenderParams } from "@solitude/engine/render";
 import { renderNearDepth } from "@solitude/engine/render/parameters";
 import { ProjectionService } from "@solitude/engine/render/projectionService";
 import type { RenderFailure } from "../../infra/renderFailure";
+import { GpuLineRenderer } from "./GpuLineRenderer";
 import { GpuMeshRenderer } from "./GpuMeshRenderer";
-import { GpuPolylineRenderer } from "./GpuPolylineRenderer";
 import { requireResource } from "./webglProgram";
 
 export interface GpuSceneRendererOptions {
@@ -18,8 +18,8 @@ export class GpuSceneRenderer {
   private lightStorageAllocated = false;
   private lightTextureWidth = 1;
   private readonly lightTexture: WebGLTexture;
+  private readonly lineRenderer: GpuLineRenderer;
   private readonly meshRenderer: GpuMeshRenderer;
-  private readonly polylineRenderer: GpuPolylineRenderer;
   private failed = false;
   private readonly contextLostListener: (event: Event) => void;
 
@@ -27,8 +27,8 @@ export class GpuSceneRenderer {
     this.gl = gl;
     try {
       this.lightTexture = requireResource(gl.createTexture(), "light texture");
+      this.lineRenderer = new GpuLineRenderer(gl);
       this.meshRenderer = new GpuMeshRenderer(gl);
-      this.polylineRenderer = new GpuPolylineRenderer(gl);
     } catch (cause) {
       onFatalError({ code: "webgl-program-failed", cause });
       throw cause;
@@ -90,12 +90,8 @@ export class GpuSceneRenderer {
       projectionService: this.projectionService,
     });
 
-    if (params.renderPolylines) {
-      this.polylineRenderer.render(
-        params,
-        this.projectionService,
-        logDepthRange,
-      );
+    if (params.renderPolylines || params.renderSegments) {
+      this.lineRenderer.render(params, this.projectionService, logDepthRange);
     }
   }
 
@@ -103,8 +99,8 @@ export class GpuSceneRenderer {
     const gl = this.gl;
     gl.canvas.removeEventListener("webglcontextlost", this.contextLostListener);
     gl.deleteTexture(this.lightTexture);
+    this.lineRenderer.dispose();
     this.meshRenderer.dispose();
-    this.polylineRenderer.dispose();
   }
 
   private uploadLights(params: ViewRenderParams): void {

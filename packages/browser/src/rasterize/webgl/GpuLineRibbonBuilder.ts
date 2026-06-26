@@ -1,4 +1,5 @@
 import type { Vec3 } from "@solitude/engine/math";
+import type { WorldSegment } from "@solitude/engine/plugin";
 import type { PolylineSceneObject, SceneObject } from "@solitude/engine/render";
 import { renderNearDepth } from "@solitude/engine/render/parameters";
 import type { ProjectionService } from "@solitude/engine/render/projectionService";
@@ -19,15 +20,23 @@ interface ProjectedSegment {
   clipped: boolean;
 }
 
-export interface PolylineRibbonBuildParams {
+interface LineStyle {
+  color: { r: number; g: number; b: number };
+  lineWidth: number;
+}
+
+export interface LineRibbonBuildParams {
   objects: readonly SceneObject[];
   objectsFilter?: (obj: SceneObject) => boolean;
   projectionService: ProjectionService;
+  renderPolylines: boolean;
+  renderSegments: boolean;
   surfaceHeight: number;
   surfaceWidth: number;
+  worldSegments: readonly WorldSegment[];
 }
 
-export class GpuPolylineRibbonBuilder {
+export class GpuLineRibbonBuilder {
   private data = new Float32Array(floatsPerSegment);
   private vertexCount = 0;
   private readonly segment: ProjectedSegment = {
@@ -36,15 +45,10 @@ export class GpuPolylineRibbonBuilder {
     clipped: false,
   };
 
-  build(params: PolylineRibbonBuildParams): Float32Array {
+  build(params: LineRibbonBuildParams): Float32Array {
     this.vertexCount = 0;
-    const objects = params.objects;
-    for (let index = 0; index < objects.length; index++) {
-      const object = objects[index];
-      if (object.kind !== "polyline") continue;
-      if (params.objectsFilter && !params.objectsFilter(object)) continue;
-      this.buildPolyline(object, params);
-    }
+    if (params.renderPolylines) this.buildPolylines(params);
+    if (params.renderSegments) this.buildWorldSegments(params);
     return this.data.subarray(0, this.vertexCount * floatsPerVertex);
   }
 
@@ -52,9 +56,27 @@ export class GpuPolylineRibbonBuilder {
     return this.vertexCount;
   }
 
+  private buildPolylines(params: LineRibbonBuildParams): void {
+    const objects = params.objects;
+    for (let index = 0; index < objects.length; index++) {
+      const object = objects[index];
+      if (object.kind !== "polyline") continue;
+      if (params.objectsFilter && !params.objectsFilter(object)) continue;
+      this.buildPolyline(object, params);
+    }
+  }
+
+  private buildWorldSegments(params: LineRibbonBuildParams): void {
+    const segments = params.worldSegments;
+    for (let index = 0; index < segments.length; index++) {
+      const segment = segments[index];
+      this.processSegment(segment, segment.start, segment.end, params);
+    }
+  }
+
   private buildPolyline(
     object: PolylineSceneObject,
-    params: PolylineRibbonBuildParams,
+    params: LineRibbonBuildParams,
   ): void {
     const points = object.mesh.points;
     const pointCapacity = points.length;
@@ -80,10 +102,10 @@ export class GpuPolylineRibbonBuilder {
   }
 
   private processSegment(
-    object: PolylineSceneObject,
+    style: LineStyle,
     aWorld: Vec3,
     bWorld: Vec3,
-    params: PolylineRibbonBuildParams,
+    params: LineRibbonBuildParams,
   ): void {
     if (
       params.projectionService.projectWorldSegmentToScreenInto(
@@ -94,12 +116,12 @@ export class GpuPolylineRibbonBuilder {
         params.surfaceHeight,
       )
     ) {
-      this.appendSegment(object, params.surfaceWidth, params.surfaceHeight);
+      this.appendSegment(style, params.surfaceWidth, params.surfaceHeight);
     }
   }
 
   private appendSegment(
-    object: PolylineSceneObject,
+    style: LineStyle,
     surfaceWidth: number,
     surfaceHeight: number,
   ): void {
@@ -109,13 +131,14 @@ export class GpuPolylineRibbonBuilder {
     const dy = b.y - a.y;
     const length = Math.hypot(dx, dy);
     if (length <= 0 || !Number.isFinite(length)) return;
+    if (style.lineWidth <= 0) return;
 
-    const halfWidth = object.lineWidth * 0.5;
+    const halfWidth = style.lineWidth * 0.5;
     const offsetX = (-dy / length) * halfWidth;
     const offsetY = (dx / length) * halfWidth;
-    const r = object.color.r / 255;
-    const g = object.color.g / 255;
-    const bl = object.color.b / 255;
+    const r = style.color.r / 255;
+    const g = style.color.g / 255;
+    const bl = style.color.b / 255;
 
     this.ensureAdditionalVertices(verticesPerSegment);
     this.appendVertex(
@@ -216,4 +239,4 @@ export class GpuPolylineRibbonBuilder {
   }
 }
 
-export const gpuPolylineRibbonFloatsPerVertex = floatsPerVertex;
+export const gpuLineRibbonFloatsPerVertex = floatsPerVertex;

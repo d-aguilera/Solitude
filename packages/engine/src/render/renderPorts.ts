@@ -19,7 +19,6 @@ export interface SceneOverlayRasterizer {
   clear(): void;
   drawSceneLabels(labels: RenderedSceneLabel[], count: number): void;
   drawMarkers(markers: RenderedMarker[], count: number): void;
-  drawSegments(segments: RenderedSegment[], count: number): void;
 }
 
 export interface RenderedMarker {

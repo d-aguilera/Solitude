@@ -166,7 +166,6 @@ function renderViews(
 
 function rasterizeView(view: RenderedView, rasterizer: SceneOverlayRasterizer) {
   rasterizer.clear();
-  rasterizer.drawSegments(view.segments, view.segmentCount);
   rasterizer.drawMarkers(view.markers, view.markerCount);
   rasterizer.drawSceneLabels(view.sceneLabels, view.sceneLabelCount);
 }

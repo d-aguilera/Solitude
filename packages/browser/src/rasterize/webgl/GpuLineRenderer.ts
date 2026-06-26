@@ -2,9 +2,9 @@ import type { ViewRenderParams } from "@solitude/engine/render";
 import { renderNearDepth } from "@solitude/engine/render/parameters";
 import type { ProjectionService } from "@solitude/engine/render/projectionService";
 import {
-  GpuPolylineRibbonBuilder,
-  gpuPolylineRibbonFloatsPerVertex,
-} from "./GpuPolylineRibbonBuilder";
+  GpuLineRibbonBuilder,
+  gpuLineRibbonFloatsPerVertex,
+} from "./GpuLineRibbonBuilder";
 import fragmentShaderSource from "./shaders/polylineRibbon.frag.glsl?raw";
 import vertexShaderSource from "./shaders/polylineRibbon.vert.glsl?raw";
 import {
@@ -14,11 +14,11 @@ import {
 } from "./webglProgram";
 
 const bytesPerFloat = 4;
-const stride = gpuPolylineRibbonFloatsPerVertex * bytesPerFloat;
+const stride = gpuLineRibbonFloatsPerVertex * bytesPerFloat;
 
-export class GpuPolylineRenderer {
+export class GpuLineRenderer {
   private readonly buffer: WebGLBuffer;
-  private readonly builder = new GpuPolylineRibbonBuilder();
+  private readonly builder = new GpuLineRibbonBuilder();
   private readonly program: WebGLProgram;
   private readonly vao: WebGLVertexArrayObject;
   private readonly uniforms: {
@@ -32,8 +32,8 @@ export class GpuPolylineRenderer {
       vertexShaderSource,
       fragmentShaderSource,
     );
-    this.vao = requireResource(gl.createVertexArray(), "polyline vertex array");
-    this.buffer = requireResource(gl.createBuffer(), "polyline buffer");
+    this.vao = requireResource(gl.createVertexArray(), "line vertex array");
+    this.buffer = requireResource(gl.createBuffer(), "line buffer");
     this.uniforms = {
       logDepthRange: requireUniform(gl, this.program, "uLogDepthRange"),
       nearDepth: requireUniform(gl, this.program, "uNearDepth"),
@@ -55,8 +55,11 @@ export class GpuPolylineRenderer {
       objects: params.scene.objects,
       objectsFilter: params.objectsFilter,
       projectionService,
+      renderPolylines: params.renderPolylines,
+      renderSegments: params.renderSegments,
       surfaceHeight: params.surface.height,
       surfaceWidth: params.surface.width,
+      worldSegments: params.worldSegments,
     });
     const vertexCount = this.builder.getVertexCount();
     if (vertexCount === 0) return;
