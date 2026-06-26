@@ -52,6 +52,7 @@ shared world + scene + camera
 - Browser presentation owns layered DOM views, synchronized device-pixel sizing, WebGL rendering, Canvas overlays, and disposal.
 - The native renderer uploads packed object-local triangles once per mesh/context and sends only camera-relative transforms, lights, and uniforms per frame.
 - Shared mesh identities are preserved across differently scaled objects; WebGL uploads one buffer per mesh/context and applies `meshScale` in the shader.
+- Browser WebGL scene rendering is split into a frame coordinator plus dedicated mesh and polyline renderers; `GpuMeshRenderer` owns the solid-mesh program, VAO, mesh buffers, LOD-aware far-depth calculation, and solid draw calls.
 - Sphere LOD meshes are shared per browser context and lower subdivision levels are used only when the projected diameter is small enough that detail is not visible.
 - WebGL flat shading uses packed face normals; smooth-sphere shading uses normalized object-local vertex position as the lighting normal.
 - GPU shaders perform object transforms, camera projection, near clipping, flat lighting, tone mapping, and logarithmic depth-tested rasterization using a conservative per-frame far range derived from object bounds.
