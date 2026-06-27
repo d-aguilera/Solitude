@@ -228,11 +228,18 @@ function buildOrbit(
  */
 type SolarBodyConfig = KeplerianBodyPhysicsConfig & EntityRenderConfig;
 
-export function buildDefaultSolarSystemConfigs(): {
+export interface SolarSystemConfigOptions {
+  orbitalSpeedMultiplier: number;
+}
+
+export function buildDefaultSolarSystemConfigs(
+  options: SolarSystemConfigOptions,
+): {
   physics: KeplerianBodyPhysicsConfig[];
   render: EntityRenderConfig[];
 } {
   const sunId = "planet:sun";
+  const densityScale = getOrbitalDensityScale(options.orbitalSpeedMultiplier);
 
   const configs: SolarBodyConfig[] = [
     {
@@ -498,7 +505,7 @@ export function buildDefaultSolarSystemConfigs(): {
       id: cfg.id,
       orbit: cfg.orbit,
       physicalRadius: cfg.physicalRadius,
-      density: cfg.density,
+      density: cfg.density * densityScale,
       centralEntityId: cfg.centralEntityId,
       obliquityRad: cfg.obliquityRad,
       angularSpeedRadPerSec: cfg.angularSpeedRadPerSec,
@@ -517,6 +524,13 @@ export function buildDefaultSolarSystemConfigs(): {
   }
 
   return { physics, render };
+}
+
+function getOrbitalDensityScale(orbitalSpeedMultiplier: number): number {
+  if (!Number.isFinite(orbitalSpeedMultiplier) || orbitalSpeedMultiplier <= 0) {
+    throw new Error("orbitalSpeedMultiplier must be a positive finite number");
+  }
+  return orbitalSpeedMultiplier * orbitalSpeedMultiplier;
 }
 
 const planetMeshLod = { kind: "unitIcosphere", maxSubdivisions: 5 } as const;

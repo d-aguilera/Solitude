@@ -86,6 +86,29 @@ describe("Solitude session manager", () => {
     ).toEqual(["ship:1", "ship:red", "ship:3"]);
   });
 
+  it("includes server runtime options in game model messages", () => {
+    const manager = createSolitudeSessionManager({
+      ...createTestOptions(createRecordingGame()),
+      runtimeOptions: { orbitalSpeedMultiplier: "32" },
+    });
+    manager.handleMessage({
+      type: "createGame",
+      clientId: "client:a",
+      sequence: 1,
+    });
+
+    const messages = manager.handleMessage({
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
+    });
+
+    expect(requireGameModel(messages).runtimeOptions).toEqual({
+      orbitalSpeedMultiplier: "32",
+    });
+  });
+
   it("releases a client's assigned ship when the client leaves", () => {
     const manager = createDefaultTestSessionManager();
     manager.handleMessage({
@@ -750,6 +773,7 @@ function createDefaultTestSessionManager() {
       return game;
     },
     nowMillis: Date.now,
+    runtimeOptions: {},
   });
 }
 
@@ -762,6 +786,7 @@ function createTestOptions(
     createAssignableEntity: (id): EntityConfig => ({ components: {}, id }),
     createGame: () => game,
     nowMillis,
+    runtimeOptions: {},
   };
 }
 

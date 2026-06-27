@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-22T23:38:34.599Z",
+  "generatedAt": "2026-06-28T19:19:09.835Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -461,6 +461,13 @@
       "id": "module:@solitude/engine:./render/bodyLod",
       "kind": "module",
       "label": "./render/bodyLod",
+      "packageName": "@solitude/engine",
+      "parent": "pkg:@solitude/engine"
+    },
+    {
+      "id": "module:@solitude/engine:./render/icosphere",
+      "kind": "module",
+      "label": "./render/icosphere",
       "packageName": "@solitude/engine",
       "parent": "pkg:@solitude/engine"
     },
@@ -1668,14 +1675,6 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/server:./http:createSolitudeHttpRequestHandler",
-      "kind": "symbol",
-      "label": "createSolitudeHttpRequestHandler",
-      "packageName": "@solitude/server",
-      "parent": "module:@solitude/server:./http",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/server:./transport:createSolitudeInProcessTransport",
       "kind": "symbol",
       "label": "createSolitudeInProcessTransport",
@@ -1769,6 +1768,14 @@
       "label": "createTrajectoriesPlugin",
       "packageName": "@solitude/display",
       "parent": "module:@solitude/display:./plugins/trajectories",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/engine:./render/icosphere:createUnitIcosphereMesh",
+      "kind": "symbol",
+      "label": "createUnitIcosphereMesh",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render/icosphere",
       "symbolKind": "function"
     },
     {
@@ -2868,6 +2875,22 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/engine:./render:MeshLod",
+      "kind": "symbol",
+      "label": "MeshLod",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render",
+      "symbolKind": "type"
+    },
+    {
+      "id": "symbol:@solitude/engine:./render:MeshShading",
+      "kind": "symbol",
+      "label": "MeshShading",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render",
+      "symbolKind": "type"
+    },
+    {
       "id": "symbol:@solitude/localization:.:MessageParams",
       "kind": "symbol",
       "label": "MessageParams",
@@ -2924,6 +2947,14 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/sim:./plugins/solarSystem:orbitalSpeedMultiplierRuntimeOption",
+      "kind": "symbol",
+      "label": "orbitalSpeedMultiplierRuntimeOption",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./plugins/solarSystem",
+      "symbolKind": "const"
+    },
+    {
       "id": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:OrbitingPlacementParams",
       "kind": "symbol",
       "label": "OrbitingPlacementParams",
@@ -2977,6 +3008,14 @@
       "label": "parseRuntimeOptionsFromSearch",
       "packageName": "@solitude/browser",
       "parent": "module:@solitude/browser:./dom/runtimeOptions",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions",
+      "kind": "symbol",
+      "label": "parseSolarSystemRuntimeOptions",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./plugins/solarSystem",
       "symbolKind": "function"
     },
     {
@@ -3335,22 +3374,6 @@
       "id": "symbol:@solitude/engine:./render/ports:RenderedMarker",
       "kind": "symbol",
       "label": "RenderedMarker",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./render/ports",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/engine:./render:RenderedPolyline",
-      "kind": "symbol",
-      "label": "RenderedPolyline",
-      "packageName": "@solitude/engine",
-      "parent": "module:@solitude/engine:./render",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/engine:./render/ports:RenderedPolyline",
-      "kind": "symbol",
-      "label": "RenderedPolyline",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render/ports",
       "symbolKind": "interface"
@@ -3860,6 +3883,14 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:SolarSystemConfigOptions",
+      "kind": "symbol",
+      "label": "SolarSystemConfigOptions",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./plugins/solarSystem/solarSystem",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/engine:./render:SolidSceneObject",
       "kind": "symbol",
       "label": "SolidSceneObject",
@@ -3996,17 +4027,17 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/server:./http:SolitudeHttpRequestHandler",
+      "id": "symbol:@solitude/server:./http:SolitudeHttpRuntime",
       "kind": "symbol",
-      "label": "SolitudeHttpRequestHandler",
+      "label": "SolitudeHttpRuntime",
       "packageName": "@solitude/server",
       "parent": "module:@solitude/server:./http",
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/server:./http:SolitudeHttpRequestHandlerOptions",
+      "id": "symbol:@solitude/server:./http:SolitudeHttpRuntimeOptions",
       "kind": "symbol",
-      "label": "SolitudeHttpRequestHandlerOptions",
+      "label": "SolitudeHttpRuntimeOptions",
       "packageName": "@solitude/server",
       "parent": "module:@solitude/server:./http",
       "symbolKind": "interface"
@@ -5172,6 +5203,12 @@
       "to": "module:@solitude/engine:./render"
     },
     {
+      "id": "module-import:module:@solitude/display:./plugins/axialViews->module:@solitude/localization:.",
+      "from": "module:@solitude/display:./plugins/axialViews",
+      "kind": "module-import",
+      "to": "module:@solitude/localization:."
+    },
+    {
       "id": "module-import:module:@solitude/display:./plugins/bodyLabels->module:@solitude/engine:./math",
       "from": "module:@solitude/display:./plugins/bodyLabels",
       "kind": "module-import",
@@ -5898,12 +5935,6 @@
       "to": "module:@solitude/engine:./render"
     },
     {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem/solarSystem->module:@solitude/engine:./assets",
-      "from": "module:@solitude/sim:./plugins/solarSystem/solarSystem",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./assets"
-    },
-    {
       "id": "module-import:module:@solitude/sim:./plugins/solarSystem/solarSystem->module:@solitude/engine:./math",
       "from": "module:@solitude/sim:./plugins/solarSystem/solarSystem",
       "kind": "module-import",
@@ -5914,6 +5945,12 @@
       "from": "module:@solitude/sim:./plugins/solarSystem/solarSystem",
       "kind": "module-import",
       "to": "module:@solitude/engine:./render"
+    },
+    {
+      "id": "module-import:module:@solitude/sim:./plugins/solarSystem/solarSystem->module:@solitude/engine:./render/icosphere",
+      "from": "module:@solitude/sim:./plugins/solarSystem/solarSystem",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./render/icosphere"
     },
     {
       "id": "module-import:module:@solitude/sim:./plugins/solarSystem/solarSystem->module:@solitude/engine:./world",
@@ -7122,6 +7159,18 @@
       "to": "symbol:@solitude/engine:./plugin:GamePlugin"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/axialViews:createAxialViewsPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
+      "from": "symbol:@solitude/display:./plugins/axialViews:createAxialViewsPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/axialViews:createAxialViewsPlugin->symbol:@solitude/localization:.:readLocaleRuntimeOption",
+      "from": "symbol:@solitude/display:./plugins/axialViews:createAxialViewsPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/localization:.:readLocaleRuntimeOption"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
       "from": "symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin",
       "kind": "symbol-reference",
@@ -8232,6 +8281,18 @@
       "to": "symbol:@solitude/engine:./render:Mesh"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:BaseSceneObject->symbol:@solitude/engine:./render:MeshLod",
+      "from": "symbol:@solitude/engine:./render:BaseSceneObject",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:MeshLod"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:BaseSceneObject->symbol:@solitude/engine:./render:MeshShading",
+      "from": "symbol:@solitude/engine:./render:BaseSceneObject",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:MeshShading"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:BaseSceneObject->symbol:@solitude/engine:./render:RGB",
       "from": "symbol:@solitude/engine:./render:BaseSceneObject",
       "kind": "symbol-reference",
@@ -8424,18 +8485,6 @@
       "to": "symbol:@solitude/engine:./render/ports:RenderedMarker"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedPolyline->symbol:@solitude/engine:./render:ScreenPoint",
-      "from": "symbol:@solitude/engine:./render:RenderedPolyline",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:ScreenPoint"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedPolyline->symbol:@solitude/engine:./render/ports:RenderedPolyline",
-      "from": "symbol:@solitude/engine:./render:RenderedPolyline",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render/ports:RenderedPolyline"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedSceneLabel->symbol:@solitude/engine:./render:Point",
       "from": "symbol:@solitude/engine:./render:RenderedSceneLabel",
       "kind": "symbol-reference",
@@ -8484,12 +8533,6 @@
       "to": "symbol:@solitude/engine:./render:RenderedMarker"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedView->symbol:@solitude/engine:./render:RenderedPolyline",
-      "from": "symbol:@solitude/engine:./render:RenderedView",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderedPolyline"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedView->symbol:@solitude/engine:./render:RenderedSceneLabel",
       "from": "symbol:@solitude/engine:./render:RenderedView",
       "kind": "symbol-reference",
@@ -8506,12 +8549,6 @@
       "from": "symbol:@solitude/engine:./render:RenderedView",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render/ports:RenderedMarker"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedView->symbol:@solitude/engine:./render/ports:RenderedPolyline",
-      "from": "symbol:@solitude/engine:./render:RenderedView",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render/ports:RenderedPolyline"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render:RenderedView->symbol:@solitude/engine:./render/ports:RenderedSceneLabel",
@@ -8796,6 +8833,24 @@
       "to": "symbol:@solitude/engine:./render/projectionService:ProjectionService"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/icosphere:createUnitIcosphereMesh->symbol:@solitude/engine:./math:vec3",
+      "from": "symbol:@solitude/engine:./render/icosphere:createUnitIcosphereMesh",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/icosphere:createUnitIcosphereMesh->symbol:@solitude/engine:./math:Vec3",
+      "from": "symbol:@solitude/engine:./render/icosphere:createUnitIcosphereMesh",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render/icosphere:createUnitIcosphereMesh->symbol:@solitude/engine:./render:Mesh",
+      "from": "symbol:@solitude/engine:./render/icosphere:createUnitIcosphereMesh",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:Mesh"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render/parameters:getRenderFocalLengthX->symbol:@solitude/engine:./render/parameters:renderFocalLengthY",
       "from": "symbol:@solitude/engine:./render/parameters:getRenderFocalLengthX",
       "kind": "symbol-reference",
@@ -8828,18 +8883,6 @@
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedMarker->symbol:@solitude/engine:./render:ScreenPoint",
       "from": "symbol:@solitude/engine:./render/ports:RenderedMarker",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:ScreenPoint"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedPolyline->symbol:@solitude/engine:./render:RenderedPolyline",
-      "from": "symbol:@solitude/engine:./render/ports:RenderedPolyline",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderedPolyline"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedPolyline->symbol:@solitude/engine:./render:ScreenPoint",
-      "from": "symbol:@solitude/engine:./render/ports:RenderedPolyline",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:ScreenPoint"
     },
@@ -8892,12 +8935,6 @@
       "to": "symbol:@solitude/engine:./render:RenderedMarker"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render:RenderedPolyline",
-      "from": "symbol:@solitude/engine:./render/ports:RenderedView",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderedPolyline"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render:RenderedSceneLabel",
       "from": "symbol:@solitude/engine:./render/ports:RenderedView",
       "kind": "symbol-reference",
@@ -8920,12 +8957,6 @@
       "from": "symbol:@solitude/engine:./render/ports:RenderedView",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render/ports:RenderedMarker"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render/ports:RenderedPolyline",
-      "from": "symbol:@solitude/engine:./render/ports:RenderedView",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render/ports:RenderedPolyline"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render/ports:RenderedView->symbol:@solitude/engine:./render/ports:RenderedSceneLabel",
@@ -8952,22 +8983,10 @@
       "to": "symbol:@solitude/engine:./render:RenderedMarker"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render:RenderedPolyline",
-      "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderedPolyline"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render:RenderedSceneLabel",
       "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:RenderedSceneLabel"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render:RenderedSegment",
-      "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RenderedSegment"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render/ports:RenderedMarker",
@@ -8976,22 +8995,10 @@
       "to": "symbol:@solitude/engine:./render/ports:RenderedMarker"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render/ports:RenderedPolyline",
-      "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render/ports:RenderedPolyline"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render/ports:RenderedSceneLabel",
       "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render/ports:RenderedSceneLabel"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer->symbol:@solitude/engine:./render/ports:RenderedSegment",
-      "from": "symbol:@solitude/engine:./render/ports:SceneOverlayRasterizer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render/ports:RenderedSegment"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render/ports:Size->symbol:@solitude/engine:./render:Size",
@@ -10452,6 +10459,18 @@
       "to": "symbol:@solitude/engine:./render:Mesh"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./world:EntityRenderConfig->symbol:@solitude/engine:./render:MeshLod",
+      "from": "symbol:@solitude/engine:./world:EntityRenderConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:MeshLod"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./world:EntityRenderConfig->symbol:@solitude/engine:./render:MeshShading",
+      "from": "symbol:@solitude/engine:./world:EntityRenderConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:MeshShading"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./world:EntityRenderConfig->symbol:@solitude/engine:./render:RGB",
       "from": "symbol:@solitude/engine:./world:EntityRenderConfig",
       "kind": "symbol-reference",
@@ -10594,6 +10613,18 @@
       "from": "symbol:@solitude/engine:./world:RenderableConfig",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:Mesh"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./world:RenderableConfig->symbol:@solitude/engine:./render:MeshLod",
+      "from": "symbol:@solitude/engine:./world:RenderableConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:MeshLod"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./world:RenderableConfig->symbol:@solitude/engine:./render:MeshShading",
+      "from": "symbol:@solitude/engine:./world:RenderableConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:MeshShading"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./world:RenderableConfig->symbol:@solitude/engine:./render:RGB",
@@ -11532,38 +11563,14 @@
       "to": "symbol:@solitude/server:./game:SolitudeServerControlInputs"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/server:./http:createSolitudeHttpRequestHandler->symbol:@solitude/protocol:./protocol:createErrorMessage",
-      "from": "symbol:@solitude/server:./http:createSolitudeHttpRequestHandler",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/protocol:./protocol:createErrorMessage"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/server:./http:createSolitudeHttpRequestHandler->symbol:@solitude/protocol:./protocol:SolitudeGameId",
-      "from": "symbol:@solitude/server:./http:createSolitudeHttpRequestHandler",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/protocol:./protocol:SolitudeGameId"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/server:./http:createSolitudeHttpRequestHandler->symbol:@solitude/server:./http:SolitudeHttpRequestHandler",
-      "from": "symbol:@solitude/server:./http:createSolitudeHttpRequestHandler",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/server:./http:SolitudeHttpRequestHandler"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/server:./http:createSolitudeHttpRequestHandler->symbol:@solitude/server:./http:SolitudeHttpRequestHandlerOptions",
-      "from": "symbol:@solitude/server:./http:createSolitudeHttpRequestHandler",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/server:./http:SolitudeHttpRequestHandlerOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/server:./http:SolitudeHttpRequestHandlerOptions->symbol:@solitude/server:./http:SolitudeDevAssetHandler",
-      "from": "symbol:@solitude/server:./http:SolitudeHttpRequestHandlerOptions",
+      "id": "symbol-reference:symbol:@solitude/server:./http:SolitudeHttpRuntimeOptions->symbol:@solitude/server:./http:SolitudeDevAssetHandler",
+      "from": "symbol:@solitude/server:./http:SolitudeHttpRuntimeOptions",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/server:./http:SolitudeDevAssetHandler"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/server:./http:SolitudeHttpRequestHandlerOptions->symbol:@solitude/server:./runner:SolitudeGameRunnerFactory",
-      "from": "symbol:@solitude/server:./http:SolitudeHttpRequestHandlerOptions",
+      "id": "symbol-reference:symbol:@solitude/server:./http:SolitudeHttpRuntimeOptions->symbol:@solitude/server:./runner:SolitudeGameRunnerFactory",
+      "from": "symbol:@solitude/server:./http:SolitudeHttpRuntimeOptions",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/server:./runner:SolitudeGameRunnerFactory"
     },
@@ -11584,12 +11591,6 @@
       "from": "symbol:@solitude/server:./http:startSolitudeHttpServer",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/protocol:./protocol:createErrorMessage"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/server:./http:startSolitudeHttpServer->symbol:@solitude/server:./http:createSolitudeHttpRequestHandler",
-      "from": "symbol:@solitude/server:./http:startSolitudeHttpServer",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/server:./http:createSolitudeHttpRequestHandler"
     },
     {
       "id": "symbol-reference:symbol:@solitude/server:./http:startSolitudeHttpServer->symbol:@solitude/server:./http:SolitudeHttpServer",
@@ -12876,6 +12877,12 @@
       "to": "symbol:@solitude/sim:./plugins/solarSystem:buildSolarSystemBodyEntities"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin->symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions",
+      "from": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin->symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider",
       "from": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
       "kind": "symbol-reference",
@@ -12886,6 +12893,24 @@
       "from": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions->symbol:@solitude/engine:./plugin:RuntimeOptions",
+      "from": "symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions->symbol:@solitude/sim:./plugins/solarSystem:orbitalSpeedMultiplierRuntimeOption",
+      "from": "symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./plugins/solarSystem:orbitalSpeedMultiplierRuntimeOption"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions->symbol:@solitude/sim:./plugins/solarSystem/solarSystem:SolarSystemConfigOptions",
+      "from": "symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:SolarSystemConfigOptions"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider->symbol:@solitude/engine:./world:createKeplerianBodiesFromConfig",
@@ -12910,6 +12935,12 @@
       "from": "symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider->symbol:@solitude/sim:./plugins/solarSystem/solarSystem:SolarSystemConfigOptions",
+      "from": "symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:SolarSystemConfigOptions"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/colors:ColorName->symbol:@solitude/sim:./plugins/solarSystem/colors:ALL_COLORS",
@@ -12952,6 +12983,12 @@
       "from": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/sim:./plugins/solarSystem/colors:colors"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs->symbol:@solitude/sim:./plugins/solarSystem/solarSystem:SolarSystemConfigOptions",
+      "from": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:SolarSystemConfigOptions"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin->symbol:@solitude/engine:./plugin:GamePlugin",

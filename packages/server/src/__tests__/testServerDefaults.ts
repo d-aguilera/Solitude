@@ -54,6 +54,7 @@ export function createDefaultTestInProcessTransport(): SolitudeInProcessTranspor
       createAssignableEntity: (id): EntityConfig => ({ components: {}, id }),
       createGame: (initialEntities) => createRecordingGame(initialEntities),
       nowMillis: Date.now,
+      runtimeOptions: {},
     }),
   );
 }

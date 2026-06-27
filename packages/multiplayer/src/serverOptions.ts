@@ -1,3 +1,4 @@
+import type { RuntimeOptions } from "@solitude/engine/plugin";
 import type { SolitudeHttpServerOptions } from "@solitude/server/http";
 import {
   type SolitudeGameRunner,
@@ -11,12 +12,16 @@ import {
 import { createDefaultSolitudeInProcessTransport } from "./composition";
 
 const simRateEnvironmentVariable = "SOLITUDE_SIM_RATE";
+const orbitalSpeedMultiplierEnvironmentVariable =
+  "SOLITUDE_ORBITAL_SPEED_MULTIPLIER";
+const orbitalSpeedMultiplierRuntimeOption = "orbitalSpeedMultiplier";
 
 export function createDefaultSolitudeGameRunner({
   metrics,
   onSnapshot,
 }: SolitudeGameRunnerFactoryOptions): SolitudeGameRunner {
-  const transport = createDefaultSolitudeInProcessTransport();
+  const runtimeOptions = createDefaultSolitudeRuntimeOptions(process.env);
+  const transport = createDefaultSolitudeInProcessTransport(runtimeOptions);
   return createSolitudeGameRunner({
     ticker: createSolitudeGameTicker({
       metrics,
@@ -26,6 +31,26 @@ export function createDefaultSolitudeGameRunner({
     }),
     transport,
   });
+}
+
+export function createDefaultSolitudeRuntimeOptions(
+  env: Readonly<Record<string, string | undefined>>,
+): RuntimeOptions {
+  const rawMultiplier = env[orbitalSpeedMultiplierEnvironmentVariable];
+  if (rawMultiplier === undefined || rawMultiplier.trim().length === 0) {
+    return {};
+  }
+
+  const orbitalSpeedMultiplier = Number(rawMultiplier);
+  if (!Number.isFinite(orbitalSpeedMultiplier) || orbitalSpeedMultiplier <= 0) {
+    throw new Error(
+      `${orbitalSpeedMultiplierEnvironmentVariable} must be a positive finite number`,
+    );
+  }
+
+  return {
+    [orbitalSpeedMultiplierRuntimeOption]: String(orbitalSpeedMultiplier),
+  };
 }
 
 export function createDefaultSolitudeGameTickPolicy(

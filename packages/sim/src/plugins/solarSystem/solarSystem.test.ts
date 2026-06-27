@@ -1,10 +1,15 @@
+import { vec3 } from "@solitude/engine/math";
 import type { WorldModelRegistry } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { EntityConfig } from "@solitude/engine/world";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
 import { describe, expect, it, vi } from "vitest";
-import { createSolarSystemPlugin } from "../../plugins/solarSystem";
+import {
+  createSolarSystemPlugin,
+  parseSolarSystemRuntimeOptions,
+} from "../../plugins/solarSystem";
 import { buildWorldAndSceneConfig } from "../../worldAndSceneConfig";
+import { createSolarSystemCelestialBodyProvider } from "./celestialBodyProvider";
 
 describe("solarSystem plugin", () => {
   it("contributes world content through generic entities", () => {
@@ -91,4 +96,68 @@ describe("solarSystem plugin", () => {
       ),
     ).toBe(true);
   });
+
+  it("scales celestial body densities by the square of the orbital speed multiplier", () => {
+    const normalConfig = buildWorldAndSceneConfig();
+    const acceleratedConfig = buildWorldAndSceneConfig();
+
+    applyWorldModelPlugins(normalConfig, [createSolarSystemPlugin()]);
+    applyWorldModelPlugins(acceleratedConfig, [
+      createSolarSystemPlugin({ orbitalSpeedMultiplier: "8" }),
+    ]);
+
+    const normalEarth = getEntity(normalConfig.entities, "planet:earth");
+    const acceleratedEarth = getEntity(
+      acceleratedConfig.entities,
+      "planet:earth",
+    );
+
+    expect(acceleratedEarth.components.gravityMass?.density).toBe(
+      normalEarth.components.gravityMass!.density * 64,
+    );
+    expect(acceleratedEarth.components.gravityMass?.physicalRadius).toBe(
+      normalEarth.components.gravityMass?.physicalRadius,
+    );
+  });
+
+  it("scales celestial body provider mass and orbital velocity coherently", () => {
+    const normalProvider = createSolarSystemCelestialBodyProvider({
+      orbitalSpeedMultiplier: 1,
+    });
+    const acceleratedProvider = createSolarSystemCelestialBodyProvider({
+      orbitalSpeedMultiplier: 8,
+    });
+    const normalEarth = normalProvider.getCelestialBody("planet:earth");
+    const acceleratedEarth =
+      acceleratedProvider.getCelestialBody("planet:earth");
+
+    expect(normalEarth).toBeTruthy();
+    expect(acceleratedEarth).toBeTruthy();
+    expect(acceleratedEarth!.mass).toBeCloseTo(normalEarth!.mass * 64, 0);
+    expect(vec3.length(acceleratedEarth!.velocity)).toBeCloseTo(
+      vec3.length(normalEarth!.velocity) * 8,
+      5,
+    );
+  });
+
+  it("parses orbital speed multiplier runtime options", () => {
+    expect(parseSolarSystemRuntimeOptions({})).toEqual({
+      orbitalSpeedMultiplier: 1,
+    });
+    expect(
+      parseSolarSystemRuntimeOptions({ orbitalSpeedMultiplier: "16" }),
+    ).toEqual({ orbitalSpeedMultiplier: 16 });
+    expect(() =>
+      parseSolarSystemRuntimeOptions({ orbitalSpeedMultiplier: "0" }),
+    ).toThrow("orbitalSpeedMultiplier must be a positive finite number");
+  });
 });
+
+function getEntity(
+  entities: readonly EntityConfig[],
+  id: string,
+): EntityConfig {
+  const entity = entities.find((item) => item.id === id);
+  if (!entity) throw new Error(`Missing entity: ${id}`);
+  return entity;
+}

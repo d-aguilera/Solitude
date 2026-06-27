@@ -1,5 +1,6 @@
 import { vec3 } from "@solitude/engine/math";
 import type { ControlledBody } from "@solitude/engine/world";
+import { createSolarSystemCelestialBodyProvider } from "@solitude/sim/plugins/solarSystem/celestialBodyProvider";
 import { describe, expect, it } from "vitest";
 import { createDefaultMultiplayerSpacecraftEntity } from "../composition";
 import { createSolitudeServerGame } from "../runtime";
@@ -52,12 +53,17 @@ describe("Solitude server runtime", () => {
   });
 
   it("advances dynamically added ships through gravity integration", () => {
+    const celestialBodyProvider = createSolarSystemCelestialBodyProvider({
+      orbitalSpeedMultiplier: 1,
+    });
     const blue = createDefaultMultiplayerSpacecraftEntity({
+      celestialBodyProvider,
       entityCount: 16,
       id: "ship:1",
       index: 0,
     });
     const red = createDefaultMultiplayerSpacecraftEntity({
+      celestialBodyProvider,
       entityCount: 16,
       id: "ship:red",
       index: 1,
@@ -82,13 +88,18 @@ describe("Solitude server runtime", () => {
 });
 
 function createDefaultShipEntities() {
+  const celestialBodyProvider = createSolarSystemCelestialBodyProvider({
+    orbitalSpeedMultiplier: 1,
+  });
   return [
     createDefaultMultiplayerSpacecraftEntity({
+      celestialBodyProvider,
       entityCount: 16,
       id: "ship:1",
       index: 0,
     }),
     createDefaultMultiplayerSpacecraftEntity({
+      celestialBodyProvider,
       entityCount: 16,
       id: "ship:red",
       index: 1,

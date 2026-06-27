@@ -95,7 +95,11 @@ export interface SolitudeRemoteClientRenderer {
   handleLocalKey: (code: string, isDown: boolean, isRepeat: boolean) => boolean;
   pushSnapshotMessage: (message: RemoteClientSnapshotMessage) => void;
   renderFrame: (nowMillis: number, dtMillis: number) => boolean;
-  setModel: (entities: readonly EntityConfig[], modelVersion: number) => void;
+  setModel: (
+    entities: readonly EntityConfig[],
+    modelVersion: number,
+    modelRuntimeOptions: RuntimeOptions,
+  ) => void;
   setControlState: (
     controls: Partial<ControlInput>,
     inputSequence: SolitudeInputSequence,
@@ -122,18 +126,14 @@ export function createSolitudeRemoteClientRenderer({
   plugins: clientPlugins,
   runtimeOptions,
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
-  const {
-    capabilityRegistry,
-    localPredictionProviders,
-    overlayProviders,
-    plugins,
-  } = createRemoteClientComposition({
+  const baseRuntimeOptions = runtimeOptions;
+  let composition = createRemoteClientComposition({
     clientPlugins,
-    runtimeOptions,
+    runtimeOptions: baseRuntimeOptions,
   });
-  const keyboardDispatcher = createKeyboardHandlerDispatcher(
+  let keyboardDispatcher = createKeyboardHandlerDispatcher(
     collectKeyboardInputProviders(
-      plugins.flatMap((plugin) => plugin.capabilities ?? []),
+      composition.plugins.flatMap((plugin) => plugin.capabilities ?? []),
     ),
   );
   const predictionState = createLocalPredictionState();
@@ -234,7 +234,7 @@ export function createSolitudeRemoteClientRenderer({
       );
       if (!rendered) return false;
       applyBrowserOverlayProviders(
-        overlayProviders,
+        composition.overlayProviders,
         {
           advanceOverlay: true,
           controlInput: predictionState.controlInput,
@@ -245,17 +245,29 @@ export function createSolitudeRemoteClientRenderer({
           simTimeMillis: messageSimulationTimeMillis + predictionMillis,
           world: renderer.worldRenderer.mirror.world,
         },
-        capabilityRegistry,
+        composition.capabilityRegistry,
       );
       return true;
     },
     setControlState: (controls, inputSequence) => {
       recordLocalInput(predictionState, controls, inputSequence);
     },
-    setModel: (entities, nextModelVersion) => {
+    setModel: (entities, nextModelVersion, modelRuntimeOptions) => {
+      composition = createRemoteClientComposition({
+        clientPlugins,
+        runtimeOptions: mergeModelRuntimeOptions(
+          baseRuntimeOptions,
+          modelRuntimeOptions,
+        ),
+      });
+      keyboardDispatcher = createKeyboardHandlerDispatcher(
+        collectKeyboardInputProviders(
+          composition.plugins.flatMap((plugin) => plugin.capabilities ?? []),
+        ),
+      );
       modelVersion = nextModelVersion;
       renderer?.dispose();
-      renderer = createRenderer(plugins, entities);
+      renderer = createRenderer(composition.plugins, entities);
       latestSnapshot = null;
       latestSnapshotReceivedAtMillis = 0;
       messageSimulationTimeMillis = 0;
@@ -265,7 +277,7 @@ export function createSolitudeRemoteClientRenderer({
         predictionState.pendingInputs.length,
       );
       predictionState.controlInput = {};
-      resetLocalPredictionProviders(localPredictionProviders);
+      resetLocalPredictionProviders(composition.localPredictionProviders);
       reconciliationState.correction.active = false;
       lastPredictedLocalState = null;
       lastRenderedLocalState = null;
@@ -399,7 +411,7 @@ export function createSolitudeRemoteClientRenderer({
   ): void {
     const world = renderer.worldRenderer.mirror.world;
     const provider = findLocalPredictionProvider(
-      localPredictionProviders,
+      composition.localPredictionProviders,
       controlledBody,
       world,
     );
@@ -552,6 +564,13 @@ export function shouldUseLocalPrediction(
   return isRuntimeOptionEnabledDefaultOff(
     runtimeOptions[predictionRuntimeOption],
   );
+}
+
+export function mergeModelRuntimeOptions(
+  baseRuntimeOptions: RuntimeOptions,
+  modelRuntimeOptions: RuntimeOptions,
+): RuntimeOptions {
+  return { ...baseRuntimeOptions, ...modelRuntimeOptions };
 }
 
 function isRuntimeOptionEnabled(value: string | undefined): boolean {

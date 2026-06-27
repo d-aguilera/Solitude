@@ -38,6 +38,7 @@ export interface SolitudeSessionManagerOptions {
   createAssignableEntity: (id: EntityId, index: number) => EntityConfig;
   createGame: (initialEntities: readonly EntityConfig[]) => SolitudeServerGame;
   nowMillis: () => number;
+  runtimeOptions: Readonly<Record<string, string>>;
 }
 
 export interface SolitudeInputTimeWindow {
@@ -82,6 +83,7 @@ interface ServerGameSession {
   modelVersion: number;
   nextSequence: SolitudeProtocolSequence;
   pendingPressedControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
+  runtimeOptions: Readonly<Record<string, string>>;
   simulationTimeMillis: number;
   steppedControlInputsByEntityId: Map<EntityId, Partial<ControlInput>>;
   tick: number;
@@ -120,6 +122,7 @@ export function createSolitudeSessionManager(
       modelVersion: 0,
       nextSequence: sequence + 1,
       pendingPressedControlInputsByEntityId: new Map(),
+      runtimeOptions: { ...options.runtimeOptions },
       simulationTimeMillis: 0,
       steppedControlInputsByEntityId: new Map(),
       tick: 0,
@@ -415,6 +418,7 @@ function createGameModel(
     ),
     gameId: session.id,
     modelVersion: session.modelVersion,
+    runtimeOptions: { ...session.runtimeOptions },
     sequence,
   });
 }

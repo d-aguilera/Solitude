@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  mergeModelRuntimeOptions,
   shouldUseLocalPrediction,
   shouldUseRemoteSnapshotInterpolation,
 } from "../remoteClientRenderer";
@@ -35,5 +36,22 @@ describe("remote client renderer", () => {
     expect(shouldUseLocalPrediction({ prediction: "off" })).toBe(false);
     expect(shouldUseLocalPrediction({ prediction: "false" })).toBe(false);
     expect(shouldUseLocalPrediction({ prediction: "0" })).toBe(false);
+  });
+
+  it("lets model runtime options override browser runtime options", () => {
+    expect(
+      mergeModelRuntimeOptions(
+        {
+          interpolation: "off",
+          orbitalSpeedMultiplier: "1",
+        },
+        {
+          orbitalSpeedMultiplier: "32",
+        },
+      ),
+    ).toEqual({
+      interpolation: "off",
+      orbitalSpeedMultiplier: "32",
+    });
   });
 });

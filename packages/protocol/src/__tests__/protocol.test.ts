@@ -107,6 +107,7 @@ describe("Solitude protocol", () => {
       entities: [],
       gameId: "game:test",
       modelVersion: 2,
+      runtimeOptions: {},
       sequence: 3,
     });
 

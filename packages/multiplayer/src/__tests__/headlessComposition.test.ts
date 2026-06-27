@@ -1,6 +1,7 @@
 import { vec3 } from "@solitude/engine/math";
 import type { ControlledBody } from "@solitude/engine/world";
 import { createSolitudeHeadlessLoop } from "@solitude/sim/headless";
+import { createSolarSystemCelestialBodyProvider } from "@solitude/sim/plugins/solarSystem/celestialBodyProvider";
 import { describe, expect, it } from "vitest";
 import { createDefaultMultiplayerSpacecraftEntity } from "../composition";
 
@@ -130,18 +131,24 @@ describe("server-style headless Solitude composition", () => {
   });
 
   it("assigns distinct display colors without server-authored names", () => {
+    const celestialBodyProvider = createSolarSystemCelestialBodyProvider({
+      orbitalSpeedMultiplier: 1,
+    });
     const ships = [
       createDefaultMultiplayerSpacecraftEntity({
+        celestialBodyProvider,
         entityCount: 16,
         id: "ship:1",
         index: 0,
       }),
       createDefaultMultiplayerSpacecraftEntity({
+        celestialBodyProvider,
         entityCount: 16,
         id: "ship:red",
         index: 1,
       }),
       createDefaultMultiplayerSpacecraftEntity({
+        celestialBodyProvider,
         entityCount: 16,
         id: "ship:3",
         index: 2,
@@ -162,13 +169,18 @@ describe("server-style headless Solitude composition", () => {
 });
 
 function createDefaultShipEntities() {
+  const celestialBodyProvider = createSolarSystemCelestialBodyProvider({
+    orbitalSpeedMultiplier: 1,
+  });
   return [
     createDefaultMultiplayerSpacecraftEntity({
+      celestialBodyProvider,
       entityCount: 16,
       id: "ship:1",
       index: 0,
     }),
     createDefaultMultiplayerSpacecraftEntity({
+      celestialBodyProvider,
       entityCount: 16,
       id: "ship:red",
       index: 1,

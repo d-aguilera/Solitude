@@ -3,10 +3,15 @@ import type {
   CelestialBody,
   CelestialBodyProvider,
 } from "../../celestialBodies/provider";
-import { buildDefaultSolarSystemConfigs } from "./solarSystem";
+import {
+  buildDefaultSolarSystemConfigs,
+  type SolarSystemConfigOptions,
+} from "./solarSystem";
 
-export function createSolarSystemCelestialBodyProvider(): CelestialBodyProvider {
-  const solarSystem = buildDefaultSolarSystemConfigs();
+export function createSolarSystemCelestialBodyProvider(
+  options: SolarSystemConfigOptions,
+): CelestialBodyProvider {
+  const solarSystem = buildDefaultSolarSystemConfigs(options);
   const setup = createKeplerianBodiesFromConfig(solarSystem.physics);
 
   return {

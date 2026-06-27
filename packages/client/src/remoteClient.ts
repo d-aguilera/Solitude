@@ -289,7 +289,11 @@ function handleMessages(
         if (connectAfterJoin) connectEvents();
         break;
       case "gameModel":
-        engineRenderer.setModel(message.entities, message.modelVersion);
+        engineRenderer.setModel(
+          message.entities,
+          message.modelVersion,
+          message.runtimeOptions,
+        );
         break;
       case "snapshot":
         serverSimulationRate =

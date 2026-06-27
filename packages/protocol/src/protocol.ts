@@ -102,6 +102,7 @@ export interface GameModelMessage {
   entities: EntityConfig[];
   gameId: SolitudeGameId;
   modelVersion: SolitudeModelVersion;
+  runtimeOptions: Record<string, string>;
   sequence: SolitudeProtocolSequence;
 }
 
@@ -228,6 +229,7 @@ export function isSolitudeServerMessage(
         Array.isArray(value.entities) &&
         isString(value.gameId) &&
         isFiniteNumber(value.modelVersion) &&
+        isStringRecord(value.runtimeOptions) &&
         isFiniteNumber(value.sequence)
       );
     case "snapshot":
@@ -299,6 +301,11 @@ function isInputSequenceRecord(
 ): value is Record<string, number> {
   if (!isRecord(value)) return false;
   return Object.values(value).every(isFiniteNumber);
+}
+
+function isStringRecord(value: unknown): value is Record<string, string> {
+  if (!isRecord(value)) return false;
+  return Object.values(value).every(isString);
 }
 
 function isString(value: unknown): value is string {

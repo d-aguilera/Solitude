@@ -1,4 +1,5 @@
 import { km } from "@solitude/engine/math";
+import type { RuntimeOptions } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { EntityConfig, EntityId } from "@solitude/engine/world";
 import {
@@ -9,11 +10,13 @@ import {
   createSolitudeInProcessTransport,
   type SolitudeInProcessTransport,
 } from "@solitude/server/transport";
+import type { CelestialBodyProvider } from "@solitude/sim/celestialBodies/provider";
 import {
   controllableEntityProviderCapability,
   isControllableEntityProvider,
 } from "@solitude/sim/controllableEntities/provider";
 import { createPolyFighterPlugin } from "@solitude/sim/plugins/polyFighter";
+import { parseSolarSystemRuntimeOptions } from "@solitude/sim/plugins/solarSystem";
 import { createSolarSystemCelestialBodyProvider } from "@solitude/sim/plugins/solarSystem/celestialBodyProvider";
 import { createOrbitingPlacement } from "@solitude/sim/spacecraft/orbitalPlacement";
 import { createSolitudeServerGame } from "./runtime";
@@ -22,7 +25,6 @@ const DEFAULT_ASSIGNABLE_ENTITY_COUNT = 16;
 const EARTH_ID = "planet:earth";
 const POLY_FIGHTER_PROVIDER_ID = "polyFighter";
 const SPACECRAFT_START_ALTITUDE_M = 100 * km;
-const defaultCelestialBodyProvider = createSolarSystemCelestialBodyProvider();
 const defaultControllableEntityProvider =
   createDefaultControllableEntityProvider();
 const multiplayerSpacecraftColors = [
@@ -44,39 +46,51 @@ const multiplayerSpacecraftColors = [
   { r: 150, g: 255, b: 170 },
 ] as const;
 
-export function createDefaultSolitudeInProcessTransport(): SolitudeInProcessTransport {
+export function createDefaultSolitudeInProcessTransport(
+  runtimeOptions: RuntimeOptions = {},
+): SolitudeInProcessTransport {
   return createSolitudeInProcessTransport(
-    createDefaultSolitudeSessionManager(),
+    createDefaultSolitudeSessionManager(runtimeOptions),
   );
 }
 
-export function createDefaultSolitudeSessionManager(): SolitudeSessionManager {
+export function createDefaultSolitudeSessionManager(
+  runtimeOptions: RuntimeOptions = {},
+): SolitudeSessionManager {
   const assignableEntityIds = createDefaultAssignableEntityIds(
     DEFAULT_ASSIGNABLE_ENTITY_COUNT,
+  );
+  const celestialBodyProvider = createSolarSystemCelestialBodyProvider(
+    parseSolarSystemRuntimeOptions(runtimeOptions),
   );
   return createSolitudeSessionManager({
     assignableEntityIds,
     createAssignableEntity: (id, index) =>
       createDefaultMultiplayerSpacecraftEntity({
+        celestialBodyProvider,
         entityCount: assignableEntityIds.length,
         id,
         index,
       }),
-    createGame: createSolitudeServerGame,
+    createGame: (initialEntities) =>
+      createSolitudeServerGame(initialEntities, runtimeOptions),
     nowMillis: Date.now,
+    runtimeOptions,
   });
 }
 
 export function createDefaultMultiplayerSpacecraftEntity({
+  celestialBodyProvider,
   entityCount,
   id,
   index,
 }: {
+  celestialBodyProvider: CelestialBodyProvider;
   entityCount: number;
   id: EntityId;
   index: number;
 }): EntityConfig {
-  const earth = defaultCelestialBodyProvider.getCelestialBody(EARTH_ID);
+  const earth = celestialBodyProvider.getCelestialBody(EARTH_ID);
   if (!earth) throw new Error(`Missing celestial body: ${EARTH_ID}`);
   const entity = defaultControllableEntityProvider.createEntity({
     color: getMultiplayerSpacecraftColor(index),
