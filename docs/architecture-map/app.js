@@ -8,6 +8,7 @@ const expandAllEl = document.querySelector("#expand-all");
 const expandLevel1El = document.querySelector("#expand-level-1");
 const expandLevel2El = document.querySelector("#expand-level-2");
 const fitEl = document.querySelector("#fit");
+const layoutEl = document.querySelector("#layout");
 
 const architecture = await loadArchitecture();
 const nodeById = new Map(architecture.nodes.map((node) => [node.id, node]));
@@ -16,11 +17,6 @@ const packageNodes = architecture.nodes
   .filter((node) => node.kind === "package")
   .sort(compareTreeNodes);
 const expanded = new Set();
-const selectedEdgeKinds = new Set(
-  [...document.querySelectorAll(".filters input:checked")].map(
-    (input) => input.value,
-  ),
-);
 const nodeSizes = {
   package: { height: 64, width: 180 },
   module: { height: 58, width: 148 },
@@ -33,7 +29,15 @@ const containerPadding = {
   right: 28,
   top: 58,
 };
+const layoutStorageKey = "solitude.architectureMap.layout.v1";
+const layoutSignature = createLayoutSignature();
 let selectedNodeId;
+let positionsByNodeId = await loadStoredPositions();
+const dragStartPositions = new Map();
+if (!positionsByNodeId) {
+  positionsByNodeId = await calculateInitialPositions();
+  storePositions();
+}
 
 summaryEl.textContent = `${architecture.nodes.length} nodes, ${architecture.edges.length} edges. Generated ${new Date(
   architecture.generatedAt,
@@ -70,7 +74,9 @@ const cy = cytoscape({
     {
       selector: "node[kind = 'package']",
       style: {
-        "background-color": "#54c7a9",
+        "background-opacity": 0,
+        "border-color": "#54c7a9",
+        "border-width": 2,
         height: 42,
         padding: 34,
         shape: "round-rectangle",
@@ -80,7 +86,9 @@ const cy = cytoscape({
     {
       selector: "node[kind = 'module']",
       style: {
-        "background-color": "#f1bd5a",
+        "background-opacity": 0,
+        "border-color": "#f1bd5a",
+        "border-width": 2,
         padding: 28,
         shape: "round-rectangle",
       },
@@ -104,41 +112,39 @@ const cy = cytoscape({
       style: {
         "curve-style": "bezier",
         "line-color": "#66707b",
+        label: "data(label)",
         opacity: 0.68,
         "target-arrow-color": "#66707b",
         "target-arrow-shape": "triangle",
+        "text-background-color": "#151719",
+        "text-background-opacity": 0.78,
+        "text-background-padding": 2,
+        "text-rotation": "autorotate",
         width: 1.1,
       },
     },
     {
-      selector: "edge[kind = 'dependency']",
+      selector: "edge[kind = 'projected-dependency']",
       style: {
-        "line-color": "#54c7a9",
-        "target-arrow-color": "#54c7a9",
+        "line-color": "#aeb8c2",
+        "target-arrow-color": "#aeb8c2",
         width: 2,
-      },
-    },
-    {
-      selector: "edge[kind = 'module-import']",
-      style: {
-        "line-color": "#f1bd5a",
-        "target-arrow-color": "#f1bd5a",
-      },
-    },
-    {
-      selector: "edge[kind = 'symbol-reference']",
-      style: {
-        "line-color": "#80a8ff",
-        "line-style": "dashed",
-        "target-arrow-color": "#80a8ff",
       },
     },
   ],
 });
 
 render();
+cy.fit(undefined, 42);
 
 cy.on("tap", "node", (event) => {
+  const nodeId = event.target.id();
+  selectedNodeId = nodeId;
+  renderSelection();
+  renderTree();
+});
+
+cy.on("dbltap", "node", (event) => {
   const nodeId = event.target.id();
   selectedNodeId = nodeId;
   if (childrenByParent.has(nodeId)) {
@@ -147,17 +153,6 @@ cy.on("tap", "node", (event) => {
     renderSelection();
     renderTree();
   }
-});
-
-document.querySelectorAll(".filters input").forEach((input) => {
-  input.addEventListener("change", () => {
-    if (input.checked) {
-      selectedEdgeKinds.add(input.value);
-    } else {
-      selectedEdgeKinds.delete(input.value);
-    }
-    renderGraph();
-  });
 });
 
 searchEl.addEventListener("input", render);
@@ -176,6 +171,36 @@ expandAllEl.addEventListener("click", expandAll);
 
 fitEl.addEventListener("click", () => {
   cy.fit(undefined, 42);
+});
+
+layoutEl.addEventListener("click", async () => {
+  layoutEl.disabled = true;
+  layoutEl.textContent = "Layout...";
+  positionsByNodeId = await calculateInitialPositions();
+  storePositions();
+  renderGraph();
+  cy.fit(undefined, 42);
+  layoutEl.textContent = "Layout";
+  layoutEl.disabled = false;
+});
+
+cy.on("grab", "node", (event) => {
+  dragStartPositions.set(event.target.id(), event.target.position());
+});
+
+cy.on("dragfree", "node", (event) => {
+  const nodeId = event.target.id();
+  const before = dragStartPositions.get(nodeId);
+  const after = event.target.position();
+  syncPositionsFromGraph();
+  if (before) {
+    translateHiddenDescendantPositions(nodeId, {
+      x: after.x - before.x,
+      y: after.y - before.y,
+    });
+    dragStartPositions.delete(nodeId);
+  }
+  storePositions();
 });
 
 async function loadArchitecture() {
@@ -265,20 +290,16 @@ function renderGraph() {
         label: symbolLabel(node),
         parent,
       },
+      position: positionsByNodeId.get(node.id) ?? { x: 0, y: 0 },
     });
   }
 
-  for (const edge of architecture.edges) {
-    if (!selectedEdgeKinds.has(edge.kind)) {
-      continue;
-    }
-    if (!visibleNodeIds.has(edge.from) || !visibleNodeIds.has(edge.to)) {
-      continue;
-    }
+  for (const edge of projectEdges(visibleNodeIds)) {
     elements.push({
       data: {
         id: edge.id,
         kind: edge.kind,
+        label: edge.count > 1 ? String(edge.count) : "",
         source: edge.from,
         target: edge.to,
       },
@@ -286,15 +307,340 @@ function renderGraph() {
   }
 
   cy.elements().remove();
-  const positions = calculateGridPositions(visibleNodeIds);
-
   cy.add(elements);
-  cy.layout({
-    name: "preset",
-    animate: false,
-    positions: (node) => positions.get(node.id()) ?? { x: 0, y: 0 },
-  }).run();
-  cy.fit(undefined, 42);
+
+  if (selectedNodeId && visibleNodeIds.has(selectedNodeId)) {
+    cy.getElementById(selectedNodeId).select();
+  }
+}
+
+async function loadStoredPositions() {
+  try {
+    const raw = localStorage.getItem(layoutStorageKey);
+    if (!raw) {
+      return undefined;
+    }
+
+    const stored = JSON.parse(raw);
+    if (stored.signature !== layoutSignature || !stored.positions) {
+      return undefined;
+    }
+
+    const positions = new Map();
+    for (const node of architecture.nodes) {
+      const position = stored.positions[node.id];
+      if (
+        !position ||
+        !Number.isFinite(position.x) ||
+        !Number.isFinite(position.y)
+      ) {
+        return undefined;
+      }
+      positions.set(node.id, position);
+    }
+    return positions;
+  } catch (error) {
+    console.warn("Could not load stored architecture layout.", error);
+    return undefined;
+  }
+}
+
+function storePositions() {
+  try {
+    localStorage.setItem(
+      layoutStorageKey,
+      JSON.stringify({
+        positions: Object.fromEntries(positionsByNodeId),
+        signature: layoutSignature,
+      }),
+    );
+  } catch (error) {
+    console.warn("Could not store architecture layout.", error);
+  }
+}
+
+function syncPositionsFromGraph() {
+  for (const node of cy.nodes()) {
+    positionsByNodeId.set(node.id(), node.position());
+  }
+}
+
+function translateHiddenDescendantPositions(nodeId, delta) {
+  if (delta.x === 0 && delta.y === 0) {
+    return;
+  }
+
+  for (const descendantId of getDescendantIds(nodeId)) {
+    if (cy.getElementById(descendantId).nonempty()) {
+      continue;
+    }
+
+    const position = positionsByNodeId.get(descendantId);
+    if (!position) {
+      continue;
+    }
+
+    positionsByNodeId.set(descendantId, {
+      x: position.x + delta.x,
+      y: position.y + delta.y,
+    });
+  }
+}
+
+function getDescendantIds(nodeId) {
+  const descendants = [];
+  const remaining = [...(childrenByParent.get(nodeId) ?? [])];
+
+  while (remaining.length > 0) {
+    const child = remaining.pop();
+    descendants.push(child.id);
+    remaining.push(...(childrenByParent.get(child.id) ?? []));
+  }
+
+  return descendants;
+}
+
+function createLayoutSignature() {
+  const nodeIds = architecture.nodes
+    .map((node) => node.id)
+    .sort()
+    .join("|");
+  const edgeIds = architecture.edges
+    .map((edge) => edge.id)
+    .sort()
+    .join("|");
+  return `${architecture.nodes.length}:${architecture.edges.length}:${hashString(
+    `${nodeIds}\n${edgeIds}`,
+  )}`;
+}
+
+function hashString(value) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) | 0;
+  }
+  return String(hash);
+}
+
+function projectEdges(visibleNodeIds) {
+  const projected = new Map();
+  const coveredPairs = new Set();
+
+  projectEdgeKind({
+    coveredPairs,
+    edgeKind: "symbol-reference",
+    projected,
+    visibleNodeIds,
+  });
+  projectEdgeKind({
+    coveredPairs,
+    edgeKind: "module-import",
+    projected,
+    visibleNodeIds,
+  });
+  projectEdgeKind({
+    coveredPairs,
+    edgeKind: "dependency",
+    projected,
+    visibleNodeIds,
+  });
+
+  return [...projected.values()];
+}
+
+function projectEdgeKind({
+  coveredPairs,
+  edgeKind,
+  projected,
+  visibleNodeIds,
+}) {
+  for (const edge of architecture.edges) {
+    if (edge.kind !== edgeKind) {
+      continue;
+    }
+    const from = nearestVisibleAncestor(edge.from, visibleNodeIds);
+    const to = nearestVisibleAncestor(edge.to, visibleNodeIds);
+
+    if (!from || !to || from === to) {
+      continue;
+    }
+
+    const pairId = `${from}->${to}`;
+    if (coveredPairs.has(pairId)) {
+      continue;
+    }
+
+    const id = `projected:${from}->${to}`;
+    const existing = projected.get(id);
+    if (existing) {
+      existing.count += 1;
+      coverVisibleAncestorPairs({
+        coveredPairs,
+        from: edge.from,
+        to: edge.to,
+        visibleNodeIds,
+      });
+      continue;
+    }
+
+    projected.set(id, {
+      count: 1,
+      from,
+      id,
+      kind: "projected-dependency",
+      to,
+    });
+    coverVisibleAncestorPairs({
+      coveredPairs,
+      from: edge.from,
+      to: edge.to,
+      visibleNodeIds,
+    });
+  }
+}
+
+function coverVisibleAncestorPairs({ coveredPairs, from, to, visibleNodeIds }) {
+  for (const fromAncestor of visibleAncestorIds(from, visibleNodeIds)) {
+    for (const toAncestor of visibleAncestorIds(to, visibleNodeIds)) {
+      if (fromAncestor !== toAncestor) {
+        coveredPairs.add(`${fromAncestor}->${toAncestor}`);
+      }
+    }
+  }
+}
+
+function visibleAncestorIds(nodeId, visibleNodeIds) {
+  const ancestors = [];
+  let current = nodeById.get(nodeId);
+
+  while (current) {
+    if (visibleNodeIds.has(current.id)) {
+      ancestors.push(current.id);
+    }
+    current = current.parent ? nodeById.get(current.parent) : undefined;
+  }
+
+  return ancestors;
+}
+
+async function calculateInitialPositions() {
+  try {
+    return await calculateElkPositions();
+  } catch (error) {
+    console.warn("ELK layout failed; using deterministic grid layout.", error);
+    return calculateGridPositions(
+      new Set(architecture.nodes.map((node) => node.id)),
+    );
+  }
+}
+
+async function calculateElkPositions() {
+  if (typeof globalThis.ELK !== "function") {
+    throw new Error("ELK is not available.");
+  }
+
+  const elk = new globalThis.ELK();
+  const elkGraph = {
+    id: "root",
+    layoutOptions: {
+      "elk.algorithm": "layered",
+      "elk.direction": "RIGHT",
+      "elk.edgeRouting": "ORTHOGONAL",
+      "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+      "elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
+      "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
+      "elk.spacing.edgeEdge": "18",
+      "elk.spacing.edgeNode": "42",
+      "elk.spacing.nodeNode": "52",
+    },
+    children: architecture.nodes.map((node) => {
+      const size = nodeSizes[node.kind] ?? nodeSizes.symbol;
+      return {
+        height: size.height,
+        id: node.id,
+        width: size.width,
+      };
+    }),
+    edges: architecture.edges.map((edge) => ({
+      id: edge.id,
+      sources: [edge.from],
+      targets: [edge.to],
+    })),
+  };
+  const layout = await elk.layout(elkGraph);
+  const positions = new Map();
+
+  for (const child of layout.children ?? []) {
+    const size = nodeSizes[nodeById.get(child.id)?.kind] ?? nodeSizes.symbol;
+    positions.set(child.id, {
+      x: (child.x ?? 0) + size.width / 2,
+      y: (child.y ?? 0) + size.height / 2,
+    });
+  }
+
+  centerParentsOnChildren(positions);
+  centerPositions(positions);
+  return positions;
+}
+
+function centerParentsOnChildren(positions) {
+  const nodesByDepth = [...architecture.nodes].sort(
+    (a, b) => getNodeDepth(b) - getNodeDepth(a),
+  );
+
+  for (const node of nodesByDepth) {
+    const children = childrenByParent.get(node.id) ?? [];
+    const childPositions = children
+      .map((child) => positions.get(child.id))
+      .filter(Boolean);
+
+    if (childPositions.length === 0) {
+      continue;
+    }
+
+    positions.set(node.id, {
+      x:
+        childPositions.reduce((total, position) => total + position.x, 0) /
+        childPositions.length,
+      y:
+        childPositions.reduce((total, position) => total + position.y, 0) /
+        childPositions.length,
+    });
+  }
+}
+
+function centerPositions(positions) {
+  const values = [...positions.values()];
+  if (values.length === 0) {
+    return;
+  }
+
+  const minX = Math.min(...values.map((position) => position.x));
+  const maxX = Math.max(...values.map((position) => position.x));
+  const minY = Math.min(...values.map((position) => position.y));
+  const maxY = Math.max(...values.map((position) => position.y));
+  const offsetX = (minX + maxX) / 2;
+  const offsetY = (minY + maxY) / 2;
+
+  for (const [id, position] of positions) {
+    positions.set(id, {
+      x: position.x - offsetX,
+      y: position.y - offsetY,
+    });
+  }
+}
+
+function nearestVisibleAncestor(nodeId, visibleNodeIds) {
+  let current = nodeById.get(nodeId);
+
+  while (current) {
+    if (visibleNodeIds.has(current.id)) {
+      return current.id;
+    }
+    current = current.parent ? nodeById.get(current.parent) : undefined;
+  }
+
+  return undefined;
 }
 
 function calculateGridPositions(visibleNodeIds) {

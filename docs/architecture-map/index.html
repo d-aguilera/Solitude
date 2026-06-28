@@ -19,21 +19,6 @@
           <input id="search" type="search" autocomplete="off" />
         </label>
 
-        <section class="filters" aria-label="Edge filters">
-          <label
-            ><input type="checkbox" value="dependency" checked /> package
-            dependency</label
-          >
-          <label
-            ><input type="checkbox" value="module-import" checked /> module
-            import</label
-          >
-          <label
-            ><input type="checkbox" value="symbol-reference" checked /> symbol
-            reference</label
-          >
-        </section>
-
         <nav id="tree" class="tree" aria-label="Architecture tree"></nav>
       </aside>
 
@@ -43,6 +28,7 @@
           <button id="expand-level-2" type="button">Level 2</button>
           <button id="expand-all" type="button">Expand All</button>
           <button id="collapse-all" type="button">Collapse All</button>
+          <button id="layout" type="button">Layout</button>
           <button id="fit" type="button">Fit</button>
           <span id="selection" class="selection">Select a node</span>
         </div>
@@ -51,6 +37,7 @@
     </main>
 
     <script src="https://unpkg.com/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/elkjs@0.10.0/lib/elk.bundled.js"></script>
     <script src="./app.js" type="module"></script>
   </body>
 </html>
