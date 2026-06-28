@@ -1,9 +1,11 @@
 import { vec3 } from "@solitude/engine/math";
 import type { ControlledBody } from "@solitude/engine/world";
 import { createSolitudeHeadlessLoop } from "@solitude/sim/headless";
-import { createSolarSystemCelestialBodyProvider } from "@solitude/sim/plugins/solarSystem/celestialBodyProvider";
 import { describe, expect, it } from "vitest";
-import { createDefaultMultiplayerSpacecraftEntity } from "../composition";
+import {
+  createDefaultMultiplayerSpacecraftEntity,
+  createDefaultMultiplayerSpawnProviders,
+} from "../composition";
 
 describe("server-style headless Solitude composition", () => {
   it("builds the default Solitude world through public exports and advances spacecraft dynamics", () => {
@@ -131,24 +133,22 @@ describe("server-style headless Solitude composition", () => {
   });
 
   it("assigns distinct display colors without server-authored names", () => {
-    const celestialBodyProvider = createSolarSystemCelestialBodyProvider({
-      orbitalSpeedMultiplier: 1,
-    });
+    const spawnProviders = createDefaultMultiplayerSpawnProviders({});
     const ships = [
       createDefaultMultiplayerSpacecraftEntity({
-        celestialBodyProvider,
+        ...spawnProviders,
         entityCount: 16,
         id: "ship:1",
         index: 0,
       }),
       createDefaultMultiplayerSpacecraftEntity({
-        celestialBodyProvider,
+        ...spawnProviders,
         entityCount: 16,
         id: "ship:red",
         index: 1,
       }),
       createDefaultMultiplayerSpacecraftEntity({
-        celestialBodyProvider,
+        ...spawnProviders,
         entityCount: 16,
         id: "ship:3",
         index: 2,
@@ -169,18 +169,16 @@ describe("server-style headless Solitude composition", () => {
 });
 
 function createDefaultShipEntities() {
-  const celestialBodyProvider = createSolarSystemCelestialBodyProvider({
-    orbitalSpeedMultiplier: 1,
-  });
+  const spawnProviders = createDefaultMultiplayerSpawnProviders({});
   return [
     createDefaultMultiplayerSpacecraftEntity({
-      celestialBodyProvider,
+      ...spawnProviders,
       entityCount: 16,
       id: "ship:1",
       index: 0,
     }),
     createDefaultMultiplayerSpacecraftEntity({
-      celestialBodyProvider,
+      ...spawnProviders,
       entityCount: 16,
       id: "ship:red",
       index: 1,

@@ -8,32 +8,57 @@ import {
 import {
   DEFAULT_SOLITUDE_GAME_TICK_POLICY,
   createSolitudeGameTicker,
+  type SolitudeGameTickPolicy,
 } from "@solitude/server/ticker";
 import { createDefaultSolitudeInProcessTransport } from "./composition";
 
-const simRateEnvironmentVariable = "SOLITUDE_SIM_RATE";
-const orbitalSpeedMultiplierEnvironmentVariable =
-  "SOLITUDE_ORBITAL_SPEED_MULTIPLIER";
-const orbitalSpeedMultiplierRuntimeOption = "orbitalSpeedMultiplier";
+export function createDefaultSolitudeHttpServerOptions(): SolitudeHttpServerOptions {
+  return {
+    createRunner: createDefaultSolitudeGameRunner,
+    hostname: "127.0.0.1",
+    port: 8787,
+  };
+}
 
-export function createDefaultSolitudeGameRunner({
+function createDefaultSolitudeGameRunner({
   metrics,
   onSnapshot,
 }: SolitudeGameRunnerFactoryOptions): SolitudeGameRunner {
-  const runtimeOptions = createDefaultSolitudeRuntimeOptions(process.env);
-  const transport = createDefaultSolitudeInProcessTransport(runtimeOptions);
+  const runtimeConfig = createDefaultSolitudeRuntimeConfig(process.env);
+  const transport = createDefaultSolitudeInProcessTransport(
+    runtimeConfig.runtimeOptions,
+  );
   return createSolitudeGameRunner({
     ticker: createSolitudeGameTicker({
       metrics,
       onSnapshot,
-      policy: createDefaultSolitudeGameTickPolicy(process.env),
+      policy: runtimeConfig.tickPolicy,
       transport,
     }),
     transport,
   });
 }
 
-export function createDefaultSolitudeRuntimeOptions(
+interface DefaultSolitudeRuntimeConfig {
+  runtimeOptions: RuntimeOptions;
+  tickPolicy: SolitudeGameTickPolicy;
+}
+
+const simRateEnvironmentVariable = "SOLITUDE_SIM_RATE";
+const orbitalSpeedMultiplierEnvironmentVariable =
+  "SOLITUDE_ORBITAL_SPEED_MULTIPLIER";
+const orbitalSpeedMultiplierRuntimeOption = "orbitalSpeedMultiplier";
+
+function createDefaultSolitudeRuntimeConfig(
+  env: Readonly<Record<string, string | undefined>>,
+): DefaultSolitudeRuntimeConfig {
+  return {
+    runtimeOptions: createDefaultSolitudeRuntimeOptions(env),
+    tickPolicy: createDefaultSolitudeGameTickPolicy(env),
+  };
+}
+
+function createDefaultSolitudeRuntimeOptions(
   env: Readonly<Record<string, string | undefined>>,
 ): RuntimeOptions {
   const rawMultiplier = env[orbitalSpeedMultiplierEnvironmentVariable];
@@ -53,7 +78,7 @@ export function createDefaultSolitudeRuntimeOptions(
   };
 }
 
-export function createDefaultSolitudeGameTickPolicy(
+function createDefaultSolitudeGameTickPolicy(
   env: Readonly<Record<string, string | undefined>>,
 ) {
   const rawSimRate = env[simRateEnvironmentVariable];
@@ -74,13 +99,5 @@ export function createDefaultSolitudeGameTickPolicy(
   return {
     ...DEFAULT_SOLITUDE_GAME_TICK_POLICY,
     simulationMillisPerWallMillis,
-  };
-}
-
-export function createDefaultSolitudeHttpServerOptions(): SolitudeHttpServerOptions {
-  return {
-    createRunner: createDefaultSolitudeGameRunner,
-    hostname: "127.0.0.1",
-    port: 8787,
   };
 }

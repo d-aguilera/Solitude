@@ -44,9 +44,12 @@ export interface SolitudeHttpServer {
   url: string;
 }
 
-export interface SolitudeHttpRequestHandler {
-  (request: IncomingMessage, response: ServerResponse): Promise<void>;
+export interface SolitudeHttpRuntime {
   close: () => void;
+  handleRequest: (
+    request: IncomingMessage,
+    response: ServerResponse,
+  ) => Promise<void>;
   handleUpgrade: (
     request: IncomingMessage,
     socket: Duplex,
@@ -58,17 +61,17 @@ export interface SolitudeDevAssetHandler {
   (request: IncomingMessage, response: ServerResponse): Promise<boolean>;
 }
 
-export interface SolitudeHttpRequestHandlerOptions {
+export interface SolitudeHttpRuntimeOptions {
   createRunner: SolitudeGameRunnerFactory;
   devAssetHandler?: SolitudeDevAssetHandler;
   staticAssetRoot?: string;
 }
 
-export function createSolitudeHttpRequestHandler({
+function createSolitudeHttpRuntime({
   createRunner,
   devAssetHandler,
   staticAssetRoot,
-}: SolitudeHttpRequestHandlerOptions): SolitudeHttpRequestHandler {
+}: SolitudeHttpRuntimeOptions): SolitudeHttpRuntime {
   const socketSubscriptionsByGameId = new Map<SolitudeGameId, Set<WebSocket>>();
   const socketSessionsBySocket = new Map<WebSocket, SocketSession>();
   const socketServer = new WebSocketServer({ noServer: true });
@@ -86,110 +89,103 @@ export function createSolitudeHttpRequestHandler({
     ? resolve(staticAssetRoot)
     : null;
 
-  const handler = async (
-    request: IncomingMessage,
-    response: ServerResponse,
-  ) => {
-    setCommonHeaders(response);
-
-    if (request.method === "OPTIONS") {
-      response.writeHead(204);
-      response.end();
-      return;
-    }
-
-    const requestUrl = new URL(request.url ?? "/", "http://localhost");
-
-    if (request.method === "GET" && requestUrl.pathname === "/games") {
-      sendGameList(response, runner.listGames());
-      return;
-    }
-
-    if (request.method === "GET" && requestUrl.pathname === "/health") {
-      sendJson(response, 200, { ok: true });
-      return;
-    }
-
-    if (request.method === "GET" && requestUrl.pathname === "/metrics") {
-      sendJson(
-        response,
-        200,
-        metrics.createReport({
-          connectedSockets: socketServer.clients.size,
-          games: runner.listGames(),
-          getClientCount: (gameId) =>
-            socketSubscriptionsByGameId.get(gameId)?.size ?? 0,
-        }),
-      );
-      return;
-    }
-
-    if (
-      request.method === "GET" &&
-      resolvedStaticAssetRoot &&
-      (await sendStaticAsset(
-        response,
-        resolvedStaticAssetRoot,
-        requestUrl.pathname,
-      ))
-    ) {
-      return;
-    }
-
-    if (devAssetHandler && (await devAssetHandler(request, response))) {
-      return;
-    }
-
-    sendJson(response, 404, {
-      messages: [
-        createErrorMessage({
-          code: "notFound",
-          message: `Route not found: ${request.method ?? "UNKNOWN"} ${requestUrl.pathname}`,
-          sequence: 0,
-        }),
-      ],
-    });
-  };
-
-  handler.close = () => {
-    runner.close();
-    socketServer.close();
-    for (const sockets of socketSubscriptionsByGameId.values()) {
-      for (const socket of sockets) {
-        socket.close();
+  return {
+    close: () => {
+      runner.close();
+      socketServer.close();
+      for (const sockets of socketSubscriptionsByGameId.values()) {
+        for (const socket of sockets) {
+          socket.close();
+        }
       }
-    }
-    socketSubscriptionsByGameId.clear();
-  };
-  handler.handleUpgrade = (
-    request: IncomingMessage,
-    socket: Duplex,
-    head: Buffer,
-  ) => {
-    const requestUrl = new URL(request.url ?? "/", "http://localhost");
-    if (requestUrl.pathname !== "/socket") {
-      socket.destroy();
-      return;
-    }
-    socketServer.handleUpgrade(request, socket, head, (webSocket) => {
-      socketServer.emit("connection", webSocket, request);
-      attachWebSocketTransport({
-        runner,
-        socket: webSocket,
-        socketSessionsBySocket,
-        socketSubscriptionsByGameId,
+      socketSubscriptionsByGameId.clear();
+    },
+    handleRequest: async (request, response) => {
+      setCommonHeaders(response);
+
+      if (request.method === "OPTIONS") {
+        response.writeHead(204);
+        response.end();
+        return;
+      }
+
+      const requestUrl = new URL(request.url ?? "/", "http://localhost");
+
+      if (request.method === "GET" && requestUrl.pathname === "/games") {
+        sendGameList(response, runner.listGames());
+        return;
+      }
+
+      if (request.method === "GET" && requestUrl.pathname === "/health") {
+        sendJson(response, 200, { ok: true });
+        return;
+      }
+
+      if (request.method === "GET" && requestUrl.pathname === "/metrics") {
+        sendJson(
+          response,
+          200,
+          metrics.createReport({
+            connectedSockets: socketServer.clients.size,
+            games: runner.listGames(),
+            getClientCount: (gameId) =>
+              socketSubscriptionsByGameId.get(gameId)?.size ?? 0,
+          }),
+        );
+        return;
+      }
+
+      if (
+        request.method === "GET" &&
+        resolvedStaticAssetRoot &&
+        (await sendStaticAsset(
+          response,
+          resolvedStaticAssetRoot,
+          requestUrl.pathname,
+        ))
+      ) {
+        return;
+      }
+
+      if (devAssetHandler && (await devAssetHandler(request, response))) {
+        return;
+      }
+
+      sendJson(response, 404, {
+        messages: [
+          createErrorMessage({
+            code: "notFound",
+            message: `Route not found: ${request.method ?? "UNKNOWN"} ${requestUrl.pathname}`,
+            sequence: 0,
+          }),
+        ],
       });
-    });
+    },
+    handleUpgrade: (request, socket, head) => {
+      const requestUrl = new URL(request.url ?? "/", "http://localhost");
+      if (requestUrl.pathname !== "/socket") {
+        socket.destroy();
+        return;
+      }
+      socketServer.handleUpgrade(request, socket, head, (webSocket) => {
+        socketServer.emit("connection", webSocket, request);
+        attachWebSocketTransport({
+          runner,
+          socket: webSocket,
+          socketSessionsBySocket,
+          socketSubscriptionsByGameId,
+        });
+      });
+    },
   };
-  return handler;
 }
 
 export async function startSolitudeHttpServer(
   options: SolitudeHttpServerOptions,
 ): Promise<SolitudeHttpServer> {
-  const handler = createSolitudeHttpRequestHandler(options);
+  const runtime = createSolitudeHttpRuntime(options);
   const server = createServer((request, response) => {
-    void handler(request, response).catch((error: unknown) => {
+    void runtime.handleRequest(request, response).catch((error: unknown) => {
       sendJson(response, 500, {
         messages: [
           createErrorMessage({
@@ -202,22 +198,35 @@ export async function startSolitudeHttpServer(
       });
     });
   });
+
   server.on(
     "upgrade",
     (request: IncomingMessage, socket: Duplex, head: Buffer) => {
-      handler.handleUpgrade(request, socket, head);
+      runtime.handleUpgrade(request, socket, head);
     },
   );
 
-  await new Promise<void>((resolve) => {
-    server.listen(options.port, options.hostname, resolve);
+  await new Promise<void>((resolve, reject) => {
+    const onError = (error: Error) => {
+      server.off("listening", onListening);
+      reject(error);
+    };
+
+    const onListening = () => {
+      server.off("error", onError);
+      resolve();
+    };
+
+    server.once("error", onError);
+    server.once("listening", onListening);
+    server.listen(options.port, options.hostname);
   });
 
   const address = server.address() as AddressInfo;
   return {
     close: () =>
       new Promise<void>((resolve, reject) => {
-        handler.close();
+        runtime.close();
         server.close((error) => {
           if (error) reject(error);
           else resolve();

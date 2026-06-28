@@ -10,14 +10,18 @@ import {
   createSolitudeInProcessTransport,
   type SolitudeInProcessTransport,
 } from "@solitude/server/transport";
-import type { CelestialBodyProvider } from "@solitude/sim/celestialBodies/provider";
+import {
+  celestialBodyProviderCapability,
+  isCelestialBodyProvider,
+  type CelestialBodyProvider,
+} from "@solitude/sim/celestialBodies/provider";
 import {
   controllableEntityProviderCapability,
+  type ControllableEntityProvider,
   isControllableEntityProvider,
 } from "@solitude/sim/controllableEntities/provider";
 import { createPolyFighterPlugin } from "@solitude/sim/plugins/polyFighter";
-import { parseSolarSystemRuntimeOptions } from "@solitude/sim/plugins/solarSystem";
-import { createSolarSystemCelestialBodyProvider } from "@solitude/sim/plugins/solarSystem/celestialBodyProvider";
+import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
 import { createOrbitingPlacement } from "@solitude/sim/spacecraft/orbitalPlacement";
 import { createSolitudeServerGame } from "./runtime";
 
@@ -25,8 +29,6 @@ const DEFAULT_ASSIGNABLE_ENTITY_COUNT = 16;
 const EARTH_ID = "planet:earth";
 const POLY_FIGHTER_PROVIDER_ID = "polyFighter";
 const SPACECRAFT_START_ALTITUDE_M = 100 * km;
-const defaultControllableEntityProvider =
-  createDefaultControllableEntityProvider();
 const multiplayerSpacecraftColors = [
   { r: 64, g: 180, b: 255 },
   { r: 255, g: 80, b: 80 },
@@ -60,14 +62,12 @@ export function createDefaultSolitudeSessionManager(
   const assignableEntityIds = createDefaultAssignableEntityIds(
     DEFAULT_ASSIGNABLE_ENTITY_COUNT,
   );
-  const celestialBodyProvider = createSolarSystemCelestialBodyProvider(
-    parseSolarSystemRuntimeOptions(runtimeOptions),
-  );
+  const spawnProviders = createDefaultMultiplayerSpawnProviders(runtimeOptions);
   return createSolitudeSessionManager({
     assignableEntityIds,
     createAssignableEntity: (id, index) =>
       createDefaultMultiplayerSpacecraftEntity({
-        celestialBodyProvider,
+        ...spawnProviders,
         entityCount: assignableEntityIds.length,
         id,
         index,
@@ -79,26 +79,63 @@ export function createDefaultSolitudeSessionManager(
   });
 }
 
+export interface DefaultMultiplayerSpawnProviders {
+  celestialBodyProvider: CelestialBodyProvider;
+  controllableEntityProvider: ControllableEntityProvider;
+}
+
+export function createDefaultMultiplayerSpawnProviders(
+  runtimeOptions: RuntimeOptions,
+): DefaultMultiplayerSpawnProviders {
+  const plugins = createDefaultMultiplayerContentPlugins(runtimeOptions);
+  const capabilityRegistry = createPluginCapabilityRegistry(
+    plugins.flatMap((plugin) => plugin.capabilities ?? []),
+  );
+  const celestialBodyProvider = capabilityRegistry
+    .getAll(celestialBodyProviderCapability)
+    .find(isCelestialBodyProvider);
+  if (!celestialBodyProvider) {
+    throw new Error("Missing celestial body provider");
+  }
+
+  const controllableEntityProvider = capabilityRegistry
+    .getAll(controllableEntityProviderCapability)
+    .filter(isControllableEntityProvider)
+    .find((item) => item.id === POLY_FIGHTER_PROVIDER_ID);
+  if (!controllableEntityProvider) {
+    throw new Error(
+      `Missing controllable entity provider: ${POLY_FIGHTER_PROVIDER_ID}`,
+    );
+  }
+
+  return {
+    celestialBodyProvider,
+    controllableEntityProvider,
+  };
+}
+
 export function createDefaultMultiplayerSpacecraftEntity({
   celestialBodyProvider,
+  controllableEntityProvider,
   entityCount,
   id,
   index,
 }: {
   celestialBodyProvider: CelestialBodyProvider;
+  controllableEntityProvider: ControllableEntityProvider;
   entityCount: number;
   id: EntityId;
   index: number;
 }): EntityConfig {
   const earth = celestialBodyProvider.getCelestialBody(EARTH_ID);
   if (!earth) throw new Error(`Missing celestial body: ${EARTH_ID}`);
-  const entity = defaultControllableEntityProvider.createEntity({
+  const entity = controllableEntityProvider.createEntity({
     color: getMultiplayerSpacecraftColor(index),
     id,
     placement: createOrbitingPlacement({
       altitudeMeters: SPACECRAFT_START_ALTITUDE_M,
       anchorBody: earth,
-      entityMass: defaultControllableEntityProvider.mass,
+      entityMass: controllableEntityProvider.mass,
       ringCount: entityCount,
       ringIndex: index,
     }),
@@ -106,21 +143,8 @@ export function createDefaultMultiplayerSpacecraftEntity({
   return entity;
 }
 
-function createDefaultControllableEntityProvider() {
-  const plugins = [createPolyFighterPlugin()];
-  const capabilityRegistry = createPluginCapabilityRegistry(
-    plugins.flatMap((plugin) => plugin.capabilities ?? []),
-  );
-  const provider = capabilityRegistry
-    .getAll(controllableEntityProviderCapability)
-    .filter(isControllableEntityProvider)
-    .find((item) => item.id === POLY_FIGHTER_PROVIDER_ID);
-  if (!provider) {
-    throw new Error(
-      `Missing controllable entity provider: ${POLY_FIGHTER_PROVIDER_ID}`,
-    );
-  }
-  return provider;
+function createDefaultMultiplayerContentPlugins(runtimeOptions: RuntimeOptions) {
+  return [createSolarSystemPlugin(runtimeOptions), createPolyFighterPlugin()];
 }
 
 function createDefaultAssignableEntityIds(count: number): EntityId[] {
