@@ -5,6 +5,20 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Architecture Map",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://127.0.0.1:4174/",
+      "webRoot": "${workspaceFolder}/docs/architecture-map",
+      "preLaunchTask": "serve architecture map",
+      "postDebugTask": "stop architecture map",
+      "sourceMaps": true,
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/docs/architecture-map/**",
+        "!**/node_modules/**"
+      ]
+    },
+    {
       "name": "Attach by Process ID",
       "processId": "${command:PickProcess}",
       "request": "attach",

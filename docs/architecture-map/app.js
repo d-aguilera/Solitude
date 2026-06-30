@@ -539,33 +539,39 @@ async function calculateElkPositions() {
     throw new Error("ELK is not available.");
   }
 
+  const layoutOptions = {
+    "elk.algorithm": "layered",
+    "elk.direction": "RIGHT",
+    "elk.edgeRouting": "ORTHOGONAL",
+    "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+    "elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
+    "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
+    "elk.spacing.edgeEdge": "18",
+    "elk.spacing.edgeNode": "42",
+    "elk.spacing.nodeNode": "52",
+  };
+
+  const children = architecture.nodes.map((node) => {
+    const size = nodeSizes[node.kind] ?? nodeSizes.symbol;
+    return {
+      height: size.height,
+      id: node.id,
+      width: size.width,
+    };
+  });
+
+  const edges = architecture.edges.map((edge) => ({
+    id: edge.id,
+    sources: [edge.from],
+    targets: [edge.to],
+  }));
+
   const elk = new globalThis.ELK();
   const elkGraph = {
     id: "root",
-    layoutOptions: {
-      "elk.algorithm": "layered",
-      "elk.direction": "RIGHT",
-      "elk.edgeRouting": "ORTHOGONAL",
-      "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
-      "elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
-      "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
-      "elk.spacing.edgeEdge": "18",
-      "elk.spacing.edgeNode": "42",
-      "elk.spacing.nodeNode": "52",
-    },
-    children: architecture.nodes.map((node) => {
-      const size = nodeSizes[node.kind] ?? nodeSizes.symbol;
-      return {
-        height: size.height,
-        id: node.id,
-        width: size.width,
-      };
-    }),
-    edges: architecture.edges.map((edge) => ({
-      id: edge.id,
-      sources: [edge.from],
-      targets: [edge.to],
-    })),
+    layoutOptions,
+    children,
+    edges,
   };
   const layout = await elk.layout(elkGraph);
   const positions = new Map();

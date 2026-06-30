@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "serve architecture map",
+      "type": "shell",
+      "command": "node",
+      "args": ["scripts/serve-architecture-map.mjs"],
+      "isBackground": true,
+      "presentation": {
+        "panel": "dedicated",
+        "reveal": "silent",
+        "close": true,
+        "showReuseMessage": false
+      },
+      "problemMatcher": {
+        "owner": "architecture-map",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Architecture map starting",
+          "endsPattern": "Architecture map ready at http://localhost:4174/"
+        }
+      }
+    },
+    {
+      "label": "stop architecture map",
+      "type": "shell",
+      "command": "bash",
+      "args": ["scripts/stop-architecture-map.sh"],
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "dedicated",
+        "reveal": "never",
+        "close": true,
+        "showReuseMessage": false
+      }
+    }
+  ]
+}
