@@ -17,8 +17,8 @@ import {
 } from "@solitude/sim/celestialBodies/provider";
 import {
   controllableEntityProviderCapability,
-  type ControllableEntityProvider,
   isControllableEntityProvider,
+  type ControllableEntityProvider,
 } from "@solitude/sim/controllableEntities/provider";
 import { createPolyFighterPlugin } from "@solitude/sim/plugins/polyFighter";
 import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
@@ -28,7 +28,7 @@ import { createSolitudeServerGame } from "./runtime";
 const DEFAULT_ASSIGNABLE_ENTITY_COUNT = 16;
 const EARTH_ID = "planet:earth";
 const POLY_FIGHTER_PROVIDER_ID = "polyFighter";
-const SPACECRAFT_START_ALTITUDE_M = 100 * km;
+const SPACECRAFT_START_ALTITUDE_M = 25_000 * km;
 const multiplayerSpacecraftColors = [
   { r: 64, g: 180, b: 255 },
   { r: 255, g: 80, b: 80 },
@@ -143,7 +143,9 @@ export function createDefaultMultiplayerSpacecraftEntity({
   return entity;
 }
 
-function createDefaultMultiplayerContentPlugins(runtimeOptions: RuntimeOptions) {
+function createDefaultMultiplayerContentPlugins(
+  runtimeOptions: RuntimeOptions,
+) {
   return [createSolarSystemPlugin(runtimeOptions), createPolyFighterPlugin()];
 }
 
