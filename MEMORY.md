@@ -19,7 +19,7 @@
 
 - `MEMORY_CLIENT_SERVER_2.md`: current client/server gameplay-feel roadmap: real-time authoritative loop, snapshot timing/buffering, and local prediction.
 - `MEMORY_GPU_RENDERING.md`: active WebGL2-native rendering roadmap covering shared browser presentation, GPU mesh rendering, Canvas overlays, and rollout.
-- `MEMORY_GPU_POLYLINES.md`: planned depth-tested WebGL trajectory ribbons and future GPU segment/marker overlay work.
+- `MEMORY_GPU_POLYLINES.md`: completed depth-tested WebGL trajectory/world-segment ribbon work; future marker/styling follow-ups are recorded there.
 - `MEMORY_HEADLESS_PLAYBACK.md`: planned work for running recorded playback scenarios end-to-end without the browser.
 
 ### Complete / Archived
@@ -33,7 +33,7 @@
 ## Current focus
 
 - **Primary active work**: client/server gameplay feel; the server-owned real-time loop, compact snapshots, load metrics, sequenced inputs, local prediction, and render-only reconciliation are in place. The next phase is restoring smooth remote-entity interpolation without disturbing predicted local flight. See `MEMORY_CLIENT_SERVER_2.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
-- **GPU rendering work**: WebGL2 is the sole solid-mesh renderer for standalone and remote play. Canvas remains only for projected scene overlays and HUD; the engine CPU-face pipeline and Canvas backend have been removed. See `MEMORY_GPU_RENDERING.md` before changing browser view presentation, rasterization, render package exports, or client renderer composition. See `MEMORY_GPU_POLYLINES.md` before changing trajectory, world-segment, or marker overlay rendering.
+- **GPU rendering work**: WebGL2 is the sole solid-mesh renderer for standalone and remote play. WebGL also owns depth-tested trajectory and world-segment ribbons; Canvas remains for scene labels, markers, and HUD. The engine CPU-face pipeline and Canvas backend have been removed. See `MEMORY_GPU_RENDERING.md` before changing browser view presentation, rasterization, render package exports, or client renderer composition. See `MEMORY_GPU_POLYLINES.md` before changing trajectory, world-segment, or marker overlay rendering.
 - **Operator/focus boundary**: core/runtime contexts use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`.
 - **Remaining operator follow-ups**: foreground/background UX and declarative input lock policy live in `MEMORY_OPERATOR_MODEL.md`.
 - **Retired compatibility names**: keep `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming out of source.
@@ -55,7 +55,7 @@
 - **Physics**: Newtonian N-body with leapfrog integration for stability.
 - **Solar-system data**: use real-ish values (AU, km, approximate J2000 elements) for plausibility.
 - **Entity model direction**: core should not know scenario categories such as planet/star/ship. Prefer generic bodies/components/capabilities.
-- **Rendering**: WebGL2-native solid-mesh rendering is required. `SceneOverlayRenderer` projects lines, segments, and labels in the engine; `CanvasSceneOverlayRasterizer` plus the HUD rasterizer draw the transparent Canvas overlay.
+- **Rendering**: WebGL2-native solid-mesh rendering is required. Browser WebGL renders solid meshes plus depth-tested trajectory/world-segment ribbons. `SceneOverlayRenderer` handles renderer-neutral scene overlay projection; the browser Canvas scene overlay draws labels and markers, and the HUD rasterizer draws HUD panels separately.
 - **Math helpers**: always use math helpers when available for vector/matrix/trig instead of inlining the math.
 - **Epsilons**: use shared constants in `packages/engine/src/domain/epsilon.ts` instead of inline literals.
 - **Optional arguments**: avoid optional runtime/plumbing arguments unless absence is semantically meaningful. Prefer required parameters with empty collections or default objects so call sites and implementations do not grow defensive branches.
@@ -110,7 +110,7 @@
 - Server runtime lives in `packages/server/src/runtime.ts`; it composes shared `@solitude/sim` headless Solitude code, steps entity-addressed controls, and reuses runtime snapshot storage.
 - Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, uses per-join participant IDs carried in game links, receives authoritative model/snapshot messages over WebSocket, sends sequenced server-authoritative controls for its assigned ship, predicts the locally controlled ship immediately, smooths reconciliation visually, derives localized ship names from server-assigned display colors, exposes prediction metrics on `window.__solitudePredictionMetrics`, and renders through `@solitude/browser`.
 - Remote client composition lives in `packages/client/src/composition.ts`; local prediction is driven through `@solitude/sim/localPrediction` plugin capabilities, not direct plugin-internal imports.
-- Standalone and remote rendering share browser-owned layered view presenters. WebGL renders solid meshes natively from renderer-neutral scene meshes; Canvas overlays preserve trajectories, segments, labels, and HUD.
+- Standalone and remote rendering share browser-owned layered view presenters. WebGL renders solid meshes natively from renderer-neutral scene meshes and draws trajectory/world-segment ribbons with depth testing; Canvas overlays preserve labels, markers, and HUD.
 - The shared display targeting-laser plugin toggles with `T`, locks the collision sphere nearest the focused ship's nose axis, and renders a beam, target-plane miss guide, obstruction cue, or constant-screen-size surface impact marker entirely client-side in standalone and remote play.
 - Engine world-segment contributions use renderer-neutral numeric RGB; CSS conversion occurs in the render layer. Engine frame policy uses generic presentation terminology while browser overlays retain browser-owned naming.
 - Localization is client-side and server-neutral. Dependency-free `@solitude/localization` resolves `?locale=` or browser-preferred language to `en`/`es`/`fr`, formats numbers/units without thousands grouping, and provides message interpolation. JSON message bundles live with the client/plugin/content package that owns each string. The multiplayer lobby offers a language selector and passes locale through game links; standalone resolves from browser locale unless `?locale=` overrides it.
@@ -177,7 +177,7 @@
 ## Next Steps Snapshot
 
 - Active path: client/server gameplay feel; keep local prediction/reconciliation stable and restore smooth remote-entity interpolation with an ordered authoritative snapshot buffer. See `MEMORY_CLIENT_SERVER_2.md`.
-- Active rendering follow-up: verify WebGL2 meshes and Canvas overlays interactively on real hardware. See `MEMORY_GPU_RENDERING.md`.
+- Active rendering follow-up: WebGL2 solid meshes and depth-tested line ribbons are in place; future marker/styling line work is tracked in `MEMORY_GPU_POLYLINES.md`.
 - Package split migration is closed; future package work is normal API curation.
 - Operator runtime focus switching series is closed; remaining operator-model work is foreground/background UX and declarative input lock policy. See `MEMORY_OPERATOR_MODEL.md`.
 - Planned future work: Solitude-owned headless playback runner. See `MEMORY_HEADLESS_PLAYBACK.md`.

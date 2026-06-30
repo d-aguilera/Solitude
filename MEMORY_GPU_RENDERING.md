@@ -4,7 +4,7 @@
 
 - Add a true WebGL2 scene renderer for standalone and remote play.
 - Keep the authoritative protocol renderer-neutral: game models provide static meshes and snapshots provide changing state.
-- Use WebGL2 as the sole solid-mesh renderer; Canvas is reserved for projected scene overlays and HUD.
+- Use WebGL2 as the sole solid-mesh renderer and as the renderer for depth-tested line ribbons. Canvas is reserved for scene labels, markers, and HUD.
 
 ## Non-negotiables
 
@@ -19,7 +19,7 @@
 - WebGL is required for standalone and remote play; there is no Canvas solid-mesh backend or renderer-selection option.
 - GPU failures are visible and never silently fall back. The failure UI links to the Canvas override.
 - Solid meshes use native WebGL2 projection, lighting, clipping, depth testing, and rasterization.
-- Scene labels, markers, and HUD remain on a transparent Canvas overlay initially.
+- Scene labels, markers, and HUD remain on transparent Canvas overlays.
 - Each view owns its WebGL context and GPU buffers; packed CPU mesh data is shared across views.
 - Camera-relative translations are calculated in JavaScript doubles before upload to preserve astronomical precision.
 - Solid meshes write logarithmic fragment depth over a visible-scene range so nearby and orbital-scale bodies occlude correctly without sacrificing the existing near-plane clipping behavior.
@@ -33,6 +33,7 @@
 shared world + scene + camera
   -> browser WebGL presenter
        -> GPU-native solid mesh renderer
+       -> GPU-native trajectory/world-segment line renderer
        -> engine SceneOverlayRenderer
             -> browser CanvasSceneOverlayRasterizer
        -> browser Canvas HUD overlay
@@ -53,12 +54,12 @@ shared world + scene + camera
 - The native renderer uploads packed object-local triangles once per mesh/context and sends only camera-relative transforms, lights, and uniforms per frame.
 - Shared mesh identities are preserved across differently scaled objects; WebGL uploads one buffer per mesh/context and applies `meshScale` in the shader.
 - Browser WebGL scene rendering is split into a frame coordinator plus dedicated mesh and line renderers; `GpuMeshRenderer` owns the solid-mesh program, VAO, mesh buffers, LOD-aware far-depth calculation, and solid draw calls.
-- `GpuLineRenderer` batches trajectory polylines and world segments into screen-width WebGL ribbons. Canvas segment drawing has been removed; segments are WebGL-only.
+- `GpuLineRenderer` batches trajectory polylines and world segments into screen-width WebGL ribbons. Canvas trajectory and segment drawing has been removed; trajectories and world segments are WebGL-only in browser views.
 - Sphere LOD meshes are shared per browser context and lower subdivision levels are used only when the projected diameter is small enough that detail is not visible.
 - WebGL flat shading uses packed face normals; smooth-sphere shading uses normalized object-local vertex position as the lighting normal.
 - GPU shaders perform object transforms, camera projection, near clipping, flat lighting, tone mapping, and logarithmic depth-tested rasterization using a conservative per-frame far range derived from object bounds.
 - Vertex and fragment shader sources live in dedicated `.vert.glsl` and `.frag.glsl` assets imported as raw text by the browser adapter.
-- The engine `SceneOverlayRenderer` projects renderer-neutral polylines, segments, and labels; the browser `CanvasSceneOverlayRasterizer` draws them.
+- The engine `SceneOverlayRenderer` handles renderer-neutral scene overlay projection; browser Canvas scene overlays draw labels and markers. Trajectories and world segments are rendered by `GpuLineRenderer`.
 - The engine no longer generates, clips, sorts, caches, or exposes CPU-rendered triangle faces.
 - Standalone and remote compositions require WebGL2. Unknown `renderer` query values, including the former `renderer=canvas`, have no rendering effect.
 - WebGL initialization/program/context-loss failures publish diagnostics and show localized fatal UI without advertising a fallback backend.
@@ -76,8 +77,8 @@ shared world + scene + camera
 
 ## Current Next Step
 
-- Run interactive standalone and remote checks on real WebGL2 hardware, especially primary/PiP overlays, context loss, and large-coordinate stability; fix only measured discrepancies.
+- Keep WebGL2 rendering stable while active work shifts elsewhere. Future marker depth/styling work should start from `MEMORY_GPU_POLYLINES.md`.
 
 ## Related Follow-Up
 
-- Depth-tested WebGL trajectory ribbons and future GPU segment/marker overlay work live in `MEMORY_GPU_POLYLINES.md`.
+- Depth-tested WebGL trajectory/world-segment ribbons and future marker/styling overlay work live in `MEMORY_GPU_POLYLINES.md`.
