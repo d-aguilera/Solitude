@@ -75,10 +75,7 @@ shared world + scene + camera
 - Large orbital coordinates remain visually stable through camera-relative GPU inputs.
 - WebGL initialization, program, and context-loss failures stop rendering and show a visible WebGL-required error.
 
-## Current Next Step
+## Closure
 
-- Keep WebGL2 rendering stable while active work shifts elsewhere. Future marker depth/styling work should start from `MEMORY_GPU_POLYLINES.md`.
-
-## Related Follow-Up
-
-- Depth-tested WebGL trajectory/world-segment ribbons and future marker/styling overlay work live in `MEMORY_GPU_POLYLINES.md`.
+- This WebGL-native rendering roadmap is complete and archived.
+- Depth-tested trajectory/world-segment ribbon details are recorded in `archive/MEMORY_GPU_POLYLINES.md`.

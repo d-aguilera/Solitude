@@ -71,9 +71,10 @@ shared world + scene + camera
   - planet-center trajectory starts are hidden by planet surfaces;
   - ship trajectories accumulate visible multi-segment history after the sampling cadence fix.
 
-## Remaining / Deferred
+## Closure
 
-- World markers remain Canvas overlay primitives. Move selected markers to WebGL only if depth-tested surface/occlusion behavior becomes important.
-- Styling remains intentionally simple: hard opaque ribbons. Antialiasing, opacity, fades, dashed lines, gradients, or glow are future presentation work.
-- Long line segments crossing large depth ranges may still need adaptive subdivision if measured silhouette artifacts appear. Existing trajectory sampling is acceptable for the current visual checks.
-- GPU-side ribbon expansion could replace CPU-expanded quads later, but the current CPU builder is simple, covered, and adequate.
+- This depth-tested line-rendering effort is complete and archived.
+- World markers intentionally remain Canvas overlay primitives and are not currently in the GPU line roadmap.
+- Styling remains intentionally simple: hard opaque ribbons. There is no active styling follow-up in this memory record.
+- Long line segments crossing large depth ranges may need adaptive subdivision only if future measured artifacts justify it. Existing trajectory sampling is acceptable for the current visual checks.
+- GPU-side ribbon expansion could replace CPU-expanded quads only if future profiling justifies it; the current CPU builder is simple, covered, and adequate.

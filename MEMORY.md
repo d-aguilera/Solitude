@@ -18,8 +18,6 @@
 ### Active
 
 - `MEMORY_CLIENT_SERVER_2.md`: current client/server gameplay-feel roadmap: real-time authoritative loop, snapshot timing/buffering, and local prediction.
-- `MEMORY_GPU_RENDERING.md`: active WebGL2-native rendering roadmap covering shared browser presentation, GPU mesh rendering, Canvas overlays, and rollout.
-- `MEMORY_GPU_POLYLINES.md`: completed depth-tested WebGL trajectory/world-segment ribbon work; future marker/styling follow-ups are recorded there.
 - `MEMORY_HEADLESS_PLAYBACK.md`: planned work for running recorded playback scenarios end-to-end without the browser.
 
 ### Complete / Archived
@@ -29,11 +27,13 @@
 - `archive/MEMORY_ENTITY_MODEL.md`: archived strategy/context for replacing ships/planets/stars core buckets with generic entities/components.
 - `archive/MEMORY_CLIENT_SERVER.md`: archived proof-of-concept client/server migration record and slice log.
 - `archive/MEMORY_PLUGIN_EXTRACTION.md`: archived audit notes and candidate list for moving non-core code into plugins.
+- `archive/MEMORY_GPU_RENDERING.md`: archived WebGL2-native rendering roadmap covering shared browser presentation, GPU mesh rendering, Canvas overlays, and rollout.
+- `archive/MEMORY_GPU_POLYLINES.md`: archived depth-tested WebGL trajectory/world-segment ribbon work.
 
 ## Current focus
 
 - **Primary active work**: client/server gameplay feel; the server-owned real-time loop, compact snapshots, load metrics, sequenced inputs, local prediction, and render-only reconciliation are in place. The next phase is restoring smooth remote-entity interpolation without disturbing predicted local flight. See `MEMORY_CLIENT_SERVER_2.md` before changing headless runtime, runtime snapshots, package exports, per-entity controls, server packages, network protocol code, or browser remote-state rendering.
-- **GPU rendering work**: WebGL2 is the sole solid-mesh renderer for standalone and remote play. WebGL also owns depth-tested trajectory and world-segment ribbons; Canvas remains for scene labels, markers, and HUD. The engine CPU-face pipeline and Canvas backend have been removed. See `MEMORY_GPU_RENDERING.md` before changing browser view presentation, rasterization, render package exports, or client renderer composition. See `MEMORY_GPU_POLYLINES.md` before changing trajectory, world-segment, or marker overlay rendering.
+- **GPU rendering state**: WebGL2 is the sole solid-mesh renderer for standalone and remote play. WebGL also owns depth-tested trajectory and world-segment ribbons; Canvas remains for scene labels, markers, and HUD. The engine CPU-face pipeline and Canvas backend have been removed. Historical rendering roadmaps live in `archive/MEMORY_GPU_RENDERING.md` and `archive/MEMORY_GPU_POLYLINES.md`.
 - **Operator/focus boundary**: core/runtime contexts use `mainFocus`/`controlledBody`, and config/world-model APIs use `mainFocusEntityId`.
 - **Remaining operator follow-ups**: foreground/background UX and declarative input lock policy live in `MEMORY_OPERATOR_MODEL.md`.
 - **Retired compatibility names**: keep `mainControlledBody`, `mainControlledEntityId`, `setMainControlledEntityId`, deprecated main-view `pilot*` aliases, `@deprecated` source markers, and core setup `setupShips` naming out of source.
@@ -177,7 +177,6 @@
 ## Next Steps Snapshot
 
 - Active path: client/server gameplay feel; keep local prediction/reconciliation stable and restore smooth remote-entity interpolation with an ordered authoritative snapshot buffer. See `MEMORY_CLIENT_SERVER_2.md`.
-- Active rendering follow-up: WebGL2 solid meshes and depth-tested line ribbons are in place; future marker/styling line work is tracked in `MEMORY_GPU_POLYLINES.md`.
 - Package split migration is closed; future package work is normal API curation.
 - Operator runtime focus switching series is closed; remaining operator-model work is foreground/background UX and declarative input lock policy. See `MEMORY_OPERATOR_MODEL.md`.
 - Planned future work: Solitude-owned headless playback runner. See `MEMORY_HEADLESS_PLAYBACK.md`.
