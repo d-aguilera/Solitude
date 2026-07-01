@@ -121,6 +121,7 @@ function updateFrontViewFrame({
   const controlledBodyFrame = mainFocus.controlledBody.frame;
   vec3.copyInto(frame.up, controlledBodyFrame.up);
   vec3.copyInto(frame.right, controlledBodyFrame.right);
+  vec3.scaleInto(frame.right, -1, frame.right); // right = -right
   vec3.copyInto(frame.forward, controlledBodyFrame.forward);
   vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -forward
 }
