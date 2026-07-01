@@ -12,7 +12,10 @@ import { initLayout, type LayoutView } from "./domLayout";
 import { getOrCreateDomViewLayers } from "./domView";
 import type { RunLoopView } from "./infraPorts";
 import type { RenderFailure } from "./renderFailure";
-import { createBrowserViewPresenter } from "./viewPresenter";
+import {
+  createBrowserViewPresenter,
+  type TextureSourceCatalog,
+} from "./viewPresenter";
 
 /**
  * DOM-level bootstrap
@@ -21,6 +24,7 @@ export function bootstrapWith(
   config: WorldAndSceneConfig,
   plugins: GamePlugin[],
   onFatalError: (failure: RenderFailure) => void,
+  textureSources: TextureSourceCatalog = {},
 ): void {
   const container = document.querySelector(".canvas-container");
   if (!container) {
@@ -28,7 +32,12 @@ export function bootstrapWith(
   }
 
   const viewDefinitions = buildViewDefinitions(config, plugins);
-  const views = createRunLoopViews(container, viewDefinitions, onFatalError);
+  const views = createRunLoopViews(
+    container,
+    viewDefinitions,
+    onFatalError,
+    textureSources,
+  );
   initLayout(container, views);
   window.addEventListener(
     "pagehide",
@@ -58,6 +67,7 @@ function createRunLoopViews(
   container: Element,
   definitions: ViewDefinition[],
   onFatalError: (failure: RenderFailure) => void,
+  textureSources: TextureSourceCatalog,
 ): (RunLoopView & LayoutView)[] {
   const views: (RunLoopView & LayoutView)[] = [];
   let index = 0;
@@ -68,6 +78,7 @@ function createRunLoopViews(
       onFatalError,
       overlayCanvas: layers.overlayCanvas,
       sceneCanvas: layers.sceneCanvas,
+      textureSources,
     });
     views.push({
       definition,

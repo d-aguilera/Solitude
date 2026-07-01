@@ -23,8 +23,10 @@ uniform float uGamma;
 
 out float vIntensity;
 out float vCameraDepth;
+out vec3 vLocalPosition;
 
 void main() {
+  vLocalPosition = aPosition;
   vec3 worldRelative =
     uModelOrientation * (aPosition * uModelScale) + uModelTranslation;
   vec3 cameraPoint = vec3(

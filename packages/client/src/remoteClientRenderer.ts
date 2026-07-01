@@ -10,6 +10,7 @@ import {
   orderViewDefinitionsPrimaryFirst,
   removeExtraDomViews,
 } from "@solitude/browser/dom/view";
+import type { TextureSourceCatalog } from "@solitude/browser/dom/viewPresenter";
 import { createBrowserViewPresenter } from "@solitude/browser/dom/viewPresenter";
 import {
   createRemoteViewPresenterRenderer,
@@ -88,6 +89,7 @@ export interface SolitudeRemoteClientRendererOptions {
   onFatalError: (failure: RenderFailure) => void;
   plugins: GamePlugin[];
   runtimeOptions: RuntimeOptions;
+  textureSources?: TextureSourceCatalog;
 }
 
 export interface SolitudeRemoteClientRenderer {
@@ -125,6 +127,7 @@ export function createSolitudeRemoteClientRenderer({
   onFatalError,
   plugins: clientPlugins,
   runtimeOptions,
+  textureSources,
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
   const baseRuntimeOptions = runtimeOptions;
   let composition = createRemoteClientComposition({
@@ -517,6 +520,7 @@ export function createSolitudeRemoteClientRenderer({
         onFatalError: handleFatalError,
         overlayCanvas: layers.overlayCanvas,
         sceneCanvas: layers.sceneCanvas,
+        textureSources,
       });
       return { definition, layers, presenter };
     });

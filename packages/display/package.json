@@ -17,7 +17,8 @@
     "./plugins/targetingLaser": "./src/plugins/targetingLaser/index.ts",
     "./plugins/trajectories": "./src/plugins/trajectories/index.ts",
     "./plugins/trajectories/trajectoryPlan": "./src/plugins/trajectories/trajectoryPlan.ts",
-    "./plugins/velocitySegments": "./src/plugins/velocitySegments/index.ts"
+    "./plugins/velocitySegments": "./src/plugins/velocitySegments/index.ts",
+    "./textures": "./src/textures.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0",

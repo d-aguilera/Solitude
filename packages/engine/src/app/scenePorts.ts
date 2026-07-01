@@ -13,6 +13,7 @@ export interface BaseSceneObject {
   meshLod: MeshLod;
   meshShading: MeshShading;
   meshScale: number;
+  material?: RenderMaterial;
   color: RGB;
   lineWidth: number;
   wireframeOnly: boolean;
@@ -43,6 +44,14 @@ export type MeshLod =
   | { kind: "unitIcosphere"; maxSubdivisions: number };
 
 export type MeshShading = { kind: "flat" } | { kind: "smoothSphere" };
+
+export type RenderMaterial =
+  | { kind: "solidColor" }
+  | {
+      kind: "sphericalTexture";
+      textureId: string;
+      longitudeOffsetRad?: number;
+    };
 
 /**
  * Main view look state relative to the focused entity.

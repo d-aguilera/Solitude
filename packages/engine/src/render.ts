@@ -13,6 +13,7 @@ export type {
   PointLight,
   PolylineSceneObject,
   RGB,
+  RenderMaterial,
   Scene,
   SceneControlState,
   SceneObject,

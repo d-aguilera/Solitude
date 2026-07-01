@@ -4,11 +4,13 @@ import { ProjectionService } from "@solitude/engine/render/projectionService";
 import type { RenderFailure } from "../../infra/renderFailure";
 import { GpuLineRenderer } from "./GpuLineRenderer";
 import { GpuMeshRenderer } from "./GpuMeshRenderer";
+import type { TextureSourceCatalog } from "./textureSources";
 import { requireResource } from "./webglProgram";
 
 export interface GpuSceneRendererOptions {
   gl: WebGL2RenderingContext;
   onFatalError: (failure: RenderFailure) => void;
+  textureSources?: TextureSourceCatalog;
 }
 
 export class GpuSceneRenderer {
@@ -23,12 +25,16 @@ export class GpuSceneRenderer {
   private failed = false;
   private readonly contextLostListener: (event: Event) => void;
 
-  constructor({ gl, onFatalError }: GpuSceneRendererOptions) {
+  constructor({
+    gl,
+    onFatalError,
+    textureSources = {},
+  }: GpuSceneRendererOptions) {
     this.gl = gl;
     try {
       this.lightTexture = requireResource(gl.createTexture(), "light texture");
       this.lineRenderer = new GpuLineRenderer(gl);
-      this.meshRenderer = new GpuMeshRenderer(gl);
+      this.meshRenderer = new GpuMeshRenderer(gl, textureSources);
     } catch (cause) {
       onFatalError({ code: "webgl-program-failed", cause });
       throw cause;

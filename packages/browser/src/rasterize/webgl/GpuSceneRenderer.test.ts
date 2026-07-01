@@ -78,6 +78,32 @@ describe("GPU scene renderer", () => {
     expect(recording.smoothSphereShading).toEqual([0, 1]);
   });
 
+  it("uses loaded spherical textures when a source is available", async () => {
+    const recording = createRecordingGl();
+    const restoreImage = installInstantImage();
+    try {
+      const renderer = new GpuSceneRenderer({
+        gl: recording.gl,
+        onFatalError: () => {},
+        textureSources: { "texture:test": "/texture-test.jpg" },
+      });
+      const object = createIcosphereBody("body:textured", 20);
+      object.material = {
+        kind: "sphericalTexture",
+        textureId: "texture:test",
+      };
+
+      renderer.render(createRenderParams(object));
+      await Promise.resolve();
+      renderer.render(createRenderParams(object));
+
+      expect(recording.textureUploads).toBe(1);
+      expect(recording.useColorTexture).toEqual([0, 1]);
+    } finally {
+      restoreImage();
+    }
+  });
+
   it("draws line ribbons after solid meshes", () => {
     const recording = createRecordingGl();
     const renderer = new GpuSceneRenderer({
@@ -277,6 +303,8 @@ function createRecordingGl(): {
   modelScales: number[];
   smoothSphereShading: number[];
   staticBufferUploads: number;
+  textureUploads: number;
+  useColorTexture: number[];
 } {
   const state = {
     deletedBuffers: 0,
@@ -286,6 +314,8 @@ function createRecordingGl(): {
     modelScales: [] as number[],
     smoothSphereShading: [] as number[],
     staticBufferUploads: 0,
+    textureUploads: 0,
+    useColorTexture: [] as number[],
   };
   let contextLostListener: ((event: Event) => void) | null = null;
   const canvas = {
@@ -316,14 +346,16 @@ function createRecordingGl(): {
     RGBA32F: 16,
     STATIC_DRAW: 17,
     TEXTURE0: 18,
-    TEXTURE_2D: 19,
-    TEXTURE_MAG_FILTER: 20,
-    TEXTURE_MIN_FILTER: 21,
-    TEXTURE_WRAP_S: 22,
-    TEXTURE_WRAP_T: 23,
-    TRIANGLES: 24,
-    UNSIGNED_SHORT: 25,
-    VERTEX_SHADER: 26,
+    TEXTURE1: 19,
+    TEXTURE_2D: 20,
+    TEXTURE_MAG_FILTER: 21,
+    TEXTURE_MIN_FILTER: 22,
+    TEXTURE_WRAP_S: 23,
+    TEXTURE_WRAP_T: 24,
+    TRIANGLES: 25,
+    UNSIGNED_BYTE: 26,
+    UNSIGNED_SHORT: 27,
+    VERTEX_SHADER: 28,
     canvas,
     activeTexture: () => {},
     attachShader: () => {},
@@ -367,7 +399,9 @@ function createRecordingGl(): {
     getUniformLocation: (_program: unknown, name: string) => name,
     linkProgram: () => {},
     shaderSource: () => {},
-    texImage2D: () => {},
+    texImage2D: (...args: unknown[]) => {
+      if (args.length === 6) state.textureUploads++;
+    },
     texParameteri: () => {},
     texSubImage2D: () => {},
     uniform1f: (location: unknown, value: number) => {
@@ -376,6 +410,9 @@ function createRecordingGl(): {
     uniform1i: (location: unknown, value: number) => {
       if (location === "uSmoothSphereShading") {
         state.smoothSphereShading.push(value);
+      }
+      if (location === "uUseColorTexture") {
+        state.useColorTexture.push(value);
       }
     },
     uniform2f: () => {},
@@ -390,4 +427,23 @@ function createRecordingGl(): {
     loseContext: () =>
       contextLostListener?.({ preventDefault: () => {} } as Event),
   });
+}
+
+function installInstantImage(): () => void {
+  const previous = globalThis.Image;
+
+  class InstantImage {
+    crossOrigin = "";
+    onerror: (() => void) | null = null;
+    onload: (() => void) | null = null;
+
+    set src(_value: string) {
+      queueMicrotask(() => this.onload?.());
+    }
+  }
+
+  globalThis.Image = InstantImage as unknown as typeof Image;
+  return () => {
+    globalThis.Image = previous;
+  };
 }

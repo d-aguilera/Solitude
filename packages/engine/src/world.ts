@@ -28,6 +28,7 @@ export type {
   EntityRenderConfig,
   WorldRenderConfig,
 } from "./app/renderConfigPorts";
+export type { RenderMaterial } from "./app/scenePorts";
 export { applyWorldModelPlugins } from "./app/worldModelConfig";
 export type {
   AngularVelocity,

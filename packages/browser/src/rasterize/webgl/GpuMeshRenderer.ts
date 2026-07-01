@@ -20,6 +20,7 @@ import { getPackedGpuMesh } from "./meshPacking";
 import fragmentShaderSource from "./shaders/solidMesh.frag.glsl?raw";
 import vertexShaderSource from "./shaders/solidMesh.vert.glsl?raw";
 import { selectGpuMeshForObject } from "./sphereLod";
+import type { TextureSourceCatalog } from "./textureSources";
 import {
   createProgramFromSources,
   requireResource,
@@ -32,6 +33,12 @@ interface GpuMesh {
   byteLength: number;
   triangleCount: number;
   vertexCount: number;
+}
+
+interface GpuTexture {
+  failed: boolean;
+  loaded: boolean;
+  texture: WebGLTexture;
 }
 
 export interface GpuMeshRenderParams {
@@ -48,13 +55,16 @@ const stride = floatsPerVertex * bytesPerFloat;
 
 export class GpuMeshRenderer {
   private readonly meshBuffers = new Map<Mesh, GpuMesh>();
+  private readonly textureCache = new Map<string, GpuTexture>();
   private readonly objectOrientation = new Float32Array(9);
   private readonly program: WebGLProgram;
   private readonly vao: WebGLVertexArrayObject;
+  private disposed = false;
 
   private readonly uniforms: {
     ambient: WebGLUniformLocation;
     baseColor: WebGLUniformLocation;
+    colorTexture: WebGLUniformLocation;
     cameraForward: WebGLUniformLocation;
     cameraRight: WebGLUniformLocation;
     cameraUp: WebGLUniformLocation;
@@ -71,9 +81,14 @@ export class GpuMeshRenderer {
     modelTranslation: WebGLUniformLocation;
     nearDepth: WebGLUniformLocation;
     smoothSphereShading: WebGLUniformLocation;
+    textureLongitudeOffset: WebGLUniformLocation;
+    useColorTexture: WebGLUniformLocation;
   };
 
-  constructor(private readonly gl: WebGL2RenderingContext) {
+  constructor(
+    private readonly gl: WebGL2RenderingContext,
+    private readonly textureSources: TextureSourceCatalog = {},
+  ) {
     this.program = createProgramFromSources(
       gl,
       vertexShaderSource,
@@ -183,10 +198,15 @@ export class GpuMeshRenderer {
 
   dispose(): void {
     const gl = this.gl;
+    this.disposed = true;
     for (const mesh of this.meshBuffers.values()) gl.deleteBuffer(mesh.buffer);
     this.meshBuffers.clear();
     gl.deleteVertexArray(this.vao);
     gl.deleteProgram(this.program);
+    for (const texture of this.textureCache.values()) {
+      gl.deleteTexture(texture.texture);
+    }
+    this.textureCache.clear();
   }
 
   private drawObject(
@@ -218,6 +238,15 @@ export class GpuMeshRenderer {
       this.uniforms.smoothSphereShading,
       object.meshShading.kind === "smoothSphere" ? 1 : 0,
     );
+    const texture = this.getTextureForObject(object);
+    gl.uniform1i(this.uniforms.colorTexture, 1);
+    gl.uniform1i(this.uniforms.useColorTexture, texture ? 1 : 0);
+    gl.uniform1f(
+      this.uniforms.textureLongitudeOffset,
+      object.material?.kind === "sphericalTexture"
+        ? (object.material.longitudeOffsetRad ?? 0)
+        : 0,
+    );
     gl.uniform3f(
       this.uniforms.baseColor,
       object.color.r / 255,
@@ -237,6 +266,10 @@ export class GpuMeshRenderer {
       gl.disable(gl.CULL_FACE);
     }
 
+    if (texture) {
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, texture.texture);
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffer);
     bindAttributePointers(gl, this.program);
     gl.drawArrays(gl.TRIANGLES, 0, mesh.vertexCount);
@@ -263,6 +296,59 @@ export class GpuMeshRenderer {
     profiler.increment("gpuRender", "meshUploads");
     profiler.increment("gpuRender", "uploadedBytes", gpuMesh.byteLength);
     return gpuMesh;
+  }
+
+  private getTextureForObject(object: SceneObject): GpuTexture | null {
+    const material = object.material;
+    if (material?.kind !== "sphericalTexture") return null;
+
+    const source = this.textureSources[material.textureId];
+    if (!source) return null;
+
+    const existing = this.textureCache.get(material.textureId);
+    if (existing) return existing.loaded && !existing.failed ? existing : null;
+
+    const texture = this.createTextureRecord(material.textureId, source);
+    return texture.loaded && !texture.failed ? texture : null;
+  }
+
+  private createTextureRecord(textureId: string, source: string): GpuTexture {
+    const gl = this.gl;
+    const texture = requireResource(gl.createTexture(), "mesh color texture");
+    const record: GpuTexture = { failed: false, loaded: false, texture };
+    this.textureCache.set(textureId, record);
+
+    if (typeof Image === "undefined") {
+      record.failed = true;
+      return record;
+    }
+
+    const image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => {
+      if (this.disposed || record.failed) return;
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        image,
+      );
+      gl.bindTexture(gl.TEXTURE_2D, null);
+      record.loaded = true;
+      profiler.increment("gpuRender", "textureUploads");
+    };
+    image.onerror = () => {
+      record.failed = true;
+    };
+    image.src = source;
+    return record;
   }
 }
 
@@ -309,6 +395,7 @@ function collectUniforms(gl: WebGL2RenderingContext, program: WebGLProgram) {
   return {
     ambient: requireUniform(gl, program, "uAmbient"),
     baseColor: requireUniform(gl, program, "uBaseColor"),
+    colorTexture: requireUniform(gl, program, "uColorTexture"),
     cameraForward: requireUniform(gl, program, "uCameraForward"),
     cameraRight: requireUniform(gl, program, "uCameraRight"),
     cameraUp: requireUniform(gl, program, "uCameraUp"),
@@ -325,6 +412,12 @@ function collectUniforms(gl: WebGL2RenderingContext, program: WebGLProgram) {
     modelTranslation: requireUniform(gl, program, "uModelTranslation"),
     nearDepth: requireUniform(gl, program, "uNearDepth"),
     smoothSphereShading: requireUniform(gl, program, "uSmoothSphereShading"),
+    textureLongitudeOffset: requireUniform(
+      gl,
+      program,
+      "uTextureLongitudeOffset",
+    ),
+    useColorTexture: requireUniform(gl, program, "uUseColorTexture"),
   };
 }
 

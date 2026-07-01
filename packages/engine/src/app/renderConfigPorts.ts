@@ -5,6 +5,7 @@ import type {
   Mesh,
   MeshLod,
   MeshShading,
+  RenderMaterial,
   RGB,
 } from "./scenePorts";
 
@@ -16,6 +17,7 @@ export interface EntityRenderConfig {
   meshLod: MeshLod;
   meshShading: MeshShading;
   meshScale: number;
+  material?: RenderMaterial;
 }
 
 export interface WorldRenderConfig {

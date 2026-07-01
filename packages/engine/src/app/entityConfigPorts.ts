@@ -3,7 +3,13 @@ import type { LocalFrame } from "../domain/localFrame";
 import type { Mat3 } from "../domain/mat3";
 import type { Vec3 } from "../domain/vec3";
 import type { KeplerianOrbit } from "./physicsConfigPorts";
-import type { Mesh, MeshLod, MeshShading, RGB } from "./scenePorts";
+import type {
+  Mesh,
+  MeshLod,
+  MeshShading,
+  RenderMaterial,
+  RGB,
+} from "./scenePorts";
 
 export interface DirectEntityStateConfig {
   angularVelocity?: AngularVelocity;
@@ -41,6 +47,7 @@ export interface RenderableConfig {
   meshLod: MeshLod;
   meshShading: MeshShading;
   meshScale: number;
+  material?: RenderMaterial;
   role: RenderableRole;
 }
 
