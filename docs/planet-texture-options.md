@@ -77,6 +77,8 @@ Current Earth material:
 - Atmosphere renders as a bright additive blue rim on a very slightly larger
   shell with no extra asset. Keep the shell close to the surface; a large
   back-face-only shell reads as a flat circular outline instead of atmosphere.
+- Atmosphere alpha is gated by direct lighting so the night-side limb can still
+  fall dark, with a soft ramp around the terminator.
 
 ### Solar System Scope
 

@@ -57,7 +57,7 @@ void main() {
     return;
   }
   if (uRenderMode == 3) {
-    float sunlight = 0.55 + 0.45 * vIntensity;
+    float sunlight = smoothstep(0.03, 0.28, vIntensity);
     float alpha = clamp(getAtmosphereRim() * uOverlayOpacity * sunlight, 0.0, 1.0);
     outColor = vec4(uAtmosphereColor, alpha);
     gl_FragDepth = fragmentDepth;
