@@ -51,6 +51,14 @@ export type RenderMaterial =
       kind: "sphericalTexture";
       textureId: string;
       longitudeOffsetRad?: number;
+      cloudTextureId?: string;
+      cloudOpacity?: number;
+      cloudScale?: number;
+      atmosphere?: {
+        color: RGB;
+        opacity: number;
+        scale: number;
+      };
     };
 
 /**

@@ -65,6 +65,18 @@ Current app asset:
   `packages/display/src/assets/textures/earth-blue-marble-land-ocean-ice-8192.jpg`
 - Processing: format conversion from PNG to JPEG at quality 90 only; no gamma
   or color correction.
+- Cloud source: NASA Blue Marble 2002 `cloud_combined_2048.jpg`.
+- Cloud app file:
+  `packages/display/src/assets/textures/earth-blue-marble-clouds-2048.jpg`
+
+Current Earth material:
+
+- Base surface uses the land/ocean/ice texture.
+- Clouds render as a slightly larger transparent shell using cloud texture
+  luminance as alpha.
+- Atmosphere renders as a bright additive blue rim on a very slightly larger
+  shell with no extra asset. Keep the shell close to the surface; a large
+  back-face-only shell reads as a flat circular outline instead of atmosphere.
 
 ### Solar System Scope
 
@@ -155,13 +167,15 @@ Better second phase after Path A works.
 Possible material layers:
 
 - Day albedo texture.
-- Night emissive texture blended by the sun-facing dot product.
 - Cloud texture on a slightly larger transparent sphere.
+- Atmosphere rim on a slightly larger transparent sphere.
+- Night emissive texture blended by the sun-facing dot product.
 - Specular mask for oceans.
 - Normal or bump map for terrain/cloud relief.
 
-This should wait until the single-texture path is stable, because each layer
-adds shader branches, texture bindings, asset memory, and loading states.
+Clouds and a simple atmosphere rim are now part of the first Earth material
+slice. More advanced layers should still wait because each layer adds shader
+branches, texture bindings, asset memory, and loading states.
 
 ## Shader Mapping Notes
 

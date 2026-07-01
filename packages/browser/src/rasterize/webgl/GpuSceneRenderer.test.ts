@@ -104,6 +104,47 @@ describe("GPU scene renderer", () => {
     }
   });
 
+  it("draws cloud and atmosphere overlays after the cloud texture loads", async () => {
+    const recording = createRecordingGl();
+    const restoreImage = installInstantImage();
+    try {
+      const renderer = new GpuSceneRenderer({
+        gl: recording.gl,
+        onFatalError: () => {},
+        textureSources: {
+          "texture:clouds": "/clouds.jpg",
+          "texture:surface": "/surface.jpg",
+        },
+      });
+      const object = createIcosphereBody("body:earth", 20);
+      object.material = {
+        atmosphere: {
+          color: { b: 255, g: 170, r: 80 },
+          opacity: 0.25,
+          scale: 1.02,
+        },
+        cloudTextureId: "texture:clouds",
+        kind: "sphericalTexture",
+        textureId: "texture:surface",
+      };
+
+      renderer.render(createRenderParams(object));
+      await Promise.resolve();
+      renderer.render(createRenderParams(object));
+
+      expect(recording.textureUploads).toBe(2);
+      expect(recording.renderModes).toEqual([0, 3, 1, 2, 3]);
+      expect(recording.blendFuncs).toEqual([
+        [recording.gl.SRC_ALPHA, recording.gl.ONE_MINUS_SRC_ALPHA],
+        [recording.gl.SRC_ALPHA, recording.gl.ONE],
+        [recording.gl.SRC_ALPHA, recording.gl.ONE_MINUS_SRC_ALPHA],
+        [recording.gl.SRC_ALPHA, recording.gl.ONE],
+      ]);
+    } finally {
+      restoreImage();
+    }
+  });
+
   it("draws line ribbons after solid meshes", () => {
     const recording = createRecordingGl();
     const renderer = new GpuSceneRenderer({
@@ -294,6 +335,8 @@ function createRenderParams(
 }
 
 function createRecordingGl(): {
+  blendFuncs: Array<[number, number]>;
+  cullFaces: number[];
   deletedBuffers: number;
   drawCalls: number;
   drawVertexCounts: number[];
@@ -301,17 +344,21 @@ function createRecordingGl(): {
   gl: WebGL2RenderingContext;
   loseContext: () => void;
   modelScales: number[];
+  renderModes: number[];
   smoothSphereShading: number[];
   staticBufferUploads: number;
   textureUploads: number;
   useColorTexture: number[];
 } {
   const state = {
+    blendFuncs: [] as Array<[number, number]>,
+    cullFaces: [] as number[],
     deletedBuffers: 0,
     drawCalls: 0,
     drawVertexCounts: [] as number[],
     dynamicBufferUploads: 0,
     modelScales: [] as number[],
+    renderModes: [] as number[],
     smoothSphereShading: [] as number[],
     staticBufferUploads: 0,
     textureUploads: 0,
@@ -329,6 +376,7 @@ function createRecordingGl(): {
   const gl = {
     ARRAY_BUFFER: 1,
     BACK: 2,
+    BLEND: 29,
     CLAMP_TO_EDGE: 3,
     COLOR_BUFFER_BIT: 4,
     COMPILE_STATUS: 5,
@@ -347,21 +395,28 @@ function createRecordingGl(): {
     STATIC_DRAW: 17,
     TEXTURE0: 18,
     TEXTURE1: 19,
-    TEXTURE_2D: 20,
-    TEXTURE_MAG_FILTER: 21,
-    TEXTURE_MIN_FILTER: 22,
-    TEXTURE_WRAP_S: 23,
-    TEXTURE_WRAP_T: 24,
-    TRIANGLES: 25,
-    UNSIGNED_BYTE: 26,
-    UNSIGNED_SHORT: 27,
-    VERTEX_SHADER: 28,
+    TEXTURE2: 20,
+    TEXTURE_2D: 21,
+    TEXTURE_MAG_FILTER: 22,
+    TEXTURE_MIN_FILTER: 23,
+    TEXTURE_WRAP_S: 24,
+    TEXTURE_WRAP_T: 25,
+    TRIANGLES: 26,
+    UNSIGNED_BYTE: 27,
+    UNSIGNED_SHORT: 28,
+    VERTEX_SHADER: 30,
+    ONE_MINUS_SRC_ALPHA: 31,
+    SRC_ALPHA: 32,
+    ONE: 33,
     canvas,
     activeTexture: () => {},
     attachShader: () => {},
     bindBuffer: () => {},
     bindTexture: () => {},
     bindVertexArray: () => {},
+    blendFunc: (src: number, dst: number) => {
+      state.blendFuncs.push([src, dst]);
+    },
     bufferData: (_target: number, _data: unknown, usage: number) => {
       if (usage === 17) state.staticBufferUploads++;
       if (usage === 27) state.dynamicBufferUploads++;
@@ -375,7 +430,9 @@ function createRecordingGl(): {
     createShader: () => ({}),
     createTexture: () => ({}),
     createVertexArray: () => ({}),
-    cullFace: () => {},
+    cullFace: (mode: number) => {
+      state.cullFaces.push(mode);
+    },
     deleteBuffer: () => state.deletedBuffers++,
     deleteProgram: () => {},
     deleteShader: () => {},
@@ -413,6 +470,9 @@ function createRecordingGl(): {
       }
       if (location === "uUseColorTexture") {
         state.useColorTexture.push(value);
+      }
+      if (location === "uRenderMode") {
+        state.renderModes.push(value);
       }
     },
     uniform2f: () => {},

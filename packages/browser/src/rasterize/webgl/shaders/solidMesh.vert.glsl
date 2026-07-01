@@ -23,6 +23,8 @@ uniform float uGamma;
 
 out float vIntensity;
 out float vCameraDepth;
+out vec3 vCameraNormal;
+out vec3 vCameraPoint;
 out vec3 vLocalPosition;
 
 void main() {
@@ -41,14 +43,20 @@ void main() {
     cameraPoint.y
   );
   vCameraDepth = cameraPoint.y;
+  vCameraPoint = cameraPoint;
+
+  vec3 localNormal = uSmoothSphereShading == 1 ? normalize(aPosition) : aNormal;
+  vec3 normal = normalize(uModelOrientation * localNormal);
+  vCameraNormal = vec3(
+    dot(normal, uCameraRight),
+    dot(normal, uCameraForward),
+    dot(normal, uCameraUp)
+  );
 
   if (uEmissive == 1) {
     vIntensity = 1.0;
     return;
   }
-
-  vec3 localNormal = uSmoothSphereShading == 1 ? normalize(aPosition) : aNormal;
-  vec3 normal = normalize(uModelOrientation * localNormal);
   vec3 anchor =
     uModelOrientation * (aFaceAnchor * uModelScale) + uModelTranslation;
   float irradiance = 0.0;

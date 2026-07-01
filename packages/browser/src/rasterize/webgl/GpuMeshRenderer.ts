@@ -63,6 +63,7 @@ export class GpuMeshRenderer {
 
   private readonly uniforms: {
     ambient: WebGLUniformLocation;
+    atmosphereColor: WebGLUniformLocation;
     baseColor: WebGLUniformLocation;
     colorTexture: WebGLUniformLocation;
     cameraForward: WebGLUniformLocation;
@@ -80,6 +81,9 @@ export class GpuMeshRenderer {
     modelScale: WebGLUniformLocation;
     modelTranslation: WebGLUniformLocation;
     nearDepth: WebGLUniformLocation;
+    overlayOpacity: WebGLUniformLocation;
+    overlayTexture: WebGLUniformLocation;
+    renderMode: WebGLUniformLocation;
     smoothSphereShading: WebGLUniformLocation;
     textureLongitudeOffset: WebGLUniformLocation;
     useColorTexture: WebGLUniformLocation;
@@ -131,6 +135,9 @@ export class GpuMeshRenderer {
     );
     gl.uniform1f(this.uniforms.nearDepth, renderNearDepth);
     gl.uniform1f(this.uniforms.logDepthRange, logDepthRange);
+    gl.uniform1i(this.uniforms.overlayTexture, 2);
+    gl.uniform1f(this.uniforms.overlayOpacity, 1);
+    gl.uniform3f(this.uniforms.atmosphereColor, 0, 0, 0);
     gl.uniform3f(
       this.uniforms.cameraRight,
       frame.right.x,
@@ -146,17 +153,30 @@ export class GpuMeshRenderer {
     gl.uniform3f(this.uniforms.cameraUp, frame.up.x, frame.up.y, frame.up.z);
 
     const objects = params.scene.objects;
+    gl.disable(gl.BLEND);
+    gl.depthMask(true);
     for (let index = 0; index < objects.length; index++) {
       const object = objects[index];
-      if (object.wireframeOnly) continue;
-      if (params.objectsFilter && !params.objectsFilter(object)) continue;
-      if (
-        isBodyAtOrBeyondOnePixelThreshold(object, projectionService, height)
-      ) {
-        continue;
-      }
+      if (shouldSkipObject(object, params, projectionService, height)) continue;
       this.drawObject(object, params, projectionService);
     }
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.depthMask(false);
+    for (let index = 0; index < objects.length; index++) {
+      const object = objects[index];
+      if (shouldSkipObject(object, params, projectionService, height)) continue;
+      this.drawObjectClouds(object, params, projectionService);
+    }
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    for (let index = 0; index < objects.length; index++) {
+      const object = objects[index];
+      if (shouldSkipObject(object, params, projectionService, height)) continue;
+      this.drawObjectAtmosphere(object, params, projectionService);
+    }
+    gl.depthMask(true);
+    gl.disable(gl.BLEND);
 
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -221,26 +241,10 @@ export class GpuMeshRenderer {
       params.surface.height,
     );
     const mesh = this.getGpuMesh(selectedMesh);
-    writeMatrixColumnMajor(this.objectOrientation, object.orientation);
-    gl.uniformMatrix3fv(
-      this.uniforms.modelOrientation,
-      false,
-      this.objectOrientation,
-    );
-    gl.uniform3f(
-      this.uniforms.modelTranslation,
-      object.position.x - params.camera.position.x,
-      object.position.y - params.camera.position.y,
-      object.position.z - params.camera.position.z,
-    );
-    gl.uniform1f(this.uniforms.modelScale, object.meshScale);
-    gl.uniform1i(
-      this.uniforms.smoothSphereShading,
-      object.meshShading.kind === "smoothSphere" ? 1 : 0,
-    );
     const texture = this.getTextureForObject(object);
     gl.uniform1i(this.uniforms.colorTexture, 1);
     gl.uniform1i(this.uniforms.useColorTexture, texture ? 1 : 0);
+    gl.uniform1i(this.uniforms.renderMode, texture ? 1 : 0);
     gl.uniform1f(
       this.uniforms.textureLongitudeOffset,
       object.material?.kind === "sphericalTexture"
@@ -270,12 +274,66 @@ export class GpuMeshRenderer {
       gl.activeTexture(gl.TEXTURE1);
       gl.bindTexture(gl.TEXTURE_2D, texture.texture);
     }
-    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffer);
-    bindAttributePointers(gl, this.program);
-    gl.drawArrays(gl.TRIANGLES, 0, mesh.vertexCount);
-    profiler.increment("gpuRender", "drawCalls");
-    profiler.increment("gpuRender", "objects");
-    profiler.increment("gpuRender", "triangles", mesh.triangleCount);
+    this.drawMesh(object, mesh, params, 1);
+  }
+
+  private drawObjectClouds(
+    object: SceneObject,
+    params: ViewRenderParams,
+    projectionService: ProjectionService,
+  ): void {
+    const material = object.material;
+    if (material?.kind !== "sphericalTexture" || !material.cloudTextureId) {
+      return;
+    }
+    const texture = this.getTexture(material.cloudTextureId);
+    if (!texture) return;
+
+    const selectedMesh = selectGpuMeshForObject(
+      object,
+      projectionService,
+      params.surface.height,
+    );
+    const mesh = this.getGpuMesh(selectedMesh);
+    glBindOverlayTexture(
+      this.gl,
+      this.uniforms.overlayTexture,
+      texture.texture,
+    );
+    this.gl.uniform1i(this.uniforms.renderMode, 2);
+    this.gl.uniform1f(
+      this.uniforms.overlayOpacity,
+      material.cloudOpacity ?? 0.4,
+    );
+    this.drawMesh(object, mesh, params, material.cloudScale ?? 1.01);
+  }
+
+  private drawObjectAtmosphere(
+    object: SceneObject,
+    params: ViewRenderParams,
+    projectionService: ProjectionService,
+  ): void {
+    const material = object.material;
+    if (material?.kind !== "sphericalTexture" || !material.atmosphere) {
+      return;
+    }
+
+    const selectedMesh = selectGpuMeshForObject(
+      object,
+      projectionService,
+      params.surface.height,
+    );
+    const mesh = this.getGpuMesh(selectedMesh);
+    const atmosphere = material.atmosphere;
+    this.gl.uniform1i(this.uniforms.renderMode, 3);
+    this.gl.uniform1f(this.uniforms.overlayOpacity, atmosphere.opacity);
+    this.gl.uniform3f(
+      this.uniforms.atmosphereColor,
+      atmosphere.color.r / 255,
+      atmosphere.color.g / 255,
+      atmosphere.color.b / 255,
+    );
+    this.drawMesh(object, mesh, params, atmosphere.scale);
   }
 
   private getGpuMesh(mesh: Mesh): GpuMesh {
@@ -302,14 +360,58 @@ export class GpuMeshRenderer {
     const material = object.material;
     if (material?.kind !== "sphericalTexture") return null;
 
-    const source = this.textureSources[material.textureId];
+    return this.getTexture(material.textureId);
+  }
+
+  private getTexture(textureId: string): GpuTexture | null {
+    const source = this.textureSources[textureId];
     if (!source) return null;
 
-    const existing = this.textureCache.get(material.textureId);
+    const existing = this.textureCache.get(textureId);
     if (existing) return existing.loaded && !existing.failed ? existing : null;
 
-    const texture = this.createTextureRecord(material.textureId, source);
+    const texture = this.createTextureRecord(textureId, source);
     return texture.loaded && !texture.failed ? texture : null;
+  }
+
+  private drawMesh(
+    object: SceneObject,
+    mesh: GpuMesh,
+    params: ViewRenderParams,
+    scaleMultiplier: number,
+    cullFaceMode?: number,
+  ): void {
+    const gl = this.gl;
+    writeMatrixColumnMajor(this.objectOrientation, object.orientation);
+    gl.uniformMatrix3fv(
+      this.uniforms.modelOrientation,
+      false,
+      this.objectOrientation,
+    );
+    gl.uniform3f(
+      this.uniforms.modelTranslation,
+      object.position.x - params.camera.position.x,
+      object.position.y - params.camera.position.y,
+      object.position.z - params.camera.position.z,
+    );
+    gl.uniform1f(this.uniforms.modelScale, object.meshScale * scaleMultiplier);
+    gl.uniform1i(
+      this.uniforms.smoothSphereShading,
+      object.meshShading.kind === "smoothSphere" ? 1 : 0,
+    );
+    if (object.backFaceCulling) {
+      gl.enable(gl.CULL_FACE);
+      gl.cullFace(cullFaceMode ?? gl.BACK);
+      gl.frontFace(gl.CCW);
+    } else {
+      gl.disable(gl.CULL_FACE);
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffer);
+    bindAttributePointers(gl, this.program);
+    gl.drawArrays(gl.TRIANGLES, 0, mesh.vertexCount);
+    profiler.increment("gpuRender", "drawCalls");
+    profiler.increment("gpuRender", "objects");
+    profiler.increment("gpuRender", "triangles", mesh.triangleCount);
   }
 
   private createTextureRecord(textureId: string, source: string): GpuTexture {
@@ -391,9 +493,33 @@ function bindAttributePointers(
   );
 }
 
+function shouldSkipObject(
+  object: SceneObject,
+  params: ViewRenderParams,
+  projectionService: ProjectionService,
+  height: number,
+): boolean {
+  return (
+    object.wireframeOnly ||
+    Boolean(params.objectsFilter && !params.objectsFilter(object)) ||
+    isBodyAtOrBeyondOnePixelThreshold(object, projectionService, height)
+  );
+}
+
+function glBindOverlayTexture(
+  gl: WebGL2RenderingContext,
+  textureUniform: WebGLUniformLocation,
+  texture: WebGLTexture,
+): void {
+  gl.activeTexture(gl.TEXTURE2);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.uniform1i(textureUniform, 2);
+}
+
 function collectUniforms(gl: WebGL2RenderingContext, program: WebGLProgram) {
   return {
     ambient: requireUniform(gl, program, "uAmbient"),
+    atmosphereColor: requireUniform(gl, program, "uAtmosphereColor"),
     baseColor: requireUniform(gl, program, "uBaseColor"),
     colorTexture: requireUniform(gl, program, "uColorTexture"),
     cameraForward: requireUniform(gl, program, "uCameraForward"),
@@ -411,6 +537,9 @@ function collectUniforms(gl: WebGL2RenderingContext, program: WebGLProgram) {
     modelScale: requireUniform(gl, program, "uModelScale"),
     modelTranslation: requireUniform(gl, program, "uModelTranslation"),
     nearDepth: requireUniform(gl, program, "uNearDepth"),
+    overlayOpacity: requireUniform(gl, program, "uOverlayOpacity"),
+    overlayTexture: requireUniform(gl, program, "uOverlayTexture"),
+    renderMode: requireUniform(gl, program, "uRenderMode"),
     smoothSphereShading: requireUniform(gl, program, "uSmoothSphereShading"),
     textureLongitudeOffset: requireUniform(
       gl,
