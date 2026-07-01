@@ -328,7 +328,7 @@ export function buildDefaultSolarSystemConfigs(
       material: {
         atmosphere: {
           color: { r: 85, g: 205, b: 255 },
-          opacity: 0.9,
+          opacity: 1,
           scale: 1.008,
         },
         cloudOpacity: 0.42,

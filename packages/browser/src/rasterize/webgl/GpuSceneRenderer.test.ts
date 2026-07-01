@@ -136,9 +136,7 @@ describe("GPU scene renderer", () => {
       expect(recording.renderModes).toEqual([0, 3, 1, 2, 3]);
       expect(recording.blendFuncs).toEqual([
         [recording.gl.SRC_ALPHA, recording.gl.ONE_MINUS_SRC_ALPHA],
-        [recording.gl.SRC_ALPHA, recording.gl.ONE],
         [recording.gl.SRC_ALPHA, recording.gl.ONE_MINUS_SRC_ALPHA],
-        [recording.gl.SRC_ALPHA, recording.gl.ONE],
       ]);
     } finally {
       restoreImage();

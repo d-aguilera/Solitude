@@ -57,9 +57,12 @@ void main() {
     return;
   }
   if (uRenderMode == 3) {
+    float rim = getAtmosphereRim();
     float sunlight = smoothstep(0.03, 0.28, vIntensity);
-    float alpha = clamp(getAtmosphereRim() * uOverlayOpacity * sunlight, 0.0, 1.0);
-    outColor = vec4(uAtmosphereColor, alpha);
+    float density = 0.55 * sqrt(rim) + 0.45 * rim;
+    float alpha = clamp(density * uOverlayOpacity * sunlight, 0.0, 0.88);
+    vec3 haze = mix(uAtmosphereColor * 0.55, uAtmosphereColor, sqrt(rim));
+    outColor = vec4(haze, alpha);
     gl_FragDepth = fragmentDepth;
     return;
   }

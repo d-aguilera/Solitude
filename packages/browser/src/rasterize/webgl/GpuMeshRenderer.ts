@@ -169,7 +169,6 @@ export class GpuMeshRenderer {
       if (shouldSkipObject(object, params, projectionService, height)) continue;
       this.drawObjectClouds(object, params, projectionService);
     }
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     for (let index = 0; index < objects.length; index++) {
       const object = objects[index];
       if (shouldSkipObject(object, params, projectionService, height)) continue;
