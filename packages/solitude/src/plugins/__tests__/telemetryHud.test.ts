@@ -12,7 +12,10 @@ import {
   type GamePlugin,
   type PluginCapabilityProvider,
 } from "@solitude/engine/plugin";
-import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
+import {
+  createPluginCapabilityRegistry,
+  parameters,
+} from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
 import { createEntityNameProvider } from "@solitude/entity-names";
 import {
@@ -201,11 +204,45 @@ describe("telemetry HUD plugins", () => {
     panel.writeHud(grid, context);
 
     expect(columnTexts(grid, "left")[0]).toBe("Orbit: Earth (bound)");
-    expect(columnTexts(grid, "left")[1]).toContain("Pe/Ap: ");
+    expect(columnTexts(grid, "left")[1]).toBe("Pe/Ap: 6771 km / 6771 km");
     expect(columnTexts(grid, "left")[2]).toBe("e: 0.000");
     expect(columnTexts(grid, "left")[3]).toBe("i: 0.0°");
     expect(columnTexts(grid, "leftCenter")[0]).toContain("Δv Rad: ");
     expect(columnTexts(grid, "leftCenter")[1]).toContain("Δv Tan: ");
+  });
+
+  it("orbitTelemetry writes escape periapsis and inbound timing", () => {
+    const { world, ship } = createWorldAndShip();
+    const planetMass = 5.972e24;
+    const eccentricity = 1.5;
+    const periapsis = 10_000_000;
+    const radius = 25_000_000;
+    const semiLatusRectum = periapsis * (1 + eccentricity);
+    const mu = parameters.newtonG * planetMass;
+    const angularMomentum = Math.sqrt(mu * semiLatusRectum);
+    const radialSpeed = -((mu / angularMomentum) * eccentricity);
+    const tangentialSpeed = angularMomentum / radius;
+    const panel = getHudPanel(createOrbitTelemetryPlugin({ locale: "en" }));
+    const grid = createHudGrid();
+    const context = createHudContext(world, ship);
+
+    ship.position = vec3.create(radius, 0, 0);
+    ship.velocity = vec3.create(radialSpeed, tangentialSpeed, 0);
+    panel.writeHud(grid, context);
+
+    expect(columnTexts(grid, "left")[0]).toBe("Orbit: Earth (escape)");
+    expect(columnTexts(grid, "left")[1]).toBe("Pe/Ap: 10000 km / --");
+    expect(columnTexts(grid, "leftCenter")[2]).toMatch(/^Pe in: /);
+    expect(columnTexts(grid, "leftCenter")[2]).not.toBe("Pe in: --");
+    expect(columnTexts(grid, "leftCenter")[3]).toBe("Ap in: --");
+
+    const outboundGrid = createHudGrid();
+    ship.velocity = vec3.create(-radialSpeed, tangentialSpeed, 0);
+    panel.writeHud(outboundGrid, context);
+
+    expect(columnTexts(outboundGrid, "left")[1]).toBe("Pe/Ap: 10000 km / --");
+    expect(columnTexts(outboundGrid, "leftCenter")[2]).toBe("Pe in: --");
+    expect(columnTexts(outboundGrid, "leftCenter")[3]).toBe("Ap in: --");
   });
 
   it("orbitTelemetry keeps delta-v direction labels stable inside the deadband", () => {

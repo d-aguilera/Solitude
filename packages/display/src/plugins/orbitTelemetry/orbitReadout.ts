@@ -1,5 +1,6 @@
 import {
   EPS_ECCENTRICITY,
+  EPS_SPEED_FINE,
   EPS_TIME_SEC,
   getDominantBodyPrimary,
   vec3,
@@ -10,7 +11,6 @@ import type { ControlledBody, EntityId, World } from "@solitude/engine/world";
 
 export interface OrbitReadout {
   primaryId: EntityId;
-  primaryRadius: number;
   distance: number;
   speed: number;
   semiMajorAxis: number;
@@ -38,7 +38,6 @@ const eVecScratch: Vec3 = vec3.zero();
 export function createOrbitReadout(): OrbitReadout {
   return {
     primaryId: "",
-    primaryRadius: 0,
     distance: 0,
     speed: 0,
     semiMajorAxis: 0,
@@ -103,11 +102,12 @@ export function computeOrbitReadoutInto(
   }
 
   const isBound = eccentricity < 1 && energy < 0;
-  const periapsis = isBound ? semiMajorAxis * (1 - eccentricity) : NaN;
-  const apoapsis = isBound ? semiMajorAxis * (1 + eccentricity) : NaN;
+  const semiLatusRectum = h === 0 ? 0 : (h * h) / mu;
+  const periapsis =
+    semiLatusRectum >= 0 ? semiLatusRectum / (1 + eccentricity) : NaN;
+  const apoapsis = isBound ? semiLatusRectum / (1 - eccentricity) : Infinity;
 
   out.primaryId = primary.id;
-  out.primaryRadius = primary.radius;
   out.distance = r;
   out.speed = v;
   out.semiMajorAxis = semiMajorAxis;
@@ -127,6 +127,7 @@ export function computeOrbitReadoutInto(
     isBound,
     eccentricity,
     semiMajorAxis,
+    semiLatusRectum,
     r,
     radialSpeed,
     mu,
@@ -140,15 +141,31 @@ function computeApsisTimersInto(
   isBound: boolean,
   eccentricity: number,
   semiMajorAxis: number,
+  semiLatusRectum: number,
   r: number,
   radialSpeed: number,
   mu: number,
 ): void {
-  if (
-    !isBound ||
-    !Number.isFinite(semiMajorAxis) ||
-    eccentricity < EPS_ECCENTRICITY
-  ) {
+  if (eccentricity < EPS_ECCENTRICITY) {
+    out.timeToPeriapsisSec = null;
+    out.timeToApoapsisSec = null;
+    return;
+  }
+
+  if (!isBound) {
+    out.timeToPeriapsisSec = computeUnboundTimeToPeriapsis(
+      eccentricity,
+      semiMajorAxis,
+      semiLatusRectum,
+      r,
+      radialSpeed,
+      mu,
+    );
+    out.timeToApoapsisSec = null;
+    return;
+  }
+
+  if (!Number.isFinite(semiMajorAxis)) {
     out.timeToPeriapsisSec = null;
     out.timeToApoapsisSec = null;
     return;
@@ -185,6 +202,89 @@ function computeApsisTimersInto(
 
   out.timeToPeriapsisSec = timeToPeriapsisSec;
   out.timeToApoapsisSec = timeToApoapsisSec;
+}
+
+function computeUnboundTimeToPeriapsis(
+  eccentricity: number,
+  semiMajorAxis: number,
+  semiLatusRectum: number,
+  r: number,
+  radialSpeed: number,
+  mu: number,
+): number | null {
+  if (radialSpeed > EPS_SPEED_FINE) return null;
+
+  if (Math.abs(eccentricity - 1) <= EPS_ECCENTRICITY) {
+    return computeParabolicTimeToPeriapsis(
+      eccentricity,
+      semiLatusRectum,
+      r,
+      radialSpeed,
+      mu,
+    );
+  }
+
+  if (eccentricity <= 1 || semiMajorAxis >= 0) return null;
+
+  return computeHyperbolicTimeToPeriapsis(
+    eccentricity,
+    -semiMajorAxis,
+    r,
+    radialSpeed,
+    mu,
+  );
+}
+
+function computeHyperbolicTimeToPeriapsis(
+  eccentricity: number,
+  semiMajorAxisMagnitude: number,
+  r: number,
+  radialSpeed: number,
+  mu: number,
+): number | null {
+  if (semiMajorAxisMagnitude <= 0) return null;
+
+  const coshH = Math.max(1, (r / semiMajorAxisMagnitude + 1) / eccentricity);
+  const hMagnitude = Math.acosh(coshH);
+  const h = radialSpeed < -EPS_SPEED_FINE ? -hMagnitude : hMagnitude;
+  const meanAnomaly = eccentricity * Math.sinh(h) - h;
+  const meanMotion = Math.sqrt(
+    mu /
+      (semiMajorAxisMagnitude *
+        semiMajorAxisMagnitude *
+        semiMajorAxisMagnitude),
+  );
+  if (meanMotion === 0) return null;
+
+  return normalizeFuturePeriapsisTime(meanAnomaly / meanMotion);
+}
+
+function computeParabolicTimeToPeriapsis(
+  eccentricity: number,
+  semiLatusRectum: number,
+  r: number,
+  radialSpeed: number,
+  mu: number,
+): number | null {
+  const periapsis = semiLatusRectum / (1 + eccentricity);
+  if (periapsis <= 0) return null;
+
+  const dMagnitude = Math.sqrt(Math.max(0, r / periapsis - 1));
+  const d = radialSpeed < -EPS_SPEED_FINE ? -dMagnitude : dMagnitude;
+  const timeSincePeriapsis =
+    Math.sqrt((2 * periapsis * periapsis * periapsis) / mu) *
+    (d + (d * d * d) / 3);
+
+  return normalizeFuturePeriapsisTime(timeSincePeriapsis);
+}
+
+function normalizeFuturePeriapsisTime(
+  timeSincePeriapsis: number,
+): number | null {
+  if (!Number.isFinite(timeSincePeriapsis)) return null;
+  if (timeSincePeriapsis > EPS_TIME_SEC) return null;
+  const timeToPeriapsis = -timeSincePeriapsis;
+  return timeToPeriapsis < EPS_TIME_SEC ? 0 : timeToPeriapsis;
 }
 
 function clamp(value: number, min: number, max: number): number {

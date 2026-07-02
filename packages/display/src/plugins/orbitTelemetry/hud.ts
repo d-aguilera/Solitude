@@ -54,16 +54,10 @@ export function createHudPanel(
       grid.addLine(
         "left",
         "orbit.peAp",
-        orbitReadout.isBound
+        Number.isFinite(orbitReadout.periapsis)
           ? localization.periapsisApoapsis(
-              formatSignedDistance(
-                orbitReadout.periapsis - orbitReadout.primaryRadius,
-                localization,
-              ),
-              formatSignedDistance(
-                orbitReadout.apoapsis - orbitReadout.primaryRadius,
-                localization,
-              ),
+              formatSignedDistance(orbitReadout.periapsis, localization),
+              formatApsisDistance(orbitReadout.apoapsis, localization),
             )
           : localization.peApEmpty,
       );
@@ -152,4 +146,13 @@ function formatSignedDistance(
   return distanceMeters < 0
     ? "-".concat(localization.formatDistance(-distanceMeters))
     : localization.formatDistance(distanceMeters);
+}
+
+function formatApsisDistance(
+  distanceMeters: number,
+  localization: OrbitTelemetryLocalization,
+): string {
+  return Number.isFinite(distanceMeters)
+    ? formatSignedDistance(distanceMeters, localization)
+    : "--";
 }
