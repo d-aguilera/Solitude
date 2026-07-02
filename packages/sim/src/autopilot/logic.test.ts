@@ -110,6 +110,99 @@ describe("autopilot circle now v2", () => {
   });
 });
 
+describe("autopilot orbit mode", () => {
+  it("holds prograde forward with the primary above the ship", () => {
+    const ship = createShip({
+      frame: createFrame(
+        vec3.create(0, 0, 1),
+        vec3.create(0, 1, 0),
+        vec3.create(-1, 0, 0),
+      ),
+      velocity: vec3.create(0, circularSpeed, 0),
+    });
+    const input = createOrbitInput();
+
+    const command = getAutopilotAttitudeCommand(
+      1000,
+      ship,
+      input,
+      createWorld(ship),
+    );
+
+    expect(command).toBeNull();
+  });
+
+  it("rolls until the primary is above the ship", () => {
+    const ship = createShip({
+      frame: createFrame(
+        vec3.create(1, 0, 0),
+        vec3.create(0, 1, 0),
+        vec3.create(0, 0, 1),
+      ),
+      velocity: vec3.create(0, circularSpeed, 0),
+    });
+    const input = createOrbitInput();
+
+    const command = getAutopilotAttitudeCommand(
+      1000,
+      ship,
+      input,
+      createWorld(ship),
+    );
+
+    expect(command).not.toBeNull();
+    expect(command?.roll).toBeLessThan(0);
+    expect(command?.pitch).toBeCloseTo(0);
+    expect(command?.yaw).toBeCloseTo(0);
+  });
+
+  it("does not invent an orbital frame for radial-only motion", () => {
+    const ship = createShip({
+      frame: createFrame(
+        vec3.create(0, 0, 1),
+        vec3.create(0, 1, 0),
+        vec3.create(-1, 0, 0),
+      ),
+      velocity: vec3.create(-1000, 0, 0),
+    });
+    const input = createOrbitInput();
+
+    const command = getAutopilotAttitudeCommand(
+      1000,
+      ship,
+      input,
+      createWorld(ship),
+    );
+
+    expect(command).toBeNull();
+  });
+
+  it("leaves propulsion under manual control", () => {
+    const ship = createShip({
+      frame: createFrame(
+        vec3.create(0, 0, 1),
+        vec3.create(0, 1, 0),
+        vec3.create(-1, 0, 0),
+      ),
+      velocity: vec3.create(0, circularSpeed, 0),
+    });
+    const input = createOrbitInput();
+    const manualCommand = { main: { forward: 0.5 }, rcs: { right: -0.25 } };
+
+    const command = resolveAutopilotPropulsionCommand(
+      1000,
+      input,
+      ship,
+      createWorld(ship),
+      manualCommand,
+      1_000_000,
+      20_000,
+    );
+
+    expect(command).toBe(manualCommand);
+  });
+});
+
 function createShip({
   frame,
   velocity,
@@ -168,6 +261,12 @@ function createWorld(ship: ControlledBody): World {
 function createCircleNowInput() {
   const input = createControlInput(["circleNow"]);
   input.circleNow = true;
+  return input;
+}
+
+function createOrbitInput() {
+  const input = createControlInput(["orbit"]);
+  input.orbit = true;
   return input;
 }
 

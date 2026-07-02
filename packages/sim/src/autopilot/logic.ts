@@ -54,6 +54,9 @@ const circleCorrectionDirScratch: Vec3 = vec3.zero();
 const circleInwardScratch: Vec3 = vec3.zero();
 const omegaWorldScratch: Vec3 = vec3.zero();
 const circleProjScratch: Vec3 = vec3.zero();
+const orbitForwardScratch: Vec3 = vec3.zero();
+const orbitInwardScratch: Vec3 = vec3.zero();
+const orbitRightScratch: Vec3 = vec3.zero();
 
 type DominantPrimary = NonNullable<ReturnType<typeof getDominantBodyPrimary>>;
 type CircleNowState = {
@@ -194,6 +197,53 @@ export function getTangentialDirection(
   return tangentialScratch;
 }
 
+export function computeOrbitAttitudeCommand(
+  dtMillis: number,
+  ship: ControlledBodyState,
+  world: World,
+): AttitudeCommand | null {
+  const primary = getDominantBodyPrimary(world, ship.position);
+  if (!primary) return null;
+
+  vec3.subInto(rScratch, ship.position, primary.body.position);
+  const rLen = vec3.length(rScratch);
+  if (rLen === 0) return null;
+
+  vec3.scaleInto(orbitInwardScratch, -1 / rLen, rScratch);
+
+  vec3.subInto(vRelScratch, ship.velocity, primary.body.velocity);
+  const radialSpeed = vec3.dot(rScratch, vRelScratch) / rLen;
+  vec3.scaleInto(orbitForwardScratch, radialSpeed / rLen, rScratch);
+  vec3.subInto(orbitForwardScratch, vRelScratch, orbitForwardScratch);
+  const forwardLen = vec3.length(orbitForwardScratch);
+  if (forwardLen <= EPS_SPEED_FINE) return null;
+  vec3.scaleInto(orbitForwardScratch, 1 / forwardLen, orbitForwardScratch);
+
+  vec3.crossInto(orbitRightScratch, orbitForwardScratch, orbitInwardScratch);
+  const rightLen = vec3.length(orbitRightScratch);
+  if (rightLen <= EPS_LEN) return null;
+  vec3.scaleInto(orbitRightScratch, 1 / rightLen, orbitRightScratch);
+
+  const alignCommand = computeAlignToDirectionCommand(
+    dtMillis,
+    ship,
+    orbitForwardScratch,
+  );
+  const rollCommand = computeRollToDirectionCommand(
+    dtMillis,
+    ship,
+    orbitRightScratch,
+  );
+
+  if (!alignCommand) return rollCommand;
+  if (!rollCommand) return alignCommand;
+  return {
+    roll: alignCommand.roll + rollCommand.roll,
+    pitch: alignCommand.pitch,
+    yaw: alignCommand.yaw,
+  };
+}
+
 /**
  * Roll-only alignment: command a roll rate so the ship's right axis aligns with
  * the target direction projected onto the roll plane.
@@ -318,6 +368,8 @@ export function getAutopilotAttitudeCommand(
     if (direction) {
       return computeAlignToDirectionCommand(dtMillis, ship, direction);
     }
+  } else if (controlInput.orbit) {
+    return computeOrbitAttitudeCommand(dtMillis, ship, world);
   } else if (controlInput.alignToVelocity) {
     const direction = getVelocityDirection(ship);
     if (direction) {
@@ -749,6 +801,7 @@ export function disengageOnManualActuation(
   }
   controlInput.alignToVelocity = false;
   controlInput.alignToBody = false;
+  controlInput.orbit = false;
   controlInput.circleNow = false;
   return true;
 }

@@ -156,7 +156,7 @@
 - Main engine: `Space` forward, `B` backward.
 - RCS translation: `N` left, `M` right.
 - Attitude: `W/S` pitch, `Q/E` roll, `A/D` yaw.
-- Autopilot: `V` align to velocity, `C` align to dominant body, `X` circle now.
+- Autopilot: `V` align to velocity, `C` align to dominant body, `Z` orbit frame, `X` circle now.
 - Camera offset: `U/J` forward/back, `I/K` up/down.
 - Time scale: `[` decrease, `]` increase.
 - Pause: `P`.

@@ -312,7 +312,7 @@ describe("telemetry HUD plugins", () => {
 
     panel.writeHud(grid, context);
 
-    expect(columnTexts(grid, "rightCenter")).toEqual(["AP: VEL BODY [CN]"]);
+    expect(columnTexts(grid, "rightCenter")).toEqual(["AP: VEL BODY ORB [CN]"]);
     expect(columnTexts(grid, "center")).toEqual([]);
   });
 

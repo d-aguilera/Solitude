@@ -12,6 +12,7 @@ type AutopilotMessageTable = typeof enMessages;
 export interface AutopilotLocalization extends SolitudeLocalization {
   readonly body: string;
   readonly circleNow: string;
+  readonly orbit: string;
   readonly prefix: string;
   readonly velocity: string;
 }
@@ -31,6 +32,7 @@ export function createAutopilotLocalization(
     ...base,
     body: messages.body,
     circleNow: messages.circleNow,
+    orbit: messages.orbit,
     prefix: messages.prefix,
     velocity: messages.velocity,
   };

@@ -206,7 +206,9 @@ function formatAutopilotStatus(
     mode === "circleNow"
       ? "[".concat(localization.circleNow, "]")
       : localization.circleNow;
-  return localization.prefix.concat(vel, " ", body, " ", circle);
+  const orbit =
+    mode === "orbit" ? "[".concat(localization.orbit, "]") : localization.orbit;
+  return localization.prefix.concat(vel, " ", body, " ", orbit, " ", circle);
 }
 
 function formatCircleNowWarnings(

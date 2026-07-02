@@ -1,6 +1,7 @@
 {
   "body": "BODY",
   "circleNow": "CN",
+  "orbit": "ORB",
   "prefix": "AP: ",
   "velocity": "VEL"
 }

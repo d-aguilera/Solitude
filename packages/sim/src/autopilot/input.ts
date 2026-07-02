@@ -7,12 +7,14 @@ import type {
 const autopilotToggleActions: Set<ControlAction> = new Set([
   "alignToBody",
   "alignToVelocity",
+  "orbit",
   "circleNow",
 ]);
 
 const autopilotKeyMap: Record<string, ControlAction> = {
   KeyC: "alignToBody",
   KeyV: "alignToVelocity",
+  KeyZ: "orbit",
   KeyX: "circleNow",
 };
 
@@ -58,6 +60,7 @@ function isAutopilotToggle(action: ControlAction): action is ControlAction {
 function clearAutopilot(controlInput: ControlInput): void {
   controlInput.alignToBody = false;
   controlInput.alignToVelocity = false;
+  controlInput.orbit = false;
   controlInput.circleNow = false;
 }
 

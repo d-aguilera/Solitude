@@ -95,6 +95,7 @@ const maxServerSimulationRate = 1024;
 const remoteAutopilotKeyMap: Readonly<Record<string, string>> = {
   KeyC: "alignToBody",
   KeyV: "alignToVelocity",
+  KeyZ: "orbit",
   KeyX: "circleNow",
 };
 
@@ -215,6 +216,7 @@ function handleAutopilotKey(
   const controls: Partial<ControlInput> = {
     alignToBody: activeAutopilotAction === "alignToBody",
     alignToVelocity: activeAutopilotAction === "alignToVelocity",
+    orbit: activeAutopilotAction === "orbit",
     circleNow: activeAutopilotAction === "circleNow",
   };
   void sendInputPatch(controls);

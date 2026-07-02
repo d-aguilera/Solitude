@@ -47,6 +47,7 @@ export function isStoredAutopilotMode(
   return (
     value === "alignToVelocity" ||
     value === "alignToBody" ||
+    value === "orbit" ||
     value === "circleNow"
   );
 }
@@ -83,6 +84,7 @@ function createAutopilotAutonomousControl(): SpacecraftAutonomousControl {
 function clearAutopilotActions(controlInput: ControlInput): void {
   controlInput.alignToVelocity = false;
   controlInput.alignToBody = false;
+  controlInput.orbit = false;
   controlInput.circleNow = false;
 }
 
