@@ -9,7 +9,9 @@ import type {
   SegmentPlugin,
   SegmentProviderParams,
   WorldMarker,
+  WorldMarkerSink,
   WorldSegment,
+  WorldSegmentSink,
 } from "@solitude/engine/plugin";
 import type {
   RenderedView,
@@ -33,6 +35,8 @@ import { SceneOverlayRenderer } from "@solitude/engine/render/sceneOverlayRender
 import type { RuntimeWorldSnapshot } from "@solitude/engine/runtime";
 import {
   createPluginCapabilityRegistry,
+  createWorldMarkerBuffer,
+  createWorldSegmentBuffer,
   validatePluginRequirements,
 } from "@solitude/engine/runtime";
 import type { WorldAndSceneConfig } from "@solitude/engine/world";
@@ -151,8 +155,10 @@ export function createRemoteWorldRenderer({
   const sceneView = sceneViews[0];
   const mainViewLookState = getMainViewLookState(config.render);
   const sceneLabelCandidates: SceneLabelCandidate[] = [];
-  const worldSegments: WorldSegment[] = [];
-  const worldMarkers: WorldMarker[] = [];
+  const worldSegmentBuffer = createWorldSegmentBuffer();
+  const worldMarkerBuffer = createWorldMarkerBuffer();
+  const worldSegments = worldSegmentBuffer.items as WorldSegment[];
+  const worldMarkers = worldMarkerBuffer.items as WorldMarker[];
   const objectsFilter = buildSceneObjectsFilter(scenePlugins, {
     config,
     mainFocus: worldAndScene.mainFocus,
@@ -174,7 +180,9 @@ export function createRemoteWorldRenderer({
     scene: worldAndScene.scene,
     sceneLabelCandidates,
     surface,
+    worldMarkerCount: 0,
     worldSegments,
+    worldSegmentCount: 0,
     worldMarkers,
   };
 
@@ -191,14 +199,14 @@ export function createRemoteWorldRenderer({
       scene: worldAndScene.scene,
       world: worldAndScene.world,
     });
-    applySegmentPlugins(segmentPlugins, worldSegments, {
+    applySegmentPlugins(segmentPlugins, worldSegmentBuffer, {
       config,
       mainFocus: worldAndScene.mainFocus,
       scene: worldAndScene.scene,
       viewId: viewDefinition.id,
       world: worldAndScene.world,
     });
-    applyMarkerPlugins(markerPlugins, worldMarkers, {
+    applyMarkerPlugins(markerPlugins, worldMarkerBuffer, {
       config,
       mainFocus: worldAndScene.mainFocus,
       scene: worldAndScene.scene,
@@ -218,6 +226,8 @@ export function createRemoteWorldRenderer({
     renderParams.renderPolylines = options.renderPolylines ?? true;
     renderParams.renderSceneLabels = options.renderSceneLabels ?? true;
     renderParams.renderSegments = options.renderSegments ?? true;
+    renderParams.worldMarkerCount = worldMarkerBuffer.count;
+    renderParams.worldSegmentCount = worldSegmentBuffer.count;
     renderer.renderInto(renderedView, renderParams);
   };
 
@@ -308,14 +318,14 @@ export function createRemoteWorldMultiRenderer({
     });
     for (const view of renderedViews) {
       const definition = view.sceneView.definition;
-      applySegmentPlugins(segmentPlugins, view.worldSegments, {
+      applySegmentPlugins(segmentPlugins, view.worldSegmentBuffer, {
         config,
         mainFocus: worldAndScene.mainFocus,
         scene: worldAndScene.scene,
         viewId: definition.id,
         world: worldAndScene.world,
       });
-      applyMarkerPlugins(markerPlugins, view.worldMarkers, {
+      applyMarkerPlugins(markerPlugins, view.worldMarkerBuffer, {
         config,
         mainFocus: worldAndScene.mainFocus,
         scene: worldAndScene.scene,
@@ -335,6 +345,8 @@ export function createRemoteWorldMultiRenderer({
       view.renderParams.renderPolylines = options.renderPolylines ?? true;
       view.renderParams.renderSceneLabels = options.renderSceneLabels ?? true;
       view.renderParams.renderSegments = options.renderSegments ?? true;
+      view.renderParams.worldMarkerCount = view.worldMarkerBuffer.count;
+      view.renderParams.worldSegmentCount = view.worldSegmentBuffer.count;
       view.renderer.renderInto(view.renderedView, view.renderParams);
     }
   };
@@ -368,7 +380,9 @@ type InternalRemoteWorldRenderedView = RemoteWorldRenderedView & {
   readonly sceneLabelCandidates: SceneLabelCandidate[];
   readonly sceneView: SceneViewState;
   readonly worldSegments: WorldSegment[];
+  readonly worldSegmentBuffer: WorldSegmentSink;
   readonly worldMarkers: WorldMarker[];
+  readonly worldMarkerBuffer: WorldMarkerSink;
 };
 
 function createRemoteRenderedViews({
@@ -389,8 +403,10 @@ function createRemoteRenderedViews({
   return sceneViews.map((sceneView, index) => {
     const view = views[index];
     const sceneLabelCandidates: SceneLabelCandidate[] = [];
-    const worldSegments: WorldSegment[] = [];
-    const worldMarkers: WorldMarker[] = [];
+    const worldSegmentBuffer = createWorldSegmentBuffer();
+    const worldMarkerBuffer = createWorldMarkerBuffer();
+    const worldSegments = worldSegmentBuffer.items as WorldSegment[];
+    const worldMarkers = worldMarkerBuffer.items as WorldMarker[];
     const objectsFilter = buildSceneObjectsFilter(scenePlugins, {
       config,
       mainFocus: mirror.worldSetup.mainFocus,
@@ -411,14 +427,18 @@ function createRemoteRenderedViews({
         scene,
         sceneLabelCandidates,
         surface: view.surface,
+        worldMarkerCount: 0,
         worldSegments,
+        worldSegmentCount: 0,
         worldMarkers,
       },
       sceneLabelCandidates,
       sceneView,
       viewId: sceneView.definition.id,
       worldSegments,
+      worldSegmentBuffer,
       worldMarkers,
+      worldMarkerBuffer,
     };
   });
 }
@@ -555,10 +575,10 @@ function applyLabelPlugins(
 
 function applySegmentPlugins(
   plugins: SegmentPlugin[],
-  segments: WorldSegment[],
+  segments: WorldSegmentSink,
   params: SegmentProviderParams,
 ): void {
-  segments.length = 0;
+  segments.reset();
   for (const plugin of plugins) {
     plugin.appendSegments?.(segments, params);
   }
@@ -566,10 +586,10 @@ function applySegmentPlugins(
 
 function applyMarkerPlugins(
   plugins: MarkerPlugin[],
-  markers: WorldMarker[],
+  markers: WorldMarkerSink,
   params: SegmentProviderParams,
 ): void {
-  markers.length = 0;
+  markers.reset();
   for (const plugin of plugins) {
     plugin.appendMarkers?.(markers, params);
   }

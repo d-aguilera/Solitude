@@ -8,6 +8,7 @@ import type {
   SegmentProviderParams,
   WorldSegment,
 } from "@solitude/engine/plugin";
+import { createWorldSegmentBuffer } from "@solitude/engine/plugin";
 import type {
   ControlledBody,
   EntityCollisionSphere,
@@ -56,9 +57,9 @@ function appendSegments(
   controller: ReturnType<typeof createOrbitSegmentsController>,
   params: SegmentProviderParams,
 ): WorldSegment[] {
-  const segments: WorldSegment[] = [];
+  const segments = createWorldSegmentBuffer();
   controller.segments.appendSegments!(segments, params);
-  return segments;
+  return segments.items.slice(0, segments.count);
 }
 
 function createFixture(options: {

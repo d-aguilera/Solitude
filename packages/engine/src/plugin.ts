@@ -47,8 +47,14 @@ export type {
   ViewRegistry,
   WorldMarker,
   WorldMarkerShape,
+  WorldMarkerSink,
   WorldModelContributionParams,
   WorldModelPlugin,
   WorldModelRegistry,
   WorldSegment,
+  WorldSegmentSink,
 } from "./app/pluginPorts";
+export {
+  createWorldMarkerBuffer,
+  createWorldSegmentBuffer,
+} from "./app/renderContributions";

@@ -183,10 +183,12 @@ function createBuildParams(
     renderSegments?: boolean;
     width?: number;
     worldSegments?: ViewRenderParams["worldSegments"];
+    worldSegmentCount?: number;
   } = {},
 ) {
   const width = options.width ?? 800;
   const height = options.height ?? 600;
+  const worldSegments = options.worldSegments ?? [];
   const camera: ViewRenderParams["camera"] = {
     frame: localFrame.clone({
       forward: vec3.create(0, 1, 0),
@@ -205,7 +207,8 @@ function createBuildParams(
     renderSegments: options.renderSegments ?? true,
     surfaceHeight: height,
     surfaceWidth: width,
-    worldSegments: options.worldSegments ?? [],
+    worldSegmentCount: options.worldSegmentCount ?? worldSegments.length,
+    worldSegments,
   };
 }
 

@@ -8,7 +8,9 @@ import type {
   SegmentPlugin,
   SegmentProviderParams,
   WorldMarker,
+  WorldMarkerSink,
   WorldSegment,
+  WorldSegmentSink,
 } from "@solitude/engine/plugin";
 import type {
   ControlledBody,
@@ -226,29 +228,57 @@ function createShortBeam(body: ControlledBody): void {
   geometry.hasBeam = true;
 }
 
-function appendLaserSegments(into: WorldSegment[]): void {
+function appendLaserSegments(into: WorldSegmentSink): void {
   if (!geometry.hasBeam) return;
   vec3.copyInto(beamSegment.end, geometry.beamEnd);
-  into.push(beamSegment);
+  into.addSegment(
+    beamSegment.start,
+    beamSegment.end,
+    LASER_COLOR,
+    BEAM_LINE_WIDTH,
+  );
   if (geometry.hasConnector) {
     vec3.copyInto(connectorSegment.start, geometry.connectorStart);
     vec3.copyInto(connectorSegment.end, geometry.connectorEnd);
-    into.push(connectorSegment);
+    into.addSegment(
+      connectorSegment.start,
+      connectorSegment.end,
+      LASER_COLOR,
+      CONNECTOR_LINE_WIDTH,
+    );
   }
 }
 
-function appendLaserMarkers(into: WorldMarker[]): void {
+function appendLaserMarkers(into: WorldMarkerSink): void {
   if (geometry.hasImpact) {
     vec3.copyInto(impactMarker.position, geometry.impactPoint);
-    into.push(impactMarker);
+    into.addMarker(
+      impactMarker.position,
+      LASER_COLOR,
+      DOT_RADIUS_PIXELS,
+      MARKER_LINE_WIDTH,
+      "dot",
+    );
   }
   if (geometry.hasMiss) {
     vec3.copyInto(missMarker.position, geometry.beamEnd);
-    into.push(missMarker);
+    into.addMarker(
+      missMarker.position,
+      LASER_COLOR,
+      CROSS_RADIUS_PIXELS,
+      MARKER_LINE_WIDTH,
+      "cross",
+    );
   }
   if (geometry.hasTargetRing) {
     vec3.copyInto(targetMarker.position, geometry.targetCenter);
-    into.push(targetMarker);
+    into.addMarker(
+      targetMarker.position,
+      LASER_COLOR,
+      TARGET_RING_RADIUS_PIXELS,
+      MARKER_LINE_WIDTH,
+      "ring",
+    );
   }
 }
 

@@ -105,6 +105,8 @@ export interface ViewRenderParams {
   sceneLabelCandidates: SceneLabelCandidate[];
   scene: Scene;
   surface: RenderSurface2D;
-  worldSegments: WorldSegment[];
+  worldMarkerCount: number;
   worldMarkers: WorldMarker[];
+  worldSegmentCount: number;
+  worldSegments: WorldSegment[];
 }

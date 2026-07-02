@@ -17,11 +17,17 @@ import type {
   SegmentProviderParams,
   ViewControlPlugin,
   WorldMarker,
+  WorldMarkerSink,
   WorldSegment,
+  WorldSegmentSink,
 } from "./pluginPorts";
 import { validatePluginRequirements } from "./pluginRequirements";
 import { assembleSimulationPlugins } from "./pluginRuntime";
 import { getMainViewLookState } from "./renderConfigPorts";
+import {
+  createWorldMarkerBuffer,
+  createWorldSegmentBuffer,
+} from "./renderContributions";
 import type { TickParams, WorldAndScene } from "./runtimePorts";
 import { updateSceneViewCameras } from "./scene";
 import type { SceneControlState } from "./scenePorts";
@@ -55,7 +61,11 @@ export interface GamePipelineView {
   sceneView: SceneViewState;
   segmentParams: SegmentProviderParams;
   worldSegments: WorldSegment[];
+  worldSegmentCount: number;
+  worldSegmentBuffer: WorldSegmentSink;
   worldMarkers: WorldMarker[];
+  worldMarkerCount: number;
+  worldMarkerBuffer: WorldMarkerSink;
 }
 
 export interface GamePipeline {
@@ -228,8 +238,8 @@ export function createGamePipeline({
     endFrame: () => {
       loopParams.simTimeMillis = simTimeMillis;
       for (const plugin of loopPlugins) {
-        plugin.afterFrame?.(loopParams)
-      };
+        plugin.afterFrame?.(loopParams);
+      }
     },
     prepareView: (view, includeLabels, includeSegments) => {
       view.sceneLabelCandidates.length = 0;
@@ -238,16 +248,18 @@ export function createGamePipeline({
           plugin.appendLabels?.(view.sceneLabelCandidates, view.labelParams);
         }
       }
-      view.worldSegments.length = 0;
-      view.worldMarkers.length = 0;
+      view.worldSegmentBuffer.reset();
+      view.worldMarkerBuffer.reset();
       if (includeSegments) {
         for (const plugin of segmentPlugins) {
-          plugin.appendSegments?.(view.worldSegments, view.segmentParams);
+          plugin.appendSegments?.(view.worldSegmentBuffer, view.segmentParams);
         }
         for (const plugin of markerPlugins) {
-          plugin.appendMarkers?.(view.worldMarkers, view.segmentParams);
+          plugin.appendMarkers?.(view.worldMarkerBuffer, view.segmentParams);
         }
       }
+      view.worldSegmentCount = view.worldSegmentBuffer.count;
+      view.worldMarkerCount = view.worldMarkerBuffer.count;
     },
   };
 }
@@ -277,8 +289,8 @@ function createPipelineViews(
           filters.every((filter) => filter(object))
       : undefined;
     const sceneLabelCandidates: SceneLabelCandidate[] = [];
-    const worldSegments: WorldSegment[] = [];
-    const worldMarkers: WorldMarker[] = [];
+    const worldSegmentBuffer = createWorldSegmentBuffer();
+    const worldMarkerBuffer = createWorldMarkerBuffer();
     return {
       definition,
       labelParams: {
@@ -300,8 +312,12 @@ function createPipelineViews(
         viewId: definition.id,
         world: worldAndScene.world,
       },
-      worldSegments,
-      worldMarkers,
+      worldSegments: worldSegmentBuffer.items as WorldSegment[],
+      worldSegmentCount: 0,
+      worldSegmentBuffer,
+      worldMarkers: worldMarkerBuffer.items as WorldMarker[],
+      worldMarkerCount: 0,
+      worldMarkerBuffer,
     };
   });
 }

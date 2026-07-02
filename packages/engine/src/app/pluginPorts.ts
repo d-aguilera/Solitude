@@ -85,6 +85,18 @@ export interface WorldSegment {
   lineWidth: number;
 }
 
+export interface WorldSegmentSink {
+  readonly count: number;
+  readonly items: readonly WorldSegment[];
+  addSegment: (
+    start: Vec3,
+    end: Vec3,
+    color: RGB,
+    lineWidth: number,
+  ) => WorldSegment;
+  reset: () => void;
+}
+
 export type WorldMarkerShape = "cross" | "dot" | "ring";
 
 export interface WorldMarker {
@@ -93,6 +105,20 @@ export interface WorldMarker {
   radius: number;
   lineWidth: number;
   shape: WorldMarkerShape;
+}
+
+export interface WorldMarkerSink {
+  readonly count: number;
+  readonly items: readonly WorldMarker[];
+  addMarker: (
+    position: Vec3,
+    color: RGB,
+    radius: number,
+    lineWidth: number,
+    shape: WorldMarkerShape,
+  ) => WorldMarker;
+  push: (...markers: WorldMarker[]) => number;
+  reset: () => void;
 }
 
 export interface SegmentProviderParams {
@@ -105,13 +131,16 @@ export interface SegmentProviderParams {
 
 export interface SegmentPlugin {
   appendSegments?: (
-    into: WorldSegment[],
+    into: WorldSegmentSink,
     params: SegmentProviderParams,
   ) => void;
 }
 
 export interface MarkerPlugin {
-  appendMarkers?: (into: WorldMarker[], params: SegmentProviderParams) => void;
+  appendMarkers?: (
+    into: WorldMarkerSink,
+    params: SegmentProviderParams,
+  ) => void;
 }
 
 export interface SceneLabelCandidate {

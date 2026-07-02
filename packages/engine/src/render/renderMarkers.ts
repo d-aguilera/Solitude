@@ -9,13 +9,14 @@ const projectedScratch = ndc.zero();
 
 export function renderWorldMarkersInto(
   into: RenderedMarker[],
-  markers: WorldMarker[],
+  markers: readonly WorldMarker[],
+  markerCount: number,
   screenWidth: number,
   screenHeight: number,
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
 ): number {
   let count = 0;
-  for (let i = 0; i < markers.length; i++) {
+  for (let i = 0; i < markerCount; i++) {
     const marker = markers[i];
     if (!projectInto(projectedScratch, marker.position)) continue;
 

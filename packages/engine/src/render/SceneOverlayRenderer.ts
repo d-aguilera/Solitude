@@ -47,12 +47,7 @@ export class SceneOverlayRenderer implements ViewRenderer {
   }
 
   renderInto(into: RenderedView, params: ViewRenderParams): void {
-    const {
-      camera,
-      surface,
-      renderSegments,
-      renderSceneLabels,
-    } = params;
+    const { camera, surface, renderSegments, renderSceneLabels } = params;
     const screenWidth = surface.width;
     const screenHeight = surface.height;
     this.screenWidth = screenWidth;
@@ -71,6 +66,7 @@ export class SceneOverlayRenderer implements ViewRenderer {
       ? renderWorldSegmentsInto(
           into.segments,
           params.worldSegments,
+          params.worldSegmentCount,
           this.projectSegmentInto,
         )
       : 0;
@@ -79,6 +75,7 @@ export class SceneOverlayRenderer implements ViewRenderer {
       ? renderWorldMarkersInto(
           into.markers,
           params.worldMarkers,
+          params.worldMarkerCount,
           screenWidth,
           screenHeight,
           this.projectInto,

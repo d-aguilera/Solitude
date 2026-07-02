@@ -59,6 +59,7 @@ export class GpuLineRenderer {
       renderSegments: params.renderSegments,
       surfaceHeight: params.surface.height,
       surfaceWidth: params.surface.width,
+      worldSegmentCount: params.worldSegmentCount,
       worldSegments: params.worldSegments,
     });
     const vertexCount = this.builder.getVertexCount();

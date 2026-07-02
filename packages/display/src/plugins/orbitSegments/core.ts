@@ -8,7 +8,7 @@ import {
 import type {
   SegmentPlugin,
   SegmentProviderParams,
-  WorldSegment,
+  WorldSegmentSink,
 } from "@solitude/engine/plugin";
 import { parameters } from "@solitude/engine/runtime";
 import type { ControlledBody } from "@solitude/engine/world";
@@ -39,8 +39,8 @@ export function createOrbitSegmentsController(): OrbitSegmentsController {
         }
         if (!active) return;
         if (!mutateFocusOrbitSegments(geometry, params)) return;
-        for (let i = 0; i < geometry.segments.length; i++) {
-          into.push(geometry.segments[i]);
+        for (let i = 0; i < geometry.points.length; i++) {
+          appendOrbitSegment(into, geometry, i);
         }
       },
     },
@@ -50,7 +50,6 @@ export function createOrbitSegmentsController(): OrbitSegmentsController {
 interface OrbitSegmentGeometry {
   cos: Float64Array;
   points: Vec3[];
-  segments: WorldSegment[];
   sin: Float64Array;
 }
 
@@ -63,15 +62,6 @@ export function mutateFocusOrbitSegments(
 
 function createOrbitSegmentGeometry(sampleCount: number): OrbitSegmentGeometry {
   const points = Array.from({ length: sampleCount }, () => vec3.zero());
-  const segments = points.map((point, index): WorldSegment => {
-    const nextPoint = points[(index + 1) % points.length];
-    return {
-      color: ORBIT_COLOR,
-      end: nextPoint,
-      lineWidth: ORBIT_LINE_WIDTH,
-      start: point,
-    };
-  });
   const cos = new Float64Array(sampleCount);
   const sin = new Float64Array(sampleCount);
   for (let i = 0; i < sampleCount; i++) {
@@ -79,7 +69,20 @@ function createOrbitSegmentGeometry(sampleCount: number): OrbitSegmentGeometry {
     cos[i] = Math.cos(angle);
     sin[i] = Math.sin(angle);
   }
-  return { cos, points, segments, sin };
+  return { cos, points, sin };
+}
+
+function appendOrbitSegment(
+  into: WorldSegmentSink,
+  geometry: OrbitSegmentGeometry,
+  index: number,
+): void {
+  into.addSegment(
+    geometry.points[index],
+    geometry.points[(index + 1) % geometry.points.length],
+    ORBIT_COLOR,
+    ORBIT_LINE_WIDTH,
+  );
 }
 
 function mutateOrbitSegmentsForBody(

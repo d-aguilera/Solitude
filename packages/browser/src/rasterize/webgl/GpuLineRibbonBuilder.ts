@@ -33,6 +33,7 @@ export interface LineRibbonBuildParams {
   renderSegments: boolean;
   surfaceHeight: number;
   surfaceWidth: number;
+  worldSegmentCount: number;
   worldSegments: readonly WorldSegment[];
 }
 
@@ -68,7 +69,7 @@ export class GpuLineRibbonBuilder {
 
   private buildWorldSegments(params: LineRibbonBuildParams): void {
     const segments = params.worldSegments;
-    for (let index = 0; index < segments.length; index++) {
+    for (let index = 0; index < params.worldSegmentCount; index++) {
       const segment = segments[index];
       this.processSegment(segment, segment.start, segment.end, params);
     }

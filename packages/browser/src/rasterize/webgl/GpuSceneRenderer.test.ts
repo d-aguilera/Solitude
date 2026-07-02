@@ -151,6 +151,7 @@ describe("GPU scene renderer", () => {
     });
     const params = createRenderParams([createObject(), createPolyline()]);
     params.worldSegments.push(createWorldSegment());
+    params.worldSegmentCount = params.worldSegments.length;
 
     renderer.render(params);
 
@@ -181,6 +182,7 @@ describe("GPU scene renderer", () => {
     });
     const params = createRenderParams(createObject());
     params.worldSegments.push(createWorldSegment());
+    params.worldSegmentCount = params.worldSegments.length;
     params.renderSegments = false;
 
     renderer.render(params);
@@ -327,7 +329,9 @@ function createRenderParams(
     scene: { lights: [], objects },
     sceneLabelCandidates: [],
     surface: { height: 600, width: 800 },
+    worldMarkerCount: 0,
     worldMarkers: [],
+    worldSegmentCount: 0,
     worldSegments: [],
   };
 }

@@ -44,7 +44,9 @@ function createRenderParams(object: PolylineSceneObject): ViewRenderParams {
     scene: { lights: [], objects: [object] },
     sceneLabelCandidates: [],
     surface: { height: 600, width: 800 },
+    worldMarkerCount: 0,
     worldMarkers: [],
+    worldSegmentCount: 0,
     worldSegments: [],
   };
 }

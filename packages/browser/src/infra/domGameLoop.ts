@@ -129,7 +129,9 @@ function createLoopViews(
         scene: worldAndScene.scene,
         sceneLabelCandidates: pipelineView.sceneLabelCandidates,
         surface: view.surface,
+        worldMarkerCount: pipelineView.worldMarkerCount,
         worldMarkers: pipelineView.worldMarkers,
+        worldSegmentCount: pipelineView.worldSegmentCount,
         worldSegments: pipelineView.worldSegments,
       },
     };
@@ -152,6 +154,8 @@ function renderViews(
     view.renderParams.renderPolylines = passes.polylines;
     view.renderParams.renderSceneLabels = passes.sceneLabels;
     view.renderParams.renderSegments = passes.segments;
+    view.renderParams.worldMarkerCount = view.pipelineView.worldMarkerCount;
+    view.renderParams.worldSegmentCount = view.pipelineView.worldSegmentCount;
     if (profiler.begin("viewRender", view.definition.id)) {
       try {
         view.renderer.renderInto(view.renderedView, view.renderParams);

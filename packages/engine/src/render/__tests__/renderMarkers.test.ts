@@ -18,6 +18,7 @@ describe("renderWorldMarkersInto", () => {
           shape: "cross",
         },
       ],
+      1,
       800,
       600,
       (into) => {

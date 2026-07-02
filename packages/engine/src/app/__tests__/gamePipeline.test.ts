@@ -42,12 +42,12 @@ describe("gamePipeline", () => {
       segments: {
         appendSegments: (into) => {
           events.push("segments");
-          into.push({
-            color: { r: 255, g: 255, b: 255 },
-            end: vec3.zero(),
-            lineWidth: 1,
-            start: vec3.zero(),
-          });
+          into.addSegment(
+            vec3.zero(),
+            vec3.zero(),
+            { r: 255, g: 255, b: 255 },
+            1,
+          );
         },
       },
     };

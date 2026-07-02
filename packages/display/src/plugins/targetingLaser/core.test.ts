@@ -4,6 +4,10 @@ import type {
   WorldMarker,
   WorldSegment,
 } from "@solitude/engine/plugin";
+import {
+  createWorldMarkerBuffer,
+  createWorldSegmentBuffer,
+} from "@solitude/engine/plugin";
 import type {
   ControlledBody,
   EntityCollisionSphere,
@@ -48,11 +52,13 @@ describe("targeting laser", () => {
 
     fixture.body.frame.forward.x = -0.15;
     fixture.body.frame.forward.y = Math.sqrt(1 - 0.15 * 0.15);
-    const segments: WorldSegment[] = [];
-    const markers: WorldMarker[] = [];
-    controller.segments.appendSegments!(segments, fixture.params);
-    controller.markers.appendMarkers!(markers, fixture.params);
+    const segmentBuffer = createWorldSegmentBuffer();
+    const markerBuffer = createWorldMarkerBuffer();
+    controller.segments.appendSegments!(segmentBuffer, fixture.params);
+    controller.markers.appendMarkers!(markerBuffer, fixture.params);
 
+    const segments = segmentBuffer.items.slice(0, segmentBuffer.count);
+    const markers = markerBuffer.items.slice(0, markerBuffer.count);
     expect(segments).toHaveLength(1);
     expect(markers.map((marker) => marker.shape)).toEqual(["dot", "ring"]);
   });
@@ -65,10 +71,12 @@ describe("targeting laser", () => {
     activate(controller, fixture.params);
 
     obstruction.state.position.x = 0;
-    const segments: WorldSegment[] = [];
-    const markers: WorldMarker[] = [];
-    controller.segments.appendSegments!(segments, fixture.params);
-    controller.markers.appendMarkers!(markers, fixture.params);
+    const segmentBuffer = createWorldSegmentBuffer();
+    const markerBuffer = createWorldMarkerBuffer();
+    controller.segments.appendSegments!(segmentBuffer, fixture.params);
+    controller.markers.appendMarkers!(markerBuffer, fixture.params);
+    const segments = segmentBuffer.items.slice(0, segmentBuffer.count);
+    const markers = markerBuffer.items.slice(0, markerBuffer.count);
 
     expect(segments[0].end.y).toBe(475);
     expect(markers.map((marker) => marker.shape)).toEqual(["dot", "ring"]);
@@ -81,9 +89,9 @@ describe("targeting laser", () => {
     expect(activate(controller, fixture.params).segments).toHaveLength(1);
 
     controller.requestToggle();
-    const segments: WorldSegment[] = [];
+    const segments = createWorldSegmentBuffer();
     controller.segments.appendSegments!(segments, fixture.params);
-    expect(segments).toHaveLength(0);
+    expect(segments.count).toBe(0);
   });
 });
 
@@ -92,11 +100,14 @@ function activate(
   params: SegmentProviderParams,
 ): { markers: WorldMarker[]; segments: WorldSegment[] } {
   controller.requestToggle();
-  const segments: WorldSegment[] = [];
-  const markers: WorldMarker[] = [];
-  controller.segments.appendSegments!(segments, params);
-  controller.markers.appendMarkers!(markers, params);
-  return { markers, segments };
+  const segmentBuffer = createWorldSegmentBuffer();
+  const markerBuffer = createWorldMarkerBuffer();
+  controller.segments.appendSegments!(segmentBuffer, params);
+  controller.markers.appendMarkers!(markerBuffer, params);
+  return {
+    markers: markerBuffer.items.slice(0, markerBuffer.count),
+    segments: segmentBuffer.items.slice(0, segmentBuffer.count),
+  };
 }
 
 function createFixture(...spheres: EntityCollisionSphere[]): {

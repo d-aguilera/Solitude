@@ -13,11 +13,12 @@ const projectedScratch: ProjectedSegment = {
 
 export function renderWorldSegmentsInto(
   into: RenderedSegment[],
-  segments: WorldSegment[],
+  segments: readonly WorldSegment[],
+  segmentCount: number,
   projectSegmentInto: SegmentProjector,
 ): number {
   let count = 0;
-  for (let i = 0; i < segments.length; i++) {
+  for (let i = 0; i < segmentCount; i++) {
     const seg = segments[i];
     if (!projectSegmentInto(projectedScratch, seg.start, seg.end)) continue;
     let entry = into[count];

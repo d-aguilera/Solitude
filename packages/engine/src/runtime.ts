@@ -15,6 +15,10 @@ export type { PhysicsWorkspace } from "./app/physics";
 export { createPluginCapabilityRegistry } from "./app/pluginCapabilities";
 export { validatePluginRequirements } from "./app/pluginRequirements";
 export type { PluginRequirementValidationParams } from "./app/pluginRequirements";
+export {
+  createWorldMarkerBuffer,
+  createWorldSegmentBuffer,
+} from "./app/renderContributions";
 export type {
   FocusContext,
   TickCallback,
