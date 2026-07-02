@@ -70,11 +70,11 @@ describe("remote world renderer", () => {
           id: "test-render-contributions",
           labels: {
             appendLabels: (into, params) => {
-              into.push({
-                anchor: params.mainFocus.controlledBody.position,
-                id: "label:test",
-                lines: ["Test"],
-              });
+              into.addLabel(
+                "label:test",
+                params.mainFocus.controlledBody.position,
+                ["Test"],
+              );
             },
           },
           segments: {

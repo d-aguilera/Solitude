@@ -86,6 +86,7 @@ export class SceneOverlayRenderer implements ViewRenderer {
       ? renderSceneLabelsInto(
           into.sceneLabels,
           params.sceneLabelCandidates,
+          params.sceneLabelCandidateCount,
           screenWidth,
           screenHeight,
           this.projectInto,

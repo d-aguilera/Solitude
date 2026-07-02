@@ -327,6 +327,7 @@ function createRenderParams(
     renderSceneLabels: true,
     renderSegments: true,
     scene: { lights: [], objects },
+    sceneLabelCandidateCount: 0,
     sceneLabelCandidates: [],
     surface: { height: 600, width: 800 },
     worldMarkerCount: 0,

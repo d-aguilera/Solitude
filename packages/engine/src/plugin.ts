@@ -30,6 +30,7 @@ export type {
   SceneLabelCandidate,
   SceneLabelPlugin,
   SceneLabelProviderParams,
+  SceneLabelSink,
   SceneObjectFilter,
   ScenePlugin,
   SceneUpdateParams,
@@ -55,6 +56,7 @@ export type {
   WorldSegmentSink,
 } from "./app/pluginPorts";
 export {
+  createSceneLabelBuffer,
   createWorldMarkerBuffer,
   createWorldSegmentBuffer,
 } from "./app/renderContributions";

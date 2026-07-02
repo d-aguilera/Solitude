@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { vec3 } from "../../domain/vec3";
 import {
+  createSceneLabelBuffer,
   createWorldMarkerBuffer,
   createWorldSegmentBuffer,
 } from "../renderContributions";
@@ -50,6 +51,35 @@ describe("render contribution buffers", () => {
       position: { x: 1, y: 2, z: 30 },
       radius: 12,
       shape: "ring",
+    });
+  });
+
+  it("reuses scene label entries and copies line text across frame resets", () => {
+    const buffer = createSceneLabelBuffer();
+    const anchor = vec3.create(1, 2, 3);
+    const lines = ["Earth", "d=1 km", "v=2 m/s"];
+    const first = buffer.addLabel(
+      "planet:earth",
+      anchor,
+      lines,
+      "star:sun",
+      -5,
+    );
+
+    buffer.reset();
+    anchor.x = 10;
+    lines[0] = "Moon";
+    lines.length = 1;
+    const second = buffer.addLabel("moon:luna", anchor, lines);
+
+    expect(second).toBe(first);
+    expect(buffer.count).toBe(1);
+    expect(buffer.items[0]).toMatchObject({
+      anchor: { x: 10, y: 2, z: 3 },
+      id: "moon:luna",
+      lines: ["Moon"],
+      parentId: undefined,
+      priority: undefined,
     });
   });
 });

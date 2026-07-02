@@ -3,7 +3,6 @@ import type {
   GamePlugin,
   PluginCapabilityRegistry,
   RuntimeOptions,
-  SceneLabelCandidate,
   SceneLabelPlugin,
 } from "@solitude/engine/plugin";
 import {
@@ -22,10 +21,6 @@ import {
 
 const distanceScratch: Vec3 = vec3.zero();
 
-type MutableSceneLabelCandidate = SceneLabelCandidate & {
-  lines: string[];
-};
-
 export function createBodyLabelsPlugin(
   runtimeOptions: RuntimeOptions = {},
 ): GamePlugin {
@@ -41,8 +36,8 @@ export function createBodyLabelsPlugin(
 function createSceneLabelPlugin(
   localization: BodyLabelLocalization,
 ): SceneLabelPlugin {
-  const candidatesById = new Map<string, MutableSceneLabelCandidate>();
   const displayNamesById = new Map<string, string>();
+  const labelLinesScratch: string[] = [];
 
   return {
     appendLabels: (into, params) => {
@@ -61,39 +56,24 @@ function createSceneLabelPlugin(
         vec3.subInto(distanceScratch, object.position, referencePosition);
         const distance = vec3.length(distanceScratch);
         const velocity = getObjectVelocity(params.world, object);
-        const candidate = getCandidate(candidatesById, object.id);
-        candidate.anchor = object.position;
-        candidate.parentId =
-          object.kind === "controlledBody" ? undefined : object.centralEntityId;
-        candidate.priority = -distance;
         writeLabelLines(
-          candidate.lines,
+          labelLinesScratch,
           params.labelMode,
           getDisplayName(displayNamesById, object, params.capabilityRegistry),
           distance,
           velocity ? vec3.length(velocity) : 0,
           localization,
         );
-        into.push(candidate);
+        into.addLabel(
+          object.id,
+          object.position,
+          labelLinesScratch,
+          object.kind === "controlledBody" ? undefined : object.centralEntityId,
+          -distance,
+        );
       }
     },
   };
-}
-
-function getCandidate(
-  candidatesById: Map<string, MutableSceneLabelCandidate>,
-  id: string,
-): MutableSceneLabelCandidate {
-  let candidate = candidatesById.get(id);
-  if (!candidate) {
-    candidate = {
-      id,
-      anchor: vec3.zero(),
-      lines: [],
-    };
-    candidatesById.set(id, candidate);
-  }
-  return candidate;
 }
 
 function writeLabelLines(

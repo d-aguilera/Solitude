@@ -117,7 +117,6 @@ export interface WorldMarkerSink {
     lineWidth: number,
     shape: WorldMarkerShape,
   ) => WorldMarker;
-  push: (...markers: WorldMarker[]) => number;
   reset: () => void;
 }
 
@@ -151,6 +150,19 @@ export interface SceneLabelCandidate {
   priority?: number;
 }
 
+export interface SceneLabelSink {
+  readonly count: number;
+  readonly items: readonly SceneLabelCandidate[];
+  addLabel: (
+    id: string,
+    anchor: Vec3,
+    lines: readonly string[],
+    parentId?: EntityId,
+    priority?: number,
+  ) => SceneLabelCandidate;
+  reset: () => void;
+}
+
 export interface SceneLabelProviderParams {
   viewId: SceneViewId;
   labelMode: ViewLabelMode;
@@ -163,7 +175,7 @@ export interface SceneLabelProviderParams {
 
 export interface SceneLabelPlugin {
   appendLabels?: (
-    into: SceneLabelCandidate[],
+    into: SceneLabelSink,
     params: SceneLabelProviderParams,
   ) => void;
 }

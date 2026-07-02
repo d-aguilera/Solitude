@@ -1,5 +1,7 @@
 import { vec3 } from "../domain/vec3";
 import type {
+  SceneLabelCandidate,
+  SceneLabelSink,
   WorldMarker,
   WorldMarkerShape,
   WorldMarkerSink,
@@ -7,6 +9,10 @@ import type {
   WorldSegmentSink,
 } from "./pluginPorts";
 import type { RGB } from "./scenePorts";
+
+export function createSceneLabelBuffer(): SceneLabelSink {
+  return new ReusableSceneLabelBuffer();
+}
 
 export function createWorldSegmentBuffer(): WorldSegmentSink {
   return new ReusableWorldSegmentBuffer();
@@ -17,7 +23,6 @@ export function createWorldMarkerBuffer(): WorldMarkerSink {
 }
 
 class ReusableWorldSegmentBuffer implements WorldSegmentSink {
-  private readonly owned: boolean[] = [];
   readonly items: WorldSegment[] = [];
   count = 0;
 
@@ -29,7 +34,7 @@ class ReusableWorldSegmentBuffer implements WorldSegmentSink {
   ): WorldSegment {
     const index = this.count;
     let segment = this.items[index];
-    if (!segment || !this.owned[index]) {
+    if (!segment) {
       segment = {
         start: vec3.zero(),
         end: vec3.zero(),
@@ -37,7 +42,6 @@ class ReusableWorldSegmentBuffer implements WorldSegmentSink {
         lineWidth: 0,
       };
       this.items[index] = segment;
-      this.owned[index] = true;
     }
     vec3.copyInto(segment.start, start);
     vec3.copyInto(segment.end, end);
@@ -53,7 +57,6 @@ class ReusableWorldSegmentBuffer implements WorldSegmentSink {
 }
 
 class ReusableWorldMarkerBuffer implements WorldMarkerSink {
-  private readonly owned: boolean[] = [];
   readonly items: WorldMarker[] = [];
   count = 0;
 
@@ -66,7 +69,7 @@ class ReusableWorldMarkerBuffer implements WorldMarkerSink {
   ): WorldMarker {
     const index = this.count;
     let marker = this.items[index];
-    if (!marker || !this.owned[index]) {
+    if (!marker) {
       marker = {
         position: vec3.zero(),
         color: createRgb(),
@@ -75,7 +78,6 @@ class ReusableWorldMarkerBuffer implements WorldMarkerSink {
         shape,
       };
       this.items[index] = marker;
-      this.owned[index] = true;
     }
     vec3.copyInto(marker.position, position);
     copyRgbInto(marker.color, color);
@@ -86,19 +88,49 @@ class ReusableWorldMarkerBuffer implements WorldMarkerSink {
     return marker;
   }
 
-  push(...markers: WorldMarker[]): number {
-    for (let i = 0; i < markers.length; i++) {
-      this.items[this.count] = markers[i];
-      this.owned[this.count] = false;
-      this.count++;
+  reset(): void {
+    this.count = 0;
+  }
+}
+
+class ReusableSceneLabelBuffer implements SceneLabelSink {
+  readonly items: SceneLabelCandidate[] = [];
+  count = 0;
+
+  addLabel(
+    id: string,
+    anchor: SceneLabelCandidate["anchor"],
+    lines: readonly string[],
+    parentId?: SceneLabelCandidate["parentId"],
+    priority?: number,
+  ): SceneLabelCandidate {
+    const index = this.count;
+    let label = this.items[index] as MutableSceneLabelCandidate | undefined;
+    if (!label) {
+      label = {
+        id: "",
+        anchor: vec3.zero(),
+        lines: [],
+      };
+      this.items[index] = label;
     }
-    return this.count;
+    label.id = id;
+    vec3.copyInto(label.anchor, anchor);
+    copyLinesInto(label.lines, lines);
+    label.parentId = parentId;
+    label.priority = priority;
+    this.count++;
+    return label;
   }
 
   reset(): void {
     this.count = 0;
   }
 }
+
+type MutableSceneLabelCandidate = Omit<SceneLabelCandidate, "lines"> & {
+  lines: string[];
+};
 
 function createRgb(): RGB {
   return { r: 0, g: 0, b: 0 };
@@ -108,5 +140,14 @@ function copyRgbInto(into: RGB, color: RGB): RGB {
   into.r = color.r;
   into.g = color.g;
   into.b = color.b;
+  return into;
+}
+
+function copyLinesInto(into: string[], lines: readonly string[]): string[] {
+  const lineCount = lines.length;
+  for (let i = 0; i < lineCount; i++) {
+    into[i] = lines[i];
+  }
+  into.length = lineCount;
   return into;
 }

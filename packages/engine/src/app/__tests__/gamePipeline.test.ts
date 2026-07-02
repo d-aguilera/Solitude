@@ -36,7 +36,7 @@ describe("gamePipeline", () => {
       labels: {
         appendLabels: (into) => {
           events.push("labels");
-          into.push({ anchor: vec3.zero(), id: "label", lines: ["Label"] });
+          into.addLabel("label", vec3.zero(), ["Label"]);
         },
       },
       segments: {
@@ -87,7 +87,7 @@ describe("gamePipeline", () => {
       events.indexOf("scene:update"),
     );
     expect(events.slice(-3)).toEqual(["labels", "segments", "loop:after"]);
-    expect(pipeline.views[0].sceneLabelCandidates).toHaveLength(1);
+    expect(pipeline.views[0].sceneLabelCandidateCount).toBe(1);
     expect(pipeline.views[0].worldSegments).toHaveLength(1);
   });
 });

@@ -3,6 +3,7 @@ import type {
   SceneLabelCandidate,
   SceneLabelProviderParams,
 } from "@solitude/engine/plugin";
+import { createSceneLabelBuffer } from "@solitude/engine/plugin";
 import type { Scene, SceneObject } from "@solitude/engine/render";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { World } from "@solitude/engine/world";
@@ -52,7 +53,7 @@ function createControlledBody(id: string, displayName?: string): SceneObject {
 describe("body label plugin", () => {
   it("provides full scene label candidates for orbital bodies", () => {
     const plugin = createBodyLabelsPlugin();
-    const labels: SceneLabelCandidate[] = [];
+    const labels = createSceneLabelBuffer();
     const scene: Scene = {
       lights: [],
       objects: [createOrbitalBody("planet:earth", "star:sun")],
@@ -63,17 +64,18 @@ describe("body label plugin", () => {
       labelMode: "full",
     });
 
-    expect(labels).toHaveLength(1);
-    expect(labels[0].id).toBe("planet:earth");
-    expect(labels[0].parentId).toBe("star:sun");
-    expect(labels[0].lines[0]).toBe("Earth");
-    expect(labels[0].lines[1]).toContain("d=");
-    expect(labels[0].lines[2]).toContain("v=");
+    const candidates = activeLabels(labels);
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].id).toBe("planet:earth");
+    expect(candidates[0].parentId).toBe("star:sun");
+    expect(candidates[0].lines[0]).toBe("Earth");
+    expect(candidates[0].lines[1]).toContain("d=");
+    expect(candidates[0].lines[2]).toContain("v=");
   });
 
   it("provides name-only labels for compact views", () => {
     const plugin = createBodyLabelsPlugin();
-    const labels: SceneLabelCandidate[] = [];
+    const labels = createSceneLabelBuffer();
     const scene: Scene = {
       lights: [],
       objects: [createOrbitalBody("planet:earth")],
@@ -85,12 +87,12 @@ describe("body label plugin", () => {
       viewId: "top",
     });
 
-    expect(labels[0].lines).toEqual(["Earth"]);
+    expect(activeLabels(labels)[0].lines).toEqual(["Earth"]);
   });
 
   it("localizes built-in solar-system names", () => {
     const plugin = createBodyLabelsPlugin({ locale: "es" });
-    const labels: SceneLabelCandidate[] = [];
+    const labels = createSceneLabelBuffer();
     const scene: Scene = {
       lights: [],
       objects: [createOrbitalBody("planet:earth")],
@@ -110,12 +112,12 @@ describe("body label plugin", () => {
       labelMode: "nameOnly",
     });
 
-    expect(labels[0].lines).toEqual(["Tierra"]);
+    expect(activeLabels(labels)[0].lines).toEqual(["Tierra"]);
   });
 
   it("labels other controlled bodies by display name", () => {
     const plugin = createBodyLabelsPlugin();
-    const labels: SceneLabelCandidate[] = [];
+    const labels = createSceneLabelBuffer();
     const scene: Scene = {
       lights: [],
       objects: [
@@ -126,13 +128,18 @@ describe("body label plugin", () => {
 
     plugin.labels?.appendLabels?.(labels, createParams(scene, "ship:1"));
 
-    expect(labels).toHaveLength(1);
-    expect(labels[0].id).toBe("ship:red");
-    expect(labels[0].lines[0]).toBe("Red");
-    expect(labels[0].lines[1]).toContain("d=");
-    expect(labels[0].lines[2]).toContain("v=");
+    const candidates = activeLabels(labels);
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].id).toBe("ship:red");
+    expect(candidates[0].lines[0]).toBe("Red");
+    expect(candidates[0].lines[1]).toContain("d=");
+    expect(candidates[0].lines[2]).toContain("v=");
   });
 });
+
+function activeLabels(labels: ReturnType<typeof createSceneLabelBuffer>) {
+  return labels.items.slice(0, labels.count) as SceneLabelCandidate[];
+}
 
 function createParams(
   scene: Scene,

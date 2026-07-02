@@ -125,6 +125,7 @@ const padding: Size = { width: 6, height: 4 };
 export function renderSceneLabelsInto(
   into: RenderedSceneLabel[],
   labels: SceneLabelCandidate[],
+  labelCount: number,
   screenWidth: number,
   screenHeight: number,
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
@@ -139,19 +140,20 @@ export function renderSceneLabelsInto(
       layoutCache.needsRelayout = true;
     }
     if (
-      shouldRelayout(
+      shouldRelayout(layoutCache, nowMs, screenWidth, screenHeight, labelCount)
+    ) {
+      layoutLabels(
         layoutCache,
-        nowMs,
+        labels,
+        labelCount,
         screenWidth,
         screenHeight,
-        labels.length,
-      )
-    ) {
-      layoutLabels(layoutCache, labels, screenWidth, screenHeight, projectInto);
+        projectInto,
+      );
       layoutCache.lastLayoutTimeMs = nowMs;
       layoutCache.lastScreenWidth = screenWidth;
       layoutCache.lastScreenHeight = screenHeight;
-      layoutCache.lastLabelCount = labels.length;
+      layoutCache.lastLabelCount = labelCount;
       layoutCache.needsRelayout = false;
     }
 
@@ -184,12 +186,13 @@ function shouldRelayout(
 function layoutLabels(
   cache: LabelLayoutCache,
   labels: SceneLabelCandidate[],
+  labelCount: number,
   screenWidth: number,
   screenHeight: number,
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
 ): void {
   cache.labelById.clear();
-  for (let i = 0; i < labels.length; i++) {
+  for (let i = 0; i < labelCount; i++) {
     cache.labelById.set(labels[i].id, labels[i]);
   }
 
@@ -198,12 +201,13 @@ function layoutLabels(
   allAnchorsCount = collectVisibleAnchors(
     cache.grid,
     labels,
+    labelCount,
     projectInto,
     screenWidth,
     screenHeight,
   );
 
-  const sortedCount = sortLabels(labels);
+  const sortedCount = sortLabels(labels, labelCount);
 
   if (cache.sortedLabels.length < sortedCount) {
     cache.sortedLabels.length = sortedCount;
@@ -545,13 +549,14 @@ function getGridCell(
 function collectVisibleAnchors(
   grid: LabelSpatialGrid,
   labels: SceneLabelCandidate[],
+  labelCount: number,
   projectInto: (into: NdcPoint, worldPoint: Vec3) => boolean,
   screenWidth: number,
   screenHeight: number,
 ): number {
   allAnchorsCount = 0;
 
-  for (let i = 0; i < labels.length; i++) {
+  for (let i = 0; i < labelCount; i++) {
     const label = labels[i];
 
     if (!projectInto(ndcScratch, label.anchor)) {
@@ -575,10 +580,10 @@ function collectVisibleAnchors(
   return allAnchorsCount;
 }
 
-function sortLabels(labels: SceneLabelCandidate[]): number {
+function sortLabels(labels: SceneLabelCandidate[], labelCount: number): number {
   let count = 0;
 
-  for (let i = 0; i < labels.length; i++) {
+  for (let i = 0; i < labelCount; i++) {
     const label = labels[i];
     if (count < sortedScratch.length) {
       const entry = sortedScratch[count];

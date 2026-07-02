@@ -11,6 +11,7 @@ import type {
   PluginCapabilityRegistry,
   SceneLabelCandidate,
   SceneLabelProviderParams,
+  SceneLabelSink,
   SceneObjectFilter,
   ScenePlugin,
   SceneViewFilterParams,
@@ -25,6 +26,7 @@ import { validatePluginRequirements } from "./pluginRequirements";
 import { assembleSimulationPlugins } from "./pluginRuntime";
 import { getMainViewLookState } from "./renderConfigPorts";
 import {
+  createSceneLabelBuffer,
   createWorldMarkerBuffer,
   createWorldSegmentBuffer,
 } from "./renderContributions";
@@ -58,6 +60,8 @@ export interface GamePipelineView {
   labelParams: SceneLabelProviderParams;
   objectsFilter?: SceneObjectFilter;
   sceneLabelCandidates: SceneLabelCandidate[];
+  sceneLabelCandidateCount: number;
+  sceneLabelBuffer: SceneLabelSink;
   sceneView: SceneViewState;
   segmentParams: SegmentProviderParams;
   worldSegments: WorldSegment[];
@@ -242,12 +246,13 @@ export function createGamePipeline({
       }
     },
     prepareView: (view, includeLabels, includeSegments) => {
-      view.sceneLabelCandidates.length = 0;
+      view.sceneLabelBuffer.reset();
       if (includeLabels) {
         for (const plugin of labelPlugins) {
-          plugin.appendLabels?.(view.sceneLabelCandidates, view.labelParams);
+          plugin.appendLabels?.(view.sceneLabelBuffer, view.labelParams);
         }
       }
+      view.sceneLabelCandidateCount = view.sceneLabelBuffer.count;
       view.worldSegmentBuffer.reset();
       view.worldMarkerBuffer.reset();
       if (includeSegments) {
@@ -288,7 +293,7 @@ function createPipelineViews(
       ? (object: Parameters<SceneObjectFilter>[0]) =>
           filters.every((filter) => filter(object))
       : undefined;
-    const sceneLabelCandidates: SceneLabelCandidate[] = [];
+    const sceneLabelBuffer = createSceneLabelBuffer();
     const worldSegmentBuffer = createWorldSegmentBuffer();
     const worldMarkerBuffer = createWorldMarkerBuffer();
     return {
@@ -303,7 +308,9 @@ function createPipelineViews(
         world: worldAndScene.world,
       },
       objectsFilter,
-      sceneLabelCandidates,
+      sceneLabelCandidates: sceneLabelBuffer.items as SceneLabelCandidate[],
+      sceneLabelCandidateCount: 0,
+      sceneLabelBuffer,
       sceneView,
       segmentParams: {
         config,

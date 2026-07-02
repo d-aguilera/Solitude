@@ -102,6 +102,7 @@ export interface ViewRenderParams {
   renderPolylines: boolean;
   renderSegments: boolean;
   renderSceneLabels: boolean;
+  sceneLabelCandidateCount: number;
   sceneLabelCandidates: SceneLabelCandidate[];
   scene: Scene;
   surface: RenderSurface2D;

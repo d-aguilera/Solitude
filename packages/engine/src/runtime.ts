@@ -16,6 +16,7 @@ export { createPluginCapabilityRegistry } from "./app/pluginCapabilities";
 export { validatePluginRequirements } from "./app/pluginRequirements";
 export type { PluginRequirementValidationParams } from "./app/pluginRequirements";
 export {
+  createSceneLabelBuffer,
   createWorldMarkerBuffer,
   createWorldSegmentBuffer,
 } from "./app/renderContributions";

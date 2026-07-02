@@ -3,6 +3,7 @@ import type {
   MarkerPlugin,
   SceneLabelCandidate,
   SceneLabelPlugin,
+  SceneLabelSink,
   SceneObjectFilter,
   ScenePlugin,
   SceneViewFilterParams,
@@ -35,6 +36,7 @@ import { SceneOverlayRenderer } from "@solitude/engine/render/sceneOverlayRender
 import type { RuntimeWorldSnapshot } from "@solitude/engine/runtime";
 import {
   createPluginCapabilityRegistry,
+  createSceneLabelBuffer,
   createWorldMarkerBuffer,
   createWorldSegmentBuffer,
   validatePluginRequirements,
@@ -154,7 +156,8 @@ export function createRemoteWorldRenderer({
   };
   const sceneView = sceneViews[0];
   const mainViewLookState = getMainViewLookState(config.render);
-  const sceneLabelCandidates: SceneLabelCandidate[] = [];
+  const sceneLabelBuffer = createSceneLabelBuffer();
+  const sceneLabelCandidates = sceneLabelBuffer.items as SceneLabelCandidate[];
   const worldSegmentBuffer = createWorldSegmentBuffer();
   const worldMarkerBuffer = createWorldMarkerBuffer();
   const worldSegments = worldSegmentBuffer.items as WorldSegment[];
@@ -178,6 +181,7 @@ export function createRemoteWorldRenderer({
     renderSceneLabels: true,
     renderSegments: true,
     scene: worldAndScene.scene,
+    sceneLabelCandidateCount: 0,
     sceneLabelCandidates,
     surface,
     worldMarkerCount: 0,
@@ -213,7 +217,7 @@ export function createRemoteWorldRenderer({
       viewId: viewDefinition.id,
       world: worldAndScene.world,
     });
-    applyLabelPlugins(labelPlugins, sceneLabelCandidates, {
+    applyLabelPlugins(labelPlugins, sceneLabelBuffer, {
       capabilityRegistry,
       config,
       labelMode: viewDefinition.labelMode,
@@ -226,6 +230,7 @@ export function createRemoteWorldRenderer({
     renderParams.renderPolylines = options.renderPolylines ?? true;
     renderParams.renderSceneLabels = options.renderSceneLabels ?? true;
     renderParams.renderSegments = options.renderSegments ?? true;
+    renderParams.sceneLabelCandidateCount = sceneLabelBuffer.count;
     renderParams.worldMarkerCount = worldMarkerBuffer.count;
     renderParams.worldSegmentCount = worldSegmentBuffer.count;
     renderer.renderInto(renderedView, renderParams);
@@ -332,7 +337,7 @@ export function createRemoteWorldMultiRenderer({
         viewId: definition.id,
         world: worldAndScene.world,
       });
-      applyLabelPlugins(labelPlugins, view.sceneLabelCandidates, {
+      applyLabelPlugins(labelPlugins, view.sceneLabelBuffer, {
         capabilityRegistry,
         config,
         labelMode: definition.labelMode,
@@ -345,6 +350,7 @@ export function createRemoteWorldMultiRenderer({
       view.renderParams.renderPolylines = options.renderPolylines ?? true;
       view.renderParams.renderSceneLabels = options.renderSceneLabels ?? true;
       view.renderParams.renderSegments = options.renderSegments ?? true;
+      view.renderParams.sceneLabelCandidateCount = view.sceneLabelBuffer.count;
       view.renderParams.worldMarkerCount = view.worldMarkerBuffer.count;
       view.renderParams.worldSegmentCount = view.worldSegmentBuffer.count;
       view.renderer.renderInto(view.renderedView, view.renderParams);
@@ -378,6 +384,7 @@ export function rasterizeSceneOverlay(
 type InternalRemoteWorldRenderedView = RemoteWorldRenderedView & {
   readonly renderer: ViewRenderer;
   readonly sceneLabelCandidates: SceneLabelCandidate[];
+  readonly sceneLabelBuffer: SceneLabelSink;
   readonly sceneView: SceneViewState;
   readonly worldSegments: WorldSegment[];
   readonly worldSegmentBuffer: WorldSegmentSink;
@@ -402,7 +409,9 @@ function createRemoteRenderedViews({
 }): InternalRemoteWorldRenderedView[] {
   return sceneViews.map((sceneView, index) => {
     const view = views[index];
-    const sceneLabelCandidates: SceneLabelCandidate[] = [];
+    const sceneLabelBuffer = createSceneLabelBuffer();
+    const sceneLabelCandidates =
+      sceneLabelBuffer.items as SceneLabelCandidate[];
     const worldSegmentBuffer = createWorldSegmentBuffer();
     const worldMarkerBuffer = createWorldMarkerBuffer();
     const worldSegments = worldSegmentBuffer.items as WorldSegment[];
@@ -425,6 +434,7 @@ function createRemoteRenderedViews({
         renderSceneLabels: true,
         renderSegments: true,
         scene,
+        sceneLabelCandidateCount: 0,
         sceneLabelCandidates,
         surface: view.surface,
         worldMarkerCount: 0,
@@ -433,6 +443,7 @@ function createRemoteRenderedViews({
         worldMarkers,
       },
       sceneLabelCandidates,
+      sceneLabelBuffer,
       sceneView,
       viewId: sceneView.definition.id,
       worldSegments,
@@ -564,10 +575,10 @@ function buildSceneObjectsFilter(
 
 function applyLabelPlugins(
   plugins: SceneLabelPlugin[],
-  into: SceneLabelCandidate[],
+  into: SceneLabelSink,
   params: Parameters<NonNullable<SceneLabelPlugin["appendLabels"]>>[1],
 ): void {
-  into.length = 0;
+  into.reset();
   for (const plugin of plugins) {
     plugin.appendLabels?.(into, params);
   }

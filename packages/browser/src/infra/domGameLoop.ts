@@ -127,6 +127,7 @@ function createLoopViews(
         renderSceneLabels: true,
         renderSegments: true,
         scene: worldAndScene.scene,
+        sceneLabelCandidateCount: pipelineView.sceneLabelCandidateCount,
         sceneLabelCandidates: pipelineView.sceneLabelCandidates,
         surface: view.surface,
         worldMarkerCount: pipelineView.worldMarkerCount,
@@ -154,6 +155,8 @@ function renderViews(
     view.renderParams.renderPolylines = passes.polylines;
     view.renderParams.renderSceneLabels = passes.sceneLabels;
     view.renderParams.renderSegments = passes.segments;
+    view.renderParams.sceneLabelCandidateCount =
+      view.pipelineView.sceneLabelCandidateCount;
     view.renderParams.worldMarkerCount = view.pipelineView.worldMarkerCount;
     view.renderParams.worldSegmentCount = view.pipelineView.worldSegmentCount;
     if (profiler.begin("viewRender", view.definition.id)) {
