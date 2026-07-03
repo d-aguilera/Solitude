@@ -8,6 +8,11 @@ import {
   createSolarSystemPlugin,
   parseSolarSystemRuntimeOptions,
 } from "../../plugins/solarSystem";
+import {
+  earthCloudTextureId,
+  earthDayTextureId,
+  moonDayTextureId,
+} from "../../textures";
 import { buildWorldAndSceneConfig } from "../../worldAndSceneConfig";
 import { createSolarSystemCelestialBodyProvider } from "./celestialBodyProvider";
 
@@ -95,6 +100,26 @@ describe("solarSystem plugin", () => {
           renderable.meshShading.kind === "smoothSphere",
       ),
     ).toBe(true);
+  });
+
+  it("assigns texture materials to Earth and the Moon", () => {
+    const config = buildWorldAndSceneConfig();
+
+    applyWorldModelPlugins(config, [createSolarSystemPlugin()]);
+
+    const earth = getEntity(config.entities, "planet:earth");
+    const moon = getEntity(config.entities, "planet:moon");
+    expect(earth.components.renderable?.material).toEqual(
+      expect.objectContaining({
+        cloudTextureId: earthCloudTextureId,
+        kind: "sphericalTexture",
+        textureId: earthDayTextureId,
+      }),
+    );
+    expect(moon.components.renderable?.material).toEqual({
+      kind: "sphericalTexture",
+      textureId: moonDayTextureId,
+    });
   });
 
   it("scales celestial body densities by the square of the orbital speed multiplier", () => {

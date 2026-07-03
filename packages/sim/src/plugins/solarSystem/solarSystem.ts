@@ -6,7 +6,11 @@ import type {
   KeplerianBodyPhysicsConfig,
   KeplerianOrbit,
 } from "@solitude/engine/world";
-import { earthCloudTextureId, earthDayTextureId } from "../../textures";
+import {
+  earthCloudTextureId,
+  earthDayTextureId,
+  moonDayTextureId,
+} from "../../textures";
 import { colors } from "./colors";
 
 // --- Generated from JPL Horizons at epoch J2000.0 ---
@@ -463,6 +467,10 @@ export function buildDefaultSolarSystemConfigs(
       meshLod: planetMeshLod,
       meshShading: planetMeshShading,
       meshScale: radii.moon,
+      material: {
+        kind: "sphericalTexture",
+        textureId: moonDayTextureId,
+      },
       obliquityRad: degToRad(obliquitiesDeg.moon),
       angularSpeedRadPerSec: angularSpeedFromPeriod(spinPeriodsSeconds.moon),
     },

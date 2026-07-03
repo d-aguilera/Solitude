@@ -1,38 +1,22 @@
 # Planet Texture Options
 
-This note records texture options for Solitude's planets, with Earth as the
-first target. It is intentionally scoped to the current renderer: WebGL2 solid
-meshes, engine-owned scene contracts, and server-safe solar-system content in
-`@solitude/sim`.
+This note records texture options for Solitude's planets, with Earth as the first target. It is intentionally scoped to the current renderer: WebGL2 solid meshes, engine-owned scene contracts, and server-safe solar-system content in `@solitude/sim`.
 
 ## Current Renderer Fit
 
-- Solar-system planets are authored in
-  `packages/sim/src/plugins/solarSystem/solarSystem.ts` as scaled copies of a
-  shared unit icosphere.
-- Earth currently differs only by RGB color, physical/orbital data, axial tilt,
-  and spin.
-- `EntityRenderConfig` and `SceneObject` carry color, mesh, LOD, shading,
-  scale, and optional material metadata.
-- `GpuMeshRenderer` uploads position, normal, and face-anchor attributes; the
-  solid-mesh shader computes lighting and multiplies by `uBaseColor`.
-- The current checked-in Earth texture lives under
-  `packages/display/src/assets/textures/`.
+- Solar-system planets are authored in `packages/sim/src/plugins/solarSystem/solarSystem.ts` as scaled copies of a shared unit icosphere.
+- Earth currently differs only by RGB color, physical/orbital data, axial tilt, and spin.
+- `EntityRenderConfig` and `SceneObject` carry color, mesh, LOD, shading, scale, and optional material metadata.
+- `GpuMeshRenderer` uploads position, normal, and face-anchor attributes; the solid-mesh shader computes lighting and multiplies by `uBaseColor`.
+- The current checked-in Earth texture lives under `packages/display/src/assets/textures/`.
 
-The low-friction texture path is to keep the mesh buffer unchanged and derive
-spherical UVs in the shader from local sphere position/normal. That works well
-for the current `unitIcosphere` LOD path and avoids expanding every vertex with
-stored UV coordinates.
+The low-friction texture path is to keep the mesh buffer unchanged and derive spherical UVs in the shader from local sphere position/normal. That works well for the current `unitIcosphere` LOD path and avoids expanding every vertex with stored UV coordinates.
 
 ## Asset Sources
 
 ### NASA Blue Marble
 
-Recommended first Earth source. For the first in-app texture, use the older
-Blue Marble 2002 land/ocean/ice map because it gives Earth the familiar blue
-ocean appearance without color-tuning the source. The Blue Marble Next
-Generation topography/bathymetry maps are useful references, but their deep
-oceans read too dark in Solitude's lighting.
+Recommended first Earth source. For the first in-app texture, use the older Blue Marble 2002 land/ocean/ice map because it gives Earth the familiar blue ocean appearance without color-tuning the source. The Blue Marble Next Generation topography/bathymetry maps are useful references, but their deep oceans read too dark in Solitude's lighting.
 
 - Source: https://science.nasa.gov/earth/earth-observatory/the-blue-marble-true-color-global-imagery-at-1km-resolution/
 - Source: https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/
@@ -44,42 +28,30 @@ Pros:
 
 - Strong provenance and broadly usable NASA imagery.
 - Equirectangular global maps are available in small and large sizes.
-- The 2002 land/ocean/ice map has readable blue oceans without shader-specific
-  ocean tinting.
+- The 2002 land/ocean/ice map has readable blue oceans without shader-specific ocean tinting.
 
 Trade-offs:
 
 - The Blue Marble 2002 land/ocean/ice map is static and cloud-free.
-- Baked topography can visually conflict with physically computed lighting, but
-  this is relevant only if using the Next Generation topography/bathymetry maps.
+- Baked topography can visually conflict with physically computed lighting, but this is relevant only if using the Next Generation topography/bathymetry maps.
 - Attribution should be included in repo docs or an in-app credits surface.
 
-Good MVP size: the 8192x4096 land/ocean/ice source converted to JPEG for app
-bundle size. Larger or lossless maps can wait until texture streaming/compression
-decisions exist.
+Good MVP size: the 8192x4096 land/ocean/ice source converted to JPEG for app bundle size. Larger or lossless maps can wait until texture streaming/compression decisions exist.
 
 Current app asset:
 
 - Source: NASA Blue Marble 2002 `land_ocean_ice_8192.png`.
-- App file:
-  `packages/display/src/assets/textures/earth-blue-marble-land-ocean-ice-8192.jpg`
-- Processing: format conversion from PNG to JPEG at quality 90 only; no gamma
-  or color correction.
+- App file: `packages/display/src/assets/textures/earth-blue-marble-land-ocean-ice-8192.jpg`
+- Processing: format conversion from PNG to JPEG at quality 90 only; no gamma or color correction.
 - Cloud source: NASA Blue Marble 2002 `cloud_combined_2048.jpg`.
-- Cloud app file:
-  `packages/display/src/assets/textures/earth-blue-marble-clouds-2048.jpg`
+- Cloud app file: `packages/display/src/assets/textures/earth-blue-marble-clouds-2048.jpg`
 
 Current Earth material:
 
 - Base surface uses the land/ocean/ice texture.
-- Clouds render as a slightly larger transparent shell using cloud texture
-  luminance as alpha.
-- Atmosphere renders as a dense saturated blue haze rim on a very slightly
-  larger alpha-blended shell with no extra asset. Keep the shell close to the
-  surface; a large back-face-only shell reads as a flat circular outline
-  instead of atmosphere.
-- Atmosphere alpha is gated by direct lighting so the night-side limb can still
-  fall dark, with a soft ramp around the terminator.
+- Clouds render as a slightly larger transparent shell using cloud texture luminance as alpha.
+- Atmosphere renders as a dense saturated blue haze rim on a very slightly larger alpha-blended shell with no extra asset. Keep the shell close to the surface; a large back-face-only shell reads as a flat circular outline instead of atmosphere.
+- Atmosphere alpha is gated by direct lighting so the night-side limb can still fall dark, with a soft ramp around the terminator.
 
 ### Solar System Scope
 
@@ -99,8 +71,30 @@ Trade-offs:
 - The aesthetic is more pre-authored than scientific-source-first.
 - Some maps may need color/exposure tuning to match Solitude's lighting.
 
-Good use: second pass if the goal becomes "texture the whole solar system"
-rather than "prove Earth texture support."
+Good use: second pass if the goal becomes "texture the whole solar system" rather than "prove Earth texture support."
+
+### NASA CGI Moon Kit
+
+Recommended first Moon source.
+
+- Source: https://svs.gsfc.nasa.gov/4720
+- App file: `packages/display/src/assets/textures/moon-lro-lroc-color-2048.jpg`
+- Source asset: `lroc_color_2k.jpg` from NASA SVS CGI Moon Kit.
+- Processing: downloaded as JPEG directly; no color or gamma correction.
+- Credit guidance on the source page asks for credit to NASA's Scientific Visualization Studio.
+
+Pros:
+
+- Designed specifically for 3D rendering.
+- The map is equirectangular, centered on 0 degrees longitude, and fits the renderer's existing spherical UV path.
+- Built from Lunar Reconnaissance Orbiter Camera and Lunar Orbiter Laser Altimeter derived products.
+- The 2K JPEG is small enough for the current app bundle.
+
+Trade-offs:
+
+- The 2K JPEG is an MVP-size preview; close lunar flybys may need a 4K/8K JPEG converted from NASA's larger TIFF sources.
+- The CGI Moon Kit also provides displacement maps, but the current renderer has no normal/displacement material path.
+- The source page notes the color map is optimized for aesthetics rather than science, which is fine for the in-game visual surface.
 
 ### Natural Earth
 
@@ -137,16 +131,12 @@ Best first slice.
        };
    ```
 
-2. Let solar-system content assign Earth a stable texture id such as
-   `solitude.texture.earth.day`.
-3. Keep `@solitude/sim` server-safe by storing only the id and mapping
-   texture ids to browser asset URLs in browser/client/standalone composition.
+2. Let solar-system content assign Earth a stable texture id such as `solitude.texture.earth.day`.
+3. Keep `@solitude/sim` server-safe by storing only the id and mapping texture ids to browser asset URLs in browser/client/standalone composition.
 4. Extend `GpuMeshRenderer` with a texture cache keyed by texture id/source.
-5. In the shader, compute UV from local sphere coordinates and sample the day
-   texture. Fall back to `uBaseColor` when no texture is bound.
+5. In the shader, compute UV from local sphere coordinates and sample the day texture. Fall back to `uBaseColor` when no texture is bound.
 
-This proves the full data path without adding cloud layers, night lights,
-normal maps, or mesh-format churn.
+This proves the full data path without adding cloud layers, night lights, normal maps, or mesh-format churn.
 
 ### Path B: Procedural Earth-Like Shader
 
@@ -176,14 +166,11 @@ Possible material layers:
 - Specular mask for oceans.
 - Normal or bump map for terrain/cloud relief.
 
-Clouds and a simple atmosphere rim are now part of the first Earth material
-slice. More advanced layers should still wait because each layer adds shader
-branches, texture bindings, asset memory, and loading states.
+Clouds and a simple atmosphere rim are now part of the first Earth material slice. More advanced layers should still wait because each layer adds shader branches, texture bindings, asset memory, and loading states.
 
 ## Shader Mapping Notes
 
-For current unit spheres, local `z` is the natural north/south axis. A fragment
-shader can derive UVs from local normal:
+For current unit spheres, local `z` is the natural north/south axis. A fragment shader can derive UVs from local normal:
 
 ```glsl
 vec3 n = normalize(vLocalPosition);
@@ -191,17 +178,13 @@ float u = atan(n.y, n.x) / (2.0 * PI) + 0.5;
 float v = asin(clamp(n.z, -1.0, 1.0)) / PI + 0.5;
 ```
 
-Most equirectangular textures place north at the top, so the sampled `v` may
-need to be flipped:
+Most equirectangular textures place north at the top, so the sampled `v` may need to be flipped:
 
 ```glsl
 vec2 uv = vec2(u + uLongitudeOffset, 1.0 - v);
 ```
 
-Keep `longitudeOffsetRad` or equivalent in the material. The current planetary
-orientation starts from identity and then spins, so a small authoring offset is
-the simplest way to align Earth's prime meridian and make visual inspection
-less surprising.
+Keep `longitudeOffsetRad` or equivalent in the material. The current planetary orientation starts from identity and then spins, so a small authoring offset is the simplest way to align Earth's prime meridian and make visual inspection less surprising.
 
 ## Recommended First Slice
 
@@ -216,15 +199,11 @@ Keep it narrow:
 - Earth uses the texture; all other bodies keep solid colors.
 - If loading fails, Earth renders with the current solid blue color.
 
-Do not put image imports in `@solitude/sim`; server/headless composition uses
-that package. Put actual bitmap assets and URL imports in a browser-facing
-package or public asset directory.
+Do not put image imports in `@solitude/sim`; server/headless composition uses that package. Put actual bitmap assets and URL imports in a browser-facing package or public asset directory.
 
 ## Later Questions
 
 - Where should user-visible asset credits live?
 - Should texture quality be tied to runtime options for low-memory devices?
-- Should remote clients receive texture ids from server model snapshots, or
-  should they apply a client-side visual catalog based on known entity ids?
-- Should planet maps use compressed GPU texture formats later, such as KTX2,
-  after the plain-image path proves useful?
+- Should remote clients receive texture ids from server model snapshots, or should they apply a client-side visual catalog based on known entity ids?
+- Should planet maps use compressed GPU texture formats later, such as KTX2, after the plain-image path proves useful?
