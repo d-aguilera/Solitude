@@ -156,6 +156,30 @@ describe("autopilot orbit mode", () => {
     expect(command?.yaw).toBeCloseTo(0);
   });
 
+  it("points the nose along full relative velocity on eccentric orbits", () => {
+    const ship = createShip({
+      frame: createFrame(
+        vec3.create(0, 0, 1),
+        vec3.create(0, 1, 0),
+        vec3.create(-1, 0, 0),
+      ),
+      velocity: vec3.create(1000, circularSpeed, 0),
+    });
+    const input = createOrbitInput();
+
+    const command = getAutopilotAttitudeCommand(
+      1000,
+      ship,
+      input,
+      createWorld(ship),
+    );
+
+    expect(command).not.toBeNull();
+    expect(command?.pitch).toBeLessThan(0);
+    expect(command?.roll).toBeCloseTo(0);
+    expect(command?.yaw).toBeCloseTo(0);
+  });
+
   it("does not invent an orbital frame for radial-only motion", () => {
     const ship = createShip({
       frame: createFrame(

@@ -212,12 +212,9 @@ export function computeOrbitAttitudeCommand(
   vec3.scaleInto(orbitInwardScratch, -1 / rLen, rScratch);
 
   vec3.subInto(vRelScratch, ship.velocity, primary.body.velocity);
-  const radialSpeed = vec3.dot(rScratch, vRelScratch) / rLen;
-  vec3.scaleInto(orbitForwardScratch, radialSpeed / rLen, rScratch);
-  vec3.subInto(orbitForwardScratch, vRelScratch, orbitForwardScratch);
-  const forwardLen = vec3.length(orbitForwardScratch);
+  const forwardLen = vec3.length(vRelScratch);
   if (forwardLen <= EPS_SPEED_FINE) return null;
-  vec3.scaleInto(orbitForwardScratch, 1 / forwardLen, orbitForwardScratch);
+  vec3.scaleInto(orbitForwardScratch, 1 / forwardLen, vRelScratch);
 
   vec3.crossInto(orbitRightScratch, orbitForwardScratch, orbitInwardScratch);
   const rightLen = vec3.length(orbitRightScratch);
