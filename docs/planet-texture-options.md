@@ -78,9 +78,9 @@ Good use: second pass if the goal becomes "texture the whole solar system" rathe
 Recommended first Moon source.
 
 - Source: https://svs.gsfc.nasa.gov/4720
-- App file: `packages/display/src/assets/textures/moon-lro-lroc-color-2048.jpg`
-- Source asset: `lroc_color_2k.jpg` from NASA SVS CGI Moon Kit.
-- Processing: downloaded as JPEG directly; no color or gamma correction.
+- App file: `packages/display/src/assets/textures/moon-lro-lroc-color-4096.jpg`
+- Source asset: `lroc_color_16bit_srgb_4k.tif` from NASA SVS CGI Moon Kit.
+- Processing: converted from 16-bit TIFF to JPEG at quality 90, with metadata stripped; no color or gamma correction.
 - Credit guidance on the source page asks for credit to NASA's Scientific Visualization Studio.
 
 Pros:
@@ -88,11 +88,11 @@ Pros:
 - Designed specifically for 3D rendering.
 - The map is equirectangular, centered on 0 degrees longitude, and fits the renderer's existing spherical UV path.
 - Built from Lunar Reconnaissance Orbiter Camera and Lunar Orbiter Laser Altimeter derived products.
-- The 2K JPEG is small enough for the current app bundle.
+- The 4K JPEG remains small enough for the current app bundle while improving low flybys over the 2K preview.
 
 Trade-offs:
 
-- The 2K JPEG is an MVP-size preview; close lunar flybys may need a 4K/8K JPEG converted from NASA's larger TIFF sources.
+- Close lunar flybys may still need an 8K JPEG converted from NASA's larger TIFF sources.
 - The CGI Moon Kit also provides displacement maps, but the current renderer has no normal/displacement material path.
 - The source page notes the color map is optimized for aesthetics rather than science, which is fine for the in-game visual surface.
 
