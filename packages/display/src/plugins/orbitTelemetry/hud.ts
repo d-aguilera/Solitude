@@ -20,7 +20,23 @@ export function createHudPanel(
         context.world,
         context.mainFocus.controlledBody,
       );
-      if (!hasOrbit) return;
+      if (!hasOrbit) {
+        primaryDisplayNameId = "";
+        primaryDisplayName = "";
+        radialDirection = null;
+        tangentialDirection = null;
+        grid.addLine(
+          "left",
+          "orbit.primary",
+          localization.orbitPrefix.concat("--"),
+        );
+        grid.addLine(
+          "left",
+          "orbit.distance",
+          localization.distancePrefix.concat("--"),
+        );
+        return;
+      }
 
       const radDv = orbitReadout.deltaVCircularRadial;
       const tanDv = orbitReadout.deltaVCircularTangential;
@@ -49,6 +65,13 @@ export function createHudPanel(
             ? localization.orbitBound
             : localization.orbitEscape,
           ")",
+        ),
+      );
+      grid.addLine(
+        "left",
+        "orbit.distance",
+        localization.distancePrefix.concat(
+          localization.formatDistance(orbitReadout.distance),
         ),
       );
       grid.addLine(

@@ -204,9 +204,10 @@ describe("telemetry HUD plugins", () => {
     panel.writeHud(grid, context);
 
     expect(columnTexts(grid, "left")[0]).toBe("Orbit: Earth (bound)");
-    expect(columnTexts(grid, "left")[1]).toBe("Pe/Ap: 6771 km / 6771 km");
-    expect(columnTexts(grid, "left")[2]).toBe("e: 0.000");
-    expect(columnTexts(grid, "left")[3]).toBe("i: 0.0°");
+    expect(columnTexts(grid, "left")[1]).toBe("d: 6771 km");
+    expect(columnTexts(grid, "left")[2]).toBe("Pe/Ap: 6771 km / 6771 km");
+    expect(columnTexts(grid, "left")[3]).toBe("e: 0.000");
+    expect(columnTexts(grid, "left")[4]).toBe("i: 0.0°");
     expect(columnTexts(grid, "leftCenter")[0]).toContain("Δv Rad: ");
     expect(columnTexts(grid, "leftCenter")[1]).toContain("Δv Tan: ");
   });
@@ -231,7 +232,8 @@ describe("telemetry HUD plugins", () => {
     panel.writeHud(grid, context);
 
     expect(columnTexts(grid, "left")[0]).toBe("Orbit: Earth (escape)");
-    expect(columnTexts(grid, "left")[1]).toBe("Pe/Ap: 10000 km / --");
+    expect(columnTexts(grid, "left")[1]).toBe("d: 25000 km");
+    expect(columnTexts(grid, "left")[2]).toBe("Pe/Ap: 10000 km / --");
     expect(columnTexts(grid, "leftCenter")[2]).toMatch(/^Pe in: /);
     expect(columnTexts(grid, "leftCenter")[2]).not.toBe("Pe in: --");
     expect(columnTexts(grid, "leftCenter")[3]).toBe("Ap in: --");
@@ -240,7 +242,7 @@ describe("telemetry HUD plugins", () => {
     ship.velocity = vec3.create(-radialSpeed, tangentialSpeed, 0);
     panel.writeHud(outboundGrid, context);
 
-    expect(columnTexts(outboundGrid, "left")[1]).toBe("Pe/Ap: 10000 km / --");
+    expect(columnTexts(outboundGrid, "left")[2]).toBe("Pe/Ap: 10000 km / --");
     expect(columnTexts(outboundGrid, "leftCenter")[2]).toBe("Pe in: --");
     expect(columnTexts(outboundGrid, "leftCenter")[3]).toBe("Ap in: --");
   });
@@ -285,11 +287,12 @@ describe("telemetry HUD plugins", () => {
     panel.writeHud(grid, context);
 
     expect(columnTexts(grid, "left")[0]).toBe("Órbita: Tierra (ligada)");
-    expect(columnTexts(grid, "left")[2]).toBe("e: 0,000");
-    expect(columnTexts(grid, "left")[3]).toBe("i: 0,0°");
+    expect(columnTexts(grid, "left")[1]).toBe("d: 6771 km");
+    expect(columnTexts(grid, "left")[3]).toBe("e: 0,000");
+    expect(columnTexts(grid, "left")[4]).toBe("i: 0,0°");
   });
 
-  it("orbitTelemetry leaves cells untouched when no primary is available", () => {
+  it("orbitTelemetry writes empty orbit cells when no primary is available", () => {
     const { world, ship } = createWorldAndShip();
     world.collisionSpheres.length = 0;
     world.gravityMasses.length = 0;
@@ -299,7 +302,7 @@ describe("telemetry HUD plugins", () => {
 
     panel.writeHud(grid, context);
 
-    expect(columnTexts(grid, "left")).toEqual([]);
+    expect(columnTexts(grid, "left")).toEqual(["Orbit: --", "d: --"]);
     expect(columnTexts(grid, "leftCenter")).toEqual([]);
   });
 

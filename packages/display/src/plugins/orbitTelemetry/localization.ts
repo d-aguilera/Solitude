@@ -13,6 +13,7 @@ export interface OrbitTelemetryLocalization extends SolitudeLocalization {
   readonly apoapsisTimeEmpty: string;
   readonly deltaVRadialPrefix: string;
   readonly deltaVTangentialPrefix: string;
+  readonly distancePrefix: string;
   readonly eccentricityPrefix: string;
   readonly inbound: string;
   readonly inclinationPrefix: string;
@@ -45,6 +46,7 @@ export function createOrbitTelemetryLocalization(
     apoapsisTimeEmpty: messages.apoapsisTimeEmpty,
     deltaVRadialPrefix: messages.deltaVRadialPrefix,
     deltaVTangentialPrefix: messages.deltaVTangentialPrefix,
+    distancePrefix: messages.distancePrefix,
     eccentricityPrefix: messages.eccentricityPrefix,
     inbound: messages.inbound,
     inclinationPrefix: messages.inclinationPrefix,
