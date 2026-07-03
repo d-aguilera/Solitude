@@ -315,6 +315,7 @@ export function createSolitudeRemoteClientRenderer({
       !shouldUseLocalRenderPath(predictionMillis)
     ) {
       return renderer.renderSnapshot(snapshot, {
+        controlInput: keyboardDispatcher.controlInput,
         dtMillis,
         dtSimMillis: dtMillis,
       });
@@ -324,6 +325,7 @@ export function createSolitudeRemoteClientRenderer({
     const controlledBody = findControlledBody(renderer, focusEntityId);
     if (!controlledBody) {
       return renderer.renderSnapshot(snapshot, {
+        controlInput: keyboardDispatcher.controlInput,
         dtMillis,
         dtSimMillis: dtMillis,
       });
@@ -342,6 +344,7 @@ export function createSolitudeRemoteClientRenderer({
       controlledBody,
     );
     renderer.renderCurrent({
+      controlInput: keyboardDispatcher.controlInput,
       dtMillis,
       dtSimMillis: predictionMillis,
     });

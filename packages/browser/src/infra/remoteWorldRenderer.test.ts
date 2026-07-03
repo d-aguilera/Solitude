@@ -118,6 +118,41 @@ describe("remote world renderer", () => {
     expect(renderer.mirror.worldSetup.mainFocus.entityId).toBe("craft:red");
   });
 
+  it("applies remote view controls before updating cameras", () => {
+    const config = buildConfig();
+    const renderer = createRemoteWorldRenderer({
+      config,
+      measureText,
+      plugins: [
+        createForwardViewPlugin(),
+        {
+          id: "test-view-controls",
+          viewControls: {
+            updateViewControls: ({
+              controlInput,
+              dtMillis,
+              sceneControlState,
+            }) => {
+              if (controlInput.lookUp) {
+                sceneControlState.mainViewLookState.elevation += dtMillis;
+              }
+            },
+          },
+        },
+      ],
+      surface,
+    });
+
+    expect(
+      renderer.renderSnapshot(createAuthoritativeSnapshot(config), {
+        controlInput: { lookUp: true },
+        dtMillis: 2,
+      }),
+    ).toBe(true);
+
+    expect(config.render.mainViewLookState?.elevation).toBe(2);
+  });
+
   it("can rasterize an already projected scene overlay", () => {
     const config = buildConfig();
     const renderer = createRemoteWorldRenderer({

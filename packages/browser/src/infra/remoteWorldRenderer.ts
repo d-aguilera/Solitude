@@ -1,4 +1,5 @@
 import type {
+  ControlInput,
   GamePlugin,
   MarkerPlugin,
   SceneLabelCandidate,
@@ -9,6 +10,7 @@ import type {
   SceneViewFilterParams,
   SegmentPlugin,
   SegmentProviderParams,
+  ViewControlPlugin,
   WorldMarker,
   WorldMarkerSink,
   WorldSegment,
@@ -17,6 +19,7 @@ import type {
 import type {
   RenderedView,
   RenderSurface2D,
+  SceneControlState,
   SceneState,
   SceneViewId,
   SceneViewState,
@@ -57,6 +60,7 @@ export interface RemoteWorldRendererOptions {
 }
 
 export interface RemoteWorldRenderOptions {
+  controlInput?: ControlInput;
   dtMillis?: number;
   dtSimMillis?: number;
   renderPolylines?: boolean;
@@ -132,6 +136,7 @@ export function createRemoteWorldRenderer({
   const labelPlugins = collectLabelPlugins(plugins);
   const segmentPlugins = collectSegmentPlugins(plugins);
   const markerPlugins = collectMarkerPlugins(plugins);
+  const viewControlPlugins = collectViewControlPlugins(plugins);
   const capabilityRegistry = createPluginCapabilityRegistry(
     plugins.flatMap((plugin) => plugin.capabilities ?? []),
   );
@@ -156,6 +161,7 @@ export function createRemoteWorldRenderer({
   };
   const sceneView = sceneViews[0];
   const mainViewLookState = getMainViewLookState(config.render);
+  const sceneControlState: SceneControlState = { mainViewLookState };
   const sceneLabelBuffer = createSceneLabelBuffer();
   const sceneLabelCandidates = sceneLabelBuffer.items as SceneLabelCandidate[];
   const worldSegmentBuffer = createWorldSegmentBuffer();
@@ -191,6 +197,13 @@ export function createRemoteWorldRenderer({
   };
 
   const renderCurrent = (options: RemoteWorldRenderOptions = {}) => {
+    applyViewControlPlugins(viewControlPlugins, {
+      controlInput: options.controlInput,
+      dtMillis: options.dtMillis ?? 0,
+      mainFocus: worldAndScene.mainFocus,
+      sceneControlState,
+      sceneState,
+    });
     updateSceneViewCameras(
       sceneState,
       worldAndScene.mainFocus,
@@ -277,6 +290,7 @@ export function createRemoteWorldMultiRenderer({
   const labelPlugins = collectLabelPlugins(plugins);
   const segmentPlugins = collectSegmentPlugins(plugins);
   const markerPlugins = collectMarkerPlugins(plugins);
+  const viewControlPlugins = collectViewControlPlugins(plugins);
   const capabilityRegistry = createPluginCapabilityRegistry(
     plugins.flatMap((plugin) => plugin.capabilities ?? []),
   );
@@ -298,6 +312,7 @@ export function createRemoteWorldMultiRenderer({
     views: sceneViews,
   };
   const mainViewLookState = getMainViewLookState(config.render);
+  const sceneControlState: SceneControlState = { mainViewLookState };
   const renderedViews = createRemoteRenderedViews({
     config,
     mirror,
@@ -309,6 +324,13 @@ export function createRemoteWorldMultiRenderer({
   const primaryView = requirePrimaryRenderedView(renderedViews);
 
   const renderCurrent = (options: RemoteWorldRenderOptions = {}) => {
+    applyViewControlPlugins(viewControlPlugins, {
+      controlInput: options.controlInput,
+      dtMillis: options.dtMillis ?? 0,
+      mainFocus: worldAndScene.mainFocus,
+      sceneControlState,
+      sceneState,
+    });
     updateSceneViewCameras(
       sceneState,
       worldAndScene.mainFocus,
@@ -535,6 +557,16 @@ function collectSegmentPlugins(plugins: GamePlugin[]): SegmentPlugin[] {
   return segmentPlugins;
 }
 
+function collectViewControlPlugins(plugins: GamePlugin[]): ViewControlPlugin[] {
+  const viewControlPlugins: ViewControlPlugin[] = [];
+  for (const plugin of plugins) {
+    if (plugin.viewControls) {
+      viewControlPlugins.push(plugin.viewControls);
+    }
+  }
+  return viewControlPlugins;
+}
+
 function applySceneInitPlugins(
   plugins: ScenePlugin[],
   params: Parameters<NonNullable<ScenePlugin["initScene"]>>[0],
@@ -550,6 +582,26 @@ function applyScenePlugins(
 ): void {
   for (const plugin of plugins) {
     plugin.updateScene?.(params);
+  }
+}
+
+function applyViewControlPlugins(
+  plugins: ViewControlPlugin[],
+  params: Omit<
+    Parameters<NonNullable<ViewControlPlugin["updateViewControls"]>>[0],
+    "controlInput"
+  > & { controlInput?: ControlInput },
+): void {
+  const controlInput = params.controlInput;
+  if (!controlInput) return;
+  for (const plugin of plugins) {
+    plugin.updateViewControls?.({
+      controlInput,
+      dtMillis: params.dtMillis,
+      mainFocus: params.mainFocus,
+      sceneControlState: params.sceneControlState,
+      sceneState: params.sceneState,
+    });
   }
 }
 

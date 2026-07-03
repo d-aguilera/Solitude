@@ -18,6 +18,7 @@ export interface KeyboardInputProvider {
 }
 
 export interface KeyboardHandlerDispatcher {
+  readonly controlInput: ControlInput;
   handleKey: (code: string, isDown: boolean, isRepeat: boolean) => boolean;
 }
 
@@ -42,6 +43,7 @@ export function createKeyboardHandlerDispatcher(
     .reverse();
 
   return {
+    controlInput,
     handleKey: (code, isDown, isRepeat) => {
       const action = keyMap[code];
       if (!action) return false;

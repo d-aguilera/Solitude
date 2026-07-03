@@ -11,7 +11,7 @@ export function createOrbitSegmentsPlugin(): GamePlugin {
     capabilities: [
       createKeyboardInputProvider({
         actions: [orbitSegmentsToggleAction],
-        keyMap: { KeyR: orbitSegmentsToggleAction },
+        keyMap: { KeyG: orbitSegmentsToggleAction },
         createKeyHandler: () => ({
           handleKeyDown: (action, isRepeat) => {
             if (action !== orbitSegmentsToggleAction) return false;

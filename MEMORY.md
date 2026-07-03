@@ -161,6 +161,7 @@
 - Time scale: `[` decrease, `]` increase.
 - Pause: `P`.
 - Focus switch: `Tab`.
+- Orbit drawing: `G`.
 - Targeting laser: `T` toggle and acquire the nearest body within the nose-axis cone.
 - Profiling HUD toggle: `O`.
 

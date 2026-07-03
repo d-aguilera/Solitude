@@ -46,4 +46,28 @@ describe("createKeyboardHandlerDispatcher", () => {
     expect(dispatcher.handleKey("KeyT", false, false)).toBe(true);
     expect(toggles).toBe(1);
   });
+
+  it("exposes provider-owned local control state", () => {
+    const dispatcher = createKeyboardHandlerDispatcher([
+      {
+        keyMap: { ArrowUp: "lookUp" },
+        createKeyHandler: (controlInput) => ({
+          handleKeyDown: (action) => {
+            controlInput[action] = true;
+            return true;
+          },
+          handleKeyUp: (action) => {
+            controlInput[action] = false;
+            return true;
+          },
+        }),
+      },
+    ]);
+
+    expect(dispatcher.controlInput.lookUp).toBe(false);
+    expect(dispatcher.handleKey("ArrowUp", true, false)).toBe(true);
+    expect(dispatcher.controlInput.lookUp).toBe(true);
+    expect(dispatcher.handleKey("ArrowUp", false, false)).toBe(true);
+    expect(dispatcher.controlInput.lookUp).toBe(false);
+  });
 });

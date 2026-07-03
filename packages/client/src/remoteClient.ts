@@ -26,6 +26,7 @@ import {
 } from "./pageShared";
 import { createSolitudeRemoteClientRenderer } from "./remoteClientRenderer";
 import { createRemoteIdentityHudPlugin } from "./remoteIdentityHud";
+import { createRemoteLookaroundPlugin } from "./remoteLookaround";
 import { createRemoteRuntimeTelemetryHudPlugin } from "./remoteRuntimeTelemetryHud";
 import { createShipColorNamesPlugin } from "./shipColorNames";
 
@@ -59,6 +60,7 @@ const engineRenderer = createSolitudeRemoteClientRenderer({
   runtimeOptions,
   textureSources: solitudeTextureSources,
   plugins: [
+    createRemoteLookaroundPlugin(),
     createShipColorNamesPlugin(localization.shipColorNames),
     createRemoteIdentityHudPlugin({
       getEntityId: () => fields.entityId.value,
