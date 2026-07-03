@@ -28,8 +28,7 @@
     "./plugins/spacecraftOperator/controlLogic": "./src/plugins/spacecraftOperator/controlLogic.ts",
     "./plugins/spacecraftOperator/core": "./src/plugins/spacecraftOperator/core.ts",
     "./plugins/spacecraftOperator/input": "./src/plugins/spacecraftOperator/input.ts",
-    "./plugins/spacecraftOperator/telemetry": "./src/plugins/spacecraftOperator/telemetry.ts",
-    "./textures": "./src/textures.ts"
+    "./plugins/spacecraftOperator/telemetry": "./src/plugins/spacecraftOperator/telemetry.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0",
