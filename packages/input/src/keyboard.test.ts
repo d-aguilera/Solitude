@@ -70,4 +70,21 @@ describe("createKeyboardHandlerDispatcher", () => {
     expect(dispatcher.handleKey("ArrowUp", false, false)).toBe(true);
     expect(dispatcher.controlInput.lookUp).toBe(false);
   });
+
+  it("updates mapped actions that do not have provider-owned handlers", () => {
+    const dispatcher = createKeyboardHandlerDispatcher([
+      {
+        actions: ["testTrim"],
+        keyMap: { KeyF: "testFire" },
+      },
+    ]);
+
+    expect(dispatcher.controlInput.testFire).toBe(false);
+    expect(dispatcher.controlInput.testTrim).toBe(false);
+    expect(dispatcher.handleKey("KeyF", true, false)).toBe(true);
+    expect(dispatcher.controlInput.testFire).toBe(true);
+    expect(dispatcher.handleKey("KeyF", false, false)).toBe(true);
+    expect(dispatcher.controlInput.testFire).toBe(false);
+    expect(dispatcher.handleKey("Unknown", true, false)).toBe(false);
+  });
 });

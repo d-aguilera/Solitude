@@ -22,7 +22,7 @@ export interface KeyboardHandlerDispatcher {
   handleKey: (code: string, isDown: boolean, isRepeat: boolean) => boolean;
 }
 
-/** Dispatches only provider-owned key handlers; unhandled actions remain local. */
+/** Dispatches provider-owned key handlers, then updates plain held actions. */
 export function createKeyboardHandlerDispatcher(
   providers: readonly KeyboardInputProvider[],
 ): KeyboardHandlerDispatcher {
@@ -53,7 +53,8 @@ export function createKeyboardHandlerDispatcher(
           : handler.handleKeyUp(action);
         if (handled) return true;
       }
-      return false;
+      controlInput[action] = isDown;
+      return true;
     },
   };
 }

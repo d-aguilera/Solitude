@@ -1,13 +1,7 @@
-import type {
-  ControlAction,
-  ControlInput,
-  GamePlugin,
-} from "@solitude/engine/plugin";
-import { createControlInput } from "@solitude/engine/plugin";
+import type { ControlInput, GamePlugin } from "@solitude/engine/plugin";
 import {
   collectKeyboardInputProviders,
-  type KeyboardInputProvider,
-  type KeyHandler,
+  createKeyboardHandlerDispatcher,
 } from "@solitude/input/keyboard";
 
 /**
@@ -19,96 +13,19 @@ export function initInput(plugins: GamePlugin[] = []): {
   const inputPlugins = collectKeyboardInputProviders(
     plugins.flatMap((plugin) => plugin.capabilities ?? []),
   );
-  const pluginActions = collectControlActions(inputPlugins);
-  const controlInput = createControlInput(pluginActions);
-  const keyHandlers = collectKeyHandlers(inputPlugins, controlInput);
-  const keyMap = buildKeyMap(inputPlugins);
+  const dispatcher = createKeyboardHandlerDispatcher(inputPlugins);
 
   window.addEventListener("keydown", (e: KeyboardEvent) => {
-    const action = keyMap[e.code];
-    if (!action) return;
-    e.preventDefault();
-    for (const handler of keyHandlers) {
-      if (handler.handleKeyDown(action, e.repeat)) {
-        return;
-      }
+    if (dispatcher.handleKey(e.code, true, e.repeat)) {
+      e.preventDefault();
     }
-    updateInputs(controlInput, action, true);
   });
 
   window.addEventListener("keyup", (e: KeyboardEvent) => {
-    const action = keyMap[e.code];
-    if (!action) return;
-    e.preventDefault();
-    for (const handler of keyHandlers) {
-      if (handler.handleKeyUp(action)) {
-        return;
-      }
+    if (dispatcher.handleKey(e.code, false, e.repeat)) {
+      e.preventDefault();
     }
-    updateInputs(controlInput, action, false);
   });
 
-  return { controlInput };
+  return { controlInput: dispatcher.controlInput };
 }
-
-function updateInputs(
-  controlInput: ControlInput,
-  action: ControlAction,
-  isDown: boolean,
-) {
-  if (action in controlInput) {
-    controlInput[action as ControlAction] = isDown;
-  }
-}
-
-const baseKeyMap: Record<string, ControlAction> = {};
-
-function collectControlActions(plugins: KeyboardInputProvider[]): string[] {
-  const actions = new Set<string>();
-  for (const plugin of plugins) {
-    if (plugin.actions) {
-      for (const action of plugin.actions) {
-        actions.add(action);
-      }
-    }
-    if (plugin.keyMap) {
-      for (const action of Object.values(plugin.keyMap)) {
-        actions.add(action);
-      }
-    }
-  }
-  return Array.from(actions);
-}
-
-function collectKeyHandlers(
-  plugins: KeyboardInputProvider[],
-  controlInput: ControlInput,
-): KeyHandler[] {
-  const handlers: KeyHandler[] = [];
-  for (let i = plugins.length - 1; i >= 0; i--) {
-    const plugin = plugins[i];
-    const handler = plugin.createKeyHandler?.(controlInput);
-    if (handler) {
-      handlers.push(handler);
-    }
-  }
-  return handlers;
-}
-
-function buildKeyMap(
-  plugins: KeyboardInputProvider[],
-): Record<string, ControlAction> {
-  const keyMap: Record<string, ControlAction> = { ...baseKeyMap };
-  for (const plugin of plugins) {
-    if (!plugin.keyMap) continue;
-    for (const [key, action] of Object.entries(plugin.keyMap)) {
-      keyMap[key] = action;
-    }
-  }
-  return keyMap;
-}
-
-export const __domKeyboardInputTest = {
-  buildKeyMap,
-  collectControlActions,
-};
