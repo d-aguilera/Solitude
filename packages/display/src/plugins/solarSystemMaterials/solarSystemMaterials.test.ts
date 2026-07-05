@@ -1,12 +1,12 @@
 import { mat3, vec3 } from "@solitude/engine/math";
 import type { Scene, SceneObject } from "@solitude/engine/render";
 import { describe, expect, it } from "vitest";
+import { createSolarSystemMaterialsPlugin } from "./index";
 import {
   earthCloudTextureId,
   earthDayTextureId,
   moonDayTextureId,
-} from "../../textureIds";
-import { createSolarSystemMaterialsPlugin } from "./index";
+} from "./textureIds";
 
 describe("solar system materials plugin", () => {
   it("assigns browser-owned texture materials to Earth and the Moon", () => {

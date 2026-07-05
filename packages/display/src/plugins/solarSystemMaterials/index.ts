@@ -4,12 +4,12 @@ import {
   earthCloudTextureId,
   earthDayTextureId,
   moonDayTextureId,
-} from "../../textureIds";
+} from "./textureIds";
 
 const earthId = "planet:earth";
 const moonId = "planet:moon";
 
-export const earthMaterial: RenderMaterial = {
+const earthMaterial: RenderMaterial = {
   atmosphere: {
     color: { r: 85, g: 205, b: 255 },
     opacity: 1,
@@ -22,7 +22,7 @@ export const earthMaterial: RenderMaterial = {
   textureId: earthDayTextureId,
 };
 
-export const moonMaterial: RenderMaterial = {
+const moonMaterial: RenderMaterial = {
   kind: "sphericalTexture",
   textureId: moonDayTextureId,
 };

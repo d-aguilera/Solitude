@@ -1,7 +1,7 @@
 import type { RenderFailure } from "@solitude/browser/dom/renderFailure";
 import { showRenderFailurePanel } from "@solitude/browser/dom/renderFailurePanel";
 import { parseRuntimeOptionsFromSearch } from "@solitude/browser/dom/runtimeOptions";
-import { solitudeTextureSources } from "@solitude/display/textures";
+import { displayTextureSources } from "@solitude/display/composition";
 import type { ControlInput } from "@solitude/engine/plugin";
 import {
   createRuntimeOptionsWithResolvedLocale,
@@ -58,7 +58,7 @@ const engineRenderer = createSolitudeRemoteClientRenderer({
   getFocusEntityId: () => fields.entityId.value,
   onFatalError: showFatalRenderError,
   runtimeOptions,
-  textureSources: solitudeTextureSources,
+  textureSources: displayTextureSources,
   plugins: [
     createRemoteLookaroundPlugin(),
     createShipColorNamesPlugin(localization.shipColorNames),
