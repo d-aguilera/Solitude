@@ -1,3 +1,4 @@
+import type { RenderTextureSourceCatalog } from "@solitude/engine/plugin";
 import type {
   RenderedView,
   ViewLabelMode,
@@ -7,13 +8,10 @@ import type {
 import { CanvasHudRasterizer } from "../rasterize/canvas/CanvasHudRasterizer";
 import { CanvasSceneOverlayRasterizer } from "../rasterize/canvas/CanvasSceneOverlayRasterizer";
 import { GpuSceneRenderer } from "../rasterize/webgl/GpuSceneRenderer";
-import type { TextureSourceCatalog } from "../rasterize/webgl/textureSources";
 import { WebGLSurface } from "../rasterize/webgl/WebGLSurface";
 import { WebGLViewRenderer } from "../rasterize/webgl/WebGLViewRenderer";
 import type { OverlayRasterizer } from "./overlayPorts";
 import type { RenderFailure } from "./renderFailure";
-
-export type { TextureSourceCatalog } from "../rasterize/webgl/textureSources";
 
 export interface BrowserViewPresenter extends ViewRenderer {
   readonly overlayRasterizer: OverlayRasterizer;
@@ -29,7 +27,7 @@ export interface BrowserViewPresenterOptions {
   onFatalError: (failure: RenderFailure) => void;
   overlayCanvas: HTMLCanvasElement;
   sceneCanvas: HTMLCanvasElement;
-  textureSources?: TextureSourceCatalog;
+  textureSources: RenderTextureSourceCatalog;
 }
 
 export function createBrowserViewPresenter({

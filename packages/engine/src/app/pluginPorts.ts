@@ -281,7 +281,7 @@ export interface ViewPlugin {
 export type RenderTextureSourceCatalog = Readonly<Record<string, string>>;
 
 export interface RenderAssetsPlugin {
-  textureSources?: RenderTextureSourceCatalog;
+  textureSources: RenderTextureSourceCatalog;
 }
 
 export interface WorldModelRegistry {

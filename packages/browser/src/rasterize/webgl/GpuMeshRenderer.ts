@@ -1,4 +1,5 @@
 import type { Mat3 } from "@solitude/engine/math";
+import type { RenderTextureSourceCatalog } from "@solitude/engine/plugin";
 import type {
   Mesh,
   SceneObject,
@@ -20,7 +21,6 @@ import { getPackedGpuMesh } from "./meshPacking";
 import fragmentShaderSource from "./shaders/solidMesh.frag.glsl?raw";
 import vertexShaderSource from "./shaders/solidMesh.vert.glsl?raw";
 import { selectGpuMeshForObject } from "./sphereLod";
-import type { TextureSourceCatalog } from "./textureSources";
 import {
   createProgramFromSources,
   requireResource,
@@ -91,7 +91,7 @@ export class GpuMeshRenderer {
 
   constructor(
     private readonly gl: WebGL2RenderingContext,
-    private readonly textureSources: TextureSourceCatalog = {},
+    private readonly textureSources: RenderTextureSourceCatalog,
   ) {
     this.program = createProgramFromSources(
       gl,

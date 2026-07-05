@@ -194,7 +194,7 @@ Build Path A with one NASA Blue Marble land/ocean/ice Earth texture.
 Keep it narrow:
 
 - One optional material field in engine render contracts.
-- One display-owned material plugin that assigns materials and contributes plugin-owned texture sources through `renderAssets`.
+- One display-owned material plugin that assigns materials and contributes plugin-owned texture sources through `renderAssets`; browser bootstraps collect texture catalogs from the selected plugins instead of accepting app-threaded texture maps.
 - One WebGL texture cache in `GpuMeshRenderer`.
 - One shader path for spherical day textures.
 - Earth uses the texture through the display material plugin; bodies without display materials keep solid colors.

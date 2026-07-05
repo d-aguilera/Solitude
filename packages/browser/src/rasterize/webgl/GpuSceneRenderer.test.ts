@@ -16,6 +16,7 @@ describe("GPU scene renderer", () => {
     const renderer = new GpuSceneRenderer({
       gl: recording.gl,
       onFatalError: (failure) => failures.push(failure),
+      textureSources: {},
     });
     const object = createObject();
     const params = createRenderParams(object);
@@ -35,6 +36,7 @@ describe("GPU scene renderer", () => {
     const renderer = new GpuSceneRenderer({
       gl: recording.gl,
       onFatalError: () => {},
+      textureSources: {},
     });
     const small = createObject("body:small", 2);
     const large = createObject("body:large", 5);
@@ -52,6 +54,7 @@ describe("GPU scene renderer", () => {
     const renderer = new GpuSceneRenderer({
       gl: recording.gl,
       onFatalError: () => {},
+      textureSources: {},
     });
     const farBody = createIcosphereBody("body:far", 2_000);
     const nearBody = createIcosphereBody("body:near", 20);
@@ -66,6 +69,7 @@ describe("GPU scene renderer", () => {
     const renderer = new GpuSceneRenderer({
       gl: recording.gl,
       onFatalError: () => {},
+      textureSources: {},
     });
 
     renderer.render(
@@ -148,6 +152,7 @@ describe("GPU scene renderer", () => {
     const renderer = new GpuSceneRenderer({
       gl: recording.gl,
       onFatalError: () => {},
+      textureSources: {},
     });
     const params = createRenderParams([createObject(), createPolyline()]);
     params.worldSegments.push(createWorldSegment());
@@ -164,6 +169,7 @@ describe("GPU scene renderer", () => {
     const renderer = new GpuSceneRenderer({
       gl: recording.gl,
       onFatalError: () => {},
+      textureSources: {},
     });
     const params = createRenderParams([createObject(), createPolyline()]);
     params.renderPolylines = false;
@@ -179,6 +185,7 @@ describe("GPU scene renderer", () => {
     const renderer = new GpuSceneRenderer({
       gl: recording.gl,
       onFatalError: () => {},
+      textureSources: {},
     });
     const params = createRenderParams(createObject());
     params.worldSegments.push(createWorldSegment());
@@ -196,6 +203,7 @@ describe("GPU scene renderer", () => {
     const renderer = new GpuSceneRenderer({
       gl: recording.gl,
       onFatalError: () => {},
+      textureSources: {},
     });
     const params = createRenderParams([createObject(), createPolyline()]);
     params.objectsFilter = (object) => object.kind !== "polyline";
@@ -212,6 +220,7 @@ describe("GPU scene renderer", () => {
     const renderer = new GpuSceneRenderer({
       gl: recording.gl,
       onFatalError: (failure) => failures.push(failure),
+      textureSources: {},
     });
     const params = createRenderParams(createObject());
     renderer.render(params);

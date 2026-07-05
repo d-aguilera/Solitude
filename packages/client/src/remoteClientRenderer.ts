@@ -10,7 +10,6 @@ import {
   orderViewDefinitionsPrimaryFirst,
   removeExtraDomViews,
 } from "@solitude/browser/dom/view";
-import type { TextureSourceCatalog } from "@solitude/browser/dom/viewPresenter";
 import { createBrowserViewPresenter } from "@solitude/browser/dom/viewPresenter";
 import {
   createRemoteViewPresenterRenderer,
@@ -90,7 +89,6 @@ export interface SolitudeRemoteClientRendererOptions {
   onFatalError: (failure: RenderFailure) => void;
   plugins: GamePlugin[];
   runtimeOptions: RuntimeOptions;
-  textureSources?: TextureSourceCatalog;
 }
 
 export interface SolitudeRemoteClientRenderer {
@@ -128,7 +126,6 @@ export function createSolitudeRemoteClientRenderer({
   onFatalError,
   plugins: clientPlugins,
   runtimeOptions,
-  textureSources,
 }: SolitudeRemoteClientRendererOptions): SolitudeRemoteClientRenderer {
   const baseRuntimeOptions = runtimeOptions;
   let composition = createRemoteClientComposition({
@@ -515,10 +512,7 @@ export function createSolitudeRemoteClientRenderer({
     config.mainFocusEntityId =
       focusEntityId.length > 0 ? focusEntityId : (entities[0]?.id ?? "");
     const viewDefinitions = buildViewDefinitions(config, plugins);
-    const collectedTextureSources = collectPluginTextureSources(
-      plugins,
-      textureSources,
-    );
+    const textureSources = collectPluginTextureSources(plugins);
     const presentedViews = orderViewDefinitionsPrimaryFirst(
       viewDefinitions,
     ).map((definition, index) => {
@@ -528,7 +522,7 @@ export function createSolitudeRemoteClientRenderer({
         onFatalError: handleFatalError,
         overlayCanvas: layers.overlayCanvas,
         sceneCanvas: layers.sceneCanvas,
-        textureSources: collectedTextureSources,
+        textureSources,
       });
       return { definition, layers, presenter };
     });

@@ -2,7 +2,6 @@ import type { GamePlugin, RenderTextureSourceCatalog } from "./pluginPorts";
 
 export function collectPluginTextureSources(
   plugins: readonly GamePlugin[],
-  explicitTextureSources: RenderTextureSourceCatalog = {},
 ): RenderTextureSourceCatalog {
   const textureSources: Record<string, string> = {};
   const providersByTextureId = new Map<string, string>();
@@ -24,5 +23,5 @@ export function collectPluginTextureSources(
     }
   }
 
-  return { ...textureSources, ...explicitTextureSources };
+  return textureSources;
 }

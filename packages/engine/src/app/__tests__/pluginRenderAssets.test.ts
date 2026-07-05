@@ -36,17 +36,6 @@ describe("plugin render assets", () => {
       'Texture source "texture:shared" is provided by both "a" and "b"',
     );
   });
-
-  it("lets explicit texture sources override plugin sources", () => {
-    expect(
-      collectPluginTextureSources(
-        [createTexturePlugin("a", { "texture:a": "/plugin.jpg" })],
-        { "texture:a": "/explicit.jpg" },
-      ),
-    ).toEqual({
-      "texture:a": "/explicit.jpg",
-    });
-  });
 });
 
 function createTexturePlugin(
