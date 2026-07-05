@@ -1,8 +1,8 @@
-import type { RenderTextureSourceCatalog } from "@solitude/engine/plugin";
 import type { ViewRenderParams } from "@solitude/engine/render";
 import { renderNearDepth } from "@solitude/engine/render/parameters";
 import { ProjectionService } from "@solitude/engine/render/projectionService";
 import type { RenderFailure } from "../../infra/renderFailure";
+import type { RenderTextureSourceCatalog } from "../../infra/renderTextureSources";
 import { GpuLineRenderer } from "./GpuLineRenderer";
 import { GpuMeshRenderer } from "./GpuMeshRenderer";
 import { requireResource } from "./webglProgram";

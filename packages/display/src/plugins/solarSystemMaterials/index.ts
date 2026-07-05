@@ -7,6 +7,7 @@ import {
 } from "./textureIds";
 import { solarSystemMaterialTextureSources } from "./textures";
 
+const renderTextureSourcesCapability = "solitude.render.textureSources.v1";
 const earthId = "planet:earth";
 const moonId = "planet:moon";
 
@@ -30,10 +31,15 @@ const moonMaterial: RenderMaterial = {
 
 export function createSolarSystemMaterialsPlugin(): GamePlugin {
   return {
+    capabilities: [
+      {
+        id: renderTextureSourcesCapability,
+        value: {
+          textureSources: solarSystemMaterialTextureSources,
+        },
+      },
+    ],
     id: "solarSystemMaterials",
-    renderAssets: {
-      textureSources: solarSystemMaterialTextureSources,
-    },
     scene: {
       initScene: ({ scene }) => {
         applySolarSystemMaterials(scene.objects);

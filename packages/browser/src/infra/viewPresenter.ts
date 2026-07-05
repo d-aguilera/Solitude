@@ -1,4 +1,3 @@
-import type { RenderTextureSourceCatalog } from "@solitude/engine/plugin";
 import type {
   RenderedView,
   ViewLabelMode,
@@ -12,6 +11,7 @@ import { WebGLSurface } from "../rasterize/webgl/WebGLSurface";
 import { WebGLViewRenderer } from "../rasterize/webgl/WebGLViewRenderer";
 import type { OverlayRasterizer } from "./overlayPorts";
 import type { RenderFailure } from "./renderFailure";
+import type { RenderTextureSourceCatalog } from "./renderTextureSources";
 
 export interface BrowserViewPresenter extends ViewRenderer {
   readonly overlayRasterizer: OverlayRasterizer;

@@ -9,10 +9,15 @@ import {
 } from "./textureIds";
 
 describe("solar system materials plugin", () => {
-  it("contributes its texture sources through render assets", () => {
-    const textureSources =
-      createSolarSystemMaterialsPlugin().renderAssets?.textureSources;
+  it("contributes its texture sources through a capability", () => {
+    const textureCapability =
+      createSolarSystemMaterialsPlugin().capabilities?.[0];
+    const textureProvider = textureCapability?.value as
+      | { textureSources?: Record<string, string> }
+      | undefined;
+    const textureSources = textureProvider?.textureSources;
 
+    expect(textureCapability?.id).toBe("solitude.render.textureSources.v1");
     expect(textureSources?.[earthDayTextureId]).toEqual(expect.any(String));
     expect(textureSources?.[earthCloudTextureId]).toEqual(expect.any(String));
     expect(textureSources?.[moonDayTextureId]).toEqual(expect.any(String));

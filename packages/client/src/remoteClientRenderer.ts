@@ -5,6 +5,7 @@ import {
 } from "@solitude/browser/dom/layout";
 import { applyBrowserOverlayProviders } from "@solitude/browser/dom/overlayPorts";
 import type { RenderFailure } from "@solitude/browser/dom/renderFailure";
+import { collectRenderTextureSources } from "@solitude/browser/dom/renderTextureSources";
 import {
   getOrCreateDomViewLayers,
   orderViewDefinitionsPrimaryFirst,
@@ -17,7 +18,6 @@ import {
 } from "@solitude/browser/remoteViewPresenter";
 import { mat3, vec3 } from "@solitude/engine/math";
 import {
-  collectPluginTextureSources,
   type ControlInput,
   type FramePolicy,
   type GamePlugin,
@@ -512,7 +512,9 @@ export function createSolitudeRemoteClientRenderer({
     config.mainFocusEntityId =
       focusEntityId.length > 0 ? focusEntityId : (entities[0]?.id ?? "");
     const viewDefinitions = buildViewDefinitions(config, plugins);
-    const textureSources = collectPluginTextureSources(plugins);
+    const textureSources = collectRenderTextureSources(
+      composition.capabilityRegistry,
+    );
     const presentedViews = orderViewDefinitionsPrimaryFirst(
       viewDefinitions,
     ).map((definition, index) => {

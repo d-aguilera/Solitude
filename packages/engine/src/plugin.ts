@@ -25,8 +25,6 @@ export type {
   PluginCapabilityProvider,
   PluginCapabilityRegistry,
   PluginRequirements,
-  RenderAssetsPlugin,
-  RenderTextureSourceCatalog,
   RuntimeOptions,
   SceneInitParams,
   SceneLabelCandidate,
@@ -57,7 +55,6 @@ export type {
   WorldSegment,
   WorldSegmentSink,
 } from "./app/pluginPorts";
-export { collectPluginTextureSources } from "./app/pluginRenderAssets";
 export {
   createSceneLabelBuffer,
   createWorldMarkerBuffer,

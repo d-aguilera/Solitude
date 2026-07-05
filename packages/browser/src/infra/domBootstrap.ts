@@ -1,11 +1,11 @@
-import {
-  collectPluginTextureSources,
-  type GamePlugin,
-  type RenderTextureSourceCatalog,
-} from "@solitude/engine/plugin";
+import type { GamePlugin } from "@solitude/engine/plugin";
 import type { ViewDefinition } from "@solitude/engine/render";
 import { buildViewDefinitions } from "@solitude/engine/render";
-import { NewtonianGravityEngine, parameters } from "@solitude/engine/runtime";
+import {
+  createPluginCapabilityRegistry,
+  NewtonianGravityEngine,
+  parameters,
+} from "@solitude/engine/runtime";
 import type {
   GravityEngine,
   WorldAndSceneConfig,
@@ -16,6 +16,10 @@ import { initLayout, type LayoutView } from "./domLayout";
 import { getOrCreateDomViewLayers } from "./domView";
 import type { RunLoopView } from "./infraPorts";
 import type { RenderFailure } from "./renderFailure";
+import {
+  collectRenderTextureSources,
+  type RenderTextureSourceCatalog,
+} from "./renderTextureSources";
 import { createBrowserViewPresenter } from "./viewPresenter";
 
 /**
@@ -26,7 +30,11 @@ export function bootstrapWith(
   plugins: GamePlugin[],
   onFatalError: (failure: RenderFailure) => void,
 ): void {
-  const textureSources = collectPluginTextureSources(plugins);
+  const textureSources = collectRenderTextureSources(
+    createPluginCapabilityRegistry(
+      plugins.flatMap((plugin) => plugin.capabilities ?? []),
+    ),
+  );
   const container = document.querySelector(".canvas-container");
   if (!container) {
     throw new Error("Required '.canvas-container' not found in document");

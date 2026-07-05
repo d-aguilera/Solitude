@@ -1,5 +1,4 @@
 import type { Mat3 } from "@solitude/engine/math";
-import type { RenderTextureSourceCatalog } from "@solitude/engine/plugin";
 import type {
   Mesh,
   SceneObject,
@@ -17,6 +16,7 @@ import {
 } from "@solitude/engine/render/parameters";
 import type { ProjectionService } from "@solitude/engine/render/projectionService";
 import { profiler } from "@solitude/engine/runtime";
+import type { RenderTextureSourceCatalog } from "../../infra/renderTextureSources";
 import { getPackedGpuMesh } from "./meshPacking";
 import fragmentShaderSource from "./shaders/solidMesh.frag.glsl?raw";
 import vertexShaderSource from "./shaders/solidMesh.vert.glsl?raw";

@@ -10,6 +10,7 @@
     "./dom/renderingBootstrap": "./src/infra/domRenderingBootstrap.ts",
     "./dom/renderFailure": "./src/infra/renderFailure.ts",
     "./dom/renderFailurePanel": "./src/infra/renderFailurePanel.ts",
+    "./dom/renderTextureSources": "./src/infra/renderTextureSources.ts",
     "./dom/view": "./src/infra/domView.ts",
     "./dom/viewPresenter": "./src/infra/viewPresenter.ts",
     "./dom/overlayPorts": "./src/infra/overlayPorts.ts",

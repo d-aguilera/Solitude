@@ -278,12 +278,6 @@ export interface ViewPlugin {
   ) => void;
 }
 
-export type RenderTextureSourceCatalog = Readonly<Record<string, string>>;
-
-export interface RenderAssetsPlugin {
-  textureSources: RenderTextureSourceCatalog;
-}
-
 export interface WorldModelRegistry {
   addEntities: (entities: EntityConfig[]) => void;
   setMainFocusEntityId: (id: EntityId) => void;
@@ -323,7 +317,6 @@ export interface GamePlugin {
   segments?: SegmentPlugin;
   scene?: ScenePlugin;
   labels?: SceneLabelPlugin;
-  renderAssets?: RenderAssetsPlugin;
   simulation?: SimulationContribution;
   requirements?: PluginRequirements;
   viewControls?: ViewControlPlugin;

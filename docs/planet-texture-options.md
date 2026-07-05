@@ -133,7 +133,7 @@ Best first slice.
    ```
 
 2. Let a browser-facing display plugin assign Earth a stable texture id such as `solitude.display.texture.earth.day` during scene init.
-3. Keep `@solitude/sim` server-safe and texture-agnostic; map display-owned texture ids to plugin-owned browser asset URLs in `solarSystemMaterials/textures`, and expose them through the `solarSystemMaterials` plugin's `renderAssets.textureSources` hook.
+3. Keep `@solitude/sim` server-safe and texture-agnostic; map display-owned texture ids to plugin-owned browser asset URLs in `solarSystemMaterials/textures`, and expose them through a render texture-source capability published by the `solarSystemMaterials` plugin.
 4. Extend `GpuMeshRenderer` with a texture cache keyed by texture id/source.
 5. In the shader, compute UV from local sphere coordinates and sample the day texture. Fall back to `uBaseColor` when no texture is bound.
 
@@ -194,7 +194,7 @@ Build Path A with one NASA Blue Marble land/ocean/ice Earth texture.
 Keep it narrow:
 
 - One optional material field in engine render contracts.
-- One display-owned material plugin that assigns materials and contributes plugin-owned texture sources through `renderAssets`; browser bootstraps collect texture catalogs from the selected plugins instead of accepting app-threaded texture maps.
+- One display-owned material plugin that assigns materials and contributes plugin-owned texture sources through a capability; browser rendering collects texture catalogs from selected plugin capabilities instead of accepting app-threaded texture maps.
 - One WebGL texture cache in `GpuMeshRenderer`.
 - One shader path for spherical day textures.
 - Earth uses the texture through the display material plugin; bodies without display materials keep solid colors.
