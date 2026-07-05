@@ -31,9 +31,7 @@ export function bootstrapWith(
   onFatalError: (failure: RenderFailure) => void,
 ): void {
   const textureSources = collectRenderTextureSources(
-    createPluginCapabilityRegistry(
-      plugins.flatMap((plugin) => plugin.capabilities ?? []),
-    ),
+    createPluginCapabilityRegistry(plugins),
   );
   const container = document.querySelector(".canvas-container");
   if (!container) {

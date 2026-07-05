@@ -2,6 +2,7 @@ import type {
   ControlAction,
   ControlInput,
   PluginCapabilityProvider,
+  PluginCapabilityRegistry,
 } from "@solitude/engine/plugin";
 
 export const keyboardInputCapability = "solitude.keyboardInput.v1";
@@ -66,12 +67,20 @@ export function createKeyboardInputProvider(
 }
 
 export function collectKeyboardInputProviders(
-  capabilities: readonly PluginCapabilityProvider[],
+  source: PluginCapabilityRegistry | readonly PluginCapabilityProvider[],
 ): KeyboardInputProvider[] {
-  return capabilities
-    .filter((capability) => capability.id === keyboardInputCapability)
-    .map((capability) => capability.value)
-    .filter(isKeyboardInputProvider);
+  const values = isCapabilityProviderArray(source)
+    ? source
+        .filter((capability) => capability.id === keyboardInputCapability)
+        .map((capability) => capability.value)
+    : source.getAll(keyboardInputCapability);
+  return values.filter(isKeyboardInputProvider);
+}
+
+function isCapabilityProviderArray(
+  source: PluginCapabilityRegistry | readonly PluginCapabilityProvider[],
+): source is readonly PluginCapabilityProvider[] {
+  return Array.isArray(source);
 }
 
 function isKeyboardInputProvider(

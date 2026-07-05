@@ -88,9 +88,7 @@ export function createDefaultMultiplayerSpawnProviders(
   runtimeOptions: RuntimeOptions,
 ): DefaultMultiplayerSpawnProviders {
   const plugins = createDefaultMultiplayerContentPlugins(runtimeOptions);
-  const capabilityRegistry = createPluginCapabilityRegistry(
-    plugins.flatMap((plugin) => plugin.capabilities ?? []),
-  );
+  const capabilityRegistry = createPluginCapabilityRegistry(plugins);
   const celestialBodyProvider = capabilityRegistry
     .getAll(celestialBodyProviderCapability)
     .find(isCelestialBodyProvider);

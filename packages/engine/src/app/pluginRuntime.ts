@@ -1,3 +1,4 @@
+import { collectPluginCapabilityProviders } from "./pluginCapabilities";
 import type {
   ControlPlugin,
   GamePlugin,
@@ -19,9 +20,9 @@ export function assembleSimulationPlugins(
   additionalControlPlugins: readonly ControlPlugin[],
   additionalSimulationPlugins: readonly SimulationPlugin[],
 ): SimulationPluginAssembly {
-  const capabilityProviders = plugins
-    .flatMap((plugin) => plugin.capabilities ?? [])
-    .concat(additionalCapabilityProviders);
+  const capabilityProviders = collectPluginCapabilityProviders(plugins).concat(
+    additionalCapabilityProviders,
+  );
   const controlPlugins = plugins
     .flatMap((plugin) => (plugin.controls ? [plugin.controls] : []))
     .concat(additionalControlPlugins);

@@ -137,9 +137,7 @@ export function createRemoteWorldRenderer({
   const segmentPlugins = collectSegmentPlugins(plugins);
   const markerPlugins = collectMarkerPlugins(plugins);
   const viewControlPlugins = collectViewControlPlugins(plugins);
-  const capabilityRegistry = createPluginCapabilityRegistry(
-    plugins.flatMap((plugin) => plugin.capabilities ?? []),
-  );
+  const capabilityRegistry = createPluginCapabilityRegistry(plugins);
 
   applySceneInitPlugins(scenePlugins, {
     config,
@@ -291,9 +289,7 @@ export function createRemoteWorldMultiRenderer({
   const segmentPlugins = collectSegmentPlugins(plugins);
   const markerPlugins = collectMarkerPlugins(plugins);
   const viewControlPlugins = collectViewControlPlugins(plugins);
-  const capabilityRegistry = createPluginCapabilityRegistry(
-    plugins.flatMap((plugin) => plugin.capabilities ?? []),
-  );
+  const capabilityRegistry = createPluginCapabilityRegistry(plugins);
 
   applySceneInitPlugins(scenePlugins, {
     config,

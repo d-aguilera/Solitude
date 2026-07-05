@@ -133,9 +133,7 @@ export function createSolitudeRemoteClientRenderer({
     runtimeOptions: baseRuntimeOptions,
   });
   let keyboardDispatcher = createKeyboardHandlerDispatcher(
-    collectKeyboardInputProviders(
-      composition.plugins.flatMap((plugin) => plugin.capabilities ?? []),
-    ),
+    collectKeyboardInputProviders(composition.capabilityRegistry),
   );
   const predictionState = createLocalPredictionState();
   const framePolicy: FramePolicy = {
@@ -262,9 +260,7 @@ export function createSolitudeRemoteClientRenderer({
         ),
       });
       keyboardDispatcher = createKeyboardHandlerDispatcher(
-        collectKeyboardInputProviders(
-          composition.plugins.flatMap((plugin) => plugin.capabilities ?? []),
-        ),
+        collectKeyboardInputProviders(composition.capabilityRegistry),
       );
       modelVersion = nextModelVersion;
       renderer?.dispose();

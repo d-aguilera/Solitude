@@ -1,4 +1,5 @@
 import type { ControlInput, GamePlugin } from "@solitude/engine/plugin";
+import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import {
   collectKeyboardInputProviders,
   createKeyboardHandlerDispatcher,
@@ -11,7 +12,7 @@ export function initInput(plugins: GamePlugin[] = []): {
   controlInput: ControlInput;
 } {
   const inputPlugins = collectKeyboardInputProviders(
-    plugins.flatMap((plugin) => plugin.capabilities ?? []),
+    createPluginCapabilityRegistry(plugins),
   );
   const dispatcher = createKeyboardHandlerDispatcher(inputPlugins);
 

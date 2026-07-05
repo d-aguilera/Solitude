@@ -12,9 +12,7 @@ export function applyWorldModelPlugins(
   config: WorldAndSceneConfig,
   plugins: GamePlugin[],
 ): void {
-  const capabilityRegistry = createPluginCapabilityRegistry(
-    plugins.flatMap((plugin) => plugin.capabilities ?? []),
-  );
+  const capabilityRegistry = createPluginCapabilityRegistry(plugins);
   const worldModelPlugins = collectWorldModelPlugins(plugins);
   const registry: WorldModelRegistry = {
     addEntities: (entities: EntityConfig[]) => {

@@ -43,9 +43,7 @@ export function createRemoteClientComposition({
     ids: ["hud", ...remoteRenderPluginIds],
     runtimeOptions,
   }).concat(clientPlugins);
-  const capabilityRegistry = createPluginCapabilityRegistry(
-    plugins.flatMap((plugin) => plugin.capabilities ?? []),
-  );
+  const capabilityRegistry = createPluginCapabilityRegistry(plugins);
 
   return {
     capabilityRegistry,
