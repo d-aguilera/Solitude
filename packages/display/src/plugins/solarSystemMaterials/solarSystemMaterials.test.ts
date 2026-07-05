@@ -9,6 +9,15 @@ import {
 } from "./textureIds";
 
 describe("solar system materials plugin", () => {
+  it("contributes its texture sources through render assets", () => {
+    const textureSources =
+      createSolarSystemMaterialsPlugin().renderAssets?.textureSources;
+
+    expect(textureSources?.[earthDayTextureId]).toEqual(expect.any(String));
+    expect(textureSources?.[earthCloudTextureId]).toEqual(expect.any(String));
+    expect(textureSources?.[moonDayTextureId]).toEqual(expect.any(String));
+  });
+
   it("assigns browser-owned texture materials to Earth and the Moon", () => {
     const scene: Scene = {
       lights: [],

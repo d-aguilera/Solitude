@@ -5,6 +5,7 @@ import {
   earthDayTextureId,
   moonDayTextureId,
 } from "./textureIds";
+import { solarSystemMaterialTextureSources } from "./textures";
 
 const earthId = "planet:earth";
 const moonId = "planet:moon";
@@ -30,6 +31,9 @@ const moonMaterial: RenderMaterial = {
 export function createSolarSystemMaterialsPlugin(): GamePlugin {
   return {
     id: "solarSystemMaterials",
+    renderAssets: {
+      textureSources: solarSystemMaterialTextureSources,
+    },
     scene: {
       initScene: ({ scene }) => {
         applySolarSystemMaterials(scene.objects);

@@ -18,6 +18,7 @@ import {
 } from "@solitude/browser/remoteViewPresenter";
 import { mat3, vec3 } from "@solitude/engine/math";
 import {
+  collectPluginTextureSources,
   type ControlInput,
   type FramePolicy,
   type GamePlugin,
@@ -514,6 +515,10 @@ export function createSolitudeRemoteClientRenderer({
     config.mainFocusEntityId =
       focusEntityId.length > 0 ? focusEntityId : (entities[0]?.id ?? "");
     const viewDefinitions = buildViewDefinitions(config, plugins);
+    const collectedTextureSources = collectPluginTextureSources(
+      plugins,
+      textureSources,
+    );
     const presentedViews = orderViewDefinitionsPrimaryFirst(
       viewDefinitions,
     ).map((definition, index) => {
@@ -523,7 +528,7 @@ export function createSolitudeRemoteClientRenderer({
         onFatalError: handleFatalError,
         overlayCanvas: layers.overlayCanvas,
         sceneCanvas: layers.sceneCanvas,
-        textureSources,
+        textureSources: collectedTextureSources,
       });
       return { definition, layers, presenter };
     });

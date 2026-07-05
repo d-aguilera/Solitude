@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./composition": "./src/composition.ts",
     "./plugins/autopilot": "./src/plugins/autopilot/index.ts",
     "./plugins/autopilot/hud": "./src/plugins/autopilot/hud.ts",
     "./plugins/axialViews": "./src/plugins/axialViews/index.ts",

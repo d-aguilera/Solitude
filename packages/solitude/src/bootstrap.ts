@@ -2,7 +2,6 @@ import type { RenderFailure } from "@solitude/browser/dom/renderFailure";
 import { showRenderFailurePanel } from "@solitude/browser/dom/renderFailurePanel";
 import { bootstrapRendering } from "@solitude/browser/dom/renderingBootstrap";
 import { parseRuntimeOptionsFromSearch } from "@solitude/browser/dom/runtimeOptions";
-import { displayTextureSources } from "@solitude/display/composition";
 import { loadPlugins } from "@solitude/engine/plugin";
 import { applyWorldModelPlugins } from "@solitude/engine/world";
 import {
@@ -35,7 +34,6 @@ function main(): void {
     onFatalError: (failure) =>
       showFatalRenderError(container, runtimeOptions, failure),
     plugins,
-    textureSources: displayTextureSources,
   });
 }
 
