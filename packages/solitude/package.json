@@ -3,9 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": {
-    "./plugins/catalog": "./src/plugins/catalog.ts"
-  },
   "dependencies": {
     "@solitude/browser": "0.0.0",
     "@solitude/display": "0.0.0",

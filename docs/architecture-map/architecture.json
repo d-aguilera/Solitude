@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-28T20:39:35.863Z",
+  "generatedAt": "2026-07-06T22:59:19.063Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -36,48 +36,6 @@
       "label": "./assets",
       "packageName": "@solitude/engine",
       "parent": "pkg:@solitude/engine"
-    },
-    {
-      "id": "module:@solitude/sim:./autopilot/behavior",
-      "kind": "module",
-      "label": "./autopilot/behavior",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/sim:./autopilot/core",
-      "kind": "module",
-      "label": "./autopilot/core",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/sim:./autopilot/input",
-      "kind": "module",
-      "label": "./autopilot/input",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/sim:./autopilot/logic",
-      "kind": "module",
-      "label": "./autopilot/logic",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/sim:./autopilot/mode",
-      "kind": "module",
-      "label": "./autopilot/mode",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/sim:./autopilot/spacecraftPropulsion",
-      "kind": "module",
-      "label": "./autopilot/spacecraftPropulsion",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
     },
     {
       "id": "module:@solitude/sim:./celestialBodies/provider",
@@ -146,6 +104,13 @@
       "id": "module:@solitude/browser:./dom/renderingBootstrap",
       "kind": "module",
       "label": "./dom/renderingBootstrap",
+      "packageName": "@solitude/browser",
+      "parent": "pkg:@solitude/browser"
+    },
+    {
+      "id": "module:@solitude/browser:./dom/renderTextureSources",
+      "kind": "module",
+      "label": "./dom/renderTextureSources",
       "packageName": "@solitude/browser",
       "parent": "pkg:@solitude/browser"
     },
@@ -234,25 +199,11 @@
       "parent": "pkg:@solitude/sim"
     },
     {
-      "id": "module:@solitude/display:./plugins/autopilot/hud",
+      "id": "module:@solitude/sim:./plugins/autopilot/input",
       "kind": "module",
-      "label": "./plugins/autopilot/hud",
-      "packageName": "@solitude/display",
-      "parent": "pkg:@solitude/display"
-    },
-    {
-      "id": "module:@solitude/display:./plugins/axialViews",
-      "kind": "module",
-      "label": "./plugins/axialViews",
-      "packageName": "@solitude/display",
-      "parent": "pkg:@solitude/display"
-    },
-    {
-      "id": "module:@solitude/display:./plugins/bodyLabels",
-      "kind": "module",
-      "label": "./plugins/bodyLabels",
-      "packageName": "@solitude/display",
-      "parent": "pkg:@solitude/display"
+      "label": "./plugins/autopilot/input",
+      "packageName": "@solitude/sim",
+      "parent": "pkg:@solitude/sim"
     },
     {
       "id": "module:@solitude/display:./plugins/catalog",
@@ -269,30 +220,9 @@
       "parent": "pkg:@solitude/sim"
     },
     {
-      "id": "module:solitude:./plugins/catalog",
-      "kind": "module",
-      "label": "./plugins/catalog",
-      "packageName": "solitude",
-      "parent": "pkg:solitude"
-    },
-    {
       "id": "module:@solitude/display:./plugins/orbitTelemetry",
       "kind": "module",
       "label": "./plugins/orbitTelemetry",
-      "packageName": "@solitude/display",
-      "parent": "pkg:@solitude/display"
-    },
-    {
-      "id": "module:@solitude/display:./plugins/orbitTelemetry/hud",
-      "kind": "module",
-      "label": "./plugins/orbitTelemetry/hud",
-      "packageName": "@solitude/display",
-      "parent": "pkg:@solitude/display"
-    },
-    {
-      "id": "module:@solitude/display:./plugins/orbitTelemetry/orbitReadout",
-      "kind": "module",
-      "label": "./plugins/orbitTelemetry/orbitReadout",
       "packageName": "@solitude/display",
       "parent": "pkg:@solitude/display"
     },
@@ -311,37 +241,9 @@
       "parent": "pkg:@solitude/display"
     },
     {
-      "id": "module:@solitude/display:./plugins/shipTelemetry/hud",
-      "kind": "module",
-      "label": "./plugins/shipTelemetry/hud",
-      "packageName": "@solitude/display",
-      "parent": "pkg:@solitude/display"
-    },
-    {
       "id": "module:@solitude/sim:./plugins/solarSystem",
       "kind": "module",
       "label": "./plugins/solarSystem",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/sim:./plugins/solarSystem/celestialBodyProvider",
-      "kind": "module",
-      "label": "./plugins/solarSystem/celestialBodyProvider",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/sim:./plugins/solarSystem/colors",
-      "kind": "module",
-      "label": "./plugins/solarSystem/colors",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/sim:./plugins/solarSystem/solarSystem",
-      "kind": "module",
-      "label": "./plugins/solarSystem/solarSystem",
       "packageName": "@solitude/sim",
       "parent": "pkg:@solitude/sim"
     },
@@ -367,53 +269,11 @@
       "parent": "pkg:@solitude/sim"
     },
     {
-      "id": "module:@solitude/sim:./plugins/spacecraftOperator/core",
-      "kind": "module",
-      "label": "./plugins/spacecraftOperator/core",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/sim:./plugins/spacecraftOperator/input",
-      "kind": "module",
-      "label": "./plugins/spacecraftOperator/input",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
       "id": "module:@solitude/sim:./plugins/spacecraftOperator/telemetry",
       "kind": "module",
       "label": "./plugins/spacecraftOperator/telemetry",
       "packageName": "@solitude/sim",
       "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/display:./plugins/targetingLaser",
-      "kind": "module",
-      "label": "./plugins/targetingLaser",
-      "packageName": "@solitude/display",
-      "parent": "pkg:@solitude/display"
-    },
-    {
-      "id": "module:@solitude/display:./plugins/trajectories",
-      "kind": "module",
-      "label": "./plugins/trajectories",
-      "packageName": "@solitude/display",
-      "parent": "pkg:@solitude/display"
-    },
-    {
-      "id": "module:@solitude/display:./plugins/trajectories/trajectoryPlan",
-      "kind": "module",
-      "label": "./plugins/trajectories/trajectoryPlan",
-      "packageName": "@solitude/display",
-      "parent": "pkg:@solitude/display"
-    },
-    {
-      "id": "module:@solitude/display:./plugins/velocitySegments",
-      "kind": "module",
-      "label": "./plugins/velocitySegments",
-      "packageName": "@solitude/display",
-      "parent": "pkg:@solitude/display"
     },
     {
       "id": "module:@solitude/protocol:./protocol",
@@ -627,28 +487,12 @@
       "packageName": "solitude"
     },
     {
-      "id": "symbol:@solitude/browser:./dom/keyboardInput:__domKeyboardInputTest",
-      "kind": "symbol",
-      "label": "__domKeyboardInputTest",
-      "packageName": "@solitude/browser",
-      "parent": "module:@solitude/browser:./dom/keyboardInput",
-      "symbolKind": "const"
-    },
-    {
       "id": "symbol:@solitude/engine:./world:addEntityConfigToWorld",
       "kind": "symbol",
       "label": "addEntityConfigToWorld",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./world",
       "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/solarSystem/colors:ALL_COLORS",
-      "kind": "symbol",
-      "label": "ALL_COLORS",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/solarSystem/colors",
-      "symbolKind": "const"
     },
     {
       "id": "symbol:@solitude/engine:./world:AngularVelocity",
@@ -723,14 +567,6 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics",
-      "kind": "symbol",
-      "label": "applySpacecraftVehicleDynamics",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/core",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/engine:./world:applyWorldModelPlugins",
       "kind": "symbol",
       "label": "applyWorldModelPlugins",
@@ -761,22 +597,6 @@
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./math",
       "symbolKind": "const"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/logic:AutopilotMode",
-      "kind": "symbol",
-      "label": "AutopilotMode",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/logic",
-      "symbolKind": "type"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/mode:AutopilotMode",
-      "kind": "symbol",
-      "label": "AutopilotMode",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/mode",
-      "symbolKind": "type"
     },
     {
       "id": "symbol:@solitude/engine:./world:AxialSpinConfig",
@@ -859,27 +679,11 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs",
-      "kind": "symbol",
-      "label": "buildDefaultSolarSystemConfigs",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/solarSystem/solarSystem",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/sim:./plugins/solarSystem:buildSolarSystemBodyEntities",
       "kind": "symbol",
       "label": "buildSolarSystemBodyEntities",
       "packageName": "@solitude/sim",
       "parent": "module:@solitude/sim:./plugins/solarSystem",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:buildTrajectoryPlan",
-      "kind": "symbol",
-      "label": "buildTrajectoryPlan",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/trajectories/trajectoryPlan",
       "symbolKind": "function"
     },
     {
@@ -963,14 +767,6 @@
       "symbolKind": "const"
     },
     {
-      "id": "symbol:@solitude/sim:./autopilot/logic:CircleNowControllerState",
-      "kind": "symbol",
-      "label": "CircleNowControllerState",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/logic",
-      "symbolKind": "interface"
-    },
-    {
       "id": "symbol:@solitude/engine:./math:circularSpeedAtRadius",
       "kind": "symbol",
       "label": "circularSpeedAtRadius",
@@ -1027,68 +823,20 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/browser:./dom/renderTextureSources:collectRenderTextureSources",
+      "kind": "symbol",
+      "label": "collectRenderTextureSources",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./dom/renderTextureSources",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/engine:./world:CollisionSphereConfig",
       "kind": "symbol",
       "label": "CollisionSphereConfig",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./world",
       "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/solarSystem/colors:ColorName",
-      "kind": "symbol",
-      "label": "ColorName",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/solarSystem/colors",
-      "symbolKind": "type"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/solarSystem/colors:colors",
-      "kind": "symbol",
-      "label": "colors",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/solarSystem/colors",
-      "symbolKind": "const"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/solarSystem/colors:Colors",
-      "kind": "symbol",
-      "label": "Colors",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/solarSystem/colors",
-      "symbolKind": "type"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand",
-      "kind": "symbol",
-      "label": "computeAlignToDirectionCommand",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/logic",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand",
-      "kind": "symbol",
-      "label": "computeCircleNowAttitudeCommand",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/logic",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto",
-      "kind": "symbol",
-      "label": "computeOrbitReadoutInto",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/orbitTelemetry/orbitReadout",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand",
-      "kind": "symbol",
-      "label": "computeRollToDirectionCommand",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/logic",
-      "symbolKind": "function"
     },
     {
       "id": "symbol:@solitude/engine:./math:computeVolumeOfTriangleMesh",
@@ -1211,27 +959,19 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./autopilot/core:createAutonomousControlProvider",
+      "id": "symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin",
       "kind": "symbol",
-      "label": "createAutonomousControlProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/core",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin",
-      "kind": "symbol",
-      "label": "createAutopilotBehaviorPlugin",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/behavior",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
-      "kind": "symbol",
-      "label": "createAutopilotPlugin",
+      "label": "createAutopilotHudPlugin",
       "packageName": "@solitude/display",
       "parent": "module:@solitude/display:./plugins/autopilot",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/sim:./plugins/autopilot/input:createAutopilotInputPlugin",
+      "kind": "symbol",
+      "label": "createAutopilotInputPlugin",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./plugins/autopilot/input",
       "symbolKind": "function"
     },
     {
@@ -1243,35 +983,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/display:./plugins/axialViews:createAxialViewsPlugin",
-      "kind": "symbol",
-      "label": "createAxialViewsPlugin",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/axialViews",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin",
-      "kind": "symbol",
-      "label": "createBodyLabelsPlugin",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/bodyLabels",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter",
       "kind": "symbol",
       "label": "createBrowserViewPresenter",
       "packageName": "@solitude/browser",
       "parent": "module:@solitude/browser:./dom/viewPresenter",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/logic:createCircleNowControllerState",
-      "kind": "symbol",
-      "label": "createCircleNowControllerState",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/logic",
       "symbolKind": "function"
     },
     {
@@ -1288,14 +1004,6 @@
       "label": "createControlInput",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./plugin",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/core:createControlPlugin",
-      "kind": "symbol",
-      "label": "createControlPlugin",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/core",
       "symbolKind": "function"
     },
     {
@@ -1371,51 +1079,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/display:./plugins/autopilot/hud:createHudPanel",
-      "kind": "symbol",
-      "label": "createHudPanel",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/autopilot/hud",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel",
-      "kind": "symbol",
-      "label": "createHudPanel",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/orbitTelemetry/hud",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/shipTelemetry/hud:createHudPanel",
-      "kind": "symbol",
-      "label": "createHudPanel",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/shipTelemetry/hud",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/hud:./provider:createHudPanelProvider",
       "kind": "symbol",
       "label": "createHudPanelProvider",
       "packageName": "@solitude/hud",
       "parent": "module:@solitude/hud:./provider",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/input:createInputPlugin",
-      "kind": "symbol",
-      "label": "createInputPlugin",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/input",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/input:createInputPlugin",
-      "kind": "symbol",
-      "label": "createInputPlugin",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/input",
       "symbolKind": "function"
     },
     {
@@ -1475,14 +1143,6 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:createOrbitReadout",
-      "kind": "symbol",
-      "label": "createOrbitReadout",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/orbitTelemetry/orbitReadout",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
       "kind": "symbol",
       "label": "createOrbitTelemetryPlugin",
@@ -1528,14 +1188,6 @@
       "label": "createProjectionWorkspace",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render/projectionService",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/core:createPropulsionResolverProvider",
-      "kind": "symbol",
-      "label": "createPropulsionResolverProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/core",
       "symbolKind": "function"
     },
     {
@@ -1611,6 +1263,22 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/engine:./plugin:createSceneLabelBuffer",
+      "kind": "symbol",
+      "label": "createSceneLabelBuffer",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./plugin",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/engine:./runtime:createSceneLabelBuffer",
+      "kind": "symbol",
+      "label": "createSceneLabelBuffer",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./runtime",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/engine:./render:createSceneViewStates",
       "kind": "symbol",
       "label": "createSceneViewStates",
@@ -1632,14 +1300,6 @@
       "label": "createSnapshotMessage",
       "packageName": "@solitude/protocol",
       "parent": "module:@solitude/protocol:./protocol",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider",
-      "kind": "symbol",
-      "label": "createSolarSystemCelestialBodyProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/solarSystem/celestialBodyProvider",
       "symbolKind": "function"
     },
     {
@@ -1699,14 +1359,6 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftLocalPredictionProvider",
-      "kind": "symbol",
-      "label": "createSpacecraftLocalPredictionProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/core",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
       "kind": "symbol",
       "label": "createSpacecraftOperatorPlugin",
@@ -1731,43 +1383,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:createSpacecraftPropulsionResolverProvider",
-      "kind": "symbol",
-      "label": "createSpacecraftPropulsionResolverProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/spacecraftPropulsion",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin",
-      "kind": "symbol",
-      "label": "createSpacecraftVehicleDynamicsPlugin",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/core",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/targetingLaser:createTargetingLaserPlugin",
-      "kind": "symbol",
-      "label": "createTargetingLaserPlugin",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/targetingLaser",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/engine:./runtime:createTickHandler",
       "kind": "symbol",
       "label": "createTickHandler",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./runtime",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/trajectories:createTrajectoriesPlugin",
-      "kind": "symbol",
-      "label": "createTrajectoriesPlugin",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/trajectories",
       "symbolKind": "function"
     },
     {
@@ -1779,19 +1399,43 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/display:./plugins/velocitySegments:createVelocitySegmentsPlugin",
-      "kind": "symbol",
-      "label": "createVelocitySegmentsPlugin",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/velocitySegments",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/engine:./world:createWorld",
       "kind": "symbol",
       "label": "createWorld",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./world",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/engine:./plugin:createWorldMarkerBuffer",
+      "kind": "symbol",
+      "label": "createWorldMarkerBuffer",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./plugin",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/engine:./runtime:createWorldMarkerBuffer",
+      "kind": "symbol",
+      "label": "createWorldMarkerBuffer",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./runtime",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/engine:./plugin:createWorldSegmentBuffer",
+      "kind": "symbol",
+      "label": "createWorldSegmentBuffer",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./plugin",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/engine:./runtime:createWorldSegmentBuffer",
+      "kind": "symbol",
+      "label": "createWorldSegmentBuffer",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./runtime",
       "symbolKind": "function"
     },
     {
@@ -1811,14 +1455,6 @@
       "symbolKind": "const"
     },
     {
-      "id": "symbol:solitude:./plugins/catalog:defaultPluginIds",
-      "kind": "symbol",
-      "label": "defaultPluginIds",
-      "packageName": "solitude",
-      "parent": "module:solitude:./plugins/catalog",
-      "symbolKind": "const"
-    },
-    {
       "id": "symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement",
       "kind": "symbol",
       "label": "DirectControllableEntityPlacement",
@@ -1833,14 +1469,6 @@
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./world",
       "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/logic:disengageOnManualActuation",
-      "kind": "symbol",
-      "label": "disengageOnManualActuation",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/logic",
-      "symbolKind": "function"
     },
     {
       "id": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
@@ -2203,43 +1831,11 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand",
-      "kind": "symbol",
-      "label": "getAutopilotAttitudeCommand",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/logic",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/logic:getAutopilotMode",
-      "kind": "symbol",
-      "label": "getAutopilotMode",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/logic",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/mode:getAutopilotMode",
-      "kind": "symbol",
-      "label": "getAutopilotMode",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/mode",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/engine:./math:getDominantBody",
       "kind": "symbol",
       "label": "getDominantBody",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./math",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection",
-      "kind": "symbol",
-      "label": "getDominantBodyDirection",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/logic",
       "symbolKind": "function"
     },
     {
@@ -2328,22 +1924,6 @@
       "label": "getSpacecraftPropulsionResolvers",
       "packageName": "@solitude/sim",
       "parent": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/logic:getTangentialDirection",
-      "kind": "symbol",
-      "label": "getTangentialDirection",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/logic",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/logic:getVelocityDirection",
-      "kind": "symbol",
-      "label": "getVelocityDirection",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/logic",
       "symbolKind": "function"
     },
     {
@@ -2560,14 +2140,6 @@
       "label": "isSolitudeSocketServerMessage",
       "packageName": "@solitude/protocol",
       "parent": "module:@solitude/protocol:./protocol",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/core:isStoredAutopilotMode",
-      "kind": "symbol",
-      "label": "isStoredAutopilotMode",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/core",
       "symbolKind": "function"
     },
     {
@@ -2963,14 +2535,6 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:OrbitReadout",
-      "kind": "symbol",
-      "label": "OrbitReadout",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/orbitTelemetry/orbitReadout",
-      "symbolKind": "interface"
-    },
-    {
       "id": "symbol:@solitude/browser:./dom/view:orderViewDefinitionsPrimaryFirst",
       "kind": "symbol",
       "label": "orderViewDefinitionsPrimaryFirst",
@@ -3016,14 +2580,6 @@
       "label": "parseSolarSystemRuntimeOptions",
       "packageName": "@solitude/sim",
       "parent": "module:@solitude/sim:./plugins/solarSystem",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:parseTrajectoryId",
-      "kind": "symbol",
-      "label": "parseTrajectoryId",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/trajectories/trajectoryPlan",
       "symbolKind": "function"
     },
     {
@@ -3217,22 +2773,6 @@
       "packageName": "@solitude/browser",
       "parent": "module:@solitude/browser:./remoteViewPresenter",
       "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/catalog:remoteRenderPluginCatalog",
-      "kind": "symbol",
-      "label": "remoteRenderPluginCatalog",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/catalog",
-      "symbolKind": "const"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/catalog:remoteRenderPluginIds",
-      "kind": "symbol",
-      "label": "remoteRenderPluginIds",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/catalog",
-      "symbolKind": "const"
     },
     {
       "id": "symbol:@solitude/browser:./remoteViewPresenter:RemoteViewPresenterRenderer",
@@ -3491,6 +3031,22 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/engine:./render:RenderMaterial",
+      "kind": "symbol",
+      "label": "RenderMaterial",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./render",
+      "symbolKind": "type"
+    },
+    {
+      "id": "symbol:@solitude/engine:./world:RenderMaterial",
+      "kind": "symbol",
+      "label": "RenderMaterial",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./world",
+      "symbolKind": "type"
+    },
+    {
       "id": "symbol:@solitude/engine:./render/parameters:renderNearDepth",
       "kind": "symbol",
       "label": "renderNearDepth",
@@ -3515,6 +3071,22 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/browser:./dom/renderTextureSources:RenderTextureSourceCatalog",
+      "kind": "symbol",
+      "label": "RenderTextureSourceCatalog",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./dom/renderTextureSources",
+      "symbolKind": "type"
+    },
+    {
+      "id": "symbol:@solitude/browser:./dom/renderTextureSources:renderTextureSourcesCapability",
+      "kind": "symbol",
+      "label": "renderTextureSourcesCapability",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./dom/renderTextureSources",
+      "symbolKind": "const"
+    },
+    {
       "id": "symbol:@solitude/engine:./render/parameters:renderVerticalFovDegrees",
       "kind": "symbol",
       "label": "renderVerticalFovDegrees",
@@ -3536,14 +3108,6 @@
       "label": "resizeLayout",
       "packageName": "@solitude/browser",
       "parent": "module:@solitude/browser:./dom/layout",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/logic:resolveAutopilotPropulsionCommand",
-      "kind": "symbol",
-      "label": "resolveAutopilotPropulsionCommand",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/logic",
       "symbolKind": "function"
     },
     {
@@ -3670,6 +3234,14 @@
       "id": "symbol:@solitude/engine:./plugin:SceneLabelProviderParams",
       "kind": "symbol",
       "label": "SceneLabelProviderParams",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./plugin",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/engine:./plugin:SceneLabelSink",
+      "kind": "symbol",
+      "label": "SceneLabelSink",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./plugin",
       "symbolKind": "interface"
@@ -3880,14 +3452,6 @@
       "label": "SnapshotMessage",
       "packageName": "@solitude/protocol",
       "parent": "module:@solitude/protocol:./protocol",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:SolarSystemConfigOptions",
-      "kind": "symbol",
-      "label": "SolarSystemConfigOptions",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/solarSystem/solarSystem",
       "symbolKind": "interface"
     },
     {
@@ -4123,14 +3687,6 @@
       "symbolKind": "type"
     },
     {
-      "id": "symbol:solitude:./plugins/catalog:solitudePluginCatalog",
-      "kind": "symbol",
-      "label": "solitudePluginCatalog",
-      "packageName": "solitude",
-      "parent": "module:solitude:./plugins/catalog",
-      "symbolKind": "const"
-    },
-    {
       "id": "symbol:@solitude/protocol:./protocol:SolitudeProtocolSequence",
       "kind": "symbol",
       "label": "SolitudeProtocolSequence",
@@ -4251,27 +3807,11 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommand",
-      "kind": "symbol",
-      "label": "SpacecraftPropulsionCommand",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/spacecraftPropulsion",
-      "symbolKind": "interface"
-    },
-    {
       "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommand",
       "kind": "symbol",
       "label": "SpacecraftPropulsionCommand",
       "packageName": "@solitude/sim",
       "parent": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommandParams",
-      "kind": "symbol",
-      "label": "SpacecraftPropulsionCommandParams",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/spacecraftPropulsion",
       "symbolKind": "interface"
     },
     {
@@ -4283,27 +3823,11 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionResolver",
-      "kind": "symbol",
-      "label": "SpacecraftPropulsionResolver",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/spacecraftPropulsion",
-      "symbolKind": "interface"
-    },
-    {
       "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionResolver",
       "kind": "symbol",
       "label": "SpacecraftPropulsionResolver",
       "packageName": "@solitude/sim",
       "parent": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftRcsCommand",
-      "kind": "symbol",
-      "label": "SpacecraftRcsCommand",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/spacecraftPropulsion",
       "symbolKind": "interface"
     },
     {
@@ -4315,27 +3839,11 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftThrustCommand",
-      "kind": "symbol",
-      "label": "SpacecraftThrustCommand",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/spacecraftPropulsion",
-      "symbolKind": "interface"
-    },
-    {
       "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftThrustCommand",
       "kind": "symbol",
       "label": "SpacecraftThrustCommand",
       "packageName": "@solitude/sim",
       "parent": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams",
-      "kind": "symbol",
-      "label": "SpacecraftVehicleDynamicsParams",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/core",
       "symbolKind": "interface"
     },
     {
@@ -4385,46 +3893,6 @@
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./runtime",
       "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:TRAJECTORY_ID_PREFIX",
-      "kind": "symbol",
-      "label": "TRAJECTORY_ID_PREFIX",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/trajectories/trajectoryPlan",
-      "symbolKind": "const"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:trajectoryIdForPlanet",
-      "kind": "symbol",
-      "label": "trajectoryIdForPlanet",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/trajectories/trajectoryPlan",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:trajectoryIdForShip",
-      "kind": "symbol",
-      "label": "trajectoryIdForShip",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/trajectories/trajectoryPlan",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:TrajectoryPlan",
-      "kind": "symbol",
-      "label": "TrajectoryPlan",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/trajectories/trajectoryPlan",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./autopilot/logic:updateCircleNowControllerState",
-      "kind": "symbol",
-      "label": "updateCircleNowControllerState",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./autopilot/logic",
-      "symbolKind": "function"
     },
     {
       "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlledBodyAngularVelocityFromInput",
@@ -4643,6 +4111,14 @@
       "symbolKind": "type"
     },
     {
+      "id": "symbol:@solitude/engine:./plugin:WorldMarkerSink",
+      "kind": "symbol",
+      "label": "WorldMarkerSink",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./plugin",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/engine:./plugin:WorldModelContributionParams",
       "kind": "symbol",
       "label": "WorldModelContributionParams",
@@ -4678,6 +4154,14 @@
       "id": "symbol:@solitude/engine:./plugin:WorldSegment",
       "kind": "symbol",
       "label": "WorldSegment",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./plugin",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/engine:./plugin:WorldSegmentSink",
+      "kind": "symbol",
+      "label": "WorldSegmentSink",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./plugin",
       "symbolKind": "interface"
@@ -4793,12 +4277,6 @@
       "from": "pkg:@solitude/display",
       "kind": "dependency",
       "to": "pkg:@solitude/localization"
-    },
-    {
-      "id": "dependency:pkg:@solitude/display->pkg:@solitude/sim",
-      "from": "pkg:@solitude/display",
-      "kind": "dependency",
-      "to": "pkg:@solitude/sim"
     },
     {
       "id": "dependency:pkg:@solitude/entity-names->pkg:@solitude/engine",
@@ -4951,6 +4429,12 @@
       "to": "module:@solitude/engine:./plugin"
     },
     {
+      "id": "module-import:module:@solitude/browser:./dom/keyboardInput->module:@solitude/engine:./runtime",
+      "from": "module:@solitude/browser:./dom/keyboardInput",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./runtime"
+    },
+    {
       "id": "module-import:module:@solitude/browser:./dom/keyboardInput->module:@solitude/input:./keyboard",
       "from": "module:@solitude/browser:./dom/keyboardInput",
       "kind": "module-import",
@@ -4999,6 +4483,12 @@
       "to": "module:@solitude/engine:./world"
     },
     {
+      "id": "module-import:module:@solitude/browser:./dom/renderTextureSources->module:@solitude/engine:./plugin",
+      "from": "module:@solitude/browser:./dom/renderTextureSources",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./plugin"
+    },
+    {
       "id": "module-import:module:@solitude/browser:./dom/runtimeOptions->module:@solitude/engine:./plugin",
       "from": "module:@solitude/browser:./dom/runtimeOptions",
       "kind": "module-import",
@@ -5021,6 +4511,12 @@
       "from": "module:@solitude/browser:./dom/viewPresenter",
       "kind": "module-import",
       "to": "module:@solitude/browser:./dom/renderFailure"
+    },
+    {
+      "id": "module-import:module:@solitude/browser:./dom/viewPresenter->module:@solitude/browser:./dom/renderTextureSources",
+      "from": "module:@solitude/browser:./dom/viewPresenter",
+      "kind": "module-import",
+      "to": "module:@solitude/browser:./dom/renderTextureSources"
     },
     {
       "id": "module-import:module:@solitude/browser:./dom/viewPresenter->module:@solitude/engine:./render",
@@ -5119,12 +4615,6 @@
       "to": "module:@solitude/engine:./world"
     },
     {
-      "id": "module-import:module:@solitude/display:./plugins/autopilot->module:@solitude/display:./plugins/autopilot/hud",
-      "from": "module:@solitude/display:./plugins/autopilot",
-      "kind": "module-import",
-      "to": "module:@solitude/display:./plugins/autopilot/hud"
-    },
-    {
       "id": "module-import:module:@solitude/display:./plugins/autopilot->module:@solitude/engine:./plugin",
       "from": "module:@solitude/display:./plugins/autopilot",
       "kind": "module-import",
@@ -5137,110 +4627,8 @@
       "to": "module:@solitude/hud:./provider"
     },
     {
-      "id": "module-import:module:@solitude/display:./plugins/autopilot->module:@solitude/input:./keyboard",
-      "from": "module:@solitude/display:./plugins/autopilot",
-      "kind": "module-import",
-      "to": "module:@solitude/input:./keyboard"
-    },
-    {
       "id": "module-import:module:@solitude/display:./plugins/autopilot->module:@solitude/localization:.",
       "from": "module:@solitude/display:./plugins/autopilot",
-      "kind": "module-import",
-      "to": "module:@solitude/localization:."
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/autopilot->module:@solitude/sim:./autopilot/behavior",
-      "from": "module:@solitude/display:./plugins/autopilot",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./autopilot/behavior"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/autopilot->module:@solitude/sim:./autopilot/input",
-      "from": "module:@solitude/display:./plugins/autopilot",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./autopilot/input"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/autopilot/hud->module:@solitude/engine:./math",
-      "from": "module:@solitude/display:./plugins/autopilot/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/autopilot/hud->module:@solitude/engine:./world",
-      "from": "module:@solitude/display:./plugins/autopilot/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/autopilot/hud->module:@solitude/hud:./provider",
-      "from": "module:@solitude/display:./plugins/autopilot/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/hud:./provider"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/autopilot/hud->module:@solitude/sim:./autopilot/mode",
-      "from": "module:@solitude/display:./plugins/autopilot/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./autopilot/mode"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/axialViews->module:@solitude/engine:./math",
-      "from": "module:@solitude/display:./plugins/axialViews",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/axialViews->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/display:./plugins/axialViews",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/axialViews->module:@solitude/engine:./render",
-      "from": "module:@solitude/display:./plugins/axialViews",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./render"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/axialViews->module:@solitude/localization:.",
-      "from": "module:@solitude/display:./plugins/axialViews",
-      "kind": "module-import",
-      "to": "module:@solitude/localization:."
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/bodyLabels->module:@solitude/engine:./math",
-      "from": "module:@solitude/display:./plugins/bodyLabels",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/bodyLabels->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/display:./plugins/bodyLabels",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/bodyLabels->module:@solitude/engine:./render",
-      "from": "module:@solitude/display:./plugins/bodyLabels",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./render"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/bodyLabels->module:@solitude/engine:./world",
-      "from": "module:@solitude/display:./plugins/bodyLabels",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/bodyLabels->module:@solitude/entity-names:.",
-      "from": "module:@solitude/display:./plugins/bodyLabels",
-      "kind": "module-import",
-      "to": "module:@solitude/entity-names:."
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/bodyLabels->module:@solitude/localization:.",
-      "from": "module:@solitude/display:./plugins/bodyLabels",
       "kind": "module-import",
       "to": "module:@solitude/localization:."
     },
@@ -5249,18 +4637,6 @@
       "from": "module:@solitude/display:./plugins/catalog",
       "kind": "module-import",
       "to": "module:@solitude/display:./plugins/autopilot"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/axialViews",
-      "from": "module:@solitude/display:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/display:./plugins/axialViews"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/bodyLabels",
-      "from": "module:@solitude/display:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/display:./plugins/bodyLabels"
     },
     {
       "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/orbitTelemetry",
@@ -5275,46 +4651,10 @@
       "to": "module:@solitude/display:./plugins/shipTelemetry"
     },
     {
-      "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/targetingLaser",
-      "from": "module:@solitude/display:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/display:./plugins/targetingLaser"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/trajectories",
-      "from": "module:@solitude/display:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/display:./plugins/trajectories"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/velocitySegments",
-      "from": "module:@solitude/display:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/display:./plugins/velocitySegments"
-    },
-    {
       "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/engine:./plugin",
       "from": "module:@solitude/display:./plugins/catalog",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/sim:./plugins/solarSystem",
-      "from": "module:@solitude/display:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/solarSystem"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/sim:./plugins/spacecraftOperator",
-      "from": "module:@solitude/display:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/spacecraftOperator"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry->module:@solitude/display:./plugins/orbitTelemetry/hud",
-      "from": "module:@solitude/display:./plugins/orbitTelemetry",
-      "kind": "module-import",
-      "to": "module:@solitude/display:./plugins/orbitTelemetry/hud"
     },
     {
       "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry->module:@solitude/engine:./plugin",
@@ -5335,54 +4675,6 @@
       "to": "module:@solitude/localization:."
     },
     {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/hud->module:@solitude/display:./plugins/orbitTelemetry/orbitReadout",
-      "from": "module:@solitude/display:./plugins/orbitTelemetry/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/display:./plugins/orbitTelemetry/orbitReadout"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/hud->module:@solitude/engine:./render",
-      "from": "module:@solitude/display:./plugins/orbitTelemetry/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./render"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/hud->module:@solitude/entity-names:.",
-      "from": "module:@solitude/display:./plugins/orbitTelemetry/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/entity-names:."
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/hud->module:@solitude/hud:./provider",
-      "from": "module:@solitude/display:./plugins/orbitTelemetry/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/hud:./provider"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/orbitReadout->module:@solitude/engine:./math",
-      "from": "module:@solitude/display:./plugins/orbitTelemetry/orbitReadout",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/orbitReadout->module:@solitude/engine:./runtime",
-      "from": "module:@solitude/display:./plugins/orbitTelemetry/orbitReadout",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./runtime"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry/orbitReadout->module:@solitude/engine:./world",
-      "from": "module:@solitude/display:./plugins/orbitTelemetry/orbitReadout",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry->module:@solitude/display:./plugins/shipTelemetry/hud",
-      "from": "module:@solitude/display:./plugins/shipTelemetry",
-      "kind": "module-import",
-      "to": "module:@solitude/display:./plugins/shipTelemetry/hud"
-    },
-    {
       "id": "module-import:module:@solitude/display:./plugins/shipTelemetry->module:@solitude/engine:./plugin",
       "from": "module:@solitude/display:./plugins/shipTelemetry",
       "kind": "module-import",
@@ -5399,60 +4691,6 @@
       "from": "module:@solitude/display:./plugins/shipTelemetry",
       "kind": "module-import",
       "to": "module:@solitude/localization:."
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry/hud->module:@solitude/engine:./math",
-      "from": "module:@solitude/display:./plugins/shipTelemetry/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry/hud->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/display:./plugins/shipTelemetry/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry/hud->module:@solitude/hud:./provider",
-      "from": "module:@solitude/display:./plugins/shipTelemetry/hud",
-      "kind": "module-import",
-      "to": "module:@solitude/hud:./provider"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/targetingLaser->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/display:./plugins/targetingLaser",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/targetingLaser->module:@solitude/input:./keyboard",
-      "from": "module:@solitude/display:./plugins/targetingLaser",
-      "kind": "module-import",
-      "to": "module:@solitude/input:./keyboard"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/trajectories->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/display:./plugins/trajectories",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/trajectories/trajectoryPlan->module:@solitude/engine:./math",
-      "from": "module:@solitude/display:./plugins/trajectories/trajectoryPlan",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/trajectories/trajectoryPlan->module:@solitude/engine:./world",
-      "from": "module:@solitude/display:./plugins/trajectories/trajectoryPlan",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/velocitySegments->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/display:./plugins/velocitySegments",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
     },
     {
       "id": "module-import:module:@solitude/engine:./render->module:@solitude/engine:./render/ports",
@@ -5635,102 +4873,6 @@
       "to": "module:@solitude/server:./sessions"
     },
     {
-      "id": "module-import:module:@solitude/sim:./autopilot/behavior->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./autopilot/behavior",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/behavior->module:@solitude/sim:./autopilot/core",
-      "from": "module:@solitude/sim:./autopilot/behavior",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./autopilot/core"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/core->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./autopilot/core",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/core->module:@solitude/sim:./autopilot/logic",
-      "from": "module:@solitude/sim:./autopilot/core",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./autopilot/logic"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/core->module:@solitude/sim:./autopilot/spacecraftPropulsion",
-      "from": "module:@solitude/sim:./autopilot/core",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./autopilot/spacecraftPropulsion"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/input->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./autopilot/input",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/input->module:@solitude/input:./keyboard",
-      "from": "module:@solitude/sim:./autopilot/input",
-      "kind": "module-import",
-      "to": "module:@solitude/input:./keyboard"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/logic->module:@solitude/engine:./math",
-      "from": "module:@solitude/sim:./autopilot/logic",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/logic->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./autopilot/logic",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/logic->module:@solitude/engine:./runtime",
-      "from": "module:@solitude/sim:./autopilot/logic",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./runtime"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/logic->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./autopilot/logic",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/logic->module:@solitude/sim:./autopilot/mode",
-      "from": "module:@solitude/sim:./autopilot/logic",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./autopilot/mode"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/logic->module:@solitude/sim:./autopilot/spacecraftPropulsion",
-      "from": "module:@solitude/sim:./autopilot/logic",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./autopilot/spacecraftPropulsion"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/mode->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./autopilot/mode",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/spacecraftPropulsion->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./autopilot/spacecraftPropulsion",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./autopilot/spacecraftPropulsion->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./autopilot/spacecraftPropulsion",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
       "id": "module-import:module:@solitude/sim:./celestialBodies/provider->module:@solitude/engine:./math",
       "from": "module:@solitude/sim:./celestialBodies/provider",
       "kind": "module-import",
@@ -5821,10 +4963,16 @@
       "to": "module:@solitude/engine:./plugin"
     },
     {
-      "id": "module-import:module:@solitude/sim:./plugins/autopilot->module:@solitude/sim:./autopilot/behavior",
-      "from": "module:@solitude/sim:./plugins/autopilot",
+      "id": "module-import:module:@solitude/sim:./plugins/autopilot/input->module:@solitude/engine:./plugin",
+      "from": "module:@solitude/sim:./plugins/autopilot/input",
       "kind": "module-import",
-      "to": "module:@solitude/sim:./autopilot/behavior"
+      "to": "module:@solitude/engine:./plugin"
+    },
+    {
+      "id": "module-import:module:@solitude/sim:./plugins/autopilot/input->module:@solitude/input:./keyboard",
+      "from": "module:@solitude/sim:./plugins/autopilot/input",
+      "kind": "module-import",
+      "to": "module:@solitude/input:./keyboard"
     },
     {
       "id": "module-import:module:@solitude/sim:./plugins/catalog->module:@solitude/engine:./plugin",
@@ -5899,72 +5047,6 @@
       "to": "module:@solitude/sim:./celestialBodies/provider"
     },
     {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem->module:@solitude/sim:./plugins/solarSystem/celestialBodyProvider",
-      "from": "module:@solitude/sim:./plugins/solarSystem",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/solarSystem/celestialBodyProvider"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem->module:@solitude/sim:./plugins/solarSystem/solarSystem",
-      "from": "module:@solitude/sim:./plugins/solarSystem",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/solarSystem/solarSystem"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem/celestialBodyProvider->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./plugins/solarSystem/celestialBodyProvider",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem/celestialBodyProvider->module:@solitude/sim:./celestialBodies/provider",
-      "from": "module:@solitude/sim:./plugins/solarSystem/celestialBodyProvider",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./celestialBodies/provider"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem/celestialBodyProvider->module:@solitude/sim:./plugins/solarSystem/solarSystem",
-      "from": "module:@solitude/sim:./plugins/solarSystem/celestialBodyProvider",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/solarSystem/solarSystem"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem/colors->module:@solitude/engine:./render",
-      "from": "module:@solitude/sim:./plugins/solarSystem/colors",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./render"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem/solarSystem->module:@solitude/engine:./math",
-      "from": "module:@solitude/sim:./plugins/solarSystem/solarSystem",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem/solarSystem->module:@solitude/engine:./render",
-      "from": "module:@solitude/sim:./plugins/solarSystem/solarSystem",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./render"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem/solarSystem->module:@solitude/engine:./render/icosphere",
-      "from": "module:@solitude/sim:./plugins/solarSystem/solarSystem",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./render/icosphere"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem/solarSystem->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./plugins/solarSystem/solarSystem",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem/solarSystem->module:@solitude/sim:./plugins/solarSystem/colors",
-      "from": "module:@solitude/sim:./plugins/solarSystem/solarSystem",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/solarSystem/colors"
-    },
-    {
       "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator->module:@solitude/engine:./math",
       "from": "module:@solitude/sim:./plugins/spacecraftOperator",
       "kind": "module-import",
@@ -5999,18 +5081,6 @@
       "from": "module:@solitude/sim:./plugins/spacecraftOperator",
       "kind": "module-import",
       "to": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator->module:@solitude/sim:./plugins/spacecraftOperator/core",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/spacecraftOperator/core"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator->module:@solitude/sim:./plugins/spacecraftOperator/input",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/spacecraftOperator/input"
     },
     {
       "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator->module:@solitude/sim:./plugins/spacecraftOperator/telemetry",
@@ -6055,66 +5125,6 @@
       "to": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities"
     },
     {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/core->module:@solitude/engine:./math",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/core",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/core->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/core",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/core->module:@solitude/engine:./runtime",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/core",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./runtime"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/core->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/core",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/core->module:@solitude/sim:./localPrediction",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/core",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./localPrediction"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/core->module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/core",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/core->module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/core",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/core->module:@solitude/sim:./plugins/spacecraftOperator/telemetry",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/core",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/spacecraftOperator/telemetry"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/input->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/input",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/input->module:@solitude/input:./keyboard",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/input",
-      "kind": "module-import",
-      "to": "module:@solitude/input:./keyboard"
-    },
-    {
       "id": "module-import:module:@solitude/sim:./spacecraft/orbitalPlacement->module:@solitude/engine:./math",
       "from": "module:@solitude/sim:./spacecraft/orbitalPlacement",
       "kind": "module-import",
@@ -6137,42 +5147,6 @@
       "from": "module:@solitude/sim:./spacecraft/orbitalPlacement",
       "kind": "module-import",
       "to": "module:@solitude/sim:./controllableEntities/provider"
-    },
-    {
-      "id": "module-import:module:solitude:./plugins/catalog->module:@solitude/browser:./dom/hudOverlayPlugin",
-      "from": "module:solitude:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/browser:./dom/hudOverlayPlugin"
-    },
-    {
-      "id": "module-import:module:solitude:./plugins/catalog->module:@solitude/display:./plugins/catalog",
-      "from": "module:solitude:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/display:./plugins/catalog"
-    },
-    {
-      "id": "module-import:module:solitude:./plugins/catalog->module:@solitude/engine:./plugin",
-      "from": "module:solitude:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:solitude:./plugins/catalog->module:@solitude/sim:./plugins/polyFighter",
-      "from": "module:solitude:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/polyFighter"
-    },
-    {
-      "id": "module-import:module:solitude:./plugins/catalog->module:@solitude/sim:./plugins/solarSystem",
-      "from": "module:solitude:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/solarSystem"
-    },
-    {
-      "id": "module-import:module:solitude:./plugins/catalog->module:@solitude/sim:./plugins/spacecraftOperator",
-      "from": "module:solitude:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/spacecraftOperator"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayContext",
@@ -6247,22 +5221,28 @@
       "to": "symbol:@solitude/engine:./plugin:ControlInput"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/keyboardInput:initInput->symbol:@solitude/engine:./plugin:createControlInput",
-      "from": "symbol:@solitude/browser:./dom/keyboardInput:initInput",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:createControlInput"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/keyboardInput:initInput->symbol:@solitude/engine:./plugin:GamePlugin",
       "from": "symbol:@solitude/browser:./dom/keyboardInput:initInput",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:GamePlugin"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/keyboardInput:initInput->symbol:@solitude/engine:./runtime:createPluginCapabilityRegistry",
+      "from": "symbol:@solitude/browser:./dom/keyboardInput:initInput",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:createPluginCapabilityRegistry"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/keyboardInput:initInput->symbol:@solitude/input:./keyboard:collectKeyboardInputProviders",
       "from": "symbol:@solitude/browser:./dom/keyboardInput:initInput",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/input:./keyboard:collectKeyboardInputProviders"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/keyboardInput:initInput->symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher",
+      "from": "symbol:@solitude/browser:./dom/keyboardInput:initInput",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/layout:initLayout->symbol:@solitude/browser:./dom/layout:LayoutView",
@@ -6421,6 +5401,24 @@
       "to": "symbol:@solitude/engine:./world:WorldAndSceneConfig"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/renderTextureSources:collectRenderTextureSources->symbol:@solitude/browser:./dom/renderTextureSources:RenderTextureSourceCatalog",
+      "from": "symbol:@solitude/browser:./dom/renderTextureSources:collectRenderTextureSources",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/renderTextureSources:RenderTextureSourceCatalog"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/renderTextureSources:collectRenderTextureSources->symbol:@solitude/browser:./dom/renderTextureSources:renderTextureSourcesCapability",
+      "from": "symbol:@solitude/browser:./dom/renderTextureSources:collectRenderTextureSources",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/renderTextureSources:renderTextureSourcesCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/renderTextureSources:collectRenderTextureSources->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
+      "from": "symbol:@solitude/browser:./dom/renderTextureSources:collectRenderTextureSources",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/runtimeOptions:parseRuntimeOptionsFromSearch->symbol:@solitude/engine:./plugin:RuntimeOptions",
       "from": "symbol:@solitude/browser:./dom/runtimeOptions:parseRuntimeOptionsFromSearch",
       "kind": "symbol-reference",
@@ -6467,6 +5465,12 @@
       "from": "symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenterOptions",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/browser:./dom/renderFailure:RenderFailure"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenterOptions->symbol:@solitude/browser:./dom/renderTextureSources:RenderTextureSourceCatalog",
+      "from": "symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenterOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/renderTextureSources:RenderTextureSourceCatalog"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/viewPresenter:BrowserViewPresenterOptions->symbol:@solitude/engine:./render:ViewLabelMode",
@@ -6703,6 +5707,12 @@
       "to": "symbol:@solitude/engine:./render:getRequiredPrimaryViewState"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./render:SceneControlState",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:SceneControlState"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer->symbol:@solitude/engine:./render:SceneState",
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldMultiRenderer",
       "kind": "symbol-reference",
@@ -6763,6 +5773,24 @@
       "to": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderOptions"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./plugin:createSceneLabelBuffer",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:createSceneLabelBuffer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./plugin:createWorldMarkerBuffer",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:createWorldMarkerBuffer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./plugin:createWorldSegmentBuffer",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:createWorldSegmentBuffer"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./plugin:SceneLabelCandidate",
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
       "kind": "symbol-reference",
@@ -6797,6 +5825,12 @@
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:getRequiredPrimaryViewState"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./render:SceneControlState",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:SceneControlState"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./render:SceneState",
@@ -6845,6 +5879,24 @@
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./runtime:createPluginCapabilityRegistry"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./runtime:createSceneLabelBuffer",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:createSceneLabelBuffer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./runtime:createWorldMarkerBuffer",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:createWorldMarkerBuffer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./runtime:createWorldSegmentBuffer",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:createWorldSegmentBuffer"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:createRemoteWorldRenderer->symbol:@solitude/engine:./runtime:validatePluginRequirements",
@@ -7087,124 +6139,40 @@
       "to": "symbol:@solitude/engine:./world:WorldAndSceneConfig"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/display:./plugins/autopilot/hud:createHudPanel",
-      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
+      "id": "symbol-reference:symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderOptions->symbol:@solitude/engine:./plugin:ControlInput",
+      "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderOptions",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/autopilot/hud:createHudPanel"
+      "to": "symbol:@solitude/engine:./plugin:ControlInput"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
+      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:GamePlugin"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
+      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/hud:./provider:createHudPanelProvider",
-      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin->symbol:@solitude/hud:./provider:createHudPanelProvider",
+      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/hud:./provider:createHudPanelProvider"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/input:./keyboard:createKeyboardInputProvider",
-      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/localization:.:readLocaleRuntimeOption",
-      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin->symbol:@solitude/localization:.:readLocaleRuntimeOption",
+      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/localization:.:readLocaleRuntimeOption"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin",
-      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/sim:./autopilot/input:createInputPlugin",
-      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/input:createInputPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot/hud:createHudPanel->symbol:@solitude/hud:./provider:HudPanelProvider",
-      "from": "symbol:@solitude/display:./plugins/autopilot/hud:createHudPanel",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/hud:./provider:HudPanelProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot/hud:createHudPanel->symbol:@solitude/sim:./autopilot/logic:getAutopilotMode",
-      "from": "symbol:@solitude/display:./plugins/autopilot/hud:createHudPanel",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:getAutopilotMode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot/hud:createHudPanel->symbol:@solitude/sim:./autopilot/mode:getAutopilotMode",
-      "from": "symbol:@solitude/display:./plugins/autopilot/hud:createHudPanel",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/mode:getAutopilotMode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/axialViews:createAxialViewsPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/display:./plugins/axialViews:createAxialViewsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/axialViews:createAxialViewsPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/display:./plugins/axialViews:createAxialViewsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/axialViews:createAxialViewsPlugin->symbol:@solitude/localization:.:readLocaleRuntimeOption",
-      "from": "symbol:@solitude/display:./plugins/axialViews:createAxialViewsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/localization:.:readLocaleRuntimeOption"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin->symbol:@solitude/localization:.:readLocaleRuntimeOption",
-      "from": "symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/localization:.:readLocaleRuntimeOption"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin",
+      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin",
       "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/autopilot:createAutopilotPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/axialViews:createAxialViewsPlugin",
-      "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/axialViews:createAxialViewsPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin",
-      "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/bodyLabels:createBodyLabelsPlugin"
+      "to": "symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin"
     },
     {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
@@ -7219,58 +6187,10 @@
       "to": "symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/targetingLaser:createTargetingLaserPlugin",
-      "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/targetingLaser:createTargetingLaserPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/trajectories:createTrajectoriesPlugin",
-      "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/trajectories:createTrajectoriesPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/velocitySegments:createVelocitySegmentsPlugin",
-      "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/velocitySegments:createVelocitySegmentsPlugin"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/engine:./plugin:PluginCatalog",
       "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:PluginCatalog"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:remoteRenderPluginCatalog->symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
-      "from": "symbol:@solitude/display:./plugins/catalog:remoteRenderPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:remoteRenderPluginCatalog->symbol:@solitude/engine:./plugin:PluginCatalog",
-      "from": "symbol:@solitude/display:./plugins/catalog:remoteRenderPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginCatalog"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:remoteRenderPluginCatalog->symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
-      "from": "symbol:@solitude/display:./plugins/catalog:remoteRenderPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:remoteRenderPluginCatalog->symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
-      "from": "symbol:@solitude/display:./plugins/catalog:remoteRenderPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin->symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel"
     },
     {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
@@ -7297,90 +6217,6 @@
       "to": "symbol:@solitude/localization:.:readLocaleRuntimeOption"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel->symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel->symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:createOrbitReadout",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:createOrbitReadout"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel->symbol:@solitude/engine:./render:formatSimTime",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:formatSimTime"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel->symbol:@solitude/entity-names:.:formatEntityName",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/entity-names:.:formatEntityName"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel->symbol:@solitude/hud:./provider:HudPanelProvider",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry/hud:createHudPanel",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/hud:./provider:HudPanelProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto->symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:OrbitReadout",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:OrbitReadout"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto->symbol:@solitude/engine:./math:getDominantBodyPrimary",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:getDominantBodyPrimary"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto->symbol:@solitude/engine:./math:vec3",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto->symbol:@solitude/engine:./runtime:parameters",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./runtime:parameters"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto->symbol:@solitude/engine:./world:ControlledBody",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:ControlledBody"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto->symbol:@solitude/engine:./world:World",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:computeOrbitReadoutInto",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:World"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:createOrbitReadout->symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:OrbitReadout",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:createOrbitReadout",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:OrbitReadout"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:OrbitReadout->symbol:@solitude/engine:./world:EntityId",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry/orbitReadout:OrbitReadout",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:EntityId"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin->symbol:@solitude/display:./plugins/shipTelemetry/hud:createHudPanel",
-      "from": "symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/shipTelemetry/hud:createHudPanel"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
       "from": "symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin",
       "kind": "symbol-reference",
@@ -7403,78 +6239,6 @@
       "from": "symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/localization:.:readLocaleRuntimeOption"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry/hud:createHudPanel->symbol:@solitude/engine:./math:vec3",
-      "from": "symbol:@solitude/display:./plugins/shipTelemetry/hud:createHudPanel",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry/hud:createHudPanel->symbol:@solitude/hud:./provider:HudPanelProvider",
-      "from": "symbol:@solitude/display:./plugins/shipTelemetry/hud:createHudPanel",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/hud:./provider:HudPanelProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/targetingLaser:createTargetingLaserPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/display:./plugins/targetingLaser:createTargetingLaserPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/targetingLaser:createTargetingLaserPlugin->symbol:@solitude/input:./keyboard:createKeyboardInputProvider",
-      "from": "symbol:@solitude/display:./plugins/targetingLaser:createTargetingLaserPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/trajectories:createTrajectoriesPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/display:./plugins/trajectories:createTrajectoriesPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:buildTrajectoryPlan->symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:trajectoryIdForPlanet",
-      "from": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:buildTrajectoryPlan",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:trajectoryIdForPlanet"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:buildTrajectoryPlan->symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:trajectoryIdForShip",
-      "from": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:buildTrajectoryPlan",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:trajectoryIdForShip"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:buildTrajectoryPlan->symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:TrajectoryPlan",
-      "from": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:buildTrajectoryPlan",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:TrajectoryPlan"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:buildTrajectoryPlan->symbol:@solitude/engine:./math:vec3",
-      "from": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:buildTrajectoryPlan",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:buildTrajectoryPlan->symbol:@solitude/engine:./world:EntityConfig",
-      "from": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:buildTrajectoryPlan",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:EntityConfig"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:buildTrajectoryPlan->symbol:@solitude/engine:./world:World",
-      "from": "symbol:@solitude/display:./plugins/trajectories/trajectoryPlan:buildTrajectoryPlan",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:World"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/velocitySegments:createVelocitySegmentsPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/display:./plugins/velocitySegments:createVelocitySegmentsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./assets:ObjMesh->symbol:@solitude/engine:./math:Vec3",
@@ -7675,6 +6439,42 @@
       "to": "symbol:@solitude/engine:./plugin:ControlInput"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:createSceneLabelBuffer->symbol:@solitude/engine:./plugin:SceneLabelSink",
+      "from": "symbol:@solitude/engine:./plugin:createSceneLabelBuffer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:SceneLabelSink"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:createSceneLabelBuffer->symbol:@solitude/engine:./runtime:createSceneLabelBuffer",
+      "from": "symbol:@solitude/engine:./plugin:createSceneLabelBuffer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:createSceneLabelBuffer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:createWorldMarkerBuffer->symbol:@solitude/engine:./plugin:WorldMarkerSink",
+      "from": "symbol:@solitude/engine:./plugin:createWorldMarkerBuffer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldMarkerSink"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:createWorldMarkerBuffer->symbol:@solitude/engine:./runtime:createWorldMarkerBuffer",
+      "from": "symbol:@solitude/engine:./plugin:createWorldMarkerBuffer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:createWorldMarkerBuffer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:createWorldSegmentBuffer->symbol:@solitude/engine:./plugin:WorldSegmentSink",
+      "from": "symbol:@solitude/engine:./plugin:createWorldSegmentBuffer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldSegmentSink"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:createWorldSegmentBuffer->symbol:@solitude/engine:./runtime:createWorldSegmentBuffer",
+      "from": "symbol:@solitude/engine:./plugin:createWorldSegmentBuffer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:createWorldSegmentBuffer"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:EntityControlInputs->symbol:@solitude/engine:./plugin:ControlInput",
       "from": "symbol:@solitude/engine:./plugin:EntityControlInputs",
       "kind": "symbol-reference",
@@ -7843,10 +6643,10 @@
       "to": "symbol:@solitude/engine:./plugin:SegmentProviderParams"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./plugin:MarkerPlugin->symbol:@solitude/engine:./plugin:WorldMarker",
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:MarkerPlugin->symbol:@solitude/engine:./plugin:WorldMarkerSink",
       "from": "symbol:@solitude/engine:./plugin:MarkerPlugin",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:WorldMarker"
+      "to": "symbol:@solitude/engine:./plugin:WorldMarkerSink"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:PluginCatalog->symbol:@solitude/engine:./plugin:PluginFactory",
@@ -7909,16 +6709,16 @@
       "to": "symbol:@solitude/engine:./world:EntityId"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./plugin:SceneLabelPlugin->symbol:@solitude/engine:./plugin:SceneLabelCandidate",
-      "from": "symbol:@solitude/engine:./plugin:SceneLabelPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:SceneLabelCandidate"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:SceneLabelPlugin->symbol:@solitude/engine:./plugin:SceneLabelProviderParams",
       "from": "symbol:@solitude/engine:./plugin:SceneLabelPlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:SceneLabelProviderParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:SceneLabelPlugin->symbol:@solitude/engine:./plugin:SceneLabelSink",
+      "from": "symbol:@solitude/engine:./plugin:SceneLabelPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:SceneLabelSink"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:SceneLabelProviderParams->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
@@ -7961,6 +6761,24 @@
       "from": "symbol:@solitude/engine:./plugin:SceneLabelProviderParams",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./world:WorldAndSceneConfig"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:SceneLabelSink->symbol:@solitude/engine:./math:Vec3",
+      "from": "symbol:@solitude/engine:./plugin:SceneLabelSink",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:SceneLabelSink->symbol:@solitude/engine:./plugin:SceneLabelCandidate",
+      "from": "symbol:@solitude/engine:./plugin:SceneLabelSink",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:SceneLabelCandidate"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:SceneLabelSink->symbol:@solitude/engine:./world:EntityId",
+      "from": "symbol:@solitude/engine:./plugin:SceneLabelSink",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityId"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:SceneObjectFilter->symbol:@solitude/engine:./render:SceneObject",
@@ -8047,10 +6865,10 @@
       "to": "symbol:@solitude/engine:./plugin:SegmentProviderParams"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./plugin:SegmentPlugin->symbol:@solitude/engine:./plugin:WorldSegment",
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:SegmentPlugin->symbol:@solitude/engine:./plugin:WorldSegmentSink",
       "from": "symbol:@solitude/engine:./plugin:SegmentPlugin",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:WorldSegment"
+      "to": "symbol:@solitude/engine:./plugin:WorldSegmentSink"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:SegmentProviderParams->symbol:@solitude/engine:./render:Scene",
@@ -8215,6 +7033,30 @@
       "to": "symbol:@solitude/engine:./render:RGB"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:WorldMarkerSink->symbol:@solitude/engine:./math:Vec3",
+      "from": "symbol:@solitude/engine:./plugin:WorldMarkerSink",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:WorldMarkerSink->symbol:@solitude/engine:./plugin:WorldMarker",
+      "from": "symbol:@solitude/engine:./plugin:WorldMarkerSink",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldMarker"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:WorldMarkerSink->symbol:@solitude/engine:./plugin:WorldMarkerShape",
+      "from": "symbol:@solitude/engine:./plugin:WorldMarkerSink",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldMarkerShape"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:WorldMarkerSink->symbol:@solitude/engine:./render:RGB",
+      "from": "symbol:@solitude/engine:./plugin:WorldMarkerSink",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RGB"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:WorldModelContributionParams->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
       "from": "symbol:@solitude/engine:./plugin:WorldModelContributionParams",
       "kind": "symbol-reference",
@@ -8263,6 +7105,24 @@
       "to": "symbol:@solitude/engine:./render:RGB"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:WorldSegmentSink->symbol:@solitude/engine:./math:Vec3",
+      "from": "symbol:@solitude/engine:./plugin:WorldSegmentSink",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:WorldSegmentSink->symbol:@solitude/engine:./plugin:WorldSegment",
+      "from": "symbol:@solitude/engine:./plugin:WorldSegmentSink",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldSegment"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./plugin:WorldSegmentSink->symbol:@solitude/engine:./render:RGB",
+      "from": "symbol:@solitude/engine:./plugin:WorldSegmentSink",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RGB"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:BaseSceneObject->symbol:@solitude/engine:./math:Mat3",
       "from": "symbol:@solitude/engine:./render:BaseSceneObject",
       "kind": "symbol-reference",
@@ -8293,6 +7153,12 @@
       "to": "symbol:@solitude/engine:./render:MeshShading"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:BaseSceneObject->symbol:@solitude/engine:./render:RenderMaterial",
+      "from": "symbol:@solitude/engine:./render:BaseSceneObject",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderMaterial"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./render:BaseSceneObject->symbol:@solitude/engine:./render:RGB",
       "from": "symbol:@solitude/engine:./render:BaseSceneObject",
       "kind": "symbol-reference",
@@ -8303,6 +7169,12 @@
       "from": "symbol:@solitude/engine:./render:BaseSceneObject",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render:SceneObjectKind"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:BaseSceneObject->symbol:@solitude/engine:./world:RenderMaterial",
+      "from": "symbol:@solitude/engine:./render:BaseSceneObject",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:RenderMaterial"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render:BodySceneObject->symbol:@solitude/engine:./render:OrbitalBodySceneObject",
@@ -8567,6 +7439,18 @@
       "from": "symbol:@solitude/engine:./render:RenderedView",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./render/ports:RenderedView"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderMaterial->symbol:@solitude/engine:./render:RGB",
+      "from": "symbol:@solitude/engine:./render:RenderMaterial",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RGB"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:RenderMaterial->symbol:@solitude/engine:./world:RenderMaterial",
+      "from": "symbol:@solitude/engine:./render:RenderMaterial",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:RenderMaterial"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render:RenderSurface2D->symbol:@solitude/engine:./render/ports:RenderSurface2D",
@@ -9625,6 +8509,12 @@
       "to": "symbol:@solitude/engine:./runtime:PhysicsWorkspace"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./runtime:createPluginCapabilityRegistry->symbol:@solitude/engine:./plugin:GamePlugin",
+      "from": "symbol:@solitude/engine:./runtime:createPluginCapabilityRegistry",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./runtime:createPluginCapabilityRegistry->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
       "from": "symbol:@solitude/engine:./runtime:createPluginCapabilityRegistry",
       "kind": "symbol-reference",
@@ -9677,6 +8567,18 @@
       "from": "symbol:@solitude/engine:./runtime:createRuntimeSnapshotApplyWorkspace",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./world:World"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./runtime:createSceneLabelBuffer->symbol:@solitude/engine:./plugin:createSceneLabelBuffer",
+      "from": "symbol:@solitude/engine:./runtime:createSceneLabelBuffer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:createSceneLabelBuffer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./runtime:createSceneLabelBuffer->symbol:@solitude/engine:./plugin:SceneLabelSink",
+      "from": "symbol:@solitude/engine:./runtime:createSceneLabelBuffer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:SceneLabelSink"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./runtime:createTickHandler->symbol:@solitude/engine:./plugin:ControlInput",
@@ -9737,6 +8639,30 @@
       "from": "symbol:@solitude/engine:./runtime:createTickHandler",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./world:GravityEngine"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./runtime:createWorldMarkerBuffer->symbol:@solitude/engine:./plugin:createWorldMarkerBuffer",
+      "from": "symbol:@solitude/engine:./runtime:createWorldMarkerBuffer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:createWorldMarkerBuffer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./runtime:createWorldMarkerBuffer->symbol:@solitude/engine:./plugin:WorldMarkerSink",
+      "from": "symbol:@solitude/engine:./runtime:createWorldMarkerBuffer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldMarkerSink"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./runtime:createWorldSegmentBuffer->symbol:@solitude/engine:./plugin:createWorldSegmentBuffer",
+      "from": "symbol:@solitude/engine:./runtime:createWorldSegmentBuffer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:createWorldSegmentBuffer"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./runtime:createWorldSegmentBuffer->symbol:@solitude/engine:./plugin:WorldSegmentSink",
+      "from": "symbol:@solitude/engine:./runtime:createWorldSegmentBuffer",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldSegmentSink"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./runtime:FocusContext->symbol:@solitude/engine:./world:ControlledBody",
@@ -9811,6 +8737,12 @@
       "to": "symbol:@solitude/engine:./plugin:SceneLabelProviderParams"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./runtime:GamePipelineView->symbol:@solitude/engine:./plugin:SceneLabelSink",
+      "from": "symbol:@solitude/engine:./runtime:GamePipelineView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:SceneLabelSink"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./runtime:GamePipelineView->symbol:@solitude/engine:./plugin:SceneObjectFilter",
       "from": "symbol:@solitude/engine:./runtime:GamePipelineView",
       "kind": "symbol-reference",
@@ -9829,10 +8761,22 @@
       "to": "symbol:@solitude/engine:./plugin:WorldMarker"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./runtime:GamePipelineView->symbol:@solitude/engine:./plugin:WorldMarkerSink",
+      "from": "symbol:@solitude/engine:./runtime:GamePipelineView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldMarkerSink"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./runtime:GamePipelineView->symbol:@solitude/engine:./plugin:WorldSegment",
       "from": "symbol:@solitude/engine:./runtime:GamePipelineView",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:WorldSegment"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./runtime:GamePipelineView->symbol:@solitude/engine:./plugin:WorldSegmentSink",
+      "from": "symbol:@solitude/engine:./runtime:GamePipelineView",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:WorldSegmentSink"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./runtime:GamePipelineView->symbol:@solitude/engine:./render:SceneViewState",
@@ -10471,6 +9415,12 @@
       "to": "symbol:@solitude/engine:./render:MeshShading"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./world:EntityRenderConfig->symbol:@solitude/engine:./render:RenderMaterial",
+      "from": "symbol:@solitude/engine:./world:EntityRenderConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderMaterial"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./world:EntityRenderConfig->symbol:@solitude/engine:./render:RGB",
       "from": "symbol:@solitude/engine:./world:EntityRenderConfig",
       "kind": "symbol-reference",
@@ -10481,6 +9431,12 @@
       "from": "symbol:@solitude/engine:./world:EntityRenderConfig",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./world:EntityId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./world:EntityRenderConfig->symbol:@solitude/engine:./world:RenderMaterial",
+      "from": "symbol:@solitude/engine:./world:EntityRenderConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:RenderMaterial"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./world:EntityStateConfig->symbol:@solitude/engine:./world:DirectEntityStateConfig",
@@ -10627,6 +9583,12 @@
       "to": "symbol:@solitude/engine:./render:MeshShading"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./world:RenderableConfig->symbol:@solitude/engine:./render:RenderMaterial",
+      "from": "symbol:@solitude/engine:./world:RenderableConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderMaterial"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./world:RenderableConfig->symbol:@solitude/engine:./render:RGB",
       "from": "symbol:@solitude/engine:./world:RenderableConfig",
       "kind": "symbol-reference",
@@ -10637,6 +9599,24 @@
       "from": "symbol:@solitude/engine:./world:RenderableConfig",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./world:RenderableRole"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./world:RenderableConfig->symbol:@solitude/engine:./world:RenderMaterial",
+      "from": "symbol:@solitude/engine:./world:RenderableConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:RenderMaterial"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./world:RenderMaterial->symbol:@solitude/engine:./render:RenderMaterial",
+      "from": "symbol:@solitude/engine:./world:RenderMaterial",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderMaterial"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./world:RenderMaterial->symbol:@solitude/engine:./render:RGB",
+      "from": "symbol:@solitude/engine:./world:RenderMaterial",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RGB"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./world:requireMainFocusEntityId->symbol:@solitude/engine:./world:EntityId",
@@ -10933,6 +9913,12 @@
       "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:collectKeyboardInputProviders->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
+      "from": "symbol:@solitude/input:./keyboard:collectKeyboardInputProviders",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/input:./keyboard:collectKeyboardInputProviders->symbol:@solitude/input:./keyboard:keyboardInputCapability",
       "from": "symbol:@solitude/input:./keyboard:collectKeyboardInputProviders",
       "kind": "symbol-reference",
@@ -10991,6 +9977,12 @@
       "from": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/input:./keyboard:KeyboardInputProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:KeyboardHandlerDispatcher->symbol:@solitude/engine:./plugin:ControlInput",
+      "from": "symbol:@solitude/input:./keyboard:KeyboardHandlerDispatcher",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:ControlInput"
     },
     {
       "id": "symbol-reference:symbol:@solitude/input:./keyboard:KeyboardInputProvider->symbol:@solitude/engine:./plugin:ControlAction",
@@ -12007,516 +10999,6 @@
       "to": "symbol:@solitude/server:./sessions:SolitudeSessionManager"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin->symbol:@solitude/sim:./autopilot/core:createAutonomousControlProvider",
-      "from": "symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/core:createAutonomousControlProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin->symbol:@solitude/sim:./autopilot/core:createControlPlugin",
-      "from": "symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/core:createControlPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin->symbol:@solitude/sim:./autopilot/core:createPropulsionResolverProvider",
-      "from": "symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/core:createPropulsionResolverProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/core:createAutonomousControlProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
-      "from": "symbol:@solitude/sim:./autopilot/core:createAutonomousControlProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/core:createControlPlugin->symbol:@solitude/engine:./plugin:ControlPlugin",
-      "from": "symbol:@solitude/sim:./autopilot/core:createControlPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/core:createControlPlugin->symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand",
-      "from": "symbol:@solitude/sim:./autopilot/core:createControlPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/core:createControlPlugin->symbol:@solitude/sim:./autopilot/logic:getAutopilotMode",
-      "from": "symbol:@solitude/sim:./autopilot/core:createControlPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:getAutopilotMode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/core:createControlPlugin->symbol:@solitude/sim:./autopilot/mode:getAutopilotMode",
-      "from": "symbol:@solitude/sim:./autopilot/core:createControlPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/mode:getAutopilotMode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/core:createPropulsionResolverProvider->symbol:@solitude/sim:./autopilot/spacecraftPropulsion:createSpacecraftPropulsionResolverProvider",
-      "from": "symbol:@solitude/sim:./autopilot/core:createPropulsionResolverProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:createSpacecraftPropulsionResolverProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/input:createInputPlugin->symbol:@solitude/input:./keyboard:KeyboardInputProvider",
-      "from": "symbol:@solitude/sim:./autopilot/input:createInputPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/input:./keyboard:KeyboardInputProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:AutopilotMode->symbol:@solitude/sim:./autopilot/mode:AutopilotMode",
-      "from": "symbol:@solitude/sim:./autopilot/logic:AutopilotMode",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/mode:AutopilotMode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:CircleNowControllerState->symbol:@solitude/engine:./math:Vec3",
-      "from": "symbol:@solitude/sim:./autopilot/logic:CircleNowControllerState",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:Vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand->symbol:@solitude/engine:./math:EPS_ANGLE_RAD",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:EPS_ANGLE_RAD"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand->symbol:@solitude/engine:./math:EPS_LEN",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:EPS_LEN"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand->symbol:@solitude/engine:./math:vec3",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand->symbol:@solitude/engine:./math:Vec3",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:Vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand->symbol:@solitude/engine:./plugin:AttitudeCommand",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:AttitudeCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand->symbol:@solitude/engine:./plugin:ControlledBodyState",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand->symbol:@solitude/engine:./plugin:AttitudeCommand",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:AttitudeCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand->symbol:@solitude/engine:./plugin:ControlledBodyState",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand->symbol:@solitude/engine:./world:World",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:World"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand->symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand->symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand->symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand->symbol:@solitude/engine:./math:EPS_ANGLE_RAD",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:EPS_ANGLE_RAD"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand->symbol:@solitude/engine:./math:EPS_LEN",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:EPS_LEN"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand->symbol:@solitude/engine:./math:vec3",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand->symbol:@solitude/engine:./math:Vec3",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:Vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand->symbol:@solitude/engine:./plugin:AttitudeCommand",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:AttitudeCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand->symbol:@solitude/engine:./plugin:ControlledBodyState",
-      "from": "symbol:@solitude/sim:./autopilot/logic:computeRollToDirectionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:createCircleNowControllerState->symbol:@solitude/engine:./math:vec3",
-      "from": "symbol:@solitude/sim:./autopilot/logic:createCircleNowControllerState",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:createCircleNowControllerState->symbol:@solitude/sim:./autopilot/logic:CircleNowControllerState",
-      "from": "symbol:@solitude/sim:./autopilot/logic:createCircleNowControllerState",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:CircleNowControllerState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:disengageOnManualActuation->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./autopilot/logic:disengageOnManualActuation",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand->symbol:@solitude/engine:./plugin:AttitudeCommand",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:AttitudeCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand->symbol:@solitude/engine:./plugin:ControlledBodyState",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand->symbol:@solitude/engine:./world:World",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:World"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand->symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:computeAlignToDirectionCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand->symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:computeCircleNowAttitudeCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand->symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand->symbol:@solitude/sim:./autopilot/logic:getVelocityDirection",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getAutopilotAttitudeCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:getVelocityDirection"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getAutopilotMode->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getAutopilotMode",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getAutopilotMode->symbol:@solitude/sim:./autopilot/logic:AutopilotMode",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getAutopilotMode",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:AutopilotMode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getAutopilotMode->symbol:@solitude/sim:./autopilot/mode:AutopilotMode",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getAutopilotMode",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/mode:AutopilotMode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getAutopilotMode->symbol:@solitude/sim:./autopilot/mode:getAutopilotMode",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getAutopilotMode",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/mode:getAutopilotMode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection->symbol:@solitude/engine:./math:getDominantBody",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:getDominantBody"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection->symbol:@solitude/engine:./math:vec3",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection->symbol:@solitude/engine:./math:Vec3",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:Vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection->symbol:@solitude/engine:./plugin:ControlledBodyState",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection->symbol:@solitude/engine:./world:World",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getDominantBodyDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:World"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getTangentialDirection->symbol:@solitude/engine:./math:EPS_LEN_COARSE",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getTangentialDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:EPS_LEN_COARSE"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getTangentialDirection->symbol:@solitude/engine:./math:EPS_SPEED_COARSE",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getTangentialDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:EPS_SPEED_COARSE"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getTangentialDirection->symbol:@solitude/engine:./math:getDominantBodyPrimary",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getTangentialDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:getDominantBodyPrimary"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getTangentialDirection->symbol:@solitude/engine:./math:vec3",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getTangentialDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getTangentialDirection->symbol:@solitude/engine:./math:Vec3",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getTangentialDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:Vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getTangentialDirection->symbol:@solitude/engine:./plugin:ControlledBodyState",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getTangentialDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getTangentialDirection->symbol:@solitude/engine:./world:World",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getTangentialDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:World"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getVelocityDirection->symbol:@solitude/engine:./math:vec3",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getVelocityDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getVelocityDirection->symbol:@solitude/engine:./math:Vec3",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getVelocityDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:Vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:getVelocityDirection->symbol:@solitude/engine:./plugin:ControlledBodyState",
-      "from": "symbol:@solitude/sim:./autopilot/logic:getVelocityDirection",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:resolveAutopilotPropulsionCommand->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./autopilot/logic:resolveAutopilotPropulsionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:resolveAutopilotPropulsionCommand->symbol:@solitude/engine:./plugin:ControlledBodyState",
-      "from": "symbol:@solitude/sim:./autopilot/logic:resolveAutopilotPropulsionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:resolveAutopilotPropulsionCommand->symbol:@solitude/engine:./world:World",
-      "from": "symbol:@solitude/sim:./autopilot/logic:resolveAutopilotPropulsionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:World"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:resolveAutopilotPropulsionCommand->symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommand",
-      "from": "symbol:@solitude/sim:./autopilot/logic:resolveAutopilotPropulsionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:updateCircleNowControllerState->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./autopilot/logic:updateCircleNowControllerState",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:updateCircleNowControllerState->symbol:@solitude/engine:./plugin:ControlledBodyState",
-      "from": "symbol:@solitude/sim:./autopilot/logic:updateCircleNowControllerState",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:updateCircleNowControllerState->symbol:@solitude/engine:./world:World",
-      "from": "symbol:@solitude/sim:./autopilot/logic:updateCircleNowControllerState",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:World"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/logic:updateCircleNowControllerState->symbol:@solitude/sim:./autopilot/logic:CircleNowControllerState",
-      "from": "symbol:@solitude/sim:./autopilot/logic:updateCircleNowControllerState",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:CircleNowControllerState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/mode:AutopilotMode->symbol:@solitude/sim:./autopilot/logic:AutopilotMode",
-      "from": "symbol:@solitude/sim:./autopilot/mode:AutopilotMode",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:AutopilotMode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/mode:getAutopilotMode->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./autopilot/mode:getAutopilotMode",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/mode:getAutopilotMode->symbol:@solitude/sim:./autopilot/logic:AutopilotMode",
-      "from": "symbol:@solitude/sim:./autopilot/mode:getAutopilotMode",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:AutopilotMode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/mode:getAutopilotMode->symbol:@solitude/sim:./autopilot/logic:getAutopilotMode",
-      "from": "symbol:@solitude/sim:./autopilot/mode:getAutopilotMode",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/logic:getAutopilotMode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/mode:getAutopilotMode->symbol:@solitude/sim:./autopilot/mode:AutopilotMode",
-      "from": "symbol:@solitude/sim:./autopilot/mode:getAutopilotMode",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/mode:AutopilotMode"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/spacecraftPropulsion:createSpacecraftPropulsionResolverProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
-      "from": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:createSpacecraftPropulsionResolverProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/spacecraftPropulsion:createSpacecraftPropulsionResolverProvider->symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionResolver",
-      "from": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:createSpacecraftPropulsionResolverProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionResolver"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommand->symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftRcsCommand",
-      "from": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftRcsCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommand->symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftThrustCommand",
-      "from": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftThrustCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommandParams->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommandParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommandParams->symbol:@solitude/engine:./plugin:ControlledBodyState",
-      "from": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommandParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommandParams->symbol:@solitude/engine:./world:World",
-      "from": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommandParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:World"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommandParams->symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommand",
-      "from": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommandParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionResolver->symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommand",
-      "from": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionResolver",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionResolver->symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommandParams",
-      "from": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionResolver",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/spacecraftPropulsion:SpacecraftPropulsionCommandParams"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/sim:./celestialBodies/provider:CelestialBody->symbol:@solitude/engine:./math:Vec3",
       "from": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBody",
       "kind": "symbol-reference",
@@ -12763,10 +11245,22 @@
       "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin",
-      "from": "symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin",
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot/input:createAutopilotInputPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
+      "from": "symbol:@solitude/sim:./plugins/autopilot/input:createAutopilotInputPlugin",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./autopilot/behavior:createAutopilotBehaviorPlugin"
+      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot/input:createAutopilotInputPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
+      "from": "symbol:@solitude/sim:./plugins/autopilot/input:createAutopilotInputPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot/input:createAutopilotInputPlugin->symbol:@solitude/input:./keyboard:createKeyboardInputProvider",
+      "from": "symbol:@solitude/sim:./plugins/autopilot/input:createAutopilotInputPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog->symbol:@solitude/engine:./plugin:PluginCatalog",
@@ -12847,12 +11341,6 @@
       "to": "symbol:@solitude/engine:./world:EntityConfig"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:buildSolarSystemBodyEntities->symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem:buildSolarSystemBodyEntities",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
       "from": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
       "kind": "symbol-reference",
@@ -12883,18 +11371,6 @@
       "to": "symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin->symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin->symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions->symbol:@solitude/engine:./plugin:RuntimeOptions",
       "from": "symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions",
       "kind": "symbol-reference",
@@ -12905,90 +11381,6 @@
       "from": "symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/sim:./plugins/solarSystem:orbitalSpeedMultiplierRuntimeOption"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions->symbol:@solitude/sim:./plugins/solarSystem/solarSystem:SolarSystemConfigOptions",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:SolarSystemConfigOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider->symbol:@solitude/engine:./world:createKeplerianBodiesFromConfig",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:createKeplerianBodiesFromConfig"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider->symbol:@solitude/sim:./celestialBodies/provider:CelestialBody",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBody"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider->symbol:@solitude/sim:./celestialBodies/provider:CelestialBodyProvider",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBodyProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider->symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider->symbol:@solitude/sim:./plugins/solarSystem/solarSystem:SolarSystemConfigOptions",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem/celestialBodyProvider:createSolarSystemCelestialBodyProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:SolarSystemConfigOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/colors:ColorName->symbol:@solitude/sim:./plugins/solarSystem/colors:ALL_COLORS",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem/colors:ColorName",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem/colors:ALL_COLORS"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/colors:Colors->symbol:@solitude/engine:./render:RGB",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem/colors:Colors",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RGB"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/colors:Colors->symbol:@solitude/sim:./plugins/solarSystem/colors:ColorName",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem/colors:Colors",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem/colors:ColorName"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/colors:colors->symbol:@solitude/sim:./plugins/solarSystem/colors:Colors",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem/colors:colors",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem/colors:Colors"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs->symbol:@solitude/engine:./world:EntityRenderConfig",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:EntityRenderConfig"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs->symbol:@solitude/engine:./world:KeplerianBodyPhysicsConfig",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:KeplerianBodyPhysicsConfig"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs->symbol:@solitude/sim:./plugins/solarSystem/colors:colors",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem/colors:colors"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs->symbol:@solitude/sim:./plugins/solarSystem/solarSystem:SolarSystemConfigOptions",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:buildDefaultSolarSystemConfigs",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem/solarSystem:SolarSystemConfigOptions"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
@@ -13019,24 +11411,6 @@
       "from": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:createSpacecraftOperatorTelemetryProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin->symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftLocalPredictionProvider",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftLocalPredictionProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin->symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin->symbol:@solitude/sim:./plugins/spacecraftOperator/input:createInputPlugin",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/input:createInputPlugin"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin->symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:createSpacecraftOperatorTelemetry",
@@ -13273,174 +11647,6 @@
       "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics->symbol:@solitude/engine:./runtime:applyControlledBodyRotation",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./runtime:applyControlledBodyRotation"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommand",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics->symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:maxRcsTranslationAcceleration",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:maxRcsTranslationAcceleration"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics->symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:maxThrustAcceleration",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:maxThrustAcceleration"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics->symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlledBodyAngularVelocityFromInput",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlledBodyAngularVelocityFromInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics->symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftLocalPredictionProvider->symbol:@solitude/engine:./runtime:createPhysicsWorkspace",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftLocalPredictionProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./runtime:createPhysicsWorkspace"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftLocalPredictionProvider->symbol:@solitude/sim:./localPrediction:LocalEntityPredictionProvider",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftLocalPredictionProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localPrediction:LocalEntityPredictionProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftLocalPredictionProvider->symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftLocalPredictionProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftLocalPredictionProvider->symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftLocalPredictionProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin->symbol:@solitude/engine:./plugin:ControlPlugin",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin->symbol:@solitude/engine:./plugin:SimulationPlugin",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:SimulationPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin->symbol:@solitude/engine:./runtime:createPhysicsWorkspace",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./runtime:createPhysicsWorkspace"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:getSpacecraftAutonomousControls",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:getSpacecraftAutonomousControls"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:getSpacecraftPropulsionResolvers",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:getSpacecraftPropulsionResolvers"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin->symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin->symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:applySpacecraftVehicleDynamics"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin->symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:createSpacecraftOperatorTelemetry",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:createSpacecraftOperatorTelemetry"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin->symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:SpacecraftOperatorTelemetry",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:createSpacecraftVehicleDynamicsPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:SpacecraftOperatorTelemetry"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams->symbol:@solitude/engine:./plugin:ControlPlugin",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams->symbol:@solitude/engine:./runtime:PhysicsWorkspace",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./runtime:PhysicsWorkspace"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams->symbol:@solitude/engine:./world:ControlledBody",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:ControlledBody"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams->symbol:@solitude/engine:./world:World",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:World"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionResolver",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionResolver"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams->symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/core:SpacecraftVehicleDynamicsParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/input:createInputPlugin->symbol:@solitude/input:./keyboard:KeyboardInputProvider",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/input:createInputPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/input:./keyboard:KeyboardInputProvider"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:createSpacecraftOperatorTelemetry->symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:SpacecraftOperatorTelemetry",
       "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:createSpacecraftOperatorTelemetry",
       "kind": "symbol-reference",
@@ -13481,42 +11687,6 @@
       "from": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:OrbitingPlacementParams",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBody"
-    },
-    {
-      "id": "symbol-reference:symbol:solitude:./plugins/catalog:solitudePluginCatalog->symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
-      "from": "symbol:solitude:./plugins/catalog:solitudePluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:solitude:./plugins/catalog:solitudePluginCatalog->symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
-      "from": "symbol:solitude:./plugins/catalog:solitudePluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog"
-    },
-    {
-      "id": "symbol-reference:symbol:solitude:./plugins/catalog:solitudePluginCatalog->symbol:@solitude/engine:./plugin:PluginCatalog",
-      "from": "symbol:solitude:./plugins/catalog:solitudePluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginCatalog"
-    },
-    {
-      "id": "symbol-reference:symbol:solitude:./plugins/catalog:solitudePluginCatalog->symbol:@solitude/sim:./plugins/polyFighter:createPolyFighterPlugin",
-      "from": "symbol:solitude:./plugins/catalog:solitudePluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/polyFighter:createPolyFighterPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:solitude:./plugins/catalog:solitudePluginCatalog->symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
-      "from": "symbol:solitude:./plugins/catalog:solitudePluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:solitude:./plugins/catalog:solitudePluginCatalog->symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
-      "from": "symbol:solitude:./plugins/catalog:solitudePluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin"
     }
   ]
 }

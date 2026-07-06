@@ -7,17 +7,17 @@
     "./dom/hudOverlayPlugin": "./src/infra/hudOverlayPlugin.ts",
     "./dom/keyboardInput": "./src/infra/domKeyboardInput.ts",
     "./dom/layout": "./src/infra/domLayout.ts",
-    "./dom/renderingBootstrap": "./src/infra/domRenderingBootstrap.ts",
+    "./dom/overlayPorts": "./src/infra/overlayPorts.ts",
     "./dom/renderFailure": "./src/infra/renderFailure.ts",
     "./dom/renderFailurePanel": "./src/infra/renderFailurePanel.ts",
     "./dom/renderTextureSources": "./src/infra/renderTextureSources.ts",
+    "./dom/renderingBootstrap": "./src/infra/domRenderingBootstrap.ts",
+    "./dom/runtimeOptions": "./src/infra/domRuntimeOptions.ts",
     "./dom/view": "./src/infra/domView.ts",
     "./dom/viewPresenter": "./src/infra/viewPresenter.ts",
-    "./dom/overlayPorts": "./src/infra/overlayPorts.ts",
-    "./dom/runtimeOptions": "./src/infra/domRuntimeOptions.ts",
     "./remoteViewPresenter": "./src/infra/remoteViewPresenter.ts",
-    "./remoteWorldRenderer": "./src/infra/remoteWorldRenderer.ts",
-    "./remoteWorldMirror": "./src/infra/remoteWorldMirror.ts"
+    "./remoteWorldMirror": "./src/infra/remoteWorldMirror.ts",
+    "./remoteWorldRenderer": "./src/infra/remoteWorldRenderer.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0",

@@ -4,12 +4,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./autopilot/behavior": "./src/autopilot/behavior.ts",
-    "./autopilot/core": "./src/autopilot/core.ts",
-    "./autopilot/input": "./src/autopilot/input.ts",
-    "./autopilot/logic": "./src/autopilot/logic.ts",
-    "./autopilot/mode": "./src/autopilot/mode.ts",
-    "./autopilot/spacecraftPropulsion": "./src/autopilot/spacecraftPropulsion.ts",
     "./celestialBodies/provider": "./src/celestialBodies/provider.ts",
     "./config/worldAndSceneConfig": "./src/worldAndSceneConfig.ts",
     "./controllableEntities/provider": "./src/controllableEntities/provider.ts",
@@ -20,16 +14,11 @@
     "./plugins/catalog": "./src/plugins/catalog.ts",
     "./plugins/polyFighter": "./src/plugins/polyFighter/index.ts",
     "./plugins/solarSystem": "./src/plugins/solarSystem/index.ts",
-    "./plugins/solarSystem/celestialBodyProvider": "./src/plugins/solarSystem/celestialBodyProvider.ts",
-    "./plugins/solarSystem/colors": "./src/plugins/solarSystem/colors.ts",
-    "./plugins/solarSystem/solarSystem": "./src/plugins/solarSystem/solarSystem.ts",
-    "./spacecraft/orbitalPlacement": "./src/spacecraft/orbitalPlacement.ts",
     "./plugins/spacecraftOperator": "./src/plugins/spacecraftOperator/index.ts",
     "./plugins/spacecraftOperator/capabilities": "./src/plugins/spacecraftOperator/capabilities.ts",
     "./plugins/spacecraftOperator/controlLogic": "./src/plugins/spacecraftOperator/controlLogic.ts",
-    "./plugins/spacecraftOperator/core": "./src/plugins/spacecraftOperator/core.ts",
-    "./plugins/spacecraftOperator/input": "./src/plugins/spacecraftOperator/input.ts",
-    "./plugins/spacecraftOperator/telemetry": "./src/plugins/spacecraftOperator/telemetry.ts"
+    "./plugins/spacecraftOperator/telemetry": "./src/plugins/spacecraftOperator/telemetry.ts",
+    "./spacecraft/orbitalPlacement": "./src/spacecraft/orbitalPlacement.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0",
