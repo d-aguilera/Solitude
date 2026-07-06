@@ -1,7 +1,5 @@
 import type { PluginCatalog } from "@solitude/engine/plugin";
-import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
-import { createSpacecraftOperatorPlugin } from "@solitude/sim/plugins/spacecraftOperator";
-import { createAutopilotPlugin } from "./autopilot/index";
+import { createAutopilotHudPlugin } from "./autopilot/index";
 import { createAxialViewsPlugin } from "./axialViews/index";
 import { createBodyLabelsPlugin } from "./bodyLabels/index";
 import { createOrbitSegmentsPlugin } from "./orbitSegments/index";
@@ -24,23 +22,8 @@ export const displayPluginIds = [
   "velocitySegments",
 ];
 
-export const remoteRenderPluginIds = [
-  "solarSystem",
-  "spacecraftOperator",
-  "orbitSegments",
-  "solarSystemMaterials",
-  "orbitTelemetry",
-  "shipTelemetry",
-  "autopilot",
-  "bodyLabels",
-  "axialViews",
-  "targetingLaser",
-  "trajectories",
-  "velocitySegments",
-];
-
 export const displayPluginCatalog: PluginCatalog = {
-  autopilot: createAutopilotPlugin,
+  autopilotHud: createAutopilotHudPlugin,
   axialViews: createAxialViewsPlugin,
   bodyLabels: createBodyLabelsPlugin,
   orbitSegments: createOrbitSegmentsPlugin,
@@ -50,10 +33,4 @@ export const displayPluginCatalog: PluginCatalog = {
   targetingLaser: createTargetingLaserPlugin,
   trajectories: createTrajectoriesPlugin,
   velocitySegments: createVelocitySegmentsPlugin,
-};
-
-export const remoteRenderPluginCatalog: PluginCatalog = {
-  ...displayPluginCatalog,
-  solarSystem: createSolarSystemPlugin,
-  spacecraftOperator: createSpacecraftOperatorPlugin,
 };

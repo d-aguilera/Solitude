@@ -4,10 +4,17 @@ import {
   getDominantBodyPrimary,
   vec3,
 } from "@solitude/engine/math";
+import type { ControlInput } from "@solitude/engine/plugin";
 import type { ControlledBody, World } from "@solitude/engine/world";
 import type { HudPanelProvider } from "@solitude/hud/provider";
-import { getAutopilotMode } from "@solitude/sim/autopilot/mode";
 import type { AutopilotLocalization } from "./localization";
+
+type AutopilotMode =
+  | "none"
+  | "alignToVelocity"
+  | "alignToBody"
+  | "orbit"
+  | "circleNow";
 
 export function createHudPanel(
   localization: AutopilotLocalization,
@@ -191,7 +198,7 @@ interface CircleNowHudDebug {
 }
 
 function formatAutopilotStatus(
-  mode: ReturnType<typeof getAutopilotMode>,
+  mode: AutopilotMode,
   localization: AutopilotLocalization,
 ): string {
   const vel =
@@ -256,4 +263,12 @@ function formatCircleNowWarnings(
 
 function appendWarning(current: string, next: string): string {
   return current ? current.concat(" | ", next) : next;
+}
+
+function getAutopilotMode(controlInput: ControlInput): AutopilotMode {
+  if (controlInput.circleNow) return "circleNow";
+  if (controlInput.orbit) return "orbit";
+  if (controlInput.alignToBody) return "alignToBody";
+  if (controlInput.alignToVelocity) return "alignToVelocity";
+  return "none";
 }

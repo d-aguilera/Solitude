@@ -16,6 +16,7 @@
     "./headless": "./src/headless.ts",
     "./localPrediction": "./src/localPrediction.ts",
     "./plugins/autopilot": "./src/plugins/autopilot/index.ts",
+    "./plugins/autopilot/input": "./src/plugins/autopilot/input.ts",
     "./plugins/catalog": "./src/plugins/catalog.ts",
     "./plugins/polyFighter": "./src/plugins/polyFighter/index.ts",
     "./plugins/solarSystem": "./src/plugins/solarSystem/index.ts",

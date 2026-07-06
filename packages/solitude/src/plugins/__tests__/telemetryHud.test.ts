@@ -1,4 +1,4 @@
-import { createAutopilotPlugin } from "@solitude/display/plugins/autopilot";
+import { createAutopilotHudPlugin } from "@solitude/display/plugins/autopilot";
 import { createOrbitTelemetryPlugin } from "@solitude/display/plugins/orbitTelemetry";
 import { createShipTelemetryPlugin } from "@solitude/display/plugins/shipTelemetry";
 import {
@@ -308,7 +308,7 @@ describe("telemetry HUD plugins", () => {
 
   it("autopilot HUD reads circle-now diagnostics from the focused body", () => {
     const { world, ship } = createWorldAndShip();
-    const panel = getHudPanel(createAutopilotPlugin({ locale: "en" }));
+    const panel = getHudPanel(createAutopilotHudPlugin({ locale: "en" }));
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
     context.controlInput.circleNow = true;
