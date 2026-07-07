@@ -1,11 +1,7 @@
 import { createHudOverlayPlugin } from "@solitude/browser/dom/hudOverlayPlugin";
 import { displayPluginCatalog } from "@solitude/display/plugins/catalog";
 import type { PluginCatalog } from "@solitude/engine/plugin";
-import { createAutopilotPlugin } from "@solitude/sim/plugins/autopilot";
-import { createAutopilotInputPlugin } from "@solitude/sim/plugins/autopilot/input";
-import { createPolyFighterPlugin } from "@solitude/sim/plugins/polyFighter";
-import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
-import { createSpacecraftOperatorPlugin } from "@solitude/sim/plugins/spacecraftOperator";
+import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
 import { createMainViewLookaroundPlugin } from "./mainViewLookaround/index";
 import { createMemoryPlugin } from "./memory/index";
 import { createOperatorSwitchPlugin } from "./operatorSwitch/index";
@@ -48,19 +44,15 @@ export const defaultPluginIds = [
 
 export const solitudePluginCatalog: PluginCatalog = {
   ...displayPluginCatalog,
-  autopilot: createAutopilotPlugin,
-  autopilotInput: createAutopilotInputPlugin,
+  ...simPluginCatalog,
   hud: createHudOverlayPlugin,
   mainViewLookaround: createMainViewLookaroundPlugin,
   memory: createMemoryPlugin,
   operatorSwitch: createOperatorSwitchPlugin,
   pause: createPausePlugin,
   playback: createPlaybackPlugin,
-  polyFighter: createPolyFighterPlugin,
   profiling: createProfilingPlugin,
   runtimeTelemetry: createRuntimeTelemetryPlugin,
-  solarSystem: createSolarSystemPlugin,
-  spacecraftOperator: createSpacecraftOperatorPlugin,
   ships: createShipsPlugin,
   timeScale: createTimeScalePlugin,
 };

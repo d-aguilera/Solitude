@@ -4,10 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./plugins/autopilot": "./src/plugins/autopilot/index.ts",
-    "./plugins/catalog": "./src/plugins/catalog.ts",
-    "./plugins/orbitTelemetry": "./src/plugins/orbitTelemetry/index.ts",
-    "./plugins/shipTelemetry": "./src/plugins/shipTelemetry/index.ts"
+    "./plugins/catalog": "./src/plugins/catalog.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0",

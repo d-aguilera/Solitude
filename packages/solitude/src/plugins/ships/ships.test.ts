@@ -1,23 +1,28 @@
 import { vec3 } from "@solitude/engine/math";
+import { loadPlugins } from "@solitude/engine/plugin";
 import {
   applyWorldModelPlugins,
   createScene,
   createWorld,
 } from "@solitude/engine/world";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
-import { createPolyFighterPlugin } from "@solitude/sim/plugins/polyFighter";
-import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
+import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
 import { describe, expect, it } from "vitest";
 import { createShipsPlugin } from "./index";
 
 describe("ships plugin", () => {
   it("places both default ships relative to Earth and chooses blue as focus", () => {
     const config = buildWorldAndSceneConfig();
-    applyWorldModelPlugins(config, [
-      createSolarSystemPlugin(),
-      createPolyFighterPlugin(),
-      createShipsPlugin(),
-    ]);
+    applyWorldModelPlugins(
+      config,
+      loadPlugins({
+        catalog: {
+          ...simPluginCatalog,
+          ships: createShipsPlugin,
+        },
+        ids: ["solarSystem", "polyFighter", "ships"],
+      }),
+    );
 
     const worldSetup = createWorld(config);
     const sceneSetup = createScene(worldSetup.world, config);

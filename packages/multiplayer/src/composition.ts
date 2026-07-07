@@ -1,5 +1,5 @@
 import { km } from "@solitude/engine/math";
-import type { RuntimeOptions } from "@solitude/engine/plugin";
+import { loadPlugins, type RuntimeOptions } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { EntityConfig, EntityId } from "@solitude/engine/world";
 import {
@@ -20,8 +20,7 @@ import {
   isControllableEntityProvider,
   type ControllableEntityProvider,
 } from "@solitude/sim/controllableEntities/provider";
-import { createPolyFighterPlugin } from "@solitude/sim/plugins/polyFighter";
-import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
+import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
 import { createOrbitingPlacement } from "@solitude/sim/spacecraft/orbitalPlacement";
 import { createSolitudeServerGame } from "./runtime";
 
@@ -144,7 +143,11 @@ export function createDefaultMultiplayerSpacecraftEntity({
 function createDefaultMultiplayerContentPlugins(
   runtimeOptions: RuntimeOptions,
 ) {
-  return [createSolarSystemPlugin(runtimeOptions), createPolyFighterPlugin()];
+  return loadPlugins({
+    catalog: simPluginCatalog,
+    ids: ["solarSystem", "polyFighter"],
+    runtimeOptions,
+  });
 }
 
 function createDefaultAssignableEntityIds(count: number): EntityId[] {

@@ -16,10 +16,7 @@ import {
   collectLocalEntityPredictionProviders,
   type LocalEntityPredictionProvider,
 } from "@solitude/sim/localPrediction";
-import { createAutopilotPlugin } from "@solitude/sim/plugins/autopilot";
-import { createAutopilotInputPlugin } from "@solitude/sim/plugins/autopilot/input";
-import { createSolarSystemPlugin } from "@solitude/sim/plugins/solarSystem";
-import { createSpacecraftOperatorPlugin } from "@solitude/sim/plugins/spacecraftOperator";
+import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
 
 export const remoteRenderPluginIds = [
   "solarSystem",
@@ -40,10 +37,7 @@ export const remoteRenderPluginIds = [
 
 export const remoteRenderPluginCatalog: PluginCatalog = {
   ...displayPluginCatalog,
-  autopilot: createAutopilotPlugin,
-  autopilotInput: createAutopilotInputPlugin,
-  solarSystem: createSolarSystemPlugin,
-  spacecraftOperator: createSpacecraftOperatorPlugin,
+  ...simPluginCatalog,
 };
 
 export interface RemoteClientCompositionParams {

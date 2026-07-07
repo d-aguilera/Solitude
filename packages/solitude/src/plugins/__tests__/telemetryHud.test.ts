@@ -1,6 +1,4 @@
-import { createAutopilotHudPlugin } from "@solitude/display/plugins/autopilot";
-import { createOrbitTelemetryPlugin } from "@solitude/display/plugins/orbitTelemetry";
-import { createShipTelemetryPlugin } from "@solitude/display/plugins/shipTelemetry";
+import { displayPluginCatalog } from "@solitude/display/plugins/catalog";
 import {
   circularSpeedAtRadius,
   localFrame,
@@ -11,6 +9,7 @@ import {
   createControlInput,
   type GamePlugin,
   type PluginCapabilityProvider,
+  type RuntimeOptions,
 } from "@solitude/engine/plugin";
 import {
   createPluginCapabilityRegistry,
@@ -108,7 +107,7 @@ describe("telemetry HUD plugins", () => {
   it("shipTelemetry writes ship state and control cells", () => {
     const { world, ship } = createWorldAndShip();
     ship.velocity = vec3.create(10, 0, 0);
-    const panel = getHudPanel(createShipTelemetryPlugin({ locale: "en" }));
+    const panel = getHudPanelById("shipTelemetry", { locale: "en" });
     const grid = createHudGrid();
     const telemetry = createSpacecraftOperatorTelemetry();
     telemetry.currentThrustLevel = 5;
@@ -129,7 +128,7 @@ describe("telemetry HUD plugins", () => {
   it("shipTelemetry writes localized speed without thousands separators", () => {
     const { world, ship } = createWorldAndShip();
     ship.velocity = vec3.create(29_579.72, 0, 0);
-    const panel = getHudPanel(createShipTelemetryPlugin({ locale: "es" }));
+    const panel = getHudPanelById("shipTelemetry", { locale: "es" });
     const grid = createHudGrid();
     const telemetry = createSpacecraftOperatorTelemetry();
     telemetry.currentRcsLevel = 1.25;
@@ -149,7 +148,7 @@ describe("telemetry HUD plugins", () => {
   it("shipTelemetry reads the focused body instead of the legacy main body", () => {
     const { world, ship } = createWorldAndShip();
     ship.velocity = vec3.create(10, 0, 0);
-    const panel = getHudPanel(createShipTelemetryPlugin({ locale: "en" }));
+    const panel = getHudPanelById("shipTelemetry", { locale: "en" });
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
 
@@ -174,7 +173,7 @@ describe("telemetry HUD plugins", () => {
           : [];
       },
     };
-    const panel = getHudPanel(createShipTelemetryPlugin({ locale: "en" }));
+    const panel = getHudPanelById("shipTelemetry", { locale: "en" });
 
     panel.writeHud(grid, context);
     panel.writeHud(grid, context);
@@ -198,7 +197,7 @@ describe("telemetry HUD plugins", () => {
 
   it("orbitTelemetry writes orbit and circularization cells", () => {
     const { world, ship } = createWorldAndShip();
-    const panel = getHudPanel(createOrbitTelemetryPlugin({ locale: "en" }));
+    const panel = getHudPanelById("orbitTelemetry", { locale: "en" });
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
     panel.writeHud(grid, context);
@@ -223,7 +222,7 @@ describe("telemetry HUD plugins", () => {
     const angularMomentum = Math.sqrt(mu * semiLatusRectum);
     const radialSpeed = -((mu / angularMomentum) * eccentricity);
     const tangentialSpeed = angularMomentum / radius;
-    const panel = getHudPanel(createOrbitTelemetryPlugin({ locale: "en" }));
+    const panel = getHudPanelById("orbitTelemetry", { locale: "en" });
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
 
@@ -251,7 +250,7 @@ describe("telemetry HUD plugins", () => {
     const { world, ship } = createWorldAndShip();
     const orbitRadius = vec3.length(ship.position);
     const circularSpeed = circularSpeedAtRadius(5.972e24, orbitRadius);
-    const panel = getHudPanel(createOrbitTelemetryPlugin({ locale: "en" }));
+    const panel = getHudPanelById("orbitTelemetry", { locale: "en" });
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
 
@@ -276,7 +275,7 @@ describe("telemetry HUD plugins", () => {
 
   it("orbitTelemetry localizes primary body names", () => {
     const { world, ship } = createWorldAndShip();
-    const panel = getHudPanel(createOrbitTelemetryPlugin({ locale: "es" }));
+    const panel = getHudPanelById("orbitTelemetry", { locale: "es" });
     const grid = createHudGrid();
     const context = createHudContext(world, ship, [
       createEntityNameProvider({
@@ -296,7 +295,7 @@ describe("telemetry HUD plugins", () => {
     const { world, ship } = createWorldAndShip();
     world.collisionSpheres.length = 0;
     world.gravityMasses.length = 0;
-    const panel = getHudPanel(createOrbitTelemetryPlugin({ locale: "en" }));
+    const panel = getHudPanelById("orbitTelemetry", { locale: "en" });
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
 
@@ -308,7 +307,7 @@ describe("telemetry HUD plugins", () => {
 
   it("autopilot HUD reads circle-now diagnostics from the focused body", () => {
     const { world, ship } = createWorldAndShip();
-    const panel = getHudPanel(createAutopilotHudPlugin({ locale: "en" }));
+    const panel = getHudPanelById("autopilotHud", { locale: "en" });
     const grid = createHudGrid();
     const context = createHudContext(world, ship);
     context.controlInput.circleNow = true;
@@ -334,6 +333,15 @@ describe("telemetry HUD plugins", () => {
 
 function columnTexts(grid: HudGrid, column: HudColumnId): string[] {
   return grid.columns[getHudColumnIndex(column)].map((line) => line.text);
+}
+
+function getHudPanelById(
+  id: keyof typeof displayPluginCatalog,
+  runtimeOptions: RuntimeOptions = {},
+): HudPanelProvider {
+  const factory = displayPluginCatalog[id];
+  if (!factory) throw new Error(`Display plugin not found: ${id}`);
+  return getHudPanel(factory(runtimeOptions));
 }
 
 function getHudPanel(plugin: GamePlugin): HudPanelProvider {
