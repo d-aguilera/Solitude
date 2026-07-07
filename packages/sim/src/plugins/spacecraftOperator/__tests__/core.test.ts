@@ -3,6 +3,7 @@ import type { SimulationPlugin } from "@solitude/engine/plugin";
 import { createControlInput } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
+import { createSpacecraftOperatorTelemetry } from "@solitude/hud/telemetry";
 import { describe, expect, it } from "vitest";
 import {
   createAutonomousControlProvider,
@@ -12,7 +13,6 @@ import {
   createSpacecraftLocalPredictionProvider,
   createSpacecraftVehicleDynamicsPlugin,
 } from "../core";
-import { createSpacecraftOperatorTelemetry } from "../telemetry";
 
 const EMPTY_ENTITY_CONTROL_INPUTS = new Map();
 

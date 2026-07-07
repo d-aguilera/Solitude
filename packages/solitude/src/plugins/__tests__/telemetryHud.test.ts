@@ -27,6 +27,11 @@ import {
   type HudGrid,
   type HudPanelProvider,
 } from "@solitude/hud/provider";
+import {
+  createSpacecraftOperatorTelemetry,
+  createSpacecraftOperatorTelemetryProvider,
+  spacecraftOperatorTelemetryCapabilityId,
+} from "@solitude/hud/telemetry";
 import { describe, expect, it } from "vitest";
 import { createHudPanel as createRuntimeTelemetryHudPanel } from "../runtimeTelemetry/hud";
 import { createRuntimeTelemetryLocalization } from "../runtimeTelemetry/localization";
@@ -81,27 +86,6 @@ function createWorldAndShip(): { world: World; ship: ControlledBody } {
   );
 
   return { world, ship };
-}
-
-interface SpacecraftOperatorTelemetry {
-  currentThrustLevel: number;
-  currentRcsLevel: number;
-}
-
-function createSpacecraftOperatorTelemetry(): SpacecraftOperatorTelemetry {
-  return {
-    currentRcsLevel: 0,
-    currentThrustLevel: 0,
-  };
-}
-
-function createSpacecraftOperatorTelemetryProvider(
-  telemetry: SpacecraftOperatorTelemetry,
-): PluginCapabilityProvider {
-  return {
-    id: "spacecraft.operatorTelemetry.v1",
-    value: { telemetry },
-  };
 }
 
 function createHudContext(
@@ -187,7 +171,7 @@ describe("telemetry HUD plugins", () => {
     context.capabilityRegistry = {
       getAll: (id) => {
         lookupCount++;
-        return id === "spacecraft.operatorTelemetry.v1"
+        return id === spacecraftOperatorTelemetryCapabilityId
           ? capabilities.map((capability) => capability.value)
           : [];
       },

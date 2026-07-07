@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./provider": "./src/provider.ts"
+    "./provider": "./src/provider.ts",
+    "./telemetry": "./src/telemetry.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0"

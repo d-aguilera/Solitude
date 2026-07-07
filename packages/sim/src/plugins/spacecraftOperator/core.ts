@@ -13,6 +13,10 @@ import {
   type PhysicsWorkspace,
 } from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
+import {
+  createSpacecraftOperatorTelemetry,
+  type SpacecraftOperatorTelemetry,
+} from "@solitude/hud/telemetry";
 import type { LocalEntityPredictionProvider } from "../../localPrediction";
 import {
   maxRcsTranslationAcceleration,
@@ -35,10 +39,6 @@ import {
   updateControlledBodyAngularVelocityFromInput,
   type SpacecraftControlState,
 } from "./controlLogic";
-import {
-  createSpacecraftOperatorTelemetry,
-  type SpacecraftOperatorTelemetry,
-} from "./telemetry";
 
 const velocityDeltaScratch = vec3.zero();
 const backgroundControlInput = {} as ControlInput;

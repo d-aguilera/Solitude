@@ -1,24 +1,17 @@
 import { vec3 } from "@solitude/engine/math";
 import type { PluginCapabilityRegistry } from "@solitude/engine/plugin";
 import type { HudPanelProvider } from "@solitude/hud/provider";
+import {
+  isSpacecraftOperatorTelemetryProvider,
+  spacecraftOperatorTelemetryCapabilityId,
+  type SpacecraftOperatorTelemetry,
+} from "@solitude/hud/telemetry";
 import type { ShipTelemetryLocalization } from "./localization";
-
-const spacecraftOperatorTelemetryCapabilityId =
-  "spacecraft.operatorTelemetry.v1";
-
-interface SpacecraftOperatorTelemetryReadout {
-  currentThrustLevel: number;
-  currentRcsLevel: number;
-}
-
-interface SpacecraftOperatorTelemetryProvider {
-  readonly telemetry: SpacecraftOperatorTelemetryReadout;
-}
 
 export function createHudPanel(
   localization: ShipTelemetryLocalization,
 ): HudPanelProvider {
-  let telemetry: SpacecraftOperatorTelemetryReadout | null = null;
+  let telemetry: SpacecraftOperatorTelemetry | null = null;
   let telemetryResolved = false;
 
   return {
@@ -61,25 +54,10 @@ export function createHudPanel(
 
 function resolveTelemetry(
   registry: PluginCapabilityRegistry,
-): SpacecraftOperatorTelemetryReadout | null {
+): SpacecraftOperatorTelemetry | null {
   return (
     registry
       .getAll(spacecraftOperatorTelemetryCapabilityId)
       .find(isSpacecraftOperatorTelemetryProvider)?.telemetry ?? null
-  );
-}
-
-function isSpacecraftOperatorTelemetryProvider(
-  value: unknown,
-): value is SpacecraftOperatorTelemetryProvider {
-  const candidate =
-    value as Partial<SpacecraftOperatorTelemetryProvider> | null;
-  return (
-    typeof candidate === "object" &&
-    candidate !== null &&
-    typeof candidate.telemetry === "object" &&
-    candidate.telemetry !== null &&
-    typeof candidate.telemetry.currentThrustLevel === "number" &&
-    typeof candidate.telemetry.currentRcsLevel === "number"
   );
 }
