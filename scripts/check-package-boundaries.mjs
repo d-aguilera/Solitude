@@ -24,15 +24,6 @@ const sourceExtensions = new Set([
 ]);
 
 const repoRoot = process.cwd();
-const failKnownPluginImports = process.argv.includes(
-  "--fail-known-plugin-imports",
-);
-
-// Temporary baseline for plugin-policy violations that existed before this
-// rule. Run with --fail-known-plugin-imports while burning these down.
-const knownPluginImportViolations = new Set([
-  "packages/solitude/src/plugins/playback/loggers/circleNow.ts -> @solitude/sim/plugins/spacecraftOperator/controlLogic",
-]);
 
 if (process.argv.includes("--self-test")) {
   await runSelfTest();
@@ -282,14 +273,6 @@ function validatePluginImport({
   if (isTestFile(relativeFile)) return;
 
   if (isPluginCompositionFile(relativeFile)) return;
-
-  const violationKey = `${relativeFile} -> ${specifier}`;
-  if (
-    !failKnownPluginImports &&
-    knownPluginImportViolations.has(violationKey)
-  ) {
-    return;
-  }
 
   errors.push({
     file,

@@ -15,6 +15,10 @@ import {
 import type { ControlledBody, World } from "@solitude/engine/world";
 import type { LocalEntityPredictionProvider } from "../../localPrediction";
 import {
+  maxRcsTranslationAcceleration,
+  maxThrustAcceleration,
+} from "../../spacecraft/propulsionLimits";
+import {
   getSpacecraftAutonomousControls,
   getSpacecraftPropulsionResolvers,
   type SpacecraftAutonomousControl,
@@ -26,8 +30,6 @@ import {
 import {
   getMainThrustCommandInto,
   getRcsCommandInto,
-  maxRcsTranslationAcceleration,
-  maxThrustAcceleration,
   resolvePropulsionCommandWithPlugins,
   updateControlState,
   updateControlledBodyAngularVelocityFromInput,

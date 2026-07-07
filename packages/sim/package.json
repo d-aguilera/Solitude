@@ -10,10 +10,8 @@
     "./headless": "./src/headless.ts",
     "./localPrediction": "./src/localPrediction.ts",
     "./plugins/catalog": "./src/plugins/catalog.ts",
-    "./plugins/spacecraftOperator/capabilities": "./src/plugins/spacecraftOperator/capabilities.ts",
-    "./plugins/spacecraftOperator/controlLogic": "./src/plugins/spacecraftOperator/controlLogic.ts",
-    "./plugins/spacecraftOperator/telemetry": "./src/plugins/spacecraftOperator/telemetry.ts",
-    "./spacecraft/orbitalPlacement": "./src/spacecraft/orbitalPlacement.ts"
+    "./spacecraft/orbitalPlacement": "./src/spacecraft/orbitalPlacement.ts",
+    "./spacecraft/propulsionLimits": "./src/spacecraft/propulsionLimits.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0",

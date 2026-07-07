@@ -27,8 +27,6 @@ import {
   type HudGrid,
   type HudPanelProvider,
 } from "@solitude/hud/provider";
-import { createSpacecraftOperatorTelemetryProvider } from "@solitude/sim/plugins/spacecraftOperator/capabilities";
-import { createSpacecraftOperatorTelemetry } from "@solitude/sim/plugins/spacecraftOperator/telemetry";
 import { describe, expect, it } from "vitest";
 import { createHudPanel as createRuntimeTelemetryHudPanel } from "../runtimeTelemetry/hud";
 import { createRuntimeTelemetryLocalization } from "../runtimeTelemetry/localization";
@@ -83,6 +81,27 @@ function createWorldAndShip(): { world: World; ship: ControlledBody } {
   );
 
   return { world, ship };
+}
+
+interface SpacecraftOperatorTelemetry {
+  currentThrustLevel: number;
+  currentRcsLevel: number;
+}
+
+function createSpacecraftOperatorTelemetry(): SpacecraftOperatorTelemetry {
+  return {
+    currentRcsLevel: 0,
+    currentThrustLevel: 0,
+  };
+}
+
+function createSpacecraftOperatorTelemetryProvider(
+  telemetry: SpacecraftOperatorTelemetry,
+): PluginCapabilityProvider {
+  return {
+    id: "spacecraft.operatorTelemetry.v1",
+    value: { telemetry },
+  };
 }
 
 function createHudContext(
