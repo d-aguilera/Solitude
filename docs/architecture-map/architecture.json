@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-06T22:59:19.063Z",
+  "generatedAt": "2026-07-10T18:52:33.984Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -185,27 +185,6 @@
       "parent": "pkg:@solitude/engine"
     },
     {
-      "id": "module:@solitude/display:./plugins/autopilot",
-      "kind": "module",
-      "label": "./plugins/autopilot",
-      "packageName": "@solitude/display",
-      "parent": "pkg:@solitude/display"
-    },
-    {
-      "id": "module:@solitude/sim:./plugins/autopilot",
-      "kind": "module",
-      "label": "./plugins/autopilot",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/sim:./plugins/autopilot/input",
-      "kind": "module",
-      "label": "./plugins/autopilot/input",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
       "id": "module:@solitude/display:./plugins/catalog",
       "kind": "module",
       "label": "./plugins/catalog",
@@ -216,62 +195,6 @@
       "id": "module:@solitude/sim:./plugins/catalog",
       "kind": "module",
       "label": "./plugins/catalog",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/display:./plugins/orbitTelemetry",
-      "kind": "module",
-      "label": "./plugins/orbitTelemetry",
-      "packageName": "@solitude/display",
-      "parent": "pkg:@solitude/display"
-    },
-    {
-      "id": "module:@solitude/sim:./plugins/polyFighter",
-      "kind": "module",
-      "label": "./plugins/polyFighter",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/display:./plugins/shipTelemetry",
-      "kind": "module",
-      "label": "./plugins/shipTelemetry",
-      "packageName": "@solitude/display",
-      "parent": "pkg:@solitude/display"
-    },
-    {
-      "id": "module:@solitude/sim:./plugins/solarSystem",
-      "kind": "module",
-      "label": "./plugins/solarSystem",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/sim:./plugins/spacecraftOperator",
-      "kind": "module",
-      "label": "./plugins/spacecraftOperator",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "kind": "module",
-      "label": "./plugins/spacecraftOperator/capabilities",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
-      "kind": "module",
-      "label": "./plugins/spacecraftOperator/controlLogic",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
-      "id": "module:@solitude/sim:./plugins/spacecraftOperator/telemetry",
-      "kind": "module",
-      "label": "./plugins/spacecraftOperator/telemetry",
       "packageName": "@solitude/sim",
       "parent": "pkg:@solitude/sim"
     },
@@ -386,6 +309,20 @@
       "label": "./spacecraft/orbitalPlacement",
       "packageName": "@solitude/sim",
       "parent": "pkg:@solitude/sim"
+    },
+    {
+      "id": "module:@solitude/sim:./spacecraft/propulsionLimits",
+      "kind": "module",
+      "label": "./spacecraft/propulsionLimits",
+      "packageName": "@solitude/sim",
+      "parent": "pkg:@solitude/sim"
+    },
+    {
+      "id": "module:@solitude/hud:./telemetry",
+      "kind": "module",
+      "label": "./telemetry",
+      "packageName": "@solitude/hud",
+      "parent": "pkg:@solitude/hud"
     },
     {
       "id": "module:@solitude/server:./ticker",
@@ -679,14 +616,6 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/solarSystem:buildSolarSystemBodyEntities",
-      "kind": "symbol",
-      "label": "buildSolarSystemBodyEntities",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/solarSystem",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/engine:./render:buildViewDefinitions",
       "kind": "symbol",
       "label": "buildViewDefinitions",
@@ -959,30 +888,6 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin",
-      "kind": "symbol",
-      "label": "createAutopilotHudPlugin",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/autopilot",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/autopilot/input:createAutopilotInputPlugin",
-      "kind": "symbol",
-      "label": "createAutopilotInputPlugin",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/autopilot/input",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin",
-      "kind": "symbol",
-      "label": "createAutopilotPlugin",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/autopilot",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter",
       "kind": "symbol",
       "label": "createBrowserViewPresenter",
@@ -1143,14 +1048,6 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
-      "kind": "symbol",
-      "label": "createOrbitTelemetryPlugin",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/orbitTelemetry",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/engine:./runtime:createPhysicsWorkspace",
       "kind": "symbol",
       "label": "createPhysicsWorkspace",
@@ -1172,14 +1069,6 @@
       "label": "createPluginCapabilityRegistry",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./runtime",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/polyFighter:createPolyFighterPlugin",
-      "kind": "symbol",
-      "label": "createPolyFighterPlugin",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/polyFighter",
       "symbolKind": "function"
     },
     {
@@ -1287,27 +1176,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin",
-      "kind": "symbol",
-      "label": "createShipTelemetryPlugin",
-      "packageName": "@solitude/display",
-      "parent": "module:@solitude/display:./plugins/shipTelemetry",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/protocol:./protocol:createSnapshotMessage",
       "kind": "symbol",
       "label": "createSnapshotMessage",
       "packageName": "@solitude/protocol",
       "parent": "module:@solitude/protocol:./protocol",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
-      "kind": "symbol",
-      "label": "createSolarSystemPlugin",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/solarSystem",
       "symbolKind": "function"
     },
     {
@@ -1359,27 +1232,19 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
-      "kind": "symbol",
-      "label": "createSpacecraftOperatorPlugin",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:createSpacecraftOperatorTelemetry",
+      "id": "symbol:@solitude/hud:./telemetry:createSpacecraftOperatorTelemetry",
       "kind": "symbol",
       "label": "createSpacecraftOperatorTelemetry",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/telemetry",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./telemetry",
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:createSpacecraftOperatorTelemetryProvider",
+      "id": "symbol:@solitude/hud:./telemetry:createSpacecraftOperatorTelemetryProvider",
       "kind": "symbol",
       "label": "createSpacecraftOperatorTelemetryProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./telemetry",
       "symbolKind": "function"
     },
     {
@@ -1855,14 +1720,6 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:getMainThrustCommandInto",
-      "kind": "symbol",
-      "label": "getMainThrustCommandInto",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/engine:./world:getMainViewCameraOffset",
       "kind": "symbol",
       "label": "getMainViewCameraOffset",
@@ -1887,14 +1744,6 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:getRcsCommandInto",
-      "kind": "symbol",
-      "label": "getRcsCommandInto",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/engine:./render/parameters:getRenderFocalLengthX",
       "kind": "symbol",
       "label": "getRenderFocalLengthX",
@@ -1908,22 +1757,6 @@
       "label": "getRequiredPrimaryViewState",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:getSpacecraftAutonomousControls",
-      "kind": "symbol",
-      "label": "getSpacecraftAutonomousControls",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:getSpacecraftPropulsionResolvers",
-      "kind": "symbol",
-      "label": "getSpacecraftPropulsionResolvers",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
       "symbolKind": "function"
     },
     {
@@ -2140,6 +1973,14 @@
       "label": "isSolitudeSocketServerMessage",
       "packageName": "@solitude/protocol",
       "parent": "module:@solitude/protocol:./protocol",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/hud:./telemetry:isSpacecraftOperatorTelemetryProvider",
+      "kind": "symbol",
+      "label": "isSpacecraftOperatorTelemetryProvider",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./telemetry",
       "symbolKind": "function"
     },
     {
@@ -2423,19 +2264,19 @@
       "symbolKind": "type"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:maxRcsTranslationAcceleration",
+      "id": "symbol:@solitude/sim:./spacecraft/propulsionLimits:maxRcsTranslationAcceleration",
       "kind": "symbol",
       "label": "maxRcsTranslationAcceleration",
       "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
+      "parent": "module:@solitude/sim:./spacecraft/propulsionLimits",
       "symbolKind": "const"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:maxThrustAcceleration",
+      "id": "symbol:@solitude/sim:./spacecraft/propulsionLimits:maxThrustAcceleration",
       "kind": "symbol",
       "label": "maxThrustAcceleration",
       "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
+      "parent": "module:@solitude/sim:./spacecraft/propulsionLimits",
       "symbolKind": "const"
     },
     {
@@ -2519,14 +2360,6 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/solarSystem:orbitalSpeedMultiplierRuntimeOption",
-      "kind": "symbol",
-      "label": "orbitalSpeedMultiplierRuntimeOption",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/solarSystem",
-      "symbolKind": "const"
-    },
-    {
       "id": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:OrbitingPlacementParams",
       "kind": "symbol",
       "label": "OrbitingPlacementParams",
@@ -2572,14 +2405,6 @@
       "label": "parseRuntimeOptionsFromSearch",
       "packageName": "@solitude/browser",
       "parent": "module:@solitude/browser:./dom/runtimeOptions",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions",
-      "kind": "symbol",
-      "label": "parseSolarSystemRuntimeOptions",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/solarSystem",
       "symbolKind": "function"
     },
     {
@@ -2669,14 +2494,6 @@
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render",
       "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/polyFighter:polyFighterProvider",
-      "kind": "symbol",
-      "label": "polyFighterProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/polyFighter",
-      "symbolKind": "const"
     },
     {
       "id": "symbol:@solitude/engine:./render:PolylineSceneObject",
@@ -3111,14 +2928,6 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins",
-      "kind": "symbol",
-      "label": "resolvePropulsionCommandWithPlugins",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/localization:.:resolveSolitudeLocale",
       "kind": "symbol",
       "label": "resolveSolitudeLocale",
@@ -3397,6 +3206,14 @@
       "packageName": "@solitude/browser",
       "parent": "module:@solitude/browser:./dom/renderFailurePanel",
       "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/sim:./plugins/catalog:simPluginCatalog",
+      "kind": "symbol",
+      "label": "simPluginCatalog",
+      "packageName": "@solitude/sim",
+      "parent": "module:@solitude/sim:./plugins/catalog",
+      "symbolKind": "const"
     },
     {
       "id": "symbol:@solitude/engine:./plugin:SimulationContribution",
@@ -3775,75 +3592,27 @@
       "symbolKind": "type"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftAutonomousControl",
-      "kind": "symbol",
-      "label": "SpacecraftAutonomousControl",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState",
-      "kind": "symbol",
-      "label": "SpacecraftControlState",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:SpacecraftOperatorTelemetry",
+      "id": "symbol:@solitude/hud:./telemetry:SpacecraftOperatorTelemetry",
       "kind": "symbol",
       "label": "SpacecraftOperatorTelemetry",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/telemetry",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./telemetry",
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftOperatorTelemetryProvider",
+      "id": "symbol:@solitude/hud:./telemetry:spacecraftOperatorTelemetryCapabilityId",
+      "kind": "symbol",
+      "label": "spacecraftOperatorTelemetryCapabilityId",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./telemetry",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/hud:./telemetry:SpacecraftOperatorTelemetryProvider",
       "kind": "symbol",
       "label": "SpacecraftOperatorTelemetryProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommand",
-      "kind": "symbol",
-      "label": "SpacecraftPropulsionCommand",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommandParams",
-      "kind": "symbol",
-      "label": "SpacecraftPropulsionCommandParams",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionResolver",
-      "kind": "symbol",
-      "label": "SpacecraftPropulsionResolver",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftRcsCommand",
-      "kind": "symbol",
-      "label": "SpacecraftRcsCommand",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftThrustCommand",
-      "kind": "symbol",
-      "label": "SpacecraftThrustCommand",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
+      "packageName": "@solitude/hud",
+      "parent": "module:@solitude/hud:./telemetry",
       "symbolKind": "interface"
     },
     {
@@ -3893,22 +3662,6 @@
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./runtime",
       "symbolKind": "interface"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlledBodyAngularVelocityFromInput",
-      "kind": "symbol",
-      "label": "updateControlledBodyAngularVelocityFromInput",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlState",
-      "kind": "symbol",
-      "label": "updateControlState",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
-      "symbolKind": "function"
     },
     {
       "id": "symbol:@solitude/engine:./runtime:updateFocusContext",
@@ -4345,6 +4098,12 @@
       "to": "pkg:@solitude/entity-names"
     },
     {
+      "id": "dependency:pkg:@solitude/sim->pkg:@solitude/hud",
+      "from": "pkg:@solitude/sim",
+      "kind": "dependency",
+      "to": "pkg:@solitude/hud"
+    },
+    {
       "id": "dependency:pkg:@solitude/sim->pkg:@solitude/input",
       "from": "pkg:@solitude/sim",
       "kind": "dependency",
@@ -4615,82 +4374,10 @@
       "to": "module:@solitude/engine:./world"
     },
     {
-      "id": "module-import:module:@solitude/display:./plugins/autopilot->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/display:./plugins/autopilot",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/autopilot->module:@solitude/hud:./provider",
-      "from": "module:@solitude/display:./plugins/autopilot",
-      "kind": "module-import",
-      "to": "module:@solitude/hud:./provider"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/autopilot->module:@solitude/localization:.",
-      "from": "module:@solitude/display:./plugins/autopilot",
-      "kind": "module-import",
-      "to": "module:@solitude/localization:."
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/autopilot",
-      "from": "module:@solitude/display:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/display:./plugins/autopilot"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/orbitTelemetry",
-      "from": "module:@solitude/display:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/display:./plugins/orbitTelemetry"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/display:./plugins/shipTelemetry",
-      "from": "module:@solitude/display:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/display:./plugins/shipTelemetry"
-    },
-    {
       "id": "module-import:module:@solitude/display:./plugins/catalog->module:@solitude/engine:./plugin",
       "from": "module:@solitude/display:./plugins/catalog",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/display:./plugins/orbitTelemetry",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry->module:@solitude/hud:./provider",
-      "from": "module:@solitude/display:./plugins/orbitTelemetry",
-      "kind": "module-import",
-      "to": "module:@solitude/hud:./provider"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/orbitTelemetry->module:@solitude/localization:.",
-      "from": "module:@solitude/display:./plugins/orbitTelemetry",
-      "kind": "module-import",
-      "to": "module:@solitude/localization:."
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/display:./plugins/shipTelemetry",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry->module:@solitude/hud:./provider",
-      "from": "module:@solitude/display:./plugins/shipTelemetry",
-      "kind": "module-import",
-      "to": "module:@solitude/hud:./provider"
-    },
-    {
-      "id": "module-import:module:@solitude/display:./plugins/shipTelemetry->module:@solitude/localization:.",
-      "from": "module:@solitude/display:./plugins/shipTelemetry",
-      "kind": "module-import",
-      "to": "module:@solitude/localization:."
     },
     {
       "id": "module-import:module:@solitude/engine:./render->module:@solitude/engine:./render/ports",
@@ -4745,6 +4432,12 @@
       "from": "module:@solitude/hud:./provider",
       "kind": "module-import",
       "to": "module:@solitude/engine:./world"
+    },
+    {
+      "id": "module-import:module:@solitude/hud:./telemetry->module:@solitude/engine:./plugin",
+      "from": "module:@solitude/hud:./telemetry",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./plugin"
     },
     {
       "id": "module-import:module:@solitude/input:./keyboard->module:@solitude/engine:./plugin",
@@ -4957,172 +4650,10 @@
       "to": "module:@solitude/engine:./world"
     },
     {
-      "id": "module-import:module:@solitude/sim:./plugins/autopilot->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./plugins/autopilot",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/autopilot/input->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./plugins/autopilot/input",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/autopilot/input->module:@solitude/input:./keyboard",
-      "from": "module:@solitude/sim:./plugins/autopilot/input",
-      "kind": "module-import",
-      "to": "module:@solitude/input:./keyboard"
-    },
-    {
       "id": "module-import:module:@solitude/sim:./plugins/catalog->module:@solitude/engine:./plugin",
       "from": "module:@solitude/sim:./plugins/catalog",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/catalog->module:@solitude/sim:./plugins/autopilot",
-      "from": "module:@solitude/sim:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/autopilot"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/catalog->module:@solitude/sim:./plugins/solarSystem",
-      "from": "module:@solitude/sim:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/solarSystem"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/catalog->module:@solitude/sim:./plugins/spacecraftOperator",
-      "from": "module:@solitude/sim:./plugins/catalog",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/spacecraftOperator"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/polyFighter->module:@solitude/engine:./assets",
-      "from": "module:@solitude/sim:./plugins/polyFighter",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./assets"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/polyFighter->module:@solitude/engine:./math",
-      "from": "module:@solitude/sim:./plugins/polyFighter",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/polyFighter->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./plugins/polyFighter",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/polyFighter->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./plugins/polyFighter",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/polyFighter->module:@solitude/sim:./controllableEntities/provider",
-      "from": "module:@solitude/sim:./plugins/polyFighter",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./controllableEntities/provider"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./plugins/solarSystem",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./plugins/solarSystem",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/solarSystem->module:@solitude/sim:./celestialBodies/provider",
-      "from": "module:@solitude/sim:./plugins/solarSystem",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./celestialBodies/provider"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator->module:@solitude/engine:./math",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator->module:@solitude/engine:./render",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./render"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator->module:@solitude/input:./keyboard",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator",
-      "kind": "module-import",
-      "to": "module:@solitude/input:./keyboard"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator->module:@solitude/sim:./localPrediction",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./localPrediction"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator->module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator->module:@solitude/sim:./plugins/spacecraftOperator/telemetry",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/spacecraftOperator/telemetry"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/capabilities->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/capabilities->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/capabilities->module:@solitude/sim:./plugins/spacecraftOperator/telemetry",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/spacecraftOperator/telemetry"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/controlLogic->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/controlLogic->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./plugins/spacecraftOperator/controlLogic->module:@solitude/sim:./plugins/spacecraftOperator/capabilities",
-      "from": "module:@solitude/sim:./plugins/spacecraftOperator/controlLogic",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/spacecraftOperator/capabilities"
     },
     {
       "id": "module-import:module:@solitude/sim:./spacecraft/orbitalPlacement->module:@solitude/engine:./math",
@@ -6145,100 +5676,10 @@
       "to": "symbol:@solitude/engine:./plugin:ControlInput"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin->symbol:@solitude/hud:./provider:createHudPanelProvider",
-      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/hud:./provider:createHudPanelProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin->symbol:@solitude/localization:.:readLocaleRuntimeOption",
-      "from": "symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/localization:.:readLocaleRuntimeOption"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin",
-      "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/autopilot:createAutopilotHudPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
-      "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin",
-      "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/display:./plugins/catalog:displayPluginCatalog->symbol:@solitude/engine:./plugin:PluginCatalog",
       "from": "symbol:@solitude/display:./plugins/catalog:displayPluginCatalog",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:PluginCatalog"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin->symbol:@solitude/hud:./provider:createHudPanelProvider",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/hud:./provider:createHudPanelProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin->symbol:@solitude/localization:.:readLocaleRuntimeOption",
-      "from": "symbol:@solitude/display:./plugins/orbitTelemetry:createOrbitTelemetryPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/localization:.:readLocaleRuntimeOption"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin->symbol:@solitude/hud:./provider:createHudPanelProvider",
-      "from": "symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/hud:./provider:createHudPanelProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin->symbol:@solitude/localization:.:readLocaleRuntimeOption",
-      "from": "symbol:@solitude/display:./plugins/shipTelemetry:createShipTelemetryPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/localization:.:readLocaleRuntimeOption"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./assets:ObjMesh->symbol:@solitude/engine:./math:Vec3",
@@ -9907,6 +9348,42 @@
       "to": "symbol:@solitude/hud:./provider:HudPanelProvider"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/hud:./telemetry:createSpacecraftOperatorTelemetry->symbol:@solitude/hud:./telemetry:SpacecraftOperatorTelemetry",
+      "from": "symbol:@solitude/hud:./telemetry:createSpacecraftOperatorTelemetry",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./telemetry:SpacecraftOperatorTelemetry"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./telemetry:createSpacecraftOperatorTelemetryProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
+      "from": "symbol:@solitude/hud:./telemetry:createSpacecraftOperatorTelemetryProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./telemetry:createSpacecraftOperatorTelemetryProvider->symbol:@solitude/hud:./telemetry:SpacecraftOperatorTelemetry",
+      "from": "symbol:@solitude/hud:./telemetry:createSpacecraftOperatorTelemetryProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./telemetry:SpacecraftOperatorTelemetry"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./telemetry:createSpacecraftOperatorTelemetryProvider->symbol:@solitude/hud:./telemetry:spacecraftOperatorTelemetryCapabilityId",
+      "from": "symbol:@solitude/hud:./telemetry:createSpacecraftOperatorTelemetryProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./telemetry:spacecraftOperatorTelemetryCapabilityId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./telemetry:isSpacecraftOperatorTelemetryProvider->symbol:@solitude/hud:./telemetry:SpacecraftOperatorTelemetryProvider",
+      "from": "symbol:@solitude/hud:./telemetry:isSpacecraftOperatorTelemetryProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./telemetry:SpacecraftOperatorTelemetryProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/hud:./telemetry:SpacecraftOperatorTelemetryProvider->symbol:@solitude/hud:./telemetry:SpacecraftOperatorTelemetry",
+      "from": "symbol:@solitude/hud:./telemetry:SpacecraftOperatorTelemetryProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/hud:./telemetry:SpacecraftOperatorTelemetry"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/input:./keyboard:collectKeyboardInputProviders->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
       "from": "symbol:@solitude/input:./keyboard:collectKeyboardInputProviders",
       "kind": "symbol-reference",
@@ -11233,58 +10710,16 @@
       "to": "symbol:@solitude/sim:./localPrediction:LocalEntityPredictionParams"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot/input:createAutopilotInputPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/sim:./plugins/autopilot/input:createAutopilotInputPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot/input:createAutopilotInputPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/sim:./plugins/autopilot/input:createAutopilotInputPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/autopilot/input:createAutopilotInputPlugin->symbol:@solitude/input:./keyboard:createKeyboardInputProvider",
-      "from": "symbol:@solitude/sim:./plugins/autopilot/input:createAutopilotInputPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog->symbol:@solitude/engine:./plugin:PluginCatalog",
       "from": "symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:PluginCatalog"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog->symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin",
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog->symbol:@solitude/sim:./plugins/catalog:simPluginCatalog",
       "from": "symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/autopilot:createAutopilotPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog->symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
-      "from": "symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog->symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
-      "from": "symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin"
+      "to": "symbol:@solitude/sim:./plugins/catalog:simPluginCatalog"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/catalog:loadHeadlessPlugins->symbol:@solitude/engine:./plugin:loadPlugins",
@@ -11305,352 +10740,10 @@
       "to": "symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/polyFighter:createPolyFighterPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/sim:./plugins/polyFighter:createPolyFighterPlugin",
+      "id": "symbol-reference:symbol:@solitude/sim:./plugins/catalog:simPluginCatalog->symbol:@solitude/engine:./plugin:PluginCatalog",
+      "from": "symbol:@solitude/sim:./plugins/catalog:simPluginCatalog",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/polyFighter:createPolyFighterPlugin->symbol:@solitude/sim:./controllableEntities/provider:controllableEntityProviderCapability",
-      "from": "symbol:@solitude/sim:./plugins/polyFighter:createPolyFighterPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./controllableEntities/provider:controllableEntityProviderCapability"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/polyFighter:createPolyFighterPlugin->symbol:@solitude/sim:./plugins/polyFighter:polyFighterProvider",
-      "from": "symbol:@solitude/sim:./plugins/polyFighter:createPolyFighterPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/polyFighter:polyFighterProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/polyFighter:polyFighterProvider->symbol:@solitude/engine:./world:EntityConfig",
-      "from": "symbol:@solitude/sim:./plugins/polyFighter:polyFighterProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:EntityConfig"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/polyFighter:polyFighterProvider->symbol:@solitude/sim:./controllableEntities/provider:ControllableEntityProvider",
-      "from": "symbol:@solitude/sim:./plugins/polyFighter:polyFighterProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./controllableEntities/provider:ControllableEntityProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:buildSolarSystemBodyEntities->symbol:@solitude/engine:./world:EntityConfig",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem:buildSolarSystemBodyEntities",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:EntityConfig"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin->symbol:@solitude/sim:./celestialBodies/provider:celestialBodyProviderCapability",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./celestialBodies/provider:celestialBodyProviderCapability"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin->symbol:@solitude/sim:./plugins/solarSystem:buildSolarSystemBodyEntities",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem:buildSolarSystemBodyEntities"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin->symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem:createSolarSystemPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions->symbol:@solitude/sim:./plugins/solarSystem:orbitalSpeedMultiplierRuntimeOption",
-      "from": "symbol:@solitude/sim:./plugins/solarSystem:parseSolarSystemRuntimeOptions",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/solarSystem:orbitalSpeedMultiplierRuntimeOption"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin->symbol:@solitude/input:./keyboard:createKeyboardInputProvider",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/input:./keyboard:createKeyboardInputProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin->symbol:@solitude/sim:./localPrediction:createLocalEntityPredictionProvider",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./localPrediction:createLocalEntityPredictionProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:createSpacecraftOperatorTelemetryProvider",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:createSpacecraftOperatorTelemetryProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin->symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:createSpacecraftOperatorTelemetry",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator:createSpacecraftOperatorPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:createSpacecraftOperatorTelemetry"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:createSpacecraftOperatorTelemetryProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:createSpacecraftOperatorTelemetryProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:createSpacecraftOperatorTelemetryProvider->symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:SpacecraftOperatorTelemetry",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:createSpacecraftOperatorTelemetryProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:SpacecraftOperatorTelemetry"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:getSpacecraftAutonomousControls->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:getSpacecraftAutonomousControls",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:getSpacecraftAutonomousControls->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftAutonomousControl",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:getSpacecraftAutonomousControls",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftAutonomousControl"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:getSpacecraftPropulsionResolvers->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:getSpacecraftPropulsionResolvers",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:getSpacecraftPropulsionResolvers->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionResolver",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:getSpacecraftPropulsionResolvers",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionResolver"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftAutonomousControl->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftAutonomousControl",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftAutonomousControl->symbol:@solitude/engine:./plugin:MutableControlState",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftAutonomousControl",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:MutableControlState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftOperatorTelemetryProvider->symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:SpacecraftOperatorTelemetry",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftOperatorTelemetryProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:SpacecraftOperatorTelemetry"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommand->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftRcsCommand",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftRcsCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommand->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftThrustCommand",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommand",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftThrustCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommandParams->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommandParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommandParams->symbol:@solitude/engine:./plugin:ControlledBodyState",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommandParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommandParams->symbol:@solitude/engine:./world:World",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommandParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:World"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommandParams->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommand",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommandParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionResolver->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommand",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionResolver",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionResolver->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommandParams",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionResolver",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommandParams"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:getMainThrustCommandInto->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:getMainThrustCommandInto",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:getMainThrustCommandInto->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftThrustCommand",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:getMainThrustCommandInto",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftThrustCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:getMainThrustCommandInto->symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:getMainThrustCommandInto",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:getRcsCommandInto->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:getRcsCommandInto",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:getRcsCommandInto->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftRcsCommand",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:getRcsCommandInto",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftRcsCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins->symbol:@solitude/engine:./plugin:ControlledBodyState",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins->symbol:@solitude/engine:./world:World",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:World"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommand",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionCommand"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins->symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionResolver",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/capabilities:SpacecraftPropulsionResolver"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins->symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:maxRcsTranslationAcceleration",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:maxRcsTranslationAcceleration"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins->symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:maxThrustAcceleration",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:resolvePropulsionCommandWithPlugins",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:maxThrustAcceleration"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState->symbol:@solitude/engine:./plugin:MutableControlState",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:MutableControlState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlledBodyAngularVelocityFromInput->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlledBodyAngularVelocityFromInput",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlledBodyAngularVelocityFromInput->symbol:@solitude/engine:./plugin:ControlledBodyState",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlledBodyAngularVelocityFromInput",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlledBodyAngularVelocityFromInput->symbol:@solitude/engine:./plugin:ControlPlugin",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlledBodyAngularVelocityFromInput",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlledBodyAngularVelocityFromInput->symbol:@solitude/engine:./world:World",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlledBodyAngularVelocityFromInput",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:World"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlledBodyAngularVelocityFromInput->symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlledBodyAngularVelocityFromInput",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlState->symbol:@solitude/engine:./plugin:ControlInput",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlState",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlInput"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlState->symbol:@solitude/engine:./plugin:ControlPlugin",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlState",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:ControlPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlState->symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:updateControlState",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/controlLogic:SpacecraftControlState"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:createSpacecraftOperatorTelemetry->symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:SpacecraftOperatorTelemetry",
-      "from": "symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:createSpacecraftOperatorTelemetry",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/spacecraftOperator/telemetry:SpacecraftOperatorTelemetry"
+      "to": "symbol:@solitude/engine:./plugin:PluginCatalog"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement->symbol:@solitude/engine:./math:localFrame",
