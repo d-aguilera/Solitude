@@ -5,9 +5,7 @@ import {
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createDefaultSolitudeHttpServerOptions } from "../serverOptions";
 
-const capturedTickPolicies = vi.hoisted(
-  () => [] as SolitudeGameTickPolicy[],
-);
+const capturedTickPolicies = vi.hoisted(() => [] as SolitudeGameTickPolicy[]);
 
 vi.mock("@solitude/server/ticker", async (importOriginal) => {
   const actual =
@@ -113,17 +111,23 @@ describe("multiplayer server options", () => {
 
 function createGameModelWithEnvironment(env: Readonly<Record<string, string>>) {
   const runner = createRunnerWithEnvironment(env);
-  runner.receive({
-    type: "createGame",
-    clientId: "client:a",
-    sequence: 1,
-  }, 1);
-  const messages = runner.receive({
-    type: "joinGame",
-    clientId: "client:a",
-    gameId: "game:1",
-    sequence: 2,
-  }, 2);
+  runner.receive(
+    {
+      type: "createGame",
+      clientId: "client:a",
+      sequence: 1,
+    },
+    1,
+  );
+  const messages = runner.receive(
+    {
+      type: "joinGame",
+      clientId: "client:a",
+      gameId: "game:1",
+      sequence: 2,
+    },
+    2,
+  );
   const model = messages.find((message) => message.type === "gameModel");
   if (!model || model.type !== "gameModel") {
     throw new Error("Missing game model message");

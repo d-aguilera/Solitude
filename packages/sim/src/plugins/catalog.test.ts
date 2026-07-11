@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { keyboardInputCapability } from "@solitude/input/keyboard";
+import { describe, expect, it } from "vitest";
 import { loadHeadlessPlugins } from "./catalog";
 
 describe("headless plugin catalog", () => {

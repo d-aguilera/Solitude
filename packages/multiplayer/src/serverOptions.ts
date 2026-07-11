@@ -1,9 +1,9 @@
 import type { RuntimeOptions } from "@solitude/engine/plugin";
 import type { SolitudeHttpServerOptions } from "@solitude/server/http";
 import {
+  createSolitudeGameRunner,
   type SolitudeGameRunner,
   type SolitudeGameRunnerFactoryOptions,
-  createSolitudeGameRunner,
 } from "@solitude/server/runner";
 import {
   DEFAULT_SOLITUDE_GAME_TICK_POLICY,
