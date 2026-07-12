@@ -7,7 +7,8 @@
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "mhutchie.git-graph",
-        "openai.chatgpt"
+        "openai.chatgpt",
+        "tamasfe.even-better-toml"
       ]
     }
   }
