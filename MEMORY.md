@@ -51,6 +51,7 @@
 - **Performance is paramount**: CPU time, memory consumption, and garbage collection pressure come before everything else.
 - **Onion layering**: domain core → app logic → infra adapters. Outer layers depend inward, even if it costs performance.
 - **Plugin imports**: plugin implementation modules may be imported only by same-plugin code, tests, or composition modules. `npm run check:boundaries` enforces this with a temporary known-violation baseline; run `node scripts/check-package-boundaries.mjs --fail-known-plugin-imports` to expose the baseline while burning it down.
+- **External plugin imports**: packages under `plugins/*` may import only `@solitude/plugin-api` from the host workspace. Their emitted browser modules must be self-contained and are loaded through versioned manifests with no static host fallback.
 - **Known exception**: `packages/engine/src/global/` is a deliberate carve-out and may violate onion rules. Do not treat it as a layering issue.
 - **Physics**: Newtonian N-body with leapfrog integration for stability.
 - **Solar-system data**: use real-ish values (AU, km, approximate J2000 elements) for plausibility.
@@ -71,16 +72,19 @@
 - `packages/display/src/`: browser-safe presentation plugins shared by standalone and remote rendering, including views, labels, telemetry, trajectories, and the input/HUD wrapper around headless autopilot behavior.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, layered view layout, Canvas presentation, GPU-native WebGL2 presentation, and remote-world mirror helpers.
 - `packages/protocol/src/`: browser-safe client/server protocol types and message guards.
+- `packages/plugin-api/src/`: narrow structural contract and pure helper surface available to independently built external plugins.
+- `packages/plugin-runtime/src/`: strict external plugin-set/manifest validation, dynamic module loading, and adaptation into engine plugin factories.
 - `packages/client/src/`: deployable remote browser client, server URL adapter, HTTP/WebSocket client helpers, keyboard input patching, authoritative snapshot interpolation, and remote rendering composition.
 - `packages/server/src/`: Node-oriented authoritative sessions, ticking, protocol transport, and HTTP/WebSocket serving for headless Solitude games.
 - `packages/solitude/src/`: Solitude standalone browser app bootstrap, browser/display plugin catalog, playback, telemetry, HUD/readout behavior, and product-specific browser UX.
+- `plugins/targeting-laser/`: independently built browser plugin package discovered at runtime by standalone and remote clients.
 - Production and test source lives under `packages/*`; the root `src` directory has been removed.
 - Root Vite config uses `packages/solitude` as the standalone app root; dedicated Vite configs build `dist/client`, `dist/server`, and `dist/standalone`.
 
 ## Runtime Flow
 
 - `packages/solitude/index.html` loads `packages/solitude/src/bootstrap.ts`.
-- Solitude bootstrap builds config, loads the product plugin set, and calls browser runtime bootstrap.
+- Solitude bootstrap discovers and imports the external browser plugin set, combines its factories with the static product catalog, builds config, and calls browser runtime bootstrap.
 - `packages/browser/src/infra/domBootstrap.ts` wires DOM input, layout, renderers, browser frame scheduling, and the gravity engine.
 - `packages/engine/src/infra/configuredGamePipeline.ts` constructs the standalone world/scene and creates the engine-owned application pipeline.
 - `packages/engine/src/app/gamePipeline.ts` owns plugin assembly, frame policy, simulation, scene/view updates, and per-view render contributions; `packages/engine/src/app/game.ts` runs the per-tick simulation phases.
@@ -111,7 +115,8 @@
 - Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, uses per-join participant IDs carried in game links, receives authoritative model/snapshot messages over WebSocket, sends sequenced server-authoritative controls for its assigned ship, predicts the locally controlled ship immediately, smooths reconciliation visually, derives localized ship names from server-assigned display colors, exposes prediction metrics on `window.__solitudePredictionMetrics`, and renders through `@solitude/browser`.
 - Remote client composition lives in `packages/client/src/composition.ts`; local prediction is driven through `@solitude/sim/localPrediction` plugin capabilities, not direct plugin-internal imports.
 - Standalone and remote rendering share browser-owned layered view presenters. WebGL renders solid meshes natively from renderer-neutral scene meshes and draws trajectory/world-segment ribbons with depth testing; Canvas overlays preserve labels, markers, and HUD.
-- The shared display targeting-laser plugin toggles with `T`, locks the collision sphere nearest the focused ship's nose axis, and renders a beam, target-plane miss guide, obstruction cue, or constant-screen-size surface impact marker entirely client-side in standalone and remote play.
+- The external targeting-laser package toggles with `T`, locks the collision sphere nearest the focused ship's nose axis, and renders a beam, target-plane miss guide, obstruction cue, or constant-screen-size surface impact marker entirely client-side in standalone and remote play. Both browser products discover the same self-contained ES-module artifact through `plugins/plugin-set.json`; neither host statically depends on its package.
+- External plugin manifests use exact API/schema/environment validation before module import. Missing or incompatible external plugins fail browser startup, and plugin ids may not collide with static host catalogs.
 - Engine world-segment contributions use renderer-neutral numeric RGB; CSS conversion occurs in the render layer. Engine frame policy uses generic presentation terminology while browser overlays retain browser-owned naming.
 - Localization is client-side and server-neutral. Dependency-free `@solitude/localization` resolves `?locale=` or browser-preferred language to `en`/`es`/`fr`, formats numbers/units without thousands grouping, and provides message interpolation. JSON message bundles live with the client/plugin/content package that owns each string. The multiplayer lobby offers a language selector and passes locale through game links; standalone resolves from browser locale unless `?locale=` overrides it.
 - Entity `displayName` remains a literal authored override for scene/body labels. The neutral `@solitude/entity-names` port lets entity-contributing plugins provide localized names through `solitude.entityNameProvider.v1`; built-in solar-system names are owned by the solar-system plugin, and custom ids fall back to generated names.
@@ -141,6 +146,9 @@
 - `packages/client/src/shipColorNames.ts`: remote-client scene plugin that indexes server-assigned ship colors and contributes localized entity names without exposing color through the entity-name port.
 - `packages/sim/src/localPrediction.ts`: generic Solitude local-prediction capability contract used by remote clients.
 - `packages/client/src/localReconciliation.ts`: prediction error metrics and render-only visual correction smoothing.
+- `packages/plugin-api/src/index.ts`: external plugin ABI, manifest types, structural render/input contracts, and bundled-safe pure math helpers.
+- `packages/plugin-runtime/src/index.ts`: browser plugin discovery, validation, dynamic import, factory adaptation, and strict catalog composition.
+- `plugins/targeting-laser/src/index.ts`: external targeting-laser entry factory; its build emits `plugin.json` plus a self-contained `index.js`.
 - `scripts/run-server-load.mjs`: headless WebSocket load and input-latency harness for local or deployed servers.
 - `packages/solitude/src/bootstrap.ts`: Solitude browser app composition.
 - `packages/sim/src/plugins/spacecraftOperator/`: spacecraft controls, dynamics, telemetry state, and forward camera rig.
@@ -172,6 +180,7 @@
 - `npm run typecheck` runs TypeScript no-emit.
 - `npm run test` runs Vitest once.
 - `npm run build` produces three deployables: `dist/server`, `dist/client`, and `dist/standalone`.
+- `npm run build:plugins` independently builds external plugin artifacts, rejects bare imports, and assembles the ordered browser plugin set copied into browser deployables.
 - `npm run build:client`, `npm run build:server`, and `npm run build:standalone` build those targets independently.
 - `npm run start:server` starts the authoritative Node server bundle and serves `dist/client` from the same origin when it exists; set `DIST_DIR` to override the built client asset directory.
 
@@ -187,6 +196,7 @@
 - Workspace package exports are intentionally absent unless a package subpath is consumed externally; avoid adding public-looking exports for private implementation seams.
 - Some plugin features still use spacecraft or solar-system vocabulary; keep that out of engine/browser unless it is truly generic.
 - Default Solitude plugin order is behaviorally significant; preserve ordering-sensitive tests when moving playback, operator switch, pause, profiling, or input plugins.
+- Browser plugin discovery currently assumes trusted code and a deployment-provided manifest list; unloading, sandboxing, signatures, inter-plugin dependency resolution, and server-side external loading are not implemented.
 - Gravity uses fixed sub-steps for stability; high time scales can still destabilize.
 - WebGL2 availability and runtime context loss are hard failures with localized WebGL-required UX; there is no fallback solid-mesh backend.
 - Controls are keyboard-only with no in-app help; consider a help overlay or onboarding prompt.

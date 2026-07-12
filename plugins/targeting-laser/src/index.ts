@@ -1,15 +1,20 @@
-import type { GamePlugin } from "@solitude/engine/plugin";
-import { createKeyboardInputProvider } from "@solitude/input/keyboard";
+import {
+  createKeyboardInputCapability,
+  type ExternalPlugin,
+  type ExternalRuntimeOptions,
+} from "@solitude/plugin-api";
 import { createTargetingLaserController } from "./core";
 
 const targetingLaserToggleAction = "targetingLaserToggle";
 
-export function createTargetingLaserPlugin(): GamePlugin {
+export function createPlugin(
+  _runtimeOptions: ExternalRuntimeOptions,
+): ExternalPlugin {
   const controller = createTargetingLaserController();
   return {
     id: "targetingLaser",
     capabilities: [
-      createKeyboardInputProvider({
+      createKeyboardInputCapability({
         actions: [targetingLaserToggleAction],
         keyMap: { KeyT: targetingLaserToggleAction },
         createKeyHandler: () => ({

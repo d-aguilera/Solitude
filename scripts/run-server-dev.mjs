@@ -11,6 +11,7 @@ const clientRoot = resolve("packages/client");
 const vite = await createViteServer({
   appType: "custom",
   logLevel: "error",
+  publicDir: resolve("dist/plugin-public"),
   root: clientRoot,
   server: {
     hmr: false,

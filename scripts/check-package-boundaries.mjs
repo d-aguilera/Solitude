@@ -98,6 +98,14 @@ async function checkWorkspace(root) {
           continue;
         }
 
+        validateExternalPluginImport({
+          errors,
+          file,
+          importedPackage,
+          pkg,
+          specifier,
+        });
+
         if (!isDeclaredDependency(pkg, importedPackage)) {
           errors.push({
             file,
@@ -136,11 +144,12 @@ async function loadWorkspacePackages(root) {
   const packages = [];
 
   for (const pattern of workspacePatterns) {
-    if (pattern !== "packages/*") {
+    const patternMatch = /^([^*]+)\/\*$/.exec(pattern);
+    if (!patternMatch) {
       throw new Error(`Unsupported workspace pattern: ${pattern}`);
     }
 
-    const workspaceRoot = path.join(root, "packages");
+    const workspaceRoot = path.join(root, patternMatch[1]);
     const entries = await readdir(workspaceRoot, { withFileTypes: true });
 
     for (const entry of entries) {
@@ -160,11 +169,27 @@ async function loadWorkspacePackages(root) {
         manifest,
         name: manifest.name,
         root: packageRoot,
+        workspacePattern: pattern,
       });
     }
   }
 
   return packages;
+}
+
+function validateExternalPluginImport({
+  errors,
+  file,
+  importedPackage,
+  pkg,
+  specifier,
+}) {
+  if (pkg.workspacePattern !== "plugins/*") return;
+  if (importedPackage === "@solitude/plugin-api") return;
+  errors.push({
+    file,
+    message: `${pkg.name} is an external plugin and may not import host workspace package ${specifier}`,
+  });
 }
 
 async function collectFiles(root) {
@@ -368,7 +393,7 @@ async function runSelfTest() {
         {
           private: true,
           type: "module",
-          workspaces: ["packages/*"],
+          workspaces: ["packages/*", "plugins/*"],
         },
         null,
         2,
@@ -397,6 +422,22 @@ async function runSelfTest() {
       },
       exports: { "./public": "./src/public.ts" },
     });
+    writePackageFixture(tempRoot, "plugin-api", "@solitude/plugin-api", {
+      dependencies: { "@fixture/engine": "0.0.0" },
+      exports: { ".": "./src/public.ts" },
+    });
+    writePackageFixture(
+      tempRoot,
+      "targeting-laser",
+      "@fixture-plugins/targeting-laser",
+      {
+        dependencies: {
+          "@fixture/engine": "0.0.0",
+          "@solitude/plugin-api": "0.0.0",
+        },
+      },
+      "plugins",
+    );
     mkdirSync(path.join(tempRoot, "packages/sim/src/plugins/drive"), {
       recursive: true,
     });
@@ -429,6 +470,18 @@ async function runSelfTest() {
       path.join(tempRoot, "packages/app/src/plugins/catalog.ts"),
       'import { drivePlugin } from "@fixture/sim/plugins/drive";\nexport const catalog = { drivePlugin };\n',
     );
+    writeFileSync(
+      path.join(tempRoot, "packages/plugin-api/src/public.ts"),
+      "export const apiValue = 1;\n",
+    );
+    const externalPluginSource = path.join(
+      tempRoot,
+      "plugins/targeting-laser/src/index.ts",
+    );
+    writeFileSync(
+      externalPluginSource,
+      'import { apiValue } from "@solitude/plugin-api";\nexport const plugin = apiValue;\n',
+    );
 
     const browserSource = path.join(tempRoot, "packages/browser/src/public.ts");
     const appSource = path.join(tempRoot, "packages/app/src/public.ts");
@@ -439,6 +492,20 @@ async function runSelfTest() {
 
     const ok = await checkWorkspace(tempRoot);
     assertNoErrors(ok, "expected valid fixture imports to pass");
+
+    writeFileSync(
+      externalPluginSource,
+      'import { value } from "@fixture/engine/public";\nexport const plugin = value;\n',
+    );
+    assertHasError(
+      await checkWorkspace(tempRoot),
+      "external plugin and may not import host workspace package",
+      "expected external plugins to depend only on the plugin API",
+    );
+    writeFileSync(
+      externalPluginSource,
+      'import { apiValue } from "@solitude/plugin-api";\nexport const plugin = apiValue;\n',
+    );
 
     writeFileSync(
       browserSource,
@@ -500,8 +567,14 @@ async function runSelfTest() {
   }
 }
 
-function writePackageFixture(root, directory, name, manifestFields) {
-  const packageRoot = path.join(root, "packages", directory);
+function writePackageFixture(
+  root,
+  directory,
+  name,
+  manifestFields,
+  workspace = "packages",
+) {
+  const packageRoot = path.join(root, workspace, directory);
   const srcRoot = path.join(packageRoot, "src");
 
   mkdirSync(srcRoot, { recursive: true });

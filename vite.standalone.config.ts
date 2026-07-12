@@ -5,6 +5,7 @@ const solitudeRoot = resolve("packages/solitude");
 
 export default defineConfig({
   root: solitudeRoot,
+  publicDir: resolve("dist/plugin-public"),
   build: {
     emptyOutDir: true,
     outDir: "../../dist/standalone",

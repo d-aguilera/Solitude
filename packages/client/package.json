@@ -11,6 +11,7 @@
     "@solitude/hud": "0.0.0",
     "@solitude/input": "0.0.0",
     "@solitude/localization": "0.0.0",
+    "@solitude/plugin-runtime": "0.0.0",
     "@solitude/protocol": "0.0.0",
     "@solitude/sim": "0.0.0"
   },

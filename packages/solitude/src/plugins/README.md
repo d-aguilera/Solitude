@@ -2,6 +2,10 @@
 
 This directory is the plugin catalog and composition layer.
 
+Runtime-discovered packages live in the repository-level `plugins/` workspace.
+They compile against `@solitude/plugin-api` and are not statically imported by
+this catalog. Targeting laser is the first externally loaded plugin.
+
 ## Layering rule
 
 - Inner layers (`domain`, `app`, `render`) must never import from
@@ -42,6 +46,10 @@ Plugins may also publish operator-specific capabilities through opaque app-level
 ## Registration
 
 Available standalone plugins are exported from `packages/solitude/src/plugins/catalog.ts`. Solitude bootstrap chooses which plugin ids to enable and asks the engine-level `loadPlugins` helper to assemble them from that catalog. Browser infra passes runtime URL options to plugins as a raw string map; each plugin owns validation and interpretation of its own option keys.
+
+Before static composition, browser bootstrap loads the ordered external plugin
+set from `plugins/plugin-set.json`. Missing, invalid, incompatible, or colliding
+external plugins fail startup; there is no static fallback.
 
 ## World model
 

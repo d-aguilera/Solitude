@@ -12,6 +12,7 @@ import {
   type RuntimeOptions,
 } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
+import { appendExternalPluginSet } from "@solitude/plugin-runtime";
 import {
   collectLocalEntityPredictionProviders,
   type LocalEntityPredictionProvider,
@@ -30,7 +31,6 @@ export const remoteRenderPluginIds = [
   "autopilotHud",
   "bodyLabels",
   "axialViews",
-  "targetingLaser",
   "trajectories",
   "velocitySegments",
 ];
@@ -42,6 +42,8 @@ export const remoteRenderPluginCatalog: PluginCatalog = {
 
 export interface RemoteClientCompositionParams {
   clientPlugins: readonly GamePlugin[];
+  externalPluginCatalog: PluginCatalog;
+  externalPluginIds: readonly string[];
   runtimeOptions: RuntimeOptions;
 }
 
@@ -54,14 +56,24 @@ export interface RemoteClientComposition {
 
 export function createRemoteClientComposition({
   clientPlugins,
+  externalPluginCatalog,
+  externalPluginIds,
   runtimeOptions,
 }: RemoteClientCompositionParams): RemoteClientComposition {
-  const plugins = loadPlugins({
-    catalog: {
+  const pluginSet = appendExternalPluginSet(
+    {
       ...remoteRenderPluginCatalog,
       hud: createHudOverlayPlugin,
     },
-    ids: ["hud", ...remoteRenderPluginIds],
+    ["hud", ...remoteRenderPluginIds],
+    {
+      catalog: externalPluginCatalog,
+      ids: externalPluginIds,
+    },
+  );
+  const plugins = loadPlugins({
+    catalog: pluginSet.catalog,
+    ids: pluginSet.ids,
     runtimeOptions,
   }).concat(clientPlugins);
   const capabilityRegistry = createPluginCapabilityRegistry(plugins);

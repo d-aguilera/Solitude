@@ -21,6 +21,7 @@ import {
   type ControlInput,
   type FramePolicy,
   type GamePlugin,
+  type PluginCatalog,
   type RuntimeOptions,
 } from "@solitude/engine/plugin";
 import { buildViewDefinitions } from "@solitude/engine/render";
@@ -85,6 +86,8 @@ export interface RemoteClientSnapshotMessage {
 
 export interface SolitudeRemoteClientRendererOptions {
   container: Element;
+  externalPluginCatalog: PluginCatalog;
+  externalPluginIds: readonly string[];
   getFocusEntityId: () => string;
   onFatalError: (failure: RenderFailure) => void;
   plugins: GamePlugin[];
@@ -122,6 +125,8 @@ const predictionRuntimeOption = "prediction";
 
 export function createSolitudeRemoteClientRenderer({
   container,
+  externalPluginCatalog,
+  externalPluginIds,
   getFocusEntityId,
   onFatalError,
   plugins: clientPlugins,
@@ -130,6 +135,8 @@ export function createSolitudeRemoteClientRenderer({
   const baseRuntimeOptions = runtimeOptions;
   let composition = createRemoteClientComposition({
     clientPlugins,
+    externalPluginCatalog,
+    externalPluginIds,
     runtimeOptions: baseRuntimeOptions,
   });
   let keyboardDispatcher = createKeyboardHandlerDispatcher(
@@ -254,6 +261,8 @@ export function createSolitudeRemoteClientRenderer({
     setModel: (entities, nextModelVersion, modelRuntimeOptions) => {
       composition = createRemoteClientComposition({
         clientPlugins,
+        externalPluginCatalog,
+        externalPluginIds,
         runtimeOptions: mergeModelRuntimeOptions(
           baseRuntimeOptions,
           modelRuntimeOptions,

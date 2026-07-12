@@ -5,6 +5,7 @@ const solitudeRoot = resolve("packages/solitude");
 
 export default defineConfig({
   root: solitudeRoot,
+  publicDir: resolve("dist/plugin-public"),
   build: {
     emptyOutDir: true,
     outDir: "../../dist",
@@ -15,7 +16,12 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["../**/*.test.ts", "../**/*.spec.ts"],
+    include: [
+      "../**/*.test.ts",
+      "../**/*.spec.ts",
+      "../../plugins/**/*.test.ts",
+      "../../plugins/**/*.spec.ts",
+    ],
     exclude: ["dist", "node_modules", "**/dist/**", "**/node_modules/**"],
   },
 });

@@ -8,6 +8,10 @@ import {
   createRuntimeOptionsWithResolvedLocale,
   resolveSolitudeLocale,
 } from "@solitude/localization";
+import {
+  appendExternalPluginSet,
+  loadBrowserPluginSet,
+} from "@solitude/plugin-runtime";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
 import { defaultPluginIds, solitudePluginCatalog } from "./plugins/catalog";
 import { getRendererFailureMessages } from "./rendererFailureLocalization";
@@ -15,14 +19,22 @@ import { getRendererFailureMessages } from "./rendererFailureLocalization";
 /**
  * Top‑level composition entry for the browser runtime.
  */
-function main(): void {
+async function main(): Promise<void> {
   const runtimeOptions = createRuntimeOptionsWithResolvedLocale(
     parseRuntimeOptionsFromSearch(window.location.search),
     navigator.languages,
   );
+  const externalPlugins = await loadBrowserPluginSet(
+    new URL("./plugins/plugin-set.json", document.baseURI).href,
+  );
+  const pluginSet = appendExternalPluginSet(
+    solitudePluginCatalog,
+    defaultPluginIds,
+    externalPlugins,
+  );
   const plugins = loadPlugins({
-    catalog: solitudePluginCatalog,
-    ids: defaultPluginIds,
+    catalog: pluginSet.catalog,
+    ids: pluginSet.ids,
     runtimeOptions,
   });
   const config = buildWorldAndSceneConfig();
@@ -58,4 +70,6 @@ function showFatalRenderError(
   });
 }
 
-main();
+void main().catch((error: unknown) => {
+  console.error("Failed to start Solitude", error);
+});

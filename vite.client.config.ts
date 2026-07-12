@@ -5,6 +5,7 @@ const clientRoot = resolve("packages/client");
 
 export default defineConfig({
   root: clientRoot,
+  publicDir: resolve("dist/plugin-public"),
   build: {
     emptyOutDir: true,
     outDir: "../../dist/client",

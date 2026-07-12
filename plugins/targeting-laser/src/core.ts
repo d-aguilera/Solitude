@@ -1,23 +1,19 @@
 import {
   raySphereFirstHitDistance,
-  type Vec3,
   vec3,
-} from "@solitude/engine/math";
-import type {
-  MarkerPlugin,
-  SegmentPlugin,
-  SegmentProviderParams,
-  WorldMarker,
-  WorldMarkerSink,
-  WorldSegment,
-  WorldSegmentSink,
-} from "@solitude/engine/plugin";
-import type {
-  ControlledBody,
-  EntityCollisionSphere,
-  EntityId,
-  World,
-} from "@solitude/engine/world";
+  type ExternalControlledBody,
+  type ExternalEntityCollisionSphere,
+  type ExternalEntityId,
+  type ExternalMarkerPlugin,
+  type ExternalSegmentPlugin,
+  type ExternalSegmentProviderParams,
+  type ExternalWorld,
+  type ExternalWorldMarker,
+  type ExternalWorldMarkerSink,
+  type ExternalWorldSegment,
+  type ExternalWorldSegmentSink,
+  type Vec3,
+} from "@solitude/plugin-api";
 
 const ACQUISITION_CONE_RADIANS = (15 * Math.PI) / 180;
 const NOSE_OFFSET_METERS = 7;
@@ -32,7 +28,7 @@ const LASER_COLOR = { r: 255, g: 32, b: 32 };
 
 interface FocusTargetState {
   active: boolean;
-  targetId: EntityId | null;
+  targetId: ExternalEntityId | null;
 }
 
 interface LaserGeometry {
@@ -50,12 +46,12 @@ interface LaserGeometry {
 
 export interface TargetingLaserController {
   requestToggle: () => void;
-  segments: SegmentPlugin;
-  markers: MarkerPlugin;
+  segments: ExternalSegmentPlugin;
+  markers: ExternalMarkerPlugin;
 }
 
 export function createTargetingLaserController(): TargetingLaserController {
-  const targetByFocusId = new Map<EntityId, FocusTargetState>();
+  const targetByFocusId = new Map<ExternalEntityId, FocusTargetState>();
   let toggleRequested = false;
 
   return {
@@ -76,8 +72,8 @@ export function createTargetingLaserController(): TargetingLaserController {
 }
 
 function updateLaserGeometry(
-  targetByFocusId: Map<EntityId, FocusTargetState>,
-  { mainFocus, world }: SegmentProviderParams,
+  targetByFocusId: Map<ExternalEntityId, FocusTargetState>,
+  { mainFocus, world }: ExternalSegmentProviderParams,
   applyToggle: boolean,
 ): void {
   resetGeometry();
@@ -104,11 +100,14 @@ function updateLaserGeometry(
   computeLockedTargetGeometry(world, body, target);
 }
 
-function acquireTargetId(world: World, body: ControlledBody): EntityId | null {
-  let bestId: EntityId | null = null;
+function acquireTargetId(
+  world: ExternalWorld,
+  body: ExternalControlledBody,
+): ExternalEntityId | null {
+  let bestId: ExternalEntityId | null = null;
   let bestAngularGap = ACQUISITION_CONE_RADIANS;
   let bestHitDistance = Number.POSITIVE_INFINITY;
-  let sphere: EntityCollisionSphere;
+  let sphere: ExternalEntityCollisionSphere;
 
   for (let i = 0; i < world.collisionSpheres.length; i++) {
     sphere = world.collisionSpheres[i];
@@ -145,15 +144,15 @@ function acquireTargetId(world: World, body: ControlledBody): EntityId | null {
 }
 
 function computeLockedTargetGeometry(
-  world: World,
-  body: ControlledBody,
-  target: EntityCollisionSphere,
+  world: ExternalWorld,
+  body: ExternalControlledBody,
+  target: ExternalEntityCollisionSphere,
 ): void {
   const origin = body.position;
   const direction = body.frame.forward;
-  let nearestHit: EntityCollisionSphere | null = null;
+  let nearestHit: ExternalEntityCollisionSphere | null = null;
   let nearestHitDistance = Number.POSITIVE_INFINITY;
-  let sphere: EntityCollisionSphere;
+  let sphere: ExternalEntityCollisionSphere;
   for (let i = 0; i < world.collisionSpheres.length; i++) {
     sphere = world.collisionSpheres[i];
     if (sphere.id === body.id) continue;
@@ -212,7 +211,7 @@ function computeLockedTargetGeometry(
   geometry.hasMiss = true;
 }
 
-function createShortBeam(body: ControlledBody): void {
+function createShortBeam(body: ExternalControlledBody): void {
   vec3.scaledAddInto(
     beamSegment.start,
     body.position,
@@ -228,7 +227,7 @@ function createShortBeam(body: ControlledBody): void {
   geometry.hasBeam = true;
 }
 
-function appendLaserSegments(into: WorldSegmentSink): void {
+function appendLaserSegments(into: ExternalWorldSegmentSink): void {
   if (!geometry.hasBeam) return;
   vec3.copyInto(beamSegment.end, geometry.beamEnd);
   into.addSegment(
@@ -249,7 +248,7 @@ function appendLaserSegments(into: WorldSegmentSink): void {
   }
 }
 
-function appendLaserMarkers(into: WorldMarkerSink): void {
+function appendLaserMarkers(into: ExternalWorldMarkerSink): void {
   if (geometry.hasImpact) {
     vec3.copyInto(impactMarker.position, geometry.impactPoint);
     into.addMarker(
@@ -283,9 +282,9 @@ function appendLaserMarkers(into: WorldMarkerSink): void {
 }
 
 function findCollisionSphere(
-  world: World,
-  id: EntityId | null,
-): EntityCollisionSphere | null {
+  world: ExternalWorld,
+  id: ExternalEntityId | null,
+): ExternalEntityCollisionSphere | null {
   if (!id) return null;
   for (let i = 0; i < world.collisionSpheres.length; i++) {
     const sphere = world.collisionSpheres[i];
@@ -320,33 +319,33 @@ const geometry: LaserGeometry = {
   hasMiss: false,
   hasTargetRing: false,
 };
-const beamSegment: WorldSegment = {
+const beamSegment: ExternalWorldSegment = {
   start: vec3.zero(),
   end: vec3.zero(),
   color: LASER_COLOR,
   lineWidth: BEAM_LINE_WIDTH,
 };
-const connectorSegment: WorldSegment = {
+const connectorSegment: ExternalWorldSegment = {
   start: vec3.zero(),
   end: vec3.zero(),
   color: LASER_COLOR,
   lineWidth: CONNECTOR_LINE_WIDTH,
 };
-const impactMarker: WorldMarker = {
+const impactMarker: ExternalWorldMarker = {
   position: vec3.zero(),
   color: LASER_COLOR,
   radius: DOT_RADIUS_PIXELS,
   lineWidth: MARKER_LINE_WIDTH,
   shape: "dot",
 };
-const missMarker: WorldMarker = {
+const missMarker: ExternalWorldMarker = {
   position: vec3.zero(),
   color: LASER_COLOR,
   radius: CROSS_RADIUS_PIXELS,
   lineWidth: MARKER_LINE_WIDTH,
   shape: "cross",
 };
-const targetMarker: WorldMarker = {
+const targetMarker: ExternalWorldMarker = {
   position: vec3.zero(),
   color: LASER_COLOR,
   radius: TARGET_RING_RADIUS_PIXELS,
