@@ -21,6 +21,12 @@ export interface ExternalPluginManifest {
 }
 
 export interface ExternalPluginSetManifest {
+  packs: readonly string[];
+  schemaVersion: number;
+}
+
+export interface ExternalPluginPackManifest {
+  id: string;
   plugins: readonly string[];
   schemaVersion: number;
 }

@@ -3,45 +3,22 @@ import { describe, expect, it, vi } from "vitest";
 import { appendExternalPluginSet, loadExternalPluginSet } from "./index";
 
 const setUrl = "https://plugins.example/plugin-set.json";
-const manifestUrl = "https://plugins.example/laser/plugin.json";
-const entryUrl = "https://plugins.example/laser/index.js";
+const targetingPackUrl = "https://plugins.example/packs/targeting/pack.json";
+const utilityPackUrl = "https://plugins.example/packs/utility/pack.json";
+const laserManifestUrl =
+  "https://plugins.example/packs/targeting/laser/plugin.json";
+const secondManifestUrl = "https://plugins.example/packs/utility/second.json";
+const laserEntryUrl = "https://plugins.example/packs/targeting/laser/index.js";
+const secondEntryUrl = "https://plugins.example/packs/utility/second.js";
 
 describe("external plugin runtime", () => {
-  it("discovers manifests, imports modules, and preserves declared order", async () => {
+  it("expands ordered packs and preserves plugin order", async () => {
     const createLaser = vi.fn(() => ({ id: "targetingLaser" }));
     const createSecond = vi.fn(() => ({ id: "secondPlugin" }));
-    const documents = new Map<string, unknown>([
-      [
-        setUrl,
-        {
-          schemaVersion: 1,
-          plugins: ["./laser/plugin.json", "./second.json"],
-        },
-      ],
-      [
-        manifestUrl,
-        {
-          apiVersion: 1,
-          entry: "./index.js",
-          environment: "browser",
-          id: "targetingLaser",
-          schemaVersion: 1,
-        },
-      ],
-      [
-        "https://plugins.example/second.json",
-        {
-          apiVersion: 1,
-          entry: "./second.js",
-          environment: "browser",
-          id: "secondPlugin",
-          schemaVersion: 1,
-        },
-      ],
-    ]);
+    const documents = createDocumentMap();
     const modules = new Map<string, ExternalPluginModule>([
-      [entryUrl, { createPlugin: createLaser }],
-      ["https://plugins.example/second.js", { createPlugin: createSecond }],
+      [laserEntryUrl, { createPlugin: createLaser }],
+      [secondEntryUrl, { createPlugin: createSecond }],
     ]);
 
     const loaded = await loadExternalPluginSet({
@@ -58,20 +35,13 @@ describe("external plugin runtime", () => {
 
   it("rejects incompatible APIs before importing any module", async () => {
     const importModule = vi.fn();
+    const documents = createDocumentMap();
+    documents.set(laserManifestUrl, createPluginManifest("targetingLaser", 2));
 
     await expect(
       loadExternalPluginSet({
         environment: "browser",
-        fetchJson: async (url) =>
-          url === setUrl
-            ? { schemaVersion: 1, plugins: ["./laser/plugin.json"] }
-            : {
-                apiVersion: 2,
-                entry: "./index.js",
-                environment: "browser",
-                id: "targetingLaser",
-                schemaVersion: 1,
-              },
+        fetchJson: async (url) => documents.get(url),
         importModule,
         pluginSetUrl: setUrl,
       }),
@@ -79,28 +49,39 @@ describe("external plugin runtime", () => {
     expect(importModule).not.toHaveBeenCalled();
   });
 
-  it("rejects duplicate ids and host catalog collisions", async () => {
+  it("rejects duplicate pack and plugin ids", async () => {
+    const duplicatePackDocuments = createDocumentMap();
+    duplicatePackDocuments.set(utilityPackUrl, {
+      id: "targeting",
+      plugins: ["./second.json"],
+      schemaVersion: 1,
+    });
+
     await expect(
       loadExternalPluginSet({
         environment: "browser",
-        fetchJson: async (url) =>
-          url === setUrl
-            ? {
-                schemaVersion: 1,
-                plugins: ["./laser/plugin.json", "./laser/again.json"],
-              }
-            : {
-                apiVersion: 1,
-                entry: "./index.js",
-                environment: "browser",
-                id: "targetingLaser",
-                schemaVersion: 1,
-              },
+        fetchJson: async (url) => duplicatePackDocuments.get(url),
+        importModule: async () => ({ createPlugin: () => ({}) }),
+        pluginSetUrl: setUrl,
+      }),
+    ).rejects.toThrow("Duplicate external plugin pack id");
+
+    const duplicatePluginDocuments = createDocumentMap();
+    duplicatePluginDocuments.set(
+      secondManifestUrl,
+      createPluginManifest("targetingLaser"),
+    );
+    await expect(
+      loadExternalPluginSet({
+        environment: "browser",
+        fetchJson: async (url) => duplicatePluginDocuments.get(url),
         importModule: async () => ({ createPlugin: () => ({}) }),
         pluginSetUrl: setUrl,
       }),
     ).rejects.toThrow("Duplicate external plugin id");
+  });
 
+  it("rejects collisions with the host catalog", () => {
     expect(() =>
       appendExternalPluginSet(
         { targetingLaser: () => ({ id: "targetingLaser" }) },
@@ -114,18 +95,15 @@ describe("external plugin runtime", () => {
   });
 
   it("validates the plugin id returned by a loaded factory", async () => {
+    const documents = createDocumentMap();
+    documents.set(setUrl, {
+      packs: ["./packs/targeting/pack.json"],
+      schemaVersion: 1,
+    });
+
     const loaded = await loadExternalPluginSet({
       environment: "browser",
-      fetchJson: async (url) =>
-        url === setUrl
-          ? { schemaVersion: 1, plugins: ["./laser/plugin.json"] }
-          : {
-              apiVersion: 1,
-              entry: "./index.js",
-              environment: "browser",
-              id: "targetingLaser",
-              schemaVersion: 1,
-            },
+      fetchJson: async (url) => documents.get(url),
       importModule: async () => ({
         createPlugin: () => ({ id: "wrongPlugin" }),
       }),
@@ -137,3 +115,47 @@ describe("external plugin runtime", () => {
     );
   });
 });
+
+function createDocumentMap(): Map<string, unknown> {
+  return new Map<string, unknown>([
+    [
+      setUrl,
+      {
+        packs: ["./packs/targeting/pack.json", "./packs/utility/pack.json"],
+        schemaVersion: 1,
+      },
+    ],
+    [
+      targetingPackUrl,
+      {
+        id: "targeting",
+        plugins: ["./laser/plugin.json"],
+        schemaVersion: 1,
+      },
+    ],
+    [
+      utilityPackUrl,
+      {
+        id: "utility",
+        plugins: ["./second.json"],
+        schemaVersion: 1,
+      },
+    ],
+    [laserManifestUrl, createPluginManifest("targetingLaser")],
+    [secondManifestUrl, createPluginManifest("secondPlugin", 1, "./second.js")],
+  ]);
+}
+
+function createPluginManifest(
+  id: string,
+  apiVersion = 1,
+  entry = "./index.js",
+) {
+  return {
+    apiVersion,
+    entry,
+    environment: "browser",
+    id,
+    schemaVersion: 1,
+  };
+}

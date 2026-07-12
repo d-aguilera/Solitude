@@ -11,10 +11,12 @@ import {
   type ExternalPluginEnvironment,
   type ExternalPluginManifest,
   type ExternalPluginModule,
+  type ExternalPluginPackManifest,
   type ExternalPluginSetManifest,
 } from "@solitude/plugin-api";
 
 const PLUGIN_MANIFEST_SCHEMA_VERSION = 1;
+const PLUGIN_PACK_SCHEMA_VERSION = 1;
 const PLUGIN_SET_SCHEMA_VERSION = 1;
 const PLUGIN_ID_PATTERN = /^[A-Za-z][A-Za-z0-9.-]*$/;
 
@@ -60,8 +62,22 @@ export async function loadExternalPluginSet({
     await fetchJson(absoluteSetUrl),
     absoluteSetUrl,
   );
-  const manifestUrls = pluginSet.plugins.map(
-    (manifestUrl) => new URL(manifestUrl, absoluteSetUrl).href,
+  const packManifestUrls = pluginSet.packs.map(
+    (packManifestUrl) => new URL(packManifestUrl, absoluteSetUrl).href,
+  );
+  const packManifests = await Promise.all(
+    packManifestUrls.map(async (packManifestUrl) =>
+      parsePluginPackManifest(
+        await fetchJson(packManifestUrl),
+        packManifestUrl,
+      ),
+    ),
+  );
+  validatePluginPacks(packManifests);
+  const manifestUrls = packManifests.flatMap((pack, index) =>
+    pack.plugins.map(
+      (manifestUrl) => new URL(manifestUrl, packManifestUrls[index]).href,
+    ),
   );
   const manifests = await Promise.all(
     manifestUrls.map(async (manifestUrl) =>
@@ -121,12 +137,45 @@ function parsePluginSetManifest(
     );
   }
   if (
-    !Array.isArray(value.plugins) ||
-    !value.plugins.every((item) => typeof item === "string" && item.length > 0)
+    !Array.isArray(value.packs) ||
+    !value.packs.every((item) => typeof item === "string" && item.length > 0)
   ) {
     throw invalidManifest("plugin set", source);
   }
   return value as unknown as ExternalPluginSetManifest;
+}
+
+function parsePluginPackManifest(
+  value: unknown,
+  source: string,
+): ExternalPluginPackManifest {
+  if (!isRecord(value)) throw invalidManifest("plugin pack", source);
+  if (value.schemaVersion !== PLUGIN_PACK_SCHEMA_VERSION) {
+    throw new Error(
+      `Unsupported plugin pack schema at ${source}: ${String(value.schemaVersion)}`,
+    );
+  }
+  if (
+    typeof value.id !== "string" ||
+    !PLUGIN_ID_PATTERN.test(value.id) ||
+    !Array.isArray(value.plugins) ||
+    !value.plugins.every((item) => typeof item === "string" && item.length > 0)
+  ) {
+    throw invalidManifest("plugin pack", source);
+  }
+  return value as unknown as ExternalPluginPackManifest;
+}
+
+function validatePluginPacks(
+  manifests: readonly ExternalPluginPackManifest[],
+): void {
+  const ids = new Set<string>();
+  for (const manifest of manifests) {
+    if (ids.has(manifest.id)) {
+      throw new Error(`Duplicate external plugin pack id: ${manifest.id}`);
+    }
+    ids.add(manifest.id);
+  }
 }
 
 function parsePluginManifest(

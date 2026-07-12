@@ -25,6 +25,19 @@ export default defineConfig({
     {
       generateBundle() {
         this.emitFile({
+          fileName: "pack.json",
+          source: `${JSON.stringify(
+            {
+              id: "targeting-laser",
+              plugins: ["./plugin.json"],
+              schemaVersion: 1,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
           fileName: "plugin.json",
           source: `${JSON.stringify(
             {
@@ -40,7 +53,7 @@ export default defineConfig({
           type: "asset",
         });
       },
-      name: "targeting-laser-manifest",
+      name: "targeting-laser-pack-manifests",
     },
   ],
   root: pluginRoot,

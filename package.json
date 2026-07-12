@@ -8,7 +8,7 @@
   "scripts": {
     "build": "npm run clean:dist && npm run build:plugins && npm run bundle:standalone && npm run bundle:client && npm run build:server",
     "build:client": "npm run build:plugins && npm run bundle:client",
-    "build:plugins": "npm run build --workspace=@solitude-plugins/targeting-laser && node scripts/assemble-browser-plugins.mjs",
+    "build:plugins": "node scripts/build-browser-plugin-packs.mjs && node scripts/assemble-browser-plugins.mjs",
     "build:server": "vite build -c vite.server.config.ts",
     "build:standalone": "npm run build:plugins && npm run bundle:standalone",
     "bundle:client": "vite build -c vite.client.config.ts",
