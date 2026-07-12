@@ -34,6 +34,9 @@ describe("Solitude HTTP server", () => {
       const response = await fetch(`${server.url}/`);
 
       expect(response.status).toBe(200);
+      expect(response.headers.get("content-security-policy")).toContain(
+        "script-src 'self'",
+      );
       const page = await response.text();
       expect(page).toContain("Solitude");
       expect(page).toContain("/src/lobby.ts");

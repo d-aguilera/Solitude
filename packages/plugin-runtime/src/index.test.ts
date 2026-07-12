@@ -1,18 +1,20 @@
 import type { ExternalPluginModule } from "@solitude/plugin-api";
 import { describe, expect, it, vi } from "vitest";
-import { appendExternalPluginSet, loadExternalPluginSet } from "./index";
+import { appendExternalPluginSet, loadExternalPlugins } from "./index";
 
-const setUrl = "https://plugins.example/plugin-set.json";
-const targetingPackUrl = "https://plugins.example/packs/targeting/pack.json";
-const utilityPackUrl = "https://plugins.example/packs/utility/pack.json";
-const laserManifestUrl =
-  "https://plugins.example/packs/targeting/laser/plugin.json";
-const secondManifestUrl = "https://plugins.example/packs/utility/second.json";
-const laserEntryUrl = "https://plugins.example/packs/targeting/laser/index.js";
-const secondEntryUrl = "https://plugins.example/packs/utility/second.js";
+const pageOrigin = "https://app.example";
+const pluginOrigin = "https://plugins.example";
+const configUrl = `${pageOrigin}/plugins/loader.json`;
+const setUrl = `${pageOrigin}/plugins/plugin-set.json`;
+const targetingPackUrl = `${pluginOrigin}/packs/targeting/pack.json`;
+const utilityPackUrl = `${pluginOrigin}/packs/utility/pack.json`;
+const laserManifestUrl = `${pluginOrigin}/packs/targeting/laser/plugin.json`;
+const secondManifestUrl = `${pluginOrigin}/packs/utility/second.json`;
+const laserEntryUrl = `${pluginOrigin}/packs/targeting/laser/index.js`;
+const secondEntryUrl = `${pluginOrigin}/packs/utility/second.js`;
 
 describe("external plugin runtime", () => {
-  it("expands ordered packs and preserves plugin order", async () => {
+  it("loads explicitly allowed cross-origin plugin packs in order", async () => {
     const createLaser = vi.fn(() => ({ id: "targetingLaser" }));
     const createSecond = vi.fn(() => ({ id: "secondPlugin" }));
     const documents = createDocumentMap();
@@ -21,16 +23,84 @@ describe("external plugin runtime", () => {
       [secondEntryUrl, { createPlugin: createSecond }],
     ]);
 
-    const loaded = await loadExternalPluginSet({
+    const loaded = await loadExternalPlugins({
+      configUrl,
       environment: "browser",
       fetchJson: async (url) => documents.get(url),
       importModule: async (url) => modules.get(url),
-      pluginSetUrl: setUrl,
+      pageOrigin,
     });
 
     expect(loaded.ids).toEqual(["targetingLaser", "secondPlugin"]);
     expect(loaded.catalog.targetingLaser({}).id).toBe("targetingLaser");
     expect(loaded.catalog.secondPlugin({}).id).toBe("secondPlugin");
+  });
+
+  it("requires the loader configuration to be same-origin", async () => {
+    const fetchJson = vi.fn();
+
+    await expect(
+      loadExternalPlugins({
+        configUrl: `${pluginOrigin}/loader.json`,
+        environment: "browser",
+        fetchJson,
+        importModule: vi.fn(),
+        pageOrigin,
+      }),
+    ).rejects.toThrow("loader config must be same-origin");
+    expect(fetchJson).not.toHaveBeenCalled();
+  });
+
+  it("rejects disallowed pack origins before fetching them", async () => {
+    const documents = createDocumentMap(["self"]);
+    const fetchJson = vi.fn(async (url: string) => documents.get(url));
+
+    await expect(
+      loadExternalPlugins({
+        configUrl,
+        environment: "browser",
+        fetchJson,
+        importModule: vi.fn(),
+        pageOrigin,
+      }),
+    ).rejects.toThrow(
+      `Disallowed plugin pack manifest origin: ${pluginOrigin}`,
+    );
+    expect(fetchJson).not.toHaveBeenCalledWith(targetingPackUrl);
+  });
+
+  it("rejects disallowed module origins before importing them", async () => {
+    const documents = createDocumentMap();
+    documents.set(secondManifestUrl, {
+      ...createPluginManifest("secondPlugin"),
+      entry: "https://evil.example/index.js",
+    });
+    const importModule = vi.fn();
+
+    await expect(
+      loadExternalPlugins({
+        configUrl,
+        environment: "browser",
+        fetchJson: async (url) => documents.get(url),
+        importModule,
+        pageOrigin,
+      }),
+    ).rejects.toThrow("Disallowed plugin module origin");
+    expect(importModule).not.toHaveBeenCalled();
+  });
+
+  it("rejects invalid allowed origins", async () => {
+    const documents = createDocumentMap(["https://plugins.example/path"]);
+
+    await expect(
+      loadExternalPlugins({
+        configUrl,
+        environment: "browser",
+        fetchJson: async (url) => documents.get(url),
+        importModule: vi.fn(),
+        pageOrigin,
+      }),
+    ).rejects.toThrow("Invalid allowed plugin origin");
   });
 
   it("rejects incompatible APIs before importing any module", async () => {
@@ -39,11 +109,12 @@ describe("external plugin runtime", () => {
     documents.set(laserManifestUrl, createPluginManifest("targetingLaser", 2));
 
     await expect(
-      loadExternalPluginSet({
+      loadExternalPlugins({
+        configUrl,
         environment: "browser",
         fetchJson: async (url) => documents.get(url),
         importModule,
-        pluginSetUrl: setUrl,
+        pageOrigin,
       }),
     ).rejects.toThrow("Unsupported plugin API");
     expect(importModule).not.toHaveBeenCalled();
@@ -58,11 +129,12 @@ describe("external plugin runtime", () => {
     });
 
     await expect(
-      loadExternalPluginSet({
+      loadExternalPlugins({
+        configUrl,
         environment: "browser",
         fetchJson: async (url) => duplicatePackDocuments.get(url),
         importModule: async () => ({ createPlugin: () => ({}) }),
-        pluginSetUrl: setUrl,
+        pageOrigin,
       }),
     ).rejects.toThrow("Duplicate external plugin pack id");
 
@@ -72,11 +144,12 @@ describe("external plugin runtime", () => {
       createPluginManifest("targetingLaser"),
     );
     await expect(
-      loadExternalPluginSet({
+      loadExternalPlugins({
+        configUrl,
         environment: "browser",
         fetchJson: async (url) => duplicatePluginDocuments.get(url),
         importModule: async () => ({ createPlugin: () => ({}) }),
-        pluginSetUrl: setUrl,
+        pageOrigin,
       }),
     ).rejects.toThrow("Duplicate external plugin id");
   });
@@ -97,17 +170,18 @@ describe("external plugin runtime", () => {
   it("validates the plugin id returned by a loaded factory", async () => {
     const documents = createDocumentMap();
     documents.set(setUrl, {
-      packs: ["./packs/targeting/pack.json"],
+      packs: [targetingPackUrl],
       schemaVersion: 1,
     });
 
-    const loaded = await loadExternalPluginSet({
+    const loaded = await loadExternalPlugins({
+      configUrl,
       environment: "browser",
       fetchJson: async (url) => documents.get(url),
       importModule: async () => ({
         createPlugin: () => ({ id: "wrongPlugin" }),
       }),
-      pluginSetUrl: setUrl,
+      pageOrigin,
     });
 
     expect(() => loaded.catalog.targetingLaser({})).toThrow(
@@ -116,12 +190,22 @@ describe("external plugin runtime", () => {
   });
 });
 
-function createDocumentMap(): Map<string, unknown> {
+function createDocumentMap(
+  allowedOrigins: readonly string[] = ["self", pluginOrigin],
+): Map<string, unknown> {
   return new Map<string, unknown>([
+    [
+      configUrl,
+      {
+        allowedOrigins,
+        pluginSet: "./plugin-set.json",
+        schemaVersion: 1,
+      },
+    ],
     [
       setUrl,
       {
-        packs: ["./packs/targeting/pack.json", "./packs/utility/pack.json"],
+        packs: [targetingPackUrl, utilityPackUrl],
         schemaVersion: 1,
       },
     ],

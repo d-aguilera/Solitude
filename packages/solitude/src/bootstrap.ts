@@ -10,7 +10,7 @@ import {
 } from "@solitude/localization";
 import {
   appendExternalPluginSet,
-  loadBrowserPluginSet,
+  loadBrowserPlugins,
 } from "@solitude/plugin-runtime";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
 import { defaultPluginIds, solitudePluginCatalog } from "./plugins/catalog";
@@ -24,8 +24,8 @@ async function main(): Promise<void> {
     parseRuntimeOptionsFromSearch(window.location.search),
     navigator.languages,
   );
-  const externalPlugins = await loadBrowserPluginSet(
-    new URL("./plugins/plugin-set.json", document.baseURI).href,
+  const externalPlugins = await loadBrowserPlugins(
+    new URL("./plugins/loader.json", document.baseURI).href,
   );
   const pluginSet = appendExternalPluginSet(
     solitudePluginCatalog,

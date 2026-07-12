@@ -9,6 +9,7 @@ import {
   SOLITUDE_PLUGIN_API_VERSION,
   type ExternalPlugin,
   type ExternalPluginEnvironment,
+  type ExternalPluginLoaderConfig,
   type ExternalPluginManifest,
   type ExternalPluginModule,
   type ExternalPluginPackManifest,
@@ -25,14 +26,15 @@ export interface ExternalPluginSet {
   ids: readonly string[];
 }
 
-export interface ExternalPluginSetLoadAdapters {
+export interface ExternalPluginLoadAdapters {
   fetchJson: (url: string) => Promise<unknown>;
   importModule: (url: string) => Promise<unknown>;
 }
 
-export interface ExternalPluginSetLoadOptions extends ExternalPluginSetLoadAdapters {
+export interface ExternalPluginLoadOptions extends ExternalPluginLoadAdapters {
+  configUrl: string;
   environment: ExternalPluginEnvironment;
-  pluginSetUrl: string;
+  pageOrigin: string;
 }
 
 export interface ComposedPluginSet {
@@ -40,31 +42,48 @@ export interface ComposedPluginSet {
   ids: readonly string[];
 }
 
-export async function loadBrowserPluginSet(
-  pluginSetUrl: string,
+export async function loadBrowserPlugins(
+  configUrl: string,
 ): Promise<ExternalPluginSet> {
-  return loadExternalPluginSet({
+  return loadExternalPlugins({
+    configUrl,
     environment: "browser",
     fetchJson: fetchJsonFromNetwork,
     importModule: importExternalModule,
-    pluginSetUrl,
+    pageOrigin: globalThis.location.origin,
   });
 }
 
-export async function loadExternalPluginSet({
+export async function loadExternalPlugins({
+  configUrl,
   environment,
   fetchJson,
   importModule,
-  pluginSetUrl,
-}: ExternalPluginSetLoadOptions): Promise<ExternalPluginSet> {
-  const absoluteSetUrl = new URL(pluginSetUrl, globalThis.location?.href).href;
+  pageOrigin,
+}: ExternalPluginLoadOptions): Promise<ExternalPluginSet> {
+  const normalizedPageOrigin = normalizePageOrigin(pageOrigin);
+  const absoluteConfigUrl = new URL(configUrl, `${normalizedPageOrigin}/`).href;
+  assertSameOriginUrl(absoluteConfigUrl, normalizedPageOrigin, "loader config");
+  const config = parsePluginLoaderConfig(
+    await fetchJson(absoluteConfigUrl),
+    absoluteConfigUrl,
+  );
+  const allowedOrigins = resolveAllowedOrigins(
+    config.allowedOrigins,
+    normalizedPageOrigin,
+    absoluteConfigUrl,
+  );
+  const absoluteSetUrl = new URL(config.pluginSet, absoluteConfigUrl).href;
+  assertAllowedUrl(absoluteSetUrl, allowedOrigins, "plugin set");
   const pluginSet = parsePluginSetManifest(
     await fetchJson(absoluteSetUrl),
     absoluteSetUrl,
   );
-  const packManifestUrls = pluginSet.packs.map(
-    (packManifestUrl) => new URL(packManifestUrl, absoluteSetUrl).href,
-  );
+  const packManifestUrls = pluginSet.packs.map((packManifestUrl) => {
+    const url = new URL(packManifestUrl, absoluteSetUrl).href;
+    assertAllowedUrl(url, allowedOrigins, "plugin pack manifest");
+    return url;
+  });
   const packManifests = await Promise.all(
     packManifestUrls.map(async (packManifestUrl) =>
       parsePluginPackManifest(
@@ -75,9 +94,11 @@ export async function loadExternalPluginSet({
   );
   validatePluginPacks(packManifests);
   const manifestUrls = packManifests.flatMap((pack, index) =>
-    pack.plugins.map(
-      (manifestUrl) => new URL(manifestUrl, packManifestUrls[index]).href,
-    ),
+    pack.plugins.map((manifestUrl) => {
+      const url = new URL(manifestUrl, packManifestUrls[index]).href;
+      assertAllowedUrl(url, allowedOrigins, "plugin manifest");
+      return url;
+    }),
   );
   const manifests = await Promise.all(
     manifestUrls.map(async (manifestUrl) =>
@@ -87,11 +108,12 @@ export async function loadExternalPluginSet({
 
   validatePluginManifests(manifests, manifestUrls, environment);
 
-  const modules = await Promise.all(
-    manifests.map((manifest, index) =>
-      importModule(new URL(manifest.entry, manifestUrls[index]).href),
-    ),
-  );
+  const moduleUrls = manifests.map((manifest, index) => {
+    const url = new URL(manifest.entry, manifestUrls[index]).href;
+    assertAllowedUrl(url, allowedOrigins, "plugin module");
+    return url;
+  });
+  const modules = await Promise.all(moduleUrls.map(importModule));
   const catalog: Record<string, PluginFactory> = Object.create(null) as Record<
     string,
     PluginFactory
@@ -124,6 +146,93 @@ export function appendExternalPluginSet(
     catalog: { ...baseCatalog, ...external.catalog },
     ids: [...baseIds, ...external.ids],
   };
+}
+
+function parsePluginLoaderConfig(
+  value: unknown,
+  source: string,
+): ExternalPluginLoaderConfig {
+  if (!isRecord(value)) throw invalidManifest("plugin loader config", source);
+  if (value.schemaVersion !== 1) {
+    throw new Error(
+      `Unsupported plugin loader config schema at ${source}: ${String(value.schemaVersion)}`,
+    );
+  }
+  if (
+    !Array.isArray(value.allowedOrigins) ||
+    !value.allowedOrigins.every(
+      (origin) => typeof origin === "string" && origin.length > 0,
+    ) ||
+    typeof value.pluginSet !== "string" ||
+    value.pluginSet.length === 0
+  ) {
+    throw invalidManifest("plugin loader config", source);
+  }
+  return value as unknown as ExternalPluginLoaderConfig;
+}
+
+function resolveAllowedOrigins(
+  values: readonly string[],
+  pageOrigin: string,
+  source: string,
+): ReadonlySet<string> {
+  const origins = new Set<string>();
+  for (const value of values) {
+    if (value === "self") {
+      origins.add(pageOrigin);
+      continue;
+    }
+    let url: URL;
+    try {
+      url = new URL(value);
+    } catch {
+      throw new Error(`Invalid allowed plugin origin at ${source}: ${value}`);
+    }
+    if (
+      (url.protocol !== "http:" && url.protocol !== "https:") ||
+      url.username.length > 0 ||
+      url.password.length > 0 ||
+      url.pathname !== "/" ||
+      url.search.length > 0 ||
+      url.hash.length > 0
+    ) {
+      throw new Error(`Invalid allowed plugin origin at ${source}: ${value}`);
+    }
+    origins.add(url.origin);
+  }
+  return origins;
+}
+
+function normalizePageOrigin(value: string): string {
+  const url = new URL(value);
+  if (
+    (url.protocol !== "http:" && url.protocol !== "https:") ||
+    url.origin !== value
+  ) {
+    throw new Error(`Invalid page origin: ${value}`);
+  }
+  return url.origin;
+}
+
+function assertSameOriginUrl(
+  value: string,
+  origin: string,
+  kind: string,
+): void {
+  if (new URL(value).origin !== origin) {
+    throw new Error(`External ${kind} must be same-origin: ${value}`);
+  }
+}
+
+function assertAllowedUrl(
+  value: string,
+  allowedOrigins: ReadonlySet<string>,
+  kind: string,
+): void {
+  const origin = new URL(value).origin;
+  if (!allowedOrigins.has(origin)) {
+    throw new Error(`Disallowed ${kind} origin: ${origin}`);
+  }
 }
 
 function parsePluginSetManifest(
@@ -281,7 +390,7 @@ function adaptExternalPlugin(plugin: ExternalPlugin): GamePlugin {
 }
 
 async function fetchJsonFromNetwork(url: string): Promise<unknown> {
-  const response = await fetch(url);
+  const response = await fetch(url, { redirect: "error" });
   if (!response.ok) {
     throw new Error(
       `Failed to fetch plugin document ${url}: ${response.status}`,

@@ -47,8 +47,9 @@ Plugins may also publish operator-specific capabilities through opaque app-level
 
 Available standalone plugins are exported from `packages/solitude/src/plugins/catalog.ts`. Solitude bootstrap chooses which plugin ids to enable and asks the engine-level `loadPlugins` helper to assemble them from that catalog. Browser infra passes runtime URL options to plugins as a raw string map; each plugin owns validation and interpretation of its own option keys.
 
-Before static composition, browser bootstrap loads the ordered external plugin
-set from `plugins/plugin-set.json`. Missing, invalid, incompatible, or colliding
+Before static composition, browser bootstrap loads the same-origin
+`plugins/loader.json`, validates its origin allowlist, and expands the ordered
+external plugin packs. Missing, disallowed, invalid, incompatible, or colliding
 external plugins fail startup; there is no static fallback.
 
 ## World model

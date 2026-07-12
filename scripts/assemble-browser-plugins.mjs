@@ -14,6 +14,18 @@ await mkdir(publicRoot, { recursive: true });
 
 const packManifestUrls = await Promise.all(config.packs.map(assemblePack));
 await writeFile(
+  resolve(publicRoot, "loader.json"),
+  `${JSON.stringify(
+    {
+      allowedOrigins: ["self"],
+      pluginSet: "./plugin-set.json",
+      schemaVersion: 1,
+    },
+    null,
+    2,
+  )}\n`,
+);
+await writeFile(
   resolve(publicRoot, "plugin-set.json"),
   `${JSON.stringify(
     {

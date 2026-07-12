@@ -6,7 +6,7 @@ import {
   createRuntimeOptionsWithResolvedLocale,
   resolveSolitudeLocale,
 } from "@solitude/localization";
-import { loadBrowserPluginSet } from "@solitude/plugin-runtime";
+import { loadBrowserPlugins } from "@solitude/plugin-runtime";
 import type {
   SolitudeGameId,
   SolitudeServerMessage,
@@ -31,8 +31,8 @@ import { createRemoteRuntimeTelemetryHudPlugin } from "./remoteRuntimeTelemetryH
 import { createShipColorNamesPlugin } from "./shipColorNames";
 
 async function main(): Promise<void> {
-  const externalPlugins = await loadBrowserPluginSet(
-    new URL("./plugins/plugin-set.json", document.baseURI).href,
+  const externalPlugins = await loadBrowserPlugins(
+    new URL("./plugins/loader.json", document.baseURI).href,
   );
   const searchParams = new URLSearchParams(window.location.search);
   const fields = {

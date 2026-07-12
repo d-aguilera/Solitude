@@ -15,6 +15,10 @@ hosts discover and load at runtime.
   beside the browser products.
 - External plugins are trusted code. They run in the host page and are not a
   security sandbox.
+- Browser hosts begin from a fixed same-origin `loader.json`. Its
+  `allowedOrigins` list is the application-level allowlist for the plugin set,
+  pack manifests, plugin manifests, and module entries. Cross-origin plugins
+  require an explicit origin entry and matching page CSP changes.
 
 ## Runtime Documents
 
@@ -29,6 +33,17 @@ before importing any plugin module.
 pack there makes `npm run build:plugins` build its workspace package, validate
 and copy its complete artifact directory, and publish its pack manifest through
 the browser plugin set.
+
+The default assembled loader configuration allows only `self`. JSON plugin
+documents are fetched without following redirects, and browser pages enforce a
+`script-src 'self'` Content Security Policy. Allowing a trusted external plugin
+host therefore requires two deliberate deployment changes:
+
+1. Add its exact HTTP(S) origin to `loader.json`.
+2. Add the same origin to the page's `script-src` CSP.
+
+CORS permission from the external host is also required. These controls limit
+which trusted code can load; they do not sandbox code after loading.
 
 The module must export `createPlugin`. Factories are retained and instantiated
 with the current runtime options whenever the host creates a plugin

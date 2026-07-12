@@ -377,6 +377,10 @@ function setCommonHeaders(response: ServerResponse): void {
   response.setHeader("Access-Control-Allow-Headers", "content-type");
   response.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   response.setHeader("Access-Control-Allow-Origin", "*");
+  response.setHeader(
+    "Content-Security-Policy",
+    "default-src 'self'; base-uri 'self'; connect-src 'self' http: https: ws: wss:; img-src 'self' data: blob:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'",
+  );
 }
 
 function sendJson(
