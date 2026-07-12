@@ -1,17 +1,16 @@
 import {
+  computeStandardGravitationalParameter,
   EPS_ECCENTRICITY,
   EPS_LEN,
   getDominantBodyPrimary,
   vec3,
+  type ExternalControlledBody,
+  type ExternalSegmentPlugin,
+  type ExternalSegmentProviderParams,
+  type ExternalWorld,
+  type ExternalWorldSegmentSink,
   type Vec3,
-} from "@solitude/engine/math";
-import type {
-  SegmentPlugin,
-  SegmentProviderParams,
-  WorldSegmentSink,
-} from "@solitude/engine/plugin";
-import { parameters } from "@solitude/engine/runtime";
-import type { ControlledBody } from "@solitude/engine/world";
+} from "@solitude/plugin-api";
 
 const ORBIT_SAMPLE_COUNT = 192;
 const ORBIT_LINE_WIDTH = 2;
@@ -19,7 +18,7 @@ const ORBIT_COLOR = { r: 96, g: 208, b: 255 };
 
 export interface OrbitSegmentsController {
   requestToggle: () => void;
-  segments: SegmentPlugin;
+  segments: ExternalSegmentPlugin;
 }
 
 export function createOrbitSegmentsController(): OrbitSegmentsController {
@@ -55,7 +54,7 @@ interface OrbitSegmentGeometry {
 
 export function mutateFocusOrbitSegments(
   geometry: OrbitSegmentGeometry,
-  { mainFocus, world }: SegmentProviderParams,
+  { mainFocus, world }: ExternalSegmentProviderParams,
 ): boolean {
   return mutateOrbitSegmentsForBody(geometry, world, mainFocus.controlledBody);
 }
@@ -73,7 +72,7 @@ function createOrbitSegmentGeometry(sampleCount: number): OrbitSegmentGeometry {
 }
 
 function appendOrbitSegment(
-  into: WorldSegmentSink,
+  into: ExternalWorldSegmentSink,
   geometry: OrbitSegmentGeometry,
   index: number,
 ): void {
@@ -87,8 +86,8 @@ function appendOrbitSegment(
 
 function mutateOrbitSegmentsForBody(
   geometry: OrbitSegmentGeometry,
-  world: SegmentProviderParams["world"],
-  body: ControlledBody,
+  world: ExternalWorld,
+  body: ExternalControlledBody,
 ): boolean {
   const primary = getDominantBodyPrimary(world, body.position);
   if (!primary) return false;
@@ -99,7 +98,7 @@ function mutateOrbitSegmentsForBody(
   const r = vec3.length(rScratch);
   if (r <= EPS_LEN) return false;
 
-  const mu = parameters.newtonG * primary.mass;
+  const mu = computeStandardGravitationalParameter(primary.mass);
   if (!Number.isFinite(mu) || mu <= 0) return false;
 
   vec3.crossInto(hScratch, rScratch, vScratch);

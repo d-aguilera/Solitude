@@ -1,15 +1,20 @@
-import type { GamePlugin } from "@solitude/engine/plugin";
-import { createKeyboardInputProvider } from "@solitude/input/keyboard";
+import {
+  createKeyboardInputCapability,
+  type ExternalPlugin,
+  type ExternalRuntimeOptions,
+} from "@solitude/plugin-api";
 import { createOrbitSegmentsController } from "./core";
 
 const orbitSegmentsToggleAction = "orbitSegmentsToggle";
 
-export function createOrbitSegmentsPlugin(): GamePlugin {
+export function createPlugin(
+  _runtimeOptions: ExternalRuntimeOptions,
+): ExternalPlugin {
   const controller = createOrbitSegmentsController();
   return {
     id: "orbitSegments",
     capabilities: [
-      createKeyboardInputProvider({
+      createKeyboardInputCapability({
         actions: [orbitSegmentsToggleAction],
         keyMap: { KeyG: orbitSegmentsToggleAction },
         createKeyHandler: () => ({

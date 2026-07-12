@@ -22,7 +22,6 @@ import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
 export const remoteRenderPluginIds = [
   "solarSystem",
   "spacecraftOperator",
-  "orbitSegments",
   "solarSystemMaterials",
   "orbitTelemetry",
   "shipTelemetry",

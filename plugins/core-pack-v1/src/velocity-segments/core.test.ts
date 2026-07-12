@@ -48,7 +48,7 @@ function createParams(
 ): ExternalSegmentProviderParams {
   return {
     mainFocus: { controlledBody: body, entityId: body.id },
-    world: { collisionSpheres: [] },
+    world: { collisionSpheres: [], gravityMasses: [] },
   };
 }
 

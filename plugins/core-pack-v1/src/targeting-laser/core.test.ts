@@ -119,7 +119,7 @@ function createFixture(...spheres: ExternalEntityCollisionSphere[]): {
     body,
     params: {
       mainFocus: { controlledBody: body, entityId: body.id },
-      world: { collisionSpheres: spheres },
+      world: { collisionSpheres: spheres, gravityMasses: [] },
     },
   };
 }
@@ -133,7 +133,11 @@ function createSphere(
   return {
     id,
     radius,
-    state: { position: vec3.create(x, y, 0) },
+    state: {
+      id,
+      position: vec3.create(x, y, 0),
+      velocity: vec3.zero(),
+    },
   };
 }
 

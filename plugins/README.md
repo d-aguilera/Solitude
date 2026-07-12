@@ -53,6 +53,8 @@ composition.
 
 - `core-pack-v1`: first multi-plugin pack, shared by standalone and remote
   rendering. It currently contains:
+  - `orbitSegments`: analytic bound-orbit segments around the focused entity's
+    dominant gravity body, with keyboard toggle behavior.
   - `targetingLaser`: targeting beam, target lock, impact/miss markers, and
     keyboard toggle behavior.
   - `velocitySegments`: forward/backward world segments along the focused

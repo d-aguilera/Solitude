@@ -8,6 +8,9 @@ export default defineConfig({
     emptyOutDir: true,
     lib: {
       entry: {
+        "orbit-segments": fileURLToPath(
+          new URL("./src/orbit-segments/index.ts", import.meta.url),
+        ),
         "targeting-laser": fileURLToPath(
           new URL("./src/targeting-laser/index.ts", import.meta.url),
         ),
@@ -37,9 +40,25 @@ export default defineConfig({
             {
               id: "core-pack-v1",
               plugins: [
+                "./orbit-segments/plugin.json",
                 "./targeting-laser/plugin.json",
                 "./velocity-segments/plugin.json",
               ],
+              schemaVersion: 1,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "orbit-segments/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: 1,
+              entry: "./index.js",
+              environment: "browser",
+              id: "orbitSegments",
               schemaVersion: 1,
             },
             null,
