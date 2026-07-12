@@ -49,8 +49,14 @@ The module must export `createPlugin`. Factories are retained and instantiated
 with the current runtime options whenever the host creates a plugin
 composition.
 
-## Current Plugin
+## Current Pack
 
-- `targeting-laser`: first plugin pack; currently contains the browser targeting
-  beam, target lock, impact/miss markers, and keyboard toggle plugin shared by
-  standalone and remote rendering.
+- `core-pack-v1`: first multi-plugin pack, shared by standalone and remote
+  rendering. It currently contains:
+  - `targetingLaser`: targeting beam, target lock, impact/miss markers, and
+    keyboard toggle behavior.
+  - `velocitySegments`: forward/backward world segments along the focused
+    entity's velocity vector.
+
+The core pack is the migration destination for existing first-party plugins as
+the external API grows to support their required contribution types.

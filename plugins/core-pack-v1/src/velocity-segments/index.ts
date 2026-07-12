@@ -1,7 +1,12 @@
-import type { GamePlugin } from "@solitude/engine/plugin";
+import type {
+  ExternalPlugin,
+  ExternalRuntimeOptions,
+} from "@solitude/plugin-api";
 import { createSegmentsPlugin } from "./core";
 
-export function createVelocitySegmentsPlugin(): GamePlugin {
+export function createPlugin(
+  _runtimeOptions: ExternalRuntimeOptions,
+): ExternalPlugin {
   return {
     id: "velocitySegments",
     requirements: {

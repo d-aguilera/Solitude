@@ -1,6 +1,10 @@
 import type { Vec3 } from "@solitude/engine/math";
 
-export { raySphereFirstHitDistance, vec3 } from "@solitude/engine/math";
+export {
+  EPS_SPEED_SQ,
+  raySphereFirstHitDistance,
+  vec3,
+} from "@solitude/engine/math";
 export type { Vec3 } from "@solitude/engine/math";
 
 export const SOLITUDE_PLUGIN_API_VERSION = 1;
@@ -73,6 +77,7 @@ export interface ExternalControlledBody {
   };
   id: ExternalEntityId;
   position: Vec3;
+  velocity: Vec3;
 }
 
 export interface ExternalWorld {

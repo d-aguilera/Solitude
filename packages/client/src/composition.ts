@@ -32,7 +32,6 @@ export const remoteRenderPluginIds = [
   "bodyLabels",
   "axialViews",
   "trajectories",
-  "velocitySegments",
 ];
 
 export const remoteRenderPluginCatalog: PluginCatalog = {

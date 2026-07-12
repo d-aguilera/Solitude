@@ -113,6 +113,7 @@ function createFixture(...spheres: ExternalEntityCollisionSphere[]): {
     frame: { forward: vec3.create(0, 1, 0) },
     id: "ship:test",
     position: vec3.zero(),
+    velocity: vec3.zero(),
   };
   return {
     body,

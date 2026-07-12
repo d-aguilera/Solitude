@@ -7,7 +7,6 @@ import { createOrbitTelemetryPlugin } from "./orbitTelemetry/index";
 import { createShipTelemetryPlugin } from "./shipTelemetry/index";
 import { createSolarSystemMaterialsPlugin } from "./solarSystemMaterials/index";
 import { createTrajectoriesPlugin } from "./trajectories/index";
-import { createVelocitySegmentsPlugin } from "./velocitySegments/index";
 
 export const displayPluginIds = [
   "bodyLabels",
@@ -17,7 +16,6 @@ export const displayPluginIds = [
   "orbitTelemetry",
   "shipTelemetry",
   "trajectories",
-  "velocitySegments",
 ];
 
 export const displayPluginCatalog: PluginCatalog = {
@@ -29,5 +27,4 @@ export const displayPluginCatalog: PluginCatalog = {
   shipTelemetry: createShipTelemetryPlugin,
   solarSystemMaterials: createSolarSystemMaterialsPlugin,
   trajectories: createTrajectoriesPlugin,
-  velocitySegments: createVelocitySegmentsPlugin,
 };
