@@ -21,7 +21,6 @@ export const defaultPluginIds = [
   "mainViewLookaround",
   "spacecraftOperator",
   "hud",
-  "bodyLabels",
   "orbitTelemetry",
   "runtimeTelemetry",
   "shipTelemetry",

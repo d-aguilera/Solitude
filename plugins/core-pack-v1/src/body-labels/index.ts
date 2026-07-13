@@ -1,19 +1,16 @@
-import { vec3, type Vec3 } from "@solitude/engine/math";
-import type {
-  GamePlugin,
-  PluginCapabilityRegistry,
-  RuntimeOptions,
-  SceneLabelPlugin,
-} from "@solitude/engine/plugin";
 import {
-  type BodySceneObject,
-  type ControlledBodySceneObject,
-  type LightEmitterSceneObject,
-  type SceneObject,
-} from "@solitude/engine/render";
-import type { EntityId, World } from "@solitude/engine/world";
-import { formatEntityName } from "@solitude/entity-names";
-import { readLocaleRuntimeOption } from "@solitude/localization";
+  formatEntityName,
+  readLocaleRuntimeOption,
+  vec3,
+  type ExternalEntityId,
+  type ExternalPlugin,
+  type ExternalPluginCapabilityRegistry,
+  type ExternalRuntimeOptions,
+  type ExternalSceneLabelPlugin,
+  type ExternalSceneObject,
+  type ExternalWorld,
+  type Vec3,
+} from "@solitude/plugin-api";
 import {
   createBodyLabelLocalization,
   type BodyLabelLocalization,
@@ -21,9 +18,14 @@ import {
 
 const distanceScratch: Vec3 = vec3.zero();
 
-export function createBodyLabelsPlugin(
-  runtimeOptions: RuntimeOptions = {},
-): GamePlugin {
+type LabelledSceneObject = ExternalSceneObject & {
+  kind: "controlledBody" | "lightEmitter" | "orbitalBody";
+  position: Vec3;
+};
+
+export function createPlugin(
+  runtimeOptions: ExternalRuntimeOptions,
+): ExternalPlugin {
   const localization = createBodyLabelLocalization(
     readLocaleRuntimeOption(runtimeOptions),
   );
@@ -35,7 +37,7 @@ export function createBodyLabelsPlugin(
 
 function createSceneLabelPlugin(
   localization: BodyLabelLocalization,
-): SceneLabelPlugin {
+): ExternalSceneLabelPlugin {
   const displayNamesById = new Map<string, string>();
   const labelLinesScratch: string[] = [];
 
@@ -43,9 +45,7 @@ function createSceneLabelPlugin(
     appendLabels: (into, params) => {
       const referencePosition = params.mainFocus.controlledBody.position;
       for (const object of params.scene.objects) {
-        if (!isLabelledObject(object)) {
-          continue;
-        }
+        if (!isLabelledObject(object)) continue;
         if (
           object.kind === "controlledBody" &&
           object.id === params.mainFocus.entityId
@@ -96,9 +96,9 @@ function writeLabelLines(
 
 function getDisplayName(
   displayNamesById: Map<string, string>,
-  object: SceneObject,
-  capabilityRegistry: PluginCapabilityRegistry,
-) {
+  object: LabelledSceneObject,
+  capabilityRegistry: ExternalPluginCapabilityRegistry,
+): string {
   if (object.displayName) return object.displayName;
   let displayName = displayNamesById.get(object.id);
   if (!displayName) {
@@ -109,28 +109,25 @@ function getDisplayName(
 }
 
 function isLabelledObject(
-  object: SceneObject,
-): object is
-  | BodySceneObject
-  | ControlledBodySceneObject
-  | LightEmitterSceneObject {
+  object: ExternalSceneObject,
+): object is LabelledSceneObject {
   return (
-    object.kind === "controlledBody" ||
-    object.kind === "orbitalBody" ||
-    object.kind === "lightEmitter"
+    object.position !== undefined &&
+    (object.kind === "controlledBody" ||
+      object.kind === "orbitalBody" ||
+      object.kind === "lightEmitter")
   );
 }
 
 function getObjectVelocity(
-  world: World,
-  object: BodySceneObject | ControlledBodySceneObject | LightEmitterSceneObject,
+  world: ExternalWorld,
+  object: LabelledSceneObject,
 ): Vec3 | null {
-  if (object.kind !== "controlledBody") return object.velocity;
-  const body = findControlledBody(world, object.id);
-  return body?.velocity ?? null;
+  if (object.kind !== "controlledBody") return object.velocity ?? null;
+  return findControlledBody(world, object.id)?.velocity ?? null;
 }
 
-function findControlledBody(world: World, id: EntityId) {
+function findControlledBody(world: ExternalWorld, id: ExternalEntityId) {
   for (const body of world.controllableBodies) {
     if (body.id === id) return body;
   }

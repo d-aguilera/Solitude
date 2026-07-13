@@ -3,6 +3,7 @@ import type {
   MarkerPlugin,
   PluginCatalog,
   PluginFactory,
+  SceneLabelPlugin,
   ScenePlugin,
   SegmentPlugin,
   ViewPlugin,
@@ -368,6 +369,12 @@ function validateExternalPlugin(
     throw new Error(`External plugin ${expectedId} has invalid capabilities`);
   }
   if (
+    plugin.labels?.appendLabels !== undefined &&
+    typeof plugin.labels.appendLabels !== "function"
+  ) {
+    throw new Error(`External plugin ${expectedId} has invalid labels`);
+  }
+  if (
     plugin.markers?.appendMarkers !== undefined &&
     typeof plugin.markers.appendMarkers !== "function"
   ) {
@@ -399,6 +406,7 @@ function adaptExternalPlugin(plugin: ExternalPlugin): GamePlugin {
   return {
     id: plugin.id,
     capabilities: plugin.capabilities,
+    labels: plugin.labels as SceneLabelPlugin | undefined,
     markers: plugin.markers as MarkerPlugin | undefined,
     requirements: plugin.requirements,
     scene: plugin.scene as ScenePlugin | undefined,

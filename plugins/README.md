@@ -55,6 +55,7 @@ composition.
   rendering. It currently contains:
   - `axialViews`: localized top/front/left/right picture-in-picture camera
     definitions.
+  - `bodyLabels`: localized names, distance, and speed labels for scene bodies.
   - `orbitSegments`: analytic bound-orbit segments around the focused entity's
     dominant gravity body, with keyboard toggle behavior.
   - `solarSystemMaterials`: Earth and Moon texture materials plus pack-owned

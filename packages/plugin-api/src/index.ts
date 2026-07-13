@@ -12,6 +12,7 @@ export type { Mat3, Vec3 } from "@solitude/engine/math";
 
 export const SOLITUDE_PLUGIN_API_VERSION = 1;
 export const keyboardInputCapability = "solitude.keyboardInput.v1";
+export const entityNameProviderCapability = "solitude.entityNameProvider.v1";
 export const renderTextureSourcesCapability =
   "solitude.render.textureSources.v1";
 
@@ -50,6 +51,48 @@ export interface ExternalPluginPackManifest {
 export interface ExternalPluginCapabilityProvider {
   id: string;
   value: unknown;
+}
+
+export interface ExternalPluginCapabilityRegistry {
+  getAll: (id: string) => readonly unknown[];
+}
+
+export interface ExternalEntityNameProvider {
+  formatEntityName: (entityId: ExternalEntityId) => string | null;
+}
+
+export function createEntityNameProvider(
+  provider: ExternalEntityNameProvider,
+): ExternalPluginCapabilityProvider {
+  return { id: entityNameProviderCapability, value: provider };
+}
+
+export function formatEntityName(
+  capabilityRegistry: ExternalPluginCapabilityRegistry,
+  entityId: ExternalEntityId,
+  explicitDisplayName: string | undefined,
+): string {
+  if (explicitDisplayName) return explicitDisplayName;
+  for (const value of capabilityRegistry.getAll(entityNameProviderCapability)) {
+    if (!isEntityNameProvider(value)) continue;
+    const formatted = value.formatEntityName(entityId);
+    if (formatted != null) return formatted;
+  }
+  const separatorIndex = entityId.lastIndexOf(":");
+  const raw =
+    separatorIndex >= 0 ? entityId.slice(separatorIndex + 1) : entityId;
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
+function isEntityNameProvider(
+  value: unknown,
+): value is ExternalEntityNameProvider {
+  const candidate = value as Partial<ExternalEntityNameProvider> | null;
+  return (
+    typeof candidate === "object" &&
+    candidate !== null &&
+    typeof candidate.formatEntityName === "function"
+  );
 }
 
 export interface ExternalKeyHandler {
@@ -251,9 +294,13 @@ export type ExternalRenderMaterial =
     };
 
 export interface ExternalSceneObject {
+  centralEntityId?: ExternalEntityId;
+  displayName?: string;
   id: ExternalEntityId;
   kind?: "controlledBody" | "lightEmitter" | "orbitalBody" | "polyline";
   material?: ExternalRenderMaterial;
+  position?: Vec3;
+  velocity?: Vec3;
 }
 
 export interface ExternalPolylineSceneObject extends ExternalSceneObject {
@@ -319,6 +366,44 @@ export interface ExternalSceneUpdateParams {
 export interface ExternalScenePlugin {
   initScene?: (params: ExternalSceneInitParams) => void;
   updateScene?: (params: ExternalSceneUpdateParams) => void;
+}
+
+export interface ExternalSceneLabelCandidate {
+  anchor: Vec3;
+  id: string;
+  lines: readonly string[];
+  parentId?: ExternalEntityId;
+  priority?: number;
+}
+
+export interface ExternalSceneLabelSink {
+  readonly count: number;
+  readonly items: readonly ExternalSceneLabelCandidate[];
+  addLabel: (
+    id: string,
+    anchor: Vec3,
+    lines: readonly string[],
+    parentId?: ExternalEntityId,
+    priority?: number,
+  ) => ExternalSceneLabelCandidate;
+  reset: () => void;
+}
+
+export interface ExternalSceneLabelProviderParams {
+  capabilityRegistry: ExternalPluginCapabilityRegistry;
+  config: ExternalWorldAndSceneConfig;
+  labelMode: "full" | "nameOnly";
+  mainFocus: ExternalFocusContext;
+  scene: ExternalScene;
+  viewId: string;
+  world: ExternalWorld;
+}
+
+export interface ExternalSceneLabelPlugin {
+  appendLabels?: (
+    into: ExternalSceneLabelSink,
+    params: ExternalSceneLabelProviderParams,
+  ) => void;
 }
 
 export type ExternalViewLayout =
@@ -401,6 +486,7 @@ export interface ExternalPluginRequirements {
 export interface ExternalPlugin {
   capabilities?: readonly ExternalPluginCapabilityProvider[];
   id: string;
+  labels?: ExternalSceneLabelPlugin;
   markers?: ExternalMarkerPlugin;
   requirements?: ExternalPluginRequirements;
   scene?: ExternalScenePlugin;

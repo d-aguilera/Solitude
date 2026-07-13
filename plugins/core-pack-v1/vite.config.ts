@@ -17,6 +17,9 @@ export default defineConfig({
         "axial-views": fileURLToPath(
           new URL("./src/axial-views/index.ts", import.meta.url),
         ),
+        "body-labels": fileURLToPath(
+          new URL("./src/body-labels/index.ts", import.meta.url),
+        ),
         "orbit-segments": fileURLToPath(
           new URL("./src/orbit-segments/index.ts", import.meta.url),
         ),
@@ -70,6 +73,7 @@ export default defineConfig({
               id: "core-pack-v1",
               plugins: [
                 "./axial-views/plugin.json",
+                "./body-labels/plugin.json",
                 "./orbit-segments/plugin.json",
                 "./solar-system-materials/plugin.json",
                 "./targeting-laser/plugin.json",
@@ -91,6 +95,21 @@ export default defineConfig({
               entry: "./index.js",
               environment: "browser",
               id: "axialViews",
+              schemaVersion: 1,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "body-labels/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: 1,
+              entry: "./index.js",
+              environment: "browser",
+              id: "bodyLabels",
               schemaVersion: 1,
             },
             null,
