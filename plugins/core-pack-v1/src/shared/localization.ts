@@ -1,4 +1,4 @@
-import type { ExternalLocale } from "@solitude/plugin-api";
+import type { ExternalLocale } from "@solitude/plugin-api/localization";
 
 export interface PluginLocaleOption {
   readonly label: string;

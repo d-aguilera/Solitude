@@ -1,13 +1,15 @@
 import {
   EPS_LEN_COARSE,
   EPS_SPEED_COARSE,
-  getDominantBodyPrimary,
   vec3,
-  type ExternalControlInput,
-  type ExternalControlledBody,
-  type ExternalHudPanelProvider,
-  type ExternalWorld,
-} from "@solitude/plugin-api";
+} from "@solitude/plugin-api/math";
+import type {
+  ExternalControlInput,
+  ExternalControlledBody,
+  ExternalHudPanelProvider,
+  ExternalWorld,
+} from "@solitude/plugin-api/plugin";
+import { getDominantBodyPrimary } from "@solitude/plugin-api/world";
 import type { AutopilotLocalization } from "./localization";
 
 type AutopilotMode =

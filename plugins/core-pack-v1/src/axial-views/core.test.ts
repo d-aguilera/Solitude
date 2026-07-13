@@ -1,9 +1,9 @@
-import {
-  vec3,
-  type ExternalLocalFrame,
-  type ExternalRuntimeOptions,
-  type ExternalViewDefinition,
-} from "@solitude/plugin-api";
+import { vec3 } from "@solitude/plugin-api/math";
+import type {
+  ExternalLocalFrame,
+  ExternalRuntimeOptions,
+  ExternalViewDefinition,
+} from "@solitude/plugin-api/plugin";
 import { describe, expect, it } from "vitest";
 import { createPlugin } from "./index";
 

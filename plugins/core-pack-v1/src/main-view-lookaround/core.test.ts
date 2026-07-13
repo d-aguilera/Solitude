@@ -1,8 +1,6 @@
-import {
-  keyboardInputCapability,
-  vec3,
-  type ExternalKeyboardInputProvider,
-} from "@solitude/plugin-api";
+import { keyboardInputCapability } from "@solitude/plugin-api/capabilities";
+import { vec3 } from "@solitude/plugin-api/math";
+import type { ExternalKeyboardInputProvider } from "@solitude/plugin-api/plugin";
 import { describe, expect, it } from "vitest";
 import { createTestWorldAndBody } from "../shared/hudTest";
 import { createPlugin } from "./index";

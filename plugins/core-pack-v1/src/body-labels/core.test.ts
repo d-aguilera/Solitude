@@ -1,15 +1,15 @@
-import {
-  createEntityNameProvider,
-  vec3,
-  type ExternalControlledBody,
-  type ExternalPluginCapabilityProvider,
-  type ExternalPluginCapabilityRegistry,
-  type ExternalScene,
-  type ExternalSceneLabelCandidate,
-  type ExternalSceneLabelProviderParams,
-  type ExternalSceneLabelSink,
-  type ExternalSceneObject,
-} from "@solitude/plugin-api";
+import { createEntityNameProvider } from "@solitude/plugin-api/capabilities";
+import { vec3 } from "@solitude/plugin-api/math";
+import type {
+  ExternalControlledBody,
+  ExternalPluginCapabilityProvider,
+  ExternalPluginCapabilityRegistry,
+  ExternalScene,
+  ExternalSceneLabelCandidate,
+  ExternalSceneLabelProviderParams,
+  ExternalSceneLabelSink,
+  ExternalSceneObject,
+} from "@solitude/plugin-api/plugin";
 import { describe, expect, it } from "vitest";
 import { createPlugin } from "./index";
 

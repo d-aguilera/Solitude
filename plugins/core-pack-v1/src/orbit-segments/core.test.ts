@@ -1,11 +1,11 @@
-import {
-  computeStandardGravitationalParameter,
-  type ExternalControlledBody,
-  type ExternalSegmentProviderParams,
-  type ExternalWorldSegment,
-  type ExternalWorldSegmentSink,
-  vec3,
-} from "@solitude/plugin-api";
+import { vec3 } from "@solitude/plugin-api/math";
+import type {
+  ExternalControlledBody,
+  ExternalSegmentProviderParams,
+  ExternalWorldSegment,
+  ExternalWorldSegmentSink,
+} from "@solitude/plugin-api/plugin";
+import { computeStandardGravitationalParameter } from "@solitude/plugin-api/world";
 import { describe, expect, it } from "vitest";
 import { createOrbitSegmentsController } from "./core";
 

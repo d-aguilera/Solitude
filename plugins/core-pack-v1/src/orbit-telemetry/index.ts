@@ -1,9 +1,9 @@
-import {
-  createHudPanelCapability,
-  readLocaleRuntimeOption,
-  type ExternalPlugin,
-  type ExternalRuntimeOptions,
-} from "@solitude/plugin-api";
+import { createHudPanelCapability } from "@solitude/plugin-api/capabilities";
+import { readLocaleRuntimeOption } from "@solitude/plugin-api/localization";
+import type {
+  ExternalPlugin,
+  ExternalRuntimeOptions,
+} from "@solitude/plugin-api/plugin";
 import { createHudPanel } from "./hud";
 import { createOrbitTelemetryLocalization } from "./localization";
 

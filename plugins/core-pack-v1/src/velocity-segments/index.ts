@@ -1,7 +1,7 @@
 import type {
   ExternalPlugin,
   ExternalRuntimeOptions,
-} from "@solitude/plugin-api";
+} from "@solitude/plugin-api/plugin";
 import { createSegmentsPlugin } from "./core";
 
 export function createPlugin(

@@ -4,7 +4,12 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    "./capabilities": "./src/capabilities.ts",
+    "./localization": "./src/localization.ts",
+    "./manifest": "./src/manifest.ts",
+    "./math": "./src/math.ts",
+    "./plugin": "./src/plugin.ts",
+    "./world": "./src/world.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0"

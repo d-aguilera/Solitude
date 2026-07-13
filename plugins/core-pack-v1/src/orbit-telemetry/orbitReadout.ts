@@ -1,15 +1,19 @@
+import type { Vec3 } from "@solitude/plugin-api/math";
 import {
-  computeStandardGravitationalParameter,
   EPS_ECCENTRICITY,
   EPS_SPEED_FINE,
   EPS_TIME_SEC,
-  getDominantBodyPrimary,
   vec3,
-  type ExternalControlledBody,
-  type ExternalEntityId,
-  type ExternalWorld,
-  type Vec3,
-} from "@solitude/plugin-api";
+} from "@solitude/plugin-api/math";
+import type {
+  ExternalControlledBody,
+  ExternalEntityId,
+  ExternalWorld,
+} from "@solitude/plugin-api/plugin";
+import {
+  computeStandardGravitationalParameter,
+  getDominantBodyPrimary,
+} from "@solitude/plugin-api/world";
 
 export interface OrbitReadout {
   primaryId: ExternalEntityId;

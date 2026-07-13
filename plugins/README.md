@@ -5,8 +5,10 @@ hosts discover and load at runtime.
 
 ## Boundary
 
-- External plugin source may import only `@solitude/plugin-api` from the host
-  workspace. The package-boundary check enforces this rule.
+- External plugin source may import only exported `@solitude/plugin-api/*`
+  subpaths from the host workspace. The package-boundary check enforces this
+  rule. There is deliberately no package-root export: plugins select only the
+  API surface they use.
 - External plugin artifacts must be self-contained ES modules with no bare
   package imports. `npm run build:plugins` verifies this before assembling the
   browser plugin set.
@@ -49,6 +51,22 @@ which trusted code can load; they do not sandbox code after loading.
 The module must export `createPlugin`. Factories are retained and instantiated
 with the current runtime options whenever the host creates a plugin
 composition.
+
+## Plugin API Subpaths
+
+- `@solitude/plugin-api/plugin`: type-only structural plugin ABI and runtime
+  contribution contracts.
+- `@solitude/plugin-api/capabilities`: capability ids, constructors, guards,
+  and entity-name lookup.
+- `@solitude/plugin-api/localization`: supported locale type and runtime locale
+  parsing.
+- `@solitude/plugin-api/math`: bundled-safe vector, matrix, intersection, and
+  epsilon helpers. Importing this subpath intentionally includes math runtime
+  code.
+- `@solitude/plugin-api/world`: dominant-body and gravitational-parameter
+  helpers. This subpath depends on the math runtime.
+- `@solitude/plugin-api/manifest`: external loader, set, pack, and plugin
+  manifest contracts used by the host runtime.
 
 ## Current Packs
 

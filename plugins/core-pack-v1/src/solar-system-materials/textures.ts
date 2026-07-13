@@ -1,4 +1,4 @@
-import type { ExternalRenderTextureSourceCatalog } from "@solitude/plugin-api";
+import type { ExternalRenderTextureSourceCatalog } from "@solitude/plugin-api/plugin";
 import {
   earthCloudTextureId,
   earthDayTextureId,

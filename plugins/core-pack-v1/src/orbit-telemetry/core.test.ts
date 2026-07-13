@@ -1,8 +1,6 @@
-import {
-  computeStandardGravitationalParameter,
-  createEntityNameProvider,
-  vec3,
-} from "@solitude/plugin-api";
+import { createEntityNameProvider } from "@solitude/plugin-api/capabilities";
+import { vec3 } from "@solitude/plugin-api/math";
+import { computeStandardGravitationalParameter } from "@solitude/plugin-api/world";
 import { describe, expect, it } from "vitest";
 import {
   columnTexts,

@@ -1,4 +1,4 @@
-import type { ExternalPolylineSceneObject } from "@solitude/plugin-api";
+import type { ExternalPolylineSceneObject } from "@solitude/plugin-api/plugin";
 
 export interface Trajectory {
   intervalMillis: number;

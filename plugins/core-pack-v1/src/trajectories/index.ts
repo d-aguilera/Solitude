@@ -1,7 +1,7 @@
-import {
-  type ExternalPlugin,
-  type ExternalRuntimeOptions,
-} from "@solitude/plugin-api";
+import type {
+  ExternalPlugin,
+  ExternalRuntimeOptions,
+} from "@solitude/plugin-api/plugin";
 import { createScenePlugin } from "./core";
 
 export function createPlugin(

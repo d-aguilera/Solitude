@@ -1,16 +1,16 @@
-import {
-  formatEntityName,
-  readLocaleRuntimeOption,
-  vec3,
-  type ExternalEntityId,
-  type ExternalPlugin,
-  type ExternalPluginCapabilityRegistry,
-  type ExternalRuntimeOptions,
-  type ExternalSceneLabelPlugin,
-  type ExternalSceneObject,
-  type ExternalWorld,
-  type Vec3,
-} from "@solitude/plugin-api";
+import { formatEntityName } from "@solitude/plugin-api/capabilities";
+import { readLocaleRuntimeOption } from "@solitude/plugin-api/localization";
+import type { Vec3 } from "@solitude/plugin-api/math";
+import { vec3 } from "@solitude/plugin-api/math";
+import type {
+  ExternalEntityId,
+  ExternalPlugin,
+  ExternalPluginCapabilityRegistry,
+  ExternalRuntimeOptions,
+  ExternalSceneLabelPlugin,
+  ExternalSceneObject,
+  ExternalWorld,
+} from "@solitude/plugin-api/plugin";
 import {
   createBodyLabelLocalization,
   type BodyLabelLocalization,

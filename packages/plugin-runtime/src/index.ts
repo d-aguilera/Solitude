@@ -9,16 +9,18 @@ import type {
   ViewControlPlugin,
   ViewPlugin,
 } from "@solitude/engine/plugin";
-import {
-  SOLITUDE_PLUGIN_API_VERSION,
-  type ExternalPlugin,
-  type ExternalPluginEnvironment,
-  type ExternalPluginLoaderConfig,
-  type ExternalPluginManifest,
-  type ExternalPluginModule,
-  type ExternalPluginPackManifest,
-  type ExternalPluginSetManifest,
-} from "@solitude/plugin-api";
+import type {
+  ExternalPluginEnvironment,
+  ExternalPluginLoaderConfig,
+  ExternalPluginManifest,
+  ExternalPluginPackManifest,
+  ExternalPluginSetManifest,
+} from "@solitude/plugin-api/manifest";
+import { SOLITUDE_PLUGIN_API_VERSION } from "@solitude/plugin-api/manifest";
+import type {
+  ExternalPlugin,
+  ExternalPluginModule,
+} from "@solitude/plugin-api/plugin";
 
 const PLUGIN_MANIFEST_SCHEMA_VERSION = 1;
 const PLUGIN_PACK_SCHEMA_VERSION = 1;

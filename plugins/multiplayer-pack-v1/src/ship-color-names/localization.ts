@@ -1,4 +1,4 @@
-import type { ExternalLocale } from "@solitude/plugin-api";
+import type { ExternalLocale } from "@solitude/plugin-api/localization";
 import enNames from "./locales/en.json";
 import esNames from "./locales/es.json";
 import frNames from "./locales/fr.json";

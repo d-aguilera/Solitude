@@ -1,8 +1,8 @@
 import {
   createSpacecraftOperatorTelemetryProvider,
   spacecraftOperatorTelemetryCapability,
-  vec3,
-} from "@solitude/plugin-api";
+} from "@solitude/plugin-api/capabilities";
+import { vec3 } from "@solitude/plugin-api/math";
 import { describe, expect, it } from "vitest";
 import {
   columnTexts,

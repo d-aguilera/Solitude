@@ -1,8 +1,8 @@
-import {
-  vec3,
-  type ExternalPolylineSceneObject,
-  type ExternalScene,
-} from "@solitude/plugin-api";
+import { vec3 } from "@solitude/plugin-api/math";
+import type {
+  ExternalPolylineSceneObject,
+  ExternalScene,
+} from "@solitude/plugin-api/plugin";
 import type { TrajectoryPlan } from "./trajectoryPlan";
 import type { Trajectory } from "./types";
 

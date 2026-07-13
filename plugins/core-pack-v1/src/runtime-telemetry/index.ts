@@ -1,10 +1,12 @@
 import {
   createHudPanelCapability,
   createPresentationFrameCapability,
-  readLocaleRuntimeOption,
-  type ExternalPlugin,
-  type ExternalRuntimeOptions,
-} from "@solitude/plugin-api";
+} from "@solitude/plugin-api/capabilities";
+import { readLocaleRuntimeOption } from "@solitude/plugin-api/localization";
+import type {
+  ExternalPlugin,
+  ExternalRuntimeOptions,
+} from "@solitude/plugin-api/plugin";
 import { createHudPanel } from "./hud";
 import { createRuntimeTelemetryLocalization } from "./localization";
 import { createRuntimeTelemetryController } from "./logic";

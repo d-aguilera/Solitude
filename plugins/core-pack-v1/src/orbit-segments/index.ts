@@ -1,8 +1,8 @@
-import {
-  createKeyboardInputCapability,
-  type ExternalPlugin,
-  type ExternalRuntimeOptions,
-} from "@solitude/plugin-api";
+import { createKeyboardInputCapability } from "@solitude/plugin-api/capabilities";
+import type {
+  ExternalPlugin,
+  ExternalRuntimeOptions,
+} from "@solitude/plugin-api/plugin";
 import { createOrbitSegmentsController } from "./core";
 
 const orbitSegmentsToggleAction = "orbitSegmentsToggle";

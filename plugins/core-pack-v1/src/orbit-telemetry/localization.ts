@@ -1,4 +1,4 @@
-import { type ExternalLocale } from "@solitude/plugin-api";
+import type { ExternalLocale } from "@solitude/plugin-api/localization";
 import {
   createPluginLocalization,
   type PluginLocalization,

@@ -1,10 +1,9 @@
-import {
-  EPS_SPEED_SQ,
-  type ExternalControlledBody,
-  type ExternalSegmentPlugin,
-  type Vec3,
-  vec3,
-} from "@solitude/plugin-api";
+import type { Vec3 } from "@solitude/plugin-api/math";
+import { EPS_SPEED_SQ, vec3 } from "@solitude/plugin-api/math";
+import type {
+  ExternalControlledBody,
+  ExternalSegmentPlugin,
+} from "@solitude/plugin-api/plugin";
 
 const VELOCITY_SEGMENT_LENGTH = 500_000;
 const VELOCITY_SEGMENT_INNER_RADIUS = 7;

@@ -1,9 +1,9 @@
+import type { Vec3 } from "@solitude/plugin-api/math";
 import type {
   ExternalControlInput,
   ExternalMainViewLookState,
   ExternalViewControlPlugin,
-  Vec3,
-} from "@solitude/plugin-api";
+} from "@solitude/plugin-api/plugin";
 
 const lookSpeed = 0.0015;
 const cameraOffsetMoveSpeed = 5;

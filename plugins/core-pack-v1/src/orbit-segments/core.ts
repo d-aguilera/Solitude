@@ -1,16 +1,16 @@
+import type { Vec3 } from "@solitude/plugin-api/math";
+import { EPS_ECCENTRICITY, EPS_LEN, vec3 } from "@solitude/plugin-api/math";
+import type {
+  ExternalControlledBody,
+  ExternalSegmentPlugin,
+  ExternalSegmentProviderParams,
+  ExternalWorld,
+  ExternalWorldSegmentSink,
+} from "@solitude/plugin-api/plugin";
 import {
   computeStandardGravitationalParameter,
-  EPS_ECCENTRICITY,
-  EPS_LEN,
   getDominantBodyPrimary,
-  vec3,
-  type ExternalControlledBody,
-  type ExternalSegmentPlugin,
-  type ExternalSegmentProviderParams,
-  type ExternalWorld,
-  type ExternalWorldSegmentSink,
-  type Vec3,
-} from "@solitude/plugin-api";
+} from "@solitude/plugin-api/world";
 
 const ORBIT_SAMPLE_COUNT = 192;
 const ORBIT_LINE_WIDTH = 2;

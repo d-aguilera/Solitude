@@ -3,8 +3,9 @@
 This directory is the plugin catalog and composition layer.
 
 Runtime-discovered packages live in the repository-level `plugins/` workspace.
-They compile against `@solitude/plugin-api` and are not statically imported by
-this catalog. Shared browser presentation plugins live in `core-pack-v1`.
+They compile against focused `@solitude/plugin-api/*` subpaths and are not
+statically imported by this catalog. Shared browser presentation plugins live
+in `core-pack-v1`.
 
 ## Layering rule
 

@@ -1,14 +1,14 @@
-import {
-  type ExternalControlledBody,
-  type ExternalEntityCollisionSphere,
-  type ExternalSegmentProviderParams,
-  type ExternalWorldMarker,
-  type ExternalWorldMarkerSink,
-  type ExternalWorldSegment,
-  type ExternalWorldSegmentSink,
-  type Vec3,
-  vec3,
-} from "@solitude/plugin-api";
+import type { Vec3 } from "@solitude/plugin-api/math";
+import { vec3 } from "@solitude/plugin-api/math";
+import type {
+  ExternalControlledBody,
+  ExternalEntityCollisionSphere,
+  ExternalSegmentProviderParams,
+  ExternalWorldMarker,
+  ExternalWorldMarkerSink,
+  ExternalWorldSegment,
+  ExternalWorldSegmentSink,
+} from "@solitude/plugin-api/plugin";
 import { describe, expect, it } from "vitest";
 import { createTargetingLaserController } from "./core";
 

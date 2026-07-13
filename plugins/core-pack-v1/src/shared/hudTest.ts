@@ -1,20 +1,22 @@
 import {
-  computeStandardGravitationalParameter,
   hudPanelCapability,
   isHudPanelProvider,
-  vec3,
-  type ExternalControlledBody,
-  type ExternalEntityCollisionSphere,
-  type ExternalEntityMotionState,
-  type ExternalGravityMass,
-  type ExternalHudColumnId,
-  type ExternalHudContext,
-  type ExternalHudGrid,
-  type ExternalHudPanelProvider,
-  type ExternalPlugin,
-  type ExternalPluginCapabilityProvider,
-  type ExternalWorld,
-} from "@solitude/plugin-api";
+} from "@solitude/plugin-api/capabilities";
+import { vec3 } from "@solitude/plugin-api/math";
+import type {
+  ExternalControlledBody,
+  ExternalEntityCollisionSphere,
+  ExternalEntityMotionState,
+  ExternalGravityMass,
+  ExternalHudColumnId,
+  ExternalHudContext,
+  ExternalHudGrid,
+  ExternalHudPanelProvider,
+  ExternalPlugin,
+  ExternalPluginCapabilityProvider,
+  ExternalWorld,
+} from "@solitude/plugin-api/plugin";
+import { computeStandardGravitationalParameter } from "@solitude/plugin-api/world";
 
 interface TestHudLine {
   key: string;

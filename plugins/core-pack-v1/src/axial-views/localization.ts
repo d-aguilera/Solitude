@@ -1,4 +1,4 @@
-import type { ExternalLocale } from "@solitude/plugin-api";
+import type { ExternalLocale } from "@solitude/plugin-api/localization";
 import enMessages from "./locales/en.json";
 import esMessages from "./locales/es.json";
 import frMessages from "./locales/fr.json";
