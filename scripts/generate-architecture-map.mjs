@@ -185,9 +185,11 @@ for (const pkg of packages) {
         continue;
       }
 
-      for (const targetSymbolId of collectReferencedPublicSymbols(
+      for (const targetSymbolId of collectReferencedPublicSymbols({
         declaration,
-      )) {
+        sourcePackageName: pkg.name,
+        sourceSymbolId,
+      })) {
         addEdge({
           from: sourceSymbolId,
           kind: "symbol-reference",
@@ -381,7 +383,11 @@ function resolveSourcePath(basePath) {
   return undefined;
 }
 
-function collectReferencedPublicSymbols(declaration) {
+function collectReferencedPublicSymbols({
+  declaration,
+  sourcePackageName,
+  sourceSymbolId,
+}) {
   const references = new Set();
 
   for (const identifier of declaration.getDescendantsOfKind(
@@ -398,14 +404,32 @@ function collectReferencedPublicSymbols(declaration) {
             name: definition.getName(),
           }),
         ) ?? [];
+      const preferredTargetSymbolIds = preferSamePackageSymbols(
+        targetSymbolIds,
+        sourcePackageName,
+      );
 
-      for (const targetSymbolId of targetSymbolIds) {
-        references.add(targetSymbolId);
+      for (const targetSymbolId of preferredTargetSymbolIds) {
+        if (targetSymbolId !== sourceSymbolId) {
+          references.add(targetSymbolId);
+        }
       }
     }
   }
 
   return references;
+}
+
+function preferSamePackageSymbols(symbolIds, packageName) {
+  const samePackageSymbolIds = symbolIds.filter(
+    (symbolId) => symbolPackageName(symbolId) === packageName,
+  );
+  return samePackageSymbolIds.length > 0 ? samePackageSymbolIds : symbolIds;
+}
+
+function symbolPackageName(symbolId) {
+  const match = /^symbol:(.+):\.[^:]*:/.exec(symbolId);
+  return match?.[1];
 }
 
 function addPublicSymbolDeclaration({ declarationPath, name, symbolId }) {
