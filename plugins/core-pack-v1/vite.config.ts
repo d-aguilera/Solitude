@@ -14,6 +14,9 @@ export default defineConfig({
     emptyOutDir: true,
     lib: {
       entry: {
+        "autopilot-hud": fileURLToPath(
+          new URL("./src/autopilot-hud/index.ts", import.meta.url),
+        ),
         "axial-views": fileURLToPath(
           new URL("./src/axial-views/index.ts", import.meta.url),
         ),
@@ -78,6 +81,7 @@ export default defineConfig({
             {
               id: "core-pack-v1",
               plugins: [
+                "./autopilot-hud/plugin.json",
                 "./axial-views/plugin.json",
                 "./body-labels/plugin.json",
                 "./orbit-segments/plugin.json",
@@ -88,6 +92,21 @@ export default defineConfig({
                 "./trajectories/plugin.json",
                 "./velocity-segments/plugin.json",
               ],
+              schemaVersion: 1,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "autopilot-hud/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: 1,
+              entry: "./index.js",
+              environment: "browser",
+              id: "autopilotHud",
               schemaVersion: 1,
             },
             null,

@@ -5,10 +5,10 @@ This note records texture options for Solitude's planets, with Earth as the firs
 ## Current Renderer Fit
 
 - Solar-system planets are authored in `packages/sim/src/plugins/solarSystem/solarSystem.ts` as scaled copies of a shared unit icosphere.
-- Solar-system bodies in `@solitude/sim` differ by RGB fallback color, physical/orbital data, axial tilt, and spin; browser-facing visual materials are applied by `packages/display/src/plugins/solarSystemMaterials/`.
+- Solar-system bodies in `@solitude/sim` differ by RGB fallback color, physical/orbital data, axial tilt, and spin; browser-facing visual materials are applied by `plugins/core-pack-v1/src/solar-system-materials/`.
 - `EntityRenderConfig` and `SceneObject` carry color, mesh, LOD, shading, scale, and optional material metadata.
 - `GpuMeshRenderer` uploads position, normal, and face-anchor attributes; the solid-mesh shader computes lighting and multiplies by `uBaseColor`.
-- The current checked-in Earth and Moon textures live under `packages/display/src/plugins/solarSystemMaterials/assets/`.
+- The current checked-in Earth and Moon textures live under `plugins/core-pack-v1/src/solar-system-materials/assets/`.
 
 The low-friction texture path is to keep the mesh buffer unchanged and derive spherical UVs in the shader from local sphere position/normal. That works well for the current `unitIcosphere` LOD path and avoids expanding every vertex with stored UV coordinates.
 
@@ -41,14 +41,14 @@ Good MVP size: the 8192x4096 land/ocean/ice source converted to JPEG for app bun
 Current app asset:
 
 - Source: NASA Blue Marble 2002 `land_ocean_ice_8192.png`.
-- App file: `packages/display/src/plugins/solarSystemMaterials/assets/earth-blue-marble-land-ocean-ice-8192.jpg`
+- App file: `plugins/core-pack-v1/src/solar-system-materials/assets/earth-blue-marble-land-ocean-ice-8192.jpg`
 - Processing: format conversion from PNG to JPEG at quality 90 only; no gamma or color correction.
 - Cloud source: NASA Blue Marble 2002 `cloud_combined_2048.jpg`.
-- Cloud app file: `packages/display/src/plugins/solarSystemMaterials/assets/earth-blue-marble-clouds-2048.jpg`
+- Cloud app file: `plugins/core-pack-v1/src/solar-system-materials/assets/earth-blue-marble-clouds-2048.jpg`
 
 Current Earth material:
 
-- Authored by the `solarSystemMaterials` display plugin, not by `@solitude/sim`.
+- Authored by the external `solarSystemMaterials` plugin, not by `@solitude/sim`.
 - Base surface uses the land/ocean/ice texture.
 - Clouds render as a slightly larger transparent shell using cloud texture luminance as alpha.
 - Atmosphere renders as a dense saturated blue haze rim on a very slightly larger alpha-blended shell with no extra asset. Keep the shell close to the surface; a large back-face-only shell reads as a flat circular outline instead of atmosphere.
@@ -79,7 +79,7 @@ Good use: second pass if the goal becomes "texture the whole solar system" rathe
 Recommended first Moon source.
 
 - Source: https://svs.gsfc.nasa.gov/4720
-- App file: `packages/display/src/plugins/solarSystemMaterials/assets/moon-lro-lroc-color-4096.jpg`
+- App file: `plugins/core-pack-v1/src/solar-system-materials/assets/moon-lro-lroc-color-4096.jpg`
 - Source asset: `lroc_color_16bit_srgb_4k.tif` from NASA SVS CGI Moon Kit.
 - Processing: converted from 16-bit TIFF to JPEG at quality 90, with metadata stripped; no color or gamma correction.
 - Credit guidance on the source page asks for credit to NASA's Scientific Visualization Studio.

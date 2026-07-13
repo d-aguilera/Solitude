@@ -1,27 +1,18 @@
-import { displayPluginCatalog } from "@solitude/display/plugins/catalog";
 import {
   circularSpeedAtRadius,
   localFrame,
   mat3,
   vec3,
 } from "@solitude/engine/math";
-import {
-  createControlInput,
-  type GamePlugin,
-  type PluginCapabilityProvider,
-  type RuntimeOptions,
-} from "@solitude/engine/plugin";
+import { createControlInput } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
 import {
   createHudGrid,
   getHudColumnIndex,
-  hudPanelCapability,
-  isHudPanelProvider,
   type HudColumnId,
   type HudContext,
   type HudGrid,
-  type HudPanelProvider,
 } from "@solitude/hud/provider";
 import { describe, expect, it } from "vitest";
 import { createHudPanel as createRuntimeTelemetryHudPanel } from "../runtimeTelemetry/hud";
@@ -82,10 +73,9 @@ function createWorldAndShip(): { world: World; ship: ControlledBody } {
 function createHudContext(
   world: World,
   mainFocusBody: ControlledBody,
-  capabilities: readonly PluginCapabilityProvider[] = [],
 ): HudContext {
   return {
-    capabilityRegistry: createPluginCapabilityRegistry(capabilities),
+    capabilityRegistry: createPluginCapabilityRegistry([]),
     controlInput: createControlInput(),
     mainFocus: {
       controlledBody: mainFocusBody,
@@ -111,19 +101,6 @@ describe("telemetry HUD plugins", () => {
     expect(columnTexts(grid, "center")).toEqual(["Time: 01m 05s", "FPS: 60.0"]);
   });
 
-  it("autopilot HUD reads circle-now diagnostics from the focused body", () => {
-    const { world, ship } = createWorldAndShip();
-    const panel = getHudPanelById("autopilotHud", { locale: "en" });
-    const grid = createHudGrid();
-    const context = createHudContext(world, ship);
-    context.controlInput.circleNow = true;
-
-    panel.writeHud(grid, context);
-
-    expect(columnTexts(grid, "rightCenter")).toEqual(["AP: VEL BODY ORB [CN]"]);
-    expect(columnTexts(grid, "center")).toEqual([]);
-  });
-
   it("HUD lines with the same key update or append in place", () => {
     const grid = createHudGrid();
 
@@ -139,25 +116,4 @@ describe("telemetry HUD plugins", () => {
 
 function columnTexts(grid: HudGrid, column: HudColumnId): string[] {
   return grid.columns[getHudColumnIndex(column)].map((line) => line.text);
-}
-
-function getHudPanelById(
-  id: keyof typeof displayPluginCatalog,
-  runtimeOptions: RuntimeOptions = {},
-): HudPanelProvider {
-  const factory = displayPluginCatalog[id];
-  if (!factory) throw new Error(`Display plugin not found: ${id}`);
-  return getHudPanel(factory(runtimeOptions));
-}
-
-function getHudPanel(plugin: GamePlugin): HudPanelProvider {
-  const provider = plugin.capabilities?.find(
-    (capability) =>
-      capability.id === hudPanelCapability &&
-      isHudPanelProvider(capability.value),
-  );
-  if (!provider || !isHudPanelProvider(provider.value)) {
-    throw new Error(`Plugin ${plugin.id} did not provide a HUD panel`);
-  }
-  return provider.value;
 }

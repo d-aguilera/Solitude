@@ -5,7 +5,6 @@
   "type": "module",
   "dependencies": {
     "@solitude/browser": "0.0.0",
-    "@solitude/display": "0.0.0",
     "@solitude/engine": "0.0.0",
     "@solitude/entity-names": "0.0.0",
     "@solitude/hud": "0.0.0",

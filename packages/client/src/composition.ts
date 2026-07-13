@@ -3,7 +3,6 @@ import {
   collectBrowserOverlayProviders,
   type BrowserOverlayProvider,
 } from "@solitude/browser/dom/overlayPorts";
-import { displayPluginCatalog } from "@solitude/display/plugins/catalog";
 import {
   loadPlugins,
   type GamePlugin,
@@ -24,11 +23,9 @@ export const remoteRenderPluginIds = [
   "spacecraftOperator",
   "autopilot",
   "autopilotInput",
-  "autopilotHud",
 ];
 
 export const remoteRenderPluginCatalog: PluginCatalog = {
-  ...displayPluginCatalog,
   ...simPluginCatalog,
 };
 

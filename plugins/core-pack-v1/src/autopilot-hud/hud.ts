@@ -3,10 +3,11 @@ import {
   EPS_SPEED_COARSE,
   getDominantBodyPrimary,
   vec3,
-} from "@solitude/engine/math";
-import type { ControlInput } from "@solitude/engine/plugin";
-import type { ControlledBody, World } from "@solitude/engine/world";
-import type { HudPanelProvider } from "@solitude/hud/provider";
+  type ExternalControlInput,
+  type ExternalControlledBody,
+  type ExternalHudPanelProvider,
+  type ExternalWorld,
+} from "@solitude/plugin-api";
 import type { AutopilotLocalization } from "./localization";
 
 type AutopilotMode =
@@ -18,7 +19,7 @@ type AutopilotMode =
 
 export function createHudPanel(
   localization: AutopilotLocalization,
-): HudPanelProvider {
+): ExternalHudPanelProvider {
   const circleNowTracker = createCircleNowDebugTracker();
 
   return {
@@ -47,8 +48,8 @@ export function createHudPanel(
 interface CircleNowDebugTracker {
   debug: CircleNowHudDebug;
   update: (
-    world: World,
-    ship: ControlledBody,
+    world: ExternalWorld,
+    ship: ExternalControlledBody,
     circleNowActive: boolean,
     nowMs: number,
   ) => void;
@@ -75,8 +76,8 @@ function createCircleNowDebugTracker(): CircleNowDebugTracker {
   };
 
   const update = (
-    world: World,
-    ship: ControlledBody,
+    world: ExternalWorld,
+    ship: ExternalControlledBody,
     circleNowActive: boolean,
     nowMs: number,
   ): void => {
@@ -265,7 +266,7 @@ function appendWarning(current: string, next: string): string {
   return current ? current.concat(" | ", next) : next;
 }
 
-function getAutopilotMode(controlInput: ControlInput): AutopilotMode {
+function getAutopilotMode(controlInput: ExternalControlInput): AutopilotMode {
   if (controlInput.circleNow) return "circleNow";
   if (controlInput.orbit) return "orbit";
   if (controlInput.alignToBody) return "alignToBody";

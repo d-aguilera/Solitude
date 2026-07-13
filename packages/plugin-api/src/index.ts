@@ -3,6 +3,8 @@ import { vec3, type Mat3, type Vec3 } from "@solitude/engine/math";
 export {
   EPS_ECCENTRICITY,
   EPS_LEN,
+  EPS_LEN_COARSE,
+  EPS_SPEED_COARSE,
   EPS_SPEED_FINE,
   EPS_SPEED_SQ,
   EPS_TIME_SEC,

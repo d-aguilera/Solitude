@@ -231,11 +231,12 @@ async function loadWorkspacePackages(root) {
   const packages = [];
 
   for (const pattern of rootPackage.workspaces ?? []) {
-    if (pattern !== "packages/*") {
+    const patternMatch = /^([^*]+)\/\*$/.exec(pattern);
+    if (!patternMatch) {
       throw new Error(`Unsupported workspace pattern: ${pattern}`);
     }
 
-    const workspaceRoot = path.join(root, "packages");
+    const workspaceRoot = path.join(root, patternMatch[1]);
     const entries = await readdir(workspaceRoot, { withFileTypes: true });
 
     for (const entry of entries) {

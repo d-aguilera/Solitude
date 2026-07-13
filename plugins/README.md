@@ -53,6 +53,8 @@ composition.
 
 - `core-pack-v1`: first multi-plugin pack, shared by standalone and remote
   rendering. It currently contains:
+  - `autopilotHud`: localized autopilot mode and circle-now diagnostic HUD
+    readouts for the focused entity.
   - `axialViews`: localized top/front/left/right picture-in-picture camera
     definitions.
   - `bodyLabels`: localized names, distance, and speed labels for scene bodies.
