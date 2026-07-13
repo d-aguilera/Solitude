@@ -22,6 +22,11 @@ export interface PluginLocalization {
 const oneAstronomicalUnitMeters = 149_597_870_700;
 const oneKilometerMeters = 1000;
 const onePercentLightSpeedMps = 2_997_924.58;
+const secondsPerMinute = 60;
+const secondsPerHour = 60 * secondsPerMinute;
+const secondsPerDay = 24 * secondsPerHour;
+const secondsPerYear = 365 * secondsPerDay;
+const simTimePartsScratch: string[] = [];
 
 export const pluginLocaleOptions: readonly PluginLocaleOption[] = [
   { locale: "en", label: "English" },
@@ -58,6 +63,66 @@ export function createPluginLocalization(
       formatFixed(value, fractionDigits, fixed0, fixed1, fixed2, fixed3),
     formatMessage,
   };
+}
+
+export function formatSimTime(totalSeconds: number): string {
+  if (totalSeconds < 0) totalSeconds = 0;
+  let remaining = Math.floor(totalSeconds);
+  const years = Math.floor(remaining / secondsPerYear);
+  remaining -= years * secondsPerYear;
+  const days = Math.floor(remaining / secondsPerDay);
+  remaining -= days * secondsPerDay;
+  const hours = Math.floor(remaining / secondsPerHour);
+  remaining -= hours * secondsPerHour;
+  const minutes = Math.floor(remaining / secondsPerMinute);
+  remaining -= minutes * secondsPerMinute;
+
+  let count = 0;
+  if (years > 0) simTimePartsScratch[count++] = years.toString().concat("y");
+  if (days > 0 || years > 0)
+    simTimePartsScratch[count++] = days.toString().concat("d");
+  if (hours > 0 || days > 0 || years > 0)
+    simTimePartsScratch[count++] = formatTwoDigit(hours).concat("h");
+  if (minutes > 0 || hours > 0 || days > 0 || years > 0)
+    simTimePartsScratch[count++] = formatTwoDigit(minutes).concat("m");
+  simTimePartsScratch[count++] = formatTwoDigit(remaining).concat("s");
+  switch (count) {
+    case 1:
+      return simTimePartsScratch[0];
+    case 2:
+      return simTimePartsScratch[0].concat(" ", simTimePartsScratch[1]);
+    case 3:
+      return simTimePartsScratch[0].concat(
+        " ",
+        simTimePartsScratch[1],
+        " ",
+        simTimePartsScratch[2],
+      );
+    case 4:
+      return simTimePartsScratch[0].concat(
+        " ",
+        simTimePartsScratch[1],
+        " ",
+        simTimePartsScratch[2],
+        " ",
+        simTimePartsScratch[3],
+      );
+    default:
+      return simTimePartsScratch[0].concat(
+        " ",
+        simTimePartsScratch[1],
+        " ",
+        simTimePartsScratch[2],
+        " ",
+        simTimePartsScratch[3],
+        " ",
+        simTimePartsScratch[4],
+      );
+  }
+}
+
+function formatTwoDigit(value: number): string {
+  return value < 10 ? "0".concat(value.toString()) : value.toString();
 }
 
 function formatMessage(

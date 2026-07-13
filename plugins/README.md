@@ -58,8 +58,12 @@ composition.
   - `bodyLabels`: localized names, distance, and speed labels for scene bodies.
   - `orbitSegments`: analytic bound-orbit segments around the focused entity's
     dominant gravity body, with keyboard toggle behavior.
+  - `orbitTelemetry`: localized orbit state, apsis, circularization, and timing
+    readouts for the focused entity.
   - `solarSystemMaterials`: Earth and Moon texture materials plus pack-owned
     texture assets.
+  - `shipTelemetry`: localized speed and spacecraft control telemetry for the
+    focused entity.
   - `targetingLaser`: targeting beam, target lock, impact/miss markers, and
     keyboard toggle behavior.
   - `trajectories`: sampled ring-buffer polylines for controllable bodies and

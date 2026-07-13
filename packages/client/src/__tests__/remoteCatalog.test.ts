@@ -8,7 +8,7 @@ import {
 } from "../composition";
 
 describe("remote render plugin catalog", () => {
-  it("composes remote sim behavior separately from display HUD providers", () => {
+  it("keeps external telemetry out of the static host catalog", () => {
     const plugins = loadPlugins({
       catalog: remoteRenderPluginCatalog,
       ids: remoteRenderPluginIds,
@@ -18,9 +18,6 @@ describe("remote render plugin catalog", () => {
     const autopilotHud = plugins.find((plugin) => plugin.id === "autopilotHud");
     const autopilotInput = plugins.find(
       (plugin) => plugin.id === "autopilotInput",
-    );
-    const shipTelemetry = plugins.find(
-      (plugin) => plugin.id === "shipTelemetry",
     );
     const spacecraftOperator = plugins.find(
       (plugin) => plugin.id === "spacecraftOperator",
@@ -35,9 +32,10 @@ describe("remote render plugin catalog", () => {
     expect(
       autopilotHud?.capabilities?.some(({ id }) => id === hudPanelCapability),
     ).toBe(true);
-    expect(
-      shipTelemetry?.capabilities?.some(({ id }) => id === hudPanelCapability),
-    ).toBe(true);
+    expect(plugins.some((plugin) => plugin.id === "orbitTelemetry")).toBe(
+      false,
+    );
+    expect(plugins.some((plugin) => plugin.id === "shipTelemetry")).toBe(false);
     expect(spacecraftOperator?.capabilities?.length).toBeGreaterThan(0);
   });
 });

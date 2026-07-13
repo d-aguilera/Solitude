@@ -1,12 +1,14 @@
-import { formatSimTime } from "@solitude/engine/render";
-import { formatEntityName } from "@solitude/entity-names";
-import type { HudPanelProvider } from "@solitude/hud/provider";
+import {
+  formatEntityName,
+  type ExternalHudPanelProvider,
+} from "@solitude/plugin-api";
+import { formatSimTime } from "../shared/localization";
 import type { OrbitTelemetryLocalization } from "./localization";
 import { computeOrbitReadoutInto, createOrbitReadout } from "./orbitReadout";
 
 export function createHudPanel(
   localization: OrbitTelemetryLocalization,
-): HudPanelProvider {
+): ExternalHudPanelProvider {
   const orbitReadout = createOrbitReadout();
   let primaryDisplayNameId = "";
   let primaryDisplayName = "";

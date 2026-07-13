@@ -1,15 +1,15 @@
+import { type ExternalLocale } from "@solitude/plugin-api";
 import {
-  createSolitudeLocalization,
-  type SolitudeLocale,
-  type SolitudeLocalization,
-} from "@solitude/localization";
+  createPluginLocalization,
+  type PluginLocalization,
+} from "../shared/localization";
 import enMessages from "./locales/en.json";
 import esMessages from "./locales/es.json";
 import frMessages from "./locales/fr.json";
 
 type OrbitTelemetryMessageTable = typeof enMessages;
 
-export interface OrbitTelemetryLocalization extends SolitudeLocalization {
+export interface OrbitTelemetryLocalization extends PluginLocalization {
   readonly apoapsisTimeEmpty: string;
   readonly deltaVRadialPrefix: string;
   readonly deltaVTangentialPrefix: string;
@@ -34,12 +34,12 @@ const messagesByLocale = {
   en: enMessages,
   es: esMessages,
   fr: frMessages,
-} satisfies Record<SolitudeLocale, OrbitTelemetryMessageTable>;
+} satisfies Record<ExternalLocale, OrbitTelemetryMessageTable>;
 
 export function createOrbitTelemetryLocalization(
-  locale: SolitudeLocale,
+  locale: ExternalLocale,
 ): OrbitTelemetryLocalization {
-  const base = createSolitudeLocalization(locale);
+  const base = createPluginLocalization(locale);
   const messages = messagesByLocale[locale];
   return {
     ...base,

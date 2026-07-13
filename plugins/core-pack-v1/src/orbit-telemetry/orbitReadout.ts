@@ -1,16 +1,18 @@
 import {
+  computeStandardGravitationalParameter,
   EPS_ECCENTRICITY,
   EPS_SPEED_FINE,
   EPS_TIME_SEC,
   getDominantBodyPrimary,
   vec3,
+  type ExternalControlledBody,
+  type ExternalEntityId,
+  type ExternalWorld,
   type Vec3,
-} from "@solitude/engine/math";
-import { parameters } from "@solitude/engine/runtime";
-import type { ControlledBody, EntityId, World } from "@solitude/engine/world";
+} from "@solitude/plugin-api";
 
 export interface OrbitReadout {
-  primaryId: EntityId;
+  primaryId: ExternalEntityId;
   distance: number;
   speed: number;
   semiMajorAxis: number;
@@ -58,8 +60,8 @@ export function createOrbitReadout(): OrbitReadout {
 
 export function computeOrbitReadoutInto(
   out: OrbitReadout,
-  world: World,
-  body: ControlledBody,
+  world: ExternalWorld,
+  body: ExternalControlledBody,
 ): boolean {
   const primary = getDominantBodyPrimary(world, body.position);
   if (!primary) return false;
@@ -72,7 +74,7 @@ export function computeOrbitReadoutInto(
 
   const v2 = vec3.lengthSq(vScratch);
   const v = Math.sqrt(v2);
-  const mu = parameters.newtonG * primary.mass;
+  const mu = computeStandardGravitationalParameter(primary.mass);
   if (mu === 0) return false;
 
   const rHat = vec3.scaleInto(rHatScratch, 1 / r, rScratch);

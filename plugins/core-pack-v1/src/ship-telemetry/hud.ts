@@ -1,17 +1,17 @@
-import { vec3 } from "@solitude/engine/math";
-import type { PluginCapabilityRegistry } from "@solitude/engine/plugin";
-import type { HudPanelProvider } from "@solitude/hud/provider";
 import {
   isSpacecraftOperatorTelemetryProvider,
-  spacecraftOperatorTelemetryCapabilityId,
-  type SpacecraftOperatorTelemetry,
-} from "@solitude/hud/telemetry";
+  spacecraftOperatorTelemetryCapability,
+  vec3,
+  type ExternalHudPanelProvider,
+  type ExternalPluginCapabilityRegistry,
+  type ExternalSpacecraftOperatorTelemetry,
+} from "@solitude/plugin-api";
 import type { ShipTelemetryLocalization } from "./localization";
 
 export function createHudPanel(
   localization: ShipTelemetryLocalization,
-): HudPanelProvider {
-  let telemetry: SpacecraftOperatorTelemetry | null = null;
+): ExternalHudPanelProvider {
+  let telemetry: ExternalSpacecraftOperatorTelemetry | null = null;
   let telemetryResolved = false;
 
   return {
@@ -53,11 +53,11 @@ export function createHudPanel(
 }
 
 function resolveTelemetry(
-  registry: PluginCapabilityRegistry,
-): SpacecraftOperatorTelemetry | null {
+  registry: ExternalPluginCapabilityRegistry,
+): ExternalSpacecraftOperatorTelemetry | null {
   return (
     registry
-      .getAll(spacecraftOperatorTelemetryCapabilityId)
+      .getAll(spacecraftOperatorTelemetryCapability)
       .find(isSpacecraftOperatorTelemetryProvider)?.telemetry ?? null
   );
 }

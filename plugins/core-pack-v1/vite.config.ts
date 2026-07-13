@@ -23,8 +23,14 @@ export default defineConfig({
         "orbit-segments": fileURLToPath(
           new URL("./src/orbit-segments/index.ts", import.meta.url),
         ),
+        "orbit-telemetry": fileURLToPath(
+          new URL("./src/orbit-telemetry/index.ts", import.meta.url),
+        ),
         "solar-system-materials": fileURLToPath(
           new URL("./src/solar-system-materials/index.ts", import.meta.url),
+        ),
+        "ship-telemetry": fileURLToPath(
+          new URL("./src/ship-telemetry/index.ts", import.meta.url),
         ),
         "targeting-laser": fileURLToPath(
           new URL("./src/targeting-laser/index.ts", import.meta.url),
@@ -75,7 +81,9 @@ export default defineConfig({
                 "./axial-views/plugin.json",
                 "./body-labels/plugin.json",
                 "./orbit-segments/plugin.json",
+                "./orbit-telemetry/plugin.json",
                 "./solar-system-materials/plugin.json",
+                "./ship-telemetry/plugin.json",
                 "./targeting-laser/plugin.json",
                 "./trajectories/plugin.json",
                 "./velocity-segments/plugin.json",
@@ -118,6 +126,21 @@ export default defineConfig({
           type: "asset",
         });
         this.emitFile({
+          fileName: "orbit-telemetry/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: 1,
+              entry: "./index.js",
+              environment: "browser",
+              id: "orbitTelemetry",
+              schemaVersion: 1,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
           fileName: "solar-system-materials/plugin.json",
           source: `${JSON.stringify(
             {
@@ -140,6 +163,21 @@ export default defineConfig({
               entry: "./index.js",
               environment: "browser",
               id: "orbitSegments",
+              schemaVersion: 1,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "ship-telemetry/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: 1,
+              entry: "./index.js",
+              environment: "browser",
+              id: "shipTelemetry",
               schemaVersion: 1,
             },
             null,

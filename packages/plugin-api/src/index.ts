@@ -3,7 +3,9 @@ import { vec3, type Mat3, type Vec3 } from "@solitude/engine/math";
 export {
   EPS_ECCENTRICITY,
   EPS_LEN,
+  EPS_SPEED_FINE,
   EPS_SPEED_SQ,
+  EPS_TIME_SEC,
   mat3,
   raySphereFirstHitDistance,
   vec3,
@@ -13,8 +15,11 @@ export type { Mat3, Vec3 } from "@solitude/engine/math";
 export const SOLITUDE_PLUGIN_API_VERSION = 1;
 export const keyboardInputCapability = "solitude.keyboardInput.v1";
 export const entityNameProviderCapability = "solitude.entityNameProvider.v1";
+export const hudPanelCapability = "solitude.hud.panel.v1";
 export const renderTextureSourcesCapability =
   "solitude.render.textureSources.v1";
+export const spacecraftOperatorTelemetryCapability =
+  "spacecraft.operatorTelemetry.v1";
 
 export type ExternalPluginEnvironment = "browser" | "server";
 export type ExternalRuntimeOptions = Readonly<Record<string, string>>;
@@ -110,6 +115,86 @@ export function createKeyboardInputCapability(
   provider: ExternalKeyboardInputProvider,
 ): ExternalPluginCapabilityProvider {
   return { id: keyboardInputCapability, value: provider };
+}
+
+export type ExternalHudColumnId =
+  | "left"
+  | "leftCenter"
+  | "center"
+  | "rightCenter"
+  | "right";
+
+export interface ExternalHudGrid {
+  addLine: (column: ExternalHudColumnId, key: string, text: string) => void;
+  appendLine: (
+    column: ExternalHudColumnId,
+    key: string,
+    text: string,
+    separator: string,
+  ) => void;
+}
+
+export interface ExternalHudContext {
+  capabilityRegistry: ExternalPluginCapabilityRegistry;
+  controlInput: ExternalControlInput;
+  mainFocus: ExternalFocusContext;
+  nowMs: number;
+  simTimeMillis: number;
+  world: ExternalWorld;
+}
+
+export interface ExternalHudPanelProvider {
+  writeHud: (grid: ExternalHudGrid, context: ExternalHudContext) => void;
+}
+
+export function createHudPanelCapability(
+  provider: ExternalHudPanelProvider,
+): ExternalPluginCapabilityProvider {
+  return { id: hudPanelCapability, value: provider };
+}
+
+export function isHudPanelProvider(
+  value: unknown,
+): value is ExternalHudPanelProvider {
+  const candidate = value as Partial<ExternalHudPanelProvider> | null;
+  return (
+    typeof candidate === "object" &&
+    candidate !== null &&
+    typeof candidate.writeHud === "function"
+  );
+}
+
+export interface ExternalSpacecraftOperatorTelemetry {
+  currentRcsLevel: number;
+  currentThrustLevel: number;
+}
+
+export interface ExternalSpacecraftOperatorTelemetryProvider {
+  readonly telemetry: ExternalSpacecraftOperatorTelemetry;
+}
+
+export function createSpacecraftOperatorTelemetryProvider(
+  telemetry: ExternalSpacecraftOperatorTelemetry,
+): ExternalPluginCapabilityProvider {
+  return {
+    id: spacecraftOperatorTelemetryCapability,
+    value: { telemetry } satisfies ExternalSpacecraftOperatorTelemetryProvider,
+  };
+}
+
+export function isSpacecraftOperatorTelemetryProvider(
+  value: unknown,
+): value is ExternalSpacecraftOperatorTelemetryProvider {
+  const candidate =
+    value as Partial<ExternalSpacecraftOperatorTelemetryProvider> | null;
+  return (
+    typeof candidate === "object" &&
+    candidate !== null &&
+    typeof candidate.telemetry === "object" &&
+    candidate.telemetry !== null &&
+    typeof candidate.telemetry.currentThrustLevel === "number" &&
+    typeof candidate.telemetry.currentRcsLevel === "number"
+  );
 }
 
 export function readLocaleRuntimeOption(

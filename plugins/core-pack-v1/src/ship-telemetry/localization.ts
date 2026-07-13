@@ -1,15 +1,15 @@
+import type { ExternalLocale } from "@solitude/plugin-api";
 import {
-  createSolitudeLocalization,
-  type SolitudeLocale,
-  type SolitudeLocalization,
-} from "@solitude/localization";
+  createPluginLocalization,
+  type PluginLocalization,
+} from "../shared/localization";
 import enMessages from "./locales/en.json";
 import esMessages from "./locales/es.json";
 import frMessages from "./locales/fr.json";
 
 type ShipTelemetryMessageTable = typeof enMessages;
 
-export interface ShipTelemetryLocalization extends SolitudeLocalization {
+export interface ShipTelemetryLocalization extends PluginLocalization {
   readonly rcsPrefix: string;
   readonly speedPrefix: string;
   readonly thrustPrefix: string;
@@ -19,12 +19,12 @@ const messagesByLocale = {
   en: enMessages,
   es: esMessages,
   fr: frMessages,
-} satisfies Record<SolitudeLocale, ShipTelemetryMessageTable>;
+} satisfies Record<ExternalLocale, ShipTelemetryMessageTable>;
 
 export function createShipTelemetryLocalization(
-  locale: SolitudeLocale,
+  locale: ExternalLocale,
 ): ShipTelemetryLocalization {
-  const base = createSolitudeLocalization(locale);
+  const base = createPluginLocalization(locale);
   const messages = messagesByLocale[locale];
   return {
     ...base,

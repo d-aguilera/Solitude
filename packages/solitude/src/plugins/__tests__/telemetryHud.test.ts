@@ -11,12 +11,8 @@ import {
   type PluginCapabilityProvider,
   type RuntimeOptions,
 } from "@solitude/engine/plugin";
-import {
-  createPluginCapabilityRegistry,
-  parameters,
-} from "@solitude/engine/runtime";
+import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
-import { createEntityNameProvider } from "@solitude/entity-names";
 import {
   createHudGrid,
   getHudColumnIndex,
@@ -27,11 +23,6 @@ import {
   type HudGrid,
   type HudPanelProvider,
 } from "@solitude/hud/provider";
-import {
-  createSpacecraftOperatorTelemetry,
-  createSpacecraftOperatorTelemetryProvider,
-  spacecraftOperatorTelemetryCapabilityId,
-} from "@solitude/hud/telemetry";
 import { describe, expect, it } from "vitest";
 import { createHudPanel as createRuntimeTelemetryHudPanel } from "../runtimeTelemetry/hud";
 import { createRuntimeTelemetryLocalization } from "../runtimeTelemetry/localization";
@@ -107,84 +98,6 @@ function createHudContext(
 }
 
 describe("telemetry HUD plugins", () => {
-  it("shipTelemetry writes ship state and control cells", () => {
-    const { world, ship } = createWorldAndShip();
-    ship.velocity = vec3.create(10, 0, 0);
-    const panel = getHudPanelById("shipTelemetry", { locale: "en" });
-    const grid = createHudGrid();
-    const telemetry = createSpacecraftOperatorTelemetry();
-    telemetry.currentThrustLevel = 5;
-    telemetry.currentRcsLevel = -1;
-    const context = createHudContext(world, ship, [
-      createSpacecraftOperatorTelemetryProvider(telemetry),
-    ]);
-
-    panel.writeHud(grid, context);
-
-    expect(columnTexts(grid, "right")).toEqual([
-      "Speed: 36 km/h",
-      "Thrust:  5",
-      "RCS: -1.00",
-    ]);
-  });
-
-  it("shipTelemetry writes localized speed without thousands separators", () => {
-    const { world, ship } = createWorldAndShip();
-    ship.velocity = vec3.create(29_579.72, 0, 0);
-    const panel = getHudPanelById("shipTelemetry", { locale: "es" });
-    const grid = createHudGrid();
-    const telemetry = createSpacecraftOperatorTelemetry();
-    telemetry.currentRcsLevel = 1.25;
-    const context = createHudContext(world, ship, [
-      createSpacecraftOperatorTelemetryProvider(telemetry),
-    ]);
-
-    panel.writeHud(grid, context);
-
-    expect(columnTexts(grid, "right")).toEqual([
-      "Velocidad: 106487 km/h",
-      "Empuje:  0",
-      "RCS:  1,25",
-    ]);
-  });
-
-  it("shipTelemetry reads the focused body instead of the legacy main body", () => {
-    const { world, ship } = createWorldAndShip();
-    ship.velocity = vec3.create(10, 0, 0);
-    const panel = getHudPanelById("shipTelemetry", { locale: "en" });
-    const grid = createHudGrid();
-    const context = createHudContext(world, ship);
-
-    panel.writeHud(grid, context);
-
-    expect(columnTexts(grid, "right")).toEqual(["Speed: 36 km/h"]);
-  });
-
-  it("shipTelemetry caches the spacecraft operator telemetry provider", () => {
-    const { world, ship } = createWorldAndShip();
-    const grid = createHudGrid();
-    const telemetry = createSpacecraftOperatorTelemetry();
-    telemetry.currentThrustLevel = 7;
-    const capabilities = [createSpacecraftOperatorTelemetryProvider(telemetry)];
-    let lookupCount = 0;
-    const context = createHudContext(world, ship);
-    context.capabilityRegistry = {
-      getAll: (id) => {
-        lookupCount++;
-        return id === spacecraftOperatorTelemetryCapabilityId
-          ? capabilities.map((capability) => capability.value)
-          : [];
-      },
-    };
-    const panel = getHudPanelById("shipTelemetry", { locale: "en" });
-
-    panel.writeHud(grid, context);
-    panel.writeHud(grid, context);
-
-    expect(lookupCount).toBe(1);
-    expect(columnTexts(grid, "right")).toContain("Thrust:  7");
-  });
-
   it("runtimeTelemetry writes simulation time and fps cells", () => {
     const { world, ship } = createWorldAndShip();
     const localization = createRuntimeTelemetryLocalization("en");
@@ -196,116 +109,6 @@ describe("telemetry HUD plugins", () => {
     panel.writeHud(grid, context);
 
     expect(columnTexts(grid, "center")).toEqual(["Time: 01m 05s", "FPS: 60.0"]);
-  });
-
-  it("orbitTelemetry writes orbit and circularization cells", () => {
-    const { world, ship } = createWorldAndShip();
-    const panel = getHudPanelById("orbitTelemetry", { locale: "en" });
-    const grid = createHudGrid();
-    const context = createHudContext(world, ship);
-    panel.writeHud(grid, context);
-
-    expect(columnTexts(grid, "left")[0]).toBe("Orbit: Earth (bound)");
-    expect(columnTexts(grid, "left")[1]).toBe("d: 6771 km");
-    expect(columnTexts(grid, "left")[2]).toBe("Pe/Ap: 6771 km / 6771 km");
-    expect(columnTexts(grid, "left")[3]).toBe("e: 0.000");
-    expect(columnTexts(grid, "left")[4]).toBe("i: 0.0°");
-    expect(columnTexts(grid, "leftCenter")[0]).toContain("Δv Rad: ");
-    expect(columnTexts(grid, "leftCenter")[1]).toContain("Δv Tan: ");
-  });
-
-  it("orbitTelemetry writes escape periapsis and inbound timing", () => {
-    const { world, ship } = createWorldAndShip();
-    const planetMass = 5.972e24;
-    const eccentricity = 1.5;
-    const periapsis = 10_000_000;
-    const radius = 25_000_000;
-    const semiLatusRectum = periapsis * (1 + eccentricity);
-    const mu = parameters.newtonG * planetMass;
-    const angularMomentum = Math.sqrt(mu * semiLatusRectum);
-    const radialSpeed = -((mu / angularMomentum) * eccentricity);
-    const tangentialSpeed = angularMomentum / radius;
-    const panel = getHudPanelById("orbitTelemetry", { locale: "en" });
-    const grid = createHudGrid();
-    const context = createHudContext(world, ship);
-
-    ship.position = vec3.create(radius, 0, 0);
-    ship.velocity = vec3.create(radialSpeed, tangentialSpeed, 0);
-    panel.writeHud(grid, context);
-
-    expect(columnTexts(grid, "left")[0]).toBe("Orbit: Earth (escape)");
-    expect(columnTexts(grid, "left")[1]).toBe("d: 25000 km");
-    expect(columnTexts(grid, "left")[2]).toBe("Pe/Ap: 10000 km / --");
-    expect(columnTexts(grid, "leftCenter")[2]).toMatch(/^Pe in: /);
-    expect(columnTexts(grid, "leftCenter")[2]).not.toBe("Pe in: --");
-    expect(columnTexts(grid, "leftCenter")[3]).toBe("Ap in: --");
-
-    const outboundGrid = createHudGrid();
-    ship.velocity = vec3.create(-radialSpeed, tangentialSpeed, 0);
-    panel.writeHud(outboundGrid, context);
-
-    expect(columnTexts(outboundGrid, "left")[2]).toBe("Pe/Ap: 10000 km / --");
-    expect(columnTexts(outboundGrid, "leftCenter")[2]).toBe("Pe in: --");
-    expect(columnTexts(outboundGrid, "leftCenter")[3]).toBe("Ap in: --");
-  });
-
-  it("orbitTelemetry keeps delta-v direction labels stable inside the deadband", () => {
-    const { world, ship } = createWorldAndShip();
-    const orbitRadius = vec3.length(ship.position);
-    const circularSpeed = circularSpeedAtRadius(5.972e24, orbitRadius);
-    const panel = getHudPanelById("orbitTelemetry", { locale: "en" });
-    const grid = createHudGrid();
-    const context = createHudContext(world, ship);
-
-    ship.velocity = vec3.create(-1, circularSpeed - 1, 0);
-    panel.writeHud(grid, context);
-
-    expect(columnTexts(grid, "leftCenter")[0]).toContain(" out");
-    expect(columnTexts(grid, "leftCenter")[1]).toContain(" pro");
-
-    ship.velocity = vec3.create(0.000001, circularSpeed + 0.000001, 0);
-    panel.writeHud(grid, context);
-
-    expect(columnTexts(grid, "leftCenter")[0]).toContain(" out");
-    expect(columnTexts(grid, "leftCenter")[1]).toContain(" pro");
-
-    ship.velocity = vec3.create(0.02, circularSpeed + 0.02, 0);
-    panel.writeHud(grid, context);
-
-    expect(columnTexts(grid, "leftCenter")[0]).toContain(" in");
-    expect(columnTexts(grid, "leftCenter")[1]).toContain(" retro");
-  });
-
-  it("orbitTelemetry localizes primary body names", () => {
-    const { world, ship } = createWorldAndShip();
-    const panel = getHudPanelById("orbitTelemetry", { locale: "es" });
-    const grid = createHudGrid();
-    const context = createHudContext(world, ship, [
-      createEntityNameProvider({
-        formatEntityName: (entityId) =>
-          entityId === "planet:earth" ? "Tierra" : null,
-      }),
-    ]);
-    panel.writeHud(grid, context);
-
-    expect(columnTexts(grid, "left")[0]).toBe("Órbita: Tierra (ligada)");
-    expect(columnTexts(grid, "left")[1]).toBe("d: 6771 km");
-    expect(columnTexts(grid, "left")[3]).toBe("e: 0,000");
-    expect(columnTexts(grid, "left")[4]).toBe("i: 0,0°");
-  });
-
-  it("orbitTelemetry writes empty orbit cells when no primary is available", () => {
-    const { world, ship } = createWorldAndShip();
-    world.collisionSpheres.length = 0;
-    world.gravityMasses.length = 0;
-    const panel = getHudPanelById("orbitTelemetry", { locale: "en" });
-    const grid = createHudGrid();
-    const context = createHudContext(world, ship);
-
-    panel.writeHud(grid, context);
-
-    expect(columnTexts(grid, "left")).toEqual(["Orbit: --", "d: --"]);
-    expect(columnTexts(grid, "leftCenter")).toEqual([]);
   });
 
   it("autopilot HUD reads circle-now diagnostics from the focused body", () => {
