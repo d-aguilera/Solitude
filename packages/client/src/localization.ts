@@ -6,7 +6,6 @@ import {
 import enMessages from "./locales/en.json";
 import esMessages from "./locales/es.json";
 import frMessages from "./locales/fr.json";
-import type { ShipColorNames } from "./shipColorNames";
 
 type ClientMessageTable = typeof enMessages;
 
@@ -34,18 +33,12 @@ export interface ClientLocalization extends SolitudeLocalization {
       readonly tick: number;
     }) => string;
   };
-  readonly remoteIdentity: {
-    readonly entityPrefix: string;
-    readonly gameNone: string;
-    readonly gamePrefix: string;
-  };
   readonly rendererFailure: {
     readonly contextLost: string;
     readonly program: string;
     readonly title: string;
     readonly unavailable: string;
   };
-  readonly shipColorNames: ShipColorNames;
 }
 
 const messagesByLocale = {
@@ -91,34 +84,11 @@ export function createClientLocalization(
           tick: base.formatFixed(summary.tick, 0),
         }),
     },
-    remoteIdentity: {
-      entityPrefix: messages["remoteIdentity.entityPrefix"],
-      gameNone: messages["remoteIdentity.gameNone"],
-      gamePrefix: messages["remoteIdentity.gamePrefix"],
-    },
     rendererFailure: {
       contextLost: messages["renderer.failure.contextLost"],
       program: messages["renderer.failure.program"],
       title: messages["renderer.failure.title"],
       unavailable: messages["renderer.failure.unavailable"],
-    },
-    shipColorNames: {
-      blue: messages["shipColor.blue"],
-      coral: messages["shipColor.coral"],
-      gold: messages["shipColor.gold"],
-      green: messages["shipColor.green"],
-      ice: messages["shipColor.ice"],
-      indigo: messages["shipColor.indigo"],
-      lime: messages["shipColor.lime"],
-      magenta: messages["shipColor.magenta"],
-      mint: messages["shipColor.mint"],
-      orange: messages["shipColor.orange"],
-      red: messages["shipColor.red"],
-      rose: messages["shipColor.rose"],
-      stone: messages["shipColor.stone"],
-      teal: messages["shipColor.teal"],
-      violet: messages["shipColor.violet"],
-      white: messages["shipColor.white"],
     },
   };
 }

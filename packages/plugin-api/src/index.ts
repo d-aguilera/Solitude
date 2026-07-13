@@ -18,6 +18,7 @@ export const SOLITUDE_PLUGIN_API_VERSION = 1;
 export const keyboardInputCapability = "solitude.keyboardInput.v1";
 export const entityNameProviderCapability = "solitude.entityNameProvider.v1";
 export const hudPanelCapability = "solitude.hud.panel.v1";
+export const multiplayerSessionCapability = "solitude.multiplayer.session.v1";
 export const presentationFrameCapability =
   "solitude.browser.presentationFrame.v1";
 export const renderTextureSourcesCapability =
@@ -191,6 +192,29 @@ export function isPresentationFrameProvider(
     typeof candidate === "object" &&
     candidate !== null &&
     typeof candidate.updatePresentationFrame === "function"
+  );
+}
+
+export interface ExternalMultiplayerSessionProvider {
+  getEntityId: () => string;
+  getGameId: () => string;
+}
+
+export function createMultiplayerSessionCapability(
+  provider: ExternalMultiplayerSessionProvider,
+): ExternalPluginCapabilityProvider {
+  return { id: multiplayerSessionCapability, value: provider };
+}
+
+export function isMultiplayerSessionProvider(
+  value: unknown,
+): value is ExternalMultiplayerSessionProvider {
+  const candidate = value as Partial<ExternalMultiplayerSessionProvider> | null;
+  return (
+    typeof candidate === "object" &&
+    candidate !== null &&
+    typeof candidate.getEntityId === "function" &&
+    typeof candidate.getGameId === "function"
   );
 }
 

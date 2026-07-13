@@ -48,6 +48,12 @@ describe("remote render plugin catalog", () => {
     expect(plugins.some((plugin) => plugin.id === "runtimeTelemetry")).toBe(
       false,
     );
+    expect(plugins.some((plugin) => plugin.id === "remoteIdentityHud")).toBe(
+      false,
+    );
+    expect(plugins.some((plugin) => plugin.id === "shipColorNames")).toBe(
+      false,
+    );
     expect(spacecraftOperator?.capabilities?.length).toBeGreaterThan(0);
   });
 

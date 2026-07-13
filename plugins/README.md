@@ -29,10 +29,11 @@ declares its schema version, exact host API version, target environment, id,
 and ES-module entry URL. The runtime validates every pack and plugin manifest
 before importing any plugin module.
 
-`plugins/browser-plugin-packs.json` is the deployment assembly list. Adding a
-pack there makes `npm run build:plugins` build its workspace package, validate
-and copy its complete artifact directory, and publish its pack manifest through
-the browser plugin set.
+`plugins/browser-plugin-packs.json` declares the ordered packs for each browser
+target. `npm run build:plugins` builds the union of those workspace packages,
+validates their artifacts, and emits separate standalone and multiplayer
+public roots. Each product bundle copies only its target's packs and publishes
+only those pack manifests through its browser plugin set.
 
 The default assembled loader configuration allows only `self`. JSON plugin
 documents are fetched without following redirects, and browser pages enforce a
@@ -49,7 +50,7 @@ The module must export `createPlugin`. Factories are retained and instantiated
 with the current runtime options whenever the host creates a plugin
 composition.
 
-## Current Pack
+## Current Packs
 
 - `core-pack-v1`: first multi-plugin pack, shared by standalone and remote
   rendering. It currently contains:
@@ -77,5 +78,12 @@ composition.
   - `velocitySegments`: forward/backward world segments along the focused
     entity's velocity vector.
 
-The core pack is the migration destination for existing first-party plugins as
-the external API grows to support their required contribution types.
+The core pack is the migration destination for first-party plugins shared by
+both browser products as the external API grows to support their required
+contribution types.
+
+- `multiplayer-pack-v1`: multiplayer-only presentation plugins. It contains:
+  - `remoteIdentityHud`: localized live game and assigned-entity identity HUD,
+    backed by the client-owned multiplayer-session capability.
+  - `shipColorNames`: localized entity names derived from server-assigned ship
+    render colors.

@@ -8,15 +8,9 @@ const config = JSON.parse(
   await readFile(resolve("plugins/browser-plugin-packs.json"), "utf8"),
 );
 
-if (
-  config.schemaVersion !== 1 ||
-  !Array.isArray(config.packs) ||
-  !config.packs.every((id) => typeof id === "string" && id.length > 0)
-) {
-  throw new Error("Invalid browser plugin pack build configuration");
-}
+const packIds = collectPackIds(config);
 
-await Promise.all(config.packs.map(buildPack));
+await Promise.all(packIds.map(buildPack));
 
 async function buildPack(directory) {
   const packageJson = JSON.parse(
@@ -43,4 +37,34 @@ function run(command, args) {
       }
     });
   });
+}
+
+function collectPackIds(value) {
+  if (
+    value.schemaVersion !== 2 ||
+    typeof value.targets !== "object" ||
+    value.targets === null ||
+    Array.isArray(value.targets)
+  ) {
+    throw new Error("Invalid browser plugin pack build configuration");
+  }
+
+  const targets = Object.entries(value.targets);
+  if (
+    targets.length === 0 ||
+    !targets.every(
+      ([target, packs]) =>
+        /^[a-z][a-z0-9-]*$/.test(target) &&
+        Array.isArray(packs) &&
+        packs.length > 0 &&
+        packs.every(
+          (id) => typeof id === "string" && /^[a-z][a-z0-9-]*$/.test(id),
+        ) &&
+        new Set(packs).size === packs.length,
+    )
+  ) {
+    throw new Error("Invalid browser plugin pack build configuration");
+  }
+
+  return [...new Set(targets.flatMap(([, packs]) => packs))];
 }

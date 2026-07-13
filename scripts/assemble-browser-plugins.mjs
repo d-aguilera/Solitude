@@ -6,47 +6,65 @@ import { resolve } from "node:path";
 const config = JSON.parse(
   await readFile(resolve("plugins/browser-plugin-packs.json"), "utf8"),
 );
-const publicRoot = resolve("dist/plugin-public/plugins");
+const publicRoot = resolve("dist/plugin-public");
 
 validateBuildConfig(config);
 await rm(publicRoot, { force: true, recursive: true });
 await mkdir(publicRoot, { recursive: true });
 
-const packManifestUrls = await Promise.all(config.packs.map(assemblePack));
-await writeFile(
-  resolve(publicRoot, "loader.json"),
-  `${JSON.stringify(
-    {
-      allowedOrigins: ["self"],
-      pluginSet: "./plugin-set.json",
-      schemaVersion: 1,
-    },
-    null,
-    2,
-  )}\n`,
-);
-await writeFile(
-  resolve(publicRoot, "plugin-set.json"),
-  `${JSON.stringify(
-    {
-      packs: packManifestUrls,
-      schemaVersion: 1,
-    },
-    null,
-    2,
-  )}\n`,
+const targets = Object.entries(config.targets);
+const packIds = [...new Set(targets.flatMap(([, packs]) => packs))];
+const packageRoots = new Map(await Promise.all(packIds.map(validateBuiltPack)));
+await Promise.all(
+  targets.map(([target, packs]) => assembleTarget(target, packs, packageRoots)),
 );
 
-async function assemblePack(packId) {
+async function validateBuiltPack(packId) {
   const packageRoot = resolve("dist/plugin-packages", packId);
   const packManifest = JSON.parse(
     await readFile(resolve(packageRoot, "pack.json"), "utf8"),
   );
   validatePackManifest(packManifest, packId);
   await assertPackModulesAreSelfContained(packageRoot);
+  return [packId, packageRoot];
+}
 
+async function assembleTarget(target, packs, packageRoots) {
+  const pluginsRoot = resolve(publicRoot, target, "plugins");
+  await mkdir(pluginsRoot, { recursive: true });
+  const packManifestUrls = await Promise.all(
+    packs.map((packId) => assemblePack(packId, pluginsRoot, packageRoots)),
+  );
+  await writeFile(
+    resolve(pluginsRoot, "loader.json"),
+    `${JSON.stringify(
+      {
+        allowedOrigins: ["self"],
+        pluginSet: "./plugin-set.json",
+        schemaVersion: 1,
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  await writeFile(
+    resolve(pluginsRoot, "plugin-set.json"),
+    `${JSON.stringify(
+      {
+        packs: packManifestUrls,
+        schemaVersion: 1,
+      },
+      null,
+      2,
+    )}\n`,
+  );
+}
+
+async function assemblePack(packId, pluginsRoot, packageRoots) {
+  const packageRoot = packageRoots.get(packId);
+  if (!packageRoot) throw new Error(`Plugin pack was not built: ${packId}`);
   const relativeTarget = `packs/${packId}`;
-  await cp(packageRoot, resolve(publicRoot, relativeTarget), {
+  await cp(packageRoot, resolve(pluginsRoot, relativeTarget), {
     recursive: true,
   });
   return `./${relativeTarget}/pack.json`;
@@ -80,12 +98,27 @@ async function assertSelfContainedModule(filename) {
 
 function validateBuildConfig(value) {
   if (
-    value.schemaVersion !== 1 ||
-    !Array.isArray(value.packs) ||
-    !value.packs.every(
-      (id) => typeof id === "string" && /^[a-z][a-z0-9-]*$/.test(id),
-    ) ||
-    new Set(value.packs).size !== value.packs.length
+    value.schemaVersion !== 2 ||
+    typeof value.targets !== "object" ||
+    value.targets === null ||
+    Array.isArray(value.targets)
+  ) {
+    throw new Error("Invalid browser plugin pack build configuration");
+  }
+
+  const targets = Object.entries(value.targets);
+  if (
+    targets.length === 0 ||
+    !targets.every(
+      ([target, packs]) =>
+        /^[a-z][a-z0-9-]*$/.test(target) &&
+        Array.isArray(packs) &&
+        packs.length > 0 &&
+        packs.every(
+          (id) => typeof id === "string" && /^[a-z][a-z0-9-]*$/.test(id),
+        ) &&
+        new Set(packs).size === packs.length,
+    )
   ) {
     throw new Error("Invalid browser plugin pack build configuration");
   }

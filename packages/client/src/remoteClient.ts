@@ -17,6 +17,7 @@ import {
   solitudeSpacecraftKeyMap,
 } from "./client";
 import { createClientLocalization } from "./localization";
+import { createMultiplayerSessionPlugin } from "./multiplayerSession";
 import {
   createSocketUrl,
   queryElement,
@@ -26,8 +27,6 @@ import {
 } from "./pageShared";
 import { createSolitudeRemoteClientRenderer } from "./remoteClientRenderer";
 import { getRemoteDebugAction } from "./remoteDebugInput";
-import { createRemoteIdentityHudPlugin } from "./remoteIdentityHud";
-import { createShipColorNamesPlugin } from "./shipColorNames";
 
 async function main(): Promise<void> {
   const externalPlugins = await loadBrowserPlugins(
@@ -62,11 +61,9 @@ async function main(): Promise<void> {
     onFatalError: showFatalRenderError,
     runtimeOptions,
     plugins: [
-      createShipColorNamesPlugin(localization.shipColorNames),
-      createRemoteIdentityHudPlugin({
+      createMultiplayerSessionPlugin({
         getEntityId: () => fields.entityId.value,
         getGameId: () => fields.gameId.value,
-        localization,
       }),
     ],
   });

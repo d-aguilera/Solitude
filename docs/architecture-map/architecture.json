@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T17:40:43.688Z",
+  "generatedAt": "2026-07-13T18:42:05.921Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -364,6 +364,12 @@
       "kind": "package",
       "label": "@solitude-plugins/core-pack-v1",
       "packageName": "@solitude-plugins/core-pack-v1"
+    },
+    {
+      "id": "pkg:@solitude-plugins/multiplayer-pack-v1",
+      "kind": "package",
+      "label": "@solitude-plugins/multiplayer-pack-v1",
+      "packageName": "@solitude-plugins/multiplayer-pack-v1"
     },
     {
       "id": "pkg:@solitude/browser",
@@ -1111,6 +1117,14 @@
       "label": "createLocalEntityPredictionProvider",
       "packageName": "@solitude/sim",
       "parent": "module:@solitude/sim:./localPrediction",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:.:createMultiplayerSessionCapability",
+      "kind": "symbol",
+      "label": "createMultiplayerSessionCapability",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:.",
       "symbolKind": "function"
     },
     {
@@ -1946,6 +1960,14 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/plugin-api:.:ExternalMultiplayerSessionProvider",
+      "kind": "symbol",
+      "label": "ExternalMultiplayerSessionProvider",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:.",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:.:ExternalPlugin",
       "kind": "symbol",
       "label": "ExternalPlugin",
@@ -2754,6 +2776,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/plugin-api:.:isMultiplayerSessionProvider",
+      "kind": "symbol",
+      "label": "isMultiplayerSessionProvider",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:.",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:.:isPresentationFrameProvider",
       "kind": "symbol",
       "label": "isPresentationFrameProvider",
@@ -3184,6 +3214,14 @@
       "packageName": "@solitude/protocol",
       "parent": "module:@solitude/protocol:./protocol",
       "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:.:multiplayerSessionCapability",
+      "kind": "symbol",
+      "label": "multiplayerSessionCapability",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:.",
+      "symbolKind": "const"
     },
     {
       "id": "symbol:@solitude/engine:./plugin:MutableControlState",
@@ -4898,6 +4936,12 @@
       "to": "pkg:@solitude/plugin-api"
     },
     {
+      "id": "dependency:pkg:@solitude-plugins/multiplayer-pack-v1->pkg:@solitude/plugin-api",
+      "from": "pkg:@solitude-plugins/multiplayer-pack-v1",
+      "kind": "dependency",
+      "to": "pkg:@solitude/plugin-api"
+    },
+    {
       "id": "dependency:pkg:@solitude/browser->pkg:@solitude/engine",
       "from": "pkg:@solitude/browser",
       "kind": "dependency",
@@ -4926,18 +4970,6 @@
       "from": "pkg:@solitude/client",
       "kind": "dependency",
       "to": "pkg:@solitude/engine"
-    },
-    {
-      "id": "dependency:pkg:@solitude/client->pkg:@solitude/entity-names",
-      "from": "pkg:@solitude/client",
-      "kind": "dependency",
-      "to": "pkg:@solitude/entity-names"
-    },
-    {
-      "id": "dependency:pkg:@solitude/client->pkg:@solitude/hud",
-      "from": "pkg:@solitude/client",
-      "kind": "dependency",
-      "to": "pkg:@solitude/hud"
     },
     {
       "id": "dependency:pkg:@solitude/client->pkg:@solitude/input",
@@ -10634,6 +10666,24 @@
       "to": "symbol:@solitude/plugin-api:.:keyboardInputCapability"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:createMultiplayerSessionCapability->symbol:@solitude/plugin-api:.:ExternalMultiplayerSessionProvider",
+      "from": "symbol:@solitude/plugin-api:.:createMultiplayerSessionCapability",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalMultiplayerSessionProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:createMultiplayerSessionCapability->symbol:@solitude/plugin-api:.:ExternalPluginCapabilityProvider",
+      "from": "symbol:@solitude/plugin-api:.:createMultiplayerSessionCapability",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalPluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:createMultiplayerSessionCapability->symbol:@solitude/plugin-api:.:multiplayerSessionCapability",
+      "from": "symbol:@solitude/plugin-api:.:createMultiplayerSessionCapability",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:multiplayerSessionCapability"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:.:createPresentationFrameCapability->symbol:@solitude/plugin-api:.:ExternalPluginCapabilityProvider",
       "from": "symbol:@solitude/plugin-api:.:createPresentationFrameCapability",
       "kind": "symbol-reference",
@@ -11448,6 +11498,12 @@
       "from": "symbol:@solitude/plugin-api:.:isHudPanelProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:.:ExternalHudPanelProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:isMultiplayerSessionProvider->symbol:@solitude/plugin-api:.:ExternalMultiplayerSessionProvider",
+      "from": "symbol:@solitude/plugin-api:.:isMultiplayerSessionProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalMultiplayerSessionProvider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:.:isPresentationFrameProvider->symbol:@solitude/plugin-api:.:ExternalPresentationFrameProvider",

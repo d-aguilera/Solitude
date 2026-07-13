@@ -1,27 +1,15 @@
-import type { GamePlugin } from "@solitude/engine/plugin";
-import type { RGB } from "@solitude/engine/render";
-import type { EntityId } from "@solitude/engine/world";
-import { createEntityNameProvider } from "@solitude/entity-names";
-
-export type ShipColorNameKey =
-  | "blue"
-  | "coral"
-  | "gold"
-  | "green"
-  | "ice"
-  | "indigo"
-  | "lime"
-  | "magenta"
-  | "mint"
-  | "orange"
-  | "red"
-  | "rose"
-  | "stone"
-  | "teal"
-  | "violet"
-  | "white";
-
-export type ShipColorNames = Readonly<Record<ShipColorNameKey, string>>;
+import {
+  createEntityNameProvider,
+  readLocaleRuntimeOption,
+  type ExternalPlugin,
+  type ExternalRgb,
+  type ExternalRuntimeOptions,
+} from "@solitude/plugin-api";
+import {
+  getShipColorNames,
+  type ShipColorNameKey,
+  type ShipColorNames,
+} from "./localization";
 
 const shipColorNameKeyByRgb = new Map<number, ShipColorNameKey>([
   [rgbKey({ r: 64, g: 180, b: 255 }), "blue"],
@@ -42,8 +30,16 @@ const shipColorNameKeyByRgb = new Map<number, ShipColorNameKey>([
   [rgbKey({ r: 150, g: 255, b: 170 }), "mint"],
 ]);
 
-export function createShipColorNamesPlugin(names: ShipColorNames): GamePlugin {
-  const namesByEntityId = new Map<EntityId, string>();
+export function createPlugin(
+  runtimeOptions: ExternalRuntimeOptions,
+): ExternalPlugin {
+  return createShipColorNamesPlugin(
+    getShipColorNames(readLocaleRuntimeOption(runtimeOptions)),
+  );
+}
+
+function createShipColorNamesPlugin(names: ShipColorNames): ExternalPlugin {
+  const namesByEntityId = new Map<string, string>();
 
   return {
     id: "shipColorNames",
@@ -53,18 +49,22 @@ export function createShipColorNamesPlugin(names: ShipColorNames): GamePlugin {
       }),
     ],
     scene: {
-      initScene: ({ scene }) => {
+      initScene: ({ config, world }) => {
         namesByEntityId.clear();
-        for (const object of scene.objects) {
-          if (object.kind !== "controlledBody") continue;
-          const nameKey = shipColorNameKeyByRgb.get(rgbKey(object.color));
-          if (nameKey) namesByEntityId.set(object.id, names[nameKey]);
+        for (const body of world.controllableBodies) {
+          const entity = config.entities.find(
+            (candidate) => candidate.id === body.id,
+          );
+          const color = entity?.components.renderable?.color;
+          if (!color) continue;
+          const nameKey = shipColorNameKeyByRgb.get(rgbKey(color));
+          if (nameKey) namesByEntityId.set(body.id, names[nameKey]);
         }
       },
     },
   };
 }
 
-function rgbKey(color: RGB): number {
+function rgbKey(color: ExternalRgb): number {
   return (color.r << 16) | (color.g << 8) | color.b;
 }

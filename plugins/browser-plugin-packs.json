@@ -1,4 +1,7 @@
 {
-  "schemaVersion": 1,
-  "packs": ["core-pack-v1"]
+  "schemaVersion": 2,
+  "targets": {
+    "standalone": ["core-pack-v1"],
+    "multiplayer": ["core-pack-v1", "multiplayer-pack-v1"]
+  }
 }
