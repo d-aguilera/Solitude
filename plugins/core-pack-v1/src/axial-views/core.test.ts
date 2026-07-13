@@ -1,27 +1,28 @@
-import { localFrame, mat3, vec3 } from "@solitude/engine/math";
-import type { ViewDefinition } from "@solitude/engine/render";
-import type { WorldAndSceneConfig } from "@solitude/engine/world";
+import {
+  vec3,
+  type ExternalLocalFrame,
+  type ExternalRuntimeOptions,
+  type ExternalViewDefinition,
+} from "@solitude/plugin-api";
 import { describe, expect, it } from "vitest";
-import { createAxialViewsPlugin } from "./index";
+import { createPlugin } from "./index";
 
 describe("axial view plugin", () => {
-  it("places the front camera ahead of the craft and points it back at the craft", () => {
+  it("places the front camera ahead of the craft and points it back", () => {
     const front = getView("front");
     expect(front.initialCameraOffset).toEqual(vec3.create(0, 500_000, 4_850));
 
-    const frame = localFrame.zero();
+    const frame = createFrame(vec3.zero(), vec3.zero(), vec3.zero());
     front.updateFrame({
       frame,
       mainFocus: {
         controlledBody: {
-          angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
-          frame: localFrame.clone({
-            forward: vec3.create(0, 1, 0),
-            right: vec3.create(1, 0, 0),
-            up: vec3.create(0, 0, 1),
-          }),
+          frame: createFrame(
+            vec3.create(0, 1, 0),
+            vec3.create(1, 0, 0),
+            vec3.create(0, 0, 1),
+          ),
           id: "ship:test",
-          orientation: mat3.identity,
           position: vec3.zero(),
           velocity: vec3.zero(),
         },
@@ -34,6 +35,10 @@ describe("axial view plugin", () => {
     expectVec3Close(frame.right, vec3.create(-1, 0, 0));
     expectVec3Close(frame.up, vec3.create(0, 0, 1));
   });
+
+  it("uses the locale supplied by the host", () => {
+    expect(getView("front", { locale: "fr" }).title).toBe("Avant");
+  });
 });
 
 function expectVec3Close(
@@ -45,18 +50,27 @@ function expectVec3Close(
   expect(actual.z).toBeCloseTo(expected.z);
 }
 
-function getView(id: string): ViewDefinition {
-  const views: ViewDefinition[] = [];
-  createAxialViewsPlugin().views?.registerViews?.(
+function getView(
+  id: string,
+  runtimeOptions: ExternalRuntimeOptions = {},
+): ExternalViewDefinition {
+  const views: ExternalViewDefinition[] = [];
+  createPlugin(runtimeOptions).views?.registerViews(
     {
       addMainViewCameraRig: () => {},
       addView: (view) => views.push(view),
     },
-    {
-      config: { entities: [] } as unknown as WorldAndSceneConfig,
-    },
+    { config: { entities: [] } },
   );
   const view = views.find((item) => item.id === id);
   if (!view) throw new Error(`Missing view: ${id}`);
   return view;
+}
+
+function createFrame(
+  forward: ReturnType<typeof vec3.create>,
+  right: ReturnType<typeof vec3.create>,
+  up: ReturnType<typeof vec3.create>,
+): ExternalLocalFrame {
+  return { forward, right, up };
 }

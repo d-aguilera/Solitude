@@ -1,4 +1,4 @@
-import type { SolitudeLocale } from "@solitude/localization";
+import type { ExternalLocale } from "@solitude/plugin-api";
 import enMessages from "./locales/en.json";
 import esMessages from "./locales/es.json";
 import frMessages from "./locales/fr.json";
@@ -14,10 +14,10 @@ const messagesByLocale = {
   en: enMessages,
   es: esMessages,
   fr: frMessages,
-} satisfies Record<SolitudeLocale, AxialViewsLocalization>;
+} satisfies Record<ExternalLocale, AxialViewsLocalization>;
 
 export function createAxialViewsLocalization(
-  locale: SolitudeLocale,
+  locale: ExternalLocale,
 ): AxialViewsLocalization {
   return messagesByLocale[locale];
 }

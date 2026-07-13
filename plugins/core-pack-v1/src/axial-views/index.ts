@@ -1,15 +1,16 @@
-import { vec3 } from "@solitude/engine/math";
-import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
-import type {
-  ViewDefinition,
-  ViewFrameUpdateParams,
-} from "@solitude/engine/render";
-import { readLocaleRuntimeOption } from "@solitude/localization";
+import {
+  readLocaleRuntimeOption,
+  vec3,
+  type ExternalPlugin,
+  type ExternalRuntimeOptions,
+  type ExternalViewDefinition,
+  type ExternalViewFrameUpdateParams,
+} from "@solitude/plugin-api";
 import { createAxialViewsLocalization } from "./localization";
 
-export function createAxialViewsPlugin(
-  runtimeOptions: RuntimeOptions = {},
-): GamePlugin {
+export function createPlugin(
+  runtimeOptions: ExternalRuntimeOptions,
+): ExternalPlugin {
   const localization = createAxialViewsLocalization(
     readLocaleRuntimeOption(runtimeOptions),
   );
@@ -30,7 +31,7 @@ export function createAxialViewsPlugin(
 
 function createAxialViewDefinitions(
   localization: ReturnType<typeof createAxialViewsLocalization>,
-): ViewDefinition[] {
+): ExternalViewDefinition[] {
   return [
     {
       id: "top",
@@ -85,43 +86,46 @@ function createAxialViewDefinitions(
   ];
 }
 
-function updateTopViewFrame({ frame, mainFocus }: ViewFrameUpdateParams): void {
+function updateTopViewFrame({
+  frame,
+  mainFocus,
+}: ExternalViewFrameUpdateParams): void {
   const controlledBodyFrame = mainFocus.controlledBody.frame;
   vec3.copyInto(frame.right, controlledBodyFrame.right);
-  vec3.scaleInto(frame.forward, -1, controlledBodyFrame.up); // forward = -up
-  vec3.copyInto(frame.up, controlledBodyFrame.forward); // up = forward
+  vec3.scaleInto(frame.forward, -1, controlledBodyFrame.up);
+  vec3.copyInto(frame.up, controlledBodyFrame.forward);
 }
 
 function updateLeftViewFrame({
   frame,
   mainFocus,
-}: ViewFrameUpdateParams): void {
+}: ExternalViewFrameUpdateParams): void {
   const controlledBodyFrame = mainFocus.controlledBody.frame;
   vec3.copyInto(frame.up, controlledBodyFrame.up);
-  vec3.copyInto(frame.forward, controlledBodyFrame.right); // forward = right
+  vec3.copyInto(frame.forward, controlledBodyFrame.right);
   vec3.copyInto(frame.right, controlledBodyFrame.forward);
-  vec3.scaleInto(frame.right, -1, frame.right); // right = -forward
+  vec3.scaleInto(frame.right, -1, frame.right);
 }
 
 function updateRightViewFrame({
   frame,
   mainFocus,
-}: ViewFrameUpdateParams): void {
+}: ExternalViewFrameUpdateParams): void {
   const controlledBodyFrame = mainFocus.controlledBody.frame;
   vec3.copyInto(frame.up, controlledBodyFrame.up);
   vec3.copyInto(frame.forward, controlledBodyFrame.right);
-  vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -right
+  vec3.scaleInto(frame.forward, -1, frame.forward);
   vec3.copyInto(frame.right, controlledBodyFrame.forward);
 }
 
 function updateFrontViewFrame({
   frame,
   mainFocus,
-}: ViewFrameUpdateParams): void {
+}: ExternalViewFrameUpdateParams): void {
   const controlledBodyFrame = mainFocus.controlledBody.frame;
   vec3.copyInto(frame.up, controlledBodyFrame.up);
   vec3.copyInto(frame.right, controlledBodyFrame.right);
-  vec3.scaleInto(frame.right, -1, frame.right); // right = -right
+  vec3.scaleInto(frame.right, -1, frame.right);
   vec3.copyInto(frame.forward, controlledBodyFrame.forward);
-  vec3.scaleInto(frame.forward, -1, frame.forward); // forward = -forward
+  vec3.scaleInto(frame.forward, -1, frame.forward);
 }

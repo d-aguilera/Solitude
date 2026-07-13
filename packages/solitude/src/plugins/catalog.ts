@@ -22,7 +22,6 @@ export const defaultPluginIds = [
   "spacecraftOperator",
   "hud",
   "bodyLabels",
-  "axialViews",
   "orbitTelemetry",
   "runtimeTelemetry",
   "shipTelemetry",

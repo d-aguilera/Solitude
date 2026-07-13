@@ -14,6 +14,9 @@ export default defineConfig({
     emptyOutDir: true,
     lib: {
       entry: {
+        "axial-views": fileURLToPath(
+          new URL("./src/axial-views/index.ts", import.meta.url),
+        ),
         "orbit-segments": fileURLToPath(
           new URL("./src/orbit-segments/index.ts", import.meta.url),
         ),
@@ -66,12 +69,28 @@ export default defineConfig({
             {
               id: "core-pack-v1",
               plugins: [
+                "./axial-views/plugin.json",
                 "./orbit-segments/plugin.json",
                 "./solar-system-materials/plugin.json",
                 "./targeting-laser/plugin.json",
                 "./trajectories/plugin.json",
                 "./velocity-segments/plugin.json",
               ],
+              schemaVersion: 1,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "axial-views/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: 1,
+              entry: "./index.js",
+              environment: "browser",
+              id: "axialViews",
               schemaVersion: 1,
             },
             null,

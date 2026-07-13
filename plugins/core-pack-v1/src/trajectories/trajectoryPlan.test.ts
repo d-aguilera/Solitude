@@ -57,7 +57,11 @@ describe("buildTrajectoryPlan", () => {
 
 function createShip(): ExternalControlledBody {
   return {
-    frame: { forward: vec3.create(0, 1, 0) },
+    frame: {
+      forward: vec3.create(0, 1, 0),
+      right: vec3.create(1, 0, 0),
+      up: vec3.create(0, 0, 1),
+    },
     id: "ship:test",
     position: vec3.zero(),
     velocity: vec3.create(0, 1, 0),

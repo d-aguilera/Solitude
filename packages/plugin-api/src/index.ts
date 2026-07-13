@@ -17,6 +17,7 @@ export const renderTextureSourcesCapability =
 
 export type ExternalPluginEnvironment = "browser" | "server";
 export type ExternalRuntimeOptions = Readonly<Record<string, string>>;
+export type ExternalLocale = "en" | "es" | "fr";
 export type ExternalEntityId = string;
 export type ExternalControlAction = string;
 export type ExternalControlInput = Record<ExternalControlAction, boolean>;
@@ -68,6 +69,16 @@ export function createKeyboardInputCapability(
   return { id: keyboardInputCapability, value: provider };
 }
 
+export function readLocaleRuntimeOption(
+  runtimeOptions: ExternalRuntimeOptions,
+): ExternalLocale {
+  const locale = runtimeOptions.locale;
+  if (!locale) return "en";
+  const language = locale.split("-")[0]?.toLowerCase();
+  if (language === "es" || language === "fr") return language;
+  return "en";
+}
+
 export type ExternalRenderTextureSourceCatalog = Readonly<
   Record<string, string>
 >;
@@ -103,10 +114,14 @@ export interface ExternalGravityMass {
   state: ExternalEntityMotionState;
 }
 
+export interface ExternalLocalFrame {
+  forward: Vec3;
+  right: Vec3;
+  up: Vec3;
+}
+
 export interface ExternalControlledBody extends ExternalEntityMotionState {
-  frame: {
-    forward: Vec3;
-  };
+  frame: ExternalLocalFrame;
 }
 
 export interface ExternalWorld {
@@ -306,6 +321,56 @@ export interface ExternalScenePlugin {
   updateScene?: (params: ExternalSceneUpdateParams) => void;
 }
 
+export type ExternalViewLayout =
+  | { kind: "primary" }
+  | {
+      avoidHud?: boolean;
+      horizontal: "left" | "right";
+      kind: "pip";
+      vertical: "top" | "bottom";
+    };
+
+export interface ExternalMainViewLookState {
+  azimuth: number;
+  elevation: number;
+}
+
+export interface ExternalViewFrameUpdateParams {
+  frame: ExternalLocalFrame;
+  mainFocus: ExternalFocusContext;
+  mainViewLookState: ExternalMainViewLookState;
+}
+
+export interface ExternalViewDefinition {
+  id: string;
+  initialCameraOffset: Vec3;
+  labelMode: "full" | "nameOnly";
+  layout: ExternalViewLayout;
+  title?: string;
+  updateFrame: (params: ExternalViewFrameUpdateParams) => void;
+}
+
+export interface ExternalMainViewCameraRig {
+  id: string;
+  updateFrame: (params: ExternalViewFrameUpdateParams) => void;
+}
+
+export interface ExternalViewRegistry {
+  addMainViewCameraRig: (rig: ExternalMainViewCameraRig) => void;
+  addView: (view: ExternalViewDefinition) => void;
+}
+
+export interface ExternalViewRegistrationParams {
+  config: ExternalWorldAndSceneConfig;
+}
+
+export interface ExternalViewPlugin {
+  registerViews: (
+    registry: ExternalViewRegistry,
+    params: ExternalViewRegistrationParams,
+  ) => void;
+}
+
 export interface ExternalSegmentPlugin {
   appendSegments?: (
     into: ExternalWorldSegmentSink,
@@ -340,6 +405,7 @@ export interface ExternalPlugin {
   requirements?: ExternalPluginRequirements;
   scene?: ExternalScenePlugin;
   segments?: ExternalSegmentPlugin;
+  views?: ExternalViewPlugin;
 }
 
 export type ExternalPluginFactory = (
