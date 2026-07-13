@@ -66,12 +66,12 @@
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
 - `packages/hud/src/`: generic HUD grid and HUD panel capability contracts shared by browser, client, Solitude, and external plugins.
 - `packages/input/src/`: outer keyboard input-provider contracts; plugins publish bindings/handlers through generic engine capabilities and browser adapters consume them.
-- `packages/entity-names/src/`: neutral entity-name provider capability contract and lookup policy; content plugins own provider implementations and localized name bundles.
+- `packages/entity-names/src/`: dependency-free canonical entity-name provider capability contract and lookup policy; content plugins own provider implementations and localized name bundles, and the external plugin API re-exports this implementation.
 - `packages/localization/src/`: dependency-free shared Solitude locale resolution and number/unit/message formatting; message bundles remain with their owning client/plugin/content package.
 - `packages/sim/src/`: browser-safe and Node-safe Solitude simulation library: default world config, solar-system entity builders/assets and localized names, spacecraft operator dynamics, headless autopilot behavior, and headless Solitude composition shared by server and browser/product packages.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, presentation-frame capabilities, layered view layout, Canvas presentation, GPU-native WebGL2 presentation, and remote-world mirror helpers.
 - `packages/protocol/src/`: browser-safe client/server protocol types and message guards.
-- `packages/plugin-api/src/`: focused, rootless subpath exports for the structural plugin ABI, capability helpers, localization, math, world helpers, and manifests available to independently built external plugins; type-only consumers do not pull executable math into plugin artifacts.
+- `packages/plugin-api/src/`: focused, rootless subpath exports for the structural plugin ABI, capability helpers, localization, math, world helpers, and manifests available to independently built external plugins; type-only consumers do not pull executable math into plugin artifacts, and entity-name capabilities reuse the dependency-free canonical package rather than duplicating policy.
 - `packages/plugin-runtime/src/`: strict external plugin-set, pack, and plugin-manifest validation; ordered pack expansion; dynamic module loading; and adaptation into engine plugin factories.
 - `packages/client/src/`: deployable remote browser client, server URL adapter, HTTP/WebSocket client helpers, keyboard input patching, authoritative snapshot interpolation, and remote rendering composition.
 - `packages/server/src/`: Node-oriented authoritative sessions, ticking, protocol transport, and HTTP/WebSocket serving for headless Solitude games.
@@ -150,7 +150,7 @@
 - `packages/client/src/multiplayerSession.ts`: client-owned capability adapter exposing live game/entity identity to multiplayer external plugins.
 - `packages/sim/src/localPrediction.ts`: generic Solitude local-prediction capability contract used by remote clients.
 - `packages/client/src/localReconciliation.ts`: prediction error metrics and render-only visual correction smoothing.
-- `packages/plugin-api/src/plugin.ts`: type-only external plugin ABI and structural render/input contracts; sibling `capabilities.ts`, `localization.ts`, `manifest.ts`, `math.ts`, and `world.ts` are separate package subpath exports.
+- `packages/plugin-api/src/plugin.ts`: type-only external plugin ABI and structural render/input contracts; sibling `capabilities.ts`, `localization.ts`, `manifest.ts`, `math.ts`, and `world.ts` are separate package subpath exports. Entity-name types and helpers are aliases/re-exports of the canonical dependency-free `@solitude/entity-names` implementation.
 - `packages/plugin-runtime/src/index.ts`: browser plugin discovery, validation, dynamic import, factory adaptation, and strict catalog composition.
 - `plugins/core-pack-v1/src/`: external first-party plugin factories. The multi-entry pack build emits one `pack.json`, per-plugin manifests/entries, and shared relative ESM chunks where beneficial.
 - `plugins/multiplayer-pack-v1/src/`: multiplayer-only external presentation plugin factories for remote identity and localized ship-color names.

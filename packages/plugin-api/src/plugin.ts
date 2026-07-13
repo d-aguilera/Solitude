@@ -1,4 +1,5 @@
 import type { Mat3, Vec3 } from "./math";
+export type { EntityNameProvider as ExternalEntityNameProvider } from "@solitude/entity-names";
 
 export type ExternalRuntimeOptions = Readonly<Record<string, string>>;
 export type ExternalEntityId = string;
@@ -12,10 +13,6 @@ export interface ExternalPluginCapabilityProvider {
 
 export interface ExternalPluginCapabilityRegistry {
   getAll: (id: string) => readonly unknown[];
-}
-
-export interface ExternalEntityNameProvider {
-  formatEntityName: (entityId: ExternalEntityId) => string | null;
 }
 
 export interface ExternalKeyHandler {

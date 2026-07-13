@@ -1,11 +1,8 @@
 import type {
-  ExternalEntityId,
-  ExternalEntityNameProvider,
   ExternalHudPanelProvider,
   ExternalKeyboardInputProvider,
   ExternalMultiplayerSessionProvider,
   ExternalPluginCapabilityProvider,
-  ExternalPluginCapabilityRegistry,
   ExternalPresentationFrameProvider,
   ExternalRenderTextureSourceCatalog,
   ExternalRenderTextureSourcesProvider,
@@ -13,8 +10,13 @@ import type {
   ExternalSpacecraftOperatorTelemetryProvider,
 } from "./plugin";
 
+export {
+  createEntityNameProvider,
+  entityNameProviderCapability,
+  formatEntityName,
+} from "@solitude/entity-names";
+
 export const keyboardInputCapability = "solitude.keyboardInput.v1";
-export const entityNameProviderCapability = "solitude.entityNameProvider.v1";
 export const hudPanelCapability = "solitude.hud.panel.v1";
 export const multiplayerSessionCapability = "solitude.multiplayer.session.v1";
 export const presentationFrameCapability =
@@ -23,40 +25,6 @@ export const renderTextureSourcesCapability =
   "solitude.render.textureSources.v1";
 export const spacecraftOperatorTelemetryCapability =
   "spacecraft.operatorTelemetry.v1";
-
-export function createEntityNameProvider(
-  provider: ExternalEntityNameProvider,
-): ExternalPluginCapabilityProvider {
-  return { id: entityNameProviderCapability, value: provider };
-}
-
-export function formatEntityName(
-  capabilityRegistry: ExternalPluginCapabilityRegistry,
-  entityId: ExternalEntityId,
-  explicitDisplayName: string | undefined,
-): string {
-  if (explicitDisplayName) return explicitDisplayName;
-  for (const value of capabilityRegistry.getAll(entityNameProviderCapability)) {
-    if (!isEntityNameProvider(value)) continue;
-    const formatted = value.formatEntityName(entityId);
-    if (formatted != null) return formatted;
-  }
-  const separatorIndex = entityId.lastIndexOf(":");
-  const raw =
-    separatorIndex >= 0 ? entityId.slice(separatorIndex + 1) : entityId;
-  return raw.charAt(0).toUpperCase() + raw.slice(1);
-}
-
-function isEntityNameProvider(
-  value: unknown,
-): value is ExternalEntityNameProvider {
-  const candidate = value as Partial<ExternalEntityNameProvider> | null;
-  return (
-    typeof candidate === "object" &&
-    candidate !== null &&
-    typeof candidate.formatEntityName === "function"
-  );
-}
 
 export function createKeyboardInputCapability(
   provider: ExternalKeyboardInputProvider,

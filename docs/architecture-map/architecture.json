@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T19:27:12.632Z",
+  "generatedAt": "2026-07-13T20:14:22.553Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -1584,6 +1584,22 @@
       "label": "EntityMotionState",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./world",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/entity-names:.:EntityNameCapabilityProvider",
+      "kind": "symbol",
+      "label": "EntityNameCapabilityProvider",
+      "packageName": "@solitude/entity-names",
+      "parent": "module:@solitude/entity-names:.",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/entity-names:.:EntityNameCapabilityRegistry",
+      "kind": "symbol",
+      "label": "EntityNameCapabilityRegistry",
+      "packageName": "@solitude/entity-names",
+      "parent": "module:@solitude/entity-names:.",
       "symbolKind": "interface"
     },
     {
@@ -5037,12 +5053,6 @@
       "to": "pkg:@solitude/sim"
     },
     {
-      "id": "dependency:pkg:@solitude/entity-names->pkg:@solitude/engine",
-      "from": "pkg:@solitude/entity-names",
-      "kind": "dependency",
-      "to": "pkg:@solitude/engine"
-    },
-    {
       "id": "dependency:pkg:@solitude/hud->pkg:@solitude/engine",
       "from": "pkg:@solitude/hud",
       "kind": "dependency",
@@ -5077,6 +5087,12 @@
       "from": "pkg:@solitude/plugin-api",
       "kind": "dependency",
       "to": "pkg:@solitude/engine"
+    },
+    {
+      "id": "dependency:pkg:@solitude/plugin-api->pkg:@solitude/entity-names",
+      "from": "pkg:@solitude/plugin-api",
+      "kind": "dependency",
+      "to": "pkg:@solitude/entity-names"
     },
     {
       "id": "dependency:pkg:@solitude/plugin-runtime->pkg:@solitude/engine",
@@ -5433,12 +5449,6 @@
       "to": "module:@solitude/engine:./render/projectionService"
     },
     {
-      "id": "module-import:module:@solitude/entity-names:.->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/entity-names:.",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
       "id": "module-import:module:@solitude/hud:./provider->module:@solitude/engine:./plugin",
       "from": "module:@solitude/hud:./provider",
       "kind": "module-import",
@@ -5469,6 +5479,12 @@
       "to": "module:@solitude/engine:./plugin"
     },
     {
+      "id": "module-import:module:@solitude/plugin-api:./capabilities->module:@solitude/entity-names:.",
+      "from": "module:@solitude/plugin-api:./capabilities",
+      "kind": "module-import",
+      "to": "module:@solitude/entity-names:."
+    },
+    {
       "id": "module-import:module:@solitude/plugin-api:./capabilities->module:@solitude/plugin-api:./plugin",
       "from": "module:@solitude/plugin-api:./capabilities",
       "kind": "module-import",
@@ -5485,6 +5501,12 @@
       "from": "module:@solitude/plugin-api:./math",
       "kind": "module-import",
       "to": "module:@solitude/engine:./math"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./plugin->module:@solitude/entity-names:.",
+      "from": "module:@solitude/plugin-api:./plugin",
+      "kind": "module-import",
+      "to": "module:@solitude/entity-names:."
     },
     {
       "id": "module-import:module:@solitude/plugin-api:./plugin->module:@solitude/plugin-api:./math",
@@ -10305,10 +10327,10 @@
       "to": "symbol:@solitude/engine:./world:World"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/entity-names:.:createEntityNameProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
+      "id": "symbol-reference:symbol:@solitude/entity-names:.:createEntityNameProvider->symbol:@solitude/entity-names:.:EntityNameCapabilityProvider",
       "from": "symbol:@solitude/entity-names:.:createEntityNameProvider",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
+      "to": "symbol:@solitude/entity-names:.:EntityNameCapabilityProvider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/entity-names:.:createEntityNameProvider->symbol:@solitude/entity-names:.:EntityNameProvider",
@@ -10329,10 +10351,10 @@
       "to": "symbol:@solitude/entity-names:.:formatEntityName"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/entity-names:.:formatEntityName->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
+      "id": "symbol-reference:symbol:@solitude/entity-names:.:formatEntityName->symbol:@solitude/entity-names:.:EntityNameCapabilityRegistry",
       "from": "symbol:@solitude/entity-names:.:formatEntityName",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
+      "to": "symbol:@solitude/entity-names:.:EntityNameCapabilityRegistry"
     },
     {
       "id": "symbol-reference:symbol:@solitude/entity-names:.:formatEntityName->symbol:@solitude/entity-names:.:entityNameProviderCapability",
@@ -10683,22 +10705,22 @@
       "to": "symbol:@solitude/localization:.:SolitudeLocaleOption"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./capabilities:createEntityNameProvider->symbol:@solitude/entity-names:.:EntityNameCapabilityProvider",
+      "from": "symbol:@solitude/plugin-api:./capabilities:createEntityNameProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/entity-names:.:EntityNameCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./capabilities:createEntityNameProvider->symbol:@solitude/entity-names:.:EntityNameProvider",
+      "from": "symbol:@solitude/plugin-api:./capabilities:createEntityNameProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/entity-names:.:EntityNameProvider"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./capabilities:createEntityNameProvider->symbol:@solitude/plugin-api:./capabilities:entityNameProviderCapability",
       "from": "symbol:@solitude/plugin-api:./capabilities:createEntityNameProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./capabilities:entityNameProviderCapability"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./capabilities:createEntityNameProvider->symbol:@solitude/plugin-api:./plugin:ExternalEntityNameProvider",
-      "from": "symbol:@solitude/plugin-api:./capabilities:createEntityNameProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./plugin:ExternalEntityNameProvider"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./capabilities:createEntityNameProvider->symbol:@solitude/plugin-api:./plugin:ExternalPluginCapabilityProvider",
-      "from": "symbol:@solitude/plugin-api:./capabilities:createEntityNameProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./plugin:ExternalPluginCapabilityProvider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./capabilities:createHudPanelCapability->symbol:@solitude/plugin-api:./capabilities:hudPanelCapability",
@@ -10821,22 +10843,16 @@
       "to": "symbol:@solitude/plugin-api:./plugin:ExternalSpacecraftOperatorTelemetryProvider"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./capabilities:formatEntityName->symbol:@solitude/entity-names:.:EntityNameCapabilityRegistry",
+      "from": "symbol:@solitude/plugin-api:./capabilities:formatEntityName",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/entity-names:.:EntityNameCapabilityRegistry"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./capabilities:formatEntityName->symbol:@solitude/plugin-api:./capabilities:entityNameProviderCapability",
       "from": "symbol:@solitude/plugin-api:./capabilities:formatEntityName",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./capabilities:entityNameProviderCapability"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./capabilities:formatEntityName->symbol:@solitude/plugin-api:./plugin:ExternalEntityId",
-      "from": "symbol:@solitude/plugin-api:./capabilities:formatEntityName",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./plugin:ExternalEntityId"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./capabilities:formatEntityName->symbol:@solitude/plugin-api:./plugin:ExternalPluginCapabilityRegistry",
-      "from": "symbol:@solitude/plugin-api:./capabilities:formatEntityName",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./plugin:ExternalPluginCapabilityRegistry"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./capabilities:isHudPanelProvider->symbol:@solitude/plugin-api:./plugin:ExternalHudPanelProvider",
@@ -10953,10 +10969,16 @@
       "to": "symbol:@solitude/plugin-api:./plugin:ExternalEntityId"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./plugin:ExternalEntityNameProvider->symbol:@solitude/plugin-api:./plugin:ExternalEntityId",
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./plugin:ExternalEntityNameProvider->symbol:@solitude/entity-names:.:EntityNameProvider",
       "from": "symbol:@solitude/plugin-api:./plugin:ExternalEntityNameProvider",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./plugin:ExternalEntityId"
+      "to": "symbol:@solitude/entity-names:.:EntityNameProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./plugin:ExternalEntityNameProvider->symbol:@solitude/plugin-api:./capabilities:formatEntityName",
+      "from": "symbol:@solitude/plugin-api:./plugin:ExternalEntityNameProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./capabilities:formatEntityName"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./plugin:ExternalEntityStateConfig->symbol:@solitude/plugin-api:./plugin:ExternalEntityId",

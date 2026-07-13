@@ -57,7 +57,8 @@ composition.
 - `@solitude/plugin-api/plugin`: type-only structural plugin ABI and runtime
   contribution contracts.
 - `@solitude/plugin-api/capabilities`: capability ids, constructors, guards,
-  and entity-name lookup.
+  and canonical dependency-free entity-name lookup re-exported from
+  `@solitude/entity-names`.
 - `@solitude/plugin-api/localization`: supported locale type and runtime locale
   parsing.
 - `@solitude/plugin-api/math`: bundled-safe vector, matrix, intersection, and

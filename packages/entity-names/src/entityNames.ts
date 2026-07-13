@@ -1,17 +1,21 @@
-import type {
-  PluginCapabilityProvider,
-  PluginCapabilityRegistry,
-} from "@solitude/engine/plugin";
-
 export interface EntityNameProvider {
   formatEntityName: (entityId: string) => string | null;
+}
+
+export interface EntityNameCapabilityProvider {
+  id: string;
+  value: unknown;
+}
+
+export interface EntityNameCapabilityRegistry {
+  getAll: (id: string) => readonly unknown[];
 }
 
 export const entityNameProviderCapability = "solitude.entityNameProvider.v1";
 
 export function createEntityNameProvider(
   provider: EntityNameProvider,
-): PluginCapabilityProvider {
+): EntityNameCapabilityProvider {
   return {
     id: entityNameProviderCapability,
     value: provider,
@@ -19,7 +23,7 @@ export function createEntityNameProvider(
 }
 
 export function formatEntityName(
-  capabilityRegistry: PluginCapabilityRegistry,
+  capabilityRegistry: EntityNameCapabilityRegistry,
   entityId: string,
   explicitDisplayName: string | undefined,
 ): string {

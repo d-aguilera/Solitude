@@ -1,10 +1,14 @@
-import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import { describe, expect, it } from "vitest";
-import { createEntityNameProvider, formatEntityName } from "./entityNames";
+import {
+  createEntityNameProvider,
+  formatEntityName,
+  type EntityNameCapabilityProvider,
+  type EntityNameCapabilityRegistry,
+} from "./entityNames";
 
 describe("entity names", () => {
   it("uses providers and preserves explicit display names", () => {
-    const capabilityRegistry = createPluginCapabilityRegistry([
+    const capabilityRegistry = createCapabilityRegistry([
       createEntityNameProvider({
         formatEntityName: (entityId) =>
           entityId === "ship:blue" ? "Azul" : null,
@@ -29,3 +33,14 @@ describe("entity names", () => {
     ).toBe("Terra Prime");
   });
 });
+
+function createCapabilityRegistry(
+  providers: readonly EntityNameCapabilityProvider[],
+): EntityNameCapabilityRegistry {
+  return {
+    getAll: (id) =>
+      providers
+        .filter((provider) => provider.id === id)
+        .map((provider) => provider.value),
+  };
+}

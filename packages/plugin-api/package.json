@@ -12,7 +12,8 @@
     "./world": "./src/world.ts"
   },
   "dependencies": {
-    "@solitude/engine": "0.0.0"
+    "@solitude/engine": "0.0.0",
+    "@solitude/entity-names": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"
