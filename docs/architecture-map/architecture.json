@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T14:58:10.452Z",
+  "generatedAt": "2026-07-13T15:47:16.533Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -2043,6 +2043,14 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/plugin-api:.:ExternalPrimaryViewState",
+      "kind": "symbol",
+      "label": "ExternalPrimaryViewState",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:.",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:.:ExternalRenderMaterial",
       "kind": "symbol",
       "label": "ExternalRenderMaterial",
@@ -2086,6 +2094,14 @@
       "id": "symbol:@solitude/plugin-api:.:ExternalScene",
       "kind": "symbol",
       "label": "ExternalScene",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:.",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:.:ExternalSceneControlState",
+      "kind": "symbol",
+      "label": "ExternalSceneControlState",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:.",
       "symbolKind": "interface"
@@ -2182,6 +2198,30 @@
       "id": "symbol:@solitude/plugin-api:.:ExternalSpacecraftOperatorTelemetryProvider",
       "kind": "symbol",
       "label": "ExternalSpacecraftOperatorTelemetryProvider",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:.",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:.:ExternalViewControlPlugin",
+      "kind": "symbol",
+      "label": "ExternalViewControlPlugin",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:.",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:.:ExternalViewControlSceneState",
+      "kind": "symbol",
+      "label": "ExternalViewControlSceneState",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:.",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:.:ExternalViewControlUpdateParams",
+      "kind": "symbol",
+      "label": "ExternalViewControlUpdateParams",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:.",
       "symbolKind": "interface"
@@ -11293,6 +11333,12 @@
       "to": "symbol:@solitude/plugin-api:.:ExternalSegmentPlugin"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalPlugin->symbol:@solitude/plugin-api:.:ExternalViewControlPlugin",
+      "from": "symbol:@solitude/plugin-api:.:ExternalPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalViewControlPlugin"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalPlugin->symbol:@solitude/plugin-api:.:ExternalViewPlugin",
       "from": "symbol:@solitude/plugin-api:.:ExternalPlugin",
       "kind": "symbol-reference",
@@ -11365,6 +11411,18 @@
       "to": "symbol:@solitude/plugin-api:.:Vec3"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalPrimaryViewState->symbol:@solitude/engine:./math:Vec3",
+      "from": "symbol:@solitude/plugin-api:.:ExternalPrimaryViewState",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalPrimaryViewState->symbol:@solitude/plugin-api:.:Vec3",
+      "from": "symbol:@solitude/plugin-api:.:ExternalPrimaryViewState",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:Vec3"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalRenderMaterial->symbol:@solitude/plugin-api:.:ExternalRgb",
       "from": "symbol:@solitude/plugin-api:.:ExternalRenderMaterial",
       "kind": "symbol-reference",
@@ -11381,6 +11439,12 @@
       "from": "symbol:@solitude/plugin-api:.:ExternalScene",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:.:ExternalSceneObject"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalSceneControlState->symbol:@solitude/plugin-api:.:ExternalMainViewLookState",
+      "from": "symbol:@solitude/plugin-api:.:ExternalSceneControlState",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalMainViewLookState"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalSceneInitParams->symbol:@solitude/plugin-api:.:ExternalScene",
@@ -11549,6 +11613,42 @@
       "from": "symbol:@solitude/plugin-api:.:ExternalSpacecraftOperatorTelemetryProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:.:ExternalSpacecraftOperatorTelemetry"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalViewControlPlugin->symbol:@solitude/plugin-api:.:ExternalViewControlUpdateParams",
+      "from": "symbol:@solitude/plugin-api:.:ExternalViewControlPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalViewControlUpdateParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalViewControlSceneState->symbol:@solitude/plugin-api:.:ExternalPrimaryViewState",
+      "from": "symbol:@solitude/plugin-api:.:ExternalViewControlSceneState",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalPrimaryViewState"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalViewControlUpdateParams->symbol:@solitude/plugin-api:.:ExternalControlInput",
+      "from": "symbol:@solitude/plugin-api:.:ExternalViewControlUpdateParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalControlInput"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalViewControlUpdateParams->symbol:@solitude/plugin-api:.:ExternalFocusContext",
+      "from": "symbol:@solitude/plugin-api:.:ExternalViewControlUpdateParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalFocusContext"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalViewControlUpdateParams->symbol:@solitude/plugin-api:.:ExternalSceneControlState",
+      "from": "symbol:@solitude/plugin-api:.:ExternalViewControlUpdateParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalSceneControlState"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalViewControlUpdateParams->symbol:@solitude/plugin-api:.:ExternalViewControlSceneState",
+      "from": "symbol:@solitude/plugin-api:.:ExternalViewControlUpdateParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalViewControlSceneState"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalViewDefinition->symbol:@solitude/engine:./math:Vec3",

@@ -37,7 +37,7 @@ The `hud` plugin owns the preallocated HUD grid and browser overlay rendering. T
 
 Simulation plugins run inside the fixed tick order. Vehicle or operator behavior that mutates focused entities should be contributed through simulation phases rather than hard-coded into core tick logic.
 
-Input plugins contribute action names and key bindings. Browser input has no product default actions; the default main-view lookaround controls are plugin-owned rather than browser or engine defaults.
+Input plugins contribute action names and key bindings. Browser input has no product default actions; the external `mainViewLookaround` plugin in `core-pack-v1` owns the default local look and camera-offset controls for both standalone and remote rendering.
 
 Plugins may declare focused-entity requirements. Infra validates those requirements against the assembled world and `mainFocus` during setup, before simulation, overlay, and scene hooks run. Missing hard requirements fail startup with the plugin id, focus entity id, and missing capability.
 

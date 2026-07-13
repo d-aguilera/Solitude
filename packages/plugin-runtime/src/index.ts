@@ -6,6 +6,7 @@ import type {
   SceneLabelPlugin,
   ScenePlugin,
   SegmentPlugin,
+  ViewControlPlugin,
   ViewPlugin,
 } from "@solitude/engine/plugin";
 import {
@@ -395,6 +396,12 @@ function validateExternalPlugin(
     throw new Error(`External plugin ${expectedId} has invalid scene`);
   }
   if (
+    plugin.viewControls?.updateViewControls !== undefined &&
+    typeof plugin.viewControls.updateViewControls !== "function"
+  ) {
+    throw new Error(`External plugin ${expectedId} has invalid view controls`);
+  }
+  if (
     plugin.views?.registerViews !== undefined &&
     typeof plugin.views.registerViews !== "function"
   ) {
@@ -411,6 +418,7 @@ function adaptExternalPlugin(plugin: ExternalPlugin): GamePlugin {
     requirements: plugin.requirements,
     scene: plugin.scene as ScenePlugin | undefined,
     segments: plugin.segments as SegmentPlugin | undefined,
+    viewControls: plugin.viewControls as ViewControlPlugin | undefined,
     views: plugin.views as ViewPlugin | undefined,
   };
 }

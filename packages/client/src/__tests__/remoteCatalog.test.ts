@@ -1,13 +1,19 @@
 import { loadPlugins } from "@solitude/engine/plugin";
-import { keyboardInputCapability } from "@solitude/input/keyboard";
+import {
+  collectKeyboardInputProviders,
+  createKeyboardHandlerDispatcher,
+  createKeyboardInputProvider,
+  keyboardInputCapability,
+} from "@solitude/input/keyboard";
 import { describe, expect, it } from "vitest";
 import {
+  createRemoteClientComposition,
   remoteRenderPluginCatalog,
   remoteRenderPluginIds,
 } from "../composition";
 
 describe("remote render plugin catalog", () => {
-  it("keeps external HUD plugins out of the static host catalog", () => {
+  it("keeps external browser plugins out of the static host catalog", () => {
     const plugins = loadPlugins({
       catalog: remoteRenderPluginCatalog,
       ids: remoteRenderPluginIds,
@@ -28,10 +34,44 @@ describe("remote render plugin catalog", () => {
       ),
     ).toBe(true);
     expect(plugins.some((plugin) => plugin.id === "autopilotHud")).toBe(false);
+    expect(plugins.some((plugin) => plugin.id === "mainViewLookaround")).toBe(
+      false,
+    );
     expect(plugins.some((plugin) => plugin.id === "orbitTelemetry")).toBe(
       false,
     );
     expect(plugins.some((plugin) => plugin.id === "shipTelemetry")).toBe(false);
     expect(spacecraftOperator?.capabilities?.length).toBeGreaterThan(0);
+  });
+
+  it("composes external view controls into local multiplayer input", () => {
+    const updateViewControls = () => {};
+    const composition = createRemoteClientComposition({
+      clientPlugins: [],
+      externalPluginCatalog: {
+        mainViewLookaround: () => ({
+          id: "mainViewLookaround",
+          capabilities: [
+            createKeyboardInputProvider({
+              actions: ["lookUp"],
+              keyMap: { ArrowUp: "lookUp" },
+            }),
+          ],
+          viewControls: { updateViewControls },
+        }),
+      },
+      externalPluginIds: ["mainViewLookaround"],
+      runtimeOptions: {},
+    });
+    const dispatcher = createKeyboardHandlerDispatcher(
+      collectKeyboardInputProviders(composition.capabilityRegistry),
+    );
+
+    expect(dispatcher.handleKey("ArrowUp", true, false)).toBe(true);
+    expect(dispatcher.controlInput.lookUp).toBe(true);
+    expect(
+      composition.plugins.find((plugin) => plugin.id === "mainViewLookaround")
+        ?.viewControls?.updateViewControls,
+    ).toBe(updateViewControls);
   });
 });

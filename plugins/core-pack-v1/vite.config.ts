@@ -23,6 +23,9 @@ export default defineConfig({
         "body-labels": fileURLToPath(
           new URL("./src/body-labels/index.ts", import.meta.url),
         ),
+        "main-view-lookaround": fileURLToPath(
+          new URL("./src/main-view-lookaround/index.ts", import.meta.url),
+        ),
         "orbit-segments": fileURLToPath(
           new URL("./src/orbit-segments/index.ts", import.meta.url),
         ),
@@ -84,6 +87,7 @@ export default defineConfig({
                 "./autopilot-hud/plugin.json",
                 "./axial-views/plugin.json",
                 "./body-labels/plugin.json",
+                "./main-view-lookaround/plugin.json",
                 "./orbit-segments/plugin.json",
                 "./orbit-telemetry/plugin.json",
                 "./solar-system-materials/plugin.json",
@@ -137,6 +141,21 @@ export default defineConfig({
               entry: "./index.js",
               environment: "browser",
               id: "bodyLabels",
+              schemaVersion: 1,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "main-view-lookaround/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: 1,
+              entry: "./index.js",
+              environment: "browser",
+              id: "mainViewLookaround",
               schemaVersion: 1,
             },
             null,

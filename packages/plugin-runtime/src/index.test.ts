@@ -19,10 +19,12 @@ describe("external plugin runtime", () => {
     const appendLabels = vi.fn();
     const registerViews = vi.fn();
     const updateScene = vi.fn();
+    const updateViewControls = vi.fn();
     const createLaser = vi.fn(() => ({
       id: "targetingLaser",
       labels: { appendLabels },
       scene: { initScene, updateScene },
+      viewControls: { updateViewControls },
       views: { registerViews },
     }));
     const createSecond = vi.fn(() => ({ id: "secondPlugin" }));
@@ -46,6 +48,9 @@ describe("external plugin runtime", () => {
     expect(targetingLaser.labels?.appendLabels).toBe(appendLabels);
     expect(targetingLaser.scene?.initScene).toBe(initScene);
     expect(targetingLaser.scene?.updateScene).toBe(updateScene);
+    expect(targetingLaser.viewControls?.updateViewControls).toBe(
+      updateViewControls,
+    );
     expect(targetingLaser.views?.registerViews).toBe(registerViews);
     expect(loaded.catalog.secondPlugin({}).id).toBe("secondPlugin");
   });
@@ -200,6 +205,31 @@ describe("external plugin runtime", () => {
 
     expect(() => loaded.catalog.targetingLaser({})).toThrow(
       "returned id wrongPlugin",
+    );
+  });
+
+  it("rejects invalid view controls returned by a loaded factory", async () => {
+    const documents = createDocumentMap();
+    documents.set(setUrl, {
+      packs: [targetingPackUrl],
+      schemaVersion: 1,
+    });
+
+    const loaded = await loadExternalPlugins({
+      configUrl,
+      environment: "browser",
+      fetchJson: async (url) => documents.get(url),
+      importModule: async () => ({
+        createPlugin: () => ({
+          id: "targetingLaser",
+          viewControls: { updateViewControls: "invalid" },
+        }),
+      }),
+      pageOrigin,
+    });
+
+    expect(() => loaded.catalog.targetingLaser({})).toThrow(
+      "invalid view controls",
     );
   });
 });

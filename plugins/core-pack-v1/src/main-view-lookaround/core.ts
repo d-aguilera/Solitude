@@ -1,9 +1,14 @@
-import type { ViewControlPlugin } from "@solitude/engine/plugin";
+import type {
+  ExternalControlInput,
+  ExternalMainViewLookState,
+  ExternalViewControlPlugin,
+  Vec3,
+} from "@solitude/plugin-api";
 
 const lookSpeed = 0.0015;
 const cameraOffsetMoveSpeed = 5;
 
-export function createViewControlPlugin(): ViewControlPlugin {
+export function createViewControlPlugin(): ExternalViewControlPlugin {
   return {
     updateViewControls: ({
       controlInput,
@@ -27,8 +32,8 @@ export function createViewControlPlugin(): ViewControlPlugin {
 
 function updateMainViewLook(
   dtMillis: number,
-  controlInput: Record<string, boolean>,
-  lookState: { azimuth: number; elevation: number },
+  controlInput: ExternalControlInput,
+  lookState: ExternalMainViewLookState,
 ): void {
   if (controlInput.lookReset) {
     lookState.azimuth = 0;
@@ -43,12 +48,11 @@ function updateMainViewLook(
 
 function updateMainViewCameraOffset(
   dtMillis: number,
-  controlInput: Record<string, boolean>,
-  mainViewCameraLocalOffset: { x: number; y: number; z: number },
+  controlInput: ExternalControlInput,
+  mainViewCameraLocalOffset: Vec3,
 ): void {
   if (dtMillis === 0) return;
 
-  let dx = 0;
   let dy = 0;
   let dz = 0;
 
@@ -57,9 +61,8 @@ function updateMainViewCameraOffset(
   if (controlInput.camUp) dz += cameraOffsetMoveSpeed;
   if (controlInput.camDown) dz -= cameraOffsetMoveSpeed;
 
-  if (dx === 0 && dy === 0 && dz === 0) return;
+  if (dy === 0 && dz === 0) return;
 
-  mainViewCameraLocalOffset.x += dx * dtMillis;
   mainViewCameraLocalOffset.y += dy * dtMillis;
   mainViewCameraLocalOffset.z += dz * dtMillis;
 }

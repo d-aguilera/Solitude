@@ -25,8 +25,8 @@ import {
   readServerBaseUrl,
 } from "./pageShared";
 import { createSolitudeRemoteClientRenderer } from "./remoteClientRenderer";
+import { getRemoteDebugAction } from "./remoteDebugInput";
 import { createRemoteIdentityHudPlugin } from "./remoteIdentityHud";
-import { createRemoteLookaroundPlugin } from "./remoteLookaround";
 import { createRemoteRuntimeTelemetryHudPlugin } from "./remoteRuntimeTelemetryHud";
 import { createShipColorNamesPlugin } from "./shipColorNames";
 
@@ -65,7 +65,6 @@ async function main(): Promise<void> {
     onFatalError: showFatalRenderError,
     runtimeOptions,
     plugins: [
-      createRemoteLookaroundPlugin(),
       createShipColorNamesPlugin(localization.shipColorNames),
       createRemoteIdentityHudPlugin({
         getEntityId: () => fields.entityId.value,
@@ -104,21 +103,6 @@ async function main(): Promise<void> {
     KeyV: "alignToVelocity",
     KeyZ: "orbit",
     KeyX: "circleNow",
-  };
-
-  const remoteDebugKeyMap: Readonly<
-    Record<
-      string,
-      | "decreaseSimulationRate"
-      | "increaseSimulationRate"
-      | "interpolation"
-      | "prediction"
-    >
-  > = {
-    BracketLeft: "decreaseSimulationRate",
-    BracketRight: "increaseSimulationRate",
-    KeyI: "interpolation",
-    KeyP: "prediction",
   };
 
   const keyboard = createKeyboardInputPatcher({
@@ -234,7 +218,7 @@ async function main(): Promise<void> {
     event: KeyboardEvent,
     isDown: boolean,
   ): boolean {
-    const action = remoteDebugKeyMap[event.code];
+    const action = getRemoteDebugAction(event);
     if (!action) return false;
     event.preventDefault();
     event.stopPropagation();

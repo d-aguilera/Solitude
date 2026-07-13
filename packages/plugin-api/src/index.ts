@@ -543,6 +543,30 @@ export interface ExternalViewPlugin {
   ) => void;
 }
 
+export interface ExternalSceneControlState {
+  mainViewLookState: ExternalMainViewLookState;
+}
+
+export interface ExternalPrimaryViewState {
+  cameraOffset: Vec3;
+}
+
+export interface ExternalViewControlSceneState {
+  primaryView: ExternalPrimaryViewState;
+}
+
+export interface ExternalViewControlUpdateParams {
+  controlInput: ExternalControlInput;
+  dtMillis: number;
+  mainFocus: ExternalFocusContext;
+  sceneControlState: ExternalSceneControlState;
+  sceneState: ExternalViewControlSceneState;
+}
+
+export interface ExternalViewControlPlugin {
+  updateViewControls?: (params: ExternalViewControlUpdateParams) => void;
+}
+
 export interface ExternalSegmentPlugin {
   appendSegments?: (
     into: ExternalWorldSegmentSink,
@@ -578,6 +602,7 @@ export interface ExternalPlugin {
   requirements?: ExternalPluginRequirements;
   scene?: ExternalScenePlugin;
   segments?: ExternalSegmentPlugin;
+  viewControls?: ExternalViewControlPlugin;
   views?: ExternalViewPlugin;
 }
 

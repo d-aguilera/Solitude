@@ -22,5 +22,8 @@ describe("solitude plugin catalog", () => {
       ),
     ).toBe(true);
     expect(plugins.some((plugin) => plugin.id === "autopilotHud")).toBe(false);
+    expect(plugins.some((plugin) => plugin.id === "mainViewLookaround")).toBe(
+      false,
+    );
   });
 });

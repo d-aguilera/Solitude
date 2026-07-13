@@ -58,6 +58,8 @@ composition.
   - `axialViews`: localized top/front/left/right picture-in-picture camera
     definitions.
   - `bodyLabels`: localized names, distance, and speed labels for scene bodies.
+  - `mainViewLookaround`: shared local look rotation, reset, and camera-offset
+    controls for standalone and remote rendering.
   - `orbitSegments`: analytic bound-orbit segments around the focused entity's
     dominant gravity body, with keyboard toggle behavior.
   - `orbitTelemetry`: localized orbit state, apsis, circularization, and timing

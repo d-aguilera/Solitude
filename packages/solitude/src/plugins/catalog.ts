@@ -1,7 +1,6 @@
 import { createHudOverlayPlugin } from "@solitude/browser/dom/hudOverlayPlugin";
 import type { PluginCatalog } from "@solitude/engine/plugin";
 import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
-import { createMainViewLookaroundPlugin } from "./mainViewLookaround/index";
 import { createMemoryPlugin } from "./memory/index";
 import { createOperatorSwitchPlugin } from "./operatorSwitch/index";
 import { createPausePlugin } from "./pause/index";
@@ -17,7 +16,6 @@ export const defaultPluginIds = [
   "solarSystem",
   "polyFighter",
   "ships",
-  "mainViewLookaround",
   "spacecraftOperator",
   "hud",
   "runtimeTelemetry",
@@ -34,7 +32,6 @@ export const defaultPluginIds = [
 export const solitudePluginCatalog: PluginCatalog = {
   ...simPluginCatalog,
   hud: createHudOverlayPlugin,
-  mainViewLookaround: createMainViewLookaroundPlugin,
   memory: createMemoryPlugin,
   operatorSwitch: createOperatorSwitchPlugin,
   pause: createPausePlugin,
