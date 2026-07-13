@@ -1,17 +1,21 @@
-import type { GamePlugin } from "@solitude/engine/plugin";
-import type { RenderMaterial, SceneObject } from "@solitude/engine/render";
+import {
+  createRenderTextureSourcesCapability,
+  type ExternalPlugin,
+  type ExternalRenderMaterial,
+  type ExternalRuntimeOptions,
+  type ExternalSceneObject,
+} from "@solitude/plugin-api";
 import {
   earthCloudTextureId,
   earthDayTextureId,
   moonDayTextureId,
 } from "./textureIds";
-import { solarSystemMaterialTextureSources } from "./textures";
+import { createSolarSystemMaterialTextureSources } from "./textures";
 
-const renderTextureSourcesCapability = "solitude.render.textureSources.v1";
 const earthId = "planet:earth";
 const moonId = "planet:moon";
 
-const earthMaterial: RenderMaterial = {
+const earthMaterial: ExternalRenderMaterial = {
   atmosphere: {
     color: { r: 85, g: 205, b: 255 },
     opacity: 1,
@@ -24,21 +28,18 @@ const earthMaterial: RenderMaterial = {
   textureId: earthDayTextureId,
 };
 
-const moonMaterial: RenderMaterial = {
+const moonMaterial: ExternalRenderMaterial = {
   kind: "sphericalTexture",
   textureId: moonDayTextureId,
 };
 
-export function createSolarSystemMaterialsPlugin(): GamePlugin {
+const textureSources = createSolarSystemMaterialTextureSources(import.meta.url);
+
+export function createPlugin(
+  _runtimeOptions: ExternalRuntimeOptions,
+): ExternalPlugin {
   return {
-    capabilities: [
-      {
-        id: renderTextureSourcesCapability,
-        value: {
-          textureSources: solarSystemMaterialTextureSources,
-        },
-      },
-    ],
+    capabilities: [createRenderTextureSourcesCapability(textureSources)],
     id: "solarSystemMaterials",
     scene: {
       initScene: ({ scene }) => {
@@ -48,7 +49,7 @@ export function createSolarSystemMaterialsPlugin(): GamePlugin {
   };
 }
 
-function applySolarSystemMaterials(objects: SceneObject[]): void {
+function applySolarSystemMaterials(objects: ExternalSceneObject[]): void {
   for (const object of objects) {
     if (object.id === earthId) {
       object.material = earthMaterial;

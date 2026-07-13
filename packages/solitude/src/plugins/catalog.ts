@@ -16,7 +16,6 @@ import { createTimeScalePlugin } from "./timeScale/index";
 // override earlier ones, and input handlers are consulted in reverse order.
 export const defaultPluginIds = [
   "solarSystem",
-  "solarSystemMaterials",
   "polyFighter",
   "ships",
   "mainViewLookaround",

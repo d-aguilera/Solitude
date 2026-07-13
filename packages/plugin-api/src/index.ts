@@ -11,6 +11,8 @@ export type { Vec3 } from "@solitude/engine/math";
 
 export const SOLITUDE_PLUGIN_API_VERSION = 1;
 export const keyboardInputCapability = "solitude.keyboardInput.v1";
+export const renderTextureSourcesCapability =
+  "solitude.render.textureSources.v1";
 
 export type ExternalPluginEnvironment = "browser" | "server";
 export type ExternalRuntimeOptions = Readonly<Record<string, string>>;
@@ -63,6 +65,23 @@ export function createKeyboardInputCapability(
   provider: ExternalKeyboardInputProvider,
 ): ExternalPluginCapabilityProvider {
   return { id: keyboardInputCapability, value: provider };
+}
+
+export type ExternalRenderTextureSourceCatalog = Readonly<
+  Record<string, string>
+>;
+
+export interface ExternalRenderTextureSourcesProvider {
+  textureSources: ExternalRenderTextureSourceCatalog;
+}
+
+export function createRenderTextureSourcesCapability(
+  textureSources: ExternalRenderTextureSourceCatalog,
+): ExternalPluginCapabilityProvider {
+  return {
+    id: renderTextureSourcesCapability,
+    value: { textureSources } satisfies ExternalRenderTextureSourcesProvider,
+  };
 }
 
 export interface ExternalEntityMotionState {
@@ -197,6 +216,39 @@ export interface ExternalRgb {
   b: number;
 }
 
+export type ExternalRenderMaterial =
+  | { kind: "solidColor" }
+  | {
+      kind: "sphericalTexture";
+      textureId: string;
+      longitudeOffsetRad?: number;
+      cloudTextureId?: string;
+      cloudOpacity?: number;
+      cloudScale?: number;
+      atmosphere?: {
+        color: ExternalRgb;
+        opacity: number;
+        scale: number;
+      };
+    };
+
+export interface ExternalSceneObject {
+  id: ExternalEntityId;
+  material?: ExternalRenderMaterial;
+}
+
+export interface ExternalScene {
+  objects: ExternalSceneObject[];
+}
+
+export interface ExternalSceneInitParams {
+  scene: ExternalScene;
+}
+
+export interface ExternalScenePlugin {
+  initScene?: (params: ExternalSceneInitParams) => void;
+}
+
 export interface ExternalSegmentPlugin {
   appendSegments?: (
     into: ExternalWorldSegmentSink,
@@ -229,6 +281,7 @@ export interface ExternalPlugin {
   id: string;
   markers?: ExternalMarkerPlugin;
   requirements?: ExternalPluginRequirements;
+  scene?: ExternalScenePlugin;
   segments?: ExternalSegmentPlugin;
 }
 

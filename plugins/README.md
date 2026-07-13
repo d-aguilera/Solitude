@@ -55,6 +55,8 @@ composition.
   rendering. It currently contains:
   - `orbitSegments`: analytic bound-orbit segments around the focused entity's
     dominant gravity body, with keyboard toggle behavior.
+  - `solarSystemMaterials`: Earth and Moon texture materials plus pack-owned
+    texture assets.
   - `targetingLaser`: targeting beam, target lock, impact/miss markers, and
     keyboard toggle behavior.
   - `velocitySegments`: forward/backward world segments along the focused

@@ -3,6 +3,7 @@ import type {
   MarkerPlugin,
   PluginCatalog,
   PluginFactory,
+  ScenePlugin,
   SegmentPlugin,
 } from "@solitude/engine/plugin";
 import {
@@ -377,6 +378,12 @@ function validateExternalPlugin(
   ) {
     throw new Error(`External plugin ${expectedId} has invalid segments`);
   }
+  if (
+    plugin.scene?.initScene !== undefined &&
+    typeof plugin.scene.initScene !== "function"
+  ) {
+    throw new Error(`External plugin ${expectedId} has invalid scene`);
+  }
 }
 
 function adaptExternalPlugin(plugin: ExternalPlugin): GamePlugin {
@@ -385,6 +392,7 @@ function adaptExternalPlugin(plugin: ExternalPlugin): GamePlugin {
     capabilities: plugin.capabilities,
     markers: plugin.markers as MarkerPlugin | undefined,
     requirements: plugin.requirements,
+    scene: plugin.scene as ScenePlugin | undefined,
     segments: plugin.segments as SegmentPlugin | undefined,
   };
 }

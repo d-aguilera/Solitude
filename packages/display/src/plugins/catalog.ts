@@ -4,13 +4,11 @@ import { createAxialViewsPlugin } from "./axialViews/index";
 import { createBodyLabelsPlugin } from "./bodyLabels/index";
 import { createOrbitTelemetryPlugin } from "./orbitTelemetry/index";
 import { createShipTelemetryPlugin } from "./shipTelemetry/index";
-import { createSolarSystemMaterialsPlugin } from "./solarSystemMaterials/index";
 import { createTrajectoriesPlugin } from "./trajectories/index";
 
 export const displayPluginIds = [
   "bodyLabels",
   "axialViews",
-  "solarSystemMaterials",
   "orbitTelemetry",
   "shipTelemetry",
   "trajectories",
@@ -22,6 +20,5 @@ export const displayPluginCatalog: PluginCatalog = {
   bodyLabels: createBodyLabelsPlugin,
   orbitTelemetry: createOrbitTelemetryPlugin,
   shipTelemetry: createShipTelemetryPlugin,
-  solarSystemMaterials: createSolarSystemMaterialsPlugin,
   trajectories: createTrajectoriesPlugin,
 };

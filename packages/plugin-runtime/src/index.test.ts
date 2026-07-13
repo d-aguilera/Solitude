@@ -15,7 +15,11 @@ const secondEntryUrl = `${pluginOrigin}/packs/utility/second.js`;
 
 describe("external plugin runtime", () => {
   it("loads explicitly allowed cross-origin plugin packs in order", async () => {
-    const createLaser = vi.fn(() => ({ id: "targetingLaser" }));
+    const initScene = vi.fn();
+    const createLaser = vi.fn(() => ({
+      id: "targetingLaser",
+      scene: { initScene },
+    }));
     const createSecond = vi.fn(() => ({ id: "secondPlugin" }));
     const documents = createDocumentMap();
     const modules = new Map<string, ExternalPluginModule>([
@@ -32,7 +36,9 @@ describe("external plugin runtime", () => {
     });
 
     expect(loaded.ids).toEqual(["targetingLaser", "secondPlugin"]);
-    expect(loaded.catalog.targetingLaser({}).id).toBe("targetingLaser");
+    const targetingLaser = loaded.catalog.targetingLaser({});
+    expect(targetingLaser.id).toBe("targetingLaser");
+    expect(targetingLaser.scene?.initScene).toBe(initScene);
     expect(loaded.catalog.secondPlugin({}).id).toBe("secondPlugin");
   });
 
