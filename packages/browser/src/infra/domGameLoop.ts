@@ -13,6 +13,10 @@ import {
   type BrowserOverlayContext,
   type OverlayRasterizer,
 } from "./overlayPorts";
+import {
+  collectPresentationFrameProviders,
+  updatePresentationFrameProviders,
+} from "./presentationFrame";
 
 type RenderPassDebug = {
   polylines: boolean;
@@ -58,6 +62,10 @@ export function runLoop({
   const overlayProviders = collectBrowserOverlayProviders(
     pipeline.capabilityRegistry,
   );
+  const presentationFrameProviders = collectPresentationFrameProviders(
+    pipeline.capabilityRegistry,
+  );
+  const presentationFrameContext = { dtMillis: 0, nowMs: 0 };
   const overlayContext: BrowserOverlayContext = {
     advanceOverlay: false,
     controlInput,
@@ -75,6 +83,12 @@ export function runLoop({
   const loop = (nowMs: number) => {
     const dtMillis = nowMs - lastTimeMs;
     lastTimeMs = nowMs;
+    presentationFrameContext.dtMillis = dtMillis;
+    presentationFrameContext.nowMs = nowMs;
+    updatePresentationFrameProviders(
+      presentationFrameProviders,
+      presentationFrameContext,
+    );
     const frame = pipeline.beginFrame(nowMs, dtMillis);
     primaryOverlayRasterizer?.beginFrame();
     renderViews(loopViews, pipeline.prepareView, renderDebug);

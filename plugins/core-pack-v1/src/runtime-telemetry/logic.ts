@@ -1,4 +1,4 @@
-const FPS_HISTORY_CAPACITY = 300;
+const fpsHistoryCapacity = 300;
 
 export interface RuntimeTelemetryController {
   getFps: () => number;
@@ -16,12 +16,12 @@ export function createRuntimeTelemetryController(): RuntimeTelemetryController {
     updateFps: (dtMillis) => {
       if (dtMillis <= 0) return;
 
-      if (history.length < FPS_HISTORY_CAPACITY) {
+      if (history.length < fpsHistoryCapacity) {
         tail++;
         history.push(dtMillis);
         sum += dtMillis;
       } else {
-        tail = (tail + 1) % FPS_HISTORY_CAPACITY;
+        tail = (tail + 1) % fpsHistoryCapacity;
         sum += dtMillis - history[tail];
         history[tail] = dtMillis;
       }

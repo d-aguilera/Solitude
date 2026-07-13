@@ -64,6 +64,8 @@ composition.
     dominant gravity body, with keyboard toggle behavior.
   - `orbitTelemetry`: localized orbit state, apsis, circularization, and timing
     readouts for the focused entity.
+  - `runtimeTelemetry`: shared localized simulation-time and rolling-FPS HUD
+    driven by browser presentation-frame samples.
   - `solarSystemMaterials`: Earth and Moon texture materials plus pack-owned
     texture assets.
   - `shipTelemetry`: localized speed and spacecraft control telemetry for the

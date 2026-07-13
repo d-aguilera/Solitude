@@ -25,5 +25,8 @@ describe("solitude plugin catalog", () => {
     expect(plugins.some((plugin) => plugin.id === "mainViewLookaround")).toBe(
       false,
     );
+    expect(plugins.some((plugin) => plugin.id === "runtimeTelemetry")).toBe(
+      false,
+    );
   });
 });

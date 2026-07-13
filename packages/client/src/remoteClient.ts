@@ -27,7 +27,6 @@ import {
 import { createSolitudeRemoteClientRenderer } from "./remoteClientRenderer";
 import { getRemoteDebugAction } from "./remoteDebugInput";
 import { createRemoteIdentityHudPlugin } from "./remoteIdentityHud";
-import { createRemoteRuntimeTelemetryHudPlugin } from "./remoteRuntimeTelemetryHud";
 import { createShipColorNamesPlugin } from "./shipColorNames";
 
 async function main(): Promise<void> {
@@ -54,8 +53,6 @@ async function main(): Promise<void> {
     resolveSolitudeLocale(runtimeOptions),
   );
   document.documentElement.lang = localization.htmlLang;
-  const remoteRuntimeTelemetryHud =
-    createRemoteRuntimeTelemetryHudPlugin(localization);
 
   const engineRenderer = createSolitudeRemoteClientRenderer({
     container: canvasContainer,
@@ -71,7 +68,6 @@ async function main(): Promise<void> {
         getGameId: () => fields.gameId.value,
         localization,
       }),
-      remoteRuntimeTelemetryHud.plugin,
     ],
   });
 
@@ -252,7 +248,6 @@ async function main(): Promise<void> {
   function renderRemoteFrame(nowMillis: number): void {
     const dtMillis = Math.max(0, nowMillis - lastFrameMillis);
     lastFrameMillis = nowMillis;
-    remoteRuntimeTelemetryHud.updateFps(dtMillis);
     engineRenderer.renderFrame(nowMillis, dtMillis);
     requestAnimationFrame(renderRemoteFrame);
   }

@@ -39,10 +39,6 @@ export interface ClientLocalization extends SolitudeLocalization {
     readonly gameNone: string;
     readonly gamePrefix: string;
   };
-  readonly remoteRuntime: {
-    readonly fpsPrefix: string;
-    readonly timePrefix: string;
-  };
   readonly rendererFailure: {
     readonly contextLost: string;
     readonly program: string;
@@ -99,10 +95,6 @@ export function createClientLocalization(
       entityPrefix: messages["remoteIdentity.entityPrefix"],
       gameNone: messages["remoteIdentity.gameNone"],
       gamePrefix: messages["remoteIdentity.gamePrefix"],
-    },
-    remoteRuntime: {
-      fpsPrefix: messages["remoteRuntime.fpsPrefix"],
-      timePrefix: messages["remoteRuntime.timePrefix"],
     },
     rendererFailure: {
       contextLost: messages["renderer.failure.contextLost"],

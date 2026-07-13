@@ -1,12 +1,12 @@
-import { formatSimTime } from "@solitude/engine/render";
-import type { HudPanelProvider } from "@solitude/hud/provider";
+import type { ExternalHudPanelProvider } from "@solitude/plugin-api";
+import { formatSimTime } from "../shared/localization";
 import type { RuntimeTelemetryLocalization } from "./localization";
 import type { RuntimeTelemetryController } from "./logic";
 
 export function createHudPanel(
   controller: RuntimeTelemetryController,
   localization: RuntimeTelemetryLocalization,
-): HudPanelProvider {
+): ExternalHudPanelProvider {
   return {
     writeHud: (grid, context) => {
       grid.addLine(

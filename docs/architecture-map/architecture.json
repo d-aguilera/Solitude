@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T15:47:16.533Z",
+  "generatedAt": "2026-07-13T17:12:11.268Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -97,6 +97,13 @@
       "id": "module:@solitude/browser:./dom/overlayPorts",
       "kind": "module",
       "label": "./dom/overlayPorts",
+      "packageName": "@solitude/browser",
+      "parent": "pkg:@solitude/browser"
+    },
+    {
+      "id": "module:@solitude/browser:./dom/presentationFrame",
+      "kind": "module",
+      "label": "./dom/presentationFrame",
       "packageName": "@solitude/browser",
       "parent": "pkg:@solitude/browser"
     },
@@ -779,6 +786,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/browser:./dom/presentationFrame:collectPresentationFrameProviders",
+      "kind": "symbol",
+      "label": "collectPresentationFrameProviders",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./dom/presentationFrame",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/browser:./dom/renderTextureSources:collectRenderTextureSources",
       "kind": "symbol",
       "label": "collectRenderTextureSources",
@@ -1136,6 +1151,14 @@
       "label": "createPluginCapabilityRegistry",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./runtime",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:.:createPresentationFrameCapability",
+      "kind": "symbol",
+      "label": "createPresentationFrameCapability",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:.",
       "symbolKind": "function"
     },
     {
@@ -2043,6 +2066,22 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/plugin-api:.:ExternalPresentationFrameContext",
+      "kind": "symbol",
+      "label": "ExternalPresentationFrameContext",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:.",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:.:ExternalPresentationFrameProvider",
+      "kind": "symbol",
+      "label": "ExternalPresentationFrameProvider",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:.",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:.:ExternalPrimaryViewState",
       "kind": "symbol",
       "label": "ExternalPrimaryViewState",
@@ -2715,6 +2754,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/plugin-api:.:isPresentationFrameProvider",
+      "kind": "symbol",
+      "label": "isPresentationFrameProvider",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:.",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/protocol:./protocol:isSolitudeClientMessage",
       "kind": "symbol",
       "label": "isSolitudeClientMessage",
@@ -3320,6 +3367,38 @@
       "label": "PolylineSceneObject",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/browser:./dom/presentationFrame:presentationFrameCapability",
+      "kind": "symbol",
+      "label": "presentationFrameCapability",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./dom/presentationFrame",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:.:presentationFrameCapability",
+      "kind": "symbol",
+      "label": "presentationFrameCapability",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:.",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/browser:./dom/presentationFrame:PresentationFrameContext",
+      "kind": "symbol",
+      "label": "PresentationFrameContext",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./dom/presentationFrame",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/browser:./dom/presentationFrame:PresentationFrameProvider",
+      "kind": "symbol",
+      "label": "PresentationFrameProvider",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./dom/presentationFrame",
       "symbolKind": "interface"
     },
     {
@@ -4531,6 +4610,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/browser:./dom/presentationFrame:updatePresentationFrameProviders",
+      "kind": "symbol",
+      "label": "updatePresentationFrameProviders",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./dom/presentationFrame",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/engine:./render:updateSceneViewCameras",
       "kind": "symbol",
       "label": "updateSceneViewCameras",
@@ -5091,6 +5178,12 @@
       "from": "module:@solitude/browser:./dom/overlayPorts",
       "kind": "module-import",
       "to": "module:@solitude/engine:./world"
+    },
+    {
+      "id": "module-import:module:@solitude/browser:./dom/presentationFrame->module:@solitude/engine:./plugin",
+      "from": "module:@solitude/browser:./dom/presentationFrame",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./plugin"
     },
     {
       "id": "module-import:module:@solitude/browser:./dom/renderingBootstrap->module:@solitude/browser:./dom/renderFailure",
@@ -5769,6 +5862,42 @@
       "from": "symbol:@solitude/browser:./dom/overlayPorts:createPluginCapabilityProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/presentationFrame:collectPresentationFrameProviders->symbol:@solitude/browser:./dom/presentationFrame:presentationFrameCapability",
+      "from": "symbol:@solitude/browser:./dom/presentationFrame:collectPresentationFrameProviders",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/presentationFrame:presentationFrameCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/presentationFrame:collectPresentationFrameProviders->symbol:@solitude/browser:./dom/presentationFrame:PresentationFrameProvider",
+      "from": "symbol:@solitude/browser:./dom/presentationFrame:collectPresentationFrameProviders",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/presentationFrame:PresentationFrameProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/presentationFrame:collectPresentationFrameProviders->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
+      "from": "symbol:@solitude/browser:./dom/presentationFrame:collectPresentationFrameProviders",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/presentationFrame:PresentationFrameProvider->symbol:@solitude/browser:./dom/presentationFrame:PresentationFrameContext",
+      "from": "symbol:@solitude/browser:./dom/presentationFrame:PresentationFrameProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/presentationFrame:PresentationFrameContext"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/presentationFrame:updatePresentationFrameProviders->symbol:@solitude/browser:./dom/presentationFrame:PresentationFrameContext",
+      "from": "symbol:@solitude/browser:./dom/presentationFrame:updatePresentationFrameProviders",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/presentationFrame:PresentationFrameContext"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/presentationFrame:updatePresentationFrameProviders->symbol:@solitude/browser:./dom/presentationFrame:PresentationFrameProvider",
+      "from": "symbol:@solitude/browser:./dom/presentationFrame:updatePresentationFrameProviders",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/browser:./dom/presentationFrame:PresentationFrameProvider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/renderFailure:RenderFailure->symbol:@solitude/browser:./dom/renderFailure:RenderFailureCode",
@@ -10985,6 +11114,24 @@
       "to": "symbol:@solitude/plugin-api:.:keyboardInputCapability"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:createPresentationFrameCapability->symbol:@solitude/plugin-api:.:ExternalPluginCapabilityProvider",
+      "from": "symbol:@solitude/plugin-api:.:createPresentationFrameCapability",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalPluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:createPresentationFrameCapability->symbol:@solitude/plugin-api:.:ExternalPresentationFrameProvider",
+      "from": "symbol:@solitude/plugin-api:.:createPresentationFrameCapability",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalPresentationFrameProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:createPresentationFrameCapability->symbol:@solitude/plugin-api:.:presentationFrameCapability",
+      "from": "symbol:@solitude/plugin-api:.:createPresentationFrameCapability",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:presentationFrameCapability"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:.:createRenderTextureSourcesCapability->symbol:@solitude/plugin-api:.:ExternalPluginCapabilityProvider",
       "from": "symbol:@solitude/plugin-api:.:createRenderTextureSourcesCapability",
       "kind": "symbol-reference",
@@ -11409,6 +11556,12 @@
       "from": "symbol:@solitude/plugin-api:.:ExternalPolylineSceneObject",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:.:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalPresentationFrameProvider->symbol:@solitude/plugin-api:.:ExternalPresentationFrameContext",
+      "from": "symbol:@solitude/plugin-api:.:ExternalPresentationFrameProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalPresentationFrameContext"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:.:ExternalPrimaryViewState->symbol:@solitude/engine:./math:Vec3",
@@ -11907,6 +12060,12 @@
       "from": "symbol:@solitude/plugin-api:.:isHudPanelProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:.:ExternalHudPanelProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:.:isPresentationFrameProvider->symbol:@solitude/plugin-api:.:ExternalPresentationFrameProvider",
+      "from": "symbol:@solitude/plugin-api:.:isPresentationFrameProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:.:ExternalPresentationFrameProvider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:.:isSpacecraftOperatorTelemetryProvider->symbol:@solitude/plugin-api:.:ExternalSpacecraftOperatorTelemetryProvider",

@@ -32,6 +32,9 @@ export default defineConfig({
         "orbit-telemetry": fileURLToPath(
           new URL("./src/orbit-telemetry/index.ts", import.meta.url),
         ),
+        "runtime-telemetry": fileURLToPath(
+          new URL("./src/runtime-telemetry/index.ts", import.meta.url),
+        ),
         "solar-system-materials": fileURLToPath(
           new URL("./src/solar-system-materials/index.ts", import.meta.url),
         ),
@@ -90,6 +93,7 @@ export default defineConfig({
                 "./main-view-lookaround/plugin.json",
                 "./orbit-segments/plugin.json",
                 "./orbit-telemetry/plugin.json",
+                "./runtime-telemetry/plugin.json",
                 "./solar-system-materials/plugin.json",
                 "./ship-telemetry/plugin.json",
                 "./targeting-laser/plugin.json",
@@ -171,6 +175,21 @@ export default defineConfig({
               entry: "./index.js",
               environment: "browser",
               id: "orbitTelemetry",
+              schemaVersion: 1,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "runtime-telemetry/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: 1,
+              entry: "./index.js",
+              environment: "browser",
+              id: "runtimeTelemetry",
               schemaVersion: 1,
             },
             null,

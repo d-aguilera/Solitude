@@ -6,7 +6,6 @@ import { createOperatorSwitchPlugin } from "./operatorSwitch/index";
 import { createPausePlugin } from "./pause/index";
 import { createPlaybackPlugin } from "./playback/index";
 import { createProfilingPlugin } from "./profiling/index";
-import { createRuntimeTelemetryPlugin } from "./runtimeTelemetry/index";
 import { createShipsPlugin } from "./ships/index";
 import { createTimeScalePlugin } from "./timeScale/index";
 
@@ -18,7 +17,6 @@ export const defaultPluginIds = [
   "ships",
   "spacecraftOperator",
   "hud",
-  "runtimeTelemetry",
   "autopilot",
   "autopilotInput",
   "memory",
@@ -37,7 +35,6 @@ export const solitudePluginCatalog: PluginCatalog = {
   pause: createPausePlugin,
   playback: createPlaybackPlugin,
   profiling: createProfilingPlugin,
-  runtimeTelemetry: createRuntimeTelemetryPlugin,
   ships: createShipsPlugin,
   timeScale: createTimeScalePlugin,
 };

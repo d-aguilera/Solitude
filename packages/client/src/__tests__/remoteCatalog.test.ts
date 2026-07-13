@@ -1,3 +1,7 @@
+import {
+  presentationFrameCapability,
+  updatePresentationFrameProviders,
+} from "@solitude/browser/dom/presentationFrame";
 import { loadPlugins } from "@solitude/engine/plugin";
 import {
   collectKeyboardInputProviders,
@@ -5,7 +9,7 @@ import {
   createKeyboardInputProvider,
   keyboardInputCapability,
 } from "@solitude/input/keyboard";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   createRemoteClientComposition,
   remoteRenderPluginCatalog,
@@ -41,6 +45,9 @@ describe("remote render plugin catalog", () => {
       false,
     );
     expect(plugins.some((plugin) => plugin.id === "shipTelemetry")).toBe(false);
+    expect(plugins.some((plugin) => plugin.id === "runtimeTelemetry")).toBe(
+      false,
+    );
     expect(spacecraftOperator?.capabilities?.length).toBeGreaterThan(0);
   });
 
@@ -73,5 +80,35 @@ describe("remote render plugin catalog", () => {
       composition.plugins.find((plugin) => plugin.id === "mainViewLookaround")
         ?.viewControls?.updateViewControls,
     ).toBe(updateViewControls);
+  });
+
+  it("composes external presentation-frame providers locally", () => {
+    const updatePresentationFrame = vi.fn();
+    const composition = createRemoteClientComposition({
+      clientPlugins: [],
+      externalPluginCatalog: {
+        runtimeTelemetry: () => ({
+          id: "runtimeTelemetry",
+          capabilities: [
+            {
+              id: presentationFrameCapability,
+              value: { updatePresentationFrame },
+            },
+          ],
+        }),
+      },
+      externalPluginIds: ["runtimeTelemetry"],
+      runtimeOptions: {},
+    });
+
+    updatePresentationFrameProviders(composition.presentationFrameProviders, {
+      dtMillis: 16,
+      nowMs: 100,
+    });
+
+    expect(updatePresentationFrame).toHaveBeenCalledWith({
+      dtMillis: 16,
+      nowMs: 100,
+    });
   });
 });

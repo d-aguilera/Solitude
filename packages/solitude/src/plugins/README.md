@@ -4,7 +4,7 @@ This directory is the plugin catalog and composition layer.
 
 Runtime-discovered packages live in the repository-level `plugins/` workspace.
 They compile against `@solitude/plugin-api` and are not statically imported by
-this catalog. Targeting laser is the first externally loaded plugin.
+this catalog. Shared browser presentation plugins live in `core-pack-v1`.
 
 ## Layering rule
 
@@ -34,6 +34,8 @@ Loop plugins can also influence per-frame policies such as whether the sim, scen
 View plugins register named views and main-view camera rigs through the view registry. The primary canvas, layout plumbing, and primary `ViewDefinition` are core-owned, but the active primary camera rig is supplied by plugins. Optional views such as picture-in-picture cameras are registered as full plugin views. Infra owns the canvas elements and their DOM IDs.
 
 The `hud` plugin owns the preallocated HUD grid and browser overlay rendering. Telemetry plugins publish `solitude.hud.panel.v1` providers that write into that grid. Keep each provider focused on one telemetry group, and avoid allocating per-cell objects in the HUD refresh path.
+
+Plugins that measure local rendering cadence publish `solitude.browser.presentationFrame.v1` providers. Standalone and remote browser loops feed those providers from their own animation frames, keeping frame telemetry independent from simulation-loop policy.
 
 Simulation plugins run inside the fixed tick order. Vehicle or operator behavior that mutates focused entities should be contributed through simulation phases rather than hard-coded into core tick logic.
 

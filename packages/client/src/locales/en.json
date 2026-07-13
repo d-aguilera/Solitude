@@ -20,8 +20,6 @@
   "remoteIdentity.entityPrefix": "Entity: ",
   "remoteIdentity.gameNone": "Game: none",
   "remoteIdentity.gamePrefix": "Game: ",
-  "remoteRuntime.fpsPrefix": "FPS: ",
-  "remoteRuntime.timePrefix": "Time: ",
   "shipColor.blue": "Blue",
   "shipColor.coral": "Coral",
   "shipColor.gold": "Gold",

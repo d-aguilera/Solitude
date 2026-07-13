@@ -18,6 +18,8 @@ export const SOLITUDE_PLUGIN_API_VERSION = 1;
 export const keyboardInputCapability = "solitude.keyboardInput.v1";
 export const entityNameProviderCapability = "solitude.entityNameProvider.v1";
 export const hudPanelCapability = "solitude.hud.panel.v1";
+export const presentationFrameCapability =
+  "solitude.browser.presentationFrame.v1";
 export const renderTextureSourcesCapability =
   "solitude.render.textureSources.v1";
 export const spacecraftOperatorTelemetryCapability =
@@ -163,6 +165,32 @@ export function isHudPanelProvider(
     typeof candidate === "object" &&
     candidate !== null &&
     typeof candidate.writeHud === "function"
+  );
+}
+
+export interface ExternalPresentationFrameContext {
+  dtMillis: number;
+  nowMs: number;
+}
+
+export interface ExternalPresentationFrameProvider {
+  updatePresentationFrame: (context: ExternalPresentationFrameContext) => void;
+}
+
+export function createPresentationFrameCapability(
+  provider: ExternalPresentationFrameProvider,
+): ExternalPluginCapabilityProvider {
+  return { id: presentationFrameCapability, value: provider };
+}
+
+export function isPresentationFrameProvider(
+  value: unknown,
+): value is ExternalPresentationFrameProvider {
+  const candidate = value as Partial<ExternalPresentationFrameProvider> | null;
+  return (
+    typeof candidate === "object" &&
+    candidate !== null &&
+    typeof candidate.updatePresentationFrame === "function"
   );
 }
 

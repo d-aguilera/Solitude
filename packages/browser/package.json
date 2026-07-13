@@ -8,6 +8,7 @@
     "./dom/keyboardInput": "./src/infra/domKeyboardInput.ts",
     "./dom/layout": "./src/infra/domLayout.ts",
     "./dom/overlayPorts": "./src/infra/overlayPorts.ts",
+    "./dom/presentationFrame": "./src/infra/presentationFrame.ts",
     "./dom/renderFailure": "./src/infra/renderFailure.ts",
     "./dom/renderFailurePanel": "./src/infra/renderFailurePanel.ts",
     "./dom/renderTextureSources": "./src/infra/renderTextureSources.ts",

@@ -4,6 +4,7 @@ import {
   type LayoutView,
 } from "@solitude/browser/dom/layout";
 import { applyBrowserOverlayProviders } from "@solitude/browser/dom/overlayPorts";
+import { updatePresentationFrameProviders } from "@solitude/browser/dom/presentationFrame";
 import type { RenderFailure } from "@solitude/browser/dom/renderFailure";
 import { collectRenderTextureSources } from "@solitude/browser/dom/renderTextureSources";
 import {
@@ -157,6 +158,7 @@ export function createSolitudeRemoteClientRenderer({
   let predictLocalShip = shouldUseLocalPrediction(runtimeOptions);
   let interpolationBuffer = createRuntimeSnapshotInterpolationBuffer();
   const mixedSnapshot: RuntimeWorldSnapshot = { entities: [] };
+  const presentationFrameContext = { dtMillis: 0, nowMs: 0 };
 
   let renderer: RemoteViewPresenterRenderer | null = null;
   let fatalError: RenderFailure["code"] | null = null;
@@ -209,6 +211,12 @@ export function createSolitudeRemoteClientRenderer({
       }
     },
     renderFrame: (nowMillis, dtMillis) => {
+      presentationFrameContext.dtMillis = dtMillis;
+      presentationFrameContext.nowMs = nowMillis;
+      updatePresentationFrameProviders(
+        composition.presentationFrameProviders,
+        presentationFrameContext,
+      );
       if (!latestSnapshot || !renderer) return false;
       renderer.resizeToDisplaySize(window.devicePixelRatio || 1);
       const focusEntityId = getFocusEntityId();

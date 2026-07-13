@@ -4,6 +4,10 @@ import {
   type BrowserOverlayProvider,
 } from "@solitude/browser/dom/overlayPorts";
 import {
+  collectPresentationFrameProviders,
+  type PresentationFrameProvider,
+} from "@solitude/browser/dom/presentationFrame";
+import {
   loadPlugins,
   type GamePlugin,
   type PluginCapabilityRegistry,
@@ -40,6 +44,7 @@ export interface RemoteClientComposition {
   capabilityRegistry: PluginCapabilityRegistry;
   localPredictionProviders: readonly LocalEntityPredictionProvider[];
   overlayProviders: readonly BrowserOverlayProvider[];
+  presentationFrameProviders: readonly PresentationFrameProvider[];
   plugins: GamePlugin[];
 }
 
@@ -72,6 +77,8 @@ export function createRemoteClientComposition({
     localPredictionProviders:
       collectLocalEntityPredictionProviders(capabilityRegistry),
     overlayProviders: collectBrowserOverlayProviders(capabilityRegistry),
+    presentationFrameProviders:
+      collectPresentationFrameProviders(capabilityRegistry),
     plugins,
   };
 }
