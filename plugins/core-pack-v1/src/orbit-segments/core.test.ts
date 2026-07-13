@@ -79,6 +79,8 @@ function createFixture(options: {
       collisionSpheres: [
         { id: planetState.id, radius: 1_000, state: planetState },
       ],
+      controllableBodies: [ship],
+      entityStates: [ship, planetState],
       gravityMasses: [
         {
           id: planetState.id,

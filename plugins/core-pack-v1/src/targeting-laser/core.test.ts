@@ -119,7 +119,12 @@ function createFixture(...spheres: ExternalEntityCollisionSphere[]): {
     body,
     params: {
       mainFocus: { controlledBody: body, entityId: body.id },
-      world: { collisionSpheres: spheres, gravityMasses: [] },
+      world: {
+        collisionSpheres: spheres,
+        controllableBodies: [body],
+        entityStates: [body, ...spheres.map((sphere) => sphere.state)],
+        gravityMasses: [],
+      },
     },
   };
 }

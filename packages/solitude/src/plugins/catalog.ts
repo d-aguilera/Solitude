@@ -35,7 +35,6 @@ export const defaultPluginIds = [
   "timeScale",
   "playback",
   "operatorSwitch",
-  "trajectories",
 ];
 
 export const solitudePluginCatalog: PluginCatalog = {

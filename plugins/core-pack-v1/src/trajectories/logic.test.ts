@@ -1,5 +1,8 @@
-import { mat3, vec3 } from "@solitude/engine/math";
-import type { PolylineSceneObject } from "@solitude/engine/render";
+import {
+  mat3,
+  vec3,
+  type ExternalPolylineSceneObject,
+} from "@solitude/plugin-api";
 import { describe, expect, it } from "vitest";
 import { updateTrajectories } from "./logic";
 import type { Trajectory } from "./types";
@@ -27,7 +30,7 @@ describe("updateTrajectories", () => {
   });
 });
 
-function createPolyline(): PolylineSceneObject {
+function createPolyline(): ExternalPolylineSceneObject {
   return {
     applyTransform: false,
     backFaceCulling: false,

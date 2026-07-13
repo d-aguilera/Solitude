@@ -1,9 +1,9 @@
-import { vec3 } from "@solitude/engine/math";
-import type {
-  EntityConfig,
-  KeplerianOrbit,
-  World,
-} from "@solitude/engine/world";
+import {
+  vec3,
+  type ExternalEntityConfig,
+  type ExternalKeplerianOrbit,
+  type ExternalWorld,
+} from "@solitude/plugin-api";
 
 export interface TrajectoryPlan {
   pathId: string;
@@ -42,8 +42,8 @@ export function parseTrajectoryId(
 }
 
 export function buildTrajectoryPlan(
-  world: World,
-  entityConfigs: EntityConfig[],
+  world: ExternalWorld,
+  entityConfigs: readonly ExternalEntityConfig[],
 ): TrajectoryPlan[] {
   const plan: TrajectoryPlan[] = [];
 
@@ -55,7 +55,7 @@ export function buildTrajectoryPlan(
     });
   }
 
-  // Build trajectories for planets (skip moons)
+  // Build trajectories for planets (skip moons).
   for (const cfg of getTrajectoryPlanetConfigs(entityConfigs)) {
     if (cfg.centralEntityId !== "planet:sun") continue;
     const body = getById(world.entityStates, cfg.id, "Entity state");
@@ -75,15 +75,15 @@ export function buildTrajectoryPlan(
   return plan;
 }
 
-function getTrajectoryPlanetConfigs(configs: EntityConfig[]): {
+function getTrajectoryPlanetConfigs(configs: readonly ExternalEntityConfig[]): {
   centralEntityId: string;
   id: string;
-  orbit: KeplerianOrbit;
+  orbit: ExternalKeplerianOrbit;
 }[] {
   const planetConfigs: {
     centralEntityId: string;
     id: string;
-    orbit: KeplerianOrbit;
+    orbit: ExternalKeplerianOrbit;
   }[] = [];
   for (const entity of configs) {
     const state = entity.components.state;
@@ -101,7 +101,7 @@ function getTrajectoryPlanetConfigs(configs: EntityConfig[]): {
 }
 
 function getById<T extends { id: string }>(
-  list: T[],
+  list: readonly T[],
   id: string,
   typeName: string,
 ): T {
@@ -118,7 +118,7 @@ function getById<T extends { id: string }>(
  *
  * Only depends on semi-major axis and eccentricity.
  */
-function orbitalEllipseLength(orbit: KeplerianOrbit): number {
+function orbitalEllipseLength(orbit: ExternalKeplerianOrbit): number {
   const a = orbit.semiMajorAxis;
   const e = orbit.eccentricity;
 

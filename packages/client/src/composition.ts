@@ -29,7 +29,6 @@ export const remoteRenderPluginIds = [
   "autopilotHud",
   "bodyLabels",
   "axialViews",
-  "trajectories",
 ];
 
 export const remoteRenderPluginCatalog: PluginCatalog = {

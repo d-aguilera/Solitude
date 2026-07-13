@@ -1,13 +1,14 @@
-import { vec3, type Vec3 } from "@solitude/engine/math";
+import { vec3, type Mat3, type Vec3 } from "@solitude/engine/math";
 
 export {
   EPS_ECCENTRICITY,
   EPS_LEN,
   EPS_SPEED_SQ,
+  mat3,
   raySphereFirstHitDistance,
   vec3,
 } from "@solitude/engine/math";
-export type { Vec3 } from "@solitude/engine/math";
+export type { Mat3, Vec3 } from "@solitude/engine/math";
 
 export const SOLITUDE_PLUGIN_API_VERSION = 1;
 export const keyboardInputCapability = "solitude.keyboardInput.v1";
@@ -110,6 +111,8 @@ export interface ExternalControlledBody extends ExternalEntityMotionState {
 
 export interface ExternalWorld {
   collisionSpheres: readonly ExternalEntityCollisionSphere[];
+  controllableBodies: readonly ExternalControlledBody[];
+  entityStates: readonly ExternalEntityMotionState[];
   gravityMasses: readonly ExternalGravityMass[];
 }
 
@@ -234,19 +237,73 @@ export type ExternalRenderMaterial =
 
 export interface ExternalSceneObject {
   id: ExternalEntityId;
+  kind?: "controlledBody" | "lightEmitter" | "orbitalBody" | "polyline";
   material?: ExternalRenderMaterial;
+}
+
+export interface ExternalPolylineSceneObject extends ExternalSceneObject {
+  applyTransform: false;
+  backFaceCulling: false;
+  color: ExternalRgb;
+  count: number;
+  kind: "polyline";
+  lineWidth: number;
+  mesh: {
+    faces: number[][];
+    points: Vec3[];
+  };
+  meshLod: { kind: "none" };
+  meshScale: number;
+  meshShading: { kind: "flat" };
+  orientation: Mat3;
+  position: Vec3;
+  tail: number;
+  wireframeOnly: true;
 }
 
 export interface ExternalScene {
   objects: ExternalSceneObject[];
 }
 
+export interface ExternalKeplerianOrbit {
+  eccentricity: number;
+  semiMajorAxis: number;
+}
+
+export type ExternalEntityStateConfig =
+  | { kind: "direct" }
+  | {
+      centralEntityId: ExternalEntityId;
+      kind: "keplerian";
+      orbit: ExternalKeplerianOrbit;
+    };
+
+export interface ExternalEntityConfig {
+  components: {
+    lightEmitter?: unknown;
+    renderable?: { color: ExternalRgb };
+    state?: ExternalEntityStateConfig;
+  };
+  id: ExternalEntityId;
+}
+
+export interface ExternalWorldAndSceneConfig {
+  entities: readonly ExternalEntityConfig[];
+}
+
 export interface ExternalSceneInitParams {
+  config: ExternalWorldAndSceneConfig;
   scene: ExternalScene;
+  world: ExternalWorld;
+}
+
+export interface ExternalSceneUpdateParams {
+  dtSimMillis: number;
 }
 
 export interface ExternalScenePlugin {
   initScene?: (params: ExternalSceneInitParams) => void;
+  updateScene?: (params: ExternalSceneUpdateParams) => void;
 }
 
 export interface ExternalSegmentPlugin {

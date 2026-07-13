@@ -379,8 +379,10 @@ function validateExternalPlugin(
     throw new Error(`External plugin ${expectedId} has invalid segments`);
   }
   if (
-    plugin.scene?.initScene !== undefined &&
-    typeof plugin.scene.initScene !== "function"
+    (plugin.scene?.initScene !== undefined &&
+      typeof plugin.scene.initScene !== "function") ||
+    (plugin.scene?.updateScene !== undefined &&
+      typeof plugin.scene.updateScene !== "function")
   ) {
     throw new Error(`External plugin ${expectedId} has invalid scene`);
   }

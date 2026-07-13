@@ -59,6 +59,8 @@ composition.
     texture assets.
   - `targetingLaser`: targeting beam, target lock, impact/miss markers, and
     keyboard toggle behavior.
+  - `trajectories`: sampled ring-buffer polylines for controllable bodies and
+    primary solar-system bodies.
   - `velocitySegments`: forward/backward world segments along the focused
     entity's velocity vector.
 

@@ -23,6 +23,9 @@ export default defineConfig({
         "targeting-laser": fileURLToPath(
           new URL("./src/targeting-laser/index.ts", import.meta.url),
         ),
+        trajectories: fileURLToPath(
+          new URL("./src/trajectories/index.ts", import.meta.url),
+        ),
         "velocity-segments": fileURLToPath(
           new URL("./src/velocity-segments/index.ts", import.meta.url),
         ),
@@ -66,6 +69,7 @@ export default defineConfig({
                 "./orbit-segments/plugin.json",
                 "./solar-system-materials/plugin.json",
                 "./targeting-laser/plugin.json",
+                "./trajectories/plugin.json",
                 "./velocity-segments/plugin.json",
               ],
               schemaVersion: 1,
@@ -113,6 +117,21 @@ export default defineConfig({
               entry: "./index.js",
               environment: "browser",
               id: "targetingLaser",
+              schemaVersion: 1,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "trajectories/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: 1,
+              entry: "./index.js",
+              environment: "browser",
+              id: "trajectories",
               schemaVersion: 1,
             },
             null,

@@ -1,16 +1,18 @@
-import { vec3 } from "@solitude/engine/math";
-import type { PolylineSceneObject, Scene } from "@solitude/engine/render";
+import {
+  vec3,
+  type ExternalPolylineSceneObject,
+  type ExternalScene,
+} from "@solitude/plugin-api";
 import type { TrajectoryPlan } from "./trajectoryPlan";
 import type { Trajectory } from "./types";
 
 export function bindTrajectoryPlanToScene(
-  scene: Scene,
+  scene: ExternalScene,
   plan: TrajectoryPlan[],
 ): Trajectory[] {
   const trajectoryList: Trajectory[] = [];
   const sceneObjects = scene.objects;
 
-  // Build a scene objects lookup index
   const sceneObjectIndex: Record<string, number> = {};
   for (let i = 0; i < sceneObjects.length; i++) {
     sceneObjectIndex[sceneObjects[i].id] = i;
@@ -18,17 +20,14 @@ export function bindTrajectoryPlanToScene(
 
   for (const entry of plan) {
     const sceneObject = sceneObjects[sceneObjectIndex[entry.pathId]] as
-      | PolylineSceneObject
+      | ExternalPolylineSceneObject
       | undefined;
     if (!sceneObject) {
       throw new Error(`Trajectory scene object not found: ${entry.pathId}`);
     }
-    const trajectory = createTrajectory(
-      entry.capacity,
-      entry.intervalMillis,
-      sceneObject,
+    trajectoryList.push(
+      createTrajectory(entry.capacity, entry.intervalMillis, sceneObject),
     );
-    trajectoryList.push(trajectory);
   }
 
   return trajectoryList;
@@ -37,10 +36,9 @@ export function bindTrajectoryPlanToScene(
 function createTrajectory(
   capacity: number,
   intervalMillis: number,
-  sceneObject: PolylineSceneObject,
+  sceneObject: ExternalPolylineSceneObject,
 ): Trajectory {
-  const mesh = sceneObject.mesh;
-  mesh.points = Array.from({ length: capacity }).map(() => vec3.zero());
+  sceneObject.mesh.points = Array.from({ length: capacity }, () => vec3.zero());
   return {
     intervalMillis,
     remainingMillis: 0,

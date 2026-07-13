@@ -39,7 +39,16 @@ describe("solar system materials plugin", () => {
       ],
     };
 
-    createPlugin({}).scene?.initScene?.({ scene });
+    createPlugin({}).scene?.initScene?.({
+      config: { entities: [] },
+      scene,
+      world: {
+        collisionSpheres: [],
+        controllableBodies: [],
+        entityStates: [],
+        gravityMasses: [],
+      },
+    });
 
     expect(scene.objects[0].material).toEqual(
       expect.objectContaining({
