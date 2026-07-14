@@ -6,6 +6,7 @@
   "exports": {
     "./assets": "./src/assets.ts",
     "./controllable-entities": "./src/app/controllableEntityProvider.ts",
+    "./epsilon": "./src/epsilon.ts",
     "./math": "./src/math.ts",
     "./plugin": "./src/plugin.ts",
     "./render": "./src/render.ts",
@@ -17,6 +18,9 @@
     "./render/sceneOverlayRenderer": "./src/render/SceneOverlayRenderer.ts",
     "./runtime": "./src/runtime.ts",
     "./world": "./src/world.ts"
+  },
+  "dependencies": {
+    "@solitude/geometry": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

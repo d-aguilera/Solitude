@@ -57,13 +57,14 @@
 - **Solar-system data**: use real-ish values (AU, km, approximate J2000 elements) for plausibility.
 - **Entity model direction**: core should not know scenario categories such as planet/star/ship. Prefer generic bodies/components/capabilities.
 - **Rendering**: WebGL2-native solid-mesh rendering is required. Browser WebGL renders solid meshes plus depth-tested trajectory/world-segment ribbons. `SceneOverlayRenderer` handles renderer-neutral scene overlay projection; the browser Canvas scene overlay draws labels and markers, and the HUD rasterizer draws HUD panels separately.
-- **Math helpers**: always use math helpers when available for vector/matrix/trig instead of inlining the math.
+- **Geometry helpers**: always use the dependency-free `@solitude/geometry` vector, matrix, intersection, mesh-volume, and OBJ helpers when available instead of inlining the math. Engine-owned vector/matrix facades retain allocation profiling; external plugins consume the portable implementations through `@solitude/plugin-api/math` and `@solitude/plugin-api/assets`.
 - **Epsilons**: use shared constants in `packages/engine/src/domain/epsilon.ts` instead of inline literals.
 - **Optional arguments**: avoid optional runtime/plumbing arguments unless absence is semantically meaningful. Prefer required parameters with empty collections or default objects so call sites and implementations do not grow defensive branches.
 
 ## Package Snapshot
 
 - `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
+- `packages/geometry/src/`: dependency-free portable vector, matrix, ray/sphere, triangle-mesh volume, and Wavefront OBJ primitives shared by engine and the controlled external plugin API.
 - `packages/hud/src/`: generic HUD grid and HUD panel capability contracts shared by browser, client, Solitude, and external plugins.
 - `packages/input/src/`: outer keyboard input-provider contracts; plugins publish bindings/handlers through generic engine capabilities and browser adapters consume them.
 - `packages/entity-names/src/`: dependency-free canonical entity-name provider capability contract and lookup policy; content plugins own provider implementations and localized name bundles, and the external plugin API re-exports this implementation.
@@ -71,7 +72,7 @@
 - `packages/sim/src/`: browser-safe and Node-safe Solitude simulation library: default world config, solar-system entity builders/assets and localized names, spacecraft operator dynamics, headless autopilot behavior, and headless Solitude composition shared by server and browser/product packages.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, presentation-frame capabilities, layered view layout, Canvas presentation, GPU-native WebGL2 presentation, and remote-world mirror helpers.
 - `packages/protocol/src/`: browser-safe client/server protocol types and message guards.
-- `packages/plugin-api/src/`: focused, rootless subpath exports for independently built external plugins. Module composition, runtime options, generic capability primitives, domain capabilities, render/scene/view contracts, world access, localization, math, entity naming, and manifests have distinct surfaces; there is no catch-all `plugin.ts`. Type-only consumers do not pull executable math into plugin artifacts, and entity-name capabilities reuse the dependency-free canonical package rather than duplicating policy.
+- `packages/plugin-api/src/`: focused, rootless subpath exports for independently built external plugins. Module composition, runtime options, generic capability primitives, domain capabilities, render/scene/view contracts, world access, localization, math, entity naming, and manifests have distinct surfaces; there is no catch-all `plugin.ts`. Portable geometry and OBJ implementations come from the dependency-free `@solitude/geometry` package, while entity-name capabilities reuse their dependency-free canonical package rather than duplicating policy.
 - `packages/plugin-runtime/src/`: strict external plugin-set, pack, and plugin-manifest validation; ordered browser pack expansion; contained local server-module loading; and adaptation into engine plugin factories. Plugin manifests may target browser, server, or both through the universal environment.
 - `packages/client/src/`: deployable remote browser client, server URL adapter, HTTP/WebSocket client helpers, keyboard input patching, authoritative snapshot interpolation, and remote rendering composition.
 - `packages/server/src/`: Node-oriented authoritative sessions, ticking, protocol transport, and HTTP/WebSocket serving for headless Solitude games.
@@ -139,6 +140,7 @@
 - `packages/engine/src/infra/headlessGameLoop.ts`: generic headless stepper; callers pass Solitude plugins explicitly when needed.
 - `packages/engine/src/setup/sceneSetup.ts`: generic scene graph + trajectory setup.
 - `packages/engine/src/render/SceneOverlayRenderer.ts`: renderer-neutral projection and layout for scene overlays only.
+- `packages/geometry/src/index.ts`: dependency-free public geometry surface for vectors, matrices, ray/sphere intersection, mesh volume, and OBJ parsing.
 - `packages/browser/src/infra/domBootstrap.ts`: browser runtime composition.
 - `packages/browser/src/infra/remoteWorldMirror.ts`: non-DOM authoritative snapshot apply mirror for future network clients.
 - `packages/sim/src/headless.ts`: shared server-safe/browser-safe Solitude headless composition.
@@ -205,7 +207,7 @@
 - Workspace package exports are intentionally absent unless a package subpath is consumed externally; avoid adding public-looking exports for private implementation seams.
 - Some plugin features still use spacecraft or solar-system vocabulary; keep that out of engine/browser unless it is truly generic.
 - Default Solitude plugin order is behaviorally significant; preserve ordering-sensitive tests when moving playback, operator switch, pause, profiling, or input plugins.
-- Browser plugin discovery allows only explicitly trusted origins and is reinforced by page CSP, but loaded plugins remain same-realm trusted code. Unloading, sandboxing, signatures, inter-plugin dependency resolution, and server-side external loading are not implemented.
+- Browser plugin discovery allows only explicitly trusted origins and is reinforced by page CSP, but loaded plugins remain same-realm trusted code. Unloading, sandboxing, signatures, inter-plugin dependency resolution, and general server-side pack-set discovery are not implemented; the server currently loads explicitly configured contained local plugin manifests.
 - Gravity uses fixed sub-steps for stability; high time scales can still destabilize.
 - WebGL2 availability and runtime context loss are hard failures with localized WebGL-required UX; there is no fallback solid-mesh backend.
 - Controls are keyboard-only with no in-app help; consider a help overlay or onboarding prompt.

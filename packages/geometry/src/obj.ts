@@ -1,4 +1,4 @@
-import { vec3, type Vec3 } from "../domain/vec3";
+import { vec3, type Vec3 } from "./vec3";
 
 export interface ObjMesh {
   points: Vec3[];
@@ -10,7 +10,7 @@ export interface ObjMesh {
  * - `v x y z` vertices (ignores optional `w`)
  * - `f a b c ...` faces (triangulated as a fan), supports `v/vt/vn` and `v//vn`
  *
- * Indices are returned 0-based for direct use with `Mesh.faces`.
+ * Indices are returned 0-based for direct use with mesh face indices.
  */
 export function parseObjMesh(objText: string): ObjMesh {
   const points: Vec3[] = [];
@@ -58,7 +58,6 @@ export function parseObjMesh(objText: string): ObjMesh {
         poly[i] = idx;
       }
 
-      // Triangulate polygon as a fan: (0, i, i+1)
       for (let i = 1; i + 1 < poly.length; i++) {
         faces.push([poly[0], poly[i], poly[i + 1]]);
       }

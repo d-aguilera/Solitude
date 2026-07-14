@@ -1,2 +1,2 @@
-export { parseObjMesh } from "./config/obj";
-export type { ObjMesh } from "./config/obj";
+export { parseObjMesh } from "@solitude/geometry";
+export type { ObjMesh } from "@solitude/geometry";

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { raySphereFirstHitDistance } from "../raySphere";
 import { vec3 } from "../vec3";
 
-describe("raySphereFirstHitDistance", () => {
+describe(raySphereFirstHitDistance.name, () => {
   it("returns the nearest forward surface intersection", () => {
     expect(
       raySphereFirstHitDistance(

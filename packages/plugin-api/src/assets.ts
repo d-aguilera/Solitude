@@ -1,1 +1,1 @@
-export { parseObjMesh } from "@solitude/engine/assets";
+export { parseObjMesh } from "@solitude/geometry";

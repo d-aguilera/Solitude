@@ -6,9 +6,11 @@ export {
   EPS_SPEED_FINE,
   EPS_SPEED_SQ,
   EPS_TIME_SEC,
+} from "@solitude/engine/epsilon";
+export {
   computeVolumeOfTriangleMesh,
   mat3,
   raySphereFirstHitDistance,
   vec3,
-} from "@solitude/engine/math";
-export type { Mat3, Vec3 } from "@solitude/engine/math";
+} from "@solitude/geometry";
+export type { Mat3, Vec3 } from "@solitude/geometry";

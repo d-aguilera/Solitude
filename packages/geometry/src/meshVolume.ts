@@ -18,9 +18,7 @@ function computeSignedVolumeOfTriangleMesh(
 ): number {
   if (points.length === 0 || faces.length === 0) return 0;
 
-  // Translation-invariant formulation: sum tetrahedra relative to a reference point.
   const ref = points[0];
-
   let sum = 0;
   for (let i = 0; i < faces.length; i++) {
     const f = faces[i];
@@ -32,7 +30,6 @@ function computeSignedVolumeOfTriangleMesh(
     const i0 = f[0] | 0;
     const i1 = f[1] | 0;
     const i2 = f[2] | 0;
-
     const p0 = points[i0];
     const p1 = points[i1];
     const p2 = points[i2];
@@ -41,8 +38,6 @@ function computeSignedVolumeOfTriangleMesh(
     vec3.subInto(aScratch, p0, ref);
     vec3.subInto(bScratch, p1, ref);
     vec3.subInto(cScratch, p2, ref);
-
-    // 6 * V = dot(a, cross(b, c))
     vec3.crossInto(crossScratch, bScratch, cScratch);
     sum += vec3.dot(aScratch, crossScratch);
   }
