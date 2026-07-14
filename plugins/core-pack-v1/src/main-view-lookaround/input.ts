@@ -1,4 +1,4 @@
-import type { ExternalKeyboardInputProvider } from "@solitude/plugin-api/plugin";
+import type { ExternalKeyboardInputProvider } from "@solitude/plugin-api/input";
 
 export const mainViewLookaroundActions = [
   "lookLeft",

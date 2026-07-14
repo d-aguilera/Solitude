@@ -1,15 +1,13 @@
+import type { ExternalPluginCapabilityRegistry } from "@solitude/plugin-api/capabilities";
+import { createHudPanelCapability } from "@solitude/plugin-api/hud";
+import { readLocaleRuntimeOption } from "@solitude/plugin-api/localization";
+import type { ExternalPlugin } from "@solitude/plugin-api/module";
+import type { ExternalMultiplayerSessionProvider } from "@solitude/plugin-api/multiplayer";
 import {
-  createHudPanelCapability,
   isMultiplayerSessionProvider,
   multiplayerSessionCapability,
-} from "@solitude/plugin-api/capabilities";
-import { readLocaleRuntimeOption } from "@solitude/plugin-api/localization";
-import type {
-  ExternalMultiplayerSessionProvider,
-  ExternalPlugin,
-  ExternalPluginCapabilityRegistry,
-  ExternalRuntimeOptions,
-} from "@solitude/plugin-api/plugin";
+} from "@solitude/plugin-api/multiplayer";
+import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 import { getRemoteIdentityMessages } from "./localization";
 
 export function createPlugin(

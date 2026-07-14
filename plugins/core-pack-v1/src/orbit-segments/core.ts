@@ -1,12 +1,14 @@
 import type { Vec3 } from "@solitude/plugin-api/math";
 import { EPS_ECCENTRICITY, EPS_LEN, vec3 } from "@solitude/plugin-api/math";
 import type {
-  ExternalControlledBody,
   ExternalSegmentPlugin,
   ExternalSegmentProviderParams,
-  ExternalWorld,
   ExternalWorldSegmentSink,
-} from "@solitude/plugin-api/plugin";
+} from "@solitude/plugin-api/scene";
+import type {
+  ExternalControlledBody,
+  ExternalWorld,
+} from "@solitude/plugin-api/world";
 import {
   computeStandardGravitationalParameter,
   getDominantBodyPrimary,

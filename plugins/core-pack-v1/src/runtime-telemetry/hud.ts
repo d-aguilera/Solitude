@@ -1,4 +1,4 @@
-import type { ExternalHudPanelProvider } from "@solitude/plugin-api/plugin";
+import type { ExternalHudPanelProvider } from "@solitude/plugin-api/hud";
 import { formatSimTime } from "../shared/localization";
 import type { RuntimeTelemetryLocalization } from "./localization";
 import type { RuntimeTelemetryController } from "./logic";

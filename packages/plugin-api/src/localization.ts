@@ -1,4 +1,4 @@
-import type { ExternalRuntimeOptions } from "./plugin";
+import type { ExternalRuntimeOptions } from "./runtime";
 
 export type ExternalLocale = "en" | "es" | "fr";
 

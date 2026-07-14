@@ -1,18 +1,20 @@
 import type { Vec3 } from "@solitude/plugin-api/math";
 import { raySphereFirstHitDistance, vec3 } from "@solitude/plugin-api/math";
 import type {
-  ExternalControlledBody,
-  ExternalEntityCollisionSphere,
-  ExternalEntityId,
   ExternalMarkerPlugin,
   ExternalSegmentPlugin,
   ExternalSegmentProviderParams,
-  ExternalWorld,
   ExternalWorldMarker,
   ExternalWorldMarkerSink,
   ExternalWorldSegment,
   ExternalWorldSegmentSink,
-} from "@solitude/plugin-api/plugin";
+} from "@solitude/plugin-api/scene";
+import type {
+  ExternalControlledBody,
+  ExternalEntityCollisionSphere,
+  ExternalEntityId,
+  ExternalWorld,
+} from "@solitude/plugin-api/world";
 
 const ACQUISITION_CONE_RADIANS = (15 * Math.PI) / 180;
 const NOSE_OFFSET_METERS = 7;

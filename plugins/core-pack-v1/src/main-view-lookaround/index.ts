@@ -1,8 +1,6 @@
-import { createKeyboardInputCapability } from "@solitude/plugin-api/capabilities";
-import type {
-  ExternalPlugin,
-  ExternalRuntimeOptions,
-} from "@solitude/plugin-api/plugin";
+import { createKeyboardInputCapability } from "@solitude/plugin-api/input";
+import type { ExternalPlugin } from "@solitude/plugin-api/module";
+import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 import { createViewControlPlugin } from "./core";
 import { createInputPlugin } from "./input";
 

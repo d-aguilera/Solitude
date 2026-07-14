@@ -8,9 +8,9 @@ import {
   createEntityNameProvider,
   entityNameProviderCapability,
   formatEntityName,
-} from "./capabilities";
+} from "./entity-names";
 
-describe("plugin API capabilities", () => {
+describe("plugin API entity names", () => {
   it("re-exports the canonical entity-name capability and policy", () => {
     expect(entityNameProviderCapability).toBe(
       canonicalEntityNameProviderCapability,

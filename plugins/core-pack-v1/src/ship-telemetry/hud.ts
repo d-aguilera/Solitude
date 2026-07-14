@@ -1,13 +1,11 @@
+import type { ExternalPluginCapabilityRegistry } from "@solitude/plugin-api/capabilities";
+import type { ExternalHudPanelProvider } from "@solitude/plugin-api/hud";
+import { vec3 } from "@solitude/plugin-api/math";
+import type { ExternalSpacecraftOperatorTelemetry } from "@solitude/plugin-api/telemetry";
 import {
   isSpacecraftOperatorTelemetryProvider,
   spacecraftOperatorTelemetryCapability,
-} from "@solitude/plugin-api/capabilities";
-import { vec3 } from "@solitude/plugin-api/math";
-import type {
-  ExternalHudPanelProvider,
-  ExternalPluginCapabilityRegistry,
-  ExternalSpacecraftOperatorTelemetry,
-} from "@solitude/plugin-api/plugin";
+} from "@solitude/plugin-api/telemetry";
 import type { ShipTelemetryLocalization } from "./localization";
 
 export function createHudPanel(

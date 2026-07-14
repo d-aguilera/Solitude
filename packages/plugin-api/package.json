@@ -5,10 +5,20 @@
   "type": "module",
   "exports": {
     "./capabilities": "./src/capabilities.ts",
+    "./entity-names": "./src/entity-names.ts",
+    "./hud": "./src/hud.ts",
+    "./input": "./src/input.ts",
     "./localization": "./src/localization.ts",
     "./manifest": "./src/manifest.ts",
     "./math": "./src/math.ts",
-    "./plugin": "./src/plugin.ts",
+    "./module": "./src/module.ts",
+    "./multiplayer": "./src/multiplayer.ts",
+    "./presentation": "./src/presentation.ts",
+    "./render": "./src/render.ts",
+    "./runtime": "./src/runtime.ts",
+    "./scene": "./src/scene.ts",
+    "./telemetry": "./src/telemetry.ts",
+    "./views": "./src/views.ts",
     "./world": "./src/world.ts"
   },
   "dependencies": {

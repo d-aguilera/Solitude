@@ -1,14 +1,14 @@
 import type { Vec3 } from "@solitude/plugin-api/math";
 import { mat3 } from "@solitude/plugin-api/math";
+import type { ExternalRgb } from "@solitude/plugin-api/render";
 import type {
   ExternalEntityConfig,
   ExternalPolylineSceneObject,
-  ExternalRgb,
   ExternalScene,
   ExternalScenePlugin,
-  ExternalWorld,
   ExternalWorldAndSceneConfig,
-} from "@solitude/plugin-api/plugin";
+} from "@solitude/plugin-api/scene";
+import type { ExternalWorld } from "@solitude/plugin-api/world";
 import { updateTrajectories } from "./logic";
 import { bindTrajectoryPlanToScene } from "./trajectoryBind";
 import {

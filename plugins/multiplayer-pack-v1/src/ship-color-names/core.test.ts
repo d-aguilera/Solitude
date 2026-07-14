@@ -1,6 +1,6 @@
-import { formatEntityName } from "@solitude/plugin-api/capabilities";
+import type { ExternalPluginCapabilityRegistry } from "@solitude/plugin-api/capabilities";
+import { formatEntityName } from "@solitude/plugin-api/entity-names";
 import { vec3 } from "@solitude/plugin-api/math";
-import type { ExternalPluginCapabilityRegistry } from "@solitude/plugin-api/plugin";
 import { describe, expect, it } from "vitest";
 import { createPlugin } from "./index";
 

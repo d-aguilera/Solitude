@@ -20,7 +20,7 @@ import { SOLITUDE_PLUGIN_API_VERSION } from "@solitude/plugin-api/manifest";
 import type {
   ExternalPlugin,
   ExternalPluginModule,
-} from "@solitude/plugin-api/plugin";
+} from "@solitude/plugin-api/module";
 
 const PLUGIN_MANIFEST_SCHEMA_VERSION = 1;
 const PLUGIN_PACK_SCHEMA_VERSION = 1;

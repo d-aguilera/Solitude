@@ -1,13 +1,13 @@
-import {
-  createMultiplayerSessionCapability,
-  hudPanelCapability,
-  isHudPanelProvider,
-} from "@solitude/plugin-api/capabilities";
+import type { ExternalPluginCapabilityProvider } from "@solitude/plugin-api/capabilities";
 import type {
   ExternalHudContext,
   ExternalHudGrid,
-  ExternalPluginCapabilityProvider,
-} from "@solitude/plugin-api/plugin";
+} from "@solitude/plugin-api/hud";
+import {
+  hudPanelCapability,
+  isHudPanelProvider,
+} from "@solitude/plugin-api/hud";
+import { createMultiplayerSessionCapability } from "@solitude/plugin-api/multiplayer";
 import { describe, expect, it } from "vitest";
 import { createPlugin } from "./index";
 

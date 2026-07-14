@@ -1,10 +1,10 @@
 import { vec3 } from "@solitude/plugin-api/math";
+import type { ExternalEntityConfig } from "@solitude/plugin-api/scene";
 import type {
   ExternalControlledBody,
-  ExternalEntityConfig,
   ExternalEntityMotionState,
   ExternalWorld,
-} from "@solitude/plugin-api/plugin";
+} from "@solitude/plugin-api/world";
 import { describe, expect, it } from "vitest";
 import {
   buildTrajectoryPlan,

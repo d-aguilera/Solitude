@@ -1,10 +1,53 @@
 import { vec3, type Vec3 } from "./math";
-import type {
-  ExternalEntityId,
-  ExternalGravityMass,
-  ExternalGravityPrimary,
-  ExternalWorld,
-} from "./plugin";
+
+export type ExternalEntityId = string;
+
+export interface ExternalEntityMotionState {
+  id: ExternalEntityId;
+  position: Vec3;
+  velocity: Vec3;
+}
+
+export interface ExternalEntityCollisionSphere {
+  id: ExternalEntityId;
+  radius: number;
+  state: ExternalEntityMotionState;
+}
+
+export interface ExternalGravityMass {
+  id: ExternalEntityId;
+  mass: number;
+  state: ExternalEntityMotionState;
+}
+
+export interface ExternalLocalFrame {
+  forward: Vec3;
+  right: Vec3;
+  up: Vec3;
+}
+
+export interface ExternalControlledBody extends ExternalEntityMotionState {
+  frame: ExternalLocalFrame;
+}
+
+export interface ExternalWorld {
+  collisionSpheres: readonly ExternalEntityCollisionSphere[];
+  controllableBodies: readonly ExternalControlledBody[];
+  entityStates: readonly ExternalEntityMotionState[];
+  gravityMasses: readonly ExternalGravityMass[];
+}
+
+export interface ExternalGravityPrimary {
+  body: ExternalEntityMotionState;
+  id: ExternalEntityId;
+  mass: number;
+  radius: number;
+}
+
+export interface ExternalFocusContext {
+  controlledBody: ExternalControlledBody;
+  entityId: ExternalEntityId;
+}
 
 export function getDominantBodyPrimary(
   world: ExternalWorld,

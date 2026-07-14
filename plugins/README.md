@@ -54,18 +54,26 @@ composition.
 
 ## Plugin API Subpaths
 
-- `@solitude/plugin-api/plugin`: type-only structural plugin ABI and runtime
-  contribution contracts.
-- `@solitude/plugin-api/capabilities`: capability ids, constructors, guards,
-  and canonical dependency-free entity-name lookup re-exported from
-  `@solitude/entity-names`.
+- `@solitude/plugin-api/module`: plugin definition, focused-entity
+  requirements, factory, and loaded ES-module contracts.
+- `@solitude/plugin-api/runtime`: raw runtime option contracts passed to plugin
+  factories.
+- `@solitude/plugin-api/capabilities`: generic capability provider and registry
+  primitives only.
+- `@solitude/plugin-api/entity-names`: canonical dependency-free entity-name
+  capability and lookup policy re-exported from `@solitude/entity-names`.
+- `@solitude/plugin-api/input`, `hud`, `presentation`, `multiplayer`, and
+  `telemetry`: domain capability contracts, ids, constructors, and guards.
+- `@solitude/plugin-api/render`, `scene`, and `views`: renderer-neutral scene,
+  contribution, material, texture, and view contracts.
 - `@solitude/plugin-api/localization`: supported locale type and runtime locale
   parsing.
 - `@solitude/plugin-api/math`: bundled-safe vector, matrix, intersection, and
   epsilon helpers. Importing this subpath intentionally includes math runtime
   code.
-- `@solitude/plugin-api/world`: dominant-body and gravitational-parameter
-  helpers. This subpath depends on the math runtime.
+- `@solitude/plugin-api/world`: entity, focus, and world contracts plus
+  dominant-body and gravitational-parameter helpers. This subpath depends on
+  the math runtime.
 - `@solitude/plugin-api/manifest`: external loader, set, pack, and plugin
   manifest contracts used by the host runtime.
 

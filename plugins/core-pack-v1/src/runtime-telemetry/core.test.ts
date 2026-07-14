@@ -1,7 +1,7 @@
 import {
   isPresentationFrameProvider,
   presentationFrameCapability,
-} from "@solitude/plugin-api/capabilities";
+} from "@solitude/plugin-api/presentation";
 import { describe, expect, it } from "vitest";
 import {
   columnTexts,

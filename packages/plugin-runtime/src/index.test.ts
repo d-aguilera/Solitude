@@ -1,4 +1,4 @@
-import type { ExternalPluginModule } from "@solitude/plugin-api/plugin";
+import type { ExternalPluginModule } from "@solitude/plugin-api/module";
 import { describe, expect, it, vi } from "vitest";
 import { appendExternalPluginSet, loadExternalPlugins } from "./index";
 

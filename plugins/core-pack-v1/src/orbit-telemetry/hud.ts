@@ -1,5 +1,5 @@
-import { formatEntityName } from "@solitude/plugin-api/capabilities";
-import type { ExternalHudPanelProvider } from "@solitude/plugin-api/plugin";
+import { formatEntityName } from "@solitude/plugin-api/entity-names";
+import type { ExternalHudPanelProvider } from "@solitude/plugin-api/hud";
 import { formatSimTime } from "../shared/localization";
 import type { OrbitTelemetryLocalization } from "./localization";
 import { computeOrbitReadoutInto, createOrbitReadout } from "./orbitReadout";

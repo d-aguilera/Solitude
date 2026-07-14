@@ -1,14 +1,14 @@
+import type { ExternalHudPanelProvider } from "@solitude/plugin-api/hud";
+import type { ExternalControlInput } from "@solitude/plugin-api/input";
 import {
   EPS_LEN_COARSE,
   EPS_SPEED_COARSE,
   vec3,
 } from "@solitude/plugin-api/math";
 import type {
-  ExternalControlInput,
   ExternalControlledBody,
-  ExternalHudPanelProvider,
   ExternalWorld,
-} from "@solitude/plugin-api/plugin";
+} from "@solitude/plugin-api/world";
 import { getDominantBodyPrimary } from "@solitude/plugin-api/world";
 import type { AutopilotLocalization } from "./localization";
 

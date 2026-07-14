@@ -1,4 +1,4 @@
-import { createEntityNameProvider } from "@solitude/plugin-api/capabilities";
+import { createEntityNameProvider } from "@solitude/plugin-api/entity-names";
 import { vec3 } from "@solitude/plugin-api/math";
 import { computeStandardGravitationalParameter } from "@solitude/plugin-api/world";
 import { describe, expect, it } from "vitest";

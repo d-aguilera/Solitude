@@ -1,8 +1,6 @@
-import { renderTextureSourcesCapability } from "@solitude/plugin-api/capabilities";
-import type {
-  ExternalRenderTextureSourcesProvider,
-  ExternalScene,
-} from "@solitude/plugin-api/plugin";
+import type { ExternalRenderTextureSourcesProvider } from "@solitude/plugin-api/render";
+import { renderTextureSourcesCapability } from "@solitude/plugin-api/render";
+import type { ExternalScene } from "@solitude/plugin-api/scene";
 import { describe, expect, it } from "vitest";
 import { createPlugin } from "./index";
 import {

@@ -1,10 +1,8 @@
-import { createEntityNameProvider } from "@solitude/plugin-api/capabilities";
+import { createEntityNameProvider } from "@solitude/plugin-api/entity-names";
 import { readLocaleRuntimeOption } from "@solitude/plugin-api/localization";
-import type {
-  ExternalPlugin,
-  ExternalRgb,
-  ExternalRuntimeOptions,
-} from "@solitude/plugin-api/plugin";
+import type { ExternalPlugin } from "@solitude/plugin-api/module";
+import type { ExternalRgb } from "@solitude/plugin-api/render";
+import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 import {
   getShipColorNames,
   type ShipColorNameKey,

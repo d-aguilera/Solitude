@@ -1,21 +1,23 @@
+import type { ExternalPluginCapabilityProvider } from "@solitude/plugin-api/capabilities";
+import type {
+  ExternalHudColumnId,
+  ExternalHudContext,
+  ExternalHudGrid,
+  ExternalHudPanelProvider,
+} from "@solitude/plugin-api/hud";
 import {
   hudPanelCapability,
   isHudPanelProvider,
-} from "@solitude/plugin-api/capabilities";
+} from "@solitude/plugin-api/hud";
 import { vec3 } from "@solitude/plugin-api/math";
+import type { ExternalPlugin } from "@solitude/plugin-api/module";
 import type {
   ExternalControlledBody,
   ExternalEntityCollisionSphere,
   ExternalEntityMotionState,
   ExternalGravityMass,
-  ExternalHudColumnId,
-  ExternalHudContext,
-  ExternalHudGrid,
-  ExternalHudPanelProvider,
-  ExternalPlugin,
-  ExternalPluginCapabilityProvider,
   ExternalWorld,
-} from "@solitude/plugin-api/plugin";
+} from "@solitude/plugin-api/world";
 import { computeStandardGravitationalParameter } from "@solitude/plugin-api/world";
 
 interface TestHudLine {

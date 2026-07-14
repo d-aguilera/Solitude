@@ -1,11 +1,11 @@
 import { readLocaleRuntimeOption } from "@solitude/plugin-api/localization";
 import { vec3 } from "@solitude/plugin-api/math";
+import type { ExternalPlugin } from "@solitude/plugin-api/module";
+import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 import type {
-  ExternalPlugin,
-  ExternalRuntimeOptions,
   ExternalViewDefinition,
   ExternalViewFrameUpdateParams,
-} from "@solitude/plugin-api/plugin";
+} from "@solitude/plugin-api/views";
 import { createAxialViewsLocalization } from "./localization";
 
 export function createPlugin(

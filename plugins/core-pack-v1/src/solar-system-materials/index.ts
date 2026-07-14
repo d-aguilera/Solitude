@@ -1,10 +1,8 @@
-import { createRenderTextureSourcesCapability } from "@solitude/plugin-api/capabilities";
-import type {
-  ExternalPlugin,
-  ExternalRenderMaterial,
-  ExternalRuntimeOptions,
-  ExternalSceneObject,
-} from "@solitude/plugin-api/plugin";
+import type { ExternalPlugin } from "@solitude/plugin-api/module";
+import type { ExternalRenderMaterial } from "@solitude/plugin-api/render";
+import { createRenderTextureSourcesCapability } from "@solitude/plugin-api/render";
+import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
+import type { ExternalSceneObject } from "@solitude/plugin-api/scene";
 import {
   earthCloudTextureId,
   earthDayTextureId,

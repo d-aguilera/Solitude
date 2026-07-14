@@ -424,7 +424,7 @@ async function runSelfTest() {
     });
     writePackageFixture(tempRoot, "plugin-api", "@solitude/plugin-api", {
       dependencies: { "@fixture/engine": "0.0.0" },
-      exports: { "./plugin": "./src/plugin.ts" },
+      exports: { "./module": "./src/module.ts" },
     });
     writePackageFixture(
       tempRoot,
@@ -471,7 +471,7 @@ async function runSelfTest() {
       'import { drivePlugin } from "@fixture/sim/plugins/drive";\nexport const catalog = { drivePlugin };\n',
     );
     writeFileSync(
-      path.join(tempRoot, "packages/plugin-api/src/plugin.ts"),
+      path.join(tempRoot, "packages/plugin-api/src/module.ts"),
       "export const apiValue = 1;\n",
     );
     const externalPluginSource = path.join(
@@ -480,7 +480,7 @@ async function runSelfTest() {
     );
     writeFileSync(
       externalPluginSource,
-      'import { apiValue } from "@solitude/plugin-api/plugin";\nexport const plugin = apiValue;\n',
+      'import { apiValue } from "@solitude/plugin-api/module";\nexport const plugin = apiValue;\n',
     );
 
     const browserSource = path.join(tempRoot, "packages/browser/src/public.ts");
@@ -514,7 +514,7 @@ async function runSelfTest() {
     );
     writeFileSync(
       externalPluginSource,
-      'import { apiValue } from "@solitude/plugin-api/plugin";\nexport const plugin = apiValue;\n',
+      'import { apiValue } from "@solitude/plugin-api/module";\nexport const plugin = apiValue;\n',
     );
 
     writeFileSync(

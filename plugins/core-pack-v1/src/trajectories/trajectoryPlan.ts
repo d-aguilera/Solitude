@@ -2,8 +2,8 @@ import { vec3 } from "@solitude/plugin-api/math";
 import type {
   ExternalEntityConfig,
   ExternalKeplerianOrbit,
-  ExternalWorld,
-} from "@solitude/plugin-api/plugin";
+} from "@solitude/plugin-api/scene";
+import type { ExternalWorld } from "@solitude/plugin-api/world";
 
 export interface TrajectoryPlan {
   pathId: string;

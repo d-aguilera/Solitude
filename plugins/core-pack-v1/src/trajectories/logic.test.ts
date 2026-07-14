@@ -1,5 +1,5 @@
 import { mat3, vec3 } from "@solitude/plugin-api/math";
-import type { ExternalPolylineSceneObject } from "@solitude/plugin-api/plugin";
+import type { ExternalPolylineSceneObject } from "@solitude/plugin-api/scene";
 import { describe, expect, it } from "vitest";
 import { updateTrajectories } from "./logic";
 import type { Trajectory } from "./types";

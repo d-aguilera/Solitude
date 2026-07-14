@@ -9,7 +9,7 @@ import type {
   ExternalControlledBody,
   ExternalEntityId,
   ExternalWorld,
-} from "@solitude/plugin-api/plugin";
+} from "@solitude/plugin-api/world";
 import {
   computeStandardGravitationalParameter,
   getDominantBodyPrimary,
