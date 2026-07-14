@@ -1,7 +1,11 @@
 {
   "schemaVersion": 2,
   "targets": {
-    "standalone": ["core-pack-v1"],
-    "multiplayer": ["core-pack-v1", "multiplayer-pack-v1"]
+    "standalone": ["solitude-content-pack-v1", "core-pack-v1"],
+    "multiplayer": [
+      "solitude-content-pack-v1",
+      "core-pack-v1",
+      "multiplayer-pack-v1"
+    ]
   }
 }
