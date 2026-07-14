@@ -39,9 +39,11 @@ export function createPlugin(
   return {
     capabilities: [createRenderTextureSourcesCapability(textureSources)],
     id: "solarSystemMaterials",
-    scene: {
-      initScene: ({ scene }) => {
-        applySolarSystemMaterials(scene.objects);
+    hooks: {
+      scene: {
+        initScene: ({ scene }) => {
+          applySolarSystemMaterials(scene.objects);
+        },
       },
     },
   };

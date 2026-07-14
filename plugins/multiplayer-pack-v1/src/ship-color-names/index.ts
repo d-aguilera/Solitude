@@ -46,18 +46,20 @@ function createShipColorNamesPlugin(names: ShipColorNames): ExternalPlugin {
         formatEntityName: (entityId) => namesByEntityId.get(entityId) ?? null,
       }),
     ],
-    scene: {
-      initScene: ({ config, world }) => {
-        namesByEntityId.clear();
-        for (const body of world.controllableBodies) {
-          const entity = config.entities.find(
-            (candidate) => candidate.id === body.id,
-          );
-          const color = entity?.components.renderable?.color;
-          if (!color) continue;
-          const nameKey = shipColorNameKeyByRgb.get(rgbKey(color));
-          if (nameKey) namesByEntityId.set(body.id, names[nameKey]);
-        }
+    hooks: {
+      scene: {
+        initScene: ({ config, world }) => {
+          namesByEntityId.clear();
+          for (const body of world.controllableBodies) {
+            const entity = config.entities.find(
+              (candidate) => candidate.id === body.id,
+            );
+            const color = entity?.components.renderable?.color;
+            if (!color) continue;
+            const nameKey = shipColorNameKeyByRgb.get(rgbKey(color));
+            if (nameKey) namesByEntityId.set(body.id, names[nameKey]);
+          }
+        },
       },
     },
   };

@@ -52,10 +52,32 @@ The module must export `createPlugin`. Factories are retained and instantiated
 with the current runtime options whenever the host creates a plugin
 composition.
 
+Plugin API version 2 separates plugin metadata from executable hooks. A plugin
+may publish capabilities, declare optional requirements on the focused entity,
+and group engine callbacks under `hooks`:
+
+```ts
+return {
+  id: "example",
+  requirements: {
+    focusEntity: ["collisionSphere"],
+  },
+  hooks: {
+    markers: markerPlugin,
+    scene: scenePlugin,
+  },
+};
+```
+
+Focus requirements list only capabilities not already guaranteed by
+`ExternalFocusContext`: `collisionSphere`, `gravityMass`, and `lightEmitter`.
+The runtime rejects unknown top-level properties, hook names, and requirement
+values so misspelled or obsolete plugin shapes fail during composition.
+
 ## Plugin API Subpaths
 
-- `@solitude/plugin-api/module`: plugin definition, focused-entity
-  requirements, factory, and loaded ES-module contracts.
+- `@solitude/plugin-api/module`: plugin identity, capabilities, grouped hooks,
+  focused-entity requirements, factory, and loaded ES-module contracts.
 - `@solitude/plugin-api/runtime`: raw runtime option contracts passed to plugin
   factories.
 - `@solitude/plugin-api/capabilities`: generic capability provider and registry

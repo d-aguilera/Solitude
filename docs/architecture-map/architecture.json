@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T12:46:17.857Z",
+  "generatedAt": "2026-07-14T13:27:02.116Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -1953,20 +1953,20 @@
       "symbolKind": "type"
     },
     {
-      "id": "symbol:@solitude/plugin-api:./module:ExternalFocusCapabilityRequirement",
-      "kind": "symbol",
-      "label": "ExternalFocusCapabilityRequirement",
-      "packageName": "@solitude/plugin-api",
-      "parent": "module:@solitude/plugin-api:./module",
-      "symbolKind": "type"
-    },
-    {
       "id": "symbol:@solitude/plugin-api:./world:ExternalFocusContext",
       "kind": "symbol",
       "label": "ExternalFocusContext",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./world",
       "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./module:ExternalFocusEntityCapabilityRequirement",
+      "kind": "symbol",
+      "label": "ExternalFocusEntityCapabilityRequirement",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./module",
+      "symbolKind": "type"
     },
     {
       "id": "symbol:@solitude/plugin-api:./world:ExternalGravityMass",
@@ -2127,6 +2127,14 @@
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./module",
       "symbolKind": "type"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
+      "kind": "symbol",
+      "label": "ExternalPluginHooks",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./module",
+      "symbolKind": "interface"
     },
     {
       "id": "symbol:@solitude/plugin-runtime:.:ExternalPluginLoadAdapters",
@@ -11057,46 +11065,16 @@
       "to": "symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPlugin->symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./module:ExternalPluginHooks"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPlugin->symbol:@solitude/plugin-api:./module:ExternalPluginRequirements",
       "from": "symbol:@solitude/plugin-api:./module:ExternalPlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./module:ExternalPluginRequirements"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPlugin->symbol:@solitude/plugin-api:./scene:ExternalMarkerPlugin",
-      "from": "symbol:@solitude/plugin-api:./module:ExternalPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./scene:ExternalMarkerPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPlugin->symbol:@solitude/plugin-api:./scene:ExternalSceneLabelPlugin",
-      "from": "symbol:@solitude/plugin-api:./module:ExternalPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./scene:ExternalSceneLabelPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPlugin->symbol:@solitude/plugin-api:./scene:ExternalScenePlugin",
-      "from": "symbol:@solitude/plugin-api:./module:ExternalPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./scene:ExternalScenePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPlugin->symbol:@solitude/plugin-api:./scene:ExternalSegmentPlugin",
-      "from": "symbol:@solitude/plugin-api:./module:ExternalPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./scene:ExternalSegmentPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPlugin->symbol:@solitude/plugin-api:./views:ExternalViewControlPlugin",
-      "from": "symbol:@solitude/plugin-api:./module:ExternalPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./views:ExternalViewControlPlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPlugin->symbol:@solitude/plugin-api:./views:ExternalViewPlugin",
-      "from": "symbol:@solitude/plugin-api:./module:ExternalPlugin",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./views:ExternalViewPlugin"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginFactory->symbol:@solitude/plugin-api:./module:ExternalPlugin",
@@ -11111,16 +11089,52 @@
       "to": "symbol:@solitude/plugin-api:./runtime:ExternalRuntimeOptions"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginHooks->symbol:@solitude/plugin-api:./scene:ExternalMarkerPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./scene:ExternalMarkerPlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginHooks->symbol:@solitude/plugin-api:./scene:ExternalSceneLabelPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./scene:ExternalSceneLabelPlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginHooks->symbol:@solitude/plugin-api:./scene:ExternalScenePlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./scene:ExternalScenePlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginHooks->symbol:@solitude/plugin-api:./scene:ExternalSegmentPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./scene:ExternalSegmentPlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginHooks->symbol:@solitude/plugin-api:./views:ExternalViewControlPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./views:ExternalViewControlPlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginHooks->symbol:@solitude/plugin-api:./views:ExternalViewPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./views:ExternalViewPlugin"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginModule->symbol:@solitude/plugin-api:./module:ExternalPluginFactory",
       "from": "symbol:@solitude/plugin-api:./module:ExternalPluginModule",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./module:ExternalPluginFactory"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginRequirements->symbol:@solitude/plugin-api:./module:ExternalFocusCapabilityRequirement",
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginRequirements->symbol:@solitude/plugin-api:./module:ExternalFocusEntityCapabilityRequirement",
       "from": "symbol:@solitude/plugin-api:./module:ExternalPluginRequirements",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./module:ExternalFocusCapabilityRequirement"
+      "to": "symbol:@solitude/plugin-api:./module:ExternalFocusEntityCapabilityRequirement"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./multiplayer:createMultiplayerSessionCapability->symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider",

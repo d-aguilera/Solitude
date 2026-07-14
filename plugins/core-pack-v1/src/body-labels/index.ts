@@ -33,7 +33,7 @@ export function createPlugin(
   );
   return {
     id: "bodyLabels",
-    labels: createSceneLabelPlugin(localization),
+    hooks: { labels: createSceneLabelPlugin(localization) },
   };
 }
 

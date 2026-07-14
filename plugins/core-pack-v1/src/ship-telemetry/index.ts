@@ -14,8 +14,5 @@ export function createPlugin(
   return {
     id: "shipTelemetry",
     capabilities: [createHudPanelCapability(createHudPanel(localization))],
-    requirements: {
-      mainFocus: ["controlledBody", "motionState"],
-    },
   };
 }

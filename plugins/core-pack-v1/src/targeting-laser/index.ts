@@ -25,10 +25,9 @@ export function createPlugin(
         }),
       }),
     ],
-    markers: controller.markers,
-    requirements: {
-      mainFocus: ["controlledBody", "motionState", "localFrame"],
+    hooks: {
+      markers: controller.markers,
+      segments: controller.segments,
     },
-    segments: controller.segments,
   };
 }

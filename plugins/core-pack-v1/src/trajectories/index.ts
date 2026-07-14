@@ -7,6 +7,6 @@ export function createPlugin(
 ): ExternalPlugin {
   return {
     id: "trajectories",
-    scene: createScenePlugin(),
+    hooks: { scene: createScenePlugin() },
   };
 }

@@ -7,9 +7,6 @@ export function createPlugin(
 ): ExternalPlugin {
   return {
     id: "velocitySegments",
-    requirements: {
-      mainFocus: ["controlledBody", "motionState"],
-    },
-    segments: createSegmentsPlugin(),
+    hooks: { segments: createSegmentsPlugin() },
   };
 }

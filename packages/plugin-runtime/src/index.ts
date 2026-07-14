@@ -26,6 +26,26 @@ const PLUGIN_MANIFEST_SCHEMA_VERSION = 1;
 const PLUGIN_PACK_SCHEMA_VERSION = 1;
 const PLUGIN_SET_SCHEMA_VERSION = 1;
 const PLUGIN_ID_PATTERN = /^[A-Za-z][A-Za-z0-9.-]*$/;
+const EXTERNAL_PLUGIN_KEYS = new Set([
+  "capabilities",
+  "hooks",
+  "id",
+  "requirements",
+]);
+const EXTERNAL_PLUGIN_HOOK_KEYS = new Set([
+  "labels",
+  "markers",
+  "scene",
+  "segments",
+  "viewControls",
+  "views",
+]);
+const EXTERNAL_PLUGIN_REQUIREMENT_KEYS = new Set(["focusEntity"]);
+const EXTERNAL_FOCUS_ENTITY_REQUIREMENTS = new Set([
+  "collisionSphere",
+  "gravityMass",
+  "lightEmitter",
+]);
 
 export interface ExternalPluginSet {
   catalog: PluginCatalog;
@@ -368,60 +388,109 @@ function validateExternalPlugin(
       `External plugin factory for ${expectedId} returned id ${String(plugin?.id)}`,
     );
   }
-  if (plugin.capabilities && !Array.isArray(plugin.capabilities)) {
+  if (!hasOnlyKeys(plugin, EXTERNAL_PLUGIN_KEYS)) {
+    throw new Error(`External plugin ${expectedId} has invalid properties`);
+  }
+  if (
+    plugin.capabilities !== undefined &&
+    !Array.isArray(plugin.capabilities)
+  ) {
     throw new Error(`External plugin ${expectedId} has invalid capabilities`);
   }
-  if (
-    plugin.labels?.appendLabels !== undefined &&
-    typeof plugin.labels.appendLabels !== "function"
-  ) {
+  if (plugin.hooks !== undefined && !isRecord(plugin.hooks)) {
+    throw new Error(`External plugin ${expectedId} has invalid hooks`);
+  }
+  const hooks = plugin.hooks;
+  if (hooks !== undefined && !hasOnlyKeys(hooks, EXTERNAL_PLUGIN_HOOK_KEYS)) {
+    throw new Error(`External plugin ${expectedId} has invalid hooks`);
+  }
+  validateExternalPluginRequirements(plugin.requirements, expectedId);
+  if (hasInvalidHookFunctions(hooks?.labels, ["appendLabels"])) {
     throw new Error(`External plugin ${expectedId} has invalid labels`);
   }
-  if (
-    plugin.markers?.appendMarkers !== undefined &&
-    typeof plugin.markers.appendMarkers !== "function"
-  ) {
+  if (hasInvalidHookFunctions(hooks?.markers, ["appendMarkers"])) {
     throw new Error(`External plugin ${expectedId} has invalid markers`);
   }
-  if (
-    plugin.segments?.appendSegments !== undefined &&
-    typeof plugin.segments.appendSegments !== "function"
-  ) {
+  if (hasInvalidHookFunctions(hooks?.segments, ["appendSegments"])) {
     throw new Error(`External plugin ${expectedId} has invalid segments`);
   }
-  if (
-    (plugin.scene?.initScene !== undefined &&
-      typeof plugin.scene.initScene !== "function") ||
-    (plugin.scene?.updateScene !== undefined &&
-      typeof plugin.scene.updateScene !== "function")
-  ) {
+  if (hasInvalidHookFunctions(hooks?.scene, ["initScene", "updateScene"])) {
     throw new Error(`External plugin ${expectedId} has invalid scene`);
   }
-  if (
-    plugin.viewControls?.updateViewControls !== undefined &&
-    typeof plugin.viewControls.updateViewControls !== "function"
-  ) {
+  if (hasInvalidHookFunctions(hooks?.viewControls, ["updateViewControls"])) {
     throw new Error(`External plugin ${expectedId} has invalid view controls`);
   }
-  if (
-    plugin.views?.registerViews !== undefined &&
-    typeof plugin.views.registerViews !== "function"
-  ) {
+  if (hasInvalidHookFunctions(hooks?.views, ["registerViews"])) {
     throw new Error(`External plugin ${expectedId} has invalid views`);
   }
 }
 
+function validateExternalPluginRequirements(
+  value: unknown,
+  expectedId: string,
+): void {
+  if (value === undefined) return;
+  if (
+    !isRecord(value) ||
+    !hasOnlyKeys(value, EXTERNAL_PLUGIN_REQUIREMENT_KEYS)
+  ) {
+    throw new Error(`External plugin ${expectedId} has invalid requirements`);
+  }
+  const focusEntity = value.focusEntity;
+  if (
+    focusEntity !== undefined &&
+    (!Array.isArray(focusEntity) ||
+      focusEntity.some(
+        (requirement) =>
+          typeof requirement !== "string" ||
+          !EXTERNAL_FOCUS_ENTITY_REQUIREMENTS.has(requirement),
+      ))
+  ) {
+    throw new Error(
+      `External plugin ${expectedId} has invalid focus entity requirements`,
+    );
+  }
+}
+
+function hasInvalidHookFunctions(
+  value: unknown,
+  functionNames: readonly string[],
+): boolean {
+  if (value === undefined) return false;
+  if (!isRecord(value)) return true;
+  for (const functionName of functionNames) {
+    const candidate = value[functionName];
+    if (candidate !== undefined && typeof candidate !== "function") return true;
+  }
+  return false;
+}
+
+function hasOnlyKeys(
+  value: Record<string, unknown>,
+  allowedKeys: ReadonlySet<string>,
+): boolean {
+  for (const key of Object.keys(value)) {
+    if (!allowedKeys.has(key)) return false;
+  }
+  return true;
+}
+
 function adaptExternalPlugin(plugin: ExternalPlugin): GamePlugin {
+  const hooks = plugin.hooks;
+  const focusEntityRequirements = plugin.requirements?.focusEntity;
   return {
     id: plugin.id,
     capabilities: plugin.capabilities,
-    labels: plugin.labels as SceneLabelPlugin | undefined,
-    markers: plugin.markers as MarkerPlugin | undefined,
-    requirements: plugin.requirements,
-    scene: plugin.scene as ScenePlugin | undefined,
-    segments: plugin.segments as SegmentPlugin | undefined,
-    viewControls: plugin.viewControls as ViewControlPlugin | undefined,
-    views: plugin.views as ViewPlugin | undefined,
+    labels: hooks?.labels as SceneLabelPlugin | undefined,
+    markers: hooks?.markers as MarkerPlugin | undefined,
+    requirements:
+      focusEntityRequirements === undefined
+        ? undefined
+        : { mainFocus: focusEntityRequirements },
+    scene: hooks?.scene as ScenePlugin | undefined,
+    segments: hooks?.segments as SegmentPlugin | undefined,
+    viewControls: hooks?.viewControls as ViewControlPlugin | undefined,
+    views: hooks?.views as ViewPlugin | undefined,
   };
 }
 

@@ -1,3 +1,4 @@
+import { SOLITUDE_PLUGIN_API_VERSION } from "@solitude/plugin-api/manifest";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
@@ -111,7 +112,7 @@ export default defineConfig({
           fileName: "autopilot-hud/plugin.json",
           source: `${JSON.stringify(
             {
-              apiVersion: 1,
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               environment: "browser",
               id: "autopilotHud",
@@ -126,7 +127,7 @@ export default defineConfig({
           fileName: "axial-views/plugin.json",
           source: `${JSON.stringify(
             {
-              apiVersion: 1,
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               environment: "browser",
               id: "axialViews",
@@ -141,7 +142,7 @@ export default defineConfig({
           fileName: "body-labels/plugin.json",
           source: `${JSON.stringify(
             {
-              apiVersion: 1,
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               environment: "browser",
               id: "bodyLabels",
@@ -156,7 +157,7 @@ export default defineConfig({
           fileName: "main-view-lookaround/plugin.json",
           source: `${JSON.stringify(
             {
-              apiVersion: 1,
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               environment: "browser",
               id: "mainViewLookaround",
@@ -171,7 +172,7 @@ export default defineConfig({
           fileName: "orbit-telemetry/plugin.json",
           source: `${JSON.stringify(
             {
-              apiVersion: 1,
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               environment: "browser",
               id: "orbitTelemetry",
@@ -186,7 +187,7 @@ export default defineConfig({
           fileName: "runtime-telemetry/plugin.json",
           source: `${JSON.stringify(
             {
-              apiVersion: 1,
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               environment: "browser",
               id: "runtimeTelemetry",
@@ -201,7 +202,7 @@ export default defineConfig({
           fileName: "solar-system-materials/plugin.json",
           source: `${JSON.stringify(
             {
-              apiVersion: 1,
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               environment: "browser",
               id: "solarSystemMaterials",
@@ -216,7 +217,7 @@ export default defineConfig({
           fileName: "orbit-segments/plugin.json",
           source: `${JSON.stringify(
             {
-              apiVersion: 1,
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               environment: "browser",
               id: "orbitSegments",
@@ -231,7 +232,7 @@ export default defineConfig({
           fileName: "ship-telemetry/plugin.json",
           source: `${JSON.stringify(
             {
-              apiVersion: 1,
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               environment: "browser",
               id: "shipTelemetry",
@@ -246,7 +247,7 @@ export default defineConfig({
           fileName: "targeting-laser/plugin.json",
           source: `${JSON.stringify(
             {
-              apiVersion: 1,
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               environment: "browser",
               id: "targetingLaser",
@@ -261,7 +262,7 @@ export default defineConfig({
           fileName: "trajectories/plugin.json",
           source: `${JSON.stringify(
             {
-              apiVersion: 1,
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               environment: "browser",
               id: "trajectories",
@@ -276,7 +277,7 @@ export default defineConfig({
           fileName: "velocity-segments/plugin.json",
           source: `${JSON.stringify(
             {
-              apiVersion: 1,
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               environment: "browser",
               id: "velocitySegments",

@@ -22,7 +22,7 @@ describe("body label plugin", () => {
       objects: [createOrbitalBody("planet:earth", "star:sun")],
     };
 
-    createPlugin({}).labels?.appendLabels?.(labels, {
+    createPlugin({}).hooks?.labels?.appendLabels?.(labels, {
       ...createParams(scene),
       labelMode: "full",
     });
@@ -41,7 +41,7 @@ describe("body label plugin", () => {
       objects: [createOrbitalBody("planet:earth")],
     };
 
-    createPlugin({}).labels?.appendLabels?.(labels, {
+    createPlugin({}).hooks?.labels?.appendLabels?.(labels, {
       ...createParams(scene),
       labelMode: "nameOnly",
       viewId: "top",
@@ -60,7 +60,7 @@ describe("body label plugin", () => {
         entityId === "planet:earth" ? "Tierra" : null,
     });
 
-    createPlugin({ locale: "es" }).labels?.appendLabels?.(
+    createPlugin({ locale: "es" }).hooks?.labels?.appendLabels?.(
       labels,
       createParams(
         scene,
@@ -81,7 +81,7 @@ describe("body label plugin", () => {
       ],
     };
 
-    createPlugin({}).labels?.appendLabels?.(
+    createPlugin({}).hooks?.labels?.appendLabels?.(
       labels,
       createParams(scene, "ship:1"),
     );

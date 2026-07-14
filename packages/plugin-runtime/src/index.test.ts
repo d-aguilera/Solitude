@@ -1,3 +1,4 @@
+import { SOLITUDE_PLUGIN_API_VERSION } from "@solitude/plugin-api/manifest";
 import type { ExternalPluginModule } from "@solitude/plugin-api/module";
 import { describe, expect, it, vi } from "vitest";
 import { appendExternalPluginSet, loadExternalPlugins } from "./index";
@@ -22,10 +23,13 @@ describe("external plugin runtime", () => {
     const updateViewControls = vi.fn();
     const createLaser = vi.fn(() => ({
       id: "targetingLaser",
-      labels: { appendLabels },
-      scene: { initScene, updateScene },
-      viewControls: { updateViewControls },
-      views: { registerViews },
+      hooks: {
+        labels: { appendLabels },
+        scene: { initScene, updateScene },
+        viewControls: { updateViewControls },
+        views: { registerViews },
+      },
+      requirements: { focusEntity: ["collisionSphere"] as const },
     }));
     const createSecond = vi.fn(() => ({ id: "secondPlugin" }));
     const documents = createDocumentMap();
@@ -52,6 +56,7 @@ describe("external plugin runtime", () => {
       updateViewControls,
     );
     expect(targetingLaser.views?.registerViews).toBe(registerViews);
+    expect(targetingLaser.requirements?.mainFocus).toEqual(["collisionSphere"]);
     expect(loaded.catalog.secondPlugin({}).id).toBe("secondPlugin");
   });
 
@@ -125,7 +130,10 @@ describe("external plugin runtime", () => {
   it("rejects incompatible APIs before importing any module", async () => {
     const importModule = vi.fn();
     const documents = createDocumentMap();
-    documents.set(laserManifestUrl, createPluginManifest("targetingLaser", 2));
+    documents.set(
+      laserManifestUrl,
+      createPluginManifest("targetingLaser", SOLITUDE_PLUGIN_API_VERSION + 1),
+    );
 
     await expect(
       loadExternalPlugins({
@@ -222,7 +230,7 @@ describe("external plugin runtime", () => {
       importModule: async () => ({
         createPlugin: () => ({
           id: "targetingLaser",
-          viewControls: { updateViewControls: "invalid" },
+          hooks: { viewControls: { updateViewControls: "invalid" } },
         }),
       }),
       pageOrigin,
@@ -230,6 +238,56 @@ describe("external plugin runtime", () => {
 
     expect(() => loaded.catalog.targetingLaser({})).toThrow(
       "invalid view controls",
+    );
+  });
+
+  it("rejects legacy top-level hooks returned by a loaded factory", async () => {
+    const documents = createDocumentMap();
+    documents.set(setUrl, {
+      packs: [targetingPackUrl],
+      schemaVersion: 1,
+    });
+
+    const loaded = await loadExternalPlugins({
+      configUrl,
+      environment: "browser",
+      fetchJson: async (url) => documents.get(url),
+      importModule: async () => ({
+        createPlugin: () => ({
+          id: "targetingLaser",
+          views: { registerViews: vi.fn() },
+        }),
+      }),
+      pageOrigin,
+    });
+
+    expect(() => loaded.catalog.targetingLaser({})).toThrow(
+      "invalid properties",
+    );
+  });
+
+  it("rejects focus requirements guaranteed by the focus context", async () => {
+    const documents = createDocumentMap();
+    documents.set(setUrl, {
+      packs: [targetingPackUrl],
+      schemaVersion: 1,
+    });
+
+    const loaded = await loadExternalPlugins({
+      configUrl,
+      environment: "browser",
+      fetchJson: async (url) => documents.get(url),
+      importModule: async () => ({
+        createPlugin: () => ({
+          id: "targetingLaser",
+          requirements: { focusEntity: ["controlledBody"] },
+        }),
+      }),
+      pageOrigin,
+    });
+
+    expect(() => loaded.catalog.targetingLaser({})).toThrow(
+      "invalid focus entity requirements",
     );
   });
 });
@@ -270,13 +328,20 @@ function createDocumentMap(
       },
     ],
     [laserManifestUrl, createPluginManifest("targetingLaser")],
-    [secondManifestUrl, createPluginManifest("secondPlugin", 1, "./second.js")],
+    [
+      secondManifestUrl,
+      createPluginManifest(
+        "secondPlugin",
+        SOLITUDE_PLUGIN_API_VERSION,
+        "./second.js",
+      ),
+    ],
   ]);
 }
 
 function createPluginManifest(
   id: string,
-  apiVersion = 1,
+  apiVersion = SOLITUDE_PLUGIN_API_VERSION,
   entry = "./index.js",
 ) {
   return {

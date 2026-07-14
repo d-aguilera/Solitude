@@ -37,7 +37,7 @@ describe("solar system materials plugin", () => {
       ],
     };
 
-    createPlugin({}).scene?.initScene?.({
+    createPlugin({}).hooks?.scene?.initScene?.({
       config: { entities: [] },
       scene,
       world: {

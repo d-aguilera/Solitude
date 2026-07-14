@@ -7,7 +7,7 @@ import { createPlugin } from "./index";
 describe("ship color names plugin", () => {
   it("indexes localized names for controllable entities", () => {
     const plugin = createPlugin({ locale: "es" });
-    plugin.scene?.initScene?.({
+    plugin.hooks?.scene?.initScene?.({
       config: {
         entities: [
           {

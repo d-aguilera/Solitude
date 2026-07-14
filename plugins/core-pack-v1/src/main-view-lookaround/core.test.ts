@@ -30,7 +30,7 @@ describe("main view lookaround plugin", () => {
     const lookState = { azimuth: 0, elevation: 0 };
     const cameraOffset = vec3.zero();
 
-    createPlugin({}).viewControls?.updateViewControls?.({
+    createPlugin({}).hooks?.viewControls?.updateViewControls?.({
       controlInput: {
         camForward: true,
         camUp: true,

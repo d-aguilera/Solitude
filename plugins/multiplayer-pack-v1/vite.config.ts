@@ -1,3 +1,4 @@
+import { SOLITUDE_PLUGIN_API_VERSION } from "@solitude/plugin-api/manifest";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 
@@ -54,7 +55,7 @@ export default defineConfig({
           fileName: "remote-identity-hud/plugin.json",
           source: `${JSON.stringify(
             {
-              apiVersion: 1,
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               environment: "browser",
               id: "remoteIdentityHud",
@@ -69,7 +70,7 @@ export default defineConfig({
           fileName: "ship-color-names/plugin.json",
           source: `${JSON.stringify(
             {
-              apiVersion: 1,
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               environment: "browser",
               id: "shipColorNames",

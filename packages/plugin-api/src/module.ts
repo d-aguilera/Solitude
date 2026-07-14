@@ -8,29 +8,29 @@ import type {
 } from "./scene";
 import type { ExternalViewControlPlugin, ExternalViewPlugin } from "./views";
 
-export type ExternalFocusCapabilityRequirement =
-  | "angularVelocity"
+export type ExternalFocusEntityCapabilityRequirement =
   | "collisionSphere"
-  | "controlledBody"
   | "gravityMass"
-  | "lightEmitter"
-  | "localFrame"
-  | "motionState";
+  | "lightEmitter";
 
 export interface ExternalPluginRequirements {
-  mainFocus?: readonly ExternalFocusCapabilityRequirement[];
+  focusEntity?: readonly ExternalFocusEntityCapabilityRequirement[];
 }
 
-export interface ExternalPlugin {
-  capabilities?: readonly ExternalPluginCapabilityProvider[];
-  id: string;
+export interface ExternalPluginHooks {
   labels?: ExternalSceneLabelPlugin;
   markers?: ExternalMarkerPlugin;
-  requirements?: ExternalPluginRequirements;
   scene?: ExternalScenePlugin;
   segments?: ExternalSegmentPlugin;
   viewControls?: ExternalViewControlPlugin;
   views?: ExternalViewPlugin;
+}
+
+export interface ExternalPlugin {
+  id: string;
+  capabilities?: readonly ExternalPluginCapabilityProvider[];
+  requirements?: ExternalPluginRequirements;
+  hooks?: ExternalPluginHooks;
 }
 
 export type ExternalPluginFactory = (

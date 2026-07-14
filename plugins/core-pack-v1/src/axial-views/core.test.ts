@@ -53,7 +53,7 @@ function getView(
   runtimeOptions: ExternalRuntimeOptions = {},
 ): ExternalViewDefinition {
   const views: ExternalViewDefinition[] = [];
-  createPlugin(runtimeOptions).views?.registerViews(
+  createPlugin(runtimeOptions).hooks?.views?.registerViews(
     {
       addMainViewCameraRig: () => {},
       addView: (view) => views.push(view),

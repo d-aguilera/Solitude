@@ -25,9 +25,6 @@ export function createPlugin(
         }),
       }),
     ],
-    requirements: {
-      mainFocus: ["controlledBody", "motionState"],
-    },
-    segments: controller.segments,
+    hooks: { segments: controller.segments },
   };
 }

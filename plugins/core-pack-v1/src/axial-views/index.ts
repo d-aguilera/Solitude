@@ -16,14 +16,13 @@ export function createPlugin(
   );
   return {
     id: "axialViews",
-    requirements: {
-      mainFocus: ["controlledBody", "localFrame"],
-    },
-    views: {
-      registerViews: (registry) => {
-        for (const view of createAxialViewDefinitions(localization)) {
-          registry.addView(view);
-        }
+    hooks: {
+      views: {
+        registerViews: (registry) => {
+          for (const view of createAxialViewDefinitions(localization)) {
+            registry.addView(view);
+          }
+        },
       },
     },
   };

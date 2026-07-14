@@ -11,6 +11,6 @@ export function createPlugin(
   return {
     id: "mainViewLookaround",
     capabilities: [createKeyboardInputCapability(createInputPlugin())],
-    viewControls: createViewControlPlugin(),
+    hooks: { viewControls: createViewControlPlugin() },
   };
 }

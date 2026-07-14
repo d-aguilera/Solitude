@@ -110,7 +110,7 @@
 - Core owns generic focus, primary-view plumbing, simulation phase order, gravity, spin, collision, setup, render preparation, and plugin port/capability contracts.
 - The engine-owned configured game pipeline constructs standalone runtime state and coordinates frame policy, simulation, scene/view updates, and render contributions. Browser runtime code is limited to frame scheduling and presentation adapters.
 - Standalone and headless runtimes share simulation-plugin capability/control assembly through `packages/engine/src/app/pluginRuntime.ts`.
-- Plugins can declare focused-entity requirements; DOM/headless setup validates them against the assembled world and `mainFocus` with hard setup errors.
+- External plugins can declare `requirements.focusEntity` for focused-entity capabilities not guaranteed by `ExternalFocusContext`; the external runtime translates them to the engine's internal `mainFocus` requirement scope, and DOM/headless setup validates them against the assembled world with hard setup errors. External contribution callbacks are grouped under `ExternalPlugin.hooks`.
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
 - Server runtime lives in `packages/server/src/runtime.ts`; it composes shared `@solitude/sim` headless Solitude code, steps entity-addressed controls, and reuses runtime snapshot storage.
 - Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, uses per-join participant IDs carried in game links, receives authoritative model/snapshot messages over WebSocket, sends sequenced server-authoritative controls for its assigned ship, predicts the locally controlled ship immediately, smooths reconciliation visually, derives localized ship names from server-assigned display colors, exposes prediction metrics on `window.__solitudePredictionMetrics`, and renders through `@solitude/browser`.
@@ -150,7 +150,7 @@
 - `packages/client/src/multiplayerSession.ts`: client-owned capability adapter exposing live game/entity identity to multiplayer external plugins.
 - `packages/sim/src/localPrediction.ts`: generic Solitude local-prediction capability contract used by remote clients.
 - `packages/client/src/localReconciliation.ts`: prediction error metrics and render-only visual correction smoothing.
-- `packages/plugin-api/src/module.ts`: the minimal external plugin definition, requirements, factory, and loaded-module composition seam. All runtime options, capability protocols, world access, render/scene/view contracts, localization, math, and entity-name APIs live in focused sibling subpath modules.
+- `packages/plugin-api/src/module.ts`: the minimal external plugin identity, capabilities, focused-entity requirements, grouped hooks, factory, and loaded-module composition seam. All runtime options, capability protocols, world access, render/scene/view contracts, localization, math, and entity-name APIs live in focused sibling subpath modules.
 - `packages/plugin-runtime/src/index.ts`: browser plugin discovery, validation, dynamic import, factory adaptation, and strict catalog composition.
 - `plugins/core-pack-v1/src/`: external first-party plugin factories. The multi-entry pack build emits one `pack.json`, per-plugin manifests/entries, and shared relative ESM chunks where beneficial.
 - `plugins/multiplayer-pack-v1/src/`: multiplayer-only external presentation plugin factories for remote identity and localized ship-color names.
