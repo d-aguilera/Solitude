@@ -1,7 +1,7 @@
 # External Plugins
 
-This workspace contains independently built plugins that the Solitude browser
-hosts discover and load at runtime.
+This workspace contains independently built plugins that Solitude browser and
+server hosts discover and load at runtime.
 
 ## Boundary
 
@@ -9,12 +9,12 @@ hosts discover and load at runtime.
   subpaths from the host workspace. The package-boundary check enforces this
   rule. There is deliberately no package-root export: plugins select only the
   API surface they use.
-- External plugin artifacts must be self-contained ES modules with no bare
-  package imports. `npm run build:plugins` verifies this before assembling the
-  browser plugin set.
+- External plugin artifacts must be self-contained ES modules with only
+  contained relative imports. `npm run build:plugins` verifies the complete
+  module graph before assembling browser and server plugin sets.
 - Product packages do not depend on external plugin packages. Deployment
-  assembly places plugin pack artifacts and an ordered `plugin-set.json`
-  beside the browser products.
+  assembly places plugin pack artifacts and ordered `plugin-set.json`
+  documents beside their browser or server products.
 - External plugins are trusted code. They run in the host page and are not a
   security sandbox.
 - Browser hosts begin from a fixed same-origin `loader.json`. Its
@@ -25,22 +25,23 @@ hosts discover and load at runtime.
 ## Runtime Documents
 
 The plugin-set document lists plugin pack manifests in runtime order. Each pack
-owns an ordered list of one or more plugin manifests, allowing one independently
-built package to publish several related runtime plugins. Each plugin manifest
-declares its schema version, exact host API version, target environment, id,
-and ES-module entry URL. The runtime validates every pack and plugin manifest
-before importing any plugin module.
+is an atomic deployment and activation unit: it declares its supported `hosts`
+and owns an ordered list of one or more plugin manifests. A pack may support
+`browser`, `server`, or both hosts. There is no `universal` sentinel and
+individual plugins do not declare an environment. Each plugin manifest declares
+only its schema version, exact host API version, id, and ES-module entry URL.
+The runtime validates the complete pack and plugin graph before importing any
+plugin module.
 
-Plugin environments are `browser`, `server`, or `universal`. Universal modules
-may be loaded by either host. Browser discovery starts from the deployed loader
-documents; server composition loads explicitly configured local manifests and
-requires their module entries to remain inside the manifest directory.
-
-`plugins/browser-plugin-packs.json` declares the ordered packs for each browser
-target. `npm run build:plugins` builds the union of those workspace packages,
-validates their artifacts, and emits separate standalone and multiplayer
-public roots. Each product bundle copies only its target's packs and publishes
-only those pack manifests through its browser plugin set.
+`plugins/browser-plugin-packs.json` and `plugins/server-plugin-packs.json`
+declare the ordered packs for each product/host target. `npm run build:plugins`
+builds their union, validates each pack against its target host, and emits
+separate browser and server deployment roots. Browser products start from a
+same-origin `loader.json`; the authoritative server starts from its explicitly
+configured local `plugin-set.json` and requires every resolved document and
+module entry to remain within that plugin-set root after symlink resolution.
+`SOLITUDE_SERVER_PLUGIN_SET` may point authoritative multiplayer at a different
+assembled local plugin-set document.
 
 The default assembled loader configuration allows only `self`. JSON plugin
 documents are fetched without following redirects, and browser pages enforce a
@@ -57,7 +58,7 @@ The module must export `createPlugin`. Factories are retained and instantiated
 with the current runtime options whenever the host creates a plugin
 composition.
 
-Plugin API version 2 separates plugin metadata from executable hooks. A plugin
+Plugin API version 3 separates plugin metadata from executable hooks. A plugin
 may publish capabilities, declare optional requirements on the focused entity,
 and group engine callbacks under `hooks`:
 
@@ -111,9 +112,8 @@ or obsolete plugin shapes fail during composition.
 
 ## Current Packs
 
-- `core-pack-v1`: first multi-plugin pack, shared by standalone and remote
-  rendering, with universal content entries also available to the authoritative
-  server. It currently contains:
+- `core-pack-v1`: browser presentation and control plugins shared by standalone
+  and remote rendering. It currently contains:
   - `autopilotHud`: localized autopilot mode and circle-now diagnostic HUD
     readouts for the focused entity.
   - `axialViews`: localized top/front/left/right picture-in-picture camera
@@ -125,9 +125,6 @@ or obsolete plugin shapes fail during composition.
     dominant gravity body, with keyboard toggle behavior.
   - `orbitTelemetry`: localized orbit state, apsis, circularization, and timing
     readouts for the focused entity.
-  - `polyFighter`: universal controllable-entity provider owning the fighter OBJ
-    mesh, derived mass, and complete entity configuration used by standalone
-    ships and authoritative multiplayer spawning.
   - `runtimeTelemetry`: shared localized simulation-time and rolling-FPS HUD
     driven by browser presentation-frame samples.
   - `solarSystemMaterials`: Earth and Moon texture materials plus pack-owned
@@ -141,9 +138,15 @@ or obsolete plugin shapes fail during composition.
   - `velocitySegments`: forward/backward world segments along the focused
     entity's velocity vector.
 
-The core pack is the migration destination for first-party plugins shared by
-both browser products as the external API grows to support their required
+The core pack is the migration destination for browser plugins shared by both
+browser products as the external API grows to support their required
 contribution types.
+
+- `solitude-content-pack-v1`: browser-and-server gameplay content activated by
+  both browser products and authoritative multiplayer. It currently contains:
+  - `polyFighter`: controllable-entity provider owning the fighter OBJ mesh,
+    derived mass, and complete entity configuration used by standalone ships
+    and authoritative multiplayer spawning.
 
 - `multiplayer-pack-v1`: multiplayer-only presentation plugins. It contains:
   - `remoteIdentityHud`: localized live game and assigned-entity identity HUD,

@@ -9,12 +9,12 @@ import {
 } from "./plugin-pack-targets.mjs";
 
 const config = await readPluginPackTargetConfig(
-  "plugins/browser-plugin-packs.json",
+  "plugins/server-plugin-packs.json",
 );
-const publicRoot = resolve("dist/plugin-public");
+const serverRoot = resolve("dist/server-plugins");
 
-await rm(publicRoot, { force: true, recursive: true });
-await mkdir(publicRoot, { recursive: true });
+await rm(serverRoot, { force: true, recursive: true });
+await mkdir(serverRoot, { recursive: true });
 
 const targets = Object.entries(config.targets);
 const packageRoots = new Map(
@@ -25,32 +25,20 @@ await Promise.all(
 );
 
 async function validateBuiltPack(packId) {
-  return [packId, await validateBuiltPluginPack(packId, "browser")];
+  return [packId, await validateBuiltPluginPack(packId, "server")];
 }
 
 async function assembleTarget(target, packs, packageRoots) {
-  const pluginsRoot = resolve(publicRoot, target, "plugins");
-  await mkdir(pluginsRoot, { recursive: true });
-  const packManifestUrls = await Promise.all(
-    packs.map((packId) => assemblePack(packId, pluginsRoot, packageRoots)),
+  const targetRoot = resolve(serverRoot, target);
+  await mkdir(targetRoot, { recursive: true });
+  const packManifestPaths = await Promise.all(
+    packs.map((packId) => assemblePack(packId, targetRoot, packageRoots)),
   );
   await writeFile(
-    resolve(pluginsRoot, "loader.json"),
+    resolve(targetRoot, "plugin-set.json"),
     `${JSON.stringify(
       {
-        allowedOrigins: ["self"],
-        pluginSet: "./plugin-set.json",
-        schemaVersion: 1,
-      },
-      null,
-      2,
-    )}\n`,
-  );
-  await writeFile(
-    resolve(pluginsRoot, "plugin-set.json"),
-    `${JSON.stringify(
-      {
-        packs: packManifestUrls,
+        packs: packManifestPaths,
         schemaVersion: 1,
       },
       null,
@@ -59,11 +47,11 @@ async function assembleTarget(target, packs, packageRoots) {
   );
 }
 
-async function assemblePack(packId, pluginsRoot, packageRoots) {
+async function assemblePack(packId, targetRoot, packageRoots) {
   const packageRoot = packageRoots.get(packId);
   if (!packageRoot) throw new Error(`Plugin pack was not built: ${packId}`);
   const relativeTarget = `packs/${packId}`;
-  await cp(packageRoot, resolve(pluginsRoot, relativeTarget), {
+  await cp(packageRoot, resolve(targetRoot, relativeTarget), {
     recursive: true,
   });
   return `./${relativeTarget}/pack.json`;

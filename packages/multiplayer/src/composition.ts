@@ -4,13 +4,13 @@ import {
   type ControllableEntityProvider,
 } from "@solitude/engine/controllable-entities";
 import { km } from "@solitude/engine/math";
-import {
-  loadPlugins,
-  type PluginFactory,
-  type RuntimeOptions,
-} from "@solitude/engine/plugin";
+import { loadPlugins, type RuntimeOptions } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { EntityConfig, EntityId } from "@solitude/engine/world";
+import {
+  appendExternalPluginSet,
+  type ExternalPluginSet,
+} from "@solitude/plugin-runtime";
 import {
   createSolitudeSessionManager,
   type SolitudeSessionManager,
@@ -52,7 +52,7 @@ const multiplayerSpacecraftColors = [
 ] as const;
 
 export function createDefaultSolitudeInProcessTransport(
-  contentPlugins: DefaultMultiplayerContentPluginFactories,
+  contentPlugins: DefaultMultiplayerContentPluginSet,
   runtimeOptions: RuntimeOptions,
 ): SolitudeInProcessTransport {
   return createSolitudeInProcessTransport(
@@ -61,7 +61,7 @@ export function createDefaultSolitudeInProcessTransport(
 }
 
 export function createDefaultSolitudeSessionManager(
-  contentPlugins: DefaultMultiplayerContentPluginFactories,
+  contentPlugins: DefaultMultiplayerContentPluginSet,
   runtimeOptions: RuntimeOptions,
 ): SolitudeSessionManager {
   const assignableEntityIds = createDefaultAssignableEntityIds(
@@ -92,12 +92,10 @@ export interface DefaultMultiplayerSpawnProviders {
   controllableEntityProvider: ControllableEntityProvider;
 }
 
-export interface DefaultMultiplayerContentPluginFactories {
-  polyFighter: PluginFactory;
-}
+export type DefaultMultiplayerContentPluginSet = ExternalPluginSet;
 
 export function createDefaultMultiplayerSpawnProviders(
-  contentPlugins: DefaultMultiplayerContentPluginFactories,
+  contentPlugins: DefaultMultiplayerContentPluginSet,
   runtimeOptions: RuntimeOptions,
 ): DefaultMultiplayerSpawnProviders {
   const plugins = createDefaultMultiplayerContentPlugins(
@@ -158,15 +156,17 @@ export function createDefaultMultiplayerSpacecraftEntity({
 }
 
 function createDefaultMultiplayerContentPlugins(
-  contentPlugins: DefaultMultiplayerContentPluginFactories,
+  contentPlugins: DefaultMultiplayerContentPluginSet,
   runtimeOptions: RuntimeOptions,
 ) {
+  const composed = appendExternalPluginSet(
+    { solarSystem: simPluginCatalog.solarSystem },
+    ["solarSystem"],
+    contentPlugins,
+  );
   return loadPlugins({
-    catalog: {
-      polyFighter: contentPlugins.polyFighter,
-      solarSystem: simPluginCatalog.solarSystem,
-    },
-    ids: ["solarSystem", "polyFighter"],
+    catalog: composed.catalog,
+    ids: composed.ids,
     runtimeOptions,
   });
 }

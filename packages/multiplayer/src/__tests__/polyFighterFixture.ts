@@ -3,7 +3,7 @@ import {
   type ControllableEntityProvider,
 } from "@solitude/engine/controllable-entities";
 import type { PluginFactory } from "@solitude/engine/plugin";
-import type { DefaultMultiplayerContentPluginFactories } from "../composition";
+import type { DefaultMultiplayerContentPluginSet } from "../composition";
 
 const TEST_FIGHTER_DENSITY = 1_000;
 const TEST_FIGHTER_VOLUME = 1_000;
@@ -62,7 +62,8 @@ const createTestPolyFighterPlugin: PluginFactory = () => ({
   id: "polyFighter",
 });
 
-export const testMultiplayerContentPlugins: DefaultMultiplayerContentPluginFactories =
+export const testMultiplayerContentPlugins: DefaultMultiplayerContentPluginSet =
   {
-    polyFighter: createTestPolyFighterPlugin,
+    catalog: { polyFighter: createTestPolyFighterPlugin },
+    ids: ["polyFighter"],
   };

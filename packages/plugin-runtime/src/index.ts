@@ -27,6 +27,11 @@ const PLUGIN_PACK_SCHEMA_VERSION = 2;
 const PLUGIN_SET_SCHEMA_VERSION = 1;
 const PLUGIN_ID_PATTERN = /^[A-Za-z][A-Za-z0-9.-]*$/;
 const PLUGIN_HOSTS = new Set<ExternalPluginHost>(["browser", "server"]);
+const PLUGIN_LOADER_CONFIG_KEYS = new Set([
+  "allowedOrigins",
+  "pluginSet",
+  "schemaVersion",
+]);
 const PLUGIN_MANIFEST_KEYS = new Set([
   "apiVersion",
   "entry",
@@ -34,6 +39,7 @@ const PLUGIN_MANIFEST_KEYS = new Set([
   "schemaVersion",
 ]);
 const PLUGIN_PACK_KEYS = new Set(["hosts", "id", "plugins", "schemaVersion"]);
+const PLUGIN_SET_KEYS = new Set(["packs", "schemaVersion"]);
 const EXTERNAL_PLUGIN_KEYS = new Set([
   "capabilities",
   "hooks",
@@ -60,14 +66,30 @@ export interface ExternalPluginSet {
 }
 
 export interface ExternalPluginLoadAdapters {
-  fetchJson: (url: string) => Promise<unknown>;
+  fetchJson: (
+    url: string,
+    kind: ExternalPluginDocumentKind,
+  ) => Promise<unknown>;
   importModule: (url: string) => Promise<unknown>;
 }
+
+export type ExternalPluginDocumentKind =
+  | "plugin loader config"
+  | "plugin manifest"
+  | "plugin module"
+  | "plugin pack manifest"
+  | "plugin set";
 
 export interface ExternalPluginLoadOptions extends ExternalPluginLoadAdapters {
   configUrl: string;
   host: ExternalPluginHost;
   pageOrigin: string;
+}
+
+export interface ExternalPluginSetLoadOptions extends ExternalPluginLoadAdapters {
+  assertUrl: (url: string, kind: ExternalPluginDocumentKind) => void;
+  host: ExternalPluginHost;
+  pluginSetUrl: string;
 }
 
 export interface ComposedPluginSet {
@@ -98,7 +120,7 @@ export async function loadExternalPlugins({
   const absoluteConfigUrl = new URL(configUrl, `${normalizedPageOrigin}/`).href;
   assertSameOriginUrl(absoluteConfigUrl, normalizedPageOrigin, "loader config");
   const config = parsePluginLoaderConfig(
-    await fetchJson(absoluteConfigUrl),
+    await fetchJson(absoluteConfigUrl, "plugin loader config"),
     absoluteConfigUrl,
   );
   const allowedOrigins = resolveAllowedOrigins(
@@ -108,19 +130,36 @@ export async function loadExternalPlugins({
   );
   const absoluteSetUrl = new URL(config.pluginSet, absoluteConfigUrl).href;
   assertAllowedUrl(absoluteSetUrl, allowedOrigins, "plugin set");
+  return loadExternalPluginSet({
+    assertUrl: (url, kind) => assertAllowedUrl(url, allowedOrigins, kind),
+    fetchJson,
+    host,
+    importModule,
+    pluginSetUrl: absoluteSetUrl,
+  });
+}
+
+export async function loadExternalPluginSet({
+  assertUrl,
+  fetchJson,
+  host,
+  importModule,
+  pluginSetUrl,
+}: ExternalPluginSetLoadOptions): Promise<ExternalPluginSet> {
+  assertUrl(pluginSetUrl, "plugin set");
   const pluginSet = parsePluginSetManifest(
-    await fetchJson(absoluteSetUrl),
-    absoluteSetUrl,
+    await fetchJson(pluginSetUrl, "plugin set"),
+    pluginSetUrl,
   );
   const packManifestUrls = pluginSet.packs.map((packManifestUrl) => {
-    const url = new URL(packManifestUrl, absoluteSetUrl).href;
-    assertAllowedUrl(url, allowedOrigins, "plugin pack manifest");
+    const url = new URL(packManifestUrl, pluginSetUrl).href;
+    assertUrl(url, "plugin pack manifest");
     return url;
   });
   const packManifests = await Promise.all(
     packManifestUrls.map(async (packManifestUrl) =>
       parsePluginPackManifest(
-        await fetchJson(packManifestUrl),
+        await fetchJson(packManifestUrl, "plugin pack manifest"),
         packManifestUrl,
       ),
     ),
@@ -129,13 +168,21 @@ export async function loadExternalPlugins({
   const manifestUrls = packManifests.flatMap((pack, index) =>
     pack.plugins.map((manifestUrl) => {
       const url = new URL(manifestUrl, packManifestUrls[index]).href;
-      assertAllowedUrl(url, allowedOrigins, "plugin manifest");
+      assertUrl(url, "plugin manifest");
+      assertContainedUrl(
+        url,
+        packManifestUrls[index],
+        "Plugin manifest escapes its pack directory",
+      );
       return url;
     }),
   );
   const manifests = await Promise.all(
     manifestUrls.map(async (manifestUrl) =>
-      parsePluginManifest(await fetchJson(manifestUrl), manifestUrl),
+      parsePluginManifest(
+        await fetchJson(manifestUrl, "plugin manifest"),
+        manifestUrl,
+      ),
     ),
   );
 
@@ -143,7 +190,12 @@ export async function loadExternalPlugins({
 
   const moduleUrls = manifests.map((manifest, index) => {
     const url = new URL(manifest.entry, manifestUrls[index]).href;
-    assertAllowedUrl(url, allowedOrigins, "plugin module");
+    assertUrl(url, "plugin module");
+    assertContainedUrl(
+      url,
+      manifestUrls[index],
+      `Plugin module for ${manifest.id} escapes its plugin directory`,
+    );
     return url;
   });
   const modules = await Promise.all(moduleUrls.map(importModule));
@@ -192,6 +244,7 @@ function parsePluginLoaderConfig(
     );
   }
   if (
+    !hasOnlyKeys(value, PLUGIN_LOADER_CONFIG_KEYS) ||
     !Array.isArray(value.allowedOrigins) ||
     !value.allowedOrigins.every(
       (origin) => typeof origin === "string" && origin.length > 0,
@@ -268,6 +321,22 @@ function assertAllowedUrl(
   }
 }
 
+function assertContainedUrl(
+  value: string,
+  containerDocumentUrl: string,
+  message: string,
+): void {
+  const candidate = new URL(value);
+  const containerDirectory = new URL("./", containerDocumentUrl);
+  if (
+    candidate.protocol !== containerDirectory.protocol ||
+    candidate.host !== containerDirectory.host ||
+    !candidate.pathname.startsWith(containerDirectory.pathname)
+  ) {
+    throw new Error(`${message}: ${value}`);
+  }
+}
+
 function parsePluginSetManifest(
   value: unknown,
   source: string,
@@ -279,7 +348,9 @@ function parsePluginSetManifest(
     );
   }
   if (
+    !hasOnlyKeys(value, PLUGIN_SET_KEYS) ||
     !Array.isArray(value.packs) ||
+    value.packs.length === 0 ||
     !value.packs.every((item) => typeof item === "string" && item.length > 0)
   ) {
     throw invalidManifest("plugin set", source);
@@ -310,6 +381,7 @@ function parsePluginPackManifest(
     ) ||
     new Set(value.hosts).size !== value.hosts.length ||
     !Array.isArray(value.plugins) ||
+    value.plugins.length === 0 ||
     !value.plugins.every((item) => typeof item === "string" && item.length > 0)
   ) {
     throw invalidManifest("plugin pack", source);

@@ -4,15 +4,14 @@ WORKDIR /app
 
 COPY . .
 
-RUN npm ci && npm run build:client && npm run build:server
+RUN npm ci && npm run build:plugins && npm run bundle:client && npm run bundle:server
 
 FROM node:22-slim AS runner
 
 WORKDIR /app
 
 COPY --from=builder /app/dist/client ./dist/client
-COPY --from=builder /app/dist/plugin-packages/core-pack-v1/poly-fighter ./dist/plugin-packages/core-pack-v1/poly-fighter
-COPY --from=builder /app/dist/plugin-packages/core-pack-v1/shared ./dist/plugin-packages/core-pack-v1/shared
+COPY --from=builder /app/dist/server-plugins/multiplayer ./dist/server-plugins/multiplayer
 COPY --from=builder /app/dist/server ./dist/server
 
 ENV NODE_ENV=production

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T15:40:19.891Z",
+  "generatedAt": "2026-07-14T20:18:54.364Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -510,6 +510,12 @@
       "kind": "package",
       "label": "@solitude-plugins/multiplayer-pack-v1",
       "packageName": "@solitude-plugins/multiplayer-pack-v1"
+    },
+    {
+      "id": "pkg:@solitude-plugins/solitude-content-pack-v1",
+      "kind": "package",
+      "label": "@solitude-plugins/solitude-content-pack-v1",
+      "packageName": "@solitude-plugins/solitude-content-pack-v1"
     },
     {
       "id": "pkg:@solitude/browser",
@@ -2258,11 +2264,11 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/plugin-api:./manifest:ExternalPluginEnvironment",
+      "id": "symbol:@solitude/plugin-runtime:.:ExternalPluginDocumentKind",
       "kind": "symbol",
-      "label": "ExternalPluginEnvironment",
-      "packageName": "@solitude/plugin-api",
-      "parent": "module:@solitude/plugin-api:./manifest",
+      "label": "ExternalPluginDocumentKind",
+      "packageName": "@solitude/plugin-runtime",
+      "parent": "module:@solitude/plugin-runtime:.",
       "symbolKind": "type"
     },
     {
@@ -2282,9 +2288,9 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/plugin-api:./manifest:ExternalPluginHostEnvironment",
+      "id": "symbol:@solitude/plugin-api:./manifest:ExternalPluginHost",
       "kind": "symbol",
-      "label": "ExternalPluginHostEnvironment",
+      "label": "ExternalPluginHost",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./manifest",
       "symbolKind": "type"
@@ -2349,6 +2355,14 @@
       "id": "symbol:@solitude/plugin-runtime:.:ExternalPluginSet",
       "kind": "symbol",
       "label": "ExternalPluginSet",
+      "packageName": "@solitude/plugin-runtime",
+      "parent": "module:@solitude/plugin-runtime:.",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-runtime:.:ExternalPluginSetLoadOptions",
+      "kind": "symbol",
+      "label": "ExternalPluginSetLoadOptions",
       "packageName": "@solitude/plugin-runtime",
       "parent": "module:@solitude/plugin-runtime:.",
       "symbolKind": "interface"
@@ -3282,6 +3296,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/plugin-runtime:.:loadExternalPluginSet",
+      "kind": "symbol",
+      "label": "loadExternalPluginSet",
+      "packageName": "@solitude/plugin-runtime",
+      "parent": "module:@solitude/plugin-runtime:.",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/sim:./plugins/catalog:loadHeadlessPlugins",
       "kind": "symbol",
       "label": "loadHeadlessPlugins",
@@ -3298,9 +3320,9 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/plugin-runtime:./server:loadServerPlugin",
+      "id": "symbol:@solitude/plugin-runtime:./server:loadServerPluginSet",
       "kind": "symbol",
-      "label": "loadServerPlugin",
+      "label": "loadServerPluginSet",
       "packageName": "@solitude/plugin-runtime",
       "parent": "module:@solitude/plugin-runtime:./server",
       "symbolKind": "function"
@@ -5304,6 +5326,12 @@
       "to": "pkg:@solitude/plugin-api"
     },
     {
+      "id": "dependency:pkg:@solitude-plugins/solitude-content-pack-v1->pkg:@solitude/plugin-api",
+      "from": "pkg:@solitude-plugins/solitude-content-pack-v1",
+      "kind": "dependency",
+      "to": "pkg:@solitude/plugin-api"
+    },
+    {
       "id": "dependency:pkg:@solitude/browser->pkg:@solitude/engine",
       "from": "pkg:@solitude/browser",
       "kind": "dependency",
@@ -5998,12 +6026,6 @@
       "from": "module:@solitude/plugin-runtime:.",
       "kind": "module-import",
       "to": "module:@solitude/plugin-api:./module"
-    },
-    {
-      "id": "module-import:module:@solitude/plugin-runtime:./server->module:@solitude/plugin-api:./manifest",
-      "from": "module:@solitude/plugin-runtime:./server",
-      "kind": "module-import",
-      "to": "module:@solitude/plugin-api:./manifest"
     },
     {
       "id": "module-import:module:@solitude/plugin-runtime:./server->module:@solitude/plugin-runtime:.",
@@ -11634,16 +11656,10 @@
       "to": "symbol:@solitude/plugin-api:./runtime:ExternalRuntimeOptions"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./manifest:ExternalPluginEnvironment->symbol:@solitude/plugin-api:./manifest:ExternalPluginHostEnvironment",
-      "from": "symbol:@solitude/plugin-api:./manifest:ExternalPluginEnvironment",
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./manifest:ExternalPluginPackManifest->symbol:@solitude/plugin-api:./manifest:ExternalPluginHost",
+      "from": "symbol:@solitude/plugin-api:./manifest:ExternalPluginPackManifest",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./manifest:ExternalPluginHostEnvironment"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./manifest:ExternalPluginManifest->symbol:@solitude/plugin-api:./manifest:ExternalPluginEnvironment",
-      "from": "symbol:@solitude/plugin-api:./manifest:ExternalPluginManifest",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./manifest:ExternalPluginEnvironment"
+      "to": "symbol:@solitude/plugin-api:./manifest:ExternalPluginHost"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./math:computeVolumeOfTriangleMesh->symbol:@solitude/plugin-api:./math:Vec3",
@@ -12432,10 +12448,16 @@
       "to": "symbol:@solitude/engine:./plugin:PluginCatalog"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:ExternalPluginLoadOptions->symbol:@solitude/plugin-api:./manifest:ExternalPluginHostEnvironment",
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:ExternalPluginLoadAdapters->symbol:@solitude/plugin-runtime:.:ExternalPluginDocumentKind",
+      "from": "symbol:@solitude/plugin-runtime:.:ExternalPluginLoadAdapters",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-runtime:.:ExternalPluginDocumentKind"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:ExternalPluginLoadOptions->symbol:@solitude/plugin-api:./manifest:ExternalPluginHost",
       "from": "symbol:@solitude/plugin-runtime:.:ExternalPluginLoadOptions",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./manifest:ExternalPluginHostEnvironment"
+      "to": "symbol:@solitude/plugin-api:./manifest:ExternalPluginHost"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:ExternalPluginLoadOptions->symbol:@solitude/plugin-runtime:.:ExternalPluginLoadAdapters",
@@ -12450,6 +12472,24 @@
       "to": "symbol:@solitude/engine:./plugin:PluginCatalog"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:ExternalPluginSetLoadOptions->symbol:@solitude/plugin-api:./manifest:ExternalPluginHost",
+      "from": "symbol:@solitude/plugin-runtime:.:ExternalPluginSetLoadOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./manifest:ExternalPluginHost"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:ExternalPluginSetLoadOptions->symbol:@solitude/plugin-runtime:.:ExternalPluginDocumentKind",
+      "from": "symbol:@solitude/plugin-runtime:.:ExternalPluginSetLoadOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-runtime:.:ExternalPluginDocumentKind"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:ExternalPluginSetLoadOptions->symbol:@solitude/plugin-runtime:.:ExternalPluginLoadAdapters",
+      "from": "symbol:@solitude/plugin-runtime:.:ExternalPluginSetLoadOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-runtime:.:ExternalPluginLoadAdapters"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:loadBrowserPlugins->symbol:@solitude/plugin-runtime:.:ExternalPluginSet",
       "from": "symbol:@solitude/plugin-runtime:.:loadBrowserPlugins",
       "kind": "symbol-reference",
@@ -12460,12 +12500,6 @@
       "from": "symbol:@solitude/plugin-runtime:.:loadBrowserPlugins",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-runtime:.:loadExternalPlugins"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:loadExternalPlugins->symbol:@solitude/engine:./plugin:PluginFactory",
-      "from": "symbol:@solitude/plugin-runtime:.:loadExternalPlugins",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginFactory"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:loadExternalPlugins->symbol:@solitude/plugin-runtime:.:ExternalPluginLoadOptions",
@@ -12480,22 +12514,40 @@
       "to": "symbol:@solitude/plugin-runtime:.:ExternalPluginSet"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/plugin-runtime:./server:loadServerPlugin->symbol:@solitude/plugin-api:./manifest:ExternalPluginManifest",
-      "from": "symbol:@solitude/plugin-runtime:./server:loadServerPlugin",
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:loadExternalPlugins->symbol:@solitude/plugin-runtime:.:loadExternalPluginSet",
+      "from": "symbol:@solitude/plugin-runtime:.:loadExternalPlugins",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./manifest:ExternalPluginManifest"
+      "to": "symbol:@solitude/plugin-runtime:.:loadExternalPluginSet"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/plugin-runtime:./server:loadServerPlugin->symbol:@solitude/plugin-runtime:.:ExternalPluginSet",
-      "from": "symbol:@solitude/plugin-runtime:./server:loadServerPlugin",
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:loadExternalPluginSet->symbol:@solitude/engine:./plugin:PluginFactory",
+      "from": "symbol:@solitude/plugin-runtime:.:loadExternalPluginSet",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginFactory"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:loadExternalPluginSet->symbol:@solitude/plugin-runtime:.:ExternalPluginSet",
+      "from": "symbol:@solitude/plugin-runtime:.:loadExternalPluginSet",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-runtime:.:ExternalPluginSet"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/plugin-runtime:./server:loadServerPlugin->symbol:@solitude/plugin-runtime:.:loadExternalPlugins",
-      "from": "symbol:@solitude/plugin-runtime:./server:loadServerPlugin",
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:loadExternalPluginSet->symbol:@solitude/plugin-runtime:.:ExternalPluginSetLoadOptions",
+      "from": "symbol:@solitude/plugin-runtime:.:loadExternalPluginSet",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-runtime:.:loadExternalPlugins"
+      "to": "symbol:@solitude/plugin-runtime:.:ExternalPluginSetLoadOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:./server:loadServerPluginSet->symbol:@solitude/plugin-runtime:.:ExternalPluginSet",
+      "from": "symbol:@solitude/plugin-runtime:./server:loadServerPluginSet",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-runtime:.:ExternalPluginSet"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:./server:loadServerPluginSet->symbol:@solitude/plugin-runtime:.:loadExternalPluginSet",
+      "from": "symbol:@solitude/plugin-runtime:./server:loadServerPluginSet",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-runtime:.:loadExternalPluginSet"
     },
     {
       "id": "symbol-reference:symbol:@solitude/protocol:./protocol:ClientMessageSocketEvent->symbol:@solitude/protocol:./protocol:SolitudeClientMessage",

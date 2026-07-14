@@ -3,12 +3,27 @@
 import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import {
+  collectPluginPackIds,
+  readPluginPackTargetConfig,
+} from "./plugin-pack-targets.mjs";
 
-const config = JSON.parse(
-  await readFile(resolve("plugins/browser-plugin-packs.json"), "utf8"),
+const targetKind = process.argv[2] ?? "all";
+const configFilenames = {
+  all: [
+    "plugins/browser-plugin-packs.json",
+    "plugins/server-plugin-packs.json",
+  ],
+  browser: ["plugins/browser-plugin-packs.json"],
+  server: ["plugins/server-plugin-packs.json"],
+}[targetKind];
+if (!configFilenames) {
+  throw new Error(`Unknown plugin pack build target: ${targetKind}`);
+}
+const configs = await Promise.all(
+  configFilenames.map(readPluginPackTargetConfig),
 );
-
-const packIds = collectPackIds(config);
+const packIds = [...new Set(configs.flatMap(collectPluginPackIds))];
 
 await Promise.all(packIds.map(buildPack));
 
@@ -37,34 +52,4 @@ function run(command, args) {
       }
     });
   });
-}
-
-function collectPackIds(value) {
-  if (
-    value.schemaVersion !== 2 ||
-    typeof value.targets !== "object" ||
-    value.targets === null ||
-    Array.isArray(value.targets)
-  ) {
-    throw new Error("Invalid browser plugin pack build configuration");
-  }
-
-  const targets = Object.entries(value.targets);
-  if (
-    targets.length === 0 ||
-    !targets.every(
-      ([target, packs]) =>
-        /^[a-z][a-z0-9-]*$/.test(target) &&
-        Array.isArray(packs) &&
-        packs.length > 0 &&
-        packs.every(
-          (id) => typeof id === "string" && /^[a-z][a-z0-9-]*$/.test(id),
-        ) &&
-        new Set(packs).size === packs.length,
-    )
-  ) {
-    throw new Error("Invalid browser plugin pack build configuration");
-  }
-
-  return [...new Set(targets.flatMap(([, packs]) => packs))];
 }

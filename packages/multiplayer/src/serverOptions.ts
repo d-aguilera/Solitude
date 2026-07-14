@@ -12,11 +12,11 @@ import {
 } from "@solitude/server/ticker";
 import {
   createDefaultSolitudeInProcessTransport,
-  type DefaultMultiplayerContentPluginFactories,
+  type DefaultMultiplayerContentPluginSet,
 } from "./composition";
 
 export function createDefaultSolitudeHttpServerOptions(
-  contentPlugins: DefaultMultiplayerContentPluginFactories,
+  contentPlugins: DefaultMultiplayerContentPluginSet,
 ): SolitudeHttpServerOptions {
   return {
     createRunner: (options) =>
@@ -28,7 +28,7 @@ export function createDefaultSolitudeHttpServerOptions(
 
 function createDefaultSolitudeGameRunner(
   { metrics, onSnapshot }: SolitudeGameRunnerFactoryOptions,
-  contentPlugins: DefaultMultiplayerContentPluginFactories,
+  contentPlugins: DefaultMultiplayerContentPluginSet,
 ): SolitudeGameRunner {
   const runtimeConfig = createDefaultSolitudeRuntimeConfig(process.env);
   const transport = createDefaultSolitudeInProcessTransport(
