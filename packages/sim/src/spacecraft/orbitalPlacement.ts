@@ -1,3 +1,4 @@
+import type { DirectControllableEntityPlacement } from "@solitude/engine/controllable-entities";
 import {
   circularSpeedAtRadius,
   DOT_PARALLEL_COS,
@@ -11,7 +12,6 @@ import {
 } from "@solitude/engine/math";
 import { initialFrame } from "@solitude/engine/world";
 import type { CelestialBody } from "../celestialBodies/provider";
-import type { DirectControllableEntityPlacement } from "../controllableEntities/provider";
 
 export interface OrbitingPlacementParams {
   altitudeMeters: number;

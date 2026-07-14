@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T13:27:02.116Z",
+  "generatedAt": "2026-07-14T14:23:55.541Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -45,6 +45,13 @@
       "parent": "pkg:@solitude/engine"
     },
     {
+      "id": "module:@solitude/plugin-api:./assets",
+      "kind": "module",
+      "label": "./assets",
+      "packageName": "@solitude/plugin-api",
+      "parent": "pkg:@solitude/plugin-api"
+    },
+    {
       "id": "module:@solitude/plugin-api:./capabilities",
       "kind": "module",
       "label": "./capabilities",
@@ -66,11 +73,18 @@
       "parent": "pkg:@solitude/sim"
     },
     {
-      "id": "module:@solitude/sim:./controllableEntities/provider",
+      "id": "module:@solitude/engine:./controllable-entities",
       "kind": "module",
-      "label": "./controllableEntities/provider",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
+      "label": "./controllable-entities",
+      "packageName": "@solitude/engine",
+      "parent": "pkg:@solitude/engine"
+    },
+    {
+      "id": "module:@solitude/plugin-api:./controllable-entities",
+      "kind": "module",
+      "label": "./controllable-entities",
+      "packageName": "@solitude/plugin-api",
+      "parent": "pkg:@solitude/plugin-api"
     },
     {
       "id": "module:@solitude/browser:./dom/hudOverlayPlugin",
@@ -393,6 +407,13 @@
       "label": "./scene",
       "packageName": "@solitude/plugin-api",
       "parent": "pkg:@solitude/plugin-api"
+    },
+    {
+      "id": "module:@solitude/plugin-runtime:./server",
+      "kind": "module",
+      "label": "./server",
+      "packageName": "@solitude/plugin-runtime",
+      "parent": "pkg:@solitude/plugin-runtime"
     },
     {
       "id": "module:@solitude/server:./sessions",
@@ -945,6 +966,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./math:computeVolumeOfTriangleMesh",
+      "kind": "symbol",
+      "label": "computeVolumeOfTriangleMesh",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./math",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/engine:./runtime:ConfiguredGamePipelineParams",
       "kind": "symbol",
       "label": "ConfiguredGamePipelineParams",
@@ -977,19 +1006,27 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./controllableEntities/provider:ControllableEntityProvider",
+      "id": "symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider",
       "kind": "symbol",
       "label": "ControllableEntityProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./controllableEntities/provider",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./controllable-entities",
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./controllableEntities/provider:controllableEntityProviderCapability",
+      "id": "symbol:@solitude/engine:./controllable-entities:controllableEntityProviderCapability",
       "kind": "symbol",
       "label": "controllableEntityProviderCapability",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./controllableEntities/provider",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./controllable-entities",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./controllable-entities:controllableEntityProviderCapability",
+      "kind": "symbol",
+      "label": "controllableEntityProviderCapability",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./controllable-entities",
       "symbolKind": "const"
     },
     {
@@ -1078,6 +1115,14 @@
       "label": "createControlInput",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./plugin",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./controllable-entities:createControllableEntityProviderCapability",
+      "kind": "symbol",
+      "label": "createControllableEntityProviderCapability",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./controllable-entities",
       "symbolKind": "function"
     },
     {
@@ -1545,11 +1590,11 @@
       "symbolKind": "const"
     },
     {
-      "id": "symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement",
+      "id": "symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement",
       "kind": "symbol",
       "label": "DirectControllableEntityPlacement",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./controllableEntities/provider",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./controllable-entities",
       "symbolKind": "interface"
     },
     {
@@ -1897,11 +1942,27 @@
       "symbolKind": "type"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./controllable-entities:ExternalControllableEntityProvider",
+      "kind": "symbol",
+      "label": "ExternalControllableEntityProvider",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./controllable-entities",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:./world:ExternalControlledBody",
       "kind": "symbol",
       "label": "ExternalControlledBody",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./world",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement",
+      "kind": "symbol",
+      "label": "ExternalDirectControllableEntityPlacement",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./controllable-entities",
       "symbolKind": "interface"
     },
     {
@@ -2135,6 +2196,14 @@
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./module",
       "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./manifest:ExternalPluginHostEnvironment",
+      "kind": "symbol",
+      "label": "ExternalPluginHostEnvironment",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./manifest",
+      "symbolKind": "type"
     },
     {
       "id": "symbol:@solitude/plugin-runtime:.:ExternalPluginLoadAdapters",
@@ -2881,11 +2950,19 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./controllableEntities/provider:isControllableEntityProvider",
+      "id": "symbol:@solitude/engine:./controllable-entities:isControllableEntityProvider",
       "kind": "symbol",
       "label": "isControllableEntityProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./controllableEntities/provider",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./controllable-entities",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./controllable-entities:isControllableEntityProvider",
+      "kind": "symbol",
+      "label": "isControllableEntityProvider",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./controllable-entities",
       "symbolKind": "function"
     },
     {
@@ -3134,6 +3211,14 @@
       "label": "loadPlugins",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./plugin",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/plugin-runtime:./server:loadServerPlugin",
+      "kind": "symbol",
+      "label": "loadServerPlugin",
+      "packageName": "@solitude/plugin-runtime",
+      "parent": "module:@solitude/plugin-runtime:./server",
       "symbolKind": "function"
     },
     {
@@ -3430,6 +3515,14 @@
       "label": "parseObjMesh",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./assets",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./assets:parseObjMesh",
+      "kind": "symbol",
+      "label": "parseObjMesh",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./assets",
       "symbolKind": "function"
     },
     {
@@ -5551,6 +5644,24 @@
       "to": "module:@solitude/engine:./plugin"
     },
     {
+      "id": "module-import:module:@solitude/plugin-api:./assets->module:@solitude/engine:./assets",
+      "from": "module:@solitude/plugin-api:./assets",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./assets"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./controllable-entities->module:@solitude/engine:./controllable-entities",
+      "from": "module:@solitude/plugin-api:./controllable-entities",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./controllable-entities"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./controllable-entities->module:@solitude/plugin-api:./capabilities",
+      "from": "module:@solitude/plugin-api:./controllable-entities",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./capabilities"
+    },
+    {
       "id": "module-import:module:@solitude/plugin-api:./entity-names->module:@solitude/entity-names:.",
       "from": "module:@solitude/plugin-api:./entity-names",
       "kind": "module-import",
@@ -5713,6 +5824,18 @@
       "to": "module:@solitude/plugin-api:./module"
     },
     {
+      "id": "module-import:module:@solitude/plugin-runtime:./server->module:@solitude/plugin-api:./manifest",
+      "from": "module:@solitude/plugin-runtime:./server",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./manifest"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-runtime:./server->module:@solitude/plugin-runtime:.",
+      "from": "module:@solitude/plugin-runtime:./server",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-runtime:."
+    },
+    {
       "id": "module-import:module:@solitude/protocol:./protocol->module:@solitude/engine:./plugin",
       "from": "module:@solitude/protocol:./protocol",
       "kind": "module-import",
@@ -5857,24 +5980,6 @@
       "to": "module:@solitude/engine:./world"
     },
     {
-      "id": "module-import:module:@solitude/sim:./controllableEntities/provider->module:@solitude/engine:./math",
-      "from": "module:@solitude/sim:./controllableEntities/provider",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./controllableEntities/provider->module:@solitude/engine:./render",
-      "from": "module:@solitude/sim:./controllableEntities/provider",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./render"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./controllableEntities/provider->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./controllableEntities/provider",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
       "id": "module-import:module:@solitude/sim:./headless->module:@solitude/engine:./plugin",
       "from": "module:@solitude/sim:./headless",
       "kind": "module-import",
@@ -5923,6 +6028,12 @@
       "to": "module:@solitude/engine:./plugin"
     },
     {
+      "id": "module-import:module:@solitude/sim:./spacecraft/orbitalPlacement->module:@solitude/engine:./controllable-entities",
+      "from": "module:@solitude/sim:./spacecraft/orbitalPlacement",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./controllable-entities"
+    },
+    {
       "id": "module-import:module:@solitude/sim:./spacecraft/orbitalPlacement->module:@solitude/engine:./math",
       "from": "module:@solitude/sim:./spacecraft/orbitalPlacement",
       "kind": "module-import",
@@ -5939,12 +6050,6 @@
       "from": "module:@solitude/sim:./spacecraft/orbitalPlacement",
       "kind": "module-import",
       "to": "module:@solitude/sim:./celestialBodies/provider"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./spacecraft/orbitalPlacement->module:@solitude/sim:./controllableEntities/provider",
-      "from": "module:@solitude/sim:./spacecraft/orbitalPlacement",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./controllableEntities/provider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayContext",
@@ -7001,6 +7106,54 @@
       "from": "symbol:@solitude/engine:./assets:parseObjMesh",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider->symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement",
+      "from": "symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider->symbol:@solitude/engine:./world:EntityConfig",
+      "from": "symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityConfig"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider->symbol:@solitude/engine:./world:EntityId",
+      "from": "symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement->symbol:@solitude/engine:./math:LocalFrame",
+      "from": "symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:LocalFrame"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement->symbol:@solitude/engine:./math:Mat3",
+      "from": "symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:Mat3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement->symbol:@solitude/engine:./math:Vec3",
+      "from": "symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement->symbol:@solitude/engine:./world:AngularVelocity",
+      "from": "symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:AngularVelocity"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./controllable-entities:isControllableEntityProvider->symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider",
+      "from": "symbol:@solitude/engine:./controllable-entities:isControllableEntityProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./math:circularSpeedAtRadius->symbol:@solitude/engine:./runtime:parameters",
@@ -10873,6 +11026,102 @@
       "to": "symbol:@solitude/localization:.:SolitudeLocaleOption"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./assets:parseObjMesh->symbol:@solitude/engine:./assets:ObjMesh",
+      "from": "symbol:@solitude/plugin-api:./assets:parseObjMesh",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./assets:ObjMesh"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./assets:parseObjMesh->symbol:@solitude/plugin-api:./math:vec3",
+      "from": "symbol:@solitude/plugin-api:./assets:parseObjMesh",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./assets:parseObjMesh->symbol:@solitude/plugin-api:./math:Vec3",
+      "from": "symbol:@solitude/plugin-api:./assets:parseObjMesh",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:createControllableEntityProviderCapability->symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider",
+      "from": "symbol:@solitude/plugin-api:./controllable-entities:createControllableEntityProviderCapability",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:createControllableEntityProviderCapability->symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider",
+      "from": "symbol:@solitude/plugin-api:./controllable-entities:createControllableEntityProviderCapability",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:createControllableEntityProviderCapability->symbol:@solitude/plugin-api:./controllable-entities:controllableEntityProviderCapability",
+      "from": "symbol:@solitude/plugin-api:./controllable-entities:createControllableEntityProviderCapability",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./controllable-entities:controllableEntityProviderCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:ExternalControllableEntityProvider->symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider",
+      "from": "symbol:@solitude/plugin-api:./controllable-entities:ExternalControllableEntityProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:ExternalControllableEntityProvider->symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement",
+      "from": "symbol:@solitude/plugin-api:./controllable-entities:ExternalControllableEntityProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:ExternalControllableEntityProvider->symbol:@solitude/engine:./world:EntityConfig",
+      "from": "symbol:@solitude/plugin-api:./controllable-entities:ExternalControllableEntityProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityConfig"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:ExternalControllableEntityProvider->symbol:@solitude/engine:./world:EntityId",
+      "from": "symbol:@solitude/plugin-api:./controllable-entities:ExternalControllableEntityProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement->symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement",
+      "from": "symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement->symbol:@solitude/engine:./math:LocalFrame",
+      "from": "symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:LocalFrame"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement->symbol:@solitude/engine:./world:AngularVelocity",
+      "from": "symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:AngularVelocity"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement->symbol:@solitude/plugin-api:./math:Mat3",
+      "from": "symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:Mat3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement->symbol:@solitude/plugin-api:./math:Vec3",
+      "from": "symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:isControllableEntityProvider->symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider",
+      "from": "symbol:@solitude/plugin-api:./controllable-entities:isControllableEntityProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./entity-names:createEntityNameProvider->symbol:@solitude/entity-names:.:EntityNameCapabilityProvider",
       "from": "symbol:@solitude/plugin-api:./entity-names:createEntityNameProvider",
       "kind": "symbol-reference",
@@ -11041,10 +11290,22 @@
       "to": "symbol:@solitude/plugin-api:./runtime:ExternalRuntimeOptions"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./manifest:ExternalPluginEnvironment->symbol:@solitude/plugin-api:./manifest:ExternalPluginHostEnvironment",
+      "from": "symbol:@solitude/plugin-api:./manifest:ExternalPluginEnvironment",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./manifest:ExternalPluginHostEnvironment"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./manifest:ExternalPluginManifest->symbol:@solitude/plugin-api:./manifest:ExternalPluginEnvironment",
       "from": "symbol:@solitude/plugin-api:./manifest:ExternalPluginManifest",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./manifest:ExternalPluginEnvironment"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./math:computeVolumeOfTriangleMesh->symbol:@solitude/plugin-api:./math:Vec3",
+      "from": "symbol:@solitude/plugin-api:./math:computeVolumeOfTriangleMesh",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:Vec3"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./math:raySphereFirstHitDistance->symbol:@solitude/plugin-api:./math:vec3",
@@ -11827,10 +12088,10 @@
       "to": "symbol:@solitude/engine:./plugin:PluginCatalog"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:ExternalPluginLoadOptions->symbol:@solitude/plugin-api:./manifest:ExternalPluginEnvironment",
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:ExternalPluginLoadOptions->symbol:@solitude/plugin-api:./manifest:ExternalPluginHostEnvironment",
       "from": "symbol:@solitude/plugin-runtime:.:ExternalPluginLoadOptions",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./manifest:ExternalPluginEnvironment"
+      "to": "symbol:@solitude/plugin-api:./manifest:ExternalPluginHostEnvironment"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-runtime:.:ExternalPluginLoadOptions->symbol:@solitude/plugin-runtime:.:ExternalPluginLoadAdapters",
@@ -11873,6 +12134,24 @@
       "from": "symbol:@solitude/plugin-runtime:.:loadExternalPlugins",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-runtime:.:ExternalPluginSet"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:./server:loadServerPlugin->symbol:@solitude/plugin-api:./manifest:ExternalPluginManifest",
+      "from": "symbol:@solitude/plugin-runtime:./server:loadServerPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./manifest:ExternalPluginManifest"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:./server:loadServerPlugin->symbol:@solitude/plugin-runtime:.:ExternalPluginSet",
+      "from": "symbol:@solitude/plugin-runtime:./server:loadServerPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-runtime:.:ExternalPluginSet"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-runtime:./server:loadServerPlugin->symbol:@solitude/plugin-runtime:.:loadExternalPlugins",
+      "from": "symbol:@solitude/plugin-runtime:./server:loadServerPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-runtime:.:loadExternalPlugins"
     },
     {
       "id": "symbol-reference:symbol:@solitude/protocol:./protocol:ClientMessageSocketEvent->symbol:@solitude/protocol:./protocol:SolitudeClientMessage",
@@ -12829,72 +13108,6 @@
       "to": "symbol:@solitude/plugin-api:./math:vec3"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./controllableEntities/provider:ControllableEntityProvider->symbol:@solitude/engine:./render:RGB",
-      "from": "symbol:@solitude/sim:./controllableEntities/provider:ControllableEntityProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./render:RGB"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./controllableEntities/provider:ControllableEntityProvider->symbol:@solitude/engine:./world:EntityConfig",
-      "from": "symbol:@solitude/sim:./controllableEntities/provider:ControllableEntityProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:EntityConfig"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./controllableEntities/provider:ControllableEntityProvider->symbol:@solitude/engine:./world:EntityId",
-      "from": "symbol:@solitude/sim:./controllableEntities/provider:ControllableEntityProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:EntityId"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./controllableEntities/provider:ControllableEntityProvider->symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement",
-      "from": "symbol:@solitude/sim:./controllableEntities/provider:ControllableEntityProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement->symbol:@solitude/engine:./math:LocalFrame",
-      "from": "symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:LocalFrame"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement->symbol:@solitude/engine:./math:Mat3",
-      "from": "symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:Mat3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement->symbol:@solitude/engine:./math:Vec3",
-      "from": "symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:Vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement->symbol:@solitude/engine:./world:AngularVelocity",
-      "from": "symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:AngularVelocity"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement->symbol:@solitude/plugin-api:./math:Mat3",
-      "from": "symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./math:Mat3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement->symbol:@solitude/plugin-api:./math:Vec3",
-      "from": "symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./math:Vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./controllableEntities/provider:isControllableEntityProvider->symbol:@solitude/sim:./controllableEntities/provider:ControllableEntityProvider",
-      "from": "symbol:@solitude/sim:./controllableEntities/provider:isControllableEntityProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./controllableEntities/provider:ControllableEntityProvider"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop->symbol:@solitude/engine:./runtime:createHeadlessLoop",
       "from": "symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop",
       "kind": "symbol-reference",
@@ -13069,6 +13282,12 @@
       "to": "symbol:@solitude/engine:./plugin:PluginCatalog"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement->symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement",
+      "from": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement->symbol:@solitude/engine:./math:localFrame",
       "from": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement",
       "kind": "symbol-reference",
@@ -13097,12 +13316,6 @@
       "from": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./math:vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement->symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement",
-      "from": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./controllableEntities/provider:DirectControllableEntityPlacement"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement->symbol:@solitude/sim:./spacecraft/orbitalPlacement:OrbitingPlacementParams",

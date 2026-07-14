@@ -33,6 +33,10 @@ describe("external plugin runtime", () => {
     }));
     const createSecond = vi.fn(() => ({ id: "secondPlugin" }));
     const documents = createDocumentMap();
+    documents.set(laserManifestUrl, {
+      ...createPluginManifest("targetingLaser"),
+      environment: "universal",
+    });
     const modules = new Map<string, ExternalPluginModule>([
       [laserEntryUrl, { createPlugin: createLaser }],
       [secondEntryUrl, { createPlugin: createSecond }],

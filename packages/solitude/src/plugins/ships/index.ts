@@ -1,13 +1,13 @@
+import {
+  controllableEntityProviderCapability,
+  isControllableEntityProvider,
+} from "@solitude/engine/controllable-entities";
 import { km } from "@solitude/engine/math";
 import type { GamePlugin } from "@solitude/engine/plugin";
 import {
   celestialBodyProviderCapability,
   isCelestialBodyProvider,
 } from "@solitude/sim/celestialBodies/provider";
-import {
-  controllableEntityProviderCapability,
-  isControllableEntityProvider,
-} from "@solitude/sim/controllableEntities/provider";
 import { createOrbitingPlacement } from "@solitude/sim/spacecraft/orbitalPlacement";
 
 const EARTH_ID = "planet:earth";

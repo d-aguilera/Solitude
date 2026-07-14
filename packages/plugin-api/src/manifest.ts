@@ -1,6 +1,9 @@
-export const SOLITUDE_PLUGIN_API_VERSION = 2;
+export const SOLITUDE_PLUGIN_API_VERSION = 3;
 
-export type ExternalPluginEnvironment = "browser" | "server";
+export type ExternalPluginHostEnvironment = "browser" | "server";
+export type ExternalPluginEnvironment =
+  | ExternalPluginHostEnvironment
+  | "universal";
 
 export interface ExternalPluginManifest {
   apiVersion: number;

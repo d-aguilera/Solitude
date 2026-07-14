@@ -6,6 +6,7 @@ export {
   EPS_SPEED_FINE,
   EPS_SPEED_SQ,
   EPS_TIME_SEC,
+  computeVolumeOfTriangleMesh,
   mat3,
   raySphereFirstHitDistance,
   vec3,

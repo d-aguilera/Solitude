@@ -31,6 +31,11 @@ declares its schema version, exact host API version, target environment, id,
 and ES-module entry URL. The runtime validates every pack and plugin manifest
 before importing any plugin module.
 
+Plugin environments are `browser`, `server`, or `universal`. Universal modules
+may be loaded by either host. Browser discovery starts from the deployed loader
+documents; server composition loads explicitly configured local manifests and
+requires their module entries to remain inside the manifest directory.
+
 `plugins/browser-plugin-packs.json` declares the ordered packs for each browser
 target. `npm run build:plugins` builds the union of those workspace packages,
 validates their artifacts, and emits separate standalone and multiplayer
@@ -78,6 +83,11 @@ or obsolete plugin shapes fail during composition.
 
 - `@solitude/plugin-api/module`: plugin identity, capabilities, grouped hooks,
   focused-entity requirements, factory, and loaded ES-module contracts.
+- `@solitude/plugin-api/controllable-entities`: the canonical generic
+  controllable-entity provider capability, placement/configuration contracts,
+  constructor, and guard.
+- `@solitude/plugin-api/assets`: bundled-safe OBJ parsing for pack-owned mesh
+  assets.
 - `@solitude/plugin-api/runtime`: raw runtime option contracts passed to plugin
   factories.
 - `@solitude/plugin-api/capabilities`: generic capability provider and registry
@@ -91,8 +101,8 @@ or obsolete plugin shapes fail during composition.
 - `@solitude/plugin-api/localization`: supported locale type and runtime locale
   parsing.
 - `@solitude/plugin-api/math`: bundled-safe vector, matrix, intersection, and
-  epsilon helpers. Importing this subpath intentionally includes math runtime
-  code.
+  mesh-volume helpers plus epsilon constants. Importing this subpath
+  intentionally includes math runtime code.
 - `@solitude/plugin-api/world`: entity, focus, and world contracts plus
   dominant-body and gravitational-parameter helpers. This subpath depends on
   the math runtime.

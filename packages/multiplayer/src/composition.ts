@@ -1,3 +1,8 @@
+import {
+  controllableEntityProviderCapability,
+  isControllableEntityProvider,
+  type ControllableEntityProvider,
+} from "@solitude/engine/controllable-entities";
 import { km } from "@solitude/engine/math";
 import { loadPlugins, type RuntimeOptions } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
@@ -15,11 +20,6 @@ import {
   isCelestialBodyProvider,
   type CelestialBodyProvider,
 } from "@solitude/sim/celestialBodies/provider";
-import {
-  controllableEntityProviderCapability,
-  isControllableEntityProvider,
-  type ControllableEntityProvider,
-} from "@solitude/sim/controllableEntities/provider";
 import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
 import { createOrbitingPlacement } from "@solitude/sim/spacecraft/orbitalPlacement";
 import { createSolitudeServerGame } from "./runtime";

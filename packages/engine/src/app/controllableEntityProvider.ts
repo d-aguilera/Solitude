@@ -1,10 +1,8 @@
-import type { LocalFrame, Mat3, Vec3 } from "@solitude/engine/math";
-import type { RGB } from "@solitude/engine/render";
-import type {
-  AngularVelocity,
-  EntityConfig,
-  EntityId,
-} from "@solitude/engine/world";
+import type { AngularVelocity, EntityId } from "../domain/domainPorts";
+import type { LocalFrame } from "../domain/localFrame";
+import type { Mat3 } from "../domain/mat3";
+import type { Vec3 } from "../domain/vec3";
+import type { EntityConfig } from "./entityConfigPorts";
 
 export const controllableEntityProviderCapability =
   "controllableEntityProvider";
@@ -21,7 +19,7 @@ export interface ControllableEntityProvider {
   id: string;
   mass: number;
   createEntity: (params: {
-    color: RGB;
+    color: { r: number; g: number; b: number };
     id: EntityId;
     placement: DirectControllableEntityPlacement;
   }) => EntityConfig;

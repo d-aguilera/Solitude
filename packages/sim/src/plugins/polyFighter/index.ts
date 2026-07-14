@@ -1,11 +1,11 @@
 import { parseObjMesh } from "@solitude/engine/assets";
-import { computeVolumeOfTriangleMesh, vec3 } from "@solitude/engine/math";
-import type { GamePlugin } from "@solitude/engine/plugin";
-import type { EntityConfig } from "@solitude/engine/world";
 import {
   controllableEntityProviderCapability,
   type ControllableEntityProvider,
-} from "../../controllableEntities/provider";
+} from "@solitude/engine/controllable-entities";
+import { computeVolumeOfTriangleMesh, vec3 } from "@solitude/engine/math";
+import type { GamePlugin } from "@solitude/engine/plugin";
+import type { EntityConfig } from "@solitude/engine/world";
 import polyFighterObjText from "./polyFighter.obj?raw";
 
 const POLY_FIGHTER_DENSITY_KG_PER_M3 = 2700;

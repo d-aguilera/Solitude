@@ -10,7 +10,7 @@ import type {
   ViewPlugin,
 } from "@solitude/engine/plugin";
 import type {
-  ExternalPluginEnvironment,
+  ExternalPluginHostEnvironment,
   ExternalPluginLoaderConfig,
   ExternalPluginManifest,
   ExternalPluginPackManifest,
@@ -58,7 +58,7 @@ export interface ExternalPluginLoadAdapters {
 
 export interface ExternalPluginLoadOptions extends ExternalPluginLoadAdapters {
   configUrl: string;
-  environment: ExternalPluginEnvironment;
+  environment: ExternalPluginHostEnvironment;
   pageOrigin: string;
 }
 
@@ -326,7 +326,9 @@ function parsePluginManifest(
     typeof value.apiVersion !== "number" ||
     typeof value.entry !== "string" ||
     value.entry.length === 0 ||
-    (value.environment !== "browser" && value.environment !== "server") ||
+    (value.environment !== "browser" &&
+      value.environment !== "server" &&
+      value.environment !== "universal") ||
     typeof value.id !== "string" ||
     !PLUGIN_ID_PATTERN.test(value.id)
   ) {
@@ -338,7 +340,7 @@ function parsePluginManifest(
 function validatePluginManifests(
   manifests: readonly ExternalPluginManifest[],
   manifestUrls: readonly string[],
-  environment: ExternalPluginEnvironment,
+  environment: ExternalPluginHostEnvironment,
 ): void {
   const ids = new Set<string>();
   for (let index = 0; index < manifests.length; index++) {
@@ -348,7 +350,10 @@ function validatePluginManifests(
         `Unsupported plugin API for ${manifest.id} at ${manifestUrls[index]}: ${manifest.apiVersion}`,
       );
     }
-    if (manifest.environment !== environment) {
+    if (
+      manifest.environment !== environment &&
+      manifest.environment !== "universal"
+    ) {
       throw new Error(
         `Plugin ${manifest.id} targets ${manifest.environment}, not ${environment}`,
       );
