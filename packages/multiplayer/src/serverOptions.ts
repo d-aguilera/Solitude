@@ -10,22 +10,29 @@ import {
   createSolitudeGameTicker,
   type SolitudeGameTickPolicy,
 } from "@solitude/server/ticker";
-import { createDefaultSolitudeInProcessTransport } from "./composition";
+import {
+  createDefaultSolitudeInProcessTransport,
+  type DefaultMultiplayerContentPluginFactories,
+} from "./composition";
 
-export function createDefaultSolitudeHttpServerOptions(): SolitudeHttpServerOptions {
+export function createDefaultSolitudeHttpServerOptions(
+  contentPlugins: DefaultMultiplayerContentPluginFactories,
+): SolitudeHttpServerOptions {
   return {
-    createRunner: createDefaultSolitudeGameRunner,
+    createRunner: (options) =>
+      createDefaultSolitudeGameRunner(options, contentPlugins),
     hostname: "127.0.0.1",
     port: 8787,
   };
 }
 
-function createDefaultSolitudeGameRunner({
-  metrics,
-  onSnapshot,
-}: SolitudeGameRunnerFactoryOptions): SolitudeGameRunner {
+function createDefaultSolitudeGameRunner(
+  { metrics, onSnapshot }: SolitudeGameRunnerFactoryOptions,
+  contentPlugins: DefaultMultiplayerContentPluginFactories,
+): SolitudeGameRunner {
   const runtimeConfig = createDefaultSolitudeRuntimeConfig(process.env);
   const transport = createDefaultSolitudeInProcessTransport(
+    contentPlugins,
     runtimeConfig.runtimeOptions,
   );
   return createSolitudeGameRunner({

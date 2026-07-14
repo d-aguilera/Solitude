@@ -4,7 +4,11 @@ import {
   type ControllableEntityProvider,
 } from "@solitude/engine/controllable-entities";
 import { km } from "@solitude/engine/math";
-import { loadPlugins, type RuntimeOptions } from "@solitude/engine/plugin";
+import {
+  loadPlugins,
+  type PluginFactory,
+  type RuntimeOptions,
+} from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { EntityConfig, EntityId } from "@solitude/engine/world";
 import {
@@ -48,20 +52,25 @@ const multiplayerSpacecraftColors = [
 ] as const;
 
 export function createDefaultSolitudeInProcessTransport(
-  runtimeOptions: RuntimeOptions = {},
+  contentPlugins: DefaultMultiplayerContentPluginFactories,
+  runtimeOptions: RuntimeOptions,
 ): SolitudeInProcessTransport {
   return createSolitudeInProcessTransport(
-    createDefaultSolitudeSessionManager(runtimeOptions),
+    createDefaultSolitudeSessionManager(contentPlugins, runtimeOptions),
   );
 }
 
 export function createDefaultSolitudeSessionManager(
-  runtimeOptions: RuntimeOptions = {},
+  contentPlugins: DefaultMultiplayerContentPluginFactories,
+  runtimeOptions: RuntimeOptions,
 ): SolitudeSessionManager {
   const assignableEntityIds = createDefaultAssignableEntityIds(
     DEFAULT_ASSIGNABLE_ENTITY_COUNT,
   );
-  const spawnProviders = createDefaultMultiplayerSpawnProviders(runtimeOptions);
+  const spawnProviders = createDefaultMultiplayerSpawnProviders(
+    contentPlugins,
+    runtimeOptions,
+  );
   return createSolitudeSessionManager({
     assignableEntityIds,
     createAssignableEntity: (id, index) =>
@@ -83,10 +92,18 @@ export interface DefaultMultiplayerSpawnProviders {
   controllableEntityProvider: ControllableEntityProvider;
 }
 
+export interface DefaultMultiplayerContentPluginFactories {
+  polyFighter: PluginFactory;
+}
+
 export function createDefaultMultiplayerSpawnProviders(
+  contentPlugins: DefaultMultiplayerContentPluginFactories,
   runtimeOptions: RuntimeOptions,
 ): DefaultMultiplayerSpawnProviders {
-  const plugins = createDefaultMultiplayerContentPlugins(runtimeOptions);
+  const plugins = createDefaultMultiplayerContentPlugins(
+    contentPlugins,
+    runtimeOptions,
+  );
   const capabilityRegistry = createPluginCapabilityRegistry(plugins);
   const celestialBodyProvider = capabilityRegistry
     .getAll(celestialBodyProviderCapability)
@@ -141,10 +158,14 @@ export function createDefaultMultiplayerSpacecraftEntity({
 }
 
 function createDefaultMultiplayerContentPlugins(
+  contentPlugins: DefaultMultiplayerContentPluginFactories,
   runtimeOptions: RuntimeOptions,
 ) {
   return loadPlugins({
-    catalog: simPluginCatalog,
+    catalog: {
+      polyFighter: contentPlugins.polyFighter,
+      solarSystem: simPluginCatalog.solarSystem,
+    },
     ids: ["solarSystem", "polyFighter"],
     runtimeOptions,
   });

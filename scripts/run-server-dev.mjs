@@ -25,10 +25,17 @@ const { startSolitudeHttpServer } = await vite.ssrLoadModule(
 const { createDefaultSolitudeHttpServerOptions } = await vite.ssrLoadModule(
   resolve("packages/multiplayer/src/serverOptions.ts"),
 );
+const { loadDefaultMultiplayerContentPluginFactories } =
+  await vite.ssrLoadModule(
+    resolve("packages/multiplayer/src/serverPlugins.ts"),
+  );
+const contentPlugins = await loadDefaultMultiplayerContentPluginFactories(
+  process.env,
+);
 await vite.ws.close();
 
 const server = await startSolitudeHttpServer({
-  ...createDefaultSolitudeHttpServerOptions(),
+  ...createDefaultSolitudeHttpServerOptions(contentPlugins),
   devAssetHandler: createDevAssetHandler(vite, clientRoot),
   hostname,
   port,

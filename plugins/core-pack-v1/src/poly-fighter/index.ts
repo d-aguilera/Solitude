@@ -1,11 +1,11 @@
-import { parseObjMesh } from "@solitude/engine/assets";
+import { parseObjMesh } from "@solitude/plugin-api/assets";
 import {
-  controllableEntityProviderCapability,
-  type ControllableEntityProvider,
-} from "@solitude/engine/controllable-entities";
-import { computeVolumeOfTriangleMesh, vec3 } from "@solitude/engine/math";
-import type { GamePlugin } from "@solitude/engine/plugin";
-import type { EntityConfig } from "@solitude/engine/world";
+  createControllableEntityProviderCapability,
+  type ExternalControllableEntityProvider,
+} from "@solitude/plugin-api/controllable-entities";
+import { computeVolumeOfTriangleMesh, vec3 } from "@solitude/plugin-api/math";
+import type { ExternalPlugin } from "@solitude/plugin-api/module";
+import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 import polyFighterObjText from "./polyFighter.obj?raw";
 
 const POLY_FIGHTER_DENSITY_KG_PER_M3 = 2700;
@@ -18,8 +18,8 @@ const polyFighterVolume = computeVolumeOfTriangleMesh(
 );
 const polyFighterMass = POLY_FIGHTER_DENSITY_KG_PER_M3 * polyFighterVolume;
 
-export const polyFighterProvider: ControllableEntityProvider = {
-  createEntity: ({ color, id, placement }): EntityConfig => ({
+export const polyFighterProvider: ExternalControllableEntityProvider = {
+  createEntity: ({ color, id, placement }) => ({
     id,
     components: {
       controllable: {
@@ -51,15 +51,14 @@ export const polyFighterProvider: ControllableEntityProvider = {
   mass: polyFighterMass,
 };
 
-export function createPolyFighterPlugin(): GamePlugin {
+export function createPlugin(
+  _runtimeOptions: ExternalRuntimeOptions,
+): ExternalPlugin {
   return {
-    capabilities: [
-      {
-        id: controllableEntityProviderCapability,
-        value: polyFighterProvider,
-      },
-    ],
     id: "polyFighter",
+    capabilities: [
+      createControllableEntityProviderCapability(polyFighterProvider),
+    ],
   };
 }
 

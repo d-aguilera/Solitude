@@ -6,6 +6,7 @@ import {
   createDefaultMultiplayerSpawnProviders,
 } from "../composition";
 import { createSolitudeServerGame } from "../runtime";
+import { testMultiplayerContentPlugins } from "./polyFighterFixture";
 
 describe("Solitude server runtime", () => {
   it("steps the default headless game with entity-addressed controls and reuses snapshots", () => {
@@ -55,7 +56,10 @@ describe("Solitude server runtime", () => {
   });
 
   it("advances dynamically added ships through gravity integration", () => {
-    const spawnProviders = createDefaultMultiplayerSpawnProviders({});
+    const spawnProviders = createDefaultMultiplayerSpawnProviders(
+      testMultiplayerContentPlugins,
+      {},
+    );
     const blue = createDefaultMultiplayerSpacecraftEntity({
       ...spawnProviders,
       entityCount: 16,
@@ -88,7 +92,10 @@ describe("Solitude server runtime", () => {
 });
 
 function createDefaultShipEntities() {
-  const spawnProviders = createDefaultMultiplayerSpawnProviders({});
+  const spawnProviders = createDefaultMultiplayerSpawnProviders(
+    testMultiplayerContentPlugins,
+    {},
+  );
   return [
     createDefaultMultiplayerSpacecraftEntity({
       ...spawnProviders,

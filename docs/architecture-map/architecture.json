@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T14:23:55.541Z",
+  "generatedAt": "2026-07-14T14:37:30.093Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -5240,6 +5240,12 @@
       "from": "pkg:@solitude/multiplayer",
       "kind": "dependency",
       "to": "pkg:@solitude/engine"
+    },
+    {
+      "id": "dependency:pkg:@solitude/multiplayer->pkg:@solitude/plugin-runtime",
+      "from": "pkg:@solitude/multiplayer",
+      "kind": "dependency",
+      "to": "pkg:@solitude/plugin-runtime"
     },
     {
       "id": "dependency:pkg:@solitude/multiplayer->pkg:@solitude/server",

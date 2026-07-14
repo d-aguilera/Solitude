@@ -112,7 +112,8 @@ or obsolete plugin shapes fail during composition.
 ## Current Packs
 
 - `core-pack-v1`: first multi-plugin pack, shared by standalone and remote
-  rendering. It currently contains:
+  rendering, with universal content entries also available to the authoritative
+  server. It currently contains:
   - `autopilotHud`: localized autopilot mode and circle-now diagnostic HUD
     readouts for the focused entity.
   - `axialViews`: localized top/front/left/right picture-in-picture camera
@@ -124,6 +125,9 @@ or obsolete plugin shapes fail during composition.
     dominant gravity body, with keyboard toggle behavior.
   - `orbitTelemetry`: localized orbit state, apsis, circularization, and timing
     readouts for the focused entity.
+  - `polyFighter`: universal controllable-entity provider owning the fighter OBJ
+    mesh, derived mass, and complete entity configuration used by standalone
+    ships and authoritative multiplayer spawning.
   - `runtimeTelemetry`: shared localized simulation-time and rolling-FPS HUD
     driven by browser presentation-frame samples.
   - `solarSystemMaterials`: Earth and Moon texture materials plus pack-owned

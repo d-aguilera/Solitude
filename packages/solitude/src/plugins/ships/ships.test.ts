@@ -1,5 +1,9 @@
+import {
+  controllableEntityProviderCapability,
+  type ControllableEntityProvider,
+} from "@solitude/engine/controllable-entities";
 import { vec3 } from "@solitude/engine/math";
-import { loadPlugins } from "@solitude/engine/plugin";
+import { loadPlugins, type PluginFactory } from "@solitude/engine/plugin";
 import {
   applyWorldModelPlugins,
   createScene,
@@ -18,6 +22,7 @@ describe("ships plugin", () => {
       loadPlugins({
         catalog: {
           ...simPluginCatalog,
+          polyFighter: createTestPolyFighterPlugin,
           ships: createShipsPlugin,
         },
         ids: ["solarSystem", "polyFighter", "ships"],
@@ -68,4 +73,49 @@ describe("ships plugin", () => {
     expect(vec3.length(redOffset)).toBeGreaterThan(earthSphere!.radius);
     expect(vec3.dot(blueOffset, redOffset)).toBeLessThan(0);
   });
+});
+
+const testPolyFighterProvider: ControllableEntityProvider = {
+  createEntity: ({ color, id, placement }) => ({
+    id,
+    components: {
+      controllable: { enabled: true },
+      gravityMass: { density: 1_000, volume: 1_000 },
+      renderable: {
+        color,
+        mesh: {
+          faces: [[0, 1, 2]],
+          points: [
+            { x: 0, y: 0, z: 0 },
+            { x: 1, y: 0, z: 0 },
+            { x: 0, y: 1, z: 0 },
+          ],
+        },
+        meshLod: { kind: "none" },
+        meshScale: 1,
+        meshShading: { kind: "flat" },
+        role: "controlledBody",
+      },
+      state: {
+        angularVelocity: placement.angularVelocity,
+        frame: placement.frame,
+        kind: "direct",
+        orientation: placement.orientation,
+        position: placement.position,
+        velocity: placement.velocity,
+      },
+    },
+  }),
+  id: "polyFighter",
+  mass: 1_000_000,
+};
+
+const createTestPolyFighterPlugin: PluginFactory = () => ({
+  capabilities: [
+    {
+      id: controllableEntityProviderCapability,
+      value: testPolyFighterProvider,
+    },
+  ],
+  id: "polyFighter",
 });

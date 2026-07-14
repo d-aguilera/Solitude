@@ -33,6 +33,9 @@ export default defineConfig({
         "orbit-telemetry": fileURLToPath(
           new URL("./src/orbit-telemetry/index.ts", import.meta.url),
         ),
+        "poly-fighter": fileURLToPath(
+          new URL("./src/poly-fighter/index.ts", import.meta.url),
+        ),
         "runtime-telemetry": fileURLToPath(
           new URL("./src/runtime-telemetry/index.ts", import.meta.url),
         ),
@@ -94,6 +97,7 @@ export default defineConfig({
                 "./main-view-lookaround/plugin.json",
                 "./orbit-segments/plugin.json",
                 "./orbit-telemetry/plugin.json",
+                "./poly-fighter/plugin.json",
                 "./runtime-telemetry/plugin.json",
                 "./solar-system-materials/plugin.json",
                 "./ship-telemetry/plugin.json",
@@ -176,6 +180,21 @@ export default defineConfig({
               entry: "./index.js",
               environment: "browser",
               id: "orbitTelemetry",
+              schemaVersion: 1,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "poly-fighter/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
+              entry: "./index.js",
+              environment: "universal",
+              id: "polyFighter",
               schemaVersion: 1,
             },
             null,

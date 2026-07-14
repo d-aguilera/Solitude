@@ -4,6 +4,7 @@ import {
 } from "@solitude/server/ticker";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createDefaultSolitudeHttpServerOptions } from "../serverOptions";
+import { testMultiplayerContentPlugins } from "./polyFighterFixture";
 
 const capturedTickPolicies = vi.hoisted(() => [] as SolitudeGameTickPolicy[]);
 
@@ -137,7 +138,9 @@ function createGameModelWithEnvironment(env: Readonly<Record<string, string>>) {
 
 function createRunnerWithEnvironment(env: Readonly<Record<string, string>>) {
   return withSolitudeEnvironment(env, () =>
-    createDefaultSolitudeHttpServerOptions().createRunner({
+    createDefaultSolitudeHttpServerOptions(
+      testMultiplayerContentPlugins,
+    ).createRunner({
       metrics: createNoopMetrics(),
       onSnapshot: () => {},
     }),

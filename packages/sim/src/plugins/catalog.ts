@@ -5,7 +5,6 @@ import {
 } from "@solitude/engine/plugin";
 import { createAutopilotPlugin } from "./autopilot/index";
 import { createAutopilotInputPlugin } from "./autopilot/input";
-import { createPolyFighterPlugin } from "./polyFighter/index";
 import { createSolarSystemPlugin } from "./solarSystem/index";
 import { createSpacecraftOperatorPlugin } from "./spacecraftOperator/index";
 
@@ -18,7 +17,6 @@ export const defaultHeadlessPluginIds = [
 export const simPluginCatalog: PluginCatalog = {
   autopilot: createAutopilotPlugin,
   autopilotInput: createAutopilotInputPlugin,
-  polyFighter: createPolyFighterPlugin,
   solarSystem: createSolarSystemPlugin,
   spacecraftOperator: createSpacecraftOperatorPlugin,
 };

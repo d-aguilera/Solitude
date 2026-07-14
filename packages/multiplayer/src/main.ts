@@ -2,6 +2,7 @@ import { startSolitudeHttpServer } from "@solitude/server/http";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { createDefaultSolitudeHttpServerOptions } from "./serverOptions";
+import { loadDefaultMultiplayerContentPluginFactories } from "./serverPlugins";
 
 const port = Number(process.env.PORT ?? 8787);
 const hostname = process.env.HOST ?? "127.0.0.1";
@@ -13,8 +14,11 @@ const staticAssetRoot = existsSync(staticAssetRootCandidate)
 void main();
 
 async function main(): Promise<void> {
+  const contentPlugins = await loadDefaultMultiplayerContentPluginFactories(
+    process.env,
+  );
   const server = await startSolitudeHttpServer({
-    ...createDefaultSolitudeHttpServerOptions(),
+    ...createDefaultSolitudeHttpServerOptions(contentPlugins),
     hostname,
     port,
     staticAssetRoot,

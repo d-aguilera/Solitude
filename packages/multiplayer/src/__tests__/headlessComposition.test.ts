@@ -6,6 +6,7 @@ import {
   createDefaultMultiplayerSpacecraftEntity,
   createDefaultMultiplayerSpawnProviders,
 } from "../composition";
+import { testMultiplayerContentPlugins } from "./polyFighterFixture";
 
 describe("server-style headless Solitude composition", () => {
   it("builds the default Solitude world through public exports and advances spacecraft dynamics", () => {
@@ -133,7 +134,10 @@ describe("server-style headless Solitude composition", () => {
   });
 
   it("assigns distinct display colors without server-authored names", () => {
-    const spawnProviders = createDefaultMultiplayerSpawnProviders({});
+    const spawnProviders = createDefaultMultiplayerSpawnProviders(
+      testMultiplayerContentPlugins,
+      {},
+    );
     const ships = [
       createDefaultMultiplayerSpacecraftEntity({
         ...spawnProviders,
@@ -169,7 +173,10 @@ describe("server-style headless Solitude composition", () => {
 });
 
 function createDefaultShipEntities() {
-  const spawnProviders = createDefaultMultiplayerSpawnProviders({});
+  const spawnProviders = createDefaultMultiplayerSpawnProviders(
+    testMultiplayerContentPlugins,
+    {},
+  );
   return [
     createDefaultMultiplayerSpacecraftEntity({
       ...spawnProviders,
