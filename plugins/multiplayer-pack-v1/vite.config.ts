@@ -39,12 +39,13 @@ export default defineConfig({
           fileName: "pack.json",
           source: `${JSON.stringify(
             {
+              hosts: ["browser"],
               id: "multiplayer-pack-v1",
               plugins: [
                 "./remote-identity-hud/plugin.json",
                 "./ship-color-names/plugin.json",
               ],
-              schemaVersion: 1,
+              schemaVersion: 2,
             },
             null,
             2,
@@ -57,9 +58,8 @@ export default defineConfig({
             {
               apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
-              environment: "browser",
               id: "remoteIdentityHud",
-              schemaVersion: 1,
+              schemaVersion: 2,
             },
             null,
             2,
@@ -72,9 +72,8 @@ export default defineConfig({
             {
               apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
-              environment: "browser",
               id: "shipColorNames",
-              schemaVersion: 1,
+              schemaVersion: 2,
             },
             null,
             2,

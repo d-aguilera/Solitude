@@ -21,7 +21,6 @@ export async function loadServerPlugin(
 
   return loadExternalPlugins({
     configUrl: VIRTUAL_CONFIG_URL,
-    environment: "server",
     fetchJson: async (url) => {
       switch (url) {
         case VIRTUAL_CONFIG_URL:
@@ -34,9 +33,10 @@ export async function loadServerPlugin(
           return { packs: [VIRTUAL_PACK_URL], schemaVersion: 1 };
         case VIRTUAL_PACK_URL:
           return {
+            hosts: ["server"],
             id: "server-plugin",
             plugins: [VIRTUAL_MANIFEST_URL],
-            schemaVersion: 1,
+            schemaVersion: 2,
           };
         case VIRTUAL_MANIFEST_URL:
           return manifestDocument;
@@ -58,6 +58,7 @@ export async function loadServerPlugin(
         /* @vite-ignore */ pathToFileURL(entryFilename).href
       ) as Promise<unknown>;
     },
+    host: "server",
     pageOrigin: VIRTUAL_ORIGIN,
   });
 }

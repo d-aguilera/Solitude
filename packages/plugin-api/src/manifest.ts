@@ -1,14 +1,10 @@
 export const SOLITUDE_PLUGIN_API_VERSION = 3;
 
-export type ExternalPluginHostEnvironment = "browser" | "server";
-export type ExternalPluginEnvironment =
-  | ExternalPluginHostEnvironment
-  | "universal";
+export type ExternalPluginHost = "browser" | "server";
 
 export interface ExternalPluginManifest {
   apiVersion: number;
   entry: string;
-  environment: ExternalPluginEnvironment;
   id: string;
   schemaVersion: number;
 }
@@ -25,6 +21,7 @@ export interface ExternalPluginLoaderConfig {
 }
 
 export interface ExternalPluginPackManifest {
+  hosts: readonly ExternalPluginHost[];
   id: string;
   plugins: readonly string[];
   schemaVersion: number;

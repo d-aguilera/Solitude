@@ -33,10 +33,6 @@ describe("external plugin runtime", () => {
     }));
     const createSecond = vi.fn(() => ({ id: "secondPlugin" }));
     const documents = createDocumentMap();
-    documents.set(laserManifestUrl, {
-      ...createPluginManifest("targetingLaser"),
-      environment: "universal",
-    });
     const modules = new Map<string, ExternalPluginModule>([
       [laserEntryUrl, { createPlugin: createLaser }],
       [secondEntryUrl, { createPlugin: createSecond }],
@@ -44,8 +40,8 @@ describe("external plugin runtime", () => {
 
     const loaded = await loadExternalPlugins({
       configUrl,
-      environment: "browser",
       fetchJson: async (url) => documents.get(url),
+      host: "browser",
       importModule: async (url) => modules.get(url),
       pageOrigin,
     });
@@ -64,14 +60,70 @@ describe("external plugin runtime", () => {
     expect(loaded.catalog.secondPlugin({}).id).toBe("secondPlugin");
   });
 
+  it("rejects a pack that does not support the current host", async () => {
+    const documents = createDocumentMap();
+    documents.set(
+      targetingPackUrl,
+      createPackManifest("targeting", ["server"]),
+    );
+    const fetchJson = vi.fn(async (url: string) => documents.get(url));
+
+    await expect(
+      loadExternalPlugins({
+        configUrl,
+        fetchJson,
+        host: "browser",
+        importModule: vi.fn(),
+        pageOrigin,
+      }),
+    ).rejects.toThrow("targeting does not support host browser");
+    expect(fetchJson).not.toHaveBeenCalledWith(laserManifestUrl);
+  });
+
+  it("rejects the removed universal host sentinel", async () => {
+    const documents = createDocumentMap();
+    documents.set(
+      targetingPackUrl,
+      createPackManifest("targeting", ["browser", "universal"]),
+    );
+
+    await expect(
+      loadExternalPlugins({
+        configUrl,
+        fetchJson: async (url) => documents.get(url),
+        host: "browser",
+        importModule: vi.fn(),
+        pageOrigin,
+      }),
+    ).rejects.toThrow("Invalid plugin pack manifest");
+  });
+
+  it("rejects legacy plugin environment metadata", async () => {
+    const documents = createDocumentMap();
+    documents.set(laserManifestUrl, {
+      ...createPluginManifest("targetingLaser"),
+      environment: "browser",
+    });
+
+    await expect(
+      loadExternalPlugins({
+        configUrl,
+        fetchJson: async (url) => documents.get(url),
+        host: "browser",
+        importModule: vi.fn(),
+        pageOrigin,
+      }),
+    ).rejects.toThrow("Invalid plugin manifest");
+  });
+
   it("requires the loader configuration to be same-origin", async () => {
     const fetchJson = vi.fn();
 
     await expect(
       loadExternalPlugins({
         configUrl: `${pluginOrigin}/loader.json`,
-        environment: "browser",
         fetchJson,
+        host: "browser",
         importModule: vi.fn(),
         pageOrigin,
       }),
@@ -86,8 +138,8 @@ describe("external plugin runtime", () => {
     await expect(
       loadExternalPlugins({
         configUrl,
-        environment: "browser",
         fetchJson,
+        host: "browser",
         importModule: vi.fn(),
         pageOrigin,
       }),
@@ -108,8 +160,8 @@ describe("external plugin runtime", () => {
     await expect(
       loadExternalPlugins({
         configUrl,
-        environment: "browser",
         fetchJson: async (url) => documents.get(url),
+        host: "browser",
         importModule,
         pageOrigin,
       }),
@@ -123,8 +175,8 @@ describe("external plugin runtime", () => {
     await expect(
       loadExternalPlugins({
         configUrl,
-        environment: "browser",
         fetchJson: async (url) => documents.get(url),
+        host: "browser",
         importModule: vi.fn(),
         pageOrigin,
       }),
@@ -142,8 +194,8 @@ describe("external plugin runtime", () => {
     await expect(
       loadExternalPlugins({
         configUrl,
-        environment: "browser",
         fetchJson: async (url) => documents.get(url),
+        host: "browser",
         importModule,
         pageOrigin,
       }),
@@ -153,17 +205,16 @@ describe("external plugin runtime", () => {
 
   it("rejects duplicate pack and plugin ids", async () => {
     const duplicatePackDocuments = createDocumentMap();
-    duplicatePackDocuments.set(utilityPackUrl, {
-      id: "targeting",
-      plugins: ["./second.json"],
-      schemaVersion: 1,
-    });
+    duplicatePackDocuments.set(
+      utilityPackUrl,
+      createPackManifest("targeting", ["browser"], ["./second.json"]),
+    );
 
     await expect(
       loadExternalPlugins({
         configUrl,
-        environment: "browser",
         fetchJson: async (url) => duplicatePackDocuments.get(url),
+        host: "browser",
         importModule: async () => ({ createPlugin: () => ({}) }),
         pageOrigin,
       }),
@@ -177,8 +228,8 @@ describe("external plugin runtime", () => {
     await expect(
       loadExternalPlugins({
         configUrl,
-        environment: "browser",
         fetchJson: async (url) => duplicatePluginDocuments.get(url),
+        host: "browser",
         importModule: async () => ({ createPlugin: () => ({}) }),
         pageOrigin,
       }),
@@ -198,39 +249,30 @@ describe("external plugin runtime", () => {
     ).toThrow("collides with host plugin");
   });
 
-  it("validates the plugin id returned by a loaded factory", async () => {
+  it("validates factories and their external plugin surface", async () => {
     const documents = createDocumentMap();
     documents.set(setUrl, {
       packs: [targetingPackUrl],
       schemaVersion: 1,
     });
 
-    const loaded = await loadExternalPlugins({
+    const wrongId = await loadExternalPlugins({
       configUrl,
-      environment: "browser",
       fetchJson: async (url) => documents.get(url),
+      host: "browser",
       importModule: async () => ({
         createPlugin: () => ({ id: "wrongPlugin" }),
       }),
       pageOrigin,
     });
-
-    expect(() => loaded.catalog.targetingLaser({})).toThrow(
+    expect(() => wrongId.catalog.targetingLaser({})).toThrow(
       "returned id wrongPlugin",
     );
-  });
 
-  it("rejects invalid view controls returned by a loaded factory", async () => {
-    const documents = createDocumentMap();
-    documents.set(setUrl, {
-      packs: [targetingPackUrl],
-      schemaVersion: 1,
-    });
-
-    const loaded = await loadExternalPlugins({
+    const invalidHooks = await loadExternalPlugins({
       configUrl,
-      environment: "browser",
       fetchJson: async (url) => documents.get(url),
+      host: "browser",
       importModule: async () => ({
         createPlugin: () => ({
           id: "targetingLaser",
@@ -239,23 +281,14 @@ describe("external plugin runtime", () => {
       }),
       pageOrigin,
     });
-
-    expect(() => loaded.catalog.targetingLaser({})).toThrow(
+    expect(() => invalidHooks.catalog.targetingLaser({})).toThrow(
       "invalid view controls",
     );
-  });
 
-  it("rejects legacy top-level hooks returned by a loaded factory", async () => {
-    const documents = createDocumentMap();
-    documents.set(setUrl, {
-      packs: [targetingPackUrl],
-      schemaVersion: 1,
-    });
-
-    const loaded = await loadExternalPlugins({
+    const legacyHooks = await loadExternalPlugins({
       configUrl,
-      environment: "browser",
       fetchJson: async (url) => documents.get(url),
+      host: "browser",
       importModule: async () => ({
         createPlugin: () => ({
           id: "targetingLaser",
@@ -264,23 +297,14 @@ describe("external plugin runtime", () => {
       }),
       pageOrigin,
     });
-
-    expect(() => loaded.catalog.targetingLaser({})).toThrow(
+    expect(() => legacyHooks.catalog.targetingLaser({})).toThrow(
       "invalid properties",
     );
-  });
 
-  it("rejects focus requirements guaranteed by the focus context", async () => {
-    const documents = createDocumentMap();
-    documents.set(setUrl, {
-      packs: [targetingPackUrl],
-      schemaVersion: 1,
-    });
-
-    const loaded = await loadExternalPlugins({
+    const invalidRequirements = await loadExternalPlugins({
       configUrl,
-      environment: "browser",
       fetchJson: async (url) => documents.get(url),
+      host: "browser",
       importModule: async () => ({
         createPlugin: () => ({
           id: "targetingLaser",
@@ -289,8 +313,7 @@ describe("external plugin runtime", () => {
       }),
       pageOrigin,
     });
-
-    expect(() => loaded.catalog.targetingLaser({})).toThrow(
+    expect(() => invalidRequirements.catalog.targetingLaser({})).toThrow(
       "invalid focus entity requirements",
     );
   });
@@ -317,19 +340,11 @@ function createDocumentMap(
     ],
     [
       targetingPackUrl,
-      {
-        id: "targeting",
-        plugins: ["./laser/plugin.json"],
-        schemaVersion: 1,
-      },
+      createPackManifest("targeting", ["browser"], ["./laser/plugin.json"]),
     ],
     [
       utilityPackUrl,
-      {
-        id: "utility",
-        plugins: ["./second.json"],
-        schemaVersion: 1,
-      },
+      createPackManifest("utility", ["browser"], ["./second.json"]),
     ],
     [laserManifestUrl, createPluginManifest("targetingLaser")],
     [
@@ -343,16 +358,18 @@ function createDocumentMap(
   ]);
 }
 
+function createPackManifest(
+  id: string,
+  hosts: readonly string[],
+  plugins: readonly string[] = ["./laser/plugin.json"],
+) {
+  return { hosts, id, plugins, schemaVersion: 2 };
+}
+
 function createPluginManifest(
   id: string,
   apiVersion = SOLITUDE_PLUGIN_API_VERSION,
   entry = "./index.js",
 ) {
-  return {
-    apiVersion,
-    entry,
-    environment: "browser",
-    id,
-    schemaVersion: 1,
-  };
+  return { apiVersion, entry, id, schemaVersion: 2 };
 }

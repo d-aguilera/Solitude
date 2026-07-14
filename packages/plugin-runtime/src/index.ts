@@ -10,7 +10,7 @@ import type {
   ViewPlugin,
 } from "@solitude/engine/plugin";
 import type {
-  ExternalPluginHostEnvironment,
+  ExternalPluginHost,
   ExternalPluginLoaderConfig,
   ExternalPluginManifest,
   ExternalPluginPackManifest,
@@ -22,10 +22,18 @@ import type {
   ExternalPluginModule,
 } from "@solitude/plugin-api/module";
 
-const PLUGIN_MANIFEST_SCHEMA_VERSION = 1;
-const PLUGIN_PACK_SCHEMA_VERSION = 1;
+const PLUGIN_MANIFEST_SCHEMA_VERSION = 2;
+const PLUGIN_PACK_SCHEMA_VERSION = 2;
 const PLUGIN_SET_SCHEMA_VERSION = 1;
 const PLUGIN_ID_PATTERN = /^[A-Za-z][A-Za-z0-9.-]*$/;
+const PLUGIN_HOSTS = new Set<ExternalPluginHost>(["browser", "server"]);
+const PLUGIN_MANIFEST_KEYS = new Set([
+  "apiVersion",
+  "entry",
+  "id",
+  "schemaVersion",
+]);
+const PLUGIN_PACK_KEYS = new Set(["hosts", "id", "plugins", "schemaVersion"]);
 const EXTERNAL_PLUGIN_KEYS = new Set([
   "capabilities",
   "hooks",
@@ -58,7 +66,7 @@ export interface ExternalPluginLoadAdapters {
 
 export interface ExternalPluginLoadOptions extends ExternalPluginLoadAdapters {
   configUrl: string;
-  environment: ExternalPluginHostEnvironment;
+  host: ExternalPluginHost;
   pageOrigin: string;
 }
 
@@ -72,7 +80,7 @@ export async function loadBrowserPlugins(
 ): Promise<ExternalPluginSet> {
   return loadExternalPlugins({
     configUrl,
-    environment: "browser",
+    host: "browser",
     fetchJson: fetchJsonFromNetwork,
     importModule: importExternalModule,
     pageOrigin: globalThis.location.origin,
@@ -81,7 +89,7 @@ export async function loadBrowserPlugins(
 
 export async function loadExternalPlugins({
   configUrl,
-  environment,
+  host,
   fetchJson,
   importModule,
   pageOrigin,
@@ -117,7 +125,7 @@ export async function loadExternalPlugins({
       ),
     ),
   );
-  validatePluginPacks(packManifests);
+  validatePluginPacks(packManifests, host);
   const manifestUrls = packManifests.flatMap((pack, index) =>
     pack.plugins.map((manifestUrl) => {
       const url = new URL(manifestUrl, packManifestUrls[index]).href;
@@ -131,7 +139,7 @@ export async function loadExternalPlugins({
     ),
   );
 
-  validatePluginManifests(manifests, manifestUrls, environment);
+  validatePluginManifests(manifests, manifestUrls);
 
   const moduleUrls = manifests.map((manifest, index) => {
     const url = new URL(manifest.entry, manifestUrls[index]).href;
@@ -290,8 +298,17 @@ function parsePluginPackManifest(
     );
   }
   if (
+    !hasOnlyKeys(value, PLUGIN_PACK_KEYS) ||
     typeof value.id !== "string" ||
     !PLUGIN_ID_PATTERN.test(value.id) ||
+    !Array.isArray(value.hosts) ||
+    value.hosts.length === 0 ||
+    !value.hosts.every(
+      (host) =>
+        typeof host === "string" &&
+        PLUGIN_HOSTS.has(host as ExternalPluginHost),
+    ) ||
+    new Set(value.hosts).size !== value.hosts.length ||
     !Array.isArray(value.plugins) ||
     !value.plugins.every((item) => typeof item === "string" && item.length > 0)
   ) {
@@ -302,11 +319,17 @@ function parsePluginPackManifest(
 
 function validatePluginPacks(
   manifests: readonly ExternalPluginPackManifest[],
+  host: ExternalPluginHost,
 ): void {
   const ids = new Set<string>();
   for (const manifest of manifests) {
     if (ids.has(manifest.id)) {
       throw new Error(`Duplicate external plugin pack id: ${manifest.id}`);
+    }
+    if (!manifest.hosts.includes(host)) {
+      throw new Error(
+        `External plugin pack ${manifest.id} does not support host ${host}`,
+      );
     }
     ids.add(manifest.id);
   }
@@ -323,12 +346,10 @@ function parsePluginManifest(
     );
   }
   if (
+    !hasOnlyKeys(value, PLUGIN_MANIFEST_KEYS) ||
     typeof value.apiVersion !== "number" ||
     typeof value.entry !== "string" ||
     value.entry.length === 0 ||
-    (value.environment !== "browser" &&
-      value.environment !== "server" &&
-      value.environment !== "universal") ||
     typeof value.id !== "string" ||
     !PLUGIN_ID_PATTERN.test(value.id)
   ) {
@@ -340,7 +361,6 @@ function parsePluginManifest(
 function validatePluginManifests(
   manifests: readonly ExternalPluginManifest[],
   manifestUrls: readonly string[],
-  environment: ExternalPluginHostEnvironment,
 ): void {
   const ids = new Set<string>();
   for (let index = 0; index < manifests.length; index++) {
@@ -348,14 +368,6 @@ function validatePluginManifests(
     if (manifest.apiVersion !== SOLITUDE_PLUGIN_API_VERSION) {
       throw new Error(
         `Unsupported plugin API for ${manifest.id} at ${manifestUrls[index]}: ${manifest.apiVersion}`,
-      );
-    }
-    if (
-      manifest.environment !== environment &&
-      manifest.environment !== "universal"
-    ) {
-      throw new Error(
-        `Plugin ${manifest.id} targets ${manifest.environment}, not ${environment}`,
       );
     }
     if (ids.has(manifest.id)) {

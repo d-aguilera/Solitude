@@ -16,10 +16,9 @@ afterEach(async () => {
 });
 
 describe("server plugin runtime", () => {
-  it("loads a universal plugin from a contained module entry", async () => {
+  it("loads a plugin from a contained module entry", async () => {
     const directory = await createTemporaryDirectory();
     const manifestPath = await writePlugin(directory, {
-      environment: "universal",
       source:
         'export function createPlugin() { return { id: "polyFighter", capabilities: [{ id: "test", value: 42 }] }; }\n',
     });
@@ -32,16 +31,16 @@ describe("server plugin runtime", () => {
     ]);
   });
 
-  it("rejects browser-only plugins", async () => {
+  it("rejects legacy per-plugin environment metadata", async () => {
     const directory = await createTemporaryDirectory();
     const manifestPath = await writePlugin(directory, {
-      environment: "browser",
+      extraManifest: { environment: "universal" },
       source:
         'export function createPlugin() { return { id: "polyFighter" }; }\n',
     });
 
     await expect(loadServerPlugin(manifestPath)).rejects.toThrow(
-      "targets browser, not server",
+      "Invalid plugin manifest",
     );
   });
 
@@ -50,7 +49,6 @@ describe("server plugin runtime", () => {
     const pluginDirectory = resolve(directory, "plugin");
     const manifestPath = await writePlugin(pluginDirectory, {
       entry: "../outside.mjs",
-      environment: "universal",
       source:
         'export function createPlugin() { return { id: "polyFighter" }; }\n',
     });
@@ -70,11 +68,11 @@ async function writePlugin(
   directory: string,
   {
     entry = "index.mjs",
-    environment,
+    extraManifest = {},
     source,
   }: {
     entry?: string;
-    environment: "browser" | "universal";
+    extraManifest?: Readonly<Record<string, unknown>>;
     source: string;
   },
 ): Promise<string> {
@@ -86,9 +84,9 @@ async function writePlugin(
     `${JSON.stringify({
       apiVersion: SOLITUDE_PLUGIN_API_VERSION,
       entry,
-      environment,
       id: "polyFighter",
-      schemaVersion: 1,
+      schemaVersion: 2,
+      ...extraManifest,
     })}\n`,
   );
   return manifestPath;

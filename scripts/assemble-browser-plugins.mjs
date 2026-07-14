@@ -126,7 +126,9 @@ function validateBuildConfig(value) {
 
 function validatePackManifest(value, expectedId) {
   if (
-    value.schemaVersion !== 1 ||
+    value.schemaVersion !== 2 ||
+    !Array.isArray(value.hosts) ||
+    !value.hosts.includes("browser") ||
     value.id !== expectedId ||
     !Array.isArray(value.plugins) ||
     !value.plugins.every(
