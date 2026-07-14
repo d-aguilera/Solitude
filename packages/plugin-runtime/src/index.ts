@@ -44,7 +44,6 @@ const EXTERNAL_PLUGIN_REQUIREMENT_KEYS = new Set(["focusEntity"]);
 const EXTERNAL_FOCUS_ENTITY_REQUIREMENTS = new Set([
   "collisionSphere",
   "gravityMass",
-  "lightEmitter",
 ]);
 
 export interface ExternalPluginSet {

@@ -300,7 +300,6 @@ export type FocusCapabilityRequirement =
   | "collisionSphere"
   | "controlledBody"
   | "gravityMass"
-  | "lightEmitter"
   | "localFrame"
   | "motionState";
 

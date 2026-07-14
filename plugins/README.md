@@ -70,9 +70,9 @@ return {
 ```
 
 Focus requirements list only capabilities not already guaranteed by
-`ExternalFocusContext`: `collisionSphere`, `gravityMass`, and `lightEmitter`.
-The runtime rejects unknown top-level properties, hook names, and requirement
-values so misspelled or obsolete plugin shapes fail during composition.
+`ExternalFocusContext`: `collisionSphere` and `gravityMass`. The runtime rejects
+unknown top-level properties, hook names, and requirement values so misspelled
+or obsolete plugin shapes fail during composition.
 
 ## Plugin API Subpaths
 

@@ -10,8 +10,7 @@ import type { ExternalViewControlPlugin, ExternalViewPlugin } from "./views";
 
 export type ExternalFocusEntityCapabilityRequirement =
   | "collisionSphere"
-  | "gravityMass"
-  | "lightEmitter";
+  | "gravityMass";
 
 export interface ExternalPluginRequirements {
   focusEntity?: readonly ExternalFocusEntityCapabilityRequirement[];

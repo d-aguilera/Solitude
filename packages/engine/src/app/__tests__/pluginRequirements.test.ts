@@ -63,16 +63,16 @@ describe("validatePluginRequirements", () => {
   it("fails clearly when a focused capability is missing", () => {
     const { mainFocus, world } = createWorldAndFocus();
     const plugin: GamePlugin = {
-      id: "light-demo",
+      id: "gravity-demo",
       requirements: {
-        mainFocus: ["lightEmitter"],
+        mainFocus: ["gravityMass"],
       },
     };
 
     expect(() =>
       validatePluginRequirements({ mainFocus, plugins: [plugin], world }),
     ).toThrow(
-      'Plugin "light-demo" requires main focus capability "lightEmitter" on entity "craft:test"',
+      'Plugin "gravity-demo" requires main focus capability "gravityMass" on entity "craft:test"',
     );
   });
 });

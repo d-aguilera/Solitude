@@ -40,8 +40,6 @@ function hasFocusCapability(
       return hasCapabilityRecord(world.controllableBodies, mainFocus.entityId);
     case "gravityMass":
       return hasCapabilityRecord(world.gravityMasses, mainFocus.entityId);
-    case "lightEmitter":
-      return hasCapabilityRecord(world.lightEmitters, mainFocus.entityId);
     case "localFrame":
       return "frame" in focusedBody;
     case "motionState":
