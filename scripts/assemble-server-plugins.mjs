@@ -50,7 +50,7 @@ async function assembleTarget(target, packs, packageRoots) {
 async function assemblePack(packId, targetRoot, packageRoots) {
   const packageRoot = packageRoots.get(packId);
   if (!packageRoot) throw new Error(`Plugin pack was not built: ${packId}`);
-  const relativeTarget = `packs/${packId}`;
+  const relativeTarget = packId;
   await cp(packageRoot, resolve(targetRoot, relativeTarget), {
     recursive: true,
   });

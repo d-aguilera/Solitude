@@ -43,6 +43,13 @@ module entry to remain within that plugin-set root after symlink resolution.
 `SOLITUDE_SERVER_PLUGIN_SET` may point authoritative multiplayer at a different
 assembled local plugin-set document.
 
+Assembled packs live directly under their target plugin root. For example, the
+browser core pack is emitted at `dist/client/plugins/core-pack-v1`, and the
+authoritative content pack is emitted at
+`dist/server-plugins/multiplayer/solitude-content-pack-v1`. The generated
+plugin-set documents reference these flat paths; there is no intermediate
+`packs` directory.
+
 The default assembled loader configuration allows only `self`. JSON plugin
 documents are fetched without following redirects, and browser pages enforce a
 `script-src 'self'` Content Security Policy. Allowing a trusted external plugin
