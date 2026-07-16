@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
   "targets": {
-    "multiplayer": ["solitude-content-pack-v1"]
+    "server": ["solitude-content-pack-v1"]
   }
 }

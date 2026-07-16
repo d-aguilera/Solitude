@@ -11,7 +11,6 @@ FROM node:22-slim AS runner
 WORKDIR /app
 
 COPY --from=builder /app/dist/client ./dist/client
-COPY --from=builder /app/dist/server-plugins/multiplayer ./dist/server-plugins/multiplayer
 COPY --from=builder /app/dist/server ./dist/server
 
 ENV NODE_ENV=production

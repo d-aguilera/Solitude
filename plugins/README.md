@@ -46,7 +46,7 @@ assembled local plugin-set document.
 Assembled packs live directly under their target plugin root. For example, the
 browser core pack is emitted at `dist/client/plugins/core-pack-v1`, and the
 authoritative content pack is emitted at
-`dist/server-plugins/multiplayer/solitude-content-pack-v1`. The generated
+`dist/server/plugins/solitude-content-pack-v1`. The generated
 plugin-set documents reference these flat paths; there is no intermediate
 `packs` directory.
 

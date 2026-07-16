@@ -11,11 +11,6 @@ import {
 const config = await readPluginPackTargetConfig(
   "plugins/server-plugin-packs.json",
 );
-const serverRoot = resolve("dist/server-plugins");
-
-await rm(serverRoot, { force: true, recursive: true });
-await mkdir(serverRoot, { recursive: true });
-
 const targets = Object.entries(config.targets);
 const packageRoots = new Map(
   await Promise.all(collectPluginPackIds(config).map(validateBuiltPack)),
@@ -29,7 +24,8 @@ async function validateBuiltPack(packId) {
 }
 
 async function assembleTarget(target, packs, packageRoots) {
-  const targetRoot = resolve(serverRoot, target);
+  const targetRoot = resolve("dist", target, "plugins");
+  await rm(targetRoot, { force: true, recursive: true });
   await mkdir(targetRoot, { recursive: true });
   const packManifestPaths = await Promise.all(
     packs.map((packId) => assemblePack(packId, targetRoot, packageRoots)),

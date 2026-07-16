@@ -3,7 +3,9 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   build: {
-    emptyOutDir: true,
+    // Server plugin assembly owns dist/server/plugins. Preserve it when Vite
+    // replaces the server bundle in the same deployment directory.
+    emptyOutDir: false,
     minify: false,
     outDir: "dist/server",
     rollupOptions: {
