@@ -1,10 +1,16 @@
+import {
+  controllableEntityProviderCapability,
+  type ControllableEntityProvider,
+} from "@solitude/engine/controllable-entities";
 import { vec3 } from "@solitude/engine/math";
+import type { PluginFactory } from "@solitude/engine/plugin";
 import type { ControlledBody } from "@solitude/engine/world";
 import { createSolitudeHeadlessLoop } from "@solitude/sim/headless";
 import { describe, expect, it } from "vitest";
 import {
   createDefaultMultiplayerSpacecraftEntity,
   createDefaultMultiplayerSpawnProviders,
+  type DefaultMultiplayerContentPluginSet,
 } from "../composition";
 import { testMultiplayerContentPlugins } from "./polyFighterFixture";
 
@@ -170,7 +176,51 @@ describe("server-style headless Solitude composition", () => {
       { r: 255, g: 210, b: 64 },
     ]);
   });
+
+  it("requires one controllable entity provider", () => {
+    expect(() =>
+      createDefaultMultiplayerSpawnProviders({ catalog: {}, ids: [] }, {}),
+    ).toThrowError(
+      "Expected exactly one controllable entity provider, found 0",
+    );
+  });
+
+  it("rejects ambiguous controllable entity providers", () => {
+    expect(() =>
+      createDefaultMultiplayerSpawnProviders(
+        createContentPluginSetWithProviders(["fighter", "shuttle"]),
+        {},
+      ),
+    ).toThrowError(
+      "Expected exactly one controllable entity provider, found 2",
+    );
+  });
 });
+
+function createContentPluginSetWithProviders(
+  providerIds: readonly string[],
+): DefaultMultiplayerContentPluginSet {
+  const catalog = Object.fromEntries(
+    providerIds.map((id) => [id, createControllableEntityPlugin(id)]),
+  );
+  return { catalog, ids: providerIds };
+}
+
+function createControllableEntityPlugin(id: string): PluginFactory {
+  const provider: ControllableEntityProvider = {
+    createEntity: () => {
+      throw new Error("Not used by provider selection");
+    },
+    id,
+    mass: 1,
+  };
+  return () => ({
+    capabilities: [
+      { id: controllableEntityProviderCapability, value: provider },
+    ],
+    id,
+  });
+}
 
 function createDefaultShipEntities() {
   const spawnProviders = createDefaultMultiplayerSpawnProviders(

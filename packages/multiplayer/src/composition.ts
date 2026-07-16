@@ -30,7 +30,6 @@ import { createSolitudeServerGame } from "./runtime";
 
 const DEFAULT_ASSIGNABLE_ENTITY_COUNT = 16;
 const EARTH_ID = "planet:earth";
-const POLY_FIGHTER_PROVIDER_ID = "polyFighter";
 const SPACECRAFT_START_ALTITUDE_M = 25_000 * km;
 const multiplayerSpacecraftColors = [
   { r: 64, g: 180, b: 255 },
@@ -110,15 +109,15 @@ export function createDefaultMultiplayerSpawnProviders(
     throw new Error("Missing celestial body provider");
   }
 
-  const controllableEntityProvider = capabilityRegistry
+  const controllableEntityProviders = capabilityRegistry
     .getAll(controllableEntityProviderCapability)
-    .filter(isControllableEntityProvider)
-    .find((item) => item.id === POLY_FIGHTER_PROVIDER_ID);
-  if (!controllableEntityProvider) {
+    .filter(isControllableEntityProvider);
+  if (controllableEntityProviders.length !== 1) {
     throw new Error(
-      `Missing controllable entity provider: ${POLY_FIGHTER_PROVIDER_ID}`,
+      `Expected exactly one controllable entity provider, found ${controllableEntityProviders.length}`,
     );
   }
+  const controllableEntityProvider = controllableEntityProviders[0];
 
   return {
     celestialBodyProvider,
