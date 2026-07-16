@@ -180,9 +180,7 @@ describe("server-style headless Solitude composition", () => {
   it("requires one controllable entity provider", () => {
     expect(() =>
       createDefaultMultiplayerSpawnProviders({ catalog: {}, ids: [] }, {}),
-    ).toThrowError(
-      "Expected exactly one controllable entity provider, found 0",
-    );
+    ).toThrowError("Missing controllable entity provider");
   });
 
   it("rejects ambiguous controllable entity providers", () => {
@@ -192,7 +190,7 @@ describe("server-style headless Solitude composition", () => {
         {},
       ),
     ).toThrowError(
-      "Expected exactly one controllable entity provider, found 2",
+      "Expected exactly one controllable entity provider, found [fighter, shuttle]",
     );
   });
 });

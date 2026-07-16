@@ -112,10 +112,13 @@ export function createDefaultMultiplayerSpawnProviders(
   const controllableEntityProviders = capabilityRegistry
     .getAll(controllableEntityProviderCapability)
     .filter(isControllableEntityProvider);
-  if (controllableEntityProviders.length !== 1) {
+  if (controllableEntityProviders.length > 1) {
+    const providers = controllableEntityProviders.map((p) => p.id);
     throw new Error(
-      `Expected exactly one controllable entity provider, found ${controllableEntityProviders.length}`,
+      `Expected exactly one controllable entity provider, found [${providers.join(", ")}]`,
     );
+  } else if (controllableEntityProviders.length === 0) {
+    throw new Error("Missing controllable entity provider");
   }
   const controllableEntityProvider = controllableEntityProviders[0];
 
