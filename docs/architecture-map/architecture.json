@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T20:18:54.364Z",
+  "generatedAt": "2026-07-18T03:05:53.836Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -7306,12 +7306,6 @@
       "to": "symbol:@solitude/geometry:.:vec3"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./assets:parseObjMesh->symbol:@solitude/plugin-api:./math:vec3",
-      "from": "symbol:@solitude/engine:./assets:parseObjMesh",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./math:vec3"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider->symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement",
       "from": "symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider",
       "kind": "symbol-reference",
@@ -7528,12 +7522,6 @@
       "to": "symbol:@solitude/geometry:.:mat3"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./math:mat3->symbol:@solitude/plugin-api:./math:mat3",
-      "from": "symbol:@solitude/engine:./math:mat3",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./math:mat3"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/engine:./math:raySphereFirstHitDistance->symbol:@solitude/engine:./math:Vec3",
       "from": "symbol:@solitude/engine:./math:raySphereFirstHitDistance",
       "kind": "symbol-reference",
@@ -7546,22 +7534,10 @@
       "to": "symbol:@solitude/geometry:.:vec3"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/engine:./math:raySphereFirstHitDistance->symbol:@solitude/plugin-api:./math:vec3",
-      "from": "symbol:@solitude/engine:./math:raySphereFirstHitDistance",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./math:vec3"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/engine:./math:vec3->symbol:@solitude/geometry:.:vec3",
       "from": "symbol:@solitude/engine:./math:vec3",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/geometry:.:vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/engine:./math:vec3->symbol:@solitude/plugin-api:./math:vec3",
-      "from": "symbol:@solitude/engine:./math:vec3",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./math:vec3"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./plugin:AttitudeCommandParams->symbol:@solitude/engine:./plugin:ControlInput",
@@ -13460,18 +13436,6 @@
       "from": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBody",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./world:EntityId"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./celestialBodies/provider:CelestialBody->symbol:@solitude/geometry:.:Vec3",
-      "from": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBody",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/geometry:.:Vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./celestialBodies/provider:CelestialBody->symbol:@solitude/plugin-api:./math:Vec3",
-      "from": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBody",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./math:Vec3"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./celestialBodies/provider:CelestialBodyProvider->symbol:@solitude/engine:./world:EntityId",

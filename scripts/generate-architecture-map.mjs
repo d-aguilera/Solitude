@@ -424,11 +424,22 @@ function preferSamePackageSymbols(symbolIds, packageName) {
   const samePackageSymbolIds = symbolIds.filter(
     (symbolId) => symbolPackageName(symbolId) === packageName,
   );
-  return samePackageSymbolIds.length > 0 ? samePackageSymbolIds : symbolIds;
+  if (samePackageSymbolIds.length > 0) {
+    return samePackageSymbolIds;
+  }
+
+  const sourcePackage = packageByName.get(packageName);
+  const dependencySymbolIds = symbolIds.filter((symbolId) =>
+    Object.hasOwn(
+      sourcePackage?.dependencies ?? {},
+      symbolPackageName(symbolId) ?? "",
+    ),
+  );
+  return dependencySymbolIds.length > 0 ? dependencySymbolIds : symbolIds;
 }
 
 function symbolPackageName(symbolId) {
-  const match = /^symbol:(.+):\.[^:]*:/.exec(symbolId);
+  const match = /^symbol:([^:]+):/.exec(symbolId);
   return match?.[1];
 }
 
