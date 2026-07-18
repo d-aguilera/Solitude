@@ -13,11 +13,7 @@ import { getDominantBodyPrimary } from "@solitude/plugin-api/world";
 import type { AutopilotLocalization } from "./localization";
 
 type AutopilotMode =
-  | "none"
-  | "alignToVelocity"
-  | "alignToBody"
-  | "orbit"
-  | "circleNow";
+  "none" | "alignToVelocity" | "alignToBody" | "orbit" | "circleNow";
 
 export function createHudPanel(
   localization: AutopilotLocalization,

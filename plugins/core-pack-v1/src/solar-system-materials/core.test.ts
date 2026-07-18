@@ -13,8 +13,7 @@ describe("solar system materials plugin", () => {
   it("contributes pack-relative texture sources through a capability", () => {
     const textureCapability = createPlugin({}).capabilities?.[0];
     const textureProvider = textureCapability?.value as
-      | ExternalRenderTextureSourcesProvider
-      | undefined;
+      ExternalRenderTextureSourcesProvider | undefined;
 
     expect(textureCapability?.id).toBe(renderTextureSourcesCapability);
     expect(textureProvider?.textureSources[earthDayTextureId]).toMatch(

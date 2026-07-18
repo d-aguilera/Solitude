@@ -27,8 +27,7 @@ export interface KeplerianEntityStateConfig {
 }
 
 export type EntityStateConfig =
-  | DirectEntityStateConfig
-  | KeplerianEntityStateConfig;
+  DirectEntityStateConfig | KeplerianEntityStateConfig;
 
 export interface GravityMassConfig {
   density: number;

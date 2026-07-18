@@ -15,7 +15,7 @@
     "@solitude/engine": "0.0.0",
     "@solitude/protocol": "0.0.0",
     "@types/ws": "^8.18.1",
-    "ws": "^8.21.0"
+    "ws": "^8.21.1"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

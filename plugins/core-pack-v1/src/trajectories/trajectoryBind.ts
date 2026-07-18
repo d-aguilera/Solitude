@@ -20,8 +20,7 @@ export function bindTrajectoryPlanToScene(
 
   for (const entry of plan) {
     const sceneObject = sceneObjects[sceneObjectIndex[entry.pathId]] as
-      | ExternalPolylineSceneObject
-      | undefined;
+      ExternalPolylineSceneObject | undefined;
     if (!sceneObject) {
       throw new Error(`Trajectory scene object not found: ${entry.pathId}`);
     }

@@ -6,11 +6,7 @@ import type { ExternalControlInput } from "./input";
 import type { ExternalFocusContext, ExternalWorld } from "./world";
 
 export type ExternalHudColumnId =
-  | "left"
-  | "leftCenter"
-  | "center"
-  | "rightCenter"
-  | "right";
+  "left" | "leftCenter" | "center" | "rightCenter" | "right";
 
 export interface ExternalHudGrid {
   addLine: (column: ExternalHudColumnId, key: string, text: string) => void;

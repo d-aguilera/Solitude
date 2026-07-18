@@ -18,13 +18,10 @@ export type SolitudeClientMessage =
   | SetSimulationRateMessage;
 
 export type SolitudeSocketClientMessage =
-  | ClientMessageSocketRequest
-  | ClientMessageSocketEvent;
+  ClientMessageSocketRequest | ClientMessageSocketEvent;
 
 export type SolitudeSocketServerMessage =
-  | MessagesSocketResponse
-  | ServerMessageSocketEvent
-  | ReadySocketEvent;
+  MessagesSocketResponse | ServerMessageSocketEvent | ReadySocketEvent;
 
 export type SolitudeServerMessage =
   | GameCreatedMessage

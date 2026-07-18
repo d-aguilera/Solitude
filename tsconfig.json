@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "esModuleInterop": false,
     "forceConsistentCasingInFileNames": true,
     "module": "es2020",
     "moduleResolution": "bundler",

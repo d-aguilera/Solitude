@@ -40,8 +40,7 @@ export interface Mesh {
 }
 
 export type MeshLod =
-  | { kind: "none" }
-  | { kind: "unitIcosphere"; maxSubdivisions: number };
+  { kind: "none" } | { kind: "unitIcosphere"; maxSubdivisions: number };
 
 export type MeshShading = { kind: "flat" } | { kind: "smoothSphere" };
 
@@ -118,10 +117,7 @@ export type SceneObject =
   | PolylineSceneObject;
 
 export type SceneObjectKind =
-  | "controlledBody"
-  | "lightEmitter"
-  | "orbitalBody"
-  | "polyline";
+  "controlledBody" | "lightEmitter" | "orbitalBody" | "polyline";
 
 export interface SolidSceneObject extends BaseSceneObject {
   applyTransform: true;

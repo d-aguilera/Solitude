@@ -35,11 +35,7 @@ export interface RuntimeSnapshotInterpolationBuffer {
 }
 
 export type RuntimeSnapshotInterpolationSampleMode =
-  | "clamped"
-  | "empty"
-  | "extrapolated"
-  | "interpolated"
-  | "underrun";
+  "clamped" | "empty" | "extrapolated" | "interpolated" | "underrun";
 
 export interface RuntimeSnapshotInterpolationMetrics {
   averageInterArrivalMillis: number;
