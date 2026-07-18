@@ -1,6 +1,12 @@
 {
   "name": "Solitude",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:4-22-trixie",
+  "mounts": [
+    "source=${localEnv:HOME}/.codex,target=/home/daniel/.codex,type=bind"
+  ],
+  "containerEnv": {
+    "CODEX_HOME": "/home/daniel/.codex"
+  },
   "customizations": {
     "vscode": {
       "extensions": [
