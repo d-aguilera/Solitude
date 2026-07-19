@@ -1,9 +1,9 @@
-import type { HudPanelProvider } from "@solitude/hud/provider";
+import type { ExternalHudPanelProvider } from "@solitude/plugin-api/hud";
 import type { MemoryTelemetryController } from "./logic";
 
 export function createHudPanel(
   controller: MemoryTelemetryController,
-): HudPanelProvider {
+): ExternalHudPanelProvider {
   return {
     writeHud: (grid) => {
       if (!controller.isEnabled()) return;

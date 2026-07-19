@@ -12,6 +12,9 @@ export default defineConfig({
     emptyOutDir: true,
     lib: {
       entry: {
+        memory: fileURLToPath(
+          new URL("./src/memory/index.ts", import.meta.url),
+        ),
         "operator-switch": fileURLToPath(
           new URL("./src/operator-switch/index.ts", import.meta.url),
         ),
@@ -38,7 +41,24 @@ export default defineConfig({
             {
               hosts: ["browser"],
               id: "standalone-pack-v1",
-              plugins: ["./operator-switch/plugin.json"],
+              plugins: [
+                "./memory/plugin.json",
+                "./operator-switch/plugin.json",
+              ],
+              schemaVersion: 2,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "memory/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
+              entry: "./index.js",
+              id: "memory",
               schemaVersion: 2,
             },
             null,

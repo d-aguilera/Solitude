@@ -167,6 +167,8 @@ contribution types.
 
 - `standalone-pack-v1`: standalone-only runtime behavior. It currently
   contains:
+  - `memory`: opt-in browser heap telemetry, toggled alongside profiling with
+    `O` and published through the shared HUD panel capability.
   - `operatorSwitch`: repeat-safe `Tab` focus switching between the default
     controllable ships, ordered after playback so a paused focus change still
     refreshes the scene and declaring its action as available through

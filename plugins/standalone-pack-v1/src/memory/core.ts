@@ -1,13 +1,13 @@
-import type { LoopPlugin } from "@solitude/engine/plugin";
+import type { ExternalLoopPlugin } from "@solitude/plugin-api/loop";
 import { createMemoryTelemetryController } from "./logic";
 
 export function createLoopPlugin(): {
-  plugin: LoopPlugin;
+  plugin: ExternalLoopPlugin;
   controller: ReturnType<typeof createMemoryTelemetryController>;
 } {
   const controller = createMemoryTelemetryController();
 
-  const plugin: LoopPlugin = {
+  const plugin: ExternalLoopPlugin = {
     updateLoopState: (params) => {
       controller.updateEnabled(params.controlInput.profilingToggle);
       controller.update(params.nowMs);

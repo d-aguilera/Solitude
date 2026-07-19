@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-19T16:14:30.147Z",
+  "generatedAt": "2026-07-19T18:21:12.115Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",

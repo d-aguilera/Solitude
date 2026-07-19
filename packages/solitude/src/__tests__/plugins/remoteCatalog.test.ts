@@ -28,6 +28,7 @@ describe("solitude plugin catalog", () => {
     expect(plugins.some((plugin) => plugin.id === "runtimeTelemetry")).toBe(
       false,
     );
+    expect(plugins.some((plugin) => plugin.id === "memory")).toBe(false);
     expect(plugins.some((plugin) => plugin.id === "polyFighter")).toBe(false);
     expect(plugins.some((plugin) => plugin.id === "operatorSwitch")).toBe(
       false,
