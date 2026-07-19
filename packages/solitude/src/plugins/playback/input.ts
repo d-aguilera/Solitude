@@ -7,9 +7,7 @@ import type { PlaybackController } from "./core";
 import type { DiagnosticRuntimeOptions } from "./options";
 
 const captureToggleAction: ControlAction = "playbackCaptureToggle";
-const operatorSwapFocusAction: ControlAction = "operatorSwapFocus";
 const pauseToggleAction: ControlAction = "pauseToggle";
-const profilingToggleAction: ControlAction = "profilingToggle";
 
 export function createInputPlugin(
   diagnostic: DiagnosticRuntimeOptions | undefined,
@@ -26,7 +24,8 @@ export function createInputPlugin(
   if (diagnostic?.mode === "playback") {
     return {
       keyMap: { KeyP: pauseToggleAction },
-      createKeyHandler: () => createPlaybackKeyHandler(controller),
+      createKeyHandler: (_controlInput, { unlockedActions }) =>
+        createPlaybackKeyHandler(controller, unlockedActions),
     };
   }
 
@@ -44,10 +43,13 @@ function createCaptureKeyHandler(controller: PlaybackController): KeyHandler {
   };
 }
 
-function createPlaybackKeyHandler(controller: PlaybackController): KeyHandler {
+function createPlaybackKeyHandler(
+  controller: PlaybackController,
+  unlockedActions: ReadonlySet<ControlAction>,
+): KeyHandler {
   return {
     handleKeyDown: (action, isRepeat) => {
-      if (isUnlockedPlaybackAction(action)) return false;
+      if (unlockedActions.has(action)) return false;
       if (!controller.isInputLocked()) return false;
       if (action === pauseToggleAction && !isRepeat) {
         controller.handlePause();
@@ -55,12 +57,8 @@ function createPlaybackKeyHandler(controller: PlaybackController): KeyHandler {
       return true;
     },
     handleKeyUp: (action) => {
-      if (isUnlockedPlaybackAction(action)) return false;
+      if (unlockedActions.has(action)) return false;
       return controller.isInputLocked();
     },
   };
-}
-
-function isUnlockedPlaybackAction(action: ControlAction): boolean {
-  return action === profilingToggleAction || action === operatorSwapFocusAction;
 }

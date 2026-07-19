@@ -1,3 +1,5 @@
+import type { LoopUpdateParams } from "@solitude/engine/plugin";
+import type { ExternalLoopPlugin } from "@solitude/plugin-api/loop";
 import { SOLITUDE_PLUGIN_API_VERSION } from "@solitude/plugin-api/manifest";
 import type { ExternalPluginModule } from "@solitude/plugin-api/module";
 import { describe, expect, it, vi } from "vitest";
@@ -21,10 +23,16 @@ describe("external plugin runtime", () => {
     const registerViews = vi.fn();
     const updateScene = vi.fn();
     const updateViewControls = vi.fn();
+    const updateLoopState: NonNullable<ExternalLoopPlugin["updateLoopState"]> =
+      vi.fn((params) => {
+        params.focusEntity("ship:second");
+        return { framePolicy: { advanceScene: true } };
+      });
     const createLaser = vi.fn(() => ({
       id: "targetingLaser",
       hooks: {
         labels: { appendLabels },
+        loop: { updateLoopState },
         scene: { initScene, updateScene },
         viewControls: { updateViewControls },
         views: { registerViews },
@@ -50,6 +58,38 @@ describe("external plugin runtime", () => {
     const targetingLaser = loaded.catalog.targetingLaser({});
     expect(targetingLaser.id).toBe("targetingLaser");
     expect(targetingLaser.labels?.appendLabels).toBe(appendLabels);
+    const firstBody = {
+      id: "ship:first",
+    } as LoopUpdateParams["mainFocus"]["controlledBody"];
+    const secondBody = {
+      id: "ship:second",
+    } as LoopUpdateParams["mainFocus"]["controlledBody"];
+    const mainFocus: LoopUpdateParams["mainFocus"] = {
+      controlledBody: firstBody,
+      entityId: firstBody.id,
+    };
+    expect(
+      targetingLaser.loop?.updateLoopState?.({
+        controlInput: {},
+        dtMillis: 16,
+        mainFocus,
+        nowMs: 16,
+        state: {
+          framePolicy: {
+            advancePresentation: true,
+            advanceScene: true,
+            advanceSim: true,
+          },
+        },
+        world: {
+          controllableBodies: [firstBody, secondBody],
+        } as NonNullable<LoopUpdateParams["world"]>,
+      }),
+    ).toEqual({ framePolicy: { advanceScene: true } });
+    expect(mainFocus).toEqual({
+      controlledBody: secondBody,
+      entityId: secondBody.id,
+    });
     expect(targetingLaser.scene?.initScene).toBe(initScene);
     expect(targetingLaser.scene?.updateScene).toBe(updateScene);
     expect(targetingLaser.viewControls?.updateViewControls).toBe(
@@ -283,6 +323,22 @@ describe("external plugin runtime", () => {
     });
     expect(() => invalidHooks.catalog.targetingLaser({})).toThrow(
       "invalid view controls",
+    );
+
+    const invalidLoop = await loadExternalPlugins({
+      configUrl,
+      fetchJson: async (url) => documents.get(url),
+      host: "browser",
+      importModule: async () => ({
+        createPlugin: () => ({
+          id: "targetingLaser",
+          hooks: { loop: { updateLoopState: "invalid" } },
+        }),
+      }),
+      pageOrigin,
+    });
+    expect(() => invalidLoop.catalog.targetingLaser({})).toThrow(
+      "invalid loop",
     );
 
     const legacyHooks = await loadExternalPlugins({

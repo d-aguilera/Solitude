@@ -87,4 +87,22 @@ describe("createKeyboardHandlerDispatcher", () => {
     expect(dispatcher.controlInput.testFire).toBe(false);
     expect(dispatcher.handleKey("Unknown", true, false)).toBe(false);
   });
+
+  it("shares provider-declared unlocked actions with key handlers", () => {
+    let unlockedActions: ReadonlySet<string> | undefined;
+    createKeyboardHandlerDispatcher([
+      { unlockedActions: ["operatorSwapFocus"] },
+      {
+        createKeyHandler: (_controlInput, context) => {
+          unlockedActions = context.unlockedActions;
+          return {
+            handleKeyDown: () => false,
+            handleKeyUp: () => false,
+          };
+        },
+      },
+    ]);
+
+    expect(unlockedActions).toEqual(new Set(["operatorSwapFocus"]));
+  });
 });

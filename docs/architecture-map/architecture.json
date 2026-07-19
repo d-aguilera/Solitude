@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-18T03:05:53.836Z",
+  "generatedAt": "2026-07-19T16:14:30.147Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -246,6 +246,13 @@
       "label": "./localPrediction",
       "packageName": "@solitude/sim",
       "parent": "pkg:@solitude/sim"
+    },
+    {
+      "id": "module:@solitude/plugin-api:./loop",
+      "kind": "module",
+      "label": "./loop",
+      "packageName": "@solitude/plugin-api",
+      "parent": "pkg:@solitude/plugin-api"
     },
     {
       "id": "module:@solitude/plugin-api:./manifest",
@@ -516,6 +523,12 @@
       "kind": "package",
       "label": "@solitude-plugins/solitude-content-pack-v1",
       "packageName": "@solitude-plugins/solitude-content-pack-v1"
+    },
+    {
+      "id": "pkg:@solitude-plugins/standalone-pack-v1",
+      "kind": "package",
+      "label": "@solitude-plugins/standalone-pack-v1",
+      "packageName": "@solitude-plugins/standalone-pack-v1"
     },
     {
       "id": "pkg:@solitude/browser",
@@ -2120,6 +2133,14 @@
       "symbolKind": "type"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./loop:ExternalFramePolicy",
+      "kind": "symbol",
+      "label": "ExternalFramePolicy",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./loop",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:./world:ExternalGravityMass",
       "kind": "symbol",
       "label": "ExternalGravityMass",
@@ -2176,6 +2197,14 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./input:ExternalKeyboardInputContext",
+      "kind": "symbol",
+      "label": "ExternalKeyboardInputContext",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./input",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:./input:ExternalKeyboardInputProvider",
       "kind": "symbol",
       "label": "ExternalKeyboardInputProvider",
@@ -2205,6 +2234,38 @@
       "label": "ExternalLocalFrame",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./world",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./loop:ExternalLoopPlugin",
+      "kind": "symbol",
+      "label": "ExternalLoopPlugin",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./loop",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./loop:ExternalLoopState",
+      "kind": "symbol",
+      "label": "ExternalLoopState",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./loop",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateParams",
+      "kind": "symbol",
+      "label": "ExternalLoopUpdateParams",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./loop",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateResult",
+      "kind": "symbol",
+      "label": "ExternalLoopUpdateResult",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./loop",
       "symbolKind": "interface"
     },
     {
@@ -3214,6 +3275,14 @@
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./input",
       "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/input:./keyboard:KeyboardInputContext",
+      "kind": "symbol",
+      "label": "KeyboardInputContext",
+      "packageName": "@solitude/input",
+      "parent": "module:@solitude/input:./keyboard",
+      "symbolKind": "interface"
     },
     {
       "id": "symbol:@solitude/input:./keyboard:KeyboardInputProvider",
@@ -5332,6 +5401,12 @@
       "to": "pkg:@solitude/plugin-api"
     },
     {
+      "id": "dependency:pkg:@solitude-plugins/standalone-pack-v1->pkg:@solitude/plugin-api",
+      "from": "pkg:@solitude-plugins/standalone-pack-v1",
+      "kind": "dependency",
+      "to": "pkg:@solitude/plugin-api"
+    },
+    {
       "id": "dependency:pkg:@solitude/browser->pkg:@solitude/engine",
       "from": "pkg:@solitude/browser",
       "kind": "dependency",
@@ -5896,6 +5971,18 @@
       "to": "module:@solitude/plugin-api:./runtime"
     },
     {
+      "id": "module-import:module:@solitude/plugin-api:./loop->module:@solitude/plugin-api:./input",
+      "from": "module:@solitude/plugin-api:./loop",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./input"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./loop->module:@solitude/plugin-api:./world",
+      "from": "module:@solitude/plugin-api:./loop",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./world"
+    },
+    {
       "id": "module-import:module:@solitude/plugin-api:./math->module:@solitude/engine:./epsilon",
       "from": "module:@solitude/plugin-api:./math",
       "kind": "module-import",
@@ -5912,6 +5999,12 @@
       "from": "module:@solitude/plugin-api:./module",
       "kind": "module-import",
       "to": "module:@solitude/plugin-api:./capabilities"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./module->module:@solitude/plugin-api:./loop",
+      "from": "module:@solitude/plugin-api:./module",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./loop"
     },
     {
       "id": "module-import:module:@solitude/plugin-api:./module->module:@solitude/plugin-api:./runtime",
@@ -6014,6 +6107,18 @@
       "from": "module:@solitude/plugin-runtime:.",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-runtime:.->module:@solitude/engine:./runtime",
+      "from": "module:@solitude/plugin-runtime:.",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./runtime"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-runtime:.->module:@solitude/plugin-api:./loop",
+      "from": "module:@solitude/plugin-runtime:.",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./loop"
     },
     {
       "id": "module-import:module:@solitude/plugin-runtime:.->module:@solitude/plugin-api:./manifest",
@@ -11212,6 +11317,12 @@
       "to": "symbol:@solitude/input:./keyboard:KeyboardHandlerDispatcher"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher->symbol:@solitude/input:./keyboard:KeyboardInputContext",
+      "from": "symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:KeyboardInputContext"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher->symbol:@solitude/input:./keyboard:KeyboardInputProvider",
       "from": "symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher",
       "kind": "symbol-reference",
@@ -11248,6 +11359,12 @@
       "to": "symbol:@solitude/engine:./plugin:ControlInput"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:KeyboardInputContext->symbol:@solitude/engine:./plugin:ControlAction",
+      "from": "symbol:@solitude/input:./keyboard:KeyboardInputContext",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:ControlAction"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/input:./keyboard:KeyboardInputProvider->symbol:@solitude/engine:./plugin:ControlAction",
       "from": "symbol:@solitude/input:./keyboard:KeyboardInputProvider",
       "kind": "symbol-reference",
@@ -11258,6 +11375,12 @@
       "from": "symbol:@solitude/input:./keyboard:KeyboardInputProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:ControlInput"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/input:./keyboard:KeyboardInputProvider->symbol:@solitude/input:./keyboard:KeyboardInputContext",
+      "from": "symbol:@solitude/input:./keyboard:KeyboardInputProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/input:./keyboard:KeyboardInputContext"
     },
     {
       "id": "symbol-reference:symbol:@solitude/input:./keyboard:KeyboardInputProvider->symbol:@solitude/input:./keyboard:KeyHandler",
@@ -11596,6 +11719,12 @@
       "to": "symbol:@solitude/plugin-api:./input:ExternalControlAction"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./input:ExternalKeyboardInputContext->symbol:@solitude/plugin-api:./input:ExternalControlAction",
+      "from": "symbol:@solitude/plugin-api:./input:ExternalKeyboardInputContext",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./input:ExternalControlAction"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./input:ExternalKeyboardInputProvider->symbol:@solitude/plugin-api:./input:ExternalControlAction",
       "from": "symbol:@solitude/plugin-api:./input:ExternalKeyboardInputProvider",
       "kind": "symbol-reference",
@@ -11606,6 +11735,12 @@
       "from": "symbol:@solitude/plugin-api:./input:ExternalKeyboardInputProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./input:ExternalControlInput"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./input:ExternalKeyboardInputProvider->symbol:@solitude/plugin-api:./input:ExternalKeyboardInputContext",
+      "from": "symbol:@solitude/plugin-api:./input:ExternalKeyboardInputProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./input:ExternalKeyboardInputContext"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./input:ExternalKeyboardInputProvider->symbol:@solitude/plugin-api:./input:ExternalKeyHandler",
@@ -11630,6 +11765,60 @@
       "from": "symbol:@solitude/plugin-api:./localization:readLocaleRuntimeOption",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./runtime:ExternalRuntimeOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./loop:ExternalLoopPlugin->symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateParams",
+      "from": "symbol:@solitude/plugin-api:./loop:ExternalLoopPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./loop:ExternalLoopPlugin->symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateResult",
+      "from": "symbol:@solitude/plugin-api:./loop:ExternalLoopPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateResult"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./loop:ExternalLoopState->symbol:@solitude/plugin-api:./loop:ExternalFramePolicy",
+      "from": "symbol:@solitude/plugin-api:./loop:ExternalLoopState",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./loop:ExternalFramePolicy"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateParams->symbol:@solitude/plugin-api:./input:ExternalControlInput",
+      "from": "symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./input:ExternalControlInput"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateParams->symbol:@solitude/plugin-api:./loop:ExternalLoopState",
+      "from": "symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./loop:ExternalLoopState"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateParams->symbol:@solitude/plugin-api:./world:ExternalEntityId",
+      "from": "symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world:ExternalEntityId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateParams->symbol:@solitude/plugin-api:./world:ExternalFocusContext",
+      "from": "symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world:ExternalFocusContext"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateParams->symbol:@solitude/plugin-api:./world:ExternalWorld",
+      "from": "symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world:ExternalWorld"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateResult->symbol:@solitude/plugin-api:./loop:ExternalFramePolicy",
+      "from": "symbol:@solitude/plugin-api:./loop:ExternalLoopUpdateResult",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./loop:ExternalFramePolicy"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./manifest:ExternalPluginPackManifest->symbol:@solitude/plugin-api:./manifest:ExternalPluginHost",
@@ -11684,6 +11873,12 @@
       "from": "symbol:@solitude/plugin-api:./module:ExternalPluginFactory",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./runtime:ExternalRuntimeOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginHooks->symbol:@solitude/plugin-api:./loop:ExternalLoopPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./loop:ExternalLoopPlugin"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginHooks->symbol:@solitude/plugin-api:./scene:ExternalMarkerPlugin",

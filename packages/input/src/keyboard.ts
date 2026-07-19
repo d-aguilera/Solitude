@@ -12,10 +12,18 @@ export interface KeyHandler {
   handleKeyUp: (action: ControlAction) => boolean;
 }
 
+export interface KeyboardInputContext {
+  unlockedActions: ReadonlySet<ControlAction>;
+}
+
 export interface KeyboardInputProvider {
   actions?: readonly ControlAction[];
   keyMap?: Readonly<Record<string, ControlAction>>;
-  createKeyHandler?: (controlInput: ControlInput) => KeyHandler;
+  unlockedActions?: readonly ControlAction[];
+  createKeyHandler?: (
+    controlInput: ControlInput,
+    context: KeyboardInputContext,
+  ) => KeyHandler;
 }
 
 export interface KeyboardHandlerDispatcher {
@@ -28,9 +36,13 @@ export function createKeyboardHandlerDispatcher(
   providers: readonly KeyboardInputProvider[],
 ): KeyboardHandlerDispatcher {
   const actions = new Set<ControlAction>();
+  const unlockedActions = new Set<ControlAction>();
   const keyMap: Record<string, ControlAction> = {};
   for (const provider of providers) {
     for (const action of provider.actions ?? []) actions.add(action);
+    for (const action of provider.unlockedActions ?? []) {
+      unlockedActions.add(action);
+    }
     for (const [code, action] of Object.entries(provider.keyMap ?? {})) {
       actions.add(action);
       keyMap[code] = action;
@@ -38,8 +50,9 @@ export function createKeyboardHandlerDispatcher(
   }
   const controlInput: ControlInput = {};
   for (const action of actions) controlInput[action] = false;
+  const context: KeyboardInputContext = { unlockedActions };
   const handlers = providers
-    .map((provider) => provider.createKeyHandler?.(controlInput))
+    .map((provider) => provider.createKeyHandler?.(controlInput, context))
     .filter((handler): handler is KeyHandler => handler !== undefined)
     .reverse();
 

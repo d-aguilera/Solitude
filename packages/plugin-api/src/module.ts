@@ -1,4 +1,5 @@
 import type { ExternalPluginCapabilityProvider } from "./capabilities";
+import type { ExternalLoopPlugin } from "./loop";
 import type { ExternalRuntimeOptions } from "./runtime";
 import type {
   ExternalMarkerPlugin,
@@ -17,6 +18,7 @@ export interface ExternalPluginRequirements {
 
 export interface ExternalPluginHooks {
   labels?: ExternalSceneLabelPlugin;
+  loop?: ExternalLoopPlugin;
   markers?: ExternalMarkerPlugin;
   scene?: ExternalScenePlugin;
   segments?: ExternalSegmentPlugin;

@@ -5,14 +5,14 @@ import { createInputPlugin } from "../../../plugins/playback/input";
 
 describe("playback input", () => {
   it("allows profiling toggle through while playback input is locked", () => {
-    const handler = createPlaybackHandler(true);
+    const handler = createPlaybackHandler(true, ["profilingToggle"]);
 
     expect(handler.handleKeyDown("profilingToggle", false)).toBe(false);
     expect(handler.handleKeyUp("profilingToggle")).toBe(false);
   });
 
   it("allows operator focus switching through while playback input is locked", () => {
-    const handler = createPlaybackHandler(true);
+    const handler = createPlaybackHandler(true, ["operatorSwapFocus"]);
 
     expect(handler.handleKeyDown("operatorSwapFocus", false)).toBe(false);
     expect(handler.handleKeyUp("operatorSwapFocus")).toBe(false);
@@ -20,7 +20,7 @@ describe("playback input", () => {
 
   it("still locks playback-owned controls while allowing pause handling", () => {
     const handlePause = vi.fn();
-    const handler = createPlaybackHandler(true, handlePause);
+    const handler = createPlaybackHandler(true, [], handlePause);
 
     expect(handler.handleKeyDown("burnForward", false)).toBe(true);
     expect(handler.handleKeyUp("burnForward")).toBe(true);
@@ -32,6 +32,7 @@ describe("playback input", () => {
 
 function createPlaybackHandler(
   isInputLocked: boolean,
+  unlockedActions: readonly string[] = [],
   handlePause = vi.fn(),
 ): KeyHandler {
   const plugin = createInputPlugin(
@@ -41,7 +42,9 @@ function createPlaybackHandler(
       isInputLocked: () => isInputLocked,
     } as unknown as Parameters<typeof createInputPlugin>[1],
   );
-  const handler = plugin.createKeyHandler?.(createControlInput());
+  const handler = plugin.createKeyHandler?.(createControlInput(), {
+    unlockedActions: new Set(unlockedActions),
+  });
   if (!handler) throw new Error("Expected playback key handler");
   return handler;
 }

@@ -11,6 +11,7 @@
     "./hud": "./src/hud.ts",
     "./input": "./src/input.ts",
     "./localization": "./src/localization.ts",
+    "./loop": "./src/loop.ts",
     "./manifest": "./src/manifest.ts",
     "./math": "./src/math.ts",
     "./module": "./src/module.ts",

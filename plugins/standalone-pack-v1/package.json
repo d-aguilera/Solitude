@@ -1,0 +1,13 @@
+{
+  "name": "@solitude-plugins/standalone-pack-v1",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@solitude/plugin-api": "0.0.0"
+  },
+  "scripts": {
+    "build": "vite build -c vite.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

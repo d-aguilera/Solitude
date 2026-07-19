@@ -1,5 +1,8 @@
 import type {
   GamePlugin,
+  LoopPlugin,
+  LoopUpdateParams,
+  LoopUpdateResult,
   MarkerPlugin,
   PluginCatalog,
   PluginFactory,
@@ -9,6 +12,11 @@ import type {
   ViewControlPlugin,
   ViewPlugin,
 } from "@solitude/engine/plugin";
+import { updateFocusContext } from "@solitude/engine/runtime";
+import type {
+  ExternalLoopPlugin,
+  ExternalLoopUpdateParams,
+} from "@solitude/plugin-api/loop";
 import type {
   ExternalPluginHost,
   ExternalPluginLoaderConfig,
@@ -48,6 +56,7 @@ const EXTERNAL_PLUGIN_KEYS = new Set([
 ]);
 const EXTERNAL_PLUGIN_HOOK_KEYS = new Set([
   "labels",
+  "loop",
   "markers",
   "scene",
   "segments",
@@ -496,6 +505,15 @@ function validateExternalPlugin(
   if (hasInvalidHookFunctions(hooks?.labels, ["appendLabels"])) {
     throw new Error(`External plugin ${expectedId} has invalid labels`);
   }
+  if (
+    hasInvalidHookFunctions(hooks?.loop, [
+      "afterFrame",
+      "initLoop",
+      "updateLoopState",
+    ])
+  ) {
+    throw new Error(`External plugin ${expectedId} has invalid loop`);
+  }
   if (hasInvalidHookFunctions(hooks?.markers, ["appendMarkers"])) {
     throw new Error(`External plugin ${expectedId} has invalid markers`);
   }
@@ -570,6 +588,7 @@ function adaptExternalPlugin(plugin: ExternalPlugin): GamePlugin {
     id: plugin.id,
     capabilities: plugin.capabilities,
     labels: hooks?.labels as SceneLabelPlugin | undefined,
+    loop: adaptExternalLoop(hooks?.loop),
     markers: hooks?.markers as MarkerPlugin | undefined,
     requirements:
       focusEntityRequirements === undefined
@@ -579,6 +598,65 @@ function adaptExternalPlugin(plugin: ExternalPlugin): GamePlugin {
     segments: hooks?.segments as SegmentPlugin | undefined,
     viewControls: hooks?.viewControls as ViewControlPlugin | undefined,
     views: hooks?.views as ViewPlugin | undefined,
+  };
+}
+
+function adaptExternalLoop(
+  external: ExternalLoopPlugin | undefined,
+): LoopPlugin | undefined {
+  if (external === undefined) return undefined;
+  const { afterFrame, initLoop, updateLoopState } = external;
+
+  let currentParams: LoopUpdateParams | undefined;
+  let adaptedParams: ExternalLoopUpdateParams | undefined;
+  const getAdaptedParams = (
+    params: LoopUpdateParams,
+  ): ExternalLoopUpdateParams => {
+    currentParams = params;
+    if (adaptedParams === undefined) {
+      adaptedParams = {
+        controlInput: params.controlInput,
+        dtMillis: params.dtMillis,
+        focusEntity: (id) => {
+          const current = currentParams;
+          if (current?.world === undefined) {
+            throw new Error(
+              `Cannot focus entity without a runtime world: ${id}`,
+            );
+          }
+          updateFocusContext(current.world, current.mainFocus, id);
+        },
+        mainFocus: params.mainFocus,
+        nowMs: params.nowMs,
+        simTimeMillis: params.simTimeMillis,
+        state: params.state,
+        world: params.world,
+      };
+    } else {
+      adaptedParams.controlInput = params.controlInput;
+      adaptedParams.dtMillis = params.dtMillis;
+      adaptedParams.mainFocus = params.mainFocus;
+      adaptedParams.nowMs = params.nowMs;
+      adaptedParams.simTimeMillis = params.simTimeMillis;
+      adaptedParams.state = params.state;
+      adaptedParams.world = params.world;
+    }
+    return adaptedParams;
+  };
+
+  return {
+    afterFrame:
+      afterFrame === undefined
+        ? undefined
+        : (params) => afterFrame(getAdaptedParams(params)),
+    initLoop: initLoop === undefined ? undefined : () => initLoop(),
+    updateLoopState:
+      updateLoopState === undefined
+        ? undefined
+        : (params) =>
+            updateLoopState(
+              getAdaptedParams(params),
+            ) as LoopUpdateResult | null,
   };
 }
 

@@ -5,7 +5,8 @@ This directory is the plugin catalog and composition layer.
 Runtime-discovered packages live in the repository-level `plugins/` workspace.
 They compile against focused `@solitude/plugin-api/*` subpaths and are not
 statically imported by this catalog. Shared browser presentation plugins live
-in `core-pack-v1`.
+in `core-pack-v1`; standalone-only runtime behavior lives in
+`standalone-pack-v1`.
 
 ## Layering rule
 
@@ -48,7 +49,13 @@ Plugins may also publish operator-specific capabilities through opaque app-level
 
 ## Registration
 
-Available standalone plugins are exported from `packages/solitude/src/plugins/catalog.ts`. Solitude bootstrap chooses which plugin ids to enable and asks the engine-level `loadPlugins` helper to assemble them from that catalog. Browser infra passes runtime URL options to plugins as a raw string map; each plugin owns validation and interpretation of its own option keys.
+The remaining host-composed standalone plugins are exported from
+`packages/solitude/src/plugins/catalog.ts`. Runtime-discovered plugins are
+ordered through `plugins/browser-plugin-packs.json`; standalone-only packs run
+after the static catalog, preserving the operator-switch plugin's final loop
+policy position. Browser infra passes runtime URL options to plugins as a raw
+string map; each plugin owns validation and interpretation of its own option
+keys.
 
 Before static composition, browser bootstrap loads the same-origin
 `plugins/loader.json`, validates its origin allowlist, and expands the ordered

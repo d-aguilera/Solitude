@@ -2,7 +2,6 @@ import { createHudOverlayPlugin } from "@solitude/browser/dom/hudOverlayPlugin";
 import type { PluginCatalog } from "@solitude/engine/plugin";
 import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
 import { createMemoryPlugin } from "./memory/index";
-import { createOperatorSwitchPlugin } from "./operatorSwitch/index";
 import { createPausePlugin } from "./pause/index";
 import { createPlaybackPlugin } from "./playback/index";
 import { createProfilingPlugin } from "./profiling/index";
@@ -23,14 +22,12 @@ export const defaultPluginIds = [
   "profiling",
   "timeScale",
   "playback",
-  "operatorSwitch",
 ];
 
 export const solitudePluginCatalog: PluginCatalog = {
   ...simPluginCatalog,
   hud: createHudOverlayPlugin,
   memory: createMemoryPlugin,
-  operatorSwitch: createOperatorSwitchPlugin,
   pause: createPausePlugin,
   playback: createPlaybackPlugin,
   profiling: createProfilingPlugin,

@@ -65,7 +65,7 @@ The module must export `createPlugin`. Factories are retained and instantiated
 with the current runtime options whenever the host creates a plugin
 composition.
 
-Plugin API version 3 separates plugin metadata from executable hooks. A plugin
+Plugin API version 4 separates plugin metadata from executable hooks. A plugin
 may publish capabilities, declare optional requirements on the focused entity,
 and group engine callbacks under `hooks`:
 
@@ -94,6 +94,8 @@ or obsolete plugin shapes fail during composition.
 - `@solitude/plugin-api/controllable-entities`: the canonical generic
   controllable-entity provider capability, placement/configuration contracts,
   constructor, and guard.
+- `@solitude/plugin-api/input`: keyboard action maps, handlers, and
+  provider-declared actions that remain available through input locks.
 - `@solitude/plugin-api/assets`: bundled-safe OBJ parsing for pack-owned mesh
   assets.
 - `@solitude/plugin-api/runtime`: raw runtime option contracts passed to plugin
@@ -108,6 +110,8 @@ or obsolete plugin shapes fail during composition.
   contribution, material, texture, and view contracts.
 - `@solitude/plugin-api/localization`: supported locale type and runtime locale
   parsing.
+- `@solitude/plugin-api/loop`: frame-policy hooks and controlled runtime focus
+  changes for browser loop plugins.
 - `@solitude/plugin-api/math`: bundled-safe vector, matrix, intersection, and
   mesh-volume helpers plus epsilon constants. Importing this subpath
   intentionally includes math runtime code.
@@ -160,3 +164,10 @@ contribution types.
     backed by the client-owned multiplayer-session capability.
   - `shipColorNames`: localized entity names derived from server-assigned ship
     render colors.
+
+- `standalone-pack-v1`: standalone-only runtime behavior. It currently
+  contains:
+  - `operatorSwitch`: repeat-safe `Tab` focus switching between the default
+    controllable ships, ordered after playback so a paused focus change still
+    refreshes the scene and declaring its action as available through
+    playback's generic input lock.

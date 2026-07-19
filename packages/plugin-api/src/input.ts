@@ -8,10 +8,18 @@ export interface ExternalKeyHandler {
   handleKeyUp: (action: ExternalControlAction) => boolean;
 }
 
+export interface ExternalKeyboardInputContext {
+  unlockedActions: ReadonlySet<ExternalControlAction>;
+}
+
 export interface ExternalKeyboardInputProvider {
   actions?: readonly ExternalControlAction[];
   keyMap?: Readonly<Record<string, ExternalControlAction>>;
-  createKeyHandler?: (controlInput: ExternalControlInput) => ExternalKeyHandler;
+  unlockedActions?: readonly ExternalControlAction[];
+  createKeyHandler?: (
+    controlInput: ExternalControlInput,
+    context: ExternalKeyboardInputContext,
+  ) => ExternalKeyHandler;
 }
 
 export const keyboardInputCapability = "solitude.keyboardInput.v1";

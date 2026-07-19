@@ -6,5 +6,6 @@ export function createInputPlugin(): KeyboardInputProvider {
     keyMap: {
       KeyO: "profilingToggle",
     },
+    unlockedActions: ["profilingToggle"],
   };
 }
