@@ -18,6 +18,7 @@ export default defineConfig({
         profiling: fileURLToPath(
           new URL("./src/profiling/index.ts", import.meta.url),
         ),
+        ships: fileURLToPath(new URL("./src/ships/index.ts", import.meta.url)),
         "operator-switch": fileURLToPath(
           new URL("./src/operator-switch/index.ts", import.meta.url),
         ),
@@ -45,10 +46,25 @@ export default defineConfig({
               hosts: ["browser"],
               id: "standalone-pack-v1",
               plugins: [
+                "./ships/plugin.json",
                 "./memory/plugin.json",
                 "./profiling/plugin.json",
                 "./operator-switch/plugin.json",
               ],
+              schemaVersion: 2,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "ships/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
+              entry: "./index.js",
+              id: "ships",
               schemaVersion: 2,
             },
             null,

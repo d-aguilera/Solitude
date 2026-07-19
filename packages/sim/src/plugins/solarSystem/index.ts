@@ -1,6 +1,6 @@
+import { celestialBodyProviderCapability } from "@solitude/engine/celestial-bodies";
 import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
 import type { EntityConfig } from "@solitude/engine/world";
-import { celestialBodyProviderCapability } from "../../celestialBodies/provider";
 import { createSolarSystemCelestialBodyProvider } from "./celestialBodyProvider";
 import { createSolarSystemEntityNameProvider } from "./localization";
 import {

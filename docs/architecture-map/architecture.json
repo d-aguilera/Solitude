@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-19T23:36:40.322Z",
+  "generatedAt": "2026-07-19T23:58:29.139Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -66,11 +66,18 @@
       "parent": "pkg:@solitude/plugin-api"
     },
     {
-      "id": "module:@solitude/sim:./celestialBodies/provider",
+      "id": "module:@solitude/engine:./celestial-bodies",
       "kind": "module",
-      "label": "./celestialBodies/provider",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
+      "label": "./celestial-bodies",
+      "packageName": "@solitude/engine",
+      "parent": "pkg:@solitude/engine"
+    },
+    {
+      "id": "module:@solitude/plugin-api:./celestial-bodies",
+      "kind": "module",
+      "label": "./celestial-bodies",
+      "packageName": "@solitude/plugin-api",
+      "parent": "pkg:@solitude/plugin-api"
     },
     {
       "id": "module:@solitude/sim:./config/worldAndSceneConfig",
@@ -290,6 +297,13 @@
       "parent": "pkg:@solitude/plugin-api"
     },
     {
+      "id": "module:@solitude/plugin-api:./orbits",
+      "kind": "module",
+      "label": "./orbits",
+      "packageName": "@solitude/plugin-api",
+      "parent": "pkg:@solitude/plugin-api"
+    },
+    {
       "id": "module:@solitude/engine:./plugin",
       "kind": "module",
       "label": "./plugin",
@@ -451,13 +465,6 @@
       "parent": "pkg:@solitude/server"
     },
     {
-      "id": "module:@solitude/sim:./spacecraft/orbitalPlacement",
-      "kind": "module",
-      "label": "./spacecraft/orbitalPlacement",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
-    },
-    {
       "id": "module:@solitude/sim:./spacecraft/propulsionLimits",
       "kind": "module",
       "label": "./spacecraft/propulsionLimits",
@@ -496,6 +503,13 @@
       "id": "module:@solitude/plugin-api:./views",
       "kind": "module",
       "label": "./views",
+      "packageName": "@solitude/plugin-api",
+      "parent": "pkg:@solitude/plugin-api"
+    },
+    {
+      "id": "module:@solitude/plugin-api:./world-model",
+      "kind": "module",
+      "label": "./world-model",
       "packageName": "@solitude/plugin-api",
       "parent": "pkg:@solitude/plugin-api"
     },
@@ -884,27 +898,35 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBody",
+      "id": "symbol:@solitude/engine:./celestial-bodies:CelestialBody",
       "kind": "symbol",
       "label": "CelestialBody",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./celestialBodies/provider",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./celestial-bodies",
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBodyProvider",
+      "id": "symbol:@solitude/engine:./celestial-bodies:CelestialBodyProvider",
       "kind": "symbol",
       "label": "CelestialBodyProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./celestialBodies/provider",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./celestial-bodies",
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./celestialBodies/provider:celestialBodyProviderCapability",
+      "id": "symbol:@solitude/engine:./celestial-bodies:celestialBodyProviderCapability",
       "kind": "symbol",
       "label": "celestialBodyProviderCapability",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./celestialBodies/provider",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./celestial-bodies",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./celestial-bodies:celestialBodyProviderCapability",
+      "kind": "symbol",
+      "label": "celestialBodyProviderCapability",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./celestial-bodies",
       "symbolKind": "const"
     },
     {
@@ -1156,6 +1178,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./celestial-bodies:createCelestialBodyProviderCapability",
+      "kind": "symbol",
+      "label": "createCelestialBodyProviderCapability",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./celestial-bodies",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/engine:./runtime:createConfiguredGamePipeline",
       "kind": "symbol",
       "label": "createConfiguredGamePipeline",
@@ -1340,11 +1370,19 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement",
+      "id": "symbol:@solitude/geometry:.:createOrbitingPlacement",
       "kind": "symbol",
       "label": "createOrbitingPlacement",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./spacecraft/orbitalPlacement",
+      "packageName": "@solitude/geometry",
+      "parent": "module:@solitude/geometry:.",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./orbits:createOrbitingPlacement",
+      "kind": "symbol",
+      "label": "createOrbitingPlacement",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./orbits",
       "symbolKind": "function"
     },
     {
@@ -2036,6 +2074,22 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBody",
+      "kind": "symbol",
+      "label": "ExternalCelestialBody",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./celestial-bodies",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBodyProvider",
+      "kind": "symbol",
+      "label": "ExternalCelestialBodyProvider",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./celestial-bodies",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:./input:ExternalControlAction",
       "kind": "symbol",
       "label": "ExternalControlAction",
@@ -2089,6 +2143,14 @@
       "label": "ExternalEntityConfig",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./scene",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./world-model:ExternalEntityConfig",
+      "kind": "symbol",
+      "label": "ExternalEntityConfig",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./world-model",
       "symbolKind": "interface"
     },
     {
@@ -2305,6 +2367,30 @@
       "label": "ExternalMultiplayerSessionProvider",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./multiplayer",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./orbits:ExternalOrbitAnchorBody",
+      "kind": "symbol",
+      "label": "ExternalOrbitAnchorBody",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./orbits",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacement",
+      "kind": "symbol",
+      "label": "ExternalOrbitingPlacement",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./orbits",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacementParams",
+      "kind": "symbol",
+      "label": "ExternalOrbitingPlacementParams",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./orbits",
       "symbolKind": "interface"
     },
     {
@@ -2756,6 +2842,30 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./world-model:ExternalWorldModelContext",
+      "kind": "symbol",
+      "label": "ExternalWorldModelContext",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./world-model",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./world-model:ExternalWorldModelPlugin",
+      "kind": "symbol",
+      "label": "ExternalWorldModelPlugin",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./world-model",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./world-model:ExternalWorldModelRegistry",
+      "kind": "symbol",
+      "label": "ExternalWorldModelRegistry",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./world-model",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:./scene:ExternalWorldSegment",
       "kind": "symbol",
       "label": "ExternalWorldSegment",
@@ -3124,11 +3234,19 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./celestialBodies/provider:isCelestialBodyProvider",
+      "id": "symbol:@solitude/engine:./celestial-bodies:isCelestialBodyProvider",
       "kind": "symbol",
       "label": "isCelestialBodyProvider",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./celestialBodies/provider",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./celestial-bodies",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./celestial-bodies:isCelestialBodyProvider",
+      "kind": "symbol",
+      "label": "isCelestialBodyProvider",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./celestial-bodies",
       "symbolKind": "function"
     },
     {
@@ -3700,11 +3818,27 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:OrbitingPlacementParams",
+      "id": "symbol:@solitude/geometry:.:OrbitAnchorBody",
+      "kind": "symbol",
+      "label": "OrbitAnchorBody",
+      "packageName": "@solitude/geometry",
+      "parent": "module:@solitude/geometry:.",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/geometry:.:OrbitingPlacement",
+      "kind": "symbol",
+      "label": "OrbitingPlacement",
+      "packageName": "@solitude/geometry",
+      "parent": "module:@solitude/geometry:.",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/geometry:.:OrbitingPlacementParams",
       "kind": "symbol",
       "label": "OrbitingPlacementParams",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./spacecraft/orbitalPlacement",
+      "packageName": "@solitude/geometry",
+      "parent": "module:@solitude/geometry:.",
       "symbolKind": "interface"
     },
     {
@@ -5514,6 +5648,12 @@
       "to": "pkg:@solitude/engine"
     },
     {
+      "id": "dependency:pkg:@solitude/multiplayer->pkg:@solitude/geometry",
+      "from": "pkg:@solitude/multiplayer",
+      "kind": "dependency",
+      "to": "pkg:@solitude/geometry"
+    },
+    {
       "id": "dependency:pkg:@solitude/multiplayer->pkg:@solitude/plugin-runtime",
       "from": "pkg:@solitude/multiplayer",
       "kind": "dependency",
@@ -5946,6 +6086,18 @@
       "to": "module:@solitude/geometry:."
     },
     {
+      "id": "module-import:module:@solitude/plugin-api:./celestial-bodies->module:@solitude/engine:./celestial-bodies",
+      "from": "module:@solitude/plugin-api:./celestial-bodies",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./celestial-bodies"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./celestial-bodies->module:@solitude/plugin-api:./capabilities",
+      "from": "module:@solitude/plugin-api:./celestial-bodies",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./capabilities"
+    },
+    {
       "id": "module-import:module:@solitude/plugin-api:./controllable-entities->module:@solitude/engine:./controllable-entities",
       "from": "module:@solitude/plugin-api:./controllable-entities",
       "kind": "module-import",
@@ -6054,10 +6206,22 @@
       "to": "module:@solitude/plugin-api:./views"
     },
     {
+      "id": "module-import:module:@solitude/plugin-api:./module->module:@solitude/plugin-api:./world-model",
+      "from": "module:@solitude/plugin-api:./module",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./world-model"
+    },
+    {
       "id": "module-import:module:@solitude/plugin-api:./multiplayer->module:@solitude/plugin-api:./capabilities",
       "from": "module:@solitude/plugin-api:./multiplayer",
       "kind": "module-import",
       "to": "module:@solitude/plugin-api:./capabilities"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./orbits->module:@solitude/geometry:.",
+      "from": "module:@solitude/plugin-api:./orbits",
+      "kind": "module-import",
+      "to": "module:@solitude/geometry:."
     },
     {
       "id": "module-import:module:@solitude/plugin-api:./presentation->module:@solitude/plugin-api:./capabilities",
@@ -6126,6 +6290,18 @@
       "to": "module:@solitude/plugin-api:./world"
     },
     {
+      "id": "module-import:module:@solitude/plugin-api:./world-model->module:@solitude/engine:./world",
+      "from": "module:@solitude/plugin-api:./world-model",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./world"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./world-model->module:@solitude/plugin-api:./capabilities",
+      "from": "module:@solitude/plugin-api:./world-model",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./capabilities"
+    },
+    {
       "id": "module-import:module:@solitude/plugin-api:./world->module:@solitude/plugin-api:./math",
       "from": "module:@solitude/plugin-api:./world",
       "kind": "module-import",
@@ -6166,6 +6342,12 @@
       "from": "module:@solitude/plugin-runtime:.",
       "kind": "module-import",
       "to": "module:@solitude/plugin-api:./profiling"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-runtime:.->module:@solitude/plugin-api:./world-model",
+      "from": "module:@solitude/plugin-runtime:.",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./world-model"
     },
     {
       "id": "module-import:module:@solitude/plugin-runtime:./server->module:@solitude/plugin-runtime:.",
@@ -6294,18 +6476,6 @@
       "to": "module:@solitude/server:./sessions"
     },
     {
-      "id": "module-import:module:@solitude/sim:./celestialBodies/provider->module:@solitude/engine:./math",
-      "from": "module:@solitude/sim:./celestialBodies/provider",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./celestialBodies/provider->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./celestialBodies/provider",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
       "id": "module-import:module:@solitude/sim:./config/worldAndSceneConfig->module:@solitude/engine:./math",
       "from": "module:@solitude/sim:./config/worldAndSceneConfig",
       "kind": "module-import",
@@ -6364,30 +6534,6 @@
       "from": "module:@solitude/sim:./plugins/catalog",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./spacecraft/orbitalPlacement->module:@solitude/engine:./controllable-entities",
-      "from": "module:@solitude/sim:./spacecraft/orbitalPlacement",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./controllable-entities"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./spacecraft/orbitalPlacement->module:@solitude/engine:./math",
-      "from": "module:@solitude/sim:./spacecraft/orbitalPlacement",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./spacecraft/orbitalPlacement->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./spacecraft/orbitalPlacement",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./spacecraft/orbitalPlacement->module:@solitude/sim:./celestialBodies/provider",
-      "from": "module:@solitude/sim:./spacecraft/orbitalPlacement",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./celestialBodies/provider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayContext",
@@ -7444,6 +7590,36 @@
       "from": "symbol:@solitude/engine:./assets:parseObjMesh",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/geometry:.:vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./celestial-bodies:CelestialBody->symbol:@solitude/engine:./math:Vec3",
+      "from": "symbol:@solitude/engine:./celestial-bodies:CelestialBody",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./celestial-bodies:CelestialBody->symbol:@solitude/engine:./world:EntityId",
+      "from": "symbol:@solitude/engine:./celestial-bodies:CelestialBody",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./celestial-bodies:CelestialBodyProvider->symbol:@solitude/engine:./celestial-bodies:CelestialBody",
+      "from": "symbol:@solitude/engine:./celestial-bodies:CelestialBodyProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./celestial-bodies:CelestialBody"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./celestial-bodies:CelestialBodyProvider->symbol:@solitude/engine:./world:EntityId",
+      "from": "symbol:@solitude/engine:./celestial-bodies:CelestialBodyProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./celestial-bodies:isCelestialBodyProvider->symbol:@solitude/engine:./celestial-bodies:CelestialBodyProvider",
+      "from": "symbol:@solitude/engine:./celestial-bodies:isCelestialBodyProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./celestial-bodies:CelestialBodyProvider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider->symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement",
@@ -11124,10 +11300,58 @@
       "to": "symbol:@solitude/geometry:.:Vec3"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/geometry:.:createOrbitingPlacement->symbol:@solitude/geometry:.:mat3",
+      "from": "symbol:@solitude/geometry:.:createOrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:mat3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/geometry:.:createOrbitingPlacement->symbol:@solitude/geometry:.:OrbitingPlacement",
+      "from": "symbol:@solitude/geometry:.:createOrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:OrbitingPlacement"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/geometry:.:createOrbitingPlacement->symbol:@solitude/geometry:.:OrbitingPlacementParams",
+      "from": "symbol:@solitude/geometry:.:createOrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:OrbitingPlacementParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/geometry:.:createOrbitingPlacement->symbol:@solitude/geometry:.:vec3",
+      "from": "symbol:@solitude/geometry:.:createOrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:vec3"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/geometry:.:ObjMesh->symbol:@solitude/geometry:.:Vec3",
       "from": "symbol:@solitude/geometry:.:ObjMesh",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/geometry:.:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/geometry:.:OrbitAnchorBody->symbol:@solitude/geometry:.:Vec3",
+      "from": "symbol:@solitude/geometry:.:OrbitAnchorBody",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/geometry:.:OrbitingPlacement->symbol:@solitude/geometry:.:Mat3",
+      "from": "symbol:@solitude/geometry:.:OrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:Mat3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/geometry:.:OrbitingPlacement->symbol:@solitude/geometry:.:Vec3",
+      "from": "symbol:@solitude/geometry:.:OrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/geometry:.:OrbitingPlacementParams->symbol:@solitude/geometry:.:OrbitAnchorBody",
+      "from": "symbol:@solitude/geometry:.:OrbitingPlacementParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:OrbitAnchorBody"
     },
     {
       "id": "symbol-reference:symbol:@solitude/geometry:.:parseObjMesh->symbol:@solitude/geometry:.:ObjMesh",
@@ -11542,6 +11766,66 @@
       "from": "symbol:@solitude/plugin-api:./assets:parseObjMesh",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./celestial-bodies:createCelestialBodyProviderCapability->symbol:@solitude/engine:./celestial-bodies:CelestialBodyProvider",
+      "from": "symbol:@solitude/plugin-api:./celestial-bodies:createCelestialBodyProviderCapability",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./celestial-bodies:CelestialBodyProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./celestial-bodies:createCelestialBodyProviderCapability->symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider",
+      "from": "symbol:@solitude/plugin-api:./celestial-bodies:createCelestialBodyProviderCapability",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./celestial-bodies:createCelestialBodyProviderCapability->symbol:@solitude/plugin-api:./celestial-bodies:celestialBodyProviderCapability",
+      "from": "symbol:@solitude/plugin-api:./celestial-bodies:createCelestialBodyProviderCapability",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./celestial-bodies:celestialBodyProviderCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBody->symbol:@solitude/engine:./celestial-bodies:CelestialBody",
+      "from": "symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBody",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./celestial-bodies:CelestialBody"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBody->symbol:@solitude/engine:./world:EntityId",
+      "from": "symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBody",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBody->symbol:@solitude/plugin-api:./math:Vec3",
+      "from": "symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBody",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBodyProvider->symbol:@solitude/engine:./celestial-bodies:CelestialBody",
+      "from": "symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBodyProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./celestial-bodies:CelestialBody"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBodyProvider->symbol:@solitude/engine:./celestial-bodies:CelestialBodyProvider",
+      "from": "symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBodyProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./celestial-bodies:CelestialBodyProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBodyProvider->symbol:@solitude/engine:./world:EntityId",
+      "from": "symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBodyProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./celestial-bodies:isCelestialBodyProvider->symbol:@solitude/engine:./celestial-bodies:CelestialBodyProvider",
+      "from": "symbol:@solitude/plugin-api:./celestial-bodies:isCelestialBodyProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./celestial-bodies:CelestialBodyProvider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:createControllableEntityProviderCapability->symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider",
@@ -11964,6 +12248,12 @@
       "to": "symbol:@solitude/plugin-api:./views:ExternalViewPlugin"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginHooks->symbol:@solitude/plugin-api:./world-model:ExternalWorldModelPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world-model:ExternalWorldModelPlugin"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginModule->symbol:@solitude/plugin-api:./module:ExternalPluginFactory",
       "from": "symbol:@solitude/plugin-api:./module:ExternalPluginModule",
       "kind": "symbol-reference",
@@ -11998,6 +12288,72 @@
       "from": "symbol:@solitude/plugin-api:./multiplayer:isMultiplayerSessionProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./multiplayer:ExternalMultiplayerSessionProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:createOrbitingPlacement->symbol:@solitude/geometry:.:OrbitingPlacement",
+      "from": "symbol:@solitude/plugin-api:./orbits:createOrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:OrbitingPlacement"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:createOrbitingPlacement->symbol:@solitude/geometry:.:OrbitingPlacementParams",
+      "from": "symbol:@solitude/plugin-api:./orbits:createOrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:OrbitingPlacementParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:createOrbitingPlacement->symbol:@solitude/plugin-api:./math:mat3",
+      "from": "symbol:@solitude/plugin-api:./orbits:createOrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:mat3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:createOrbitingPlacement->symbol:@solitude/plugin-api:./math:vec3",
+      "from": "symbol:@solitude/plugin-api:./orbits:createOrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalOrbitAnchorBody->symbol:@solitude/geometry:.:OrbitAnchorBody",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalOrbitAnchorBody",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:OrbitAnchorBody"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalOrbitAnchorBody->symbol:@solitude/plugin-api:./math:Vec3",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalOrbitAnchorBody",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacement->symbol:@solitude/geometry:.:OrbitingPlacement",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:OrbitingPlacement"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacement->symbol:@solitude/plugin-api:./math:Mat3",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:Mat3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacement->symbol:@solitude/plugin-api:./math:Vec3",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacementParams->symbol:@solitude/geometry:.:OrbitAnchorBody",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacementParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:OrbitAnchorBody"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacementParams->symbol:@solitude/geometry:.:OrbitingPlacementParams",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacementParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:OrbitingPlacementParams"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./presentation:createPresentationFrameCapability->symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider",
@@ -12514,6 +12870,54 @@
       "from": "symbol:@solitude/plugin-api:./views:ExternalViewRegistry",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./views:ExternalViewDefinition"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./world-model:ExternalEntityConfig->symbol:@solitude/engine:./world:EntityComponentsConfig",
+      "from": "symbol:@solitude/plugin-api:./world-model:ExternalEntityConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityComponentsConfig"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./world-model:ExternalEntityConfig->symbol:@solitude/engine:./world:EntityConfig",
+      "from": "symbol:@solitude/plugin-api:./world-model:ExternalEntityConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityConfig"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./world-model:ExternalEntityConfig->symbol:@solitude/engine:./world:EntityId",
+      "from": "symbol:@solitude/plugin-api:./world-model:ExternalEntityConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./world-model:ExternalWorldModelContext->symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityRegistry",
+      "from": "symbol:@solitude/plugin-api:./world-model:ExternalWorldModelContext",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityRegistry"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./world-model:ExternalWorldModelPlugin->symbol:@solitude/plugin-api:./world-model:ExternalWorldModelContext",
+      "from": "symbol:@solitude/plugin-api:./world-model:ExternalWorldModelPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world-model:ExternalWorldModelContext"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./world-model:ExternalWorldModelPlugin->symbol:@solitude/plugin-api:./world-model:ExternalWorldModelRegistry",
+      "from": "symbol:@solitude/plugin-api:./world-model:ExternalWorldModelPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world-model:ExternalWorldModelRegistry"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./world-model:ExternalWorldModelRegistry->symbol:@solitude/engine:./world:EntityConfig",
+      "from": "symbol:@solitude/plugin-api:./world-model:ExternalWorldModelRegistry",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityConfig"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./world-model:ExternalWorldModelRegistry->symbol:@solitude/engine:./world:EntityId",
+      "from": "symbol:@solitude/plugin-api:./world-model:ExternalWorldModelRegistry",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityId"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./world:ExternalControlledBody->symbol:@solitude/plugin-api:./world:ExternalEntityMotionState",
@@ -13668,36 +14072,6 @@
       "to": "symbol:@solitude/server:./sessions:SolitudeSessionManager"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./celestialBodies/provider:CelestialBody->symbol:@solitude/engine:./math:Vec3",
-      "from": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBody",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:Vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./celestialBodies/provider:CelestialBody->symbol:@solitude/engine:./world:EntityId",
-      "from": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBody",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:EntityId"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./celestialBodies/provider:CelestialBodyProvider->symbol:@solitude/engine:./world:EntityId",
-      "from": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBodyProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:EntityId"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./celestialBodies/provider:CelestialBodyProvider->symbol:@solitude/sim:./celestialBodies/provider:CelestialBody",
-      "from": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBodyProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBody"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./celestialBodies/provider:isCelestialBodyProvider->symbol:@solitude/sim:./celestialBodies/provider:CelestialBodyProvider",
-      "from": "symbol:@solitude/sim:./celestialBodies/provider:isCelestialBodyProvider",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBodyProvider"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/sim:./config/worldAndSceneConfig:buildWorldAndSceneConfig->symbol:@solitude/engine:./math:vec3",
       "from": "symbol:@solitude/sim:./config/worldAndSceneConfig:buildWorldAndSceneConfig",
       "kind": "symbol-reference",
@@ -13882,42 +14256,6 @@
       "from": "symbol:@solitude/sim:./plugins/catalog:simPluginCatalog",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:PluginCatalog"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement->symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement",
-      "from": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement->symbol:@solitude/engine:./math:localFrame",
-      "from": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:localFrame"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement->symbol:@solitude/engine:./math:mat3",
-      "from": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:mat3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement->symbol:@solitude/engine:./math:vec3",
-      "from": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement->symbol:@solitude/sim:./spacecraft/orbitalPlacement:OrbitingPlacementParams",
-      "from": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:createOrbitingPlacement",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:OrbitingPlacementParams"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./spacecraft/orbitalPlacement:OrbitingPlacementParams->symbol:@solitude/sim:./celestialBodies/provider:CelestialBody",
-      "from": "symbol:@solitude/sim:./spacecraft/orbitalPlacement:OrbitingPlacementParams",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./celestialBodies/provider:CelestialBody"
     }
   ]
 }

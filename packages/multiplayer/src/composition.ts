@@ -1,4 +1,9 @@
 import {
+  celestialBodyProviderCapability,
+  isCelestialBodyProvider,
+  type CelestialBodyProvider,
+} from "@solitude/engine/celestial-bodies";
+import {
   controllableEntityProviderCapability,
   isControllableEntityProvider,
   type ControllableEntityProvider,
@@ -7,6 +12,7 @@ import { km } from "@solitude/engine/math";
 import { loadPlugins, type RuntimeOptions } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { EntityConfig, EntityId } from "@solitude/engine/world";
+import { createOrbitingPlacement } from "@solitude/geometry";
 import {
   appendExternalPluginSet,
   type ExternalPluginSet,
@@ -19,13 +25,7 @@ import {
   createSolitudeInProcessTransport,
   type SolitudeInProcessTransport,
 } from "@solitude/server/transport";
-import {
-  celestialBodyProviderCapability,
-  isCelestialBodyProvider,
-  type CelestialBodyProvider,
-} from "@solitude/sim/celestialBodies/provider";
 import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
-import { createOrbitingPlacement } from "@solitude/sim/spacecraft/orbitalPlacement";
 import { createSolitudeServerGame } from "./runtime";
 
 const DEFAULT_ASSIGNABLE_ENTITY_COUNT = 16;

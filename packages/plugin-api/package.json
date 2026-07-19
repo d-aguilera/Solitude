@@ -6,6 +6,7 @@
   "exports": {
     "./assets": "./src/assets.ts",
     "./capabilities": "./src/capabilities.ts",
+    "./celestial-bodies": "./src/celestial-bodies.ts",
     "./controllable-entities": "./src/controllable-entities.ts",
     "./entity-names": "./src/entity-names.ts",
     "./hud": "./src/hud.ts",
@@ -16,6 +17,7 @@
     "./math": "./src/math.ts",
     "./module": "./src/module.ts",
     "./multiplayer": "./src/multiplayer.ts",
+    "./orbits": "./src/orbits.ts",
     "./presentation": "./src/presentation.ts",
     "./profiling": "./src/profiling.ts",
     "./render": "./src/render.ts",
@@ -23,7 +25,8 @@
     "./scene": "./src/scene.ts",
     "./telemetry": "./src/telemetry.ts",
     "./views": "./src/views.ts",
-    "./world": "./src/world.ts"
+    "./world": "./src/world.ts",
+    "./world-model": "./src/world-model.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0",

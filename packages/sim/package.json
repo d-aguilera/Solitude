@@ -4,12 +4,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./celestialBodies/provider": "./src/celestialBodies/provider.ts",
     "./config/worldAndSceneConfig": "./src/worldAndSceneConfig.ts",
     "./headless": "./src/headless.ts",
     "./localPrediction": "./src/localPrediction.ts",
     "./plugins/catalog": "./src/plugins/catalog.ts",
-    "./spacecraft/orbitalPlacement": "./src/spacecraft/orbitalPlacement.ts",
     "./spacecraft/propulsionLimits": "./src/spacecraft/propulsionLimits.ts"
   },
   "dependencies": {

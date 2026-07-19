@@ -1,5 +1,9 @@
-import type { LoopUpdateParams } from "@solitude/engine/plugin";
+import type {
+  LoopUpdateParams,
+  WorldModelRegistry,
+} from "@solitude/engine/plugin";
 import { profilerController } from "@solitude/engine/runtime";
+import type { WorldAndSceneConfig } from "@solitude/engine/world";
 import type { ExternalLoopPlugin } from "@solitude/plugin-api/loop";
 import { SOLITUDE_PLUGIN_API_VERSION } from "@solitude/plugin-api/manifest";
 import type {
@@ -7,6 +11,7 @@ import type {
   ExternalPluginModule,
 } from "@solitude/plugin-api/module";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
+import type { ExternalWorldModelPlugin } from "@solitude/plugin-api/world-model";
 import { describe, expect, it, vi } from "vitest";
 import { appendExternalPluginSet, loadExternalPlugins } from "../index";
 
@@ -28,6 +33,18 @@ describe("external plugin runtime", () => {
     const registerViews = vi.fn();
     const updateScene = vi.fn();
     const updateViewControls = vi.fn();
+    const worldEntities = [{ components: {}, id: "entity:external" }];
+    const contributeWorldModel: ExternalWorldModelPlugin["contributeWorldModel"] =
+      vi.fn((registry, context) => {
+        expect(Object.isFrozen(registry)).toBe(true);
+        expect(Object.isFrozen(context)).toBe(true);
+        expect(Object.isFrozen(context.capabilityRegistry)).toBe(true);
+        expect(context.capabilityRegistry.getAll("example.capability")).toEqual(
+          ["example-value"],
+        );
+        registry.addEntities(worldEntities);
+        registry.setMainFocusEntityId(worldEntities[0].id);
+      });
     const updateLoopState: NonNullable<ExternalLoopPlugin["updateLoopState"]> =
       vi.fn((params) => {
         params.focusEntity("ship:second");
@@ -45,6 +62,7 @@ describe("external plugin runtime", () => {
           scene: { initScene, updateScene },
           viewControls: { updateViewControls },
           views: { registerViews },
+          worldModel: { contributeWorldModel },
         },
         requirements: { focusEntity: ["collisionSphere"] as const },
       }),
@@ -116,6 +134,21 @@ describe("external plugin runtime", () => {
       updateViewControls,
     );
     expect(targetingLaser.views?.registerViews).toBe(registerViews);
+    const addEntities = vi.fn<WorldModelRegistry["addEntities"]>();
+    const setMainFocusEntityId =
+      vi.fn<WorldModelRegistry["setMainFocusEntityId"]>();
+    targetingLaser.worldModel?.contributeWorldModel(
+      { addEntities, setMainFocusEntityId },
+      {
+        capabilityRegistry: {
+          getAll: (id) =>
+            id === "example.capability" ? ["example-value"] : [],
+        },
+        config: {} as WorldAndSceneConfig,
+      },
+    );
+    expect(addEntities).toHaveBeenCalledWith(worldEntities);
+    expect(setMainFocusEntityId).toHaveBeenCalledWith("entity:external");
     expect(targetingLaser.requirements?.mainFocus).toEqual(["collisionSphere"]);
     expect(loaded.catalog.secondPlugin({}).id).toBe("secondPlugin");
   });
@@ -359,6 +392,22 @@ describe("external plugin runtime", () => {
     });
     expect(() => invalidLoop.catalog.targetingLaser({})).toThrow(
       "invalid loop",
+    );
+
+    const invalidWorldModel = await loadExternalPlugins({
+      configUrl,
+      fetchJson: async (url) => documents.get(url),
+      host: "browser",
+      importModule: async () => ({
+        createPlugin: () => ({
+          id: "targetingLaser",
+          hooks: { worldModel: { contributeWorldModel: "invalid" } },
+        }),
+      }),
+      pageOrigin,
+    });
+    expect(() => invalidWorldModel.catalog.targetingLaser({})).toThrow(
+      "invalid world model",
     );
 
     const legacyHooks = await loadExternalPlugins({

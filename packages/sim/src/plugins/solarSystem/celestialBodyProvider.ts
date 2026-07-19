@@ -1,8 +1,8 @@
-import { createKeplerianBodiesFromConfig } from "@solitude/engine/world";
 import type {
   CelestialBody,
   CelestialBodyProvider,
-} from "../../celestialBodies/provider";
+} from "@solitude/engine/celestial-bodies";
+import { createKeplerianBodiesFromConfig } from "@solitude/engine/world";
 import {
   buildDefaultSolarSystemConfigs,
   type SolarSystemConfigOptions,

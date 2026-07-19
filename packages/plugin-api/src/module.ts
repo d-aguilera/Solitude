@@ -9,6 +9,7 @@ import type {
   ExternalSegmentPlugin,
 } from "./scene";
 import type { ExternalViewControlPlugin, ExternalViewPlugin } from "./views";
+import type { ExternalWorldModelPlugin } from "./world-model";
 
 export type ExternalFocusEntityCapabilityRequirement =
   "collisionSphere" | "gravityMass";
@@ -25,6 +26,7 @@ export interface ExternalPluginHooks {
   segments?: ExternalSegmentPlugin;
   viewControls?: ExternalViewControlPlugin;
   views?: ExternalViewPlugin;
+  worldModel?: ExternalWorldModelPlugin;
 }
 
 export interface ExternalPlugin {

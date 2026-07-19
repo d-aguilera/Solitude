@@ -11,6 +11,7 @@ import type {
   SegmentPlugin,
   ViewControlPlugin,
   ViewPlugin,
+  WorldModelPlugin,
 } from "@solitude/engine/plugin";
 import {
   profilerController,
@@ -34,6 +35,12 @@ import type {
   ExternalPluginModule,
 } from "@solitude/plugin-api/module";
 import type { ExternalProfilerControl } from "@solitude/plugin-api/profiling";
+import type {
+  ExternalEntityConfig,
+  ExternalWorldModelContext,
+  ExternalWorldModelPlugin,
+  ExternalWorldModelRegistry,
+} from "@solitude/plugin-api/world-model";
 
 const PLUGIN_MANIFEST_SCHEMA_VERSION = 2;
 const PLUGIN_PACK_SCHEMA_VERSION = 2;
@@ -67,6 +74,7 @@ const EXTERNAL_PLUGIN_HOOK_KEYS = new Set([
   "segments",
   "viewControls",
   "views",
+  "worldModel",
 ]);
 const EXTERNAL_PLUGIN_REQUIREMENT_KEYS = new Set(["focusEntity"]);
 const EXTERNAL_FOCUS_ENTITY_REQUIREMENTS = new Set([
@@ -543,6 +551,9 @@ function validateExternalPlugin(
   if (hasInvalidHookFunctions(hooks?.views, ["registerViews"])) {
     throw new Error(`External plugin ${expectedId} has invalid views`);
   }
+  if (hasInvalidHookFunctions(hooks?.worldModel, ["contributeWorldModel"])) {
+    throw new Error(`External plugin ${expectedId} has invalid world model`);
+  }
 }
 
 function validateExternalPluginRequirements(
@@ -612,6 +623,28 @@ function adaptExternalPlugin(plugin: ExternalPlugin): GamePlugin {
     segments: hooks?.segments as SegmentPlugin | undefined,
     viewControls: hooks?.viewControls as ViewControlPlugin | undefined,
     views: hooks?.views as ViewPlugin | undefined,
+    worldModel: adaptExternalWorldModel(hooks?.worldModel),
+  };
+}
+
+function adaptExternalWorldModel(
+  external: ExternalWorldModelPlugin | undefined,
+): WorldModelPlugin | undefined {
+  if (external === undefined) return undefined;
+  return {
+    contributeWorldModel: (registry, { capabilityRegistry }) => {
+      const externalRegistry: ExternalWorldModelRegistry = Object.freeze({
+        addEntities: (entities: ExternalEntityConfig[]) =>
+          registry.addEntities(entities),
+        setMainFocusEntityId: (id: string) => registry.setMainFocusEntityId(id),
+      });
+      const externalContext: ExternalWorldModelContext = Object.freeze({
+        capabilityRegistry: Object.freeze({
+          getAll: (id: string) => capabilityRegistry.getAll(id),
+        }),
+      });
+      external.contributeWorldModel(externalRegistry, externalContext);
+    },
   };
 }
 

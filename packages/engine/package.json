@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./assets": "./src/assets.ts",
+    "./celestial-bodies": "./src/app/celestialBodyProvider.ts",
     "./controllable-entities": "./src/app/controllableEntityProvider.ts",
     "./epsilon": "./src/epsilon.ts",
     "./math": "./src/math.ts",

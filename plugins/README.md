@@ -66,10 +66,10 @@ with the current runtime options and a frozen host-service context whenever the
 host creates a plugin composition. The context exposes narrow facades rather
 than host implementation objects.
 
-Plugin API version 5 adds the creation-time profiler facade while retaining the
-separation between plugin metadata and executable hooks. A plugin may publish
-capabilities, declare optional requirements on the focused entity, and group
-engine callbacks under `hooks`:
+Plugin API version 6 adds pre-runtime world-model hooks while retaining the
+creation-time profiler facade and the separation between plugin metadata and
+executable hooks. A plugin may publish capabilities, declare optional
+requirements on the focused entity, and group host callbacks under `hooks`:
 
 ```ts
 return {
@@ -80,6 +80,7 @@ return {
   hooks: {
     markers: markerPlugin,
     scene: scenePlugin,
+    worldModel: worldModelPlugin,
   },
 };
 ```
@@ -93,9 +94,15 @@ or obsolete plugin shapes fail during composition.
 
 - `@solitude/plugin-api/module`: plugin identity, capabilities, grouped hooks,
   focused-entity requirements, factory, and loaded ES-module contracts.
+- `@solitude/plugin-api/world-model`: pre-runtime entity and focus
+  contributions with controlled access to the assembled capability registry.
+- `@solitude/plugin-api/celestial-bodies`: the canonical celestial-body
+  provider capability consumed by scenario and spawning plugins.
 - `@solitude/plugin-api/controllable-entities`: the canonical generic
   controllable-entity provider capability, placement/configuration contracts,
   constructor, and guard.
+- `@solitude/plugin-api/orbits`: portable circular-orbit placement used by
+  plugins without importing host simulation code.
 - `@solitude/plugin-api/input`: keyboard action maps, handlers, and
   provider-declared actions that remain available through input locks.
 - `@solitude/plugin-api/profiling`: control contract for the host profiler
@@ -171,6 +178,8 @@ contribution types.
 
 - `standalone-pack-v1`: standalone-only runtime behavior. It currently
   contains:
+  - `ships`: default blue/red standalone spacecraft, their Earth-relative
+    orbital placement, and the initial focus selection.
   - `memory`: opt-in browser heap telemetry, toggled alongside profiling with
     `O` and published through the shared HUD panel capability.
   - `profiling`: opt-in runtime profiling control and localized status HUD,
