@@ -11,6 +11,9 @@ const solarSystemMaterialAssets = [
 ] as const;
 
 export default defineConfig({
+  cacheDir: fileURLToPath(
+    new URL("../../node_modules/.vite/core-pack-v1", import.meta.url),
+  ),
   build: {
     emptyOutDir: true,
     lib: {

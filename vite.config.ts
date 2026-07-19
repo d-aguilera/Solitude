@@ -4,6 +4,7 @@ import { defineConfig } from "vitest/config";
 const solitudeRoot = resolve("packages/solitude");
 
 export default defineConfig({
+  cacheDir: resolve("node_modules/.vite/standalone"),
   root: solitudeRoot,
   publicDir: resolve("dist/plugin-public/standalone"),
   build: {

@@ -5,6 +5,12 @@ import { defineConfig } from "vite";
 const pluginRoot = fileURLToPath(new URL(".", import.meta.url));
 
 export default defineConfig({
+  cacheDir: fileURLToPath(
+    new URL(
+      "../../node_modules/.vite/solitude-content-pack-v1",
+      import.meta.url,
+    ),
+  ),
   build: {
     emptyOutDir: true,
     lib: {

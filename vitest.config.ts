@@ -1,6 +1,8 @@
+import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  cacheDir: resolve("node_modules/.vite/vitest"),
   test: {
     include: [
       "packages/**/*.test.ts",

@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  cacheDir: resolve("node_modules/.vite/server"),
   build: {
     // Server plugin assembly owns dist/server/plugins. Preserve it when Vite
     // replaces the server bundle in the same deployment directory.
