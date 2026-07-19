@@ -1,11 +1,11 @@
-import type { HudPanelProvider } from "@solitude/hud/provider";
+import type { ExternalHudPanelProvider } from "@solitude/plugin-api/hud";
 import type { ProfilingLocalization } from "./localization";
 import type { ProfilingController } from "./logic";
 
 export function createHudPanel(
   controller: ProfilingController,
   localization: ProfilingLocalization,
-): HudPanelProvider {
+): ExternalHudPanelProvider {
   return {
     writeHud: (grid) => {
       if (!controller.isEnabled()) return;

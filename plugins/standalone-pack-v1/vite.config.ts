@@ -15,6 +15,9 @@ export default defineConfig({
         memory: fileURLToPath(
           new URL("./src/memory/index.ts", import.meta.url),
         ),
+        profiling: fileURLToPath(
+          new URL("./src/profiling/index.ts", import.meta.url),
+        ),
         "operator-switch": fileURLToPath(
           new URL("./src/operator-switch/index.ts", import.meta.url),
         ),
@@ -43,8 +46,23 @@ export default defineConfig({
               id: "standalone-pack-v1",
               plugins: [
                 "./memory/plugin.json",
+                "./profiling/plugin.json",
                 "./operator-switch/plugin.json",
               ],
+              schemaVersion: 2,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "profiling/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
+              entry: "./index.js",
+              id: "profiling",
               schemaVersion: 2,
             },
             null,

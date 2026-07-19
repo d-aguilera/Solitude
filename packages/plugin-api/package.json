@@ -17,6 +17,7 @@
     "./module": "./src/module.ts",
     "./multiplayer": "./src/multiplayer.ts",
     "./presentation": "./src/presentation.ts",
+    "./profiling": "./src/profiling.ts",
     "./render": "./src/render.ts",
     "./runtime": "./src/runtime.ts",
     "./scene": "./src/scene.ts",

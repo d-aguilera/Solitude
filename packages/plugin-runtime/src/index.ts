@@ -12,7 +12,10 @@ import type {
   ViewControlPlugin,
   ViewPlugin,
 } from "@solitude/engine/plugin";
-import { updateFocusContext } from "@solitude/engine/runtime";
+import {
+  profilerController,
+  updateFocusContext,
+} from "@solitude/engine/runtime";
 import type {
   ExternalLoopPlugin,
   ExternalLoopUpdateParams,
@@ -27,8 +30,10 @@ import type {
 import { SOLITUDE_PLUGIN_API_VERSION } from "@solitude/plugin-api/manifest";
 import type {
   ExternalPlugin,
+  ExternalPluginContext,
   ExternalPluginModule,
 } from "@solitude/plugin-api/module";
+import type { ExternalProfilerControl } from "@solitude/plugin-api/profiling";
 
 const PLUGIN_MANIFEST_SCHEMA_VERSION = 2;
 const PLUGIN_PACK_SCHEMA_VERSION = 2;
@@ -68,6 +73,15 @@ const EXTERNAL_FOCUS_ENTITY_REQUIREMENTS = new Set([
   "collisionSphere",
   "gravityMass",
 ]);
+const externalProfilerControl: ExternalProfilerControl = Object.freeze({
+  check: () => profilerController.check(),
+  flush: () => profilerController.flush(),
+  setEnabled: (enabled: boolean) => profilerController.setEnabled(enabled),
+  setPaused: (paused: boolean) => profilerController.setPaused(paused),
+});
+const externalPluginContext: ExternalPluginContext = Object.freeze({
+  profiler: externalProfilerControl,
+});
 
 export interface ExternalPluginSet {
   catalog: PluginCatalog;
@@ -470,7 +484,7 @@ function createInternalPluginFactory(
   module: ExternalPluginModule,
 ): PluginFactory {
   return (runtimeOptions) => {
-    const external = module.createPlugin(runtimeOptions);
+    const external = module.createPlugin(runtimeOptions, externalPluginContext);
     validateExternalPlugin(external, expectedId);
     return adaptExternalPlugin(external);
   };

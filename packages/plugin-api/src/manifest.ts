@@ -1,4 +1,4 @@
-export const SOLITUDE_PLUGIN_API_VERSION = 4;
+export const SOLITUDE_PLUGIN_API_VERSION = 5;
 
 export type ExternalPluginHost = "browser" | "server";
 

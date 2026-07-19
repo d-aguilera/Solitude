@@ -1,7 +1,12 @@
 import type { LoopUpdateParams } from "@solitude/engine/plugin";
+import { profilerController } from "@solitude/engine/runtime";
 import type { ExternalLoopPlugin } from "@solitude/plugin-api/loop";
 import { SOLITUDE_PLUGIN_API_VERSION } from "@solitude/plugin-api/manifest";
-import type { ExternalPluginModule } from "@solitude/plugin-api/module";
+import type {
+  ExternalPluginContext,
+  ExternalPluginModule,
+} from "@solitude/plugin-api/module";
+import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 import { describe, expect, it, vi } from "vitest";
 import { appendExternalPluginSet, loadExternalPlugins } from "../index";
 
@@ -28,17 +33,22 @@ describe("external plugin runtime", () => {
         params.focusEntity("ship:second");
         return { framePolicy: { advanceScene: true } };
       });
-    const createLaser = vi.fn(() => ({
-      id: "targetingLaser",
-      hooks: {
-        labels: { appendLabels },
-        loop: { updateLoopState },
-        scene: { initScene, updateScene },
-        viewControls: { updateViewControls },
-        views: { registerViews },
-      },
-      requirements: { focusEntity: ["collisionSphere"] as const },
-    }));
+    const createLaser = vi.fn(
+      (
+        _runtimeOptions: ExternalRuntimeOptions,
+        _context: ExternalPluginContext,
+      ) => ({
+        id: "targetingLaser",
+        hooks: {
+          labels: { appendLabels },
+          loop: { updateLoopState },
+          scene: { initScene, updateScene },
+          viewControls: { updateViewControls },
+          views: { registerViews },
+        },
+        requirements: { focusEntity: ["collisionSphere"] as const },
+      }),
+    );
     const createSecond = vi.fn(() => ({ id: "secondPlugin" }));
     const documents = createDocumentMap();
     const modules = new Map<string, ExternalPluginModule>([
@@ -56,6 +66,16 @@ describe("external plugin runtime", () => {
 
     expect(loaded.ids).toEqual(["targetingLaser", "secondPlugin"]);
     const targetingLaser = loaded.catalog.targetingLaser({});
+    const pluginContext = createLaser.mock.calls[0]?.[1];
+    expect(pluginContext?.profiler).not.toBe(profilerController);
+    expect(pluginContext?.profiler).toEqual({
+      check: expect.any(Function),
+      flush: expect.any(Function),
+      setEnabled: expect.any(Function),
+      setPaused: expect.any(Function),
+    });
+    expect(Object.isFrozen(pluginContext)).toBe(true);
+    expect(Object.isFrozen(pluginContext?.profiler)).toBe(true);
     expect(targetingLaser.id).toBe("targetingLaser");
     expect(targetingLaser.labels?.appendLabels).toBe(appendLabels);
     const firstBody = {

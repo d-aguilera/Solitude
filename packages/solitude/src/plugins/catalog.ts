@@ -3,7 +3,6 @@ import type { PluginCatalog } from "@solitude/engine/plugin";
 import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
 import { createPausePlugin } from "./pause/index";
 import { createPlaybackPlugin } from "./playback/index";
-import { createProfilingPlugin } from "./profiling/index";
 import { createShipsPlugin } from "./ships/index";
 import { createTimeScalePlugin } from "./timeScale/index";
 
@@ -17,7 +16,6 @@ export const defaultPluginIds = [
   "autopilot",
   "autopilotInput",
   "pause",
-  "profiling",
   "timeScale",
   "playback",
 ];
@@ -27,7 +25,6 @@ export const solitudePluginCatalog: PluginCatalog = {
   hud: createHudOverlayPlugin,
   pause: createPausePlugin,
   playback: createPlaybackPlugin,
-  profiling: createProfilingPlugin,
   ships: createShipsPlugin,
   timeScale: createTimeScalePlugin,
 };

@@ -1,5 +1,6 @@
 import type { ExternalPluginCapabilityProvider } from "./capabilities";
 import type { ExternalLoopPlugin } from "./loop";
+import type { ExternalProfilerControl } from "./profiling";
 import type { ExternalRuntimeOptions } from "./runtime";
 import type {
   ExternalMarkerPlugin,
@@ -33,8 +34,13 @@ export interface ExternalPlugin {
   hooks?: ExternalPluginHooks;
 }
 
+export interface ExternalPluginContext {
+  readonly profiler: ExternalProfilerControl;
+}
+
 export type ExternalPluginFactory = (
   runtimeOptions: ExternalRuntimeOptions,
+  context: ExternalPluginContext,
 ) => ExternalPlugin;
 
 export interface ExternalPluginModule {

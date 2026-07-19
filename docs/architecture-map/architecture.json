@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-19T18:21:12.115Z",
+  "generatedAt": "2026-07-19T23:36:40.322Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -307,6 +307,13 @@
       "id": "module:@solitude/plugin-api:./presentation",
       "kind": "module",
       "label": "./presentation",
+      "packageName": "@solitude/plugin-api",
+      "parent": "pkg:@solitude/plugin-api"
+    },
+    {
+      "id": "module:@solitude/plugin-api:./profiling",
+      "kind": "module",
+      "label": "./profiling",
       "packageName": "@solitude/plugin-api",
       "parent": "pkg:@solitude/plugin-api"
     },
@@ -2325,6 +2332,14 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./module:ExternalPluginContext",
+      "kind": "symbol",
+      "label": "ExternalPluginContext",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./module",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/plugin-runtime:.:ExternalPluginDocumentKind",
       "kind": "symbol",
       "label": "ExternalPluginDocumentKind",
@@ -2466,6 +2481,14 @@
       "label": "ExternalPrimaryViewState",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./views",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./profiling:ExternalProfilerControl",
+      "kind": "symbol",
+      "label": "ExternalProfilerControl",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./profiling",
       "symbolKind": "interface"
     },
     {
@@ -6007,6 +6030,12 @@
       "to": "module:@solitude/plugin-api:./loop"
     },
     {
+      "id": "module-import:module:@solitude/plugin-api:./module->module:@solitude/plugin-api:./profiling",
+      "from": "module:@solitude/plugin-api:./module",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./profiling"
+    },
+    {
       "id": "module-import:module:@solitude/plugin-api:./module->module:@solitude/plugin-api:./runtime",
       "from": "module:@solitude/plugin-api:./module",
       "kind": "module-import",
@@ -6131,6 +6160,12 @@
       "from": "module:@solitude/plugin-runtime:.",
       "kind": "module-import",
       "to": "module:@solitude/plugin-api:./module"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-runtime:.->module:@solitude/plugin-api:./profiling",
+      "from": "module:@solitude/plugin-runtime:.",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./profiling"
     },
     {
       "id": "module-import:module:@solitude/plugin-runtime:./server->module:@solitude/plugin-runtime:.",
@@ -11863,10 +11898,22 @@
       "to": "symbol:@solitude/plugin-api:./module:ExternalPluginRequirements"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginContext->symbol:@solitude/plugin-api:./profiling:ExternalProfilerControl",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginContext",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./profiling:ExternalProfilerControl"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginFactory->symbol:@solitude/plugin-api:./module:ExternalPlugin",
       "from": "symbol:@solitude/plugin-api:./module:ExternalPluginFactory",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./module:ExternalPlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginFactory->symbol:@solitude/plugin-api:./module:ExternalPluginContext",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginFactory",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./module:ExternalPluginContext"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginFactory->symbol:@solitude/plugin-api:./runtime:ExternalRuntimeOptions",

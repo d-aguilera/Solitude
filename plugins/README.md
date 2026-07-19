@@ -62,12 +62,14 @@ CORS permission from the external host is also required. These controls limit
 which trusted code can load; they do not sandbox code after loading.
 
 The module must export `createPlugin`. Factories are retained and instantiated
-with the current runtime options whenever the host creates a plugin
-composition.
+with the current runtime options and a frozen host-service context whenever the
+host creates a plugin composition. The context exposes narrow facades rather
+than host implementation objects.
 
-Plugin API version 4 separates plugin metadata from executable hooks. A plugin
-may publish capabilities, declare optional requirements on the focused entity,
-and group engine callbacks under `hooks`:
+Plugin API version 5 adds the creation-time profiler facade while retaining the
+separation between plugin metadata and executable hooks. A plugin may publish
+capabilities, declare optional requirements on the focused entity, and group
+engine callbacks under `hooks`:
 
 ```ts
 return {
@@ -96,6 +98,8 @@ or obsolete plugin shapes fail during composition.
   constructor, and guard.
 - `@solitude/plugin-api/input`: keyboard action maps, handlers, and
   provider-declared actions that remain available through input locks.
+- `@solitude/plugin-api/profiling`: control contract for the host profiler
+  facade supplied through the plugin creation context.
 - `@solitude/plugin-api/assets`: bundled-safe OBJ parsing for pack-owned mesh
   assets.
 - `@solitude/plugin-api/runtime`: raw runtime option contracts passed to plugin
@@ -169,6 +173,8 @@ contribution types.
   contains:
   - `memory`: opt-in browser heap telemetry, toggled alongside profiling with
     `O` and published through the shared HUD panel capability.
+  - `profiling`: opt-in runtime profiling control and localized status HUD,
+    backed by the host profiler service exposed at plugin creation time.
   - `operatorSwitch`: repeat-safe `Tab` focus switching between the default
     controllable ships, ordered after playback so a paused focus change still
     refreshes the scene and declaring its action as available through
