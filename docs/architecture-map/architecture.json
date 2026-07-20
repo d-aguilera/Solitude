@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-19T23:58:29.139Z",
+  "generatedAt": "2026-07-20T01:43:18.500Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -3567,6 +3567,14 @@
       "label": "LocalFrame",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./math",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/geometry:.:LocalFrame",
+      "kind": "symbol",
+      "label": "LocalFrame",
+      "packageName": "@solitude/geometry",
+      "parent": "module:@solitude/geometry:.",
       "symbolKind": "interface"
     },
     {
@@ -11324,6 +11332,12 @@
       "to": "symbol:@solitude/geometry:.:vec3"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/geometry:.:LocalFrame->symbol:@solitude/geometry:.:Vec3",
+      "from": "symbol:@solitude/geometry:.:LocalFrame",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:Vec3"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/geometry:.:ObjMesh->symbol:@solitude/geometry:.:Vec3",
       "from": "symbol:@solitude/geometry:.:ObjMesh",
       "kind": "symbol-reference",
@@ -11334,6 +11348,12 @@
       "from": "symbol:@solitude/geometry:.:OrbitAnchorBody",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/geometry:.:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/geometry:.:OrbitingPlacement->symbol:@solitude/geometry:.:LocalFrame",
+      "from": "symbol:@solitude/geometry:.:OrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:LocalFrame"
     },
     {
       "id": "symbol-reference:symbol:@solitude/geometry:.:OrbitingPlacement->symbol:@solitude/geometry:.:Mat3",
@@ -11888,6 +11908,12 @@
       "to": "symbol:@solitude/engine:./world:AngularVelocity"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement->symbol:@solitude/geometry:.:LocalFrame",
+      "from": "symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:LocalFrame"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement->symbol:@solitude/plugin-api:./math:Mat3",
       "from": "symbol:@solitude/plugin-api:./controllable-entities:ExternalDirectControllableEntityPlacement",
       "kind": "symbol-reference",
@@ -12324,6 +12350,18 @@
       "from": "symbol:@solitude/plugin-api:./orbits:ExternalOrbitAnchorBody",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacement->symbol:@solitude/engine:./math:LocalFrame",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:LocalFrame"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacement->symbol:@solitude/geometry:.:LocalFrame",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacement",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/geometry:.:LocalFrame"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalOrbitingPlacement->symbol:@solitude/geometry:.:OrbitingPlacement",

@@ -1,12 +1,9 @@
+import type { LocalFrame } from "@solitude/geometry";
 import { alloc } from "../global/allocProfiler";
 import { type Mat3, mat3 } from "./mat3";
 import { type Vec3, vec3 } from "./vec3";
 
-export interface LocalFrame {
-  right: Vec3;
-  forward: Vec3;
-  up: Vec3;
-}
+export type { LocalFrame } from "@solitude/geometry";
 
 const worldForwardScratch = vec3.zero();
 

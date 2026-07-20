@@ -1,3 +1,4 @@
+export type { LocalFrame } from "./localFrame";
 export { mat3 } from "./mat3";
 export type { Mat3 } from "./mat3";
 export { computeVolumeOfTriangleMesh } from "./meshVolume";

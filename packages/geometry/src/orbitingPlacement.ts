@@ -1,3 +1,4 @@
+import type { LocalFrame } from "./localFrame";
 import { mat3, type Mat3 } from "./mat3";
 import { vec3, type Vec3 } from "./vec3";
 
@@ -22,12 +23,6 @@ export interface OrbitingPlacementParams {
   entityMass: number;
   ringCount: number;
   ringIndex: number;
-}
-
-interface LocalFrame {
-  forward: Vec3;
-  right: Vec3;
-  up: Vec3;
 }
 
 const NEWTON_G = 6.6743e-11;
