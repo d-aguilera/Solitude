@@ -155,10 +155,7 @@ describe("external plugin runtime", () => {
 
   it("rejects a pack that does not support the current host", async () => {
     const documents = createDocumentMap();
-    documents.set(
-      targetingPackUrl,
-      createPackManifest("targeting", ["server"]),
-    );
+    documents.set(targetingPackUrl, createPackManifest("targeting", "server"));
     const fetchJson = vi.fn(async (url: string) => documents.get(url));
 
     await expect(
@@ -173,12 +170,14 @@ describe("external plugin runtime", () => {
     expect(fetchJson).not.toHaveBeenCalledWith(laserManifestUrl);
   });
 
-  it("rejects the removed universal host sentinel", async () => {
+  it("rejects legacy multi-host pack metadata", async () => {
     const documents = createDocumentMap();
-    documents.set(
-      targetingPackUrl,
-      createPackManifest("targeting", ["browser", "universal"]),
-    );
+    documents.set(targetingPackUrl, {
+      hosts: ["browser", "server"],
+      id: "targeting",
+      plugins: ["./laser/plugin.json"],
+      schemaVersion: 3,
+    });
 
     await expect(
       loadExternalPlugins({
@@ -300,7 +299,7 @@ describe("external plugin runtime", () => {
     const duplicatePackDocuments = createDocumentMap();
     duplicatePackDocuments.set(
       utilityPackUrl,
-      createPackManifest("targeting", ["browser"], ["./second.json"]),
+      createPackManifest("targeting", "browser", ["./second.json"]),
     );
 
     await expect(
@@ -465,11 +464,11 @@ function createDocumentMap(
     ],
     [
       targetingPackUrl,
-      createPackManifest("targeting", ["browser"], ["./laser/plugin.json"]),
+      createPackManifest("targeting", "browser", ["./laser/plugin.json"]),
     ],
     [
       utilityPackUrl,
-      createPackManifest("utility", ["browser"], ["./second.json"]),
+      createPackManifest("utility", "browser", ["./second.json"]),
     ],
     [laserManifestUrl, createPluginManifest("targetingLaser")],
     [
@@ -485,10 +484,10 @@ function createDocumentMap(
 
 function createPackManifest(
   id: string,
-  hosts: readonly string[],
+  host: string,
   plugins: readonly string[] = ["./laser/plugin.json"],
 ) {
-  return { hosts, id, plugins, schemaVersion: 2 };
+  return { host, id, plugins, schemaVersion: 3 };
 }
 
 function createPluginManifest(

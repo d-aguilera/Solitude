@@ -4,7 +4,7 @@ import {
   type ExternalControllableEntityProvider,
 } from "@solitude/plugin-api/controllable-entities";
 import { computeVolumeOfTriangleMesh, vec3 } from "@solitude/plugin-api/math";
-import type { ExternalPlugin } from "@solitude/plugin-api/module";
+import type { ExternalHostNeutralPlugin } from "@solitude/plugin-api/module";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 import polyFighterObjText from "./polyFighter.obj?raw";
 
@@ -53,7 +53,7 @@ export const polyFighterProvider: ExternalControllableEntityProvider = {
 
 export function createPlugin(
   _runtimeOptions: ExternalRuntimeOptions,
-): ExternalPlugin {
+): ExternalHostNeutralPlugin {
   return {
     id: "polyFighter",
     capabilities: [

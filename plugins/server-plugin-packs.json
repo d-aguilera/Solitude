@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
   "targets": {
-    "server": ["solitude-content-pack-v1"]
+    "server": ["solitude-content-server-pack-v1"]
   }
 }

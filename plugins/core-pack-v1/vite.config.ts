@@ -89,7 +89,7 @@ export default defineConfig({
           fileName: "pack.json",
           source: `${JSON.stringify(
             {
-              hosts: ["browser"],
+              host: "browser",
               id: "core-pack-v1",
               plugins: [
                 "./autopilot-hud/plugin.json",
@@ -105,7 +105,7 @@ export default defineConfig({
                 "./trajectories/plugin.json",
                 "./velocity-segments/plugin.json",
               ],
-              schemaVersion: 2,
+              schemaVersion: 3,
             },
             null,
             2,

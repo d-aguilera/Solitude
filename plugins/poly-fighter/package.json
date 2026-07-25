@@ -1,0 +1,15 @@
+{
+  "name": "@solitude-plugins/poly-fighter",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./vite-pack-config": "./vite.pack.config.ts"
+  },
+  "dependencies": {
+    "@solitude/plugin-api": "0.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

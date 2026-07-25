@@ -4,7 +4,7 @@ import {
 } from "@solitude/plugin-api/controllable-entities";
 import { mat3, vec3 } from "@solitude/plugin-api/math";
 import { describe, expect, it } from "vitest";
-import { createPlugin } from "../../poly-fighter/index";
+import { createPlugin } from "../index";
 
 describe("poly fighter plugin", () => {
   it("publishes a provider that creates the controllable fighter model", () => {

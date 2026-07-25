@@ -43,7 +43,7 @@ export default defineConfig({
           fileName: "pack.json",
           source: `${JSON.stringify(
             {
-              hosts: ["browser"],
+              host: "browser",
               id: "standalone-pack-v1",
               plugins: [
                 "./ships/plugin.json",
@@ -51,7 +51,7 @@ export default defineConfig({
                 "./profiling/plugin.json",
                 "./operator-switch/plugin.json",
               ],
-              schemaVersion: 2,
+              schemaVersion: 3,
             },
             null,
             2,

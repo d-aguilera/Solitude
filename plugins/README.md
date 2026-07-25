@@ -25,13 +25,14 @@ server hosts discover and load at runtime.
 ## Runtime Documents
 
 The plugin-set document lists plugin pack manifests in runtime order. Each pack
-is an atomic deployment and activation unit: it declares its supported `hosts`
-and owns an ordered list of one or more plugin manifests. A pack may support
-`browser`, `server`, or both hosts. There is no `universal` sentinel and
-individual plugins do not declare an environment. Each plugin manifest declares
-only its schema version, exact host API version, id, and ES-module entry URL.
-The runtime validates the complete pack and plugin graph before importing any
-plugin module.
+is an atomic deployment and activation unit: pack schema version 3 declares one
+`host` and owns an ordered list of one or more plugin manifests. Packs cannot
+span execution hosts, there is no `universal` sentinel, and individual plugins
+do not declare an environment. Unpacked plugins are not supported; a
+single-plugin deployment is represented by a pack containing one plugin
+manifest. Each plugin manifest declares only its schema version, exact host API
+version, id, and ES-module entry URL. The runtime validates the complete pack
+and plugin graph before importing any plugin module.
 
 `plugins/browser-plugin-packs.json` and `plugins/server-plugin-packs.json`
 declare the ordered packs for each product/host target. `npm run build:plugins`
@@ -46,7 +47,7 @@ assembled local plugin-set document.
 Assembled packs live directly under their target plugin root. For example, the
 browser core pack is emitted at `dist/client/plugins/core-pack-v1`, and the
 authoritative content pack is emitted at
-`dist/server/plugins/solitude-content-pack-v1`. The generated
+`dist/server/plugins/solitude-content-server-pack-v1`. The generated
 plugin-set documents reference these flat paths; there is no intermediate
 `packs` directory.
 
@@ -65,6 +66,14 @@ The module must export `createPlugin`. Factories are retained and instantiated
 with the current runtime options and a frozen host-service context whenever the
 host creates a plugin composition. The context exposes narrow facades rather
 than host implementation objects.
+
+The pack host is also a plugin-shape contract. Browser plugins may publish
+capabilities, focused-entity requirements, and the current hook surfaces.
+Server plugins are capability-only until an authoritative server lifecycle is
+explicitly added to the external API. The runtime captures the loading host in
+each retained factory and rejects properties unsupported by that host when the
+factory is instantiated. `ExternalBrowserPlugin`, `ExternalServerPlugin`, and
+`ExternalHostNeutralPlugin` expose the corresponding compile-time contracts.
 
 Plugin API version 6 adds pre-runtime world-model hooks while retaining the
 creation-time profiler facade and the separation between plugin metadata and
@@ -92,8 +101,9 @@ or obsolete plugin shapes fail during composition.
 
 ## Plugin API Subpaths
 
-- `@solitude/plugin-api/module`: plugin identity, capabilities, grouped hooks,
-  focused-entity requirements, factory, and loaded ES-module contracts.
+- `@solitude/plugin-api/module`: common and host-specific plugin identities,
+  capabilities, grouped browser hooks, focused-entity requirements, factories,
+  and loaded ES-module contracts.
 - `@solitude/plugin-api/world-model`: pre-runtime entity and focus
   contributions with controlled access to the assembled capability registry.
 - `@solitude/plugin-api/celestial-bodies`: the canonical celestial-body
@@ -164,11 +174,18 @@ The core pack is the migration destination for browser plugins shared by both
 browser products as the external API grows to support their required
 contribution types.
 
-- `solitude-content-pack-v1`: browser-and-server gameplay content activated by
-  both browser products and authoritative multiplayer. It currently contains:
+- `solitude-content-browser-pack-v1`: browser gameplay content activated by
+  both browser products. It currently contains:
   - `polyFighter`: controllable-entity provider owning the fighter OBJ mesh,
-    derived mass, and complete entity configuration used by standalone ships
-    and authoritative multiplayer spawning.
+    derived mass, and complete entity configuration used by standalone ships.
+
+- `solitude-content-server-pack-v1`: capability-only authoritative gameplay
+  content. It contains the same `polyFighter` module used by authoritative
+  multiplayer spawning.
+
+Both content packs bundle the single implementation and OBJ asset owned by the
+`@solitude-plugins/poly-fighter` workspace package. Their emitted plugin modules
+are identical; only the deployment pack id and host contract differ.
 
 - `multiplayer-pack-v1`: multiplayer-only presentation plugins. It contains:
   - `remoteIdentityHud`: localized live game and assigned-entity identity HUD,

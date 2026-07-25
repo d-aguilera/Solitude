@@ -42,13 +42,13 @@ export default defineConfig({
           fileName: "pack.json",
           source: `${JSON.stringify(
             {
-              hosts: ["browser"],
+              host: "browser",
               id: "multiplayer-pack-v1",
               plugins: [
                 "./remote-identity-hud/plugin.json",
                 "./ship-color-names/plugin.json",
               ],
-              schemaVersion: 2,
+              schemaVersion: 3,
             },
             null,
             2,

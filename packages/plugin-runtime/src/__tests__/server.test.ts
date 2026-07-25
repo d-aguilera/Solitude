@@ -42,18 +42,32 @@ describe(loadServerPluginSet.name, () => {
   it("rejects a browser-only pack before importing its plugins", async () => {
     const root = await createTemporaryDirectory();
     await writePlugin(root, "content", "poly-fighter", "polyFighter", 42);
-    await writePack(
-      root,
-      "content",
-      ["./poly-fighter/plugin.json"],
-      ["browser"],
-    );
+    await writePack(root, "content", ["./poly-fighter/plugin.json"], "browser");
     const pluginSetPath = await writePluginSet(root, [
       "./packs/content/pack.json",
     ]);
 
     await expect(loadServerPluginSet(pluginSetPath)).rejects.toThrow(
       "content does not support host server",
+    );
+  });
+
+  it("rejects browser-only plugin surfaces on the server host", async () => {
+    const root = await createTemporaryDirectory();
+    await writePlugin(root, "content", "poly-fighter", "polyFighter", 42);
+    await writeFile(
+      resolve(root, "packs/content/poly-fighter/index.mjs"),
+      'export function createPlugin() { return { id: "polyFighter", hooks: { worldModel: { contributeWorldModel() {} } } }; }\n',
+    );
+    await writePack(root, "content", ["./poly-fighter/plugin.json"]);
+    const pluginSetPath = await writePluginSet(root, [
+      "./packs/content/pack.json",
+    ]);
+
+    const loaded = await loadServerPluginSet(pluginSetPath);
+
+    expect(() => loaded.catalog.polyFighter({})).toThrow(
+      "properties unsupported by host server",
     );
   });
 
@@ -152,13 +166,13 @@ async function writePack(
   root: string,
   id: string,
   plugins: readonly string[],
-  hosts: readonly string[] = ["browser", "server"],
+  host = "server",
 ): Promise<void> {
   const filename = resolve(root, "packs", id, "pack.json");
   await mkdir(dirname(filename), { recursive: true });
   await writeFile(
     filename,
-    `${JSON.stringify({ hosts, id, plugins, schemaVersion: 2 })}\n`,
+    `${JSON.stringify({ host, id, plugins, schemaVersion: 3 })}\n`,
   );
 }
 

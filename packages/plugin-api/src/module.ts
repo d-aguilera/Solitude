@@ -29,22 +29,43 @@ export interface ExternalPluginHooks {
   worldModel?: ExternalWorldModelPlugin;
 }
 
-export interface ExternalPlugin {
+export interface ExternalPluginBase {
   id: string;
   capabilities?: readonly ExternalPluginCapabilityProvider[];
+}
+
+export interface ExternalBrowserPlugin extends ExternalPluginBase {
   requirements?: ExternalPluginRequirements;
   hooks?: ExternalPluginHooks;
 }
+
+export interface ExternalHostNeutralPlugin extends ExternalPluginBase {
+  requirements?: never;
+  hooks?: never;
+}
+
+export interface ExternalServerPlugin extends ExternalHostNeutralPlugin {}
+
+export type ExternalPlugin = ExternalBrowserPlugin | ExternalServerPlugin;
 
 export interface ExternalPluginContext {
   readonly profiler: ExternalProfilerControl;
 }
 
-export type ExternalPluginFactory = (
+export type ExternalPluginFactory<
+  Plugin extends ExternalPlugin = ExternalPlugin,
+> = (
   runtimeOptions: ExternalRuntimeOptions,
   context: ExternalPluginContext,
-) => ExternalPlugin;
+) => Plugin;
 
-export interface ExternalPluginModule {
-  createPlugin: ExternalPluginFactory;
+export type ExternalBrowserPluginFactory =
+  ExternalPluginFactory<ExternalBrowserPlugin>;
+export type ExternalServerPluginFactory =
+  ExternalPluginFactory<ExternalServerPlugin>;
+
+export interface ExternalPluginModule<
+  Plugin extends ExternalPlugin = ExternalPlugin,
+> {
+  createPlugin: ExternalPluginFactory<Plugin>;
 }

@@ -43,7 +43,7 @@ import type {
 } from "@solitude/plugin-api/world-model";
 
 const PLUGIN_MANIFEST_SCHEMA_VERSION = 2;
-const PLUGIN_PACK_SCHEMA_VERSION = 2;
+const PLUGIN_PACK_SCHEMA_VERSION = 3;
 const PLUGIN_SET_SCHEMA_VERSION = 1;
 const PLUGIN_ID_PATTERN = /^[A-Za-z][A-Za-z0-9.-]*$/;
 const PLUGIN_HOSTS = new Set<ExternalPluginHost>(["browser", "server"]);
@@ -58,7 +58,7 @@ const PLUGIN_MANIFEST_KEYS = new Set([
   "id",
   "schemaVersion",
 ]);
-const PLUGIN_PACK_KEYS = new Set(["hosts", "id", "plugins", "schemaVersion"]);
+const PLUGIN_PACK_KEYS = new Set(["host", "id", "plugins", "schemaVersion"]);
 const PLUGIN_SET_KEYS = new Set(["packs", "schemaVersion"]);
 const EXTERNAL_PLUGIN_KEYS = new Set([
   "capabilities",
@@ -66,6 +66,7 @@ const EXTERNAL_PLUGIN_KEYS = new Set([
   "id",
   "requirements",
 ]);
+const EXTERNAL_SERVER_PLUGIN_KEYS = new Set(["capabilities", "id"]);
 const EXTERNAL_PLUGIN_HOOK_KEYS = new Set([
   "labels",
   "loop",
@@ -238,7 +239,11 @@ export async function loadExternalPluginSet({
   for (let index = 0; index < manifests.length; index++) {
     const manifest = manifests[index];
     const module = parsePluginModule(modules[index], manifest.id);
-    catalog[manifest.id] = createInternalPluginFactory(manifest.id, module);
+    catalog[manifest.id] = createInternalPluginFactory(
+      manifest.id,
+      module,
+      host,
+    );
   }
 
   return {
@@ -403,14 +408,8 @@ function parsePluginPackManifest(
     !hasOnlyKeys(value, PLUGIN_PACK_KEYS) ||
     typeof value.id !== "string" ||
     !PLUGIN_ID_PATTERN.test(value.id) ||
-    !Array.isArray(value.hosts) ||
-    value.hosts.length === 0 ||
-    !value.hosts.every(
-      (host) =>
-        typeof host === "string" &&
-        PLUGIN_HOSTS.has(host as ExternalPluginHost),
-    ) ||
-    new Set(value.hosts).size !== value.hosts.length ||
+    typeof value.host !== "string" ||
+    !PLUGIN_HOSTS.has(value.host as ExternalPluginHost) ||
     !Array.isArray(value.plugins) ||
     value.plugins.length === 0 ||
     !value.plugins.every((item) => typeof item === "string" && item.length > 0)
@@ -429,7 +428,7 @@ function validatePluginPacks(
     if (ids.has(manifest.id)) {
       throw new Error(`Duplicate external plugin pack id: ${manifest.id}`);
     }
-    if (!manifest.hosts.includes(host)) {
+    if (manifest.host !== host) {
       throw new Error(
         `External plugin pack ${manifest.id} does not support host ${host}`,
       );
@@ -490,10 +489,11 @@ function parsePluginModule(value: unknown, id: string): ExternalPluginModule {
 function createInternalPluginFactory(
   expectedId: string,
   module: ExternalPluginModule,
+  host: ExternalPluginHost,
 ): PluginFactory {
   return (runtimeOptions) => {
     const external = module.createPlugin(runtimeOptions, externalPluginContext);
-    validateExternalPlugin(external, expectedId);
+    validateExternalPlugin(external, expectedId, host);
     return adaptExternalPlugin(external);
   };
 }
@@ -501,14 +501,22 @@ function createInternalPluginFactory(
 function validateExternalPlugin(
   plugin: ExternalPlugin,
   expectedId: string,
+  host: ExternalPluginHost,
 ): void {
   if (!isRecord(plugin) || plugin.id !== expectedId) {
     throw new Error(
       `External plugin factory for ${expectedId} returned id ${String(plugin?.id)}`,
     );
   }
-  if (!hasOnlyKeys(plugin, EXTERNAL_PLUGIN_KEYS)) {
-    throw new Error(`External plugin ${expectedId} has invalid properties`);
+  const allowedKeys =
+    host === "browser" ? EXTERNAL_PLUGIN_KEYS : EXTERNAL_SERVER_PLUGIN_KEYS;
+  if (!hasOnlyKeys(plugin, allowedKeys)) {
+    if (host === "browser") {
+      throw new Error(`External plugin ${expectedId} has invalid properties`);
+    }
+    throw new Error(
+      `External plugin ${expectedId} has properties unsupported by host ${host}`,
+    );
   }
   if (
     plugin.capabilities !== undefined &&

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20T01:43:18.500Z",
+  "generatedAt": "2026-07-25T15:04:02.524Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -540,10 +540,22 @@
       "packageName": "@solitude-plugins/multiplayer-pack-v1"
     },
     {
-      "id": "pkg:@solitude-plugins/solitude-content-pack-v1",
+      "id": "pkg:@solitude-plugins/poly-fighter",
       "kind": "package",
-      "label": "@solitude-plugins/solitude-content-pack-v1",
-      "packageName": "@solitude-plugins/solitude-content-pack-v1"
+      "label": "@solitude-plugins/poly-fighter",
+      "packageName": "@solitude-plugins/poly-fighter"
+    },
+    {
+      "id": "pkg:@solitude-plugins/solitude-content-browser-pack-v1",
+      "kind": "package",
+      "label": "@solitude-plugins/solitude-content-browser-pack-v1",
+      "packageName": "@solitude-plugins/solitude-content-browser-pack-v1"
+    },
+    {
+      "id": "pkg:@solitude-plugins/solitude-content-server-pack-v1",
+      "kind": "package",
+      "label": "@solitude-plugins/solitude-content-server-pack-v1",
+      "packageName": "@solitude-plugins/solitude-content-server-pack-v1"
     },
     {
       "id": "pkg:@solitude-plugins/standalone-pack-v1",
@@ -2074,6 +2086,22 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./module:ExternalBrowserPlugin",
+      "kind": "symbol",
+      "label": "ExternalBrowserPlugin",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./module",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./module:ExternalBrowserPluginFactory",
+      "kind": "symbol",
+      "label": "ExternalBrowserPluginFactory",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./module",
+      "symbolKind": "type"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:./celestial-bodies:ExternalCelestialBody",
       "kind": "symbol",
       "label": "ExternalCelestialBody",
@@ -2223,6 +2251,14 @@
       "label": "ExternalGravityPrimary",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./world",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./module:ExternalHostNeutralPlugin",
+      "kind": "symbol",
+      "label": "ExternalHostNeutralPlugin",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./module",
       "symbolKind": "interface"
     },
     {
@@ -2397,6 +2433,14 @@
       "id": "symbol:@solitude/plugin-api:./module:ExternalPlugin",
       "kind": "symbol",
       "label": "ExternalPlugin",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./module",
+      "symbolKind": "type"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./module:ExternalPluginBase",
+      "kind": "symbol",
+      "label": "ExternalPluginBase",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./module",
       "symbolKind": "interface"
@@ -2712,6 +2756,22 @@
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./scene",
       "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./module:ExternalServerPlugin",
+      "kind": "symbol",
+      "label": "ExternalServerPlugin",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./module",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./module:ExternalServerPluginFactory",
+      "kind": "symbol",
+      "label": "ExternalServerPluginFactory",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./module",
+      "symbolKind": "type"
     },
     {
       "id": "symbol:@solitude/plugin-api:./telemetry:ExternalSpacecraftOperatorTelemetry",
@@ -5560,10 +5620,22 @@
       "to": "pkg:@solitude/plugin-api"
     },
     {
-      "id": "dependency:pkg:@solitude-plugins/solitude-content-pack-v1->pkg:@solitude/plugin-api",
-      "from": "pkg:@solitude-plugins/solitude-content-pack-v1",
+      "id": "dependency:pkg:@solitude-plugins/poly-fighter->pkg:@solitude/plugin-api",
+      "from": "pkg:@solitude-plugins/poly-fighter",
       "kind": "dependency",
       "to": "pkg:@solitude/plugin-api"
+    },
+    {
+      "id": "dependency:pkg:@solitude-plugins/solitude-content-browser-pack-v1->pkg:@solitude-plugins/poly-fighter",
+      "from": "pkg:@solitude-plugins/solitude-content-browser-pack-v1",
+      "kind": "dependency",
+      "to": "pkg:@solitude-plugins/poly-fighter"
+    },
+    {
+      "id": "dependency:pkg:@solitude-plugins/solitude-content-server-pack-v1->pkg:@solitude-plugins/poly-fighter",
+      "from": "pkg:@solitude-plugins/solitude-content-server-pack-v1",
+      "kind": "dependency",
+      "to": "pkg:@solitude-plugins/poly-fighter"
     },
     {
       "id": "dependency:pkg:@solitude-plugins/standalone-pack-v1->pkg:@solitude/plugin-api",
@@ -12190,22 +12262,58 @@
       "to": "symbol:@solitude/plugin-api:./math:Vec3"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPlugin->symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider",
-      "from": "symbol:@solitude/plugin-api:./module:ExternalPlugin",
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalBrowserPlugin->symbol:@solitude/plugin-api:./module:ExternalPluginBase",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalBrowserPlugin",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider"
+      "to": "symbol:@solitude/plugin-api:./module:ExternalPluginBase"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPlugin->symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
-      "from": "symbol:@solitude/plugin-api:./module:ExternalPlugin",
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalBrowserPlugin->symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalBrowserPlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./module:ExternalPluginHooks"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPlugin->symbol:@solitude/plugin-api:./module:ExternalPluginRequirements",
-      "from": "symbol:@solitude/plugin-api:./module:ExternalPlugin",
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalBrowserPlugin->symbol:@solitude/plugin-api:./module:ExternalPluginRequirements",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalBrowserPlugin",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./module:ExternalPluginRequirements"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalBrowserPluginFactory->symbol:@solitude/plugin-api:./module:ExternalBrowserPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalBrowserPluginFactory",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./module:ExternalBrowserPlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalBrowserPluginFactory->symbol:@solitude/plugin-api:./module:ExternalPluginFactory",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalBrowserPluginFactory",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./module:ExternalPluginFactory"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalHostNeutralPlugin->symbol:@solitude/plugin-api:./module:ExternalPluginBase",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalHostNeutralPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./module:ExternalPluginBase"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPlugin->symbol:@solitude/plugin-api:./module:ExternalBrowserPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./module:ExternalBrowserPlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPlugin->symbol:@solitude/plugin-api:./module:ExternalServerPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./module:ExternalServerPlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginBase->symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginBase",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginContext->symbol:@solitude/plugin-api:./profiling:ExternalProfilerControl",
@@ -12280,6 +12388,12 @@
       "to": "symbol:@solitude/plugin-api:./world-model:ExternalWorldModelPlugin"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginModule->symbol:@solitude/plugin-api:./module:ExternalPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginModule",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./module:ExternalPlugin"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginModule->symbol:@solitude/plugin-api:./module:ExternalPluginFactory",
       "from": "symbol:@solitude/plugin-api:./module:ExternalPluginModule",
       "kind": "symbol-reference",
@@ -12290,6 +12404,24 @@
       "from": "symbol:@solitude/plugin-api:./module:ExternalPluginRequirements",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./module:ExternalFocusEntityCapabilityRequirement"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalServerPlugin->symbol:@solitude/plugin-api:./module:ExternalHostNeutralPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalServerPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./module:ExternalHostNeutralPlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalServerPluginFactory->symbol:@solitude/plugin-api:./module:ExternalPluginFactory",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalServerPluginFactory",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./module:ExternalPluginFactory"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalServerPluginFactory->symbol:@solitude/plugin-api:./module:ExternalServerPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalServerPluginFactory",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./module:ExternalServerPlugin"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./multiplayer:createMultiplayerSessionCapability->symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider",

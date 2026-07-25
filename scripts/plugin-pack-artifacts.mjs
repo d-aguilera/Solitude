@@ -2,7 +2,7 @@ import { readFile, readdir, realpath } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve } from "node:path";
 
 const hostIds = new Set(["browser", "server"]);
-const packKeys = new Set(["hosts", "id", "plugins", "schemaVersion"]);
+const packKeys = new Set(["host", "id", "plugins", "schemaVersion"]);
 const pluginKeys = new Set(["apiVersion", "entry", "id", "schemaVersion"]);
 const pluginIdPattern = /^[A-Za-z][A-Za-z0-9.-]*$/;
 const importSpecifierPattern =
@@ -73,13 +73,10 @@ function validatePackManifest(value, expectedId, requiredHost) {
   if (
     !isRecord(value) ||
     !hasOnlyKeys(value, packKeys) ||
-    value.schemaVersion !== 2 ||
+    value.schemaVersion !== 3 ||
     value.id !== expectedId ||
-    !Array.isArray(value.hosts) ||
-    value.hosts.length === 0 ||
-    !value.hosts.every((host) => hostIds.has(host)) ||
-    new Set(value.hosts).size !== value.hosts.length ||
-    !value.hosts.includes(requiredHost) ||
+    !hostIds.has(value.host) ||
+    value.host !== requiredHost ||
     !Array.isArray(value.plugins) ||
     value.plugins.length === 0 ||
     !value.plugins.every(

@@ -21,7 +21,7 @@ export interface ExternalPluginLoaderConfig {
 }
 
 export interface ExternalPluginPackManifest {
-  hosts: readonly ExternalPluginHost[];
+  host: ExternalPluginHost;
   id: string;
   plugins: readonly string[];
   schemaVersion: number;
