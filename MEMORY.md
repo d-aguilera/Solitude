@@ -34,7 +34,7 @@
 ## Current focus
 
 - **Primary active work**: package decoupling. Continue moving product plugins out of host packages and into independently built packages discovered through deployed plugin sets. See `MEMORY_PACKAGE_DECOUPLING.md`.
-- **Current extraction frontier**: the remaining static Solitude plugins are `playback` and `timeScale`; the remaining static simulation plugins are `autopilot`, `autopilotInput`, `solarSystem`, and `spacecraftOperator`. The simulation set is the deeper phase because authoritative external plugins are currently capability-only.
+- **Current extraction frontier**: the final static Solitude product plugin is `playback`; the remaining static simulation plugins are `autopilot`, `autopilotInput`, `solarSystem`, and `spacecraftOperator`. The simulation set is the deeper phase because authoritative external plugins are currently capability-only.
 - **Discovery foundation**: browser and server discovery, multi-plugin packs, strict manifests, target-specific assembly, origin/path security, and schema-v3 single-host packs are in place. Preserve the rule that a pack is an atomic host-specific activation unit.
 - **Headless playback**: still unresolved and not archived, but it is a dormant backlog item rather than the active path. See `MEMORY_HEADLESS_PLAYBACK.md`.
 - **GPU rendering state**: WebGL2 is the sole solid-mesh renderer for standalone and remote play. WebGL also owns depth-tested trajectory and world-segment ribbons; Canvas remains for scene labels, markers, and HUD. The engine CPU-face pipeline and Canvas backend have been removed. Historical rendering roadmaps live in `archive/MEMORY_GPU_RENDERING.md` and `archive/MEMORY_GPU_POLYLINES.md`.
@@ -81,12 +81,12 @@
 - `packages/client/src/`: deployable remote browser client, server URL adapter, HTTP/WebSocket client helpers, keyboard input patching, authoritative snapshot interpolation, and remote rendering composition.
 - `packages/server/src/`: generic Node-oriented authoritative session, ticking, snapshot encoding, metrics, HTTP, and WebSocket infrastructure parameterized by a game implementation.
 - `packages/multiplayer/src/`: Solitude-specific authoritative game composition and deployable server entrypoint, including server plugin discovery and use of the shared headless simulation.
-- `packages/solitude/src/`: standalone browser app bootstrap and the remaining static product plugins: `playback` and `timeScale`.
+- `packages/solitude/src/`: standalone browser app bootstrap and the final static product plugin, `playback`.
 - `plugins/core-pack-v1/`: independently built browser pack discovered at runtime by standalone and remote clients. It contains autopilot-HUD, axial-view, body-label, main-view-lookaround, orbit-segment, orbit-telemetry, runtime-telemetry, ship-telemetry, solar-system-material, targeting-laser, trajectory, and velocity-segment plugins plus pack-owned texture assets.
 - `plugins/poly-fighter/`: host-neutral external plugin implementation package owning the poly-fighter controllable-entity provider and OBJ model.
 - `plugins/solitude-content-browser-pack-v1/` and `plugins/solitude-content-server-pack-v1/`: thin single-host deployment packs that bundle the same poly-fighter implementation for browser and authoritative server activation respectively.
 - `plugins/multiplayer-pack-v1/`: independently built multiplayer-only browser plugin pack containing the remote identity HUD and localized ship-color entity names.
-- `plugins/standalone-pack-v1/`: independently built standalone-only browser plugin pack containing default ships, memory telemetry, profiling controls/HUD, pause behavior, and runtime operator focus switching.
+- `plugins/standalone-pack-v1/`: independently built standalone-only browser plugin pack containing default ships, pause and time-scale controls/HUD, memory telemetry, profiling controls/HUD, and runtime operator focus switching.
 - Production and test source lives under `packages/*`; the root `src` directory has been removed.
 - Root Vite config uses `packages/solitude` as the standalone app root; dedicated Vite configs build `dist/client`, `dist/server`, and `dist/standalone`.
 
@@ -98,7 +98,7 @@
 - `packages/engine/src/infra/configuredGamePipeline.ts` constructs the standalone world/scene and creates the engine-owned application pipeline.
 - `packages/engine/src/app/gamePipeline.ts` owns plugin assembly, frame policy, simulation, scene/view updates, and per-view render contributions; `packages/engine/src/app/game.ts` runs the per-tick simulation phases.
 - `packages/browser/src/infra/domGameLoop.ts` schedules animation frames, invokes the engine pipeline, renders through generic view renderers, and rasterizes scene/HUD overlays.
-- Shared Solitude simulation plugins from `@solitude/sim` provide spacecraft controls, vehicle dynamics, headless autopilot behavior, autopilot keyboard input, and scenario/world-model content. The external `autopilotHud` plugin provides localized browser presentation around that behavior; the remaining static standalone plugins provide time-scale and playback behavior.
+- Shared Solitude simulation plugins from `@solitude/sim` provide spacecraft controls, vehicle dynamics, headless autopilot behavior, autopilot keyboard input, and scenario/world-model content. The external `autopilotHud` plugin provides localized browser presentation around that behavior; the final static standalone plugin provides playback behavior.
 - Solitude plugin order is runtime behavior; later loop/frame-policy plugins can override earlier ones, and capability-backed DOM input handlers are consulted in reverse plugin order.
 
 ## Current State
@@ -129,7 +129,7 @@
 - The external browser-only `core-pack-v1` package currently contributes twelve plugins. Autopilot HUD renders localized mode state and circle-now diagnostics. Axial views registers localized top/front/left/right picture-in-picture cameras. Body labels render capability-provided or generated entity names plus localized distance and speed readouts. Main-view lookaround owns shared renderer-local look rotation, reset, and camera-offset controls. Orbit segments toggle with `G` and render the focused entity's bound analytic orbit around its dominant gravity body. Orbit telemetry renders localized orbit, apsis, circularization, and timing readouts. Runtime telemetry renders localized simulation time and rolling local presentation FPS. Ship telemetry renders localized focused-entity speed and optional spacecraft thrust/RCS state. Solar-system materials applies Earth and Moon texture materials and resolves three pack-owned JPEG assets relative to its loaded module. Targeting laser toggles with `T`, locks the collision sphere nearest the focused ship's nose axis, and renders a beam, target-plane miss guide, obstruction cue, or constant-screen-size surface impact marker. Trajectories maintain sampled ring-buffer polylines for controllable bodies and primary solar-system bodies. Velocity segments render forward/backward world-space lines along the focused entity's velocity. Both browser products discover the pack through same-origin `plugins/loader.json`; no product package statically depends on the plugin package.
 - The host-neutral `@solitude-plugins/poly-fighter` implementation owns its OBJ mesh, derived mass, and controllable-entity provider. Both browser products discover it through `solitude-content-browser-pack-v1`; authoritative multiplayer discovers the identical bundled module through `solitude-content-server-pack-v1` in `dist/server/plugins/plugin-set.json`, activates its capability before creating sessions, and requires exactly one discovered controllable-entity provider without knowing its concrete id.
 - The external `multiplayer-pack-v1` package contributes `remoteIdentityHud` and `shipColorNames` only to multiplayer. Standalone's assembled plugin set and distribution do not contain the pack. Multiplayer reads both packs through its own same-origin `plugins/loader.json`.
-- The external `standalone-pack-v1` package contributes `ships`, `memory`, `profiling`, `pause`, and `operatorSwitch` only to standalone. The extracted pause hook returns no policy while running and yields to an earlier fixed-tick diagnostic policy, preserving playback precedence after the package move. `operatorSwitch` remains after playback in final plugin order so it can refresh the scene when focus changes while playback is paused. Multiplayer's assembled plugin set and distribution do not contain the pack.
+- The external `standalone-pack-v1` package contributes `ships`, `pause`, `timeScale`, `memory`, `profiling`, and `operatorSwitch` only to standalone. Pause is ordered before profiling so the profiler observes paused frames. The extracted pause and time-scale hooks yield to an earlier fixed-tick diagnostic policy, preserving playback precedence after their package moves. `operatorSwitch` remains after playback in final plugin order so it can refresh the scene when focus changes while playback is paused. Multiplayer's assembled plugin set and distribution do not contain the pack.
 - External plugin sets expand ordered atomic pack manifests, and each independently built pack may contribute multiple ordered runtime plugin manifests. All packs and plugin manifests use strict schema/id validation; pack-host, plugin API, path/origin, duplicate-id, and collision validation complete before module import. Browser loader configuration is a fixed same-origin trust root, defaults to `self`, and JSON fetches reject redirects. Server plugin sets are explicit local trust roots with lexical and real-path containment. Missing, disallowed, incompatible, duplicate, or colliding plugins fail host startup.
 - Plugin deployment assembly is target-specific: `plugins/browser-plugin-packs.json` defines standalone/multiplayer browser order, `plugins/server-plugin-packs.json` defines authoritative server order, `dist/plugin-public/<target>` stages browser trees, and `dist/server/plugins` contains the authoritative server's local plugin tree beside its bundle.
 - Engine world-segment contributions use renderer-neutral numeric RGB; CSS conversion occurs in the render layer. Engine frame policy uses generic presentation terminology while browser overlays retain browser-owned naming.
@@ -172,7 +172,7 @@
 - `plugins/poly-fighter/src/`: host-neutral poly-fighter gameplay-content plugin factory shared by the separate browser and server content pack builds.
 - `plugins/solitude-content-browser-pack-v1/` and `plugins/solitude-content-server-pack-v1/`: host-specific deployment-pack build wrappers for the shared poly-fighter implementation.
 - `plugins/multiplayer-pack-v1/src/`: multiplayer-only external presentation plugin factories for remote identity and localized ship-color names.
-- `plugins/standalone-pack-v1/src/`: standalone-only external factories for ships, memory telemetry, profiling, pause behavior, and operator focus switching.
+- `plugins/standalone-pack-v1/src/`: standalone-only external factories for ships, pause and time-scale behavior, memory telemetry, profiling, and operator focus switching.
 - `scripts/run-server-load.mjs`: headless WebSocket load and input-latency harness for local or deployed servers.
 - `packages/solitude/src/bootstrap.ts`: Solitude browser app composition.
 - `packages/sim/src/plugins/spacecraftOperator/`: spacecraft controls, dynamics, telemetry state, and forward camera rig.
@@ -180,7 +180,7 @@
 - `packages/sim/src/autopilot/`: reusable headless autopilot behavior, input contract, control logic, and propulsion integration APIs.
 - `plugins/core-pack-v1/src/autopilot-hud/`: standalone/remote localized autopilot status and circle-now diagnostic HUD plugin.
 - `packages/solitude/src/plugins/playback/`: diagnostic capture/playback and repeatable scenario logs.
-- `packages/solitude/src/plugins/timeScale/`: remaining static standalone time-scale loop/input/HUD plugin.
+- `plugins/standalone-pack-v1/src/time-scale/`: standalone time-scale loop/input/localized-HUD plugin.
 - `packages/sim/src/plugins/`: remaining static solar-system, spacecraft-operator, autopilot, and autopilot-input implementations.
 
 ## Controls Quick Reference
@@ -213,7 +213,7 @@
 
 ## Next Steps Snapshot
 
-- Active path: continue physical package decoupling one plugin at a time. Start from the remaining standalone browser plugins, then design the authoritative lifecycle needed to externalize the server-used simulation plugins. See `MEMORY_PACKAGE_DECOUPLING.md`.
+- Active path: extract the final standalone playback plugin, then design the authoritative lifecycle needed to externalize the server-used simulation plugins. See `MEMORY_PACKAGE_DECOUPLING.md`.
 - Package split migration is closed, but package decoupling is not: the current work replaces static product-plugin catalogs with independently built runtime deployment units.
 - Headless playback remains unresolved and active as a tracked topic, but is deprioritized until explicitly resumed. See `MEMORY_HEADLESS_PLAYBACK.md`.
 - Operator runtime focus switching is extracted and closed; foreground/background UX and declarative input lock policy remain deferred in `archive/MEMORY_OPERATOR_MODEL.md`.
@@ -222,7 +222,7 @@
 
 - Workspace package exports are intentionally absent unless a package subpath is consumed externally; avoid adding public-looking exports for private implementation seams.
 - Some plugin features still use spacecraft or solar-system vocabulary; keep that out of engine/browser unless it is truly generic.
-- Default Solitude plugin order is behaviorally significant; preserve ordering-sensitive tests when moving playback, time scale, operator switch, profiling, or input plugins.
+- Default Solitude plugin order is behaviorally significant; preserve ordering-sensitive tests when moving playback, operator switch, profiling, or input plugins.
 - Server external plugins are capability-only. Do not extract authoritative world-model, control, simulation, or loop behavior by bypassing that contract; design the lifecycle explicitly first.
 - Browser plugin discovery allows only explicitly trusted origins and is reinforced by page CSP; server discovery accepts only an explicitly configured contained local plugin set. Loaded plugins remain same-realm trusted code. Unloading, sandboxing, signatures, and inter-plugin dependency resolution are not implemented.
 - Gravity uses fixed sub-steps for stability; high time scales can still destabilize.

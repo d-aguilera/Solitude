@@ -51,8 +51,8 @@
 
 - `core-pack-v1` (`browser`): twelve presentation/control plugins shared by
   standalone and multiplayer.
-- `standalone-pack-v1` (`browser`): `ships`, `memory`, `profiling`, `pause`,
-  and `operatorSwitch`.
+- `standalone-pack-v1` (`browser`): `ships`, `pause`, `timeScale`, `memory`,
+  `profiling`, and `operatorSwitch`.
 - `multiplayer-pack-v1` (`browser`): `remoteIdentityHud` and `shipColorNames`.
 - `solitude-content-browser-pack-v1` (`browser`) and
   `solitude-content-server-pack-v1` (`server`): host-specific wrappers around
@@ -67,7 +67,6 @@ separate packs express separate host activation and deployment.
 `packages/solitude/src/plugins/` still owns:
 
 - `playback`
-- `timeScale`
 
 `packages/sim/src/plugins/` still owns:
 
@@ -86,17 +85,16 @@ composition. Removing it is the deeper part of the remaining work.
 
 ## Recommended Slicing
 
-1. Reinspect `timeScale` and `playback` before choosing the next standalone
-   slice; both participate in ordering-sensitive frame policy.
-2. Extract `playback` independently from the dormant headless playback runner
+1. Extract `playback`, the final static standalone product plugin,
+   independently from the dormant headless playback runner
    work; preserve its browser behavior and tests without making the headless
    backlog a prerequisite.
-3. Audit the `@solitude/sim` plugins one at a time. Introduce only the narrow
+2. Audit the `@solitude/sim` plugins one at a time. Introduce only the narrow
    Plugin API surface required by the selected slice.
-4. Before moving server-used simulation behavior, design an explicit
+3. Before moving server-used simulation behavior, design an explicit
    authoritative lifecycle for server plugins. Do not smuggle browser hooks
    through capability-only server modules.
-5. When one implementation must run on multiple hosts, keep one host-neutral
+4. When one implementation must run on multiple hosts, keep one host-neutral
    implementation package and build separate single-host deployment packs, as
    with Poly Fighter.
 

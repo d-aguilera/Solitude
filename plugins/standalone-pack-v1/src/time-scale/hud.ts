@@ -1,11 +1,11 @@
-import type { HudPanelProvider } from "@solitude/hud/provider";
+import type { ExternalHudPanelProvider } from "@solitude/plugin-api/hud";
 import type { TimeScaleLocalization } from "./localization";
 import type { TimeScaleController } from "./logic";
 
 export function createHudPanel(
   controller: TimeScaleController,
   localization: TimeScaleLocalization,
-): HudPanelProvider {
+): ExternalHudPanelProvider {
   return {
     writeHud: (grid) => {
       const scale = controller.getScale();

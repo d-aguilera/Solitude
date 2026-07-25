@@ -1,21 +1,27 @@
-import type { LoopPlugin, LoopUpdateResult } from "@solitude/engine/plugin";
-import { parameters } from "@solitude/engine/runtime";
+import type {
+  ExternalLoopPlugin,
+  ExternalLoopUpdateResult,
+} from "@solitude/plugin-api/loop";
 import { createTimeScaleController } from "./logic";
 
+const DEFAULT_TIME_SCALE = 1;
+
 export function createLoopPlugin(): {
-  plugin: LoopPlugin;
+  plugin: ExternalLoopPlugin;
   controller: ReturnType<typeof createTimeScaleController>;
 } {
-  const controller = createTimeScaleController(parameters.timeScale);
+  const controller = createTimeScaleController(DEFAULT_TIME_SCALE);
   const framePolicy = { simDtMillis: 0 };
-  const updateResult: LoopUpdateResult = { framePolicy };
+  const updateResult: ExternalLoopUpdateResult = { framePolicy };
 
-  const plugin: LoopPlugin = {
+  const plugin: ExternalLoopPlugin = {
     updateLoopState: (params) => {
       const nextTimeScale = controller.update(
         params.controlInput.decreaseTimeScale,
         params.controlInput.increaseTimeScale,
       );
+      // An earlier fixed-tick diagnostic loop already owns simulation timing.
+      if (params.state.framePolicy.tickDtMillis !== undefined) return null;
       framePolicy.simDtMillis = params.dtMillis * nextTimeScale;
       return updateResult;
     },
