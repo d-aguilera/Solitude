@@ -1,5 +1,11 @@
 # Client-Server Gameplay Feel Plan
 
+## Final Update
+
+This memory doc is finished and archived.
+
+It records the second client/server gameplay-feel phase: authoritative realtime loop hardening, compact snapshots, load metrics, sequenced input, remote interpolation diagnostics, local prediction/reconciliation, and multiplayer time-scale troubleshooting.
+
 ## Purpose
 
 - Bring the client/server gameplay feel as close as possible to the standalone browser version.

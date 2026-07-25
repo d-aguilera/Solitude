@@ -2,29 +2,31 @@
 
 ## Purpose
 
-- Track planned work for running recorded playback scenarios end-to-end in a headless runtime.
-- Use this before changing `src/infra/headlessGameLoop.ts`, playback plugin lifecycle code, or diagnostic playback tests.
+- Track unresolved work for running recorded playback scenarios end-to-end in a headless runtime.
+- This topic is intentionally deprioritized while package decoupling is the primary active effort. Keep it active, but do not treat it as the next roadmap slice unless explicitly resumed.
+- Use this before changing `packages/engine/src/infra/headlessGameLoop.ts`, Solitude headless composition, playback plugin lifecycle code, or diagnostic playback tests.
 - Goal: make scenarios such as `random-trip` runnable without the browser URL/runtime path, so recorded scenarios can become fast regression tests.
 
 ## Current State
 
 - Browser playback works through DOM bootstrap/runtime options, e.g. `?mode=playback&scenario=random-trip`.
-- `src/infra/headlessGameLoop.ts` is currently a thin simulation stepper intended for tests.
+- `packages/engine/src/infra/headlessGameLoop.ts` is currently a thin generic simulation stepper intended for tests.
 - Headless setup builds a world with `createHeadlessWorld` and advances physics through `step(dtMillis, controlInputOverrides)`.
-- As of package-split Phase 0, generic headless setup no longer installs `spacecraftOperator` by default. Callers pass Solitude plugins explicitly through `HeadlessLoopOptions.plugins` when spacecraft behavior is needed.
-- Playback internals are unit-tested (`src/plugins/playback/core.test.ts`, snapshot tests, logger tests), but headless bootstrap does not play a recorded scenario end-to-end.
+- `packages/sim/src/headless.ts` provides the Solitude-owned wrapper: it loads the static headless simulation catalog, applies world-model hooks, and passes those plugins to the generic loop.
+- Generic headless setup does not install `spacecraftOperator` by default. Callers pass plugins explicitly through `HeadlessLoopOptions.plugins`; the Solitude wrapper currently selects `solarSystem`, `spacecraftOperator`, and `autopilot`.
+- Playback internals are unit-tested under `packages/solitude/src/__tests__/plugins/playback/`, but headless composition does not play a recorded scenario end-to-end.
 
 ## Current Gap
 
-`createHeadlessLoop` does not currently run the playback plugin lifecycle:
+Neither `createHeadlessLoop` nor `createSolitudeHeadlessLoop` currently runs the playback plugin lifecycle:
 
-- no runtime-options parsing or plugin loading;
+- the Solitude wrapper accepts runtime options and loads simulation plugins, but playback is not in its headless catalog;
 - no `LoopPlugin.updateLoopState` orchestration;
 - no playback `FramePolicy` handling for fixed playback step/time scale;
 - no `playback.applySceneSnapshot(world)` scene/world snapshot application;
 - no playback pause/start handling;
 - no `LoopPlugin.afterFrame` diagnostic logging path;
-- no plugin input/control lifecycle beyond manually supplied control/simulation plugins.
+- no general browser-style loop/input/control lifecycle around the direct headless simulation stepper.
 
 Result: recorded scenarios are testable at controller/unit level, but the headless bootstrap cannot yet run a URL-equivalent playback such as `mode=playback&scenario=random-trip`.
 
@@ -55,6 +57,7 @@ Expected behavior:
 - Prefer a dedicated headless playback runner over making the existing simple `createHeadlessLoop` too DOM-runtime-shaped.
 - Keep the existing `createHeadlessLoop` useful as a direct physics/test stepper.
 - Compose Solitude plugins explicitly in a Solitude-owned runner; do not add playback or spacecraft defaults back into the generic headless loop.
+- Keep this work independent from extracting the browser playback plugin into an external package. When this roadmap resumes, consume the then-current playback implementation through a deliberate headless composition seam.
 - Reuse plugin ports rather than importing playback internals directly where possible.
 - Avoid DOM assumptions: no canvas, no requestAnimationFrame, no keyboard handler dependency.
 - Keep allocation/performance constraints in mind if this becomes part of regression suites.
