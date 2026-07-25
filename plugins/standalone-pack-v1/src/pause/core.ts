@@ -1,15 +1,10 @@
-import type { LoopPlugin, LoopUpdateResult } from "@solitude/engine/plugin";
+import type {
+  ExternalLoopPlugin,
+  ExternalLoopUpdateResult,
+} from "@solitude/plugin-api/loop";
 import { createPauseController } from "./logic";
 
-const RUNNING_LOOP_UPDATE: LoopUpdateResult = {
-  framePolicy: {
-    advanceSim: true,
-    advanceScene: true,
-    advancePresentation: true,
-  },
-};
-
-const PAUSED_LOOP_UPDATE: LoopUpdateResult = {
+const PAUSED_LOOP_UPDATE: ExternalLoopUpdateResult = {
   framePolicy: {
     advanceSim: false,
     advanceScene: false,
@@ -18,18 +13,20 @@ const PAUSED_LOOP_UPDATE: LoopUpdateResult = {
 };
 
 export function createLoopPlugin(): {
-  loop: LoopPlugin;
+  loop: ExternalLoopPlugin;
   controller: ReturnType<typeof createPauseController>;
 } {
   const controller = createPauseController();
 
-  const loop: LoopPlugin = {
+  const loop: ExternalLoopPlugin = {
     initLoop: () => {
       controller.init();
     },
     updateLoopState: (params) => {
       const paused = controller.updatePaused(params.controlInput.pauseToggle);
-      return paused ? PAUSED_LOOP_UPDATE : RUNNING_LOOP_UPDATE;
+      // An earlier fixed-tick diagnostic loop already owns the frame policy.
+      if (params.state.framePolicy.tickDtMillis !== undefined) return null;
+      return paused ? PAUSED_LOOP_UPDATE : null;
     },
   };
 

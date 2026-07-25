@@ -15,6 +15,7 @@ export default defineConfig({
         memory: fileURLToPath(
           new URL("./src/memory/index.ts", import.meta.url),
         ),
+        pause: fileURLToPath(new URL("./src/pause/index.ts", import.meta.url)),
         profiling: fileURLToPath(
           new URL("./src/profiling/index.ts", import.meta.url),
         ),
@@ -49,6 +50,7 @@ export default defineConfig({
                 "./ships/plugin.json",
                 "./memory/plugin.json",
                 "./profiling/plugin.json",
+                "./pause/plugin.json",
                 "./operator-switch/plugin.json",
               ],
               schemaVersion: 3,
@@ -93,6 +95,20 @@ export default defineConfig({
               apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               id: "memory",
+              schemaVersion: 2,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "pause/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
+              entry: "./index.js",
+              id: "pause",
               schemaVersion: 2,
             },
             null,

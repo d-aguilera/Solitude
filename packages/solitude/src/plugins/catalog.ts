@@ -1,7 +1,6 @@
 import { createHudOverlayPlugin } from "@solitude/browser/dom/hudOverlayPlugin";
 import type { PluginCatalog } from "@solitude/engine/plugin";
 import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
-import { createPausePlugin } from "./pause/index";
 import { createPlaybackPlugin } from "./playback/index";
 import { createTimeScalePlugin } from "./timeScale/index";
 
@@ -13,7 +12,6 @@ export const defaultPluginIds = [
   "hud",
   "autopilot",
   "autopilotInput",
-  "pause",
   "timeScale",
   "playback",
 ];
@@ -21,7 +19,6 @@ export const defaultPluginIds = [
 export const solitudePluginCatalog: PluginCatalog = {
   ...simPluginCatalog,
   hud: createHudOverlayPlugin,
-  pause: createPausePlugin,
   playback: createPlaybackPlugin,
   timeScale: createTimeScalePlugin,
 };

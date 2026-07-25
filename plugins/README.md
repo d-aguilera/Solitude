@@ -201,6 +201,9 @@ are identical; only the deployment pack id and host contract differ.
     `O` and published through the shared HUD panel capability.
   - `profiling`: opt-in runtime profiling control and localized status HUD,
     backed by the host profiler service exposed at plugin creation time.
+  - `pause`: `P` and page-visibility pause behavior plus the localized paused
+    HUD status. It yields to an earlier fixed-tick diagnostic loop so runtime
+    discovery does not reverse playback's frame-policy precedence.
   - `operatorSwitch`: repeat-safe `Tab` focus switching between the default
     controllable ships, ordered after playback so a paused focus change still
     refreshes the scene and declaring its action as available through

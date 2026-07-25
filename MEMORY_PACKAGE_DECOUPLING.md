@@ -51,8 +51,8 @@
 
 - `core-pack-v1` (`browser`): twelve presentation/control plugins shared by
   standalone and multiplayer.
-- `standalone-pack-v1` (`browser`): `ships`, `memory`, `profiling`, and
-  `operatorSwitch`.
+- `standalone-pack-v1` (`browser`): `ships`, `memory`, `profiling`, `pause`,
+  and `operatorSwitch`.
 - `multiplayer-pack-v1` (`browser`): `remoteIdentityHud` and `shipColorNames`.
 - `solitude-content-browser-pack-v1` (`browser`) and
   `solitude-content-server-pack-v1` (`server`): host-specific wrappers around
@@ -66,7 +66,6 @@ separate packs express separate host activation and deployment.
 
 `packages/solitude/src/plugins/` still owns:
 
-- `pause`
 - `playback`
 - `timeScale`
 
@@ -87,8 +86,8 @@ composition. Removing it is the deeper part of the remaining work.
 
 ## Recommended Slicing
 
-1. Prefer another self-contained standalone browser plugin such as `pause` or
-   `timeScale`.
+1. Reinspect `timeScale` and `playback` before choosing the next standalone
+   slice; both participate in ordering-sensitive frame policy.
 2. Extract `playback` independently from the dormant headless playback runner
    work; preserve its browser behavior and tests without making the headless
    backlog a prerequisite.
