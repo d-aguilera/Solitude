@@ -4,11 +4,7 @@ import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
 
 // Plugin order is runtime behavior: later loop/frame-policy plugins can
 // override earlier ones, and input handlers are consulted in reverse order.
-export const staticPluginIds = [
-  "spacecraftOperator",
-  "browserHudOverlay",
-  "autopilot",
-];
+export const staticPluginIds = ["spacecraftOperator", "browserHudOverlay"];
 
 export const staticPluginCatalog: PluginCatalog = {
   ...simPluginCatalog,

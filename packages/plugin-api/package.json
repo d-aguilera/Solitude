@@ -26,6 +26,7 @@
     "./scene": "./src/scene.ts",
     "./simulation": "./src/simulation.ts",
     "./snapshots": "./src/snapshots.ts",
+    "./spacecraft": "./src/spacecraft.ts",
     "./telemetry": "./src/telemetry.ts",
     "./views": "./src/views.ts",
     "./world": "./src/world.ts",
@@ -34,7 +35,8 @@
   "dependencies": {
     "@solitude/engine": "0.0.0",
     "@solitude/entity-names": "0.0.0",
-    "@solitude/geometry": "0.0.0"
+    "@solitude/geometry": "0.0.0",
+    "@solitude/spacecraft": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

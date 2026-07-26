@@ -1,21 +1,22 @@
-import { localFrame, mat3, vec3, type LocalFrame } from "@solitude/engine/math";
-import { createControlInput } from "@solitude/engine/plugin";
-import { parameters } from "@solitude/engine/runtime";
+import type { ExternalControlInput } from "@solitude/plugin-api/input";
+import { vec3 } from "@solitude/plugin-api/math";
 import type {
-  ControlledBody,
-  EntityMotionState,
-  World,
-} from "@solitude/engine/world";
+  ExternalControlledBody,
+  ExternalEntityMotionState,
+  ExternalLocalFrame,
+  ExternalWorld,
+} from "@solitude/plugin-api/world";
+import { computeStandardGravitationalParameter } from "@solitude/plugin-api/world";
 import { describe, expect, it } from "vitest";
 import {
   getAutopilotAttitudeCommand,
   resolveAutopilotPropulsionCommand,
-} from "../../autopilot/logic";
+} from "../logic";
 
 const orbitRadius = 1_000_000;
 const primaryMass = 5.972e24;
 const circularSpeed = Math.sqrt(
-  (parameters.newtonG * primaryMass) / orbitRadius,
+  computeStandardGravitationalParameter(primaryMass) / orbitRadius,
 );
 
 describe("autopilot circle now v2", () => {
@@ -231,73 +232,58 @@ function createShip({
   frame,
   velocity,
 }: {
-  frame: LocalFrame;
-  velocity: ControlledBody["velocity"];
-}): ControlledBody {
+  frame: ExternalLocalFrame;
+  velocity: ExternalControlledBody["velocity"];
+}): ExternalControlledBody {
   return {
     angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
     frame,
     id: "ship:test",
-    orientation: localFrame.intoMat3(mat3.zero(), frame),
     position: vec3.create(orbitRadius, 0, 0),
     velocity,
   };
 }
 
-function createPrimary(): EntityMotionState {
-  const frame = createFrame(
-    vec3.create(1, 0, 0),
-    vec3.create(0, 1, 0),
-    vec3.create(0, 0, 1),
-  );
+function createPrimary(): ExternalEntityMotionState {
   return {
     id: "body:primary",
-    orientation: localFrame.intoMat3(mat3.zero(), frame),
     position: vec3.zero(),
     velocity: vec3.zero(),
   };
 }
 
-function createWorld(ship: ControlledBody): World {
+function createWorld(ship: ExternalControlledBody): ExternalWorld {
   const primary = createPrimary();
   return {
-    axialSpins: [],
     collisionSpheres: [{ id: primary.id, radius: 1000, state: primary }],
     controllableBodies: [ship],
-    entities: [{ id: primary.id }, { id: ship.id }],
-    entityIndex: new Map([
-      [primary.id, { id: primary.id }],
-      [ship.id, { id: ship.id }],
-    ]),
     entityStates: [primary, ship],
     gravityMasses: [
       {
-        density: 1,
         id: primary.id,
         mass: primaryMass,
         state: primary,
       },
     ],
-    lightEmitters: [],
   };
 }
 
 function createCircleNowInput() {
-  const input = createControlInput(["circleNow"]);
+  const input: ExternalControlInput = {};
   input.circleNow = true;
   return input;
 }
 
 function createOrbitInput() {
-  const input = createControlInput(["orbit"]);
+  const input: ExternalControlInput = {};
   input.orbit = true;
   return input;
 }
 
 function createFrame(
-  right: LocalFrame["right"],
-  forward: LocalFrame["forward"],
-  up: LocalFrame["up"],
-): LocalFrame {
+  right: ExternalLocalFrame["right"],
+  forward: ExternalLocalFrame["forward"],
+  up: ExternalLocalFrame["up"],
+): ExternalLocalFrame {
   return { forward, right, up };
 }

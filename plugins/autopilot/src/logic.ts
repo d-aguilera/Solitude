@@ -1,3 +1,5 @@
+import type { ExternalAttitudeCommand } from "@solitude/plugin-api/controls";
+import type { ExternalControlInput } from "@solitude/plugin-api/input";
 import {
   EPS_ANGLE_RAD,
   EPS_DELTA_V,
@@ -5,24 +7,23 @@ import {
   EPS_LEN_COARSE,
   EPS_SPEED_COARSE,
   EPS_SPEED_FINE,
-  getDominantBody,
-  getDominantBodyPrimary,
   vec3,
   type Vec3,
-} from "@solitude/engine/math";
+} from "@solitude/plugin-api/math";
 import type {
-  AttitudeCommand,
-  ControlInput,
-  ControlledBodyState,
-} from "@solitude/engine/plugin";
-import { parameters } from "@solitude/engine/runtime";
-import type { World } from "@solitude/engine/world";
-import type {
-  SpacecraftPropulsionCommand,
-  SpacecraftRcsCommand,
-  SpacecraftThrustCommand,
-} from "./spacecraftPropulsion";
+  ExternalSpacecraftPropulsionCommand,
+  ExternalSpacecraftRcsCommand,
+  ExternalSpacecraftThrustCommand,
+} from "@solitude/plugin-api/spacecraft";
+import {
+  computeStandardGravitationalParameter,
+  getDominantBodyPrimary,
+  type ExternalControlledBody,
+  type ExternalWorld,
+} from "@solitude/plugin-api/world";
 export { getAutopilotMode, type AutopilotMode } from "./mode";
+
+type AutopilotBodyState = Omit<ExternalControlledBody, "id">;
 
 // Max rate at which the ship can reorient itself toward its velocity vector.
 const alignToVelocityMaxAngularSpeed = 2.0; // rad/s
@@ -81,9 +82,9 @@ const circleNowActiveRelativeError = 0.03;
 
 const RAD_TO_DEG = 180 / Math.PI;
 
-const circleZeroThrust: SpacecraftThrustCommand = { forward: 0 };
-const circleZeroRcs: SpacecraftRcsCommand = { right: 0 };
-const circleZeroPropulsion: SpacecraftPropulsionCommand = {
+const circleZeroThrust: ExternalSpacecraftThrustCommand = { forward: 0 };
+const circleZeroRcs: ExternalSpacecraftRcsCommand = { right: 0 };
+const circleZeroPropulsion: ExternalSpacecraftPropulsionCommand = {
   main: circleZeroThrust,
   rcs: circleZeroRcs,
 };
@@ -132,11 +133,11 @@ export function createCircleNowControllerState(): CircleNowControllerState {
 }
 
 export function getDominantBodyDirection(
-  state: ControlledBodyState,
-  world: World,
+  state: AutopilotBodyState,
+  world: ExternalWorld,
 ): Vec3 | null {
   const position = state.position;
-  const body = getDominantBody(world, position);
+  const body = getDominantBodyPrimary(world, position)?.body;
   if (!body) {
     return null;
   }
@@ -149,7 +150,7 @@ export function getDominantBodyDirection(
   return dominantBodyScratch;
 }
 
-export function getVelocityDirection(state: ControlledBodyState): Vec3 | null {
+export function getVelocityDirection(state: AutopilotBodyState): Vec3 | null {
   const velocity = state.velocity;
   const speed = vec3.length(velocity);
   if (speed === 0) {
@@ -163,8 +164,8 @@ export function getVelocityDirection(state: ControlledBodyState): Vec3 | null {
 }
 
 export function getTangentialDirection(
-  ship: ControlledBodyState,
-  world: World,
+  ship: AutopilotBodyState,
+  world: ExternalWorld,
 ): Vec3 | null {
   const primary = getDominantBodyPrimary(world, ship.position);
   if (!primary) return null;
@@ -199,9 +200,9 @@ export function getTangentialDirection(
 
 export function computeOrbitAttitudeCommand(
   dtMillis: number,
-  ship: ControlledBodyState,
-  world: World,
-): AttitudeCommand | null {
+  ship: AutopilotBodyState,
+  world: ExternalWorld,
+): ExternalAttitudeCommand | null {
   const primary = getDominantBodyPrimary(world, ship.position);
   if (!primary) return null;
 
@@ -247,9 +248,9 @@ export function computeOrbitAttitudeCommand(
  */
 export function computeRollToDirectionCommand(
   dtMillis: number,
-  state: ControlledBodyState,
+  state: AutopilotBodyState,
   targetDirection: Vec3,
-): AttitudeCommand | null {
+): ExternalAttitudeCommand | null {
   const len = vec3.length(targetDirection);
   if (len === 0) return null;
 
@@ -288,9 +289,9 @@ export function computeRollToDirectionCommand(
 
 export function computeCircleNowAttitudeCommand(
   dtMillis: number,
-  ship: ControlledBodyState,
-  world: World,
-): AttitudeCommand | null {
+  ship: AutopilotBodyState,
+  world: ExternalWorld,
+): ExternalAttitudeCommand | null {
   const guidance = computeCircleNowControlGuidance(ship, world);
   if (!guidance) return null;
 
@@ -300,7 +301,7 @@ export function computeCircleNowAttitudeCommand(
   );
 
   const inward = targetForward ?? getDominantBodyDirection(ship, world);
-  let command: AttitudeCommand | null = null;
+  let command: ExternalAttitudeCommand | null = null;
   if (inward) {
     command = computeAlignToDirectionCommand(dtMillis, ship, inward);
   }
@@ -328,9 +329,9 @@ export function computeCircleNowAttitudeCommand(
 
 export function updateCircleNowControllerState(
   dtMillis: number,
-  controlInput: ControlInput,
-  ship: ControlledBodyState,
-  world: World,
+  controlInput: ExternalControlInput,
+  ship: AutopilotBodyState,
+  world: ExternalWorld,
   state: CircleNowControllerState,
 ): void {
   if (!controlInput.circleNow) {
@@ -352,10 +353,10 @@ export function updateCircleNowControllerState(
 
 export function getAutopilotAttitudeCommand(
   dtMillis: number,
-  ship: ControlledBodyState,
-  controlInput: ControlInput,
-  world: World,
-): AttitudeCommand | null {
+  ship: AutopilotBodyState,
+  controlInput: ExternalControlInput,
+  world: ExternalWorld,
+): ExternalAttitudeCommand | null {
   if (controlInput.circleNow) {
     return computeCircleNowAttitudeCommand(dtMillis, ship, world);
   }
@@ -378,10 +379,10 @@ export function getAutopilotAttitudeCommand(
 }
 
 function commandFromWorldAxis(
-  state: ControlledBodyState,
+  state: AutopilotBodyState,
   axisWorld: Vec3,
   speed: number,
-): AttitudeCommand {
+): ExternalAttitudeCommand {
   const frame = state.frame;
   return {
     roll: vec3.dot(axisWorld, frame.forward) * speed,
@@ -396,9 +397,9 @@ function commandFromWorldAxis(
  */
 export function computeAlignToDirectionCommand(
   dtMillis: number,
-  state: ControlledBodyState,
+  state: AutopilotBodyState,
   targetDirection: Vec3,
-): AttitudeCommand | null {
+): ExternalAttitudeCommand | null {
   if (dtMillis === 0) return null;
 
   const len = vec3.length(targetDirection);
@@ -456,8 +457,8 @@ export function computeAlignToDirectionCommand(
 }
 
 function computeCircleNowGuidance(
-  ship: ControlledBodyState,
-  world: World,
+  ship: AutopilotBodyState,
+  world: ExternalWorld,
 ): CircleNowGuidance | null {
   const primary = getDominantBodyPrimary(world, ship.position);
   if (!primary) return null;
@@ -465,7 +466,7 @@ function computeCircleNowGuidance(
   const state = computeCircleNowState(ship, primary);
   if (!state) return null;
 
-  const mu = parameters.newtonG * primary.mass;
+  const mu = computeStandardGravitationalParameter(primary.mass);
   if (mu === 0) return null;
 
   const circularSpeed = Math.sqrt(mu / state.r);
@@ -493,8 +494,8 @@ function computeCircleNowGuidance(
 }
 
 function computeCircleNowControlGuidance(
-  ship: ControlledBodyState,
-  world: World,
+  ship: AutopilotBodyState,
+  world: ExternalWorld,
 ): CircleNowControlGuidance | null {
   const primary = getDominantBodyPrimary(world, ship.position);
   if (!primary) return null;
@@ -502,7 +503,7 @@ function computeCircleNowControlGuidance(
   const state = computeCircleNowState(ship, primary);
   if (!state) return null;
 
-  const mu = parameters.newtonG * primary.mass;
+  const mu = computeStandardGravitationalParameter(primary.mass);
   if (mu === 0) return null;
 
   const circularSpeed = Math.sqrt(mu / state.r);
@@ -584,13 +585,13 @@ function computeCircleNowRollTarget(
   return circleTScratch;
 }
 
-function computeInwardAlignmentDeg(ship: ControlledBodyState): number {
+function computeInwardAlignmentDeg(ship: AutopilotBodyState): number {
   const dot = -vec3.dot(ship.frame.forward, circleRHatScratch);
   return Math.acos(clamp(dot, -1, 1)) * RAD_TO_DEG;
 }
 
 function computeRollAlignmentDeg(
-  state: ControlledBodyState,
+  state: AutopilotBodyState,
   targetDirection: Vec3,
 ): number {
   const len = vec3.length(targetDirection);
@@ -615,7 +616,7 @@ function computeRollAlignmentDeg(
 }
 
 function computeActuatorPlaneScore(
-  ship: ControlledBodyState,
+  ship: AutopilotBodyState,
   deltaV: Vec3,
   deltaVMag: number,
 ): number {
@@ -625,7 +626,7 @@ function computeActuatorPlaneScore(
 }
 
 function computeCircleNowState(
-  ship: ControlledBodyState,
+  ship: AutopilotBodyState,
   primary: DominantPrimary,
 ): CircleNowState | null {
   vec3.subInto(circleRScratch, ship.position, primary.body.position);
@@ -653,7 +654,7 @@ function computeCircleNowState(
 }
 
 function computeCircleTangentialDirection(
-  ship: ControlledBodyState,
+  ship: AutopilotBodyState,
   rHat: Vec3,
   vRel: Vec3,
   radialSpeed: number,
@@ -718,11 +719,11 @@ function computeCircleAcceleration(
 
 function computeCircleNowThrust(
   dtMillis: number,
-  ship: ControlledBodyState,
-  world: World,
+  ship: AutopilotBodyState,
+  world: ExternalWorld,
   maxThrustAcceleration: number,
   maxRcsTranslationAcceleration: number,
-): SpacecraftPropulsionCommand {
+): ExternalSpacecraftPropulsionCommand {
   if (maxThrustAcceleration === 0) {
     return circleZeroPropulsion;
   }
@@ -770,13 +771,13 @@ function computeCircleNowThrust(
 
 export function resolveAutopilotPropulsionCommand(
   dtMillis: number,
-  controlInput: ControlInput,
-  ship: ControlledBodyState,
-  world: World,
-  manualPropulsion: SpacecraftPropulsionCommand,
+  controlInput: ExternalControlInput,
+  ship: AutopilotBodyState,
+  world: ExternalWorld,
+  manualPropulsion: ExternalSpacecraftPropulsionCommand,
   maxThrustAcceleration: number,
   maxRcsTranslationAcceleration: number,
-): SpacecraftPropulsionCommand {
+): ExternalSpacecraftPropulsionCommand {
   if (!controlInput.circleNow) {
     return manualPropulsion;
   }
@@ -791,7 +792,7 @@ export function resolveAutopilotPropulsionCommand(
 }
 
 export function disengageOnManualActuation(
-  controlInput: ControlInput,
+  controlInput: ExternalControlInput,
 ): boolean {
   if (!hasManualActuatorInput(controlInput)) {
     return false;
@@ -803,7 +804,7 @@ export function disengageOnManualActuation(
   return true;
 }
 
-function hasManualActuatorInput(controlInput: ControlInput): boolean {
+function hasManualActuatorInput(controlInput: ExternalControlInput): boolean {
   return (
     controlInput.burnForward ||
     controlInput.burnBackwards ||

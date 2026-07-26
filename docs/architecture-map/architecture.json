@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-26T17:16:59.179Z",
+  "generatedAt": "2026-07-26T17:30:21.697Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -64,6 +64,13 @@
       "label": "./capabilities",
       "packageName": "@solitude/plugin-api",
       "parent": "pkg:@solitude/plugin-api"
+    },
+    {
+      "id": "module:@solitude/spacecraft:./capabilities",
+      "kind": "module",
+      "label": "./capabilities",
+      "packageName": "@solitude/spacecraft",
+      "parent": "pkg:@solitude/spacecraft"
     },
     {
       "id": "module:@solitude/engine:./celestial-bodies",
@@ -486,6 +493,13 @@
       "parent": "pkg:@solitude/plugin-api"
     },
     {
+      "id": "module:@solitude/plugin-api:./spacecraft",
+      "kind": "module",
+      "label": "./spacecraft",
+      "packageName": "@solitude/plugin-api",
+      "parent": "pkg:@solitude/plugin-api"
+    },
+    {
       "id": "module:@solitude/sim:./spacecraft/propulsionLimits",
       "kind": "module",
       "label": "./spacecraft/propulsionLimits",
@@ -554,6 +568,12 @@
       "label": "./world",
       "packageName": "@solitude/plugin-api",
       "parent": "pkg:@solitude/plugin-api"
+    },
+    {
+      "id": "pkg:@solitude-plugins/autopilot",
+      "kind": "package",
+      "label": "@solitude-plugins/autopilot",
+      "packageName": "@solitude-plugins/autopilot"
     },
     {
       "id": "pkg:@solitude-plugins/core-pack-v1",
@@ -686,6 +706,12 @@
       "kind": "package",
       "label": "@solitude/sim",
       "packageName": "@solitude/sim"
+    },
+    {
+      "id": "pkg:@solitude/spacecraft",
+      "kind": "package",
+      "label": "@solitude/spacecraft",
+      "packageName": "@solitude/spacecraft"
     },
     {
       "id": "pkg:solitude",
@@ -1670,6 +1696,22 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./spacecraft:createSpacecraftAutonomousControlProvider",
+      "kind": "symbol",
+      "label": "createSpacecraftAutonomousControlProvider",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./spacecraft",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/spacecraft:./capabilities:createSpacecraftAutonomousControlProvider",
+      "kind": "symbol",
+      "label": "createSpacecraftAutonomousControlProvider",
+      "packageName": "@solitude/spacecraft",
+      "parent": "module:@solitude/spacecraft:./capabilities",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/hud:./telemetry:createSpacecraftOperatorTelemetry",
       "kind": "symbol",
       "label": "createSpacecraftOperatorTelemetry",
@@ -1691,6 +1733,22 @@
       "label": "createSpacecraftOperatorTelemetryProvider",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./telemetry",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./spacecraft:createSpacecraftPropulsionResolverProvider",
+      "kind": "symbol",
+      "label": "createSpacecraftPropulsionResolverProvider",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./spacecraft",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/spacecraft:./capabilities:createSpacecraftPropulsionResolverProvider",
+      "kind": "symbol",
+      "label": "createSpacecraftPropulsionResolverProvider",
+      "packageName": "@solitude/spacecraft",
+      "parent": "module:@solitude/spacecraft:./capabilities",
       "symbolKind": "function"
     },
     {
@@ -1942,11 +2000,27 @@
       "symbolKind": "type"
     },
     {
+      "id": "symbol:@solitude/engine:./epsilon:EPS_ANGLE_RAD",
+      "kind": "symbol",
+      "label": "EPS_ANGLE_RAD",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./epsilon",
+      "symbolKind": "const"
+    },
+    {
       "id": "symbol:@solitude/engine:./math:EPS_ANGLE_RAD",
       "kind": "symbol",
       "label": "EPS_ANGLE_RAD",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./math",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./math:EPS_ANGLE_RAD",
+      "kind": "symbol",
+      "label": "EPS_ANGLE_RAD",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./math",
       "symbolKind": "const"
     },
     {
@@ -3006,6 +3080,14 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftAutonomousControl",
+      "kind": "symbol",
+      "label": "ExternalSpacecraftAutonomousControl",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./spacecraft",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:./telemetry:ExternalSpacecraftOperatorTelemetry",
       "kind": "symbol",
       "label": "ExternalSpacecraftOperatorTelemetry",
@@ -3019,6 +3101,46 @@
       "label": "ExternalSpacecraftOperatorTelemetryProvider",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./telemetry",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommand",
+      "kind": "symbol",
+      "label": "ExternalSpacecraftPropulsionCommand",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./spacecraft",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommandParams",
+      "kind": "symbol",
+      "label": "ExternalSpacecraftPropulsionCommandParams",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./spacecraft",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionResolver",
+      "kind": "symbol",
+      "label": "ExternalSpacecraftPropulsionResolver",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./spacecraft",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftRcsCommand",
+      "kind": "symbol",
+      "label": "ExternalSpacecraftRcsCommand",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./spacecraft",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftThrustCommand",
+      "kind": "symbol",
+      "label": "ExternalSpacecraftThrustCommand",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./spacecraft",
       "symbolKind": "interface"
     },
     {
@@ -3355,6 +3477,22 @@
       "label": "getRequiredPrimaryViewState",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/spacecraft:./capabilities:getSpacecraftAutonomousControls",
+      "kind": "symbol",
+      "label": "getSpacecraftAutonomousControls",
+      "packageName": "@solitude/spacecraft",
+      "parent": "module:@solitude/spacecraft:./capabilities",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/spacecraft:./capabilities:getSpacecraftPropulsionResolvers",
+      "kind": "symbol",
+      "label": "getSpacecraftPropulsionResolvers",
+      "packageName": "@solitude/spacecraft",
+      "parent": "module:@solitude/spacecraft:./capabilities",
       "symbolKind": "function"
     },
     {
@@ -5454,6 +5592,30 @@
       "symbolKind": "type"
     },
     {
+      "id": "symbol:@solitude/spacecraft:./capabilities:SpacecraftAutonomousControl",
+      "kind": "symbol",
+      "label": "SpacecraftAutonomousControl",
+      "packageName": "@solitude/spacecraft",
+      "parent": "module:@solitude/spacecraft:./capabilities",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./spacecraft:spacecraftAutonomousControlCapability",
+      "kind": "symbol",
+      "label": "spacecraftAutonomousControlCapability",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./spacecraft",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/spacecraft:./capabilities:spacecraftAutonomousControlCapability",
+      "kind": "symbol",
+      "label": "spacecraftAutonomousControlCapability",
+      "packageName": "@solitude/spacecraft",
+      "parent": "module:@solitude/spacecraft:./capabilities",
+      "symbolKind": "const"
+    },
+    {
       "id": "symbol:@solitude/hud:./telemetry:SpacecraftOperatorTelemetry",
       "kind": "symbol",
       "label": "SpacecraftOperatorTelemetry",
@@ -5483,6 +5645,62 @@
       "label": "SpacecraftOperatorTelemetryProvider",
       "packageName": "@solitude/hud",
       "parent": "module:@solitude/hud:./telemetry",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand",
+      "kind": "symbol",
+      "label": "SpacecraftPropulsionCommand",
+      "packageName": "@solitude/spacecraft",
+      "parent": "module:@solitude/spacecraft:./capabilities",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams",
+      "kind": "symbol",
+      "label": "SpacecraftPropulsionCommandParams",
+      "packageName": "@solitude/spacecraft",
+      "parent": "module:@solitude/spacecraft:./capabilities",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionResolver",
+      "kind": "symbol",
+      "label": "SpacecraftPropulsionResolver",
+      "packageName": "@solitude/spacecraft",
+      "parent": "module:@solitude/spacecraft:./capabilities",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./spacecraft:spacecraftPropulsionResolverCapability",
+      "kind": "symbol",
+      "label": "spacecraftPropulsionResolverCapability",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./spacecraft",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/spacecraft:./capabilities:spacecraftPropulsionResolverCapability",
+      "kind": "symbol",
+      "label": "spacecraftPropulsionResolverCapability",
+      "packageName": "@solitude/spacecraft",
+      "parent": "module:@solitude/spacecraft:./capabilities",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/spacecraft:./capabilities:SpacecraftRcsCommand",
+      "kind": "symbol",
+      "label": "SpacecraftRcsCommand",
+      "packageName": "@solitude/spacecraft",
+      "parent": "module:@solitude/spacecraft:./capabilities",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/spacecraft:./capabilities:SpacecraftThrustCommand",
+      "kind": "symbol",
+      "label": "SpacecraftThrustCommand",
+      "packageName": "@solitude/spacecraft",
+      "parent": "module:@solitude/spacecraft:./capabilities",
       "symbolKind": "interface"
     },
     {
@@ -5840,6 +6058,12 @@
   ],
   "edges": [
     {
+      "id": "dependency:pkg:@solitude-plugins/autopilot->pkg:@solitude/plugin-api",
+      "from": "pkg:@solitude-plugins/autopilot",
+      "kind": "dependency",
+      "to": "pkg:@solitude/plugin-api"
+    },
+    {
       "id": "dependency:pkg:@solitude-plugins/core-pack-v1->pkg:@solitude/plugin-api",
       "from": "pkg:@solitude-plugins/core-pack-v1",
       "kind": "dependency",
@@ -5868,6 +6092,12 @@
       "from": "pkg:@solitude-plugins/solitude-content-browser-pack-v1",
       "kind": "dependency",
       "to": "pkg:@solitude-plugins/solitude-content-pack"
+    },
+    {
+      "id": "dependency:pkg:@solitude-plugins/solitude-content-pack->pkg:@solitude-plugins/autopilot",
+      "from": "pkg:@solitude-plugins/solitude-content-pack",
+      "kind": "dependency",
+      "to": "pkg:@solitude-plugins/autopilot"
     },
     {
       "id": "dependency:pkg:@solitude-plugins/solitude-content-pack->pkg:@solitude-plugins/poly-fighter",
@@ -6026,6 +6256,12 @@
       "to": "pkg:@solitude/geometry"
     },
     {
+      "id": "dependency:pkg:@solitude/plugin-api->pkg:@solitude/spacecraft",
+      "from": "pkg:@solitude/plugin-api",
+      "kind": "dependency",
+      "to": "pkg:@solitude/spacecraft"
+    },
+    {
       "id": "dependency:pkg:@solitude/plugin-runtime->pkg:@solitude/engine",
       "from": "pkg:@solitude/plugin-runtime",
       "kind": "dependency",
@@ -6084,6 +6320,18 @@
       "from": "pkg:@solitude/sim",
       "kind": "dependency",
       "to": "pkg:@solitude/localization"
+    },
+    {
+      "id": "dependency:pkg:@solitude/sim->pkg:@solitude/spacecraft",
+      "from": "pkg:@solitude/sim",
+      "kind": "dependency",
+      "to": "pkg:@solitude/spacecraft"
+    },
+    {
+      "id": "dependency:pkg:@solitude/spacecraft->pkg:@solitude/engine",
+      "from": "pkg:@solitude/spacecraft",
+      "kind": "dependency",
+      "to": "pkg:@solitude/engine"
     },
     {
       "id": "dependency:pkg:solitude->pkg:@solitude/browser",
@@ -6662,6 +6910,12 @@
       "to": "module:@solitude/plugin-api:./world"
     },
     {
+      "id": "module-import:module:@solitude/plugin-api:./spacecraft->module:@solitude/spacecraft:./capabilities",
+      "from": "module:@solitude/plugin-api:./spacecraft",
+      "kind": "module-import",
+      "to": "module:@solitude/spacecraft:./capabilities"
+    },
+    {
       "id": "module-import:module:@solitude/plugin-api:./telemetry->module:@solitude/plugin-api:./capabilities",
       "from": "module:@solitude/plugin-api:./telemetry",
       "kind": "module-import",
@@ -6948,6 +7202,18 @@
       "from": "module:@solitude/sim:./plugins/catalog",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
+    },
+    {
+      "id": "module-import:module:@solitude/spacecraft:./capabilities->module:@solitude/engine:./plugin",
+      "from": "module:@solitude/spacecraft:./capabilities",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./plugin"
+    },
+    {
+      "id": "module-import:module:@solitude/spacecraft:./capabilities->module:@solitude/engine:./world",
+      "from": "module:@solitude/spacecraft:./capabilities",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./world"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayContext",
@@ -8084,6 +8350,12 @@
       "to": "symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./epsilon:EPS_ANGLE_RAD->symbol:@solitude/engine:./math:EPS_ANGLE_RAD",
+      "from": "symbol:@solitude/engine:./epsilon:EPS_ANGLE_RAD",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:EPS_ANGLE_RAD"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./epsilon:EPS_DELTA_V->symbol:@solitude/engine:./math:EPS_DELTA_V",
       "from": "symbol:@solitude/engine:./epsilon:EPS_DELTA_V",
       "kind": "symbol-reference",
@@ -8160,6 +8432,12 @@
       "from": "symbol:@solitude/engine:./math:DOT_PARALLEL_COS",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./math:EPS_PARALLEL_DOT"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./math:EPS_ANGLE_RAD->symbol:@solitude/engine:./epsilon:EPS_ANGLE_RAD",
+      "from": "symbol:@solitude/engine:./math:EPS_ANGLE_RAD",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./epsilon:EPS_ANGLE_RAD"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./math:EPS_DELTA_V->symbol:@solitude/engine:./epsilon:EPS_DELTA_V",
@@ -13598,6 +13876,138 @@
       "to": "symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeEntitySnapshot"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:createSpacecraftAutonomousControlProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:createSpacecraftAutonomousControlProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:createSpacecraftAutonomousControlProvider->symbol:@solitude/plugin-api:./spacecraft:spacecraftAutonomousControlCapability",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:createSpacecraftAutonomousControlProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./spacecraft:spacecraftAutonomousControlCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:createSpacecraftAutonomousControlProvider->symbol:@solitude/spacecraft:./capabilities:SpacecraftAutonomousControl",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:createSpacecraftAutonomousControlProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftAutonomousControl"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:createSpacecraftPropulsionResolverProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:createSpacecraftPropulsionResolverProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:createSpacecraftPropulsionResolverProvider->symbol:@solitude/plugin-api:./spacecraft:spacecraftPropulsionResolverCapability",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:createSpacecraftPropulsionResolverProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./spacecraft:spacecraftPropulsionResolverCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:createSpacecraftPropulsionResolverProvider->symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionResolver",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:createSpacecraftPropulsionResolverProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionResolver"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftAutonomousControl->symbol:@solitude/engine:./plugin:ControlInput",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftAutonomousControl",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:ControlInput"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftAutonomousControl->symbol:@solitude/engine:./plugin:MutableControlState",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftAutonomousControl",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:MutableControlState"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftAutonomousControl->symbol:@solitude/spacecraft:./capabilities:SpacecraftAutonomousControl",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftAutonomousControl",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftAutonomousControl"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommand->symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommand",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommand->symbol:@solitude/spacecraft:./capabilities:SpacecraftRcsCommand",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommand",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftRcsCommand"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommand->symbol:@solitude/spacecraft:./capabilities:SpacecraftThrustCommand",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommand",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftThrustCommand"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommandParams->symbol:@solitude/engine:./plugin:ControlInput",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommandParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:ControlInput"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommandParams->symbol:@solitude/engine:./plugin:ControlledBodyState",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommandParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommandParams->symbol:@solitude/engine:./world:World",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommandParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:World"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommandParams->symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommandParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommandParams->symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionCommandParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionResolver->symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionResolver",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionResolver->symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionResolver",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionResolver->symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionResolver",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftPropulsionResolver",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionResolver"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftRcsCommand->symbol:@solitude/spacecraft:./capabilities:SpacecraftRcsCommand",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftRcsCommand",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftRcsCommand"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftThrustCommand->symbol:@solitude/spacecraft:./capabilities:SpacecraftThrustCommand",
+      "from": "symbol:@solitude/plugin-api:./spacecraft:ExternalSpacecraftThrustCommand",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftThrustCommand"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./telemetry:createSpacecraftOperatorTelemetryProvider->symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider",
       "from": "symbol:@solitude/plugin-api:./telemetry:createSpacecraftOperatorTelemetryProvider",
       "kind": "symbol-reference",
@@ -15114,6 +15524,138 @@
       "from": "symbol:@solitude/sim:./plugins/catalog:simPluginCatalog",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:PluginCatalog"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:createSpacecraftAutonomousControlProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
+      "from": "symbol:@solitude/spacecraft:./capabilities:createSpacecraftAutonomousControlProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:createSpacecraftAutonomousControlProvider->symbol:@solitude/spacecraft:./capabilities:SpacecraftAutonomousControl",
+      "from": "symbol:@solitude/spacecraft:./capabilities:createSpacecraftAutonomousControlProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftAutonomousControl"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:createSpacecraftAutonomousControlProvider->symbol:@solitude/spacecraft:./capabilities:spacecraftAutonomousControlCapability",
+      "from": "symbol:@solitude/spacecraft:./capabilities:createSpacecraftAutonomousControlProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:spacecraftAutonomousControlCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:createSpacecraftPropulsionResolverProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
+      "from": "symbol:@solitude/spacecraft:./capabilities:createSpacecraftPropulsionResolverProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:createSpacecraftPropulsionResolverProvider->symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionResolver",
+      "from": "symbol:@solitude/spacecraft:./capabilities:createSpacecraftPropulsionResolverProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionResolver"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:createSpacecraftPropulsionResolverProvider->symbol:@solitude/spacecraft:./capabilities:spacecraftPropulsionResolverCapability",
+      "from": "symbol:@solitude/spacecraft:./capabilities:createSpacecraftPropulsionResolverProvider",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:spacecraftPropulsionResolverCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:getSpacecraftAutonomousControls->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
+      "from": "symbol:@solitude/spacecraft:./capabilities:getSpacecraftAutonomousControls",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:getSpacecraftAutonomousControls->symbol:@solitude/spacecraft:./capabilities:SpacecraftAutonomousControl",
+      "from": "symbol:@solitude/spacecraft:./capabilities:getSpacecraftAutonomousControls",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftAutonomousControl"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:getSpacecraftAutonomousControls->symbol:@solitude/spacecraft:./capabilities:spacecraftAutonomousControlCapability",
+      "from": "symbol:@solitude/spacecraft:./capabilities:getSpacecraftAutonomousControls",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:spacecraftAutonomousControlCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:getSpacecraftPropulsionResolvers->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
+      "from": "symbol:@solitude/spacecraft:./capabilities:getSpacecraftPropulsionResolvers",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:getSpacecraftPropulsionResolvers->symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionResolver",
+      "from": "symbol:@solitude/spacecraft:./capabilities:getSpacecraftPropulsionResolvers",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionResolver"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:getSpacecraftPropulsionResolvers->symbol:@solitude/spacecraft:./capabilities:spacecraftPropulsionResolverCapability",
+      "from": "symbol:@solitude/spacecraft:./capabilities:getSpacecraftPropulsionResolvers",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:spacecraftPropulsionResolverCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:SpacecraftAutonomousControl->symbol:@solitude/engine:./plugin:ControlInput",
+      "from": "symbol:@solitude/spacecraft:./capabilities:SpacecraftAutonomousControl",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:ControlInput"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:SpacecraftAutonomousControl->symbol:@solitude/engine:./plugin:MutableControlState",
+      "from": "symbol:@solitude/spacecraft:./capabilities:SpacecraftAutonomousControl",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:MutableControlState"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand->symbol:@solitude/spacecraft:./capabilities:SpacecraftRcsCommand",
+      "from": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftRcsCommand"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand->symbol:@solitude/spacecraft:./capabilities:SpacecraftThrustCommand",
+      "from": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftThrustCommand"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams->symbol:@solitude/engine:./plugin:ControlInput",
+      "from": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:ControlInput"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams->symbol:@solitude/engine:./plugin:ControlledBodyState",
+      "from": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:ControlledBodyState"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams->symbol:@solitude/engine:./world:World",
+      "from": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:World"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams->symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand",
+      "from": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionResolver->symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand",
+      "from": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionResolver",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommand"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionResolver->symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams",
+      "from": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionResolver",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/spacecraft:./capabilities:SpacecraftPropulsionCommandParams"
     }
   ]
 }

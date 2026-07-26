@@ -1,4 +1,5 @@
 export {
+  EPS_ANGLE_RAD,
   EPS_DELTA_V,
   EPS_ECCENTRICITY,
   EPS_LEN,

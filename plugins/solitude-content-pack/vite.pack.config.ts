@@ -10,6 +10,11 @@ const pluginEntries = [
     source: new URL("../solar-system/src/index.ts", import.meta.url),
   },
   {
+    directory: "autopilot",
+    id: "autopilot",
+    source: new URL("../autopilot/src/index.ts", import.meta.url),
+  },
+  {
     directory: "poly-fighter",
     id: "polyFighter",
     source: new URL("../poly-fighter/src/index.ts", import.meta.url),

@@ -120,11 +120,16 @@ const createTestSolarSystemPlugin: PluginFactory = () => ({
   },
 });
 
+const createTestAutopilotPlugin: PluginFactory = () => ({
+  id: "autopilot",
+});
+
 export const testMultiplayerContentPlugins: DefaultMultiplayerContentPluginSet =
   {
     catalog: {
+      autopilot: createTestAutopilotPlugin,
       polyFighter: createTestPolyFighterPlugin,
       solarSystem: createTestSolarSystemPlugin,
     },
-    ids: ["solarSystem", "polyFighter"],
+    ids: ["solarSystem", "autopilot", "polyFighter"],
   };

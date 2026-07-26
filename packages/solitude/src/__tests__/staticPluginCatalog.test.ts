@@ -9,13 +9,12 @@ describe("static plugin catalog", () => {
       ids: staticPluginIds,
     });
 
-    const autopilot = plugins.find((plugin) => plugin.id === "autopilot");
     const browserHudOverlay = plugins.find(
       (plugin) => plugin.id === "browserHudOverlay",
     );
 
-    expect(autopilot?.controls).toBeDefined();
     expect(browserHudOverlay?.capabilities).toHaveLength(1);
+    expect(plugins.some((plugin) => plugin.id === "autopilot")).toBe(false);
     expect(plugins.some((plugin) => plugin.id === "solarSystem")).toBe(false);
     expect(plugins.some((plugin) => plugin.id === "autopilotInput")).toBe(
       false,

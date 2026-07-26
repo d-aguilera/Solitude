@@ -1,14 +1,16 @@
 import { localFrame, mat3, vec3 } from "@solitude/engine/math";
-import type { SimulationPlugin } from "@solitude/engine/plugin";
+import type {
+  ControlInput,
+  ControlPlugin,
+  MutableControlState,
+  SimulationPlugin,
+} from "@solitude/engine/plugin";
 import { createControlInput } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { ControlledBody, World } from "@solitude/engine/world";
 import { createSpacecraftOperatorTelemetry } from "@solitude/hud/telemetry";
+import { createSpacecraftAutonomousControlProvider } from "@solitude/spacecraft/capabilities";
 import { describe, expect, it } from "vitest";
-import {
-  createAutonomousControlProvider,
-  createControlPlugin as createAutopilotControlPlugin,
-} from "../../../autopilot/core";
 import {
   createSpacecraftLocalPredictionProvider,
   createSpacecraftVehicleDynamicsPlugin,
@@ -298,4 +300,27 @@ function createCircleNowThrustResolver() {
           : params.manualPropulsion,
     },
   };
+}
+
+function createAutopilotControlPlugin(): ControlPlugin {
+  return {
+    updateControlState: ({ controlInput, controlState }) => {
+      if (controlInput.circleNow) {
+        controlState.autopilotMode = "circleNow";
+      }
+    },
+  };
+}
+
+function createAutonomousControlProvider() {
+  return createSpacecraftAutonomousControlProvider({
+    hasAutonomousControl: (controlState: MutableControlState) =>
+      controlState.autopilotMode === "circleNow",
+    writeAutonomousControlInput: (
+      controlInput: ControlInput,
+      controlState: MutableControlState,
+    ) => {
+      controlInput.circleNow = controlState.autopilotMode === "circleNow";
+    },
+  });
 }

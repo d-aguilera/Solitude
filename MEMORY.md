@@ -34,7 +34,7 @@
 ## Current focus
 
 - **Primary active work**: package decoupling. Continue moving product plugins out of host packages and into independently built packages discovered through deployed plugin sets. See `MEMORY_PACKAGE_DECOUPLING.md`.
-- **Current extraction frontier**: no product plugin implementation remains in `packages/solitude`; the remaining static simulation plugins are `autopilot` and `spacecraftOperator`. The browser-only `autopilotInput` sibling is runtime-discovered from `core-pack-v1`, and the host-neutral `solarSystem` implementation is bundled into both Solitude content packs. Server runtime control and simulation hooks remain unsupported.
+- **Current extraction frontier**: no product plugin implementation remains in `packages/solitude`; `spacecraftOperator` is the only remaining static simulation plugin. The browser-only `autopilotInput` sibling is runtime-discovered from `core-pack-v1`, while the host-neutral `solarSystem` and `autopilot` implementations are bundled into both Solitude content packs. Server simulation hooks remain unsupported.
 - **Discovery foundation**: browser and server discovery, multi-plugin packs, strict manifests, target-specific assembly, origin/path security, and schema-v3 single-host packs are in place. Preserve the rule that a pack is an atomic host-specific activation unit.
 - **Headless playback**: still unresolved and not archived, but it is a dormant backlog item rather than the active path. See `MEMORY_HEADLESS_PLAYBACK.md`.
 - **GPU rendering state**: WebGL2 is the sole solid-mesh renderer for standalone and remote play. WebGL also owns depth-tested trajectory and world-segment ribbons; Canvas remains for scene labels, markers, and HUD. The engine CPU-face pipeline and Canvas backend have been removed. Historical rendering roadmaps live in `archive/MEMORY_GPU_RENDERING.md` and `archive/MEMORY_GPU_POLYLINES.md`.
@@ -76,7 +76,8 @@
 - `packages/input/src/`: outer keyboard input-provider contracts; plugins publish bindings/handlers through generic engine capabilities and browser adapters consume them.
 - `packages/entity-names/src/`: dependency-free canonical entity-name provider capability contract and lookup policy; content plugins own provider implementations and localized name bundles, and the external plugin API re-exports this implementation.
 - `packages/localization/src/`: dependency-free shared Solitude locale resolution and number/unit/message formatting; message bundles remain with their owning client/plugin/content package.
-- `packages/sim/src/`: browser-safe and Node-safe Solitude simulation library. Its remaining static plugin catalog owns `spacecraftOperator` and `autopilot`; it also provides the Solitude headless composition currently shared by authoritative multiplayer and tests.
+- `packages/sim/src/`: browser-safe and Node-safe Solitude simulation library. Its remaining static plugin catalog owns only `spacecraftOperator`; it also provides the Solitude headless composition currently shared by authoritative multiplayer and tests.
+- `packages/spacecraft/src/`: canonical spacecraft autonomous-control and propulsion-resolver capability contracts shared by the remaining operator and external autopilot.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, presentation-frame capabilities, layered view layout, Canvas presentation, GPU-native WebGL2 presentation, and remote-world mirror helpers.
 - `packages/protocol/src/`: browser-safe client/server protocol types and message guards.
 - `packages/plugin-api/src/`: focused, rootless subpath exports for independently built external plugins. Module composition, runtime options, generic capability primitives, domain capabilities, control-state updates, loop/frame-policy access, narrow browser simulation phases, canonical runtime snapshots, render/scene/view contracts, world access, localization, math, entity naming, and manifests have distinct surfaces; there is no catch-all `plugin.ts`. Portable geometry and OBJ implementations come from the dependency-free `@solitude/geometry` package, while entity-name capabilities reuse their dependency-free canonical package rather than duplicating policy.
@@ -86,9 +87,9 @@
 - `packages/multiplayer/src/`: Solitude-specific authoritative game composition and deployable server entrypoint, including server plugin discovery and use of the shared headless simulation.
 - `packages/solitude/src/`: standalone browser bootstrap, renderer-failure localization, and the temporary static host catalog for simulation plugins plus the browser HUD adapter; it owns no product plugin implementation.
 - `plugins/core-pack-v1/`: independently built browser pack discovered at runtime by standalone and remote clients. It contains autopilot-input, autopilot-HUD, axial-view, body-label, main-view-lookaround, orbit-segment, orbit-telemetry, runtime-telemetry, ship-telemetry, solar-system-material, targeting-laser, trajectory, and velocity-segment plugins plus pack-owned texture assets.
-- `plugins/poly-fighter/` and `plugins/solar-system/`: host-neutral external implementation packages owning the controllable-entity provider/OBJ model and solar-system world model/capabilities/localization respectively.
-- `plugins/solitude-content-pack/`: shared two-entry build configuration for the separate browser and server content deployment packs.
-- `plugins/solitude-content-browser-pack-v1/` and `plugins/solitude-content-server-pack-v1/`: thin single-host deployment packs that bundle the same ordered `solarSystem` and `polyFighter` implementations for browser and authoritative server activation respectively.
+- `plugins/poly-fighter/`, `plugins/solar-system/`, and `plugins/autopilot/`: host-neutral external implementation packages owning the fighter content, solar-system world model/capabilities/localization, and headless control behavior respectively.
+- `plugins/solitude-content-pack/`: shared three-entry build configuration for the separate browser and server content deployment packs.
+- `plugins/solitude-content-browser-pack-v1/` and `plugins/solitude-content-server-pack-v1/`: thin single-host deployment packs that bundle the same ordered `solarSystem`, `autopilot`, and `polyFighter` implementations for browser and authoritative server activation respectively.
 - `plugins/multiplayer-pack-v1/`: independently built multiplayer-only browser plugin pack containing the remote identity HUD and localized ship-color entity names.
 - `plugins/standalone-pack-v1/`: independently built standalone-only browser plugin pack containing default ships, diagnostic playback, pause and time-scale controls/HUD, memory telemetry, profiling controls/HUD, and runtime operator focus switching.
 - Production and test source lives under `packages/*`; the root `src` directory has been removed.
@@ -102,7 +103,7 @@
 - `packages/engine/src/infra/configuredGamePipeline.ts` constructs the standalone world/scene and creates the engine-owned application pipeline.
 - `packages/engine/src/app/gamePipeline.ts` owns plugin assembly, frame policy, simulation, scene/view updates, and per-view render contributions; `packages/engine/src/app/game.ts` runs the per-tick simulation phases.
 - `packages/browser/src/infra/domGameLoop.ts` schedules animation frames, invokes the engine pipeline, renders through generic view renderers, and rasterizes scene/HUD overlays.
-- Shared Solitude simulation plugins from `@solitude/sim` provide spacecraft controls, vehicle dynamics, headless autopilot behavior, autopilot keyboard input, and scenario/world-model content. External packs provide standalone product behavior, including autopilot presentation and diagnostic playback.
+- The remaining shared Solitude simulation plugin from `@solitude/sim` provides spacecraft controls and vehicle dynamics. External packs provide headless autopilot behavior, gameplay content, browser presentation/input, and diagnostic playback.
 - Solitude plugin order is runtime behavior; later loop/frame-policy plugins can override earlier ones, and capability-backed DOM input handlers are consulted in reverse plugin order.
 
 ## Current State
@@ -115,9 +116,9 @@
 - Browser presentation-frame providers let plugins observe local animation-frame cadence without depending on the standalone simulation loop; both standalone and remote hosts publish frame samples through `solitude.browser.presentationFrame.v1`.
 - Keyboard maps and key handlers are owned by `@solitude/input`, published as plugin capabilities, and consumed by browser DOM input. Providers may declare actions that remain available through generic input-lock handlers, avoiding cross-plugin action-name coupling. Engine plugin contracts know semantic control actions but not keyboard/device bindings.
 - Main-view lookaround input/camera-offset controls live in the external `mainViewLookaround` plugin in `core-pack-v1`; both standalone and multiplayer apply them to renderer-local state rather than authoritative simulation input.
-- Spacecraft propulsion/RCS/attitude, input bindings, spacecraft operator state, and the primary forward camera rig live in `@solitude/sim`; standalone, remote-client, and authoritative multiplayer composition still consume them statically.
+- Spacecraft propulsion/RCS dynamics, spacecraft operator state, and the primary forward camera rig live in `@solitude/sim`; standalone, remote-client, and authoritative multiplayer composition still consume that operator statically.
 - Autopilot `circleNow` uses `autopilot.mode.v2`: a continuous dominant-body circularization controller that aims the main thrust axis at orbital correction while unstable, blends back to inward-facing once stable, and keeps roll referenced to the orbital tangent to avoid stable-orbit roll oscillation. `alignToVelocity` and `alignToBody` remain behavior-compatible with v1.
-- The headless autopilot plugin in `@solitude/sim` contributes control behavior and capabilities. Its external `autopilotInput` and `autopilotHud` siblings in `core-pack-v1` own browser keyboard bindings and the localized HUD panel/message bundles respectively; server/headless composition does not instantiate either browser-facing plugin.
+- The host-neutral `autopilot` plugin contributes control behavior and capabilities through both Solitude content packs. Its `autopilotInput` and `autopilotHud` siblings in `core-pack-v1` own browser keyboard bindings and the localized HUD panel/message bundles respectively; server/headless composition does not instantiate either browser-facing plugin.
 - Runtime focus switching lives in the external `operatorSwitch` plugin in `standalone-pack-v1`; `Tab` swaps foreground focus between `ship:blue` and `ship:red` through the loop API's controlled focus operation.
 - During playback, `Tab` may switch the viewed focus while recorded controls continue applying to the entity focused when each playback phase was recorded.
 - Core owns generic focus, primary-view plumbing, simulation phase order, gravity, spin, collision, setup, render preparation, and plugin port/capability contracts.
@@ -175,6 +176,7 @@
 - `plugins/core-pack-v1/src/`: external first-party plugin factories. The multi-entry pack build emits one `pack.json`, per-plugin manifests/entries, and shared relative ESM chunks where beneficial.
 - `plugins/poly-fighter/src/`: host-neutral poly-fighter gameplay-content plugin factory shared by the separate browser and server content pack builds.
 - `plugins/solar-system/src/`: host-neutral solar-system world model, celestial-body and localized-name providers, orbital data, and tests.
+- `plugins/autopilot/src/`: host-neutral autopilot control behavior, attitude logic, propulsion integration, and tests.
 - `plugins/solitude-content-pack/`: shared ordered multi-entry build configuration used by both Solitude content deployment packs.
 - `plugins/solitude-content-browser-pack-v1/` and `plugins/solitude-content-server-pack-v1/`: host-specific deployment-pack build wrappers for the shared poly-fighter implementation.
 - `plugins/multiplayer-pack-v1/src/`: multiplayer-only external presentation plugin factories for remote identity and localized ship-color names.
@@ -183,12 +185,12 @@
 - `packages/solitude/src/bootstrap.ts`: Solitude browser app composition.
 - `packages/sim/src/plugins/spacecraftOperator/`: spacecraft controls, dynamics, telemetry state, and forward camera rig.
 - `plugins/standalone-pack-v1/src/operator-switch/`: default runtime focus switching between controllable ships.
-- `packages/sim/src/autopilot/`: reusable headless autopilot behavior, control logic, and propulsion integration APIs.
+- `plugins/autopilot/src/`: reusable headless autopilot behavior, control logic, and propulsion integration APIs.
 - `plugins/core-pack-v1/src/autopilot-input/`: shared standalone/remote autopilot keyboard mode toggles.
 - `plugins/core-pack-v1/src/autopilot-hud/`: standalone/remote localized autopilot status and circle-now diagnostic HUD plugin.
 - `plugins/standalone-pack-v1/src/playback/`: diagnostic capture/playback, portable snapshots, and repeatable scenario logs.
 - `plugins/standalone-pack-v1/src/time-scale/`: standalone time-scale loop/input/localized-HUD plugin.
-- `packages/sim/src/plugins/`: remaining static spacecraft-operator and autopilot implementations.
+- `packages/sim/src/plugins/`: the remaining static spacecraft-operator implementation.
 
 ## Controls Quick Reference
 

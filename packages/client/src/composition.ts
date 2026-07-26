@@ -22,7 +22,7 @@ import {
 } from "@solitude/sim/localPrediction";
 import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
 
-export const remoteRenderPluginIds = ["spacecraftOperator", "autopilot"];
+export const remoteRenderPluginIds = ["spacecraftOperator"];
 
 export const remoteRenderPluginCatalog: PluginCatalog = {
   ...simPluginCatalog,

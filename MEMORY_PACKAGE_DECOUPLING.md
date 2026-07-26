@@ -59,10 +59,10 @@
 - `multiplayer-pack-v1` (`browser`): `remoteIdentityHud` and `shipColorNames`.
 - `solitude-content-browser-pack-v1` (`browser`) and
   `solitude-content-server-pack-v1` (`server`): host-specific wrappers around
-  the same ordered `solarSystem` and `polyFighter` implementations from
+  the same ordered `solarSystem`, `autopilot`, and `polyFighter` implementations from
   host-neutral external packages.
 
-The browser and server Poly Fighter modules are intentionally byte-identical;
+The browser and server content modules are intentionally byte-identical;
 separate packs express separate host activation and deployment.
 
 ## Remaining Static Plugin Frontier
@@ -73,12 +73,11 @@ simulation catalog through `packages/solitude/src/staticPluginCatalog.ts`.
 
 `packages/sim/src/plugins/` still owns:
 
-- `autopilot`
 - `spacecraftOperator`
 
 The browser-only `autopilotInput` implementation has moved to `core-pack-v1`.
-The host-neutral `solarSystem` implementation is bundled into both Solitude
-content packs and participates in browser and authoritative world-model
+The host-neutral `solarSystem` and `autopilot` implementations are bundled
+into both Solitude content packs and participate in browser and authoritative
 assembly through discovery. The static catalogs no longer contain either.
 
 The standalone and remote catalogs also compose the mandatory browser-owned
@@ -131,10 +130,9 @@ dependencies before every extraction.
 
 ## Open Design Pressure
 
-- API v9's server pre-runtime world-model phase runs the extracted
-  `solarSystem`, and its control lifecycle makes `autopilot` the next viable
-  extraction. The server external contract still has no simulation or loop
-  lifecycle; extracting `spacecraftOperator` requires that boundary to be
+- API v9's server control lifecycle runs the extracted `autopilot`. The server
+  external contract still has no simulation or loop lifecycle; extracting the
+  final static plugin, `spacecraftOperator`, requires that boundary to be
   designed.
 - Browser API v9 also supplies a frozen host snapshot facade. External
   playback owns scenario metadata and scripts, while the engine remains the

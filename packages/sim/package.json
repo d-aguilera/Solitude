@@ -15,7 +15,8 @@
     "@solitude/entity-names": "0.0.0",
     "@solitude/hud": "0.0.0",
     "@solitude/input": "0.0.0",
-    "@solitude/localization": "0.0.0"
+    "@solitude/localization": "0.0.0",
+    "@solitude/spacecraft": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

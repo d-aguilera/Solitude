@@ -116,6 +116,8 @@ or obsolete plugin shapes fail during composition.
   constructor, and guard.
 - `@solitude/plugin-api/controls`: mutable control-state updates and
   attitude-command resolution for browser and authoritative plugins.
+- `@solitude/plugin-api/spacecraft`: canonical autonomous-control and
+  propulsion-resolver capabilities shared with the spacecraft operator.
 - `@solitude/plugin-api/orbits`: portable circular-orbit placement used by
   plugins plus bundled-safe Keplerian setup and configuration types.
 - `@solitude/plugin-api/input`: keyboard action maps, handlers, and
@@ -190,18 +192,20 @@ contribution types.
   both browser products. It currently contains:
   - `solarSystem`: solar-system world entities, celestial-body lookup, and
     localized entity names.
+  - `autopilot`: headless attitude and propulsion control behavior.
   - `polyFighter`: controllable-entity provider owning the fighter OBJ mesh,
     derived mass, and complete entity configuration used by standalone ships.
 
 - `solitude-content-server-pack-v1`: authoritative gameplay content using the
   capability and pre-runtime world-model surfaces. It contains the same
-  `solarSystem` and `polyFighter` modules used by the browser content pack.
+  `solarSystem`, `autopilot`, and `polyFighter` modules used by the browser
+  content pack.
 
 Both content packs use the shared `@solitude-plugins/solitude-content-pack`
 build configuration and bundle the implementations owned by
-`@solitude-plugins/solar-system` and `@solitude-plugins/poly-fighter`. Their
-emitted plugin modules are identical; only the deployment pack id and host
-contract differ.
+`@solitude-plugins/solar-system`, `@solitude-plugins/autopilot`, and
+`@solitude-plugins/poly-fighter`. Their emitted plugin modules are identical;
+only the deployment pack id and host contract differ.
 
 - `multiplayer-pack-v1`: multiplayer-only presentation plugins. It contains:
   - `remoteIdentityHud`: localized live game and assigned-entity identity HUD,

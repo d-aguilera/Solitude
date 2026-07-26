@@ -174,15 +174,12 @@ export function createDefaultMultiplayerSimulationPlugins(
   contentPlugins: DefaultMultiplayerContentPluginSet,
   runtimeOptions: RuntimeOptions,
 ) {
-  return createDefaultMultiplayerContentPlugins(
-    contentPlugins,
+  return loadPlugins({
+    catalog: simPluginCatalog,
+    ids: ["spacecraftOperator"],
     runtimeOptions,
-  ).concat(
-    loadPlugins({
-      catalog: simPluginCatalog,
-      ids: ["spacecraftOperator", "autopilot"],
-      runtimeOptions,
-    }),
+  }).concat(
+    createDefaultMultiplayerContentPlugins(contentPlugins, runtimeOptions),
   );
 }
 

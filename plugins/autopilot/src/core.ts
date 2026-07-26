@@ -1,21 +1,20 @@
-import type {
-  ControlInput,
-  ControlPlugin,
-  MutableControlState,
-  PluginCapabilityProvider,
-} from "@solitude/engine/plugin";
+import type { ExternalPluginCapabilityProvider } from "@solitude/plugin-api/capabilities";
+import type { ExternalControlPlugin } from "@solitude/plugin-api/controls";
+import type { ExternalControlInput } from "@solitude/plugin-api/input";
+import {
+  createSpacecraftAutonomousControlProvider,
+  createSpacecraftPropulsionResolverProvider,
+  type ExternalSpacecraftAutonomousControl,
+  type ExternalSpacecraftPropulsionResolver,
+} from "@solitude/plugin-api/spacecraft";
 import {
   getAutopilotAttitudeCommand,
   getAutopilotMode,
   resolveAutopilotPropulsionCommand,
   type AutopilotMode,
 } from "./logic";
-import {
-  createSpacecraftPropulsionResolverProvider,
-  type SpacecraftPropulsionResolver,
-} from "./spacecraftPropulsion";
 
-export function createControlPlugin(): ControlPlugin {
+export function createControlPlugin(): ExternalControlPlugin {
   return {
     updateControlState: ({ controlInput, controlState }) => {
       const mode = getAutopilotMode(controlInput);
@@ -36,8 +35,6 @@ export function createControlPlugin(): ControlPlugin {
 }
 
 const autopilotModeStateKey = "autopilot.mode.v2";
-const spacecraftAutonomousControlCapabilityId =
-  "spacecraft.autonomousControl.v1";
 
 type StoredAutopilotMode = Exclude<AutopilotMode, "none">;
 
@@ -52,22 +49,13 @@ export function isStoredAutopilotMode(
   );
 }
 
-interface SpacecraftAutonomousControl {
-  hasAutonomousControl: (controlState: MutableControlState) => boolean;
-  writeAutonomousControlInput: (
-    controlInput: ControlInput,
-    controlState: MutableControlState,
-  ) => void;
+export function createAutonomousControlProvider(): ExternalPluginCapabilityProvider {
+  return createSpacecraftAutonomousControlProvider(
+    createAutopilotAutonomousControl(),
+  );
 }
 
-export function createAutonomousControlProvider(): PluginCapabilityProvider {
-  return {
-    id: spacecraftAutonomousControlCapabilityId,
-    value: createAutopilotAutonomousControl(),
-  };
-}
-
-function createAutopilotAutonomousControl(): SpacecraftAutonomousControl {
+function createAutopilotAutonomousControl(): ExternalSpacecraftAutonomousControl {
   return {
     hasAutonomousControl: (controlState) =>
       isStoredAutopilotMode(controlState[autopilotModeStateKey]),
@@ -81,7 +69,7 @@ function createAutopilotAutonomousControl(): SpacecraftAutonomousControl {
   };
 }
 
-function clearAutopilotActions(controlInput: ControlInput): void {
+function clearAutopilotActions(controlInput: ExternalControlInput): void {
   controlInput.alignToVelocity = false;
   controlInput.alignToBody = false;
   controlInput.orbit = false;
@@ -94,7 +82,7 @@ export function createPropulsionResolverProvider() {
   );
 }
 
-function createImmediatePropulsionResolver(): SpacecraftPropulsionResolver {
+function createImmediatePropulsionResolver(): ExternalSpacecraftPropulsionResolver {
   return {
     resolvePropulsionCommand: (params) =>
       resolveAutopilotPropulsionCommand(

@@ -22,12 +22,11 @@ describe("remote render plugin catalog", () => {
       ids: remoteRenderPluginIds,
     });
 
-    const autopilot = plugins.find((plugin) => plugin.id === "autopilot");
     const spacecraftOperator = plugins.find(
       (plugin) => plugin.id === "spacecraftOperator",
     );
 
-    expect(autopilot?.controls).toBeDefined();
+    expect(plugins.some((plugin) => plugin.id === "autopilot")).toBe(false);
     expect(plugins.some((plugin) => plugin.id === "solarSystem")).toBe(false);
     expect(plugins.some((plugin) => plugin.id === "autopilotInput")).toBe(
       false,
