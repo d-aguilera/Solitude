@@ -4,7 +4,7 @@ This note records texture options for Solitude's planets, with Earth as the firs
 
 ## Current Renderer Fit
 
-- Solar-system planets are authored in `packages/sim/src/plugins/solarSystem/solarSystem.ts` as scaled copies of a shared unit icosphere.
+- Solar-system planets are authored in `plugins/solar-system/src/solarSystem.ts` as scaled copies of a shared unit icosphere.
 - Solar-system bodies in `@solitude/sim` differ by RGB fallback color, physical/orbital data, axial tilt, and spin; browser-facing visual materials are applied by `plugins/core-pack-v1/src/solar-system-materials/`.
 - `EntityRenderConfig` and `SceneObject` carry color, mesh, LOD, shading, scale, and optional material metadata.
 - `GpuMeshRenderer` uploads position, normal, and face-anchor attributes; the solid-mesh shader computes lighting and multiplies by `uBaseColor`.

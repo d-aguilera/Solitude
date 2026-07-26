@@ -1,4 +1,4 @@
-import type { RGB } from "@solitude/engine/render";
+import type { ExternalRgb } from "@solitude/plugin-api/render";
 
 export const ALL_COLORS = [
   "blueShip",
@@ -18,7 +18,7 @@ export const ALL_COLORS = [
   "deimos",
 ] as const;
 export type ColorName = (typeof ALL_COLORS)[number];
-export type Colors = Record<ColorName, RGB>;
+export type Colors = Record<ColorName, ExternalRgb>;
 
 export const colors: Colors = {
   blueShip: { r: 0, g: 255, b: 255 },

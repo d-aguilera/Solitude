@@ -8,6 +8,7 @@ import type { ControlledBody } from "@solitude/engine/world";
 import { createSolitudeHeadlessLoop } from "@solitude/sim/headless";
 import { describe, expect, it } from "vitest";
 import {
+  createDefaultMultiplayerSimulationPlugins,
   createDefaultMultiplayerSpacecraftEntity,
   createDefaultMultiplayerSpawnProviders,
   type DefaultMultiplayerContentPluginSet,
@@ -18,6 +19,7 @@ describe("server-style headless Solitude composition", () => {
   it("builds the default Solitude world through public exports and advances spacecraft dynamics", () => {
     const { config, loop } = createSolitudeHeadlessLoop({
       extraEntities: createDefaultShipEntities(),
+      plugins: createTestSimulationPlugins(),
     });
     const world = loop.worldAndScene.world;
     const focus = loop.worldAndScene.mainFocus;
@@ -42,6 +44,7 @@ describe("server-style headless Solitude composition", () => {
   it("can route controls to multiple ships in one authoritative headless tick", () => {
     const { loop } = createSolitudeHeadlessLoop({
       extraEntities: createDefaultShipEntities(),
+      plugins: createTestSimulationPlugins(),
     });
     const blue = getControlledBody(loop.worldAndScene.world, "ship:1");
     const red = getControlledBody(loop.worldAndScene.world, "ship:red");
@@ -69,18 +72,23 @@ describe("server-style headless Solitude composition", () => {
   it("can advance simulation time independently from control time", () => {
     const noBurnLoop = createSolitudeHeadlessLoop({
       extraEntities: createDefaultShipEntities(),
+      plugins: createTestSimulationPlugins(),
     }).loop;
     const shortBurnLoop = createSolitudeHeadlessLoop({
       extraEntities: createDefaultShipEntities(),
+      plugins: createTestSimulationPlugins(),
     }).loop;
     const fullBurnLoop = createSolitudeHeadlessLoop({
       extraEntities: createDefaultShipEntities(),
+      plugins: createTestSimulationPlugins(),
     }).loop;
     const shortYawLoop = createSolitudeHeadlessLoop({
       extraEntities: createDefaultShipEntities(),
+      plugins: createTestSimulationPlugins(),
     }).loop;
     const fullYawLoop = createSolitudeHeadlessLoop({
       extraEntities: createDefaultShipEntities(),
+      plugins: createTestSimulationPlugins(),
     }).loop;
 
     noBurnLoop.stepWithEntityInputsAndSimDt(100, 1000, new Map());
@@ -248,4 +256,11 @@ function getControlledBody(
   const body = world.controllableBodies.find((item) => item.id === id);
   if (!body) throw new Error(`Missing controlled body: ${id}`);
   return body;
+}
+
+function createTestSimulationPlugins() {
+  return createDefaultMultiplayerSimulationPlugins(
+    testMultiplayerContentPlugins,
+    {},
+  );
 }

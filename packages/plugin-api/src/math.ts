@@ -8,6 +8,7 @@ export {
   EPS_SPEED_SQ,
   EPS_TIME_SEC,
 } from "@solitude/engine/epsilon";
+export { AU, km } from "@solitude/engine/units";
 export {
   computeVolumeOfTriangleMesh,
   mat3,

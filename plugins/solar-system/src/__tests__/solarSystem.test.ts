@@ -1,34 +1,25 @@
-import { vec3 } from "@solitude/engine/math";
-import type { WorldModelRegistry } from "@solitude/engine/plugin";
-import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
-import type { EntityConfig } from "@solitude/engine/world";
-import { applyWorldModelPlugins } from "@solitude/engine/world";
+import { vec3 } from "@solitude/plugin-api/math";
+import type { ExternalEntityConfig } from "@solitude/plugin-api/world-model";
 import { describe, expect, it, vi } from "vitest";
-import {
-  createSolarSystemPlugin,
-  parseSolarSystemRuntimeOptions,
-} from "../../../plugins/solarSystem";
-import { createSolarSystemCelestialBodyProvider } from "../../../plugins/solarSystem/celestialBodyProvider";
-import { buildWorldAndSceneConfig } from "../../../worldAndSceneConfig";
+import { createSolarSystemCelestialBodyProvider } from "../celestialBodyProvider";
+import { createPlugin, parseSolarSystemRuntimeOptions } from "../index";
 
 describe("solarSystem plugin", () => {
   it("contributes world content through generic entities", () => {
-    const config = buildWorldAndSceneConfig();
-    const addEntities = vi.fn<WorldModelRegistry["addEntities"]>();
-    const registry: WorldModelRegistry = {
-      addEntities,
-      setMainFocusEntityId: vi.fn(),
-    };
+    const addEntities = vi.fn();
+    const setMainFocusEntityId = vi.fn();
 
-    createSolarSystemPlugin().worldModel!.contributeWorldModel(registry, {
-      capabilityRegistry: createPluginCapabilityRegistry(),
-      config,
-    });
+    createPlugin().hooks?.worldModel?.contributeWorldModel(
+      { addEntities, setMainFocusEntityId },
+      { capabilityRegistry: { getAll: () => [] } },
+    );
 
-    expect(registry.addEntities).toHaveBeenCalledOnce();
-    expect(registry.setMainFocusEntityId).not.toHaveBeenCalled();
+    expect(addEntities).toHaveBeenCalledOnce();
+    expect(setMainFocusEntityId).not.toHaveBeenCalled();
     expect(
-      addEntities.mock.calls[0][0].map((entity: EntityConfig) => entity.id),
+      (addEntities.mock.calls[0][0] as ExternalEntityConfig[]).map(
+        (entity) => entity.id,
+      ),
     ).toEqual([
       "planet:sun",
       "planet:mercury",
@@ -45,42 +36,15 @@ describe("solarSystem plugin", () => {
     ]);
   });
 
-  it("contributes solar bodies without choosing a main focus", () => {
-    const config = buildWorldAndSceneConfig();
-
-    applyWorldModelPlugins(config, [createSolarSystemPlugin()]);
-    expect(config.mainFocusEntityId).toBe("");
-    expect(config.entities.map((entity) => entity.id)).toEqual([
-      "planet:sun",
-      "planet:mercury",
-      "planet:venus",
-      "planet:earth",
-      "planet:mars",
-      "planet:jupiter",
-      "planet:saturn",
-      "planet:uranus",
-      "planet:neptune",
-      "planet:moon",
-      "planet:phobos",
-      "planet:deimos",
-    ]);
-    expect(config.entities[0].components.lightEmitter?.luminosity).toBeTruthy();
-    expect(
-      config.entities.some((entity) => entity.components.controllable),
-    ).toBe(false);
-  });
-
   it("shares one unit sphere mesh across solar bodies and scales per entity", () => {
-    const config = buildWorldAndSceneConfig();
-
-    applyWorldModelPlugins(config, [createSolarSystemPlugin()]);
-
-    const renderables = config.entities.map((entity) => {
+    const entities = contributeEntities();
+    const renderables = entities.map((entity) => {
       const renderable = entity.components.renderable;
       if (!renderable) throw new Error(`Missing renderable: ${entity.id}`);
       return renderable;
     });
     const firstMesh = renderables[0].mesh;
+
     expect(
       renderables.every((renderable) => renderable.mesh === firstMesh),
     ).toBe(true);
@@ -98,28 +62,18 @@ describe("solarSystem plugin", () => {
   });
 
   it("leaves visual texture materials to presentation plugins", () => {
-    const config = buildWorldAndSceneConfig();
+    const entities = contributeEntities();
+    const earth = getEntity(entities, "planet:earth");
+    const moon = getEntity(entities, "planet:moon");
 
-    applyWorldModelPlugins(config, [createSolarSystemPlugin()]);
-
-    const earth = getEntity(config.entities, "planet:earth");
-    const moon = getEntity(config.entities, "planet:moon");
     expect(earth.components.renderable?.material).toBeUndefined();
     expect(moon.components.renderable?.material).toBeUndefined();
   });
 
   it("scales celestial body densities by the square of the orbital speed multiplier", () => {
-    const normalConfig = buildWorldAndSceneConfig();
-    const acceleratedConfig = buildWorldAndSceneConfig();
-
-    applyWorldModelPlugins(normalConfig, [createSolarSystemPlugin()]);
-    applyWorldModelPlugins(acceleratedConfig, [
-      createSolarSystemPlugin({ orbitalSpeedMultiplier: "8" }),
-    ]);
-
-    const normalEarth = getEntity(normalConfig.entities, "planet:earth");
+    const normalEarth = getEntity(contributeEntities(), "planet:earth");
     const acceleratedEarth = getEntity(
-      acceleratedConfig.entities,
+      contributeEntities({ orbitalSpeedMultiplier: "8" }),
       "planet:earth",
     );
 
@@ -164,10 +118,26 @@ describe("solarSystem plugin", () => {
   });
 });
 
+function contributeEntities(
+  runtimeOptions: Record<string, string> = {},
+): ExternalEntityConfig[] {
+  let entities: ExternalEntityConfig[] = [];
+  createPlugin(runtimeOptions).hooks?.worldModel?.contributeWorldModel(
+    {
+      addEntities: (contribution) => {
+        entities = contribution;
+      },
+      setMainFocusEntityId: vi.fn(),
+    },
+    { capabilityRegistry: { getAll: () => [] } },
+  );
+  return entities;
+}
+
 function getEntity(
-  entities: readonly EntityConfig[],
+  entities: readonly ExternalEntityConfig[],
   id: string,
-): EntityConfig {
+): ExternalEntityConfig {
   const entity = entities.find((item) => item.id === id);
   if (!entity) throw new Error(`Missing entity: ${id}`);
   return entity;

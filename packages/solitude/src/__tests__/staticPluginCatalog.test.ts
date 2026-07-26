@@ -16,6 +16,7 @@ describe("static plugin catalog", () => {
 
     expect(autopilot?.controls).toBeDefined();
     expect(browserHudOverlay?.capabilities).toHaveLength(1);
+    expect(plugins.some((plugin) => plugin.id === "solarSystem")).toBe(false);
     expect(plugins.some((plugin) => plugin.id === "autopilotInput")).toBe(
       false,
     );

@@ -58,8 +58,8 @@
 - `multiplayer-pack-v1` (`browser`): `remoteIdentityHud` and `shipColorNames`.
 - `solitude-content-browser-pack-v1` (`browser`) and
   `solitude-content-server-pack-v1` (`server`): host-specific wrappers around
-  the same `polyFighter` implementation from the host-neutral
-  `@solitude-plugins/poly-fighter` package.
+  the same ordered `solarSystem` and `polyFighter` implementations from
+  host-neutral external packages.
 
 The browser and server Poly Fighter modules are intentionally byte-identical;
 separate packs express separate host activation and deployment.
@@ -73,12 +73,12 @@ simulation catalog through `packages/solitude/src/staticPluginCatalog.ts`.
 `packages/sim/src/plugins/` still owns:
 
 - `autopilot`
-- `solarSystem`
 - `spacecraftOperator`
 
-The browser-only `autopilotInput` implementation has moved to `core-pack-v1`
-and is discovered by both browser products. The static standalone and remote
-catalogs no longer contain it.
+The browser-only `autopilotInput` implementation has moved to `core-pack-v1`.
+The host-neutral `solarSystem` implementation is bundled into both Solitude
+content packs and participates in browser and authoritative world-model
+assembly through discovery. The static catalogs no longer contain either.
 
 The standalone and remote catalogs also compose the mandatory browser-owned
 `browserHudOverlay` host adapter through
@@ -128,11 +128,10 @@ dependencies before every extraction.
 
 ## Open Design Pressure
 
-- API v8 establishes a server pre-runtime world-model phase, so `solarSystem`
-  is the next viable extraction. The server external contract still has no
-  control, simulation, or loop lifecycle; extracting `spacecraftOperator` or
-  `autopilot` from static authoritative composition requires those boundaries
-  to be designed.
+- API v8's server pre-runtime world-model phase now runs the extracted
+  `solarSystem`. The server external contract still has no control, simulation,
+  or loop lifecycle; extracting `spacecraftOperator` or `autopilot` from static
+  authoritative composition requires those boundaries to be designed.
 - Browser API v8 also supplies a frozen host snapshot facade. External
   playback owns scenario metadata and scripts, while the engine remains the
   single implementation of runtime snapshot capture/apply policy.

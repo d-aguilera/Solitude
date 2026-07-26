@@ -4,24 +4,17 @@ import {
   type RuntimeOptions,
 } from "@solitude/engine/plugin";
 import { createAutopilotPlugin } from "./autopilot/index";
-import { createSolarSystemPlugin } from "./solarSystem/index";
 import { createSpacecraftOperatorPlugin } from "./spacecraftOperator/index";
 
-export const defaultHeadlessPluginIds = [
-  "solarSystem",
-  "spacecraftOperator",
-  "autopilot",
-];
+export const defaultHeadlessPluginIds = ["spacecraftOperator", "autopilot"];
 
 export const simPluginCatalog: PluginCatalog = {
   autopilot: createAutopilotPlugin,
-  solarSystem: createSolarSystemPlugin,
   spacecraftOperator: createSpacecraftOperatorPlugin,
 };
 
 export const headlessPluginCatalog: PluginCatalog = {
   autopilot: simPluginCatalog.autopilot,
-  solarSystem: simPluginCatalog.solarSystem,
   spacecraftOperator: simPluginCatalog.spacecraftOperator,
 };
 

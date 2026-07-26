@@ -2,6 +2,7 @@ import { vec3 } from "@solitude/engine/math";
 import type { ControlledBody } from "@solitude/engine/world";
 import { describe, expect, it } from "vitest";
 import {
+  createDefaultMultiplayerSimulationPlugins,
   createDefaultMultiplayerSpacecraftEntity,
   createDefaultMultiplayerSpawnProviders,
 } from "../composition";
@@ -10,7 +11,7 @@ import { testMultiplayerContentPlugins } from "./polyFighterFixture";
 
 describe("Solitude server runtime", () => {
   it("steps the default headless game with entity-addressed controls and reuses snapshots", () => {
-    const game = createSolitudeServerGame(createDefaultShipEntities());
+    const game = createTestServerGame(createDefaultShipEntities());
     const blue = getControlledBody(game.worldAndScene, "ship:1");
     const red = getControlledBody(game.worldAndScene, "ship:red");
     const blueBefore = vec3.clone(blue.velocity);
@@ -40,7 +41,7 @@ describe("Solitude server runtime", () => {
   });
 
   it("moves runtime focus away from a removed focused entity", () => {
-    const game = createSolitudeServerGame(createDefaultShipEntities());
+    const game = createTestServerGame(createDefaultShipEntities());
 
     expect(game.worldAndScene.mainFocus.entityId).toBe("ship:1");
 
@@ -72,7 +73,7 @@ describe("Solitude server runtime", () => {
       id: "ship:red",
       index: 1,
     });
-    const game = createSolitudeServerGame([blue]);
+    const game = createTestServerGame([blue]);
     game.addEntity(red);
     const redBody = getControlledBody(game.worldAndScene, "ship:red");
     const redPositionBefore = vec3.clone(redBody.position);
@@ -110,6 +111,18 @@ function createDefaultShipEntities() {
       index: 1,
     }),
   ];
+}
+
+function createTestServerGame(
+  initialEntities: ReturnType<typeof createDefaultShipEntities>,
+) {
+  return createSolitudeServerGame(
+    initialEntities,
+    createDefaultMultiplayerSimulationPlugins(
+      testMultiplayerContentPlugins,
+      {},
+    ),
+  );
 }
 
 function getControlledBody(

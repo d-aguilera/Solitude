@@ -1,6 +1,7 @@
-import { celestialBodyProviderCapability } from "@solitude/engine/celestial-bodies";
-import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
-import type { EntityConfig } from "@solitude/engine/world";
+import { createCelestialBodyProviderCapability } from "@solitude/plugin-api/celestial-bodies";
+import type { ExternalPlugin } from "@solitude/plugin-api/module";
+import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
+import type { ExternalEntityConfig } from "@solitude/plugin-api/world-model";
 import { createSolarSystemCelestialBodyProvider } from "./celestialBodyProvider";
 import { createSolarSystemEntityNameProvider } from "./localization";
 import {
@@ -10,31 +11,32 @@ import {
 
 export const orbitalSpeedMultiplierRuntimeOption = "orbitalSpeedMultiplier";
 
-export function createSolarSystemPlugin(
-  runtimeOptions: RuntimeOptions = {},
-): GamePlugin {
+export function createPlugin(
+  runtimeOptions: ExternalRuntimeOptions = {},
+): ExternalPlugin {
   const options = parseSolarSystemRuntimeOptions(runtimeOptions);
   return {
     capabilities: [
-      {
-        id: celestialBodyProviderCapability,
-        value: createSolarSystemCelestialBodyProvider(options),
-      },
+      createCelestialBodyProviderCapability(
+        createSolarSystemCelestialBodyProvider(options),
+      ),
       createSolarSystemEntityNameProvider(runtimeOptions),
     ],
     id: "solarSystem",
-    worldModel: {
-      contributeWorldModel: (registry) => {
-        const solarSystem = buildDefaultSolarSystemConfigs(options);
-        const entities = buildSolarSystemBodyEntities(solarSystem);
-        registry.addEntities(entities);
+    hooks: {
+      worldModel: {
+        contributeWorldModel: (registry) => {
+          const solarSystem = buildDefaultSolarSystemConfigs(options);
+          const entities = buildSolarSystemBodyEntities(solarSystem);
+          registry.addEntities(entities);
+        },
       },
     },
   };
 }
 
 export function parseSolarSystemRuntimeOptions(
-  runtimeOptions: RuntimeOptions,
+  runtimeOptions: ExternalRuntimeOptions,
 ): SolarSystemConfigOptions {
   const raw = runtimeOptions[orbitalSpeedMultiplierRuntimeOption];
   if (raw === undefined) {
@@ -53,8 +55,8 @@ export function parseSolarSystemRuntimeOptions(
 export function buildSolarSystemBodyEntities({
   physics,
   render,
-}: ReturnType<typeof buildDefaultSolarSystemConfigs>): EntityConfig[] {
-  const entities: EntityConfig[] = [];
+}: ReturnType<typeof buildDefaultSolarSystemConfigs>): ExternalEntityConfig[] {
+  const entities: ExternalEntityConfig[] = [];
   for (const body of physics) {
     const renderConfig = render.find((item) => item.id === body.id);
     entities.push({

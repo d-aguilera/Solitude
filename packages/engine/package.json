@@ -18,6 +18,7 @@
     "./render/projectionService": "./src/render/ProjectionService.ts",
     "./render/sceneOverlayRenderer": "./src/render/SceneOverlayRenderer.ts",
     "./runtime": "./src/runtime.ts",
+    "./units": "./src/units.ts",
     "./world": "./src/world.ts"
   },
   "dependencies": {

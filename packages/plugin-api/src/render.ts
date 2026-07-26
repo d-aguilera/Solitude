@@ -1,5 +1,12 @@
 import type { ExternalPluginCapabilityProvider } from "./capabilities";
 
+export type {
+  Mesh as ExternalMesh,
+  MeshLod as ExternalMeshLod,
+  MeshShading as ExternalMeshShading,
+} from "@solitude/engine/render";
+export { createUnitIcosphereMesh } from "@solitude/engine/render/icosphere";
+
 export interface ExternalRgb {
   r: number;
   g: number;

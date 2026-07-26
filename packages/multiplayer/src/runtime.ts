@@ -1,4 +1,4 @@
-import type { RuntimeOptions } from "@solitude/engine/plugin";
+import type { GamePlugin } from "@solitude/engine/plugin";
 import {
   captureRuntimeSnapshotInto,
   createRuntimeSnapshot,
@@ -15,11 +15,11 @@ import { createSolitudeHeadlessLoop } from "@solitude/sim/headless";
 
 export function createSolitudeServerGame(
   initialEntities: readonly EntityConfig[],
-  runtimeOptions: RuntimeOptions = {},
+  plugins: readonly GamePlugin[],
 ): SolitudeServerGame {
   const { config, loop } = createSolitudeHeadlessLoop({
     extraEntities: initialEntities,
-    runtimeOptions,
+    plugins,
   });
   const snapshot = createRuntimeSnapshot();
   captureRuntimeSnapshotInto(snapshot, loop.worldAndScene.world);

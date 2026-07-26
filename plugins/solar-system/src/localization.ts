@@ -1,9 +1,9 @@
-import type { RuntimeOptions } from "@solitude/engine/plugin";
-import { createEntityNameProvider } from "@solitude/entity-names";
+import { createEntityNameProvider } from "@solitude/plugin-api/entity-names";
 import {
   readLocaleRuntimeOption,
-  type SolitudeLocale,
-} from "@solitude/localization";
+  type ExternalLocale,
+} from "@solitude/plugin-api/localization";
+import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 import enMessages from "./locales/en.json";
 import esMessages from "./locales/es.json";
 import frMessages from "./locales/fr.json";
@@ -14,10 +14,10 @@ const messagesByLocale = {
   en: enMessages,
   es: esMessages,
   fr: frMessages,
-} satisfies Record<SolitudeLocale, SolarSystemNameTable>;
+} satisfies Record<ExternalLocale, SolarSystemNameTable>;
 
 export function createSolarSystemEntityNameProvider(
-  runtimeOptions: RuntimeOptions,
+  runtimeOptions: ExternalRuntimeOptions,
 ) {
   const messages = messagesByLocale[readLocaleRuntimeOption(runtimeOptions)];
   return createEntityNameProvider({

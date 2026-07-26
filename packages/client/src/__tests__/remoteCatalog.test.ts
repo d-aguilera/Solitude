@@ -28,6 +28,7 @@ describe("remote render plugin catalog", () => {
     );
 
     expect(autopilot?.controls).toBeDefined();
+    expect(plugins.some((plugin) => plugin.id === "solarSystem")).toBe(false);
     expect(plugins.some((plugin) => plugin.id === "autopilotInput")).toBe(
       false,
     );

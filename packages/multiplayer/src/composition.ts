@@ -13,10 +13,7 @@ import { loadPlugins, type RuntimeOptions } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { EntityConfig, EntityId } from "@solitude/engine/world";
 import { createOrbitingPlacement } from "@solitude/geometry";
-import {
-  appendExternalPluginSet,
-  type ExternalPluginSet,
-} from "@solitude/plugin-runtime";
+import type { ExternalPluginSet } from "@solitude/plugin-runtime";
 import {
   createSolitudeSessionManager,
   type SolitudeSessionManager,
@@ -80,7 +77,13 @@ export function createDefaultSolitudeSessionManager(
         index,
       }),
     createGame: (initialEntities) =>
-      createSolitudeServerGame(initialEntities, runtimeOptions),
+      createSolitudeServerGame(
+        initialEntities,
+        createDefaultMultiplayerSimulationPlugins(
+          contentPlugins,
+          runtimeOptions,
+        ),
+      ),
     nowMillis: Date.now,
     runtimeOptions,
   });
@@ -102,13 +105,6 @@ export function createDefaultMultiplayerSpawnProviders(
     runtimeOptions,
   );
   const capabilityRegistry = createPluginCapabilityRegistry(plugins);
-  const celestialBodyProvider = capabilityRegistry
-    .getAll(celestialBodyProviderCapability)
-    .find(isCelestialBodyProvider);
-  if (!celestialBodyProvider) {
-    throw new Error("Missing celestial body provider");
-  }
-
   const controllableEntityProviders = capabilityRegistry
     .getAll(controllableEntityProviderCapability)
     .filter(isControllableEntityProvider);
@@ -121,6 +117,12 @@ export function createDefaultMultiplayerSpawnProviders(
     throw new Error("Missing controllable entity provider");
   }
   const controllableEntityProvider = controllableEntityProviders[0];
+  const celestialBodyProvider = capabilityRegistry
+    .getAll(celestialBodyProviderCapability)
+    .find(isCelestialBodyProvider);
+  if (!celestialBodyProvider) {
+    throw new Error("Missing celestial body provider");
+  }
 
   return {
     celestialBodyProvider,
@@ -161,16 +163,27 @@ function createDefaultMultiplayerContentPlugins(
   contentPlugins: DefaultMultiplayerContentPluginSet,
   runtimeOptions: RuntimeOptions,
 ) {
-  const composed = appendExternalPluginSet(
-    { solarSystem: simPluginCatalog.solarSystem },
-    ["solarSystem"],
-    contentPlugins,
-  );
   return loadPlugins({
-    catalog: composed.catalog,
-    ids: composed.ids,
+    catalog: contentPlugins.catalog,
+    ids: contentPlugins.ids,
     runtimeOptions,
   });
+}
+
+export function createDefaultMultiplayerSimulationPlugins(
+  contentPlugins: DefaultMultiplayerContentPluginSet,
+  runtimeOptions: RuntimeOptions,
+) {
+  return createDefaultMultiplayerContentPlugins(
+    contentPlugins,
+    runtimeOptions,
+  ).concat(
+    loadPlugins({
+      catalog: simPluginCatalog,
+      ids: ["spacecraftOperator", "autopilot"],
+      runtimeOptions,
+    }),
+  );
 }
 
 function createDefaultAssignableEntityIds(count: number): EntityId[] {

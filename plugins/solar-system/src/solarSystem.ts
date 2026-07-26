@@ -1,11 +1,13 @@
-import { AU, km } from "@solitude/engine/math";
-import type { Mesh } from "@solitude/engine/render";
-import { createUnitIcosphereMesh } from "@solitude/engine/render/icosphere";
+import { AU, km } from "@solitude/plugin-api/math";
 import type {
-  EntityRenderConfig,
-  KeplerianBodyPhysicsConfig,
-  KeplerianOrbit,
-} from "@solitude/engine/world";
+  ExternalEntityRenderConfig,
+  ExternalKeplerianBodyPhysicsConfig,
+  ExternalKeplerianOrbit,
+} from "@solitude/plugin-api/orbits";
+import {
+  createUnitIcosphereMesh,
+  type ExternalMesh,
+} from "@solitude/plugin-api/render";
 import { colors } from "./colors";
 
 // --- Generated from JPL Horizons at epoch J2000.0 ---
@@ -205,7 +207,7 @@ function buildOrbit(
   lonAscNodeDegVal: number,
   argPeriapsisDegVal: number,
   meanAnomalyAtEpochRad: number,
-): KeplerianOrbit {
+): ExternalKeplerianOrbit {
   return {
     semiMajorAxis,
     eccentricity,
@@ -226,7 +228,8 @@ function buildOrbit(
  *
  * All distances and radii are in meters.
  */
-type SolarBodyConfig = KeplerianBodyPhysicsConfig & EntityRenderConfig;
+type SolarBodyConfig = ExternalKeplerianBodyPhysicsConfig &
+  ExternalEntityRenderConfig;
 
 export interface SolarSystemConfigOptions {
   orbitalSpeedMultiplier: number;
@@ -235,8 +238,8 @@ export interface SolarSystemConfigOptions {
 export function buildDefaultSolarSystemConfigs(
   options: SolarSystemConfigOptions,
 ): {
-  physics: KeplerianBodyPhysicsConfig[];
-  render: EntityRenderConfig[];
+  physics: ExternalKeplerianBodyPhysicsConfig[];
+  render: ExternalEntityRenderConfig[];
 } {
   const sunId = "planet:sun";
   const densityScale = getOrbitalDensityScale(options.orbitalSpeedMultiplier);
@@ -497,8 +500,8 @@ export function buildDefaultSolarSystemConfigs(
     },
   ];
 
-  const physics: KeplerianBodyPhysicsConfig[] = [];
-  const render: EntityRenderConfig[] = [];
+  const physics: ExternalKeplerianBodyPhysicsConfig[] = [];
+  const render: ExternalEntityRenderConfig[] = [];
 
   for (const cfg of configs) {
     physics.push({
@@ -536,6 +539,6 @@ function getOrbitalDensityScale(orbitalSpeedMultiplier: number): number {
 
 const planetMeshLod = { kind: "unitIcosphere", maxSubdivisions: 5 } as const;
 const planetMeshShading = { kind: "smoothSphere" } as const;
-const planetPrototype: Mesh = createUnitIcosphereMesh(
+const planetPrototype: ExternalMesh = createUnitIcosphereMesh(
   planetMeshLod.maxSubdivisions,
 );

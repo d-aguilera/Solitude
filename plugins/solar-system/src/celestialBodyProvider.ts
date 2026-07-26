@@ -1,8 +1,8 @@
 import type {
-  CelestialBody,
-  CelestialBodyProvider,
-} from "@solitude/engine/celestial-bodies";
-import { createKeplerianBodiesFromConfig } from "@solitude/engine/world";
+  ExternalCelestialBody,
+  ExternalCelestialBodyProvider,
+} from "@solitude/plugin-api/celestial-bodies";
+import { createKeplerianBodiesFromConfig } from "@solitude/plugin-api/orbits";
 import {
   buildDefaultSolarSystemConfigs,
   type SolarSystemConfigOptions,
@@ -10,7 +10,7 @@ import {
 
 export function createSolarSystemCelestialBodyProvider(
   options: SolarSystemConfigOptions,
-): CelestialBodyProvider {
+): ExternalCelestialBodyProvider {
   const solarSystem = buildDefaultSolarSystemConfigs(options);
   const setup = createKeplerianBodiesFromConfig(solarSystem.physics);
 
@@ -20,7 +20,7 @@ export function createSolarSystemCelestialBodyProvider(
       if (bodyIndex < 0) return null;
       const body = setup.bodies[bodyIndex];
       const physics = setup.physics[bodyIndex];
-      const celestialBody: CelestialBody = {
+      const celestialBody: ExternalCelestialBody = {
         id,
         mass: physics.mass,
         physicalRadius: physics.physicalRadius,

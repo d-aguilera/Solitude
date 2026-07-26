@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-26T16:09:00.725Z",
+  "generatedAt": "2026-07-26T16:43:48.482Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -521,6 +521,13 @@
       "parent": "pkg:@solitude/server"
     },
     {
+      "id": "module:@solitude/engine:./units",
+      "kind": "module",
+      "label": "./units",
+      "packageName": "@solitude/engine",
+      "parent": "pkg:@solitude/engine"
+    },
+    {
       "id": "module:@solitude/plugin-api:./views",
       "kind": "module",
       "label": "./views",
@@ -567,10 +574,22 @@
       "packageName": "@solitude-plugins/poly-fighter"
     },
     {
+      "id": "pkg:@solitude-plugins/solar-system",
+      "kind": "package",
+      "label": "@solitude-plugins/solar-system",
+      "packageName": "@solitude-plugins/solar-system"
+    },
+    {
       "id": "pkg:@solitude-plugins/solitude-content-browser-pack-v1",
       "kind": "package",
       "label": "@solitude-plugins/solitude-content-browser-pack-v1",
       "packageName": "@solitude-plugins/solitude-content-browser-pack-v1"
+    },
+    {
+      "id": "pkg:@solitude-plugins/solitude-content-pack",
+      "kind": "package",
+      "label": "@solitude-plugins/solitude-content-pack",
+      "packageName": "@solitude-plugins/solitude-content-pack"
     },
     {
       "id": "pkg:@solitude-plugins/solitude-content-server-pack-v1",
@@ -795,6 +814,22 @@
       "symbolKind": "const"
     },
     {
+      "id": "symbol:@solitude/engine:./units:AU",
+      "kind": "symbol",
+      "label": "AU",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./units",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./math:AU",
+      "kind": "symbol",
+      "label": "AU",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./math",
+      "symbolKind": "const"
+    },
+    {
       "id": "symbol:@solitude/engine:./world:AxialSpinConfig",
       "kind": "symbol",
       "label": "AxialSpinConfig",
@@ -896,6 +931,14 @@
       "label": "C",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./math",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/engine:./units:C",
+      "kind": "symbol",
+      "label": "C",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./units",
       "symbolKind": "const"
     },
     {
@@ -1363,6 +1406,14 @@
       "symbolKind": "function"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig",
+      "kind": "symbol",
+      "label": "createKeplerianBodiesFromConfig",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./orbits",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/input:./keyboard:createKeyboardHandlerDispatcher",
       "kind": "symbol",
       "label": "createKeyboardHandlerDispatcher",
@@ -1656,6 +1707,14 @@
       "label": "createUnitIcosphereMesh",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./render/icosphere",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./render:createUnitIcosphereMesh",
+      "kind": "symbol",
+      "label": "createUnitIcosphereMesh",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./render",
       "symbolKind": "function"
     },
     {
@@ -2267,6 +2326,14 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig",
+      "kind": "symbol",
+      "label": "ExternalEntityRenderConfig",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./orbits",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:./scene:ExternalEntityStateConfig",
       "kind": "symbol",
       "label": "ExternalEntityStateConfig",
@@ -2352,6 +2419,22 @@
       "label": "ExternalHudPanelProvider",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./hud",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./orbits:ExternalKeplerianBodyPhysicsConfig",
+      "kind": "symbol",
+      "label": "ExternalKeplerianBodyPhysicsConfig",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./orbits",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./orbits:ExternalKeplerianOrbit",
+      "kind": "symbol",
+      "label": "ExternalKeplerianOrbit",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./orbits",
       "symbolKind": "interface"
     },
     {
@@ -2457,6 +2540,30 @@
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./scene",
       "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./render:ExternalMesh",
+      "kind": "symbol",
+      "label": "ExternalMesh",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./render",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./render:ExternalMeshLod",
+      "kind": "symbol",
+      "label": "ExternalMeshLod",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./render",
+      "symbolKind": "type"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./render:ExternalMeshShading",
+      "kind": "symbol",
+      "label": "ExternalMeshShading",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./render",
+      "symbolKind": "type"
     },
     {
       "id": "symbol:@solitude/plugin-api:./multiplayer:ExternalMultiplayerSessionProvider",
@@ -3624,6 +3731,22 @@
       "label": "km",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./math",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/engine:./units:km",
+      "kind": "symbol",
+      "label": "km",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./units",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./math:km",
+      "kind": "symbol",
+      "label": "km",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./math",
       "symbolKind": "const"
     },
     {
@@ -5743,16 +5866,40 @@
       "to": "pkg:@solitude/plugin-api"
     },
     {
-      "id": "dependency:pkg:@solitude-plugins/solitude-content-browser-pack-v1->pkg:@solitude-plugins/poly-fighter",
+      "id": "dependency:pkg:@solitude-plugins/solar-system->pkg:@solitude/plugin-api",
+      "from": "pkg:@solitude-plugins/solar-system",
+      "kind": "dependency",
+      "to": "pkg:@solitude/plugin-api"
+    },
+    {
+      "id": "dependency:pkg:@solitude-plugins/solitude-content-browser-pack-v1->pkg:@solitude-plugins/solitude-content-pack",
       "from": "pkg:@solitude-plugins/solitude-content-browser-pack-v1",
+      "kind": "dependency",
+      "to": "pkg:@solitude-plugins/solitude-content-pack"
+    },
+    {
+      "id": "dependency:pkg:@solitude-plugins/solitude-content-pack->pkg:@solitude-plugins/poly-fighter",
+      "from": "pkg:@solitude-plugins/solitude-content-pack",
       "kind": "dependency",
       "to": "pkg:@solitude-plugins/poly-fighter"
     },
     {
-      "id": "dependency:pkg:@solitude-plugins/solitude-content-server-pack-v1->pkg:@solitude-plugins/poly-fighter",
+      "id": "dependency:pkg:@solitude-plugins/solitude-content-pack->pkg:@solitude-plugins/solar-system",
+      "from": "pkg:@solitude-plugins/solitude-content-pack",
+      "kind": "dependency",
+      "to": "pkg:@solitude-plugins/solar-system"
+    },
+    {
+      "id": "dependency:pkg:@solitude-plugins/solitude-content-pack->pkg:@solitude/plugin-api",
+      "from": "pkg:@solitude-plugins/solitude-content-pack",
+      "kind": "dependency",
+      "to": "pkg:@solitude/plugin-api"
+    },
+    {
+      "id": "dependency:pkg:@solitude-plugins/solitude-content-server-pack-v1->pkg:@solitude-plugins/solitude-content-pack",
       "from": "pkg:@solitude-plugins/solitude-content-server-pack-v1",
       "kind": "dependency",
-      "to": "pkg:@solitude-plugins/poly-fighter"
+      "to": "pkg:@solitude-plugins/solitude-content-pack"
     },
     {
       "id": "dependency:pkg:@solitude-plugins/standalone-pack-v1->pkg:@solitude/plugin-api",
@@ -6355,6 +6502,12 @@
       "to": "module:@solitude/engine:./epsilon"
     },
     {
+      "id": "module-import:module:@solitude/plugin-api:./math->module:@solitude/engine:./units",
+      "from": "module:@solitude/plugin-api:./math",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./units"
+    },
+    {
       "id": "module-import:module:@solitude/plugin-api:./math->module:@solitude/geometry:.",
       "from": "module:@solitude/plugin-api:./math",
       "kind": "module-import",
@@ -6427,6 +6580,12 @@
       "to": "module:@solitude/plugin-api:./capabilities"
     },
     {
+      "id": "module-import:module:@solitude/plugin-api:./orbits->module:@solitude/engine:./world",
+      "from": "module:@solitude/plugin-api:./orbits",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./world"
+    },
+    {
       "id": "module-import:module:@solitude/plugin-api:./orbits->module:@solitude/geometry:.",
       "from": "module:@solitude/plugin-api:./orbits",
       "kind": "module-import",
@@ -6437,6 +6596,18 @@
       "from": "module:@solitude/plugin-api:./presentation",
       "kind": "module-import",
       "to": "module:@solitude/plugin-api:./capabilities"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./render->module:@solitude/engine:./render",
+      "from": "module:@solitude/plugin-api:./render",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./render"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./render->module:@solitude/engine:./render/icosphere",
+      "from": "module:@solitude/plugin-api:./render",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./render/icosphere"
     },
     {
       "id": "module-import:module:@solitude/plugin-api:./render->module:@solitude/plugin-api:./capabilities",
@@ -7969,6 +8140,18 @@
       "to": "symbol:@solitude/engine:./math:EPS_TIME_SEC"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./math:AU->symbol:@solitude/engine:./units:AU",
+      "from": "symbol:@solitude/engine:./math:AU",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./units:AU"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./math:C->symbol:@solitude/engine:./units:C",
+      "from": "symbol:@solitude/engine:./math:C",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./units:C"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./math:circularSpeedAtRadius->symbol:@solitude/engine:./runtime:parameters",
       "from": "symbol:@solitude/engine:./math:circularSpeedAtRadius",
       "kind": "symbol-reference",
@@ -8087,6 +8270,12 @@
       "from": "symbol:@solitude/engine:./math:GravityPrimary",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./world:EntityMotionState"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./math:km->symbol:@solitude/engine:./units:km",
+      "from": "symbol:@solitude/engine:./math:km",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./units:km"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./math:LocalFrame->symbol:@solitude/engine:./math:Vec3",
@@ -9035,6 +9224,18 @@
       "from": "symbol:@solitude/engine:./render:formatDistance",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./math:km"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:formatDistance->symbol:@solitude/engine:./units:AU",
+      "from": "symbol:@solitude/engine:./render:formatDistance",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./units:AU"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./render:formatDistance->symbol:@solitude/engine:./units:km",
+      "from": "symbol:@solitude/engine:./render:formatDistance",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./units:km"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./render:getRequiredPrimaryViewState->symbol:@solitude/engine:./render:SceneViewState",
@@ -10787,6 +10988,24 @@
       "from": "symbol:@solitude/engine:./runtime:WorldAndScene",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./world:World"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./units:AU->symbol:@solitude/engine:./math:AU",
+      "from": "symbol:@solitude/engine:./units:AU",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:AU"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./units:C->symbol:@solitude/engine:./math:C",
+      "from": "symbol:@solitude/engine:./units:C",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:C"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./units:km->symbol:@solitude/engine:./math:km",
+      "from": "symbol:@solitude/engine:./units:km",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:km"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./world:addEntityConfigToWorld->symbol:@solitude/engine:./world:EntityConfig",
@@ -12679,6 +12898,48 @@
       "to": "symbol:@solitude/plugin-api:./multiplayer:ExternalMultiplayerSessionProvider"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig->symbol:@solitude/engine:./math:mat3",
+      "from": "symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:mat3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig->symbol:@solitude/engine:./math:vec3",
+      "from": "symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig->symbol:@solitude/engine:./world:KeplerianBodiesSetup",
+      "from": "symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:KeplerianBodiesSetup"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig->symbol:@solitude/engine:./world:KeplerianBodyPhysicsConfig",
+      "from": "symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:KeplerianBodyPhysicsConfig"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig->symbol:@solitude/engine:./world:RotatingBody",
+      "from": "symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:RotatingBody"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig->symbol:@solitude/engine:./world:SphericalBodyPhysics",
+      "from": "symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:SphericalBodyPhysics"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig->symbol:@solitude/plugin-api:./math:Vec3",
+      "from": "symbol:@solitude/plugin-api:./orbits:createKeplerianBodiesFromConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:Vec3"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:createOrbitingPlacement->symbol:@solitude/geometry:.:OrbitingPlacement",
       "from": "symbol:@solitude/plugin-api:./orbits:createOrbitingPlacement",
       "kind": "symbol-reference",
@@ -12701,6 +12962,78 @@
       "from": "symbol:@solitude/plugin-api:./orbits:createOrbitingPlacement",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./math:vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig->symbol:@solitude/engine:./render:Mesh",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:Mesh"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig->symbol:@solitude/engine:./render:MeshLod",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:MeshLod"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig->symbol:@solitude/engine:./render:MeshShading",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:MeshShading"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig->symbol:@solitude/engine:./render:RenderMaterial",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RenderMaterial"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig->symbol:@solitude/engine:./render:RGB",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:RGB"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig->symbol:@solitude/engine:./world:EntityId",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig->symbol:@solitude/engine:./world:EntityRenderConfig",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityRenderConfig"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig->symbol:@solitude/engine:./world:RenderMaterial",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalEntityRenderConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:RenderMaterial"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalKeplerianBodyPhysicsConfig->symbol:@solitude/engine:./world:EntityId",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalKeplerianBodyPhysicsConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalKeplerianBodyPhysicsConfig->symbol:@solitude/engine:./world:KeplerianBodyPhysicsConfig",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalKeplerianBodyPhysicsConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:KeplerianBodyPhysicsConfig"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalKeplerianBodyPhysicsConfig->symbol:@solitude/engine:./world:KeplerianOrbit",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalKeplerianBodyPhysicsConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:KeplerianOrbit"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalKeplerianOrbit->symbol:@solitude/engine:./world:KeplerianOrbit",
+      "from": "symbol:@solitude/plugin-api:./orbits:ExternalKeplerianOrbit",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:KeplerianOrbit"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./orbits:ExternalOrbitAnchorBody->symbol:@solitude/geometry:.:OrbitAnchorBody",
@@ -12809,6 +13142,48 @@
       "from": "symbol:@solitude/plugin-api:./render:createRenderTextureSourcesCapability",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./render:renderTextureSourcesCapability"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./render:createUnitIcosphereMesh->symbol:@solitude/engine:./math:vec3",
+      "from": "symbol:@solitude/plugin-api:./render:createUnitIcosphereMesh",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./render:createUnitIcosphereMesh->symbol:@solitude/engine:./render:Mesh",
+      "from": "symbol:@solitude/plugin-api:./render:createUnitIcosphereMesh",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:Mesh"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./render:createUnitIcosphereMesh->symbol:@solitude/plugin-api:./math:Vec3",
+      "from": "symbol:@solitude/plugin-api:./render:createUnitIcosphereMesh",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./render:ExternalMesh->symbol:@solitude/engine:./render:Mesh",
+      "from": "symbol:@solitude/plugin-api:./render:ExternalMesh",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:Mesh"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./render:ExternalMesh->symbol:@solitude/plugin-api:./math:Vec3",
+      "from": "symbol:@solitude/plugin-api:./render:ExternalMesh",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./render:ExternalMeshLod->symbol:@solitude/engine:./render:MeshLod",
+      "from": "symbol:@solitude/plugin-api:./render:ExternalMeshLod",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:MeshLod"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./render:ExternalMeshShading->symbol:@solitude/engine:./render:MeshShading",
+      "from": "symbol:@solitude/plugin-api:./render:ExternalMeshShading",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./render:MeshShading"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./render:ExternalRenderMaterial->symbol:@solitude/plugin-api:./render:ExternalRgb",
@@ -14627,6 +15002,12 @@
       "from": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoop",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./world:WorldAndSceneConfig"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions->symbol:@solitude/engine:./plugin:GamePlugin",
+      "from": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions->symbol:@solitude/engine:./plugin:RuntimeOptions",

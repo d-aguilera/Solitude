@@ -116,7 +116,7 @@ or obsolete plugin shapes fail during composition.
 - `@solitude/plugin-api/controls`: mutable control-state updates for browser
   runtime plugins.
 - `@solitude/plugin-api/orbits`: portable circular-orbit placement used by
-  plugins without importing host simulation code.
+  plugins plus bundled-safe Keplerian setup and configuration types.
 - `@solitude/plugin-api/input`: keyboard action maps, handlers, and
   provider-declared actions that remain available through input locks.
 - `@solitude/plugin-api/profiling`: control contract for the host profiler
@@ -132,7 +132,7 @@ or obsolete plugin shapes fail during composition.
 - `@solitude/plugin-api/input`, `hud`, `presentation`, `multiplayer`, and
   `telemetry`: domain capability contracts, ids, constructors, and guards.
 - `@solitude/plugin-api/render`, `scene`, and `views`: renderer-neutral scene,
-  contribution, material, texture, and view contracts.
+  contribution, material, texture, mesh, unit-icosphere, and view contracts.
 - `@solitude/plugin-api/localization`: supported locale type and runtime locale
   parsing.
 - `@solitude/plugin-api/loop`: frame-policy hooks and controlled runtime focus
@@ -187,17 +187,20 @@ contribution types.
 
 - `solitude-content-browser-pack-v1`: browser gameplay content activated by
   both browser products. It currently contains:
+  - `solarSystem`: solar-system world entities, celestial-body lookup, and
+    localized entity names.
   - `polyFighter`: controllable-entity provider owning the fighter OBJ mesh,
     derived mass, and complete entity configuration used by standalone ships.
 
 - `solitude-content-server-pack-v1`: authoritative gameplay content using the
-  capability and pre-runtime world-model surfaces. It currently contains the
-  same capability-only `polyFighter` module used by authoritative multiplayer
-  spawning.
+  capability and pre-runtime world-model surfaces. It contains the same
+  `solarSystem` and `polyFighter` modules used by the browser content pack.
 
-Both content packs bundle the single implementation and OBJ asset owned by the
-`@solitude-plugins/poly-fighter` workspace package. Their emitted plugin modules
-are identical; only the deployment pack id and host contract differ.
+Both content packs use the shared `@solitude-plugins/solitude-content-pack`
+build configuration and bundle the implementations owned by
+`@solitude-plugins/solar-system` and `@solitude-plugins/poly-fighter`. Their
+emitted plugin modules are identical; only the deployment pack id and host
+contract differ.
 
 - `multiplayer-pack-v1`: multiplayer-only presentation plugins. It contains:
   - `remoteIdentityHud`: localized live game and assigned-entity identity HUD,
