@@ -48,6 +48,9 @@
 - Organize imports at the top of modified source files. Prettier uses `prettier-plugin-organize-imports`, but verify when imports move across packages.
 - Run: `npm run typecheck`
 - Run: `npm run test`
+- Run: `npm run map:architecture`, inspect every generated change, and include
+  substantive slice-related map updates. Restore the file when `generatedAt`
+  is the only change.
 - If you did not run either command, explicitly say “Not run” in the response.
 
 ## Non-negotiables and exceptions

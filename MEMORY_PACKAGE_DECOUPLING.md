@@ -120,6 +120,9 @@ dependencies before every extraction.
   duplicate ids, collisions, disallowed origins, and path escapes.
 - Run `npm run check:boundaries`, typechecks, tests, and the relevant plugin and
   product builds for every extraction slice.
+- Run `npm run map:architecture` for every slice and inspect its diff. Include
+  substantive slice-related map changes, but restore timestamp-only
+  `generatedAt` updates.
 
 ## Open Design Pressure
 
