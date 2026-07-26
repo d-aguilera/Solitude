@@ -1,4 +1,4 @@
-import { createHudOverlayPlugin } from "@solitude/browser/dom/hudOverlayPlugin";
+import { createBrowserHudOverlayAdapter } from "@solitude/browser/dom/hudOverlayAdapter";
 import {
   collectBrowserOverlayProviders,
   type BrowserOverlayProvider,
@@ -57,9 +57,9 @@ export function createRemoteClientComposition({
   const pluginSet = appendExternalPluginSet(
     {
       ...remoteRenderPluginCatalog,
-      hud: createHudOverlayPlugin,
+      browserHudOverlay: createBrowserHudOverlayAdapter,
     },
-    ["hud", ...remoteRenderPluginIds],
+    ["browserHudOverlay", ...remoteRenderPluginIds],
     {
       catalog: externalPluginCatalog,
       ids: externalPluginIds,

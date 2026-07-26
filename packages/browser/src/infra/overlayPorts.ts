@@ -32,7 +32,7 @@ export interface BrowserOverlayProvider {
   ) => void;
 }
 
-export function createPluginCapabilityProvider(
+export function createBrowserOverlayCapabilityProvider(
   provider: BrowserOverlayProvider,
 ): PluginCapabilityProvider {
   return {

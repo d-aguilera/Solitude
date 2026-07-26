@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./dom/hudOverlayPlugin": "./src/infra/hudOverlayPlugin.ts",
+    "./dom/hudOverlayAdapter": "./src/infra/hudOverlayAdapter.ts",
     "./dom/keyboardInput": "./src/infra/domKeyboardInput.ts",
     "./dom/layout": "./src/infra/domLayout.ts",
     "./dom/overlayPorts": "./src/infra/overlayPorts.ts",

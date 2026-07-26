@@ -13,9 +13,13 @@ describe("static plugin catalog", () => {
     const autopilotInput = plugins.find(
       (plugin) => plugin.id === "autopilotInput",
     );
+    const browserHudOverlay = plugins.find(
+      (plugin) => plugin.id === "browserHudOverlay",
+    );
 
     expect(autopilot?.controls).toBeDefined();
     expect(autopilotInput?.capabilities).toHaveLength(1);
+    expect(browserHudOverlay?.capabilities).toHaveLength(1);
     expect(plugins.some((plugin) => plugin.id === "autopilotHud")).toBe(false);
     expect(plugins.some((plugin) => plugin.id === "mainViewLookaround")).toBe(
       false,

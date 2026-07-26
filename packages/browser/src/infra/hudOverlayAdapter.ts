@@ -11,12 +11,12 @@ import {
   type HudPanelProvider,
 } from "@solitude/hud/provider";
 import {
-  createPluginCapabilityProvider,
+  createBrowserOverlayCapabilityProvider,
   type BrowserOverlayContext,
   type BrowserOverlayProvider,
 } from "./overlayPorts";
 
-export function createHudOverlayPlugin(): GamePlugin {
+export function createBrowserHudOverlayAdapter(): GamePlugin {
   const grid = createHudGrid();
   const hudContextScratch = {} as HudContext;
   let providers: readonly HudPanelProvider[] | null = null;
@@ -48,7 +48,7 @@ export function createHudOverlayPlugin(): GamePlugin {
   const provider: BrowserOverlayProvider = { renderOverlay };
 
   return {
-    id: "hud",
-    capabilities: [createPluginCapabilityProvider(provider)],
+    id: "browserHudOverlay",
+    capabilities: [createBrowserOverlayCapabilityProvider(provider)],
   };
 }

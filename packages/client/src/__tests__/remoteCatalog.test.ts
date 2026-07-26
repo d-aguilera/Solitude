@@ -80,6 +80,7 @@ describe("remote render plugin catalog", () => {
       collectKeyboardInputProviders(composition.capabilityRegistry),
     );
 
+    expect(composition.plugins[0]?.id).toBe("browserHudOverlay");
     expect(dispatcher.handleKey("ArrowUp", true, false)).toBe(true);
     expect(dispatcher.controlInput.lookUp).toBe(true);
     expect(

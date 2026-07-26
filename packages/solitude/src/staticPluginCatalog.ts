@@ -1,4 +1,4 @@
-import { createHudOverlayPlugin } from "@solitude/browser/dom/hudOverlayPlugin";
+import { createBrowserHudOverlayAdapter } from "@solitude/browser/dom/hudOverlayAdapter";
 import type { PluginCatalog } from "@solitude/engine/plugin";
 import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
 
@@ -7,12 +7,12 @@ import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
 export const staticPluginIds = [
   "solarSystem",
   "spacecraftOperator",
-  "hud",
+  "browserHudOverlay",
   "autopilot",
   "autopilotInput",
 ];
 
 export const staticPluginCatalog: PluginCatalog = {
   ...simPluginCatalog,
-  hud: createHudOverlayPlugin,
+  browserHudOverlay: createBrowserHudOverlayAdapter,
 };

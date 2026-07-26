@@ -76,9 +76,11 @@ simulation catalog through `packages/solitude/src/staticPluginCatalog.ts`.
 - `solarSystem`
 - `spacecraftOperator`
 
-The standalone and remote catalogs also compose the generic browser-owned
-`hud` overlay adapter. Treat that as a host adapter unless an extraction shows
-that product behavior still remains in it.
+The standalone and remote catalogs also compose the mandatory browser-owned
+`browserHudOverlay` host adapter through
+`createBrowserHudOverlayAdapter`. It deliberately uses the internal
+`GamePlugin` capability envelope to bridge HUD panel providers into the browser
+overlay lifecycle; it is host infrastructure, not an extraction candidate.
 
 The static `simPluginCatalog` is currently consumed by standalone, the remote
 client, Solitude headless composition, and authoritative multiplayer

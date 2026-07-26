@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-26T01:25:15.559Z",
+  "generatedAt": "2026-07-26T01:45:51.560Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -108,9 +108,9 @@
       "parent": "pkg:@solitude/plugin-api"
     },
     {
-      "id": "module:@solitude/browser:./dom/hudOverlayPlugin",
+      "id": "module:@solitude/browser:./dom/hudOverlayAdapter",
       "kind": "module",
-      "label": "./dom/hudOverlayPlugin",
+      "label": "./dom/hudOverlayAdapter",
       "packageName": "@solitude/browser",
       "parent": "pkg:@solitude/browser"
     },
@@ -1203,6 +1203,22 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter",
+      "kind": "symbol",
+      "label": "createBrowserHudOverlayAdapter",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./dom/hudOverlayAdapter",
+      "symbolKind": "function"
+    },
+    {
+      "id": "symbol:@solitude/browser:./dom/overlayPorts:createBrowserOverlayCapabilityProvider",
+      "kind": "symbol",
+      "label": "createBrowserOverlayCapabilityProvider",
+      "packageName": "@solitude/browser",
+      "parent": "module:@solitude/browser:./dom/overlayPorts",
+      "symbolKind": "function"
+    },
+    {
       "id": "symbol:@solitude/browser:./dom/viewPresenter:createBrowserViewPresenter",
       "kind": "symbol",
       "label": "createBrowserViewPresenter",
@@ -1315,14 +1331,6 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
-      "kind": "symbol",
-      "label": "createHudOverlayPlugin",
-      "packageName": "@solitude/browser",
-      "parent": "module:@solitude/browser:./dom/hudOverlayPlugin",
-      "symbolKind": "function"
-    },
-    {
       "id": "symbol:@solitude/plugin-api:./hud:createHudPanelCapability",
       "kind": "symbol",
       "label": "createHudPanelCapability",
@@ -1424,14 +1432,6 @@
       "label": "createPhysicsWorkspace",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./runtime",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/browser:./dom/overlayPorts:createPluginCapabilityProvider",
-      "kind": "symbol",
-      "label": "createPluginCapabilityProvider",
-      "packageName": "@solitude/browser",
-      "parent": "module:@solitude/browser:./dom/overlayPorts",
       "symbolKind": "function"
     },
     {
@@ -5969,20 +5969,20 @@
       "to": "pkg:@solitude/sim"
     },
     {
-      "id": "module-import:module:@solitude/browser:./dom/hudOverlayPlugin->module:@solitude/browser:./dom/overlayPorts",
-      "from": "module:@solitude/browser:./dom/hudOverlayPlugin",
+      "id": "module-import:module:@solitude/browser:./dom/hudOverlayAdapter->module:@solitude/browser:./dom/overlayPorts",
+      "from": "module:@solitude/browser:./dom/hudOverlayAdapter",
       "kind": "module-import",
       "to": "module:@solitude/browser:./dom/overlayPorts"
     },
     {
-      "id": "module-import:module:@solitude/browser:./dom/hudOverlayPlugin->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/browser:./dom/hudOverlayPlugin",
+      "id": "module-import:module:@solitude/browser:./dom/hudOverlayAdapter->module:@solitude/engine:./plugin",
+      "from": "module:@solitude/browser:./dom/hudOverlayAdapter",
       "kind": "module-import",
       "to": "module:@solitude/engine:./plugin"
     },
     {
-      "id": "module-import:module:@solitude/browser:./dom/hudOverlayPlugin->module:@solitude/hud:./provider",
-      "from": "module:@solitude/browser:./dom/hudOverlayPlugin",
+      "id": "module-import:module:@solitude/browser:./dom/hudOverlayAdapter->module:@solitude/hud:./provider",
+      "from": "module:@solitude/browser:./dom/hudOverlayAdapter",
       "kind": "module-import",
       "to": "module:@solitude/hud:./provider"
     },
@@ -6779,68 +6779,68 @@
       "to": "module:@solitude/engine:./plugin"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayContext",
-      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayContext",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayContext"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayProvider",
-      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayProvider",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayProvider"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/browser:./dom/overlayPorts:createPluginCapabilityProvider",
-      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter->symbol:@solitude/browser:./dom/overlayPorts:createBrowserOverlayCapabilityProvider",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/browser:./dom/overlayPorts:createPluginCapabilityProvider"
+      "to": "symbol:@solitude/browser:./dom/overlayPorts:createBrowserOverlayCapabilityProvider"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter->symbol:@solitude/engine:./plugin:GamePlugin",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:GamePlugin"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
-      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter->symbol:@solitude/engine:./plugin:PluginCapabilityRegistry",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/hud:./provider:clearHudGrid",
-      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter->symbol:@solitude/hud:./provider:clearHudGrid",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/hud:./provider:clearHudGrid"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/hud:./provider:createHudGrid",
-      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter->symbol:@solitude/hud:./provider:createHudGrid",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/hud:./provider:createHudGrid"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/hud:./provider:HudContext",
-      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter->symbol:@solitude/hud:./provider:HudContext",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/hud:./provider:HudContext"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/hud:./provider:hudPanelCapability",
-      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter->symbol:@solitude/hud:./provider:hudPanelCapability",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/hud:./provider:hudPanelCapability"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/hud:./provider:HudPanelProvider",
-      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter->symbol:@solitude/hud:./provider:HudPanelProvider",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/hud:./provider:HudPanelProvider"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin->symbol:@solitude/hud:./provider:isHudPanelProvider",
-      "from": "symbol:@solitude/browser:./dom/hudOverlayPlugin:createHudOverlayPlugin",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter->symbol:@solitude/hud:./provider:isHudPanelProvider",
+      "from": "symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/hud:./provider:isHudPanelProvider"
     },
@@ -6971,20 +6971,20 @@
       "to": "symbol:@solitude/engine:./plugin:PluginCapabilityRegistry"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/overlayPorts:createPluginCapabilityProvider->symbol:@solitude/browser:./dom/overlayPorts:browserOverlayCapability",
-      "from": "symbol:@solitude/browser:./dom/overlayPorts:createPluginCapabilityProvider",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/overlayPorts:createBrowserOverlayCapabilityProvider->symbol:@solitude/browser:./dom/overlayPorts:browserOverlayCapability",
+      "from": "symbol:@solitude/browser:./dom/overlayPorts:createBrowserOverlayCapabilityProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/browser:./dom/overlayPorts:browserOverlayCapability"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/overlayPorts:createPluginCapabilityProvider->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayProvider",
-      "from": "symbol:@solitude/browser:./dom/overlayPorts:createPluginCapabilityProvider",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/overlayPorts:createBrowserOverlayCapabilityProvider->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayProvider",
+      "from": "symbol:@solitude/browser:./dom/overlayPorts:createBrowserOverlayCapabilityProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayProvider"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/browser:./dom/overlayPorts:createPluginCapabilityProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
-      "from": "symbol:@solitude/browser:./dom/overlayPorts:createPluginCapabilityProvider",
+      "id": "symbol-reference:symbol:@solitude/browser:./dom/overlayPorts:createBrowserOverlayCapabilityProvider->symbol:@solitude/engine:./plugin:PluginCapabilityProvider",
+      "from": "symbol:@solitude/browser:./dom/overlayPorts:createBrowserOverlayCapabilityProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:PluginCapabilityProvider"
     },
