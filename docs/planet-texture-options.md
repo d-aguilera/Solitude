@@ -1,11 +1,11 @@
 # Planet Texture Options
 
-This note records texture options for Solitude's planets, with Earth as the first target. It is intentionally scoped to the current renderer: WebGL2 solid meshes, engine-owned scene contracts, and server-safe solar-system content in `@solitude/sim`.
+This note records texture options for Solitude's planets, with Earth as the first target. It is intentionally scoped to the current renderer: WebGL2 solid meshes, engine-owned scene contracts, and server-safe content in the external solar-system plugin.
 
 ## Current Renderer Fit
 
 - Solar-system planets are authored in `plugins/solar-system/src/solarSystem.ts` as scaled copies of a shared unit icosphere.
-- Solar-system bodies in `@solitude/sim` differ by RGB fallback color, physical/orbital data, axial tilt, and spin; browser-facing visual materials are applied by `plugins/core-pack-v1/src/solar-system-materials/`.
+- Bodies from the external solar-system plugin differ by RGB fallback color, physical/orbital data, axial tilt, and spin; browser-facing visual materials are applied by `plugins/core-pack-v1/src/solar-system-materials/`.
 - `EntityRenderConfig` and `SceneObject` carry color, mesh, LOD, shading, scale, and optional material metadata.
 - `GpuMeshRenderer` uploads position, normal, and face-anchor attributes; the solid-mesh shader computes lighting and multiplies by `uBaseColor`.
 - The current checked-in Earth and Moon textures live under `plugins/core-pack-v1/src/solar-system-materials/assets/`.
@@ -48,7 +48,7 @@ Current app asset:
 
 Current Earth material:
 
-- Authored by the external `solarSystemMaterials` plugin, not by `@solitude/sim`.
+- Authored by the external `solarSystemMaterials` plugin, not by the host-neutral solar-system content plugin.
 - Base surface uses the land/ocean/ice texture.
 - Clouds render as a slightly larger transparent shell using cloud texture luminance as alpha.
 - Atmosphere renders as a dense saturated blue haze rim on a very slightly larger alpha-blended shell with no extra asset. Keep the shell close to the surface; a large back-face-only shell reads as a flat circular outline instead of atmosphere.
@@ -133,7 +133,7 @@ Best first slice.
    ```
 
 2. Let a browser-facing display plugin assign Earth a stable texture id such as `solitude.display.texture.earth.day` during scene init.
-3. Keep `@solitude/sim` server-safe and texture-agnostic; map display-owned texture ids to plugin-owned browser asset URLs in `solarSystemMaterials/textures`, and expose them through a render texture-source capability published by the `solarSystemMaterials` plugin.
+3. Keep the solar-system content plugin host-neutral and texture-agnostic; map display-owned texture ids to plugin-owned browser asset URLs in `solarSystemMaterials/textures`, and expose them through a render texture-source capability published by the `solarSystemMaterials` plugin.
 4. Extend `GpuMeshRenderer` with a texture cache keyed by texture id/source.
 5. In the shader, compute UV from local sphere coordinates and sample the day texture. Fall back to `uBaseColor` when no texture is bound.
 
@@ -200,7 +200,7 @@ Keep it narrow:
 - Earth uses the texture through the display material plugin; bodies without display materials keep solid colors.
 - If loading fails, Earth renders with the current solid blue color.
 
-Do not put image imports in `@solitude/sim`; server/headless composition uses that package. Put actual bitmap assets and URL imports in a browser-facing package or public asset directory.
+Do not put image imports in host-neutral content or composition packages. Put actual bitmap assets and URL imports in a browser-facing plugin package or public asset directory.
 
 ## Later Questions
 

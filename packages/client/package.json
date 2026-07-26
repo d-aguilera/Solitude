@@ -11,7 +11,7 @@
     "@solitude/plugin-api": "0.0.0",
     "@solitude/plugin-runtime": "0.0.0",
     "@solitude/protocol": "0.0.0",
-    "@solitude/sim": "0.0.0"
+    "@solitude/composition": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

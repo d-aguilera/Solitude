@@ -14,8 +14,11 @@
   `?mode=playback&scenario=random-trip`.
 - `packages/engine/src/infra/headlessGameLoop.ts` is currently a thin generic simulation stepper intended for tests.
 - Headless setup builds a world with `createHeadlessWorld` and advances physics through `step(dtMillis, controlInputOverrides)`.
-- `packages/sim/src/headless.ts` provides the Solitude-owned wrapper: it loads the static headless simulation catalog, applies world-model hooks, and passes those plugins to the generic loop.
-- Generic headless setup does not install `spacecraftOperator` by default. Callers pass plugins explicitly through `HeadlessLoopOptions.plugins`; the Solitude wrapper currently selects `solarSystem`, `spacecraftOperator`, and `autopilot`.
+- `packages/composition/src/headless.ts` provides the Solitude-owned wrapper: it
+  accepts the caller's discovered plugin collection, applies world-model
+  hooks, and passes those plugins to the generic loop.
+- Generic headless setup does not install product plugins by default. Callers
+  pass discovered plugins explicitly through `HeadlessLoopOptions.plugins`.
 - Playback internals are unit-tested under
   `plugins/standalone-pack-v1/src/__tests__/playback/`, but headless
   composition does not play a recorded scenario end-to-end.
@@ -24,7 +27,8 @@
 
 Neither `createHeadlessLoop` nor `createSolitudeHeadlessLoop` currently runs the playback plugin lifecycle:
 
-- the Solitude wrapper accepts runtime options and loads simulation plugins, but playback is not in its headless catalog;
+- the Solitude wrapper accepts runtime options and discovered plugins, but the
+  server deployment catalog does not include playback;
 - no `LoopPlugin.updateLoopState` orchestration;
 - no playback `FramePolicy` handling for fixed playback step/time scale;
 - no `playback.applySceneSnapshot(world)` scene/world snapshot application;
@@ -33,7 +37,7 @@ Neither `createHeadlessLoop` nor `createSolitudeHeadlessLoop` currently runs the
 - no general browser-style loop/input/control lifecycle around the direct headless simulation stepper.
 - the implementation currently lives in a browser-host pack, so headless use
   also needs a deliberate shared implementation/deployment seam rather than a
-  static import from `@solitude/sim`.
+  static import from `@solitude/composition`.
 
 Result: recorded scenarios are testable at controller/unit level, but the headless bootstrap cannot yet run a URL-equivalent playback such as `mode=playback&scenario=random-trip`.
 

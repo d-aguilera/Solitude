@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-26T21:06:52.209Z",
+  "generatedAt": "2026-07-26T22:47:06.123Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -80,11 +80,11 @@
       "parent": "pkg:@solitude/plugin-api"
     },
     {
-      "id": "module:@solitude/sim:./config/worldAndSceneConfig",
+      "id": "module:@solitude/composition:./config/worldAndSceneConfig",
       "kind": "module",
       "label": "./config/worldAndSceneConfig",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
+      "packageName": "@solitude/composition",
+      "parent": "pkg:@solitude/composition"
     },
     {
       "id": "module:@solitude/engine:./controllable-entities",
@@ -213,11 +213,11 @@
       "parent": "pkg:@solitude/server"
     },
     {
-      "id": "module:@solitude/sim:./headless",
+      "id": "module:@solitude/composition:./headless",
       "kind": "module",
       "label": "./headless",
-      "packageName": "@solitude/sim",
-      "parent": "pkg:@solitude/sim"
+      "packageName": "@solitude/composition",
+      "parent": "pkg:@solitude/composition"
     },
     {
       "id": "module:@solitude/server:./http",
@@ -621,6 +621,12 @@
       "packageName": "@solitude/client"
     },
     {
+      "id": "pkg:@solitude/composition",
+      "kind": "package",
+      "label": "@solitude/composition",
+      "packageName": "@solitude/composition"
+    },
+    {
       "id": "pkg:@solitude/engine",
       "kind": "package",
       "label": "@solitude/engine",
@@ -685,12 +691,6 @@
       "kind": "package",
       "label": "@solitude/server",
       "packageName": "@solitude/server"
-    },
-    {
-      "id": "pkg:@solitude/sim",
-      "kind": "package",
-      "label": "@solitude/sim",
-      "packageName": "@solitude/sim"
     },
     {
       "id": "pkg:solitude",
@@ -923,11 +923,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./config/worldAndSceneConfig:buildWorldAndSceneConfig",
+      "id": "symbol:@solitude/composition:./config/worldAndSceneConfig:buildWorldAndSceneConfig",
       "kind": "symbol",
       "label": "buildWorldAndSceneConfig",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./config/worldAndSceneConfig",
+      "packageName": "@solitude/composition",
+      "parent": "module:@solitude/composition:./config/worldAndSceneConfig",
       "symbolKind": "function"
     },
     {
@@ -1643,11 +1643,11 @@
       "symbolKind": "function"
     },
     {
-      "id": "symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop",
+      "id": "symbol:@solitude/composition:./headless:createSolitudeHeadlessLoop",
       "kind": "symbol",
       "label": "createSolitudeHeadlessLoop",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./headless",
+      "packageName": "@solitude/composition",
+      "parent": "module:@solitude/composition:./headless",
       "symbolKind": "function"
     },
     {
@@ -5363,19 +5363,19 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoop",
+      "id": "symbol:@solitude/composition:./headless:SolitudeHeadlessLoop",
       "kind": "symbol",
       "label": "SolitudeHeadlessLoop",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./headless",
+      "packageName": "@solitude/composition",
+      "parent": "module:@solitude/composition:./headless",
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions",
+      "id": "symbol:@solitude/composition:./headless:SolitudeHeadlessLoopOptions",
       "kind": "symbol",
       "label": "SolitudeHeadlessLoopOptions",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./headless",
+      "packageName": "@solitude/composition",
+      "parent": "module:@solitude/composition:./headless",
       "symbolKind": "interface"
     },
     {
@@ -6073,6 +6073,12 @@
       "to": "pkg:@solitude/browser"
     },
     {
+      "id": "dependency:pkg:@solitude/client->pkg:@solitude/composition",
+      "from": "pkg:@solitude/client",
+      "kind": "dependency",
+      "to": "pkg:@solitude/composition"
+    },
+    {
       "id": "dependency:pkg:@solitude/client->pkg:@solitude/engine",
       "from": "pkg:@solitude/client",
       "kind": "dependency",
@@ -6109,10 +6115,10 @@
       "to": "pkg:@solitude/protocol"
     },
     {
-      "id": "dependency:pkg:@solitude/client->pkg:@solitude/sim",
-      "from": "pkg:@solitude/client",
+      "id": "dependency:pkg:@solitude/composition->pkg:@solitude/engine",
+      "from": "pkg:@solitude/composition",
       "kind": "dependency",
-      "to": "pkg:@solitude/sim"
+      "to": "pkg:@solitude/engine"
     },
     {
       "id": "dependency:pkg:@solitude/engine->pkg:@solitude/geometry",
@@ -6131,6 +6137,12 @@
       "from": "pkg:@solitude/input",
       "kind": "dependency",
       "to": "pkg:@solitude/engine"
+    },
+    {
+      "id": "dependency:pkg:@solitude/multiplayer->pkg:@solitude/composition",
+      "from": "pkg:@solitude/multiplayer",
+      "kind": "dependency",
+      "to": "pkg:@solitude/composition"
     },
     {
       "id": "dependency:pkg:@solitude/multiplayer->pkg:@solitude/engine",
@@ -6155,12 +6167,6 @@
       "from": "pkg:@solitude/multiplayer",
       "kind": "dependency",
       "to": "pkg:@solitude/server"
-    },
-    {
-      "id": "dependency:pkg:@solitude/multiplayer->pkg:@solitude/sim",
-      "from": "pkg:@solitude/multiplayer",
-      "kind": "dependency",
-      "to": "pkg:@solitude/sim"
     },
     {
       "id": "dependency:pkg:@solitude/plugin-api->pkg:@solitude/engine",
@@ -6211,16 +6217,16 @@
       "to": "pkg:@solitude/protocol"
     },
     {
-      "id": "dependency:pkg:@solitude/sim->pkg:@solitude/engine",
-      "from": "pkg:@solitude/sim",
-      "kind": "dependency",
-      "to": "pkg:@solitude/engine"
-    },
-    {
       "id": "dependency:pkg:solitude->pkg:@solitude/browser",
       "from": "pkg:solitude",
       "kind": "dependency",
       "to": "pkg:@solitude/browser"
+    },
+    {
+      "id": "dependency:pkg:solitude->pkg:@solitude/composition",
+      "from": "pkg:solitude",
+      "kind": "dependency",
+      "to": "pkg:@solitude/composition"
     },
     {
       "id": "dependency:pkg:solitude->pkg:@solitude/engine",
@@ -6239,12 +6245,6 @@
       "from": "pkg:solitude",
       "kind": "dependency",
       "to": "pkg:@solitude/plugin-runtime"
-    },
-    {
-      "id": "dependency:pkg:solitude->pkg:@solitude/sim",
-      "from": "pkg:solitude",
-      "kind": "dependency",
-      "to": "pkg:@solitude/sim"
     },
     {
       "id": "module-import:module:@solitude/browser:./dom/hudOverlayAdapter->module:@solitude/browser:./dom/overlayPorts",
@@ -6459,6 +6459,42 @@
     {
       "id": "module-import:module:@solitude/browser:./remoteWorldRenderer->module:@solitude/engine:./world",
       "from": "module:@solitude/browser:./remoteWorldRenderer",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./world"
+    },
+    {
+      "id": "module-import:module:@solitude/composition:./config/worldAndSceneConfig->module:@solitude/engine:./math",
+      "from": "module:@solitude/composition:./config/worldAndSceneConfig",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./math"
+    },
+    {
+      "id": "module-import:module:@solitude/composition:./config/worldAndSceneConfig->module:@solitude/engine:./world",
+      "from": "module:@solitude/composition:./config/worldAndSceneConfig",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./world"
+    },
+    {
+      "id": "module-import:module:@solitude/composition:./headless->module:@solitude/composition:./config/worldAndSceneConfig",
+      "from": "module:@solitude/composition:./headless",
+      "kind": "module-import",
+      "to": "module:@solitude/composition:./config/worldAndSceneConfig"
+    },
+    {
+      "id": "module-import:module:@solitude/composition:./headless->module:@solitude/engine:./plugin",
+      "from": "module:@solitude/composition:./headless",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./plugin"
+    },
+    {
+      "id": "module-import:module:@solitude/composition:./headless->module:@solitude/engine:./runtime",
+      "from": "module:@solitude/composition:./headless",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./runtime"
+    },
+    {
+      "id": "module-import:module:@solitude/composition:./headless->module:@solitude/engine:./world",
+      "from": "module:@solitude/composition:./headless",
       "kind": "module-import",
       "to": "module:@solitude/engine:./world"
     },
@@ -7079,42 +7115,6 @@
       "from": "module:@solitude/server:./transport",
       "kind": "module-import",
       "to": "module:@solitude/server:./sessions"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./config/worldAndSceneConfig->module:@solitude/engine:./math",
-      "from": "module:@solitude/sim:./config/worldAndSceneConfig",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./math"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./config/worldAndSceneConfig->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./config/worldAndSceneConfig",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./headless->module:@solitude/engine:./plugin",
-      "from": "module:@solitude/sim:./headless",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./plugin"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./headless->module:@solitude/engine:./runtime",
-      "from": "module:@solitude/sim:./headless",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./runtime"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./headless->module:@solitude/engine:./world",
-      "from": "module:@solitude/sim:./headless",
-      "kind": "module-import",
-      "to": "module:@solitude/engine:./world"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./headless->module:@solitude/sim:./config/worldAndSceneConfig",
-      "from": "module:@solitude/sim:./headless",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./config/worldAndSceneConfig"
     },
     {
       "id": "symbol-reference:symbol:@solitude/browser:./dom/hudOverlayAdapter:createBrowserHudOverlayAdapter->symbol:@solitude/browser:./dom/overlayPorts:BrowserOverlayContext",
@@ -8147,6 +8147,72 @@
       "from": "symbol:@solitude/browser:./remoteWorldRenderer:RemoteWorldRenderOptions",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:ControlInput"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/composition:./config/worldAndSceneConfig:buildWorldAndSceneConfig->symbol:@solitude/engine:./math:vec3",
+      "from": "symbol:@solitude/composition:./config/worldAndSceneConfig:buildWorldAndSceneConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/composition:./config/worldAndSceneConfig:buildWorldAndSceneConfig->symbol:@solitude/engine:./world:WorldAndSceneConfig",
+      "from": "symbol:@solitude/composition:./config/worldAndSceneConfig:buildWorldAndSceneConfig",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:WorldAndSceneConfig"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/composition:./headless:createSolitudeHeadlessLoop->symbol:@solitude/composition:./config/worldAndSceneConfig:buildWorldAndSceneConfig",
+      "from": "symbol:@solitude/composition:./headless:createSolitudeHeadlessLoop",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/composition:./config/worldAndSceneConfig:buildWorldAndSceneConfig"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/composition:./headless:createSolitudeHeadlessLoop->symbol:@solitude/composition:./headless:SolitudeHeadlessLoop",
+      "from": "symbol:@solitude/composition:./headless:createSolitudeHeadlessLoop",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/composition:./headless:SolitudeHeadlessLoop"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/composition:./headless:createSolitudeHeadlessLoop->symbol:@solitude/composition:./headless:SolitudeHeadlessLoopOptions",
+      "from": "symbol:@solitude/composition:./headless:createSolitudeHeadlessLoop",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/composition:./headless:SolitudeHeadlessLoopOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/composition:./headless:createSolitudeHeadlessLoop->symbol:@solitude/engine:./runtime:createHeadlessLoop",
+      "from": "symbol:@solitude/composition:./headless:createSolitudeHeadlessLoop",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:createHeadlessLoop"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/composition:./headless:createSolitudeHeadlessLoop->symbol:@solitude/engine:./world:applyWorldModelPlugins",
+      "from": "symbol:@solitude/composition:./headless:createSolitudeHeadlessLoop",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:applyWorldModelPlugins"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/composition:./headless:SolitudeHeadlessLoop->symbol:@solitude/engine:./runtime:HeadlessLoop",
+      "from": "symbol:@solitude/composition:./headless:SolitudeHeadlessLoop",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./runtime:HeadlessLoop"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/composition:./headless:SolitudeHeadlessLoop->symbol:@solitude/engine:./world:WorldAndSceneConfig",
+      "from": "symbol:@solitude/composition:./headless:SolitudeHeadlessLoop",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:WorldAndSceneConfig"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/composition:./headless:SolitudeHeadlessLoopOptions->symbol:@solitude/engine:./plugin:GamePlugin",
+      "from": "symbol:@solitude/composition:./headless:SolitudeHeadlessLoopOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/composition:./headless:SolitudeHeadlessLoopOptions->symbol:@solitude/engine:./world:EntityConfig",
+      "from": "symbol:@solitude/composition:./headless:SolitudeHeadlessLoopOptions",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./world:EntityConfig"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./assets:ObjMesh->symbol:@solitude/engine:./math:Vec3",
@@ -15401,72 +15467,6 @@
       "from": "symbol:@solitude/server:./transport:SolitudeInProcessTransport",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/server:./sessions:SolitudeSessionManager"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./config/worldAndSceneConfig:buildWorldAndSceneConfig->symbol:@solitude/engine:./math:vec3",
-      "from": "symbol:@solitude/sim:./config/worldAndSceneConfig:buildWorldAndSceneConfig",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./math:vec3"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./config/worldAndSceneConfig:buildWorldAndSceneConfig->symbol:@solitude/engine:./world:WorldAndSceneConfig",
-      "from": "symbol:@solitude/sim:./config/worldAndSceneConfig:buildWorldAndSceneConfig",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:WorldAndSceneConfig"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop->symbol:@solitude/engine:./runtime:createHeadlessLoop",
-      "from": "symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./runtime:createHeadlessLoop"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop->symbol:@solitude/engine:./world:applyWorldModelPlugins",
-      "from": "symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:applyWorldModelPlugins"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop->symbol:@solitude/sim:./config/worldAndSceneConfig:buildWorldAndSceneConfig",
-      "from": "symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./config/worldAndSceneConfig:buildWorldAndSceneConfig"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop->symbol:@solitude/sim:./headless:SolitudeHeadlessLoop",
-      "from": "symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoop"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop->symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions",
-      "from": "symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./headless:SolitudeHeadlessLoop->symbol:@solitude/engine:./runtime:HeadlessLoop",
-      "from": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoop",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./runtime:HeadlessLoop"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./headless:SolitudeHeadlessLoop->symbol:@solitude/engine:./world:WorldAndSceneConfig",
-      "from": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoop",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:WorldAndSceneConfig"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions->symbol:@solitude/engine:./plugin:GamePlugin",
-      "from": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions->symbol:@solitude/engine:./world:EntityConfig",
-      "from": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./world:EntityConfig"
     }
   ]
 }

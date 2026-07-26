@@ -1,3 +1,4 @@
+import { createSolitudeHeadlessLoop } from "@solitude/composition/headless";
 import type { GamePlugin } from "@solitude/engine/plugin";
 import {
   captureRuntimeSnapshotInto,
@@ -11,7 +12,6 @@ import {
   type EntityConfig,
 } from "@solitude/engine/world";
 import type { SolitudeServerGame } from "@solitude/server/game";
-import { createSolitudeHeadlessLoop } from "@solitude/sim/headless";
 
 export function createSolitudeServerGame(
   initialEntities: readonly EntityConfig[],

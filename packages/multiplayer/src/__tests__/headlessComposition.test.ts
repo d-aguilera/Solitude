@@ -1,3 +1,4 @@
+import { createSolitudeHeadlessLoop } from "@solitude/composition/headless";
 import {
   controllableEntityProviderCapability,
   type ControllableEntityProvider,
@@ -5,7 +6,6 @@ import {
 import { vec3 } from "@solitude/engine/math";
 import type { PluginFactory } from "@solitude/engine/plugin";
 import type { ControlledBody } from "@solitude/engine/world";
-import { createSolitudeHeadlessLoop } from "@solitude/sim/headless";
 import { describe, expect, it } from "vitest";
 import {
   createDefaultMultiplayerSimulationPlugins,

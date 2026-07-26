@@ -17,6 +17,7 @@ import {
   createRemoteViewPresenterRenderer,
   type RemoteViewPresenterRenderer,
 } from "@solitude/browser/remoteViewPresenter";
+import { buildWorldAndSceneConfig } from "@solitude/composition/config/worldAndSceneConfig";
 import { mat3, vec3 } from "@solitude/engine/math";
 import {
   type ControlInput,
@@ -43,7 +44,6 @@ import {
 } from "@solitude/input/keyboard";
 import type { ExternalLocalEntityPredictionProvider as LocalEntityPredictionProvider } from "@solitude/plugin-api/local-prediction";
 import type { SolitudeInputSequence } from "@solitude/protocol/protocol";
-import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
 import { createRemoteClientComposition } from "./composition";
 import {
   acknowledgeLocalInputs,

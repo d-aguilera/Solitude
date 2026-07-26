@@ -2,19 +2,18 @@
 
 ## Purpose
 
-- This is the primary active roadmap for physically decoupling Solitude plugins
+- This is the completed roadmap for physically decoupling Solitude plugins
   from host packages.
-- Use it before changing external plugin manifests, discovery, pack assembly,
-  `@solitude/plugin-api`, `@solitude/plugin-runtime`, or choosing the next
-  in-tree plugin to extract.
+- Use it as historical context before changing external plugin manifests,
+  discovery, pack assembly, `@solitude/plugin-api`, or
+  `@solitude/plugin-runtime`.
 - The goal is enforced independence: product plugins are independently built
   packages loaded through runtime discovery, not implementation modules that
   host packages can gradually import and couple to again.
 
-## Completion Direction
+## Completed State
 
-- Product plugin implementations are fully extracted from `packages/solitude`
-  and `packages/sim`.
+- Product plugin implementations are fully extracted from host packages.
 - Browser and authoritative products should select behavior through deployed
   plugin sets and single-host packs.
 - Host packages should retain only generic runtime/composition adapters and the
@@ -67,9 +66,10 @@ prediction, and its camera rig.
 
 ## Remaining Static Plugin Frontier
 
-No product plugin implementation remains under `packages/solitude/src/` or
-`packages/sim/src/`. The static Solitude catalog contains only the generic
-browser HUD host adapter.
+No product plugin implementation remains under the host packages. The
+`solitude` package contains only the generic browser HUD host adapter, while
+`@solitude/composition` contains the shared world-config and headless
+composition helpers.
 
 The browser-only `autopilotInput` implementation has moved to `core-pack-v1`.
 The extracted `solarSystem`, `autopilot`, `spacecraftOperator`, and
@@ -86,18 +86,14 @@ The former `simPluginCatalog` and its product consumers have been removed.
 Headless loop creation accepts one ordered collection of already-instantiated
 discovered plugins.
 
-## Recommended Slicing
+## Completed Slicing
 
-1. Audit the `@solitude/sim` plugins one at a time. Introduce only the narrow
-   Plugin API surface required by the selected slice.
-2. Use API v10 authoritative world-model, control, and vehicle-dynamics phases
-   for server content and simulation behavior.
-3. When one implementation must run on multiple hosts, keep one host-neutral
-   implementation package and build separate single-host deployment packs, as
-   with Poly Fighter.
-
-The order is a recommendation, not a commitment. Reinspect current
-dependencies before every extraction.
+- API v10 authoritative world-model, control, and vehicle-dynamics phases
+  support server content and simulation behavior.
+- Implementations that run on multiple hosts use one host-neutral source
+  package and separate single-host deployment packs.
+- `@solitude/composition` is the remaining thin product-composition package;
+  it owns no plugin implementation or catalog.
 
 ## Extraction Guardrails
 

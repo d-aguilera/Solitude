@@ -406,7 +406,7 @@ async function runSelfTest() {
       dependencies: { "@fixture/engine": "0.0.0" },
       exports: { "./public": "./src/public.ts" },
     });
-    writePackageFixture(tempRoot, "sim", "@fixture/sim", {
+    writePackageFixture(tempRoot, "plugin-host", "@fixture/plugin-host", {
       dependencies: { "@fixture/engine": "0.0.0" },
       exports: {
         "./plugins/catalog": "./src/plugins/catalog.ts",
@@ -418,7 +418,7 @@ async function runSelfTest() {
       dependencies: {
         "@fixture/browser": "0.0.0",
         "@fixture/engine": "0.0.0",
-        "@fixture/sim": "0.0.0",
+        "@fixture/plugin-host": "0.0.0",
       },
       exports: { "./public": "./src/public.ts" },
     });
@@ -438,37 +438,40 @@ async function runSelfTest() {
       },
       "plugins",
     );
-    mkdirSync(path.join(tempRoot, "packages/sim/src/plugins/drive"), {
+    mkdirSync(path.join(tempRoot, "packages/plugin-host/src/plugins/drive"), {
       recursive: true,
     });
-    mkdirSync(path.join(tempRoot, "packages/sim/src/plugins/drive/__tests__"), {
-      recursive: true,
-    });
+    mkdirSync(
+      path.join(tempRoot, "packages/plugin-host/src/plugins/drive/__tests__"),
+      {
+        recursive: true,
+      },
+    );
     mkdirSync(path.join(tempRoot, "packages/app/src/plugins"), {
       recursive: true,
     });
     writeFileSync(
-      path.join(tempRoot, "packages/sim/src/plugins/drive/core.ts"),
+      path.join(tempRoot, "packages/plugin-host/src/plugins/drive/core.ts"),
       "export const driveCore = 1;\n",
     );
     writeFileSync(
-      path.join(tempRoot, "packages/sim/src/plugins/drive/index.ts"),
+      path.join(tempRoot, "packages/plugin-host/src/plugins/drive/index.ts"),
       'import { driveCore } from "./core";\nexport const drivePlugin = driveCore;\n',
     );
     writeFileSync(
-      path.join(tempRoot, "packages/sim/src/plugins/catalog.ts"),
+      path.join(tempRoot, "packages/plugin-host/src/plugins/catalog.ts"),
       'import { drivePlugin } from "./drive/index";\nexport const catalog = { drivePlugin };\n',
     );
     writeFileSync(
       path.join(
         tempRoot,
-        "packages/sim/src/plugins/drive/__tests__/drive.test.ts",
+        "packages/plugin-host/src/plugins/drive/__tests__/drive.test.ts",
       ),
-      'import { driveCore } from "@fixture/sim/plugins/drive/core";\nexport const testValue = driveCore;\n',
+      'import { driveCore } from "@fixture/plugin-host/plugins/drive/core";\nexport const testValue = driveCore;\n',
     );
     writeFileSync(
       path.join(tempRoot, "packages/app/src/plugins/catalog.ts"),
-      'import { drivePlugin } from "@fixture/sim/plugins/drive";\nexport const catalog = { drivePlugin };\n',
+      'import { drivePlugin } from "@fixture/plugin-host/plugins/drive";\nexport const catalog = { drivePlugin };\n',
     );
     writeFileSync(
       path.join(tempRoot, "packages/plugin-api/src/module.ts"),
@@ -554,7 +557,7 @@ async function runSelfTest() {
     );
     writeFileSync(
       appSource,
-      'import { driveCore } from "@fixture/sim/plugins/drive/core";\nexport const value = driveCore;\n',
+      'import { driveCore } from "@fixture/plugin-host/plugins/drive/core";\nexport const value = driveCore;\n',
     );
     assertHasError(
       await checkWorkspace(tempRoot),
@@ -564,7 +567,7 @@ async function runSelfTest() {
 
     writeFileSync(
       appSource,
-      'import { catalog } from "@fixture/sim/plugins/catalog";\nexport const value = catalog;\n',
+      'import { catalog } from "@fixture/plugin-host/plugins/catalog";\nexport const value = catalog;\n',
     );
     assertNoErrors(
       await checkWorkspace(tempRoot),

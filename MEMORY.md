@@ -5,7 +5,7 @@
 - **App**: Solitude — browser-based spaceflight + orbital mechanics sandbox with pilot and picture-in-picture axial views.
 - **Core value**: real-ish Newtonian gravity and a controllable spacecraft, rendered in 2D/3D projections.
 - **Primary user**: someone exploring orbital dynamics and spacecraft controls.
-- **Current strategic direction**: finish physically decoupling product plugins into independently built, runtime-discovered, single-host deployment packs behind the controlled Plugin API.
+- **Current strategic direction**: preserve the completed physical plugin-package boundary and choose the next product direction deliberately.
 
 ## How To Use This File
 
@@ -17,11 +17,11 @@
 
 ### Active
 
-- `MEMORY_PACKAGE_DECOUPLING.md`: primary roadmap for external plugin packages, runtime discovery, single-host packs, the remaining static plugin frontier, and extraction guardrails.
 - `MEMORY_HEADLESS_PLAYBACK.md`: unresolved but currently deprioritized work for running recorded playback scenarios end-to-end without the browser.
 
 ### Complete / Archived
 
+- `archive/MEMORY_PACKAGE_DECOUPLING.md`: completed roadmap for external plugin packages, runtime discovery, single-host packs, and physical extraction.
 - `archive/MEMORY_PACKAGE_SPLIT.md`: archived package-split record for `@solitude/engine`, `@solitude/browser`, and `solitude`; consult before package boundary/export changes.
 - `archive/MEMORY_OPERATOR_MODEL.md`: archived strategy for moving main ship/control/camera behavior into plugin-defined operator modes around a generic focused entity.
 - `archive/MEMORY_ENTITY_MODEL.md`: archived strategy/context for replacing ships/planets/stars core buckets with generic entities/components.
@@ -33,8 +33,8 @@
 
 ## Current focus
 
-- **Primary active work**: package decoupling. Continue moving product plugins out of host packages and into independently built packages discovered through deployed plugin sets. See `MEMORY_PACKAGE_DECOUPLING.md`.
-- **Current extraction frontier**: physical product-plugin extraction is complete. No product plugin implementation remains in `packages/solitude` or `packages/sim`; both products discover `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` through their Solitude content packs.
+- **Primary active work**: no migration roadmap is currently active; package decoupling is complete and headless playback remains deliberately dormant.
+- **Current extraction frontier**: physical product-plugin extraction is complete. No product plugin implementation remains in a host package; both products discover `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` through their Solitude content packs.
 - **Discovery foundation**: browser and server discovery, multi-plugin packs, strict manifests, target-specific assembly, origin/path security, and schema-v3 single-host packs are in place. Preserve the rule that a pack is an atomic host-specific activation unit.
 - **Headless playback**: still unresolved and not archived, but it is a dormant backlog item rather than the active path. See `MEMORY_HEADLESS_PLAYBACK.md`.
 - **GPU rendering state**: WebGL2 is the sole solid-mesh renderer for standalone and remote play. WebGL also owns depth-tested trajectory and world-segment ribbons; Canvas remains for scene labels, markers, and HUD. The engine CPU-face pipeline and Canvas backend have been removed. Historical rendering roadmaps live in `archive/MEMORY_GPU_RENDERING.md` and `archive/MEMORY_GPU_POLYLINES.md`.
@@ -76,7 +76,7 @@
 - `packages/input/src/`: outer keyboard input-provider contracts; plugins publish bindings/handlers through generic engine capabilities and browser adapters consume them.
 - `packages/entity-names/src/`: dependency-free canonical entity-name provider capability contract and lookup policy; content plugins own provider implementations and localized name bundles, and the external plugin API re-exports this implementation.
 - `packages/localization/src/`: dependency-free shared Solitude locale resolution and number/unit/message formatting; message bundles remain with their owning client/plugin/content package.
-- `packages/sim/src/`: browser-safe and Node-safe Solitude world-config and headless-composition helpers; it owns no plugin implementation or catalog.
+- `packages/composition/src/`: browser-safe and Node-safe Solitude world-config and headless-composition helpers; it owns no plugin implementation or catalog.
 - `packages/browser/src/`: DOM/runtime adapters, keyboard input, presentation-frame capabilities, layered view layout, Canvas presentation, GPU-native WebGL2 presentation, and remote-world mirror helpers.
 - `packages/protocol/src/`: browser-safe client/server protocol types and message guards.
 - `packages/plugin-api/src/`: focused, rootless subpath exports for independently built external plugins. Module composition, runtime options, generic capability primitives, domain capabilities, control-state updates, loop/frame-policy access, narrow browser simulation phases, canonical runtime snapshots, render/scene/view contracts, world access, localization, math, entity naming, and manifests have distinct surfaces; there is no catch-all `plugin.ts`. Portable geometry and OBJ implementations come from the dependency-free `@solitude/geometry` package, while entity-name capabilities reuse their dependency-free canonical package rather than duplicating policy.
@@ -125,7 +125,7 @@
 - Standalone and headless runtimes share simulation-plugin capability/control assembly through `packages/engine/src/app/pluginRuntime.ts`. Solitude headless composition accepts one required ordered `plugins` collection; callers instantiate static and discovered factories with runtime options before creating the loop.
 - External plugins can declare `requirements.focusEntity` for focused-entity capabilities not guaranteed by `ExternalFocusContext`; the external runtime translates them to the engine's internal `mainFocus` requirement scope, and DOM/headless setup validates them against the assembled world with hard setup errors. External contribution callbacks are grouped under `ExternalPlugin.hooks`. API v10 retains the browser lifecycle and frozen snapshot facade, and permits authoritative `controls`, `simulation.updateVehicleDynamics`, and pre-runtime `worldModel` hooks. Server requirements and browser-only phases remain rejected.
 - Generic headless runtime does not import or auto-install Solitude spacecraft plugins; Solitude behavior is caller-composed when needed.
-- Solitude's authoritative runtime lives in `packages/multiplayer/src/runtime.ts`; it instantiates the complete discovered content catalog per game, composes shared `@solitude/sim` headless code, steps entity-addressed controls, and reuses runtime snapshot storage. `@solitude/server` supplies the generic server/session/transport framework.
+- Solitude's authoritative runtime lives in `packages/multiplayer/src/runtime.ts`; it instantiates the complete discovered content catalog per game, composes shared `@solitude/composition` headless code, steps entity-addressed controls, and reuses runtime snapshot storage. `@solitude/server` supplies the generic server/session/transport framework.
 - Remote client lives in `packages/client/`; it can be deployed as static assets, points at a configurable Solitude server, uses per-join participant IDs carried in game links, receives authoritative model/snapshot messages over WebSocket, sends sequenced server-authoritative controls for its assigned ship, can optionally predict the locally controlled ship and smooth reconciliation visually, derives localized ship names from server-assigned display colors, exposes prediction metrics on `window.__solitudePredictionMetrics`, and renders through `@solitude/browser`.
 - Remote client composition lives in `packages/client/src/composition.ts`; local prediction is driven through `@solitude/plugin-api/local-prediction` capabilities, not direct plugin-internal imports.
 - The client-owned `solitude.multiplayer.session.v1` capability exposes live game and assigned-entity ids to external multiplayer presentation plugins without coupling them to DOM fields or protocol state.
@@ -141,7 +141,7 @@
 - Entity `displayName` remains a literal authored override for scene/body labels. The neutral `@solitude/entity-names` port lets entity-contributing plugins provide localized names through `solitude.entityNameProvider.v1`; built-in solar-system names are owned by the solar-system plugin, and custom ids fall back to generated names.
 - Shared browser-safe protocol contract lives in `@solitude/protocol`; browser client adapters live in `@solitude/client`.
 - Browser remote-world mirror proof lives in `@solitude/browser/remoteWorldMirror`; it applies authoritative runtime snapshots into a local world via a reusable indexed workspace.
-- Server-safe Solitude headless composition lives in `@solitude/sim`; `@solitude/server` intentionally does not depend on the browser-facing `solitude` package.
+- Server-safe Solitude headless composition lives in `@solitude/composition`; `@solitude/server` intentionally does not depend on the browser-facing `solitude` package.
 - Playback snapshots are v2-only: generic `entities` plus snapshot metadata with `focusEntityId`.
 - Tests have moved into owning packages; root TypeScript/Vitest tooling no longer includes `src`.
 
@@ -157,7 +157,7 @@
 - `packages/geometry/src/index.ts`: dependency-free public geometry surface for vectors, matrices, ray/sphere intersection, mesh volume, and OBJ parsing.
 - `packages/browser/src/infra/domBootstrap.ts`: browser runtime composition.
 - `packages/browser/src/infra/remoteWorldMirror.ts`: non-DOM authoritative snapshot apply mirror for future network clients.
-- `packages/sim/src/headless.ts`: shared server-safe/browser-safe Solitude headless composition.
+- `packages/composition/src/headless.ts`: shared server-safe/browser-safe Solitude headless composition.
 - `packages/entity-names/src/entityNames.ts`: neutral entity-name provider capability contract, lookup orchestration, explicit-name precedence, and generated fallback names.
 - `packages/localization/src/localization.ts`: dependency-free Solitude locale resolution, unit formatting, and message interpolation. Client/plugin JSON bundles live in their owning package directories.
 - `packages/multiplayer/src/runtime.ts`: Solitude-specific authoritative game implementation over the shared headless simulation.
@@ -165,7 +165,6 @@
 - `packages/server/src/metrics.ts`: rolling server stream metrics for snapshot cadence, payload size, fanout, step timing, and socket counts.
 - `packages/client/src/localPrediction.ts`: client-side input prediction state for the assigned ship.
 - `packages/client/src/multiplayerSession.ts`: client-owned capability adapter exposing live game/entity identity to multiplayer external plugins.
-- `packages/sim/src/localPrediction.ts`: generic Solitude local-prediction capability contract used by remote clients.
 - `packages/client/src/localReconciliation.ts`: prediction error metrics and render-only visual correction smoothing.
 - `packages/plugin-api/src/module.ts`: the minimal external plugin identity, capabilities, focused-entity requirements, grouped hooks, factory, and loaded-module composition seam. All runtime options, capability protocols, world access, render/scene/view contracts, localization, math, and entity-name APIs live in focused sibling subpath modules.
 - `packages/engine/src/app/controllableEntityProvider.ts`: canonical generic provider capability for constructing configured controllable entities from direct placements; the external API re-exports it through a controlled subpath.
