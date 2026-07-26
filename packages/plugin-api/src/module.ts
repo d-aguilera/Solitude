@@ -44,12 +44,28 @@ export interface ExternalBrowserPlugin extends ExternalPluginBase {
   hooks?: ExternalPluginHooks;
 }
 
+export interface ExternalServerPluginHooks {
+  controls?: never;
+  labels?: never;
+  loop?: never;
+  markers?: never;
+  scene?: never;
+  segments?: never;
+  simulation?: never;
+  viewControls?: never;
+  views?: never;
+  worldModel?: ExternalWorldModelPlugin;
+}
+
+export interface ExternalServerPlugin extends ExternalPluginBase {
+  hooks?: ExternalServerPluginHooks;
+  requirements?: never;
+}
+
 export interface ExternalHostNeutralPlugin extends ExternalPluginBase {
   requirements?: never;
   hooks?: never;
 }
-
-export interface ExternalServerPlugin extends ExternalHostNeutralPlugin {}
 
 export type ExternalPlugin = ExternalBrowserPlugin | ExternalServerPlugin;
 

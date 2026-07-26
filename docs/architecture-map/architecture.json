@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-26T01:45:51.560Z",
+  "generatedAt": "2026-07-26T16:09:00.725Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -2865,6 +2865,14 @@
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./module",
       "symbolKind": "type"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./module:ExternalServerPluginHooks",
+      "kind": "symbol",
+      "label": "ExternalServerPluginHooks",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./module",
+      "symbolKind": "interface"
     },
     {
       "id": "symbol:@solitude/plugin-api:./simulation:ExternalSimulationPhaseParams",
@@ -12617,10 +12625,16 @@
       "to": "symbol:@solitude/plugin-api:./module:ExternalFocusEntityCapabilityRequirement"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalServerPlugin->symbol:@solitude/plugin-api:./module:ExternalHostNeutralPlugin",
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalServerPlugin->symbol:@solitude/plugin-api:./module:ExternalPluginBase",
       "from": "symbol:@solitude/plugin-api:./module:ExternalServerPlugin",
       "kind": "symbol-reference",
-      "to": "symbol:@solitude/plugin-api:./module:ExternalHostNeutralPlugin"
+      "to": "symbol:@solitude/plugin-api:./module:ExternalPluginBase"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalServerPlugin->symbol:@solitude/plugin-api:./module:ExternalServerPluginHooks",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalServerPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./module:ExternalServerPluginHooks"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalServerPluginFactory->symbol:@solitude/plugin-api:./module:ExternalPluginFactory",
@@ -12633,6 +12647,12 @@
       "from": "symbol:@solitude/plugin-api:./module:ExternalServerPluginFactory",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./module:ExternalServerPlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalServerPluginHooks->symbol:@solitude/plugin-api:./world-model:ExternalWorldModelPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalServerPluginHooks",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world-model:ExternalWorldModelPlugin"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./multiplayer:createMultiplayerSessionCapability->symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider",

@@ -1,8 +1,10 @@
+import type { WorldModelRegistry } from "@solitude/engine/plugin";
+import type { WorldAndSceneConfig } from "@solitude/engine/world";
 import { SOLITUDE_PLUGIN_API_VERSION } from "@solitude/plugin-api/manifest";
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { loadServerPluginSet } from "../server";
 
 const temporaryDirectories: string[] = [];
@@ -52,12 +54,43 @@ describe(loadServerPluginSet.name, () => {
     );
   });
 
-  it("rejects browser-only plugin surfaces on the server host", async () => {
+  it("adapts authoritative world-model hooks", async () => {
     const root = await createTemporaryDirectory();
     await writePlugin(root, "content", "poly-fighter", "polyFighter", 42);
     await writeFile(
       resolve(root, "packs/content/poly-fighter/index.mjs"),
-      'export function createPlugin() { return { id: "polyFighter", hooks: { worldModel: { contributeWorldModel() {} } } }; }\n',
+      'export function createPlugin() { return { id: "polyFighter", hooks: { worldModel: { contributeWorldModel(registry) { registry.addEntities([{ id: "entity:server", components: {} }]); } } } }; }\n',
+    );
+    await writePack(root, "content", ["./poly-fighter/plugin.json"]);
+    const pluginSetPath = await writePluginSet(root, [
+      "./packs/content/pack.json",
+    ]);
+
+    const loaded = await loadServerPluginSet(pluginSetPath);
+    const plugin = loaded.catalog.polyFighter({});
+    const addEntities = vi.fn<WorldModelRegistry["addEntities"]>();
+
+    plugin.worldModel?.contributeWorldModel(
+      {
+        addEntities,
+        setMainFocusEntityId: vi.fn(),
+      },
+      {
+        capabilityRegistry: { getAll: () => [] },
+        config: {} as WorldAndSceneConfig,
+      },
+    );
+    expect(addEntities).toHaveBeenCalledWith([
+      { id: "entity:server", components: {} },
+    ]);
+  });
+
+  it("rejects runtime hooks on the server host", async () => {
+    const root = await createTemporaryDirectory();
+    await writePlugin(root, "content", "poly-fighter", "polyFighter", 42);
+    await writeFile(
+      resolve(root, "packs/content/poly-fighter/index.mjs"),
+      'export function createPlugin() { return { id: "polyFighter", hooks: { simulation: { beforeVehicleDynamics() {} } } }; }\n',
     );
     await writePack(root, "content", ["./poly-fighter/plugin.json"]);
     const pluginSetPath = await writePluginSet(root, [
@@ -67,7 +100,7 @@ describe(loadServerPluginSet.name, () => {
     const loaded = await loadServerPluginSet(pluginSetPath);
 
     expect(() => loaded.catalog.polyFighter({})).toThrow(
-      "properties unsupported by host server",
+      "hooks unsupported by host server",
     );
   });
 

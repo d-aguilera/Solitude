@@ -69,17 +69,17 @@ than host implementation objects.
 
 The pack host is also a plugin-shape contract. Browser plugins may publish
 capabilities, focused-entity requirements, and the current hook surfaces.
-Server plugins are capability-only until an authoritative server lifecycle is
-explicitly added to the external API. The runtime captures the loading host in
-each retained factory and rejects properties unsupported by that host when the
-factory is instantiated. `ExternalBrowserPlugin`, `ExternalServerPlugin`, and
+Server plugins may publish capabilities and the authoritative pre-runtime
+`worldModel` hook only. The runtime captures the loading host in each retained
+factory and rejects properties unsupported by that host when the factory is
+instantiated. `ExternalBrowserPlugin`, `ExternalServerPlugin`, and
 `ExternalHostNeutralPlugin` expose the corresponding compile-time contracts.
 
-Plugin API version 7 adds narrow browser control-state and vehicle-dynamics
-phase hooks, loop initialization time, controlled-body angular velocity, and a
-canonical runtime snapshot service. It retains pre-runtime world-model hooks,
-the creation-time profiler facade, and the separation between plugin metadata
-and executable hooks. A plugin may publish capabilities, declare optional
+Plugin API version 8 adds the server pre-runtime world-model phase while
+retaining narrow browser control-state and vehicle-dynamics phase hooks, loop
+initialization time, controlled-body angular velocity, and the canonical
+runtime snapshot service. Server requirements and runtime/browser hooks remain
+unsupported. A browser plugin may publish capabilities, declare optional
 requirements on the focused entity, and group host callbacks under `hooks`:
 
 ```ts
@@ -190,9 +190,10 @@ contribution types.
   - `polyFighter`: controllable-entity provider owning the fighter OBJ mesh,
     derived mass, and complete entity configuration used by standalone ships.
 
-- `solitude-content-server-pack-v1`: capability-only authoritative gameplay
-  content. It contains the same `polyFighter` module used by authoritative
-  multiplayer spawning.
+- `solitude-content-server-pack-v1`: authoritative gameplay content using the
+  capability and pre-runtime world-model surfaces. It currently contains the
+  same capability-only `polyFighter` module used by authoritative multiplayer
+  spawning.
 
 Both content packs bundle the single implementation and OBJ asset owned by the
 `@solitude-plugins/poly-fighter` workspace package. Their emitted plugin modules

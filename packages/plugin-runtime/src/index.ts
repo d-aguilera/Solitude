@@ -81,7 +81,7 @@ const EXTERNAL_PLUGIN_KEYS = new Set([
   "id",
   "requirements",
 ]);
-const EXTERNAL_SERVER_PLUGIN_KEYS = new Set(["capabilities", "id"]);
+const EXTERNAL_SERVER_PLUGIN_KEYS = new Set(["capabilities", "hooks", "id"]);
 const EXTERNAL_PLUGIN_HOOK_KEYS = new Set([
   "controls",
   "labels",
@@ -94,6 +94,7 @@ const EXTERNAL_PLUGIN_HOOK_KEYS = new Set([
   "views",
   "worldModel",
 ]);
+const EXTERNAL_SERVER_PLUGIN_HOOK_KEYS = new Set(["worldModel"]);
 const EXTERNAL_PLUGIN_REQUIREMENT_KEYS = new Set(["focusEntity"]);
 const EXTERNAL_FOCUS_ENTITY_REQUIREMENTS = new Set([
   "collisionSphere",
@@ -558,7 +559,16 @@ function validateExternalPlugin(
     throw new Error(`External plugin ${expectedId} has invalid hooks`);
   }
   const hooks = plugin.hooks;
-  if (hooks !== undefined && !hasOnlyKeys(hooks, EXTERNAL_PLUGIN_HOOK_KEYS)) {
+  const allowedHookKeys =
+    host === "browser"
+      ? EXTERNAL_PLUGIN_HOOK_KEYS
+      : EXTERNAL_SERVER_PLUGIN_HOOK_KEYS;
+  if (hooks !== undefined && !hasOnlyKeys(hooks, allowedHookKeys)) {
+    if (host === "server") {
+      throw new Error(
+        `External plugin ${expectedId} has hooks unsupported by host ${host}`,
+      );
+    }
     throw new Error(`External plugin ${expectedId} has invalid hooks`);
   }
   validateExternalPluginRequirements(plugin.requirements, expectedId);
