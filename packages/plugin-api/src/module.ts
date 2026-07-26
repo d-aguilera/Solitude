@@ -45,7 +45,7 @@ export interface ExternalBrowserPlugin extends ExternalPluginBase {
 }
 
 export interface ExternalServerPluginHooks {
-  controls?: never;
+  controls?: ExternalControlPlugin;
   labels?: never;
   loop?: never;
   markers?: never;

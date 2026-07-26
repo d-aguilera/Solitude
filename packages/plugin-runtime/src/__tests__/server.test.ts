@@ -1,5 +1,9 @@
 import type { WorldModelRegistry } from "@solitude/engine/plugin";
-import type { WorldAndSceneConfig } from "@solitude/engine/world";
+import type {
+  ControlledBody,
+  World,
+  WorldAndSceneConfig,
+} from "@solitude/engine/world";
 import { SOLITUDE_PLUGIN_API_VERSION } from "@solitude/plugin-api/manifest";
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -83,6 +87,38 @@ describe(loadServerPluginSet.name, () => {
     expect(addEntities).toHaveBeenCalledWith([
       { id: "entity:server", components: {} },
     ]);
+  });
+
+  it("adapts authoritative control hooks", async () => {
+    const root = await createTemporaryDirectory();
+    await writePlugin(root, "content", "autopilot", "autopilot", 42);
+    await writeFile(
+      resolve(root, "packs/content/autopilot/index.mjs"),
+      'export function createPlugin() { return { id: "autopilot", hooks: { controls: { getAttitudeCommand() { return { pitch: 1, roll: 2, yaw: 3 }; }, updateControlState({ controlState }) { controlState.mode = "active"; } } } }; }\n',
+    );
+    await writePack(root, "content", ["./autopilot/plugin.json"]);
+    const pluginSetPath = await writePluginSet(root, [
+      "./packs/content/pack.json",
+    ]);
+
+    const loaded = await loadServerPluginSet(pluginSetPath);
+    const plugin = loaded.catalog.autopilot({});
+    const controlState = {};
+
+    plugin.controls?.updateControlState?.({
+      controlInput: {},
+      controlState,
+    });
+    expect(controlState).toEqual({ mode: "active" });
+    expect(
+      plugin.controls?.getAttitudeCommand?.({
+        controlInput: {},
+        controlledBody: {} as ControlledBody,
+        controlState,
+        dtMillis: 16,
+        world: {} as World,
+      }),
+    ).toEqual({ pitch: 1, roll: 2, yaw: 3 });
   });
 
   it("rejects runtime hooks on the server host", async () => {

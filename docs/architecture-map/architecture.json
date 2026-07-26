@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-26T17:09:47.002Z",
+  "generatedAt": "2026-07-26T17:16:59.179Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -2179,6 +2179,22 @@
       "label": "ExternalAngularVelocity",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./world",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./controls:ExternalAttitudeCommand",
+      "kind": "symbol",
+      "label": "ExternalAttitudeCommand",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./controls",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./controls:ExternalAttitudeCommandParams",
+      "kind": "symbol",
+      "label": "ExternalAttitudeCommandParams",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./controls",
       "symbolKind": "interface"
     },
     {
@@ -6422,6 +6438,12 @@
       "from": "module:@solitude/plugin-api:./controls",
       "kind": "module-import",
       "to": "module:@solitude/plugin-api:./input"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./controls->module:@solitude/plugin-api:./world",
+      "from": "module:@solitude/plugin-api:./controls",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./world"
     },
     {
       "id": "module-import:module:@solitude/plugin-api:./entity-names->module:@solitude/entity-names:.",
@@ -12376,6 +12398,42 @@
       "to": "symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controls:ExternalAttitudeCommandParams->symbol:@solitude/plugin-api:./controls:ExternalMutableControlState",
+      "from": "symbol:@solitude/plugin-api:./controls:ExternalAttitudeCommandParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./controls:ExternalMutableControlState"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controls:ExternalAttitudeCommandParams->symbol:@solitude/plugin-api:./input:ExternalControlInput",
+      "from": "symbol:@solitude/plugin-api:./controls:ExternalAttitudeCommandParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./input:ExternalControlInput"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controls:ExternalAttitudeCommandParams->symbol:@solitude/plugin-api:./world:ExternalControlledBody",
+      "from": "symbol:@solitude/plugin-api:./controls:ExternalAttitudeCommandParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world:ExternalControlledBody"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controls:ExternalAttitudeCommandParams->symbol:@solitude/plugin-api:./world:ExternalWorld",
+      "from": "symbol:@solitude/plugin-api:./controls:ExternalAttitudeCommandParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world:ExternalWorld"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controls:ExternalControlPlugin->symbol:@solitude/plugin-api:./controls:ExternalAttitudeCommand",
+      "from": "symbol:@solitude/plugin-api:./controls:ExternalControlPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./controls:ExternalAttitudeCommand"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controls:ExternalControlPlugin->symbol:@solitude/plugin-api:./controls:ExternalAttitudeCommandParams",
+      "from": "symbol:@solitude/plugin-api:./controls:ExternalControlPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./controls:ExternalAttitudeCommandParams"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./controls:ExternalControlPlugin->symbol:@solitude/plugin-api:./controls:ExternalControlStateUpdateParams",
       "from": "symbol:@solitude/plugin-api:./controls:ExternalControlPlugin",
       "kind": "symbol-reference",
@@ -12836,6 +12894,12 @@
       "from": "symbol:@solitude/plugin-api:./module:ExternalServerPluginFactory",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./module:ExternalServerPlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalServerPluginHooks->symbol:@solitude/plugin-api:./controls:ExternalControlPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalServerPluginHooks",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./controls:ExternalControlPlugin"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalServerPluginHooks->symbol:@solitude/plugin-api:./world-model:ExternalWorldModelPlugin",

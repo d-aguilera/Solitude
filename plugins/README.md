@@ -69,17 +69,18 @@ than host implementation objects.
 
 The pack host is also a plugin-shape contract. Browser plugins may publish
 capabilities, focused-entity requirements, and the current hook surfaces.
-Server plugins may publish capabilities and the authoritative pre-runtime
-`worldModel` hook only. The runtime captures the loading host in each retained
-factory and rejects properties unsupported by that host when the factory is
-instantiated. `ExternalBrowserPlugin`, `ExternalServerPlugin`, and
-`ExternalHostNeutralPlugin` expose the corresponding compile-time contracts.
+Server plugins may publish capabilities, authoritative control-state/attitude
+resolvers, and the pre-runtime `worldModel` hook. The runtime captures the
+loading host in each retained factory and rejects properties unsupported by
+that host when the factory is instantiated. `ExternalBrowserPlugin`,
+`ExternalServerPlugin`, and `ExternalHostNeutralPlugin` expose the corresponding
+compile-time contracts.
 
-Plugin API version 8 adds the server pre-runtime world-model phase while
-retaining narrow browser control-state and vehicle-dynamics phase hooks, loop
-initialization time, controlled-body angular velocity, and the canonical
-runtime snapshot service. Server requirements and runtime/browser hooks remain
-unsupported. A browser plugin may publish capabilities, declare optional
+Plugin API version 9 adds the authoritative control lifecycle while retaining
+the server pre-runtime world-model phase, browser vehicle-dynamics/loop hooks,
+controlled-body angular velocity, and the canonical runtime snapshot service.
+Server requirements and simulation, loop, scene, view, and presentation hooks
+remain unsupported. A browser plugin may publish capabilities, declare optional
 requirements on the focused entity, and group host callbacks under `hooks`:
 
 ```ts
@@ -113,8 +114,8 @@ or obsolete plugin shapes fail during composition.
 - `@solitude/plugin-api/controllable-entities`: the canonical generic
   controllable-entity provider capability, placement/configuration contracts,
   constructor, and guard.
-- `@solitude/plugin-api/controls`: mutable control-state updates for browser
-  runtime plugins.
+- `@solitude/plugin-api/controls`: mutable control-state updates and
+  attitude-command resolution for browser and authoritative plugins.
 - `@solitude/plugin-api/orbits`: portable circular-orbit placement used by
   plugins plus bundled-safe Keplerian setup and configuration types.
 - `@solitude/plugin-api/input`: keyboard action maps, handlers, and

@@ -94,7 +94,7 @@ const EXTERNAL_PLUGIN_HOOK_KEYS = new Set([
   "views",
   "worldModel",
 ]);
-const EXTERNAL_SERVER_PLUGIN_HOOK_KEYS = new Set(["worldModel"]);
+const EXTERNAL_SERVER_PLUGIN_HOOK_KEYS = new Set(["controls", "worldModel"]);
 const EXTERNAL_PLUGIN_REQUIREMENT_KEYS = new Set(["focusEntity"]);
 const EXTERNAL_FOCUS_ENTITY_REQUIREMENTS = new Set([
   "collisionSphere",
@@ -572,7 +572,12 @@ function validateExternalPlugin(
     throw new Error(`External plugin ${expectedId} has invalid hooks`);
   }
   validateExternalPluginRequirements(plugin.requirements, expectedId);
-  if (hasInvalidHookFunctions(hooks?.controls, ["updateControlState"])) {
+  if (
+    hasInvalidHookFunctions(hooks?.controls, [
+      "getAttitudeCommand",
+      "updateControlState",
+    ])
+  ) {
     throw new Error(`External plugin ${expectedId} has invalid controls`);
   }
   if (hasInvalidHookFunctions(hooks?.labels, ["appendLabels"])) {

@@ -40,9 +40,10 @@
   lexical and real-path containment.
 - Browser plugins may expose capabilities, focused-entity requirements, and
   the current hook surfaces, including narrow control-state and
-  before/after-vehicle-dynamics callbacks. API v8 server plugins may expose
-  capabilities plus the authoritative pre-runtime `worldModel` hook;
-  requirements and runtime/browser hooks remain unsupported.
+  before/after-vehicle-dynamics callbacks. API v9 server plugins may expose
+  capabilities, control-state/attitude resolvers, and the authoritative
+  pre-runtime `worldModel` hook; requirements and other runtime/browser hooks
+  remain unsupported.
 - External packages import only the rootless, focused Plugin API. Built module
   graphs must be self-contained and contain no bare imports.
 - Browser and server builds assemble target-specific plugin sets. Production
@@ -96,10 +97,10 @@ Removing the remaining catalog consumers is the deeper part of the work.
 
 1. Audit the `@solitude/sim` plugins one at a time. Introduce only the narrow
    Plugin API surface required by the selected slice.
-2. Use the API v8 authoritative world-model phase for pre-runtime content.
-   Before moving server-used control or simulation behavior, design its
-   explicit authoritative lifecycle rather than smuggling browser hooks into
-   server modules.
+2. Use API v9 authoritative world-model and control phases for pre-runtime
+   content and control/attitude resolution. Before moving server-used
+   simulation behavior, design its explicit authoritative lifecycle rather
+   than smuggling browser hooks into server modules.
 3. When one implementation must run on multiple hosts, keep one host-neutral
    implementation package and build separate single-host deployment packs, as
    with Poly Fighter.
@@ -130,11 +131,12 @@ dependencies before every extraction.
 
 ## Open Design Pressure
 
-- API v8's server pre-runtime world-model phase now runs the extracted
-  `solarSystem`. The server external contract still has no control, simulation,
-  or loop lifecycle; extracting `spacecraftOperator` or `autopilot` from static
-  authoritative composition requires those boundaries to be designed.
-- Browser API v8 also supplies a frozen host snapshot facade. External
+- API v9's server pre-runtime world-model phase runs the extracted
+  `solarSystem`, and its control lifecycle makes `autopilot` the next viable
+  extraction. The server external contract still has no simulation or loop
+  lifecycle; extracting `spacecraftOperator` requires that boundary to be
+  designed.
+- Browser API v9 also supplies a frozen host snapshot facade. External
   playback owns scenario metadata and scripts, while the engine remains the
   single implementation of runtime snapshot capture/apply policy.
 - Host-specific packs duplicate deployment wrappers when one implementation
