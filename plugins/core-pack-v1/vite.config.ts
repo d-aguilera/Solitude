@@ -62,7 +62,7 @@ export default defineConfig({
     },
     minify: false,
     outDir: fileURLToPath(
-      new URL("../../dist/plugin-packages/core-pack-v1", import.meta.url),
+      new URL("../../dist/plugin-packs/core-pack-v1", import.meta.url),
     ),
     rollupOptions: {
       output: {

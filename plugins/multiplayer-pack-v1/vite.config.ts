@@ -23,10 +23,7 @@ export default defineConfig({
     },
     minify: false,
     outDir: fileURLToPath(
-      new URL(
-        "../../dist/plugin-packages/multiplayer-pack-v1",
-        import.meta.url,
-      ),
+      new URL("../../dist/plugin-packs/multiplayer-pack-v1", import.meta.url),
     ),
     rollupOptions: {
       output: {

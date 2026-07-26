@@ -143,7 +143,7 @@ dependencies before every extraction.
 - Loaded plugins are trusted same-realm code. Discovery controls trust roots
   but does not provide sandboxing, signatures, unloading, or dependency
   resolution.
-- `dist/plugin-packages` and `dist/plugin-public` are intermediate build and
+- `dist/plugin-packs` and `dist/plugin-public` are intermediate build and
   assembly trees. Deployable products consume the assembled plugin trees under
   `dist/standalone/plugins`, `dist/client/plugins`, and
   `dist/server/plugins`.

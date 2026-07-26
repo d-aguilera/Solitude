@@ -47,7 +47,7 @@ export function createSolitudeContentPackConfig({
       },
       minify: false,
       outDir: fileURLToPath(
-        new URL(`../../dist/plugin-packages/${packId}`, packRoot),
+        new URL(`../../dist/plugin-packs/${packId}`, packRoot),
       ),
       rollupOptions: {
         output: {

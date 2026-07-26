@@ -34,7 +34,7 @@ export default defineConfig({
     },
     minify: false,
     outDir: fileURLToPath(
-      new URL("../../dist/plugin-packages/standalone-pack-v1", import.meta.url),
+      new URL("../../dist/plugin-packs/standalone-pack-v1", import.meta.url),
     ),
     rollupOptions: {
       output: {

@@ -9,7 +9,7 @@ const importSpecifierPattern =
   /(?:^|[\r\n])\s*(?:import\s+(?:[\s\S]*?\s+from\s+)?["']([^"']+)["']|export\s+(?:\{[\s\S]*?\}|\*)\s+from\s+["']([^"']+)["']|import\s*\(\s*["']([^"']+)["']\s*\))/g;
 
 export async function validateBuiltPluginPack(packId, requiredHost) {
-  const packageRoot = await realpath(resolve("dist/plugin-packages", packId));
+  const packageRoot = await realpath(resolve("dist/plugin-packs", packId));
   const packFilename = resolve(packageRoot, "pack.json");
   const pack = await readJson(packFilename);
   validatePackManifest(pack, packId, requiredHost);
