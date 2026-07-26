@@ -1,4 +1,7 @@
-import type { WorldModelRegistry } from "@solitude/engine/plugin";
+import type {
+  SimulationPhaseParams,
+  WorldModelRegistry,
+} from "@solitude/engine/plugin";
 import type {
   ControlledBody,
   World,
@@ -121,6 +124,46 @@ describe(loadServerPluginSet.name, () => {
     ).toEqual({ pitch: 1, roll: 2, yaw: 3 });
   });
 
+  it("adapts authoritative vehicle dynamics contributions", async () => {
+    const root = await createTemporaryDirectory();
+    await writePlugin(
+      root,
+      "content",
+      "spacecraft-operator",
+      "spacecraftOperator",
+      42,
+    );
+    await writeFile(
+      resolve(root, "packs/content/spacecraft-operator/index.mjs"),
+      'export function createPlugin() { return { id: "spacecraftOperator", hooks: { simulation: () => ({ updateVehicleDynamics({ controlInput }) { controlInput.updated = true; } }) } }; }\n',
+    );
+    await writePack(root, "content", ["./spacecraft-operator/plugin.json"]);
+    const pluginSetPath = await writePluginSet(root, [
+      "./packs/content/pack.json",
+    ]);
+
+    const loaded = await loadServerPluginSet(pluginSetPath);
+    const plugin = loaded.catalog.spacecraftOperator({});
+    expect(typeof plugin.simulation).toBe("function");
+    if (typeof plugin.simulation !== "function") return;
+    const simulation = plugin.simulation({
+      capabilityRegistry: { getAll: () => [] },
+      controlPlugins: [],
+    });
+    const params = {
+      controlInput: {},
+      controlInputsByEntityId: new Map(),
+      dtMillis: 16,
+      dtMillisSim: 16,
+      mainFocus: {} as SimulationPhaseParams["mainFocus"],
+      world: {} as World,
+    } satisfies SimulationPhaseParams;
+
+    simulation.updateVehicleDynamics?.(params);
+
+    expect(params.controlInput).toEqual({ updated: true });
+  });
+
   it("rejects runtime hooks on the server host", async () => {
     const root = await createTemporaryDirectory();
     await writePlugin(root, "content", "poly-fighter", "polyFighter", 42);
@@ -135,9 +178,7 @@ describe(loadServerPluginSet.name, () => {
 
     const loaded = await loadServerPluginSet(pluginSetPath);
 
-    expect(() => loaded.catalog.polyFighter({})).toThrow(
-      "hooks unsupported by host server",
-    );
+    expect(() => loaded.catalog.polyFighter({})).toThrow("invalid simulation");
   });
 
   it("rejects plugin manifests that escape their pack directory", async () => {

@@ -76,10 +76,10 @@ that host when the factory is instantiated. `ExternalBrowserPlugin`,
 `ExternalServerPlugin`, and `ExternalHostNeutralPlugin` expose the corresponding
 compile-time contracts.
 
-Plugin API version 9 adds the authoritative control lifecycle while retaining
-the server pre-runtime world-model phase, browser vehicle-dynamics/loop hooks,
+Plugin API version 10 adds authoritative vehicle-dynamics contributions while
+retaining the server world-model/control phases, browser lifecycle hooks,
 controlled-body angular velocity, and the canonical runtime snapshot service.
-Server requirements and simulation, loop, scene, view, and presentation hooks
+Server requirements and browser-only loop, scene, view, and presentation hooks
 remain unsupported. A browser plugin may publish capabilities, declare optional
 requirements on the focused entity, and group host callbacks under `hooks`:
 
@@ -122,6 +122,8 @@ or obsolete plugin shapes fail during composition.
   plugins plus bundled-safe Keplerian setup and configuration types.
 - `@solitude/plugin-api/input`: keyboard action maps, handlers, and
   provider-declared actions that remain available through input locks.
+- `@solitude/plugin-api/local-prediction`: browser-local entity prediction
+  provider capability consumed by the remote client.
 - `@solitude/plugin-api/profiling`: control contract for the host profiler
   facade supplied through the plugin creation context.
 - `@solitude/plugin-api/assets`: bundled-safe OBJ parsing for pack-owned mesh
@@ -140,8 +142,9 @@ or obsolete plugin shapes fail during composition.
   parsing.
 - `@solitude/plugin-api/loop`: frame-policy hooks and controlled runtime focus
   changes plus initial simulation-time selection for browser loop plugins.
-- `@solitude/plugin-api/simulation`: narrow before/after vehicle-dynamics
-  callbacks with controlled temporary focus changes.
+- `@solitude/plugin-api/simulation`: browser before/update/after
+  vehicle-dynamics callbacks, authoritative update contributions,
+  entity-addressed controls, and controlled temporary focus changes.
 - `@solitude/plugin-api/snapshots`: canonical runtime entity snapshot
   contracts and the frozen host capture/apply service supplied through the
   plugin creation context.
@@ -193,19 +196,23 @@ contribution types.
   - `solarSystem`: solar-system world entities, celestial-body lookup, and
     localized entity names.
   - `autopilot`: headless attitude and propulsion control behavior.
+  - `spacecraftOperator`: spacecraft input, local prediction, camera rig, and
+    vehicle dynamics.
   - `polyFighter`: controllable-entity provider owning the fighter OBJ mesh,
     derived mass, and complete entity configuration used by standalone ships.
 
 - `solitude-content-server-pack-v1`: authoritative gameplay content using the
   capability and pre-runtime world-model surfaces. It contains the same
-  `solarSystem`, `autopilot`, and `polyFighter` modules used by the browser
-  content pack.
+  `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter`
+  implementations used by the browser content pack. Its spacecraft-operator
+  entry omits browser-only contributions.
 
 Both content packs use the shared `@solitude-plugins/solitude-content-pack`
 build configuration and bundle the implementations owned by
-`@solitude-plugins/solar-system`, `@solitude-plugins/autopilot`, and
-`@solitude-plugins/poly-fighter`. Their emitted plugin modules are identical;
-only the deployment pack id and host contract differ.
+`@solitude-plugins/solar-system`, `@solitude-plugins/autopilot`,
+`@solitude-plugins/spacecraft-operator`, and
+`@solitude-plugins/poly-fighter`. Host-neutral modules are identical; the
+spacecraft operator has thin browser/server entries over shared dynamics.
 
 - `multiplayer-pack-v1`: multiplayer-only presentation plugins. It contains:
   - `remoteIdentityHud`: localized live game and assigned-entity identity HUD,

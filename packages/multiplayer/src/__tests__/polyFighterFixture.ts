@@ -124,12 +124,65 @@ const createTestAutopilotPlugin: PluginFactory = () => ({
   id: "autopilot",
 });
 
+const createTestSpacecraftOperatorPlugin: PluginFactory = () => ({
+  id: "spacecraftOperator",
+  simulation: {
+    updateVehicleDynamics: ({
+      controlInputsByEntityId,
+      dtMillis,
+      dtMillisSim,
+      world,
+    }) => {
+      for (const body of world.controllableBodies) {
+        const input = controlInputsByEntityId.get(body.id);
+        if (!input) continue;
+        const thrustLevel = findThrustLevel(input);
+        if (input.burnForward) {
+          addScaledVelocity(
+            body.velocity,
+            body.frame.forward,
+            (1_000_000 * Math.pow(thrustLevel / 9, 3) * dtMillisSim) / 1000,
+          );
+        }
+        if (input.burnRight) {
+          addScaledVelocity(
+            body.velocity,
+            body.frame.right,
+            (20_000 * dtMillisSim) / 1000,
+          );
+        }
+        if (input.yawLeft) {
+          body.angularVelocity.yaw = Math.min(0.5, (4 * dtMillis) / 1000);
+        }
+      }
+    },
+  },
+});
+
+function addScaledVelocity(
+  velocity: { x: number; y: number; z: number },
+  direction: { x: number; y: number; z: number },
+  scale: number,
+): void {
+  velocity.x += direction.x * scale;
+  velocity.y += direction.y * scale;
+  velocity.z += direction.z * scale;
+}
+
+function findThrustLevel(input: Readonly<Record<string, boolean>>): number {
+  for (let level = 9; level >= 0; level--) {
+    if (input[`thrust${level}`]) return level;
+  }
+  return 1;
+}
+
 export const testMultiplayerContentPlugins: DefaultMultiplayerContentPluginSet =
   {
     catalog: {
       autopilot: createTestAutopilotPlugin,
       polyFighter: createTestPolyFighterPlugin,
       solarSystem: createTestSolarSystemPlugin,
+      spacecraftOperator: createTestSpacecraftOperatorPlugin,
     },
-    ids: ["solarSystem", "autopilot", "polyFighter"],
+    ids: ["solarSystem", "autopilot", "spacecraftOperator", "polyFighter"],
   };

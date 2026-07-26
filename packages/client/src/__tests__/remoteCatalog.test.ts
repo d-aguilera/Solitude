@@ -12,20 +12,18 @@ import { describe, expect, it, vi } from "vitest";
 import {
   createRemoteClientComposition,
   remoteRenderPluginCatalog,
-  remoteRenderPluginIds,
 } from "../composition";
 
 describe("remote render plugin catalog", () => {
   it("keeps external browser plugins out of the static host catalog", () => {
     const plugins = loadPlugins({
       catalog: remoteRenderPluginCatalog,
-      ids: remoteRenderPluginIds,
+      ids: [],
     });
 
-    const spacecraftOperator = plugins.find(
-      (plugin) => plugin.id === "spacecraftOperator",
+    expect(plugins.some((plugin) => plugin.id === "spacecraftOperator")).toBe(
+      false,
     );
-
     expect(plugins.some((plugin) => plugin.id === "autopilot")).toBe(false);
     expect(plugins.some((plugin) => plugin.id === "solarSystem")).toBe(false);
     expect(plugins.some((plugin) => plugin.id === "autopilotInput")).toBe(
@@ -48,7 +46,7 @@ describe("remote render plugin catalog", () => {
     expect(plugins.some((plugin) => plugin.id === "shipColorNames")).toBe(
       false,
     );
-    expect(spacecraftOperator?.capabilities?.length).toBeGreaterThan(0);
+    expect(plugins).toEqual([]);
   });
 
   it("composes external view controls into local multiplayer input", () => {

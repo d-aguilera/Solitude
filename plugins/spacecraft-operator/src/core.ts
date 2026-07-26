@@ -1,36 +1,29 @@
-import { vec3 } from "@solitude/engine/math";
+import type { ExternalPluginCapabilityRegistry } from "@solitude/plugin-api/capabilities";
+import type { ExternalControlPlugin } from "@solitude/plugin-api/controls";
+import type { ExternalControlInput } from "@solitude/plugin-api/input";
+import type { ExternalLocalEntityPredictionProvider } from "@solitude/plugin-api/local-prediction";
+import { vec3, type Vec3 } from "@solitude/plugin-api/math";
 import type {
-  ControlInput,
-  ControlPlugin,
-  EntityControlInputs,
-  PluginCapabilityRegistry,
-  SimulationPhaseParams,
-  SimulationPlugin,
-} from "@solitude/engine/plugin";
-import {
-  applyControlledBodyRotation,
-  createPhysicsWorkspace,
-  type PhysicsWorkspace,
-} from "@solitude/engine/runtime";
-import type { ControlledBody, World } from "@solitude/engine/world";
-import {
-  createSpacecraftOperatorTelemetry,
-  type SpacecraftOperatorTelemetry,
-} from "@solitude/hud/telemetry";
-import type { LocalEntityPredictionProvider } from "../../localPrediction";
-import {
-  maxRcsTranslationAcceleration,
-  maxThrustAcceleration,
-} from "../../spacecraft/propulsionLimits";
+  ExternalSimulationPhaseParams,
+  ExternalVehicleDynamicsPlugin,
+} from "@solitude/plugin-api/simulation";
+import type {
+  ExternalSpacecraftAutonomousControl,
+  ExternalSpacecraftPropulsionCommand,
+  ExternalSpacecraftPropulsionResolver,
+  ExternalSpacecraftRcsCommand,
+  ExternalSpacecraftThrustCommand,
+} from "@solitude/plugin-api/spacecraft";
 import {
   getSpacecraftAutonomousControls,
   getSpacecraftPropulsionResolvers,
-  type SpacecraftAutonomousControl,
-  type SpacecraftPropulsionCommand,
-  type SpacecraftPropulsionResolver,
-  type SpacecraftRcsCommand,
-  type SpacecraftThrustCommand,
-} from "./capabilities";
+} from "@solitude/plugin-api/spacecraft";
+import type { ExternalSpacecraftOperatorTelemetry } from "@solitude/plugin-api/telemetry";
+import type {
+  ExternalControlledBody,
+  ExternalEntityId,
+  ExternalWorld,
+} from "@solitude/plugin-api/world";
 import {
   getMainThrustCommandInto,
   getRcsCommandInto,
@@ -39,28 +32,48 @@ import {
   updateControlledBodyAngularVelocityFromInput,
   type SpacecraftControlState,
 } from "./controlLogic";
+import { localFrame } from "./localFrame";
+import {
+  maxRcsTranslationAcceleration,
+  maxThrustAcceleration,
+} from "./propulsionLimits";
 
 const velocityDeltaScratch = vec3.zero();
-const backgroundControlInput = {} as ControlInput;
-const emptyControlPlugins: ControlPlugin[] = [];
-const emptyPropulsionResolvers: readonly SpacecraftPropulsionResolver[] = [];
+const backgroundControlInput: ExternalControlInput = {};
+const emptyControlPlugins: ExternalControlPlugin[] = [];
+const emptyPropulsionResolvers: readonly ExternalSpacecraftPropulsionResolver[] =
+  [];
+
+interface PhysicsWorkspace {
+  omegaWorld: Vec3;
+  omegaAxis: Vec3;
+}
+
+function createPhysicsWorkspace(): PhysicsWorkspace {
+  return {
+    omegaAxis: vec3.zero(),
+    omegaWorld: vec3.zero(),
+  };
+}
+
+const defaultPhysicsWorkspace = createPhysicsWorkspace();
 
 export interface SpacecraftVehicleDynamicsParams {
-  controlInput: ControlInput;
-  controlPlugins: ControlPlugin[];
+  controlInput: ExternalControlInput;
+  controlPlugins: readonly ExternalControlPlugin[];
   controlState: SpacecraftControlState;
-  controlledBody: ControlledBody;
+  controlledBody: ExternalControlledBody;
   dtMillis: number;
   physicsWorkspace?: PhysicsWorkspace;
   propulsionDtMillis: number;
-  propulsionResolvers: readonly SpacecraftPropulsionResolver[];
+  propulsionResolvers: readonly ExternalSpacecraftPropulsionResolver[];
   updateControlStateFromInput?: boolean;
-  world: World;
+  world: ExternalWorld;
 }
 
 export function applySpacecraftVehicleDynamics(
   params: SpacecraftVehicleDynamicsParams,
-): SpacecraftPropulsionCommand {
+): ExternalSpacecraftPropulsionCommand {
   const propulsionCommand = getPropulsionCommandForTick(
     params.propulsionDtMillis,
     params.controlInput,
@@ -100,10 +113,13 @@ export function applySpacecraftVehicleDynamics(
 }
 
 export function createSpacecraftVehicleDynamicsPlugin(
-  controlPlugins: ControlPlugin[],
-  capabilityRegistry: PluginCapabilityRegistry,
-  telemetry: SpacecraftOperatorTelemetry = createSpacecraftOperatorTelemetry(),
-): SimulationPlugin {
+  controlPlugins: readonly ExternalControlPlugin[],
+  capabilityRegistry: ExternalPluginCapabilityRegistry,
+  telemetry: ExternalSpacecraftOperatorTelemetry = {
+    currentRcsLevel: 0,
+    currentThrustLevel: 0,
+  },
+): ExternalVehicleDynamicsPlugin {
   const controlStatesByEntityId = new Map<string, SpacecraftControlState>();
   const autonomousControls =
     getSpacecraftAutonomousControls(capabilityRegistry);
@@ -192,7 +208,7 @@ export function createSpacecraftVehicleDynamicsPlugin(
   };
 }
 
-export function createSpacecraftLocalPredictionProvider(): LocalEntityPredictionProvider {
+export function createSpacecraftLocalPredictionProvider(): ExternalLocalEntityPredictionProvider {
   const controlState: SpacecraftControlState = { thrustLevel: 1 };
   const physicsWorkspace = createPhysicsWorkspace();
 
@@ -219,16 +235,17 @@ export function createSpacecraftLocalPredictionProvider(): LocalEntityPrediction
 }
 
 function applyEntityControlVehicleDynamics(
-  params: SimulationPhaseParams,
-  controlInputsByEntityId: EntityControlInputs,
+  params: ExternalSimulationPhaseParams,
+  controlInputsByEntityId: ReadonlyMap<ExternalEntityId, ExternalControlInput>,
   controlStatesByEntityId: Map<string, SpacecraftControlState>,
-  autonomousControls: readonly SpacecraftAutonomousControl[],
-  propulsionResolvers: readonly SpacecraftPropulsionResolver[],
-  controlPlugins: ControlPlugin[],
+  autonomousControls: readonly ExternalSpacecraftAutonomousControl[],
+  propulsionResolvers: readonly ExternalSpacecraftPropulsionResolver[],
+  controlPlugins: readonly ExternalControlPlugin[],
   physicsWorkspace: PhysicsWorkspace,
-  telemetry: SpacecraftOperatorTelemetry,
+  telemetry: ExternalSpacecraftOperatorTelemetry,
 ): void {
-  let focusedPropulsionCommand: SpacecraftPropulsionCommand | null = null;
+  let focusedPropulsionCommand: ExternalSpacecraftPropulsionCommand | null =
+    null;
   let focusedControlState: SpacecraftControlState | null = null;
 
   for (const controlledBody of params.world.controllableBodies) {
@@ -238,7 +255,7 @@ function applyEntityControlVehicleDynamics(
     );
     const controlInput = controlInputsByEntityId.get(controlledBody.id);
 
-    let propulsionCommand: SpacecraftPropulsionCommand | null = null;
+    let propulsionCommand: ExternalSpacecraftPropulsionCommand | null = null;
     if (controlInput) {
       propulsionCommand = applySpacecraftVehicleDynamics({
         controlInput,
@@ -302,7 +319,7 @@ function getControlStateForEntity(
 }
 
 function getRenderedThrustLevel(
-  thrustCommand: SpacecraftThrustCommand,
+  thrustCommand: ExternalSpacecraftThrustCommand,
   controlState: SpacecraftControlState,
 ): number {
   if (thrustCommand.forward === 0) {
@@ -313,28 +330,28 @@ function getRenderedThrustLevel(
     : -controlState.thrustLevel;
 }
 
-function getRenderedRcsLevel(rcsCommand: SpacecraftRcsCommand): number {
+function getRenderedRcsLevel(rcsCommand: ExternalSpacecraftRcsCommand): number {
   if (rcsCommand.right === 0) {
     return 0;
   }
   return rcsCommand.right;
 }
 
-let manualPropulsionCommand: SpacecraftPropulsionCommand = {
+let manualPropulsionCommand: ExternalSpacecraftPropulsionCommand = {
   main: { forward: 0 },
   rcs: { right: 0 },
 };
 
 function getPropulsionCommandForTick(
   dtMillis: number,
-  controlInput: ControlInput,
+  controlInput: ExternalControlInput,
   controlState: SpacecraftControlState,
-  controlledBody: ControlledBody,
-  world: World,
-  controlPlugins: ControlPlugin[],
-  propulsionResolvers: readonly SpacecraftPropulsionResolver[],
+  controlledBody: ExternalControlledBody,
+  world: ExternalWorld,
+  controlPlugins: readonly ExternalControlPlugin[],
+  propulsionResolvers: readonly ExternalSpacecraftPropulsionResolver[],
   updateControlStateFromInput: boolean,
-): SpacecraftPropulsionCommand {
+): ExternalSpacecraftPropulsionCommand {
   if (updateControlStateFromInput) {
     updateControlState(controlInput, controlState, controlPlugins);
   }
@@ -357,7 +374,7 @@ function getPropulsionCommandForTick(
 }
 
 function hasAutonomousControl(
-  autonomousControls: readonly SpacecraftAutonomousControl[],
+  autonomousControls: readonly ExternalSpacecraftAutonomousControl[],
   controlState: SpacecraftControlState,
 ): boolean {
   for (const control of autonomousControls) {
@@ -367,8 +384,8 @@ function hasAutonomousControl(
 }
 
 function writeAutonomousControlInput(
-  autonomousControls: readonly SpacecraftAutonomousControl[],
-  controlInput: ControlInput,
+  autonomousControls: readonly ExternalSpacecraftAutonomousControl[],
+  controlInput: ExternalControlInput,
   controlState: SpacecraftControlState,
 ): void {
   for (const control of autonomousControls) {
@@ -376,10 +393,54 @@ function writeAutonomousControlInput(
   }
 }
 
+function applyControlledBodyRotation(
+  dtMillis: number,
+  controlledBody: ExternalControlledBody,
+  workspace: PhysicsWorkspace = defaultPhysicsWorkspace,
+): void {
+  const dtSec = dtMillis / 1000;
+  if (dtSec <= 0) return;
+
+  const omega = controlledBody.angularVelocity;
+  if (omega.roll === 0 && omega.pitch === 0 && omega.yaw === 0) return;
+
+  const frame = controlledBody.frame;
+  const omegaWorld = workspace.omegaWorld;
+  omegaWorld.x =
+    frame.forward.x * omega.roll +
+    frame.right.x * omega.pitch +
+    frame.up.x * omega.yaw;
+  omegaWorld.y =
+    frame.forward.y * omega.roll +
+    frame.right.y * omega.pitch +
+    frame.up.y * omega.yaw;
+  omegaWorld.z =
+    frame.forward.z * omega.roll +
+    frame.right.z * omega.pitch +
+    frame.up.z * omega.yaw;
+
+  const omegaMagnitude = vec3.length(omegaWorld);
+  if (omegaMagnitude === 0) return;
+  const orientation = controlledBody.orientation;
+  if (orientation === undefined) {
+    throw new Error(
+      `Controlled body ${controlledBody.id} has no mutable orientation`,
+    );
+  }
+
+  vec3.scaleInto(workspace.omegaAxis, 1 / omegaMagnitude, omegaWorld);
+  localFrame.rotateAroundAxisInPlace(
+    frame,
+    workspace.omegaAxis,
+    omegaMagnitude * dtSec,
+  );
+  localFrame.intoMat3(orientation, frame);
+}
+
 function applyThrust(
   dtMillis: number,
-  controlledBody: ControlledBody,
-  thrust: SpacecraftThrustCommand,
+  controlledBody: ExternalControlledBody,
+  thrust: ExternalSpacecraftThrustCommand,
   maxThrustAcceleration: number,
 ): void {
   if (dtMillis === 0) return;
@@ -400,8 +461,8 @@ function applyThrust(
 
 function applyRcsTranslation(
   dtMillis: number,
-  controlledBody: ControlledBody,
-  rcs: SpacecraftRcsCommand,
+  controlledBody: ExternalControlledBody,
+  rcs: ExternalSpacecraftRcsCommand,
   maxRcsTranslationAcceleration: number,
 ): void {
   if (dtMillis === 0) return;

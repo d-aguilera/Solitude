@@ -1,4 +1,4 @@
-import { vec3, type Vec3 } from "./math";
+import { vec3, type Mat3, type Vec3 } from "./math";
 
 export type ExternalEntityId = string;
 
@@ -37,6 +37,7 @@ export interface ExternalLocalFrame {
 export interface ExternalControlledBody extends ExternalEntityMotionState {
   angularVelocity: ExternalAngularVelocity;
   frame: ExternalLocalFrame;
+  orientation?: Mat3;
 }
 
 export interface ExternalWorld {

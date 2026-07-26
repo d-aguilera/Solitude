@@ -41,9 +41,9 @@ import {
   collectKeyboardInputProviders,
   createKeyboardHandlerDispatcher,
 } from "@solitude/input/keyboard";
+import type { ExternalLocalEntityPredictionProvider as LocalEntityPredictionProvider } from "@solitude/plugin-api/local-prediction";
 import type { SolitudeInputSequence } from "@solitude/protocol/protocol";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
-import type { LocalEntityPredictionProvider } from "@solitude/sim/localPrediction";
 import { createRemoteClientComposition } from "./composition";
 import {
   acknowledgeLocalInputs,

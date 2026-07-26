@@ -223,6 +223,7 @@ describe("playback controller", () => {
     };
     const simulationParams: ExternalSimulationPhaseParams = {
       controlInput,
+      controlInputsByEntityId: new Map(),
       dtMillis: 20,
       dtMillisSim: 20,
       focusEntity: (id) => {

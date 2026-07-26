@@ -9,7 +9,10 @@ import type {
   ExternalScenePlugin,
   ExternalSegmentPlugin,
 } from "./scene";
-import type { ExternalSimulationPlugin } from "./simulation";
+import type {
+  ExternalSimulationContribution,
+  ExternalVehicleDynamicsContribution,
+} from "./simulation";
 import type { ExternalRuntimeSnapshotService } from "./snapshots";
 import type { ExternalViewControlPlugin, ExternalViewPlugin } from "./views";
 import type { ExternalWorldModelPlugin } from "./world-model";
@@ -28,7 +31,7 @@ export interface ExternalPluginHooks {
   markers?: ExternalMarkerPlugin;
   scene?: ExternalScenePlugin;
   segments?: ExternalSegmentPlugin;
-  simulation?: ExternalSimulationPlugin;
+  simulation?: ExternalSimulationContribution;
   viewControls?: ExternalViewControlPlugin;
   views?: ExternalViewPlugin;
   worldModel?: ExternalWorldModelPlugin;
@@ -51,7 +54,7 @@ export interface ExternalServerPluginHooks {
   markers?: never;
   scene?: never;
   segments?: never;
-  simulation?: never;
+  simulation?: ExternalVehicleDynamicsContribution;
   viewControls?: never;
   views?: never;
   worldModel?: ExternalWorldModelPlugin;

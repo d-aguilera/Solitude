@@ -15,18 +15,13 @@ import {
   type RuntimeOptions,
 } from "@solitude/engine/plugin";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
-import { appendExternalPluginSet } from "@solitude/plugin-runtime";
 import {
   collectLocalEntityPredictionProviders,
-  type LocalEntityPredictionProvider,
-} from "@solitude/sim/localPrediction";
-import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
+  type ExternalLocalEntityPredictionProvider as LocalEntityPredictionProvider,
+} from "@solitude/plugin-api/local-prediction";
+import { appendExternalPluginSet } from "@solitude/plugin-runtime";
 
-export const remoteRenderPluginIds = ["spacecraftOperator"];
-
-export const remoteRenderPluginCatalog: PluginCatalog = {
-  ...simPluginCatalog,
-};
+export const remoteRenderPluginCatalog: PluginCatalog = {};
 
 export interface RemoteClientCompositionParams {
   clientPlugins: readonly GamePlugin[];
@@ -54,7 +49,7 @@ export function createRemoteClientComposition({
       ...remoteRenderPluginCatalog,
       browserHudOverlay: createBrowserHudOverlayAdapter,
     },
-    ["browserHudOverlay", ...remoteRenderPluginIds],
+    ["browserHudOverlay"],
     {
       catalog: externalPluginCatalog,
       ids: externalPluginIds,

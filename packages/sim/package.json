@@ -5,18 +5,10 @@
   "type": "module",
   "exports": {
     "./config/worldAndSceneConfig": "./src/worldAndSceneConfig.ts",
-    "./headless": "./src/headless.ts",
-    "./localPrediction": "./src/localPrediction.ts",
-    "./plugins/catalog": "./src/plugins/catalog.ts",
-    "./spacecraft/propulsionLimits": "./src/spacecraft/propulsionLimits.ts"
+    "./headless": "./src/headless.ts"
   },
   "dependencies": {
-    "@solitude/engine": "0.0.0",
-    "@solitude/entity-names": "0.0.0",
-    "@solitude/hud": "0.0.0",
-    "@solitude/input": "0.0.0",
-    "@solitude/localization": "0.0.0",
-    "@solitude/spacecraft": "0.0.0"
+    "@solitude/engine": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

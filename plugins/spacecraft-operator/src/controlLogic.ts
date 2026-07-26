@@ -1,17 +1,19 @@
 import type {
-  AttitudeCommand,
-  ControlInput,
-  ControlledBodyState,
-  ControlPlugin,
-  MutableControlState,
-} from "@solitude/engine/plugin";
-import type { World } from "@solitude/engine/world";
+  ExternalAttitudeCommand,
+  ExternalControlPlugin,
+  ExternalMutableControlState,
+} from "@solitude/plugin-api/controls";
+import type { ExternalControlInput } from "@solitude/plugin-api/input";
 import type {
-  SpacecraftPropulsionCommand,
-  SpacecraftPropulsionResolver,
-  SpacecraftRcsCommand,
-  SpacecraftThrustCommand,
-} from "./capabilities";
+  ExternalSpacecraftPropulsionCommand,
+  ExternalSpacecraftPropulsionResolver,
+  ExternalSpacecraftRcsCommand,
+  ExternalSpacecraftThrustCommand,
+} from "@solitude/plugin-api/spacecraft";
+import type {
+  ExternalControlledBody,
+  ExternalWorld,
+} from "@solitude/plugin-api/world";
 
 // Ship attitude rates (rad/s) and acceleration (rad/s^2).
 const maxRollRate = 1.0;
@@ -26,14 +28,14 @@ const shipThrustValues = Array.from<number, number>(
   (_, i) => Math.pow(i, shipThrustExponent) / shipThrustMaxPow,
 );
 
-export interface SpacecraftControlState extends MutableControlState {
+export interface SpacecraftControlState extends ExternalMutableControlState {
   thrustLevel: number;
 }
 
 export function updateControlState(
-  controlInput: ControlInput,
+  controlInput: ExternalControlInput,
   controlState: SpacecraftControlState,
-  controlPlugins: ControlPlugin[] = [],
+  controlPlugins: readonly ExternalControlPlugin[] = [],
 ): void {
   updateThrustLevelFromInput(controlInput, controlState);
   for (const plugin of controlPlugins) {
@@ -41,7 +43,9 @@ export function updateControlState(
   }
 }
 
-function getManualAttitudeCommand(controlInput: ControlInput): AttitudeCommand {
+function getManualAttitudeCommand(
+  controlInput: ExternalControlInput,
+): ExternalAttitudeCommand {
   const rollLeft = Boolean(controlInput.rollLeft);
   const rollRight = Boolean(controlInput.rollRight);
   const pitchDown = Boolean(controlInput.pitchDown);
@@ -79,8 +83,8 @@ function stepToward(current: number, target: number, maxDelta: number): number {
 
 function applyAttitudeCommand(
   dtMillis: number,
-  ship: ControlledBodyState,
-  command: AttitudeCommand,
+  ship: ExternalControlledBody,
+  command: ExternalAttitudeCommand,
 ): void {
   const dtSec = dtMillis / 1000;
   if (dtSec <= 0) return;
@@ -92,7 +96,7 @@ function applyAttitudeCommand(
   omega.yaw = stepToward(omega.yaw, command.yaw, maxDelta);
 }
 
-const thrustKeys: (keyof ControlInput)[] = [
+const thrustKeys: (keyof ExternalControlInput)[] = [
   "thrust0",
   "thrust1",
   "thrust2",
@@ -112,7 +116,7 @@ const thrustKeys: (keyof ControlInput)[] = [
  * If multiple keys are pressed at once, the highest level wins for this frame.
  */
 function updateThrustLevelFromInput(
-  controlInput: ControlInput,
+  controlInput: ExternalControlInput,
   controlState: SpacecraftControlState,
 ): void {
   for (let i = 9; i >= 0; i--) {
@@ -129,8 +133,8 @@ function updateThrustLevelFromInput(
  *  - Magnitude from stored thrust level (set by 0-9) in the given state.
  */
 export function getMainThrustCommandInto(
-  into: SpacecraftThrustCommand,
-  controlInput: ControlInput,
+  into: ExternalSpacecraftThrustCommand,
+  controlInput: ExternalControlInput,
   controlState: SpacecraftControlState,
 ): void {
   const mag = shipThrustValues[controlState.thrustLevel];
@@ -143,8 +147,8 @@ export function getMainThrustCommandInto(
  * Signed RCS translation command in [-1, 1] for N/M lateral burns.
  */
 export function getRcsCommandInto(
-  into: SpacecraftRcsCommand,
-  controlInput: ControlInput,
+  into: ExternalSpacecraftRcsCommand,
+  controlInput: ExternalControlInput,
 ): void {
   if (controlInput.burnLeft === controlInput.burnRight) {
     into.right = 0;
@@ -163,11 +167,11 @@ export function getRcsCommandInto(
  */
 export function updateControlledBodyAngularVelocityFromInput(
   dtMillis: number,
-  ship: ControlledBodyState,
-  controlInput: ControlInput,
+  ship: ExternalControlledBody,
+  controlInput: ExternalControlInput,
   controlState: SpacecraftControlState,
-  world: World,
-  controlPlugins: ControlPlugin[] = [],
+  world: ExternalWorld,
+  controlPlugins: readonly ExternalControlPlugin[] = [],
 ): void {
   const manualCommand = getManualAttitudeCommand(controlInput);
   const command = getPluginAttitudeCommand(
@@ -184,14 +188,14 @@ export function updateControlledBodyAngularVelocityFromInput(
 
 export function resolvePropulsionCommandWithPlugins(
   dtMillis: number,
-  controlInput: ControlInput,
-  ship: ControlledBodyState,
-  world: World,
-  manualPropulsion: SpacecraftPropulsionCommand,
+  controlInput: ExternalControlInput,
+  ship: ExternalControlledBody,
+  world: ExternalWorld,
+  manualPropulsion: ExternalSpacecraftPropulsionCommand,
   maxThrustAcceleration: number,
   maxRcsTranslationAcceleration: number,
-  propulsionResolvers: readonly SpacecraftPropulsionResolver[] = [],
-): SpacecraftPropulsionCommand {
+  propulsionResolvers: readonly ExternalSpacecraftPropulsionResolver[] = [],
+): ExternalSpacecraftPropulsionCommand {
   let command = manualPropulsion;
   for (const resolver of propulsionResolvers) {
     command = resolver.resolvePropulsionCommand({
@@ -209,12 +213,12 @@ export function resolvePropulsionCommandWithPlugins(
 
 function getPluginAttitudeCommand(
   dtMillis: number,
-  ship: ControlledBodyState,
-  controlInput: ControlInput,
+  ship: ExternalControlledBody,
+  controlInput: ExternalControlInput,
   controlState: SpacecraftControlState,
-  world: World,
-  controlPlugins: ControlPlugin[],
-): AttitudeCommand | null {
+  world: ExternalWorld,
+  controlPlugins: readonly ExternalControlPlugin[],
+): ExternalAttitudeCommand | null {
   for (const plugin of controlPlugins) {
     if (!plugin.getAttitudeCommand) continue;
     const command = plugin.getAttitudeCommand({

@@ -14,6 +14,7 @@
     "./input": "./src/input.ts",
     "./localization": "./src/localization.ts",
     "./loop": "./src/loop.ts",
+    "./local-prediction": "./src/local-prediction.ts",
     "./manifest": "./src/manifest.ts",
     "./math": "./src/math.ts",
     "./module": "./src/module.ts",
@@ -35,8 +36,7 @@
   "dependencies": {
     "@solitude/engine": "0.0.0",
     "@solitude/entity-names": "0.0.0",
-    "@solitude/geometry": "0.0.0",
-    "@solitude/spacecraft": "0.0.0"
+    "@solitude/geometry": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

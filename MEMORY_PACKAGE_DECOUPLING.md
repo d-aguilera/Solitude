@@ -13,9 +13,8 @@
 
 ## Completion Direction
 
-- Standalone product plugin implementations are fully extracted from
-  `packages/solitude`. The remaining simulation implementations should leave
-  `packages/sim/src/plugins/` one slice at a time.
+- Product plugin implementations are fully extracted from `packages/solitude`
+  and `packages/sim`.
 - Browser and authoritative products should select behavior through deployed
   plugin sets and single-host packs.
 - Host packages should retain only generic runtime/composition adapters and the
@@ -39,11 +38,10 @@
   CSP. Server discovery starts from an explicit local plugin set and enforces
   lexical and real-path containment.
 - Browser plugins may expose capabilities, focused-entity requirements, and
-  the current hook surfaces, including narrow control-state and
-  before/after-vehicle-dynamics callbacks. API v9 server plugins may expose
-  capabilities, control-state/attitude resolvers, and the authoritative
-  pre-runtime `worldModel` hook; requirements and other runtime/browser hooks
-  remain unsupported.
+  the current hook surfaces. API v10 server plugins may expose capabilities,
+  control-state/attitude resolvers, authoritative vehicle dynamics, and the
+  pre-runtime `worldModel` hook; requirements and browser-only hooks remain
+  unsupported.
 - External packages import only the rootless, focused Plugin API. Built module
   graphs must be self-contained and contain no bare imports.
 - Browser and server builds assemble target-specific plugin sets. Production
@@ -59,26 +57,24 @@
 - `multiplayer-pack-v1` (`browser`): `remoteIdentityHud` and `shipColorNames`.
 - `solitude-content-browser-pack-v1` (`browser`) and
   `solitude-content-server-pack-v1` (`server`): host-specific wrappers around
-  the same ordered `solarSystem`, `autopilot`, and `polyFighter` implementations from
-  host-neutral external packages.
+  the same ordered `solarSystem`, `autopilot`, `spacecraftOperator`, and
+  `polyFighter` implementations from external packages.
 
-The browser and server content modules are intentionally byte-identical;
-separate packs express separate host activation and deployment.
+The host-neutral content modules are intentionally byte-identical.
+`spacecraftOperator` uses thin host-specific entries around one shared
+dynamics implementation because only the browser entry contributes input,
+prediction, and its camera rig.
 
 ## Remaining Static Plugin Frontier
 
-No product plugin implementation remains under `packages/solitude/src/`.
-Standalone still composes the generic browser HUD adapter and the static
-simulation catalog through `packages/solitude/src/staticPluginCatalog.ts`.
-
-`packages/sim/src/plugins/` still owns:
-
-- `spacecraftOperator`
+No product plugin implementation remains under `packages/solitude/src/` or
+`packages/sim/src/`. The static Solitude catalog contains only the generic
+browser HUD host adapter.
 
 The browser-only `autopilotInput` implementation has moved to `core-pack-v1`.
-The host-neutral `solarSystem` and `autopilot` implementations are bundled
-into both Solitude content packs and participate in browser and authoritative
-assembly through discovery. The static catalogs no longer contain either.
+The extracted `solarSystem`, `autopilot`, `spacecraftOperator`, and
+`polyFighter` implementations are bundled into both Solitude content packs and
+participate in browser and authoritative assembly through discovery.
 
 The standalone and remote catalogs also compose the mandatory browser-owned
 `browserHudOverlay` host adapter through
@@ -86,20 +82,16 @@ The standalone and remote catalogs also compose the mandatory browser-owned
 `GamePlugin` capability envelope to bridge HUD panel providers into the browser
 overlay lifecycle; it is host infrastructure, not an extraction candidate.
 
-The static `simPluginCatalog` is currently consumed by standalone, the remote
-client, and authoritative multiplayer composition. Headless loop creation no
-longer accepts plugin ids or runtime options; authoritative composition passes
-one ordered collection of already-instantiated static and discovered plugins.
-Removing the remaining catalog consumers is the deeper part of the work.
+The former `simPluginCatalog` and its product consumers have been removed.
+Headless loop creation accepts one ordered collection of already-instantiated
+discovered plugins.
 
 ## Recommended Slicing
 
 1. Audit the `@solitude/sim` plugins one at a time. Introduce only the narrow
    Plugin API surface required by the selected slice.
-2. Use API v9 authoritative world-model and control phases for pre-runtime
-   content and control/attitude resolution. Before moving server-used
-   simulation behavior, design its explicit authoritative lifecycle rather
-   than smuggling browser hooks into server modules.
+2. Use API v10 authoritative world-model, control, and vehicle-dynamics phases
+   for server content and simulation behavior.
 3. When one implementation must run on multiple hosts, keep one host-neutral
    implementation package and build separate single-host deployment packs, as
    with Poly Fighter.
@@ -130,11 +122,10 @@ dependencies before every extraction.
 
 ## Open Design Pressure
 
-- API v9's server control lifecycle runs the extracted `autopilot`. The server
-  external contract still has no simulation or loop lifecycle; extracting the
-  final static plugin, `spacecraftOperator`, requires that boundary to be
-  designed.
-- Browser API v9 also supplies a frozen host snapshot facade. External
+- API v10's authoritative vehicle-dynamics contribution is intentionally
+  narrower than the browser simulation surface: server plugins still cannot
+  register before/after phases or browser lifecycle hooks.
+- Browser API v10 also supplies a frozen host snapshot facade. External
   playback owns scenario metadata and scripts, while the engine remains the
   single implementation of runtime snapshot capture/apply policy.
 - Host-specific packs duplicate deployment wrappers when one implementation

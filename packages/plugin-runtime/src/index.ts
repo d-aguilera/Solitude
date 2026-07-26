@@ -10,6 +10,8 @@ import type {
   SceneLabelPlugin,
   ScenePlugin,
   SegmentPlugin,
+  SimulationContribution,
+  SimulationContributionParams,
   SimulationPhaseParams,
   SimulationPlugin,
   ViewControlPlugin,
@@ -43,6 +45,8 @@ import type {
 } from "@solitude/plugin-api/module";
 import type { ExternalProfilerControl } from "@solitude/plugin-api/profiling";
 import type {
+  ExternalSimulationContribution,
+  ExternalSimulationContributionContext,
   ExternalSimulationPhaseParams,
   ExternalSimulationPlugin,
 } from "@solitude/plugin-api/simulation";
@@ -94,7 +98,11 @@ const EXTERNAL_PLUGIN_HOOK_KEYS = new Set([
   "views",
   "worldModel",
 ]);
-const EXTERNAL_SERVER_PLUGIN_HOOK_KEYS = new Set(["controls", "worldModel"]);
+const EXTERNAL_SERVER_PLUGIN_HOOK_KEYS = new Set([
+  "controls",
+  "simulation",
+  "worldModel",
+]);
 const EXTERNAL_PLUGIN_REQUIREMENT_KEYS = new Set(["focusEntity"]);
 const EXTERNAL_FOCUS_ENTITY_REQUIREMENTS = new Set([
   "collisionSphere",
@@ -525,7 +533,7 @@ function createInternalPluginFactory(
   return (runtimeOptions) => {
     const external = module.createPlugin(runtimeOptions, externalPluginContext);
     validateExternalPlugin(external, expectedId, host);
-    return adaptExternalPlugin(external);
+    return adaptExternalPlugin(external, host);
   };
 }
 
@@ -602,12 +610,7 @@ function validateExternalPlugin(
   if (hasInvalidHookFunctions(hooks?.scene, ["initScene", "updateScene"])) {
     throw new Error(`External plugin ${expectedId} has invalid scene`);
   }
-  if (
-    hasInvalidHookFunctions(hooks?.simulation, [
-      "afterVehicleDynamics",
-      "beforeVehicleDynamics",
-    ])
-  ) {
+  if (hasInvalidSimulationContribution(hooks?.simulation, host)) {
     throw new Error(`External plugin ${expectedId} has invalid simulation`);
   }
   if (hasInvalidHookFunctions(hooks?.viewControls, ["updateViewControls"])) {
@@ -661,6 +664,25 @@ function hasInvalidHookFunctions(
   return false;
 }
 
+function hasInvalidSimulationContribution(
+  value: unknown,
+  host: ExternalPluginHost,
+): boolean {
+  if (value === undefined) return false;
+  if (typeof value === "function") return false;
+  if (!isRecord(value)) return true;
+  const functionNames =
+    host === "server"
+      ? ["updateVehicleDynamics"]
+      : [
+          "afterVehicleDynamics",
+          "beforeVehicleDynamics",
+          "updateVehicleDynamics",
+        ];
+  if (!hasOnlyKeys(value, new Set(functionNames))) return true;
+  return hasInvalidHookFunctions(value, functionNames);
+}
+
 function hasOnlyKeys(
   value: Record<string, unknown>,
   allowedKeys: ReadonlySet<string>,
@@ -671,7 +693,10 @@ function hasOnlyKeys(
   return true;
 }
 
-function adaptExternalPlugin(plugin: ExternalPlugin): GamePlugin {
+function adaptExternalPlugin(
+  plugin: ExternalPlugin,
+  host: ExternalPluginHost,
+): GamePlugin {
   const hooks = plugin.hooks;
   const focusEntityRequirements = plugin.requirements?.focusEntity;
   return {
@@ -687,7 +712,7 @@ function adaptExternalPlugin(plugin: ExternalPlugin): GamePlugin {
         : { mainFocus: focusEntityRequirements },
     scene: hooks?.scene as ScenePlugin | undefined,
     segments: hooks?.segments as SegmentPlugin | undefined,
-    simulation: adaptExternalSimulation(hooks?.simulation),
+    simulation: adaptExternalSimulation(hooks?.simulation, host),
     viewControls: hooks?.viewControls as ViewControlPlugin | undefined,
     views: hooks?.views as ViewPlugin | undefined,
     worldModel: adaptExternalWorldModel(hooks?.worldModel),
@@ -777,10 +802,57 @@ function adaptExternalLoop(
 }
 
 function adaptExternalSimulation(
-  external: ExternalSimulationPlugin | undefined,
-): SimulationPlugin | undefined {
+  external: ExternalSimulationContribution | undefined,
+  host: ExternalPluginHost,
+): SimulationContribution | undefined {
   if (external === undefined) return undefined;
-  const { afterVehicleDynamics, beforeVehicleDynamics } = external;
+  if (typeof external === "function") {
+    return (params) =>
+      adaptExternalSimulationPlugin(
+        validateExternalSimulationPlugin(
+          external(createExternalSimulationContributionContext(params)),
+          host,
+        ),
+      );
+  }
+  return adaptExternalSimulationPlugin(
+    validateExternalSimulationPlugin(external, host),
+  );
+}
+
+function validateExternalSimulationPlugin(
+  value: unknown,
+  host: ExternalPluginHost,
+): ExternalSimulationPlugin {
+  if (
+    hasInvalidSimulationContribution(value, host) ||
+    typeof value === "function"
+  ) {
+    throw new Error(
+      `External simulation contribution is invalid for host ${host}`,
+    );
+  }
+  return value as ExternalSimulationPlugin;
+}
+
+function createExternalSimulationContributionContext({
+  capabilityRegistry,
+  controlPlugins,
+}: SimulationContributionParams): ExternalSimulationContributionContext {
+  return Object.freeze({
+    capabilityRegistry: Object.freeze({
+      getAll: (id: string) => capabilityRegistry.getAll(id),
+    }),
+    controlPlugins:
+      controlPlugins as unknown as ExternalSimulationContributionContext["controlPlugins"],
+  });
+}
+
+function adaptExternalSimulationPlugin(
+  external: ExternalSimulationPlugin,
+): SimulationPlugin {
+  const { afterVehicleDynamics, beforeVehicleDynamics, updateVehicleDynamics } =
+    external;
 
   let currentParams: SimulationPhaseParams | undefined;
   let adaptedParams: ExternalSimulationPhaseParams | undefined;
@@ -790,6 +862,7 @@ function adaptExternalSimulation(
     if (adaptedParams === undefined) {
       adaptedParams = {
         controlInput: params.controlInput,
+        controlInputsByEntityId: params.controlInputsByEntityId,
         dtMillis: params.dtMillis,
         dtMillisSim: params.dtMillisSim,
         focusEntity: (id) => {
@@ -806,6 +879,7 @@ function adaptExternalSimulation(
       };
     } else {
       adaptedParams.controlInput = params.controlInput;
+      adaptedParams.controlInputsByEntityId = params.controlInputsByEntityId;
       adaptedParams.dtMillis = params.dtMillis;
       adaptedParams.dtMillisSim = params.dtMillisSim;
       adaptedParams.mainFocus = params.mainFocus;
@@ -834,6 +908,10 @@ function adaptExternalSimulation(
       beforeVehicleDynamics === undefined
         ? undefined
         : (params) => invoke(beforeVehicleDynamics, params),
+    updateVehicleDynamics:
+      updateVehicleDynamics === undefined
+        ? undefined
+        : (params) => invoke(updateVehicleDynamics, params),
   };
 }
 

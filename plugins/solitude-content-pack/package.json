@@ -10,7 +10,8 @@
     "@solitude/plugin-api": "0.0.0",
     "@solitude-plugins/autopilot": "0.0.0",
     "@solitude-plugins/poly-fighter": "0.0.0",
-    "@solitude-plugins/solar-system": "0.0.0"
+    "@solitude-plugins/solar-system": "0.0.0",
+    "@solitude-plugins/spacecraft-operator": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

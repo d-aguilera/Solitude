@@ -1,24 +1,25 @@
-import { localFrame, mat3, vec3 } from "@solitude/engine/math";
 import type {
-  ControlInput,
-  ControlPlugin,
-  MutableControlState,
-  SimulationPlugin,
-} from "@solitude/engine/plugin";
-import { createControlInput } from "@solitude/engine/plugin";
-import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
-import type { ControlledBody, World } from "@solitude/engine/world";
-import { createSpacecraftOperatorTelemetry } from "@solitude/hud/telemetry";
-import { createSpacecraftAutonomousControlProvider } from "@solitude/spacecraft/capabilities";
+  ExternalControlPlugin,
+  ExternalMutableControlState,
+} from "@solitude/plugin-api/controls";
+import type { ExternalControlInput } from "@solitude/plugin-api/input";
+import { mat3, vec3 } from "@solitude/plugin-api/math";
+import type { ExternalSimulationPlugin } from "@solitude/plugin-api/simulation";
+import { createSpacecraftAutonomousControlProvider } from "@solitude/plugin-api/spacecraft";
+import type {
+  ExternalControlledBody,
+  ExternalWorld,
+} from "@solitude/plugin-api/world";
 import { describe, expect, it } from "vitest";
 import {
   createSpacecraftLocalPredictionProvider,
   createSpacecraftVehicleDynamicsPlugin,
-} from "../../../plugins/spacecraftOperator/core";
+} from "../core";
+import { localFrame } from "../localFrame";
 
 const EMPTY_ENTITY_CONTROL_INPUTS = new Map();
 
-function createBody(id: string): ControlledBody {
+function createBody(id: string): ExternalControlledBody {
   const frame = localFrame.fromUp(vec3.create(0, 0, 1));
   return {
     angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
@@ -30,22 +31,37 @@ function createBody(id: string): ControlledBody {
   };
 }
 
-function createWorld(...bodies: ControlledBody[]): World {
+function createWorld(...bodies: ExternalControlledBody[]): ExternalWorld {
   return {
-    axialSpins: [],
     collisionSpheres: [],
     controllableBodies: bodies,
-    entities: bodies.map((body) => ({ id: body.id })),
-    entityIndex: new Map(bodies.map((body) => [body.id, { id: body.id }])),
     entityStates: bodies,
     gravityMasses: [],
-    lightEmitters: [],
   };
 }
 
+function createControlInput(): ExternalControlInput {
+  return {};
+}
+
+function createPluginCapabilityRegistry(
+  providers: readonly { id: string; value: unknown }[] = [],
+) {
+  return {
+    getAll: (id: string) =>
+      providers
+        .filter((provider) => provider.id === id)
+        .map(({ value }) => value),
+  };
+}
+
+function createSpacecraftOperatorTelemetry() {
+  return { currentRcsLevel: 0, currentThrustLevel: 0 };
+}
+
 function updateVehicleDynamics(
-  plugin: SimulationPlugin,
-  focusedBody: ControlledBody,
+  plugin: ExternalSimulationPlugin,
+  focusedBody: ExternalControlledBody,
   controlInput = createControlInput(),
   world = createWorld(focusedBody),
 ): void {
@@ -55,6 +71,7 @@ function updateVehicleDynamics(
     controlInputsByEntityId: EMPTY_ENTITY_CONTROL_INPUTS,
     dtMillis: 1000,
     dtMillisSim: 1000,
+    focusEntity: () => {},
     mainFocus: {
       controlledBody: focusedBody,
       entityId: focusedBody.id,
@@ -267,10 +284,10 @@ describe("spacecraft vehicle dynamics plugin", () => {
 });
 
 function runVehicleDynamics(
-  plugin: SimulationPlugin,
-  focusedBody: ControlledBody,
+  plugin: ExternalSimulationPlugin,
+  focusedBody: ExternalControlledBody,
   controlInput: ReturnType<typeof createControlInput>,
-  world: World,
+  world: ExternalWorld,
   dtMillis = 1000,
   dtMillisSim = 1000,
 ): void {
@@ -279,6 +296,7 @@ function runVehicleDynamics(
     controlInputsByEntityId: EMPTY_ENTITY_CONTROL_INPUTS,
     dtMillis,
     dtMillisSim,
+    focusEntity: () => {},
     mainFocus: {
       controlledBody: focusedBody,
       entityId: focusedBody.id,
@@ -302,7 +320,7 @@ function createCircleNowThrustResolver() {
   };
 }
 
-function createAutopilotControlPlugin(): ControlPlugin {
+function createAutopilotControlPlugin(): ExternalControlPlugin {
   return {
     updateControlState: ({ controlInput, controlState }) => {
       if (controlInput.circleNow) {
@@ -314,11 +332,11 @@ function createAutopilotControlPlugin(): ControlPlugin {
 
 function createAutonomousControlProvider() {
   return createSpacecraftAutonomousControlProvider({
-    hasAutonomousControl: (controlState: MutableControlState) =>
+    hasAutonomousControl: (controlState: ExternalMutableControlState) =>
       controlState.autopilotMode === "circleNow",
     writeAutonomousControlInput: (
-      controlInput: ControlInput,
-      controlState: MutableControlState,
+      controlInput: ExternalControlInput,
+      controlState: ExternalMutableControlState,
     ) => {
       controlInput.circleNow = controlState.autopilotMode === "circleNow";
     },

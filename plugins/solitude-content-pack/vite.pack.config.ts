@@ -15,6 +15,14 @@ const pluginEntries = [
     source: new URL("../autopilot/src/index.ts", import.meta.url),
   },
   {
+    directory: "spacecraft-operator",
+    id: "spacecraftOperator",
+    source: {
+      browser: new URL("../spacecraft-operator/src/index.ts", import.meta.url),
+      server: new URL("../spacecraft-operator/src/server.ts", import.meta.url),
+    },
+  },
+  {
     directory: "poly-fighter",
     id: "polyFighter",
     source: new URL("../poly-fighter/src/index.ts", import.meta.url),
@@ -38,10 +46,10 @@ export function createSolitudeContentPackConfig({
       emptyOutDir: true,
       lib: {
         entry: Object.fromEntries(
-          pluginEntries.map(({ directory, source }) => [
-            directory,
-            fileURLToPath(source),
-          ]),
+          pluginEntries.map(({ directory, source }) => {
+            const hostSource = source instanceof URL ? source : source[host];
+            return [directory, fileURLToPath(hostSource)];
+          }),
         ),
         formats: ["es"],
       },

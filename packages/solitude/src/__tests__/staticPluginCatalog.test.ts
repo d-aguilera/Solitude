@@ -14,6 +14,9 @@ describe("static plugin catalog", () => {
     );
 
     expect(browserHudOverlay?.capabilities).toHaveLength(1);
+    expect(plugins.some((plugin) => plugin.id === "spacecraftOperator")).toBe(
+      false,
+    );
     expect(plugins.some((plugin) => plugin.id === "autopilot")).toBe(false);
     expect(plugins.some((plugin) => plugin.id === "solarSystem")).toBe(false);
     expect(plugins.some((plugin) => plugin.id === "autopilotInput")).toBe(

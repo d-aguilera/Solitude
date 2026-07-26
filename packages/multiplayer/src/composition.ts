@@ -22,7 +22,6 @@ import {
   createSolitudeInProcessTransport,
   type SolitudeInProcessTransport,
 } from "@solitude/server/transport";
-import { simPluginCatalog } from "@solitude/sim/plugins/catalog";
 import { createSolitudeServerGame } from "./runtime";
 
 const DEFAULT_ASSIGNABLE_ENTITY_COUNT = 16;
@@ -174,13 +173,7 @@ export function createDefaultMultiplayerSimulationPlugins(
   contentPlugins: DefaultMultiplayerContentPluginSet,
   runtimeOptions: RuntimeOptions,
 ) {
-  return loadPlugins({
-    catalog: simPluginCatalog,
-    ids: ["spacecraftOperator"],
-    runtimeOptions,
-  }).concat(
-    createDefaultMultiplayerContentPlugins(contentPlugins, runtimeOptions),
-  );
+  return createDefaultMultiplayerContentPlugins(contentPlugins, runtimeOptions);
 }
 
 function createDefaultAssignableEntityIds(count: number): EntityId[] {
