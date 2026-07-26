@@ -155,6 +155,8 @@ or obsolete plugin shapes fail during composition.
 
 - `core-pack-v1`: browser presentation and control plugins shared by standalone
   and remote rendering. It currently contains:
+  - `autopilotInput`: shared `C`/`V`/`Z`/`X` autopilot mode-toggle keyboard
+    behavior.
   - `autopilotHud`: localized autopilot mode and circle-now diagnostic HUD
     readouts for the focused entity.
   - `axialViews`: localized top/front/left/right picture-in-picture camera

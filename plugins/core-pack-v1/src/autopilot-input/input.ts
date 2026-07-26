@@ -1,34 +1,40 @@
-import type { ControlAction, ControlInput } from "@solitude/engine/plugin";
 import type {
-  KeyboardInputProvider,
-  KeyHandler,
-} from "@solitude/input/keyboard";
+  ExternalControlAction,
+  ExternalControlInput,
+  ExternalKeyboardInputProvider,
+  ExternalKeyHandler,
+} from "@solitude/plugin-api/input";
 
-const autopilotToggleActions: Set<ControlAction> = new Set([
+const autopilotToggleActions: ReadonlySet<ExternalControlAction> = new Set([
   "alignToBody",
   "alignToVelocity",
   "orbit",
   "circleNow",
 ]);
 
-const autopilotKeyMap: Record<string, ControlAction> = {
+const autopilotKeyMap: Readonly<Record<string, ExternalControlAction>> = {
   KeyC: "alignToBody",
   KeyV: "alignToVelocity",
   KeyZ: "orbit",
   KeyX: "circleNow",
 };
 
-export function createInputPlugin(): KeyboardInputProvider {
+export function createInputPlugin(): ExternalKeyboardInputProvider {
   return {
     keyMap: autopilotKeyMap,
     createKeyHandler,
   };
 }
 
-function createKeyHandler(controlInput: ControlInput): KeyHandler {
-  let pendingAutopilotRelease: ControlAction | null = null;
+function createKeyHandler(
+  controlInput: ExternalControlInput,
+): ExternalKeyHandler {
+  let pendingAutopilotRelease: ExternalControlAction | null = null;
 
-  const handleKeyDown = (action: ControlAction, isRepeat: boolean): boolean => {
+  const handleKeyDown = (
+    action: ExternalControlAction,
+    isRepeat: boolean,
+  ): boolean => {
     if (!isAutopilotToggle(action)) return false;
     if (!isRepeat) {
       if (controlInput[action]) {
@@ -41,7 +47,7 @@ function createKeyHandler(controlInput: ControlInput): KeyHandler {
     return true;
   };
 
-  const handleKeyUp = (action: ControlAction): boolean => {
+  const handleKeyUp = (action: ExternalControlAction): boolean => {
     if (!isAutopilotToggle(action)) return false;
     if (pendingAutopilotRelease === action) {
       clearAutopilot(controlInput);
@@ -53,11 +59,11 @@ function createKeyHandler(controlInput: ControlInput): KeyHandler {
   return { handleKeyDown, handleKeyUp };
 }
 
-function isAutopilotToggle(action: ControlAction): action is ControlAction {
-  return autopilotToggleActions.has(action as ControlAction);
+function isAutopilotToggle(action: ExternalControlAction): boolean {
+  return autopilotToggleActions.has(action);
 }
 
-function clearAutopilot(controlInput: ControlInput): void {
+function clearAutopilot(controlInput: ExternalControlInput): void {
   controlInput.alignToBody = false;
   controlInput.alignToVelocity = false;
   controlInput.orbit = false;
@@ -65,8 +71,8 @@ function clearAutopilot(controlInput: ControlInput): void {
 }
 
 function activateAutopilot(
-  controlInput: ControlInput,
-  action: ControlAction,
+  controlInput: ExternalControlInput,
+  action: ExternalControlAction,
 ): void {
   clearAutopilot(controlInput);
   controlInput[action] = true;

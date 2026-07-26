@@ -18,6 +18,9 @@ export default defineConfig({
     emptyOutDir: true,
     lib: {
       entry: {
+        "autopilot-input": fileURLToPath(
+          new URL("./src/autopilot-input/index.ts", import.meta.url),
+        ),
         "autopilot-hud": fileURLToPath(
           new URL("./src/autopilot-hud/index.ts", import.meta.url),
         ),
@@ -92,6 +95,7 @@ export default defineConfig({
               host: "browser",
               id: "core-pack-v1",
               plugins: [
+                "./autopilot-input/plugin.json",
                 "./autopilot-hud/plugin.json",
                 "./axial-views/plugin.json",
                 "./body-labels/plugin.json",
@@ -106,6 +110,20 @@ export default defineConfig({
                 "./velocity-segments/plugin.json",
               ],
               schemaVersion: 3,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "autopilot-input/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
+              entry: "./index.js",
+              id: "autopilotInput",
+              schemaVersion: 2,
             },
             null,
             2,

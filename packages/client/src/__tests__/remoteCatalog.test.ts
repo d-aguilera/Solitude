@@ -7,7 +7,6 @@ import {
   collectKeyboardInputProviders,
   createKeyboardHandlerDispatcher,
   createKeyboardInputProvider,
-  keyboardInputCapability,
 } from "@solitude/input/keyboard";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -24,19 +23,14 @@ describe("remote render plugin catalog", () => {
     });
 
     const autopilot = plugins.find((plugin) => plugin.id === "autopilot");
-    const autopilotInput = plugins.find(
-      (plugin) => plugin.id === "autopilotInput",
-    );
     const spacecraftOperator = plugins.find(
       (plugin) => plugin.id === "spacecraftOperator",
     );
 
     expect(autopilot?.controls).toBeDefined();
-    expect(
-      autopilotInput?.capabilities?.some(
-        ({ id }) => id === keyboardInputCapability,
-      ),
-    ).toBe(true);
+    expect(plugins.some((plugin) => plugin.id === "autopilotInput")).toBe(
+      false,
+    );
     expect(plugins.some((plugin) => plugin.id === "autopilotHud")).toBe(false);
     expect(plugins.some((plugin) => plugin.id === "mainViewLookaround")).toBe(
       false,

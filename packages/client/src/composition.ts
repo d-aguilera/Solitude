@@ -26,7 +26,6 @@ export const remoteRenderPluginIds = [
   "solarSystem",
   "spacecraftOperator",
   "autopilot",
-  "autopilotInput",
 ];
 
 export const remoteRenderPluginCatalog: PluginCatalog = {

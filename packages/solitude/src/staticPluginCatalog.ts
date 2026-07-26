@@ -9,7 +9,6 @@ export const staticPluginIds = [
   "spacecraftOperator",
   "browserHudOverlay",
   "autopilot",
-  "autopilotInput",
 ];
 
 export const staticPluginCatalog: PluginCatalog = {

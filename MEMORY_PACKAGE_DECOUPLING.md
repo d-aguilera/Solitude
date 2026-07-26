@@ -50,8 +50,8 @@
 
 ## Extracted Deployment Units
 
-- `core-pack-v1` (`browser`): twelve presentation/control plugins shared by
-  standalone and multiplayer.
+- `core-pack-v1` (`browser`): thirteen presentation/control plugins shared by
+  standalone and multiplayer, including the extracted `autopilotInput`.
 - `standalone-pack-v1` (`browser`): `ships`, `playback`, `pause`, `timeScale`,
   `memory`, `profiling`, and `operatorSwitch`.
 - `multiplayer-pack-v1` (`browser`): `remoteIdentityHud` and `shipColorNames`.
@@ -72,9 +72,12 @@ simulation catalog through `packages/solitude/src/staticPluginCatalog.ts`.
 `packages/sim/src/plugins/` still owns:
 
 - `autopilot`
-- `autopilotInput`
 - `solarSystem`
 - `spacecraftOperator`
+
+The browser-only `autopilotInput` implementation has moved to `core-pack-v1`
+and is discovered by both browser products. The static standalone and remote
+catalogs no longer contain it.
 
 The standalone and remote catalogs also compose the mandatory browser-owned
 `browserHudOverlay` host adapter through
