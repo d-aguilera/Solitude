@@ -87,8 +87,10 @@ The standalone and remote catalogs also compose the mandatory browser-owned
 overlay lifecycle; it is host infrastructure, not an extraction candidate.
 
 The static `simPluginCatalog` is currently consumed by standalone, the remote
-client, Solitude headless composition, and authoritative multiplayer
-composition. Removing it is the deeper part of the remaining work.
+client, and authoritative multiplayer composition. Headless loop creation no
+longer accepts plugin ids or runtime options; authoritative composition passes
+one ordered collection of already-instantiated static and discovered plugins.
+Removing the remaining catalog consumers is the deeper part of the work.
 
 ## Recommended Slicing
 

@@ -1,4 +1,4 @@
-import type { GamePlugin, RuntimeOptions } from "@solitude/engine/plugin";
+import type { GamePlugin } from "@solitude/engine/plugin";
 import {
   createHeadlessLoop,
   type HeadlessLoop,
@@ -8,17 +8,11 @@ import {
   type EntityConfig,
   type WorldAndSceneConfig,
 } from "@solitude/engine/world";
-import {
-  defaultHeadlessPluginIds,
-  loadHeadlessPlugins,
-} from "./plugins/catalog";
 import { buildWorldAndSceneConfig } from "./worldAndSceneConfig";
 
 export interface SolitudeHeadlessLoopOptions {
   extraEntities?: readonly EntityConfig[];
-  pluginIds?: readonly string[];
-  plugins?: readonly GamePlugin[];
-  runtimeOptions?: RuntimeOptions;
+  plugins: readonly GamePlugin[];
 }
 
 export interface SolitudeHeadlessLoop {
@@ -27,16 +21,10 @@ export interface SolitudeHeadlessLoop {
 }
 
 export function createSolitudeHeadlessLoop(
-  options: SolitudeHeadlessLoopOptions = {},
+  options: SolitudeHeadlessLoopOptions,
 ): SolitudeHeadlessLoop {
   const config = buildWorldAndSceneConfig();
-  const plugins =
-    options.plugins === undefined
-      ? loadHeadlessPlugins(
-          [...(options.pluginIds ?? defaultHeadlessPluginIds)],
-          options.runtimeOptions,
-        )
-      : [...options.plugins];
+  const plugins = [...options.plugins];
 
   applyWorldModelPlugins(config, plugins);
   if (options.extraEntities) {

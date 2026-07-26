@@ -1,10 +1,14 @@
+import { loadPlugins } from "@solitude/engine/plugin";
 import { keyboardInputCapability } from "@solitude/input/keyboard";
 import { describe, expect, it } from "vitest";
-import { loadHeadlessPlugins } from "../../plugins/catalog";
+import { simPluginCatalog } from "../../plugins/catalog";
 
-describe("headless plugin catalog", () => {
+describe("simulation plugin catalog", () => {
   it("loads autopilot behavior without input or HUD presentation", () => {
-    const [autopilot] = loadHeadlessPlugins(["autopilot"]);
+    const [autopilot] = loadPlugins({
+      catalog: simPluginCatalog,
+      ids: ["autopilot"],
+    });
 
     expect(autopilot.id).toBe("autopilot");
     expect(autopilot.controls).toBeDefined();

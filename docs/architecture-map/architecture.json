@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-26T16:43:48.482Z",
+  "generatedAt": "2026-07-26T17:09:47.002Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -1766,14 +1766,6 @@
       "symbolKind": "const"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/catalog:defaultHeadlessPluginIds",
-      "kind": "symbol",
-      "label": "defaultHeadlessPluginIds",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/catalog",
-      "symbolKind": "const"
-    },
-    {
       "id": "symbol:@solitude/engine:./controllable-entities:DirectControllableEntityPlacement",
       "kind": "symbol",
       "label": "DirectControllableEntityPlacement",
@@ -3398,14 +3390,6 @@
       "symbolKind": "interface"
     },
     {
-      "id": "symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog",
-      "kind": "symbol",
-      "label": "headlessPluginCatalog",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/catalog",
-      "symbolKind": "const"
-    },
-    {
       "id": "symbol:@solitude/hud:./provider:HudColumnId",
       "kind": "symbol",
       "label": "HudColumnId",
@@ -3811,14 +3795,6 @@
       "label": "loadExternalPluginSet",
       "packageName": "@solitude/plugin-runtime",
       "parent": "module:@solitude/plugin-runtime:.",
-      "symbolKind": "function"
-    },
-    {
-      "id": "symbol:@solitude/sim:./plugins/catalog:loadHeadlessPlugins",
-      "kind": "symbol",
-      "label": "loadHeadlessPlugins",
-      "packageName": "@solitude/sim",
-      "parent": "module:@solitude/sim:./plugins/catalog",
       "symbolKind": "function"
     },
     {
@@ -6932,12 +6908,6 @@
       "from": "module:@solitude/sim:./headless",
       "kind": "module-import",
       "to": "module:@solitude/sim:./config/worldAndSceneConfig"
-    },
-    {
-      "id": "module-import:module:@solitude/sim:./headless->module:@solitude/sim:./plugins/catalog",
-      "from": "module:@solitude/sim:./headless",
-      "kind": "module-import",
-      "to": "module:@solitude/sim:./plugins/catalog"
     },
     {
       "id": "module-import:module:@solitude/sim:./localPrediction->module:@solitude/engine:./plugin",
@@ -14980,18 +14950,6 @@
       "to": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions"
     },
     {
-      "id": "symbol-reference:symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop->symbol:@solitude/sim:./plugins/catalog:defaultHeadlessPluginIds",
-      "from": "symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/catalog:defaultHeadlessPluginIds"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop->symbol:@solitude/sim:./plugins/catalog:loadHeadlessPlugins",
-      "from": "symbol:@solitude/sim:./headless:createSolitudeHeadlessLoop",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/catalog:loadHeadlessPlugins"
-    },
-    {
       "id": "symbol-reference:symbol:@solitude/sim:./headless:SolitudeHeadlessLoop->symbol:@solitude/engine:./runtime:HeadlessLoop",
       "from": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoop",
       "kind": "symbol-reference",
@@ -15008,12 +14966,6 @@
       "from": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./plugin:GamePlugin"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./headless:SolitudeHeadlessLoopOptions->symbol:@solitude/engine:./world:EntityConfig",
@@ -15092,36 +15044,6 @@
       "from": "symbol:@solitude/sim:./localPrediction:LocalEntityPredictionProvider",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/sim:./localPrediction:LocalEntityPredictionParams"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog->symbol:@solitude/engine:./plugin:PluginCatalog",
-      "from": "symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:PluginCatalog"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog->symbol:@solitude/sim:./plugins/catalog:simPluginCatalog",
-      "from": "symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/catalog:simPluginCatalog"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/catalog:loadHeadlessPlugins->symbol:@solitude/engine:./plugin:loadPlugins",
-      "from": "symbol:@solitude/sim:./plugins/catalog:loadHeadlessPlugins",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:loadPlugins"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/catalog:loadHeadlessPlugins->symbol:@solitude/engine:./plugin:RuntimeOptions",
-      "from": "symbol:@solitude/sim:./plugins/catalog:loadHeadlessPlugins",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/engine:./plugin:RuntimeOptions"
-    },
-    {
-      "id": "symbol-reference:symbol:@solitude/sim:./plugins/catalog:loadHeadlessPlugins->symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog",
-      "from": "symbol:@solitude/sim:./plugins/catalog:loadHeadlessPlugins",
-      "kind": "symbol-reference",
-      "to": "symbol:@solitude/sim:./plugins/catalog:headlessPluginCatalog"
     },
     {
       "id": "symbol-reference:symbol:@solitude/sim:./plugins/catalog:simPluginCatalog->symbol:@solitude/engine:./plugin:PluginCatalog",
