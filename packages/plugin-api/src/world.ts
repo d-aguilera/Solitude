@@ -2,7 +2,15 @@ import { vec3, type Vec3 } from "./math";
 
 export type ExternalEntityId = string;
 
+export interface ExternalAngularVelocity {
+  pitch: number;
+  roll: number;
+  yaw: number;
+}
+
 export interface ExternalEntityMotionState {
+  angularVelocity?: ExternalAngularVelocity;
+  frame?: ExternalLocalFrame;
   id: ExternalEntityId;
   position: Vec3;
   velocity: Vec3;
@@ -27,6 +35,7 @@ export interface ExternalLocalFrame {
 }
 
 export interface ExternalControlledBody extends ExternalEntityMotionState {
+  angularVelocity: ExternalAngularVelocity;
   frame: ExternalLocalFrame;
 }
 

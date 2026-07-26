@@ -22,6 +22,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createPlugin } from "../../profiling/index";
 
 const body: ExternalControlledBody = {
+  angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
   frame: {
     forward: { x: 0, y: 1, z: 0 },
     right: { x: 1, y: 0, z: 0 },
@@ -46,7 +47,16 @@ describe("profiling plugin", () => {
       setEnabled: vi.fn(),
       setPaused: vi.fn(),
     };
-    const plugin = createPlugin({ locale: "fr" }, { profiler });
+    const plugin = createPlugin(
+      { locale: "fr" },
+      {
+        profiler,
+        snapshots: {
+          apply: vi.fn(() => true),
+          capture: vi.fn(() => ({ entities: [] })),
+        },
+      },
+    );
     const input = getKeyboardInput(plugin);
     const hud = getHudPanel(plugin);
 

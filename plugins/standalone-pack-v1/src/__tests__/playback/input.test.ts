@@ -1,7 +1,9 @@
-import { createControlInput } from "@solitude/engine/plugin";
-import type { KeyHandler } from "@solitude/input/keyboard";
+import type {
+  ExternalControlInput,
+  ExternalKeyHandler,
+} from "@solitude/plugin-api/input";
 import { describe, expect, it, vi } from "vitest";
-import { createInputPlugin } from "../../../plugins/playback/input";
+import { createInputPlugin } from "../../playback/input";
 
 describe("playback input", () => {
   it("allows profiling toggle through while playback input is locked", () => {
@@ -34,7 +36,7 @@ function createPlaybackHandler(
   isInputLocked: boolean,
   unlockedActions: readonly string[] = [],
   handlePause = vi.fn(),
-): KeyHandler {
+): ExternalKeyHandler {
   const plugin = createInputPlugin(
     { mode: "playback", scenario: "moon-circle" },
     {
@@ -42,7 +44,7 @@ function createPlaybackHandler(
       isInputLocked: () => isInputLocked,
     } as unknown as Parameters<typeof createInputPlugin>[1],
   );
-  const handler = plugin.createKeyHandler?.(createControlInput(), {
+  const handler = plugin.createKeyHandler?.({} as ExternalControlInput, {
     unlockedActions: new Set(unlockedActions),
   });
   if (!handler) throw new Error("Expected playback key handler");

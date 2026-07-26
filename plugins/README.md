@@ -75,9 +75,11 @@ each retained factory and rejects properties unsupported by that host when the
 factory is instantiated. `ExternalBrowserPlugin`, `ExternalServerPlugin`, and
 `ExternalHostNeutralPlugin` expose the corresponding compile-time contracts.
 
-Plugin API version 6 adds pre-runtime world-model hooks while retaining the
-creation-time profiler facade and the separation between plugin metadata and
-executable hooks. A plugin may publish capabilities, declare optional
+Plugin API version 7 adds narrow browser control-state and vehicle-dynamics
+phase hooks, loop initialization time, controlled-body angular velocity, and a
+canonical runtime snapshot service. It retains pre-runtime world-model hooks,
+the creation-time profiler facade, and the separation between plugin metadata
+and executable hooks. A plugin may publish capabilities, declare optional
 requirements on the focused entity, and group host callbacks under `hooks`:
 
 ```ts
@@ -111,6 +113,8 @@ or obsolete plugin shapes fail during composition.
 - `@solitude/plugin-api/controllable-entities`: the canonical generic
   controllable-entity provider capability, placement/configuration contracts,
   constructor, and guard.
+- `@solitude/plugin-api/controls`: mutable control-state updates for browser
+  runtime plugins.
 - `@solitude/plugin-api/orbits`: portable circular-orbit placement used by
   plugins without importing host simulation code.
 - `@solitude/plugin-api/input`: keyboard action maps, handlers, and
@@ -132,7 +136,12 @@ or obsolete plugin shapes fail during composition.
 - `@solitude/plugin-api/localization`: supported locale type and runtime locale
   parsing.
 - `@solitude/plugin-api/loop`: frame-policy hooks and controlled runtime focus
-  changes for browser loop plugins.
+  changes plus initial simulation-time selection for browser loop plugins.
+- `@solitude/plugin-api/simulation`: narrow before/after vehicle-dynamics
+  callbacks with controlled temporary focus changes.
+- `@solitude/plugin-api/snapshots`: canonical runtime entity snapshot
+  contracts and the frozen host capture/apply service supplied through the
+  plugin creation context.
 - `@solitude/plugin-api/math`: bundled-safe vector, matrix, intersection, and
   mesh-volume helpers plus epsilon constants. Importing this subpath
   intentionally includes math runtime code.
@@ -197,6 +206,9 @@ are identical; only the deployment pack id and host contract differ.
   contains:
   - `ships`: default blue/red standalone spacecraft, their Earth-relative
     orbital placement, and the initial focus selection.
+  - `playback`: diagnostic control capture and fixed-step playback, scene
+    snapshots through the canonical host snapshot service, optional circle-now
+    logs, localized status HUD, and generic input locking.
   - `pause`: `P` and page-visibility pause behavior plus the localized paused
     HUD status. It yields to an earlier fixed-tick diagnostic loop and is
     ordered before profiling so profiling observes the paused frame policy.
@@ -211,3 +223,24 @@ are identical; only the deployment pack id and host contract differ.
     controllable ships, ordered after playback so a paused focus change still
     refreshes the scene and declaring its action as available through
     playback's generic input lock.
+
+## Diagnostic Playback
+
+The standalone playback plugin is enabled by raw runtime options:
+
+- `?mode=capture&scenario=<id>`: press `L` to capture the current world and
+  begin recording playback-owned controls; press `L` again to dump a
+  paste-ready script module to the console.
+- `?mode=playback&scenario=<registered-id>`: apply the saved snapshot, start
+  paused, and use `P` to start, pause, resume, and finally release normal
+  control after playback completes.
+- Add `&log=circle-now` to emit the optional circle-now diagnostic report at
+  playback end.
+- Add `&autopilot=v1` through `&autopilot=v5` to select the diagnostic
+  autopilot algorithm; the current default is `v5`.
+
+Playback records semantic control state rather than keyboard events. Capture
+stores the effective time scale at recording start; a later time-scale change
+produces a warning because scripts have one top-level scale. Playback scenarios
+must be registered in `standalone-pack-v1/src/playback/scripts/index.ts`;
+unknown ids fail closed.

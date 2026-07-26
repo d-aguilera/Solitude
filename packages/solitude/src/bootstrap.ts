@@ -13,8 +13,8 @@ import {
   loadBrowserPlugins,
 } from "@solitude/plugin-runtime";
 import { buildWorldAndSceneConfig } from "@solitude/sim/config/worldAndSceneConfig";
-import { defaultPluginIds, solitudePluginCatalog } from "./plugins/catalog";
 import { getRendererFailureMessages } from "./rendererFailureLocalization";
+import { staticPluginCatalog, staticPluginIds } from "./staticPluginCatalog";
 
 /**
  * Top‑level composition entry for the browser runtime.
@@ -28,8 +28,8 @@ async function main(): Promise<void> {
     new URL("./plugins/loader.json", document.baseURI).href,
   );
   const pluginSet = appendExternalPluginSet(
-    solitudePluginCatalog,
-    defaultPluginIds,
+    staticPluginCatalog,
+    staticPluginIds,
     externalPlugins,
   );
   const plugins = loadPlugins({

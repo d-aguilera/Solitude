@@ -22,6 +22,7 @@ import { createPlugin } from "../../memory/index";
 
 const MB = 1024 * 1024;
 const body: ExternalControlledBody = {
+  angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
   frame: {
     forward: { x: 0, y: 1, z: 0 },
     right: { x: 1, y: 0, z: 0 },

@@ -1,4 +1,7 @@
-import type { ControlAction, ControlInput } from "@solitude/engine/plugin";
+import type {
+  ExternalControlAction,
+  ExternalControlInput,
+} from "@solitude/plugin-api/input";
 import type {
   CompiledPlaybackPhase,
   CompiledPlaybackScript,
@@ -60,7 +63,7 @@ export function compilePlaybackScript(
 }
 
 export function applyCompiledPhaseControls(
-  controlInput: ControlInput,
+  controlInput: ExternalControlInput,
   phase: CompiledPlaybackPhase | null,
 ): void {
   clearPlaybackControls(controlInput);
@@ -72,14 +75,16 @@ export function applyCompiledPhaseControls(
   }
 }
 
-export function clearPlaybackControls(controlInput: ControlInput): void {
+export function clearPlaybackControls(
+  controlInput: ExternalControlInput,
+): void {
   for (let i = 0; i < playbackOwnedActions.length; i++) {
     controlInput[playbackOwnedActions[i]] = false;
   }
 }
 
 export function readPlaybackControlState(
-  controlInput: ControlInput,
+  controlInput: ExternalControlInput,
   thrustLevel: number | null,
 ): PlaybackControlState {
   const state: PlaybackControlState = {};
@@ -139,8 +144,8 @@ export function phaseForScriptTime(
 
 function collectTrueActions(
   controls: PlaybackControlState,
-): readonly ControlAction[] {
-  const actions: ControlAction[] = [];
+): readonly ExternalControlAction[] {
+  const actions: ExternalControlAction[] = [];
   for (let i = 0; i < playbackOwnedActions.length; i++) {
     const action = playbackOwnedActions[i];
     if (controls[action]) {

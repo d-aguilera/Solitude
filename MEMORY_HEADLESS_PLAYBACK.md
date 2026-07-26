@@ -9,12 +9,16 @@
 
 ## Current State
 
-- Browser playback works through DOM bootstrap/runtime options, e.g. `?mode=playback&scenario=random-trip`.
+- Browser playback works as the runtime-discovered `playback` plugin in
+  `standalone-pack-v1` through DOM bootstrap/runtime options, e.g.
+  `?mode=playback&scenario=random-trip`.
 - `packages/engine/src/infra/headlessGameLoop.ts` is currently a thin generic simulation stepper intended for tests.
 - Headless setup builds a world with `createHeadlessWorld` and advances physics through `step(dtMillis, controlInputOverrides)`.
 - `packages/sim/src/headless.ts` provides the Solitude-owned wrapper: it loads the static headless simulation catalog, applies world-model hooks, and passes those plugins to the generic loop.
 - Generic headless setup does not install `spacecraftOperator` by default. Callers pass plugins explicitly through `HeadlessLoopOptions.plugins`; the Solitude wrapper currently selects `solarSystem`, `spacecraftOperator`, and `autopilot`.
-- Playback internals are unit-tested under `packages/solitude/src/__tests__/plugins/playback/`, but headless composition does not play a recorded scenario end-to-end.
+- Playback internals are unit-tested under
+  `plugins/standalone-pack-v1/src/__tests__/playback/`, but headless
+  composition does not play a recorded scenario end-to-end.
 
 ## Current Gap
 
@@ -27,6 +31,9 @@ Neither `createHeadlessLoop` nor `createSolitudeHeadlessLoop` currently runs the
 - no playback pause/start handling;
 - no `LoopPlugin.afterFrame` diagnostic logging path;
 - no general browser-style loop/input/control lifecycle around the direct headless simulation stepper.
+- the implementation currently lives in a browser-host pack, so headless use
+  also needs a deliberate shared implementation/deployment seam rather than a
+  static import from `@solitude/sim`.
 
 Result: recorded scenarios are testable at controller/unit level, but the headless bootstrap cannot yet run a URL-equivalent playback such as `mode=playback&scenario=random-trip`.
 
@@ -57,7 +64,10 @@ Expected behavior:
 - Prefer a dedicated headless playback runner over making the existing simple `createHeadlessLoop` too DOM-runtime-shaped.
 - Keep the existing `createHeadlessLoop` useful as a direct physics/test stepper.
 - Compose Solitude plugins explicitly in a Solitude-owned runner; do not add playback or spacecraft defaults back into the generic headless loop.
-- Keep this work independent from extracting the browser playback plugin into an external package. When this roadmap resumes, consume the then-current playback implementation through a deliberate headless composition seam.
+- Browser extraction is complete. When this roadmap resumes, decide whether
+  the implementation should move into a host-neutral package with separate
+  browser/headless activation wrappers or be consumed through another explicit
+  headless composition seam.
 - Reuse plugin ports rather than importing playback internals directly where possible.
 - Avoid DOM assumptions: no canvas, no requestAnimationFrame, no keyboard handler dependency.
 - Keep allocation/performance constraints in mind if this becomes part of regression suites.

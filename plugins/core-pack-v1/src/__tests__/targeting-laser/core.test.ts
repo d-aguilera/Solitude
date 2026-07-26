@@ -1,3 +1,7 @@
+import {
+  keyboardInputCapability,
+  type ExternalKeyboardInputProvider,
+} from "@solitude/plugin-api/input";
 import type { Vec3 } from "@solitude/plugin-api/math";
 import { vec3 } from "@solitude/plugin-api/math";
 import type {
@@ -13,8 +17,17 @@ import type {
 } from "@solitude/plugin-api/world";
 import { describe, expect, it } from "vitest";
 import { createTargetingLaserController } from "../../targeting-laser/core";
+import { createPlugin } from "../../targeting-laser/index";
 
 describe("targeting laser", () => {
+  it("keeps its diagnostic toggle available through input locks", () => {
+    const input = createPlugin({}).capabilities?.find(
+      ({ id }) => id === keyboardInputCapability,
+    )?.value as ExternalKeyboardInputProvider;
+
+    expect(input.unlockedActions).toEqual(["targetingLaserToggle"]);
+  });
+
   it("terminates on a locked target and emits an impact dot", () => {
     const fixture = createFixture(createSphere("planet", 0, 1_000, 100));
     const controller = createTargetingLaserController();
@@ -112,6 +125,7 @@ function createFixture(...spheres: ExternalEntityCollisionSphere[]): {
   params: ExternalSegmentProviderParams;
 } {
   const body: ExternalControlledBody = {
+    angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
     frame: {
       forward: vec3.create(0, 1, 0),
       right: vec3.create(1, 0, 0),

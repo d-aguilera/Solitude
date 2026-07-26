@@ -1,4 +1,5 @@
 import type { ExternalPluginCapabilityProvider } from "./capabilities";
+import type { ExternalControlPlugin } from "./controls";
 import type { ExternalLoopPlugin } from "./loop";
 import type { ExternalProfilerControl } from "./profiling";
 import type { ExternalRuntimeOptions } from "./runtime";
@@ -8,6 +9,8 @@ import type {
   ExternalScenePlugin,
   ExternalSegmentPlugin,
 } from "./scene";
+import type { ExternalSimulationPlugin } from "./simulation";
+import type { ExternalRuntimeSnapshotService } from "./snapshots";
 import type { ExternalViewControlPlugin, ExternalViewPlugin } from "./views";
 import type { ExternalWorldModelPlugin } from "./world-model";
 
@@ -19,11 +22,13 @@ export interface ExternalPluginRequirements {
 }
 
 export interface ExternalPluginHooks {
+  controls?: ExternalControlPlugin;
   labels?: ExternalSceneLabelPlugin;
   loop?: ExternalLoopPlugin;
   markers?: ExternalMarkerPlugin;
   scene?: ExternalScenePlugin;
   segments?: ExternalSegmentPlugin;
+  simulation?: ExternalSimulationPlugin;
   viewControls?: ExternalViewControlPlugin;
   views?: ExternalViewPlugin;
   worldModel?: ExternalWorldModelPlugin;
@@ -50,6 +55,7 @@ export type ExternalPlugin = ExternalBrowserPlugin | ExternalServerPlugin;
 
 export interface ExternalPluginContext {
   readonly profiler: ExternalProfilerControl;
+  readonly snapshots: ExternalRuntimeSnapshotService;
 }
 
 export type ExternalPluginFactory<

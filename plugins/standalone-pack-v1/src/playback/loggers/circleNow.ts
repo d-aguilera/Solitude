@@ -2,20 +2,16 @@ import {
   EPS_DELTA_V,
   EPS_LEN,
   EPS_SPEED_FINE,
-  getDominantBodyPrimary,
-  type Vec3,
   vec3,
-} from "@solitude/engine/math";
-import { parameters } from "@solitude/engine/runtime";
-import type {
-  ControlledBody,
-  EntityMotionState,
-  World,
-} from "@solitude/engine/world";
+  type Vec3,
+} from "@solitude/plugin-api/math";
 import {
-  maxRcsTranslationAcceleration,
-  maxThrustAcceleration,
-} from "@solitude/sim/spacecraft/propulsionLimits";
+  computeStandardGravitationalParameter,
+  getDominantBodyPrimary,
+  type ExternalControlledBody,
+  type ExternalEntityMotionState,
+  type ExternalWorld,
+} from "@solitude/plugin-api/world";
 import type { CompiledPlaybackScript } from "../types";
 import type {
   PlaybackLogger,
@@ -70,6 +66,10 @@ const NO_PRIMARY_INDEX = -1;
 const NO_PREVIOUS_PRIMARY_INDEX = -2;
 const eccentricityThresholds = [0.1, 0.01, 0.001] as const;
 const circleNowLogSchemaVersion = 3;
+// Schema v3 models the propulsion calibration used by the recorded scripts.
+// A propulsion change should produce a new diagnostic schema and calibration.
+const maxThrustAcceleration = 1_000_000;
+const maxRcsTranslationAcceleration = 20_000;
 
 export interface CircleNowLogReport {
   kind: "circle-now";
@@ -178,7 +178,7 @@ export function createCircleNowLogger(
     tangentialProjectionLength: NaN,
   };
 
-  let primaryBodyScratch: EntityMotionState | null = null;
+  let primaryBodyScratch: ExternalEntityMotionState | null = null;
   let primaryIdScratch = "";
   let primaryMassScratch = 0;
   let primaryRadiusScratch = 0;
@@ -329,8 +329,8 @@ export function createCircleNowLogger(
   }
 
   function pushCircleNowSample(context: PlaybackLoggerTickContext): void {
-    const world = context.world as World;
-    const ship = getContextControlledBody(context) as ControlledBody;
+    const world = context.world as ExternalWorld;
+    const ship = getContextControlledBody(context) as ExternalControlledBody;
     if (!findPrimary(world, ship.position)) {
       pushMissingSample(context);
       return;
@@ -343,7 +343,7 @@ export function createCircleNowLogger(
     }
 
     const primaryIndex = indexForPrimary(primaryIdScratch);
-    const mu = parameters.newtonG * primaryMassScratch;
+    const mu = computeStandardGravitationalParameter(primaryMassScratch);
     vec3.subInto(rScratch, ship.position, primaryBody.position);
     const radiusM = vec3.length(rScratch);
     if (radiusM === 0 || mu === 0) {
@@ -471,7 +471,7 @@ export function createCircleNowLogger(
   }
 
   function computeTangentialDirectionIndex(
-    ship: ControlledBody,
+    ship: ExternalControlledBody,
     radialSpeedMps: number,
   ): number {
     vec3.scaleInto(tangentialScratch, radialSpeedMps, rHatScratch);
@@ -499,13 +499,13 @@ export function createCircleNowLogger(
     return 0;
   }
 
-  function computeInwardAlignmentDeg(ship: ControlledBody): number {
+  function computeInwardAlignmentDeg(ship: ExternalControlledBody): number {
     vec3.scaleInto(inwardScratch, -1, rHatScratch);
     return angleDeg(ship.frame.forward, inwardScratch);
   }
 
   function computeTangentialRollDiagnostics(
-    ship: ControlledBody,
+    ship: ExternalControlledBody,
   ): CircleNowRollDiagnostics {
     const forward = ship.frame.forward;
     const proj = vec3.dot(tangentialScratch, forward);
@@ -575,7 +575,7 @@ export function createCircleNowLogger(
   }
 
   function computeAccelerationCommand(
-    ship: ControlledBody,
+    ship: ExternalControlledBody,
     dtTickMillis: number,
     deltaVMagnitudeMps: number,
   ): {
@@ -933,7 +933,7 @@ export function createCircleNowLogger(
     return primaryIds[index] ?? null;
   }
 
-  function findPrimary(world: World, position: Vec3): boolean {
+  function findPrimary(world: ExternalWorld, position: Vec3): boolean {
     const primary = getDominantBodyPrimary(world, position);
     primaryBodyScratch = primary?.body ?? null;
     primaryIdScratch = primary?.id ?? "";
@@ -945,7 +945,7 @@ export function createCircleNowLogger(
 
 function getContextControlledBody(
   context: PlaybackLoggerLifecycleContext,
-): ControlledBody | undefined {
+): ExternalControlledBody | undefined {
   return context.controlledBody;
 }
 

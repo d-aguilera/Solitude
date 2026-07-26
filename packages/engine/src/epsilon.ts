@@ -1,4 +1,5 @@
 export {
+  EPS_DELTA_V,
   EPS_ECCENTRICITY,
   EPS_LEN,
   EPS_LEN_COARSE,

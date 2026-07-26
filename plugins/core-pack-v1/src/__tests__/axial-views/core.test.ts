@@ -15,6 +15,7 @@ describe("axial view plugin", () => {
       frame,
       mainFocus: {
         controlledBody: {
+          angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
           frame: createFrame(
             vec3.create(0, 1, 0),
             vec3.create(1, 0, 0),

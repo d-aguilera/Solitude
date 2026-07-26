@@ -1,16 +1,19 @@
-import { mat3, vec3 } from "@solitude/engine/math";
-import { createControlInput } from "@solitude/engine/plugin";
-import { parameters } from "@solitude/engine/runtime";
-import type { ControlledBody, World } from "@solitude/engine/world";
+import type { ExternalControlInput } from "@solitude/plugin-api/input";
+import { vec3 } from "@solitude/plugin-api/math";
+import {
+  computeStandardGravitationalParameter,
+  type ExternalControlledBody,
+  type ExternalWorld,
+} from "@solitude/plugin-api/world";
 import { describe, expect, it, vi } from "vitest";
 import {
   circleNowSampleFields,
   createCircleNowLogger,
   type CircleNowLogReport,
-} from "../../../../plugins/playback/loggers/circleNow";
-import { createPlaybackLogger } from "../../../../plugins/playback/loggers/index";
-import { compilePlaybackScript } from "../../../../plugins/playback/logic";
-import type { PlaybackScript } from "../../../../plugins/playback/types";
+} from "../../../playback/loggers/circleNow";
+import { createPlaybackLogger } from "../../../playback/loggers/index";
+import { compilePlaybackScript } from "../../../playback/logic";
+import type { PlaybackScript } from "../../../playback/types";
 
 function createScript(): ReturnType<typeof compilePlaybackScript> {
   const script: PlaybackScript = {
@@ -37,48 +40,38 @@ function createScript(): ReturnType<typeof compilePlaybackScript> {
   return compilePlaybackScript(script);
 }
 
-function createWorld(): { ship: ControlledBody; world: World } {
+function createWorld(): {
+  ship: ExternalControlledBody;
+  world: ExternalWorld;
+} {
   const frame = {
     right: vec3.create(0, 1, 0),
     forward: vec3.create(-1, 0, 0),
     up: vec3.create(0, 0, 1),
   };
-  const ship: ControlledBody = {
+  const ship: ExternalControlledBody = {
+    angularVelocity: { roll: 1, pitch: 0.1, yaw: 0.2 },
     id: "ship:test",
     position: vec3.create(10_000_000, 0, 0),
     velocity: vec3.create(0, 1500, 0),
     frame,
-    orientation: mat3.zero(),
-    angularVelocity: { roll: 1, pitch: 0.1, yaw: 0.2 },
   };
   const planet = {
     id: "planet:moon",
     position: vec3.zero(),
     velocity: vec3.zero(),
-    orientation: mat3.zero(),
-    rotationAxis: vec3.create(0, 0, 1),
-    angularSpeedRadPerSec: 0,
   };
-  mat3.copy(mat3.identity, ship.orientation);
-  mat3.copy(mat3.identity, planet.orientation);
 
   return {
     ship,
     world: {
-      axialSpins: [],
       collisionSpheres: [{ id: planet.id, radius: 1_737_400, state: planet }],
       controllableBodies: [ship],
-      entities: [{ id: ship.id }, { id: planet.id }],
-      entityIndex: new Map([
-        [ship.id, { id: ship.id }],
-        [planet.id, { id: planet.id }],
-      ]),
       entityStates: [ship, planet],
       gravityMasses: [
-        { id: ship.id, density: 1, mass: 1, state: ship },
-        { id: planet.id, density: 1, mass: 7.342e22, state: planet },
+        { id: ship.id, mass: 1, state: ship },
+        { id: planet.id, mass: 7.342e22, state: planet },
       ],
-      lightEmitters: [],
     },
   };
 }
@@ -282,7 +275,8 @@ describe("circle-now playback logger", () => {
       (mass) => mass.id === "planet:moon",
     )!.mass;
     const circularSpeed = Math.sqrt(
-      (parameters.newtonG * planetMass) / vec3.length(ship.position),
+      computeStandardGravitationalParameter(planetMass) /
+        vec3.length(ship.position),
     );
     ship.velocity.y = circularSpeed;
 
@@ -367,14 +361,10 @@ describe("circle-now playback logger", () => {
         script,
         simTimeMillis: 100,
         world: {
-          axialSpins: [],
           collisionSpheres: [],
           controllableBodies: [],
-          entities: [],
-          entityIndex: new Map(),
           entityStates: [],
           gravityMasses: [],
-          lightEmitters: [],
         },
       });
     }).not.toThrow();
@@ -401,3 +391,7 @@ describe("circle-now playback logger", () => {
     expect(sampleValue(report, 0, "desiredAccelerationUpDot")).toBeNaN();
   });
 });
+
+function createControlInput(actions: readonly string[]): ExternalControlInput {
+  return Object.fromEntries(actions.map((action) => [action, false]));
+}

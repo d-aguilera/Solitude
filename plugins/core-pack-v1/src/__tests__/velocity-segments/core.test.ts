@@ -36,6 +36,7 @@ describe("velocity segments", () => {
 
 function createBody(x: number, y: number, z: number): ExternalControlledBody {
   return {
+    angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
     frame: {
       forward: vec3.create(0, 1, 0),
       right: vec3.create(1, 0, 0),

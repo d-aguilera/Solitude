@@ -1,5 +1,8 @@
-import type { ControlInput } from "@solitude/engine/plugin";
-import type { ControlledBody, World } from "@solitude/engine/world";
+import type { ExternalControlInput } from "@solitude/plugin-api/input";
+import type {
+  ExternalControlledBody,
+  ExternalWorld,
+} from "@solitude/plugin-api/world";
 import type { CompiledPlaybackScript } from "../types";
 
 export interface PlaybackLogger {
@@ -9,12 +12,12 @@ export interface PlaybackLogger {
 }
 
 export interface PlaybackLoggerLifecycleContext {
-  controlInput: ControlInput;
-  controlledBody?: ControlledBody;
+  controlInput: ExternalControlInput;
+  controlledBody?: ExternalControlledBody;
   playbackElapsedMs: number;
   script: CompiledPlaybackScript;
   simTimeMillis: number;
-  world?: World;
+  world?: ExternalWorld;
 }
 
 export interface PlaybackLoggerTickContext extends PlaybackLoggerLifecycleContext {

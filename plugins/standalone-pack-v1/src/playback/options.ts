@@ -1,4 +1,4 @@
-import type { RuntimeOptions } from "@solitude/engine/plugin";
+import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 
 export type DiagnosticMode = "capture" | "playback";
 export type DiagnosticLogMode = "circle-now";
@@ -20,7 +20,7 @@ const diagnosticModes: readonly DiagnosticMode[] = ["capture", "playback"];
 const diagnosticLogModes: readonly DiagnosticLogMode[] = ["circle-now"];
 
 export function parsePlaybackRuntimeOptions(
-  runtimeOptions: RuntimeOptions,
+  runtimeOptions: ExternalRuntimeOptions,
 ): PlaybackRuntimeOptions {
   const mode = runtimeOptions.mode;
   const scenario = runtimeOptions.scenario;

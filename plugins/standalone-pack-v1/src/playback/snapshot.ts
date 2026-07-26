@@ -1,19 +1,19 @@
-import { getDominantBodyPrimary } from "@solitude/engine/math";
+import type { ExternalRuntimeSnapshotService } from "@solitude/plugin-api/snapshots";
 import {
-  applyRuntimeSnapshot,
-  captureRuntimeSnapshot,
-} from "@solitude/engine/runtime";
-import type { ControlledBody, World } from "@solitude/engine/world";
+  getDominantBodyPrimary,
+  type ExternalControlledBody,
+  type ExternalWorld,
+} from "@solitude/plugin-api/world";
 import type { PlaybackScenarioId, PlaybackSnapshot } from "./types";
 
 export function capturePlaybackSnapshot(
-  world: World,
-  controlledBody: ControlledBody,
+  snapshots: ExternalRuntimeSnapshotService,
+  world: ExternalWorld,
+  controlledBody: ExternalControlledBody,
   label: PlaybackScenarioId,
   capturedSimTimeMillis: number,
 ): PlaybackSnapshot {
   const primary = getDominantBodyPrimary(world, controlledBody.position);
-  const snapshot = captureRuntimeSnapshot(world);
   return {
     metadata: {
       label,
@@ -21,13 +21,14 @@ export function capturePlaybackSnapshot(
       dominantBodyId: primary?.id ?? null,
       focusEntityId: controlledBody.id,
     },
-    entities: snapshot.entities,
+    entities: snapshots.capture(world).entities,
   };
 }
 
 export function applyPlaybackSnapshot(
+  snapshots: ExternalRuntimeSnapshotService,
   snapshot: PlaybackSnapshot,
-  world: World,
+  world: ExternalWorld,
 ): boolean {
-  return applyRuntimeSnapshot(snapshot, world);
+  return snapshots.apply({ entities: snapshot.entities }, world);
 }

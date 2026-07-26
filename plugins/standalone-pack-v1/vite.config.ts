@@ -16,6 +16,9 @@ export default defineConfig({
           new URL("./src/memory/index.ts", import.meta.url),
         ),
         pause: fileURLToPath(new URL("./src/pause/index.ts", import.meta.url)),
+        playback: fileURLToPath(
+          new URL("./src/playback/index.ts", import.meta.url),
+        ),
         "time-scale": fileURLToPath(
           new URL("./src/time-scale/index.ts", import.meta.url),
         ),
@@ -51,6 +54,7 @@ export default defineConfig({
               id: "standalone-pack-v1",
               plugins: [
                 "./ships/plugin.json",
+                "./playback/plugin.json",
                 "./pause/plugin.json",
                 "./time-scale/plugin.json",
                 "./memory/plugin.json",
@@ -71,6 +75,20 @@ export default defineConfig({
               apiVersion: SOLITUDE_PLUGIN_API_VERSION,
               entry: "./index.js",
               id: "ships",
+              schemaVersion: 2,
+            },
+            null,
+            2,
+          )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "playback/plugin.json",
+          source: `${JSON.stringify(
+            {
+              apiVersion: SOLITUDE_PLUGIN_API_VERSION,
+              entry: "./index.js",
+              id: "playback",
               schemaVersion: 2,
             },
             null,

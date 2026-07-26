@@ -1,61 +1,65 @@
-import { localFrame, mat3, vec3 } from "@solitude/engine/math";
-import type { LoopUpdateParams } from "@solitude/engine/plugin";
-import { createControlInput } from "@solitude/engine/plugin";
-import type { ControlledBody, World } from "@solitude/engine/world";
+import type { ExternalControlInput } from "@solitude/plugin-api/input";
+import type { ExternalLoopUpdateParams } from "@solitude/plugin-api/loop";
+import { vec3 } from "@solitude/plugin-api/math";
+import type { ExternalSimulationPhaseParams } from "@solitude/plugin-api/simulation";
+import type { ExternalRuntimeSnapshotService } from "@solitude/plugin-api/snapshots";
+import type {
+  ExternalControlledBody,
+  ExternalWorld,
+} from "@solitude/plugin-api/world";
 import { describe, expect, it, vi } from "vitest";
-import { createPlaybackController } from "../../../plugins/playback/core";
-import type { PlaybackScript } from "../../../plugins/playback/types";
+import { createPlaybackController } from "../../playback/core";
+import type { PlaybackScript } from "../../playback/types";
 
-function createShip(id: string): ControlledBody {
-  const ship: ControlledBody = {
+const snapshots: ExternalRuntimeSnapshotService = {
+  apply: () => true,
+  capture: () => ({ entities: [] }),
+};
+
+function createShip(id: string): ExternalControlledBody {
+  const ship: ExternalControlledBody = {
+    angularVelocity: { roll: 0, pitch: 0, yaw: 0 },
     id,
     position: vec3.create(1, 0, 0),
     velocity: vec3.create(0, 1, 0),
-    frame: localFrame.fromUp(vec3.create(0, 0, 1)),
-    orientation: mat3.zero(),
-    angularVelocity: { roll: 0, pitch: 0, yaw: 0 },
+    frame: {
+      forward: vec3.create(1, 0, 0),
+      right: vec3.create(0, -1, 0),
+      up: vec3.create(0, 0, 1),
+    },
   };
-  localFrame.intoMat3(ship.orientation, ship.frame);
   return ship;
 }
 
-function createWorldAndShip(): { world: World; ship: ControlledBody } {
+function createWorldAndShip(): {
+  world: ExternalWorld;
+  ship: ExternalControlledBody;
+} {
   const ship = createShip("ship:test");
-  const world: World = {
-    axialSpins: [],
+  const world: ExternalWorld = {
     collisionSpheres: [],
     controllableBodies: [ship],
-    entities: [{ id: ship.id }],
-    entityIndex: new Map([[ship.id, { id: ship.id }]]),
     entityStates: [ship],
-    gravityMasses: [{ id: ship.id, density: 1, mass: 1, state: ship }],
-    lightEmitters: [],
+    gravityMasses: [{ id: ship.id, mass: 1, state: ship }],
   };
   return { world, ship };
 }
 
 function createWorldWithShips(): {
-  red: ControlledBody;
-  blue: ControlledBody;
-  world: World;
+  red: ExternalControlledBody;
+  blue: ExternalControlledBody;
+  world: ExternalWorld;
 } {
   const blue = createShip("ship:blue");
   const red = createShip("ship:red");
-  const world: World = {
-    axialSpins: [],
+  const world: ExternalWorld = {
     collisionSpheres: [],
     controllableBodies: [blue, red],
-    entities: [{ id: blue.id }, { id: red.id }],
-    entityIndex: new Map([
-      [blue.id, { id: blue.id }],
-      [red.id, { id: red.id }],
-    ]),
     entityStates: [blue, red],
     gravityMasses: [
-      { id: blue.id, density: 1, mass: 1, state: blue },
-      { id: red.id, density: 1, mass: 1, state: red },
+      { id: blue.id, mass: 1, state: blue },
+      { id: red.id, mass: 1, state: red },
     ],
-    lightEmitters: [],
   };
   return { red, blue, world };
 }
@@ -63,10 +67,13 @@ function createWorldWithShips(): {
 describe("playback controller", () => {
   it("records and dumps a script in capture mode", () => {
     const { world, ship } = createWorldAndShip();
-    const controller = createPlaybackController({
-      mode: "capture",
-      scenario: "moon-circle",
-    });
+    const controller = createPlaybackController(
+      {
+        mode: "capture",
+        scenario: "moon-circle",
+      },
+      snapshots,
+    );
     const controlInput = createControlInput(["circleNow"]);
     const info = vi.spyOn(console, "info").mockImplementation(() => {});
 
@@ -106,10 +113,13 @@ describe("playback controller", () => {
 
   it("records focus changes as phase boundaries during capture", () => {
     const { red, blue, world } = createWorldWithShips();
-    const controller = createPlaybackController({
-      mode: "capture",
-      scenario: "moon-circle",
-    });
+    const controller = createPlaybackController(
+      {
+        mode: "capture",
+        scenario: "moon-circle",
+      },
+      snapshots,
+    );
     const controlInput = createControlInput(["circleNow"]);
     const info = vi.spyOn(console, "info").mockImplementation(() => {});
 
@@ -132,10 +142,13 @@ describe("playback controller", () => {
 
   it("fails closed when playback script is missing", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const controller = createPlaybackController({
-      mode: "playback",
-      scenario: "unregistered",
-    });
+    const controller = createPlaybackController(
+      {
+        mode: "playback",
+        scenario: "unregistered",
+      },
+      snapshots,
+    );
     const controlInput = createControlInput(["pauseToggle"]);
 
     const result = controller.updateLoop(
@@ -164,6 +177,7 @@ describe("playback controller", () => {
         mode: "playback",
         scenario: script.id,
       },
+      snapshots,
       undefined,
       () => script,
     );
@@ -198,23 +212,37 @@ describe("playback controller", () => {
         mode: "playback",
         scenario: script.id,
       },
+      snapshots,
       undefined,
       () => script,
     );
     const controlInput = createControlInput(["pauseToggle", "circleNow"]);
-    const mainFocus = {
+    const mainFocus: ExternalSimulationPhaseParams["mainFocus"] = {
       controlledBody: red,
       entityId: red.id,
+    };
+    const simulationParams: ExternalSimulationPhaseParams = {
+      controlInput,
+      dtMillis: 20,
+      dtMillisSim: 20,
+      focusEntity: (id) => {
+        const body = world.controllableBodies.find((item) => item.id === id);
+        if (!body) throw new Error(`Missing controlled body: ${id}`);
+        mainFocus.controlledBody = body;
+        mainFocus.entityId = id;
+      },
+      mainFocus,
+      world,
     };
 
     controller.handlePause();
     controller.updateLoop(controlInput, world, red, red.id, 0, 0);
-    controller.beforeVehicleDynamics(world, mainFocus);
+    controller.beforeVehicleDynamics(simulationParams);
 
     expect(mainFocus.entityId).toBe(blue.id);
     expect(mainFocus.controlledBody).toBe(blue);
 
-    controller.afterVehicleDynamics(world, mainFocus);
+    controller.afterVehicleDynamics(simulationParams);
 
     expect(mainFocus.entityId).toBe(red.id);
     expect(mainFocus.controlledBody).toBe(red);
@@ -229,14 +257,16 @@ describe("playback controller", () => {
         mode: "playback",
         scenario: script.id,
       },
+      snapshots,
       undefined,
       () => script,
     );
     const controlInput = createControlInput(["pauseToggle", "circleNow"]);
     const info = vi.spyOn(console, "info").mockImplementation(() => {});
-    const params: LoopUpdateParams = {
+    const params: ExternalLoopUpdateParams = {
       controlInput,
       dtMillis: 20,
+      focusEntity: () => {},
       mainFocus: {
         controlledBody: ship,
         entityId: ship.id,
@@ -305,4 +335,8 @@ function createPlaybackScript(
       recordingEndedRuntimeMs: 100,
     },
   };
+}
+
+function createControlInput(actions: readonly string[]): ExternalControlInput {
+  return Object.fromEntries(actions.map((action) => [action, false]));
 }

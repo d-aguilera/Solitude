@@ -1,17 +1,33 @@
+import {
+  keyboardInputCapability,
+  type ExternalKeyboardInputProvider,
+} from "@solitude/plugin-api/input";
 import { vec3 } from "@solitude/plugin-api/math";
 import type {
   ExternalSegmentProviderParams,
   ExternalWorldSegment,
   ExternalWorldSegmentSink,
 } from "@solitude/plugin-api/scene";
-import type { ExternalControlledBody } from "@solitude/plugin-api/world";
+import type {
+  ExternalControlledBody,
+  ExternalEntityMotionState,
+} from "@solitude/plugin-api/world";
 import { computeStandardGravitationalParameter } from "@solitude/plugin-api/world";
 import { describe, expect, it } from "vitest";
 import { createOrbitSegmentsController } from "../../orbit-segments/core";
+import { createPlugin } from "../../orbit-segments/index";
 
 const PLANET_MASS = 5.972e24;
 
 describe("orbit segments", () => {
+  it("keeps its diagnostic toggle available through input locks", () => {
+    const input = createPlugin({}).capabilities?.find(
+      ({ id }) => id === keyboardInputCapability,
+    )?.value as ExternalKeyboardInputProvider;
+
+    expect(input.unlockedActions).toEqual(["orbitSegmentsToggle"]);
+  });
+
   it("toggles an analytic circular orbit around the dominant body", () => {
     const radius = 10_000;
     const fixture = createFixture({
@@ -63,6 +79,7 @@ function createFixture(options: {
   shipVelocity: ReturnType<typeof vec3.create>;
 }): ExternalSegmentProviderParams {
   const ship: ExternalControlledBody = {
+    angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
     frame: {
       forward: vec3.create(0, 1, 0),
       right: vec3.create(1, 0, 0),
@@ -72,7 +89,7 @@ function createFixture(options: {
     position: options.shipPosition,
     velocity: options.shipVelocity,
   };
-  const planetState = {
+  const planetState: ExternalEntityMotionState = {
     id: "planet:test",
     position: vec3.zero(),
     velocity: vec3.zero(),

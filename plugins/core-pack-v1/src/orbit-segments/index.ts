@@ -15,6 +15,7 @@ export function createPlugin(
       createKeyboardInputCapability({
         actions: [orbitSegmentsToggleAction],
         keyMap: { KeyG: orbitSegmentsToggleAction },
+        unlockedActions: [orbitSegmentsToggleAction],
         createKeyHandler: () => ({
           handleKeyDown: (action, isRepeat) => {
             if (action !== orbitSegmentsToggleAction) return false;

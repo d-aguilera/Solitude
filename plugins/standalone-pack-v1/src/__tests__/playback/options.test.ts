@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePlaybackRuntimeOptions } from "../../../plugins/playback/options";
+import { parsePlaybackRuntimeOptions } from "../../playback/options";
 
 describe("playback runtime options", () => {
   it("ignores unrelated runtime options", () => {

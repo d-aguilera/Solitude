@@ -13,9 +13,9 @@
 
 ## Completion Direction
 
-- Product plugin implementations should leave
-  `packages/solitude/src/plugins/` and `packages/sim/src/plugins/` one slice at
-  a time.
+- Standalone product plugin implementations are fully extracted from
+  `packages/solitude`. The remaining simulation implementations should leave
+  `packages/sim/src/plugins/` one slice at a time.
 - Browser and authoritative products should select behavior through deployed
   plugin sets and single-host packs.
 - Host packages should retain only generic runtime/composition adapters and the
@@ -39,8 +39,9 @@
   CSP. Server discovery starts from an explicit local plugin set and enforces
   lexical and real-path containment.
 - Browser plugins may expose capabilities, focused-entity requirements, and
-  the current hook surfaces. Server plugins are capability-only until an
-  authoritative external lifecycle is deliberately designed.
+  the current hook surfaces, including narrow control-state and
+  before/after-vehicle-dynamics callbacks. Server plugins are capability-only
+  until an authoritative external lifecycle is deliberately designed.
 - External packages import only the rootless, focused Plugin API. Built module
   graphs must be self-contained and contain no bare imports.
 - Browser and server builds assemble target-specific plugin sets. Production
@@ -51,8 +52,8 @@
 
 - `core-pack-v1` (`browser`): twelve presentation/control plugins shared by
   standalone and multiplayer.
-- `standalone-pack-v1` (`browser`): `ships`, `pause`, `timeScale`, `memory`,
-  `profiling`, and `operatorSwitch`.
+- `standalone-pack-v1` (`browser`): `ships`, `playback`, `pause`, `timeScale`,
+  `memory`, `profiling`, and `operatorSwitch`.
 - `multiplayer-pack-v1` (`browser`): `remoteIdentityHud` and `shipColorNames`.
 - `solitude-content-browser-pack-v1` (`browser`) and
   `solitude-content-server-pack-v1` (`server`): host-specific wrappers around
@@ -64,9 +65,9 @@ separate packs express separate host activation and deployment.
 
 ## Remaining Static Plugin Frontier
 
-`packages/solitude/src/plugins/` still owns:
-
-- `playback`
+No product plugin implementation remains under `packages/solitude/src/`.
+Standalone still composes the generic browser HUD adapter and the static
+simulation catalog through `packages/solitude/src/staticPluginCatalog.ts`.
 
 `packages/sim/src/plugins/` still owns:
 
@@ -85,16 +86,12 @@ composition. Removing it is the deeper part of the remaining work.
 
 ## Recommended Slicing
 
-1. Extract `playback`, the final static standalone product plugin,
-   independently from the dormant headless playback runner
-   work; preserve its browser behavior and tests without making the headless
-   backlog a prerequisite.
-2. Audit the `@solitude/sim` plugins one at a time. Introduce only the narrow
+1. Audit the `@solitude/sim` plugins one at a time. Introduce only the narrow
    Plugin API surface required by the selected slice.
-3. Before moving server-used simulation behavior, design an explicit
+2. Before moving server-used simulation behavior, design an explicit
    authoritative lifecycle for server plugins. Do not smuggle browser hooks
    through capability-only server modules.
-4. When one implementation must run on multiple hosts, keep one host-neutral
+3. When one implementation must run on multiple hosts, keep one host-neutral
    implementation package and build separate single-host deployment packs, as
    with Poly Fighter.
 
@@ -122,9 +119,13 @@ dependencies before every extraction.
 ## Open Design Pressure
 
 - The server external contract has no world-model, controls, simulation, or
-  loop lifecycle. Extracting `solarSystem`, `spacecraftOperator`, or
-  `autopilot` from the static authoritative composition will require this
-  boundary to be designed.
+  loop lifecycle. Browser API v7 control and vehicle-dynamics hooks do not
+  change that. Extracting `solarSystem`, `spacecraftOperator`, or `autopilot`
+  from the static authoritative composition will require this boundary to be
+  designed.
+- Browser API v7 also supplies a frozen host snapshot facade. External
+  playback owns scenario metadata and scripts, while the engine remains the
+  single implementation of runtime snapshot capture/apply policy.
 - Host-specific packs duplicate deployment wrappers when one implementation
   runs in browser and server. That duplication is intentional; share source,
   not activation metadata.

@@ -1,11 +1,11 @@
-import { createControlInput } from "@solitude/engine/plugin";
+import type { ExternalControlInput } from "@solitude/plugin-api/input";
 import { describe, expect, it } from "vitest";
 import {
   applyCompiledPhaseControls,
   compilePlaybackScript,
   phaseForScriptTime,
-} from "../../../plugins/playback/logic";
-import type { PlaybackScript } from "../../../plugins/playback/types";
+} from "../../playback/logic";
+import type { PlaybackScript } from "../../playback/types";
 
 function createScript(): PlaybackScript {
   return {
@@ -84,3 +84,7 @@ describe("playback script logic", () => {
     expect(controlInput.circleNow).toBe(true);
   });
 });
+
+function createControlInput(actions: readonly string[]): ExternalControlInput {
+  return Object.fromEntries(actions.map((action) => [action, false]));
+}

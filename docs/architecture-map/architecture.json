@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-25T23:12:48.725Z",
+  "generatedAt": "2026-07-26T01:25:15.559Z",
   "generator": "scripts/generate-architecture-map.mjs",
   "notes": [
     "Package dependencies come from workspace package manifests.",
@@ -97,6 +97,13 @@
       "id": "module:@solitude/plugin-api:./controllable-entities",
       "kind": "module",
       "label": "./controllable-entities",
+      "packageName": "@solitude/plugin-api",
+      "parent": "pkg:@solitude/plugin-api"
+    },
+    {
+      "id": "module:@solitude/plugin-api:./controls",
+      "kind": "module",
+      "label": "./controls",
       "packageName": "@solitude/plugin-api",
       "parent": "pkg:@solitude/plugin-api"
     },
@@ -463,6 +470,20 @@
       "label": "./sessions",
       "packageName": "@solitude/server",
       "parent": "pkg:@solitude/server"
+    },
+    {
+      "id": "module:@solitude/plugin-api:./simulation",
+      "kind": "module",
+      "label": "./simulation",
+      "packageName": "@solitude/plugin-api",
+      "parent": "pkg:@solitude/plugin-api"
+    },
+    {
+      "id": "module:@solitude/plugin-api:./snapshots",
+      "kind": "module",
+      "label": "./snapshots",
+      "packageName": "@solitude/plugin-api",
+      "parent": "pkg:@solitude/plugin-api"
     },
     {
       "id": "module:@solitude/sim:./spacecraft/propulsionLimits",
@@ -1878,11 +1899,27 @@
       "symbolKind": "const"
     },
     {
+      "id": "symbol:@solitude/engine:./epsilon:EPS_DELTA_V",
+      "kind": "symbol",
+      "label": "EPS_DELTA_V",
+      "packageName": "@solitude/engine",
+      "parent": "module:@solitude/engine:./epsilon",
+      "symbolKind": "const"
+    },
+    {
       "id": "symbol:@solitude/engine:./math:EPS_DELTA_V",
       "kind": "symbol",
       "label": "EPS_DELTA_V",
       "packageName": "@solitude/engine",
       "parent": "module:@solitude/engine:./math",
+      "symbolKind": "const"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./math:EPS_DELTA_V",
+      "kind": "symbol",
+      "label": "EPS_DELTA_V",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./math",
       "symbolKind": "const"
     },
     {
@@ -2086,6 +2123,14 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./world:ExternalAngularVelocity",
+      "kind": "symbol",
+      "label": "ExternalAngularVelocity",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./world",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:./module:ExternalBrowserPlugin",
       "kind": "symbol",
       "label": "ExternalBrowserPlugin",
@@ -2147,6 +2192,22 @@
       "label": "ExternalControlledBody",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./world",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./controls:ExternalControlPlugin",
+      "kind": "symbol",
+      "label": "ExternalControlPlugin",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./controls",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./controls:ExternalControlStateUpdateParams",
+      "kind": "symbol",
+      "label": "ExternalControlStateUpdateParams",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./controls",
       "symbolKind": "interface"
     },
     {
@@ -2406,6 +2467,14 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./controls:ExternalMutableControlState",
+      "kind": "symbol",
+      "label": "ExternalMutableControlState",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./controls",
+      "symbolKind": "type"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:./orbits:ExternalOrbitAnchorBody",
       "kind": "symbol",
       "label": "ExternalOrbitAnchorBody",
@@ -2654,12 +2723,36 @@
       "symbolKind": "interface"
     },
     {
+      "id": "symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeEntitySnapshot",
+      "kind": "symbol",
+      "label": "ExternalRuntimeEntitySnapshot",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./snapshots",
+      "symbolKind": "interface"
+    },
+    {
       "id": "symbol:@solitude/plugin-api:./runtime:ExternalRuntimeOptions",
       "kind": "symbol",
       "label": "ExternalRuntimeOptions",
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./runtime",
       "symbolKind": "type"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeSnapshotService",
+      "kind": "symbol",
+      "label": "ExternalRuntimeSnapshotService",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./snapshots",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeWorldSnapshot",
+      "kind": "symbol",
+      "label": "ExternalRuntimeWorldSnapshot",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./snapshots",
+      "symbolKind": "interface"
     },
     {
       "id": "symbol:@solitude/plugin-api:./scene:ExternalScene",
@@ -2772,6 +2865,22 @@
       "packageName": "@solitude/plugin-api",
       "parent": "module:@solitude/plugin-api:./module",
       "symbolKind": "type"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./simulation:ExternalSimulationPhaseParams",
+      "kind": "symbol",
+      "label": "ExternalSimulationPhaseParams",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./simulation",
+      "symbolKind": "interface"
+    },
+    {
+      "id": "symbol:@solitude/plugin-api:./simulation:ExternalSimulationPlugin",
+      "kind": "symbol",
+      "label": "ExternalSimulationPlugin",
+      "packageName": "@solitude/plugin-api",
+      "parent": "module:@solitude/plugin-api:./simulation",
+      "symbolKind": "interface"
     },
     {
       "id": "symbol:@solitude/plugin-api:./telemetry:ExternalSpacecraftOperatorTelemetry",
@@ -5842,18 +5951,6 @@
       "to": "pkg:@solitude/engine"
     },
     {
-      "id": "dependency:pkg:solitude->pkg:@solitude/hud",
-      "from": "pkg:solitude",
-      "kind": "dependency",
-      "to": "pkg:@solitude/hud"
-    },
-    {
-      "id": "dependency:pkg:solitude->pkg:@solitude/input",
-      "from": "pkg:solitude",
-      "kind": "dependency",
-      "to": "pkg:@solitude/input"
-    },
-    {
       "id": "dependency:pkg:solitude->pkg:@solitude/localization",
       "from": "pkg:solitude",
       "kind": "dependency",
@@ -6190,6 +6287,12 @@
       "to": "module:@solitude/plugin-api:./capabilities"
     },
     {
+      "id": "module-import:module:@solitude/plugin-api:./controls->module:@solitude/plugin-api:./input",
+      "from": "module:@solitude/plugin-api:./controls",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./input"
+    },
+    {
       "id": "module-import:module:@solitude/plugin-api:./entity-names->module:@solitude/entity-names:.",
       "from": "module:@solitude/plugin-api:./entity-names",
       "kind": "module-import",
@@ -6256,6 +6359,12 @@
       "to": "module:@solitude/plugin-api:./capabilities"
     },
     {
+      "id": "module-import:module:@solitude/plugin-api:./module->module:@solitude/plugin-api:./controls",
+      "from": "module:@solitude/plugin-api:./module",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./controls"
+    },
+    {
       "id": "module-import:module:@solitude/plugin-api:./module->module:@solitude/plugin-api:./loop",
       "from": "module:@solitude/plugin-api:./module",
       "kind": "module-import",
@@ -6278,6 +6387,18 @@
       "from": "module:@solitude/plugin-api:./module",
       "kind": "module-import",
       "to": "module:@solitude/plugin-api:./scene"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./module->module:@solitude/plugin-api:./simulation",
+      "from": "module:@solitude/plugin-api:./module",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./simulation"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./module->module:@solitude/plugin-api:./snapshots",
+      "from": "module:@solitude/plugin-api:./module",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./snapshots"
     },
     {
       "id": "module-import:module:@solitude/plugin-api:./module->module:@solitude/plugin-api:./views",
@@ -6336,6 +6457,30 @@
     {
       "id": "module-import:module:@solitude/plugin-api:./scene->module:@solitude/plugin-api:./world",
       "from": "module:@solitude/plugin-api:./scene",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./world"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./simulation->module:@solitude/plugin-api:./input",
+      "from": "module:@solitude/plugin-api:./simulation",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./input"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./simulation->module:@solitude/plugin-api:./world",
+      "from": "module:@solitude/plugin-api:./simulation",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./world"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./snapshots->module:@solitude/plugin-api:./math",
+      "from": "module:@solitude/plugin-api:./snapshots",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./math"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-api:./snapshots->module:@solitude/plugin-api:./world",
+      "from": "module:@solitude/plugin-api:./snapshots",
       "kind": "module-import",
       "to": "module:@solitude/plugin-api:./world"
     },
@@ -6400,6 +6545,12 @@
       "to": "module:@solitude/engine:./runtime"
     },
     {
+      "id": "module-import:module:@solitude/plugin-runtime:.->module:@solitude/engine:./world",
+      "from": "module:@solitude/plugin-runtime:.",
+      "kind": "module-import",
+      "to": "module:@solitude/engine:./world"
+    },
+    {
       "id": "module-import:module:@solitude/plugin-runtime:.->module:@solitude/plugin-api:./loop",
       "from": "module:@solitude/plugin-runtime:.",
       "kind": "module-import",
@@ -6422,6 +6573,18 @@
       "from": "module:@solitude/plugin-runtime:.",
       "kind": "module-import",
       "to": "module:@solitude/plugin-api:./profiling"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-runtime:.->module:@solitude/plugin-api:./simulation",
+      "from": "module:@solitude/plugin-runtime:.",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./simulation"
+    },
+    {
+      "id": "module-import:module:@solitude/plugin-runtime:.->module:@solitude/plugin-api:./snapshots",
+      "from": "module:@solitude/plugin-runtime:.",
+      "kind": "module-import",
+      "to": "module:@solitude/plugin-api:./snapshots"
     },
     {
       "id": "module-import:module:@solitude/plugin-runtime:.->module:@solitude/plugin-api:./world-model",
@@ -7750,6 +7913,12 @@
       "to": "symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/engine:./epsilon:EPS_DELTA_V->symbol:@solitude/engine:./math:EPS_DELTA_V",
+      "from": "symbol:@solitude/engine:./epsilon:EPS_DELTA_V",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./math:EPS_DELTA_V"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/engine:./epsilon:EPS_ECCENTRICITY->symbol:@solitude/engine:./math:EPS_ECCENTRICITY",
       "from": "symbol:@solitude/engine:./epsilon:EPS_ECCENTRICITY",
       "kind": "symbol-reference",
@@ -7808,6 +7977,12 @@
       "from": "symbol:@solitude/engine:./math:DOT_PARALLEL_COS",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/engine:./math:EPS_PARALLEL_DOT"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/engine:./math:EPS_DELTA_V->symbol:@solitude/engine:./epsilon:EPS_DELTA_V",
+      "from": "symbol:@solitude/engine:./math:EPS_DELTA_V",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/engine:./epsilon:EPS_DELTA_V"
     },
     {
       "id": "symbol-reference:symbol:@solitude/engine:./math:EPS_ECCENTRICITY->symbol:@solitude/engine:./epsilon:EPS_ECCENTRICITY",
@@ -12004,6 +12179,24 @@
       "to": "symbol:@solitude/engine:./controllable-entities:ControllableEntityProvider"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controls:ExternalControlPlugin->symbol:@solitude/plugin-api:./controls:ExternalControlStateUpdateParams",
+      "from": "symbol:@solitude/plugin-api:./controls:ExternalControlPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./controls:ExternalControlStateUpdateParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controls:ExternalControlStateUpdateParams->symbol:@solitude/plugin-api:./controls:ExternalMutableControlState",
+      "from": "symbol:@solitude/plugin-api:./controls:ExternalControlStateUpdateParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./controls:ExternalMutableControlState"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./controls:ExternalControlStateUpdateParams->symbol:@solitude/plugin-api:./input:ExternalControlInput",
+      "from": "symbol:@solitude/plugin-api:./controls:ExternalControlStateUpdateParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./input:ExternalControlInput"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./entity-names:createEntityNameProvider->symbol:@solitude/entity-names:.:EntityNameCapabilityProvider",
       "from": "symbol:@solitude/plugin-api:./entity-names:createEntityNameProvider",
       "kind": "symbol-reference",
@@ -12322,6 +12515,12 @@
       "to": "symbol:@solitude/plugin-api:./profiling:ExternalProfilerControl"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginContext->symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeSnapshotService",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginContext",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeSnapshotService"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginFactory->symbol:@solitude/plugin-api:./module:ExternalPlugin",
       "from": "symbol:@solitude/plugin-api:./module:ExternalPluginFactory",
       "kind": "symbol-reference",
@@ -12338,6 +12537,12 @@
       "from": "symbol:@solitude/plugin-api:./module:ExternalPluginFactory",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./runtime:ExternalRuntimeOptions"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginHooks->symbol:@solitude/plugin-api:./controls:ExternalControlPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./controls:ExternalControlPlugin"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginHooks->symbol:@solitude/plugin-api:./loop:ExternalLoopPlugin",
@@ -12368,6 +12573,12 @@
       "from": "symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./scene:ExternalSegmentPlugin"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginHooks->symbol:@solitude/plugin-api:./simulation:ExternalSimulationPlugin",
+      "from": "symbol:@solitude/plugin-api:./module:ExternalPluginHooks",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./simulation:ExternalSimulationPlugin"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./module:ExternalPluginHooks->symbol:@solitude/plugin-api:./views:ExternalViewControlPlugin",
@@ -12886,6 +13097,78 @@
       "to": "symbol:@solitude/plugin-api:./scene:ExternalWorldSegment"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./simulation:ExternalSimulationPhaseParams->symbol:@solitude/plugin-api:./input:ExternalControlInput",
+      "from": "symbol:@solitude/plugin-api:./simulation:ExternalSimulationPhaseParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./input:ExternalControlInput"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./simulation:ExternalSimulationPhaseParams->symbol:@solitude/plugin-api:./world:ExternalEntityId",
+      "from": "symbol:@solitude/plugin-api:./simulation:ExternalSimulationPhaseParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world:ExternalEntityId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./simulation:ExternalSimulationPhaseParams->symbol:@solitude/plugin-api:./world:ExternalFocusContext",
+      "from": "symbol:@solitude/plugin-api:./simulation:ExternalSimulationPhaseParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world:ExternalFocusContext"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./simulation:ExternalSimulationPhaseParams->symbol:@solitude/plugin-api:./world:ExternalWorld",
+      "from": "symbol:@solitude/plugin-api:./simulation:ExternalSimulationPhaseParams",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world:ExternalWorld"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./simulation:ExternalSimulationPlugin->symbol:@solitude/plugin-api:./simulation:ExternalSimulationPhaseParams",
+      "from": "symbol:@solitude/plugin-api:./simulation:ExternalSimulationPlugin",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./simulation:ExternalSimulationPhaseParams"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeEntitySnapshot->symbol:@solitude/plugin-api:./math:Mat3",
+      "from": "symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeEntitySnapshot",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:Mat3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeEntitySnapshot->symbol:@solitude/plugin-api:./math:Vec3",
+      "from": "symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeEntitySnapshot",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./math:Vec3"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeEntitySnapshot->symbol:@solitude/plugin-api:./world:ExternalAngularVelocity",
+      "from": "symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeEntitySnapshot",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world:ExternalAngularVelocity"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeEntitySnapshot->symbol:@solitude/plugin-api:./world:ExternalLocalFrame",
+      "from": "symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeEntitySnapshot",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world:ExternalLocalFrame"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeSnapshotService->symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeWorldSnapshot",
+      "from": "symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeSnapshotService",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeWorldSnapshot"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeSnapshotService->symbol:@solitude/plugin-api:./world:ExternalWorld",
+      "from": "symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeSnapshotService",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world:ExternalWorld"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeWorldSnapshot->symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeEntitySnapshot",
+      "from": "symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeWorldSnapshot",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./snapshots:ExternalRuntimeEntitySnapshot"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./telemetry:createSpacecraftOperatorTelemetryProvider->symbol:@solitude/plugin-api:./capabilities:ExternalPluginCapabilityProvider",
       "from": "symbol:@solitude/plugin-api:./telemetry:createSpacecraftOperatorTelemetryProvider",
       "kind": "symbol-reference",
@@ -13090,6 +13373,12 @@
       "to": "symbol:@solitude/engine:./world:EntityId"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./world:ExternalControlledBody->symbol:@solitude/plugin-api:./world:ExternalAngularVelocity",
+      "from": "symbol:@solitude/plugin-api:./world:ExternalControlledBody",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world:ExternalAngularVelocity"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./world:ExternalControlledBody->symbol:@solitude/plugin-api:./world:ExternalEntityMotionState",
       "from": "symbol:@solitude/plugin-api:./world:ExternalControlledBody",
       "kind": "symbol-reference",
@@ -13120,10 +13409,22 @@
       "to": "symbol:@solitude/plugin-api:./math:Vec3"
     },
     {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./world:ExternalEntityMotionState->symbol:@solitude/plugin-api:./world:ExternalAngularVelocity",
+      "from": "symbol:@solitude/plugin-api:./world:ExternalEntityMotionState",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world:ExternalAngularVelocity"
+    },
+    {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./world:ExternalEntityMotionState->symbol:@solitude/plugin-api:./world:ExternalEntityId",
       "from": "symbol:@solitude/plugin-api:./world:ExternalEntityMotionState",
       "kind": "symbol-reference",
       "to": "symbol:@solitude/plugin-api:./world:ExternalEntityId"
+    },
+    {
+      "id": "symbol-reference:symbol:@solitude/plugin-api:./world:ExternalEntityMotionState->symbol:@solitude/plugin-api:./world:ExternalLocalFrame",
+      "from": "symbol:@solitude/plugin-api:./world:ExternalEntityMotionState",
+      "kind": "symbol-reference",
+      "to": "symbol:@solitude/plugin-api:./world:ExternalLocalFrame"
     },
     {
       "id": "symbol-reference:symbol:@solitude/plugin-api:./world:ExternalFocusContext->symbol:@solitude/plugin-api:./world:ExternalControlledBody",

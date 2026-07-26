@@ -1,5 +1,5 @@
-import type { ControlAction } from "@solitude/engine/plugin";
-import type { RuntimeEntitySnapshot } from "@solitude/engine/runtime";
+import type { ExternalControlAction } from "@solitude/plugin-api/input";
+import type { ExternalRuntimeEntitySnapshot } from "@solitude/plugin-api/snapshots";
 
 export type PlaybackScenarioId = string;
 export type PlaybackEndBehavior = "pause";
@@ -59,7 +59,7 @@ export type ThrustLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 export interface CompiledPlaybackPhase {
   endMs: number;
   focusEntityId: string;
-  trueActions: readonly ControlAction[];
+  trueActions: readonly ExternalControlAction[];
   thrustLevel: ThrustLevel | null;
 }
 
@@ -86,4 +86,4 @@ export interface PlaybackSnapshotMetadata {
   focusEntityId: string;
 }
 
-export type PlaybackEntitySnapshot = RuntimeEntitySnapshot;
+export type PlaybackEntitySnapshot = ExternalRuntimeEntitySnapshot;

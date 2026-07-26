@@ -1,4 +1,5 @@
 import type {
+  ControlPlugin,
   GamePlugin,
   LoopPlugin,
   LoopUpdateParams,
@@ -9,14 +10,20 @@ import type {
   SceneLabelPlugin,
   ScenePlugin,
   SegmentPlugin,
+  SimulationPhaseParams,
+  SimulationPlugin,
   ViewControlPlugin,
   ViewPlugin,
   WorldModelPlugin,
 } from "@solitude/engine/plugin";
+import type { RuntimeWorldSnapshot } from "@solitude/engine/runtime";
 import {
+  applyRuntimeSnapshot,
+  captureRuntimeSnapshot,
   profilerController,
   updateFocusContext,
 } from "@solitude/engine/runtime";
+import type { World } from "@solitude/engine/world";
 import type {
   ExternalLoopPlugin,
   ExternalLoopUpdateParams,
@@ -35,6 +42,14 @@ import type {
   ExternalPluginModule,
 } from "@solitude/plugin-api/module";
 import type { ExternalProfilerControl } from "@solitude/plugin-api/profiling";
+import type {
+  ExternalSimulationPhaseParams,
+  ExternalSimulationPlugin,
+} from "@solitude/plugin-api/simulation";
+import type {
+  ExternalRuntimeSnapshotService,
+  ExternalRuntimeWorldSnapshot,
+} from "@solitude/plugin-api/snapshots";
 import type {
   ExternalEntityConfig,
   ExternalWorldModelContext,
@@ -68,11 +83,13 @@ const EXTERNAL_PLUGIN_KEYS = new Set([
 ]);
 const EXTERNAL_SERVER_PLUGIN_KEYS = new Set(["capabilities", "id"]);
 const EXTERNAL_PLUGIN_HOOK_KEYS = new Set([
+  "controls",
   "labels",
   "loop",
   "markers",
   "scene",
   "segments",
+  "simulation",
   "viewControls",
   "views",
   "worldModel",
@@ -88,8 +105,21 @@ const externalProfilerControl: ExternalProfilerControl = Object.freeze({
   setEnabled: (enabled: boolean) => profilerController.setEnabled(enabled),
   setPaused: (paused: boolean) => profilerController.setPaused(paused),
 });
+const externalRuntimeSnapshotService: ExternalRuntimeSnapshotService =
+  Object.freeze<ExternalRuntimeSnapshotService>({
+    apply: (snapshot, world) =>
+      applyRuntimeSnapshot(
+        snapshot as RuntimeWorldSnapshot,
+        world as unknown as World,
+      ),
+    capture: (world) =>
+      captureRuntimeSnapshot(
+        world as unknown as World,
+      ) as ExternalRuntimeWorldSnapshot,
+  });
 const externalPluginContext: ExternalPluginContext = Object.freeze({
   profiler: externalProfilerControl,
+  snapshots: externalRuntimeSnapshotService,
 });
 
 export interface ExternalPluginSet {
@@ -532,12 +562,16 @@ function validateExternalPlugin(
     throw new Error(`External plugin ${expectedId} has invalid hooks`);
   }
   validateExternalPluginRequirements(plugin.requirements, expectedId);
+  if (hasInvalidHookFunctions(hooks?.controls, ["updateControlState"])) {
+    throw new Error(`External plugin ${expectedId} has invalid controls`);
+  }
   if (hasInvalidHookFunctions(hooks?.labels, ["appendLabels"])) {
     throw new Error(`External plugin ${expectedId} has invalid labels`);
   }
   if (
     hasInvalidHookFunctions(hooks?.loop, [
       "afterFrame",
+      "getInitialSimTimeMillis",
       "initLoop",
       "updateLoopState",
     ])
@@ -552,6 +586,14 @@ function validateExternalPlugin(
   }
   if (hasInvalidHookFunctions(hooks?.scene, ["initScene", "updateScene"])) {
     throw new Error(`External plugin ${expectedId} has invalid scene`);
+  }
+  if (
+    hasInvalidHookFunctions(hooks?.simulation, [
+      "afterVehicleDynamics",
+      "beforeVehicleDynamics",
+    ])
+  ) {
+    throw new Error(`External plugin ${expectedId} has invalid simulation`);
   }
   if (hasInvalidHookFunctions(hooks?.viewControls, ["updateViewControls"])) {
     throw new Error(`External plugin ${expectedId} has invalid view controls`);
@@ -620,6 +662,7 @@ function adaptExternalPlugin(plugin: ExternalPlugin): GamePlugin {
   return {
     id: plugin.id,
     capabilities: plugin.capabilities,
+    controls: hooks?.controls as ControlPlugin | undefined,
     labels: hooks?.labels as SceneLabelPlugin | undefined,
     loop: adaptExternalLoop(hooks?.loop),
     markers: hooks?.markers as MarkerPlugin | undefined,
@@ -629,6 +672,7 @@ function adaptExternalPlugin(plugin: ExternalPlugin): GamePlugin {
         : { mainFocus: focusEntityRequirements },
     scene: hooks?.scene as ScenePlugin | undefined,
     segments: hooks?.segments as SegmentPlugin | undefined,
+    simulation: adaptExternalSimulation(hooks?.simulation),
     viewControls: hooks?.viewControls as ViewControlPlugin | undefined,
     views: hooks?.views as ViewPlugin | undefined,
     worldModel: adaptExternalWorldModel(hooks?.worldModel),
@@ -660,7 +704,8 @@ function adaptExternalLoop(
   external: ExternalLoopPlugin | undefined,
 ): LoopPlugin | undefined {
   if (external === undefined) return undefined;
-  const { afterFrame, initLoop, updateLoopState } = external;
+  const { afterFrame, getInitialSimTimeMillis, initLoop, updateLoopState } =
+    external;
 
   let currentParams: LoopUpdateParams | undefined;
   let adaptedParams: ExternalLoopUpdateParams | undefined;
@@ -704,6 +749,7 @@ function adaptExternalLoop(
       afterFrame === undefined
         ? undefined
         : (params) => afterFrame(getAdaptedParams(params)),
+    getInitialSimTimeMillis,
     initLoop: initLoop === undefined ? undefined : () => initLoop(),
     updateLoopState:
       updateLoopState === undefined
@@ -712,6 +758,67 @@ function adaptExternalLoop(
             updateLoopState(
               getAdaptedParams(params),
             ) as LoopUpdateResult | null,
+  };
+}
+
+function adaptExternalSimulation(
+  external: ExternalSimulationPlugin | undefined,
+): SimulationPlugin | undefined {
+  if (external === undefined) return undefined;
+  const { afterVehicleDynamics, beforeVehicleDynamics } = external;
+
+  let currentParams: SimulationPhaseParams | undefined;
+  let adaptedParams: ExternalSimulationPhaseParams | undefined;
+  const getAdaptedParams = (
+    params: SimulationPhaseParams,
+  ): ExternalSimulationPhaseParams => {
+    if (adaptedParams === undefined) {
+      adaptedParams = {
+        controlInput: params.controlInput,
+        dtMillis: params.dtMillis,
+        dtMillisSim: params.dtMillisSim,
+        focusEntity: (id) => {
+          const current = currentParams;
+          if (current === undefined) {
+            throw new Error(
+              `Cannot focus entity outside a simulation phase: ${id}`,
+            );
+          }
+          updateFocusContext(current.world, current.mainFocus, id);
+        },
+        mainFocus: params.mainFocus,
+        world: params.world,
+      };
+    } else {
+      adaptedParams.controlInput = params.controlInput;
+      adaptedParams.dtMillis = params.dtMillis;
+      adaptedParams.dtMillisSim = params.dtMillisSim;
+      adaptedParams.mainFocus = params.mainFocus;
+      adaptedParams.world = params.world;
+    }
+    return adaptedParams;
+  };
+  const invoke = (
+    callback: (params: ExternalSimulationPhaseParams) => void,
+    params: SimulationPhaseParams,
+  ): void => {
+    currentParams = params;
+    try {
+      callback(getAdaptedParams(params));
+    } finally {
+      currentParams = undefined;
+    }
+  };
+
+  return {
+    afterVehicleDynamics:
+      afterVehicleDynamics === undefined
+        ? undefined
+        : (params) => invoke(afterVehicleDynamics, params),
+    beforeVehicleDynamics:
+      beforeVehicleDynamics === undefined
+        ? undefined
+        : (params) => invoke(beforeVehicleDynamics, params),
   };
 }
 

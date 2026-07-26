@@ -1,11 +1,11 @@
-import type { HudPanelProvider } from "@solitude/hud/provider";
+import type { ExternalHudPanelProvider } from "@solitude/plugin-api/hud";
 import type { PlaybackController } from "./core";
 import type { PlaybackLocalization } from "./localization";
 
 export function createHudPanel(
   controller: PlaybackController,
   localization: PlaybackLocalization,
-): HudPanelProvider {
+): ExternalHudPanelProvider {
   return {
     writeHud: (grid) => {
       const timeScale = controller.getEffectiveTimeScale();

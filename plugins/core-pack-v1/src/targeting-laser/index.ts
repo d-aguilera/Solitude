@@ -15,6 +15,7 @@ export function createPlugin(
       createKeyboardInputCapability({
         actions: [targetingLaserToggleAction],
         keyMap: { KeyT: targetingLaserToggleAction },
+        unlockedActions: [targetingLaserToggleAction],
         createKeyHandler: () => ({
           handleKeyDown: (action, isRepeat) => {
             if (action !== targetingLaserToggleAction) return false;

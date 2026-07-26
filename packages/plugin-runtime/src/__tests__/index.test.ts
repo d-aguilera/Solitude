@@ -1,9 +1,12 @@
 import type {
+  ControlStateUpdateParams,
   LoopUpdateParams,
+  SimulationPhaseParams,
   WorldModelRegistry,
 } from "@solitude/engine/plugin";
 import { profilerController } from "@solitude/engine/runtime";
 import type { WorldAndSceneConfig } from "@solitude/engine/world";
+import type { ExternalControlPlugin } from "@solitude/plugin-api/controls";
 import type { ExternalLoopPlugin } from "@solitude/plugin-api/loop";
 import { SOLITUDE_PLUGIN_API_VERSION } from "@solitude/plugin-api/manifest";
 import type {
@@ -11,6 +14,10 @@ import type {
   ExternalPluginModule,
 } from "@solitude/plugin-api/module";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
+import type {
+  ExternalSimulationPhaseParams,
+  ExternalSimulationPlugin,
+} from "@solitude/plugin-api/simulation";
 import type { ExternalWorldModelPlugin } from "@solitude/plugin-api/world-model";
 import { describe, expect, it, vi } from "vitest";
 import { appendExternalPluginSet, loadExternalPlugins } from "../index";
@@ -31,8 +38,22 @@ describe("external plugin runtime", () => {
     const initScene = vi.fn();
     const appendLabels = vi.fn();
     const registerViews = vi.fn();
+    const updateControlState: NonNullable<
+      ExternalControlPlugin["updateControlState"]
+    > = vi.fn();
     const updateScene = vi.fn();
     const updateViewControls = vi.fn();
+    let capturedSimulationFocus:
+      ExternalSimulationPhaseParams["focusEntity"] | undefined;
+    const beforeVehicleDynamics: NonNullable<
+      ExternalSimulationPlugin["beforeVehicleDynamics"]
+    > = vi.fn((params) => {
+      capturedSimulationFocus = params.focusEntity;
+      params.focusEntity("ship:second");
+    });
+    const afterVehicleDynamics: NonNullable<
+      ExternalSimulationPlugin["afterVehicleDynamics"]
+    > = vi.fn((params) => params.focusEntity("ship:first"));
     const worldEntities = [{ components: {}, id: "entity:external" }];
     const contributeWorldModel: ExternalWorldModelPlugin["contributeWorldModel"] =
       vi.fn((registry, context) => {
@@ -57,9 +78,11 @@ describe("external plugin runtime", () => {
       ) => ({
         id: "targetingLaser",
         hooks: {
+          controls: { updateControlState },
           labels: { appendLabels },
-          loop: { updateLoopState },
+          loop: { getInitialSimTimeMillis: () => 123, updateLoopState },
           scene: { initScene, updateScene },
+          simulation: { afterVehicleDynamics, beforeVehicleDynamics },
           viewControls: { updateViewControls },
           views: { registerViews },
           worldModel: { contributeWorldModel },
@@ -92,8 +115,13 @@ describe("external plugin runtime", () => {
       setEnabled: expect.any(Function),
       setPaused: expect.any(Function),
     });
+    expect(pluginContext?.snapshots).toEqual({
+      apply: expect.any(Function),
+      capture: expect.any(Function),
+    });
     expect(Object.isFrozen(pluginContext)).toBe(true);
     expect(Object.isFrozen(pluginContext?.profiler)).toBe(true);
+    expect(Object.isFrozen(pluginContext?.snapshots)).toBe(true);
     expect(targetingLaser.id).toBe("targetingLaser");
     expect(targetingLaser.labels?.appendLabels).toBe(appendLabels);
     const firstBody = {
@@ -128,6 +156,36 @@ describe("external plugin runtime", () => {
       controlledBody: secondBody,
       entityId: secondBody.id,
     });
+    expect(targetingLaser.loop?.getInitialSimTimeMillis?.()).toBe(123);
+    const controlStateUpdateParams = {
+      controlInput: {},
+      controlState: {},
+    } satisfies ControlStateUpdateParams;
+    targetingLaser.controls?.updateControlState?.(controlStateUpdateParams);
+    expect(updateControlState).toHaveBeenCalledWith(controlStateUpdateParams);
+    const simulationParams = {
+      controlInput: {},
+      controlInputsByEntityId: new Map(),
+      dtMillis: 16,
+      dtMillisSim: 32,
+      mainFocus,
+      world: {
+        controllableBodies: [firstBody, secondBody],
+      } as SimulationPhaseParams["world"],
+    } satisfies SimulationPhaseParams;
+    mainFocus.controlledBody = firstBody;
+    mainFocus.entityId = firstBody.id;
+    targetingLaser.simulation &&
+      typeof targetingLaser.simulation !== "function" &&
+      targetingLaser.simulation.beforeVehicleDynamics?.(simulationParams);
+    expect(mainFocus.entityId).toBe(secondBody.id);
+    expect(() => capturedSimulationFocus?.("ship:first")).toThrow(
+      "outside a simulation phase",
+    );
+    targetingLaser.simulation &&
+      typeof targetingLaser.simulation !== "function" &&
+      targetingLaser.simulation.afterVehicleDynamics?.(simulationParams);
+    expect(mainFocus.entityId).toBe(firstBody.id);
     expect(targetingLaser.scene?.initScene).toBe(initScene);
     expect(targetingLaser.scene?.updateScene).toBe(updateScene);
     expect(targetingLaser.viewControls?.updateViewControls).toBe(
@@ -391,6 +449,56 @@ describe("external plugin runtime", () => {
     });
     expect(() => invalidLoop.catalog.targetingLaser({})).toThrow(
       "invalid loop",
+    );
+
+    const invalidInitialSimTime = await loadExternalPlugins({
+      configUrl,
+      fetchJson: async (url) => documents.get(url),
+      host: "browser",
+      importModule: async () => ({
+        createPlugin: () => ({
+          id: "targetingLaser",
+          hooks: { loop: { getInitialSimTimeMillis: "invalid" } },
+        }),
+      }),
+      pageOrigin,
+    });
+    expect(() => invalidInitialSimTime.catalog.targetingLaser({})).toThrow(
+      "invalid loop",
+    );
+
+    const invalidControls = await loadExternalPlugins({
+      configUrl,
+      fetchJson: async (url) => documents.get(url),
+      host: "browser",
+      importModule: async () => ({
+        createPlugin: () => ({
+          id: "targetingLaser",
+          hooks: { controls: { updateControlState: "invalid" } },
+        }),
+      }),
+      pageOrigin,
+    });
+    expect(() => invalidControls.catalog.targetingLaser({})).toThrow(
+      "invalid controls",
+    );
+
+    const invalidSimulation = await loadExternalPlugins({
+      configUrl,
+      fetchJson: async (url) => documents.get(url),
+      host: "browser",
+      importModule: async () => ({
+        createPlugin: () => ({
+          id: "targetingLaser",
+          hooks: {
+            simulation: { beforeVehicleDynamics: "invalid" },
+          },
+        }),
+      }),
+      pageOrigin,
+    });
+    expect(() => invalidSimulation.catalog.targetingLaser({})).toThrow(
+      "invalid simulation",
     );
 
     const invalidWorldModel = await loadExternalPlugins({

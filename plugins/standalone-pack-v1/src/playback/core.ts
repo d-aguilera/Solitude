@@ -1,12 +1,15 @@
+import type { ExternalMutableControlState } from "@solitude/plugin-api/controls";
+import type { ExternalControlInput } from "@solitude/plugin-api/input";
 import type {
-  ControlInput,
-  LoopPlugin,
-  LoopUpdateParams,
-  MutableControlState,
-} from "@solitude/engine/plugin";
-import type { FocusContext } from "@solitude/engine/runtime";
-import { updateFocusContext } from "@solitude/engine/runtime";
-import type { ControlledBody, World } from "@solitude/engine/world";
+  ExternalLoopPlugin,
+  ExternalLoopUpdateParams,
+} from "@solitude/plugin-api/loop";
+import type { ExternalSimulationPhaseParams } from "@solitude/plugin-api/simulation";
+import type { ExternalRuntimeSnapshotService } from "@solitude/plugin-api/snapshots";
+import type {
+  ExternalControlledBody,
+  ExternalWorld,
+} from "@solitude/plugin-api/world";
 import { createPlaybackLogger } from "./loggers/index";
 import type { PlaybackLogger } from "./loggers/types";
 import {
@@ -49,10 +52,10 @@ interface RecorderState {
 }
 
 export interface PlaybackController {
-  afterFrame: (params?: LoopUpdateParams) => void;
-  applySceneSnapshot: (world: World) => void;
-  beforeVehicleDynamics: (world: World, mainFocus: FocusContext) => void;
-  afterVehicleDynamics: (world: World, mainFocus: FocusContext) => void;
+  afterFrame: (params?: ExternalLoopUpdateParams) => void;
+  applySceneSnapshot: (world: ExternalWorld) => void;
+  beforeVehicleDynamics: (params: ExternalSimulationPhaseParams) => void;
+  afterVehicleDynamics: (params: ExternalSimulationPhaseParams) => void;
   getEffectiveTimeScale: () => number | null;
   getInitialSimTimeMillis: () => number | null;
   getStatus: () => PlaybackStatus;
@@ -61,22 +64,23 @@ export interface PlaybackController {
   handlePause: () => void;
   isInputLocked: () => boolean;
   updateControlState: (
-    controlInput: ControlInput,
-    controlState: MutableControlState,
+    controlInput: ExternalControlInput,
+    controlState: ExternalMutableControlState,
   ) => void;
   updateLoop: (
-    controlInput: ControlInput,
-    world: World | undefined,
-    controlledBody: ControlledBody | undefined,
+    controlInput: ExternalControlInput,
+    world: ExternalWorld | undefined,
+    controlledBody: ExternalControlledBody | undefined,
     focusedEntityId: string | undefined,
     nowMs: number,
     simTimeMillis: number,
     effectiveTimeScale?: number,
-  ) => ReturnType<NonNullable<LoopPlugin["updateLoopState"]>>;
+  ) => ReturnType<NonNullable<ExternalLoopPlugin["updateLoopState"]>>;
 }
 
 export function createPlaybackController(
   diagnostic: DiagnosticRuntimeOptions | undefined,
+  snapshots: ExternalRuntimeSnapshotService,
   warning?: string,
   scriptProvider: (
     scenario: PlaybackScenarioId,
@@ -188,7 +192,7 @@ export function createPlaybackController(
     return null;
   };
 
-  const afterFrame = (params?: LoopUpdateParams): void => {
+  const afterFrame = (params?: ExternalLoopUpdateParams): void => {
     if (status === "playing" && script) {
       sampleLoggerAfterTick(
         logger,
@@ -225,23 +229,23 @@ export function createPlaybackController(
     }
   };
 
-  function beforeVehicleDynamics(world: World, mainFocus: FocusContext): void {
+  function beforeVehicleDynamics(params: ExternalSimulationPhaseParams): void {
     restoredFocusEntityId = null;
     if (status !== "playing" || !currentPhaseFocusEntityId) return;
-    if (mainFocus.entityId === currentPhaseFocusEntityId) return;
-    restoredFocusEntityId = mainFocus.entityId;
-    updateFocusContext(world, mainFocus, currentPhaseFocusEntityId);
+    if (params.mainFocus.entityId === currentPhaseFocusEntityId) return;
+    restoredFocusEntityId = params.mainFocus.entityId;
+    params.focusEntity(currentPhaseFocusEntityId);
   }
 
-  function afterVehicleDynamics(world: World, mainFocus: FocusContext): void {
+  function afterVehicleDynamics(params: ExternalSimulationPhaseParams): void {
     if (!restoredFocusEntityId) return;
     const entityId = restoredFocusEntityId;
     restoredFocusEntityId = null;
-    updateFocusContext(world, mainFocus, entityId);
+    params.focusEntity(entityId);
   }
 
   function readSpacecraftThrustLevel(
-    controlState: MutableControlState,
+    controlState: ExternalMutableControlState,
   ): ThrustLevel {
     return isThrustLevelValue(controlState.thrustLevel)
       ? controlState.thrustLevel
@@ -263,12 +267,12 @@ export function createPlaybackController(
     );
   }
 
-  function applySceneSnapshot(world: World): void {
+  function applySceneSnapshot(world: ExternalWorld): void {
     if (diagnostic?.mode !== "playback" || !script || sceneSnapshotApplied) {
       return;
     }
     sceneSnapshotApplied = true;
-    const applied = applyPlaybackSnapshot(script.snapshot, world);
+    const applied = applyPlaybackSnapshot(snapshots, script.snapshot, world);
     if (!applied) {
       status = "missing";
       statusText = "PLAYBACK: snapshot mismatch";
@@ -314,12 +318,12 @@ export function createPlaybackController(
   }
 
   function processCaptureToggle(
-    world: World | undefined,
-    controlledBody: ControlledBody | undefined,
+    world: ExternalWorld | undefined,
+    controlledBody: ExternalControlledBody | undefined,
     nowMs: number,
     simTimeMillis: number,
     effectiveTimeScale: number,
-    controlInput: ControlInput,
+    controlInput: ExternalControlInput,
     focusedEntityId: string | undefined,
   ): void {
     if (!captureToggleRequested) return;
@@ -340,6 +344,7 @@ export function createPlaybackController(
     const controls = readPlaybackControlState(controlInput, latestThrustLevel);
     recorder = {
       snapshot: capturePlaybackSnapshot(
+        snapshots,
         world,
         controlledBody,
         diagnostic.scenario,
@@ -359,7 +364,7 @@ export function createPlaybackController(
     console.info("Solitude capture started:", diagnostic.scenario);
   }
 
-  function processPause(controlInput: ControlInput): void {
+  function processPause(controlInput: ExternalControlInput): void {
     if (!pauseRequested) return;
     pauseRequested = false;
 
@@ -394,7 +399,7 @@ export function createPlaybackController(
   }
 
   function updateRecording(
-    controlInput: ControlInput,
+    controlInput: ExternalControlInput,
     focusedEntityId: string | undefined,
     nowMs: number,
     effectiveTimeScale: number,
@@ -423,7 +428,7 @@ export function createPlaybackController(
   function stopRecording(
     nowMs: number,
     effectiveTimeScale: number,
-    controlInput: ControlInput,
+    controlInput: ExternalControlInput,
     focusedEntityId: string | undefined,
   ): void {
     if (!recorder) return;
@@ -467,7 +472,7 @@ export function createPlaybackController(
   }
 
   function applyPlaybackAtCurrentTime(
-    controlInput: ControlInput,
+    controlInput: ExternalControlInput,
     compiled: CompiledPlaybackScript,
   ): void {
     phaseIndex = phaseForScriptTime(compiled, scriptTimeMs, phaseIndex);
@@ -477,7 +482,7 @@ export function createPlaybackController(
     currentPhaseFocusEntityId = phase?.focusEntityId ?? null;
   }
 
-  function finishPlayback(controlInput: ControlInput): void {
+  function finishPlayback(controlInput: ExternalControlInput): void {
     status = "done";
     statusText = "PLAYBACK: done";
     clearPlaybackControls(controlInput);
@@ -534,7 +539,7 @@ function getInitialStatusText(
 
 function sampleLoggerAfterTick(
   logger: PlaybackLogger | null,
-  params: LoopUpdateParams | undefined,
+  params: ExternalLoopUpdateParams | undefined,
   script: CompiledPlaybackScript,
   playbackElapsedMs: number,
   focusEntityId: string | null,
@@ -556,15 +561,15 @@ function sampleLoggerAfterTick(
 }
 
 function createLoggerLifecycleContext(
-  controlInput: ControlInput | undefined,
-  world: World | undefined,
-  controlledBody: ControlledBody | undefined,
+  controlInput: ExternalControlInput | undefined,
+  world: ExternalWorld | undefined,
+  controlledBody: ExternalControlledBody | undefined,
   playbackElapsedMs: number,
   simTimeMillis: number,
   script: CompiledPlaybackScript,
 ) {
   return {
-    controlInput: controlInput ?? ({} as ControlInput),
+    controlInput: controlInput ?? ({} as ExternalControlInput),
     controlledBody,
     playbackElapsedMs,
     script,
@@ -574,9 +579,9 @@ function createLoggerLifecycleContext(
 }
 
 function getPlaybackControlledBody(
-  params: LoopUpdateParams | undefined,
+  params: ExternalLoopUpdateParams | undefined,
   entityId: string | null,
-): ControlledBody | undefined {
+): ExternalControlledBody | undefined {
   if (!entityId || !params?.world) return getLoopControlledBody(params);
   for (const body of params.world.controllableBodies) {
     if (body.id === entityId) return body;
@@ -585,7 +590,7 @@ function getPlaybackControlledBody(
 }
 
 function getLoopControlledBody(
-  params: LoopUpdateParams | undefined,
-): ControlledBody | undefined {
+  params: ExternalLoopUpdateParams | undefined,
+): ExternalControlledBody | undefined {
   return params?.mainFocus.controlledBody;
 }

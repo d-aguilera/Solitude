@@ -1,18 +1,18 @@
-import type { ControlAction } from "@solitude/engine/plugin";
 import type {
-  KeyboardInputProvider,
-  KeyHandler,
-} from "@solitude/input/keyboard";
+  ExternalControlAction,
+  ExternalKeyboardInputProvider,
+  ExternalKeyHandler,
+} from "@solitude/plugin-api/input";
 import type { PlaybackController } from "./core";
 import type { DiagnosticRuntimeOptions } from "./options";
 
-const captureToggleAction: ControlAction = "playbackCaptureToggle";
-const pauseToggleAction: ControlAction = "pauseToggle";
+const captureToggleAction: ExternalControlAction = "playbackCaptureToggle";
+const pauseToggleAction: ExternalControlAction = "pauseToggle";
 
 export function createInputPlugin(
   diagnostic: DiagnosticRuntimeOptions | undefined,
   controller: PlaybackController,
-): KeyboardInputProvider {
+): ExternalKeyboardInputProvider {
   if (diagnostic?.mode === "capture") {
     return {
       actions: [captureToggleAction],
@@ -32,7 +32,9 @@ export function createInputPlugin(
   return {};
 }
 
-function createCaptureKeyHandler(controller: PlaybackController): KeyHandler {
+function createCaptureKeyHandler(
+  controller: PlaybackController,
+): ExternalKeyHandler {
   return {
     handleKeyDown: (action, isRepeat) => {
       if (action !== captureToggleAction) return false;
@@ -45,8 +47,8 @@ function createCaptureKeyHandler(controller: PlaybackController): KeyHandler {
 
 function createPlaybackKeyHandler(
   controller: PlaybackController,
-  unlockedActions: ReadonlySet<ControlAction>,
-): KeyHandler {
+  unlockedActions: ReadonlySet<ExternalControlAction>,
+): ExternalKeyHandler {
   return {
     handleKeyDown: (action, isRepeat) => {
       if (unlockedActions.has(action)) return false;
