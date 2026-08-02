@@ -136,6 +136,31 @@ describe("headlessGameLoop", () => {
     expect(updateCount).toBe(1);
   });
 
+  it("reuses entity control input storage and clears stale actions", () => {
+    const observedMaps: ReadonlyMap<string, Record<string, boolean>>[] = [];
+    const observedInputs: Record<string, boolean>[] = [];
+    const simulationPlugin: SimulationPlugin = {
+      updateVehicleDynamics: ({ controlInputsByEntityId }) => {
+        observedMaps.push(controlInputsByEntityId);
+        const input = controlInputsByEntityId.get("craft:test");
+        if (input) observedInputs.push(input);
+      },
+    };
+    const loop = createHeadlessLoop(buildHeadlessConfig(), {
+      simulationPlugins: [simulationPlugin],
+    });
+
+    loop.stepWithEntityInputs(16, new Map([["craft:test", { thrust: true }]]));
+    loop.stepWithEntityInputs(16, new Map([["craft:test", { yaw: true }]]));
+    loop.stepWithEntityInputs(16, new Map());
+
+    expect(observedMaps[1]).toBe(observedMaps[0]);
+    expect(observedMaps[2]).toBe(observedMaps[0]);
+    expect(observedInputs[1]).toBe(observedInputs[0]);
+    expect(observedInputs[1]).toEqual({ thrust: false, yaw: true });
+    expect(observedMaps[2].size).toBe(0);
+  });
+
   it("runs a step without any render config or Solitude plugins", () => {
     const loop = createHeadlessLoop(buildHeadlessConfig());
     const before = vec3.clone(

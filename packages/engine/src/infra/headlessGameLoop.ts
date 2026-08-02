@@ -43,27 +43,38 @@ export interface HeadlessLoop {
 const EMPTY_SCENE: Scene = { objects: [], lights: [] };
 const EMPTY_ENTITY_CONTROL_INPUTS = new Map();
 
-function mergeControlInput(
+function mergeControlInputInto(
+  merged: ControlInput,
   base: ControlInput,
   overrides?: Partial<ControlInput>,
 ): ControlInput {
-  if (!overrides) return base;
-  const merged: Record<string, boolean> = { ...base };
-  for (const [key, value] of Object.entries(overrides)) {
+  for (const key in merged) merged[key] = false;
+  for (const key in base) merged[key] = base[key];
+  if (!overrides) return merged;
+  for (const key in overrides) {
+    const value = overrides[key];
     if (value !== undefined) {
       merged[key] = value;
     }
   }
-  return merged as ControlInput;
+  return merged;
 }
 
-function mergeEntityControlInputs(
+function mergeEntityControlInputsInto(
+  mergedByEntityId: Map<EntityId, ControlInput>,
   base: ControlInput,
   overridesByEntityId: ReadonlyMap<EntityId, Partial<ControlInput>>,
 ): ReadonlyMap<EntityId, ControlInput> {
-  const mergedByEntityId = new Map<EntityId, ControlInput>();
+  for (const entityId of mergedByEntityId.keys()) {
+    if (!overridesByEntityId.has(entityId)) mergedByEntityId.delete(entityId);
+  }
   for (const [entityId, overrides] of overridesByEntityId) {
-    mergedByEntityId.set(entityId, mergeControlInput(base, overrides));
+    let merged = mergedByEntityId.get(entityId);
+    if (!merged) {
+      merged = createControlInput();
+      mergedByEntityId.set(entityId, merged);
+    }
+    mergeControlInputInto(merged, base, overrides);
   }
   return mergedByEntityId;
 }
@@ -107,6 +118,8 @@ export function createHeadlessLoop(
     simulationAssembly.createSimulationPlugins(capabilityRegistry);
 
   const baseControlInput = createControlInput();
+  const mergedControlInput = createControlInput();
+  const mergedEntityControlInputs = new Map<EntityId, ControlInput>();
 
   const tickParams: TickParams = {
     dtMillis: 0,
@@ -128,7 +141,13 @@ export function createHeadlessLoop(
   ): void => {
     tickParams.dtMillis = dtMillis;
     tickParams.dtMillisSim = dtMillis * timeScale;
-    tickParams.controlInput = mergeControlInput(baseControlInput, controlInput);
+    tickParams.controlInput = controlInput
+      ? mergeControlInputInto(
+          mergedControlInput,
+          baseControlInput,
+          controlInput,
+        )
+      : baseControlInput;
     tickParams.controlInputsByEntityId = EMPTY_ENTITY_CONTROL_INPUTS;
 
     tick();
@@ -153,7 +172,8 @@ export function createHeadlessLoop(
     tickParams.dtMillis = dtMillis;
     tickParams.dtMillisSim = dtMillisSim;
     tickParams.controlInput = baseControlInput;
-    tickParams.controlInputsByEntityId = mergeEntityControlInputs(
+    tickParams.controlInputsByEntityId = mergeEntityControlInputsInto(
+      mergedEntityControlInputs,
       baseControlInput,
       controlInputsByEntityId,
     );
