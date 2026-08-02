@@ -24,6 +24,11 @@ const sourceExtensions = new Set([
 ]);
 
 const repoRoot = process.cwd();
+// `global` is the documented engine carve-out and is intentionally unrestricted.
+const ENGINE_ONION_FORBIDDEN_DEPENDENCIES = {
+  app: new Set(["infra", "render", "setup"]),
+  domain: new Set(["app", "infra", "render", "setup"]),
+};
 
 if (process.argv.includes("--self-test")) {
   await runSelfTest();
@@ -58,6 +63,7 @@ async function checkWorkspace(root) {
               message: `relative import escapes package: ${specifier}`,
             });
           }
+          validateEngineOnionImport({ errors, file, pkg, target });
           validatePluginImport({
             errors,
             file,
@@ -136,6 +142,32 @@ async function checkWorkspace(root) {
     ...error,
     file: path.relative(root, error.file),
   }));
+}
+
+function validateEngineOnionImport({ errors, file, pkg, target }) {
+  if (pkg.name !== "@solitude/engine") return;
+
+  const sourceLayer = getSourceLayer(pkg.root, file);
+  const targetLayer = getSourceLayer(pkg.root, target);
+  if (
+    sourceLayer === null ||
+    targetLayer === null ||
+    !ENGINE_ONION_FORBIDDEN_DEPENDENCIES[sourceLayer]?.has(targetLayer)
+  ) {
+    return;
+  }
+
+  errors.push({
+    file,
+    message: `engine onion violation: ${sourceLayer} may not depend on ${targetLayer}`,
+  });
+}
+
+function getSourceLayer(packageRoot, file) {
+  const relative = path.relative(path.join(packageRoot, "src"), file);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) return null;
+  const [layer] = relative.split(path.sep);
+  return layer || null;
 }
 
 async function loadWorkspacePackages(root) {
@@ -399,15 +431,15 @@ async function runSelfTest() {
         2,
       ),
     );
-    writePackageFixture(tempRoot, "engine", "@fixture/engine", {
+    writePackageFixture(tempRoot, "engine", "@solitude/engine", {
       exports: { "./public": "./src/public.ts" },
     });
     writePackageFixture(tempRoot, "browser", "@fixture/browser", {
-      dependencies: { "@fixture/engine": "0.0.0" },
+      dependencies: { "@solitude/engine": "0.0.0" },
       exports: { "./public": "./src/public.ts" },
     });
     writePackageFixture(tempRoot, "plugin-host", "@fixture/plugin-host", {
-      dependencies: { "@fixture/engine": "0.0.0" },
+      dependencies: { "@solitude/engine": "0.0.0" },
       exports: {
         "./plugins/catalog": "./src/plugins/catalog.ts",
         "./plugins/drive": "./src/plugins/drive/index.ts",
@@ -417,13 +449,13 @@ async function runSelfTest() {
     writePackageFixture(tempRoot, "app", "fixture-app", {
       dependencies: {
         "@fixture/browser": "0.0.0",
-        "@fixture/engine": "0.0.0",
+        "@solitude/engine": "0.0.0",
         "@fixture/plugin-host": "0.0.0",
       },
       exports: { "./public": "./src/public.ts" },
     });
     writePackageFixture(tempRoot, "plugin-api", "@solitude/plugin-api", {
-      dependencies: { "@fixture/engine": "0.0.0" },
+      dependencies: { "@solitude/engine": "0.0.0" },
       exports: { "./module": "./src/module.ts" },
     });
     writePackageFixture(
@@ -432,7 +464,7 @@ async function runSelfTest() {
       "@fixture-plugins/targeting-laser",
       {
         dependencies: {
-          "@fixture/engine": "0.0.0",
+          "@solitude/engine": "0.0.0",
           "@solitude/plugin-api": "0.0.0",
         },
       },
@@ -450,6 +482,39 @@ async function runSelfTest() {
     mkdirSync(path.join(tempRoot, "packages/app/src/plugins"), {
       recursive: true,
     });
+    for (const layer of ["app", "domain", "infra", "render", "setup"]) {
+      mkdirSync(path.join(tempRoot, `packages/engine/src/${layer}`), {
+        recursive: true,
+      });
+      writeFileSync(
+        path.join(tempRoot, `packages/engine/src/${layer}/value.ts`),
+        `export const ${layer}Value = 1;\n`,
+      );
+    }
+    const onionDomainSource = path.join(
+      tempRoot,
+      "packages/engine/src/domain/consumer.ts",
+    );
+    const onionAppSource = path.join(
+      tempRoot,
+      "packages/engine/src/app/consumer.ts",
+    );
+    const onionInfraSource = path.join(
+      tempRoot,
+      "packages/engine/src/infra/consumer.ts",
+    );
+    writeFileSync(
+      onionDomainSource,
+      'import { domainValue } from "./value";\nexport const domainConsumer = domainValue;\n',
+    );
+    writeFileSync(
+      onionAppSource,
+      'import { domainValue } from "../domain/value";\nexport const appConsumer = domainValue;\n',
+    );
+    writeFileSync(
+      onionInfraSource,
+      'import { appValue } from "../app/value";\nexport const infraConsumer = appValue;\n',
+    );
     writeFileSync(
       path.join(tempRoot, "packages/plugin-host/src/plugins/drive/core.ts"),
       "export const driveCore = 1;\n",
@@ -490,11 +555,43 @@ async function runSelfTest() {
     const appSource = path.join(tempRoot, "packages/app/src/public.ts");
     writeFileSync(
       browserSource,
-      'import { value } from "@fixture/engine/public";\nexport const browserValue = value;\n',
+      'import { value } from "@solitude/engine/public";\nexport const browserValue = value;\n',
     );
 
     const ok = await checkWorkspace(tempRoot);
     assertNoErrors(ok, "expected valid fixture imports to pass");
+
+    for (const outerLayer of ["app", "infra", "render", "setup"]) {
+      writeFileSync(
+        onionDomainSource,
+        `import { ${outerLayer}Value } from "../${outerLayer}/value";\nexport const domainConsumer = ${outerLayer}Value;\n`,
+      );
+      assertHasError(
+        await checkWorkspace(tempRoot),
+        `engine onion violation: domain may not depend on ${outerLayer}`,
+        `expected outward domain-to-${outerLayer} imports to fail`,
+      );
+    }
+    writeFileSync(
+      onionDomainSource,
+      'import { domainValue } from "./value";\nexport const domainConsumer = domainValue;\n',
+    );
+
+    for (const outerLayer of ["infra", "render", "setup"]) {
+      writeFileSync(
+        onionAppSource,
+        `import { ${outerLayer}Value } from "../${outerLayer}/value";\nexport const appConsumer = ${outerLayer}Value;\n`,
+      );
+      assertHasError(
+        await checkWorkspace(tempRoot),
+        `engine onion violation: app may not depend on ${outerLayer}`,
+        `expected outward app-to-${outerLayer} imports to fail`,
+      );
+    }
+    writeFileSync(
+      onionAppSource,
+      'import { domainValue } from "../domain/value";\nexport const appConsumer = domainValue;\n',
+    );
 
     writeFileSync(
       externalPluginSource,
@@ -508,7 +605,7 @@ async function runSelfTest() {
 
     writeFileSync(
       externalPluginSource,
-      'import { value } from "@fixture/engine/public";\nexport const plugin = value;\n',
+      'import { value } from "@solitude/engine/public";\nexport const plugin = value;\n',
     );
     assertHasError(
       await checkWorkspace(tempRoot),
@@ -522,7 +619,7 @@ async function runSelfTest() {
 
     writeFileSync(
       browserSource,
-      'import { value } from "@fixture/engine/internal";\nexport const browserValue = value;\n',
+      'import { value } from "@solitude/engine/internal";\nexport const browserValue = value;\n',
     );
     assertHasError(
       await checkWorkspace(tempRoot),
