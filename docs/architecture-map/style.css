@@ -30,119 +30,14 @@ body {
     sans-serif;
 }
 
-button,
-input {
+button {
   font: inherit;
 }
 
 .app-shell {
   display: grid;
-  grid-template-columns: minmax(300px, 390px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   min-height: 100vh;
-}
-
-.sidebar {
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
-  gap: 14px;
-  border-right: 1px solid var(--line);
-  background: var(--panel);
-  min-height: 100vh;
-  padding: 18px;
-}
-
-.sidebar-header h1 {
-  margin: 0 0 6px;
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-.sidebar-header p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-.search {
-  display: grid;
-  gap: 6px;
-  color: var(--muted);
-  font-size: 12px;
-  text-transform: uppercase;
-}
-
-.search input {
-  width: 100%;
-  min-height: 36px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #111417;
-  color: var(--text);
-  padding: 8px 10px;
-}
-
-.tree {
-  overflow: auto;
-  border-top: 1px solid var(--line);
-  padding-top: 10px;
-}
-
-.tree-row {
-  display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
-  align-items: center;
-  min-height: 30px;
-  color: var(--muted);
-}
-
-.tree-toggle,
-.tree-label {
-  border: 0;
-  background: transparent;
-  color: inherit;
-}
-
-.tree-toggle {
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  cursor: pointer;
-}
-
-.tree-toggle[disabled] {
-  cursor: default;
-  opacity: 0.25;
-}
-
-.tree-label {
-  min-width: 0;
-  padding: 5px 6px;
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.tree-label:hover,
-.tree-label.is-selected {
-  color: var(--text);
-  background: var(--panel-strong);
-  border-radius: 5px;
-}
-
-.kind-package {
-  color: var(--accent);
-}
-
-.kind-module {
-  color: var(--accent-2);
-}
-
-.kind-symbol {
-  color: var(--accent-3);
 }
 
 .workspace {
@@ -175,13 +70,18 @@ input {
   border-color: var(--accent);
 }
 
-.selection {
+.toolbar h1 {
   margin-left: auto;
+  margin-right: auto;
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.toolbar p {
   color: var(--muted);
   font-size: 13px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .graph {
@@ -192,12 +92,6 @@ input {
   .app-shell {
     grid-template-columns: 1fr;
     grid-template-rows: 48vh 52vh;
-  }
-
-  .sidebar {
-    min-height: 0;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
   }
 
   .workspace {
