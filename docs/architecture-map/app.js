@@ -8,9 +8,14 @@ const packageNodes = architecture.nodes.filter(
   (node) => node.kind === "package",
 );
 const nodeSize = { height: 64, width: 180 };
+const constraintNodeSize = { height: 92, width: 180 };
+const constraintMargin = 24;
+const dragProjectionRadii = [8, 16, 32, 56, 88, 128, 184, 256, 352];
+const dragProjectionAngleCount = 24;
 const layoutStorageKey = "solitude.architectureMap.layout.v1";
 const layoutSignature = createLayoutSignature();
-let selectedNodeId;
+let selectedNodeIds = new Set();
+let dragState;
 let positionsByNodeId = await loadStoredPositions();
 if (!positionsByNodeId) {
   positionsByNodeId = await calculateElkPositions();
@@ -22,6 +27,7 @@ summaryEl.textContent = `${architecture.nodes.length} nodes, ${architecture.edge
 ).toLocaleString()}.`;
 
 const cy = cytoscape({
+  autoungrabify: true,
   container: graphEl,
   elements: [],
   layout: { name: "cose", animate: false },
@@ -35,7 +41,7 @@ const cy = cytoscape({
         "border-color": "#54c7a9",
         "border-width": 2,
         color: "#f2f5f7",
-        "font-size": 14,
+        "font-size": 16,
         height: 21,
         label: "data(label)",
         padding: 34,
@@ -44,7 +50,7 @@ const cy = cytoscape({
         "text-background-opacity": 0,
         "text-background-padding": 0,
         "text-halign": "center",
-        "text-max-width": 126,
+        "text-max-width": 140,
         "text-outline-width": 0,
         "text-overflow-wrap": "anywhere",
         "text-valign": "center",
@@ -55,7 +61,13 @@ const cy = cytoscape({
     {
       selector: "node:selected",
       style: {
-        "border-color": "#ffffff",
+        "background-opacity": 0.2,
+      },
+    },
+    {
+      selector: "node.invalid-layout",
+      style: {
+        "border-color": "#ff7b7b",
         "border-width": 3,
       },
     },
@@ -88,10 +100,10 @@ const cy = cytoscape({
 
 renderGraph();
 cy.fit(undefined, 42);
+updateConstraintViolations();
 
-cy.on("tap", "node", (event) => {
-  const nodeId = event.target.id();
-  selectedNodeId = nodeId;
+cy.on("select unselect", "node", () => {
+  selectedNodeIds = new Set(cy.nodes(":selected").map((node) => node.id()));
 });
 
 fitEl.addEventListener("click", () => {
@@ -105,13 +117,13 @@ layoutEl.addEventListener("click", async () => {
   storePositions();
   renderGraph();
   cy.fit(undefined, 42);
+  updateConstraintViolations();
   layoutEl.textContent = "Layout";
   layoutEl.disabled = false;
 });
 
-cy.on("dragfree", "node", () => {
-  syncPositionsFromGraph();
-  storePositions();
+graphEl.addEventListener("pointerdown", handleGraphPointerDown, {
+  capture: true,
 });
 
 async function loadArchitecture() {
@@ -157,7 +169,7 @@ function renderGraph() {
   cy.elements().remove();
   cy.add(elements);
 
-  if (selectedNodeId) {
+  for (const selectedNodeId of selectedNodeIds) {
     cy.getElementById(selectedNodeId).select();
   }
 }
@@ -184,7 +196,7 @@ async function loadStoredPositions() {
       ) {
         return undefined;
       }
-      positions.set(node.id, position);
+      positions.set(node.id, roundPosition(position));
     }
     return positions;
   } catch (error) {
@@ -209,8 +221,540 @@ function storePositions() {
 
 function syncPositionsFromGraph() {
   for (const node of cy.nodes()) {
-    positionsByNodeId.set(node.id(), node.position());
+    positionsByNodeId.set(node.id(), roundPosition(node.position()));
   }
+}
+
+function readGraphPositions() {
+  const positions = new Map();
+  for (const node of cy.nodes()) {
+    positions.set(node.id(), roundPosition(node.position()));
+  }
+  return positions;
+}
+
+function handleGraphPointerDown(event) {
+  if (event.button !== 0) {
+    return;
+  }
+
+  const grabbedNode = findNodeAtRenderedPosition(event.clientX, event.clientY);
+  if (!grabbedNode) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  const startGraphPosition = renderedToGraphPosition(
+    event.clientX,
+    event.clientY,
+  );
+  const positions = readGraphPositions();
+  const movedNodeIds = getMovedNodeIds(grabbedNode);
+  const evaluation = evaluateLayoutConstraints(positions);
+  dragState = {
+    grabbedNodeId: grabbedNode.id(),
+    isDragging: false,
+    lastAcceptedDelta: { x: 0, y: 0 },
+    lastAcceptedPenalty: evaluation.penalty,
+    lastAcceptedPositions: positions,
+    lastAcceptedScore: evaluation.score,
+    movedNodeIds,
+    pointerId: event.pointerId,
+    selectionMode:
+      event.shiftKey || event.ctrlKey || event.metaKey ? "toggle" : "replace",
+    startGraphPosition,
+    startingMovedViolationKeys: getMovedViolationKeys(
+      evaluation.violations,
+      movedNodeIds,
+    ),
+    startPositions: copyPositions(positions),
+  };
+
+  graphEl.setPointerCapture(event.pointerId);
+  graphEl.addEventListener("pointermove", handleGraphPointerMove);
+  graphEl.addEventListener("pointerup", handleGraphPointerUp);
+  graphEl.addEventListener("pointercancel", handleGraphPointerUp);
+}
+
+function handleGraphPointerMove(event) {
+  if (!dragState || event.pointerId !== dragState.pointerId) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  const graphPosition = renderedToGraphPosition(event.clientX, event.clientY);
+  const delta = {
+    x: graphPosition.x - dragState.startGraphPosition.x,
+    y: graphPosition.y - dragState.startGraphPosition.y,
+  };
+
+  if (!dragState.isDragging && Math.hypot(delta.x, delta.y) < 2) {
+    return;
+  }
+
+  dragState.isDragging = true;
+
+  const candidatePositions = createTranslatedPositions(
+    dragState.startPositions,
+    dragState.movedNodeIds,
+    delta,
+  );
+  const evaluation = evaluateLayoutConstraints(candidatePositions);
+  if (isAllowedDragEvaluation(evaluation, dragState)) {
+    acceptDragPositions(delta, candidatePositions, evaluation);
+    return;
+  }
+
+  const projected = findClosestAllowedDragProjection(dragState, delta);
+  if (!projected) {
+    applyPositions(dragState.lastAcceptedPositions, dragState.movedNodeIds);
+    updateConstraintViolations(
+      findConstraintViolations(dragState.lastAcceptedPositions),
+    );
+    return;
+  }
+
+  acceptDragPositions(
+    projected.delta,
+    projected.positions,
+    projected.evaluation,
+  );
+}
+
+function handleGraphPointerUp(event) {
+  if (!dragState || event.pointerId !== dragState.pointerId) {
+    return;
+  }
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  graphEl.releasePointerCapture(event.pointerId);
+  graphEl.removeEventListener("pointermove", handleGraphPointerMove);
+  graphEl.removeEventListener("pointerup", handleGraphPointerUp);
+  graphEl.removeEventListener("pointercancel", handleGraphPointerUp);
+
+  if (dragState.isDragging) {
+    syncPositionsFromGraph();
+    storePositions();
+    updateConstraintViolations();
+  } else {
+    selectClickedNode(dragState.grabbedNodeId, dragState.selectionMode);
+  }
+  dragState = undefined;
+}
+
+function selectClickedNode(nodeId, selectionMode) {
+  const node = cy.getElementById(nodeId);
+  if (selectionMode === "toggle") {
+    if (node.selected()) {
+      node.unselect();
+    } else {
+      node.select();
+    }
+    return;
+  }
+
+  cy.nodes(":selected").unselect();
+  node.select();
+}
+
+function getMovedNodeIds(grabbedNode) {
+  const selected = cy.nodes(":selected");
+  if (grabbedNode.selected() && selected.length > 0) {
+    return selected.map((node) => node.id());
+  }
+  return [grabbedNode.id()];
+}
+
+function findNodeAtRenderedPosition(clientX, clientY) {
+  const graphPosition = renderedToGraphPosition(clientX, clientY);
+  const nodes = cy.nodes();
+  for (let index = nodes.length - 1; index >= 0; index -= 1) {
+    const node = nodes[index];
+    const box = createNodeBox(node.position(), 0);
+    if (pointInBox(graphPosition, box)) {
+      return node;
+    }
+  }
+  return undefined;
+}
+
+function renderedToGraphPosition(clientX, clientY) {
+  const rect = graphEl.getBoundingClientRect();
+  const pan = cy.pan();
+  const zoom = cy.zoom();
+  return {
+    x: (clientX - rect.left - pan.x) / zoom,
+    y: (clientY - rect.top - pan.y) / zoom,
+  };
+}
+
+function createTranslatedPositions(startPositions, movedNodeIds, delta) {
+  const positions = copyPositions(startPositions);
+  for (const nodeId of movedNodeIds) {
+    const startPosition = startPositions.get(nodeId);
+    if (startPosition) {
+      positions.set(nodeId, {
+        x: Math.round(startPosition.x + delta.x),
+        y: Math.round(startPosition.y + delta.y),
+      });
+    }
+  }
+  return positions;
+}
+
+function acceptDragPositions(delta, positions, evaluation) {
+  dragState.lastAcceptedDelta = delta;
+  dragState.lastAcceptedPositions = positions;
+  dragState.lastAcceptedPenalty = evaluation.penalty;
+  dragState.lastAcceptedScore = evaluation.score;
+  applyPositions(positions, dragState.movedNodeIds);
+  updateConstraintViolations(evaluation.invalidNodeIds);
+}
+
+function findClosestAllowedDragProjection(state, desiredDelta) {
+  let bestProjection;
+
+  const considerDelta = (delta) => {
+    const positions = createTranslatedPositions(
+      state.startPositions,
+      state.movedNodeIds,
+      delta,
+    );
+    const evaluation = evaluateLayoutConstraints(positions);
+    if (!isAllowedDragEvaluation(evaluation, state)) {
+      return;
+    }
+
+    const cursorDistance = calculateSquaredDistance(delta, desiredDelta);
+    const continuityDistance = calculateSquaredDistance(
+      delta,
+      state.lastAcceptedDelta,
+    );
+    if (
+      !bestProjection ||
+      cursorDistance < bestProjection.cursorDistance ||
+      (cursorDistance === bestProjection.cursorDistance &&
+        continuityDistance < bestProjection.continuityDistance)
+    ) {
+      bestProjection = {
+        continuityDistance,
+        cursorDistance,
+        delta,
+        evaluation,
+        positions,
+      };
+    }
+  };
+
+  const considerBoundary = (targetDelta) => {
+    const boundaryDelta = findAllowedBoundaryDelta(
+      state,
+      state.lastAcceptedDelta,
+      targetDelta,
+    );
+    considerDelta(boundaryDelta);
+  };
+
+  considerDelta(state.lastAcceptedDelta);
+
+  const horizontalSlideDelta = {
+    x: desiredDelta.x,
+    y: state.lastAcceptedDelta.y,
+  };
+  const verticalSlideDelta = {
+    x: state.lastAcceptedDelta.x,
+    y: desiredDelta.y,
+  };
+  considerDelta(horizontalSlideDelta);
+  considerDelta(verticalSlideDelta);
+  considerBoundary(desiredDelta);
+  considerBoundary(horizontalSlideDelta);
+  considerBoundary(verticalSlideDelta);
+
+  for (const radius of dragProjectionRadii) {
+    considerDelta({ x: desiredDelta.x - radius, y: desiredDelta.y });
+    considerDelta({ x: desiredDelta.x + radius, y: desiredDelta.y });
+    considerDelta({ x: desiredDelta.x, y: desiredDelta.y - radius });
+    considerDelta({ x: desiredDelta.x, y: desiredDelta.y + radius });
+
+    for (let index = 0; index < dragProjectionAngleCount; index += 1) {
+      const angle = (Math.PI * 2 * index) / dragProjectionAngleCount;
+      considerDelta({
+        x: desiredDelta.x + Math.cos(angle) * radius,
+        y: desiredDelta.y + Math.sin(angle) * radius,
+      });
+    }
+  }
+
+  return bestProjection;
+}
+
+function findAllowedBoundaryDelta(state, fromDelta, toDelta) {
+  let lower = fromDelta;
+  let upper = toDelta;
+
+  for (let index = 0; index < 12; index += 1) {
+    const midpoint = {
+      x: (lower.x + upper.x) / 2,
+      y: (lower.y + upper.y) / 2,
+    };
+    const positions = createTranslatedPositions(
+      state.startPositions,
+      state.movedNodeIds,
+      midpoint,
+    );
+    const evaluation = evaluateLayoutConstraints(positions);
+    if (isAllowedDragEvaluation(evaluation, state)) {
+      lower = midpoint;
+    } else {
+      upper = midpoint;
+    }
+  }
+
+  return lower;
+}
+
+function calculateSquaredDistance(left, right) {
+  const deltaX = left.x - right.x;
+  const deltaY = left.y - right.y;
+  return deltaX * deltaX + deltaY * deltaY;
+}
+
+function applyPositions(positions, nodeIds) {
+  for (const nodeId of nodeIds) {
+    const position = positions.get(nodeId);
+    if (position) {
+      cy.getElementById(nodeId).position(roundPosition(position));
+    }
+  }
+}
+
+function copyPositions(positions) {
+  const copy = new Map();
+  for (const [nodeId, position] of positions) {
+    copy.set(nodeId, roundPosition(position));
+  }
+  return copy;
+}
+
+function roundPosition(position) {
+  return {
+    x: Math.round(position.x),
+    y: Math.round(position.y),
+  };
+}
+
+function updateConstraintViolations(
+  invalidNodeIds = findConstraintViolations(readGraphPositions()),
+) {
+  cy.nodes().removeClass("invalid-layout");
+  for (const nodeId of invalidNodeIds) {
+    cy.getElementById(nodeId).addClass("invalid-layout");
+  }
+}
+
+function findConstraintViolations(positions) {
+  return evaluateLayoutConstraints(positions).invalidNodeIds;
+}
+
+function evaluateLayoutConstraints(positions) {
+  const invalidNodeIds = new Set();
+  const boxes = new Map();
+  const violations = [];
+  let penalty = 0;
+
+  for (const node of packageNodes) {
+    const position = positions.get(node.id);
+    if (!position) {
+      addViolation(
+        violations,
+        invalidNodeIds,
+        `missing:${node.id}`,
+        [node.id],
+        1,
+      );
+      continue;
+    }
+    boxes.set(node.id, createNodeBox(position, constraintMargin));
+  }
+
+  const nodeIds = [...boxes.keys()];
+  for (let leftIndex = 0; leftIndex < nodeIds.length; leftIndex += 1) {
+    for (
+      let rightIndex = leftIndex + 1;
+      rightIndex < nodeIds.length;
+      rightIndex += 1
+    ) {
+      const leftId = nodeIds[leftIndex];
+      const rightId = nodeIds[rightIndex];
+      const overlap = calculateBoxOverlap(
+        boxes.get(leftId),
+        boxes.get(rightId),
+      );
+      if (overlap > 0) {
+        addViolation(
+          violations,
+          invalidNodeIds,
+          `overlap:${leftId}<->${rightId}`,
+          [leftId, rightId],
+          overlap,
+        );
+      }
+    }
+  }
+
+  for (const edge of projectEdges()) {
+    const from = positions.get(edge.from);
+    const to = positions.get(edge.to);
+    if (!from || !to) {
+      addViolation(
+        violations,
+        invalidNodeIds,
+        `edge-missing:${edge.id}`,
+        [edge.from, edge.to],
+        1,
+      );
+      continue;
+    }
+
+    if (to.y < from.y) {
+      addViolation(
+        violations,
+        invalidNodeIds,
+        `upward-edge:${edge.id}`,
+        [edge.from, edge.to],
+        from.y - to.y,
+      );
+    }
+
+    for (const [nodeId, box] of boxes) {
+      if (nodeId === edge.from || nodeId === edge.to) {
+        continue;
+      }
+      if (segmentIntersectsBox(from, to, box)) {
+        addViolation(
+          violations,
+          invalidNodeIds,
+          `edge-crosses-box:${edge.id}:${nodeId}`,
+          [edge.from, edge.to, nodeId],
+          1,
+        );
+      }
+    }
+  }
+
+  for (const violation of violations) {
+    penalty += violation.penalty;
+  }
+
+  return { invalidNodeIds, penalty, score: violations.length, violations };
+}
+
+function isAllowedDragEvaluation(evaluation, state) {
+  if (
+    evaluation.score > state.lastAcceptedScore ||
+    (evaluation.score === state.lastAcceptedScore &&
+      evaluation.penalty > state.lastAcceptedPenalty)
+  ) {
+    return false;
+  }
+
+  const movedViolationKeys = getMovedViolationKeys(
+    evaluation.violations,
+    state.movedNodeIds,
+  );
+  for (const violationKey of movedViolationKeys) {
+    if (!state.startingMovedViolationKeys.has(violationKey)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function getMovedViolationKeys(violations, movedNodeIds) {
+  const movedNodeIdSet = new Set(movedNodeIds);
+  const keys = new Set();
+  for (const violation of violations) {
+    if (violation.nodeIds.some((nodeId) => movedNodeIdSet.has(nodeId))) {
+      keys.add(violation.key);
+    }
+  }
+  return keys;
+}
+
+function addViolation(violations, invalidNodeIds, key, nodeIds, penalty) {
+  violations.push({ key, nodeIds, penalty });
+  for (const nodeId of nodeIds) {
+    invalidNodeIds.add(nodeId);
+  }
+}
+
+function createNodeBox(position, margin) {
+  return {
+    bottom: position.y + constraintNodeSize.height / 2 + margin,
+    left: position.x - constraintNodeSize.width / 2 - margin,
+    right: position.x + constraintNodeSize.width / 2 + margin,
+    top: position.y - constraintNodeSize.height / 2 - margin,
+  };
+}
+
+function calculateBoxOverlap(left, right) {
+  const horizontalOverlap =
+    Math.min(left.right, right.right) - Math.max(left.left, right.left);
+  const verticalOverlap =
+    Math.min(left.bottom, right.bottom) - Math.max(left.top, right.top);
+  if (horizontalOverlap <= 0 || verticalOverlap <= 0) {
+    return 0;
+  }
+  return Math.min(horizontalOverlap, verticalOverlap);
+}
+
+function segmentIntersectsBox(start, end, box) {
+  if (pointInBox(start, box) || pointInBox(end, box)) {
+    return true;
+  }
+
+  const deltaX = end.x - start.x;
+  const deltaY = end.y - start.y;
+  let near = 0;
+  let far = 1;
+
+  for (const [axisDelta, lowerDistance, upperDistance] of [
+    [deltaX, start.x - box.left, box.right - start.x],
+    [deltaY, start.y - box.top, box.bottom - start.y],
+  ]) {
+    if (axisDelta === 0) {
+      if (lowerDistance < 0 || upperDistance < 0) {
+        return false;
+      }
+      continue;
+    }
+
+    const axisNear = -lowerDistance / axisDelta;
+    const axisFar = upperDistance / axisDelta;
+    near = Math.max(near, Math.min(axisNear, axisFar));
+    far = Math.min(far, Math.max(axisNear, axisFar));
+    if (near > far) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function pointInBox(point, box) {
+  return (
+    point.x >= box.left &&
+    point.x <= box.right &&
+    point.y >= box.top &&
+    point.y <= box.bottom
+  );
 }
 
 function createLayoutSignature() {
@@ -329,9 +873,12 @@ function centerPositions(positions) {
   const offsetY = (minY + maxY) / 2;
 
   for (const [id, position] of positions) {
-    positions.set(id, {
-      x: position.x - offsetX,
-      y: position.y - offsetY,
-    });
+    positions.set(
+      id,
+      roundPosition({
+        x: position.x - offsetX,
+        y: position.y - offsetY,
+      }),
+    );
   }
 }
