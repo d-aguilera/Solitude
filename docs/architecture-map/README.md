@@ -25,3 +25,5 @@ package boxes plus a margin, or package-box overlap plus a margin. Packages
 involved in any remaining violation are marked with a red border.
 When the cursor moves into forbidden space, the dragged packages project to a
 nearby legal position so they can slide along constraint boundaries.
+Use `Rules On` / `Rules Off` to temporarily disable these constraints while
+untangling a generated layout.

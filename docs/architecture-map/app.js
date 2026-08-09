@@ -2,6 +2,7 @@ const graphEl = document.querySelector("#graph");
 const summaryEl = document.querySelector("#summary");
 const fitEl = document.querySelector("#fit");
 const layoutEl = document.querySelector("#layout");
+const rulesEl = document.querySelector("#rules");
 
 const architecture = await loadArchitecture();
 const packageNodes = architecture.nodes.filter(
@@ -16,6 +17,7 @@ const layoutStorageKey = "solitude.architectureMap.layout.v1";
 const layoutSignature = createLayoutSignature();
 let selectedNodeIds = new Set();
 let dragState;
+let rulesEnabled = true;
 let positionsByNodeId = await loadStoredPositions();
 if (!positionsByNodeId) {
   positionsByNodeId = await calculateElkPositions();
@@ -120,6 +122,13 @@ layoutEl.addEventListener("click", async () => {
   updateConstraintViolations();
   layoutEl.textContent = "Layout";
   layoutEl.disabled = false;
+});
+
+rulesEl.addEventListener("click", () => {
+  rulesEnabled = !rulesEnabled;
+  rulesEl.setAttribute("aria-pressed", String(rulesEnabled));
+  rulesEl.textContent = rulesEnabled ? "Rules On" : "Rules Off";
+  updateConstraintViolations();
 });
 
 graphEl.addEventListener("pointerdown", handleGraphPointerDown, {
@@ -303,6 +312,16 @@ function handleGraphPointerMove(event) {
     dragState.movedNodeIds,
     delta,
   );
+
+  if (!rulesEnabled) {
+    acceptDragPositions(
+      delta,
+      candidatePositions,
+      createAllowedDragEvaluation(),
+    );
+    return;
+  }
+
   const evaluation = evaluateLayoutConstraints(candidatePositions);
   if (isAllowedDragEvaluation(evaluation, dragState)) {
     acceptDragPositions(delta, candidatePositions, evaluation);
@@ -554,13 +573,28 @@ function updateConstraintViolations(
   invalidNodeIds = findConstraintViolations(readGraphPositions()),
 ) {
   cy.nodes().removeClass("invalid-layout");
+  if (!rulesEnabled) {
+    return;
+  }
   for (const nodeId of invalidNodeIds) {
     cy.getElementById(nodeId).addClass("invalid-layout");
   }
 }
 
 function findConstraintViolations(positions) {
+  if (!rulesEnabled) {
+    return new Set();
+  }
   return evaluateLayoutConstraints(positions).invalidNodeIds;
+}
+
+function createAllowedDragEvaluation() {
+  return {
+    invalidNodeIds: new Set(),
+    penalty: 0,
+    score: 0,
+    violations: [],
+  };
 }
 
 function evaluateLayoutConstraints(positions) {
@@ -814,7 +848,7 @@ async function calculateElkPositions() {
 
   const layoutOptions = {
     "elk.algorithm": "layered",
-    "elk.direction": "RIGHT",
+    "elk.direction": "DOWN",
     "elk.edgeRouting": "ORTHOGONAL",
     "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
     "elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
