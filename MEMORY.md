@@ -227,10 +227,10 @@
 
 ## Next Steps Snapshot
 
-- Gravity is the active multi-slice extraction. The provider and physical
-  package boundaries are in place; the next slice replaces fixed host-side
-  substeps with bounded provider-owned integration stepping. See
-  `MEMORY_GRAVITY_PLUGIN.md`.
+- Gravity is the active multi-slice extraction. The provider, physical package,
+  and bounded integration-step policies are in place; the next slice measures
+  the CPU implementation and adopts data-layout changes only when benchmarks
+  justify them. See `MEMORY_GRAVITY_PLUGIN.md`.
 - Physical package decoupling is complete: product behavior is selected through independently built runtime deployment units, with only generic host adapters remaining static.
 - Headless playback remains unresolved and active as a tracked topic, but is deprioritized until explicitly resumed. See `MEMORY_HEADLESS_PLAYBACK.md`.
 - Operator runtime focus switching is extracted and closed; foreground/background UX and declarative input lock policy remain deferred in `archive/MEMORY_OPERATOR_MODEL.md`.
@@ -242,6 +242,9 @@
 - Default Solitude plugin order is behaviorally significant; preserve ordering-sensitive tests when moving operator switch, profiling, or input plugins.
 - Server external plugins support capabilities, control-state/attitude resolution, and the pre-runtime world-model phase. Do not extract authoritative simulation or loop behavior by bypassing that contract; design those lifecycle phases explicitly first.
 - Browser plugin discovery allows only explicitly trusted origins and is reinforced by page CSP; server discovery accepts only an explicitly configured contained local plugin set. Loaded plugins remain same-realm trusted code. Unloading, sandboxing, signatures, and inter-plugin dependency resolution are not implemented.
-- Gravity uses fixed sub-steps for stability; high time scales can still destabilize.
+- Newtonian gravity uses provider-owned integration steps bounded to 10
+  simulated seconds by default. Extreme time warp preserves that bound by
+  spending more wall-clock time, so presentation or server catch-up can become
+  compute-bound.
 - WebGL2 availability and runtime context loss are hard failures with localized WebGL-required UX; there is no fallback solid-mesh backend.
 - Controls are keyboard-only with no in-app help; consider a help overlay or onboarding prompt.

@@ -5,9 +5,12 @@ import type {
 } from "@solitude/plugin-api/gravity";
 import { vec3, type Vec3 } from "@solitude/plugin-api/math";
 import type { ExternalPlugin } from "@solitude/plugin-api/module";
+import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 
 const NEWTON_G = 6.6743e-11;
 const SOFTENING_LENGTH_METERS = 1;
+export const DEFAULT_MAX_GRAVITY_STEP_SECONDS = 10;
+export const maxGravityStepSecondsRuntimeOption = "maxGravityStepSeconds";
 
 export interface NewtonianGravityWorkspace {
   accelerations: Vec3[];
@@ -31,21 +34,33 @@ export class NewtonianGravityEngine implements ExternalGravityEngine {
   constructor(
     private readonly gravitationalConstant = NEWTON_G,
     private readonly softeningLength = SOFTENING_LENGTH_METERS,
+    private readonly maxStepSeconds = DEFAULT_MAX_GRAVITY_STEP_SECONDS,
     private readonly workspace: NewtonianGravityWorkspace = createNewtonianGravityWorkspace(),
-  ) {}
+  ) {
+    requirePositiveFiniteMaxStep(maxStepSeconds);
+  }
 
   step(dtSeconds: number, state: ExternalGravityState): void {
     if (dtSeconds === 0) return;
 
-    const bodyStates = state.bodyStates;
-    const positions = state.positions;
-    if (bodyStates.length === 0) return;
+    if (!Number.isFinite(dtSeconds)) {
+      throw new Error("Gravity step duration must be finite");
+    }
+    if (state.bodyStates.length === 0) return;
 
-    this.computeGravityAccelerations(bodyStates, positions);
-    this.kickBodyVelocities(bodyStates, dtSeconds * 0.5);
-    this.driftBodyPositions(bodyStates, positions, dtSeconds);
-    this.computeGravityAccelerations(bodyStates, positions);
-    this.kickBodyVelocities(bodyStates, dtSeconds * 0.5);
+    const stepCount = getGravitySubstepCount(dtSeconds, this.maxStepSeconds);
+    const substepSeconds = dtSeconds / stepCount;
+    for (let i = 0; i < stepCount; i++) {
+      this.stepLeapfrog(substepSeconds, state);
+    }
+  }
+
+  private stepLeapfrog(dtSeconds: number, state: ExternalGravityState): void {
+    this.computeGravityAccelerations(state.bodyStates, state.positions);
+    this.kickBodyVelocities(state.bodyStates, dtSeconds * 0.5);
+    this.driftBodyPositions(state.bodyStates, state.positions, dtSeconds);
+    this.computeGravityAccelerations(state.bodyStates, state.positions);
+    this.kickBodyVelocities(state.bodyStates, dtSeconds * 0.5);
   }
 
   private computeGravityAccelerations(
@@ -128,11 +143,48 @@ export class NewtonianGravityEngine implements ExternalGravityEngine {
   }
 }
 
-export function createPlugin(): ExternalPlugin {
+export function createPlugin(
+  runtimeOptions: ExternalRuntimeOptions = {},
+): ExternalPlugin {
+  const maxStepSeconds = parseMaxGravityStepSeconds(runtimeOptions);
   return {
     id: "newtonianGravity",
     gravity: {
-      createGravityEngine: () => new NewtonianGravityEngine(),
+      createGravityEngine: () =>
+        new NewtonianGravityEngine(
+          NEWTON_G,
+          SOFTENING_LENGTH_METERS,
+          maxStepSeconds,
+        ),
     },
   };
+}
+
+export function getGravitySubstepCount(
+  dtSeconds: number,
+  maxStepSeconds: number,
+): number {
+  requirePositiveFiniteMaxStep(maxStepSeconds);
+  if (!Number.isFinite(dtSeconds)) {
+    throw new Error("Gravity step duration must be finite");
+  }
+  return Math.max(1, Math.ceil(Math.abs(dtSeconds) / maxStepSeconds));
+}
+
+function parseMaxGravityStepSeconds(
+  runtimeOptions: ExternalRuntimeOptions,
+): number {
+  const raw = runtimeOptions[maxGravityStepSecondsRuntimeOption];
+  if (raw === undefined) return DEFAULT_MAX_GRAVITY_STEP_SECONDS;
+  const value = Number(raw);
+  requirePositiveFiniteMaxStep(value);
+  return value;
+}
+
+function requirePositiveFiniteMaxStep(value: number): void {
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error(
+      `${maxGravityStepSecondsRuntimeOption} must be a positive finite number`,
+    );
+  }
 }

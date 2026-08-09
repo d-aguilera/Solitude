@@ -93,10 +93,16 @@
 - Both host-specific Solitude content packs discover the host-neutral
   `newtonianGravity` provider before other content plugins. Browser and
   headless hosts have no concrete gravity imports or implicit fallback.
-- `applyGravity` divides every simulated interval into exactly five substeps.
-  The effective integration timestep therefore grows without bound as time
-  scale grows, allowing orbital instability and degradation at high time
-  scales.
+- Engine application code requests one gravity advancement for each simulated
+  interval. The Newtonian provider subdivides it into allocation-free steps no
+  larger than 10 simulated seconds by default, independent of presentation
+  cadence and time scale. `maxGravityStepSeconds` can override the positive
+  finite bound through runtime options.
+- The synchronous provider always completes every required bounded substep.
+  Extreme time warp therefore consumes more wall-clock time and may reduce
+  presentation cadence; it does not silently enlarge integration steps. The
+  authoritative ticker additionally accumulates simulation time and advances
+  it through fixed simulation intervals.
 - The force calculation is exact all-pairs `O(N^2)`. For the current small
   worlds, temporal substep demand is expected to become limiting before the
   number of pair interactions does, but this requires measurement.
@@ -106,20 +112,22 @@
 
 ## Next Slice
 
-Bound Newtonian integration steps independently of time scale.
+Measure and optimize the CPU implementation without changing results.
 
-- Change engine application code to call the gravity engine once for each
-  requested simulated interval instead of imposing five fixed substeps.
-- Add a positive finite maximum-step configuration to the Newtonian provider
-  and perform allocation-free subdivision inside its `step` operation.
-- Choose an initial maximum timestep from measured regression scenarios rather
-  than presentation cadence or a time-scale multiplier.
-- Add orbital energy/trajectory regression coverage across ordinary and high
-  time scales, plus exact step-count boundary tests.
-- Define and test the compute-budget behavior used when requested time warp
-  cannot be completed within the available wall-clock tick budget.
-- Preserve synchronous completion and immediately available CPU world state.
+- Add a repeatable benchmark harness for force evaluation and full bounded
+  integration across representative body counts, requested intervals, and
+  multiple independent worlds.
+- Record allocation behavior and separate pair-force cost from substep count.
+- Compare the current object-vector workspace with a reusable
+  structure-of-arrays `Float64Array` implementation using identical numerical
+  regression scenarios.
+- Adopt a new data layout only if measurements show a material throughput or
+  allocation improvement at relevant Solitude body counts and time-warp loads.
+- Keep world-to-provider synchronization allocation-free and preserve direct
+  mutation of canonical engine positions and velocities.
+- Treat worker threads, WebAssembly, SIMD, and multi-session batching as
+  follow-ups unless the measured single-threaded force loop is insufficient.
 
-The slice is complete when increasing time scale increases the number of
-bounded Newtonian steps rather than their size, and extreme time warp cannot
-silently reduce numerical accuracy.
+The slice is complete when the repository contains reproducible evidence for
+the retained data layout, or a measured replacement is implemented and covered
+by the same trajectory/energy tests.

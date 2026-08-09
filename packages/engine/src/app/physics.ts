@@ -85,18 +85,7 @@ export function applyGravity(
   gravityState: GravityState,
 ): void {
   if (dtMillisSim <= 0) return;
-
-  // Step gravity (updates velocities and positions).
-  // if time scale is too high, gravity integration becomes unstable.
-  // we mitigate this by splitting the simulated time delta into 5 substeps.
-  // this is a trade-off between CPU and stability.
-  const stepMillis = dtMillisSim / 5.0;
-  let remaining = dtMillisSim;
-  for (let i = 0; i < 4; i++) {
-    gravityEngine.step(stepMillis / 1000, gravityState);
-    remaining -= stepMillis;
-  }
-  gravityEngine.step(remaining / 1000, gravityState);
+  gravityEngine.step(dtMillisSim / 1000, gravityState);
 }
 
 function applySpinForBodies(
