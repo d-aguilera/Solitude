@@ -43,6 +43,8 @@ describe("external plugin runtime", () => {
     > = vi.fn();
     const updateScene = vi.fn();
     const updateViewControls = vi.fn();
+    const gravityEngine = { step: vi.fn() };
+    const createGravityEngine = vi.fn(() => gravityEngine);
     let capturedSimulationFocus:
       ExternalSimulationPhaseParams["focusEntity"] | undefined;
     const beforeVehicleDynamics: NonNullable<
@@ -76,6 +78,7 @@ describe("external plugin runtime", () => {
         _runtimeOptions: ExternalRuntimeOptions,
         _context: ExternalPluginContext,
       ) => ({
+        gravity: { createGravityEngine },
         id: "targetingLaser",
         hooks: {
           controls: { updateControlState },
@@ -123,6 +126,10 @@ describe("external plugin runtime", () => {
     expect(Object.isFrozen(pluginContext?.profiler)).toBe(true);
     expect(Object.isFrozen(pluginContext?.snapshots)).toBe(true);
     expect(targetingLaser.id).toBe("targetingLaser");
+    const adaptedGravityEngine = targetingLaser.gravity?.createGravityEngine();
+    adaptedGravityEngine?.step(1, { bodyStates: [], positions: [] });
+    expect(createGravityEngine).toHaveBeenCalledOnce();
+    expect(gravityEngine.step).toHaveBeenCalledOnce();
     expect(targetingLaser.labels?.appendLabels).toBe(appendLabels);
     const firstBody = {
       id: "ship:first",

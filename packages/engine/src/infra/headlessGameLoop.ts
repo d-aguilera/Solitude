@@ -1,5 +1,6 @@
 import { createControlInput, type ControlInput } from "../app/controlPorts";
 import { createTickHandler } from "../app/game";
+import { resolveGravityEngine } from "../app/gravityProvider";
 import { createPluginCapabilityRegistry } from "../app/pluginCapabilities";
 import type {
   ControlPlugin,
@@ -11,13 +12,10 @@ import { validatePluginRequirements } from "../app/pluginRequirements";
 import { assembleSimulationPlugins } from "../app/pluginRuntime";
 import type { TickParams, WorldAndScene } from "../app/runtimePorts";
 import type { Scene } from "../app/scenePorts";
-import type { EntityId, GravityEngine } from "../domain/domainPorts";
-import { parameters } from "../global/parameters";
+import type { EntityId } from "../domain/domainPorts";
 import { createHeadlessWorld, type WorldConfigBase } from "../setup/setup";
-import { NewtonianGravityEngine } from "./NewtonianGravityEngine";
 
 export interface HeadlessLoopOptions {
-  gravityEngine?: GravityEngine;
   timeScale?: number;
   plugins?: GamePlugin[];
   capabilityProviders?: PluginCapabilityProvider[];
@@ -94,10 +92,6 @@ export function createHeadlessLoop(
     scene: EMPTY_SCENE,
   };
 
-  const gravityEngine: GravityEngine =
-    options.gravityEngine ??
-    new NewtonianGravityEngine(parameters.newtonG, parameters.softeningLength);
-
   const timeScale = options.timeScale ?? 1;
   const plugins = options.plugins ?? [];
   const simulationAssembly = assembleSimulationPlugins(
@@ -129,7 +123,7 @@ export function createHeadlessLoop(
   };
 
   const tick = createTickHandler(
-    gravityEngine,
+    resolveGravityEngine(plugins),
     worldAndScene,
     tickParams,
     simulationPlugins,

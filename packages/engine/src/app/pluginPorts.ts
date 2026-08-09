@@ -1,4 +1,4 @@
-import type { EntityId, World } from "../domain/domainPorts";
+import type { EntityId, GravityEngine, World } from "../domain/domainPorts";
 import type { Vec3 } from "../domain/vec3";
 import type { WorldAndSceneConfig } from "./configPorts";
 import type {
@@ -41,6 +41,10 @@ export interface PluginCapabilityProvider {
 
 export interface PluginCapabilityRegistry {
   getAll: (id: string) => readonly unknown[];
+}
+
+export interface GravityProvider {
+  createGravityEngine: () => GravityEngine;
 }
 
 export interface ControlPlugin {
@@ -311,6 +315,7 @@ export interface GamePlugin {
   id: string;
   capabilities?: readonly PluginCapabilityProvider[];
   controls?: ControlPlugin;
+  gravity?: GravityProvider;
   loop?: LoopPlugin;
   markers?: MarkerPlugin;
   segments?: SegmentPlugin;

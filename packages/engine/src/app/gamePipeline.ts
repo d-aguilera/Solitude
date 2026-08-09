@@ -1,7 +1,7 @@
-import type { GravityEngine } from "../domain/domainPorts";
 import type { WorldAndSceneConfig } from "./configPorts";
 import type { ControlInput } from "./controlPorts";
 import { createTickHandler } from "./game";
+import { resolveGravityEngine } from "./gravityProvider";
 import { createPluginCapabilityRegistry } from "./pluginCapabilities";
 import type {
   FramePolicy,
@@ -44,7 +44,6 @@ const EMPTY_ENTITY_CONTROL_INPUTS = new Map();
 export interface GamePipelineParams {
   config: WorldAndSceneConfig;
   controlInput: ControlInput;
-  gravityEngine: GravityEngine;
   plugins: readonly GamePlugin[];
   viewDefinitions: readonly ViewDefinition[];
   worldAndScene: WorldAndScene;
@@ -91,11 +90,11 @@ export interface GamePipeline {
 export function createGamePipeline({
   config,
   controlInput,
-  gravityEngine,
   plugins,
   viewDefinitions,
   worldAndScene,
 }: GamePipelineParams): GamePipeline {
+  const gravityEngine = resolveGravityEngine(plugins);
   const simulationAssembly = assembleSimulationPlugins(plugins, [], [], []);
   const capabilityRegistry = createPluginCapabilityRegistry(
     simulationAssembly.capabilityProviders,

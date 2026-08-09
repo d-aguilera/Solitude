@@ -45,14 +45,12 @@ const defaultRenderPassDebug: RenderPassDebug = {
 export function runLoop({
   config,
   views,
-  gravityEngine,
   controlInput,
   plugins,
 }: RunLoopParams): void {
   const pipeline = createConfiguredGamePipeline({
     config,
     controlInput,
-    gravityEngine,
     plugins,
     viewDefinitions: views.map((view) => view.definition),
   });

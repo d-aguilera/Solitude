@@ -2,14 +2,10 @@ import type { GamePlugin } from "@solitude/engine/plugin";
 import type { ViewDefinition } from "@solitude/engine/render";
 import { buildViewDefinitions } from "@solitude/engine/render";
 import {
+  createNewtonianGravityPlugin,
   createPluginCapabilityRegistry,
-  NewtonianGravityEngine,
-  parameters,
 } from "@solitude/engine/runtime";
-import type {
-  GravityEngine,
-  WorldAndSceneConfig,
-} from "@solitude/engine/world";
+import type { WorldAndSceneConfig } from "@solitude/engine/world";
 import { runLoop } from "./domGameLoop";
 import { initInput } from "./domKeyboardInput";
 import { initLayout, type LayoutView } from "./domLayout";
@@ -30,6 +26,7 @@ export function bootstrapWith(
   plugins: GamePlugin[],
   onFatalError: (failure: RenderFailure) => void,
 ): void {
+  plugins = [...plugins, createNewtonianGravityPlugin()];
   const textureSources = collectRenderTextureSources(
     createPluginCapabilityRegistry(plugins),
   );
@@ -54,17 +51,11 @@ export function bootstrapWith(
     { once: true },
   );
 
-  const gravityEngine: GravityEngine = new NewtonianGravityEngine(
-    parameters.newtonG,
-    parameters.softeningLength,
-  );
-
   const { controlInput } = initInput(plugins);
 
   runLoop({
     config,
     views,
-    gravityEngine,
     controlInput,
     plugins,
   });

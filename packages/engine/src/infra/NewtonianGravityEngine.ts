@@ -1,9 +1,27 @@
+import type { GamePlugin } from "../app/pluginPorts";
 import type {
   BodyState,
   GravityEngine,
   GravityState,
 } from "../domain/domainPorts";
 import { type Vec3, vec3 } from "../domain/vec3";
+import { parameters } from "../global/parameters";
+
+export const NEWTONIAN_GRAVITY_PLUGIN_ID = "newtonianGravity";
+
+/** Temporary host-composed provider until the implementation is external. */
+export function createNewtonianGravityPlugin(): GamePlugin {
+  return {
+    id: NEWTONIAN_GRAVITY_PLUGIN_ID,
+    gravity: {
+      createGravityEngine: () =>
+        new NewtonianGravityEngine(
+          parameters.newtonG,
+          parameters.softeningLength,
+        ),
+    },
+  };
+}
 
 export interface NewtonianGravityWorkspace {
   accelerations: Vec3[];

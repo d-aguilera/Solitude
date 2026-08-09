@@ -1,6 +1,7 @@
 import type {
   ControlPlugin,
   GamePlugin,
+  GravityProvider,
   LoopPlugin,
   LoopUpdateParams,
   LoopUpdateResult,
@@ -26,6 +27,7 @@ import {
   updateFocusContext,
 } from "@solitude/engine/runtime";
 import type { World } from "@solitude/engine/world";
+import type { ExternalGravityProvider } from "@solitude/plugin-api/gravity";
 import type {
   ExternalLoopPlugin,
   ExternalLoopUpdateParams,
@@ -81,11 +83,17 @@ const PLUGIN_PACK_KEYS = new Set(["host", "id", "plugins", "schemaVersion"]);
 const PLUGIN_SET_KEYS = new Set(["packs", "schemaVersion"]);
 const EXTERNAL_PLUGIN_KEYS = new Set([
   "capabilities",
+  "gravity",
   "hooks",
   "id",
   "requirements",
 ]);
-const EXTERNAL_SERVER_PLUGIN_KEYS = new Set(["capabilities", "hooks", "id"]);
+const EXTERNAL_SERVER_PLUGIN_KEYS = new Set([
+  "capabilities",
+  "gravity",
+  "hooks",
+  "id",
+]);
 const EXTERNAL_PLUGIN_HOOK_KEYS = new Set([
   "controls",
   "labels",
@@ -566,6 +574,9 @@ function validateExternalPlugin(
   if (plugin.hooks !== undefined && !isRecord(plugin.hooks)) {
     throw new Error(`External plugin ${expectedId} has invalid hooks`);
   }
+  if (hasInvalidHookFunctions(plugin.gravity, ["createGravityEngine"])) {
+    throw new Error(`External plugin ${expectedId} has invalid gravity`);
+  }
   const hooks = plugin.hooks;
   const allowedHookKeys =
     host === "browser"
@@ -703,6 +714,7 @@ function adaptExternalPlugin(
     id: plugin.id,
     capabilities: plugin.capabilities,
     controls: hooks?.controls as ControlPlugin | undefined,
+    gravity: adaptExternalGravity(plugin.gravity),
     labels: hooks?.labels as SceneLabelPlugin | undefined,
     loop: adaptExternalLoop(hooks?.loop),
     markers: hooks?.markers as MarkerPlugin | undefined,
@@ -716,6 +728,20 @@ function adaptExternalPlugin(
     viewControls: hooks?.viewControls as ViewControlPlugin | undefined,
     views: hooks?.views as ViewPlugin | undefined,
     worldModel: adaptExternalWorldModel(hooks?.worldModel),
+  };
+}
+
+function adaptExternalGravity(
+  external: ExternalGravityProvider | undefined,
+): GravityProvider | undefined {
+  if (external === undefined) return undefined;
+  return {
+    createGravityEngine: () => {
+      const engine = external.createGravityEngine();
+      return {
+        step: (dtSeconds, state) => engine.step(dtSeconds, state),
+      };
+    },
   };
 }
 

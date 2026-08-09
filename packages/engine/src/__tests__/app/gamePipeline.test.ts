@@ -64,8 +64,13 @@ describe("gamePipeline", () => {
         },
       },
       controlInput: createControlInput(),
-      gravityEngine,
-      plugins: [plugin],
+      plugins: [
+        plugin,
+        {
+          id: "test-gravity",
+          gravity: { createGravityEngine: () => gravityEngine },
+        },
+      ],
       viewDefinitions: [createViewDefinition()],
       worldAndScene,
     });

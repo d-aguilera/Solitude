@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { EntityConfig } from "../../app/entityConfigPorts";
-import type { SimulationPlugin } from "../../app/pluginPorts";
+import type { GamePlugin, SimulationPlugin } from "../../app/pluginPorts";
 import type { GravityEngine, GravityState } from "../../domain/domainPorts";
 import { localFrame } from "../../domain/localFrame";
 import { mat3 } from "../../domain/mat3";
 import { vec3 } from "../../domain/vec3";
-import { createHeadlessLoop } from "../../infra/headlessGameLoop";
+import {
+  createHeadlessLoop,
+  type HeadlessLoopOptions,
+} from "../../infra/headlessGameLoop";
+import { createNewtonianGravityPlugin } from "../../infra/NewtonianGravityEngine";
 import type { WorldConfigBase } from "../../setup/setup";
 
 function buildHeadlessConfig(): WorldConfigBase {
@@ -96,8 +100,8 @@ describe("headlessGameLoop", () => {
       afterCollisions: () => events.push("afterCollisions"),
       afterSpin: () => events.push("afterSpin"),
     };
-    const loop = createHeadlessLoop(buildHeadlessConfig(), {
-      gravityEngine,
+    const loop = createTestHeadlessLoop({
+      plugins: [createGravityPlugin("test-gravity", gravityEngine)],
       simulationPlugins: [simulationPlugin],
     });
 
@@ -127,7 +131,7 @@ describe("headlessGameLoop", () => {
         updateCount += 1;
       },
     };
-    const loop = createHeadlessLoop(buildHeadlessConfig(), {
+    const loop = createTestHeadlessLoop({
       simulationPlugins: [simulationPlugin],
     });
 
@@ -146,7 +150,7 @@ describe("headlessGameLoop", () => {
         if (input) observedInputs.push(input);
       },
     };
-    const loop = createHeadlessLoop(buildHeadlessConfig(), {
+    const loop = createTestHeadlessLoop({
       simulationPlugins: [simulationPlugin],
     });
 
@@ -162,7 +166,7 @@ describe("headlessGameLoop", () => {
   });
 
   it("runs a step without any render config or Solitude plugins", () => {
-    const loop = createHeadlessLoop(buildHeadlessConfig());
+    const loop = createTestHeadlessLoop();
     const before = vec3.clone(
       loop.worldAndScene.mainFocus.controlledBody.position,
     );
@@ -176,7 +180,7 @@ describe("headlessGameLoop", () => {
   });
 
   it("advances the focused body position over time", () => {
-    const loop = createHeadlessLoop(buildHeadlessConfig());
+    const loop = createTestHeadlessLoop();
     const before = vec3.clone(
       loop.worldAndScene.mainFocus.controlledBody.position,
     );
@@ -189,7 +193,7 @@ describe("headlessGameLoop", () => {
   });
 
   it("preserves the main focus in headless runs", () => {
-    const loop = createHeadlessLoop(buildHeadlessConfig());
+    const loop = createTestHeadlessLoop();
 
     expect(loop.worldAndScene.mainFocus.entityId).toBe("craft:test");
     expect(loop.worldAndScene.mainFocus.controlledBody.id).toBe("craft:test");
@@ -198,3 +202,18 @@ describe("headlessGameLoop", () => {
     );
   });
 });
+
+function createGravityPlugin(
+  id: string,
+  gravityEngine: GravityEngine,
+): GamePlugin {
+  return {
+    id,
+    gravity: { createGravityEngine: () => gravityEngine },
+  };
+}
+
+function createTestHeadlessLoop(options: HeadlessLoopOptions = {}) {
+  const plugins = options.plugins ?? [createNewtonianGravityPlugin()];
+  return createHeadlessLoop(buildHeadlessConfig(), { ...options, plugins });
+}

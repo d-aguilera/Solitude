@@ -5,10 +5,7 @@ import type {
   ViewRenderer,
 } from "@solitude/engine/render";
 import type { SceneOverlayRasterizer } from "@solitude/engine/render/ports";
-import type {
-  GravityEngine,
-  WorldAndSceneConfig,
-} from "@solitude/engine/world";
+import type { WorldAndSceneConfig } from "@solitude/engine/world";
 import type { OverlayRasterizer } from "./overlayPorts";
 
 export interface RunLoopView {
@@ -23,7 +20,6 @@ export interface RunLoopView {
 export interface RunLoopParams {
   config: WorldAndSceneConfig;
   views: RunLoopView[];
-  gravityEngine: GravityEngine;
   controlInput: ControlInput;
   plugins: GamePlugin[];
 }

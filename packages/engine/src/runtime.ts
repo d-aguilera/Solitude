@@ -5,6 +5,7 @@ export type {
   GamePipelineFrame,
   GamePipelineView,
 } from "./app/gamePipeline";
+export { resolveGravityEngine } from "./app/gravityProvider";
 export {
   applyAxialSpin,
   applyControlledBodyRotation,
@@ -55,7 +56,9 @@ export type {
   HeadlessLoopOptions,
 } from "./infra/headlessGameLoop";
 export {
+  NEWTONIAN_GRAVITY_PLUGIN_ID,
   NewtonianGravityEngine,
+  createNewtonianGravityPlugin,
   createNewtonianGravityWorkspace,
 } from "./infra/NewtonianGravityEngine";
 export type { NewtonianGravityWorkspace } from "./infra/NewtonianGravityEngine";

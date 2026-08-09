@@ -10,6 +10,7 @@
     "./controllable-entities": "./src/controllable-entities.ts",
     "./controls": "./src/controls.ts",
     "./entity-names": "./src/entity-names.ts",
+    "./gravity": "./src/gravity.ts",
     "./hud": "./src/hud.ts",
     "./input": "./src/input.ts",
     "./localization": "./src/localization.ts",

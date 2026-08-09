@@ -1,5 +1,6 @@
 import type { ExternalPluginCapabilityProvider } from "./capabilities";
 import type { ExternalControlPlugin } from "./controls";
+import type { ExternalGravityProvider } from "./gravity";
 import type { ExternalLoopPlugin } from "./loop";
 import type { ExternalProfilerControl } from "./profiling";
 import type { ExternalRuntimeOptions } from "./runtime";
@@ -40,6 +41,7 @@ export interface ExternalPluginHooks {
 export interface ExternalPluginBase {
   id: string;
   capabilities?: readonly ExternalPluginCapabilityProvider[];
+  gravity?: ExternalGravityProvider;
 }
 
 export interface ExternalBrowserPlugin extends ExternalPluginBase {

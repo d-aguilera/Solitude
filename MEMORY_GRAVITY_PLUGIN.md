@@ -18,7 +18,7 @@
 
 ## High-Level Plan
 
-1. **Establish a required gravity-provider contract.**
+1. **Required gravity-provider contract.**
    - Keep `GravityEngine` and `GravityState` as generic engine-owned domain
      contracts.
    - Add a typed gravity contribution to internal and focused external plugin
@@ -85,15 +85,15 @@
   reusable vector workspace.
 - `packages/engine/src/global/parameters.ts` owns the gravitational constant and
   softening length used by that implementation.
-- Browser bootstrap constructs the Newtonian engine directly. The generic
-  headless loop accepts an optional override but otherwise constructs the same
-  implementation directly.
-- Plugin assembly does not currently expose or resolve a gravity provider.
-  Generic capabilities are fan-out collections of unknown values and do not by
-  themselves enforce required-singleton semantics.
-- External browser and server plugin contracts do not currently contain a
-  gravity contribution. Server plugins intentionally expose only their narrow
-  authoritative hooks.
+- Internal and external plugin contracts expose a typed gravity-provider
+  contribution. External API v11 supports it in browser and server plugins
+  without widening general server simulation hooks.
+- Runtime composition requires exactly one gravity provider, rejects missing
+  or duplicate providers, validates the returned engine, and creates a fresh
+  engine for every game/runtime.
+- Browser and Solitude headless composition currently append a temporary
+  engine-owned Newtonian provider plugin. Generic headless composition has no
+  implicit gravity fallback.
 - `applyGravity` divides every simulated interval into exactly five substeps.
   The effective integration timestep therefore grows without bound as time
   scale grows, allowing orbital instability and degradation at high time
@@ -107,25 +107,22 @@
 
 ## Next Slice
 
-Establish the gravity-provider composition seam without physically moving the
-Newtonian implementation yet.
+Extract the Newtonian provider into a host-neutral external plugin.
 
-- Add a typed internal gravity contribution and a focused external plugin API
-  surface for creating a gravity engine.
-- Extend browser/server external plugin validation and adaptation for that
-  contribution, including any required plugin API version change.
-- Add one shared resolver that requires exactly one gravity provider and emits
-  clear missing/duplicate-provider setup errors.
-- Resolve a fresh provider instance per standalone or headless game before tick
-  construction.
-- Route browser and headless runtime creation through the resolver while using
-  the existing Newtonian implementation through a temporary composition
-  provider.
-- Add focused tests for valid, missing, duplicate, browser, server, and
-  per-runtime provider resolution.
-- Do not change integration mathematics, fixed substep behavior, or physical
-  package ownership in this slice.
+- Create an independently built `@solitude-plugins/newtonian-gravity` package
+  using only focused `@solitude/plugin-api/*` imports.
+- Move the Newtonian leapfrog implementation and reusable workspace into that
+  package without changing its mathematics.
+- Add the plugin to both host-specific Solitude content packs so standalone and
+  authoritative multiplayer discover it through normal deployment assembly.
+- Remove the temporary provider injection from browser and Solitude headless
+  composition.
+- Remove the concrete implementation and Newtonian parameters from the engine,
+  together with obsolete exports and tests that rely on an implicit provider.
+- Keep the fixed five-substep application policy unchanged in this slice.
+- Verify independently built plugin artifacts contain no forbidden bare host
+  imports and exercise browser, headless, and authoritative composition.
 
-The slice is complete when gravity selection is entirely plugin-driven at the
-runtime composition boundary and the remaining physical extraction is a move
-of the concrete provider rather than another host-wiring redesign.
+The slice is complete when no host or engine package constructs or imports a
+concrete Newtonian implementation and both products obtain gravity solely from
+their discovered content packs.

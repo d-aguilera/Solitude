@@ -124,6 +124,24 @@ describe(loadServerPluginSet.name, () => {
     ).toEqual({ pitch: 1, roll: 2, yaw: 3 });
   });
 
+  it("adapts authoritative gravity providers", async () => {
+    const root = await createTemporaryDirectory();
+    await writePlugin(root, "content", "gravity", "gravity", 42);
+    await writeFile(
+      resolve(root, "packs/content/gravity/index.mjs"),
+      'export function createPlugin() { return { id: "gravity", gravity: { createGravityEngine() { return { step() {} }; } } }; }\n',
+    );
+    await writePack(root, "content", ["./gravity/plugin.json"]);
+    const pluginSetPath = await writePluginSet(root, [
+      "./packs/content/pack.json",
+    ]);
+
+    const loaded = await loadServerPluginSet(pluginSetPath);
+    const engine = loaded.catalog.gravity({}).gravity?.createGravityEngine();
+
+    expect(engine?.step).toEqual(expect.any(Function));
+  });
+
   it("adapts authoritative vehicle dynamics contributions", async () => {
     const root = await createTemporaryDirectory();
     await writePlugin(
