@@ -80,20 +80,19 @@
   and refreshed by engine application code.
 - `createTickHandler` receives a concrete gravity engine and invokes gravity
   between vehicle-dynamics hooks and collision resolution.
-- `packages/engine/src/infra/NewtonianGravityEngine.ts` owns the concrete
-  all-pairs Newtonian calculation, leapfrog kick-drift-kick integration, and
-  reusable vector workspace.
-- `packages/engine/src/global/parameters.ts` owns the gravitational constant and
-  softening length used by that implementation.
+- `plugins/newtonian-gravity` owns the concrete all-pairs Newtonian
+  calculation, leapfrog kick-drift-kick integration, softening configuration,
+  gravitational constant used by the integrator, and reusable vector
+  workspace.
 - Internal and external plugin contracts expose a typed gravity-provider
   contribution. External API v11 supports it in browser and server plugins
   without widening general server simulation hooks.
 - Runtime composition requires exactly one gravity provider, rejects missing
   or duplicate providers, validates the returned engine, and creates a fresh
   engine for every game/runtime.
-- Browser and Solitude headless composition currently append a temporary
-  engine-owned Newtonian provider plugin. Generic headless composition has no
-  implicit gravity fallback.
+- Both host-specific Solitude content packs discover the host-neutral
+  `newtonianGravity` provider before other content plugins. Browser and
+  headless hosts have no concrete gravity imports or implicit fallback.
 - `applyGravity` divides every simulated interval into exactly five substeps.
   The effective integration timestep therefore grows without bound as time
   scale grows, allowing orbital instability and degradation at high time
@@ -107,22 +106,20 @@
 
 ## Next Slice
 
-Extract the Newtonian provider into a host-neutral external plugin.
+Bound Newtonian integration steps independently of time scale.
 
-- Create an independently built `@solitude-plugins/newtonian-gravity` package
-  using only focused `@solitude/plugin-api/*` imports.
-- Move the Newtonian leapfrog implementation and reusable workspace into that
-  package without changing its mathematics.
-- Add the plugin to both host-specific Solitude content packs so standalone and
-  authoritative multiplayer discover it through normal deployment assembly.
-- Remove the temporary provider injection from browser and Solitude headless
-  composition.
-- Remove the concrete implementation and Newtonian parameters from the engine,
-  together with obsolete exports and tests that rely on an implicit provider.
-- Keep the fixed five-substep application policy unchanged in this slice.
-- Verify independently built plugin artifacts contain no forbidden bare host
-  imports and exercise browser, headless, and authoritative composition.
+- Change engine application code to call the gravity engine once for each
+  requested simulated interval instead of imposing five fixed substeps.
+- Add a positive finite maximum-step configuration to the Newtonian provider
+  and perform allocation-free subdivision inside its `step` operation.
+- Choose an initial maximum timestep from measured regression scenarios rather
+  than presentation cadence or a time-scale multiplier.
+- Add orbital energy/trajectory regression coverage across ordinary and high
+  time scales, plus exact step-count boundary tests.
+- Define and test the compute-budget behavior used when requested time warp
+  cannot be completed within the available wall-clock tick budget.
+- Preserve synchronous completion and immediately available CPU world state.
 
-The slice is complete when no host or engine package constructs or imports a
-concrete Newtonian implementation and both products obtain gravity solely from
-their discovered content packs.
+The slice is complete when increasing time scale increases the number of
+bounded Newtonian steps rather than their size, and extreme time warp cannot
+silently reduce numerical accuracy.

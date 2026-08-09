@@ -1,7 +1,9 @@
 {
-  "generatedAt": "2026-08-08T20:32:27.051Z",
+  "generatedAt": "2026-08-09T17:08:55.400Z",
   "generator": "scripts/generate-architecture-map.mjs",
-  "notes": ["Package dependencies come from workspace package manifests."],
+  "notes": [
+    "Package dependencies come from workspace package manifests."
+  ],
   "repoRoot": "solitude",
   "nodes": [
     {
@@ -21,6 +23,12 @@
       "kind": "package",
       "label": "@solitude-plugins/multiplayer-pack-v1",
       "packageName": "@solitude-plugins/multiplayer-pack-v1"
+    },
+    {
+      "id": "pkg:@solitude-plugins/newtonian-gravity",
+      "kind": "package",
+      "label": "@solitude-plugins/newtonian-gravity",
+      "packageName": "@solitude-plugins/newtonian-gravity"
     },
     {
       "id": "pkg:@solitude-plugins/poly-fighter",
@@ -175,6 +183,12 @@
       "to": "pkg:@solitude/plugin-api"
     },
     {
+      "id": "dependency:pkg:@solitude-plugins/newtonian-gravity->pkg:@solitude/plugin-api",
+      "from": "pkg:@solitude-plugins/newtonian-gravity",
+      "kind": "dependency",
+      "to": "pkg:@solitude/plugin-api"
+    },
+    {
       "id": "dependency:pkg:@solitude-plugins/poly-fighter->pkg:@solitude/plugin-api",
       "from": "pkg:@solitude-plugins/poly-fighter",
       "kind": "dependency",
@@ -197,6 +211,12 @@
       "from": "pkg:@solitude-plugins/solitude-content-pack",
       "kind": "dependency",
       "to": "pkg:@solitude-plugins/autopilot"
+    },
+    {
+      "id": "dependency:pkg:@solitude-plugins/solitude-content-pack->pkg:@solitude-plugins/newtonian-gravity",
+      "from": "pkg:@solitude-plugins/solitude-content-pack",
+      "kind": "dependency",
+      "to": "pkg:@solitude-plugins/newtonian-gravity"
     },
     {
       "id": "dependency:pkg:@solitude-plugins/solitude-content-pack->pkg:@solitude-plugins/poly-fighter",

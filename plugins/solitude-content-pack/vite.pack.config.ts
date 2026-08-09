@@ -5,6 +5,11 @@ import { defineConfig } from "vite";
 
 const pluginEntries = [
   {
+    directory: "newtonian-gravity",
+    id: "newtonianGravity",
+    source: new URL("../newtonian-gravity/src/index.ts", import.meta.url),
+  },
+  {
     directory: "solar-system",
     id: "solarSystem",
     source: new URL("../solar-system/src/index.ts", import.meta.url),

@@ -9,7 +9,6 @@ import {
   createHeadlessLoop,
   type HeadlessLoopOptions,
 } from "../../infra/headlessGameLoop";
-import { createNewtonianGravityPlugin } from "../../infra/NewtonianGravityEngine";
 import type { WorldConfigBase } from "../../setup/setup";
 
 function buildHeadlessConfig(): WorldConfigBase {
@@ -214,6 +213,18 @@ function createGravityPlugin(
 }
 
 function createTestHeadlessLoop(options: HeadlessLoopOptions = {}) {
-  const plugins = options.plugins ?? [createNewtonianGravityPlugin()];
+  const plugins = options.plugins ?? [
+    createGravityPlugin("test-gravity", {
+      step: (dtSeconds, state) => {
+        for (let i = 0; i < state.bodyStates.length; i++) {
+          const position = state.positions[i];
+          const velocity = state.bodyStates[i].velocity;
+          position.x += velocity.x * dtSeconds;
+          position.y += velocity.y * dtSeconds;
+          position.z += velocity.z * dtSeconds;
+        }
+      },
+    }),
+  ];
   return createHeadlessLoop(buildHeadlessConfig(), { ...options, plugins });
 }

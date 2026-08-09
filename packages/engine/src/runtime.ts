@@ -55,10 +55,3 @@ export type {
   HeadlessLoop,
   HeadlessLoopOptions,
 } from "./infra/headlessGameLoop";
-export {
-  NEWTONIAN_GRAVITY_PLUGIN_ID,
-  NewtonianGravityEngine,
-  createNewtonianGravityPlugin,
-  createNewtonianGravityWorkspace,
-} from "./infra/NewtonianGravityEngine";
-export type { NewtonianGravityWorkspace } from "./infra/NewtonianGravityEngine";

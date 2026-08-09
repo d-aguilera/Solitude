@@ -38,7 +38,7 @@
 
 - **Primary active work**: gravity-provider extraction and high-time-scale
   integration hardening. See `MEMORY_GRAVITY_PLUGIN.md`.
-- **Current extraction frontier**: physical product-plugin extraction is complete. No product plugin implementation remains in a host package; both products discover `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` through their Solitude content packs.
+- **Current extraction frontier**: physical product-plugin extraction is complete. No product plugin implementation remains in a host package; both products discover `newtonianGravity`, `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` through their Solitude content packs.
 - **Discovery foundation**: browser and server discovery, multi-plugin packs, strict manifests, target-specific assembly, origin/path security, and schema-v3 single-host packs are in place. Preserve the rule that a pack is an atomic host-specific activation unit.
 - **Headless playback**: still unresolved and not archived, but it is a dormant backlog item rather than the active path. See `MEMORY_HEADLESS_PLAYBACK.md`.
 - **GPU rendering state**: WebGL2 is the sole solid-mesh renderer for standalone and remote play. WebGL also owns depth-tested trajectory and world-segment ribbons; Canvas remains for scene labels, markers, and HUD. The engine CPU-face pipeline and Canvas backend have been removed. Historical rendering roadmaps live in `archive/MEMORY_GPU_RENDERING.md` and `archive/MEMORY_GPU_POLYLINES.md`.
@@ -74,7 +74,7 @@
 
 ## Package Snapshot
 
-- `packages/engine/src/`: generic domain/app/setup/render/global source plus generic gravity and headless runtime.
+- `packages/engine/src/`: generic domain/app/setup/render/global source plus gravity contracts/state orchestration and headless runtime.
 - `packages/geometry/src/`: dependency-free portable vector, matrix, ray/sphere, triangle-mesh volume, and Wavefront OBJ primitives shared by engine and the controlled external plugin API.
 - `packages/hud/src/`: generic HUD grid and HUD panel capability contracts shared by browser, client, Solitude, and external plugins.
 - `packages/input/src/`: outer keyboard input-provider contracts; plugins publish bindings/handlers through generic engine capabilities and browser adapters consume them.
@@ -90,9 +90,9 @@
 - `packages/multiplayer/src/`: Solitude-specific authoritative game composition and deployable server entrypoint, including server plugin discovery and use of the shared headless simulation.
 - `packages/solitude/src/`: standalone browser bootstrap, renderer-failure localization, and the static browser HUD host adapter; it owns no product plugin implementation.
 - `plugins/core-pack-v1/`: independently built browser pack discovered at runtime by standalone and remote clients. It contains autopilot-input, autopilot-HUD, axial-view, body-label, main-view-lookaround, orbit-segment, orbit-telemetry, runtime-telemetry, ship-telemetry, solar-system-material, targeting-laser, trajectory, and velocity-segment plugins plus pack-owned texture assets.
-- `plugins/poly-fighter/`, `plugins/solar-system/`, `plugins/autopilot/`, and `plugins/spacecraft-operator/`: external implementations owning fighter content, solar-system content, autopilot control, and spacecraft dynamics/browser controls respectively.
-- `plugins/solitude-content-pack/`: shared four-entry build configuration for the separate browser and server content deployment packs.
-- `plugins/solitude-content-browser-pack-v1/` and `plugins/solitude-content-server-pack-v1/`: thin single-host deployment packs that bundle the ordered `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` implementations.
+- `plugins/newtonian-gravity/`, `plugins/poly-fighter/`, `plugins/solar-system/`, `plugins/autopilot/`, and `plugins/spacecraft-operator/`: external implementations owning Newtonian integration, fighter content, solar-system content, autopilot control, and spacecraft dynamics/browser controls respectively.
+- `plugins/solitude-content-pack/`: shared five-entry build configuration for the separate browser and server content deployment packs.
+- `plugins/solitude-content-browser-pack-v1/` and `plugins/solitude-content-server-pack-v1/`: thin single-host deployment packs that bundle the ordered `newtonianGravity`, `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` implementations.
 - `plugins/multiplayer-pack-v1/`: independently built multiplayer-only browser plugin pack containing the remote identity HUD and localized ship-color entity names.
 - `plugins/standalone-pack-v1/`: independently built standalone-only browser plugin pack containing default ships, diagnostic playback, pause and time-scale controls/HUD, memory telemetry, profiling controls/HUD, and runtime operator focus switching.
 - Production and test source lives under `packages/*`; the root `src` directory has been removed.
@@ -102,7 +102,7 @@
 
 - `packages/solitude/index.html` loads `packages/solitude/src/bootstrap.ts`.
 - Solitude bootstrap discovers and imports the external browser plugin set, combines its factories with the browser HUD host adapter, builds config, and calls browser runtime bootstrap.
-- `packages/browser/src/infra/domBootstrap.ts` wires DOM input, layout, renderers, browser frame scheduling, and the gravity engine.
+- `packages/browser/src/infra/domBootstrap.ts` wires DOM input, layout, renderers, browser frame scheduling, and the discovered plugin set.
 - `packages/engine/src/infra/configuredGamePipeline.ts` constructs the standalone world/scene and creates the engine-owned application pipeline.
 - `packages/engine/src/app/gamePipeline.ts` owns plugin assembly, frame policy, simulation, scene/view updates, and per-view render contributions; `packages/engine/src/app/game.ts` runs the per-tick simulation phases.
 - `packages/browser/src/infra/domGameLoop.ts` schedules animation frames, invokes the engine pipeline, renders through generic view renderers, and rasterizes scene/HUD overlays.
@@ -124,7 +124,10 @@
 - The host-neutral `autopilot` plugin contributes control behavior and capabilities through both Solitude content packs. Its `autopilotInput` and `autopilotHud` siblings in `core-pack-v1` own browser keyboard bindings and the localized HUD panel/message bundles respectively; server/headless composition does not instantiate either browser-facing plugin.
 - Runtime focus switching lives in the external `operatorSwitch` plugin in `standalone-pack-v1`; `Tab` swaps foreground focus between `ship:blue` and `ship:red` through the loop API's controlled focus operation.
 - During playback, `Tab` may switch the viewed focus while recorded controls continue applying to the entity focused when each playback phase was recorded.
-- Core owns generic focus, primary-view plumbing, simulation phase order, gravity, spin, collision, setup, render preparation, and plugin port/capability contracts.
+- Core owns generic focus, primary-view plumbing, simulation phase order,
+  gravity contracts/state orchestration, spin, collision, setup, render
+  preparation, and plugin port/capability contracts. The external
+  `newtonianGravity` provider owns concrete gravity integration.
 - The engine-owned configured game pipeline constructs standalone runtime state and coordinates frame policy, simulation, scene/view updates, and render contributions. Browser runtime code is limited to frame scheduling and presentation adapters.
 - Standalone and headless runtimes share simulation-plugin capability/control assembly through `packages/engine/src/app/pluginRuntime.ts`. Solitude headless composition accepts one required ordered `plugins` collection; callers instantiate static and discovered factories with runtime options before creating the loop.
 - External plugins can declare `requirements.focusEntity` for focused-entity capabilities not guaranteed by `ExternalFocusContext`; the external runtime translates them to the engine's internal `mainFocus` requirement scope, and DOM/headless setup validates them against the assembled world with hard setup errors. External contribution callbacks are grouped under `ExternalPlugin.hooks`, while the required singleton gravity provider is a typed top-level contribution. API v11 retains the browser lifecycle and frozen snapshot facade, and permits server gravity providers plus authoritative `controls`, `simulation.updateVehicleDynamics`, and pre-runtime `worldModel` hooks. Server requirements and browser-only phases remain rejected.
@@ -151,7 +154,7 @@
 
 ## Key Files
 
-- `packages/engine/src/infra/NewtonianGravityEngine.ts`: N-body gravity with leapfrog integration.
+- `plugins/newtonian-gravity/src/index.ts`: external host-neutral N-body gravity provider with leapfrog integration.
 - `packages/engine/src/app/gamePipeline.ts`: application-level standalone frame pipeline and per-view contribution preparation.
 - `packages/engine/src/app/pluginRuntime.ts`: shared simulation-plugin capability, control, and simulation assembly used by standalone and headless runtimes.
 - `packages/engine/src/infra/configuredGamePipeline.ts`: engine composition factory that constructs the world/scene and application pipeline.
@@ -224,9 +227,9 @@
 
 ## Next Steps Snapshot
 
-- Gravity is the active multi-slice extraction. The provider seam is in place;
-  the next slice moves the Newtonian implementation into a host-neutral
-  external plugin discovered through both Solitude content packs. See
+- Gravity is the active multi-slice extraction. The provider and physical
+  package boundaries are in place; the next slice replaces fixed host-side
+  substeps with bounded provider-owned integration stepping. See
   `MEMORY_GRAVITY_PLUGIN.md`.
 - Physical package decoupling is complete: product behavior is selected through independently built runtime deployment units, with only generic host adapters remaining static.
 - Headless playback remains unresolved and active as a tracked topic, but is deprioritized until explicitly resumed. See `MEMORY_HEADLESS_PLAYBACK.md`.

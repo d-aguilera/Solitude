@@ -1,7 +1,6 @@
 import type { GamePlugin } from "@solitude/engine/plugin";
 import {
   createHeadlessLoop,
-  createNewtonianGravityPlugin,
   type HeadlessLoop,
 } from "@solitude/engine/runtime";
 import {
@@ -25,7 +24,7 @@ export function createSolitudeHeadlessLoop(
   options: SolitudeHeadlessLoopOptions,
 ): SolitudeHeadlessLoop {
   const config = buildWorldAndSceneConfig();
-  const plugins = [...options.plugins, createNewtonianGravityPlugin()];
+  const plugins = [...options.plugins];
 
   applyWorldModelPlugins(config, plugins);
   if (options.extraEntities) {

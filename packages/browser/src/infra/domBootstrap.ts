@@ -1,10 +1,7 @@
 import type { GamePlugin } from "@solitude/engine/plugin";
 import type { ViewDefinition } from "@solitude/engine/render";
 import { buildViewDefinitions } from "@solitude/engine/render";
-import {
-  createNewtonianGravityPlugin,
-  createPluginCapabilityRegistry,
-} from "@solitude/engine/runtime";
+import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { WorldAndSceneConfig } from "@solitude/engine/world";
 import { runLoop } from "./domGameLoop";
 import { initInput } from "./domKeyboardInput";
@@ -26,7 +23,6 @@ export function bootstrapWith(
   plugins: GamePlugin[],
   onFatalError: (failure: RenderFailure) => void,
 ): void {
-  plugins = [...plugins, createNewtonianGravityPlugin()];
   const textureSources = collectRenderTextureSources(
     createPluginCapabilityRegistry(plugins),
   );

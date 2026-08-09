@@ -124,6 +124,50 @@ const createTestAutopilotPlugin: PluginFactory = () => ({
   id: "autopilot",
 });
 
+const createTestGravityPlugin: PluginFactory = () => ({
+  gravity: {
+    createGravityEngine: () => ({
+      step: (dtSeconds, state) => {
+        for (let i = 0; i < state.bodyStates.length; i++) {
+          for (let j = i + 1; j < state.bodyStates.length; j++) {
+            const dx = state.positions[j].x - state.positions[i].x;
+            const dy = state.positions[j].y - state.positions[i].y;
+            const dz = state.positions[j].z - state.positions[i].z;
+            const radiusSq = dx * dx + dy * dy + dz * dz + 1;
+            const inverseRadius = 1 / Math.sqrt(radiusSq);
+            const inverseRadiusCubed =
+              inverseRadius * inverseRadius * inverseRadius;
+            const scaleI =
+              6.6743e-11 *
+              state.bodyStates[j].mass *
+              inverseRadiusCubed *
+              dtSeconds;
+            const scaleJ =
+              6.6743e-11 *
+              state.bodyStates[i].mass *
+              inverseRadiusCubed *
+              dtSeconds;
+            state.bodyStates[i].velocity.x += dx * scaleI;
+            state.bodyStates[i].velocity.y += dy * scaleI;
+            state.bodyStates[i].velocity.z += dz * scaleI;
+            state.bodyStates[j].velocity.x -= dx * scaleJ;
+            state.bodyStates[j].velocity.y -= dy * scaleJ;
+            state.bodyStates[j].velocity.z -= dz * scaleJ;
+          }
+        }
+        for (let i = 0; i < state.bodyStates.length; i++) {
+          const position = state.positions[i];
+          const velocity = state.bodyStates[i].velocity;
+          position.x += velocity.x * dtSeconds;
+          position.y += velocity.y * dtSeconds;
+          position.z += velocity.z * dtSeconds;
+        }
+      },
+    }),
+  },
+  id: "newtonianGravity",
+});
+
 const createTestSpacecraftOperatorPlugin: PluginFactory = () => ({
   id: "spacecraftOperator",
   simulation: {
@@ -180,9 +224,16 @@ export const testMultiplayerContentPlugins: DefaultMultiplayerContentPluginSet =
   {
     catalog: {
       autopilot: createTestAutopilotPlugin,
+      newtonianGravity: createTestGravityPlugin,
       polyFighter: createTestPolyFighterPlugin,
       solarSystem: createTestSolarSystemPlugin,
       spacecraftOperator: createTestSpacecraftOperatorPlugin,
     },
-    ids: ["solarSystem", "autopilot", "spacecraftOperator", "polyFighter"],
+    ids: [
+      "newtonianGravity",
+      "solarSystem",
+      "autopilot",
+      "spacecraftOperator",
+      "polyFighter",
+    ],
   };
