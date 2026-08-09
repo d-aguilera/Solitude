@@ -17,13 +17,13 @@
 
 ### Active
 
-- `MEMORY_GRAVITY_PLUGIN.md`: active roadmap for extracting Newtonian gravity
-  into a required external provider and improving high-time-scale integration
-  accuracy and CPU throughput.
 - `MEMORY_HEADLESS_PLAYBACK.md`: unresolved but currently deprioritized work for running recorded playback scenarios end-to-end without the browser.
 
 ### Complete / Archived
 
+- `archive/MEMORY_GRAVITY_PLUGIN.md`: completed current-state reference for the
+  required external Newtonian gravity provider, bounded high-time-scale
+  integration, and typed-array CPU implementation.
 - `archive/MEMORY_PACKAGE_DECOUPLING.md`: completed roadmap for external plugin packages, runtime discovery, single-host packs, and physical extraction.
 - `archive/MEMORY_PACKAGE_SPLIT.md`: archived package-split record for `@solitude/engine`, `@solitude/browser`, and `solitude`; consult before package boundary/export changes.
 - `archive/MEMORY_OPERATOR_MODEL.md`: archived strategy for moving main ship/control/camera behavior into plugin-defined operator modes around a generic focused entity.
@@ -36,8 +36,9 @@
 
 ## Current focus
 
-- **Primary active work**: gravity-provider extraction and high-time-scale
-  integration hardening. See `MEMORY_GRAVITY_PLUGIN.md`.
+- **Primary active work**: no migration roadmap is currently active; gravity
+  plugin extraction is complete and headless playback remains deliberately
+  dormant.
 - **Current extraction frontier**: physical product-plugin extraction is complete. No product plugin implementation remains in a host package; both products discover `newtonianGravity`, `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` through their Solitude content packs.
 - **Discovery foundation**: browser and server discovery, multi-plugin packs, strict manifests, target-specific assembly, origin/path security, and schema-v3 single-host packs are in place. Preserve the rule that a pack is an atomic host-specific activation unit.
 - **Headless playback**: still unresolved and not archived, but it is a dormant backlog item rather than the active path. See `MEMORY_HEADLESS_PLAYBACK.md`.
@@ -62,7 +63,7 @@
 - **Performance is paramount**: CPU time, memory consumption, and garbage collection pressure come before everything else.
 - **Onion layering**: domain core → app logic → infra adapters. Outer layers depend inward, even if it costs performance.
 - **Plugin imports**: plugin implementation modules may be imported only by same-plugin code, tests, or composition modules. `npm run check:boundaries` enforces this together with workspace dependency/export rules and the external-plugin import boundary.
-- **External plugin imports and trust**: packages under `plugins/*` may import only exported `@solitude/plugin-api/*` subpaths from the host workspace; the package deliberately has no root or catch-all plugin export, so plugins select focused module, runtime, capability, controllable-entity, asset, input, HUD, presentation, multiplayer, telemetry, control, loop, simulation, snapshot, render, scene, view, world, localization, math, entity-name, or manifest surfaces. Their emitted modules must be self-contained and are loaded through versioned manifests with no static host fallback. Browser loading starts from same-origin `plugins/loader.json`; every resolved document/module origin must be explicitly allowed, JSON redirects fail, and page CSP defaults plugin execution to `script-src 'self'`. Server loading starts from an explicitly configured local plugin-set document and requires all pack/plugin documents and declared module entries to remain under its real-path root.
+- **External plugin imports and trust**: packages under `plugins/*` may import only exported `@solitude/plugin-api/*` subpaths from the host workspace; the package deliberately has no root or catch-all plugin export, so plugins select focused module, runtime, capability, gravity, controllable-entity, asset, input, HUD, presentation, multiplayer, telemetry, control, loop, simulation, snapshot, render, scene, view, world, localization, math, entity-name, or manifest surfaces. Their emitted modules must be self-contained and are loaded through versioned manifests with no static host fallback. Browser loading starts from same-origin `plugins/loader.json`; every resolved document/module origin must be explicitly allowed, JSON redirects fail, and page CSP defaults plugin execution to `script-src 'self'`. Server loading starts from an explicitly configured local plugin-set document and requires all pack/plugin documents and declared module entries to remain under its real-path root.
 - **Known exception**: `packages/engine/src/global/` is a deliberate carve-out and may violate onion rules. Do not treat it as a layering issue.
 - **Physics**: Newtonian N-body with leapfrog integration for stability.
 - **Solar-system data**: use real-ish values (AU, km, approximate J2000 elements) for plausibility.
@@ -227,10 +228,10 @@
 
 ## Next Steps Snapshot
 
-- Gravity is the active multi-slice extraction. The provider, physical package,
-  bounded integration-step, and optimized CPU data-layout policies are in
-  place; the next slice audits and closes the extraction boundary. See
-  `MEMORY_GRAVITY_PLUGIN.md`.
+- Gravity plugin extraction is complete: both products discover the required
+  external Newtonian provider, high-time-scale intervals use bounded provider
+  steps, and the measured typed-array force loop is retained. See
+  `archive/MEMORY_GRAVITY_PLUGIN.md`.
 - Physical package decoupling is complete: product behavior is selected through independently built runtime deployment units, with only generic host adapters remaining static.
 - Headless playback remains unresolved and active as a tracked topic, but is deprioritized until explicitly resumed. See `MEMORY_HEADLESS_PLAYBACK.md`.
 - Operator runtime focus switching is extracted and closed; foreground/background UX and declarative input lock policy remain deferred in `archive/MEMORY_OPERATOR_MODEL.md`.

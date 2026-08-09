@@ -193,6 +193,8 @@ contribution types.
 
 - `solitude-content-browser-pack-v1`: browser gameplay content activated by
   both browser products. It currently contains:
+  - `newtonianGravity`: required Newtonian N-body gravity provider with bounded
+    leapfrog integration and reusable typed-array workspace.
   - `solarSystem`: solar-system world entities, celestial-body lookup, and
     localized entity names.
   - `autopilot`: headless attitude and propulsion control behavior.
@@ -203,14 +205,14 @@ contribution types.
 
 - `solitude-content-server-pack-v1`: authoritative gameplay content using the
   capability and pre-runtime world-model surfaces. It contains the same
-  `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter`
-  implementations used by the browser content pack. Its spacecraft-operator
-  entry omits browser-only contributions.
+  `newtonianGravity`, `solarSystem`, `autopilot`, `spacecraftOperator`, and
+  `polyFighter` implementations used by the browser content pack. Its
+  spacecraft-operator entry omits browser-only contributions.
 
 Both content packs use the shared `@solitude-plugins/solitude-content-pack`
 build configuration and bundle the implementations owned by
-`@solitude-plugins/solar-system`, `@solitude-plugins/autopilot`,
-`@solitude-plugins/spacecraft-operator`, and
+`@solitude-plugins/newtonian-gravity`, `@solitude-plugins/solar-system`,
+`@solitude-plugins/autopilot`, `@solitude-plugins/spacecraft-operator`, and
 `@solitude-plugins/poly-fighter`. Host-neutral modules are identical; the
 spacecraft operator has thin browser/server entries over shared dynamics.
 

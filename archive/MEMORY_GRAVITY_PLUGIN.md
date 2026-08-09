@@ -1,4 +1,4 @@
-# Gravity Plugin Roadmap
+# Gravity Plugin
 
 ## Purpose
 
@@ -121,21 +121,9 @@
 
 ## Next Slice
 
-Close and verify the gravity extraction boundary.
-
-- Audit engine, browser, composition, multiplayer, external API, and deployment
-  code for obsolete concrete-gravity imports, defaults, parameters, and names.
-- Confirm missing/duplicate/invalid provider errors remain hard setup failures
-  in browser and headless composition.
-- Confirm browser/server plugin artifacts are self-contained and both deployed
-  content packs contain `newtonianGravity` with API v11 manifests.
-- Run full typecheck, boundary checks, tests, plugin builds, deployable builds,
-  formatting, and architecture-map generation.
-- Keep substantive architecture-map changes and remove timestamp-only churn.
-- Reduce this document and `MEMORY.md` to the final current-state picture, move
-  the roadmap to the archived set, and leave any future physics work as
-  explicitly scoped follow-ups.
-
-The plan is complete when no extraction work remains, the required provider is
-present in every product composition, all verification passes, and the memory
-router marks this roadmap complete.
+- No gravity extraction slice remains.
+- Treat further integrator policy, alternative algorithms, parallel execution,
+  or GPU experiments as new explicitly scoped work rather than continuation of
+  this plan.
+- Use `npm run bench:gravity` before changing the force-loop data layout or
+  claiming performance improvements.
