@@ -1,9 +1,7 @@
 import type {
-  ExternalGravityBodyState,
   ExternalGravityEngine,
   ExternalGravityState,
 } from "@solitude/plugin-api/gravity";
-import { vec3, type Vec3 } from "@solitude/plugin-api/math";
 import type { ExternalPlugin } from "@solitude/plugin-api/module";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 
@@ -13,20 +11,20 @@ export const DEFAULT_MAX_GRAVITY_STEP_SECONDS = 10;
 export const maxGravityStepSecondsRuntimeOption = "maxGravityStepSeconds";
 
 export interface NewtonianGravityWorkspace {
-  accelerations: Vec3[];
-  scratchD: Vec3;
-  scratchScaled: Vec3;
-  scratchDeltaPos: Vec3;
-  scratchDeltaVel: Vec3;
+  accelerations: Float64Array;
+  masses: Float64Array;
+  positions: Float64Array;
+  velocities: Float64Array;
 }
 
-export function createNewtonianGravityWorkspace(): NewtonianGravityWorkspace {
+export function createNewtonianGravityWorkspace(
+  bodyCapacity = 0,
+): NewtonianGravityWorkspace {
   return {
-    accelerations: [],
-    scratchD: vec3.zero(),
-    scratchScaled: vec3.zero(),
-    scratchDeltaPos: vec3.zero(),
-    scratchDeltaVel: vec3.zero(),
+    accelerations: new Float64Array(bodyCapacity * 3),
+    masses: new Float64Array(bodyCapacity),
+    positions: new Float64Array(bodyCapacity * 3),
+    velocities: new Float64Array(bodyCapacity * 3),
   };
 }
 
@@ -42,103 +40,119 @@ export class NewtonianGravityEngine implements ExternalGravityEngine {
 
   step(dtSeconds: number, state: ExternalGravityState): void {
     if (dtSeconds === 0) return;
-
     if (!Number.isFinite(dtSeconds)) {
       throw new Error("Gravity step duration must be finite");
     }
-    if (state.bodyStates.length === 0) return;
+
+    const bodyCount = state.bodyStates.length;
+    if (bodyCount === 0) return;
+    this.readCanonicalState(state, bodyCount);
 
     const stepCount = getGravitySubstepCount(dtSeconds, this.maxStepSeconds);
     const substepSeconds = dtSeconds / stepCount;
     for (let i = 0; i < stepCount; i++) {
-      this.stepLeapfrog(substepSeconds, state);
+      this.computeGravityAccelerations(bodyCount);
+      this.kickBodyVelocities(bodyCount, substepSeconds * 0.5);
+      this.driftBodyPositions(bodyCount, substepSeconds);
+      this.computeGravityAccelerations(bodyCount);
+      this.kickBodyVelocities(bodyCount, substepSeconds * 0.5);
+    }
+
+    this.writeCanonicalState(state, bodyCount);
+  }
+
+  private readCanonicalState(
+    state: ExternalGravityState,
+    bodyCount: number,
+  ): void {
+    ensureWorkspaceCapacity(this.workspace, bodyCount);
+    const masses = this.workspace.masses;
+    const positions = this.workspace.positions;
+    const velocities = this.workspace.velocities;
+    for (let i = 0; i < bodyCount; i++) {
+      const offset = i * 3;
+      const position = state.positions[i];
+      const body = state.bodyStates[i];
+      masses[i] = body.mass;
+      positions[offset] = position.x;
+      positions[offset + 1] = position.y;
+      positions[offset + 2] = position.z;
+      velocities[offset] = body.velocity.x;
+      velocities[offset + 1] = body.velocity.y;
+      velocities[offset + 2] = body.velocity.z;
     }
   }
 
-  private stepLeapfrog(dtSeconds: number, state: ExternalGravityState): void {
-    this.computeGravityAccelerations(state.bodyStates, state.positions);
-    this.kickBodyVelocities(state.bodyStates, dtSeconds * 0.5);
-    this.driftBodyPositions(state.bodyStates, state.positions, dtSeconds);
-    this.computeGravityAccelerations(state.bodyStates, state.positions);
-    this.kickBodyVelocities(state.bodyStates, dtSeconds * 0.5);
+  private writeCanonicalState(
+    state: ExternalGravityState,
+    bodyCount: number,
+  ): void {
+    const positions = this.workspace.positions;
+    const velocities = this.workspace.velocities;
+    for (let i = 0; i < bodyCount; i++) {
+      const offset = i * 3;
+      const position = state.positions[i];
+      const velocity = state.bodyStates[i].velocity;
+      position.x = positions[offset];
+      position.y = positions[offset + 1];
+      position.z = positions[offset + 2];
+      velocity.x = velocities[offset];
+      velocity.y = velocities[offset + 1];
+      velocity.z = velocities[offset + 2];
+    }
   }
 
-  private computeGravityAccelerations(
-    bodies: ExternalGravityBodyState[],
-    positions: Vec3[],
-  ): void {
+  private computeGravityAccelerations(bodyCount: number): void {
     const workspace = this.workspace;
     const accelerations = workspace.accelerations;
-    const scratchD = workspace.scratchD;
-    const scratchScaled = workspace.scratchScaled;
-    const bodyCount = bodies.length;
-
-    if (accelerations.length < bodyCount) {
-      for (let i = accelerations.length; i < bodyCount; i++) {
-        accelerations.push(vec3.zero());
-      }
-    } else {
-      accelerations.length = bodyCount;
-    }
-
-    for (let i = 0; i < bodyCount; i++) {
-      const acceleration = accelerations[i];
-      acceleration.x = 0;
-      acceleration.y = 0;
-      acceleration.z = 0;
-    }
-
+    const masses = workspace.masses;
+    const positions = workspace.positions;
+    accelerations.fill(0, 0, bodyCount * 3);
     const softeningLengthSq = this.softeningLength * this.softeningLength;
-    for (let i = 0; i < bodyCount; i++) {
-      const positionI = positions[i];
-      const accelerationI = accelerations[i];
-      const massI = bodies[i].mass;
 
+    for (let i = 0; i < bodyCount; i++) {
+      const offsetI = i * 3;
       for (let j = i + 1; j < bodyCount; j++) {
-        vec3.subInto(scratchD, positions[j], positionI);
-        const radiusSq = vec3.dot(scratchD, scratchD) + softeningLengthSq;
+        const offsetJ = j * 3;
+        const dx = positions[offsetJ] - positions[offsetI];
+        const dy = positions[offsetJ + 1] - positions[offsetI + 1];
+        const dz = positions[offsetJ + 2] - positions[offsetI + 2];
+        const radiusSq = dx * dx + dy * dy + dz * dz + softeningLengthSq;
         if (radiusSq === 0) continue;
 
         const inverseRadius = 1 / Math.sqrt(radiusSq);
         const inverseRadiusCubed =
           inverseRadius * inverseRadius * inverseRadius;
-
         const scaleI =
-          this.gravitationalConstant * bodies[j].mass * inverseRadiusCubed;
-        vec3.scaleInto(scratchScaled, scaleI, scratchD);
-        vec3.addInto(accelerationI, accelerationI, scratchScaled);
+          this.gravitationalConstant * masses[j] * inverseRadiusCubed;
+        const scaleJ =
+          this.gravitationalConstant * masses[i] * inverseRadiusCubed;
 
-        const accelerationJ = accelerations[j];
-        const scaleJ = this.gravitationalConstant * massI * inverseRadiusCubed;
-        vec3.scaleInto(scratchScaled, scaleJ, scratchD);
-        vec3.subInto(accelerationJ, accelerationJ, scratchScaled);
+        accelerations[offsetI] += dx * scaleI;
+        accelerations[offsetI + 1] += dy * scaleI;
+        accelerations[offsetI + 2] += dz * scaleI;
+        accelerations[offsetJ] -= dx * scaleJ;
+        accelerations[offsetJ + 1] -= dy * scaleJ;
+        accelerations[offsetJ + 2] -= dz * scaleJ;
       }
     }
   }
 
-  private kickBodyVelocities(
-    bodies: ExternalGravityBodyState[],
-    dtSeconds: number,
-  ): void {
+  private kickBodyVelocities(bodyCount: number, dtSeconds: number): void {
     const accelerations = this.workspace.accelerations;
-    const scratchDeltaVel = this.workspace.scratchDeltaVel;
-    for (let i = 0; i < bodies.length; i++) {
-      const velocity = bodies[i].velocity;
-      vec3.scaleInto(scratchDeltaVel, dtSeconds, accelerations[i]);
-      vec3.addInto(velocity, velocity, scratchDeltaVel);
+    const velocities = this.workspace.velocities;
+    const componentCount = bodyCount * 3;
+    for (let i = 0; i < componentCount; i++) {
+      velocities[i] += accelerations[i] * dtSeconds;
     }
   }
 
-  private driftBodyPositions(
-    bodies: ExternalGravityBodyState[],
-    positions: Vec3[],
-    dtSeconds: number,
-  ): void {
-    const scratchDeltaPos = this.workspace.scratchDeltaPos;
-    for (let i = 0; i < bodies.length; i++) {
-      const position = positions[i];
-      vec3.scaleInto(scratchDeltaPos, dtSeconds, bodies[i].velocity);
-      vec3.addInto(position, position, scratchDeltaPos);
+  private driftBodyPositions(bodyCount: number, dtSeconds: number): void {
+    const positions = this.workspace.positions;
+    const velocities = this.workspace.velocities;
+    const componentCount = bodyCount * 3;
+    for (let i = 0; i < componentCount; i++) {
+      positions[i] += velocities[i] * dtSeconds;
     }
   }
 }
@@ -169,6 +183,19 @@ export function getGravitySubstepCount(
     throw new Error("Gravity step duration must be finite");
   }
   return Math.max(1, Math.ceil(Math.abs(dtSeconds) / maxStepSeconds));
+}
+
+function ensureWorkspaceCapacity(
+  workspace: NewtonianGravityWorkspace,
+  bodyCount: number,
+): void {
+  if (workspace.masses.length >= bodyCount) return;
+  let capacity = Math.max(1, workspace.masses.length);
+  while (capacity < bodyCount) capacity *= 2;
+  workspace.accelerations = new Float64Array(capacity * 3);
+  workspace.masses = new Float64Array(capacity);
+  workspace.positions = new Float64Array(capacity * 3);
+  workspace.velocities = new Float64Array(capacity * 3);
 }
 
 function parseMaxGravityStepSeconds(

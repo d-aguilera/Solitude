@@ -7,6 +7,7 @@
     "@solitude/plugin-api": "0.0.0"
   },
   "scripts": {
+    "bench": "vitest bench --run src/__benchmarks__/gravity.bench.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   }
 }

@@ -228,9 +228,9 @@
 ## Next Steps Snapshot
 
 - Gravity is the active multi-slice extraction. The provider, physical package,
-  and bounded integration-step policies are in place; the next slice measures
-  the CPU implementation and adopts data-layout changes only when benchmarks
-  justify them. See `MEMORY_GRAVITY_PLUGIN.md`.
+  bounded integration-step, and optimized CPU data-layout policies are in
+  place; the next slice audits and closes the extraction boundary. See
+  `MEMORY_GRAVITY_PLUGIN.md`.
 - Physical package decoupling is complete: product behavior is selected through independently built runtime deployment units, with only generic host adapters remaining static.
 - Headless playback remains unresolved and active as a tracked topic, but is deprioritized until explicitly resumed. See `MEMORY_HEADLESS_PLAYBACK.md`.
 - Operator runtime focus switching is extracted and closed; foreground/background UX and declarative input lock policy remain deferred in `archive/MEMORY_OPERATOR_MODEL.md`.

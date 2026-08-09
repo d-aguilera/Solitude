@@ -103,31 +103,39 @@
   presentation cadence; it does not silently enlarge integration steps. The
   authoritative ticker additionally accumulates simulation time and advances
   it through fixed simulation intervals.
-- The force calculation is exact all-pairs `O(N^2)`. For the current small
-  worlds, temporal substep demand is expected to become limiting before the
-  number of pair interactions does, but this requires measurement.
+- The force calculation is exact all-pairs `O(N^2)` over reusable
+  structure-of-arrays `Float64Array` storage. Canonical object-vector world
+  state is copied into the workspace once per requested interval and copied
+  back after every bounded substep completes; capacity grows geometrically and
+  remains allocation-free at stable body counts.
+- `npm run bench:gravity` compares the retained pre-optimization object-vector
+  loop with the production typed-array loop. Representative local results show
+  about 13.6x throughput at 10 bodies, 17.7x at 32 bodies, and 19.5x at 128
+  bodies. A 10-body, 100-simulated-second interval containing ten bounded steps
+  runs at roughly 60,000 requested intervals per second on the development
+  environment. Benchmark values are environment-dependent; the checked-in
+  harness is the source of reproducible evidence.
 - Simulation, collisions, snapshots, and plugin hooks currently consume
   immediately available CPU world state. The active direction remains a
   synchronous CPU provider.
 
 ## Next Slice
 
-Measure and optimize the CPU implementation without changing results.
+Close and verify the gravity extraction boundary.
 
-- Add a repeatable benchmark harness for force evaluation and full bounded
-  integration across representative body counts, requested intervals, and
-  multiple independent worlds.
-- Record allocation behavior and separate pair-force cost from substep count.
-- Compare the current object-vector workspace with a reusable
-  structure-of-arrays `Float64Array` implementation using identical numerical
-  regression scenarios.
-- Adopt a new data layout only if measurements show a material throughput or
-  allocation improvement at relevant Solitude body counts and time-warp loads.
-- Keep world-to-provider synchronization allocation-free and preserve direct
-  mutation of canonical engine positions and velocities.
-- Treat worker threads, WebAssembly, SIMD, and multi-session batching as
-  follow-ups unless the measured single-threaded force loop is insufficient.
+- Audit engine, browser, composition, multiplayer, external API, and deployment
+  code for obsolete concrete-gravity imports, defaults, parameters, and names.
+- Confirm missing/duplicate/invalid provider errors remain hard setup failures
+  in browser and headless composition.
+- Confirm browser/server plugin artifacts are self-contained and both deployed
+  content packs contain `newtonianGravity` with API v11 manifests.
+- Run full typecheck, boundary checks, tests, plugin builds, deployable builds,
+  formatting, and architecture-map generation.
+- Keep substantive architecture-map changes and remove timestamp-only churn.
+- Reduce this document and `MEMORY.md` to the final current-state picture, move
+  the roadmap to the archived set, and leave any future physics work as
+  explicitly scoped follow-ups.
 
-The slice is complete when the repository contains reproducible evidence for
-the retained data layout, or a measured replacement is implemented and covered
-by the same trajectory/energy tests.
+The plan is complete when no extraction work remains, the required provider is
+present in every product composition, all verification passes, and the memory
+router marks this roadmap complete.

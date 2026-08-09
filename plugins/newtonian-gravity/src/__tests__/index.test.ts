@@ -1,6 +1,7 @@
 import { vec3 } from "@solitude/plugin-api/math";
 import { describe, expect, it } from "vitest";
 import {
+  createNewtonianGravityWorkspace,
   createPlugin,
   DEFAULT_MAX_GRAVITY_STEP_SECONDS,
   getGravitySubstepCount,
@@ -54,6 +55,36 @@ describe("Newtonian gravity", () => {
     expect(() =>
       createPlugin({ [maxGravityStepSecondsRuntimeOption]: "fast" }),
     ).toThrow("must be a positive finite number");
+  });
+
+  it("reuses typed workspace storage until body capacity grows", () => {
+    const workspace = createNewtonianGravityWorkspace();
+    const engine = new NewtonianGravityEngine(1, 0, 10, workspace);
+    const twoBodyState = {
+      bodyStates: [
+        { mass: 1, velocity: vec3.zero() },
+        { mass: 1, velocity: vec3.zero() },
+      ],
+      positions: [vec3.zero(), vec3.create(1, 0, 0)],
+    };
+
+    engine.step(1, twoBodyState);
+    const positions = workspace.positions;
+    const velocities = workspace.velocities;
+    engine.step(1, twoBodyState);
+
+    expect(workspace.positions).toBe(positions);
+    expect(workspace.velocities).toBe(velocities);
+
+    engine.step(1, {
+      bodyStates: [
+        ...twoBodyState.bodyStates,
+        { mass: 1, velocity: vec3.zero() },
+      ],
+      positions: [...twoBodyState.positions, vec3.create(2, 0, 0)],
+    });
+    expect(workspace.positions).not.toBe(positions);
+    expect(workspace.positions.length).toBeGreaterThanOrEqual(9);
   });
 
   it("keeps low Earth orbit energy bounded across a full orbit", () => {
