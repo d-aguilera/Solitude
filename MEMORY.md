@@ -17,6 +17,9 @@
 
 ### Active
 
+- `MEMORY_GRAVITY_PLUGIN.md`: active roadmap for extracting Newtonian gravity
+  into a required external provider and improving high-time-scale integration
+  accuracy and CPU throughput.
 - `MEMORY_HEADLESS_PLAYBACK.md`: unresolved but currently deprioritized work for running recorded playback scenarios end-to-end without the browser.
 
 ### Complete / Archived
@@ -33,7 +36,8 @@
 
 ## Current focus
 
-- **Primary active work**: no migration roadmap is currently active; package decoupling is complete and headless playback remains deliberately dormant.
+- **Primary active work**: gravity-provider extraction and high-time-scale
+  integration hardening. See `MEMORY_GRAVITY_PLUGIN.md`.
 - **Current extraction frontier**: physical product-plugin extraction is complete. No product plugin implementation remains in a host package; both products discover `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` through their Solitude content packs.
 - **Discovery foundation**: browser and server discovery, multi-plugin packs, strict manifests, target-specific assembly, origin/path security, and schema-v3 single-host packs are in place. Preserve the rule that a pack is an atomic host-specific activation unit.
 - **Headless playback**: still unresolved and not archived, but it is a dormant backlog item rather than the active path. See `MEMORY_HEADLESS_PLAYBACK.md`.
@@ -220,6 +224,10 @@
 
 ## Next Steps Snapshot
 
+- Gravity is the active multi-slice extraction. The next slice establishes a
+  required singleton gravity-provider contribution across internal and
+  external browser/server composition without changing the numerical
+  implementation. See `MEMORY_GRAVITY_PLUGIN.md`.
 - Physical package decoupling is complete: product behavior is selected through independently built runtime deployment units, with only generic host adapters remaining static.
 - Headless playback remains unresolved and active as a tracked topic, but is deprioritized until explicitly resumed. See `MEMORY_HEADLESS_PLAYBACK.md`.
 - Operator runtime focus switching is extracted and closed; foreground/background UX and declarative input lock policy remain deferred in `archive/MEMORY_OPERATOR_MODEL.md`.
