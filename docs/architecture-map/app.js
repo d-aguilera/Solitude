@@ -9,6 +9,8 @@ const packageNodes = architecture.nodes.filter(
   (node) => node.kind === "package",
 );
 const nodeSize = { height: 64, width: 180 };
+const nodeLabelFontSize = 16;
+const nodeLabelMaxWidth = 140;
 const constraintNodeSize = { height: 92, width: 180 };
 const constraintMargin = 24;
 const dragProjectionRadii = [8, 16, 32, 56, 88, 128, 184, 256, 352];
@@ -43,7 +45,7 @@ const cy = cytoscape({
         "border-color": "#54c7a9",
         "border-width": 2,
         color: "#f2f5f7",
-        "font-size": 16,
+        "font-size": nodeLabelFontSize,
         height: 21,
         label: "data(label)",
         padding: 34,
@@ -52,7 +54,7 @@ const cy = cytoscape({
         "text-background-opacity": 0,
         "text-background-padding": 0,
         "text-halign": "center",
-        "text-max-width": 140,
+        "text-max-width": nodeLabelMaxWidth,
         "text-outline-width": 0,
         "text-overflow-wrap": "anywhere",
         "text-valign": "center",
@@ -99,6 +101,13 @@ const cy = cytoscape({
     },
   ],
 });
+
+const labelMeasureContext = document.createElement("canvas").getContext("2d");
+const labelWidthByText = new Map();
+
+if (labelMeasureContext) {
+  labelMeasureContext.font = `${nodeLabelFontSize}px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+}
 
 renderGraph();
 cy.fit(undefined, 42);
@@ -157,7 +166,7 @@ function renderGraph() {
       data: {
         id: node.id,
         kind: node.kind,
-        label: node.label.split("/").join("\n\n"),
+        label: node.label.split("/").map(splitLabelPart).join("\n\n"),
       },
       position: positionsByNodeId.get(node.id),
     });
@@ -181,6 +190,84 @@ function renderGraph() {
   for (const selectedNodeId of selectedNodeIds) {
     cy.getElementById(selectedNodeId).select();
   }
+}
+
+function splitLabelPart(part) {
+  if (measureLabelText(part) <= nodeLabelMaxWidth) {
+    return part;
+  }
+
+  const parts = part.split("-");
+  const tokens = parts.map((token, index) =>
+    index < parts.length - 1 ? `${token}-` : token,
+  );
+  const lines = [];
+
+  let line = "";
+  for (const token of tokens) {
+    const candidate = `${line}${token}`;
+    if (measureLabelText(candidate) <= nodeLabelMaxWidth) {
+      line = candidate;
+      continue;
+    }
+
+    if (line) {
+      lines.push(line);
+      line = "";
+    }
+
+    if (measureLabelText(token) <= nodeLabelMaxWidth) {
+      line = token;
+      continue;
+    }
+
+    const tokenLines = splitOversizedLabelToken(token);
+    lines.push(...tokenLines.slice(0, -1));
+    line = tokenLines.at(-1) ?? "";
+  }
+
+  if (line) {
+    lines.push(line);
+  }
+
+  return lines.join("\n");
+}
+
+function measureLabelText(text) {
+  const cachedWidth = labelWidthByText.get(text);
+  if (cachedWidth !== undefined) {
+    return cachedWidth;
+  }
+
+  const width = labelMeasureContext?.measureText(text).width ?? text.length * 8;
+  labelWidthByText.set(text, width);
+  return width;
+}
+
+function splitOversizedLabelToken(token) {
+  const lines = [];
+  let start = 0;
+
+  while (start < token.length) {
+    let low = start + 1;
+    let high = token.length;
+    let end = low;
+
+    while (low <= high) {
+      const midpoint = Math.floor((low + high) / 2);
+      if (measureLabelText(token.slice(start, midpoint)) <= nodeLabelMaxWidth) {
+        end = midpoint;
+        low = midpoint + 1;
+      } else {
+        high = midpoint - 1;
+      }
+    }
+
+    lines.push(token.slice(start, end));
+    start = end;
+  }
+
+  return lines;
 }
 
 async function loadStoredPositions() {

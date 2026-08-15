@@ -56,7 +56,14 @@
 - Run: `npm run map:architecture`, inspect every generated change, and include
   substantive slice-related map updates. Restore the file when `generatedAt`
   is the only change.
-- If you did not run either command, explicitly say “Not run” in the response.
+- Exception: for changes strictly limited to the static architecture-map viewer
+  or docs under `docs/architecture-map/`, `npm run typecheck` and
+  `npm run test` are optional. Still run Prettier on modified files, run
+  `node --check docs/architecture-map/app.js` when that file changes, and run
+  `npm run map:architecture` when the generator or `architecture.json` could be
+  affected.
+- If you did not run an otherwise-required command, explicitly say “Not run” in
+  the response.
 
 ## Non-negotiables and exceptions
 
