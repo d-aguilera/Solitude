@@ -15,6 +15,15 @@ const constraintNodeSize = { height: 92, width: 180 };
 const constraintMargin = 24;
 const dragProjectionRadii = [8, 16, 32, 56, 88, 128, 184, 256, 352];
 const dragProjectionAngleCount = 24;
+const moveIndicatorOffset = 17;
+const moveIndicatorSize = 12;
+const moveIndicatorStep = 1;
+const moveDirections = [
+  { id: "up", x: 0, y: -1 },
+  { id: "right", x: 1, y: 0 },
+  { id: "down", x: 0, y: 1 },
+  { id: "left", x: -1, y: 0 },
+];
 const layoutStorageKey = "solitude.architectureMap.layout.v1";
 const layoutSignature = createLayoutSignature();
 let selectedNodeIds = new Set();
@@ -76,6 +85,47 @@ const cy = cytoscape({
       },
     },
     {
+      selector: "node[kind = 'move-indicator']",
+      style: {
+        "background-color": "#54c7a9",
+        "background-opacity": 0.72,
+        "border-width": 0,
+        display: "element",
+        events: "no",
+        height: moveIndicatorSize,
+        label: "",
+        opacity: 0.85,
+        padding: 0,
+        shape: "polygon",
+        "shape-polygon-points": "0 -1 1 1 -1 1",
+        width: moveIndicatorSize,
+      },
+    },
+    {
+      selector: "node[kind = 'move-indicator'][allowed = 'no']",
+      style: {
+        display: "none",
+      },
+    },
+    {
+      selector: "node[direction = 'right']",
+      style: {
+        "shape-polygon-points": "1 0 -1 1 -1 -1",
+      },
+    },
+    {
+      selector: "node[direction = 'down']",
+      style: {
+        "shape-polygon-points": "-1 -1 1 -1 0 1",
+      },
+    },
+    {
+      selector: "node[direction = 'left']",
+      style: {
+        "shape-polygon-points": "-1 0 1 -1 1 1",
+      },
+    },
+    {
       selector: "edge",
       style: {
         "curve-style": "bezier",
@@ -84,6 +134,7 @@ const cy = cytoscape({
         opacity: 0.68,
         "target-arrow-color": "#66707b",
         "target-arrow-shape": "triangle",
+        "arrow-scale": 1.5,
         "text-background-color": "#151719",
         "text-background-opacity": 0.78,
         "text-background-padding": 2,
@@ -112,6 +163,7 @@ if (labelMeasureContext) {
 renderGraph();
 cy.fit(undefined, 42);
 updateConstraintViolations();
+updateMoveIndicators();
 
 cy.on("select unselect", "node", () => {
   selectedNodeIds = new Set(cy.nodes(":selected").map((node) => node.id()));
@@ -129,6 +181,7 @@ layoutEl.addEventListener("click", async () => {
   renderGraph();
   cy.fit(undefined, 42);
   updateConstraintViolations();
+  updateMoveIndicators();
   layoutEl.textContent = "Layout";
   layoutEl.disabled = false;
 });
@@ -138,6 +191,7 @@ rulesEl.addEventListener("click", () => {
   rulesEl.setAttribute("aria-pressed", String(rulesEnabled));
   rulesEl.textContent = rulesEnabled ? "Rules On" : "Rules Off";
   updateConstraintViolations();
+  updateMoveIndicators();
 });
 
 graphEl.addEventListener("pointerdown", handleGraphPointerDown, {
@@ -170,6 +224,24 @@ function renderGraph() {
       },
       position: positionsByNodeId.get(node.id),
     });
+
+    for (const direction of moveDirections) {
+      elements.push({
+        data: {
+          allowed: "yes",
+          direction: direction.id,
+          id: moveIndicatorNodeId(node.id, direction.id),
+          kind: "move-indicator",
+          packageId: node.id,
+        },
+        grabbable: false,
+        position: calculateMoveIndicatorPosition(
+          positionsByNodeId.get(node.id),
+          direction,
+        ),
+        selectable: false,
+      });
+    }
   }
 
   for (const edge of projectEdges()) {
@@ -190,6 +262,8 @@ function renderGraph() {
   for (const selectedNodeId of selectedNodeIds) {
     cy.getElementById(selectedNodeId).select();
   }
+
+  updateMoveIndicators();
 }
 
 function splitLabelPart(part) {
@@ -316,14 +390,14 @@ function storePositions() {
 }
 
 function syncPositionsFromGraph() {
-  for (const node of cy.nodes()) {
+  for (const node of cy.nodes("[kind = 'package']")) {
     positionsByNodeId.set(node.id(), roundPosition(node.position()));
   }
 }
 
 function readGraphPositions() {
   const positions = new Map();
-  for (const node of cy.nodes()) {
+  for (const node of cy.nodes("[kind = 'package']")) {
     positions.set(node.id(), roundPosition(node.position()));
   }
   return positions;
@@ -448,6 +522,7 @@ function handleGraphPointerUp(event) {
     syncPositionsFromGraph();
     storePositions();
     updateConstraintViolations();
+    updateMoveIndicators();
   } else {
     selectClickedNode(dragState.grabbedNodeId, dragState.selectionMode);
   }
@@ -479,7 +554,7 @@ function getMovedNodeIds(grabbedNode) {
 
 function findNodeAtRenderedPosition(clientX, clientY) {
   const graphPosition = renderedToGraphPosition(clientX, clientY);
-  const nodes = cy.nodes();
+  const nodes = cy.nodes("[kind = 'package']");
   for (let index = nodes.length - 1; index >= 0; index -= 1) {
     const node = nodes[index];
     const box = createNodeBox(node.position(), 0);
@@ -521,6 +596,7 @@ function acceptDragPositions(delta, positions, evaluation) {
   dragState.lastAcceptedScore = evaluation.score;
   applyPositions(positions, dragState.movedNodeIds);
   updateConstraintViolations(evaluation.invalidNodeIds);
+  updateMoveIndicators();
 }
 
 function findClosestAllowedDragProjection(state, desiredDelta) {
@@ -659,13 +735,89 @@ function roundPosition(position) {
 function updateConstraintViolations(
   invalidNodeIds = findConstraintViolations(readGraphPositions()),
 ) {
-  cy.nodes().removeClass("invalid-layout");
+  cy.nodes("[kind = 'package']").removeClass("invalid-layout");
   if (!rulesEnabled) {
     return;
   }
   for (const nodeId of invalidNodeIds) {
     cy.getElementById(nodeId).addClass("invalid-layout");
   }
+}
+
+function updateMoveIndicators() {
+  const positions = readGraphPositions();
+  cy.batch(() => {
+    for (const packageNode of packageNodes) {
+      const packagePosition = positions.get(packageNode.id);
+      if (!packagePosition) {
+        continue;
+      }
+
+      for (const direction of moveDirections) {
+        const indicator = cy.getElementById(
+          moveIndicatorNodeId(packageNode.id, direction.id),
+        );
+        indicator.position(
+          calculateMoveIndicatorPosition(packagePosition, direction),
+        );
+        indicator.data(
+          "allowed",
+          canMovePackageInDirection(packageNode.id, direction, positions)
+            ? "yes"
+            : "no",
+        );
+      }
+    }
+  });
+}
+
+function canMovePackageInDirection(packageId, direction, positions) {
+  if (!rulesEnabled) {
+    return true;
+  }
+
+  const movedNodeIds = [packageId];
+  const evaluation = evaluateLayoutConstraints(positions);
+  const candidatePositions = createTranslatedPositions(
+    positions,
+    movedNodeIds,
+    {
+      x: direction.x * moveIndicatorStep,
+      y: direction.y * moveIndicatorStep,
+    },
+  );
+
+  return isAllowedDragEvaluation(
+    evaluateLayoutConstraints(candidatePositions),
+    {
+      lastAcceptedPenalty: evaluation.penalty,
+      lastAcceptedScore: evaluation.score,
+      movedNodeIds,
+      startingMovedViolationKeys: getMovedViolationKeys(
+        evaluation.violations,
+        movedNodeIds,
+      ),
+    },
+  );
+}
+
+function calculateMoveIndicatorPosition(position, direction) {
+  if (!position) {
+    return { x: 0, y: 0 };
+  }
+
+  return {
+    x:
+      position.x +
+      direction.x * (constraintNodeSize.width / 2 + moveIndicatorOffset),
+    y:
+      position.y +
+      direction.y * (constraintNodeSize.height / 2 + moveIndicatorOffset),
+  };
+}
+
+function moveIndicatorNodeId(packageId, directionId) {
+  return `move:${packageId}:${directionId}`;
 }
 
 function findConstraintViolations(positions) {
