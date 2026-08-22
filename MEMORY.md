@@ -17,6 +17,9 @@
 
 ### Active
 
+- `MEMORY_SERVER_PERFORMANCE.md`: active roadmap for establishing a precise,
+  reproducible authoritative-server performance baseline, capacity model, and
+  later regression gates.
 - `MEMORY_HEADLESS_PLAYBACK.md`: unresolved but currently deprioritized work for running recorded playback scenarios end-to-end without the browser.
 
 ### Complete / Archived
@@ -36,9 +39,9 @@
 
 ## Current focus
 
-- **Primary active work**: no migration roadmap is currently active; gravity
-  plugin extraction is complete and headless playback remains deliberately
-  dormant.
+- **Primary active work**: establish the authoritative-server performance
+  baseline described in `MEMORY_SERVER_PERFORMANCE.md`. Gravity plugin
+  extraction is complete and headless playback remains deliberately dormant.
 - **Current extraction frontier**: physical product-plugin extraction is complete. No product plugin implementation remains in a host package; both products discover `newtonianGravity`, `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` through their Solitude content packs.
 - **Discovery foundation**: browser and server discovery, multi-plugin packs, strict manifests, target-specific assembly, origin/path security, and schema-v3 single-host packs are in place. Preserve the rule that a pack is an atomic host-specific activation unit.
 - **Headless playback**: still unresolved and not archived, but it is a dormant backlog item rather than the active path. See `MEMORY_HEADLESS_PLAYBACK.md`.
@@ -235,6 +238,11 @@
 
 ## Next Steps Snapshot
 
+- Server performance baseline work is active: add precise allocation-conscious
+  metrics and simulation backlog visibility, extend the load harness to
+  multiple games and structured results, add an in-process authoritative
+  benchmark, then capture a reference-machine baseline before setting gates.
+  See `MEMORY_SERVER_PERFORMANCE.md`.
 - Gravity plugin extraction is complete: both products discover the required
   external Newtonian provider, high-time-scale intervals use bounded provider
   steps, and the measured typed-array force loop is retained. See
