@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solitude.local/schemas/server-load-result-v1.json",
+  "title": "Solitude server load result",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "commit",
+    "nodeVersion",
+    "platform",
+    "cpu",
+    "serverBuild",
+    "scenario",
+    "warmupSeconds",
+    "measurementSeconds",
+    "samples",
+    "summary"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "commit": { "type": "string" },
+    "dirty": { "type": "boolean" },
+    "nodeVersion": { "type": "string" },
+    "platform": { "type": "string" },
+    "cpu": { "type": "string" },
+    "serverBuild": { "type": "string" },
+    "scenario": {
+      "type": "object",
+      "required": [
+        "games",
+        "clientsPerGame",
+        "inputHzPerClient",
+        "simulationMillisPerWallMillis",
+        "seed"
+      ]
+    },
+    "warmupSeconds": { "type": "number", "minimum": 0 },
+    "measurementSeconds": { "type": "number", "exclusiveMinimum": 0 },
+    "samples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "repetition",
+          "client",
+          "server",
+          "serverReports",
+          "errors"
+        ]
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["successfulRuns", "failedRuns"]
+    }
+  }
+}

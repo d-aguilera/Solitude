@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "scenarios": [
+    {
+      "clientsPerGame": 1,
+      "games": 1,
+      "inputHzPerClient": 0,
+      "name": "idle",
+      "simulationMillisPerWallMillis": 1
+    },
+    {
+      "clientsPerGame": 8,
+      "games": 1,
+      "inputHzPerClient": 4,
+      "name": "typical",
+      "simulationMillisPerWallMillis": 1
+    },
+    {
+      "clientsPerGame": 16,
+      "games": 1,
+      "inputHzPerClient": 4,
+      "name": "full-game",
+      "simulationMillisPerWallMillis": 1
+    },
+    {
+      "clientsPerGame": 8,
+      "games": 8,
+      "inputHzPerClient": 4,
+      "name": "many-games",
+      "simulationMillisPerWallMillis": 1
+    },
+    {
+      "clientsPerGame": 16,
+      "games": 4,
+      "inputHzPerClient": 4,
+      "name": "high-fanout",
+      "simulationMillisPerWallMillis": 1
+    },
+    {
+      "clientsPerGame": 16,
+      "games": 1,
+      "inputHzPerClient": 30,
+      "name": "input-stress",
+      "simulationMillisPerWallMillis": 1
+    },
+    {
+      "clientsPerGame": 16,
+      "games": 1,
+      "inputHzPerClient": 4,
+      "name": "warp-10",
+      "simulationMillisPerWallMillis": 10
+    },
+    {
+      "clientsPerGame": 16,
+      "games": 1,
+      "inputHzPerClient": 4,
+      "name": "warp-60",
+      "simulationMillisPerWallMillis": 60
+    }
+  ],
+  "capacitySweepGames": [1, 2, 4, 8, 16],
+  "capacitySweepClientsPerGame": 8
+}

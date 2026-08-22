@@ -1,168 +1,415 @@
 #!/usr/bin/env node
 
-import { parseArgs } from "node:util";
+import { execFile } from "node:child_process";
+import { writeFile } from "node:fs/promises";
+import { arch, cpus, platform, release } from "node:os";
+import { performance } from "node:perf_hooks";
+import { parseArgs, promisify } from "node:util";
 import { WebSocket } from "ws";
+import {
+  createSeededRandom,
+  parseNonNegativeInteger,
+  parseNonNegativeNumber,
+  parsePositiveInteger,
+  parsePositiveNumber,
+  summarizeNumbers,
+  summarizeRuns,
+  summarizeServerReports,
+} from "./server-load-helpers.mjs";
 
-const {
-  values: {
-    clients: clientsArg,
-    duration: durationArg,
-    "input-hz": inputHzArg,
-    latency,
-    "metrics-hz": metricsHzArg,
-    url,
-  },
-} = parseArgs({
-  options: {
-    clients: { default: "8", type: "string" },
-    duration: { default: "15", type: "string" },
-    "input-hz": { default: "4", type: "string" },
-    latency: { default: false, type: "boolean" },
-    "metrics-hz": { default: "1", type: "string" },
-    url: { default: "http://127.0.0.1:8787", type: "string" },
-  },
+const execFileAsync = promisify(execFile);
+const socketResponseTimeoutMillis = 10_000;
+const inputDrainMillis = 250;
+
+await main().catch((error) => {
+  console.error(error instanceof Error ? error.stack : String(error));
+  process.exitCode = 1;
 });
 
-const clients = parsePositiveInteger(clientsArg, "clients");
-const durationSeconds = parsePositiveNumber(durationArg, "duration");
-const inputHz = parseNonNegativeNumber(inputHzArg, "input-hz");
-const metricsHz = parsePositiveNumber(metricsHzArg, "metrics-hz");
+async function main() {
+  const options = parseOptions();
+  const environment = await readEnvironmentMetadata();
+  const startedAt = new Date().toISOString();
+  const latencyTracker = createInputLatencyTracker();
+  const runs = [];
+  let workload;
 
-const sockets = [];
-const assignments = [];
-const latencyTracker = createInputLatencyTracker();
-let requestId = 1;
-
-try {
-  for (let index = 0; index < clients; index++) {
-    sockets.push(await openSocket(`${url.replace(/^http/, "ws")}/socket`));
-  }
-
-  const createResponse = await sendClientMessage(sockets[0], {
-    clientId: "load-client:1",
-    sequence: requestId++,
-    type: "createGame",
-  });
-  const created = createResponse.messages.find(
-    (message) => message.type === "gameCreated",
-  );
-  if (!created) {
-    throw new Error(`Failed to create game: ${JSON.stringify(createResponse)}`);
-  }
-  const gameId = created.gameId;
-
-  for (let index = 0; index < sockets.length; index++) {
-    const clientId = `load-client:${index + 1}`;
-    const response = await sendClientMessage(sockets[index], {
-      clientId,
-      gameId,
-      sequence: requestId++,
-      type: "joinGame",
+  try {
+    workload = await createWorkload(options, latencyTracker);
+    log(options, {
+      event: "workloadReady",
+      games: workload.gameIds,
+      participants: workload.assignments.length,
     });
-    const joined = response.messages.find(
-      (message) => message.type === "joined",
-    );
-    if (!joined) {
-      throw new Error(
-        `Client ${clientId} failed to join: ${JSON.stringify(response)}`,
-      );
+
+    for (let repetition = 0; repetition < options.repetitions; repetition++) {
+      log(options, { event: "repetitionStarted", repetition: repetition + 1 });
+      let run;
+      try {
+        run = await runRepetition({
+          latencyTracker,
+          options,
+          repetition,
+          workload,
+        });
+      } catch (error) {
+        run = createFailedRun(repetition + 1, error);
+      }
+      runs.push(run);
+      log(options, {
+        errors: run.errors,
+        event: "repetitionCompleted",
+        repetition: repetition + 1,
+      });
+      if (run.errors.length > 0) break;
     }
-    const assignment = {
-      clientId,
-      entityId: joined.entityId,
-      nextInputSequence: 1,
-      pendingInputs: [],
-      socket: sockets[index],
-    };
-    assignment.socket.observe((message) => {
-      latencyTracker.recordSocketMessage(assignment, message, Date.now());
-    });
-    assignments.push(assignment);
+  } catch (error) {
+    runs.push(createFailedRun(1, error));
+  } finally {
+    await workload?.close();
   }
 
-  console.log(
-    JSON.stringify({
-      assignments: assignments.map(({ clientId, entityId }) => ({
-        clientId,
-        entityId,
-      })),
-      clients,
-      durationSeconds,
-      gameId,
-      inputHz,
-      latency,
-      url,
-    }),
-  );
-
-  await runLoad({
-    durationMillis: durationSeconds * 1000,
-    gameId,
-    inputIntervalMillis: inputHz === 0 ? 0 : 1000 / inputHz,
-    latency,
-    metricsIntervalMillis: 1000 / metricsHz,
-  });
-} finally {
-  await Promise.allSettled(sockets.map((socket) => socket.close()));
+  const result = {
+    schemaVersion: 1,
+    commit: environment.commit,
+    cpu: environment.cpu,
+    dirty: environment.dirty,
+    finishedAt: new Date().toISOString(),
+    measurementSeconds: options.durationSeconds,
+    nodeVersion: process.version,
+    platform: environment.platform,
+    repetitions: options.repetitions,
+    samples: runs,
+    scenario: {
+      clientsPerGame: options.clientsPerGame,
+      games: options.games,
+      inputHzPerClient: options.inputHz,
+      seed: options.seed,
+      simulationMillisPerWallMillis: options.simulationRate,
+    },
+    serverBuild: options.serverBuild,
+    serverRestartedBetweenRepetitions: false,
+    serverUrl: options.url,
+    startedAt,
+    summary: summarizeRuns(runs),
+    warmupSeconds: options.warmupSeconds,
+  };
+  const serialized = options.quiet
+    ? JSON.stringify(result)
+    : JSON.stringify(result, null, 2);
+  if (options.output)
+    await writeFile(options.output, `${serialized}\n`, "utf8");
+  process.stdout.write(`${serialized}\n`);
+  if (result.summary.failedRuns > 0) process.exitCode = 1;
 }
 
-async function runLoad({
-  durationMillis,
-  gameId,
-  inputIntervalMillis,
-  latency,
-  metricsIntervalMillis,
+function createFailedRun(repetition, error) {
+  const emptyLatencySummary = summarizeNumbers([]);
+  return {
+    client: {
+      inputAckLatencyMillis: emptyLatencySummary,
+      pendingInputAcks: 0,
+      snapshotInterArrivalMillis: emptyLatencySummary,
+    },
+    durationMillis: 0,
+    errors: [error instanceof Error ? error.message : String(error)],
+    finishedAt: new Date().toISOString(),
+    inputEventsSent: 0,
+    repetition,
+    server: summarizeServerReports([], []),
+    serverReports: [],
+    startedAt: new Date().toISOString(),
+  };
+}
+
+function parseOptions() {
+  const { values } = parseArgs({
+    options: {
+      clients: { type: "string" },
+      "clients-per-game": { default: "8", type: "string" },
+      duration: { default: "15", type: "string" },
+      games: { default: "1", type: "string" },
+      "input-hz": { default: "4", type: "string" },
+      latency: { default: false, type: "boolean" },
+      "metrics-hz": { default: "1", type: "string" },
+      output: { type: "string" },
+      quiet: { default: false, type: "boolean" },
+      repetitions: { default: "1", type: "string" },
+      seed: { default: "1", type: "string" },
+      "server-build": { default: "production", type: "string" },
+      "sim-rate": { default: "1", type: "string" },
+      url: { default: "http://127.0.0.1:8787", type: "string" },
+      warmup: { default: "5", type: "string" },
+    },
+  });
+  if (values.clients && values["clients-per-game"] !== "8") {
+    throw new Error("Use either --clients or --clients-per-game, not both");
+  }
+  const serverBuild = values["server-build"].trim();
+  if (serverBuild.length === 0) {
+    throw new Error("--server-build must not be empty");
+  }
+  return {
+    clientsPerGame: parsePositiveInteger(
+      values.clients ?? values["clients-per-game"],
+      values.clients ? "clients" : "clients-per-game",
+    ),
+    durationSeconds: parsePositiveNumber(values.duration, "duration"),
+    games: parsePositiveInteger(values.games, "games"),
+    inputHz: parseNonNegativeNumber(values["input-hz"], "input-hz"),
+    metricsHz: parsePositiveNumber(values["metrics-hz"], "metrics-hz"),
+    output: values.output,
+    quiet: values.quiet,
+    repetitions: parsePositiveInteger(values.repetitions, "repetitions"),
+    seed: parseNonNegativeInteger(values.seed, "seed"),
+    serverBuild,
+    simulationRate: parsePositiveNumber(values["sim-rate"], "sim-rate"),
+    url: values.url.replace(/\/$/, ""),
+    warmupSeconds: parseNonNegativeNumber(values.warmup, "warmup"),
+  };
+}
+
+async function createWorkload(options, latencyTracker) {
+  const assignments = [];
+  const gameIds = [];
+  const sockets = [];
+  let requestSequence = 1;
+
+  try {
+    for (let gameIndex = 0; gameIndex < options.games; gameIndex++) {
+      const gameSockets = [];
+      for (
+        let clientIndex = 0;
+        clientIndex < options.clientsPerGame;
+        clientIndex++
+      ) {
+        const socket = await openSocket(
+          `${options.url.replace(/^http/, "ws")}/socket`,
+        );
+        sockets.push(socket);
+        gameSockets.push(socket);
+      }
+
+      const creatorClientId = createClientId(gameIndex, 0);
+      const createResponse = await sendClientMessage(gameSockets[0], {
+        clientId: creatorClientId,
+        sequence: requestSequence++,
+        type: "createGame",
+      });
+      const created = createResponse.messages.find(
+        (message) => message.type === "gameCreated",
+      );
+      if (!created) {
+        throw new Error(
+          `Game ${gameIndex + 1} creation failed: ${JSON.stringify(createResponse)}`,
+        );
+      }
+      gameIds.push(created.gameId);
+
+      for (
+        let clientIndex = 0;
+        clientIndex < gameSockets.length;
+        clientIndex++
+      ) {
+        const clientId = createClientId(gameIndex, clientIndex);
+        const response = await sendClientMessage(gameSockets[clientIndex], {
+          clientId,
+          gameId: created.gameId,
+          sequence: requestSequence++,
+          type: "joinGame",
+        });
+        const joined = response.messages.find(
+          (message) => message.type === "joined",
+        );
+        if (!joined) {
+          throw new Error(
+            `${clientId} failed to join ${created.gameId}: ${JSON.stringify(response)}`,
+          );
+        }
+        const assignment = {
+          clientId,
+          entityId: joined.entityId,
+          gameId: created.gameId,
+          lastSnapshotReceivedAtMillis: undefined,
+          nextInputSequence: 1,
+          pendingInputs: [],
+          snapshotCount: 0,
+          socket: gameSockets[clientIndex],
+        };
+        assignment.socket.observe((message) => {
+          latencyTracker.recordSocketMessage(
+            assignment,
+            message,
+            performance.now(),
+          );
+        });
+        assignments.push(assignment);
+      }
+
+      await sendClientMessage(gameSockets[0], {
+        clientId: creatorClientId,
+        gameId: created.gameId,
+        sequence: requestSequence++,
+        simulationMillisPerWallMillis: options.simulationRate,
+        type: "setSimulationRate",
+      });
+    }
+
+    return {
+      assignments,
+      close: () =>
+        Promise.allSettled(sockets.map((socket) => socket.close())).then(
+          () => undefined,
+        ),
+      gameIds,
+      nextRequestSequence: () => requestSequence++,
+      sockets,
+    };
+  } catch (error) {
+    await Promise.allSettled(sockets.map((socket) => socket.close()));
+    throw error;
+  }
+}
+
+async function runRepetition({
+  latencyTracker,
+  options,
+  repetition,
+  workload,
 }) {
-  const endMillis = Date.now() + durationMillis;
-  let nextInputMillis = Date.now();
-  let nextMetricsMillis = Date.now();
-  let inputPulse = false;
+  const random = createSeededRandom(options.seed + repetition);
+  await fetchMetrics(options.url);
+  if (options.warmupSeconds > 0) {
+    await runPhase({
+      collectMetrics: false,
+      durationMillis: options.warmupSeconds * 1000,
+      latencyTracker,
+      options,
+      random,
+      workload,
+    });
+  }
+  await fetchMetrics(options.url);
+  latencyTracker.beginMeasurement(workload.assignments);
+  const phase = await runPhase({
+    collectMetrics: true,
+    durationMillis: options.durationSeconds * 1000,
+    latencyTracker,
+    options,
+    random,
+    workload,
+  });
+  await sleep(inputDrainMillis);
+  phase.serverReports.push(await fetchMetrics(options.url));
+  const client = latencyTracker.finishMeasurement(workload.assignments);
+  const errors = validateRun({ client, phase, workload });
 
-  while (Date.now() < endMillis) {
-    const now = Date.now();
+  return {
+    client,
+    durationMillis: phase.durationMillis,
+    errors,
+    finishedAt: new Date().toISOString(),
+    inputEventsSent: phase.inputEventsSent,
+    repetition: repetition + 1,
+    server: summarizeServerReports(phase.serverReports, workload.gameIds),
+    serverReports: phase.serverReports,
+    startedAt: phase.startedAt,
+  };
+}
 
-    if (inputIntervalMillis > 0 && now >= nextInputMillis) {
-      inputPulse = !inputPulse;
-      for (const assignment of assignments) {
+async function runPhase({
+  collectMetrics,
+  durationMillis,
+  latencyTracker,
+  options,
+  random,
+  workload,
+}) {
+  const startedAt = new Date().toISOString();
+  const startMillis = performance.now();
+  const endMillis = startMillis + durationMillis;
+  const inputIntervalMillis = options.inputHz > 0 ? 1000 / options.inputHz : 0;
+  const metricsIntervalMillis = 1000 / options.metricsHz;
+  let inputEventsSent = 0;
+  let nextInputMillis = startMillis;
+  let nextMetricsMillis = startMillis + metricsIntervalMillis;
+  const serverReports = [];
+
+  while (performance.now() < endMillis) {
+    const now = performance.now();
+    while (inputIntervalMillis > 0 && now >= nextInputMillis) {
+      for (const assignment of workload.assignments) {
         const inputSequence = assignment.nextInputSequence++;
-        latencyTracker.recordInputSent(assignment, inputSequence, Date.now());
+        latencyTracker.recordInputSent(
+          assignment,
+          inputSequence,
+          performance.now(),
+        );
         sendClientMessageEvent(assignment.socket, {
           clientId: assignment.clientId,
           controls: {
             burnForward: true,
             thrust5: true,
-            yawLeft: inputPulse,
+            yawLeft: random() < 0.5,
           },
           entityId: assignment.entityId,
-          gameId,
+          gameId: assignment.gameId,
           inputSequence,
-          sequence: requestId++,
+          sequence: workload.nextRequestSequence(),
           type: "input",
         });
+        inputEventsSent++;
       }
       nextInputMillis += inputIntervalMillis;
     }
 
-    if (now >= nextMetricsMillis) {
-      const response = await fetch(`${url}/metrics`);
-      console.log(JSON.stringify(await response.json()));
-      if (latency) console.log(JSON.stringify(latencyTracker.takeReport()));
+    if (collectMetrics && now >= nextMetricsMillis) {
+      serverReports.push(await fetchMetrics(options.url));
       nextMetricsMillis += metricsIntervalMillis;
     }
-
-    await sleep(5);
+    await sleep(2);
   }
 
-  const response = await fetch(`${url}/metrics`);
-  console.log(JSON.stringify(await response.json()));
-  if (latency) console.log(JSON.stringify(latencyTracker.takeReport()));
+  return {
+    durationMillis: performance.now() - startMillis,
+    inputEventsSent,
+    serverReports,
+    startedAt,
+  };
+}
+
+function validateRun({ client, phase, workload }) {
+  const errors = [];
+  for (const socket of workload.sockets) {
+    if (socket.closedUnexpectedly()) errors.push("A load socket closed early");
+  }
+  const finalReport = phase.serverReports.at(-1);
+  for (const gameId of workload.gameIds) {
+    const game = finalReport?.games.find(
+      (candidate) => candidate.gameId === gameId,
+    );
+    if (!game) errors.push(`Metrics omitted ${gameId}`);
+    else if (!game.running) errors.push(`${gameId} stopped during measurement`);
+  }
+  for (const assignment of workload.assignments) {
+    if (assignment.snapshotCount === 0) {
+      errors.push(`${assignment.clientId} received no measured snapshots`);
+    }
+  }
+  if (client.pendingInputAcks > 0) {
+    errors.push(
+      `${client.pendingInputAcks} input acknowledgements remained pending`,
+    );
+  }
+  return [...new Set(errors)];
 }
 
 async function openSocket(socketUrl) {
   const socket = new WebSocket(socketUrl);
-  const messages = [];
   const observers = [];
   const waiters = [];
+  let intentionalClose = false;
+  let unexpectedClose = false;
 
   await new Promise((resolve, reject) => {
     socket.once("open", resolve);
@@ -171,20 +418,28 @@ async function openSocket(socketUrl) {
 
   socket.on("message", (data) => {
     const message = JSON.parse(data.toString());
-    messages.push(message);
     for (const observer of observers) observer(message);
     for (let index = waiters.length - 1; index >= 0; index--) {
       const waiter = waiters[index];
       if (waiter.predicate(message)) {
         waiters.splice(index, 1);
+        clearTimeout(waiter.timeout);
         waiter.resolve(message);
       }
+    }
+  });
+  socket.on("close", () => {
+    if (!intentionalClose) unexpectedClose = true;
+    for (const waiter of waiters.splice(0)) {
+      clearTimeout(waiter.timeout);
+      waiter.reject(new Error("Socket closed while awaiting a response"));
     }
   });
 
   return {
     close: () =>
       new Promise((resolve) => {
+        intentionalClose = true;
         if (
           socket.readyState === WebSocket.CLOSED ||
           socket.readyState === WebSocket.CLOSING
@@ -195,57 +450,89 @@ async function openSocket(socketUrl) {
         socket.once("close", resolve);
         socket.close();
       }),
-    observe: (observer) => {
-      observers.push(observer);
-    },
-    readUntil: (predicate) => {
-      const existing = messages.find(predicate);
-      if (existing) return Promise.resolve(existing);
-      return new Promise((resolve) => {
-        waiters.push({ predicate, resolve });
-      });
-    },
+    closedUnexpectedly: () => unexpectedClose,
+    observe: (observer) => observers.push(observer),
+    readUntil: (predicate) =>
+      new Promise((resolve, reject) => {
+        const waiter = {
+          predicate,
+          reject,
+          resolve,
+          timeout: setTimeout(() => {
+            const index = waiters.indexOf(waiter);
+            if (index >= 0) waiters.splice(index, 1);
+            reject(new Error("Timed out awaiting a socket response"));
+          }, socketResponseTimeoutMillis),
+        };
+        waiters.push(waiter);
+      }),
     send: (payload) => {
+      if (socket.readyState !== WebSocket.OPEN) {
+        throw new Error("Cannot send through a closed load socket");
+      }
       socket.send(JSON.stringify(payload));
     },
   };
 }
 
 async function sendClientMessage(socket, message) {
-  const currentRequestId = message.sequence;
   const response = socket.readUntil(
-    (item) => item.type === "messages" && item.requestId === currentRequestId,
+    (item) => item.type === "messages" && item.requestId === message.sequence,
   );
   socket.send({
     message,
-    requestId: currentRequestId,
+    requestId: message.sequence,
     type: "clientMessage",
   });
   return response;
 }
 
 function sendClientMessageEvent(socket, message) {
-  socket.send({
-    message,
-    type: "clientMessageEvent",
-  });
+  socket.send({ message, type: "clientMessageEvent" });
 }
 
 function createInputLatencyTracker() {
   const ackLatencies = [];
   const snapshotInterArrivalMillis = [];
+  let measuring = false;
 
   return {
+    beginMeasurement: (assignments) => {
+      ackLatencies.length = 0;
+      snapshotInterArrivalMillis.length = 0;
+      for (const assignment of assignments) {
+        assignment.lastSnapshotReceivedAtMillis = undefined;
+        assignment.pendingInputs.length = 0;
+        assignment.snapshotCount = 0;
+      }
+      measuring = true;
+    },
+    finishMeasurement: (assignments) => {
+      measuring = false;
+      return {
+        inputAckLatencyMillis: summarizeNumbers(ackLatencies),
+        pendingInputAcks: assignments.reduce(
+          (total, assignment) => total + assignment.pendingInputs.length,
+          0,
+        ),
+        snapshotInterArrivalMillis: summarizeNumbers(
+          snapshotInterArrivalMillis,
+        ),
+      };
+    },
     recordInputSent: (assignment, inputSequence, sentAtMillis) => {
+      if (!measuring) return;
       assignment.pendingInputs.push({ inputSequence, sentAtMillis });
     },
     recordSocketMessage: (assignment, message, receivedAtMillis) => {
       if (
+        !measuring ||
         message.type !== "serverMessage" ||
         message.message?.type !== "snapshot"
       ) {
         return;
       }
+      assignment.snapshotCount++;
       if (assignment.lastSnapshotReceivedAtMillis !== undefined) {
         snapshotInterArrivalMillis.push(
           receivedAtMillis - assignment.lastSnapshotReceivedAtMillis,
@@ -255,8 +542,6 @@ function createInputLatencyTracker() {
 
       const lastProcessedInputSequence =
         message.message.lastProcessedInputSequences[assignment.entityId] ?? 0;
-      if (lastProcessedInputSequence <= 0) return;
-
       let writeIndex = 0;
       for (
         let readIndex = 0;
@@ -267,82 +552,57 @@ function createInputLatencyTracker() {
         if (input.inputSequence <= lastProcessedInputSequence) {
           ackLatencies.push(receivedAtMillis - input.sentAtMillis);
         } else {
-          assignment.pendingInputs[writeIndex] = input;
-          writeIndex++;
+          assignment.pendingInputs[writeIndex++] = input;
         }
       }
       assignment.pendingInputs.length = writeIndex;
     },
-    takeReport: () => {
-      const report = {
-        inputAckLatencyMillis: summarizeLatencies(ackLatencies),
-        pendingInputAcks: assignments.reduce(
-          (total, assignment) => total + assignment.pendingInputs.length,
-          0,
-        ),
-        snapshotInterArrivalMillis: summarizeLatencies(
-          snapshotInterArrivalMillis,
-        ),
-        type: "inputLatency",
-      };
-      ackLatencies.length = 0;
-      snapshotInterArrivalMillis.length = 0;
-      return report;
-    },
   };
 }
 
-function summarizeLatencies(latencies) {
-  if (latencies.length === 0) {
-    return {
-      avg: 0,
-      count: 0,
-      max: 0,
-      p50: 0,
-      p95: 0,
-    };
+async function fetchMetrics(url) {
+  const response = await fetch(`${url}/metrics`);
+  if (!response.ok) {
+    throw new Error(`Metrics request failed with HTTP ${response.status}`);
   }
+  const report = await response.json();
+  if (!Array.isArray(report.games) || typeof report.process !== "object") {
+    throw new Error("Metrics response has an unexpected shape");
+  }
+  return report;
+}
 
-  const sorted = [...latencies].sort((left, right) => left - right);
+async function readEnvironmentMetadata() {
+  const [commit, status] = await Promise.all([
+    readGitOutput(["rev-parse", "HEAD"]),
+    readGitOutput(["status", "--porcelain"]),
+  ]);
   return {
-    avg: sorted.reduce((total, value) => total + value, 0) / sorted.length,
-    count: sorted.length,
-    max: sorted[sorted.length - 1],
-    p50: percentile(sorted, 0.5),
-    p95: percentile(sorted, 0.95),
+    commit: commit || "unknown",
+    cpu: cpus()[0]?.model ?? "unknown",
+    dirty: status.length > 0,
+    platform: `${platform()} ${release()} ${arch()}`,
   };
 }
 
-function percentile(sortedValues, rank) {
-  const index = Math.min(
-    sortedValues.length - 1,
-    Math.ceil(sortedValues.length * rank) - 1,
-  );
-  return sortedValues[index];
+async function readGitOutput(args) {
+  try {
+    const { stdout } = await execFileAsync("git", args, {
+      cwd: process.cwd(),
+      encoding: "utf8",
+    });
+    return stdout.trim();
+  } catch {
+    return "";
+  }
 }
 
-function parsePositiveInteger(value, name) {
-  const parsed = Number(value);
-  if (!Number.isInteger(parsed) || parsed <= 0) {
-    throw new Error(`--${name} must be a positive integer`);
-  }
-  return parsed;
+function createClientId(gameIndex, clientIndex) {
+  return `load-client:g${gameIndex + 1}:c${clientIndex + 1}`;
 }
 
-function parsePositiveNumber(value, name) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) {
-    throw new Error(`--${name} must be a positive number`);
-  }
-  return parsed;
-}
-
-function parseNonNegativeNumber(value, name) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed < 0) {
-    throw new Error(`--${name} must be a non-negative number`);
-  }
-  return parsed;
+function log(options, value) {
+  if (!options.quiet) process.stderr.write(`${JSON.stringify(value)}\n`);
 }
 
 function sleep(durationMillis) {

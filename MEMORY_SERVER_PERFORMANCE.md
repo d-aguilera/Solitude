@@ -45,10 +45,12 @@ WebSocket clients rather than browser pages.
   by default. The authoritative ticker normally advances through fixed
   16.67-millisecond simulation intervals, so increased simulation rate mainly
   raises the number of fixed steps required per wall-clock second.
-- `scripts/run-server-load.mjs` creates one authoritative game, connects up to
-  the current 16-client game limit, sends deterministic pulse-like input, polls
-  `/metrics`, and can report input-acknowledgement and snapshot-inter-arrival
-  latency.
+- `scripts/run-server-load.mjs` creates independent authoritative games and
+  participant sets, applies seeded input and simulation rate, separates warm-up
+  and measurement, repeats phases, polls `/metrics`, and always records
+  input-acknowledgement and snapshot-inter-arrival latency. It emits one
+  versioned environment/scenario/result document to stdout and optionally a
+  file; quiet mode suppresses stderr progress.
 - `packages/server/src/metrics.ts` reports rolling per-game entity count,
   snapshot cadence, payload/wire bytes, and snapshot step/serialization
   average, p50, p95, p99, and maximum durations. Hot-path samples use fixed
@@ -69,9 +71,10 @@ WebSocket clients rather than browser pages.
   after each callback. Per-game reports expose requested and achieved
   simulation milliseconds per wall-clock second, steps per second, the
   achieved/requested throughput ratio, and current backlog.
-- The load harness supports only one game and prints periodic reports. It does
-  not yet provide warm-up phases, repetitions, structured result files,
-  deterministic scenario definitions, or capacity sweeps.
+- `benchmarks/server/scenarios.json` defines the canonical matrix and initial
+  game-count capacity sweep. `benchmarks/server/result-schema.json` defines the
+  stable required version-1 result shape, and the sibling README documents
+  local and official run protocols.
 - The server does not yet expose GC counts/pause time.
 - The first authoritative input-allocation fix is complete: the headless loop
   reuses its entity-input map and mutable per-entity input records.
@@ -285,6 +288,8 @@ Status: complete in `Server performance baseline 3`.
 
 ### Slice 3: multi-game structured load harness
 
+Status: complete in `Server performance baseline 4`.
+
 - Add multiple games and clients-per-game support.
 - Separate warm-up and measured phases.
 - Add repetitions, deterministic input seeds, simulation-rate configuration,
@@ -361,14 +366,25 @@ Status: complete in `Server performance baseline 3`.
   a synthetic overload whose backlog grows across callbacks. The expanded
   `npm run bench:server-metrics` recorder path remained about 32x faster than
   equivalent timed-object windows on the development environment.
+- Slice 3 supports `--games`, `--clients-per-game`, `--input-hz`, `--sim-rate`,
+  `--warmup`, `--duration`, `--repetitions`, `--seed`, `--output`, and `--quiet`.
+  The legacy `--clients` and `--latency` options remain accepted; latency is now
+  always collected.
+- Each result records commit/dirty state, Node, platform, CPU, server-build
+  label, scenario, raw server samples, per-game/server/client summaries, and
+  run errors. Missing joins/games/snapshots, stopped games, closed sockets,
+  metrics failures, and pending acknowledgements cause nonzero completion.
+- A production-bundle smoke run with two games, two clients per game, seeded
+  input, and two repetitions completed with zero pending acknowledgements and
+  no run errors. This is functional evidence only, not a reference performance
+  result.
 
 ## Next Slice
 
-Implement Slice 3 multi-game structured load harness. Add independent game
-lifecycles, clients per game, warm-up and measurement phases, repetitions,
-deterministic seeds and input rates, simulation-rate configuration, quiet
-operation, versioned JSON output, and explicit run-failure detection. Preserve
-production bundle and discovered-plugin execution.
+Implement Slice 4 in-process authoritative benchmark. Exercise real
+multiplayer composition and discovered server plugins without HTTP/WebSocket
+scheduling, cover representative independent games, inputs, entity counts, and
+simulation rates, and separate stepping from snapshot encoding where feasible.
 
 ## Open Questions
 
