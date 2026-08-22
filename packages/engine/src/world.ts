@@ -49,6 +49,11 @@ export type {
   SphericalBodyPhysics,
   World,
 } from "./domain/domainPorts";
+export {
+  addEntityConfigToScene,
+  refreshSceneLights,
+  removeEntityFromScene,
+} from "./setup/sceneAdapter";
 export { createScene } from "./setup/sceneSetup";
 export type { SceneSetup } from "./setup/sceneSetup";
 export {

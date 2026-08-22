@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   mergeModelRuntimeOptions,
+  runtimeOptionsEqual,
   shouldUseLocalPrediction,
   shouldUseRemoteSnapshotInterpolation,
 } from "../remoteClientRenderer";
@@ -53,5 +54,23 @@ describe("remote client renderer", () => {
       interpolation: "off",
       orbitalSpeedMultiplier: "32",
     });
+  });
+
+  it("compares runtime option records independent of key order", () => {
+    expect(
+      runtimeOptionsEqual(
+        { interpolation: "on", prediction: "off" },
+        { prediction: "off", interpolation: "on" },
+      ),
+    ).toBe(true);
+    expect(
+      runtimeOptionsEqual({ interpolation: "on" }, { interpolation: "off" }),
+    ).toBe(false);
+    expect(
+      runtimeOptionsEqual(
+        { interpolation: "on" },
+        { interpolation: "on", prediction: "off" },
+      ),
+    ).toBe(false);
   });
 });

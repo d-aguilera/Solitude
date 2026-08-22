@@ -1,6 +1,9 @@
 import type { ExternalRenderTextureSourcesProvider } from "@solitude/plugin-api/render";
 import { renderTextureSourcesCapability } from "@solitude/plugin-api/render";
-import type { ExternalScene } from "@solitude/plugin-api/scene";
+import type {
+  ExternalScene,
+  ExternalSceneObject,
+} from "@solitude/plugin-api/scene";
 import { describe, expect, it } from "vitest";
 import { createPlugin } from "../../solar-system-materials/index";
 import {
@@ -59,5 +62,27 @@ describe("solar system materials plugin", () => {
       textureId: moonDayTextureId,
     });
     expect(scene.objects[2].material).toBeUndefined();
+  });
+
+  it("does not reapply materials to retained scene objects", () => {
+    const earth: ExternalSceneObject = { id: "planet:earth" };
+    const scene: ExternalScene = { objects: [earth] };
+    const initScene = createPlugin({}).hooks?.scene?.initScene;
+    const params = {
+      config: { entities: [] },
+      scene,
+      world: {
+        collisionSpheres: [],
+        controllableBodies: [],
+        entityStates: [],
+        gravityMasses: [],
+      },
+    };
+
+    initScene?.(params);
+    earth.material = undefined;
+    initScene?.(params);
+
+    expect(earth.material).toBeUndefined();
   });
 });

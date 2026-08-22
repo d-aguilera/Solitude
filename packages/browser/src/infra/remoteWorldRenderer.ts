@@ -45,7 +45,15 @@ import {
   validatePluginRequirements,
 } from "@solitude/engine/runtime";
 import type { WorldAndSceneConfig } from "@solitude/engine/world";
-import { createScene, getMainViewLookState } from "@solitude/engine/world";
+import {
+  addEntityConfigToScene,
+  addEntityConfigToWorld,
+  createScene,
+  getMainViewLookState,
+  refreshSceneLights,
+  removeEntityFromScene,
+  removeEntityFromWorld,
+} from "@solitude/engine/world";
 import {
   createRemoteWorldMirror,
   type RemoteWorldMirror,
@@ -79,6 +87,9 @@ export interface RemoteWorldRenderer {
     snapshot: RuntimeWorldSnapshot,
     options?: RemoteWorldRenderOptions,
   ) => boolean;
+  reconcileModelEntities: (
+    entities: readonly WorldAndSceneConfig["entities"][number][],
+  ) => void;
   setFocusEntityId: (entityId: string) => boolean;
 }
 
@@ -104,6 +115,9 @@ export interface RemoteWorldMultiRenderer {
     snapshot: RuntimeWorldSnapshot,
     options?: RemoteWorldRenderOptions,
   ) => boolean;
+  reconcileModelEntities: (
+    entities: readonly WorldAndSceneConfig["entities"][number][],
+  ) => void;
   setFocusEntityId: (entityId: string) => boolean;
 }
 
@@ -259,6 +273,14 @@ export function createRemoteWorldRenderer({
       renderCurrent(options);
       return true;
     },
+    reconcileModelEntities: (entities) =>
+      reconcileRemoteModelEntities({
+        config,
+        entities,
+        mirror,
+        scene: worldAndScene.scene,
+        scenePlugins,
+      }),
     setFocusEntityId: (entityId) => setFocusEntityId(mirror, entityId),
   };
 }
@@ -386,8 +408,56 @@ export function createRemoteWorldMultiRenderer({
       renderCurrent(options);
       return true;
     },
+    reconcileModelEntities: (entities) =>
+      reconcileRemoteModelEntities({
+        config,
+        entities,
+        mirror,
+        scene: worldAndScene.scene,
+        scenePlugins,
+      }),
     setFocusEntityId: (entityId) => setFocusEntityId(mirror, entityId),
   };
+}
+
+function reconcileRemoteModelEntities({
+  config,
+  entities,
+  mirror,
+  scene,
+  scenePlugins,
+}: {
+  config: WorldAndSceneConfig;
+  entities: readonly WorldAndSceneConfig["entities"][number][];
+  mirror: RemoteWorldMirror;
+  scene: ReturnType<typeof createScene>["scene"];
+  scenePlugins: ScenePlugin[];
+}): void {
+  const nextEntityIds = new Set(entities.map((entity) => entity.id));
+  const currentEntityIds = new Set(config.entities.map((entity) => entity.id));
+
+  for (const entity of config.entities) {
+    if (nextEntityIds.has(entity.id)) continue;
+    removeEntityFromScene(scene, entity.id);
+    removeEntityFromWorld(mirror.world, entity.id);
+  }
+  for (const entity of entities) {
+    if (currentEntityIds.has(entity.id)) continue;
+    addEntityConfigToWorld(mirror.world, entity);
+    addEntityConfigToScene(scene, mirror.world, entity);
+  }
+
+  config.entities.splice(0, config.entities.length, ...entities);
+  refreshSceneLights(scene, mirror.world);
+  mirror.refreshApplyWorkspace();
+  // Retain scene and renderer resources while allowing entity-dependent scene
+  // plugins to reconcile their own derived objects and indexes.
+  applySceneInitPlugins(scenePlugins, {
+    config,
+    mainFocus: mirror.worldSetup.mainFocus,
+    scene,
+    world: mirror.world,
+  });
 }
 
 export function rasterizeSceneOverlay(

@@ -2,7 +2,10 @@ import type { ExternalPlugin } from "@solitude/plugin-api/module";
 import type { ExternalRenderMaterial } from "@solitude/plugin-api/render";
 import { createRenderTextureSourcesCapability } from "@solitude/plugin-api/render";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
-import type { ExternalSceneObject } from "@solitude/plugin-api/scene";
+import type {
+  ExternalScene,
+  ExternalSceneObject,
+} from "@solitude/plugin-api/scene";
 import {
   earthCloudTextureId,
   earthDayTextureId,
@@ -36,12 +39,15 @@ const textureSources = createSolarSystemMaterialTextureSources(import.meta.url);
 export function createPlugin(
   _runtimeOptions: ExternalRuntimeOptions,
 ): ExternalPlugin {
+  const initializedScenes = new WeakSet<ExternalScene>();
   return {
     capabilities: [createRenderTextureSourcesCapability(textureSources)],
     id: "solarSystemMaterials",
     hooks: {
       scene: {
         initScene: ({ scene }) => {
+          if (initializedScenes.has(scene)) return;
+          initializedScenes.add(scene);
           applySolarSystemMaterials(scene.objects);
         },
       },

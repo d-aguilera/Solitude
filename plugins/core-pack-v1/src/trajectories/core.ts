@@ -24,13 +24,32 @@ export function createScenePlugin(): ExternalScenePlugin {
   return {
     initScene: ({ config, scene, world }) => {
       const trajectoryPlan = buildTrajectoryPlan(world, config.entities);
+      removeUnplannedTrajectorySceneObjects(scene, trajectoryPlan);
       addTrajectorySceneObjects(scene, world, config, trajectoryPlan);
-      trajectoryList = bindTrajectoryPlanToScene(scene, trajectoryPlan);
+      trajectoryList = bindTrajectoryPlanToScene(
+        scene,
+        trajectoryPlan,
+        trajectoryList,
+      );
     },
     updateScene: ({ dtSimMillis }) => {
       updateTrajectories(dtSimMillis, trajectoryList);
     },
   };
+}
+
+function removeUnplannedTrajectorySceneObjects(
+  scene: ExternalScene,
+  trajectoryPlan: readonly TrajectoryPlan[],
+): void {
+  const plannedIds = new Set(trajectoryPlan.map((entry) => entry.pathId));
+  let writeIndex = 0;
+  for (let readIndex = 0; readIndex < scene.objects.length; readIndex++) {
+    const object = scene.objects[readIndex];
+    if (parseTrajectoryId(object.id) && !plannedIds.has(object.id)) continue;
+    scene.objects[writeIndex++] = object;
+  }
+  scene.objects.length = writeIndex;
 }
 
 function addTrajectorySceneObjects(

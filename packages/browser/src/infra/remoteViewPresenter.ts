@@ -27,6 +27,9 @@ export interface RemoteViewPresenterRenderer {
     snapshot: RuntimeWorldSnapshot,
     options: RemoteWorldRenderOptions,
   ) => boolean;
+  reconcileModelEntities: (
+    entities: readonly WorldAndSceneConfig["entities"][number][],
+  ) => void;
   resizeToDisplaySize: (pixelRatio: number) => void;
   setFocusEntityId: (entityId: string) => boolean;
 }
@@ -91,6 +94,8 @@ export function createRemoteViewPresenterRenderer({
       rasterizeCurrent();
       return true;
     },
+    reconcileModelEntities: (entities) =>
+      worldRenderer.reconcileModelEntities(entities),
     resizeToDisplaySize: (pixelRatio) => {
       for (const view of presentedViews) {
         view.presenter.resizeToDisplaySize(pixelRatio);

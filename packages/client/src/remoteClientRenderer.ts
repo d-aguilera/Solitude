@@ -140,6 +140,7 @@ export function createSolitudeRemoteClientRenderer({
     externalPluginIds,
     runtimeOptions: baseRuntimeOptions,
   });
+  let activeRuntimeOptions = baseRuntimeOptions;
   let keyboardDispatcher = createKeyboardHandlerDispatcher(
     collectKeyboardInputProviders(composition.capabilityRegistry),
   );
@@ -267,21 +268,35 @@ export function createSolitudeRemoteClientRenderer({
       recordLocalInput(predictionState, controls, inputSequence);
     },
     setModel: (entities, nextModelVersion, modelRuntimeOptions) => {
-      composition = createRemoteClientComposition({
-        clientPlugins,
-        externalPluginCatalog,
-        externalPluginIds,
-        runtimeOptions: mergeModelRuntimeOptions(
-          baseRuntimeOptions,
-          modelRuntimeOptions,
-        ),
-      });
-      keyboardDispatcher = createKeyboardHandlerDispatcher(
-        collectKeyboardInputProviders(composition.capabilityRegistry),
+      const nextRuntimeOptions = mergeModelRuntimeOptions(
+        baseRuntimeOptions,
+        modelRuntimeOptions,
       );
+      const compositionChanged = !runtimeOptionsEqual(
+        activeRuntimeOptions,
+        nextRuntimeOptions,
+      );
+      if (compositionChanged) {
+        composition = createRemoteClientComposition({
+          clientPlugins,
+          externalPluginCatalog,
+          externalPluginIds,
+          runtimeOptions: nextRuntimeOptions,
+        });
+        activeRuntimeOptions = nextRuntimeOptions;
+        keyboardDispatcher = createKeyboardHandlerDispatcher(
+          collectKeyboardInputProviders(composition.capabilityRegistry),
+        );
+      }
       modelVersion = nextModelVersion;
-      renderer?.dispose();
-      renderer = createRenderer(composition.plugins, entities);
+      const config = createRendererConfig(composition.plugins, entities);
+      if (renderer && !compositionChanged) {
+        // Join/leave model updates must not discard WebGL texture and mesh caches.
+        renderer.reconcileModelEntities(config.entities);
+      } else {
+        renderer?.dispose();
+        renderer = createRenderer(composition.plugins, config);
+      }
       latestSnapshot = null;
       latestSnapshotReceivedAtMillis = 0;
       messageSimulationTimeMillis = 0;
@@ -516,14 +531,8 @@ export function createSolitudeRemoteClientRenderer({
 
   function createRenderer(
     plugins: GamePlugin[],
-    entities: readonly EntityConfig[],
+    config: ReturnType<typeof createRendererConfig>,
   ) {
-    const config = buildWorldAndSceneConfig();
-    applyWorldModelPlugins(config, plugins);
-    config.entities.push(...entities);
-    const focusEntityId = getFocusEntityId();
-    config.mainFocusEntityId =
-      focusEntityId.length > 0 ? focusEntityId : (entities[0]?.id ?? "");
     const viewDefinitions = buildViewDefinitions(config, plugins);
     const textureSources = collectRenderTextureSources(
       composition.capabilityRegistry,
@@ -566,6 +575,19 @@ export function createSolitudeRemoteClientRenderer({
     });
   }
 
+  function createRendererConfig(
+    plugins: GamePlugin[],
+    entities: readonly EntityConfig[],
+  ) {
+    const config = buildWorldAndSceneConfig();
+    applyWorldModelPlugins(config, plugins);
+    config.entities.push(...entities);
+    const focusEntityId = getFocusEntityId();
+    config.mainFocusEntityId =
+      focusEntityId.length > 0 ? focusEntityId : (entities[0]?.id ?? "");
+    return config;
+  }
+
   function handleFatalError(failure: RenderFailure): void {
     fatalError = failure.code;
     publishRemoteRenderDebugState();
@@ -592,6 +614,19 @@ export function mergeModelRuntimeOptions(
   modelRuntimeOptions: RuntimeOptions,
 ): RuntimeOptions {
   return { ...baseRuntimeOptions, ...modelRuntimeOptions };
+}
+
+export function runtimeOptionsEqual(
+  left: RuntimeOptions,
+  right: RuntimeOptions,
+): boolean {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  if (leftKeys.length !== rightKeys.length) return false;
+  for (const key of leftKeys) {
+    if (left[key] !== right[key]) return false;
+  }
+  return true;
 }
 
 function isRuntimeOptionEnabled(value: string | undefined): boolean {

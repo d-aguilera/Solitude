@@ -118,6 +118,41 @@ describe("remote world renderer", () => {
     expect(renderer.mirror.worldSetup.mainFocus.entityId).toBe("craft:red");
   });
 
+  it("reconciles joined and departed entities without replacing the scene", () => {
+    const config = buildConfig();
+    const renderer = createRemoteWorldRenderer({
+      config,
+      measureText,
+      plugins: [createForwardViewPlugin()],
+      surface,
+    });
+    const scene = renderer.renderParams.scene;
+    const originalCraft = scene.objects.find(
+      (object) => object.id === "craft:test",
+    );
+    const joinedConfig = buildConfig([createCraft("craft:red", 8)]);
+
+    renderer.reconcileModelEntities(joinedConfig.entities);
+
+    expect(renderer.renderParams.scene).toBe(scene);
+    expect(scene.objects.find((object) => object.id === "craft:test")).toBe(
+      originalCraft,
+    );
+    expect(scene.objects.some((object) => object.id === "craft:red")).toBe(
+      true,
+    );
+    expect(
+      renderer.renderSnapshot(createAuthoritativeSnapshot(joinedConfig)),
+    ).toBe(true);
+
+    renderer.reconcileModelEntities(buildConfig().entities);
+
+    expect(scene.objects.some((object) => object.id === "craft:red")).toBe(
+      false,
+    );
+    expect(renderer.mirror.world.controllableBodies).toHaveLength(1);
+  });
+
   it("applies remote view controls before updating cameras", () => {
     const config = buildConfig();
     const renderer = createRemoteWorldRenderer({

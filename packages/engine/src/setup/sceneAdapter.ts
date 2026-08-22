@@ -20,23 +20,32 @@ export function createSceneFromWorld(
     lights: [],
   };
 
-  addEntitySceneObjects(scene, world, config.entities);
-  addLightsFromEmitters(scene, world.lightEmitters);
+  for (const entity of config.entities) {
+    addEntityConfigToScene(scene, world, entity);
+  }
+  refreshSceneLights(scene, world);
   return scene;
 }
 
-function addEntitySceneObjects(
+export function addEntityConfigToScene(
   scene: Scene,
   world: World,
-  entities: EntityConfig[],
+  entity: EntityConfig,
 ): void {
-  for (const entity of entities) {
-    const renderable = entity.components.renderable;
-    if (!renderable) continue;
+  const renderable = entity.components.renderable;
+  if (!renderable) return;
 
-    const state = getById(world.entityStates, entity.id, "Entity state");
-    scene.objects.push(createEntitySceneObject(entity, state, world));
-  }
+  const state = getById(world.entityStates, entity.id, "Entity state");
+  scene.objects.push(createEntitySceneObject(entity, state, world));
+}
+
+export function removeEntityFromScene(scene: Scene, entityId: string): void {
+  removeById(scene.objects, entityId);
+}
+
+export function refreshSceneLights(scene: Scene, world: World): void {
+  scene.lights.length = 0;
+  addLightsFromEmitters(scene, world.lightEmitters);
 }
 
 function createEntitySceneObject(
@@ -145,4 +154,14 @@ function getById<T extends { id: string }>(
     throw new Error(`${typeName} not found: ${id}`);
   }
   return obj;
+}
+
+function removeById<T extends { id: string }>(list: T[], id: string): void {
+  let writeIndex = 0;
+  for (let readIndex = 0; readIndex < list.length; readIndex++) {
+    const item = list[readIndex];
+    if (item.id === id) continue;
+    list[writeIndex++] = item;
+  }
+  list.length = writeIndex;
 }

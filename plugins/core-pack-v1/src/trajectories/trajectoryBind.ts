@@ -9,9 +9,16 @@ import type { Trajectory } from "./types";
 export function bindTrajectoryPlanToScene(
   scene: ExternalScene,
   plan: TrajectoryPlan[],
+  existingTrajectories: readonly Trajectory[] = [],
 ): Trajectory[] {
   const trajectoryList: Trajectory[] = [];
   const sceneObjects = scene.objects;
+  const existingByPathId = new Map(
+    existingTrajectories.map((trajectory) => [
+      trajectory.sceneObject.id,
+      trajectory,
+    ]),
+  );
 
   const sceneObjectIndex: Record<string, number> = {};
   for (let i = 0; i < sceneObjects.length; i++) {
@@ -23,6 +30,15 @@ export function bindTrajectoryPlanToScene(
       ExternalPolylineSceneObject | undefined;
     if (!sceneObject) {
       throw new Error(`Trajectory scene object not found: ${entry.pathId}`);
+    }
+    const existing = existingByPathId.get(entry.pathId);
+    if (
+      existing?.sceneObject === sceneObject &&
+      sceneObject.mesh.points.length === entry.capacity
+    ) {
+      existing.intervalMillis = entry.intervalMillis;
+      trajectoryList.push(existing);
+      continue;
     }
     trajectoryList.push(
       createTrajectory(entry.capacity, entry.intervalMillis, sceneObject),
