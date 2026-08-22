@@ -7,6 +7,7 @@ export interface SolitudeServerMetrics {
   createReport: (
     options: SolitudeServerMetricsReportOptions,
   ) => SolitudeServerMetricsReport;
+  recordGameTick: (sample: GameTickSample) => void;
   recordSnapshotBroadcast: (sample: SnapshotBroadcastSample) => void;
   recordSnapshotStep: (sample: SnapshotStepSample) => void;
 }
@@ -77,10 +78,20 @@ export interface SolitudeDurationMetricsReport {
 }
 
 export interface SolitudeGameMetricsReport {
+  broadcastLoopDurationMillisAvg: number;
+  broadcastLoopDurationMillisMax: number;
+  broadcastLoopDurationMillisP50: number;
+  broadcastLoopDurationMillisP95: number;
+  broadcastLoopDurationMillisP99: number;
   clients: number;
   entityCountAvg: number;
   gameId: SolitudeGameId;
   running: boolean;
+  requestedSimulationMillisPerSecond: number;
+  simulationBacklogMillis: number;
+  simulationMillisPerSecond: number;
+  simulationStepsPerSecond: number;
+  simulationThroughputRatio: number;
   snapshotPayloadBytesAvg: number;
   snapshotRateHz: number;
   snapshotSerializeDurationMillisAvg: number;
@@ -103,6 +114,15 @@ interface SnapshotStepSample {
   gameId: SolitudeGameId;
 }
 
+interface GameTickSample {
+  broadcastLoopDurationMillis: number;
+  completedSimulationMillis: number;
+  completedSteps: number;
+  gameId: SolitudeGameId;
+  requestedSimulationMillis: number;
+  simulationBacklogMillis: number;
+}
+
 interface SnapshotBroadcastSample {
   byteLength: number;
   clientCount: number;
@@ -111,7 +131,12 @@ interface SnapshotBroadcastSample {
 }
 
 interface GameMetricWindows {
+  broadcastLoopDurations: RollingDurationWindow;
+  completedSimulationMillis: RollingScalarWindow;
+  completedSimulationSteps: RollingScalarWindow;
   entityCounts: RollingScalarWindow;
+  requestedSimulationMillis: RollingScalarWindow;
+  simulationBacklogMillis: number;
   snapshotBroadcastBytes: RollingScalarWindow;
   snapshotBroadcastSerializeDurations: RollingDurationWindow;
   snapshotBroadcastWireBytes: RollingScalarWindow;
@@ -160,7 +185,12 @@ export function createSolitudeServerMetrics({
     let windows = windowsByGameId.get(gameId);
     if (!windows) {
       windows = {
+        broadcastLoopDurations: new RollingDurationWindow(windowMillis),
+        completedSimulationMillis: new RollingScalarWindow(windowMillis),
+        completedSimulationSteps: new RollingScalarWindow(windowMillis),
         entityCounts: new RollingScalarWindow(windowMillis),
+        requestedSimulationMillis: new RollingScalarWindow(windowMillis),
+        simulationBacklogMillis: 0,
         snapshotBroadcastBytes: new RollingScalarWindow(windowMillis),
         snapshotBroadcastSerializeDurations: new RollingDurationWindow(
           windowMillis,
@@ -203,16 +233,40 @@ export function createSolitudeServerMetrics({
         eventLoop,
         games: games.map((game) => {
           const windows = getWindows(game.gameId);
+          const broadcastLoopDuration =
+            windows.broadcastLoopDurations.read(now);
+          const completedSimulationMillis =
+            windows.completedSimulationMillis.read(now);
+          const completedSimulationSteps =
+            windows.completedSimulationSteps.read(now);
           const payloadBytes = windows.snapshotBroadcastBytes.read(now);
+          const requestedSimulationMillis =
+            windows.requestedSimulationMillis.read(now);
           const serializeDuration =
             windows.snapshotBroadcastSerializeDurations.read(now);
           const stepDuration = windows.snapshotStepDurations.read(now);
           const wireBytes = windows.snapshotBroadcastWireBytes.read(now);
           return {
+            broadcastLoopDurationMillisAvg: getAverage(broadcastLoopDuration),
+            broadcastLoopDurationMillisMax: broadcastLoopDuration.max,
+            broadcastLoopDurationMillisP50: broadcastLoopDuration.p50,
+            broadcastLoopDurationMillisP95: broadcastLoopDuration.p95,
+            broadcastLoopDurationMillisP99: broadcastLoopDuration.p99,
             clients: getClientCount(game.gameId),
             entityCountAvg: getAverage(windows.entityCounts.read(now)),
             gameId: game.gameId,
             running: game.running,
+            requestedSimulationMillisPerSecond:
+              (requestedSimulationMillis.sum * 1000) / windowMillis,
+            simulationBacklogMillis: windows.simulationBacklogMillis,
+            simulationMillisPerSecond:
+              (completedSimulationMillis.sum * 1000) / windowMillis,
+            simulationStepsPerSecond:
+              (completedSimulationSteps.sum * 1000) / windowMillis,
+            simulationThroughputRatio:
+              requestedSimulationMillis.sum > 0
+                ? completedSimulationMillis.sum / requestedSimulationMillis.sum
+                : 0,
             snapshotPayloadBytesAvg: getAverage(payloadBytes),
             snapshotRateHz: (payloadBytes.count * 1000) / windowMillis,
             snapshotSerializeDurationMillisAvg: getAverage(serializeDuration),
@@ -248,6 +302,22 @@ export function createSolitudeServerMetrics({
         windowMillis,
       };
     },
+    recordGameTick: ({
+      broadcastLoopDurationMillis,
+      completedSimulationMillis,
+      completedSteps,
+      gameId,
+      requestedSimulationMillis,
+      simulationBacklogMillis,
+    }) => {
+      const now = nowMillis();
+      const windows = getWindows(gameId);
+      windows.broadcastLoopDurations.record(now, broadcastLoopDurationMillis);
+      windows.completedSimulationMillis.record(now, completedSimulationMillis);
+      windows.completedSimulationSteps.record(now, completedSteps);
+      windows.requestedSimulationMillis.record(now, requestedSimulationMillis);
+      windows.simulationBacklogMillis = Math.max(0, simulationBacklogMillis);
+    },
     recordSnapshotBroadcast: ({
       byteLength,
       clientCount,
@@ -278,10 +348,20 @@ export function createNoopSolitudeServerMetrics(): SolitudeServerMetrics {
     createReport: ({ connectedSockets, games, getClientCount }) => ({
       eventLoop: createEmptyDurationReport(),
       games: games.map((game) => ({
+        broadcastLoopDurationMillisAvg: 0,
+        broadcastLoopDurationMillisMax: 0,
+        broadcastLoopDurationMillisP50: 0,
+        broadcastLoopDurationMillisP95: 0,
+        broadcastLoopDurationMillisP99: 0,
         clients: getClientCount(game.gameId),
         entityCountAvg: 0,
         gameId: game.gameId,
         running: game.running,
+        requestedSimulationMillisPerSecond: 0,
+        simulationBacklogMillis: 0,
+        simulationMillisPerSecond: 0,
+        simulationStepsPerSecond: 0,
+        simulationThroughputRatio: 0,
         snapshotPayloadBytesAvg: 0,
         snapshotRateHz: 0,
         snapshotSerializeDurationMillisAvg: 0,
@@ -314,6 +394,7 @@ export function createNoopSolitudeServerMetrics(): SolitudeServerMetrics {
       },
       windowMillis: 0,
     }),
+    recordGameTick: () => {},
     recordSnapshotBroadcast: () => {},
     recordSnapshotStep: () => {},
   };

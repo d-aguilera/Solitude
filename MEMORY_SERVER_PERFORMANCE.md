@@ -63,11 +63,16 @@ WebSocket clients rather than browser pages.
   array-buffer memory; and event-loop delay average/p50/p95/p99/max. The
   event-loop monitor uses Node's 10-millisecond sampling resolution and is
   closed with the HTTP runtime.
+- The authoritative ticker records requested simulation milliseconds,
+  completed fixed steps and simulation milliseconds, full broadcast-loop
+  duration (including snapshot serialization/fanout), and observable backlog
+  after each callback. Per-game reports expose requested and achieved
+  simulation milliseconds per wall-clock second, steps per second, the
+  achieved/requested throughput ratio, and current backlog.
 - The load harness supports only one game and prints periodic reports. It does
   not yet provide warm-up phases, repetitions, structured result files,
   deterministic scenario definitions, or capacity sweeps.
-- The server does not yet expose achieved simulation throughput, simulation
-  backlog, broadcast-loop duration, or GC counts/pause time.
+- The server does not yet expose GC counts/pause time.
 - The first authoritative input-allocation fix is complete: the headless loop
   reuses its entity-input map and mutable per-entity input records.
 
@@ -267,6 +272,8 @@ Status: complete in `Server performance baseline 2`.
 
 ### Slice 2: achieved throughput and backlog
 
+Status: complete in `Server performance baseline 3`.
+
 - Instrument requested simulation advancement, completed steps, completed
   simulation milliseconds, broadcast-loop duration, and remaining accumulated
   simulation time.
@@ -345,14 +352,23 @@ Status: complete in `Server performance baseline 2`.
 - Event-loop delay monitoring is enabled for production metrics at Node's
   10-millisecond resolution. GC observation remains deferred because it is
   more diagnostic and its overhead still needs explicit evaluation.
+- Slice 2 observes ticker throughput and saturation without changing its
+  synchronous catch-up policy. Backlog includes both the fixed-step remainder
+  and simulation time requested by wall time consumed inside the current
+  broadcast callback, so overload is visible even though each callback drains
+  all work accumulated at its start.
+- Deterministic ticker tests cover delayed callbacks, 60x simulation rate, and
+  a synthetic overload whose backlog grows across callbacks. The expanded
+  `npm run bench:server-metrics` recorder path remained about 32x faster than
+  equivalent timed-object windows on the development environment.
 
 ## Next Slice
 
-Implement Slice 2 achieved throughput and backlog observability. Instrument
-requested simulation advancement, completed fixed steps and simulation time,
-broadcast-loop duration, and remaining accumulated simulation time without
-changing ticker catch-up behavior. Add deterministic normal, delayed,
-high-rate, and growing-backlog tests before extending the load harness.
+Implement Slice 3 multi-game structured load harness. Add independent game
+lifecycles, clients per game, warm-up and measurement phases, repetitions,
+deterministic seeds and input rates, simulation-rate configuration, quiet
+operation, versioned JSON output, and explicit run-failure detection. Preserve
+production bundle and discovered-plugin execution.
 
 ## Open Questions
 

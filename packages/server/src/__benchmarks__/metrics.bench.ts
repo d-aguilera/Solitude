@@ -40,12 +40,33 @@ describe("server metric hot-path recording", () => {
       gameId: "game:1",
       serializeDurationMillis: 0.1,
     });
+    productionMetrics.recordGameTick({
+      broadcastLoopDurationMillis: 0.5,
+      completedSimulationMillis: 1000 / 60,
+      completedSteps: 1,
+      gameId: "game:1",
+      requestedSimulationMillis: 1000 / 60,
+      simulationBacklogMillis: 0,
+    });
   });
 });
 
 function createLegacyTimedObjectMetrics() {
   const stepSamples: Array<{ timeMillis: number; value: number }> = [];
+  const broadcastDurationSamples: Array<{
+    timeMillis: number;
+    value: number;
+  }> = [];
+  const completedSimulationSamples: Array<{
+    timeMillis: number;
+    value: number;
+  }> = [];
+  const completedStepSamples: Array<{ timeMillis: number; value: number }> = [];
   const payloadSamples: Array<{ timeMillis: number; value: number }> = [];
+  const requestedSimulationSamples: Array<{
+    timeMillis: number;
+    value: number;
+  }> = [];
   const wireSamples: Array<{ timeMillis: number; value: number }> = [];
 
   return {
@@ -67,8 +88,25 @@ function createLegacyTimedObjectMetrics() {
         timeMillis: sampleTimeMillis,
         value: payloadBytes * clients,
       });
+      broadcastDurationSamples.push({
+        timeMillis: sampleTimeMillis,
+        value: 0.5,
+      });
+      completedSimulationSamples.push({
+        timeMillis: sampleTimeMillis,
+        value: 1000 / 60,
+      });
+      completedStepSamples.push({ timeMillis: sampleTimeMillis, value: 1 });
+      requestedSimulationSamples.push({
+        timeMillis: sampleTimeMillis,
+        value: 1000 / 60,
+      });
       prune(stepSamples, sampleTimeMillis);
+      prune(broadcastDurationSamples, sampleTimeMillis);
+      prune(completedSimulationSamples, sampleTimeMillis);
+      prune(completedStepSamples, sampleTimeMillis);
       prune(payloadSamples, sampleTimeMillis);
+      prune(requestedSimulationSamples, sampleTimeMillis);
       prune(wireSamples, sampleTimeMillis);
     },
   };

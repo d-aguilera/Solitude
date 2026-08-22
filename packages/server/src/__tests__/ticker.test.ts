@@ -3,7 +3,10 @@ import type {
   SolitudeGameId,
 } from "@solitude/protocol/protocol";
 import { describe, expect, it } from "vitest";
-import { createNoopSolitudeServerMetrics } from "../metrics";
+import {
+  createNoopSolitudeServerMetrics,
+  type SolitudeServerMetrics,
+} from "../metrics";
 import {
   createSolitudeGameTicker,
   type SolitudeGameTickPolicy,
@@ -250,6 +253,147 @@ describe("Solitude game ticker", () => {
     ]);
   });
 
+  it("records requested and achieved work after a delayed callback", () => {
+    const clock = createManualClock();
+    const metrics = createMetricsRecorder();
+    const ticker = createSolitudeGameTicker({
+      clock,
+      metrics,
+      onSnapshot: () => {},
+      policy: createPolicy({
+        broadcastIntervalMillis: 250,
+        simulationMillisPerWallMillis: 1,
+        simulationStepMillis: 125,
+      }),
+      transport: createTransportStub({
+        "game:1": Array.from({ length: 4 }, (_, index) =>
+          createSnapshot("game:1", index + 1),
+        ),
+      }),
+    });
+
+    ticker.runGame({ gameId: "game:1" });
+    clock.advance(500);
+    clock.tick(0);
+
+    expect(metrics.gameTicks).toEqual([
+      {
+        broadcastLoopDurationMillis: 0,
+        completedSimulationMillis: 500,
+        completedSteps: 4,
+        gameId: "game:1",
+        requestedSimulationMillis: 500,
+        simulationBacklogMillis: 0,
+      },
+    ]);
+  });
+
+  it("includes snapshot publication work in loop duration and backlog", () => {
+    const clock = createManualClock();
+    const metrics = createMetricsRecorder();
+    const ticker = createSolitudeGameTicker({
+      clock,
+      metrics,
+      onSnapshot: () => clock.advance(7),
+      policy: createPolicy({
+        broadcastIntervalMillis: 50,
+        simulationMillisPerWallMillis: 2,
+        simulationStepMillis: 100,
+      }),
+      transport: createTransportStub({
+        "game:1": [createSnapshot("game:1", 1)],
+      }),
+    });
+
+    ticker.runGame({ gameId: "game:1" });
+    clock.advance(50);
+    clock.tick(0);
+
+    expect(metrics.gameTicks[0]).toMatchObject({
+      broadcastLoopDurationMillis: 7,
+      requestedSimulationMillis: 100,
+      simulationBacklogMillis: 14,
+    });
+  });
+
+  it("records high-rate requested and achieved simulation throughput", () => {
+    const clock = createManualClock();
+    const metrics = createMetricsRecorder();
+    const ticker = createSolitudeGameTicker({
+      clock,
+      metrics,
+      onSnapshot: () => {},
+      policy: createPolicy({
+        broadcastIntervalMillis: 250,
+        simulationMillisPerWallMillis: 60,
+        simulationStepMillis: 1000,
+      }),
+      transport: createTransportStub({
+        "game:1": Array.from({ length: 15 }, (_, index) =>
+          createSnapshot("game:1", index + 1),
+        ),
+      }),
+    });
+
+    ticker.runGame({ gameId: "game:1" });
+    clock.advance(250);
+    clock.tick(0);
+
+    expect(metrics.gameTicks[0]).toMatchObject({
+      completedSimulationMillis: 15_000,
+      completedSteps: 15,
+      requestedSimulationMillis: 15_000,
+      simulationBacklogMillis: 0,
+    });
+  });
+
+  it("exposes growing backlog when simulation work costs more than it advances", () => {
+    const clock = createManualClock();
+    const metrics = createMetricsRecorder();
+    const ticker = createSolitudeGameTicker({
+      clock,
+      metrics,
+      onSnapshot: () => {},
+      policy: createPolicy({
+        broadcastIntervalMillis: 10,
+        simulationMillisPerWallMillis: 10,
+        simulationStepMillis: 100,
+      }),
+      transport: createTransportStub(
+        {
+          "game:1": Array.from({ length: 3 }, (_, index) =>
+            createSnapshot("game:1", index + 1),
+          ),
+        },
+        () => clock.advance(20),
+      ),
+    });
+
+    ticker.runGame({ gameId: "game:1" });
+    clock.advance(10);
+    clock.tick(0);
+    clock.tick(0);
+
+    expect(metrics.gameTicks).toEqual([
+      {
+        broadcastLoopDurationMillis: 20,
+        completedSimulationMillis: 100,
+        completedSteps: 1,
+        gameId: "game:1",
+        requestedSimulationMillis: 100,
+        simulationBacklogMillis: 200,
+      },
+      {
+        broadcastLoopDurationMillis: 40,
+        completedSimulationMillis: 200,
+        completedSteps: 2,
+        gameId: "game:1",
+        requestedSimulationMillis: 200,
+        simulationBacklogMillis: 400,
+      },
+    ]);
+  });
+
   it("accumulates short intervals until one fixed simulation step is due", () => {
     const clock = createManualClock();
     const snapshots: SnapshotMessage[] = [];
@@ -370,6 +514,7 @@ function createManualClock(): SolitudeGameTickerClock<ManualTimer> & {
 
 function createTransportStub(
   snapshotsByGameId: Record<SolitudeGameId, SnapshotMessage[]>,
+  onStep: () => void = () => {},
 ): {
   stepGameWithInputWindow: (
     gameId: SolitudeGameId,
@@ -405,9 +550,26 @@ function createTransportStub(
   return {
     stepGameWithInputWindow: (gameId, dtMillis, inputTimeWindow) => {
       steps.push({ dtMillis, gameId, inputTimeWindow });
+      onStep();
       return snapshotsByGameId[gameId]?.shift() ?? null;
     },
     steps,
+  };
+}
+
+function createMetricsRecorder(): Pick<
+  SolitudeServerMetrics,
+  "recordGameTick" | "recordSnapshotStep"
+> & {
+  gameTicks: Array<Parameters<SolitudeServerMetrics["recordGameTick"]>[0]>;
+} {
+  const gameTicks: Array<
+    Parameters<SolitudeServerMetrics["recordGameTick"]>[0]
+  > = [];
+  return {
+    gameTicks,
+    recordGameTick: (sample) => gameTicks.push(sample),
+    recordSnapshotStep: () => {},
   };
 }
 

@@ -32,6 +32,14 @@ describe("Solitude server metrics", () => {
       entityCount: 3,
       gameId: "game:1",
     });
+    metrics.recordGameTick({
+      broadcastLoopDurationMillis: 2,
+      completedSimulationMillis: 1000,
+      completedSteps: 1,
+      gameId: "game:1",
+      requestedSimulationMillis: 1000,
+      simulationBacklogMillis: 0,
+    });
     metrics.recordSnapshotBroadcast({
       byteLength: 100,
       clientCount: 2,
@@ -43,6 +51,14 @@ describe("Solitude server metrics", () => {
       durationMillis: 6,
       entityCount: 5,
       gameId: "game:1",
+    });
+    metrics.recordGameTick({
+      broadcastLoopDurationMillis: 6,
+      completedSimulationMillis: 1000,
+      completedSteps: 1,
+      gameId: "game:1",
+      requestedSimulationMillis: 2000,
+      simulationBacklogMillis: 1000,
     });
     metrics.recordSnapshotBroadcast({
       byteLength: 140,
@@ -59,10 +75,20 @@ describe("Solitude server metrics", () => {
 
     expect(report.sockets.connected).toBe(2);
     expect(report.games[0]).toMatchObject({
+      broadcastLoopDurationMillisAvg: 4,
+      broadcastLoopDurationMillisMax: 6,
+      broadcastLoopDurationMillisP50: 2,
+      broadcastLoopDurationMillisP95: 6,
+      broadcastLoopDurationMillisP99: 6,
       clients: 1,
       entityCountAvg: 4,
       gameId: "game:1",
       running: true,
+      requestedSimulationMillisPerSecond: 3000,
+      simulationBacklogMillis: 1000,
+      simulationMillisPerSecond: 2000,
+      simulationStepsPerSecond: 2,
+      simulationThroughputRatio: 2 / 3,
       snapshotPayloadBytesAvg: 120,
       snapshotRateHz: 2,
       snapshotSerializeDurationMillisAvg: 6,

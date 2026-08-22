@@ -35,7 +35,7 @@ export interface SolitudeGameTickerClock<Timer> {
 
 export interface SolitudeGameTickerOptions<Timer> {
   clock?: SolitudeGameTickerClock<Timer>;
-  metrics: Pick<SolitudeServerMetrics, "recordSnapshotStep">;
+  metrics: Pick<SolitudeServerMetrics, "recordGameTick" | "recordSnapshotStep">;
   onSnapshot: (snapshot: SnapshotMessage) => void;
   policy: SolitudeGameTickPolicy;
   transport: Pick<SolitudeInProcessTransport, "stepGameWithInputWindow">;
@@ -83,8 +83,9 @@ export function createSolitudeGameTicker<
         return;
       }
 
-      accumulatedSimulationMillis +=
+      const requestedSimulationMillis =
         elapsedWallMillis * policy.simulationMillisPerWallMillis;
+      accumulatedSimulationMillis += requestedSimulationMillis;
 
       const result = stepGameForBroadcast(
         options.transport,
@@ -105,6 +106,21 @@ export function createSolitudeGameTicker<
       if (result.snapshot) {
         options.onSnapshot(result.snapshot);
       }
+      const broadcastEndMillis = clock.nowMillis();
+      const broadcastLoopDurationMillis = Math.max(
+        0,
+        broadcastEndMillis - inputWindowEndMillis,
+      );
+      options.metrics.recordGameTick({
+        broadcastLoopDurationMillis,
+        completedSimulationMillis: result.completedSimulationMillis,
+        completedSteps: result.completedSteps,
+        gameId: request.gameId,
+        requestedSimulationMillis,
+        simulationBacklogMillis:
+          result.remainingSimulationMillis +
+          broadcastLoopDurationMillis * policy.simulationMillisPerWallMillis,
+      });
     }, policy.broadcastIntervalMillis);
     timersByGameId.set(request.gameId, timer);
   };
@@ -147,6 +163,8 @@ function stepGameForBroadcast(
   inputWindowEndMillis: number,
   nowMillis: () => number,
 ): {
+  completedSimulationMillis: number;
+  completedSteps: number;
   gameExists: boolean;
   inputWindowStartMillis: number;
   remainingSimulationMillis: number;
@@ -154,6 +172,7 @@ function stepGameForBroadcast(
 } {
   let remainingMillis = accumulatedSimulationMillis;
   let snapshot: SnapshotMessage | null = null;
+  let completedSteps = 0;
 
   while (remainingMillis >= policy.simulationStepMillis) {
     const stepMillis = policy.simulationStepMillis;
@@ -176,6 +195,8 @@ function stepGameForBroadcast(
     });
     if (!snapshot) {
       return {
+        completedSimulationMillis: completedSteps * policy.simulationStepMillis,
+        completedSteps,
         gameExists: false,
         inputWindowStartMillis,
         remainingSimulationMillis: remainingMillis,
@@ -189,9 +210,12 @@ function stepGameForBroadcast(
     });
     inputWindowStartMillis = stepWindowEndMillis;
     remainingMillis -= stepMillis;
+    completedSteps++;
   }
 
   return {
+    completedSimulationMillis: completedSteps * policy.simulationStepMillis,
+    completedSteps,
     gameExists: true,
     inputWindowStartMillis,
     remainingSimulationMillis: remainingMillis,

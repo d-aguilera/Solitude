@@ -180,7 +180,7 @@
 - `packages/localization/src/localization.ts`: dependency-free Solitude locale resolution, unit formatting, and message interpolation. Client/plugin JSON bundles live in their owning package directories.
 - `packages/multiplayer/src/runtime.ts`: Solitude-specific authoritative game implementation over the shared headless simulation.
 - `packages/multiplayer/src/main.ts`: deployable authoritative server entrypoint.
-- `packages/server/src/metrics.ts`: allocation-conscious rotating server metrics for precise snapshot step/serialization durations, cadence, payload/fanout, process CPU and memory, event-loop delay, and socket counts.
+- `packages/server/src/metrics.ts`: allocation-conscious rotating server metrics for precise snapshot step/serialization/broadcast-loop durations, requested and achieved simulation throughput, backlog, cadence, payload/fanout, process CPU and memory, event-loop delay, and socket counts.
 - `packages/client/src/localPrediction.ts`: client-side input prediction state for the assigned ship.
 - `packages/client/src/multiplayerSession.ts`: client-owned capability adapter exposing live game/entity identity to multiplayer external plugins.
 - `packages/client/src/localReconciliation.ts`: prediction error metrics and render-only visual correction smoothing.
@@ -239,10 +239,11 @@
 ## Next Steps Snapshot
 
 - Server performance baseline work is active: precise allocation-conscious
-  metrics are complete; next add achieved simulation throughput and backlog
-  visibility, extend the load harness to multiple games and structured results,
-  add an in-process authoritative benchmark, then capture a reference-machine
-  baseline before setting gates. See `MEMORY_SERVER_PERFORMANCE.md`.
+  metrics plus achieved simulation throughput and backlog visibility are
+  complete; next extend the load harness to multiple games and structured
+  results, add an in-process authoritative benchmark, then capture a
+  reference-machine baseline before setting gates. See
+  `MEMORY_SERVER_PERFORMANCE.md`.
 - Gravity plugin extraction is complete: both products discover the required
   external Newtonian provider, high-time-scale intervals use bounded provider
   steps, and the measured typed-array force loop is retained. See

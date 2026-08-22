@@ -206,6 +206,7 @@ function createNoopMetrics(): RunnerFactoryOptions["metrics"] {
       },
       windowMillis: 0,
     }),
+    recordGameTick: () => {},
     recordSnapshotBroadcast: () => {},
     recordSnapshotStep: () => {},
   };
