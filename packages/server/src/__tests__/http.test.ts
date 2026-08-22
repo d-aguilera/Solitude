@@ -192,6 +192,13 @@ describe("Solitude HTTP server", () => {
 
       expect(response.status).toBe(200);
       expect(await response.json()).toEqual({
+        eventLoop: {
+          avg: expect.any(Number),
+          max: expect.any(Number),
+          p50: expect.any(Number),
+          p95: expect.any(Number),
+          p99: expect.any(Number),
+        },
         games: [
           {
             clients: 1,
@@ -201,14 +208,28 @@ describe("Solitude HTTP server", () => {
             snapshotPayloadBytesAvg: expect.any(Number),
             snapshotRateHz: expect.any(Number),
             snapshotSerializeDurationMillisAvg: expect.any(Number),
+            snapshotSerializeDurationMillisMax: expect.any(Number),
+            snapshotSerializeDurationMillisP50: expect.any(Number),
             snapshotSerializeDurationMillisP95: expect.any(Number),
+            snapshotSerializeDurationMillisP99: expect.any(Number),
             snapshotStepDurationMillisAvg: expect.any(Number),
+            snapshotStepDurationMillisMax: expect.any(Number),
+            snapshotStepDurationMillisP50: expect.any(Number),
             snapshotStepDurationMillisP95: expect.any(Number),
+            snapshotStepDurationMillisP99: expect.any(Number),
             snapshotWireBytesPerSecond: expect.any(Number),
             tick: expect.any(Number),
           },
         ],
         process: {
+          arrayBuffersBytes: expect.any(Number),
+          cpuSystemMillis: expect.any(Number),
+          cpuTotalMillis: expect.any(Number),
+          cpuUserMillis: expect.any(Number),
+          cpuUtilizationPercent: expect.any(Number),
+          cpuWindowMillis: expect.any(Number),
+          externalBytes: expect.any(Number),
+          heapTotalBytes: expect.any(Number),
           heapUsedBytes: expect.any(Number),
           rssBytes: expect.any(Number),
         },

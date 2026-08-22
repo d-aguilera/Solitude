@@ -2,6 +2,7 @@ import type {
   SnapshotMessage,
   SolitudeGameId,
 } from "@solitude/protocol/protocol";
+import { performance } from "node:perf_hooks";
 import type { SolitudeServerMetrics } from "./metrics";
 import type { SolitudeInProcessTransport } from "./transport";
 
@@ -53,7 +54,7 @@ export function createSolitudeGameTicker<
     options.clock ??
     ({
       clearInterval,
-      nowMillis: Date.now,
+      nowMillis: () => performance.now(),
       setInterval,
     } as unknown as SolitudeGameTickerClock<Timer>);
   const timersByGameId = new Map<SolitudeGameId, Timer>();

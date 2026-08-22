@@ -49,18 +49,25 @@ WebSocket clients rather than browser pages.
   the current 16-client game limit, sends deterministic pulse-like input, polls
   `/metrics`, and can report input-acknowledgement and snapshot-inter-arrival
   latency.
-- `packages/server/src/metrics.ts` currently reports rolling per-game entity
-  count, snapshot step and serialization average/p95, snapshot cadence,
-  payload/wire bytes, sockets, heap used, and RSS.
-- Current duration measurements use `Date.now()`. Healthy sub-millisecond work
-  can therefore appear as zero and current percentiles are not a sufficiently
-  precise official baseline.
+- `packages/server/src/metrics.ts` reports rolling per-game entity count,
+  snapshot cadence, payload/wire bytes, and snapshot step/serialization
+  average, p50, p95, p99, and maximum durations. Hot-path samples use fixed
+  rotating typed-array aggregates rather than allocating one timed object per
+  observation; sub-5-millisecond histogram buckets have 0.01-millisecond
+  resolution.
+- Server duration measurements use monotonic `performance.now()` clocks.
+  Authoritative input receipt and ticker input windows share the same monotonic
+  clock origin; protocol wall-clock semantics are unchanged.
+- `/metrics` reports process CPU user/system/total time and utilization over
+  the interval since the previous report; heap used/total, RSS, external, and
+  array-buffer memory; and event-loop delay average/p50/p95/p99/max. The
+  event-loop monitor uses Node's 10-millisecond sampling resolution and is
+  closed with the HTTP runtime.
 - The load harness supports only one game and prints periodic reports. It does
   not yet provide warm-up phases, repetitions, structured result files,
   deterministic scenario definitions, or capacity sweeps.
 - The server does not yet expose achieved simulation throughput, simulation
-  backlog, event-loop delay, process CPU utilization, detailed heap/external
-  memory, or GC counts/pause time.
+  backlog, broadcast-loop duration, or GC counts/pause time.
 - The first authoritative input-allocation fix is complete: the headless loop
   reuses its entity-input map and mutable per-entity input records.
 
@@ -247,6 +254,8 @@ capacity runs should use the controlled reference environment.
 
 ### Slice 1: precise, allocation-conscious metrics
 
+Status: complete in `Server performance baseline 2`.
+
 - Replace duration measurement based on `Date.now()` with a monotonic
   high-resolution clock.
 - Replace per-sample timed-object windows on hot paths with bounded reusable
@@ -323,13 +332,27 @@ capacity runs should use the controlled reference environment.
 - High fanout alone regresses: inspect snapshot serialization reuse, socket
   buffering, and aggregate wire work rather than simulation.
 
-## Candidate First Slice
+## Completed Slice Notes
 
-Implement precise, allocation-conscious metrics and backlog observability
-together only if they can remain a small coherent change. Otherwise begin with
-high-resolution bounded aggregation, then add ticker throughput/backlog in the
-next commit. Do not establish numerical performance claims or CI gates until
-the revised instrumentation itself has been measured for overhead.
+- Slice 1 replaced `Date.now()` duration timing and unbounded timed-object
+  arrays with monotonic clocks and fixed rotating typed-array windows. Duration
+  percentiles are calculated from reusable bounded histograms only when a
+  report is requested.
+- `npm run bench:server-metrics` retains the former timed-object recorder as a
+  benchmark comparison. On the development environment, the production
+  recorder handled the representative combined step/broadcast recording path
+  about 22x faster; benchmark values are environment-dependent.
+- Event-loop delay monitoring is enabled for production metrics at Node's
+  10-millisecond resolution. GC observation remains deferred because it is
+  more diagnostic and its overhead still needs explicit evaluation.
+
+## Next Slice
+
+Implement Slice 2 achieved throughput and backlog observability. Instrument
+requested simulation advancement, completed fixed steps and simulation time,
+broadcast-loop duration, and remaining accumulated simulation time without
+changing ticker catch-up behavior. Add deterministic normal, delayed,
+high-rate, and growing-backlog tests before extending the load harness.
 
 ## Open Questions
 
@@ -352,8 +375,8 @@ the revised instrumentation itself has been measured for overhead.
 - Read `MEMORY.md`, this document, and `archive/MEMORY_GRAVITY_PLUGIN.md` before
   implementing the first slice.
 - Inspect the current ticker, metrics, sessions, HTTP broadcast, multiplayer
-  runtime, gravity benchmark, and load harness; they may have changed since
-  this roadmap was written.
+  runtime, metrics/gravity benchmarks, and load harness; they may have changed
+  since this roadmap was written.
 - Preserve production plugin discovery in end-to-end measurements. Do not
   replace the external gravity provider with a static test-only implementation
   when recording the official baseline.

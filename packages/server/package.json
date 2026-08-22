@@ -18,6 +18,7 @@
     "ws": "^8.21.1"
   },
   "scripts": {
+    "bench": "vitest bench --run src/__benchmarks__/metrics.bench.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   }
 }

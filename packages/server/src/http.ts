@@ -17,6 +17,7 @@ import {
 } from "node:http";
 import type { AddressInfo } from "node:net";
 import { extname, normalize, resolve, sep } from "node:path";
+import { performance } from "node:perf_hooks";
 import type { Duplex } from "node:stream";
 import { WebSocket, WebSocketServer, type RawData } from "ws";
 import {
@@ -76,7 +77,7 @@ function createSolitudeHttpRuntime({
   const socketSessionsBySocket = new Map<WebSocket, SocketSession>();
   const socketServer = new WebSocketServer({ noServer: true });
   const metrics = createSolitudeServerMetrics({
-    nowMillis: Date.now,
+    nowMillis: () => performance.now(),
     windowMillis: DEFAULT_SOLITUDE_METRICS_WINDOW_MILLIS,
   });
   const runner = createRunner({
@@ -92,6 +93,7 @@ function createSolitudeHttpRuntime({
   return {
     close: () => {
       runner.close();
+      metrics.close();
       socketServer.close();
       for (const sockets of socketSubscriptionsByGameId.values()) {
         for (const socket of sockets) {
@@ -526,14 +528,17 @@ function publishSocketSnapshot(
 ): void {
   const subscriptions = subscriptionsByGameId.get(snapshot.gameId);
   if (!subscriptions) return;
-  const serializeStartMillis = Date.now();
+  const serializeStartMillis = performance.now();
   const payload = JSON.stringify({ message: snapshot, type: "serverMessage" });
   const byteLength = Buffer.byteLength(payload);
   metrics.recordSnapshotBroadcast({
     byteLength,
     clientCount: subscriptions.size,
     gameId: snapshot.gameId,
-    serializeDurationMillis: Math.max(0, Date.now() - serializeStartMillis),
+    serializeDurationMillis: Math.max(
+      0,
+      performance.now() - serializeStartMillis,
+    ),
   });
   for (const socket of subscriptions) {
     sendSocketText(socket, payload);

@@ -179,9 +179,25 @@ function withSolitudeEnvironment<T>(
 
 function createNoopMetrics(): RunnerFactoryOptions["metrics"] {
   return {
+    close: () => {},
     createReport: () => ({
+      eventLoop: {
+        avg: 0,
+        max: 0,
+        p50: 0,
+        p95: 0,
+        p99: 0,
+      },
       games: [],
       process: {
+        arrayBuffersBytes: 0,
+        cpuSystemMillis: 0,
+        cpuTotalMillis: 0,
+        cpuUserMillis: 0,
+        cpuUtilizationPercent: 0,
+        cpuWindowMillis: 0,
+        externalBytes: 0,
+        heapTotalBytes: 0,
         heapUsedBytes: 0,
         rssBytes: 0,
       },

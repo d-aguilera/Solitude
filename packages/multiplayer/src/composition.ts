@@ -22,6 +22,7 @@ import {
   createSolitudeInProcessTransport,
   type SolitudeInProcessTransport,
 } from "@solitude/server/transport";
+import { performance } from "node:perf_hooks";
 import { createSolitudeServerGame } from "./runtime";
 
 const DEFAULT_ASSIGNABLE_ENTITY_COUNT = 16;
@@ -83,7 +84,7 @@ export function createDefaultSolitudeSessionManager(
           runtimeOptions,
         ),
       ),
-    nowMillis: Date.now,
+    nowMillis: () => performance.now(),
     runtimeOptions,
   });
 }
