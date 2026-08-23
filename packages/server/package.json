@@ -8,6 +8,7 @@
     "./http": "./src/http.ts",
     "./runner": "./src/runner.ts",
     "./sessions": "./src/sessions.ts",
+    "./snapshot": "./src/snapshotEncoding.ts",
     "./ticker": "./src/ticker.ts",
     "./transport": "./src/transport.ts"
   },

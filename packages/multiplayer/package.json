@@ -7,10 +7,12 @@
     "@solitude/engine": "0.0.0",
     "@solitude/geometry": "0.0.0",
     "@solitude/plugin-runtime": "0.0.0",
+    "@solitude/protocol": "0.0.0",
     "@solitude/server": "0.0.0",
     "@solitude/composition": "0.0.0"
   },
   "scripts": {
+    "bench": "vitest bench --run src/__benchmarks__/authoritative.bench.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   }
 }

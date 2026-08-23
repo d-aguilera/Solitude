@@ -75,6 +75,12 @@ WebSocket clients rather than browser pages.
   game-count capacity sweep. `benchmarks/server/result-schema.json` defines the
   stable required version-1 result shape, and the sibling README documents
   local and official run protocols.
+- `npm run bench:server-authoritative` builds and discovers the production
+  server plugin set, then benchmarks real in-process multiplayer composition.
+  It separates simulation plus runtime snapshot capture from compact snapshot
+  encoding and covers 1/8/16 controlled entities, 1/4/8 independent
+  eight-player games, typical/input-stress event rates, and 1x/10x/60x
+  fixed-step workloads.
 - The server does not yet expose GC counts/pause time.
 - The first authoritative input-allocation fix is complete: the headless loop
   reuses its entity-input map and mutable per-entity input records.
@@ -301,6 +307,8 @@ Status: complete in `Server performance baseline 4`.
 
 ### Slice 4: in-process authoritative benchmark
 
+Status: complete in `Server performance baseline 5`.
+
 - Benchmark real multiplayer composition and discovered server plugins without
   HTTP/WebSocket scheduling noise.
 - Cover representative entity counts, concurrent independent games, input
@@ -378,13 +386,24 @@ Status: complete in `Server performance baseline 4`.
   input, and two repetitions completed with zero pending acknowledgements and
   no run errors. This is functional evidence only, not a reference performance
   result.
+- Slice 4 uses the same local plugin-set discovery as the production server;
+  there is no static benchmark-only gravity or content implementation. Direct
+  game cases isolate simulation plus reusable runtime snapshot capture, compact
+  encoding cases isolate the allocation-producing protocol representation,
+  and session cases include input processing plus both layers.
+- Representative development-machine results scaled eight independent
+  eight-player games to about 8.1x the cost of one. The sixteen-player 10x and
+  60x session workloads cost about 9.5x and 63.7x the 1x workload. Values are
+  environment-dependent and establish harness behavior, not a reference
+  baseline or performance budget.
 
 ## Next Slice
 
-Implement Slice 4 in-process authoritative benchmark. Exercise real
-multiplayer composition and discovered server plugins without HTTP/WebSocket
-scheduling, cover representative independent games, inputs, entity counts, and
-simulation rates, and separate stepping from snapshot encoding where feasible.
+Implement Slice 5 reference-baseline capture. Select and name the reference
+environment, run the canonical matrix and capacity sweep against the production
+bundle with the documented warm-up/repetition protocol, record the first
+saturation point and bottleneck, and derive provisional warning thresholds
+without creating hard CI gates.
 
 ## Open Questions
 

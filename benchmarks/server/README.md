@@ -35,6 +35,18 @@ later repetitions with abandoned games. Official reference runs must instead
 restart the server and invoke the harness with `--repetitions 1` for each
 repetition, as described in `MEMORY_SERVER_PERFORMANCE.md`.
 
+Run the in-process authoritative benchmark separately:
+
+```sh
+npm run bench:server-authoritative
+```
+
+That command rebuilds and discovers the production server plugin set. It
+reports simulation plus runtime snapshot capture, compact snapshot encoding,
+independent-game scaling, input-window workloads, and 1x/10x/60x fixed-step
+cost without HTTP or WebSocket scheduling. Use `npm run bench:gravity` as the
+narrower Newtonian-provider signal.
+
 Non-quiet progress is written to stderr. The versioned result is written to
 stdout and, when `--output` is supplied, to that path. A run exits nonzero when
 game creation or joining fails, the metrics endpoint fails, a socket closes,

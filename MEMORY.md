@@ -199,6 +199,7 @@
 - `plugins/multiplayer-pack-v1/src/`: multiplayer-only external presentation plugin factories for remote identity and localized ship-color names.
 - `plugins/standalone-pack-v1/src/`: standalone-only external factories for ships, diagnostic playback, pause and time-scale behavior, memory telemetry, profiling, and operator focus switching.
 - `scripts/run-server-load.mjs`: multi-game headless WebSocket load harness with seeded input, simulation-rate control, warm-up/measurement phases, repetitions, client latency, failure detection, and versioned structured results.
+- `packages/multiplayer/src/__benchmarks__/authoritative.bench.ts`: production-discovered in-process authoritative benchmark separating simulation/runtime snapshot capture, compact encoding, concurrent games, input workloads, and time-scale cost.
 - `packages/solitude/src/bootstrap.ts`: Solitude browser app composition.
 - `plugins/spacecraft-operator/src/`: spacecraft controls, dynamics, telemetry state, local prediction, input, and forward camera rig.
 - `plugins/standalone-pack-v1/src/operator-switch/`: default runtime focus switching between controllable ships.
@@ -240,8 +241,8 @@
 
 - Server performance baseline work is active: precise allocation-conscious
   metrics plus achieved simulation throughput and backlog visibility are
-  complete, as is the multi-game structured load harness; next add an in-process
-  authoritative benchmark, then capture a reference-machine baseline before
+  complete, as are the multi-game structured load harness and in-process
+  authoritative benchmark; next capture a reference-machine baseline before
   setting gates. See `MEMORY_SERVER_PERFORMANCE.md`.
 - Gravity plugin extraction is complete: both products discover the required
   external Newtonian provider, high-time-scale intervals use bounded provider
