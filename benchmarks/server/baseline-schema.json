@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solitude.local/schemas/server-baseline-v1.json",
+  "title": "Solitude server reference baseline",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "commit",
+    "profile",
+    "machine",
+    "nodeVersion",
+    "platform",
+    "cpu",
+    "pluginIdentity",
+    "protocol",
+    "warmupSeconds",
+    "measurementSeconds",
+    "provisionalThresholds",
+    "scenarios",
+    "capacitySweep"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "commit": { "type": "string" },
+    "dirty": { "type": "boolean" },
+    "profile": { "enum": ["reference", "smoke"] },
+    "machine": { "type": "string" },
+    "nodeVersion": { "type": "string" },
+    "platform": { "type": "string" },
+    "cpu": { "type": "string" },
+    "pluginIdentity": { "type": "object" },
+    "protocol": {
+      "type": "object",
+      "required": [
+        "productionBuildCreatedOnce",
+        "repetitions",
+        "serverEntry",
+        "serverRestartedBetweenRepetitions"
+      ]
+    },
+    "warmupSeconds": { "type": "number", "minimum": 0 },
+    "measurementSeconds": { "type": "number", "exclusiveMinimum": 0 },
+    "provisionalThresholds": { "type": "object" },
+    "scenarios": { "$ref": "#/$defs/scenarioResults" },
+    "capacitySweep": { "$ref": "#/$defs/scenarioResults" }
+  },
+  "$defs": {
+    "scenarioResults": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scenario", "runs", "summary"],
+        "properties": {
+          "scenario": { "type": "object" },
+          "runs": { "type": "array" },
+          "summary": {
+            "type": "object",
+            "required": [
+              "confirmedSaturation",
+              "medianRunRepetition",
+              "saturationCount"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

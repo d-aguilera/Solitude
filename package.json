@@ -6,6 +6,7 @@
     "plugins/*"
   ],
   "scripts": {
+    "baseline:server": "npm run build:server && node scripts/run-server-baseline.mjs",
     "build": "npm run clean:dist && npm run build:plugins && npm run bundle:standalone && npm run bundle:client && npm run bundle:server",
     "build:browser-plugins": "node scripts/build-plugin-packs.mjs browser && node scripts/assemble-browser-plugins.mjs",
     "build:client": "npm run build:browser-plugins && npm run bundle:client",

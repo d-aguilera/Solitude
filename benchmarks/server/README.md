@@ -35,6 +35,40 @@ later repetitions with abandoned games. Official reference runs must instead
 restart the server and invoke the harness with `--repetitions 1` for each
 repetition, as described in `MEMORY_SERVER_PERFORMANCE.md`.
 
+The baseline orchestrator enforces that protocol and builds the production
+bundle once before running the canonical matrix and capacity sweep:
+
+```sh
+npm run baseline:server
+```
+
+Reference defaults are a 15-second warm-up, 60-second measurement, and five
+fresh-server repetitions. Results are written under
+`benchmarks/server/baselines/<machine>/<commit>.json`; `baseline-schema.json`
+defines their required version-1 shape. The named default environment is
+`wsl2-i7-7700hq`. It is a same-host WSL2 reference, so its transport numbers
+must not be presented as separate-host network capacity.
+
+For a functional check of the orchestration without creating a checked-in
+baseline, use the explicitly non-reference smoke profile:
+
+```sh
+npm run build:server
+node scripts/run-server-baseline.mjs \
+  --profile smoke \
+  --scenario typical \
+  --skip-capacity \
+  --output /tmp/solitude-server-baseline-smoke.json
+```
+
+The orchestrator persists after every scenario so an interrupted long run
+retains completed evidence. Capacity doubles beyond the checked-in initial
+game counts and stops at the first majority-confirmed saturation point, or at
+128 games if none is observed. `--max-capacity-games` can change that safety
+ceiling. Each repetition retains aggregated latency/process/game summaries and
+a compact trend series; the much larger raw `/metrics` responses remain load
+harness artifacts rather than reference-baseline storage.
+
 Run the in-process authoritative benchmark separately:
 
 ```sh
