@@ -80,3 +80,7 @@ The 50-millisecond interaction warnings sit above the 34.50-millisecond worst
 ack p99 and 32.61-millisecond worst inter-arrival p99 through the last healthy
 capacity point. High fanout demonstrates that these metrics still have
 outliers, so no baseline metric is a hard CI gate yet.
+
+The repository-level `reference-baseline.json` points to this capture.
+`npm run compare:server-baseline` produces non-blocking Markdown or versioned
+JSON comparisons against it, including run spread and identity mismatches.

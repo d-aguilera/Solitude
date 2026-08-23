@@ -90,6 +90,11 @@ WebSocket clients rather than browser pages.
   `benchmarks/server/baselines/`. It records the exact production plugin
   artifact identity, stable trend evidence, median-CPU repetition, worst
   p95/p99 latencies, and majority-confirmed saturation analysis.
+- `npm run compare:server-baseline` compares a candidate with the selected
+  reference pointer and emits Markdown or versioned JSON. It reports absolute
+  and percentage deltas, min/p50/p95/max repetition spread, workload coverage,
+  saturation changes, and machine/runtime/plugin/protocol/analysis identity
+  mismatches without enforcing performance gates.
 - The server does not yet expose GC counts/pause time.
 - The first authoritative input-allocation fix is complete: the headless loop
   reuses its entity-input map and mutable per-entity input records.
@@ -339,6 +344,10 @@ Status: complete in `Server performance baseline 7`.
 
 ### Slice 6: regression reporting and gates
 
+Status: complete in `Server performance baseline 8`; reporting is implemented
+and gate promotion remains intentionally deferred pending repeated controlled
+captures and agreed budgets.
+
 - Add comparison against the selected baseline.
 - Report absolute values, percentage deltas, environment mismatches, and
   statistical spread.
@@ -427,12 +436,24 @@ Status: complete in `Server performance baseline 7`.
   compares first-third and final-third medians with a positive full-window
   slope and an 8-MiB-or-5% minimum; majority confirmation rejects normal GC
   sawtooth endpoint variance. No hard CI gates were introduced.
+- Slice 6 adds a stable reference pointer plus a comparison CLI with Markdown
+  and JSON output. Nineteen representative process, simulation, memory,
+  transport, and latency metrics per compatible workload include absolute and
+  percentage deltas and min/p50/p95/max spread across successful repetitions.
+- Comparisons expose missing or scenario-incompatible workloads, first-capacity
+  saturation changes, dirty state, and machine, runtime, plugin artifact,
+  protocol, and analysis-policy mismatches. Metric and environment findings are
+  non-blocking; only invalid input or I/O failure exits nonzero.
+- All six planned server-performance baseline slices are complete. Hard gate
+  promotion is not a remaining implementation slice: it requires additional
+  controlled captures to establish variance and explicit product budgets.
 
-## Next Slice
+## Roadmap Status
 
-Implement Slice 6 baseline comparison and non-blocking regression reporting.
-Report absolute values, deltas, statistical spread, and environment/plugin
-identity mismatches against the named reference without introducing hard gates.
+All planned slices are complete. Future performance work should collect
+additional controlled candidate captures, use the non-blocking comparator to
+establish normal variance, validate the capacity result with a separate-host
+load generator, and only then propose explicit blocking gates.
 
 ## Open Questions
 

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solitude.local/schemas/server-baseline-comparison-v1.json",
+  "title": "Solitude server baseline comparison",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "blocking",
+    "reference",
+    "candidate",
+    "environment",
+    "coverage",
+    "summary",
+    "workloads"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "blocking": { "const": false },
+    "reference": { "$ref": "#/$defs/baselineIdentity" },
+    "candidate": { "$ref": "#/$defs/baselineIdentity" },
+    "environment": {
+      "type": "object",
+      "required": ["matches", "mismatches"]
+    },
+    "coverage": {
+      "type": "object",
+      "required": [
+        "comparedWorkloads",
+        "referenceOnly",
+        "candidateOnly",
+        "incompatibleWorkloads"
+      ]
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "comparedMetrics",
+        "metricsOutsideReferenceRange",
+        "referenceFirstCapacitySaturationGames",
+        "candidateFirstCapacitySaturationGames"
+      ]
+    },
+    "workloads": { "type": "array" }
+  },
+  "$defs": {
+    "baselineIdentity": {
+      "type": "object",
+      "required": ["commit", "machine", "path", "profile"]
+    }
+  }
+}

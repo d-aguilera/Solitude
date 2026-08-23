@@ -24,6 +24,7 @@
     "check:boundaries": "node scripts/check-package-boundaries.mjs",
     "check:boundaries:self-test": "node scripts/check-package-boundaries.mjs --self-test",
     "clean:dist": "node scripts/clean-dist.mjs",
+    "compare:server-baseline": "node scripts/compare-server-baselines.mjs",
     "dev": "npm run check && npm run build:plugins && vite --host",
     "dev:client": "npm run build:browser-plugins && VITE_SOLITUDE_SERVER_URL=http://localhost:8787 vite -c vite.client.config.ts --host",
     "dev:server": "npm run build:plugins && node scripts/run-server-dev.mjs",

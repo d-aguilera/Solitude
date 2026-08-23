@@ -75,6 +75,27 @@ full-window slope, avoiding false positives from ending at the top of a stable
 GC sawtooth. Interaction-latency thresholds are explicitly warning-only until
 an SLA is agreed.
 
+Compare any candidate baseline with the selected reference:
+
+```sh
+npm run compare:server-baseline -- \
+  --candidate /path/to/candidate-baseline.json \
+  --output /tmp/server-baseline-comparison.md
+```
+
+`reference-baseline.json` selects the default checked-in reference; use
+`--reference` to compare against a different result. Add `--json` for the
+versioned machine-readable shape defined by `comparison-schema.json`. The
+Markdown and JSON forms report absolute and percentage deltas, min/p50/p95/max
+spread across successful repetitions, scenario coverage, saturation changes,
+and machine/runtime/plugin/protocol/analysis mismatches.
+
+Comparison findings are deliberately non-blocking: metric changes,
+out-of-reference-range values, missing workloads, and environment mismatches
+do not produce a failing exit code. Invalid inputs and I/O failures still exit
+nonzero. Promote a metric to a gate only after repeated controlled captures
+establish its variance and an explicit budget is agreed.
+
 Run the in-process authoritative benchmark separately:
 
 ```sh
