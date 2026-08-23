@@ -7,6 +7,7 @@ import { arch, cpus, platform, release } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import {
+  analysisPolicy,
   curateLoadRun,
   provisionalThresholds,
   summarizeBaselineRuns,
@@ -51,6 +52,7 @@ async function main() {
       : undefined;
   const result = {
     schemaVersion: 1,
+    analysisPolicy,
     commit: commit || "unknown",
     cpu: cpus()[0]?.model ?? "unknown",
     dirty: status.length > 0,

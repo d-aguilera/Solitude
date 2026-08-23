@@ -1,11 +1,18 @@
 import { summarizeNumbers } from "./server-load-helpers.mjs";
 
 export const broadcastIntervalMillis = 1000 / 60;
+export const analysisPolicy = Object.freeze({
+  confirmation: "majority-of-repetitions",
+  heapTrend: "first-third-to-final-third-median-with-positive-slope",
+  interactionLatency: "warning-only-no-agreed-sla",
+});
 export const provisionalThresholds = Object.freeze({
   eventLoopDelayMillisP99: broadcastIntervalMillis,
   heapGrowthMinimumBytes: 8 * 1024 * 1024,
   heapGrowthMinimumRatio: 0.05,
+  inputAckLatencyMillisP99Warning: 50,
   simulationThroughputRatio: 0.99,
+  snapshotInterArrivalMillisP99Warning: 50,
   snapshotRateHz: 60 * 0.99,
 });
 
@@ -58,7 +65,7 @@ export function analyzeLoadRun(run) {
   const heapValues = trend.map((sample) => sample.heapUsedBytes);
   const backlogGrowth = detectGrowth(backlogValues, broadcastIntervalMillis, 0);
   const firstHeap = heapValues[0] ?? 0;
-  const heapGrowth = detectGrowth(
+  const heapGrowth = detectBandGrowth(
     heapValues,
     Math.max(
       provisionalThresholds.heapGrowthMinimumBytes,
@@ -94,6 +101,18 @@ export function analyzeLoadRun(run) {
   );
   if (eventLoopP99 > provisionalThresholds.eventLoopDelayMillisP99) {
     warnings.push("event-loop-p99-exceeds-broadcast-interval");
+  }
+  if (
+    (run.client?.inputAckLatencyMillis?.p99 ?? 0) >
+    provisionalThresholds.inputAckLatencyMillisP99Warning
+  ) {
+    warnings.push("input-ack-p99-exceeds-provisional-warning");
+  }
+  if (
+    (run.client?.snapshotInterArrivalMillis?.p99 ?? 0) >
+    provisionalThresholds.snapshotInterArrivalMillisP99Warning
+  ) {
+    warnings.push("snapshot-inter-arrival-p99-exceeds-provisional-warning");
   }
   if ((run.errors?.length ?? 0) > 0) warnings.push("load-run-failed");
 
@@ -133,6 +152,80 @@ export function curateLoadRun(run, repetition) {
     server: aggregateServerSummary(run.serverReports ?? []),
     trend: analysis.trend,
   };
+}
+
+export function reanalyzeBaselineResult(result) {
+  result.analysisPolicy = analysisPolicy;
+  result.provisionalThresholds = provisionalThresholds;
+  for (const scenario of [...result.scenarios, ...result.capacitySweep]) {
+    for (const run of scenario.runs) reanalyzeCuratedRun(run);
+    scenario.summary = summarizeBaselineRuns(scenario.runs);
+  }
+  result.firstCapacitySaturation =
+    result.capacitySweep.find((scenario) =>
+      Boolean(scenario.summary.confirmedSaturation),
+    )?.scenario ?? null;
+  return result;
+}
+
+export function reanalyzeCuratedRun(run) {
+  const heapGrowth = detectBandGrowth(
+    run.trend.map((sample) => sample.heapUsedBytes),
+    Math.max(
+      provisionalThresholds.heapGrowthMinimumBytes,
+      (run.trend[0]?.heapUsedBytes ?? 0) *
+        provisionalThresholds.heapGrowthMinimumRatio,
+    ),
+    0,
+  );
+  const reasons = [];
+  if (
+    run.analysis.minimumPerGameMedianSimulationThroughputRatio <
+    provisionalThresholds.simulationThroughputRatio
+  ) {
+    reasons.push("simulation-throughput-below-99-percent");
+  }
+  if (run.analysis.backlogGrowth?.growing) {
+    reasons.push("simulation-backlog-growing");
+  }
+  if (
+    run.analysis.minimumPerGameMedianSnapshotRateHz <
+    provisionalThresholds.snapshotRateHz
+  ) {
+    reasons.push("snapshot-cadence-below-99-percent");
+  }
+  if (run.client.pendingInputAcks > 0) {
+    reasons.push("pending-input-acknowledgements");
+  }
+  if (heapGrowth.growing) reasons.push("heap-growing-after-warmup");
+  const warnings = [];
+  if (
+    run.analysis.eventLoopDelayMillisP99Maximum >
+    provisionalThresholds.eventLoopDelayMillisP99
+  ) {
+    warnings.push("event-loop-p99-exceeds-broadcast-interval");
+  }
+  if (
+    run.client.inputAckLatencyMillis.p99 >
+    provisionalThresholds.inputAckLatencyMillisP99Warning
+  ) {
+    warnings.push("input-ack-p99-exceeds-provisional-warning");
+  }
+  if (
+    run.client.snapshotInterArrivalMillis.p99 >
+    provisionalThresholds.snapshotInterArrivalMillisP99Warning
+  ) {
+    warnings.push("snapshot-inter-arrival-p99-exceeds-provisional-warning");
+  }
+  if (run.errors.length > 0) warnings.push("load-run-failed");
+  run.analysis = {
+    ...run.analysis,
+    heapGrowth,
+    reasons,
+    saturated: reasons.length > 0 || run.errors.length > 0,
+    warnings,
+  };
+  return run;
 }
 
 export function summarizeBaselineRuns(runs) {
@@ -280,6 +373,30 @@ export function detectGrowth(values, minimumIncrease, minimumSlope) {
   return {
     growing: increase > minimumIncrease && slopePerSample > minimumSlope,
     increase,
+    slopePerSample,
+  };
+}
+
+export function detectBandGrowth(values, minimumIncrease, minimumSlope) {
+  if (values.length < 6) {
+    return {
+      finalBandMedian: 0,
+      growing: false,
+      increase: 0,
+      initialBandMedian: 0,
+      slopePerSample: 0,
+    };
+  }
+  const bandSize = Math.floor(values.length / 3);
+  const initialBandMedian = summarizeNumbers(values.slice(0, bandSize)).p50;
+  const finalBandMedian = summarizeNumbers(values.slice(-bandSize)).p50;
+  const increase = finalBandMedian - initialBandMedian;
+  const slopePerSample = linearRegressionSlope(values);
+  return {
+    finalBandMedian,
+    growing: increase > minimumIncrease && slopePerSample > minimumSlope,
+    increase,
+    initialBandMedian,
     slopePerSample,
   };
 }

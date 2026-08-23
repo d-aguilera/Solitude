@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   analyzeLoadRun,
+  detectBandGrowth,
   detectGrowth,
+  reanalyzeBaselineResult,
   summarizeBaselineRuns,
 } from "./server-baseline-helpers.mjs";
 
@@ -12,6 +14,17 @@ describe("server baseline helpers", () => {
       increase: 30,
     });
     expect(detectGrowth([0, 30, 20, 5], 16, 0).growing).toBe(false);
+  });
+
+  it("does not mistake a stable GC sawtooth for heap growth", () => {
+    expect(
+      detectBandGrowth([0, 5, 10, 20, 0, 5, 10, 20, 0, 5, 10, 20], 16, 0)
+        .growing,
+    ).toBe(false);
+    expect(
+      detectBandGrowth([0, 1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23], 16, 0)
+        .growing,
+    ).toBe(true);
   });
 
   it("classifies throughput, backlog, cadence, and ack saturation", () => {
@@ -44,6 +57,18 @@ describe("server baseline helpers", () => {
     );
   });
 
+  it("warns on observed interaction latency without declaring saturation", () => {
+    const run = createRun([createReport(), createReport(), createReport()]);
+    run.client.inputAckLatencyMillis.p99 = 51;
+    run.client.snapshotInterArrivalMillis.p99 = 51;
+    const analysis = analyzeLoadRun(run);
+    expect(analysis.saturated).toBe(false);
+    expect(analysis.warnings).toEqual([
+      "input-ack-p99-exceeds-provisional-warning",
+      "snapshot-inter-arrival-p99-exceeds-provisional-warning",
+    ]);
+  });
+
   it("confirms saturation in a majority and selects the median CPU run", () => {
     const runs = [
       createCuratedRun(1, 10, false),
@@ -57,6 +82,22 @@ describe("server baseline helpers", () => {
       medianRunRepetition: 3,
       saturationCount: 3,
     });
+  });
+
+  it("reclassifies stored heap trends and scenario summaries", () => {
+    const run = createCuratedRun(1, 10, true);
+    run.analysis.reasons = ["heap-growing-after-warmup"];
+    run.errors = [];
+    run.trend = Array.from({ length: 12 }, (_, index) => ({
+      heapUsedBytes: [0, 5, 10, 20][index % 4],
+    }));
+    const result = {
+      capacitySweep: [],
+      scenarios: [{ runs: [run], summary: {} }],
+    };
+    reanalyzeBaselineResult(result);
+    expect(run.analysis).toMatchObject({ reasons: [], saturated: false });
+    expect(result.scenarios[0].summary.confirmedSaturation).toBe(false);
   });
 });
 

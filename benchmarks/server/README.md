@@ -69,6 +69,12 @@ ceiling. Each repetition retains aggregated latency/process/game summaries and
 a compact trend series; the much larger raw `/metrics` responses remain load
 harness artifacts rather than reference-baseline storage.
 
+Saturation requires a majority of repetitions. Heap growth compares the
+first-third and final-third steady-state medians and requires a positive
+full-window slope, avoiding false positives from ending at the top of a stable
+GC sawtooth. Interaction-latency thresholds are explicitly warning-only until
+an SLA is agreed.
+
 Run the in-process authoritative benchmark separately:
 
 ```sh

@@ -5,6 +5,7 @@
   "type": "object",
   "required": [
     "schemaVersion",
+    "analysisPolicy",
     "commit",
     "profile",
     "machine",
@@ -21,6 +22,7 @@
   ],
   "properties": {
     "schemaVersion": { "const": 1 },
+    "analysisPolicy": { "type": "object" },
     "commit": { "type": "string" },
     "dirty": { "type": "boolean" },
     "profile": { "enum": ["reference", "smoke"] },

@@ -81,6 +81,15 @@ WebSocket clients rather than browser pages.
   encoding and covers 1/8/16 controlled entities, 1/4/8 independent
   eight-player games, typical/input-stress event rates, and 1x/10x/60x
   fixed-step workloads.
+- `npm run baseline:server` builds the production server once, restarts it for
+  every repetition, runs the canonical matrix and doubling capacity sweep, and
+  persists a compact versioned baseline after every scenario. Reference
+  defaults enforce the 15-second warm-up, 60-second measurement, and five-run
+  protocol; the smoke profile remains explicitly non-reference.
+- The named `wsl2-i7-7700hq` reference result is checked in under
+  `benchmarks/server/baselines/`. It records the exact production plugin
+  artifact identity, stable trend evidence, median-CPU repetition, worst
+  p95/p99 latencies, and majority-confirmed saturation analysis.
 - The server does not yet expose GC counts/pause time.
 - The first authoritative input-allocation fix is complete: the headless loop
   reuses its entity-input map and mutable per-entity input records.
@@ -319,6 +328,8 @@ Status: complete in `Server performance baseline 5`.
 
 ### Slice 5: capture the reference baseline
 
+Status: complete in `Server performance baseline 7`.
+
 - Select and name the reference machine/environment.
 - Run the canonical matrix and capacity sweep against the production bundle.
 - Check in the scenario definitions and one versioned reference result.
@@ -396,18 +407,35 @@ Status: complete in `Server performance baseline 5`.
   60x session workloads cost about 9.5x and 63.7x the 1x workload. Values are
   environment-dependent and establish harness behavior, not a reference
   baseline or performance budget.
+- Slice 5 names `wsl2-i7-7700hq` as the same-host local reference environment.
+  The clean production capture used Node v22.22.3, a 15-second warm-up,
+  60-second measurement, five fresh-server repetitions, and the deployed
+  API-v11 content pack for every workload.
+- All canonical workloads sustained requested simulation throughput. Warp 60
+  consistently exceeded the provisional 16.67-millisecond event-loop warning
+  while retaining throughput and bounded backlog; high fanout produced two
+  acknowledgement-p99 warnings, including one 100.43-millisecond outlier.
+- The capacity sweep's last confirmed healthy point was 16 eight-client games.
+  At 32 games all five runs missed the 59.4-Hz cadence floor, event-loop p99
+  reached 28.33–39.03 milliseconds, and input-ack p99 reached 0.90–1.67
+  seconds, while simulation throughput remained at least 99.90% and backlog
+  stayed bounded. The first bottleneck is same-host scheduling/transport fanout
+  rather than authoritative simulation throughput; separate-host validation
+  remains necessary for a deployment capacity claim.
+- Initial non-blocking warnings are 16.67 milliseconds for event-loop p99 and
+  50 milliseconds for input-ack or snapshot-inter-arrival p99. Heap growth
+  compares first-third and final-third medians with a positive full-window
+  slope and an 8-MiB-or-5% minimum; majority confirmation rejects normal GC
+  sawtooth endpoint variance. No hard CI gates were introduced.
 
 ## Next Slice
 
-Implement Slice 5 reference-baseline capture. Select and name the reference
-environment, run the canonical matrix and capacity sweep against the production
-bundle with the documented warm-up/repetition protocol, record the first
-saturation point and bottleneck, and derive provisional warning thresholds
-without creating hard CI gates.
+Implement Slice 6 baseline comparison and non-blocking regression reporting.
+Report absolute values, deltas, statistical spread, and environment/plugin
+identity mismatches against the named reference without introducing hard gates.
 
 ## Open Questions
 
-- Which physical or virtual machine will be the named reference environment?
 - Should official end-to-end runs place the load generator on a separate host
   from the server, while retaining same-host runs for development convenience?
 - Which input-acknowledgement latency constitutes the initial interaction
@@ -416,8 +444,6 @@ without creating hard CI gates.
   benchmark launcher option?
 - What bounded histogram precision is sufficient for sub-millisecond step and
   serialization durations?
-- Should reference results live in the repository or in CI artifacts with only
-  a curated baseline checked in?
 - Which capacity scenario should become the first blocking regression gate
   after variance is known?
 

@@ -241,9 +241,11 @@
 
 - Server performance baseline work is active: precise allocation-conscious
   metrics plus achieved simulation throughput and backlog visibility are
-  complete, as are the multi-game structured load harness and in-process
-  authoritative benchmark; next capture a reference-machine baseline before
-  setting gates. See `MEMORY_SERVER_PERFORMANCE.md`.
+  complete, as are the multi-game structured load harness, in-process
+  authoritative benchmark, and named WSL2 reference capture. The first
+  confirmed capacity saturation was 32 eight-client games in scheduling and
+  transport fanout while simulation throughput stayed near 100%; next add
+  non-blocking comparison reporting. See `MEMORY_SERVER_PERFORMANCE.md`.
 - Gravity plugin extraction is complete: both products discover the required
   external Newtonian provider, high-time-scale intervals use bounded provider
   steps, and the measured typed-array force loop is retained. See
