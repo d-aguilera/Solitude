@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://solitude.local/schemas/server-baseline-metadata-v1.json",
+  "title": "Solitude server baseline metadata",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "capturedAt",
+    "commit",
+    "dirty",
+    "machine",
+    "nodeVersion",
+    "platform",
+    "cpu",
+    "cpuAffinity",
+    "nodeOptions",
+    "serverBuild",
+    "serverEntry",
+    "serverArtifactSha256",
+    "pluginIdentity"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "capturedAt": { "type": "string", "format": "date-time" },
+    "commit": { "type": "string", "minLength": 1 },
+    "dirty": { "type": "boolean" },
+    "machine": { "type": "string", "minLength": 1 },
+    "nodeVersion": { "type": "string", "minLength": 1 },
+    "platform": { "type": "string", "minLength": 1 },
+    "cpu": { "type": "string", "minLength": 1 },
+    "cpuAffinity": { "type": "string", "minLength": 1 },
+    "nodeOptions": { "type": "string" },
+    "serverBuild": { "type": "string", "minLength": 1 },
+    "serverEntry": { "type": "string", "minLength": 1 },
+    "serverArtifactSha256": { "type": "string", "minLength": 1 },
+    "pluginIdentity": { "type": "object" }
+  }
+}

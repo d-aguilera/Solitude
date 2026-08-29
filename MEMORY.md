@@ -199,7 +199,8 @@
 - `plugins/multiplayer-pack-v1/src/`: multiplayer-only external presentation plugin factories for remote identity and localized ship-color names.
 - `plugins/standalone-pack-v1/src/`: standalone-only external factories for ships, diagnostic playback, pause and time-scale behavior, memory telemetry, profiling, and operator focus switching.
 - `scripts/run-server-load.mjs`: multi-game headless WebSocket load harness with seeded input, simulation-rate control, warm-up/measurement phases, repetitions, client latency, failure detection, and versioned structured results.
-- `scripts/run-server-baseline.mjs`: reference/smoke orchestrator that builds once, restarts the production server for every repetition, persists compact trend evidence, and stops the capacity sweep at majority-confirmed saturation.
+- `scripts/run-server-baseline.mjs`: reference/smoke orchestrator that builds once, restarts a local or explicit remote production server for every repetition, distinguishes server and load-generator environments, persists compact trend evidence, and stops the capacity sweep at majority-confirmed saturation.
+- `scripts/capture-server-baseline-metadata.mjs`: server-side production artifact and environment identity capture for separate-host baseline orchestration.
 - `scripts/compare-server-baselines.mjs`: non-blocking Markdown/JSON comparison CLI using the selected reference pointer; reports absolute/percentage deltas, repetition spread, workload coverage, saturation changes, and environment/plugin/protocol identity mismatches.
 - `packages/multiplayer/src/__benchmarks__/authoritative.bench.ts`: production-discovered in-process authoritative benchmark separating simulation/runtime snapshot capture, compact encoding, concurrent games, input workloads, and time-scale cost.
 - `packages/solitude/src/bootstrap.ts`: Solitude browser app composition.

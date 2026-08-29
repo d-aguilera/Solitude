@@ -95,6 +95,13 @@ WebSocket clients rather than browser pages.
   and percentage deltas, min/p50/p95/max repetition spread, workload coverage,
   saturation changes, and machine/runtime/plugin/protocol/analysis identity
   mismatches without enforcing performance gates.
+- `npm run baseline:server:remote` runs the same matrix and capacity protocol
+  against an explicit HTTP(S) server URL. It supports a manual restart
+  checkpoint or an unattended restart command before every repetition, waits
+  for `/health`, and records server and load-generator identities separately.
+- `npm run baseline:server-metadata` captures the production server bundle and
+  plugin artifact identity plus the server machine/runtime metadata consumed by
+  remote baseline runs.
 - The server does not yet expose GC counts/pause time.
 - The first authoritative input-allocation fix is complete: the headless loop
   reuses its entity-input map and mutable per-entity input records.
@@ -447,18 +454,20 @@ captures and agreed budgets.
 - All six planned server-performance baseline slices are complete. Hard gate
   promotion is not a remaining implementation slice: it requires additional
   controlled captures to establish variance and explicit product budgets.
+- The post-roadmap separate-host extension adds remote baseline orchestration.
+  Remote runs require captured server metadata, default to an interactive
+  fresh-server checkpoint before every repetition, and may instead execute an
+  explicit restart command for unattended LAN or hosted-machine measurements.
 
 ## Roadmap Status
 
-All planned slices are complete. Future performance work should collect
-additional controlled candidate captures, use the non-blocking comparator to
-establish normal variance, validate the capacity result with a separate-host
-load generator, and only then propose explicit blocking gates.
+All planned slices and the separate-host orchestration extension are complete.
+Future performance work should collect controlled local and separate-host
+candidate captures, use the non-blocking comparator to establish normal
+variance, and only then propose explicit blocking gates.
 
 ## Open Questions
 
-- Should official end-to-end runs place the load generator on a separate host
-  from the server, while retaining same-host runs for development convenience?
 - Which input-acknowledgement latency constitutes the initial interaction
   budget?
 - Should GC diagnostics be enabled by a server environment flag or only by a

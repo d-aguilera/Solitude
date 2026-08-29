@@ -49,6 +49,63 @@ defines their required version-1 shape. The named default environment is
 `wsl2-i7-7700hq`. It is a same-host WSL2 reference, so its transport numbers
 must not be presented as separate-host network capacity.
 
+## Separate-host baselines
+
+Remote mode runs the complete matrix and capacity orchestration from a load
+generator on another machine. The server still must use the production bundle
+and restart before every repetition. First capture the exact server identity on
+the server machine, after creating the build that will be measured:
+
+```sh
+npm run baseline:server-metadata -- \
+  --machine devcontainer-lan \
+  --output /tmp/solitude-server-metadata.json
+
+HOST=0.0.0.0 PORT=8080 npm run start:server
+```
+
+Copy the metadata file to the load-generator machine. Then run the remote
+baseline there:
+
+```sh
+npm run baseline:server:remote -- \
+  --server-url http://192.168.0.97:8080 \
+  --server-metadata /path/to/solitude-server-metadata.json \
+  --load-generator-machine windows-lan-client \
+  --topology separate-host-lan
+```
+
+By default the orchestrator pauses before every repetition. Restart the server
+process on the server machine and press Enter; the orchestrator waits for
+`/health` before starting the workload. This includes the first repetition, so
+the first run also starts from a fresh process. Manual restart requires an
+interactive terminal.
+
+For unattended operation, provide a command that restarts the server and exits
+only after initiating the new process:
+
+```sh
+npm run baseline:server:remote -- \
+  --server-url http://192.168.0.97:8080 \
+  --server-metadata /path/to/solitude-server-metadata.json \
+  --restart-command "ssh benchmark-server restart-solitude-server" \
+  --restart-timeout 60
+```
+
+The restart command runs on the load-generator machine through its platform
+shell. It receives `SOLITUDE_SERVER_URL`, `SOLITUDE_BASELINE_SCENARIO`, and
+`SOLITUDE_BASELINE_REPETITION` environment variables. A nonzero exit or a
+server that does not become healthy within the timeout aborts the baseline.
+
+Remote results retain the server identity in the baseline's established
+top-level fields and under `environment.serverEnvironment`. The Windows or
+other load-generator identity is recorded separately under
+`environment.loadGeneratorEnvironment`; `environment.topology` prevents LAN,
+loopback, and public-internet results from appearing environment-compatible.
+`server-metadata-schema.json` defines the captured metadata document. Capture
+metadata again whenever the server bundle, plugin artifacts, runtime, or server
+environment changes.
+
 For a functional check of the orchestration without creating a checked-in
 baseline, use the explicitly non-reference smoke profile:
 

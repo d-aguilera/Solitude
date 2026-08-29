@@ -87,6 +87,23 @@ describe("server baseline comparison", () => {
     });
   });
 
+  it("compares separate server and load-generator identities when present", () => {
+    const reference = createBaseline();
+    const candidate = createBaseline();
+    reference.environment.loadGeneratorEnvironment = createEnvironment("pc-a");
+    candidate.environment.loadGeneratorEnvironment = createEnvironment("pc-b");
+    reference.environment.serverEnvironment = createEnvironment("server");
+    candidate.environment.serverEnvironment = createEnvironment("server");
+    reference.environment.topology = "separate-host-lan";
+    candidate.environment.topology = "separate-host-lan";
+    const comparison = compare(reference, candidate);
+    expect(comparison.environment.mismatches).toEqual([
+      expect.objectContaining({
+        field: "environment.loadGeneratorEnvironment",
+      }),
+    ]);
+  });
+
   it("renders an explicitly non-blocking Markdown report", () => {
     const comparison = compare(createBaseline(), createBaseline());
     const markdown = renderServerBaselineComparisonMarkdown(comparison);
@@ -150,6 +167,18 @@ function createBaseline() {
     provisionalThresholds: { simulationThroughputRatio: 0.99 },
     scenarios: [workload],
     warmupSeconds: 15,
+  };
+}
+
+function createEnvironment(machine) {
+  return {
+    commit: "abc123",
+    cpu: "Test CPU",
+    dirty: false,
+    machine,
+    nodeOptions: "",
+    nodeVersion: "v22.0.0",
+    platform: "linux x64",
   };
 }
 

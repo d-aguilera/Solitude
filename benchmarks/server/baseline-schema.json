@@ -12,6 +12,7 @@
     "nodeVersion",
     "platform",
     "cpu",
+    "environment",
     "pluginIdentity",
     "protocol",
     "warmupSeconds",
@@ -30,6 +31,20 @@
     "nodeVersion": { "type": "string" },
     "platform": { "type": "string" },
     "cpu": { "type": "string" },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "cpuAffinity": { "type": "string" },
+        "loadGenerator": { "type": "string" },
+        "loadGeneratorEnvironment": {
+          "$ref": "#/$defs/environmentIdentity"
+        },
+        "machine": { "type": "string" },
+        "nodeOptions": { "type": "string" },
+        "serverEnvironment": { "$ref": "#/$defs/environmentIdentity" },
+        "topology": { "type": "string" }
+      }
+    },
     "pluginIdentity": { "type": "object" },
     "protocol": {
       "type": "object",
@@ -38,7 +53,17 @@
         "repetitions",
         "serverEntry",
         "serverRestartedBetweenRepetitions"
-      ]
+      ],
+      "properties": {
+        "productionBuildCreatedOnce": { "type": "boolean" },
+        "repetitions": { "type": "integer", "minimum": 1 },
+        "restartStrategy": { "enum": ["local-process", "manual", "command"] },
+        "serverArtifactSha256": { "type": "string" },
+        "serverEntry": { "type": "string" },
+        "serverMode": { "enum": ["local", "remote"] },
+        "serverRestartedBetweenRepetitions": { "type": "boolean" },
+        "serverUrl": { "type": "string" }
+      }
     },
     "warmupSeconds": { "type": "number", "minimum": 0 },
     "measurementSeconds": { "type": "number", "exclusiveMinimum": 0 },
@@ -47,6 +72,27 @@
     "capacitySweep": { "$ref": "#/$defs/scenarioResults" }
   },
   "$defs": {
+    "environmentIdentity": {
+      "type": "object",
+      "required": [
+        "commit",
+        "cpu",
+        "dirty",
+        "machine",
+        "nodeOptions",
+        "nodeVersion",
+        "platform"
+      ],
+      "properties": {
+        "commit": { "type": "string" },
+        "cpu": { "type": "string" },
+        "dirty": { "type": "boolean" },
+        "machine": { "type": "string" },
+        "nodeOptions": { "type": "string" },
+        "nodeVersion": { "type": "string" },
+        "platform": { "type": "string" }
+      }
+    },
     "scenarioResults": {
       "type": "array",
       "items": {

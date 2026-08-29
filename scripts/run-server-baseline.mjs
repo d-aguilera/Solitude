@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 
 import { spawn } from "node:child_process";
-import { createHash } from "node:crypto";
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
-import { arch, cpus, platform, release } from "node:os";
-import { dirname, join, relative, resolve } from "node:path";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { createInterface } from "node:readline/promises";
 import { parseArgs } from "node:util";
+import {
+  captureHostEnvironment,
+  captureServerMetadata,
+  validateServerMetadata,
+} from "./server-baseline-environment.mjs";
 import {
   analysisPolicy,
   curateLoadRun,
@@ -22,7 +26,6 @@ import {
 const root = process.cwd();
 const scenariosPath = resolve(root, "benchmarks/server/scenarios.json");
 const serverEntryPath = resolve(root, "dist/server/main.js");
-const pluginRoot = resolve(root, "dist/server/plugins");
 
 await main().catch((error) => {
   console.error(error instanceof Error ? error.stack : String(error));
@@ -33,47 +36,73 @@ async function main() {
   const options = parseOptions();
   const definitions = JSON.parse(await readFile(scenariosPath, "utf8"));
   const selectedScenarios = selectScenarios(definitions.scenarios, options);
-  await assertProductionBuildExists();
-
-  const [commit, status, pluginIdentity] = await Promise.all([
-    readGitOutput(["rev-parse", "HEAD"]),
-    readGitOutput(["status", "--porcelain"]),
-    readPluginIdentity(),
+  const [loadGeneratorEnvironment, serverMetadata] = await Promise.all([
+    captureHostEnvironment(root),
+    options.serverMetadataPath
+      ? readServerMetadata(options.serverMetadataPath)
+      : captureServerMetadata({ machine: options.machine, root }),
   ]);
+  options.serverBuild = serverMetadata.serverBuild;
   const outputPath = options.output
     ? resolve(options.output)
     : options.profile === "reference"
       ? resolve(
           root,
           "benchmarks/server/baselines",
-          options.machine,
-          `${commit || "unknown"}.json`,
+          serverMetadata.machine,
+          `${serverMetadata.commit}.json`,
         )
       : undefined;
+  const remote = Boolean(options.serverUrl);
   const result = {
     schemaVersion: 1,
     analysisPolicy,
-    commit: commit || "unknown",
-    cpu: cpus()[0]?.model ?? "unknown",
-    dirty: status.length > 0,
+    commit: serverMetadata.commit,
+    cpu: serverMetadata.cpu,
+    dirty: serverMetadata.dirty,
     environment: {
-      cpuAffinity: "not-pinned",
-      loadGenerator: "same-host-separate-process",
-      machine: options.machine,
-      nodeOptions: process.env.NODE_OPTIONS ?? "",
+      cpuAffinity: serverMetadata.cpuAffinity,
+      loadGenerator: remote
+        ? "separate-host-separate-process"
+        : "same-host-separate-process",
+      loadGeneratorEnvironment: {
+        ...loadGeneratorEnvironment,
+        machine:
+          options.loadGeneratorMachine ?? loadGeneratorEnvironment.machine,
+      },
+      machine: serverMetadata.machine,
+      nodeOptions: serverMetadata.nodeOptions,
+      serverEnvironment: {
+        commit: serverMetadata.commit,
+        cpu: serverMetadata.cpu,
+        dirty: serverMetadata.dirty,
+        machine: serverMetadata.machine,
+        nodeOptions: serverMetadata.nodeOptions,
+        nodeVersion: serverMetadata.nodeVersion,
+        platform: serverMetadata.platform,
+      },
+      topology: options.topology,
     },
     finishedAt: null,
-    machine: options.machine,
+    machine: serverMetadata.machine,
     measurementSeconds: options.durationSeconds,
-    nodeVersion: process.version,
-    platform: `${platform()} ${release()} ${arch()}`,
-    pluginIdentity,
+    nodeVersion: serverMetadata.nodeVersion,
+    platform: serverMetadata.platform,
+    pluginIdentity: serverMetadata.pluginIdentity,
     profile: options.profile,
     protocol: {
       productionBuildCreatedOnce: true,
       repetitions: options.repetitions,
-      serverEntry: relative(root, serverEntryPath),
+      restartStrategy: remote
+        ? options.restartCommand
+          ? "command"
+          : "manual"
+        : "local-process",
+      serverArtifactSha256: serverMetadata.serverArtifactSha256,
+      serverEntry: serverMetadata.serverEntry,
+      serverMode: remote ? "remote" : "local",
       serverRestartedBetweenRepetitions: true,
+      serverUrl: remote ? options.serverUrl : "dynamic-loopback",
     },
     provisionalThresholds,
     capacitySweep: [],
@@ -120,16 +149,22 @@ function parseOptions() {
   const { values } = parseArgs({
     options: {
       duration: { type: "string" },
+      "load-generator-machine": { type: "string" },
       machine: { default: "wsl2-i7-7700hq", type: "string" },
       "max-capacity-games": { default: "128", type: "string" },
       output: { type: "string" },
       profile: { default: "reference", type: "string" },
       quiet: { default: false, type: "boolean" },
       repetitions: { type: "string" },
+      "restart-command": { type: "string" },
+      "restart-timeout": { default: "30", type: "string" },
       scenario: { multiple: true, type: "string" },
       seed: { default: "1", type: "string" },
+      "server-metadata": { type: "string" },
+      "server-url": { type: "string" },
       "skip-capacity": { default: false, type: "boolean" },
       "skip-matrix": { default: false, type: "boolean" },
+      topology: { type: "string" },
       warmup: { type: "string" },
     },
   });
@@ -142,11 +177,33 @@ function parseOptions() {
       : { duration: 3, repetitions: 1, warmup: 1 };
   const machine = values.machine.trim();
   if (machine.length === 0) throw new Error("--machine must not be empty");
+  const serverUrl = values["server-url"]
+    ? normalizeServerUrl(values["server-url"])
+    : undefined;
+  const serverMetadataPath = values["server-metadata"]
+    ? resolve(values["server-metadata"])
+    : undefined;
+  if (Boolean(serverUrl) !== Boolean(serverMetadataPath)) {
+    throw new Error("--server-url and --server-metadata must be used together");
+  }
+  const restartCommand = values["restart-command"]?.trim();
+  if (restartCommand && !serverUrl) {
+    throw new Error("--restart-command requires --server-url");
+  }
+  const topology =
+    values.topology?.trim() ??
+    (serverUrl ? "separate-host-lan" : "same-host-loopback");
+  if (!topology) throw new Error("--topology must not be empty");
+  const loadGeneratorMachine = values["load-generator-machine"]?.trim();
+  if (values["load-generator-machine"] && !loadGeneratorMachine) {
+    throw new Error("--load-generator-machine must not be empty");
+  }
   return {
     durationSeconds: values.duration
       ? parsePositiveNumber(values.duration, "duration")
       : defaults.duration,
     machine,
+    loadGeneratorMachine,
     maxCapacityGames: parsePositiveInteger(
       values["max-capacity-games"],
       "max-capacity-games",
@@ -157,10 +214,18 @@ function parseOptions() {
     repetitions: values.repetitions
       ? parsePositiveInteger(values.repetitions, "repetitions")
       : defaults.repetitions,
+    restartCommand,
+    restartTimeoutSeconds: parsePositiveNumber(
+      values["restart-timeout"],
+      "restart-timeout",
+    ),
     scenarioNames: values.scenario ?? [],
     seed: parseNonNegativeInteger(values.seed, "seed"),
+    serverMetadataPath,
+    serverUrl,
     skipCapacity: values["skip-capacity"],
     skipMatrix: values["skip-matrix"],
+    topology,
     warmupSeconds: values.warmup
       ? parseNonNegativeNumber(values.warmup, "warmup")
       : defaults.warmup,
@@ -199,7 +264,9 @@ async function runScenario(scenario, options) {
       options,
       `[baseline] ${scenario.name} repetition ${repetition}/${options.repetitions}`,
     );
-    const server = await startServer();
+    const server = options.serverUrl
+      ? await prepareRemoteServer({ options, repetition, scenario })
+      : await startServer();
     try {
       const loadResult = await runLoadGenerator({
         options,
@@ -247,7 +314,7 @@ async function runLoadGenerator({ options, repetition, scenario, serverUrl }) {
     "--seed",
     String(options.seed + repetition - 1),
     "--server-build",
-    "production",
+    options.serverBuild,
     "--quiet",
   ];
   const execution = await captureProcess(process.execPath, args);
@@ -266,6 +333,97 @@ async function runLoadGenerator({ options, repetition, scenario, serverUrl }) {
     );
   }
   return result;
+}
+
+async function prepareRemoteServer({ options, repetition, scenario }) {
+  if (options.restartCommand) {
+    await runRestartCommand(options, repetition, scenario);
+  } else {
+    await waitForManualRestart(options, repetition, scenario);
+  }
+  await waitForServerReady(options.serverUrl, options.restartTimeoutSeconds);
+  return { stop: async () => undefined, url: options.serverUrl };
+}
+
+async function runRestartCommand(options, repetition, scenario) {
+  log(options, `[baseline] running remote restart command`);
+  const execution = await captureShellCommand(options.restartCommand, {
+    SOLITUDE_BASELINE_REPETITION: String(repetition),
+    SOLITUDE_BASELINE_SCENARIO: scenario.name,
+    SOLITUDE_SERVER_URL: options.serverUrl,
+  });
+  if (execution.code !== 0) {
+    throw new Error(
+      `Remote restart command exited ${execution.code}: ${execution.stderr || execution.stdout || "no output"}`,
+    );
+  }
+}
+
+async function waitForManualRestart(options, repetition, scenario) {
+  if (!process.stdin.isTTY) {
+    throw new Error(
+      "Remote manual restart requires an interactive terminal; use --restart-command for unattended runs",
+    );
+  }
+  const readline = createInterface({
+    input: process.stdin,
+    output: process.stderr,
+  });
+  try {
+    await readline.question(
+      `[baseline] Restart ${options.serverUrl} for ${scenario.name} repetition ${repetition}, then press Enter to continue. `,
+    );
+  } finally {
+    readline.close();
+  }
+}
+
+async function waitForServerReady(serverUrl, timeoutSeconds) {
+  const healthUrl = `${serverUrl}/health`;
+  const deadline = Date.now() + timeoutSeconds * 1_000;
+  let lastError;
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch(healthUrl, {
+        signal: AbortSignal.timeout(2_000),
+      });
+      if (response.ok) return;
+      lastError = new Error(`HTTP ${response.status}`);
+    } catch (error) {
+      lastError = error;
+    }
+    await new Promise((resolveWait) => setTimeout(resolveWait, 250));
+  }
+  throw new Error(
+    `Remote server did not become healthy at ${healthUrl} within ${timeoutSeconds} seconds: ${lastError instanceof Error ? lastError.message : String(lastError)}`,
+  );
+}
+
+function normalizeServerUrl(value) {
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch (error) {
+    throw new Error(`--server-url must be an absolute HTTP(S) URL: ${value}`, {
+      cause: error,
+    });
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error("--server-url must use http or https");
+  }
+  return parsed.href.replace(/\/$/, "");
+}
+
+async function readServerMetadata(path) {
+  let metadata;
+  try {
+    metadata = JSON.parse(await readFile(path, "utf8"));
+  } catch (error) {
+    throw new Error(`Could not read server metadata from ${path}`, {
+      cause: error,
+    });
+  }
+  return validateServerMetadata(metadata, path);
 }
 
 async function startServer() {
@@ -364,82 +522,35 @@ function captureProcess(command, args) {
   });
 }
 
-async function readPluginIdentity() {
-  const pluginSetPath = join(pluginRoot, "plugin-set.json");
-  const pluginSet = JSON.parse(await readFile(pluginSetPath, "utf8"));
-  const packs = [];
-  for (const packReference of pluginSet.packs) {
-    const packPath = resolve(dirname(pluginSetPath), packReference);
-    const pack = JSON.parse(await readFile(packPath, "utf8"));
-    const plugins = [];
-    for (const pluginReference of pack.plugins) {
-      const manifest = JSON.parse(
-        await readFile(resolve(dirname(packPath), pluginReference), "utf8"),
-      );
-      plugins.push({
-        apiVersion: manifest.apiVersion,
-        id: manifest.id,
-        schemaVersion: manifest.schemaVersion,
-      });
-    }
-    packs.push({
-      host: pack.host,
-      id: pack.id,
-      plugins,
-      schemaVersion: pack.schemaVersion,
+function captureShellCommand(command, environment) {
+  return new Promise((resolveExecution, reject) => {
+    const child = spawn(command, {
+      cwd: root,
+      env: { ...process.env, ...environment },
+      shell: true,
+      stdio: ["ignore", "pipe", "pipe"],
     });
-  }
-  return {
-    artifactSha256: await hashDirectory(pluginRoot),
-    packs,
-    schemaVersion: pluginSet.schemaVersion,
-  };
-}
-
-async function hashDirectory(directory) {
-  const hash = createHash("sha256");
-  const files = await listFiles(directory);
-  for (const file of files) {
-    hash.update(relative(directory, file));
-    hash.update("\0");
-    hash.update(await readFile(file));
-    hash.update("\0");
-  }
-  return hash.digest("hex");
-}
-
-async function listFiles(directory) {
-  const entries = await readdir(directory, { withFileTypes: true });
-  const files = [];
-  for (const entry of entries.sort((left, right) =>
-    left.name.localeCompare(right.name),
-  )) {
-    const path = join(directory, entry.name);
-    if (entry.isDirectory()) files.push(...(await listFiles(path)));
-    else if (entry.isFile()) files.push(path);
-  }
-  return files;
-}
-
-async function assertProductionBuildExists() {
-  try {
-    await readFile(serverEntryPath);
-  } catch {
-    throw new Error(
-      "Production server bundle is missing; run npm run build:server first",
-    );
-  }
+    let stderr = "";
+    let stdout = "";
+    child.stderr.setEncoding("utf8");
+    child.stdout.setEncoding("utf8");
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk;
+    });
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk;
+    });
+    child.once("error", reject);
+    child.once("exit", (code, signal) => {
+      resolveExecution({ code: code ?? (signal ? 1 : 0), stderr, stdout });
+    });
+  });
 }
 
 async function persist(result, outputPath) {
   if (!outputPath) return;
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(result, null, 2)}\n`, "utf8");
-}
-
-async function readGitOutput(args) {
-  const execution = await captureProcess("git", args);
-  return execution.code === 0 ? execution.stdout.trim() : "";
 }
 
 function log(options, message) {

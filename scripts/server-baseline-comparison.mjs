@@ -428,6 +428,12 @@ function compareEnvironment(reference, candidate) {
       ["cpuAffinity", "loadGenerator", "nodeOptions"],
       "environment",
     ),
+    ...compareSharedFields(
+      reference.environment,
+      candidate.environment,
+      ["loadGeneratorEnvironment", "serverEnvironment", "topology"],
+      "environment",
+    ),
     ...compareFields(
       reference.protocol,
       candidate.protocol,
@@ -437,6 +443,12 @@ function compareEnvironment(reference, candidate) {
         "serverEntry",
         "serverRestartedBetweenRepetitions",
       ],
+      "protocol",
+    ),
+    ...compareSharedFields(
+      reference.protocol,
+      candidate.protocol,
+      ["restartStrategy", "serverArtifactSha256", "serverMode", "serverUrl"],
       "protocol",
     ),
     ...compareFields(
@@ -466,6 +478,18 @@ function compareFields(reference, candidate, fields, prefix = "") {
           },
         ];
   });
+}
+
+function compareSharedFields(reference, candidate, fields, prefix = "") {
+  return compareFields(
+    reference,
+    candidate,
+    fields.filter(
+      (field) =>
+        reference?.[field] !== undefined && candidate?.[field] !== undefined,
+    ),
+    prefix,
+  );
 }
 
 function indexWorkloads(baseline) {
