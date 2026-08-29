@@ -69,7 +69,7 @@ baseline there:
 
 ```sh
 npm run baseline:server:remote -- \
-  --server-url http://192.168.0.97:8080 \
+  --server-url http://192.168.0.86:8080 \
   --server-metadata /path/to/solitude-server-metadata.json \
   --load-generator-machine windows-lan-client \
   --topology separate-host-lan
@@ -86,7 +86,7 @@ only after initiating the new process:
 
 ```sh
 npm run baseline:server:remote -- \
-  --server-url http://192.168.0.97:8080 \
+  --server-url http://192.168.0.86:8080 \
   --server-metadata /path/to/solitude-server-metadata.json \
   --restart-command "ssh benchmark-server restart-solitude-server" \
   --restart-timeout 60
@@ -128,6 +128,18 @@ changing any field that previously identified an environment:
   hypervisor-enforced code integrity (`hvci`) adds memory-access overhead to
   every workload measured on that host. It is `null` where the state cannot be
   resolved.
+
+Every run also records a `generator` block holding the load generator's own CPU
+utilization, event-loop delay, and RSS, plus a `generatorSaturation` verdict.
+This exists because input-acknowledgement latency is measured inside the
+generator process: if its event loop is delayed, both input scheduling and
+acknowledgement timestamping are delayed with it, so the generator's event-loop
+p99 is effectively a floor on the acknowledgement latency it can resolve. A run
+whose acknowledgement p99 collapses while the server reports healthy CPU,
+throughput, backlog, and cadence should be checked against `generatorSaturation`
+before it is read as server saturation. `generator.cpuUtilizationPercent` uses
+the same all-thread semantics as the server's, so it is compared against
+`logicalCores * 100`.
 
 Windows facts are read through a single best-effort `powershell.exe` probe on
 Windows and directly interoperable WSL hosts. It is bounded by a timeout and

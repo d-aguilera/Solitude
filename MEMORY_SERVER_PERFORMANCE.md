@@ -126,6 +126,13 @@ WebSocket clients rather than browser pages.
   fields are required and preserve explicit `null` values where host-only facts
   cannot be resolved. A containerized capture cannot reach Windows host facts
   at all, so devcontainer runs record null topology/VBS by construction.
+- Every load run records a `generator` block with the load generator's own CPU
+  utilization, event-loop delay, and RSS, plus a `generatorSaturation` verdict
+  at 85% of `logicalCores * 100` CPU or a 16.67-millisecond event-loop p99.
+  Acknowledgement latency is measured inside the generator process, so its
+  event-loop p99 is a floor on the latency it can resolve. This disambiguates a
+  saturated server from a starved generator, which same-host capacity runs
+  could not previously distinguish.
 - The server does not yet expose GC counts/pause time.
 - The first authoritative input-allocation fix is complete: the headless loop
   reuses its entity-input map and mutable per-entity input records.

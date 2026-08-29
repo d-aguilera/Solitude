@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   createSeededRandom,
+  deriveGeneratorSaturation,
+  generatorLatencyFloorMillis,
   parseNonNegativeInteger,
   parsePositiveInteger,
+  summarizeGeneratorSamples,
   summarizeNumbers,
   summarizeRuns,
   summarizeServerReports,
@@ -100,3 +103,92 @@ function createServerReport(cpu, backlog) {
     },
   };
 }
+
+describe("load-generator sampling", () => {
+  it("summarizes samples and records the core budget", () => {
+    const generator = summarizeGeneratorSamples(
+      [
+        {
+          cpuUtilizationPercent: 100,
+          eventLoopDelayMax: 5,
+          eventLoopDelayP99: 2,
+          rssBytes: 100,
+        },
+        {
+          cpuUtilizationPercent: 300,
+          eventLoopDelayMax: 9,
+          eventLoopDelayP99: 4,
+          rssBytes: 300,
+        },
+      ],
+      8,
+    );
+    expect(generator.logicalCores).toBe(8);
+    expect(generator.cpuUtilizationPercent.avg).toBe(200);
+    expect(generator.cpuUtilizationPercent.max).toBe(300);
+    expect(generator.eventLoopDelayMillis.p99.max).toBe(4);
+    expect(generator.eventLoopDelayMillis.max.max).toBe(9);
+    expect(generator.rssBytes.max).toBe(300);
+  });
+
+  it("reports no saturation for an idle generator", () => {
+    const generator = summarizeGeneratorSamples(
+      [
+        {
+          cpuUtilizationPercent: 40,
+          eventLoopDelayMax: 2,
+          eventLoopDelayP99: 1,
+          rssBytes: 10,
+        },
+      ],
+      8,
+    );
+    expect(
+      deriveGeneratorSaturation(generator, {
+        cpuRatio: 0.85,
+        eventLoopMillis: 16.67,
+      }),
+    ).toEqual({ reasons: [], saturated: false });
+  });
+
+  it("flags a generator that has run out of CPU", () => {
+    const generator = summarizeGeneratorSamples(
+      [
+        {
+          cpuUtilizationPercent: 780,
+          eventLoopDelayMax: 12,
+          eventLoopDelayP99: 8,
+          rssBytes: 10,
+        },
+      ],
+      8,
+    );
+    const verdict = deriveGeneratorSaturation(generator, {
+      cpuRatio: 0.85,
+      eventLoopMillis: 16.67,
+    });
+    expect(verdict.saturated).toBe(true);
+    expect(verdict.reasons[0]).toContain("load generator CPU p50 780% of 800%");
+  });
+
+  it("flags a stalled generator event loop as a latency floor", () => {
+    const generator = summarizeGeneratorSamples(
+      [
+        {
+          cpuUtilizationPercent: 100,
+          eventLoopDelayMax: 900,
+          eventLoopDelayP99: 520,
+          rssBytes: 10,
+        },
+      ],
+      8,
+    );
+    const verdict = deriveGeneratorSaturation(generator, {
+      cpuRatio: 0.85,
+      eventLoopMillis: 16.67,
+    });
+    expect(verdict.saturated).toBe(true);
+    expect(verdict.reasons[0]).toContain("event-loop p99 520.00ms");
+    expect(generatorLatencyFloorMillis(generator)).toBe(520);
+  });
+});

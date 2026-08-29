@@ -27,6 +27,40 @@ export function summarizeNumbers(values) {
   };
 }
 
+export function summarizeGeneratorSamples(samples, logicalCores) {
+  return {
+    cpuUtilizationPercent: summarizeNumbers(
+      samples.map((sample) => sample.cpuUtilizationPercent),
+    ),
+    eventLoopDelayMillis: {
+      max: summarizeNumbers(samples.map((sample) => sample.eventLoopDelayMax)),
+      p99: summarizeNumbers(samples.map((sample) => sample.eventLoopDelayP99)),
+    },
+    logicalCores,
+    rssBytes: summarizeNumbers(samples.map((sample) => sample.rssBytes)),
+  };
+}
+
+export function deriveGeneratorSaturation(generator, thresholds) {
+  const reasons = [];
+  const cpuCeiling = generator.logicalCores * 100;
+  if (generator.cpuUtilizationPercent.p50 >= cpuCeiling * thresholds.cpuRatio) {
+    reasons.push(
+      `load generator CPU p50 ${generator.cpuUtilizationPercent.p50.toFixed(0)}% of ${cpuCeiling}% available`,
+    );
+  }
+  if (generator.eventLoopDelayMillis.p99.p50 > thresholds.eventLoopMillis) {
+    reasons.push(
+      `load generator event-loop p99 ${generator.eventLoopDelayMillis.p99.p50.toFixed(2)}ms exceeds ${thresholds.eventLoopMillis}ms`,
+    );
+  }
+  return { reasons, saturated: reasons.length > 0 };
+}
+
+export function generatorLatencyFloorMillis(generator) {
+  return generator.eventLoopDelayMillis.p99.p50;
+}
+
 export function summarizeServerReports(reports, gameIds) {
   const games = [];
   for (const gameId of gameIds) {

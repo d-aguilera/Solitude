@@ -147,6 +147,8 @@ export function curateLoadRun(run, repetition) {
     client: run.client,
     durationMillis: run.durationMillis,
     errors: run.errors,
+    generator: run.generator,
+    generatorSaturation: run.generatorSaturation,
     inputEventsSent: run.inputEventsSent,
     repetition,
     server: aggregateServerSummary(run.serverReports ?? []),

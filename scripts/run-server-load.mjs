@@ -3,15 +3,17 @@
 import { execFile } from "node:child_process";
 import { writeFile } from "node:fs/promises";
 import { arch, cpus, platform, release } from "node:os";
-import { performance } from "node:perf_hooks";
+import { monitorEventLoopDelay, performance } from "node:perf_hooks";
 import { parseArgs, promisify } from "node:util";
 import { WebSocket } from "ws";
 import {
   createSeededRandom,
+  deriveGeneratorSaturation,
   parseNonNegativeInteger,
   parseNonNegativeNumber,
   parsePositiveInteger,
   parsePositiveNumber,
+  summarizeGeneratorSamples,
   summarizeNumbers,
   summarizeRuns,
   summarizeServerReports,
@@ -20,6 +22,10 @@ import {
 const execFileAsync = promisify(execFile);
 const socketResponseTimeoutMillis = 10_000;
 const inputDrainMillis = 250;
+const generatorSaturationThresholds = Object.freeze({
+  cpuRatio: 0.85,
+  eventLoopMillis: 16.67,
+});
 
 await main().catch((error) => {
   console.error(error instanceof Error ? error.stack : String(error));
@@ -114,6 +120,8 @@ function createFailedRun(repetition, error) {
     durationMillis: 0,
     errors: [error instanceof Error ? error.message : String(error)],
     finishedAt: new Date().toISOString(),
+    generator: summarizeGeneratorSamples([], cpus().length),
+    generatorSaturation: { reasons: [], saturated: false },
     inputEventsSent: 0,
     repetition,
     server: summarizeServerReports([], []),
@@ -291,14 +299,17 @@ async function runRepetition({
   }
   await fetchMetrics(options.url);
   latencyTracker.beginMeasurement(workload.assignments);
+  const generatorMonitor = createGeneratorMonitor();
   const phase = await runPhase({
     collectMetrics: true,
     durationMillis: options.durationSeconds * 1000,
+    generatorMonitor,
     latencyTracker,
     options,
     random,
     workload,
   });
+  const generator = generatorMonitor.stop();
   await sleep(inputDrainMillis);
   phase.serverReports.push(await fetchMetrics(options.url));
   const client = latencyTracker.finishMeasurement(workload.assignments);
@@ -309,6 +320,11 @@ async function runRepetition({
     durationMillis: phase.durationMillis,
     errors,
     finishedAt: new Date().toISOString(),
+    generator,
+    generatorSaturation: deriveGeneratorSaturation(
+      generator,
+      generatorSaturationThresholds,
+    ),
     inputEventsSent: phase.inputEventsSent,
     repetition: repetition + 1,
     server: summarizeServerReports(phase.serverReports, workload.gameIds),
@@ -317,9 +333,41 @@ async function runRepetition({
   };
 }
 
+function createGeneratorMonitor() {
+  const histogram = monitorEventLoopDelay({ resolution: 10 });
+  const samples = [];
+  let cpuMarker = process.cpuUsage();
+  let windowMarker = performance.now();
+  histogram.enable();
+  return {
+    sample() {
+      const cpu = process.cpuUsage(cpuMarker);
+      const now = performance.now();
+      const windowMillis = now - windowMarker;
+      cpuMarker = process.cpuUsage();
+      windowMarker = now;
+      samples.push({
+        cpuUtilizationPercent:
+          windowMillis > 0
+            ? ((cpu.user + cpu.system) / 1000) * (100 / windowMillis)
+            : 0,
+        eventLoopDelayMax: histogram.max / 1e6,
+        eventLoopDelayP99: histogram.percentile(99) / 1e6,
+        rssBytes: process.memoryUsage.rss(),
+      });
+      histogram.reset();
+    },
+    stop() {
+      histogram.disable();
+      return summarizeGeneratorSamples(samples, cpus().length);
+    },
+  };
+}
+
 async function runPhase({
   collectMetrics,
   durationMillis,
+  generatorMonitor,
   latencyTracker,
   options,
   random,
@@ -365,6 +413,7 @@ async function runPhase({
 
     if (collectMetrics && now >= nextMetricsMillis) {
       serverReports.push(await fetchMetrics(options.url));
+      generatorMonitor?.sample();
       nextMetricsMillis += metricsIntervalMillis;
     }
     await sleep(2);
