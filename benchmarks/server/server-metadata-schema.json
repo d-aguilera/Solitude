@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://solitude.local/schemas/server-baseline-metadata-v1.json",
+  "$id": "https://solitude.local/schemas/server-baseline-metadata-v2.json",
   "title": "Solitude server baseline metadata",
   "type": "object",
   "required": [
@@ -13,6 +13,8 @@
     "platform",
     "cpu",
     "cpuAffinity",
+    "cpuTopology",
+    "virtualization",
     "nodeOptions",
     "serverBuild",
     "serverEntry",
@@ -20,7 +22,7 @@
     "pluginIdentity"
   ],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "capturedAt": { "type": "string", "format": "date-time" },
     "commit": { "type": "string", "minLength": 1 },
     "dirty": { "type": "boolean" },
@@ -29,12 +31,55 @@
     "platform": { "type": "string", "minLength": 1 },
     "cpu": { "type": "string", "minLength": 1 },
     "cpuAffinity": { "type": "string", "minLength": 1 },
-    "cpuTopology": { "type": "object" },
-    "virtualization": { "type": "object" },
+    "cpuTopology": { "$ref": "#/$defs/cpuTopology" },
+    "virtualization": { "$ref": "#/$defs/virtualization" },
     "nodeOptions": { "type": "string" },
     "serverBuild": { "type": "string", "minLength": 1 },
     "serverEntry": { "type": "string", "minLength": 1 },
     "serverArtifactSha256": { "type": "string", "minLength": 1 },
     "pluginIdentity": { "type": "object" }
+  },
+  "$defs": {
+    "cpuTopology": {
+      "type": "object",
+      "required": [
+        "hybrid",
+        "logicalCores",
+        "models",
+        "physicalCores",
+        "visibleLogicalCores"
+      ],
+      "properties": {
+        "hybrid": { "type": ["boolean", "null"] },
+        "logicalCores": { "type": "integer", "minimum": 1 },
+        "models": { "type": "array", "items": { "type": "string" } },
+        "physicalCores": { "type": ["integer", "null"], "minimum": 1 },
+        "visibleLogicalCores": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "virtualization": {
+      "type": "object",
+      "required": ["hypervisorPresent", "runtime", "vbs"],
+      "properties": {
+        "hypervisorPresent": { "type": "boolean" },
+        "runtime": {
+          "enum": [
+            "bare-metal",
+            "virtual-machine",
+            "wsl2",
+            "windows-host",
+            "unknown"
+          ]
+        },
+        "vbs": {
+          "type": ["object", "null"],
+          "required": ["hvci", "status"],
+          "properties": {
+            "hvci": { "type": "boolean" },
+            "status": { "enum": ["off", "enabled", "running", "unknown"] }
+          }
+        }
+      }
+    }
   }
 }

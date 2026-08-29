@@ -87,15 +87,13 @@ describe("server baseline comparison", () => {
     });
   });
 
-  it("compares separate server and load-generator identities when present", () => {
+  it("compares complete server and load-generator identities", () => {
     const reference = createBaseline();
     const candidate = createBaseline();
-    reference.environment.loadGeneratorEnvironment = createEnvironment("pc-a");
-    candidate.environment.loadGeneratorEnvironment = createEnvironment("pc-b");
-    reference.environment.serverEnvironment = createEnvironment("server");
-    candidate.environment.serverEnvironment = createEnvironment("server");
-    reference.environment.topology = "separate-host-lan";
-    candidate.environment.topology = "separate-host-lan";
+    candidate.environment.loadGeneratorEnvironment.virtualization.vbs = {
+      hvci: true,
+      status: "running",
+    };
     const comparison = compare(reference, candidate);
     expect(comparison.environment.mismatches).toEqual([
       expect.objectContaining({
@@ -113,7 +111,7 @@ describe("server baseline comparison", () => {
     expect(markdown).toContain("### scenario: typical");
   });
 
-  it("rejects documents that are not version-1 baselines", () => {
+  it("rejects documents that are not version-2 baselines", () => {
     expect(() =>
       compareServerBaselines({
         candidate: {},
@@ -121,7 +119,7 @@ describe("server baseline comparison", () => {
         reference: createBaseline(),
         referencePath: "reference.json",
       }),
-    ).toThrow("candidate must be a version-1 server baseline");
+    ).toThrow("candidate must be a version-2 server baseline");
   });
 });
 
@@ -137,7 +135,7 @@ function compare(reference, candidate) {
 function createBaseline() {
   const workload = createWorkload("typical", "scenario", 1);
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     analysisPolicy: { confirmation: "majority" },
     capacitySweep: [],
     commit: "abc123",
@@ -146,7 +144,11 @@ function createBaseline() {
     environment: {
       cpuAffinity: "not-pinned",
       loadGenerator: "same-host-separate-process",
+      loadGeneratorEnvironment: createEnvironment("test-machine"),
+      machine: "test-machine",
       nodeOptions: "",
+      serverEnvironment: createEnvironment("test-machine"),
+      topology: "same-host-loopback",
     },
     machine: "test-machine",
     measurementSeconds: 60,
@@ -161,8 +163,12 @@ function createBaseline() {
     protocol: {
       productionBuildCreatedOnce: true,
       repetitions: 3,
+      restartStrategy: "local-process",
+      serverArtifactSha256: "server-build",
       serverEntry: "dist/server/main.js",
+      serverMode: "local",
       serverRestartedBetweenRepetitions: true,
+      serverUrl: "dynamic-loopback",
     },
     provisionalThresholds: { simulationThroughputRatio: 0.99 },
     scenarios: [workload],
@@ -174,11 +180,23 @@ function createEnvironment(machine) {
   return {
     commit: "abc123",
     cpu: "Test CPU",
+    cpuTopology: {
+      hybrid: false,
+      logicalCores: 8,
+      models: ["Test CPU"],
+      physicalCores: 4,
+      visibleLogicalCores: 8,
+    },
     dirty: false,
     machine,
     nodeOptions: "",
     nodeVersion: "v22.0.0",
     platform: "linux x64",
+    virtualization: {
+      hypervisorPresent: false,
+      runtime: "bare-metal",
+      vbs: null,
+    },
   };
 }
 

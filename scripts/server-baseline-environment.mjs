@@ -6,6 +6,14 @@ import { dirname, join, relative, resolve } from "node:path";
 
 const HVCI_SECURITY_SERVICE = 2;
 const VBS_STATUS = ["off", "enabled", "running"];
+const VBS_STATUSES = new Set([...VBS_STATUS, "unknown"]);
+const VIRTUALIZATION_RUNTIMES = new Set([
+  "bare-metal",
+  "virtual-machine",
+  "wsl2",
+  "windows-host",
+  "unknown",
+]);
 const WINDOWS_PROBE_TIMEOUT_MILLIS = 5000;
 const WINDOWS_HOST_FACTS_SCRIPT = [
   "$ErrorActionPreference='SilentlyContinue';",
@@ -84,7 +92,7 @@ export async function captureServerMetadata({
     hashFile(serverEntryPath),
   ]);
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     capturedAt: new Date().toISOString(),
     commit: host.commit,
     cpu: host.cpu,
@@ -104,8 +112,8 @@ export async function captureServerMetadata({
 }
 
 export function validateServerMetadata(value, source = "server metadata") {
-  if (!value || typeof value !== "object" || value.schemaVersion !== 1) {
-    throw new Error(`${source} must be a version-1 server metadata document`);
+  if (!isRecord(value) || value.schemaVersion !== 2) {
+    throw new Error(`${source} must be a version-2 server metadata document`);
   }
   for (const field of [
     "capturedAt",
@@ -129,18 +137,62 @@ export function validateServerMetadata(value, source = "server metadata") {
   if (typeof value.dirty !== "boolean") {
     throw new Error(`${source}.dirty must be a boolean`);
   }
-  if (!value.pluginIdentity || typeof value.pluginIdentity !== "object") {
+  if (!isRecord(value.pluginIdentity)) {
     throw new Error(`${source}.pluginIdentity must be an object`);
   }
-  for (const field of ["cpuTopology", "virtualization"]) {
-    if (
-      value[field] !== undefined &&
-      (!value[field] || typeof value[field] !== "object")
-    ) {
-      throw new Error(`${source}.${field} must be an object when present`);
+  validateCpuTopology(value.cpuTopology, `${source}.cpuTopology`);
+  validateVirtualization(value.virtualization, `${source}.virtualization`);
+  return value;
+}
+
+function validateCpuTopology(value, source) {
+  if (!isRecord(value)) throw new Error(`${source} must be an object`);
+  if (typeof value.hybrid !== "boolean" && value.hybrid !== null) {
+    throw new Error(`${source}.hybrid must be a boolean or null`);
+  }
+  for (const field of ["logicalCores", "visibleLogicalCores"]) {
+    if (!Number.isInteger(value[field]) || value[field] < 1) {
+      throw new Error(`${source}.${field} must be a positive integer`);
     }
   }
-  return value;
+  if (
+    value.physicalCores !== null &&
+    (!Number.isInteger(value.physicalCores) || value.physicalCores < 1)
+  ) {
+    throw new Error(
+      `${source}.physicalCores must be a positive integer or null`,
+    );
+  }
+  if (
+    !Array.isArray(value.models) ||
+    value.models.some((model) => typeof model !== "string")
+  ) {
+    throw new Error(`${source}.models must be an array of strings`);
+  }
+}
+
+function validateVirtualization(value, source) {
+  if (!isRecord(value)) throw new Error(`${source} must be an object`);
+  if (typeof value.hypervisorPresent !== "boolean") {
+    throw new Error(`${source}.hypervisorPresent must be a boolean`);
+  }
+  if (!VIRTUALIZATION_RUNTIMES.has(value.runtime)) {
+    throw new Error(`${source}.runtime is not recognized`);
+  }
+  if (value.vbs === null) return;
+  if (!isRecord(value.vbs)) {
+    throw new Error(`${source}.vbs must be an object or null`);
+  }
+  if (typeof value.vbs.hvci !== "boolean") {
+    throw new Error(`${source}.vbs.hvci must be a boolean`);
+  }
+  if (!VBS_STATUSES.has(value.vbs.status)) {
+    throw new Error(`${source}.vbs.status is not recognized`);
+  }
+}
+
+function isRecord(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 async function readPluginIdentity(pluginRoot) {

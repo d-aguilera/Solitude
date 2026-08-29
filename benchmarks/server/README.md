@@ -45,7 +45,7 @@ npm run baseline:server
 Reference defaults are a 15-second warm-up, 60-second measurement, and five
 fresh-server repetitions. Results are written under
 `benchmarks/server/baselines/<machine>/<commit>.json`; `baseline-schema.json`
-defines their required version-1 shape. The named default environment is
+defines their required version-2 shape. The named default environment is
 `wsl2-i7-7700hq`. It is a same-host WSL2 reference, so its transport numbers
 must not be presented as separate-host network capacity.
 
@@ -102,9 +102,9 @@ top-level fields and under `environment.serverEnvironment`. The Windows or
 other load-generator identity is recorded separately under
 `environment.loadGeneratorEnvironment`; `environment.topology` prevents LAN,
 loopback, and public-internet results from appearing environment-compatible.
-`server-metadata-schema.json` defines the captured metadata document. Capture
-metadata again whenever the server bundle, plugin artifacts, runtime, or server
-environment changes.
+`server-metadata-schema.json` defines the required version-2 metadata document.
+Capture metadata again whenever the server bundle, plugin artifacts, runtime,
+or server environment changes.
 
 Both identities additionally record `cpuTopology` and `virtualization`, because
 core layout and an active hypervisor change measured latency spread without
@@ -125,10 +125,10 @@ changing any field that previously identified an environment:
   resolved.
 
 Windows facts are read through a single best-effort `powershell.exe` probe on
-Windows and WSL hosts. It is bounded by a timeout and never fails a run; hosts
-where it cannot run record the portable subset instead. Captures made before
-these fields existed remain valid, and the comparator only reports a mismatch
-when both baselines carry the field.
+Windows and directly interoperable WSL hosts. It is bounded by a timeout and
+never fails a run; hosts where it cannot run record the portable subset instead.
+Version-2 server metadata and baselines always contain both identity objects,
+including explicit `null` values for facts that could not be resolved.
 
 For a functional check of the orchestration without creating a checked-in
 baseline, use the explicitly non-reference smoke profile:

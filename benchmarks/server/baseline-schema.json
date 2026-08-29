@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://solitude.local/schemas/server-baseline-v1.json",
+  "$id": "https://solitude.local/schemas/server-baseline-v2.json",
   "title": "Solitude server reference baseline",
   "type": "object",
   "required": [
@@ -22,7 +22,7 @@
     "capacitySweep"
   ],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "analysisPolicy": { "type": "object" },
     "commit": { "type": "string" },
     "dirty": { "type": "boolean" },
@@ -33,6 +33,15 @@
     "cpu": { "type": "string" },
     "environment": {
       "type": "object",
+      "required": [
+        "cpuAffinity",
+        "loadGenerator",
+        "loadGeneratorEnvironment",
+        "machine",
+        "nodeOptions",
+        "serverEnvironment",
+        "topology"
+      ],
       "properties": {
         "cpuAffinity": { "type": "string" },
         "loadGenerator": { "type": "string" },
@@ -51,8 +60,12 @@
       "required": [
         "productionBuildCreatedOnce",
         "repetitions",
+        "restartStrategy",
+        "serverArtifactSha256",
         "serverEntry",
-        "serverRestartedBetweenRepetitions"
+        "serverMode",
+        "serverRestartedBetweenRepetitions",
+        "serverUrl"
       ],
       "properties": {
         "productionBuildCreatedOnce": { "type": "boolean" },
@@ -77,11 +90,13 @@
       "required": [
         "commit",
         "cpu",
+        "cpuTopology",
         "dirty",
         "machine",
         "nodeOptions",
         "nodeVersion",
-        "platform"
+        "platform",
+        "virtualization"
       ],
       "properties": {
         "commit": { "type": "string" },
@@ -97,7 +112,13 @@
     },
     "cpuTopology": {
       "type": "object",
-      "required": ["logicalCores", "models", "visibleLogicalCores"],
+      "required": [
+        "hybrid",
+        "logicalCores",
+        "models",
+        "physicalCores",
+        "visibleLogicalCores"
+      ],
       "properties": {
         "hybrid": { "type": ["boolean", "null"] },
         "logicalCores": { "type": "integer", "minimum": 1 },
@@ -108,7 +129,7 @@
     },
     "virtualization": {
       "type": "object",
-      "required": ["hypervisorPresent", "runtime"],
+      "required": ["hypervisorPresent", "runtime", "vbs"],
       "properties": {
         "hypervisorPresent": { "type": "boolean" },
         "runtime": {

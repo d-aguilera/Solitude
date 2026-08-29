@@ -428,7 +428,7 @@ function compareEnvironment(reference, candidate) {
       ["cpuAffinity", "loadGenerator", "nodeOptions"],
       "environment",
     ),
-    ...compareSharedFields(
+    ...compareFields(
       reference.environment,
       candidate.environment,
       ["loadGeneratorEnvironment", "serverEnvironment", "topology"],
@@ -445,7 +445,7 @@ function compareEnvironment(reference, candidate) {
       ],
       "protocol",
     ),
-    ...compareSharedFields(
+    ...compareFields(
       reference.protocol,
       candidate.protocol,
       ["restartStrategy", "serverArtifactSha256", "serverMode", "serverUrl"],
@@ -480,18 +480,6 @@ function compareFields(reference, candidate, fields, prefix = "") {
   });
 }
 
-function compareSharedFields(reference, candidate, fields, prefix = "") {
-  return compareFields(
-    reference,
-    candidate,
-    fields.filter(
-      (field) =>
-        reference?.[field] !== undefined && candidate?.[field] !== undefined,
-    ),
-    prefix,
-  );
-}
-
 function indexWorkloads(baseline) {
   return new Map([
     ...baseline.scenarios.map((workload) => [
@@ -521,8 +509,8 @@ function describeWorkload(workload) {
 }
 
 function validateBaseline(baseline, role) {
-  if (!baseline || baseline.schemaVersion !== 1) {
-    throw new Error(`${role} must be a version-1 server baseline`);
+  if (!baseline || baseline.schemaVersion !== 2) {
+    throw new Error(`${role} must be a version-2 server baseline`);
   }
   for (const field of [
     "commit",

@@ -55,7 +55,7 @@ async function main() {
       : undefined;
   const remote = Boolean(options.serverUrl);
   const result = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     analysisPolicy,
     commit: serverMetadata.commit,
     cpu: serverMetadata.cpu,

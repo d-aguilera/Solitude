@@ -109,8 +109,8 @@ WebSocket clients rather than browser pages.
   core counts, guest-visible cores are retained separately from host cores, and
   virtualization-based security including hypervisor-enforced code integrity is
   read through one bounded best-effort Windows probe that never fails a run.
-  Both fields are optional, so earlier captures stay valid and the comparator
-  reports a mismatch only when both baselines carry them.
+  Version-2 server metadata and baseline documents require both fields and
+  preserve explicit `null` values where host-only facts cannot be resolved.
 - The server does not yet expose GC counts/pause time.
 - The first authoritative input-allocation fix is complete: the headless loop
   reuses its entity-input map and mutable per-entity input records.

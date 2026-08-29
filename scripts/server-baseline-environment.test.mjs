@@ -6,7 +6,7 @@ import {
 } from "./server-baseline-environment.mjs";
 
 describe("server baseline environment", () => {
-  it("accepts complete version-1 server metadata", () => {
+  it("accepts complete version-2 server metadata", () => {
     const metadata = createMetadata();
     expect(validateServerMetadata(metadata)).toBe(metadata);
   });
@@ -27,18 +27,35 @@ describe("server baseline environment", () => {
     );
   });
 
-  it("accepts metadata captured before topology and virtualization existed", () => {
+  it("requires topology and virtualization in version-2 metadata", () => {
     const metadata = createMetadata();
     delete metadata.cpuTopology;
-    delete metadata.virtualization;
-    expect(validateServerMetadata(metadata)).toBe(metadata);
+    expect(() => validateServerMetadata(metadata)).toThrow(
+      "server metadata.cpuTopology must be an object",
+    );
   });
 
-  it("rejects a non-object virtualization field when present", () => {
+  it("rejects a non-object virtualization field", () => {
     const metadata = createMetadata();
     metadata.virtualization = "running";
     expect(() => validateServerMetadata(metadata)).toThrow(
-      "server metadata.virtualization must be an object when present",
+      "server metadata.virtualization must be an object",
+    );
+  });
+
+  it("rejects incomplete topology", () => {
+    const metadata = createMetadata();
+    metadata.cpuTopology = {};
+    expect(() => validateServerMetadata(metadata)).toThrow(
+      "server metadata.cpuTopology.hybrid must be a boolean or null",
+    );
+  });
+
+  it("rejects incomplete virtualization state", () => {
+    const metadata = createMetadata();
+    metadata.virtualization = {};
+    expect(() => validateServerMetadata(metadata)).toThrow(
+      "server metadata.virtualization.hypervisorPresent must be a boolean",
     );
   });
 });
@@ -148,7 +165,7 @@ function processors(count, model) {
 
 function createMetadata() {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     capturedAt: "2026-08-29T00:00:00.000Z",
     commit: "abc123",
     cpu: "Test CPU",
