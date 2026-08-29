@@ -86,10 +86,11 @@ WebSocket clients rather than browser pages.
   persists a compact versioned baseline after every scenario. Reference
   defaults enforce the 15-second warm-up, 60-second measurement, and five-run
   protocol; the smoke profile remains explicitly non-reference.
-- The named `wsl2-i7-7700hq` reference result is checked in under
-  `benchmarks/server/baselines/`. It records the exact production plugin
-  artifact identity, stable trend evidence, median-CPU repetition, worst
-  p95/p99 latencies, and majority-confirmed saturation analysis.
+- The version-2 `wsl2-i7-7700hq` reference result is checked in under
+  `benchmarks/server/baselines/`. It records both complete host identities, the
+  exact production plugin and server artifact identities, stable trend
+  evidence, median-CPU repetition, worst p95/p99 latencies, and
+  majority-confirmed saturation analysis.
 - `npm run compare:server-baseline` compares a candidate with the selected
   reference pointer and emits Markdown or versioned JSON. It reports absolute
   and percentage deltas, min/p50/p95/max repetition spread, workload coverage,
@@ -433,20 +434,24 @@ captures and agreed budgets.
   environment-dependent and establish harness behavior, not a reference
   baseline or performance budget.
 - Slice 5 names `wsl2-i7-7700hq` as the same-host local reference environment.
-  The clean production capture used Node v22.22.3, a 15-second warm-up,
-  60-second measurement, five fresh-server repetitions, and the deployed
-  API-v11 content pack for every workload.
+  Its replacement version-2 capture at `ab14936` used Node v22.22.3, a
+  15-second warm-up, 60-second measurement, five fresh-server repetitions, and
+  the deployed API-v11 content pack for every workload. Both identities saw
+  eight logical WSL2 cores; host-only physical topology and VBS were unavailable
+  from inside the devcontainer and are explicitly null.
 - All canonical workloads sustained requested simulation throughput. Warp 60
-  consistently exceeded the provisional 16.67-millisecond event-loop warning
-  while retaining throughput and bounded backlog; high fanout produced two
-  acknowledgement-p99 warnings, including one 100.43-millisecond outlier.
-- The capacity sweep's last confirmed healthy point was 16 eight-client games.
-  At 32 games all five runs missed the 59.4-Hz cadence floor, event-loop p99
-  reached 28.33–39.03 milliseconds, and input-ack p99 reached 0.90–1.67
-  seconds, while simulation throughput remained at least 99.90% and backlog
-  stayed bounded. The first bottleneck is same-host scheduling/transport fanout
-  rather than authoritative simulation throughput; separate-host validation
-  remains necessary for a deployment capacity claim.
+  exceeded the provisional 16.67-millisecond event-loop warning in all five
+  runs; one repetition accumulated growing backlog, below the majority needed
+  to confirm saturation. No other canonical workload warned or saturated.
+- The capacity sweep's last point without majority-confirmed saturation was 16
+  eight-client games, though one repetition already showed 33.62-millisecond
+  event-loop p99 and 520.21-millisecond acknowledgement p99. At 32 games three
+  repetitions failed their metrics request after workload creation, one of the
+  two successful runs missed the cadence floor, and both successful runs had
+  8.71–9.66-second acknowledgement p99. Simulation throughput remained
+  99.82–99.90%. The first bottleneck remains same-host HTTP/WebSocket
+  availability and scheduling rather than authoritative simulation throughput;
+  separate-host validation is required for a deployment capacity claim.
 - Initial non-blocking warnings are 16.67 milliseconds for event-loop p99 and
   50 milliseconds for input-ack or snapshot-inter-arrival p99. Heap growth
   compares first-third and final-third medians with a positive full-window

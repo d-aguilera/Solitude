@@ -1,9 +1,40 @@
 import { describe, expect, it } from "vitest";
 import {
+  resolveLoadGeneratorMachine,
   summarizeCpuTopology,
   summarizeVirtualization,
   validateServerMetadata,
 } from "./server-baseline-environment.mjs";
+
+describe("load-generator identity", () => {
+  it("uses the stable server label for a same-host generator", () => {
+    expect(
+      resolveLoadGeneratorMachine({
+        observedMachine: "ephemeral-container-id",
+        remote: false,
+        serverMachine: "reference-server",
+      }),
+    ).toBe("reference-server");
+  });
+
+  it("retains a remote generator name unless explicitly overridden", () => {
+    expect(
+      resolveLoadGeneratorMachine({
+        observedMachine: "windows-host",
+        remote: true,
+        serverMachine: "reference-server",
+      }),
+    ).toBe("windows-host");
+    expect(
+      resolveLoadGeneratorMachine({
+        configuredMachine: "generator-alias",
+        observedMachine: "windows-host",
+        remote: true,
+        serverMachine: "reference-server",
+      }),
+    ).toBe("generator-alias");
+  });
+});
 
 describe("server baseline environment", () => {
   it("accepts complete version-2 server metadata", () => {

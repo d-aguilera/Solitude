@@ -52,6 +52,15 @@ export async function captureHostEnvironment(root = process.cwd()) {
   };
 }
 
+export function resolveLoadGeneratorMachine({
+  configuredMachine,
+  remote,
+  observedMachine,
+  serverMachine,
+}) {
+  return configuredMachine ?? (remote ? observedMachine : serverMachine);
+}
+
 export function summarizeCpuTopology(processors, windowsHost) {
   const logicalCores = windowsHost?.logicalCores ?? processors.length;
   const physicalCores = windowsHost?.physicalCores ?? 0;

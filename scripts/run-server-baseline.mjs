@@ -8,6 +8,7 @@ import { parseArgs } from "node:util";
 import {
   captureHostEnvironment,
   captureServerMetadata,
+  resolveLoadGeneratorMachine,
   validateServerMetadata,
 } from "./server-baseline-environment.mjs";
 import {
@@ -67,8 +68,12 @@ async function main() {
         : "same-host-separate-process",
       loadGeneratorEnvironment: {
         ...loadGeneratorEnvironment,
-        machine:
-          options.loadGeneratorMachine ?? loadGeneratorEnvironment.machine,
+        machine: resolveLoadGeneratorMachine({
+          configuredMachine: options.loadGeneratorMachine,
+          observedMachine: loadGeneratorEnvironment.machine,
+          remote,
+          serverMachine: serverMetadata.machine,
+        }),
       },
       machine: serverMetadata.machine,
       nodeOptions: serverMetadata.nodeOptions,
