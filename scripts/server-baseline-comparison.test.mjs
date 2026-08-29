@@ -3,7 +3,103 @@ import {
   compareServerBaselines,
   comparisonMetrics,
   renderServerBaselineComparisonMarkdown,
+  selectReferenceEntry,
 } from "./server-baseline-comparison.mjs";
+
+describe("reference selection", () => {
+  it("selects the reference matching the candidate topology", () => {
+    expect(
+      selectReferenceEntry({
+        candidate: createBaseline(),
+        pointer: createPointer(),
+      }),
+    ).toMatchObject({ purpose: "regression", topology: "same-host-loopback" });
+  });
+
+  it("selects a separate-host reference for a LAN candidate", () => {
+    const candidate = createBaseline();
+    candidate.environment.topology = "separate-host-lan";
+    expect(
+      selectReferenceEntry({ candidate, pointer: createPointer() }),
+    ).toMatchObject({ purpose: "capacity", topology: "separate-host-lan" });
+  });
+
+  it("refuses to fall back to a different topology", () => {
+    const candidate = createBaseline();
+    candidate.environment.topology = "separate-host-wan";
+    expect(() =>
+      selectReferenceEntry({
+        candidate,
+        pointer: createPointer(),
+        pointerPath: "pointer.json",
+      }),
+    ).toThrow("No reference recorded for topology separate-host-wan");
+  });
+
+  it("lets an explicit topology override the candidate", () => {
+    expect(
+      selectReferenceEntry({
+        candidate: createBaseline(),
+        pointer: createPointer(),
+        topology: "separate-host-lan",
+      }),
+    ).toMatchObject({ topology: "separate-host-lan" });
+  });
+
+  it("rejects a version-1 pointer", () => {
+    expect(() =>
+      selectReferenceEntry({
+        candidate: createBaseline(),
+        pointer: { machine: "m", result: "./r.json", schemaVersion: 1 },
+        pointerPath: "pointer.json",
+      }),
+    ).toThrow("pointer.json must be a version-2 reference pointer");
+  });
+
+  it("rejects duplicate topologies", () => {
+    const pointer = createPointer();
+    pointer.references.push({ ...pointer.references[0] });
+    expect(() =>
+      selectReferenceEntry({
+        candidate: createBaseline(),
+        pointer,
+        pointerPath: "pointer.json",
+      }),
+    ).toThrow("pointer.json has duplicate references for same-host-loopback");
+  });
+
+  it("rejects entries missing identity", () => {
+    const pointer = createPointer();
+    delete pointer.references[0].purpose;
+    expect(() =>
+      selectReferenceEntry({
+        candidate: createBaseline(),
+        pointer,
+        pointerPath: "pointer.json",
+      }),
+    ).toThrow("pointer.json.references entries need a non-empty purpose");
+  });
+});
+
+function createPointer() {
+  return {
+    schemaVersion: 2,
+    references: [
+      {
+        machine: "wsl2-i7-7700hq",
+        purpose: "regression",
+        result: "./baselines/wsl2-i7-7700hq/loopback.json",
+        topology: "same-host-loopback",
+      },
+      {
+        machine: "wsl2-i7-7700hq",
+        purpose: "capacity",
+        result: "./baselines/wsl2-i7-7700hq/lan.json",
+        topology: "separate-host-lan",
+      },
+    ],
+  };
+}
 
 describe("server baseline comparison", () => {
   it("reports equal values, run spread, and matching identity", () => {

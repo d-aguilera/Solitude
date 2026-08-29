@@ -94,6 +94,14 @@ WebSocket clients rather than browser pages.
   capture, so `npm run compare:server-baseline` rejects it until the reference
   environment is recaptured at version 3. Recapture is the only supported fix;
   do not hand-edit a captured measurement artifact to add the new fields.
+- `benchmarks/server/reference-baseline.json` is a version-2 pointer holding one
+  reference per measurement topology. `same-host-loopback` is the regression
+  reference and `separate-host-lan` is the capacity reference; a candidate is
+  matched to its own `environment.topology` and never silently falls back to a
+  differently-measured baseline. Aggregate snapshot fanout is roughly
+  `games x per-game wire bytes`, about 430 Mbit/s at 16 eight-client games and
+  830 Mbit/s at 32, so a LAN capacity capture needs wired gigabit at minimum
+  and ordinary Wi-Fi saturates before the server does.
 - `npm run compare:server-baseline` compares a candidate with the selected
   reference pointer and emits Markdown or versioned JSON. It reports absolute
   and percentage deltas, min/p50/p95/max repetition spread, workload coverage,

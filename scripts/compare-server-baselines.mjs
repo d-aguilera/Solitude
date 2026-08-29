@@ -6,6 +6,7 @@ import { parseArgs } from "node:util";
 import {
   compareServerBaselines,
   renderServerBaselineComparisonMarkdown,
+  selectReferenceEntry,
 } from "./server-baseline-comparison.mjs";
 
 const root = process.cwd();
@@ -21,14 +22,12 @@ await main().catch((error) => {
 
 async function main() {
   const options = parseOptions();
+  const candidatePath = resolve(options.candidate);
+  const candidate = await readJson(candidatePath, "candidate");
   const referencePath = options.reference
     ? resolve(options.reference)
-    : await readDefaultReferencePath();
-  const candidatePath = resolve(options.candidate);
-  const [reference, candidate] = await Promise.all([
-    readJson(referencePath, "reference"),
-    readJson(candidatePath, "candidate"),
-  ]);
+    : await resolveReferencePath(candidate, options.referenceTopology);
+  const reference = await readJson(referencePath, "reference");
   const comparison = compareServerBaselines({
     candidate,
     candidatePath: displayPath(candidatePath),
@@ -53,20 +52,24 @@ function parseOptions() {
       json: { default: false, type: "boolean" },
       output: { type: "string" },
       reference: { type: "string" },
+      "reference-topology": { type: "string" },
     },
   });
   if (!values.candidate) {
     throw new Error("--candidate is required");
   }
-  return values;
+  return { ...values, referenceTopology: values["reference-topology"] };
 }
 
-async function readDefaultReferencePath() {
+async function resolveReferencePath(candidate, topology) {
   const pointer = await readJson(defaultReferencePointer, "reference pointer");
-  if (pointer.schemaVersion !== 1 || typeof pointer.result !== "string") {
-    throw new Error("Reference pointer has an unexpected shape");
-  }
-  return resolve(dirname(defaultReferencePointer), pointer.result);
+  const entry = selectReferenceEntry({
+    candidate,
+    pointer,
+    pointerPath: displayPath(defaultReferencePointer),
+    topology,
+  });
+  return resolve(dirname(defaultReferencePointer), entry.result);
 }
 
 async function readJson(path, label) {

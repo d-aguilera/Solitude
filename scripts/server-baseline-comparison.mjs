@@ -1,5 +1,47 @@
 import { summarizeNumbers } from "./server-load-helpers.mjs";
 
+export function selectReferenceEntry({
+  candidate,
+  pointer,
+  pointerPath = "reference pointer",
+  topology,
+}) {
+  if (!pointer || pointer.schemaVersion !== 2) {
+    throw new Error(`${pointerPath} must be a version-2 reference pointer`);
+  }
+  if (!Array.isArray(pointer.references) || pointer.references.length === 0) {
+    throw new Error(`${pointerPath}.references must be a non-empty array`);
+  }
+  for (const entry of pointer.references) {
+    for (const field of ["machine", "purpose", "result", "topology"]) {
+      if (typeof entry?.[field] !== "string" || entry[field].length === 0) {
+        throw new Error(
+          `${pointerPath}.references entries need a non-empty ${field}`,
+        );
+      }
+    }
+  }
+  const available = pointer.references.map((entry) => entry.topology);
+  const wanted = topology ?? candidate?.environment?.topology;
+  if (!wanted) {
+    throw new Error(
+      "Candidate has no environment.topology; pass --reference-topology or --reference",
+    );
+  }
+  const selected = pointer.references.filter(
+    (entry) => entry.topology === wanted,
+  );
+  if (selected.length === 0) {
+    throw new Error(
+      `No reference recorded for topology ${wanted}; ${pointerPath} has ${available.join(", ")}`,
+    );
+  }
+  if (selected.length > 1) {
+    throw new Error(`${pointerPath} has duplicate references for ${wanted}`);
+  }
+  return selected[0];
+}
+
 export const comparisonMetrics = Object.freeze([
   metric(
     "processCpuUtilizationPercentP50",

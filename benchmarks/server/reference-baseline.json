@@ -1,5 +1,11 @@
 {
-  "schemaVersion": 1,
-  "machine": "wsl2-i7-7700hq",
-  "result": "./baselines/wsl2-i7-7700hq/ab1493636198e2d18787a8747c09ff2966fd9468.json"
+  "schemaVersion": 2,
+  "references": [
+    {
+      "topology": "same-host-loopback",
+      "purpose": "regression",
+      "machine": "wsl2-i7-7700hq",
+      "result": "./baselines/wsl2-i7-7700hq/ab1493636198e2d18787a8747c09ff2966fd9468.json"
+    }
+  ]
 }

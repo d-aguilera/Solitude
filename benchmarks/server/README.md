@@ -169,12 +169,31 @@ npm run compare:server-baseline -- \
   --output /tmp/server-baseline-comparison.md
 ```
 
-`reference-baseline.json` selects the default checked-in reference; use
-`--reference` to compare against a different result. Add `--json` for the
-versioned machine-readable shape defined by `comparison-schema.json`. The
-Markdown and JSON forms report absolute and percentage deltas, min/p50/p95/max
-spread across successful repetitions, scenario coverage, saturation changes,
-and machine/runtime/plugin/protocol/analysis mismatches.
+`reference-baseline.json` records one reference per measurement topology, and
+the candidate's own `environment.topology` selects which one it is compared
+against. A candidate whose topology has no recorded reference fails with the
+available topologies listed, rather than silently comparing against a
+differently-measured baseline. Use `--reference-topology` to force a specific
+entry or `--reference` to compare against an arbitrary result file. Add
+`--json` for the versioned machine-readable shape defined by
+`comparison-schema.json`.
+
+The two topologies answer different questions and are not interchangeable:
+
+- `same-host-loopback` is the **regression** reference. The load generator
+  shares the server's CPU and never crosses a network, which keeps it cheap and
+  reproducible for commit-to-commit comparison. Its capacity sweep measures
+  when the machine can no longer both generate and serve, so it is a
+  co-resident limit rather than a server capacity claim.
+- `separate-host-lan` is the **capacity** reference, and the only one that can
+  support a deployment claim. It requires enough link headroom to stay out of
+  the measurement: snapshot fanout is roughly `games x per-game wire bytes`,
+  which reaches about 430 Mbit/s at 16 eight-client games and 830 Mbit/s at 32.
+  Gigabit Ethernet is therefore marginal at the top of the current sweep, and
+  ordinary Wi-Fi saturates well before the server does. The
+  Markdown and JSON forms report absolute and percentage deltas, min/p50/p95/max
+  spread across successful repetitions, scenario coverage, saturation changes,
+  and machine/runtime/plugin/protocol/analysis mismatches.
 
 Comparison findings are deliberately non-blocking: metric changes,
 out-of-reference-range values, missing workloads, and environment mismatches
