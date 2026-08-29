@@ -90,10 +90,10 @@ WebSocket clients rather than browser pages.
   `benchmarks/server/baselines/`. It records both complete host identities, the
   exact production plugin and server artifact identities, stable trend
   evidence, median-CPU repetition, worst p95/p99 latencies, and
-  majority-confirmed saturation analysis. It is still the version-2 `ab14936`
-  capture, so `npm run compare:server-baseline` rejects it until the reference
-  environment is recaptured at version 3. Recapture is the only supported fix;
-  do not hand-edit a captured measurement artifact to add the new fields.
+  majority-confirmed saturation analysis. The version-3 `a5854ff` capture ran
+  natively in WSL2 with no container present, sustained every canonical
+  workload and up to 16 eight-client games, and first confirmed saturation at
+  32 games under same-host server/load-generator contention.
 - `benchmarks/server/reference-baseline.json` is a version-2 pointer holding one
   reference per measurement topology. `same-host-loopback` is the regression
   reference and `separate-host-lan` is the capacity reference; a candidate is
@@ -448,22 +448,22 @@ captures and agreed budgets.
   environment-dependent and establish harness behavior, not a reference
   baseline or performance budget.
 - Slice 5 names `wsl2-i7-7700hq` as the same-host local reference environment.
-  Its replacement version-2 capture at `ab14936` used Node v22.22.3, a
+  Its version-3 capture at `a5854ff` used Node v22.23.1, a
   15-second warm-up, 60-second measurement, five fresh-server repetitions, and
-  the deployed API-v11 content pack for every workload. Both identities saw
-  eight logical WSL2 cores; host-only physical topology and VBS were unavailable
-  from inside the devcontainer and are explicitly null.
+  the deployed API-v11 content pack for every workload. It ran natively in WSL2
+  with no container present; both identities record four physical cores, eight
+  logical cores, VBS running, and HVCI disabled.
 - All canonical workloads sustained requested simulation throughput. Warp 60
   exceeded the provisional 16.67-millisecond event-loop warning in all five
-  runs; one repetition accumulated growing backlog, below the majority needed
-  to confirm saturation. No other canonical workload warned or saturated.
+  runs, but no canonical repetition saturated. No other canonical workload
+  warned.
 - The capacity sweep's last point without majority-confirmed saturation was 16
-  eight-client games, though one repetition already showed 33.62-millisecond
-  event-loop p99 and 520.21-millisecond acknowledgement p99. At 32 games three
-  repetitions failed their metrics request after workload creation, one of the
-  two successful runs missed the cadence floor, and both successful runs had
-  8.71–9.66-second acknowledgement p99. Simulation throughput remained
-  99.82–99.90%. The first bottleneck remains same-host HTTP/WebSocket
+  eight-client games; one repetition crossed the event-loop warning at
+  17.97 milliseconds, while all acknowledgement p99 values remained below the
+  provisional warning. At 32 games two repetitions failed with pending input
+  acknowledgements and a third missed the cadence floor. Acknowledgement p99
+  reached 10.30–30.42 seconds while simulation throughput remained
+  99.77–99.87%. The first bottleneck remains same-host HTTP/WebSocket
   availability and scheduling rather than authoritative simulation throughput;
   separate-host validation is required for a deployment capacity claim.
 - Initial non-blocking warnings are 16.67 milliseconds for event-loop p99 and
