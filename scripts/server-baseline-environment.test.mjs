@@ -1,10 +1,79 @@
 import { describe, expect, it } from "vitest";
 import {
   resolveLoadGeneratorMachine,
+  summarizeContainer,
   summarizeCpuTopology,
   summarizeVirtualization,
   validateServerMetadata,
 } from "./server-baseline-environment.mjs";
+
+describe("container detection", () => {
+  it("reports a native WSL2 host as uncontained", () => {
+    expect(
+      summarizeContainer({
+        cgroup: "0::/init.scope\n",
+        containerEnvFile: false,
+        dockerEnvFile: false,
+        environment: {},
+      }),
+    ).toEqual({ devcontainer: false, engine: "none", present: false });
+  });
+
+  it("identifies a devcontainer separately from its engine", () => {
+    expect(
+      summarizeContainer({
+        cgroup: "0::/\n",
+        containerEnvFile: false,
+        dockerEnvFile: true,
+        environment: { REMOTE_CONTAINERS: "true" },
+      }),
+    ).toEqual({ devcontainer: true, engine: "docker", present: true });
+  });
+
+  it("reads the engine from a cgroup v1 hierarchy", () => {
+    expect(
+      summarizeContainer({
+        cgroup: "12:pids:/kubepods/burstable/pod123/abc\n",
+        containerEnvFile: false,
+        dockerEnvFile: false,
+        environment: {},
+      }),
+    ).toMatchObject({ engine: "containerd", present: true });
+  });
+
+  it("distinguishes podman from docker", () => {
+    expect(
+      summarizeContainer({
+        cgroup: "0::/\n",
+        containerEnvFile: true,
+        dockerEnvFile: false,
+        environment: {},
+      }),
+    ).toMatchObject({ engine: "podman", present: true });
+  });
+
+  it("records an unidentified engine rather than claiming none", () => {
+    expect(
+      summarizeContainer({
+        cgroup: "0::/\n",
+        containerEnvFile: false,
+        dockerEnvFile: false,
+        environment: { container: "oci" },
+      }),
+    ).toMatchObject({ engine: "unknown", present: true });
+  });
+
+  it("does not mistake a systemd init scope for a container", () => {
+    expect(
+      summarizeContainer({
+        cgroup: "0::/init.scope\n",
+        containerEnvFile: false,
+        dockerEnvFile: false,
+        environment: { CODESPACES: "" },
+      }).present,
+    ).toBe(false);
+  });
+});
 
 describe("load-generator identity", () => {
   it("uses the stable server label for a same-host generator", () => {
@@ -37,7 +106,7 @@ describe("load-generator identity", () => {
 });
 
 describe("server baseline environment", () => {
-  it("accepts complete version-2 server metadata", () => {
+  it("accepts complete version-3 server metadata", () => {
     const metadata = createMetadata();
     expect(validateServerMetadata(metadata)).toBe(metadata);
   });
@@ -58,7 +127,7 @@ describe("server baseline environment", () => {
     );
   });
 
-  it("requires topology and virtualization in version-2 metadata", () => {
+  it("requires topology and virtualization in version-3 metadata", () => {
     const metadata = createMetadata();
     delete metadata.cpuTopology;
     expect(() => validateServerMetadata(metadata)).toThrow(
@@ -79,6 +148,22 @@ describe("server baseline environment", () => {
     metadata.cpuTopology = {};
     expect(() => validateServerMetadata(metadata)).toThrow(
       "server metadata.cpuTopology.hybrid must be a boolean or null",
+    );
+  });
+
+  it("requires container context in version-3 metadata", () => {
+    const metadata = createMetadata();
+    delete metadata.container;
+    expect(() => validateServerMetadata(metadata)).toThrow(
+      "server metadata.container must be an object",
+    );
+  });
+
+  it("rejects an unrecognized container engine", () => {
+    const metadata = createMetadata();
+    metadata.container = { devcontainer: false, engine: "jail", present: true };
+    expect(() => validateServerMetadata(metadata)).toThrow(
+      "server metadata.container.engine is not recognized",
     );
   });
 
@@ -196,9 +281,10 @@ function processors(count, model) {
 
 function createMetadata() {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     capturedAt: "2026-08-29T00:00:00.000Z",
     commit: "abc123",
+    container: { devcontainer: false, engine: "none", present: false },
     cpu: "Test CPU",
     cpuAffinity: "not-pinned",
     cpuTopology: {

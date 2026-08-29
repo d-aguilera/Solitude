@@ -56,7 +56,7 @@ async function main() {
       : undefined;
   const remote = Boolean(options.serverUrl);
   const result = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     analysisPolicy,
     commit: serverMetadata.commit,
     cpu: serverMetadata.cpu,
@@ -79,6 +79,7 @@ async function main() {
       nodeOptions: serverMetadata.nodeOptions,
       serverEnvironment: {
         commit: serverMetadata.commit,
+        container: serverMetadata.container,
         cpu: serverMetadata.cpu,
         cpuTopology: serverMetadata.cpuTopology,
         dirty: serverMetadata.dirty,

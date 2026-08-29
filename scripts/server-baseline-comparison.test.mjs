@@ -111,7 +111,7 @@ describe("server baseline comparison", () => {
     expect(markdown).toContain("### scenario: typical");
   });
 
-  it("rejects documents that are not version-2 baselines", () => {
+  it("rejects documents that are not version-3 baselines", () => {
     expect(() =>
       compareServerBaselines({
         candidate: {},
@@ -119,7 +119,7 @@ describe("server baseline comparison", () => {
         reference: createBaseline(),
         referencePath: "reference.json",
       }),
-    ).toThrow("candidate must be a version-2 server baseline");
+    ).toThrow("candidate must be a version-3 server baseline");
   });
 });
 
@@ -135,7 +135,7 @@ function compare(reference, candidate) {
 function createBaseline() {
   const workload = createWorkload("typical", "scenario", 1);
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     analysisPolicy: { confirmation: "majority" },
     capacitySweep: [],
     commit: "abc123",
@@ -179,6 +179,7 @@ function createBaseline() {
 function createEnvironment(machine) {
   return {
     commit: "abc123",
+    container: { devcontainer: false, engine: "none", present: false },
     cpu: "Test CPU",
     cpuTopology: {
       hybrid: false,

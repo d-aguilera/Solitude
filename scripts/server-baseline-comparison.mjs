@@ -509,8 +509,8 @@ function describeWorkload(workload) {
 }
 
 function validateBaseline(baseline, role) {
-  if (!baseline || baseline.schemaVersion !== 2) {
-    throw new Error(`${role} must be a version-2 server baseline`);
+  if (!baseline || baseline.schemaVersion !== 3) {
+    throw new Error(`${role} must be a version-3 server baseline`);
   }
   for (const field of [
     "commit",

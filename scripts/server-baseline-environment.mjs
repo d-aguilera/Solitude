@@ -5,6 +5,26 @@ import { arch, cpus, hostname, platform, release } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 
 const HVCI_SECURITY_SERVICE = 2;
+const CONTAINER_ENGINES = new Set([
+  "containerd",
+  "docker",
+  "lxc",
+  "none",
+  "podman",
+  "unknown",
+]);
+const CONTAINER_CGROUP_ENGINES = [
+  ["docker", /\bdocker\b/],
+  ["podman", /\b(?:podman|libpod)\b/],
+  ["containerd", /\b(?:containerd|kubepods)\b/],
+  ["lxc", /\blxc\b/],
+];
+const DEVCONTAINER_VARIABLES = [
+  "CODESPACES",
+  "DEVCONTAINER",
+  "REMOTE_CONTAINERS",
+  "REMOTE_CONTAINERS_IPC",
+];
 const VBS_STATUS = ["off", "enabled", "running"];
 const VBS_STATUSES = new Set([...VBS_STATUS, "unknown"]);
 const VIRTUALIZATION_RUNTIMES = new Set([
@@ -32,15 +52,17 @@ const WINDOWS_HOST_FACTS_SCRIPT = [
 ].join("");
 
 export async function captureHostEnvironment(root = process.cwd()) {
-  const [commit, status, runtime, windowsHost] = await Promise.all([
+  const [commit, status, container, runtime, windowsHost] = await Promise.all([
     readGitOutput(root, ["rev-parse", "HEAD"]),
     readGitOutput(root, ["status", "--porcelain"]),
+    detectContainer(),
     detectRuntime(),
     readWindowsHostFacts(),
   ]);
   const processors = cpus();
   return {
     commit: commit || "unknown",
+    container,
     cpu: processors[0]?.model ?? "unknown",
     cpuTopology: summarizeCpuTopology(processors, windowsHost),
     dirty: status.length > 0,
@@ -49,6 +71,31 @@ export async function captureHostEnvironment(root = process.cwd()) {
     nodeVersion: process.version,
     platform: `${platform()} ${release()} ${arch()}`,
     virtualization: summarizeVirtualization(runtime, windowsHost),
+  };
+}
+
+export function summarizeContainer({
+  cgroup,
+  containerEnvFile,
+  dockerEnvFile,
+  environment,
+}) {
+  const devcontainer = DEVCONTAINER_VARIABLES.some((name) =>
+    Boolean(environment[name]),
+  );
+  const cgroupEngine = CONTAINER_CGROUP_ENGINES.find(([, pattern]) =>
+    pattern.test(cgroup),
+  )?.[0];
+  const engine = dockerEnvFile
+    ? (cgroupEngine ?? "docker")
+    : containerEnvFile
+      ? (cgroupEngine ?? "podman")
+      : (cgroupEngine ??
+        (environment.container || devcontainer ? "unknown" : "none"));
+  return {
+    devcontainer,
+    engine,
+    present: engine !== "none",
   };
 }
 
@@ -101,9 +148,10 @@ export async function captureServerMetadata({
     hashFile(serverEntryPath),
   ]);
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     capturedAt: new Date().toISOString(),
     commit: host.commit,
+    container: host.container,
     cpu: host.cpu,
     cpuAffinity,
     cpuTopology: host.cpuTopology,
@@ -121,8 +169,8 @@ export async function captureServerMetadata({
 }
 
 export function validateServerMetadata(value, source = "server metadata") {
-  if (!isRecord(value) || value.schemaVersion !== 2) {
-    throw new Error(`${source} must be a version-2 server metadata document`);
+  if (!isRecord(value) || value.schemaVersion !== 3) {
+    throw new Error(`${source} must be a version-3 server metadata document`);
   }
   for (const field of [
     "capturedAt",
@@ -149,9 +197,23 @@ export function validateServerMetadata(value, source = "server metadata") {
   if (!isRecord(value.pluginIdentity)) {
     throw new Error(`${source}.pluginIdentity must be an object`);
   }
+  validateContainer(value.container, `${source}.container`);
   validateCpuTopology(value.cpuTopology, `${source}.cpuTopology`);
   validateVirtualization(value.virtualization, `${source}.virtualization`);
   return value;
+}
+
+function validateContainer(value, source) {
+  if (!isRecord(value)) throw new Error(`${source} must be an object`);
+  if (typeof value.devcontainer !== "boolean") {
+    throw new Error(`${source}.devcontainer must be a boolean`);
+  }
+  if (!CONTAINER_ENGINES.has(value.engine)) {
+    throw new Error(`${source}.engine is not recognized`);
+  }
+  if (typeof value.present !== "boolean") {
+    throw new Error(`${source}.present must be a boolean`);
+  }
 }
 
 function validateCpuTopology(value, source) {
@@ -283,6 +345,32 @@ function summarizeDeviceGuard(windowsHost) {
     hvci: windowsHost.securityServicesRunning.includes(HVCI_SECURITY_SERVICE),
     status: VBS_STATUS[windowsHost.vbsStatus] ?? "unknown",
   };
+}
+
+async function detectContainer() {
+  if (platform() !== "linux") {
+    return { devcontainer: false, engine: "none", present: false };
+  }
+  const [cgroup, containerEnvFile, dockerEnvFile] = await Promise.all([
+    readOptionalFile("/proc/1/cgroup"),
+    fileExists("/run/.containerenv"),
+    fileExists("/.dockerenv"),
+  ]);
+  return summarizeContainer({
+    cgroup,
+    containerEnvFile,
+    dockerEnvFile,
+    environment: process.env,
+  });
+}
+
+async function fileExists(path) {
+  try {
+    await readFile(path);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function detectRuntime() {

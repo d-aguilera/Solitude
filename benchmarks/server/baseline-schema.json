@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://solitude.local/schemas/server-baseline-v2.json",
+  "$id": "https://solitude.local/schemas/server-baseline-v3.json",
   "title": "Solitude server reference baseline",
   "type": "object",
   "required": [
@@ -22,7 +22,7 @@
     "capacitySweep"
   ],
   "properties": {
-    "schemaVersion": { "const": 2 },
+    "schemaVersion": { "const": 3 },
     "analysisPolicy": { "type": "object" },
     "commit": { "type": "string" },
     "dirty": { "type": "boolean" },
@@ -89,6 +89,7 @@
       "type": "object",
       "required": [
         "commit",
+        "container",
         "cpu",
         "cpuTopology",
         "dirty",
@@ -100,6 +101,7 @@
       ],
       "properties": {
         "commit": { "type": "string" },
+        "container": { "$ref": "#/$defs/container" },
         "cpu": { "type": "string" },
         "cpuTopology": { "$ref": "#/$defs/cpuTopology" },
         "dirty": { "type": "boolean" },
@@ -108,6 +110,17 @@
         "nodeVersion": { "type": "string" },
         "platform": { "type": "string" },
         "virtualization": { "$ref": "#/$defs/virtualization" }
+      }
+    },
+    "container": {
+      "type": "object",
+      "required": ["devcontainer", "engine", "present"],
+      "properties": {
+        "devcontainer": { "type": "boolean" },
+        "engine": {
+          "enum": ["containerd", "docker", "lxc", "none", "podman", "unknown"]
+        },
+        "present": { "type": "boolean" }
       }
     },
     "cpuTopology": {

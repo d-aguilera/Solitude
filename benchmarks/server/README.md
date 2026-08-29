@@ -119,6 +119,11 @@ changing any field that previously identified an environment:
   subset of the host's processors, such as a WSL2 `.wslconfig` limit.
 - `virtualization.runtime` distinguishes `bare-metal`, `virtual-machine`,
   `wsl2`, and `windows-host` measurement contexts.
+- `container` records whether the capture ran inside a container, which engine
+  provided it, and whether it was a devcontainer. Containerized captures add a
+  network hop and CPU contention on the transport path that the capacity sweep
+  already stresses, so a containerized run and a native run on the same machine
+  are not comparable even though every other identity field matches.
 - `virtualization.vbs` records virtualization-based security, whose
   hypervisor-enforced code integrity (`hvci`) adds memory-access overhead to
   every workload measured on that host. It is `null` where the state cannot be

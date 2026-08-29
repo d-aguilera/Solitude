@@ -86,11 +86,14 @@ WebSocket clients rather than browser pages.
   persists a compact versioned baseline after every scenario. Reference
   defaults enforce the 15-second warm-up, 60-second measurement, and five-run
   protocol; the smoke profile remains explicitly non-reference.
-- The version-2 `wsl2-i7-7700hq` reference result is checked in under
+- The `wsl2-i7-7700hq` reference result is checked in under
   `benchmarks/server/baselines/`. It records both complete host identities, the
   exact production plugin and server artifact identities, stable trend
   evidence, median-CPU repetition, worst p95/p99 latencies, and
-  majority-confirmed saturation analysis.
+  majority-confirmed saturation analysis. It is still the version-2 `ab14936`
+  capture, so `npm run compare:server-baseline` rejects it until the reference
+  environment is recaptured at version 3. Recapture is the only supported fix;
+  do not hand-edit a captured measurement artifact to add the new fields.
 - `npm run compare:server-baseline` compares a candidate with the selected
   reference pointer and emits Markdown or versioned JSON. It reports absolute
   and percentage deltas, min/p50/p95/max repetition spread, workload coverage,
@@ -110,8 +113,11 @@ WebSocket clients rather than browser pages.
   core counts, guest-visible cores are retained separately from host cores, and
   virtualization-based security including hypervisor-enforced code integrity is
   read through one bounded best-effort Windows probe that never fails a run.
-  Version-2 server metadata and baseline documents require both fields and
-  preserve explicit `null` values where host-only facts cannot be resolved.
+  Version-3 server metadata and baseline documents also require `container`,
+  which records container presence, engine, and devcontainer status. All three
+  fields are required and preserve explicit `null` values where host-only facts
+  cannot be resolved. A containerized capture cannot reach Windows host facts
+  at all, so devcontainer runs record null topology/VBS by construction.
 - The server does not yet expose GC counts/pause time.
 - The first authoritative input-allocation fix is complete: the headless loop
   reuses its entity-input map and mutable per-entity input records.
