@@ -86,11 +86,48 @@
       "properties": {
         "commit": { "type": "string" },
         "cpu": { "type": "string" },
+        "cpuTopology": { "$ref": "#/$defs/cpuTopology" },
         "dirty": { "type": "boolean" },
         "machine": { "type": "string" },
         "nodeOptions": { "type": "string" },
         "nodeVersion": { "type": "string" },
-        "platform": { "type": "string" }
+        "platform": { "type": "string" },
+        "virtualization": { "$ref": "#/$defs/virtualization" }
+      }
+    },
+    "cpuTopology": {
+      "type": "object",
+      "required": ["logicalCores", "models", "visibleLogicalCores"],
+      "properties": {
+        "hybrid": { "type": ["boolean", "null"] },
+        "logicalCores": { "type": "integer", "minimum": 1 },
+        "models": { "type": "array", "items": { "type": "string" } },
+        "physicalCores": { "type": ["integer", "null"], "minimum": 1 },
+        "visibleLogicalCores": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "virtualization": {
+      "type": "object",
+      "required": ["hypervisorPresent", "runtime"],
+      "properties": {
+        "hypervisorPresent": { "type": "boolean" },
+        "runtime": {
+          "enum": [
+            "bare-metal",
+            "virtual-machine",
+            "wsl2",
+            "windows-host",
+            "unknown"
+          ]
+        },
+        "vbs": {
+          "type": ["object", "null"],
+          "required": ["hvci", "status"],
+          "properties": {
+            "hvci": { "type": "boolean" },
+            "status": { "enum": ["off", "enabled", "running", "unknown"] }
+          }
+        }
       }
     },
     "scenarioResults": {

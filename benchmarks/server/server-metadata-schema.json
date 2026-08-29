@@ -29,6 +29,8 @@
     "platform": { "type": "string", "minLength": 1 },
     "cpu": { "type": "string", "minLength": 1 },
     "cpuAffinity": { "type": "string", "minLength": 1 },
+    "cpuTopology": { "type": "object" },
+    "virtualization": { "type": "object" },
     "nodeOptions": { "type": "string" },
     "serverBuild": { "type": "string", "minLength": 1 },
     "serverEntry": { "type": "string", "minLength": 1 },

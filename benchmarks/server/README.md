@@ -106,6 +106,30 @@ loopback, and public-internet results from appearing environment-compatible.
 metadata again whenever the server bundle, plugin artifacts, runtime, or server
 environment changes.
 
+Both identities additionally record `cpuTopology` and `virtualization`, because
+core layout and an active hypervisor change measured latency spread without
+changing any field that previously identified an environment:
+
+- `cpuTopology.hybrid` is true when the host reports fewer physical cores than
+  a uniformly hyper-threaded part would need for its logical core count, which
+  identifies performance/efficiency designs whose thread migration widens p95
+  and p99 tails. It is `null` when host core counts are unavailable.
+- `cpuTopology.visibleLogicalCores` is what the measuring process sees, while
+  `logicalCores` is what the host reports. They differ when a guest is given a
+  subset of the host's processors, such as a WSL2 `.wslconfig` limit.
+- `virtualization.runtime` distinguishes `bare-metal`, `virtual-machine`,
+  `wsl2`, and `windows-host` measurement contexts.
+- `virtualization.vbs` records virtualization-based security, whose
+  hypervisor-enforced code integrity (`hvci`) adds memory-access overhead to
+  every workload measured on that host. It is `null` where the state cannot be
+  resolved.
+
+Windows facts are read through a single best-effort `powershell.exe` probe on
+Windows and WSL hosts. It is bounded by a timeout and never fails a run; hosts
+where it cannot run record the portable subset instead. Captures made before
+these fields existed remain valid, and the comparator only reports a mismatch
+when both baselines carry the field.
+
 For a functional check of the orchestration without creating a checked-in
 baseline, use the explicitly non-reference smoke profile:
 

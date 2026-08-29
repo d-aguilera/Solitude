@@ -102,6 +102,15 @@ WebSocket clients rather than browser pages.
 - `npm run baseline:server-metadata` captures the production server bundle and
   plugin artifact identity plus the server machine/runtime metadata consumed by
   remote baseline runs.
+- Load-generator and server identities additionally record `cpuTopology` and
+  `virtualization`, because core layout and an active hypervisor change latency
+  spread without changing any previously captured identity field. Hybrid
+  performance/efficiency layout is derived from host physical versus logical
+  core counts, guest-visible cores are retained separately from host cores, and
+  virtualization-based security including hypervisor-enforced code integrity is
+  read through one bounded best-effort Windows probe that never fails a run.
+  Both fields are optional, so earlier captures stay valid and the comparator
+  reports a mismatch only when both baselines carry them.
 - The server does not yet expose GC counts/pause time.
 - The first authoritative input-allocation fix is complete: the headless loop
   reuses its entity-input map and mutable per-entity input records.

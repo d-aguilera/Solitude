@@ -75,11 +75,13 @@ async function main() {
       serverEnvironment: {
         commit: serverMetadata.commit,
         cpu: serverMetadata.cpu,
+        cpuTopology: serverMetadata.cpuTopology,
         dirty: serverMetadata.dirty,
         machine: serverMetadata.machine,
         nodeOptions: serverMetadata.nodeOptions,
         nodeVersion: serverMetadata.nodeVersion,
         platform: serverMetadata.platform,
+        virtualization: serverMetadata.virtualization,
       },
       topology: options.topology,
     },
