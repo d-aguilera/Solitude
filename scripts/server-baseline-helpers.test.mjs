@@ -4,6 +4,7 @@ import {
   detectBandGrowth,
   detectGrowth,
   reanalyzeBaselineResult,
+  resolvePathAdjustedThresholds,
   summarizeBaselineRuns,
 } from "./server-baseline-helpers.mjs";
 
@@ -190,3 +191,39 @@ function createCuratedRun(repetition, cpu, saturated) {
     },
   };
 }
+
+describe("path-adjusted thresholds", () => {
+  it("leaves loopback thresholds effectively unchanged", () => {
+    const thresholds = resolvePathAdjustedThresholds({ p50: 0, p99: 0 });
+    expect(thresholds.inputAckLatencyMillisP99Warning).toBe(50);
+    expect(thresholds.snapshotInterArrivalMillisP99Warning).toBe(50);
+  });
+
+  it("offsets the acknowledgement budget by full path latency", () => {
+    const thresholds = resolvePathAdjustedThresholds({ p50: 8, p99: 13 });
+    expect(thresholds.inputAckLatencyMillisP99Warning).toBe(63);
+  });
+
+  it("offsets inter-arrival by jitter only, since spacing ignores constant latency", () => {
+    const thresholds = resolvePathAdjustedThresholds({ p50: 8, p99: 13 });
+    expect(thresholds.snapshotInterArrivalMillisP99Warning).toBe(55);
+  });
+
+  it("never lowers a threshold when the path summary is empty or inverted", () => {
+    expect(
+      resolvePathAdjustedThresholds(undefined).inputAckLatencyMillisP99Warning,
+    ).toBe(50);
+    expect(
+      resolvePathAdjustedThresholds({ p50: 13, p99: 8 })
+        .snapshotInterArrivalMillisP99Warning,
+    ).toBe(50);
+  });
+
+  it("leaves server-side thresholds untouched by the network path", () => {
+    const thresholds = resolvePathAdjustedThresholds({ p50: 8, p99: 13 });
+    expect(thresholds.eventLoopDelayMillisP99).toBe(
+      resolvePathAdjustedThresholds({ p50: 0, p99: 0 }).eventLoopDelayMillisP99,
+    );
+    expect(thresholds.simulationThroughputRatio).toBe(0.99);
+  });
+});

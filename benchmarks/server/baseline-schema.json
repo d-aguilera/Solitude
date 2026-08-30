@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://solitude.local/schemas/server-baseline-v3.json",
+  "$id": "https://solitude.local/schemas/server-baseline-v4.json",
   "title": "Solitude server reference baseline",
   "type": "object",
   "required": [
@@ -22,7 +22,7 @@
     "capacitySweep"
   ],
   "properties": {
-    "schemaVersion": { "const": 3 },
+    "schemaVersion": { "const": 4 },
     "analysisPolicy": { "type": "object" },
     "commit": { "type": "string" },
     "dirty": { "type": "boolean" },
@@ -39,6 +39,7 @@
         "loadGeneratorEnvironment",
         "machine",
         "nodeOptions",
+        "pathLatencyMillis",
         "serverEnvironment",
         "topology"
       ],
@@ -50,6 +51,7 @@
         },
         "machine": { "type": "string" },
         "nodeOptions": { "type": "string" },
+        "pathLatencyMillis": { "$ref": "#/$defs/latencySummary" },
         "serverEnvironment": { "$ref": "#/$defs/environmentIdentity" },
         "topology": { "type": "string" }
       }
@@ -110,6 +112,19 @@
         "nodeVersion": { "type": "string" },
         "platform": { "type": "string" },
         "virtualization": { "$ref": "#/$defs/virtualization" }
+      }
+    },
+    "latencySummary": {
+      "type": "object",
+      "required": ["avg", "count", "max", "min", "p50", "p95", "p99"],
+      "properties": {
+        "avg": { "type": "number" },
+        "count": { "type": "integer", "minimum": 0 },
+        "max": { "type": "number" },
+        "min": { "type": "number" },
+        "p50": { "type": "number" },
+        "p95": { "type": "number" },
+        "p99": { "type": "number" }
       }
     },
     "container": {

@@ -5,6 +5,7 @@ export const analysisPolicy = Object.freeze({
   confirmation: "majority-of-repetitions",
   heapTrend: "first-third-to-final-third-median-with-positive-slope",
   interactionLatency: "warning-only-no-agreed-sla",
+  pathLatency: "client-observed-thresholds-offset-by-measured-path",
 });
 export const provisionalThresholds = Object.freeze({
   eventLoopDelayMillisP99: broadcastIntervalMillis,
@@ -16,7 +17,19 @@ export const provisionalThresholds = Object.freeze({
   snapshotRateHz: 60 * 0.99,
 });
 
-export function analyzeLoadRun(run) {
+export function resolvePathAdjustedThresholds(pathLatencyMillis) {
+  const latency = pathLatencyMillis?.p99 ?? 0;
+  const jitter = Math.max(0, latency - (pathLatencyMillis?.p50 ?? 0));
+  return Object.freeze({
+    ...provisionalThresholds,
+    inputAckLatencyMillisP99Warning:
+      provisionalThresholds.inputAckLatencyMillisP99Warning + latency,
+    snapshotInterArrivalMillisP99Warning:
+      provisionalThresholds.snapshotInterArrivalMillisP99Warning + jitter,
+  });
+}
+
+export function analyzeLoadRun(run, thresholds = provisionalThresholds) {
   const reports = run.serverReports ?? [];
   const trend = reports.map((report, sample) => {
     const games = report.games ?? [];
@@ -68,8 +81,8 @@ export function analyzeLoadRun(run) {
   const heapGrowth = detectBandGrowth(
     heapValues,
     Math.max(
-      provisionalThresholds.heapGrowthMinimumBytes,
-      firstHeap * provisionalThresholds.heapGrowthMinimumRatio,
+      thresholds.heapGrowthMinimumBytes,
+      firstHeap * thresholds.heapGrowthMinimumRatio,
     ),
     0,
   );
@@ -80,14 +93,14 @@ export function analyzeLoadRun(run) {
 
   if (
     gameIds.length > 0 &&
-    minimumMedianThroughput < provisionalThresholds.simulationThroughputRatio
+    minimumMedianThroughput < thresholds.simulationThroughputRatio
   ) {
     reasons.push("simulation-throughput-below-99-percent");
   }
   if (backlogGrowth.growing) reasons.push("simulation-backlog-growing");
   if (
     gameIds.length > 0 &&
-    minimumMedianSnapshotRate < provisionalThresholds.snapshotRateHz
+    minimumMedianSnapshotRate < thresholds.snapshotRateHz
   ) {
     reasons.push("snapshot-cadence-below-99-percent");
   }
@@ -99,18 +112,18 @@ export function analyzeLoadRun(run) {
   const eventLoopP99 = maximum(
     trend.map((sample) => sample.eventLoopDelayMillisP99),
   );
-  if (eventLoopP99 > provisionalThresholds.eventLoopDelayMillisP99) {
+  if (eventLoopP99 > thresholds.eventLoopDelayMillisP99) {
     warnings.push("event-loop-p99-exceeds-broadcast-interval");
   }
   if (
     (run.client?.inputAckLatencyMillis?.p99 ?? 0) >
-    provisionalThresholds.inputAckLatencyMillisP99Warning
+    thresholds.inputAckLatencyMillisP99Warning
   ) {
     warnings.push("input-ack-p99-exceeds-provisional-warning");
   }
   if (
     (run.client?.snapshotInterArrivalMillis?.p99 ?? 0) >
-    provisionalThresholds.snapshotInterArrivalMillisP99Warning
+    thresholds.snapshotInterArrivalMillisP99Warning
   ) {
     warnings.push("snapshot-inter-arrival-p99-exceeds-provisional-warning");
   }
@@ -129,8 +142,12 @@ export function analyzeLoadRun(run) {
   };
 }
 
-export function curateLoadRun(run, repetition) {
-  const analysis = analyzeLoadRun(run);
+export function curateLoadRun(
+  run,
+  repetition,
+  thresholds = provisionalThresholds,
+) {
+  const analysis = analyzeLoadRun(run, thresholds);
   return {
     analysis: {
       backlogGrowth: analysis.backlogGrowth,
@@ -157,10 +174,13 @@ export function curateLoadRun(run, repetition) {
 }
 
 export function reanalyzeBaselineResult(result) {
+  const thresholds = resolvePathAdjustedThresholds(
+    result.environment?.pathLatencyMillis,
+  );
   result.analysisPolicy = analysisPolicy;
-  result.provisionalThresholds = provisionalThresholds;
+  result.provisionalThresholds = thresholds;
   for (const scenario of [...result.scenarios, ...result.capacitySweep]) {
-    for (const run of scenario.runs) reanalyzeCuratedRun(run);
+    for (const run of scenario.runs) reanalyzeCuratedRun(run, thresholds);
     scenario.summary = summarizeBaselineRuns(scenario.runs);
   }
   result.firstCapacitySaturation =
@@ -170,20 +190,19 @@ export function reanalyzeBaselineResult(result) {
   return result;
 }
 
-export function reanalyzeCuratedRun(run) {
+export function reanalyzeCuratedRun(run, thresholds = provisionalThresholds) {
   const heapGrowth = detectBandGrowth(
     run.trend.map((sample) => sample.heapUsedBytes),
     Math.max(
-      provisionalThresholds.heapGrowthMinimumBytes,
-      (run.trend[0]?.heapUsedBytes ?? 0) *
-        provisionalThresholds.heapGrowthMinimumRatio,
+      thresholds.heapGrowthMinimumBytes,
+      (run.trend[0]?.heapUsedBytes ?? 0) * thresholds.heapGrowthMinimumRatio,
     ),
     0,
   );
   const reasons = [];
   if (
     run.analysis.minimumPerGameMedianSimulationThroughputRatio <
-    provisionalThresholds.simulationThroughputRatio
+    thresholds.simulationThroughputRatio
   ) {
     reasons.push("simulation-throughput-below-99-percent");
   }
@@ -191,8 +210,7 @@ export function reanalyzeCuratedRun(run) {
     reasons.push("simulation-backlog-growing");
   }
   if (
-    run.analysis.minimumPerGameMedianSnapshotRateHz <
-    provisionalThresholds.snapshotRateHz
+    run.analysis.minimumPerGameMedianSnapshotRateHz < thresholds.snapshotRateHz
   ) {
     reasons.push("snapshot-cadence-below-99-percent");
   }
@@ -203,19 +221,19 @@ export function reanalyzeCuratedRun(run) {
   const warnings = [];
   if (
     run.analysis.eventLoopDelayMillisP99Maximum >
-    provisionalThresholds.eventLoopDelayMillisP99
+    thresholds.eventLoopDelayMillisP99
   ) {
     warnings.push("event-loop-p99-exceeds-broadcast-interval");
   }
   if (
     run.client.inputAckLatencyMillis.p99 >
-    provisionalThresholds.inputAckLatencyMillisP99Warning
+    thresholds.inputAckLatencyMillisP99Warning
   ) {
     warnings.push("input-ack-p99-exceeds-provisional-warning");
   }
   if (
     run.client.snapshotInterArrivalMillis.p99 >
-    provisionalThresholds.snapshotInterArrivalMillisP99Warning
+    thresholds.snapshotInterArrivalMillisP99Warning
   ) {
     warnings.push("snapshot-inter-arrival-p99-exceeds-provisional-warning");
   }

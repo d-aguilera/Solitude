@@ -467,7 +467,7 @@ function compareEnvironment(reference, candidate) {
     ...compareFields(
       reference.environment,
       candidate.environment,
-      ["cpuAffinity", "loadGenerator", "nodeOptions"],
+      ["cpuAffinity", "loadGenerator", "nodeOptions", "pathLatencyMillis"],
       "environment",
     ),
     ...compareFields(
@@ -551,8 +551,8 @@ function describeWorkload(workload) {
 }
 
 function validateBaseline(baseline, role) {
-  if (!baseline || baseline.schemaVersion !== 3) {
-    throw new Error(`${role} must be a version-3 server baseline`);
+  if (!baseline || baseline.schemaVersion !== 4) {
+    throw new Error(`${role} must be a version-4 server baseline`);
   }
   for (const field of [
     "commit",

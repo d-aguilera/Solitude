@@ -129,6 +129,27 @@ changing any field that previously identified an environment:
   every workload measured on that host. It is `null` where the state cannot be
   resolved.
 
+Before the first repetition, the orchestrator probes `/health` 200 times
+against the live server and records the result as
+`environment.pathLatencyMillis`. Client-observed thresholds are then offset by
+what the transport itself costs, because a 50 ms acknowledgement budget
+calibrated on loopback is not the right budget for a path carrying 10 ms of
+baseline latency:
+
+- `inputAckLatencyMillisP99Warning` is offset by the full path p99, since
+  absolute latency adds directly to every acknowledgement.
+- `snapshotInterArrivalMillisP99Warning` is offset by path jitter (p99 minus
+  p50) only, because constant latency shifts arrivals without changing their
+  spacing.
+- Server-side thresholds are deliberately **not** adjusted. Event-loop delay,
+  throughput, backlog, and cadence are measured inside the server process and
+  cannot be affected by the network path, so they stay directly comparable
+  across topologies.
+
+The measured summary is stored in the baseline and the effective thresholds are
+persisted in `provisionalThresholds`, so a capture always records the budget it
+was actually judged against.
+
 Every run also records a `generator` block holding the load generator's own CPU
 utilization, event-loop delay, and RSS, plus a `generatorSaturation` verdict.
 This exists because input-acknowledgement latency is measured inside the

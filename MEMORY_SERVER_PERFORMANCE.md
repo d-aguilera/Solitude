@@ -133,6 +133,21 @@ WebSocket clients rather than browser pages.
   event-loop p99 is a floor on the latency it can resolve. This disambiguates a
   saturated server from a starved generator, which same-host capacity runs
   could not previously distinguish.
+- Baseline runs probe `/health` 200 times against the live server before the
+  first repetition and record `environment.pathLatencyMillis`. Client-observed
+  warnings are offset by it: acknowledgement latency by the full path p99, and
+  snapshot inter-arrival by path jitter only, since constant latency shifts
+  arrivals without changing spacing. Server-side thresholds are never adjusted
+  because event-loop delay, throughput, backlog, and cadence are measured inside
+  the server process and stay comparable across topologies. The effective
+  thresholds are persisted per capture.
+- The separate-host path to `wsl2-i7-7700hq` is measured, not assumed. Its
+  Windows 10 build 19045 cannot run WSL mirrored networking, so the server sits
+  behind a `netsh portproxy` relay into WSL NAT. Measured on wired gigabit:
+  913 Mbit/s direct by SMB versus 753 Mbit/s through the relay, an 18% cost;
+  round-trip p50 rises from a 2 ms host-to-host ICMP floor to 7.7 ms idle and
+  9.7 ms under load, with p99 near 13 ms loaded. Aggregate fanout therefore
+  caps the usable sweep at 16 eight-client games on that path.
 - The server does not yet expose GC counts/pause time.
 - The first authoritative input-allocation fix is complete: the headless loop
   reuses its entity-input map and mutable per-entity input records.

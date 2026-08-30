@@ -3,6 +3,7 @@
 import { spawn } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
+import { performance } from "node:perf_hooks";
 import { createInterface } from "node:readline/promises";
 import { parseArgs } from "node:util";
 import {
@@ -14,7 +15,7 @@ import {
 import {
   analysisPolicy,
   curateLoadRun,
-  provisionalThresholds,
+  resolvePathAdjustedThresholds,
   summarizeBaselineRuns,
 } from "./server-baseline-helpers.mjs";
 import {
@@ -22,11 +23,13 @@ import {
   parseNonNegativeNumber,
   parsePositiveInteger,
   parsePositiveNumber,
+  summarizeNumbers,
 } from "./server-load-helpers.mjs";
 
 const root = process.cwd();
 const scenariosPath = resolve(root, "benchmarks/server/scenarios.json");
 const serverEntryPath = resolve(root, "dist/server/main.js");
+const pathLatencySamples = 200;
 
 await main().catch((error) => {
   console.error(error instanceof Error ? error.stack : String(error));
@@ -55,8 +58,10 @@ async function main() {
         )
       : undefined;
   const remote = Boolean(options.serverUrl);
+  options.pathLatencyMillis = summarizeNumbers([]);
+  options.thresholds = resolvePathAdjustedThresholds(options.pathLatencyMillis);
   const result = {
-    schemaVersion: 3,
+    schemaVersion: 4,
     analysisPolicy,
     commit: serverMetadata.commit,
     cpu: serverMetadata.cpu,
@@ -77,6 +82,7 @@ async function main() {
       },
       machine: serverMetadata.machine,
       nodeOptions: serverMetadata.nodeOptions,
+      pathLatencyMillis: options.pathLatencyMillis,
       serverEnvironment: {
         commit: serverMetadata.commit,
         container: serverMetadata.container,
@@ -112,7 +118,7 @@ async function main() {
       serverRestartedBetweenRepetitions: true,
       serverUrl: remote ? options.serverUrl : "dynamic-loopback",
     },
-    provisionalThresholds,
+    provisionalThresholds: options.thresholds,
     capacitySweep: [],
     scenarios: [],
     startedAt: new Date().toISOString(),
@@ -121,6 +127,7 @@ async function main() {
 
   for (const scenario of selectedScenarios) {
     result.scenarios.push(await runScenario(scenario, options));
+    syncMeasuredThresholds(result, options);
     await persist(result, outputPath);
   }
 
@@ -139,6 +146,7 @@ async function main() {
       };
       const captured = await runScenario(scenario, options);
       result.capacitySweep.push(captured);
+      syncMeasuredThresholds(result, options);
       await persist(result, outputPath);
       if (captured.summary.confirmedSaturation) break;
     }
@@ -265,6 +273,40 @@ function capacityGameCounts(initialCounts, maximumGames) {
   return counts;
 }
 
+function syncMeasuredThresholds(result, options) {
+  result.environment.pathLatencyMillis = options.pathLatencyMillis;
+  result.provisionalThresholds = options.thresholds;
+}
+
+async function ensurePathLatency(options, url) {
+  if (options.pathLatencyMillis.count > 0) return;
+  options.pathLatencyMillis = await measurePathLatency(url, options.quiet);
+  options.thresholds = resolvePathAdjustedThresholds(options.pathLatencyMillis);
+}
+
+async function measurePathLatency(url, quiet) {
+  const samples = [];
+  const endpoint = new URL("/health", url);
+  for (let attempt = 0; attempt < pathLatencySamples; attempt++) {
+    const startedAt = performance.now();
+    try {
+      const response = await fetch(endpoint, { cache: "no-store" });
+      await response.arrayBuffer();
+      if (response.ok) samples.push(performance.now() - startedAt);
+    } catch {
+      break;
+    }
+  }
+  const summary = summarizeNumbers(samples);
+  if (!quiet) {
+    process.stderr.write(
+      `[baseline] path latency over ${summary.count} probes: ` +
+        `p50 ${summary.p50.toFixed(3)}ms p99 ${summary.p99.toFixed(3)}ms\n`,
+    );
+  }
+  return summary;
+}
+
 async function runScenario(scenario, options) {
   const runs = [];
   for (let repetition = 1; repetition <= options.repetitions; repetition++) {
@@ -276,13 +318,16 @@ async function runScenario(scenario, options) {
       ? await prepareRemoteServer({ options, repetition, scenario })
       : await startServer();
     try {
+      await ensurePathLatency(options, server.url);
       const loadResult = await runLoadGenerator({
         options,
         repetition,
         scenario,
         serverUrl: server.url,
       });
-      runs.push(curateLoadRun(loadResult.samples[0], repetition));
+      runs.push(
+        curateLoadRun(loadResult.samples[0], repetition, options.thresholds),
+      );
     } finally {
       await server.stop();
     }
