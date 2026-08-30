@@ -296,6 +296,20 @@ describe("saturation voting", () => {
     expect(summary.confirmedSaturation).toBe(true);
     expect(summary.saturationVoters).toBe(4);
   });
+
+  it("does not treat a tie among valid repetitions as a majority", () => {
+    const summary = summarizeBaselineRuns([
+      run(1, { failed: true }),
+      run(2, { saturated: true }),
+      run(3, { saturated: true }),
+      run(4),
+      run(5),
+    ]);
+    expect(summary.confirmedSaturation).toBe(false);
+    expect(summary.inconclusive).toBe(false);
+    expect(summary.saturationCount).toBe(2);
+    expect(summary.saturationVoters).toBe(4);
+  });
 });
 
 describe("capacity sweep points", () => {

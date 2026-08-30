@@ -279,7 +279,7 @@ export function summarizeBaselineRuns(runs) {
     runs.length > 0 && successfulRuns.length > Math.floor(runs.length / 2);
   return {
     confirmedSaturation:
-      quorum && saturationCount >= Math.ceil(successfulRuns.length / 2),
+      quorum && saturationCount > Math.floor(successfulRuns.length / 2),
     failedRuns: runs.length - successfulRuns.length,
     inconclusive: runs.length > 0 && !quorum,
     medianRunSelectionMetric: "process-cpu-utilization-p50",

@@ -24,15 +24,20 @@ for _ in $(seq 1 50); do
   ss -ltn "sport = :${PORT}" 2>/dev/null | grep -q LISTEN || break
   sleep 0.1
 done
+if ss -ltn "sport = :${PORT}" 2>/dev/null | grep -q LISTEN; then
+  echo "old server still owns port ${PORT} after 5 seconds" >&2
+  exit 1
+fi
 
 cd "$REPO"
 HOST=0.0.0.0 PORT="$PORT" setsid nohup "$NODE" dist/server/main.js >>"$LOG" 2>&1 &
+server_pid=$!
 disown || true
 
 # Fail loudly if the process died immediately, rather than exiting 0 and
 # leaving the orchestrator to time out 30s later on a confusing /health wait.
 sleep 0.5
-pgrep -f 'dist/server/main.js' >/dev/null || {
+kill -0 "$server_pid" 2>/dev/null || {
   echo "server exited immediately; log tail:" >&2
   tail -5 "$LOG" >&2
   exit 1
