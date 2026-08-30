@@ -29,6 +29,7 @@ import {
 const root = process.cwd();
 const scenariosPath = resolve(root, "benchmarks/server/scenarios.json");
 const serverEntryPath = resolve(root, "dist/server/main.js");
+const pathLatencyProbeTimeoutMillis = 5_000;
 const pathLatencySamples = 200;
 
 await main().catch((error) => {
@@ -289,13 +290,17 @@ async function measurePathLatency(url, quiet) {
   const endpoint = new URL("/health", url);
   for (let attempt = 0; attempt < pathLatencySamples; attempt++) {
     const startedAt = performance.now();
-    try {
-      const response = await fetch(endpoint, { cache: "no-store" });
-      await response.arrayBuffer();
-      if (response.ok) samples.push(performance.now() - startedAt);
-    } catch {
-      break;
+    const response = await fetch(endpoint, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(pathLatencyProbeTimeoutMillis),
+    });
+    await response.arrayBuffer();
+    if (!response.ok) {
+      throw new Error(
+        `Path latency probe ${attempt + 1}/${pathLatencySamples} failed with HTTP ${response.status}`,
+      );
     }
+    samples.push(performance.now() - startedAt);
   }
   const summary = summarizeNumbers(samples);
   if (!quiet) {

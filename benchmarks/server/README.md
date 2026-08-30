@@ -45,7 +45,7 @@ npm run baseline:server
 Reference defaults are a 15-second warm-up, 60-second measurement, and five
 fresh-server repetitions. Results are written under
 `benchmarks/server/baselines/<machine>/<commit>.json`; `baseline-schema.json`
-defines their required version-3 shape. The named default environment is
+defines their required version-4 shape. The named default environment is
 `wsl2-i7-7700hq`. It is a same-host WSL2 reference, so its transport numbers
 must not be presented as separate-host network capacity.
 
@@ -159,8 +159,11 @@ p99 is effectively a floor on the acknowledgement latency it can resolve. A run
 whose acknowledgement p99 collapses while the server reports healthy CPU,
 throughput, backlog, and cadence should be checked against `generatorSaturation`
 before it is read as server saturation. `generator.cpuUtilizationPercent` uses
-the same all-thread semantics as the server's, so it is compared against
-`logicalCores * 100`.
+the same process-time semantics as the server's: 100% means one fully occupied
+core. The load generator's JavaScript work runs on one event-loop thread, so
+its CPU warning is 85% of one core rather than a host-wide logical-core budget.
+The event-loop verdict uses the worst sampled p99 so an episodic stall is not
+hidden by otherwise healthy one-second windows.
 
 Windows facts are read through a single best-effort `powershell.exe` probe on
 Windows and directly interoperable WSL hosts. It is bounded by a timeout and

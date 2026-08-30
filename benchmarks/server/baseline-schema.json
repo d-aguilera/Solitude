@@ -119,7 +119,7 @@
       "required": ["avg", "count", "max", "min", "p50", "p95", "p99"],
       "properties": {
         "avg": { "type": "number" },
-        "count": { "type": "integer", "minimum": 0 },
+        "count": { "const": 200 },
         "max": { "type": "number" },
         "min": { "type": "number" },
         "p50": { "type": "number" },

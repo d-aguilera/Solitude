@@ -43,22 +43,22 @@ export function summarizeGeneratorSamples(samples, logicalCores) {
 
 export function deriveGeneratorSaturation(generator, thresholds) {
   const reasons = [];
-  const cpuCeiling = generator.logicalCores * 100;
+  const cpuCeiling = 100;
   if (generator.cpuUtilizationPercent.p50 >= cpuCeiling * thresholds.cpuRatio) {
     reasons.push(
-      `load generator CPU p50 ${generator.cpuUtilizationPercent.p50.toFixed(0)}% of ${cpuCeiling}% available`,
+      `load generator CPU p50 ${generator.cpuUtilizationPercent.p50.toFixed(0)}% of one core`,
     );
   }
-  if (generator.eventLoopDelayMillis.p99.p50 > thresholds.eventLoopMillis) {
+  if (generator.eventLoopDelayMillis.p99.max > thresholds.eventLoopMillis) {
     reasons.push(
-      `load generator event-loop p99 ${generator.eventLoopDelayMillis.p99.p50.toFixed(2)}ms exceeds ${thresholds.eventLoopMillis}ms`,
+      `load generator event-loop p99 ${generator.eventLoopDelayMillis.p99.max.toFixed(2)}ms exceeds ${thresholds.eventLoopMillis}ms`,
     );
   }
   return { reasons, saturated: reasons.length > 0 };
 }
 
 export function generatorLatencyFloorMillis(generator) {
-  return generator.eventLoopDelayMillis.p99.p50;
+  return generator.eventLoopDelayMillis.p99.max;
 }
 
 export function summarizeServerReports(reports, gameIds) {

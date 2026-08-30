@@ -128,11 +128,13 @@ WebSocket clients rather than browser pages.
   at all, so devcontainer runs record null topology/VBS by construction.
 - Every load run records a `generator` block with the load generator's own CPU
   utilization, event-loop delay, and RSS, plus a `generatorSaturation` verdict
-  at 85% of `logicalCores * 100` CPU or a 16.67-millisecond event-loop p99.
-  Acknowledgement latency is measured inside the generator process, so its
-  event-loop p99 is a floor on the latency it can resolve. This disambiguates a
-  saturated server from a starved generator, which same-host capacity runs
-  could not previously distinguish.
+  at 85% of one fully occupied core or a worst sampled 16.67-millisecond
+  event-loop p99. The load generator's JavaScript work runs on one event-loop
+  thread, so multiplying its CPU ceiling by host logical cores would hide the
+  exact starvation this verdict needs to expose. Acknowledgement latency is
+  measured inside the generator process, so its event-loop delay bounds the
+  latency it can resolve. This disambiguates a saturated server from a starved
+  generator, which same-host capacity runs could not previously distinguish.
 - Baseline runs probe `/health` 200 times against the live server before the
   first repetition and record `environment.pathLatencyMillis`. Client-observed
   warnings are offset by it: acknowledgement latency by the full path p99, and

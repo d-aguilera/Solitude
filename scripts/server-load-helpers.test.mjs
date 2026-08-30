@@ -151,11 +151,11 @@ describe("load-generator sampling", () => {
     ).toEqual({ reasons: [], saturated: false });
   });
 
-  it("flags a generator that has run out of CPU", () => {
+  it("treats 100% as one fully occupied Node process core", () => {
     const generator = summarizeGeneratorSamples(
       [
         {
-          cpuUtilizationPercent: 780,
+          cpuUtilizationPercent: 90,
           eventLoopDelayMax: 12,
           eventLoopDelayP99: 8,
           rssBytes: 10,
@@ -168,14 +168,28 @@ describe("load-generator sampling", () => {
       eventLoopMillis: 16.67,
     });
     expect(verdict.saturated).toBe(true);
-    expect(verdict.reasons[0]).toContain("load generator CPU p50 780% of 800%");
+    expect(verdict.reasons[0]).toContain(
+      "load generator CPU p50 90% of one core",
+    );
   });
 
-  it("flags a stalled generator event loop as a latency floor", () => {
+  it("uses the worst sampled p99 to expose an episodic generator stall", () => {
     const generator = summarizeGeneratorSamples(
       [
         {
-          cpuUtilizationPercent: 100,
+          cpuUtilizationPercent: 40,
+          eventLoopDelayMax: 2,
+          eventLoopDelayP99: 1,
+          rssBytes: 10,
+        },
+        {
+          cpuUtilizationPercent: 40,
+          eventLoopDelayMax: 3,
+          eventLoopDelayP99: 2,
+          rssBytes: 10,
+        },
+        {
+          cpuUtilizationPercent: 40,
           eventLoopDelayMax: 900,
           eventLoopDelayP99: 520,
           rssBytes: 10,
