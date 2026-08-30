@@ -90,10 +90,12 @@ WebSocket clients rather than browser pages.
   `benchmarks/server/baselines/`. It records both complete host identities, the
   exact production plugin and server artifact identities, stable trend
   evidence, median-CPU repetition, worst p95/p99 latencies, and
-  majority-confirmed saturation analysis. The version-3 `a5854ff` capture ran
-  natively in WSL2 with no container present, sustained every canonical
-  workload and up to 16 eight-client games, and first confirmed saturation at
-  32 games under same-host server/load-generator contention.
+  majority-confirmed saturation analysis. The version-4 `c657f85` capture ran
+  natively in WSL2 with no container present, measured the loopback path at
+  2.62 ms p50 and 4.28 ms p99, sustained every canonical workload and up to 16
+  eight-client games, and first confirmed service saturation at 32 games. Its
+  generator telemetry shows repeatable generator event-loop starvation from 16
+  games and full generator CPU saturation at 32.
 - `benchmarks/server/reference-baseline.json` is a version-2 pointer holding one
   reference per measurement topology. `same-host-loopback` is the regression
   reference and `separate-host-lan` is the capacity reference; a candidate is
@@ -121,11 +123,12 @@ WebSocket clients rather than browser pages.
   core counts, guest-visible cores are retained separately from host cores, and
   virtualization-based security including hypervisor-enforced code integrity is
   read through one bounded best-effort Windows probe that never fails a run.
-  Version-3 server metadata and baseline documents also require `container`,
-  which records container presence, engine, and devcontainer status. All three
-  fields are required and preserve explicit `null` values where host-only facts
-  cannot be resolved. A containerized capture cannot reach Windows host facts
-  at all, so devcontainer runs record null topology/VBS by construction.
+  Version-3 server metadata and version-4 baseline documents also require
+  `container`, which records container presence, engine, and devcontainer
+  status. All three fields are required and preserve explicit `null` values
+  where host-only facts cannot be resolved. A containerized capture cannot
+  reach Windows host facts at all, so devcontainer runs record null
+  topology/VBS by construction.
 - Every load run records a `generator` block with the load generator's own CPU
   utilization, event-loop delay, and RSS, plus a `generatorSaturation` verdict
   at 85% of one fully occupied core or a worst sampled 16.67-millisecond
@@ -472,26 +475,31 @@ captures and agreed budgets.
   environment-dependent and establish harness behavior, not a reference
   baseline or performance budget.
 - Slice 5 names `wsl2-i7-7700hq` as the same-host local reference environment.
-  Its version-3 capture at `a5854ff` used Node v22.23.1, a
+  Its version-4 capture at `c657f85` used Node v22.23.1, a
   15-second warm-up, 60-second measurement, five fresh-server repetitions, and
   the deployed API-v11 content pack for every workload. It ran natively in WSL2
   with no container present; both identities record four physical cores, eight
-  logical cores, VBS running, and HVCI disabled.
+  logical cores, VBS running, and HVCI disabled. The 200-probe loopback path
+  measured 2.62 ms p50 and 4.28 ms p99.
 - All canonical workloads sustained requested simulation throughput. Warp 60
   exceeded the provisional 16.67-millisecond event-loop warning in all five
-  runs, but no canonical repetition saturated. No other canonical workload
-  warned.
+  runs, but no canonical repetition saturated. No other canonical service
+  workload warned; two high-fanout repetitions had isolated generator warnings
+  below majority confirmation.
 - The capacity sweep's last point without majority-confirmed saturation was 16
-  eight-client games; one repetition crossed the event-loop warning at
-  17.97 milliseconds, while all acknowledgement p99 values remained below the
-  provisional warning. At 32 games two repetitions failed with pending input
-  acknowledgements and a third missed the cadence floor. Acknowledgement p99
-  reached 10.30–30.42 seconds while simulation throughput remained
-  99.77–99.87%. The first bottleneck remains same-host HTTP/WebSocket
-  availability and scheduling rather than authoritative simulation throughput;
-  separate-host validation is required for a deployment capacity claim.
-- Initial non-blocking warnings are 16.67 milliseconds for event-loop p99 and
-  50 milliseconds for input-ack or snapshot-inter-arrival p99. Heap growth
+  eight-client games. All five 16-game runs showed generator event-loop
+  starvation despite healthy service thresholds, so 8 games is the last point
+  without a generator warning. At 32 games two repetitions failed their metrics
+  request, one ended with pending acknowledgements, and another missed the
+  cadence floor. Every measured generator run used about 103% CPU and stalled
+  for 6.29–6.52 seconds while server simulation throughput remained
+  99.76–99.87%. The first bottleneck is now directly measured as same-host load
+  generator starvation, not authoritative simulation throughput; separate-host
+  validation is required for a deployment capacity claim.
+- Base non-blocking warnings are 16.67 milliseconds for event-loop p99 and 50
+  milliseconds for input-ack or snapshot-inter-arrival p99. Measured path cost
+  adjusts the client thresholds; this capture records 54.28 milliseconds for
+  acknowledgement p99 and 51.66 for snapshot inter-arrival p99. Heap growth
   compares first-third and final-third medians with a positive full-window
   slope and an 8-MiB-or-5% minimum; majority confirmation rejects normal GC
   sawtooth endpoint variance. No hard CI gates were introduced.

@@ -5,7 +5,7 @@
       "topology": "same-host-loopback",
       "purpose": "regression",
       "machine": "wsl2-i7-7700hq",
-      "result": "./baselines/wsl2-i7-7700hq/a5854ff294d70286568b9f5b323ee155a60ceba2.json"
+      "result": "./baselines/wsl2-i7-7700hq/c657f85e7e07b766a449a0f12dce132db6c68e9e.json"
     }
   ]
 }
