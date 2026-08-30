@@ -113,6 +113,21 @@ WebSocket clients rather than browser pages.
   relay delivers, not because the server ran out of headroom. Server capacity
   on this hardware is therefore still unbounded by measurement; establishing it
   needs more link headroom rather than a longer sweep.
+- The separate-host restart mechanism is SSH into the server's WSL, running a
+  script that spawns a fresh server process and exits immediately. It is
+  deliberately outside the measured artifact: an HTTP restart endpoint would
+  change `dist/server/main.js` and its recorded SHA, and a process cannot
+  restart itself cleanly anyway, so an external supervisor is required either
+  way. `benchmarks/server/README.md` documents the portproxy and firewall
+  setup, the script's three failure modes, and the fact that capturing server
+  metadata over that SSH connection silently degrades host facts to `null`
+  unless `WSL_INTEROP` and the Windows directories are exported.
+- The capacity sweep doubles only because doubling brackets an unknown
+  saturation point cheaply. `--capacity-games` runs an explicit list instead,
+  for refining a bracket once one end is known. On the separate-host path the
+  useful range above 16 games is 20 and 24: measured per-game fanout is
+  26.7 Mbit/s, so 24 games is about 85% of the relay's 753 Mbit/s and 28 games
+  is already at 99%.
 - `benchmarks/server/reference-baseline.json` is a version-2 pointer holding one
   reference per measurement topology. `same-host-loopback` is the regression
   reference and `separate-host-lan` is the capacity reference; a candidate is

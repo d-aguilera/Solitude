@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   analyzeLoadRun,
+  capacityGameCounts,
   detectBandGrowth,
   detectGrowth,
   reanalyzeBaselineResult,
@@ -294,5 +295,23 @@ describe("saturation voting", () => {
     ]);
     expect(summary.confirmedSaturation).toBe(true);
     expect(summary.saturationVoters).toBe(4);
+  });
+});
+
+describe("capacity sweep points", () => {
+  it("extends the checked-in list by doubling when none is given", () => {
+    expect(capacityGameCounts([1, 2, 4, 8, 16], 64)).toEqual([
+      1, 2, 4, 8, 16, 32, 64,
+    ]);
+  });
+
+  it("honours an explicit list without doubling past it", () => {
+    expect(capacityGameCounts([16, 20, 24], 128, false)).toEqual([16, 20, 24]);
+  });
+
+  it("still respects the safety ceiling for an explicit list", () => {
+    expect(capacityGameCounts([16, 20, 24, 40], 24, false)).toEqual([
+      16, 20, 24,
+    ]);
   });
 });

@@ -14,6 +14,7 @@ import {
 } from "./server-baseline-environment.mjs";
 import {
   analysisPolicy,
+  capacityGameCounts,
   curateLoadRun,
   resolvePathAdjustedThresholds,
   summarizeBaselineRuns,
@@ -134,8 +135,9 @@ async function main() {
 
   if (!options.skipCapacity) {
     const gameCounts = capacityGameCounts(
-      definitions.capacitySweepGames,
+      options.capacityGames ?? definitions.capacitySweepGames,
       options.maxCapacityGames,
+      options.capacityGames === undefined,
     );
     for (const games of gameCounts) {
       const scenario = {
@@ -168,6 +170,7 @@ function parseOptions() {
       duration: { type: "string" },
       "load-generator-machine": { type: "string" },
       machine: { default: "wsl2-i7-7700hq", type: "string" },
+      "capacity-games": { type: "string" },
       "max-capacity-games": { default: "128", type: "string" },
       output: { type: "string" },
       profile: { default: "reference", type: "string" },
@@ -211,11 +214,15 @@ function parseOptions() {
     values.topology?.trim() ??
     (serverUrl ? "separate-host-lan" : "same-host-loopback");
   if (!topology) throw new Error("--topology must not be empty");
+  const capacityGames = values["capacity-games"]
+    ? parseCapacityGames(values["capacity-games"])
+    : undefined;
   const loadGeneratorMachine = values["load-generator-machine"]?.trim();
   if (values["load-generator-machine"] && !loadGeneratorMachine) {
     throw new Error("--load-generator-machine must not be empty");
   }
   return {
+    capacityGames,
     durationSeconds: values.duration
       ? parsePositiveNumber(values.duration, "duration")
       : defaults.duration,
@@ -264,12 +271,18 @@ function selectScenarios(scenarios, options) {
   return selected;
 }
 
-function capacityGameCounts(initialCounts, maximumGames) {
-  const counts = initialCounts.filter((count) => count <= maximumGames);
-  let next = counts.at(-1) ?? 1;
-  while (next < maximumGames) {
-    next *= 2;
-    if (next <= maximumGames && !counts.includes(next)) counts.push(next);
+function parseCapacityGames(value) {
+  const counts = [
+    ...new Set(
+      value
+        .split(",")
+        .map((entry) => entry.trim())
+        .filter((entry) => entry.length > 0)
+        .map((entry) => parsePositiveInteger(entry, "--capacity-games")),
+    ),
+  ].sort((left, right) => left - right);
+  if (counts.length === 0) {
+    throw new Error("--capacity-games must list at least one game count");
   }
   return counts;
 }

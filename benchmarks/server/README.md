@@ -24,7 +24,13 @@ npm run load:server -- \
 ```
 
 `scenarios.json` defines the canonical workload matrix and initial capacity
-sweep. `result-schema.json` defines the stable required shape of version-1
+sweep. The checked-in sweep doubles because doubling is a _bracketing search_:
+when the saturation point is unknown it reaches high game counts in a few
+steps, and each step costs five repetitions of warm-up plus measurement. Powers
+of two are not a constraint, and doubling stops being the right strategy once
+saturation is known to lie above the last healthy point but below the next
+double. `--capacity-games 16,20,24` runs an explicit list instead, with no
+doubling past it, for refining a bracket rather than establishing one. `result-schema.json` defines the stable required shape of version-1
 result files. The harness always collects client acknowledgement and snapshot
 inter-arrival latency; `--latency` remains accepted for compatibility with old
 commands.
@@ -91,6 +97,55 @@ npm run baseline:server:remote -- \
   --restart-command "ssh benchmark-server restart-solitude-server" \
   --restart-timeout 60
 ```
+
+### Restarting a WSL2 server over SSH
+
+The reference separate-host setup restarts `wsl2-i7-7700hq` this way. Its
+Windows 10 build cannot run WSL mirrored networking, so each service is reached
+through a `netsh portproxy` relay into the WSL NAT, with a matching inbound
+firewall rule on the Private profile. Three ports are involved: 8080 for the
+server, 22 for SSH, and 5201 for the optional `netcheck` link preflight. The
+relay target is the WSL IP, which changes when WSL restarts, so the proxy is
+re-asserted per WSL session:
+
+```powershell
+netsh interface portproxy add v4tov4 listenport=22 listenaddress=0.0.0.0 `
+  connectport=22 connectaddress=<WSL_IP>
+New-NetFirewallRule -DisplayName "ssh 22" -Direction Inbound `
+  -Protocol TCP -LocalPort 22 -Profile Private -Action Allow
+```
+
+Authentication uses a dedicated key so it can be revoked independently, and the
+load generator's SSH config sets `BatchMode yes` so a missing key fails fast
+instead of hanging on a password prompt for an unattended run.
+
+`scripts/restart-solitude-server.sh` is the reference implementation; copy it
+to the server machine and point `--restart-command` at it over SSH. It must
+exit 0 once a fresh process has been _initiated_, never blocking for readiness;
+the orchestrator polls `/health` on its own. Three details matter, each learned
+from a failure:
+
+- **Invoke node by absolute path.** A non-interactive SSH session does not
+  source `.bashrc`, so an nvm-managed `node` is not on `PATH`. Pinning the path
+  also makes the measured runtime deterministic rather than dependent on shell
+  initialisation.
+- **Wait for the port to be released after killing the old process**, or the
+  replacement can lose the bind race and fail in a way that looks like a server
+  fault mid-run.
+- **Verify the new process survived, and exit nonzero if not.** `nohup ... &`
+  backgrounds unconditionally and reports success even when the command could
+  not be found, which turns a missing prerequisite into a confusing `/health`
+  timeout 30 seconds later.
+
+Use `setsid`/`disown` so the server outlives the SSH session that started it,
+and append rather than truncate the server log, so a failure that only appears
+in a later repetition can still be diagnosed.
+
+Capturing server metadata over that same SSH connection silently degrades it:
+without `WSL_INTEROP` and the Windows directories on `PATH`, the Windows host
+probe cannot run and `physicalCores`, `hybrid`, and `vbs` are recorded as
+`null`. Export a live interop socket from `/run/WSL/` and prepend the Windows
+system directories, or capture from an interactive WSL terminal instead.
 
 The restart command runs on the load-generator machine through its platform
 shell. It receives `SOLITUDE_SERVER_URL`, `SOLITUDE_BASELINE_SCENARIO`, and

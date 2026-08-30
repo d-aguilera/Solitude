@@ -249,6 +249,21 @@ export function reanalyzeCuratedRun(run, thresholds = provisionalThresholds) {
   return run;
 }
 
+export function capacityGameCounts(
+  initialCounts,
+  maximumGames,
+  extendByDoubling = true,
+) {
+  const counts = initialCounts.filter((count) => count <= maximumGames);
+  if (!extendByDoubling) return counts;
+  let next = counts.at(-1) ?? 1;
+  while (next < maximumGames) {
+    next *= 2;
+    if (next <= maximumGames && !counts.includes(next)) counts.push(next);
+  }
+  return counts;
+}
+
 export function summarizeBaselineRuns(runs) {
   const successfulRuns = runs.filter((run) => run.errors.length === 0);
   const rankedRuns = [...successfulRuns].sort(
