@@ -99,20 +99,30 @@ WebSocket clients rather than browser pages.
   repetitions of five and those split one-to-one. The earlier "confirmed
   saturation at 32 games" counted three failed metrics requests as saturation
   votes.
-- The separate-host `a81e0a6` capacity reference is checked in beside the
+- The separate-host `e58dec4` capacity reference is checked in beside the
   same-host one. It ran the load generator on a wired-gigabit Windows 11 host
   against the WSL2 server behind a portproxy relay, measured that path at
-  5.11 ms p50 and 7.87 ms p99, and completed all 65 repetitions with no failed
-  run and no dropped metrics sample. Every canonical workload and the full
-  1-to-16-game sweep sustained requested throughput with no confirmed
-  saturation, so `firstCapacitySaturation` is null. At 16 eight-client games
-  the server sat at 43-44% CPU with a 16.5 ms worst event-loop p99 and 40.8 ms
-  worst acknowledgement p99 against a 57.9 ms path-adjusted budget; the
-  generator peaked at 34% of one core. The sweep stops at 16 games because
-  aggregate fanout there is about 430 Mbit/s of the roughly 753 Mbit/s the
-  relay delivers, not because the server ran out of headroom. Server capacity
-  on this hardware is therefore still unbounded by measurement; establishing it
-  needs more link headroom rather than a longer sweep.
+  6.04 ms p50 and 9.90 ms p99, and completed all 75 repetitions with no failed
+  run and no dropped metrics sample. Every canonical workload and the whole
+  1-to-24-game sweep sustained requested throughput with no confirmed
+  saturation, so `firstCapacitySaturation` is null.
+- Measured capacity scaling is close to linear and reproduces across
+  independent captures. Server CPU p50 runs 24% at 8 games, 43% at 16, 55% at
+  20 and 68% at 24; snapshot cadence declines 62.7, 62.2, 61.8, 60.2 Hz over
+  the same points; worst acknowledgement p99 rises 39.2 to 46.4 ms against a
+  59.9 ms path-adjusted budget, and the generator reaches 51% of one core. A
+  separate two-point probe measured 69% CPU, 60.2 Hz and 46.0 ms at 24 games,
+  within noise of the reference.
+- 24 games is the honest end of this path, and the reason is that three limits
+  converge. Extrapolating the reference's own slopes, cadence crosses its
+  59.4 Hz floor near 27 games, aggregate fanout of 26.0 Mbit/s per game reaches
+  the relay's roughly 753 Mbit/s near 29 games, and server CPU would not
+  saturate until about 34. The first service threshold and the link ceiling sit
+  within two games of each other, so a capture past 24 could not attribute a
+  breach to the server rather than the network. Establishing true server
+  capacity needs more link headroom, not a longer sweep.
+- Event-loop p99 warnings become persistent before anything saturates: all five
+  warp-60 repetitions, one of five at 16 games, and four of five at 24.
 - The separate-host restart mechanism is SSH into the server's WSL, running a
   script that spawns a fresh server process and exits immediately. It is
   deliberately outside the measured artifact: an HTTP restart endpoint would

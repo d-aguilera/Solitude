@@ -11,7 +11,7 @@
       "topology": "separate-host-lan",
       "purpose": "capacity",
       "machine": "wsl2-i7-7700hq",
-      "result": "./baselines/wsl2-i7-7700hq/a81e0a685d401d66d2e47d19552ee027d62da034.json"
+      "result": "./baselines/wsl2-i7-7700hq/e58dec471b9ecb73e2e52deab937f25f376ac3a1.json"
     }
   ]
 }
