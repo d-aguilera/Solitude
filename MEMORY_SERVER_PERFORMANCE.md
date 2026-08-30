@@ -99,6 +99,20 @@ WebSocket clients rather than browser pages.
   repetitions of five and those split one-to-one. The earlier "confirmed
   saturation at 32 games" counted three failed metrics requests as saturation
   votes.
+- The separate-host `a81e0a6` capacity reference is checked in beside the
+  same-host one. It ran the load generator on a wired-gigabit Windows 11 host
+  against the WSL2 server behind a portproxy relay, measured that path at
+  5.11 ms p50 and 7.87 ms p99, and completed all 65 repetitions with no failed
+  run and no dropped metrics sample. Every canonical workload and the full
+  1-to-16-game sweep sustained requested throughput with no confirmed
+  saturation, so `firstCapacitySaturation` is null. At 16 eight-client games
+  the server sat at 43-44% CPU with a 16.5 ms worst event-loop p99 and 40.8 ms
+  worst acknowledgement p99 against a 57.9 ms path-adjusted budget; the
+  generator peaked at 34% of one core. The sweep stops at 16 games because
+  aggregate fanout there is about 430 Mbit/s of the roughly 753 Mbit/s the
+  relay delivers, not because the server ran out of headroom. Server capacity
+  on this hardware is therefore still unbounded by measurement; establishing it
+  needs more link headroom rather than a longer sweep.
 - `benchmarks/server/reference-baseline.json` is a version-2 pointer holding one
   reference per measurement topology. `same-host-loopback` is the regression
   reference and `separate-host-lan` is the capacity reference; a candidate is

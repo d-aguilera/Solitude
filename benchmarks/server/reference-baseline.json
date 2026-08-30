@@ -6,6 +6,12 @@
       "purpose": "regression",
       "machine": "wsl2-i7-7700hq",
       "result": "./baselines/wsl2-i7-7700hq/c657f85e7e07b766a449a0f12dce132db6c68e9e.json"
+    },
+    {
+      "topology": "separate-host-lan",
+      "purpose": "capacity",
+      "machine": "wsl2-i7-7700hq",
+      "result": "./baselines/wsl2-i7-7700hq/a81e0a685d401d66d2e47d19552ee027d62da034.json"
     }
   ]
 }
