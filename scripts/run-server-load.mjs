@@ -23,6 +23,9 @@ import {
 const execFileAsync = promisify(execFile);
 const socketResponseTimeoutMillis = 10_000;
 const inputDrainMillis = 250;
+const metricsFetchAttempts = 3;
+const metricsRetryDelayMillis = 100;
+const maximumDroppedMetricsSampleRatio = 0.1;
 const generatorSaturationThresholds = Object.freeze({
   cpuRatio: 0.85,
   eventLoopMillis: 16.67,
@@ -118,6 +121,7 @@ function createFailedRun(repetition, error) {
       pendingInputAcks: 0,
       snapshotInterArrivalMillis: emptyLatencySummary,
     },
+    droppedMetricsSamples: 0,
     durationMillis: 0,
     errors: [error instanceof Error ? error.message : String(error)],
     finishedAt: new Date().toISOString(),
@@ -318,6 +322,7 @@ async function runRepetition({
 
   return {
     client,
+    droppedMetricsSamples: phase.droppedMetricsSamples,
     durationMillis: phase.durationMillis,
     errors,
     finishedAt: new Date().toISOString(),
@@ -379,6 +384,7 @@ async function runPhase({
   const endMillis = startMillis + durationMillis;
   const inputIntervalMillis = options.inputHz > 0 ? 1000 / options.inputHz : 0;
   const metricsIntervalMillis = 1000 / options.metricsHz;
+  let droppedMetricsSamples = 0;
   let inputEventsSent = 0;
   let nextInputMillis = startMillis;
   let nextMetricsMillis = startMillis + metricsIntervalMillis;
@@ -413,7 +419,11 @@ async function runPhase({
     }
 
     if (collectMetrics && now >= nextMetricsMillis) {
-      serverReports.push(await fetchMetrics(options.url));
+      try {
+        serverReports.push(await fetchMetricsOnce(options.url));
+      } catch {
+        droppedMetricsSamples++;
+      }
       generatorMonitor?.sample();
       nextMetricsMillis += metricsIntervalMillis;
     }
@@ -421,6 +431,7 @@ async function runPhase({
   }
 
   return {
+    droppedMetricsSamples,
     durationMillis: performance.now() - startMillis,
     inputEventsSent,
     serverReports,
@@ -430,6 +441,16 @@ async function runPhase({
 
 function validateRun({ client, phase, workload }) {
   const errors = [];
+  const expectedSamples =
+    phase.serverReports.length + phase.droppedMetricsSamples;
+  if (
+    phase.droppedMetricsSamples >
+    expectedSamples * maximumDroppedMetricsSampleRatio
+  ) {
+    errors.push(
+      `${phase.droppedMetricsSamples} of ${expectedSamples} metrics samples were lost`,
+    );
+  }
   for (const socket of workload.sockets) {
     if (socket.closedUnexpectedly()) errors.push("A load socket closed early");
   }
@@ -611,7 +632,20 @@ function createInputLatencyTracker() {
   };
 }
 
-async function fetchMetrics(url) {
+async function fetchMetrics(url, attempts = metricsFetchAttempts) {
+  let lastError;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      return await fetchMetricsOnce(url);
+    } catch (error) {
+      lastError = error;
+      if (attempt + 1 < attempts) await sleep(metricsRetryDelayMillis);
+    }
+  }
+  throw lastError;
+}
+
+async function fetchMetricsOnce(url) {
   const response = await fetch(`${url}/metrics`);
   if (!response.ok) {
     throw new Error(`Metrics request failed with HTTP ${response.status}`);

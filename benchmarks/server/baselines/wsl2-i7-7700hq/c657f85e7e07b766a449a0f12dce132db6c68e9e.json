@@ -23,7 +23,9 @@
       "cpuTopology": {
         "hybrid": false,
         "logicalCores": 8,
-        "models": ["Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz"],
+        "models": [
+          "Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz"
+        ],
         "physicalCores": 4,
         "visibleLogicalCores": 8
       },
@@ -63,7 +65,9 @@
       "cpuTopology": {
         "hybrid": false,
         "logicalCores": 8,
-        "models": ["Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz"],
+        "models": [
+          "Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz"
+        ],
         "physicalCores": 4,
         "visibleLogicalCores": 8
       },
@@ -4730,10 +4734,12 @@
       "summary": {
         "confirmedSaturation": false,
         "failedRuns": 0,
+        "inconclusive": false,
         "medianRunSelectionMetric": "process-cpu-utilization-p50",
         "medianRunRepetition": 5,
         "repetitions": 5,
         "saturationCount": 0,
+        "saturationVoters": 5,
         "successfulRuns": 5,
         "worst": {
           "broadcastLoopDurationMillisP95": 1.04,
@@ -9334,10 +9340,12 @@
       "summary": {
         "confirmedSaturation": false,
         "failedRuns": 0,
+        "inconclusive": false,
         "medianRunSelectionMetric": "process-cpu-utilization-p50",
         "medianRunRepetition": 2,
         "repetitions": 5,
         "saturationCount": 0,
+        "saturationVoters": 5,
         "successfulRuns": 5,
         "worst": {
           "broadcastLoopDurationMillisP95": 1.01,
@@ -13938,10 +13946,12 @@
       "summary": {
         "confirmedSaturation": false,
         "failedRuns": 0,
+        "inconclusive": false,
         "medianRunSelectionMetric": "process-cpu-utilization-p50",
         "medianRunRepetition": 4,
         "repetitions": 5,
         "saturationCount": 0,
+        "saturationVoters": 5,
         "successfulRuns": 5,
         "worst": {
           "broadcastLoopDurationMillisP95": 1.01,
@@ -18544,10 +18554,12 @@
       "summary": {
         "confirmedSaturation": false,
         "failedRuns": 0,
+        "inconclusive": false,
         "medianRunSelectionMetric": "process-cpu-utilization-p50",
         "medianRunRepetition": 5,
         "repetitions": 5,
         "saturationCount": 0,
+        "saturationVoters": 5,
         "successfulRuns": 5,
         "worst": {
           "broadcastLoopDurationMillisP95": 0.97,
@@ -23161,10 +23173,12 @@
       "summary": {
         "confirmedSaturation": false,
         "failedRuns": 0,
+        "inconclusive": false,
         "medianRunSelectionMetric": "process-cpu-utilization-p50",
         "medianRunRepetition": 4,
         "repetitions": 5,
         "saturationCount": 0,
+        "saturationVoters": 5,
         "successfulRuns": 5,
         "worst": {
           "broadcastLoopDurationMillisP95": 0.97,
@@ -23201,9 +23215,14 @@
             },
             "minimumPerGameMedianSimulationThroughputRatio": 0,
             "minimumPerGameMedianSnapshotRateHz": 0,
-            "reasons": [],
+            "reasons": [
+              "simulation-throughput-below-99-percent",
+              "snapshot-cadence-below-99-percent"
+            ],
             "saturated": true,
-            "warnings": ["load-run-failed"]
+            "warnings": [
+              "load-run-failed"
+            ]
           },
           "client": {
             "inputAckLatencyMillis": {
@@ -23227,7 +23246,9 @@
             }
           },
           "durationMillis": 0,
-          "errors": ["fetch failed"],
+          "errors": [
+            "fetch failed"
+          ],
           "generator": {
             "cpuUtilizationPercent": {
               "avg": 0,
@@ -23574,9 +23595,14 @@
             },
             "minimumPerGameMedianSimulationThroughputRatio": 0,
             "minimumPerGameMedianSnapshotRateHz": 0,
-            "reasons": [],
+            "reasons": [
+              "simulation-throughput-below-99-percent",
+              "snapshot-cadence-below-99-percent"
+            ],
             "saturated": true,
-            "warnings": ["load-run-failed"]
+            "warnings": [
+              "load-run-failed"
+            ]
           },
           "client": {
             "inputAckLatencyMillis": {
@@ -23600,7 +23626,9 @@
             }
           },
           "durationMillis": 0,
-          "errors": ["fetch failed"],
+          "errors": [
+            "fetch failed"
+          ],
           "generator": {
             "cpuUtilizationPercent": {
               "avg": 0,
@@ -23949,7 +23977,9 @@
             "minimumPerGameMedianSnapshotRateHz": 60.4,
             "reasons": [],
             "saturated": false,
-            "warnings": ["input-ack-p99-exceeds-provisional-warning"]
+            "warnings": [
+              "input-ack-p99-exceeds-provisional-warning"
+            ]
           },
           "client": {
             "inputAckLatencyMillis": {
@@ -24360,9 +24390,13 @@
             },
             "minimumPerGameMedianSimulationThroughputRatio": 0.9976481543107466,
             "minimumPerGameMedianSnapshotRateHz": 59,
-            "reasons": ["snapshot-cadence-below-99-percent"],
+            "reasons": [
+              "snapshot-cadence-below-99-percent"
+            ],
             "saturated": true,
-            "warnings": ["input-ack-p99-exceeds-provisional-warning"]
+            "warnings": [
+              "input-ack-p99-exceeds-provisional-warning"
+            ]
           },
           "client": {
             "inputAckLatencyMillis": {
@@ -24805,7 +24839,9 @@
             }
           },
           "durationMillis": 77734.03886999999,
-          "errors": ["98 input acknowledgements remained pending"],
+          "errors": [
+            "98 input acknowledgements remained pending"
+          ],
           "generator": {
             "cpuUtilizationPercent": {
               "avg": 102.81902552092261,
@@ -25184,12 +25220,14 @@
         "simulationMillisPerWallMillis": 1
       },
       "summary": {
-        "confirmedSaturation": true,
+        "confirmedSaturation": false,
         "failedRuns": 3,
+        "inconclusive": true,
         "medianRunSelectionMetric": "process-cpu-utilization-p50",
         "medianRunRepetition": 4,
         "repetitions": 5,
-        "saturationCount": 4,
+        "saturationCount": 1,
+        "saturationVoters": 2,
         "successfulRuns": 2,
         "worst": {
           "broadcastLoopDurationMillisP95": 0.58,
@@ -29792,10 +29830,12 @@
       "summary": {
         "confirmedSaturation": false,
         "failedRuns": 0,
+        "inconclusive": false,
         "medianRunSelectionMetric": "process-cpu-utilization-p50",
         "medianRunRepetition": 5,
         "repetitions": 5,
         "saturationCount": 0,
+        "saturationVoters": 5,
         "successfulRuns": 5,
         "worst": {
           "broadcastLoopDurationMillisP95": 0.79,
@@ -34396,10 +34436,12 @@
       "summary": {
         "confirmedSaturation": false,
         "failedRuns": 0,
+        "inconclusive": false,
         "medianRunSelectionMetric": "process-cpu-utilization-p50",
         "medianRunRepetition": 3,
         "repetitions": 5,
         "saturationCount": 0,
+        "saturationVoters": 5,
         "successfulRuns": 5,
         "worst": {
           "broadcastLoopDurationMillisP95": 1.05,
@@ -39000,10 +39042,12 @@
       "summary": {
         "confirmedSaturation": false,
         "failedRuns": 0,
+        "inconclusive": false,
         "medianRunSelectionMetric": "process-cpu-utilization-p50",
         "medianRunRepetition": 1,
         "repetitions": 5,
         "saturationCount": 0,
+        "saturationVoters": 5,
         "successfulRuns": 5,
         "worst": {
           "broadcastLoopDurationMillisP95": 1.47,
@@ -43604,10 +43648,12 @@
       "summary": {
         "confirmedSaturation": false,
         "failedRuns": 0,
+        "inconclusive": false,
         "medianRunSelectionMetric": "process-cpu-utilization-p50",
         "medianRunRepetition": 5,
         "repetitions": 5,
         "saturationCount": 0,
+        "saturationVoters": 5,
         "successfulRuns": 5,
         "worst": {
           "broadcastLoopDurationMillisP95": 0.95,
@@ -48212,10 +48258,12 @@
       "summary": {
         "confirmedSaturation": false,
         "failedRuns": 0,
+        "inconclusive": false,
         "medianRunSelectionMetric": "process-cpu-utilization-p50",
         "medianRunRepetition": 4,
         "repetitions": 5,
         "saturationCount": 0,
+        "saturationVoters": 5,
         "successfulRuns": 5,
         "worst": {
           "broadcastLoopDurationMillisP95": 1.4,
@@ -52816,10 +52864,12 @@
       "summary": {
         "confirmedSaturation": false,
         "failedRuns": 0,
+        "inconclusive": false,
         "medianRunSelectionMetric": "process-cpu-utilization-p50",
         "medianRunRepetition": 3,
         "repetitions": 5,
         "saturationCount": 0,
+        "saturationVoters": 5,
         "successfulRuns": 5,
         "worst": {
           "broadcastLoopDurationMillisP95": 2.19,
@@ -57420,10 +57470,12 @@
       "summary": {
         "confirmedSaturation": false,
         "failedRuns": 0,
+        "inconclusive": false,
         "medianRunSelectionMetric": "process-cpu-utilization-p50",
         "medianRunRepetition": 2,
         "repetitions": 5,
         "saturationCount": 0,
+        "saturationVoters": 5,
         "successfulRuns": 5,
         "worst": {
           "broadcastLoopDurationMillisP95": 2.61,
@@ -57462,7 +57514,9 @@
             "minimumPerGameMedianSnapshotRateHz": 67.4,
             "reasons": [],
             "saturated": false,
-            "warnings": ["event-loop-p99-exceeds-broadcast-interval"]
+            "warnings": [
+              "event-loop-p99-exceeds-broadcast-interval"
+            ]
           },
           "client": {
             "inputAckLatencyMillis": {
@@ -58376,7 +58430,9 @@
             "minimumPerGameMedianSnapshotRateHz": 67.6,
             "reasons": [],
             "saturated": false,
-            "warnings": ["event-loop-p99-exceeds-broadcast-interval"]
+            "warnings": [
+              "event-loop-p99-exceeds-broadcast-interval"
+            ]
           },
           "client": {
             "inputAckLatencyMillis": {
@@ -59290,7 +59346,9 @@
             "minimumPerGameMedianSnapshotRateHz": 67.4,
             "reasons": [],
             "saturated": false,
-            "warnings": ["event-loop-p99-exceeds-broadcast-interval"]
+            "warnings": [
+              "event-loop-p99-exceeds-broadcast-interval"
+            ]
           },
           "client": {
             "inputAckLatencyMillis": {
@@ -60204,7 +60262,9 @@
             "minimumPerGameMedianSnapshotRateHz": 67.4,
             "reasons": [],
             "saturated": false,
-            "warnings": ["event-loop-p99-exceeds-broadcast-interval"]
+            "warnings": [
+              "event-loop-p99-exceeds-broadcast-interval"
+            ]
           },
           "client": {
             "inputAckLatencyMillis": {
@@ -61118,7 +61178,9 @@
             "minimumPerGameMedianSnapshotRateHz": 67.4,
             "reasons": [],
             "saturated": false,
-            "warnings": ["event-loop-p99-exceeds-broadcast-interval"]
+            "warnings": [
+              "event-loop-p99-exceeds-broadcast-interval"
+            ]
           },
           "client": {
             "inputAckLatencyMillis": {
@@ -62024,10 +62086,12 @@
       "summary": {
         "confirmedSaturation": false,
         "failedRuns": 0,
+        "inconclusive": false,
         "medianRunSelectionMetric": "process-cpu-utilization-p50",
         "medianRunRepetition": 3,
         "repetitions": 5,
         "saturationCount": 0,
+        "saturationVoters": 5,
         "successfulRuns": 5,
         "worst": {
           "broadcastLoopDurationMillisP95": 10.25,
@@ -62048,11 +62112,5 @@
   ],
   "startedAt": "2026-08-30T01:43:30.559Z",
   "warmupSeconds": 15,
-  "firstCapacitySaturation": {
-    "clientsPerGame": 8,
-    "games": 32,
-    "inputHzPerClient": 4,
-    "name": "capacity-32-games",
-    "simulationMillisPerWallMillis": 1
-  }
+  "firstCapacitySaturation": null
 }

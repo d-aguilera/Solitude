@@ -227,3 +227,72 @@ describe("path-adjusted thresholds", () => {
     expect(thresholds.simulationThroughputRatio).toBe(0.99);
   });
 });
+
+describe("saturation voting", () => {
+  const run = (repetition, { saturated = false, failed = false } = {}) => ({
+    analysis: { saturated },
+    client: {
+      inputAckLatencyMillis: { p95: 1, p99: 1 },
+      snapshotInterArrivalMillis: { p95: 1, p99: 1 },
+    },
+    errors: failed ? ["fetch failed"] : [],
+    repetition,
+    server: {
+      broadcastLoopDurationMillis: { p95: { max: 1 }, p99: { max: 1 } },
+      eventLoopDelayMillis: { p95: { max: 1 }, p99: { max: 1 } },
+      processCpuUtilizationPercent: { p50: repetition },
+      snapshotSerializeDurationMillis: { p95: { max: 1 }, p99: { max: 1 } },
+      snapshotStepDurationMillis: { p95: { max: 1 }, p99: { max: 1 } },
+    },
+  });
+
+  it("does not let transport failures manufacture saturation", () => {
+    const summary = summarizeBaselineRuns([
+      run(1, { failed: true }),
+      run(2, { failed: true }),
+      run(3, { failed: true }),
+      run(4),
+      run(5),
+    ]);
+    expect(summary.confirmedSaturation).toBe(false);
+    expect(summary.saturationCount).toBe(0);
+    expect(summary.failedRuns).toBe(3);
+  });
+
+  it("refuses to conclude when too few runs are valid", () => {
+    const summary = summarizeBaselineRuns([
+      run(1, { failed: true }),
+      run(2, { failed: true }),
+      run(3, { failed: true }),
+      run(4, { saturated: true }),
+      run(5, { saturated: true }),
+    ]);
+    expect(summary.inconclusive).toBe(true);
+    expect(summary.confirmedSaturation).toBe(false);
+  });
+
+  it("confirms saturation on a majority of valid runs", () => {
+    const summary = summarizeBaselineRuns([
+      run(1, { saturated: true }),
+      run(2, { saturated: true }),
+      run(3, { saturated: true }),
+      run(4),
+      run(5),
+    ]);
+    expect(summary.confirmedSaturation).toBe(true);
+    expect(summary.inconclusive).toBe(false);
+    expect(summary.saturationVoters).toBe(5);
+  });
+
+  it("still confirms when a minority failed and the valid majority saturated", () => {
+    const summary = summarizeBaselineRuns([
+      run(1, { failed: true }),
+      run(2, { saturated: true }),
+      run(3, { saturated: true }),
+      run(4, { saturated: true }),
+      run(5),
+    ]);
+    expect(summary.confirmedSaturation).toBe(true);
+    expect(summary.saturationVoters).toBe(4);
+  });
+});

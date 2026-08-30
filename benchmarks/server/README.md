@@ -166,6 +166,17 @@ from 16 games and 6.3-6.5 second stalls at 32, while the server stayed at 62%
 CPU with 99.8% throughput - the 32-game acknowledgement collapse was generator
 GC pressure from parsing and discarding every entity in every snapshot.
 
+A run that fails for transport or harness reasons is invalid, not saturated.
+Saturation is voted only among repetitions that produced data; a workload whose
+valid repetitions do not form a majority is recorded `inconclusive`. Metrics
+polling is sampling, so a lost poll costs one observation, recorded per run as
+`droppedMetricsSamples`, and fails the run only above a 10% loss ratio.
+Boundary fetches that bound the measurement window are retried, but sampling
+fetches never are, because a retry would perturb the cadence being measured.
+`npm run reanalyze:server-baseline -- --baseline <file>` re-derives stored
+verdicts after an analysis-policy change and leaves raw run data untouched;
+`--check` reports what would change without writing.
+
 Every run also records a `generator` block holding the load generator's own CPU
 utilization, event-loop delay, and RSS, plus a `generatorSaturation` verdict.
 This exists because input-acknowledgement latency is measured inside the

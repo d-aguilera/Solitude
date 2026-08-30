@@ -136,7 +136,7 @@ export function analyzeLoadRun(run, thresholds = provisionalThresholds) {
     minimumPerGameMedianSimulationThroughputRatio: minimumMedianThroughput,
     minimumPerGameMedianSnapshotRateHz: minimumMedianSnapshotRate,
     reasons,
-    saturated: reasons.length > 0 || (run.errors?.length ?? 0) > 0,
+    saturated: reasons.length > 0,
     trend,
     warnings,
   };
@@ -162,6 +162,7 @@ export function curateLoadRun(
       warnings: analysis.warnings,
     },
     client: run.client,
+    droppedMetricsSamples: run.droppedMetricsSamples,
     durationMillis: run.durationMillis,
     errors: run.errors,
     generator: run.generator,
@@ -242,7 +243,7 @@ export function reanalyzeCuratedRun(run, thresholds = provisionalThresholds) {
     ...run.analysis,
     heapGrowth,
     reasons,
-    saturated: reasons.length > 0 || run.errors.length > 0,
+    saturated: reasons.length > 0,
     warnings,
   };
   return run;
@@ -256,15 +257,21 @@ export function summarizeBaselineRuns(runs) {
       right.server.processCpuUtilizationPercent.p50,
   );
   const medianRun = rankedRuns[Math.floor((rankedRuns.length - 1) / 2)];
-  const saturationCount = runs.filter((run) => run.analysis.saturated).length;
+  const saturationCount = successfulRuns.filter(
+    (run) => run.analysis.saturated,
+  ).length;
+  const quorum =
+    runs.length > 0 && successfulRuns.length > Math.floor(runs.length / 2);
   return {
     confirmedSaturation:
-      runs.length > 0 && saturationCount >= Math.ceil(runs.length / 2),
+      quorum && saturationCount >= Math.ceil(successfulRuns.length / 2),
     failedRuns: runs.length - successfulRuns.length,
+    inconclusive: runs.length > 0 && !quorum,
     medianRunSelectionMetric: "process-cpu-utilization-p50",
     medianRunRepetition: medianRun?.repetition ?? null,
     repetitions: runs.length,
     saturationCount,
+    saturationVoters: successfulRuns.length,
     successfulRuns: successfulRuns.length,
     worst: {
       broadcastLoopDurationMillisP95: maximum(

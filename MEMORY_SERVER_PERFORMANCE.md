@@ -92,10 +92,13 @@ WebSocket clients rather than browser pages.
   evidence, median-CPU repetition, worst p95/p99 latencies, and
   majority-confirmed saturation analysis. The version-4 `c657f85` capture ran
   natively in WSL2 with no container present, measured the loopback path at
-  2.62 ms p50 and 4.28 ms p99, sustained every canonical workload and up to 16
-  eight-client games, and first confirmed service saturation at 32 games. Its
+  2.62 ms p50 and 4.28 ms p99, and sustained every canonical workload. Its
   generator telemetry shows repeatable generator event-loop starvation from 16
-  games and full generator CPU saturation at 32.
+  games and full generator CPU saturation at 32. No capacity point reaches
+  confirmed service saturation: 32 games is inconclusive, with only two valid
+  repetitions of five and those split one-to-one. The earlier "confirmed
+  saturation at 32 games" counted three failed metrics requests as saturation
+  votes.
 - `benchmarks/server/reference-baseline.json` is a version-2 pointer holding one
   reference per measurement topology. `same-host-loopback` is the regression
   reference and `separate-host-lan` is the capacity reference; a candidate is
@@ -508,6 +511,21 @@ captures and agreed budgets.
   99.76–99.87%. The first bottleneck is now directly measured as same-host load
   generator starvation, not authoritative simulation throughput; separate-host
   validation is required for a deployment capacity claim.
+- A run that fails for transport or harness reasons is invalid, not saturated.
+  Saturation is voted only among repetitions that produced data, and a workload
+  whose valid repetitions do not form a majority is recorded `inconclusive`
+  rather than healthy or saturated. Counting failures as saturation votes
+  previously manufactured findings at both same-host 32 games and separate-host
+  1 game. `scripts/reanalyze-server-baseline.mjs` re-derives stored verdicts
+  when analysis policy changes, leaving raw run data untouched.
+- Metrics polling is sampling, so a lost poll costs one observation rather than
+  the whole repetition. Boundary fetches bounding the measurement window are
+  retried; sampling fetches are never retried, because a retry would perturb
+  the cadence being measured. Losses are recorded per run as
+  `droppedMetricsSamples`, and a run fails only above a 10% loss ratio. The
+  separate-host path drops roughly 0.1% of metrics requests under load
+  (`UND_ERR_SOCKET` through the portproxy relay), which previously voided about
+  18% of repetitions because one lost poll aborted a 60-second run.
 - Base non-blocking warnings are 16.67 milliseconds for event-loop p99 and 50
   milliseconds for input-ack or snapshot-inter-arrival p99. Measured path cost
   adjusts the client thresholds; this capture records 54.28 milliseconds for
