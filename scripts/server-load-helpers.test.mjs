@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   createSeededRandom,
+  decodeSocketMessage,
   deriveGeneratorSaturation,
+  extractSnapshotAcknowledgements,
   generatorLatencyFloorMillis,
   parseNonNegativeInteger,
   parsePositiveInteger,
@@ -204,5 +206,121 @@ describe("load-generator sampling", () => {
     expect(verdict.saturated).toBe(true);
     expect(verdict.reasons[0]).toContain("event-loop p99 520.00ms");
     expect(generatorLatencyFloorMillis(generator)).toBe(520);
+  });
+});
+
+describe("snapshot acknowledgement extraction", () => {
+  const envelope = (message) =>
+    Buffer.from(JSON.stringify({ message, type: "serverMessage" }));
+  const snapshot = (acknowledgements, extra = {}) =>
+    envelope({
+      type: "snapshot",
+      entities: [{ id: "ship:blue", position: [1e11, -2.5e10, 3] }],
+      gameId: "game:1",
+      lastProcessedInputSequences: acknowledgements,
+      sequence: 12,
+      ...extra,
+    });
+
+  it("extracts the map from a wire-shaped snapshot without full parsing", () => {
+    expect(
+      extractSnapshotAcknowledgements(
+        snapshot({ "ship:blue": 41, "ship:red": 7 }),
+      ),
+    ).toEqual({ "ship:blue": 41, "ship:red": 7 });
+  });
+
+  it("extracts an empty map", () => {
+    expect(extractSnapshotAcknowledgements(snapshot({}))).toEqual({});
+  });
+
+  it("survives braces and escaped quotes inside entity-id keys", () => {
+    expect(
+      extractSnapshotAcknowledgements(snapshot({ 'ship:{we\"ird}': 3 })),
+    ).toEqual({ 'ship:{we\"ird}': 3 });
+  });
+
+  it("returns null for non-snapshot messages", () => {
+    expect(
+      extractSnapshotAcknowledgements(
+        envelope({ type: "gameCreated", gameId: "game:1" }),
+      ),
+    ).toBeNull();
+    expect(
+      extractSnapshotAcknowledgements(
+        Buffer.from(
+          JSON.stringify({ requestId: 1, type: "messages", messages: [] }),
+        ),
+      ),
+    ).toBeNull();
+  });
+
+  it("returns null when the acknowledgement map itself is cut off", () => {
+    const whole = snapshot({ "ship:blue": 41 });
+    const insideMap =
+      whole.indexOf('"lastProcessedInputSequences":') +
+      '"lastProcessedInputSequences":{"ship'.length;
+    expect(
+      extractSnapshotAcknowledgements(whole.subarray(0, insideMap)),
+    ).toBeNull();
+    expect(extractSnapshotAcknowledgements(Buffer.from("{"))).toBeNull();
+  });
+
+  it("returns null for a snapshot serialized with a different key order", () => {
+    const reordered = Buffer.from(
+      JSON.stringify({ type: "serverMessage", message: { type: "snapshot" } }),
+    );
+    expect(extractSnapshotAcknowledgements(reordered)).toBeNull();
+  });
+});
+
+describe("socket message decoding", () => {
+  it("decodes a wire-shaped snapshot through the fast path", () => {
+    const data = Buffer.from(
+      JSON.stringify({
+        message: {
+          type: "snapshot",
+          entities: [{ id: "ship:blue" }],
+          lastProcessedInputSequences: { "ship:blue": 41 },
+        },
+        type: "serverMessage",
+      }),
+    );
+    expect(decodeSocketMessage(data)).toEqual({
+      message: {
+        message: {
+          lastProcessedInputSequences: { "ship:blue": 41 },
+          type: "snapshot",
+        },
+        type: "serverMessage",
+      },
+      snapshot: true,
+    });
+  });
+
+  it("fully parses control messages", () => {
+    const data = Buffer.from(
+      JSON.stringify({ requestId: 3, type: "messages", messages: [] }),
+    );
+    expect(decodeSocketMessage(data)).toEqual({
+      message: { requestId: 3, type: "messages", messages: [] },
+      snapshot: false,
+    });
+  });
+
+  it("hard-stops on a snapshot the fast path did not recognize", () => {
+    const reordered = Buffer.from(
+      JSON.stringify({
+        type: "serverMessage",
+        message: { type: "snapshot", lastProcessedInputSequences: {} },
+      }),
+    );
+    expect(() => decodeSocketMessage(reordered)).toThrow(
+      "Snapshot did not match the expected wire shape",
+    );
+  });
+
+  it("hard-stops on undecodable data instead of guessing", () => {
+    expect(() => decodeSocketMessage(Buffer.from("{not json"))).toThrow();
   });
 });

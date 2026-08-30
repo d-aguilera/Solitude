@@ -8,6 +8,7 @@ import { parseArgs, promisify } from "node:util";
 import { WebSocket } from "ws";
 import {
   createSeededRandom,
+  decodeSocketMessage,
   deriveGeneratorSaturation,
   parseNonNegativeInteger,
   parseNonNegativeNumber,
@@ -466,8 +467,9 @@ async function openSocket(socketUrl) {
   });
 
   socket.on("message", (data) => {
-    const message = JSON.parse(data.toString());
+    const { message, snapshot } = decodeSocketMessage(data);
     for (const observer of observers) observer(message);
+    if (snapshot) return;
     for (let index = waiters.length - 1; index >= 0; index--) {
       const waiter = waiters[index];
       if (waiter.predicate(message)) {

@@ -115,7 +115,11 @@ WebSocket clients rather than browser pages.
   for `/health`, and records server and load-generator identities separately.
 - `npm run baseline:server-metadata` captures the production server bundle and
   plugin artifact identity plus the server machine/runtime metadata consumed by
-  remote baseline runs.
+  remote baseline runs. Orchestration lives in `scripts/run-server-baseline.mjs`
+  with `scripts/capture-server-baseline-metadata.mjs`,
+  `scripts/server-baseline-environment.mjs` (shared host identity capture), and
+  `scripts/compare-server-baselines.mjs`; the in-process benchmark is
+  `packages/multiplayer/src/__benchmarks__/authoritative.bench.ts`.
 - Load-generator and server identities additionally record `cpuTopology` and
   `virtualization`, because core layout and an active hypervisor change latency
   spread without changing any previously captured identity field. Hybrid
@@ -153,6 +157,14 @@ WebSocket clients rather than browser pages.
   round-trip p50 rises from a 2 ms host-to-host ICMP floor to 7.7 ms idle and
   9.7 ms under load, with p99 near 13 ms loaded. Aggregate fanout therefore
   caps the usable sweep at 16 eight-client games on that path.
+- The load generator fast-paths snapshots: a byte-prefix check identifies the
+  wire-shaped snapshot envelope and a bounded scan extracts only the
+  `lastProcessedInputSequences` map. Control messages take the full parse; a
+  snapshot reaching the full parse hard-aborts the run rather than silently
+  reverting the harness to its old cost profile. This removed the dominant
+  generator cost (parsing
+  and discarding every entity in every snapshot across all sockets) that the
+  `c657f85` reference measured as generator starvation from 16 games.
 - The server does not yet expose GC counts/pause time.
 - The first authoritative input-allocation fix is complete: the headless loop
   reuses its entity-input map and mutable per-entity input records.

@@ -180,7 +180,6 @@
 - `packages/localization/src/localization.ts`: dependency-free Solitude locale resolution, unit formatting, and message interpolation. Client/plugin JSON bundles live in their owning package directories.
 - `packages/multiplayer/src/runtime.ts`: Solitude-specific authoritative game implementation over the shared headless simulation.
 - `packages/multiplayer/src/main.ts`: deployable authoritative server entrypoint.
-- `packages/server/src/metrics.ts`: allocation-conscious rotating server metrics for precise snapshot step/serialization/broadcast-loop durations, requested and achieved simulation throughput, backlog, cadence, payload/fanout, process CPU and memory, event-loop delay, and socket counts.
 - `packages/client/src/localPrediction.ts`: client-side input prediction state for the assigned ship.
 - `packages/client/src/multiplayerSession.ts`: client-owned capability adapter exposing live game/entity identity to multiplayer external plugins.
 - `packages/client/src/localReconciliation.ts`: prediction error metrics and render-only visual correction smoothing.
@@ -198,12 +197,7 @@
 - `plugins/solitude-content-browser-pack-v1/` and `plugins/solitude-content-server-pack-v1/`: host-specific deployment-pack build wrappers for the shared poly-fighter implementation.
 - `plugins/multiplayer-pack-v1/src/`: multiplayer-only external presentation plugin factories for remote identity and localized ship-color names.
 - `plugins/standalone-pack-v1/src/`: standalone-only external factories for ships, diagnostic playback, pause and time-scale behavior, memory telemetry, profiling, and operator focus switching.
-- `scripts/run-server-load.mjs`: multi-game headless WebSocket load harness with seeded input, simulation-rate control, warm-up/measurement phases, repetitions, client latency, failure detection, and versioned structured results.
-- `scripts/run-server-baseline.mjs`: reference/smoke orchestrator that builds once, restarts a local or explicit remote production server for every repetition, distinguishes server and load-generator environments, persists compact trend evidence, and stops the capacity sweep at majority-confirmed saturation.
-- `scripts/capture-server-baseline-metadata.mjs`: server-side production artifact and environment identity capture for separate-host baseline orchestration.
-- `scripts/server-baseline-environment.mjs`: shared host identity capture for both baseline hosts, including CPU topology, hybrid core detection, and virtualization/VBS state.
-- `scripts/compare-server-baselines.mjs`: non-blocking Markdown/JSON comparison CLI using the selected reference pointer; reports absolute/percentage deltas, repetition spread, workload coverage, saturation changes, and environment/plugin/protocol identity mismatches.
-- `packages/multiplayer/src/__benchmarks__/authoritative.bench.ts`: production-discovered in-process authoritative benchmark separating simulation/runtime snapshot capture, compact encoding, concurrent games, input workloads, and time-scale cost.
+- Server performance measurement (metrics recorder, load harness, baseline orchestration/comparison scripts, in-process benchmark): see `MEMORY_SERVER_PERFORMANCE.md`.
 - `packages/solitude/src/bootstrap.ts`: Solitude browser app composition.
 - `plugins/spacecraft-operator/src/`: spacecraft controls, dynamics, telemetry state, local prediction, input, and forward camera rig.
 - `plugins/standalone-pack-v1/src/operator-switch/`: default runtime focus switching between controllable ships.
@@ -243,15 +237,10 @@
 
 ## Next Steps Snapshot
 
-- The six-slice server performance baseline roadmap is complete: precise
-  allocation-conscious metrics, achieved throughput/backlog visibility,
-  multi-game load generation, in-process authoritative benchmarks, a named
-  WSL2 reference capture, and non-blocking comparison reporting are in place.
-  The first confirmed capacity saturation was 32 eight-client games in
-  scheduling and transport fanout while simulation throughput stayed near
-  100%. Future work needs repeated controlled captures and agreed budgets
-  before promoting any metric to a hard gate. See
-  `MEMORY_SERVER_PERFORMANCE.md`.
+- The server performance baseline roadmap is complete and has continued into
+  separate-host orchestration, host identity capture, and harness-starvation
+  fixes. Current reference state, measured saturation findings, and remaining
+  capture work live in `MEMORY_SERVER_PERFORMANCE.md`.
 - Gravity plugin extraction is complete: both products discover the required
   external Newtonian provider, high-time-scale intervals use bounded provider
   steps, and the measured typed-array force loop is retained. See

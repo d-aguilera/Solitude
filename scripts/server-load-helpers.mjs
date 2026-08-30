@@ -27,6 +27,69 @@ export function summarizeNumbers(values) {
   };
 }
 
+const SNAPSHOT_ENVELOPE_PREFIX = Buffer.from('{"message":{"type":"snapshot"');
+const ACKNOWLEDGEMENTS_KEY = Buffer.from('"lastProcessedInputSequences":');
+const BACKSLASH = 0x5c;
+const QUOTE = 0x22;
+const OPEN_BRACE = 0x7b;
+const CLOSE_BRACE = 0x7d;
+
+export function extractSnapshotAcknowledgements(data) {
+  if (
+    data.length < SNAPSHOT_ENVELOPE_PREFIX.length ||
+    !data
+      .subarray(0, SNAPSHOT_ENVELOPE_PREFIX.length)
+      .equals(SNAPSHOT_ENVELOPE_PREFIX)
+  ) {
+    return null;
+  }
+  const keyIndex = data.indexOf(ACKNOWLEDGEMENTS_KEY);
+  if (keyIndex === -1) return null;
+  const start = keyIndex + ACKNOWLEDGEMENTS_KEY.length;
+  if (data[start] !== OPEN_BRACE) return null;
+  let inString = false;
+  for (let index = start + 1; index < data.length; index++) {
+    const byte = data[index];
+    if (inString) {
+      if (byte === BACKSLASH) index++;
+      else if (byte === QUOTE) inString = false;
+    } else if (byte === QUOTE) {
+      inString = true;
+    } else if (byte === CLOSE_BRACE) {
+      return JSON.parse(data.toString("utf8", start, index + 1));
+    }
+  }
+  return null;
+}
+
+export function decodeSocketMessage(data) {
+  const acknowledgements = extractSnapshotAcknowledgements(data);
+  if (acknowledgements !== null) {
+    return {
+      message: {
+        message: {
+          lastProcessedInputSequences: acknowledgements,
+          type: "snapshot",
+        },
+        type: "serverMessage",
+      },
+      snapshot: true,
+    };
+  }
+  const message = JSON.parse(data.toString());
+  if (
+    message?.type === "serverMessage" &&
+    message.message?.type === "snapshot"
+  ) {
+    throw new Error(
+      "Snapshot did not match the expected wire shape. The server " +
+        "serialization changed; update extractSnapshotAcknowledgements " +
+        "before measuring, because results would not be comparable.",
+    );
+  }
+  return { message, snapshot: false };
+}
+
 export function summarizeGeneratorSamples(samples, logicalCores) {
   return {
     cpuUtilizationPercent: summarizeNumbers(

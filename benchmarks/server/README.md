@@ -150,6 +150,22 @@ The measured summary is stored in the baseline and the effective thresholds are
 persisted in `provisionalThresholds`, so a capture always records the budget it
 was actually judged against.
 
+The load generator does not fully parse snapshot payloads. Snapshots are the
+overwhelming majority of generator inbound work, but latency tracking needs only
+three things from one: that it is a snapshot, its arrival time, and the
+`lastProcessedInputSequences` map. Each is read with a byte-prefix check and a
+bounded scan for the map, skipping the entity state entirely. Control messages
+still take the full parse; a snapshot that reaches the full parse is a hard
+error that aborts the run, because a serialization change silently reverting
+the generator to per-snapshot parsing would change the harness's own cost
+profile and make the capture incomparable without any visible signal. On
+the development machine the fast path halved generator CPU at eight
+eight-client games.
+The `c657f85` reference showed why it matters: generator event-loop starvation
+from 16 games and 6.3-6.5 second stalls at 32, while the server stayed at 62%
+CPU with 99.8% throughput - the 32-game acknowledgement collapse was generator
+GC pressure from parsing and discarding every entity in every snapshot.
+
 Every run also records a `generator` block holding the load generator's own CPU
 utilization, event-loop delay, and RSS, plus a `generatorSaturation` verdict.
 This exists because input-acknowledgement latency is measured inside the
