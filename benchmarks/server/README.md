@@ -300,9 +300,13 @@ The two topologies answer different questions and are not interchangeable:
 
 - `same-host-loopback` is the **regression** reference. The load generator
   shares the server's CPU and never crosses a network, which keeps it cheap and
-  reproducible for commit-to-commit comparison. Its capacity sweep measures
-  when the machine can no longer both generate and serve, so it is a
-  co-resident limit rather than a server capacity claim.
+  reproducible for commit-to-commit comparison. The selected `f32841e` capture
+  uses the current snapshot fast path and covers the eight canonical scenarios
+  only; its capacity sweep was intentionally skipped. It retains a confirmed
+  warp-60 backlog-growth verdict (3/5 repetitions), documented in the reference
+  machine README. The historical `c657f85` capacity sweep measures when the
+  machine can no longer both generate and serve, so it is a co-resident limit
+  rather than a server capacity claim.
 - `separate-host-lan` is the **capacity** reference, and the only one that can
   support a deployment claim. It requires enough link headroom to stay out of
   the measurement: snapshot fanout is roughly `games x per-game wire bytes`,

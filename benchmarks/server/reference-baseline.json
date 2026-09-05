@@ -5,7 +5,7 @@
       "topology": "same-host-loopback",
       "purpose": "regression",
       "machine": "wsl2-i7-7700hq",
-      "result": "./baselines/wsl2-i7-7700hq/c657f85e7e07b766a449a0f12dce132db6c68e9e.json"
+      "result": "./baselines/wsl2-i7-7700hq/f32841ef8411e6aa37dedca42e7130bf265e5516.json"
     },
     {
       "topology": "separate-host-lan",

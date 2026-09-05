@@ -86,7 +86,22 @@ WebSocket clients rather than browser pages.
   persists a compact versioned baseline after every scenario. Reference
   defaults enforce the 15-second warm-up, 60-second measurement, and five-run
   protocol; the smoke profile remains explicitly non-reference.
-- The `wsl2-i7-7700hq` reference result is checked in under
+- The current `wsl2-i7-7700hq` same-host regression reference is the version-4
+  `f32841e` capture, recorded on 2026-09-05 with the current snapshot fast path.
+  It covers all eight canonical scenarios, with capacity intentionally skipped.
+  All 40 fresh-server repetitions completed with no failed run, dropped metrics
+  sample, or generator saturation. The loopback path measured 2.65 ms p50 and
+  4.95 ms p99. Server and plugin artifact hashes match both earlier references;
+  this refresh measures the updated harness, not a new server implementation.
+  Seven scenarios have no saturation or service warnings. Warp 60 retains
+  healthy throughput and cadence but is classified as saturated in three of
+  five repetitions solely by `simulation-backlog-growing`; all five also warn
+  on event-loop p99 (worst 18.78 ms). The flagged backlog endpoint increases
+  are 25.09-40.12 simulated milliseconds with positive full-window slopes.
+  Preserve that verdict as an unresolved diagnostic finding rather than
+  treating this capture as an all-clear. The capture contains no capacity
+  evidence; the separate-host `e58dec4` reference remains selected for capacity.
+- The historical `wsl2-i7-7700hq` result is retained under
   `benchmarks/server/baselines/`. It records both complete host identities, the
   exact production plugin and server artifact identities, stable trend
   evidence, median-CPU repetition, worst p95/p99 latencies, and
