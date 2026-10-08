@@ -16,7 +16,9 @@ describe("gamePipeline", () => {
     const plugin: GamePlugin = {
       id: "pipeline-test",
       loop: {
-        initLoop: () => events.push("loop:init"),
+        initLoop: () => {
+          events.push("loop:init");
+        },
         updateLoopState: () => {
           events.push("loop:update");
           return { framePolicy: { simDtMillis: 8 } };
@@ -95,6 +97,96 @@ describe("gamePipeline", () => {
     expect(pipeline.views[0].sceneLabelCandidateCount).toBe(1);
     expect(pipeline.views[0].worldSegments).toHaveLength(1);
   });
+  it("releases loop subscriptions in reverse order exactly once", () => {
+    const events: string[] = [];
+    const pipeline = createTestPipeline([
+      {
+        id: "a",
+        loop: {
+          initLoop: () => () => {
+            events.push("a");
+          },
+        },
+      },
+      {
+        id: "b",
+        loop: {
+          initLoop: () => () => {
+            events.push("b");
+          },
+        },
+      },
+    ]);
+    pipeline.dispose();
+    pipeline.dispose();
+    expect(events).toEqual(["b", "a"]);
+  });
+  it("releases acquired subscriptions if a later initializer fails", () => {
+    let released = 0;
+    expect(() =>
+      createTestPipeline([
+        {
+          id: "a",
+          loop: {
+            initLoop: () => () => {
+              released++;
+            },
+          },
+        },
+        {
+          id: "b",
+          loop: {
+            initLoop: () => {
+              throw new Error("init failed");
+            },
+          },
+        },
+      ]),
+    ).toThrow("init failed");
+    expect(released).toBe(1);
+    expect(() =>
+      createTestPipeline([
+        {
+          id: "a",
+          loop: {
+            initLoop: () => () => {
+              released++;
+            },
+          },
+          scene: {
+            initScene: () => {
+              throw new Error("scene failed");
+            },
+          },
+        },
+      ]),
+    ).toThrow("scene failed");
+    expect(released).toBe(2);
+  });
+  it("continues releasing subscriptions when a disposer throws", () => {
+    let released = 0;
+    const pipeline = createTestPipeline([
+      {
+        id: "a",
+        loop: {
+          initLoop: () => () => {
+            released++;
+          },
+        },
+      },
+      {
+        id: "b",
+        loop: {
+          initLoop: () => () => {
+            throw new Error("cleanup failed");
+          },
+        },
+      },
+    ]);
+    expect(() => pipeline.dispose()).toThrow("Loop cleanup failed");
+    expect(released).toBe(1);
+    expect(() => pipeline.dispose()).not.toThrow();
+  });
 });
 
 function createWorldAndScene(): WorldAndScene {
@@ -131,4 +223,27 @@ function createViewDefinition(): ViewDefinition {
     layout: { kind: "primary" },
     updateFrame: () => {},
   };
+}
+
+function createTestPipeline(plugins: GamePlugin[]) {
+  return createGamePipeline({
+    config: {
+      entities: [],
+      mainFocusEntityId: "craft:test",
+      render: {
+        mainViewCameraOffset: vec3.zero(),
+        mainViewLookState: { azimuth: 0, elevation: 0 },
+      },
+    },
+    controlInput: createControlInput(),
+    plugins: [
+      ...plugins,
+      {
+        id: "gravity",
+        gravity: { createGravityEngine: () => ({ step: () => {} }) },
+      },
+    ],
+    viewDefinitions: [createViewDefinition()],
+    worldAndScene: createWorldAndScene(),
+  });
 }

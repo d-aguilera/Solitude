@@ -19,9 +19,7 @@ export function createLoopPlugin(): {
   const controller = createPauseController();
 
   const loop: ExternalLoopPlugin = {
-    initLoop: () => {
-      controller.init();
-    },
+    initLoop: () => controller.init(),
     updateLoopState: (params) => {
       const paused = controller.updatePaused(params.controlInput.pauseToggle);
       // An earlier fixed-tick diagnostic loop already owns the frame policy.

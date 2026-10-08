@@ -36,6 +36,7 @@ interface GpuMesh {
 }
 
 interface GpuTexture {
+  pendingImage: HTMLImageElement | null;
   failed: boolean;
   loaded: boolean;
   texture: WebGLTexture;
@@ -98,12 +99,22 @@ export class GpuMeshRenderer {
       vertexShaderSource,
       fragmentShaderSource,
     );
-    this.vao = requireResource(gl.createVertexArray(), "mesh vertex array");
-    this.uniforms = collectUniforms(gl, this.program);
+    let vao: WebGLVertexArrayObject | null = null;
+    try {
+      this.vao = vao = requireResource(
+        gl.createVertexArray(),
+        "mesh vertex array",
+      );
+      this.uniforms = collectUniforms(gl, this.program);
 
-    gl.bindVertexArray(this.vao);
-    configureAttributes(gl, this.program);
-    gl.bindVertexArray(null);
+      gl.bindVertexArray(this.vao);
+      configureAttributes(gl, this.program);
+      gl.bindVertexArray(null);
+    } catch (error) {
+      if (vao) gl.deleteVertexArray(vao);
+      gl.deleteProgram(this.program);
+      throw error;
+    }
   }
 
   render({
@@ -216,6 +227,7 @@ export class GpuMeshRenderer {
   }
 
   dispose(): void {
+    if (this.disposed) return;
     const gl = this.gl;
     this.disposed = true;
     for (const mesh of this.meshBuffers.values()) gl.deleteBuffer(mesh.buffer);
@@ -223,6 +235,11 @@ export class GpuMeshRenderer {
     gl.deleteVertexArray(this.vao);
     gl.deleteProgram(this.program);
     for (const texture of this.textureCache.values()) {
+      if (texture.pendingImage) {
+        texture.pendingImage.onload = null;
+        texture.pendingImage.onerror = null;
+        texture.pendingImage = null;
+      }
       gl.deleteTexture(texture.texture);
     }
     this.textureCache.clear();
@@ -416,7 +433,12 @@ export class GpuMeshRenderer {
   private createTextureRecord(textureId: string, source: string): GpuTexture {
     const gl = this.gl;
     const texture = requireResource(gl.createTexture(), "mesh color texture");
-    const record: GpuTexture = { failed: false, loaded: false, texture };
+    const record: GpuTexture = {
+      failed: false,
+      loaded: false,
+      texture,
+      pendingImage: null,
+    };
     this.textureCache.set(textureId, record);
 
     if (typeof Image === "undefined") {
@@ -425,8 +447,12 @@ export class GpuMeshRenderer {
     }
 
     const image = new Image();
+    record.pendingImage = image;
     image.crossOrigin = "anonymous";
     image.onload = () => {
+      record.pendingImage = null;
+      image.onload = null;
+      image.onerror = null;
       if (this.disposed || record.failed) return;
       gl.bindTexture(gl.TEXTURE_2D, texture);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -446,6 +472,9 @@ export class GpuMeshRenderer {
       profiler.increment("gpuRender", "textureUploads");
     };
     image.onerror = () => {
+      record.pendingImage = null;
+      image.onload = null;
+      image.onerror = null;
       record.failed = true;
     };
     image.src = source;

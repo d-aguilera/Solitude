@@ -3,7 +3,8 @@
 This is the step 3 design. Physical predicates and confirmation rules are defined
 in [the observation specification](my-first-orbit-observations.md). This document
 chooses runtime ownership, objective state, entry, pause, suspension, and reset.
-No adventure feature code exists yet. Director feedback and instrument
+The generic browser runtime/input lifetime prerequisite is implemented; adventure
+scenario, objective, and UI code do not exist yet. Director feedback and instrument
 presentation remain steps 4 and 5.
 
 ## Ownership and reset decision
@@ -182,10 +183,12 @@ an explicit reset hook for clearing pending handler state within a paused run.
 
 ## Runtime disposal contract
 
-`bootstrapRendering`/`bootstrapWith` currently return `void`; `runLoop` schedules
-itself forever; keyboard and resize listeners are anonymous; layout DPR cleanup
-is module-global; only view disposal is wired to `pagehide`. Introduce a generic
-runtime handle with idempotent `dispose` and input clearing. It must:
+`bootstrapRendering`/`bootstrapWith` return a generic runtime handle with
+idempotent `dispose` and `clearInput`. The shell creates a
+`createBrowserKeyboardHost` once, passes it into each rendering bootstrap, and
+disposes it when the shell ends. Runtime disposal detaches its input binding;
+the host continues tracking physical key releases between runs. Layout/DPR
+cleanup is per instance. The implemented teardown contract is:
 
 - Mark the runtime stopped before cleanup, cancel its outstanding animation
   callback, and prevent an already executing callback from scheduling another.
@@ -197,9 +200,11 @@ runtime handle with idempotent `dispose` and input clearing. It must:
 - Clean partially constructed views/listeners if startup fails. The shell shows
   a startup/render error with Return to menu and permits a fresh launch.
 
-Avoid page reload as retry. No general plugin unload protocol is needed for the
-pilot: its factories must own no untracked browser listeners or background work.
-Any new subscription must return a disposer. Fatal render failure stops the run;
+Avoid page reload as retry. Loop initializers may return cleanup, which the
+pipeline releases on disposal or failed startup; the pause plugin uses this for
+its visibility subscription. This is resource cleanup, not plugin hot unloading.
+Factories must own no untracked browser listeners or background work. Any new
+subscription must return a disposer. Fatal render failure stops the run;
 it is an infrastructure error, not an orbital failure. Host lifetime changes
 must preserve remote-client behavior, even though its lobby flow stays unchanged.
 
@@ -215,12 +220,17 @@ with cleanup. Retrying repeatedly must leave one animation loop, one input
 listener set, and one layout listener set, with all retired presenters disposed.
 Use meaningful lifecycle tests and the step 2 objective acceptance cases.
 
-The next concrete session is implementation of the generic disposable browser
-runtime and input reset/release gate. Thread cleanup handles through rendering
-bootstrap, loop scheduling, keyboard dispatch, and per-instance layout; update
-call sites and verify disposal during callbacks, partial startup, held-key reset,
-and repeated construction. Run the repository code checks and architecture-map
-generator. This prerequisite does not implement adventure UI or physics policy.
-Then implement scenario/session capability and objective state against this
-specification. Define director priorities before coding guidance and instrument
+The browser lifetime prerequisite is implemented and tested with stubbed browser
+events, animation scheduling, presenters, and pipeline construction. It covers
+repeated replacement, disposal inside a callback, startup failure, held-key reset,
+pending handler input, subscription cleanup, and retired callbacks. Real browser
+playtesting and runtime-cost measurement remain step 6.
+
+The next concrete session implements standalone pre-assembly mode selection and
+the adventure scenario/session capability: one calibrated craft, fresh generations
+starting in briefing, exclusive world contributions, and the shared launch/retry/
+menu path for URL and menu entry. Use the runtime handle and shell-owned keyboard
+host. Keep authored scenario/session content in the external standalone pack and
+use a typed capability for the composition shell. Observation/objective sampling
+follows that entry/scenario slice. Define director priorities before coding guidance and instrument
 presentation; do not expand the pilot into a campaign framework.

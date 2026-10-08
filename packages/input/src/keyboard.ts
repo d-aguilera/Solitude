@@ -8,6 +8,8 @@ import type {
 export const keyboardInputCapability = "solitude.keyboardInput.v1";
 
 export interface KeyHandler {
+  /** Clear pending input without resetting persistent gameplay state. */
+  reset?: () => void;
   handleKeyDown: (action: ControlAction, isRepeat: boolean) => boolean;
   handleKeyUp: (action: ControlAction) => boolean;
 }
@@ -28,6 +30,7 @@ export interface KeyboardInputProvider {
 
 export interface KeyboardHandlerDispatcher {
   readonly controlInput: ControlInput;
+  clear: () => void;
   handleKey: (code: string, isDown: boolean, isRepeat: boolean) => boolean;
 }
 
@@ -58,6 +61,10 @@ export function createKeyboardHandlerDispatcher(
 
   return {
     controlInput,
+    clear: () => {
+      for (const action in controlInput) controlInput[action] = false;
+      for (const handler of handlers) handler.reset?.();
+    },
     handleKey: (code, isDown, isRepeat) => {
       const action = keyMap[code];
       if (!action) return false;

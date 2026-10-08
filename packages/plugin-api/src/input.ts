@@ -4,6 +4,8 @@ export type ExternalControlAction = string;
 export type ExternalControlInput = Record<ExternalControlAction, boolean>;
 
 export interface ExternalKeyHandler {
+  /** Clear pending input without resetting persistent gameplay state. */
+  reset?: () => void;
   handleKeyDown: (action: ExternalControlAction, isRepeat: boolean) => boolean;
   handleKeyUp: (action: ExternalControlAction) => boolean;
 }

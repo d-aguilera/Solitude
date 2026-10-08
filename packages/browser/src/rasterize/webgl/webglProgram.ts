@@ -4,19 +4,26 @@ export function createProgramFromSources(
   fragmentShaderSource: string,
 ): WebGLProgram {
   const vertex = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-  const fragment = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
-  const program = requireResource(gl.createProgram(), "shader program");
-  gl.attachShader(program, vertex);
-  gl.attachShader(program, fragment);
-  gl.linkProgram(program);
-  gl.deleteShader(vertex);
-  gl.deleteShader(fragment);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    const message = gl.getProgramInfoLog(program) ?? "Unknown program error";
-    gl.deleteProgram(program);
-    throw new Error(`WebGL program link failed: ${message}`);
+  let fragment: WebGLShader | null = null;
+  let program: WebGLProgram | null = null;
+  try {
+    fragment = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+    program = requireResource(gl.createProgram(), "shader program");
+    gl.attachShader(program, vertex);
+    gl.attachShader(program, fragment);
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      const message = gl.getProgramInfoLog(program) ?? "Unknown program error";
+      throw new Error(`WebGL program link failed: ${message}`);
+    }
+    return program;
+  } catch (error) {
+    if (program) gl.deleteProgram(program);
+    throw error;
+  } finally {
+    gl.deleteShader(vertex);
+    if (fragment) gl.deleteShader(fragment);
   }
-  return program;
 }
 
 export function requireUniform(

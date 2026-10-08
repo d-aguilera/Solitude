@@ -1,3 +1,4 @@
+import { createBrowserKeyboardHost } from "@solitude/browser/dom/keyboardInput";
 import type { RenderFailure } from "@solitude/browser/dom/renderFailure";
 import { showRenderFailurePanel } from "@solitude/browser/dom/renderFailurePanel";
 import { bootstrapRendering } from "@solitude/browser/dom/renderingBootstrap";
@@ -41,12 +42,19 @@ async function main(): Promise<void> {
   applyWorldModelPlugins(config, plugins);
   const container = document.querySelector(".canvas-container");
   if (!container) throw new Error("Required '.canvas-container' not found");
-  bootstrapRendering({
-    config,
-    onFatalError: (failure) =>
-      showFatalRenderError(container, runtimeOptions, failure),
-    plugins,
-  });
+  const keyboardHost = createBrowserKeyboardHost();
+  try {
+    bootstrapRendering({
+      config,
+      keyboardHost,
+      onFatalError: (failure) =>
+        showFatalRenderError(container, runtimeOptions, failure),
+      plugins,
+    });
+  } catch (error) {
+    keyboardHost.dispose();
+    throw error;
+  }
 }
 
 function showFatalRenderError(

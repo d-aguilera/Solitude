@@ -119,6 +119,22 @@ describe("operator switch plugin", () => {
     });
   });
 
+  it("drops pending focus changes on input reset", () => {
+    const { mainFocus, world } = createWorld();
+    const plugin = createPlugin({});
+    const provider = plugin.capabilities?.find(
+      ({ id }) => id === keyboardInputCapability,
+    )?.value as ExternalKeyboardInputProvider;
+    const handler = provider.createKeyHandler?.(
+      {},
+      { unlockedActions: new Set() },
+    );
+    handler?.handleKeyDown("operatorSwapFocus", false);
+    handler?.reset?.();
+    expect(applyLoop(plugin.hooks?.loop ?? {}, world, mainFocus)).toBeNull();
+    expect(mainFocus.entityId).toBe("ship:blue");
+  });
+
   it("toggles from red back to blue on the next request", () => {
     const { blue, mainFocus, world } = createWorld();
     const controller = createOperatorSwitchController([

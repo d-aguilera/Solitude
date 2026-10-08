@@ -6,6 +6,7 @@ import {
   createConfiguredGamePipeline,
   profiler,
 } from "@solitude/engine/runtime";
+import { startAnimationLoop, type AnimationLoopState } from "./animationLoop";
 import type { RunLoopParams, RunLoopView } from "./infraPorts";
 import {
   applyBrowserOverlayProviders,
@@ -44,80 +45,83 @@ const defaultRenderPassDebug: RenderPassDebug = {
 
 export function runLoop({
   config,
+  onError,
   views,
   controlInput,
   plugins,
-}: RunLoopParams): void {
+}: RunLoopParams): { dispose: () => void } {
   const pipeline = createConfiguredGamePipeline({
     config,
     controlInput,
     plugins,
     viewDefinitions: views.map((view) => view.definition),
   });
-  const worldAndScene = pipeline.worldAndScene;
-  const loopViews = createLoopViews(views, pipeline.views, worldAndScene);
-  const primaryOverlayRasterizer = getPrimaryOverlayRasterizer(loopViews);
-  const overlayProviders = collectBrowserOverlayProviders(
-    pipeline.capabilityRegistry,
-  );
-  const presentationFrameProviders = collectPresentationFrameProviders(
-    pipeline.capabilityRegistry,
-  );
-  const presentationFrameContext = { dtMillis: 0, nowMs: 0 };
-  const overlayContext: BrowserOverlayContext = {
-    advanceOverlay: false,
-    controlInput,
-    framePolicy: createOverlayFramePolicy(),
-    mainFocus: worldAndScene.mainFocus,
-    nowMs: 0,
-    primaryOverlayRasterizer,
-    simTimeMillis: 0,
-    world: worldAndScene.world,
-  };
-  const renderDebug = getRenderDebug(loopViews);
-  let lastTimeMs = 0;
-  let lastOverlayTimeMs = 0;
-
-  const loop = (nowMs: number) => {
-    const dtMillis = nowMs - lastTimeMs;
-    lastTimeMs = nowMs;
-    presentationFrameContext.dtMillis = dtMillis;
-    presentationFrameContext.nowMs = nowMs;
-    updatePresentationFrameProviders(
-      presentationFrameProviders,
-      presentationFrameContext,
+  try {
+    const worldAndScene = pipeline.worldAndScene;
+    const loopViews = createLoopViews(views, pipeline.views, worldAndScene);
+    const primaryOverlayRasterizer = getPrimaryOverlayRasterizer(loopViews);
+    const overlayProviders = collectBrowserOverlayProviders(
+      pipeline.capabilityRegistry,
     );
-    const frame = pipeline.beginFrame(nowMs, dtMillis);
-    primaryOverlayRasterizer?.beginFrame();
-    renderViews(loopViews, pipeline.prepareView, renderDebug);
+    const presentationFrameProviders = collectPresentationFrameProviders(
+      pipeline.capabilityRegistry,
+    );
+    const presentationFrameContext = { dtMillis: 0, nowMs: 0 };
+    const overlayContext: BrowserOverlayContext = {
+      advanceOverlay: false,
+      controlInput,
+      framePolicy: createOverlayFramePolicy(),
+      mainFocus: worldAndScene.mainFocus,
+      nowMs: 0,
+      primaryOverlayRasterizer,
+      simTimeMillis: 0,
+      world: worldAndScene.world,
+    };
+    const renderDebug = getRenderDebug(loopViews);
+    let lastOverlayTimeMs: number | null = null;
 
-    const shouldAdvanceOverlay = nowMs - lastOverlayTimeMs > 100;
-    for (const view of loopViews) {
-      if (!isViewEnabled(renderDebug, view.definition.id)) continue;
-      rasterizeView(view.renderedView, view.sceneOverlayRasterizer);
-    }
-    if (renderDebug.hud) {
-      overlayContext.advanceOverlay =
-        shouldAdvanceOverlay && frame.framePolicy.advancePresentation;
-      overlayContext.framePolicy = frame.framePolicy;
-      overlayContext.nowMs = nowMs;
-      overlayContext.simTimeMillis = frame.simTimeMillis;
-      applyBrowserOverlayProviders(
-        overlayProviders,
-        overlayContext,
-        pipeline.capabilityRegistry,
+    const animation = startAnimationLoop((nowMs, dtMillis, state) => {
+      if (lastOverlayTimeMs === null) lastOverlayTimeMs = nowMs;
+      presentationFrameContext.dtMillis = dtMillis;
+      presentationFrameContext.nowMs = nowMs;
+      updatePresentationFrameProviders(
+        presentationFrameProviders,
+        presentationFrameContext,
       );
-      if (shouldAdvanceOverlay) lastOverlayTimeMs = nowMs;
-    }
-    pipeline.endFrame();
-    requestAnimationFrame(loop);
-  };
+      if (!state.running) return;
+      const frame = pipeline.beginFrame(nowMs, dtMillis);
+      if (!state.running) return;
+      primaryOverlayRasterizer?.beginFrame();
+      renderViews(loopViews, pipeline.prepareView, renderDebug, state);
+      if (!state.running) return;
 
-  requestAnimationFrame((nowMs) => {
-    lastTimeMs = nowMs;
-    lastOverlayTimeMs = nowMs;
-    requestAnimationFrame(loop);
-  });
+      const shouldAdvanceOverlay = nowMs - lastOverlayTimeMs > 100;
+      for (const view of loopViews) {
+        if (!isViewEnabled(renderDebug, view.definition.id)) continue;
+        rasterizeView(view.renderedView, view.sceneOverlayRasterizer);
+      }
+      if (renderDebug.hud) {
+        overlayContext.advanceOverlay =
+          shouldAdvanceOverlay && frame.framePolicy.advancePresentation;
+        overlayContext.framePolicy = frame.framePolicy;
+        overlayContext.nowMs = nowMs;
+        overlayContext.simTimeMillis = frame.simTimeMillis;
+        applyBrowserOverlayProviders(
+          overlayProviders,
+          overlayContext,
+          pipeline.capabilityRegistry,
+        );
+        if (shouldAdvanceOverlay) lastOverlayTimeMs = nowMs;
+      }
+      if (state.running) pipeline.endFrame();
+    }, onError);
+    return {
+      dispose: combineLoopDisposal(animation.dispose, pipeline.dispose),
+    };
+  } catch (error) {
+    pipeline.dispose();
+    throw error;
+  }
 }
 
 function createLoopViews(
@@ -159,11 +163,14 @@ function renderViews(
     includeSegments: boolean,
   ) => void,
   debug: RenderDebug,
+  state: AnimationLoopState,
 ): void {
   for (const view of views) {
+    if (!state.running) return;
     if (!isViewEnabled(debug, view.definition.id)) continue;
     const passes = debug.passes;
     prepareView(view.pipelineView, passes.sceneLabels, passes.segments);
+    if (!state.running) return;
     view.renderParams.renderPolylines = passes.polylines;
     view.renderParams.renderSceneLabels = passes.sceneLabels;
     view.renderParams.renderSegments = passes.segments;
@@ -247,5 +254,18 @@ function createOverlayFramePolicy(): FramePolicy {
     advancePresentation: true,
     advanceScene: true,
     advanceSim: true,
+  };
+}
+
+function combineLoopDisposal(
+  stop: () => void,
+  cleanup: () => void,
+): () => void {
+  let dispose: (() => void) | null = cleanup;
+  return () => {
+    stop();
+    const pending = dispose;
+    dispose = null;
+    pending?.();
   };
 }

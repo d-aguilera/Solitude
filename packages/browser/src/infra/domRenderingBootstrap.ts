@@ -1,7 +1,9 @@
 import type { GamePlugin } from "@solitude/engine/plugin";
 import type { WorldAndSceneConfig } from "@solitude/engine/world";
-import { bootstrapWith } from "./domBootstrap";
+import { bootstrapWith, type BrowserRuntimeHandle } from "./domBootstrap";
+import type { BrowserKeyboardHost } from "./domKeyboardInput";
 import type { RenderFailure } from "./renderFailure";
+export type { BrowserRuntimeHandle } from "./domBootstrap";
 
 export interface RendererDebugState {
   backend: "webgl";
@@ -16,21 +18,28 @@ declare global {
 
 export interface RenderingBootstrapOptions {
   config: WorldAndSceneConfig;
+  keyboardHost: BrowserKeyboardHost;
   onFatalError: (failure: RenderFailure) => void;
   plugins: GamePlugin[];
 }
 
 export function bootstrapRendering({
   config,
+  keyboardHost,
   onFatalError,
   plugins,
-}: RenderingBootstrapOptions): void {
+}: RenderingBootstrapOptions): BrowserRuntimeHandle {
   window.__solitudeRendererState = { backend: "webgl", fatalError: null };
-  bootstrapWith(config, plugins, (failure) => {
-    window.__solitudeRendererState = {
-      backend: "webgl",
-      fatalError: failure.code,
-    };
-    onFatalError(failure);
-  });
+  return bootstrapWith(
+    config,
+    plugins,
+    (failure) => {
+      window.__solitudeRendererState = {
+        backend: "webgl",
+        fatalError: failure.code,
+      };
+      onFatalError(failure);
+    },
+    keyboardHost,
+  );
 }

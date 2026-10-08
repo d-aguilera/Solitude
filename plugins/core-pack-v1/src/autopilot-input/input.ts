@@ -56,7 +56,13 @@ function createKeyHandler(
     return true;
   };
 
-  return { handleKeyDown, handleKeyUp };
+  return {
+    handleKeyDown,
+    handleKeyUp,
+    reset: () => {
+      pendingAutopilotRelease = null;
+    },
+  };
 }
 
 function isAutopilotToggle(action: ExternalControlAction): boolean {

@@ -41,7 +41,7 @@
 
 ## Current focus
 
-- **Primary active work**: define the My First Orbit adventure and its gameplay
+- **Primary active work**: implement the My First Orbit adventure and its gameplay
   awareness foundation in `MEMORY_MY_FIRST_ORBIT.md`. Server performance context
   remains in `MEMORY_SERVER_PERFORMANCE.md`; headless playback remains dormant.
 - **Current extraction frontier**: physical product-plugin extraction is complete. No product plugin implementation remains in a host package; both products discover `newtonianGravity`, `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` through their Solitude content packs.

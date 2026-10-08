@@ -3,8 +3,9 @@ import type { ViewDefinition } from "@solitude/engine/render";
 import { buildViewDefinitions } from "@solitude/engine/render";
 import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { WorldAndSceneConfig } from "@solitude/engine/world";
+import { createDisposalScope } from "./disposal";
 import { runLoop } from "./domGameLoop";
-import { initInput } from "./domKeyboardInput";
+import { initInput, type BrowserKeyboardHost } from "./domKeyboardInput";
 import { initLayout, type LayoutView } from "./domLayout";
 import { getOrCreateDomViewLayers } from "./domView";
 import type { RunLoopView } from "./infraPorts";
@@ -18,43 +19,61 @@ import { createBrowserViewPresenter } from "./viewPresenter";
 /**
  * DOM-level bootstrap
  */
+export interface BrowserRuntimeHandle {
+  clearInput: () => void;
+  dispose: () => void;
+}
+
 export function bootstrapWith(
   config: WorldAndSceneConfig,
   plugins: GamePlugin[],
   onFatalError: (failure: RenderFailure) => void,
-): void {
-  const textureSources = collectRenderTextureSources(
-    createPluginCapabilityRegistry(plugins),
-  );
-  const container = document.querySelector(".canvas-container");
-  if (!container) {
-    throw new Error("Required '.canvas-container' not found in document");
+  keyboardHost: BrowserKeyboardHost,
+): BrowserRuntimeHandle {
+  const scope = createDisposalScope();
+  try {
+    const textureSources = collectRenderTextureSources(
+      createPluginCapabilityRegistry(plugins),
+    );
+    const container = document.querySelector(".canvas-container");
+    if (!container) {
+      throw new Error("Required '.canvas-container' not found in document");
+    }
+
+    const viewDefinitions = buildViewDefinitions(config, plugins);
+    const views = createRunLoopViews(
+      container,
+      viewDefinitions,
+      (failure) => {
+        if (scope.disposed) return;
+        scope.dispose();
+        onFatalError(failure);
+      },
+      textureSources,
+      scope,
+    );
+    scope.add(initLayout(container, views));
+    const input = initInput(plugins, keyboardHost);
+    scope.add(input.dispose);
+    const pageHide = () => scope.dispose();
+    window.addEventListener("pagehide", pageHide);
+    scope.add(() => window.removeEventListener("pagehide", pageHide));
+    const loop = runLoop({
+      config,
+      onError: (error) => {
+        scope.dispose();
+        throw error;
+      },
+      views,
+      controlInput: input.controlInput,
+      plugins,
+    });
+    scope.add(loop.dispose);
+    return { clearInput: input.clear, dispose: scope.dispose };
+  } catch (error) {
+    scope.dispose();
+    throw error;
   }
-
-  const viewDefinitions = buildViewDefinitions(config, plugins);
-  const views = createRunLoopViews(
-    container,
-    viewDefinitions,
-    onFatalError,
-    textureSources,
-  );
-  initLayout(container, views);
-  window.addEventListener(
-    "pagehide",
-    () => {
-      for (const view of views) view.dispose();
-    },
-    { once: true },
-  );
-
-  const { controlInput } = initInput(plugins);
-
-  runLoop({
-    config,
-    views,
-    controlInput,
-    plugins,
-  });
 }
 
 function createRunLoopViews(
@@ -62,11 +81,16 @@ function createRunLoopViews(
   definitions: ViewDefinition[],
   onFatalError: (failure: RenderFailure) => void,
   textureSources: RenderTextureSourceCatalog,
+  scope: ReturnType<typeof createDisposalScope>,
 ): (RunLoopView & LayoutView)[] {
   const views: (RunLoopView & LayoutView)[] = [];
+  scope.add(() => {
+    views.length = 0;
+  });
   let index = 0;
   for (const definition of primaryDefinitionsFirst(definitions)) {
     const layers = getOrCreateDomViewLayers(container, index, definition);
+    scope.add(() => layers.element.remove());
     const presenter = createBrowserViewPresenter({
       labelMode: definition.labelMode,
       onFatalError,
@@ -74,6 +98,7 @@ function createRunLoopViews(
       sceneCanvas: layers.sceneCanvas,
       textureSources,
     });
+    scope.add(presenter.dispose);
     views.push({
       definition,
       dispose: presenter.dispose,

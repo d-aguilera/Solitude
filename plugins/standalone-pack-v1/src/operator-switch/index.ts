@@ -32,6 +32,7 @@ export function createPlugin(
         keyMap: { Tab: swapFocusAction },
         unlockedActions: [swapFocusAction],
         createKeyHandler: (controlInput) => ({
+          reset: controller.clearPendingInput,
           handleKeyDown: (action, isRepeat) => {
             if (action !== swapFocusAction) return false;
             if (!isRepeat) {

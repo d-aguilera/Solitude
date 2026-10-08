@@ -13,6 +13,7 @@ export function createOperatorSwitchController(
     focusEntity: (id: ExternalEntityId) => void,
   ) => boolean;
   requestSwap: () => void;
+  clearPendingInput: () => void;
   validateTargets: (world: ExternalWorld) => void;
 } {
   let swapRequested = false;
@@ -28,6 +29,9 @@ export function createOperatorSwitchController(
       swapRequested = false;
       focusEntity(getNextFocusTarget(targetEntityIds, mainFocus.entityId));
       return true;
+    },
+    clearPendingInput: () => {
+      swapRequested = false;
     },
     requestSwap: () => {
       swapRequested = true;

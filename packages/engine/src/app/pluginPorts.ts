@@ -260,7 +260,7 @@ export interface ViewControlPlugin {
 }
 
 export interface LoopPlugin {
-  initLoop?: (params: LoopInitParams) => void;
+  initLoop?: (params: LoopInitParams) => void | (() => void);
   getInitialSimTimeMillis?: () => number | null;
   updateLoopState?: (params: LoopUpdateParams) => LoopUpdateResult | null;
   afterFrame?: (params: LoopUpdateParams) => void;

@@ -6,7 +6,7 @@ import type {
   ViewRenderParams,
 } from "@solitude/engine/render";
 import { createUnitIcosphereMesh } from "@solitude/engine/render/icosphere";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { GpuSceneRenderer } from "../../../rasterize/webgl/GpuSceneRenderer";
 
 describe("GPU scene renderer", () => {
@@ -212,6 +212,50 @@ describe("GPU scene renderer", () => {
 
     expect(recording.drawVertexCounts).toEqual([3]);
     expect(recording.dynamicBufferUploads).toBe(0);
+  });
+
+  it("releases partially constructed renderers when mesh setup fails", () => {
+    const recording = createRecordingGl();
+    const deleteProgram = vi.spyOn(recording.gl, "deleteProgram");
+    const deleteVao = vi.spyOn(recording.gl, "deleteVertexArray");
+    const deleteTexture = vi.spyOn(recording.gl, "deleteTexture");
+    vi.spyOn(recording.gl, "getUniformLocation").mockImplementation(
+      (_program, name) =>
+        name === "uAmbient" ? null : ({} as WebGLUniformLocation),
+    );
+    const failure = vi.fn();
+    expect(
+      () =>
+        new GpuSceneRenderer({
+          gl: recording.gl,
+          onFatalError: failure,
+          textureSources: {},
+        }),
+    ).toThrow("uniform uAmbient");
+    expect(deleteProgram).toHaveBeenCalledTimes(2);
+    expect(deleteVao).toHaveBeenCalledTimes(2);
+    expect(deleteTexture).toHaveBeenCalledTimes(1);
+    expect(recording.deletedBuffers).toBe(1);
+    expect(failure).toHaveBeenCalledWith(
+      expect.objectContaining({ code: "webgl-program-failed" }),
+    );
+  });
+  it("disposes once and rejects rendering and context notifications afterward", () => {
+    const recording = createRecordingGl();
+    const failure = vi.fn();
+    const renderer = new GpuSceneRenderer({
+      gl: recording.gl,
+      onFatalError: failure,
+      textureSources: {},
+    });
+    renderer.render(createRenderParams(createObject()));
+    renderer.dispose();
+    renderer.dispose();
+    renderer.render(createRenderParams(createObject()));
+    recording.loseContext();
+    expect(recording.deletedBuffers).toBe(2);
+    expect(recording.drawCalls).toBe(1);
+    expect(failure).not.toHaveBeenCalled();
   });
 
   it("reports context loss and stops issuing draws", () => {

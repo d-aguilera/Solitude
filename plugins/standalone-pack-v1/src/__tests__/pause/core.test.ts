@@ -20,7 +20,7 @@ import type {
   ExternalControlledBody,
   ExternalWorld,
 } from "@solitude/plugin-api/world";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createPlugin } from "../../pause/index";
 
 const body: ExternalControlledBody = {
@@ -72,6 +72,25 @@ describe("pause plugin", () => {
     const fixedTickPlugin = createPlugin({ locale: "en" });
     expect(updateLoop(fixedTickPlugin, true, 20)).toBeNull();
     expect(writeHud(getHudPanel(fixedTickPlugin))).toEqual(["PAUSED"]);
+  });
+  it("returns cleanup for its visibility subscription", () => {
+    const documentTarget = Object.assign(new EventTarget(), {
+      visibilityState: "visible",
+    });
+    vi.stubGlobal("document", documentTarget);
+    try {
+      const plugin = createPlugin({});
+      const cleanup = plugin.hooks?.loop?.initLoop?.();
+      expect(typeof cleanup).toBe("function");
+      if (typeof cleanup !== "function")
+        throw new Error("Missing loop cleanup");
+      cleanup();
+      documentTarget.visibilityState = "hidden";
+      documentTarget.dispatchEvent(new Event("visibilitychange"));
+      expect(updateLoop(plugin, false)).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 

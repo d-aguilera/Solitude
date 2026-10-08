@@ -80,6 +80,7 @@ export interface GamePipeline {
   worldAndScene: WorldAndScene;
   beginFrame: (nowMs: number, dtMillis: number) => GamePipelineFrame;
   endFrame: () => void;
+  dispose: () => void;
   prepareView: (
     view: GamePipelineView,
     includeLabels: boolean,
@@ -87,13 +88,44 @@ export interface GamePipeline {
   ) => void;
 }
 
-export function createGamePipeline({
-  config,
-  controlInput,
-  plugins,
-  viewDefinitions,
-  worldAndScene,
-}: GamePipelineParams): GamePipeline {
+export function createGamePipeline(params: GamePipelineParams): GamePipeline {
+  const cleanups: (() => void)[] = [];
+  const dispose = () => {
+    const errors: unknown[] = [];
+    while (cleanups.length > 0) {
+      try {
+        cleanups.pop()!();
+      } catch (error) {
+        errors.push(error);
+      }
+    }
+    if (errors.length > 0)
+      throw Object.assign(new Error("Loop cleanup failed"), { errors });
+  };
+  try {
+    return { ...createGamePipelineWithCleanup(params, cleanups), dispose };
+  } catch (error) {
+    try {
+      dispose();
+    } catch (cleanupError) {
+      throw Object.assign(new Error("Pipeline startup failed"), {
+        errors: [error, cleanupError],
+      });
+    }
+    throw error;
+  }
+}
+
+function createGamePipelineWithCleanup(
+  {
+    config,
+    controlInput,
+    plugins,
+    viewDefinitions,
+    worldAndScene,
+  }: GamePipelineParams,
+  cleanups: (() => void)[],
+): Omit<GamePipeline, "dispose"> {
   const gravityEngine = resolveGravityEngine(plugins);
   const simulationAssembly = assembleSimulationPlugins(plugins, [], [], []);
   const capabilityRegistry = createPluginCapabilityRegistry(
@@ -125,7 +157,10 @@ export function createGamePipeline({
     plugins,
     world: worldAndScene.world,
   });
-  for (const plugin of loopPlugins) plugin.initLoop?.({ config });
+  for (const plugin of loopPlugins) {
+    const cleanup = plugin.initLoop?.({ config });
+    if (typeof cleanup === "function") cleanups.push(cleanup);
+  }
   for (const plugin of scenePlugins) {
     plugin.initScene?.({
       config,

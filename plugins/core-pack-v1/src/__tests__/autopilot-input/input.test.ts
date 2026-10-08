@@ -38,4 +38,14 @@ describe("autopilot input", () => {
     expect(handler?.handleKeyUp("circleNow")).toBe(true);
     expect(controlInput.circleNow).toBe(false);
   });
+  it("clears a pending release without clearing a newly selected mode", () => {
+    const controls = { alignToVelocity: true };
+    const handler = createInputPlugin().createKeyHandler?.(controls, {
+      unlockedActions: new Set(),
+    });
+    handler?.handleKeyDown("alignToVelocity", false);
+    handler?.reset?.();
+    handler?.handleKeyUp("alignToVelocity");
+    expect(controls.alignToVelocity).toBe(true);
+  });
 });

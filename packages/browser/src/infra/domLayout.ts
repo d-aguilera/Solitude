@@ -1,19 +1,45 @@
 import type { ViewLayout } from "@solitude/engine/render";
 
-let remove: (() => void) | null = null;
-
 export interface LayoutView {
   element: HTMLElement;
   layout: ViewLayout;
   resize: (cssWidth: number, cssHeight: number, pixelRatio: number) => void;
 }
 
-export function initLayout(container: Element, views: LayoutView[]) {
-  updatePixelRatio(container, views);
-
-  window.addEventListener("resize", () => {
-    resizeCanvases(container, views);
-  });
+export function initLayout(
+  container: Element,
+  views: LayoutView[],
+): () => void {
+  let removeDprListener: (() => void) | null = null;
+  let disposed = false;
+  const resize = () => {
+    if (!disposed) resizeCanvases(container, views);
+  };
+  const updatePixelRatio = () => {
+    if (disposed) return;
+    removeDprListener?.();
+    removeDprListener = null;
+    resize();
+    const media = matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+    media.addEventListener("change", updatePixelRatio);
+    removeDprListener = () =>
+      media.removeEventListener("change", updatePixelRatio);
+  };
+  const dispose = () => {
+    if (disposed) return;
+    disposed = true;
+    window.removeEventListener("resize", resize);
+    removeDprListener?.();
+    removeDprListener = null;
+  };
+  try {
+    updatePixelRatio();
+    window.addEventListener("resize", resize);
+  } catch (error) {
+    dispose();
+    throw error;
+  }
+  return dispose;
 }
 
 export function resizeLayout(container: Element, views: LayoutView[]): void {
@@ -85,20 +111,4 @@ function resizeCanvases(container: Element, views: LayoutView[]): void {
 
     resizeViewToCssBox(view, pipWidth, pipHeight);
   }
-}
-
-function updatePixelRatio(container: Element, views: LayoutView[]) {
-  // Remove current DPR listener
-  remove?.();
-
-  resizeCanvases(container, views);
-
-  // Add new DPR listener
-  const mqString = `(resolution: ${window.devicePixelRatio}dppx)`;
-  const media = matchMedia(mqString);
-  const listener = () => updatePixelRatio(container, views);
-  media.addEventListener("change", listener);
-  remove = () => {
-    media.removeEventListener("change", listener);
-  };
 }

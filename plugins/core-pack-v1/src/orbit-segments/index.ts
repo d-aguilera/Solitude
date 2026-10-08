@@ -17,6 +17,7 @@ export function createPlugin(
         keyMap: { KeyG: orbitSegmentsToggleAction },
         unlockedActions: [orbitSegmentsToggleAction],
         createKeyHandler: () => ({
+          reset: controller.clearPendingInput,
           handleKeyDown: (action, isRepeat) => {
             if (action !== orbitSegmentsToggleAction) return false;
             if (!isRepeat) controller.requestToggle();

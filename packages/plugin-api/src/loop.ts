@@ -33,7 +33,7 @@ export interface ExternalLoopUpdateResult {
 }
 
 export interface ExternalLoopPlugin {
-  initLoop?: () => void;
+  initLoop?: () => void | (() => void);
   getInitialSimTimeMillis?: () => number | null;
   updateLoopState?: (
     params: ExternalLoopUpdateParams,

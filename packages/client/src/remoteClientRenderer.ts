@@ -562,7 +562,8 @@ export function createSolitudeRemoteClientRenderer({
     if (layoutInitialized) {
       resizeLayout(container, layoutViews);
     } else {
-      initLayout(container, layoutViews);
+      const disposeLayout = initLayout(container, layoutViews);
+      window.addEventListener("pagehide", disposeLayout, { once: true });
       layoutInitialized = true;
     }
     return createRemoteViewPresenterRenderer({

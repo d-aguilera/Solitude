@@ -23,15 +23,23 @@ export class GpuSceneRenderer {
   private readonly lineRenderer: GpuLineRenderer;
   private readonly meshRenderer: GpuMeshRenderer;
   private failed = false;
+  private disposed = false;
   private readonly contextLostListener: (event: Event) => void;
 
   constructor({ gl, onFatalError, textureSources }: GpuSceneRendererOptions) {
     this.gl = gl;
+    let lightTexture: WebGLTexture | null = null;
+    let lineRenderer: GpuLineRenderer | null = null;
     try {
-      this.lightTexture = requireResource(gl.createTexture(), "light texture");
-      this.lineRenderer = new GpuLineRenderer(gl);
+      this.lightTexture = lightTexture = requireResource(
+        gl.createTexture(),
+        "light texture",
+      );
+      this.lineRenderer = lineRenderer = new GpuLineRenderer(gl);
       this.meshRenderer = new GpuMeshRenderer(gl, textureSources);
     } catch (cause) {
+      lineRenderer?.dispose();
+      if (lightTexture) gl.deleteTexture(lightTexture);
       onFatalError({ code: "webgl-program-failed", cause });
       throw cause;
     }
@@ -98,6 +106,9 @@ export class GpuSceneRenderer {
   }
 
   dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.failed = true;
     const gl = this.gl;
     gl.canvas.removeEventListener("webglcontextlost", this.contextLostListener);
     gl.deleteTexture(this.lightTexture);

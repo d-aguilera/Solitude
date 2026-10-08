@@ -46,6 +46,7 @@ interface LaserGeometry {
 }
 
 export interface TargetingLaserController {
+  clearPendingInput: () => void;
   requestToggle: () => void;
   segments: ExternalSegmentPlugin;
   markers: ExternalMarkerPlugin;
@@ -56,6 +57,9 @@ export function createTargetingLaserController(): TargetingLaserController {
   let toggleRequested = false;
 
   return {
+    clearPendingInput: () => {
+      toggleRequested = false;
+    },
     requestToggle: () => {
       toggleRequested = true;
     },

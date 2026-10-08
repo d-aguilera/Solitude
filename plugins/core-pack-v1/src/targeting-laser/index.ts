@@ -17,6 +17,7 @@ export function createPlugin(
         keyMap: { KeyT: targetingLaserToggleAction },
         unlockedActions: [targetingLaserToggleAction],
         createKeyHandler: () => ({
+          reset: controller.clearPendingInput,
           handleKeyDown: (action, isRepeat) => {
             if (action !== targetingLaserToggleAction) return false;
             if (!isRepeat) controller.requestToggle();

@@ -1,5 +1,5 @@
 export interface PauseController {
-  init: () => void;
+  init: () => () => void;
   updatePaused: (pauseKeyPressed: boolean) => boolean;
   isPaused: () => boolean;
 }
@@ -32,7 +32,7 @@ export function createPauseController(): PauseController {
     return paused;
   };
 
-  const init = (): void => {
+  const init = (): (() => void) => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
         paused = true;
@@ -43,6 +43,8 @@ export function createPauseController(): PauseController {
 
     // Initialize once so that starting in a hidden state also pauses.
     handleVisibilityChange();
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
   };
 
   const isPaused = (): boolean => paused;

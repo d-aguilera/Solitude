@@ -19,6 +19,7 @@ export interface RunLoopView {
 
 export interface RunLoopParams {
   config: WorldAndSceneConfig;
+  onError: (error: unknown) => void;
   views: RunLoopView[];
   controlInput: ControlInput;
   plugins: GamePlugin[];

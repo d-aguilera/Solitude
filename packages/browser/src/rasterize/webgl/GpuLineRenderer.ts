@@ -32,18 +32,30 @@ export class GpuLineRenderer {
       vertexShaderSource,
       fragmentShaderSource,
     );
-    this.vao = requireResource(gl.createVertexArray(), "line vertex array");
-    this.buffer = requireResource(gl.createBuffer(), "line buffer");
-    this.uniforms = {
-      logDepthRange: requireUniform(gl, this.program, "uLogDepthRange"),
-      nearDepth: requireUniform(gl, this.program, "uNearDepth"),
-    };
+    let vao: WebGLVertexArrayObject | null = null;
+    let buffer: WebGLBuffer | null = null;
+    try {
+      this.vao = vao = requireResource(
+        gl.createVertexArray(),
+        "line vertex array",
+      );
+      this.buffer = buffer = requireResource(gl.createBuffer(), "line buffer");
+      this.uniforms = {
+        logDepthRange: requireUniform(gl, this.program, "uLogDepthRange"),
+        nearDepth: requireUniform(gl, this.program, "uNearDepth"),
+      };
 
-    gl.bindVertexArray(this.vao);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-    configureAttributes(gl, this.program);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    gl.bindVertexArray(null);
+      gl.bindVertexArray(this.vao);
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+      configureAttributes(gl, this.program);
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+      gl.bindVertexArray(null);
+    } catch (error) {
+      if (buffer) gl.deleteBuffer(buffer);
+      if (vao) gl.deleteVertexArray(vao);
+      gl.deleteProgram(this.program);
+      throw error;
+    }
   }
 
   render(
