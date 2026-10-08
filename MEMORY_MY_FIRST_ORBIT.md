@@ -34,18 +34,19 @@
 
 ## Pilot design
 
-- **Scenario:** one craft at Earth-orbit apoapsis, facing Earth-relative prograde, autopilot off. Altitude targets 400 km; predicted periapsis altitude targets -50 km. The briefing explains that a forward burn raises the orbit's lowest point. Numerical targets require simulation calibration.
+- **Scenario:** one craft at Earth-orbit apoapsis, facing Earth-relative prograde, autopilot initially off. Altitude targets 400 km; predicted periapsis altitude targets -50 km. The briefing states that automatic orbit recovery is offline, the trajectory intersects Earth, and manual forward thrust raises the orbit's lowest point. Numerical targets require simulation calibration.
 - **Flow:** selecting My First Orbit initializes a fresh scenario and paused opening briefing; Begin starts flight. Free Flight opens the existing sandbox. Completion/failure pauses flight and offers Retry or Return to menu.
 - **Player actions:** inspect highlighted periapsis altitude, align to velocity (`V`) if needed, thrust forward (`Space`), release, and coast. Success depends on the orbit rather than a key sequence.
 - **Success:** Earth-dominated bound orbit, periapsis altitude ≥150 km, apoapsis altitude ≤600 km, sustained for five unpaused real seconds without propulsion. Invalid observations, a primary change, or unmet conditions reset confirmation. This measures near-term safety, not indefinite N-body stability.
 - **Failure:** actual Earth altitude ≤80 km, an adventure boundary without atmosphere physics. Unsafe predictions and escape trajectories prompt correction; there is no time limit.
-- **Assistance:** contextual cues are on by default; expanded hints are opt-in. Highlight periapsis with plain-language labels, cue forward thrust, then cue release when the safe-orbit conditions hold. Warnings outrank hints; completion/failure outranks both. Automatic circularization is not part of the exercise.
+- **Assistance:** contextual cues are on by default; expanded hints are opt-in. Highlight periapsis with plain-language labels, cue forward thrust, then cue release when the safe-orbit conditions hold. Warnings outrank hints; completion/failure outranks both.
+- **Autopilot policy:** propulsion is manual; velocity alignment (`V`) remains available as an optional attitude assist. Automatic circularization (`X` / `circleNow`) is disabled through the adventure control policy, including direct control requests. The lesson focuses on burn timing and orbital effects; the offline-recovery premise does not imply that attitude assistance is broken.
 - **Flight policy:** 1× simulation, no time-warp/focus switching; pause freezes simulation and guidance timers. Adventure propulsion supports a deliberate multi-second burn; acceleration and available controls require calibration. Sandbox propulsion remains unchanged.
 - **Reset:** Retry restores the full starting world, focus, camera, controls/autopilot, objective state, hint history, and timers; returns to the opening briefing; clears held input. Return to menu stops the adventure and clears its state. URL adventure entry uses the same initialization path as menu selection.
 
 ## Handoff
 
 - Step 1 has a pilot design; no feature code exists.
-- Next session covers step 2: validate scenario numbers, specify observations/temporal rules, and identify telemetry and gentle-propulsion plugin/API seams. Update this document; feature implementation follows the specification.
+- Next session covers step 2: validate scenario numbers, specify observations/temporal rules, and identify telemetry, gentle-propulsion, and autopilot-restriction plugin/API seams. Update this document; feature implementation follows the specification.
 - Inspect `plugins/core-pack-v1/src/orbit-telemetry/orbitReadout.ts`, `plugins/spacecraft-operator/src/{propulsionLimits,controlLogic,core}.ts`, and `plugins/standalone-pack-v1/src/ships/index.ts`. Readout apsides are center distances; adventure altitude subtracts Earth's radius. Maximum thrust is 1,000,000 m/s²; the lowest nonzero manual setting is approximately 1,372 m/s² and requires adaptation for this exercise.
 - Keep observations reusable and adventure policy plugin-owned. Detailed director/presentation design remains open. Session completion includes a concise memory update and a concrete next task.
