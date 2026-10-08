@@ -3,7 +3,6 @@ import type { WorldAndSceneConfig } from "@solitude/engine/world";
 import { bootstrapWith, type BrowserRuntimeHandle } from "./domBootstrap";
 import type { BrowserKeyboardHost } from "./domKeyboardInput";
 import type { RenderFailure } from "./renderFailure";
-export type { BrowserRuntimeHandle } from "./domBootstrap";
 
 export interface RendererDebugState {
   backend: "webgl";
