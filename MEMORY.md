@@ -17,6 +17,8 @@
 
 ### Active
 
+- `MEMORY_MY_FIRST_ORBIT.md`: current scope and implementation plan for the first
+  guided orbit-recovery adventure and its gameplay awareness foundation.
 - `MEMORY_SERVER_PERFORMANCE.md`: active roadmap for establishing a precise,
   reproducible authoritative-server performance baseline, capacity model, and
   later regression gates.
@@ -39,9 +41,9 @@
 
 ## Current focus
 
-- **Primary active work**: establish the authoritative-server performance
-  baseline described in `MEMORY_SERVER_PERFORMANCE.md`. Gravity plugin
-  extraction is complete and headless playback remains deliberately dormant.
+- **Primary active work**: define the My First Orbit adventure and its gameplay
+  awareness foundation in `MEMORY_MY_FIRST_ORBIT.md`. Server performance context
+  remains in `MEMORY_SERVER_PERFORMANCE.md`; headless playback remains dormant.
 - **Current extraction frontier**: physical product-plugin extraction is complete. No product plugin implementation remains in a host package; both products discover `newtonianGravity`, `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` through their Solitude content packs.
 - **Discovery foundation**: browser and server discovery, multi-plugin packs, strict manifests, target-specific assembly, origin/path security, and schema-v3 single-host packs are in place. Preserve the rule that a pack is an atomic host-specific activation unit.
 - **Headless playback**: still unresolved and not archived, but it is a dormant backlog item rather than the active path. See `MEMORY_HEADLESS_PLAYBACK.md`.
