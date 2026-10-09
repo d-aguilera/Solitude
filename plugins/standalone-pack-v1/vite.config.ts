@@ -12,6 +12,12 @@ export default defineConfig({
     emptyOutDir: true,
     lib: {
       entry: {
+        "standalone-session": fileURLToPath(
+          new URL("./src/adventure/index.ts", import.meta.url),
+        ),
+        "adventure-final": fileURLToPath(
+          new URL("./src/adventure/final.ts", import.meta.url),
+        ),
         memory: fileURLToPath(
           new URL("./src/memory/index.ts", import.meta.url),
         ),
@@ -46,6 +52,16 @@ export default defineConfig({
   plugins: [
     {
       generateBundle() {
+        for (const [directory, id] of [
+          ["standalone-session", "standaloneSession"],
+          ["adventure-final", "adventureFinalPolicy"],
+        ]) {
+          this.emitFile({
+            fileName: `${directory}/plugin.json`,
+            source: `${JSON.stringify({ apiVersion: SOLITUDE_PLUGIN_API_VERSION, entry: "./index.js", id, schemaVersion: 2 }, null, 2)}\n`,
+            type: "asset",
+          });
+        }
         this.emitFile({
           fileName: "pack.json",
           source: `${JSON.stringify(
@@ -54,12 +70,14 @@ export default defineConfig({
               id: "standalone-pack-v1",
               plugins: [
                 "./ships/plugin.json",
+                "./standalone-session/plugin.json",
                 "./playback/plugin.json",
                 "./pause/plugin.json",
                 "./time-scale/plugin.json",
                 "./memory/plugin.json",
                 "./profiling/plugin.json",
                 "./operator-switch/plugin.json",
+                "./adventure-final/plugin.json",
               ],
               schemaVersion: 3,
             },

@@ -8,7 +8,8 @@
     "@solitude/engine": "0.0.0",
     "@solitude/localization": "0.0.0",
     "@solitude/plugin-runtime": "0.0.0",
-    "@solitude/composition": "0.0.0"
+    "@solitude/composition": "0.0.0",
+    "@solitude/plugin-api": "0.0.0"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

@@ -11,6 +11,8 @@ import { createOrbitingPlacement } from "@solitude/plugin-api/orbits";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 import type { ExternalWorldModelPlugin } from "@solitude/plugin-api/world-model";
 
+import { isAdventure } from "@solitude/plugin-api/standalone-session";
+
 const EARTH_ID = "planet:earth";
 const POLY_FIGHTER_PROVIDER_ID = "polyFighter";
 const SHIP_START_ALTITUDE_M = 100_000;
@@ -26,8 +28,9 @@ const STANDALONE_SHIPS = [
 ] as const;
 
 export function createPlugin(
-  _runtimeOptions: ExternalRuntimeOptions,
+  runtimeOptions: ExternalRuntimeOptions,
 ): ExternalPlugin {
+  if (isAdventure(runtimeOptions)) return { id: "ships" };
   return {
     id: "ships",
     hooks: { worldModel: createWorldModelPlugin() },

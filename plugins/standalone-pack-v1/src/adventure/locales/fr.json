@@ -1,0 +1,16 @@
+{
+  "title": "Solitude",
+  "adventure": "Ma première orbite",
+  "freeFlight": "Vol libre",
+  "selectionError": "Mode de vol inconnu. Choisissez un vol dans le menu.",
+  "startupError": "Impossible de démarrer ce vol.",
+  "menu": "Retour au menu",
+  "begin": "Commencer",
+  "resume": "Reprendre",
+  "retry": "Réessayer",
+  "paused": "Vol en pause",
+  "suspended": "Vol suspendu",
+  "suspensionBody": "Le vol a été arrêté pendant que la fenêtre était inactive ou que le temps a été interrompu. Reprenez quand vous êtes prêt.",
+  "briefing": "La récupération automatique de l’orbite est hors service. Votre trajectoire actuelle traverse la Terre. Maintenez Espace pour accélérer vers l’avant et relever le point le plus bas de votre orbite. Relâchez pour voler sans propulsion. Cette aventure est en construction ; les objectifs et le guidage seront ajoutés ensuite.",
+  "pause": "Pause"
+}

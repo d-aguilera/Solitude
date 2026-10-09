@@ -6,6 +6,7 @@ import type {
   ExternalPluginContext,
 } from "@solitude/plugin-api/module";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
+import { isAdventure } from "@solitude/plugin-api/standalone-session";
 import { createPlaybackController } from "./core";
 import { createHudPanel } from "./hud";
 import { createInputPlugin } from "./input";
@@ -16,6 +17,7 @@ export function createPlugin(
   runtimeOptions: ExternalRuntimeOptions,
   { snapshots }: ExternalPluginContext,
 ): ExternalPlugin {
+  if (isAdventure(runtimeOptions)) return { id: "playback" };
   const options = parsePlaybackRuntimeOptions(runtimeOptions);
   const localization = createPlaybackLocalization(
     readLocaleRuntimeOption(runtimeOptions),

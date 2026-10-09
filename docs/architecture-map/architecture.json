@@ -1,9 +1,7 @@
 {
-  "generatedAt": "2026-08-23T02:04:09.352Z",
+  "generatedAt": "2026-10-09T00:12:12.328Z",
   "generator": "scripts/generate-architecture-map.mjs",
-  "notes": [
-    "Package dependencies come from workspace package manifests."
-  ],
+  "notes": ["Package dependencies come from workspace package manifests."],
   "repoRoot": "solitude",
   "nodes": [
     {
@@ -457,6 +455,12 @@
       "from": "pkg:solitude",
       "kind": "dependency",
       "to": "pkg:@solitude/localization"
+    },
+    {
+      "id": "dependency:pkg:solitude->pkg:@solitude/plugin-api",
+      "from": "pkg:solitude",
+      "kind": "dependency",
+      "to": "pkg:@solitude/plugin-api"
     },
     {
       "id": "dependency:pkg:solitude->pkg:@solitude/plugin-runtime",

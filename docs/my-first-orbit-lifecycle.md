@@ -3,8 +3,9 @@
 This is the step 3 design. Physical predicates and confirmation rules are defined
 in [the observation specification](my-first-orbit-observations.md). This document
 chooses runtime ownership, objective state, entry, pause, suspension, and reset.
-The generic browser runtime/input lifetime prerequisite is implemented; adventure
-scenario, objective, and UI code do not exist yet. Director feedback and instrument
+The generic browser runtime/input lifetime prerequisite and standalone entry,
+scenario, session, and menu UI are implemented. Objective sampling and terminal
+outcomes are not implemented yet. Director feedback and instrument
 presentation remain steps 4 and 5.
 
 ## Ownership and reset decision
@@ -226,11 +227,16 @@ repeated replacement, disposal inside a callback, startup failure, held-key rese
 pending handler input, subscription cleanup, and retired callbacks. Real browser
 playtesting and runtime-cost measurement remain step 6.
 
-The next concrete session implements standalone pre-assembly mode selection and
-the adventure scenario/session capability: one calibrated craft, fresh generations
-starting in briefing, exclusive world contributions, and the shared launch/retry/
-menu path for URL and menu entry. Use the runtime handle and shell-owned keyboard
-host. Keep authored scenario/session content in the external standalone pack and
-use a typed capability for the composition shell. Observation/objective sampling
-follows that entry/scenario slice. Define director priorities before coding guidance and instrument
-presentation; do not expand the pilot into a campaign framework.
+The standalone entry/scenario slice implements pre-assembly selection, a calibrated
+craft, fresh run generations, and shared launch/retry/menu paths using the retained
+keyboard host. The pack owns session content and manual-flight policy; the shell
+uses its typed session capability. Playback/time-scale/focus plugins remain atomic
+pack entries and contribute no behavior in adventure instances. `V` is temporarily
+blocked alongside other autopilot modes until the Earth-relative reference exists.
+
+The next session implements shared validated orbit observations and completed-frame
+objective sampling, final-command bookkeeping, five-second confirmation, failure
+precedence, and latched terminal presentation. Add the opt-in Earth-relative
+velocity reference before enabling `V`. Define director priorities before coding
+guidance and instrument presentation; do not expand the pilot into a campaign
+framework. Real browser playtesting and runtime-cost verification remain step 6.

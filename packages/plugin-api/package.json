@@ -32,7 +32,8 @@
     "./telemetry": "./src/telemetry.ts",
     "./views": "./src/views.ts",
     "./world": "./src/world.ts",
-    "./world-model": "./src/world-model.ts"
+    "./world-model": "./src/world-model.ts",
+    "./standalone-session": "./src/standalone-session.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0",

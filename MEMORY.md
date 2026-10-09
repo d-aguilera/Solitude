@@ -108,7 +108,7 @@
 - `plugins/solitude-content-pack/`: shared five-entry build configuration for the separate browser and server content deployment packs.
 - `plugins/solitude-content-browser-pack-v1/` and `plugins/solitude-content-server-pack-v1/`: thin single-host deployment packs that bundle the ordered `newtonianGravity`, `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` implementations.
 - `plugins/multiplayer-pack-v1/`: independently built multiplayer-only browser plugin pack containing the remote identity HUD and localized ship-color entity names.
-- `plugins/standalone-pack-v1/`: independently built standalone-only browser plugin pack containing default ships, diagnostic playback, pause and time-scale controls/HUD, memory telemetry, profiling controls/HUD, and runtime operator focus switching.
+- `plugins/standalone-pack-v1/`: independently built standalone-only browser plugin pack containing default ships, diagnostic playback, pause and time-scale controls/HUD, memory telemetry, profiling controls/HUD, runtime operator focus switching, and the standalone session/adventure entry and manual-flight policy.
 - Production and test source lives under `packages/*`; the root `src` directory has been removed.
 - Root Vite config uses `packages/solitude` as the standalone app root; dedicated Vite configs build `dist/client`, `dist/server`, and `dist/standalone`.
 

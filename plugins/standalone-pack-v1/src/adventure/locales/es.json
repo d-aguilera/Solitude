@@ -1,0 +1,16 @@
+{
+  "title": "Solitude",
+  "adventure": "Mi primera órbita",
+  "freeFlight": "Vuelo libre",
+  "selectionError": "Modo de vuelo desconocido. Elige un vuelo en el menú.",
+  "startupError": "No se pudo iniciar este vuelo.",
+  "menu": "Volver al menú",
+  "begin": "Comenzar",
+  "resume": "Continuar",
+  "retry": "Reintentar",
+  "paused": "Vuelo en pausa",
+  "suspended": "Vuelo suspendido",
+  "suspensionBody": "El vuelo se detuvo mientras la ventana estaba inactiva o se interrumpió el reloj. Continúa cuando estés listo.",
+  "briefing": "La recuperación automática de órbita está desactivada. Tu trayectoria actual cruza la Tierra. Mantén Espacio para acelerar hacia delante y elevar el punto más bajo de tu órbita. Suelta para continuar sin propulsión. Esta aventura está en construcción; los objetivos y la orientación se añadirán después.",
+  "pause": "Pausar"
+}

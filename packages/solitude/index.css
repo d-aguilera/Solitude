@@ -22,3 +22,64 @@ body {
 .pip-view {
   border: 1px solid #555;
 }
+
+.standalone-ui {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  font-family: system-ui, sans-serif;
+  color: #e8f3fa;
+  display: grid;
+  place-items: center;
+}
+.standalone-panel {
+  pointer-events: auto;
+  max-width: 34rem;
+  padding: 2rem;
+  margin: 1rem;
+  border: 1px solid #416078;
+  border-radius: 0.75rem;
+  background: #0b1825f2;
+  box-shadow: 0 1rem 4rem #000a;
+}
+.standalone-panel h1 {
+  margin-top: 0;
+  font-size: 1.6rem;
+}
+.standalone-panel p {
+  line-height: 1.6;
+}
+.standalone-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.standalone-ui button {
+  pointer-events: auto;
+  cursor: pointer;
+  padding: 0.65rem 1rem;
+  font: inherit;
+  color: #e8f3fa;
+  border: 1px solid #557991;
+  border-radius: 0.3rem;
+  background: #182f43;
+}
+.standalone-ui button:hover {
+  background: #274a65;
+}
+.standalone-ui button:focus-visible {
+  outline: 3px solid #70d5ff;
+  outline-offset: 3px;
+}
+.standalone-ui button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.standalone-toolbar {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}

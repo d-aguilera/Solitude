@@ -1,0 +1,16 @@
+{
+  "title": "Solitude",
+  "adventure": "My First Orbit",
+  "freeFlight": "Free Flight",
+  "selectionError": "Unknown flight mode. Choose a flight from the menu.",
+  "startupError": "Unable to start this flight.",
+  "menu": "Return to menu",
+  "begin": "Begin",
+  "resume": "Resume",
+  "retry": "Retry",
+  "paused": "Flight paused",
+  "suspended": "Flight suspended",
+  "suspensionBody": "Flight stopped while the window was inactive or timing was interrupted. Resume when you are ready.",
+  "briefing": "Automatic orbit recovery is offline. Your current trajectory intersects Earth. Hold Space to thrust forward and raise the lowest point of your orbit. Release to coast. This first adventure is under construction; orbit objectives and guidance are coming next.",
+  "pause": "Pause"
+}
