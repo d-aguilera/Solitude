@@ -49,6 +49,7 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
   let craft: ExternalControlledBody | undefined;
   let propulsionActive: boolean | null = null;
   let lastCompletedSimTime: number | null = null;
+  const towardEarth = vec3.zero();
   const sample: AdventureSample = {
     ...createOrbitObservation(),
     generation: 0,
@@ -56,6 +57,7 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
     simTimeMillis: 0,
     nowMs: 0,
     earthAltitudeMeters: null,
+    earthUpAlignmentCosine: null,
     propulsionActive: null,
   };
   const policy = {
@@ -218,6 +220,19 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
           sample.earthAltitudeMeters = Number.isFinite(altitude)
             ? altitude
             : null;
+          sample.earthUpAlignmentCosine = null;
+          if (sample.earthAltitudeMeters !== null && earth && craft) {
+            vec3.subInto(towardEarth, earth.state.position, craft.position);
+            const denominator =
+              (altitude + earth.radius) *
+              Math.sqrt(vec3.lengthSq(craft.frame.up));
+            const cosine =
+              denominator > 0
+                ? vec3.dot(towardEarth, craft.frame.up) / denominator
+                : NaN;
+            if (Number.isFinite(cosine))
+              sample.earthUpAlignmentCosine = Math.max(-1, Math.min(1, cosine));
+          }
           sample.propulsionActive = propulsionActive;
           objective.sample(sample);
           if (sample.primaryId !== primaryNameId) {

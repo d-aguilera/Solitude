@@ -44,6 +44,7 @@ export function createGuidance(
   let activeMillis = 0;
   let aligned = true;
   let orbitLineSeen = false;
+  let orbitAttitudeSeen = false;
   let previousSafe = false;
   let resetCounter = 0;
   let cue: AdventureCue | null = null;
@@ -178,6 +179,7 @@ export function createGuidance(
         hint =
           stallUntil > activeMillis ? messages.hintStall : messages.hintRecover;
       else if (cue === "showOrbit") hint = messages.hintOrbit;
+      else if (cue === "orientOrbit") hint = messages.hintOrientOrbit;
       else if (cue === "align") hint = messages.hintAlign;
       else if (cue === "release" || cue === "coast") hint = messages.hintCoast;
       else if (cue === "escape" || cue === "highApoapsis")
@@ -205,7 +207,7 @@ export function createGuidance(
                 ? i === 1 || i === 6
                 : next === "coast"
                   ? i === 6
-                  : next === "align"
+                  : next === "align" || next === "orientOrbit"
                     ? i === 1 || i === 4
                     : i === 1;
       if (instruments[i].emphasized !== emphasized) {
@@ -392,6 +394,16 @@ export function createGuidance(
       let next: AdventureCue;
       if (orbitLineEnabled()) orbitLineSeen = true;
       if (
+        orbitLineSeen &&
+        sample.progradeAlignmentCosine !== null &&
+        Number.isFinite(sample.progradeAlignmentCosine) &&
+        sample.progradeAlignmentCosine >= alignedEnter &&
+        sample.earthUpAlignmentCosine !== null &&
+        Number.isFinite(sample.earthUpAlignmentCosine) &&
+        sample.earthUpAlignmentCosine >= alignedEnter
+      )
+        orbitAttitudeSeen = true;
+      if (
         !finite(sample.earthAltitudeMeters) ||
         !sample.orbitValid ||
         !finite(sample.periapsisAltitudeMeters) ||
@@ -405,6 +417,7 @@ export function createGuidance(
       else if (objective.safeOrbit && sample.propulsionActive) next = "release";
       else if (objective.status === "confirming") next = "coast";
       else if (!orbitLineSeen) next = "showOrbit";
+      else if (!orbitAttitudeSeen) next = "orientOrbit";
       else if (sample.periapsisAltitudeMeters! < 150_000)
         next = aligned ? "recover" : "align";
       else next = "unavailable";
@@ -415,7 +428,10 @@ export function createGuidance(
       }
       text(
         "warningText",
-        next === "showOrbit" || next === "recover" || next === "align"
+        next === "showOrbit" ||
+          next === "orientOrbit" ||
+          next === "recover" ||
+          next === "align"
           ? sample.periapsisAltitudeMeters! < 0
             ? messages.intersection
             : messages.belowTarget

@@ -50,13 +50,14 @@ duration or cooldown: a changed condition replaces stale instructions immediatel
 | 0        | Terminal, briefing, paused, suspended, or lifecycle replacement pending                                                        | Hide flight guidance; show existing phase presentation.                                                                                                                                           |
 | 1        | Earth altitude unavailable, invalid orbital observation, missing required apsis for a bound orbit, or final propulsion unknown | “Flight data unavailable. Release thrust while instruments recover.” Emphasize unavailable fields; make no burn recommendation.                                                                   |
 | 2        | Dominant primary is not Earth                                                                                                  | “Earth is no longer the orbit reference. Release thrust and inspect your trajectory; Retry starts at Earth.” Emphasize primary. Do not use another body's apsides as Earth safety.                |
-| 3        | Valid Earth orbit is unbound                                                                                                   | “This trajectory escapes Earth. Release thrust. For a correction, align prograde with V, then use short reverse burns with B.” Emphasize orbit type. No invented apoapsis or guaranteed recovery. |
-| 4        | Bound Earth orbit has apoapsis >600 km                                                                                         | “The highest point is too high. Release thrust. Align prograde with V, then use short reverse burns with B while watching the highest point.” Emphasize apoapsis.                                 |
+| 3        | Valid Earth orbit is unbound                                                                                                   | “This trajectory escapes Earth. Release thrust. For a correction, align prograde with Z, then use short reverse burns with B.” Emphasize orbit type. No invented apoapsis or guaranteed recovery. |
+| 4        | Bound Earth orbit has apoapsis >600 km                                                                                         | “The highest point is too high. Release thrust. Align prograde with Z, then use short reverse burns with B while watching the highest point.” Emphasize apoapsis.                                 |
 | 5        | Objective reports safe orbit and final propulsion is active                                                                    | “Safe orbit reached. Release Space/B to begin the five-second coast.” Emphasize periapsis and coast.                                                                                              |
 | 6        | Objective is confirming                                                                                                        | “Keep thrust off while the safe orbit is confirmed.” Emphasize coast; display elapsed time out of five seconds.                                                                                   |
 | 7        | Orbit-line presentation is available and has not yet been enabled in this run                                                  | “Press G to show your predicted orbit line. Inspect its path around Earth before burning.” Emphasize periapsis.                                                                                   |
-| 8        | Periapsis <150 km and prograde alignment is unavailable or below cos(10°)                                                      | “Release thrust and point along Earth's relative motion. V can align you; wait for alignment before burning.” Emphasize alignment and periapsis.                                                  |
-| 9        | Periapsis <150 km and prograde aligned                                                                                         | “Hold Space to raise the lowest point to at least 150 km. Watch the highest point stay at or below 600 km.” Emphasize periapsis.                                                                  |
+| 8        | Orbit line enabled, but nose or Earth-up alignment has not reached the initial attitude target                                 | “Press Z to align to your orbit. Wait until Earth is above and the nose follows the orbit line before thrusting.”                                                                                 |
+| 9        | Periapsis <150 km and prograde alignment is unavailable or below cos(10°)                                                      | “Release thrust and point along Earth's relative motion. Z can align you; wait for alignment before burning.” Emphasize alignment and periapsis.                                                  |
+| 10       | Periapsis <150 km and prograde aligned                                                                                         | “Hold Space to raise the lowest point to at least 150 km. Watch the highest point stay at or below 600 km.” Emphasize periapsis.                                                                  |
 
 The orbit-line preparation step observes the generic read-only
 `solitude.render.orbitSegmentsState.v1` capability. It completes when the owner
@@ -67,10 +68,16 @@ skip this visual instruction. Safety warnings and release/coast always outrank i
 This is guidance preparation and does not gate manual thrust or change objective
 success predicates.
 
-`V` is the recommended optional alignment assist for this lesson: it points the
-nose along Earth-relative velocity, which is the required forward-burn direction.
-The ship starts aligned, with Earth above. `Z` also controls roll toward the orbit
-reference; the adventure continues to permit `V` and keeps `Z` disabled.
+After G, the next preparation cue asks for Z. Completed samples expose
+`earthUpAlignmentCosine`, the dot product of normalized ship-up and direction
+toward Earth. The step finishes only when this and Earth-relative prograde
+alignment are both within 8 degrees, not merely when Z is pressed. It latches
+for the run and resets on Retry. Invalid/missing alignment never completes it.
+
+Z aligns the nose along relative motion and controls roll to place Earth above
+the ship. The initial roll keeps Earth on the left to make inspecting the orbit
+line easier. V remains available for nose-only alignment. Both assists leave
+propulsion manual, and safety/release/coast retain higher priority.
 
 An otherwise inconsistent observation/objective combination uses priority 1. The
 director must not infer confirmation from rounded instruments or start its own
@@ -137,7 +144,7 @@ Re-enabling hints shows the current explanation, not a remembered prior cue.
 | Context                     | Expanded explanation                                                                                                                                                                                                                               |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Recovery                    | Periapsis is the orbit's predicted lowest point above Earth's surface. Forward thrust while pointing prograde raises it here. A negative value means the predicted path intersects Earth; the target is 150 km, with highest point at most 600 km. |
-| Alignment                   | V toggles an attitude assist referenced to Earth's motion. It points the craft without firing the main engine. Wait for the alignment instrument, then use Space; manual attitude also works.                                                      |
+| Alignment                   | Z toggles orbit attitude assistance, aligning the nose and roll without firing the main engine. V is available for nose-only alignment. Wait for the alignment instrument, then use Space; manual attitude also works.                             |
 | Release/coast               | Safe prediction alone is not completion. Release both thrust controls and coast for five active seconds. A burn or lost safety restarts confirmation; explicit pause preserves earned time.                                                        |
 | High apoapsis/escape        | Release first, align prograde, then try short B burns. Reverse thrust can lower the highest point but may also lower periapsis; watch both limits. Retry is available through P.                                                                   |
 | Unavailable/changed primary | Values marked unavailable do not establish safety. Release thrust; if Earth data does not recover, pause with P and Retry.                                                                                                                         |

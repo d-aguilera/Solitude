@@ -63,6 +63,7 @@ export interface AdventureSample extends ExternalOrbitObservation {
   simTimeMillis: number;
   nowMs: number;
   earthAltitudeMeters: number | null;
+  earthUpAlignmentCosine: number | null;
   propulsionActive: boolean | null;
 }
 export interface AdventureObjective {
@@ -92,6 +93,7 @@ export function isAdventureObjective(
 export const adventureGuidanceCapability = "solitude.adventureGuidance.v1";
 export type AdventureCue =
   | "showOrbit"
+  | "orientOrbit"
   | "unavailable"
   | "primaryChanged"
   | "escape"

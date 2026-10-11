@@ -17,6 +17,7 @@ function ready(locale: ExternalLocale = "en", generation = 3) {
     nowMs: 0,
     simTimeMillis: 0,
     earthAltitudeMeters: null,
+    earthUpAlignmentCosine: null,
     propulsionActive: null,
   };
   let now = 0;
@@ -42,6 +43,7 @@ function ready(locale: ExternalLocale = "en", generation = 3) {
         periapsisAltitudeMeters: -50000,
         apoapsisAltitudeMeters: 400000,
         earthAltitudeMeters: 400000,
+        earthUpAlignmentCosine: 1,
         propulsionActive: false,
         progradeAlignmentCosine: 1,
       },
@@ -85,15 +87,15 @@ it("starts with the actual orbit-line state, then offers velocity alignment and 
   expect(r.g.cueText).toContain("Press G");
   expect(r.g.warningText).toContain("intersects Earth");
   r.g.setHintsEnabled(r.c.session.generation, true);
-  expect(r.g.hintText).toContain("V");
+  expect(r.g.hintText).toContain("Z");
   r.frame({ progradeAlignmentCosine: 0 });
   expect(r.g.cue).toBe("showOrbit");
   enabled = true;
   r.frame({ progradeAlignmentCosine: 0 });
-  expect(r.g.cue).toBe("align");
+  expect(r.g.cue).toBe("orientOrbit");
   r.frame();
   expect(r.g.cue).toBe("recover");
-  expect(r.g.cueText).toContain("V");
+  expect(r.g.cueText).toContain("Z");
   enabled = false;
   r.frame();
   expect(r.g.cue).toBe("recover");
@@ -110,6 +112,39 @@ it("keeps safety and release cues ahead of the orbit-line preparation step", () 
   expect(r.g.cue).toBe("highApoapsis");
   r.frame({ ...safe, propulsionActive: true });
   expect(r.g.cue).toBe("release");
+});
+
+it("waits for the measured nose and Earth-up alignment after G before offering the burn", () => {
+  const r = ready();
+  let enabled = false;
+  r.c.attachOrbitLine({
+    get enabled() {
+      return enabled;
+    },
+  });
+  r.frame({ earthUpAlignmentCosine: 0 });
+  expect(r.g.cue).toBe("showOrbit");
+  enabled = true;
+  r.frame({ earthUpAlignmentCosine: 0 });
+  expect(r.g.cue).toBe("orientOrbit");
+  expect(r.g.cueText).toContain("Press Z");
+  r.frame({ earthUpAlignmentCosine: null });
+  expect(r.g.cue).toBe("orientOrbit");
+  const cosine = (degrees: number) => Math.cos((degrees * Math.PI) / 180);
+  r.frame({ earthUpAlignmentCosine: cosine(9) });
+  expect(r.g.cue).toBe("orientOrbit");
+  r.frame({ earthUpAlignmentCosine: 1, progradeAlignmentCosine: cosine(9) });
+  expect(r.g.cue).toBe("orientOrbit");
+  r.frame({
+    earthUpAlignmentCosine: cosine(8),
+    progradeAlignmentCosine: cosine(8),
+  });
+  expect(r.g.cue).toBe("recover");
+  r.frame({ earthUpAlignmentCosine: 0 });
+  expect(r.g.cue).toBe("recover");
+  const retry = ready("en", 4);
+  retry.frame({ earthUpAlignmentCosine: 0 });
+  expect(retry.g.cue).toBe("orientOrbit");
 });
 
 describe("adventure guidance director", () => {
@@ -169,7 +204,7 @@ describe("adventure guidance director", () => {
     const r = ready();
     r.frame({ apoapsisAltitudeMeters: 600001 });
     expect(r.g.cue).toBe("highApoapsis");
-    expect(r.g.cueText).toContain("Align prograde with V");
+    expect(r.g.cueText).toContain("Align prograde with Z");
     expect(r.g.cueText).toContain("reverse burns with B");
     expect(r.g.instruments[2].emphasized).toBe(true);
     r.frame({ isBound: false, apoapsisAltitudeMeters: null });
@@ -210,6 +245,7 @@ describe("adventure guidance director", () => {
   it("uses a 10/8 degree deadband only for attitude advice, never for safety", () => {
     const r = ready();
     const cosine = (degrees: number) => Math.cos((degrees * Math.PI) / 180);
+    r.frame(); // Complete the initial orbit-attitude step before testing correction advice.
     r.frame({ progradeAlignmentCosine: cosine(11) });
     expect(r.g.cue).toBe("align");
     r.frame({ progradeAlignmentCosine: cosine(9) });

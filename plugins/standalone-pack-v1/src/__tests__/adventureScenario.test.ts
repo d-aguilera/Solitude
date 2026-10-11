@@ -6,6 +6,10 @@ import {
   controllableEntityProviderCapability,
   type ExternalDirectControllableEntityPlacement,
 } from "@solitude/plugin-api/controllable-entities";
+import {
+  keyboardInputCapability,
+  type ExternalKeyboardInputProvider,
+} from "@solitude/plugin-api/input";
 import type { ExternalLoopUpdateParams } from "@solitude/plugin-api/loop";
 import { mat3, vec3 } from "@solitude/plugin-api/math";
 import type {
@@ -163,6 +167,32 @@ function assemble(
 }
 
 describe("standalone adventure assembly", () => {
+  it("lets Z reach the orbit autopilot only during flight and keeps circularization blocked", () => {
+    vi.stubGlobal("document", {
+      visibilityState: "visible",
+      hasFocus: () => true,
+    });
+    const s = assemble("my-first-orbit");
+    const session = s.capabilityRegistry
+      .getAll(standaloneSessionCapability)
+      .find(isStandaloneSession)!;
+    const input = s.plugins[4].capabilities!.find(
+      ({ id }) => id === keyboardInputCapability,
+    )!.value as ExternalKeyboardInputProvider;
+    const guard = input.createKeyHandler!({}, { unlockedActions: new Set() });
+    expect(guard.handleKeyDown("orbit", false)).toBe(true);
+    for (let i = 0; i <= 30; i++)
+      s.plugins[3].hooks!.loop!.afterFrame!({
+        nowMs: (i * 1000) / 60,
+        dtMillis: 1000 / 60,
+      } as ExternalLoopUpdateParams);
+    session.command("begin");
+    expect(guard.handleKeyDown("orbit", false)).toBe(false);
+    expect(guard.handleKeyDown("circleNow", false)).toBe(true);
+    expect(guard.handleKeyDown("alignToBody", false)).toBe(true);
+    session.command("pause");
+    expect(guard.handleKeyDown("orbit", false)).toBe(true);
+  });
   it("binds orbit-line guidance to the discovered provider state", () => {
     vi.stubGlobal("document", {
       visibilityState: "visible",
@@ -208,6 +238,7 @@ describe("standalone adventure assembly", () => {
       periapsisAltitudeMeters: -50000,
       apoapsisAltitudeMeters: 400000,
       earthAltitudeMeters: 400000,
+      earthUpAlignmentCosine: 1,
       propulsionActive: false,
       progradeAlignmentCosine: 1,
     };
@@ -247,9 +278,9 @@ describe("standalone adventure assembly", () => {
     expect(speed).toBeCloseTo(7539.984, 2);
     expect(state.frame?.forward).toEqual({ x: 0, y: 1, z: 0 });
     const toEarth = vec3.subInto(vec3.zero(), earth.position, state.position);
-    expect(vec3.dot(toEarth, state.frame!.right)).toBeCloseTo(0, 5);
+    expect(vec3.dot(toEarth, state.frame!.right)).toBeCloseTo(-radius, 5);
     expect(vec3.dot(toEarth, state.frame!.forward)).toBeCloseTo(0, 5);
-    expect(vec3.dot(toEarth, state.frame!.up)).toBeCloseTo(radius, 5);
+    expect(vec3.dot(toEarth, state.frame!.up)).toBeCloseTo(0, 5);
     const renderedUp = vec3.zero();
     mat3.mulVec3Into(renderedUp, state.orientation!, vec3.create(0, 0, 1));
     expect(renderedUp).toEqual(state.frame!.up);
@@ -322,6 +353,7 @@ describe("standalone adventure assembly", () => {
         dtMillis: 16,
         controlInput: {
           circleNow: true,
+          orbit: true,
           thrust9: true,
           playbackCaptureToggle: true,
           timeScaleUp: true,
@@ -356,7 +388,10 @@ describe("standalone adventure assembly", () => {
       params.nowMs = 116;
       params.controlInput.burnForward = true;
       params.controlInput.circleNow = true;
+      params.controlInput.orbit = true;
       early.updateLoopState!(params);
+      expect(params.controlInput.orbit).toBe(true);
+      expect(params.controlInput.circleNow).toBe(false);
       expect(final.updateLoopState!(params)?.framePolicy).toMatchObject({
         advanceSim: true,
         simDtMillis: 16,

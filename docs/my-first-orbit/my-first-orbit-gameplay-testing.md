@@ -292,29 +292,19 @@ strict flight interruption guards, and explicit Resume after ALT-tab are retaine
 Temporary console/frame diagnostics have been removed. Captures remain here as
 evidence; no further case-10 testing is needed.
 
-## Presentation feedback — opening view
+## Presentation feedback — opening view and orbit attitude
 
-The initial view should show Earth above the ship. Implemented by rolling the
-starting attitude 90 degrees while keeping the nose Earth-relative prograde.
-
-### Visual check
-
-- Start the adventure. Earth should be above the ship.
-- Pause and choose “Reintentar”. The same view should return.
-
-Pending visual confirmation.
-
-## Presentation feedback — first flight instruction
-
-Implemented: the first recovery cue asks for G to show the predicted orbit line.
-After the line is enabled, guidance recommends V if alignment is needed, followed
-by Space for the recovery burn. V is optional because the ship starts aligned.
+Implemented: the opening view restores Earth to the left. The first recovery
+cue asks for G to show the orbit line; the next asks for Z to align the nose along
+the orbit and roll Earth above. Guidance waits for the measured attitude before
+showing the burn instruction. Z is enabled during flight and applies no thrust.
 
 ### Visual check
 
-- Begin. The first flight cue should ask for G.
-- Press G. The orbit line should appear and the cue should advance.
-- Use V if needed, then hold Space for the recovery burn.
-- Retry. The first G instruction should return, with Earth still above the ship.
+- Begin. Earth should be on the left.
+- Press G. The orbit line should appear and the next cue should ask for Z.
+- Press Z. Wait for Earth to move above and the view to settle.
+- The cue should advance to the Space burn instruction. No thrust should occur yet.
+- Recover normally, then Retry. Earth should be on the left and G should be the first cue again.
 
 Pending browser confirmation.

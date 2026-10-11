@@ -184,7 +184,7 @@ not capture, restore, or step the adventure even through direct requests.
 A host input handle must support clearing dispatcher control state and pending
 provider toggles. Releasing a held key after reset is harmless. Track physical
 keys suppressed by a clear and ignore repeat keydown events until keyup, so a
-held Space, P, or V cannot reactivate across Begin, Resume, Retry, or menu entry.
+held Space, P, V, or Z cannot reactivate across Begin, Resume, Retry, or menu entry.
 Clear input on blur/visibility loss too. The shell retains this release gate
 across runtime replacement and applies it to a newly constructed dispatcher;
 it owns no semantic spacecraft policy. Simulation input clearing alone cannot
@@ -240,8 +240,10 @@ The standalone entry/scenario slice implements pre-assembly selection, a calibra
 craft, fresh run generations, and shared launch/retry/menu paths using the retained
 keyboard host. The pack owns session content and manual-flight policy; the shell
 uses its typed session capability. Playback/time-scale/focus plugins remain atomic
-pack entries and contribute no behavior in adventure instances. `V` uses the opt-in Earth-relative velocity reference; other autopilot modes
-remain blocked.
+pack entries and contribute no behavior in adventure instances. `V` uses the opt-in Earth-relative velocity reference. `Z` also aligns the nose
+to primary-relative motion and controls roll to place Earth above the ship;
+both are attitude assistance. Automatic circularization and body-target
+alignment remain blocked.
 
 The sampling slice implements `solitude.orbitObservation.v1`, a final-command
 ledger whose resolver must be last, one retained sample per completed advancing

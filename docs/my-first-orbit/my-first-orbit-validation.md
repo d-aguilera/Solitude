@@ -101,7 +101,8 @@ Repeat the presentation checks with `locale=es` and `locale=fr`.
    the instruments make the effect of the burn clear. Rounded values alone must
    not cause completion.
 2. Retry and burn for about 20 seconds. Check the high-apoapsis warning; use `B`
-   to correct it, release, and confirm completion. Try a manual attitude change
+   to correct it, release, and confirm completion. Try `G` then `Z` from the initial Earth-left view; Z should roll Earth above
+   without thrust before recovery. Try a manual attitude change
    and `V` before thrust to assess alignment assistance and advice.
 3. During burn/coast, pause with `P`, Resume, then switch tabs and return. Pause
    preserves coast progress; tab suspension clears it and requires Resume.

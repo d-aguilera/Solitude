@@ -190,12 +190,33 @@ describe("My First Orbit with production physics", () => {
         -50000,
         -1,
       );
-      expect(run.guidance.cue).toBe("recover");
+      expect(run.guidance.cue).toBe("orientOrbit");
       const burnMillis = recover(run, { burnForward: true });
       expect(burnMillis).toBeGreaterThan(6000);
       expect(burnMillis).toBeLessThan(6200);
     },
   );
+
+  it("uses Z to roll Earth above and align the nose without propulsion, then recovers manually", () => {
+    const run = createRun(60);
+    run.frame();
+    expect(run.objective.latestSample.earthUpAlignmentCosine).toBeCloseTo(0, 5);
+    expect(run.guidance.cue).toBe("orientOrbit");
+    for (let i = 0; i < 600; i++) {
+      run.frame({ orbit: true });
+      expect(run.objective.latestSample.propulsionActive).toBe(false);
+    }
+    expect(run.params.controlInput.orbit).toBe(true);
+    expect(run.objective.latestSample.earthUpAlignmentCosine).toBeGreaterThan(
+      Math.cos((8 * Math.PI) / 180),
+    );
+    expect(run.objective.latestSample.progradeAlignmentCosine).toBeGreaterThan(
+      Math.cos((8 * Math.PI) / 180),
+    );
+    expect(run.guidance.cue).toBe("recover");
+    recover(run, { orbit: true, burnForward: true });
+    expect(run.session.phase).toBe("completed");
+  });
 
   it("fails at the actual Earth boundary with no thrust and blocks the next tick", () => {
     const run = createRun(60);
@@ -294,7 +315,7 @@ describe("My First Orbit with production physics", () => {
       -1,
     );
     expect(retry.objective.latestSample.propulsionActive).toBe(false);
-    expect(retry.guidance.cue).toBe("recover");
+    expect(retry.guidance.cue).toBe("orientOrbit");
   });
 
   it("recovers an overshoot with manual reverse thrust", () => {

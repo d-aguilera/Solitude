@@ -11,7 +11,7 @@
   "paused": "Flight paused",
   "suspended": "Flight suspended",
   "suspensionBody": "Flight stopped while the window was inactive or timing was interrupted. Resume when you are ready.",
-  "briefing": "Automatic orbit recovery is offline. Your current trajectory intersects Earth. First press G to show the predicted orbit line. V can align your nose with Earth-relative velocity; the ship already starts aligned. Then hold Space to raise the lowest point to at least 150 km while keeping the highest point at or below 600 km. Release and coast for five seconds. B thrusts backwards to correct an overshoot.",
+  "briefing": "Automatic orbit recovery is offline. Your trajectory intersects Earth. First press G to show the predicted orbit line with Earth to your left. Then press Z to align the nose along the orbit and roll Earth above the ship. Wait for the view to settle, then hold Space to raise the lowest point to at least 150 km while keeping the highest at or below 600 km. Release and coast for five seconds. B thrusts backwards to correct an overshoot.",
   "pause": "Pause",
   "completed": "Orbit recovered",
   "completedBody": "You held a safe Earth orbit for five seconds without propulsion. Recovery complete.",

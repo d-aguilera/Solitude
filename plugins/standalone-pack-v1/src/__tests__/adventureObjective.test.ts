@@ -23,6 +23,7 @@ function sample(
     periapsisAltitudeMeters: 150_000,
     apoapsisAltitudeMeters: 600_000,
     earthAltitudeMeters: 400_000,
+    earthUpAlignmentCosine: 1,
     propulsionActive: false,
     ...patch,
   };
@@ -110,7 +111,11 @@ describe("completed-frame adventure objective", () => {
   it("never treats missing or nonfinite Earth distance as a boundary crossing", () => {
     const h = ready();
     h.objective.sample(
-      sample(1, 100, { earthAltitudeMeters: null, orbitValid: false }),
+      sample(1, 100, {
+        earthAltitudeMeters: null,
+        earthUpAlignmentCosine: null,
+        orbitValid: false,
+      }),
     );
     h.objective.sample(
       sample(2, 200, { earthAltitudeMeters: NaN, orbitValid: false }),

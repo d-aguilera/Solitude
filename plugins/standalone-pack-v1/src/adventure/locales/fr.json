@@ -11,7 +11,7 @@
   "paused": "Vol en pause",
   "suspended": "Vol suspendu",
   "suspensionBody": "Le vol a été arrêté pendant que la fenêtre était inactive ou que le temps a été interrompu. Reprenez quand vous êtes prêt.",
-  "briefing": "La récupération automatique de l’orbite est hors service. Votre trajectoire actuelle traverse la Terre. Appuyez d’abord sur G pour afficher la ligne orbitale prévue. V peut aligner le nez sur la vitesse relative à la Terre ; le vaisseau démarre déjà aligné. Maintenez ensuite Espace pour relever le point le plus bas à au moins 150 km sans dépasser 600 km au point le plus haut. Relâchez et volez sans propulsion pendant cinq secondes. B pousse en arrière pour corriger un dépassement.",
+  "briefing": "La récupération automatique de l’orbite est hors service. Votre trajectoire traverse la Terre. Appuyez d’abord sur G pour afficher la ligne orbitale prévue avec la Terre à gauche. Appuyez ensuite sur Z pour orienter le nez selon l’orbite et placer la Terre au-dessus du vaisseau. Attendez que la vue se stabilise, puis maintenez Espace pour relever le point le plus bas à au moins 150 km sans dépasser 600 km au point le plus haut. Relâchez et volez sans propulsion pendant cinq secondes. B pousse en arrière pour corriger un dépassement.",
   "pause": "Pause",
   "completed": "Orbite rétablie",
   "completedBody": "Vous avez maintenu une orbite terrestre sûre pendant cinq secondes sans propulsion. Récupération terminée.",

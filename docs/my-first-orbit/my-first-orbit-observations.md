@@ -22,14 +22,15 @@ predicted periapsis altitude -50,000 m. For Earth radius `R`, use
 `ra = R + 400000`, `rp = R - 50000`, `a = (ra + rp) / 2`, and
 `v = sqrt(mu * (2 / ra - 1 / a))`. Add Earth's velocity to this tangential
 relative velocity. Initial relative speed is approximately 7,539.984 m/s.
-Set the attitude from the relative velocity, rolling so the local up axis points
-toward Earth and Earth appears above the ship in the opening view. Start with
-zero angular velocity and autopilot off. `createOrbitingPlacement` constructs a circular orbit and aligns
+Set the nose from relative velocity with the original roll: Earth appears to the
+left in the opening view, which makes the orbit line easier to inspect. Start
+with zero angular velocity and autopilot off. After G reveals the line, Z
+aligns the nose with relative motion and rolls Earth above the ship. `createOrbitingPlacement` constructs a circular orbit and aligns
 to world velocity, so it cannot supply this scenario unchanged.
 
 Use a fixed main-engine acceleration of 10 m/s² while holding forward or reverse
 thrust. Disable lateral RCS translation and numeric thrust-level changes during
-the adventure. Manual attitude controls and `V` remain available. Reverse thrust
+the adventure. Manual attitude controls, `Z` orbit attitude, and `V` nose alignment remain available. Reverse thrust
 provides an overshoot correction; initial guidance teaches forward thrust only.
 There is no automatic engine cutoff: the player chooses when to release.
 Sandbox retains its current acceleration and controls.
@@ -222,7 +223,7 @@ before operator control-state updates and attitude resolution. Clear `circleNow`
 and unsupported actions in both focused input and entity-addressed inputs; do
 not depend on hiding the `X` keyboard binding. The final manual-only resolver
 also prevents autonomous propulsion from escaping the policy. For the pilot,
-allow manual attitude and velocity alignment; clear `alignToBody` and `orbit`
+allow manual attitude, orbit attitude, and velocity alignment; clear `alignToBody`
 to keep assistance focused on the lesson. Disallowed requests never select or
 persist an autopilot mode.
 
