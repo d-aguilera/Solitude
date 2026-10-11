@@ -280,42 +280,34 @@ The "Vuelo suspendido" popup shows up instead. Clicking on "Continuar" resumes t
 
 ### Status
 
-Clock correction implemented; pending Chrome confirmation. The
-[raw timing log](my-first-orbit-gameplay-testing-case10-03.log) captured the
-unexpected generation-2 suspension: supplied frame timestamps advanced
-499.8 ms, but callback execution advanced only 1.8 ms. The preceding callback
-used a timestamp about 502 ms old. Measured frame work stayed below 2.1 ms.
-The log also contains real delays outside callbacks; their cause is unproven.
+Open. The monotonic callback-clock correction does not resolve the rushed
+Retry case. The [latest capture](my-first-orbit-gameplay-testing-case10-04.json)
+contains four actual gaps of 465–541 ms, with 463–540 ms outside measured
+callbacks. Across its nine distinct recorded frames, callback work peaks at
+2.4 ms and simulation never advances.
 
-The browser loop now samples `performance.now()` at callback entry and uses
-that same time and delta for physics, readiness, objectives, and guidance.
-The supplied animation-frame timestamp remains available only for diagnostics.
-Actual gaps over 250 ms still suspend; Begin/Resume still rebase without a tick.
-Both console messages remain stringified. Timing is off by default.
+The export retains only the last four gap reports, so later non-advancing frames
+can replace the report associated with the initial suspension. It does not
+identify the work delaying callback delivery. A full browser trace is needed.
+Texture uploads run in image-load callbacks outside the measured frame stages;
+they are an investigation target, not an established cause.
 
-### Next check
+The shared callback clock and the strict 250 ms interruption guard remain.
+Case 10 is unresolved; no new gameplay fix is claimed.
 
-- Reload with Chrome's console closed.
-- Start, wait 3 seconds, then press P.
-- Click “Reintentar”, then “Comenzar” as soon as it enables.
-- Repeat 5 times. Flight should start without “Vuelo suspendido”.
-- ALT-tab away and back once. Flight should still require “Continuar”.
-- Open Free Flight once and check that movement and controls work normally.
+### Next check — one Chrome Performance recording
 
-### Only if it still fails
+- Reload, start the adventure, wait 3 seconds, then press P.
+- Open DevTools → Performance. Keep CPU and network at “No throttling”.
+- Click Record, then click back into the game and rush “Reintentar” → “Comenzar”.
+- When “Vuelo suspendido” appears, click Stop.
+- Click the download icon → Save trace. Save under
+  `docs/my-first-orbit-gameplay-testing-case10-05.json.gz`.
 
-Enable timing in the console, then click back into the game and retry:
+Keep gzip enabled if offered; an uncompressed `.json` trace is also fine.
+No console commands or repeated runs are needed for this check. Save the trace
+file itself, rather than copying its console output.
 
-```js
-Object.assign(window.__solitudeRenderDebug, { timing: true, frameGaps: [] });
-```
-
-After suspension, copy the retained reports:
-
-```js
-copy(JSON.stringify(window.__solitudeRenderDebug.frameGaps, null, 2));
-```
-
-Save the clipboard as `docs/my-first-orbit-gameplay-testing-case10-04.json`.
-Raw console text is also useful. `copy(...)` returning `undefined` is normal:
-it writes to the clipboard. Timing stays on across Retry; reloading turns it off.
+These steps follow Chrome's official
+[recording instructions](https://developer.chrome.com/docs/devtools/performance/reference#record-runtime-performance)
+and [trace export instructions](https://developer.chrome.com/docs/devtools/performance/save-trace).
