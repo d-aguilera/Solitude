@@ -280,34 +280,30 @@ The "Vuelo suspendido" popup shows up instead. Clicking on "Continuar" resumes t
 
 ### Status
 
-Open. The monotonic callback-clock correction does not resolve the rushed
-Retry case. The [latest capture](my-first-orbit-gameplay-testing-case10-04.json)
-contains four actual gaps of 465–541 ms, with 463–540 ms outside measured
-callbacks. Across its nine distinct recorded frames, callback work peaks at
-2.4 ms and simulation never advances.
+Texture-loading fix implemented; pending Chrome confirmation. The
+[Performance trace](my-first-orbit-gameplay-testing-case10-05.json.gz) contains
+five `GpuMeshRenderer` image-load handlers taking 515–587 ms each. Each handler
+synchronously uploads an HTML image, with 243–280 ms of JPEG decoding recorded
+on the main thread. This identifies work outside the frame timings that blocks
+animation callbacks. The export was useful with resource content and source
+maps unchecked.
 
-The export retains only the last four gap reports, so later non-advancing frames
-can replace the report associated with the initial suspension. It does not
-identify the work delaying callback delivery. A full browser trace is needed.
-Texture uploads run in image-load callbacks outside the measured frame stages;
-they are an investigation target, not an established cause.
+Texture preparation now fetches compressed bytes and asynchronously creates a
+shared decoded bitmap. Views upload original-resolution pixels in strips of at
+most 2 MiB per view per frame, with storage allocation on a separate frame.
+Textures become visible only after the full upload. Completed or cancelled
+uploads release decoded data; Retry aborts unused requests and rejects late
+results for disposed renderers. The flight interruption guard remains strict.
 
-The shared callback clock and the strict 250 ms interruption guard remain.
-Case 10 is unresolved; no new gameplay fix is claimed.
+### Next check
 
-### Next check — one Chrome Performance recording
+- Reload with DevTools closed.
+- Start, wait 3 seconds, then press P.
+- Rush “Reintentar” → “Comenzar” as soon as it enables. Repeat 5 times.
+- Check that flight starts and Earth's surface/clouds finish appearing normally.
+- ALT-tab away and back once. “Continuar” should still be required.
+- Open Free Flight and check Earth/Moon textures and controls.
 
-- Reload, start the adventure, wait 3 seconds, then press P.
-- Open DevTools → Performance. Keep CPU and network at “No throttling”.
-- Click Record, then click back into the game and rush “Reintentar” → “Comenzar”.
-- When “Vuelo suspendido” appears, click Stop.
-- Click the download icon → Save trace. Save under
-  `docs/my-first-orbit-gameplay-testing-case10-05.json.gz`.
-
-Keep gzip enabled if offered; an uncompressed `.json` trace is also fine.
-No console commands or repeated runs are needed for this check. Save the trace
-file itself, rather than copying its console output.
-
-These steps follow Chrome's official
-[recording instructions](https://developer.chrome.com/docs/devtools/performance/reference#record-runtime-performance)
-and [trace export instructions](https://developer.chrome.com/docs/devtools/performance/save-trace).
+If suspension returns, save one more Performance recording as
+`docs/my-first-orbit-gameplay-testing-case10-06.json.gz`. The same export options
+are fine; resource contents and source maps are not required.

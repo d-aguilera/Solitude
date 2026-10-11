@@ -21,6 +21,7 @@ import { getPackedGpuMesh } from "./meshPacking";
 import fragmentShaderSource from "./shaders/solidMesh.frag.glsl?raw";
 import vertexShaderSource from "./shaders/solidMesh.vert.glsl?raw";
 import { selectGpuMeshForObject } from "./sphereLod";
+import { acquireTextureBitmap } from "./textureBitmap";
 import {
   createProgramFromSources,
   requireResource,
@@ -36,7 +37,10 @@ interface GpuMesh {
 }
 
 interface GpuTexture {
-  pendingImage: HTMLImageElement | null;
+  bitmap: ImageBitmap | null;
+  release: () => void;
+  nextRow: number;
+  storageAllocated: boolean;
   failed: boolean;
   loaded: boolean;
   texture: WebGLTexture;
@@ -53,10 +57,12 @@ export interface GpuMeshRenderParams {
 const floatsPerVertex = 9;
 const bytesPerFloat = 4;
 const stride = floatsPerVertex * bytesPerFloat;
+const textureUploadBytesPerFrame = 2 * 1024 * 1024;
 
 export class GpuMeshRenderer {
   private readonly meshBuffers = new Map<Mesh, GpuMesh>();
   private readonly textureCache = new Map<string, GpuTexture>();
+  private readonly pendingTextures: GpuTexture[] = [];
   private readonly objectOrientation = new Float32Array(9);
   private readonly program: WebGLProgram;
   private readonly vao: WebGLVertexArrayObject;
@@ -124,6 +130,7 @@ export class GpuMeshRenderer {
     params,
     projectionService,
   }: GpuMeshRenderParams): void {
+    this.uploadNextTexture();
     const gl = this.gl;
     const width = params.surface.width;
     const height = params.surface.height;
@@ -235,14 +242,12 @@ export class GpuMeshRenderer {
     gl.deleteVertexArray(this.vao);
     gl.deleteProgram(this.program);
     for (const texture of this.textureCache.values()) {
-      if (texture.pendingImage) {
-        texture.pendingImage.onload = null;
-        texture.pendingImage.onerror = null;
-        texture.pendingImage = null;
-      }
+      texture.bitmap = null;
+      texture.release();
       gl.deleteTexture(texture.texture);
     }
     this.textureCache.clear();
+    this.pendingTextures.length = 0;
   }
 
   private drawObject(
@@ -433,52 +438,92 @@ export class GpuMeshRenderer {
   private createTextureRecord(textureId: string, source: string): GpuTexture {
     const gl = this.gl;
     const texture = requireResource(gl.createTexture(), "mesh color texture");
+    const prepared = acquireTextureBitmap(source);
     const record: GpuTexture = {
       failed: false,
       loaded: false,
       texture,
-      pendingImage: null,
+      bitmap: null,
+      release: prepared.release,
+      nextRow: 0,
+      storageAllocated: false,
     };
     this.textureCache.set(textureId, record);
 
-    if (typeof Image === "undefined") {
-      record.failed = true;
-      return record;
-    }
-
-    const image = new Image();
-    record.pendingImage = image;
-    image.crossOrigin = "anonymous";
-    image.onload = () => {
-      record.pendingImage = null;
-      image.onload = null;
-      image.onerror = null;
-      if (this.disposed || record.failed) return;
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        image,
-      );
-      gl.bindTexture(gl.TEXTURE_2D, null);
-      record.loaded = true;
-      profiler.increment("gpuRender", "textureUploads");
-    };
-    image.onerror = () => {
-      record.pendingImage = null;
-      image.onload = null;
-      image.onerror = null;
-      record.failed = true;
-    };
-    image.src = source;
+    this.pendingTextures.push(record);
+    void prepared.ready.then(
+      (bitmap) => {
+        if (!this.disposed) record.bitmap = bitmap;
+      },
+      () => {
+        record.failed = true;
+        record.release();
+      },
+    );
     return record;
+  }
+
+  private uploadNextTexture(): void {
+    const gl = this.gl;
+    for (let i = 0; i < this.pendingTextures.length; i++) {
+      const record = this.pendingTextures[i];
+      if (record.failed) {
+        this.pendingTextures.splice(i--, 1);
+        continue;
+      }
+      const bitmap = record.bitmap;
+      if (!bitmap) continue;
+      gl.bindTexture(gl.TEXTURE_2D, record.texture);
+      try {
+        if (!record.storageAllocated) {
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+          gl.texStorage2D(
+            gl.TEXTURE_2D,
+            1,
+            gl.RGBA8,
+            bitmap.width,
+            bitmap.height,
+          );
+          record.storageAllocated = true;
+        } else {
+          const rows = Math.min(
+            bitmap.height - record.nextRow,
+            Math.max(
+              1,
+              Math.floor(textureUploadBytesPerFrame / (bitmap.width * 4)),
+            ),
+          );
+          gl.pixelStorei(gl.UNPACK_SKIP_ROWS, record.nextRow);
+          gl.texSubImage2D(
+            gl.TEXTURE_2D,
+            0,
+            0,
+            record.nextRow,
+            bitmap.width,
+            rows,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            bitmap,
+          );
+          record.nextRow += rows;
+          if (record.nextRow === bitmap.height) {
+            record.loaded = true;
+            record.bitmap = null;
+            record.release();
+            this.pendingTextures.splice(i, 1);
+            profiler.increment("gpuRender", "textureUploads");
+          }
+        }
+      } finally {
+        gl.pixelStorei(gl.UNPACK_SKIP_ROWS, 0);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+      }
+      // At most one allocation or bounded pixel transfer per view per frame.
+      return;
+    }
   }
 }
 

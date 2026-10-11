@@ -55,6 +55,21 @@ flying despite a 499.8 ms jump in the supplied frame timestamp. A later actual
 474.4 ms callback gap still suspends. This verifies the clock correction against
 the captured sequence; fresh Chrome validation is still required.
 
+## Texture preparation and upload regression
+
+The case-10 Chrome trace records five main-thread image-load handlers lasting
+515–587 ms, including 243–280 ms of JPEG decoding. Browser texture tests now
+cover shared asynchronous bitmap preparation, disposal while decoding, error
+recovery, bounded original-resolution 8K transfers, and visibility only after all
+rows upload. Each view allocates storage on one frame and submits at most 2 MiB
+of pixel data per subsequent frame; decoded images close after the last upload
+finishes or is cancelled. CPU preparation is shared across simultaneous views.
+These checks validate scheduling and resource ownership, not a universal GPU
+timing guarantee. Chrome retesting remains required.
+
+The row-transfer mechanism follows WebGL2's
+[TexImageSource subrectangle rules](https://registry.khronos.org/webgl/specs/latest/2.0/).
+
 ## Local runtime-cost sample
 
 Run

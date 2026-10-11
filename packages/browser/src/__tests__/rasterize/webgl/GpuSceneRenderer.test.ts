@@ -84,7 +84,7 @@ describe("GPU scene renderer", () => {
 
   it("uses loaded spherical textures when a source is available", async () => {
     const recording = createRecordingGl();
-    const restoreImage = installInstantImage();
+    const restoreImage = installDecodedBitmap();
     try {
       const renderer = new GpuSceneRenderer({
         gl: recording.gl,
@@ -98,11 +98,14 @@ describe("GPU scene renderer", () => {
       };
 
       renderer.render(createRenderParams(object));
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      // Allocate storage, then publish only after the complete pixel upload.
+      renderer.render(createRenderParams(object));
       renderer.render(createRenderParams(object));
 
       expect(recording.textureUploads).toBe(1);
-      expect(recording.useColorTexture).toEqual([0, 1]);
+      expect(recording.useColorTexture).toEqual([0, 0, 1]);
+      renderer.dispose();
     } finally {
       restoreImage();
     }
@@ -110,7 +113,7 @@ describe("GPU scene renderer", () => {
 
   it("draws cloud and atmosphere overlays after the cloud texture loads", async () => {
     const recording = createRecordingGl();
-    const restoreImage = installInstantImage();
+    const restoreImage = installDecodedBitmap();
     try {
       const renderer = new GpuSceneRenderer({
         gl: recording.gl,
@@ -133,17 +136,100 @@ describe("GPU scene renderer", () => {
       };
 
       renderer.render(createRenderParams(object));
-      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      // Allocate storage, then publish only after the complete pixel upload.
+      renderer.render(createRenderParams(object));
       renderer.render(createRenderParams(object));
 
+      renderer.render(createRenderParams(object));
+      renderer.render(createRenderParams(object));
       expect(recording.textureUploads).toBe(2);
-      expect(recording.renderModes).toEqual([0, 3, 1, 2, 3]);
-      expect(recording.blendFuncs).toEqual([
-        [recording.gl.SRC_ALPHA, recording.gl.ONE_MINUS_SRC_ALPHA],
-        [recording.gl.SRC_ALPHA, recording.gl.ONE_MINUS_SRC_ALPHA],
-      ]);
+      expect(recording.renderModes).toEqual([0, 3, 0, 3, 1, 3, 1, 3, 1, 2, 3]);
+      expect(recording.blendFuncs).toEqual(
+        Array.from({ length: 5 }, () => [
+          recording.gl.SRC_ALPHA,
+          recording.gl.ONE_MINUS_SRC_ALPHA,
+        ]),
+      );
+      renderer.dispose();
     } finally {
       restoreImage();
+    }
+  });
+
+  it("uploads full 8K textures in bounded strips and publishes only the complete image", async () => {
+    const recording = createRecordingGl();
+    const restore = installDecodedBitmap();
+    const close = vi.fn();
+    globalThis.createImageBitmap = (async () => ({
+      width: 8192,
+      height: 4096,
+      close,
+    })) as typeof createImageBitmap;
+    const renderer = new GpuSceneRenderer({
+      gl: recording.gl,
+      onFatalError: () => {},
+      textureSources: { earth: "/large-earth.jpg" },
+    });
+    const object = createIcosphereBody("earth", 20);
+    object.material = { kind: "sphericalTexture", textureId: "earth" };
+    try {
+      renderer.render(createRenderParams(object));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      renderer.render(createRenderParams(object));
+      expect(recording.textureStorage).toEqual([[8192, 4096]]);
+      expect(recording.textureRegions).toHaveLength(0);
+      for (let i = 0; i < 64; i++) {
+        renderer.render(createRenderParams(object));
+        expect(recording.textureRegions[i]).toEqual({
+          y: i * 64,
+          width: 8192,
+          height: 64,
+          sourceY: i * 64,
+        });
+        expect(
+          recording.useColorTexture[recording.useColorTexture.length - 1],
+        ).toBe(i === 63 ? 1 : 0);
+        expect(recording.pixelSkips[recording.pixelSkips.length - 1]).toBe(0);
+      }
+      expect(close).toHaveBeenCalledOnce();
+      renderer.render(createRenderParams(object));
+      expect(recording.textureRegions).toHaveLength(64);
+    } finally {
+      renderer.dispose();
+      restore();
+    }
+  });
+
+  it("does not upload a late bitmap to a disposed Retry generation", async () => {
+    const recording = createRecordingGl();
+    const restore = installDecodedBitmap();
+    const close = vi.fn();
+    let finish: (bitmap: ImageBitmap) => void = () => {};
+    globalThis.createImageBitmap = (() =>
+      new Promise<ImageBitmap>((resolve) => {
+        finish = resolve;
+      })) as typeof createImageBitmap;
+    const renderer = new GpuSceneRenderer({
+      gl: recording.gl,
+      onFatalError: () => {},
+      textureSources: { earth: "/cancelled-earth.jpg" },
+    });
+    const object = createIcosphereBody("earth", 20);
+    object.material = { kind: "sphericalTexture", textureId: "earth" };
+    try {
+      renderer.render(createRenderParams(object));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      renderer.dispose();
+      finish({ width: 8192, height: 4096, close } as unknown as ImageBitmap);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      renderer.render(createRenderParams(object));
+      expect(recording.textureStorage).toHaveLength(0);
+      expect(recording.textureRegions).toHaveLength(0);
+      expect(close).toHaveBeenCalledOnce();
+    } finally {
+      renderer.dispose();
+      restore();
     }
   });
 
@@ -404,6 +490,14 @@ function createRecordingGl(): {
   smoothSphereShading: number[];
   staticBufferUploads: number;
   textureUploads: number;
+  textureStorage: number[][];
+  textureRegions: {
+    y: number;
+    width: number;
+    height: number;
+    sourceY: number;
+  }[];
+  pixelSkips: number[];
   useColorTexture: number[];
 } {
   const state = {
@@ -418,6 +512,14 @@ function createRecordingGl(): {
     smoothSphereShading: [] as number[],
     staticBufferUploads: 0,
     textureUploads: 0,
+    textureStorage: [] as number[][],
+    textureRegions: [] as {
+      y: number;
+      width: number;
+      height: number;
+      sourceY: number;
+    }[],
+    pixelSkips: [] as number[],
     useColorTexture: [] as number[],
   };
   let contextLostListener: ((event: Event) => void) | null = null;
@@ -447,6 +549,8 @@ function createRecordingGl(): {
     LINK_STATUS: 13,
     NEAREST: 14,
     RGBA: 15,
+    RGBA8: 34,
+    UNPACK_SKIP_ROWS: 35,
     RGBA32F: 16,
     STATIC_DRAW: 17,
     TEXTURE0: 18,
@@ -516,7 +620,29 @@ function createRecordingGl(): {
       if (args.length === 6) state.textureUploads++;
     },
     texParameteri: () => {},
-    texSubImage2D: () => {},
+    texStorage2D: (
+      _target: number,
+      _levels: number,
+      _format: number,
+      width: number,
+      height: number,
+    ) => {
+      state.textureStorage.push([width, height]);
+    },
+    pixelStorei: (parameter: number, value: number) => {
+      if (parameter === 35) state.pixelSkips.push(value);
+    },
+    texSubImage2D: (...args: unknown[]) => {
+      if (args.length === 9 && !(args[8] instanceof Float32Array)) {
+        state.textureUploads++;
+        state.textureRegions.push({
+          y: args[3] as number,
+          width: args[4] as number,
+          height: args[5] as number,
+          sourceY: state.pixelSkips[state.pixelSkips.length - 1] ?? 0,
+        });
+      }
+    },
     uniform1f: (location: unknown, value: number) => {
       if (location === "uModelScale") state.modelScales.push(value);
     },
@@ -545,21 +671,17 @@ function createRecordingGl(): {
   });
 }
 
-function installInstantImage(): () => void {
-  const previous = globalThis.Image;
-
-  class InstantImage {
-    crossOrigin = "";
-    onerror: (() => void) | null = null;
-    onload: (() => void) | null = null;
-
-    set src(_value: string) {
-      queueMicrotask(() => this.onload?.());
-    }
-  }
-
-  globalThis.Image = InstantImage as unknown as typeof Image;
+function installDecodedBitmap(): () => void {
+  const previousFetch = globalThis.fetch;
+  const previousBitmap = globalThis.createImageBitmap;
+  globalThis.fetch = async () => new Response(new Blob());
+  globalThis.createImageBitmap = (async () => ({
+    width: 2,
+    height: 2,
+    close: () => {},
+  })) as typeof createImageBitmap;
   return () => {
-    globalThis.Image = previous;
+    globalThis.fetch = previousFetch;
+    globalThis.createImageBitmap = previousBitmap;
   };
 }
