@@ -9,6 +9,7 @@ import type {
 import en from "./locales/en.json";
 import es from "./locales/es.json";
 import fr from "./locales/fr.json";
+import { createObjective } from "./objective";
 
 export function createSession(
   generation: number,
@@ -23,12 +24,19 @@ export function createSession(
   let baseline = true;
   let lastNow: number | null = null;
   let advance = false;
+  const hold = createObjective(
+    generation,
+    (result) => changePhase(result),
+    () => advance && !lifecycleRequest && phase === "flying",
+  );
   const listeners = new Set<() => void>();
   let resetInput = () => {};
   const notify = () => {
     for (const listener of listeners) listener();
   };
   const changePhase = (next: StandalonePhase) => {
+    if (next === "suspended") hold.reset();
+    hold.pause();
     phase = next;
     baseline = true;
     lastNow = null;
@@ -94,11 +102,12 @@ export function createSession(
           disabled: !canFly(),
         });
       else {
-        actions.push({
-          command: "resume",
-          label: messages.resume,
-          disabled: !canFly(),
-        });
+        if (phase === "paused" || phase === "suspended")
+          actions.push({
+            command: "resume",
+            label: messages.resume,
+            disabled: !canFly(),
+          });
         actions.push({
           command: "retry",
           label: messages.retry,
@@ -112,19 +121,28 @@ export function createSession(
             ? messages.adventure
             : phase === "paused"
               ? messages.paused
-              : messages.suspended,
+              : phase === "completed"
+                ? messages.completed
+                : phase === "failed"
+                  ? messages.failed
+                  : messages.suspended,
         body:
           phase === "briefing"
             ? messages.briefing
             : phase === "suspended"
               ? messages.suspensionBody
-              : "",
+              : phase === "completed"
+                ? messages.completedBody
+                : phase === "failed"
+                  ? messages.failedBody
+                  : "",
         actions,
       };
     },
   };
   return {
     session,
+    objective: hold.objective,
     refresh: notify,
     suspend: () => {
       resetInput();

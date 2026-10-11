@@ -1,5 +1,6 @@
 import type { ExternalControlInput } from "@solitude/plugin-api/input";
 export const flightActions = new Set([
+  "alignToVelocity",
   "burnForward",
   "burnBackwards",
   "rollLeft",

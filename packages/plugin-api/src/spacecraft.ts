@@ -106,3 +106,23 @@ function isSpacecraftAutonomousControl(
     typeof candidate.writeAutonomousControlInput === "function"
   );
 }
+
+export const spacecraftVelocityReferenceCapability =
+  "spacecraft.velocityReference.v1";
+export interface ExternalSpacecraftVelocityReference {
+  /** null selects the normal world-velocity reference. */
+  getReferenceEntityId: (entityId: string) => string | null;
+}
+export function getSpacecraftVelocityReferences(
+  registry: ExternalPluginCapabilityRegistry,
+): ExternalSpacecraftVelocityReference[] {
+  return registry
+    .getAll(spacecraftVelocityReferenceCapability)
+    .filter(
+      (value): value is ExternalSpacecraftVelocityReference =>
+        typeof value === "object" &&
+        value !== null &&
+        typeof (value as ExternalSpacecraftVelocityReference)
+          .getReferenceEntityId === "function",
+    );
+}

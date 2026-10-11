@@ -11,14 +11,23 @@ import type {
   ExternalPlugin,
   ExternalPluginContext,
 } from "@solitude/plugin-api/module";
+import type { ExternalScenePlugin } from "@solitude/plugin-api/scene";
+import type { ExternalSimulationPlugin } from "@solitude/plugin-api/simulation";
 import type { ExternalSpacecraftPropulsionCommandParams } from "@solitude/plugin-api/spacecraft";
 import { getSpacecraftPropulsionResolvers } from "@solitude/plugin-api/spacecraft";
 import {
+  adventureObjectiveCapability,
+  isAdventureObjective,
   isStandaloneSession,
   standaloneGenerationOption,
   standaloneModeOption,
   standaloneSessionCapability,
 } from "@solitude/plugin-api/standalone-session";
+import {
+  orbitObservationCapability,
+  type ExternalOrbitObservation,
+} from "@solitude/plugin-api/telemetry";
+import type { ExternalWorld } from "@solitude/plugin-api/world";
 import type {
   ExternalEntityConfig,
   ExternalWorldModelRegistry,
@@ -50,6 +59,28 @@ function assemble(mode: "my-first-orbit" | "free-flight") {
   const content: ExternalPlugin = {
     id: "testContent",
     capabilities: [
+      {
+        id: orbitObservationCapability,
+        value: {
+          sampleInto: (
+            out: ExternalOrbitObservation,
+            _world: ExternalWorld,
+            entityId: string,
+          ) => {
+            Object.assign(out, {
+              entityId,
+              primaryId: "planet:earth",
+              orbitValid: true,
+              isBound: true,
+              altitudeMeters: 400000,
+              periapsisAltitudeMeters: 400000,
+              apoapsisAltitudeMeters: 400000,
+              radialSpeedMetersPerSecond: 0,
+              progradeAlignmentCosine: 1,
+            });
+          },
+        },
+      },
       {
         id: celestialBodyProviderCapability,
         value: {
@@ -257,5 +288,146 @@ describe("standalone adventure assembly", () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+  it("samples completed advancing frames once, observes final propulsion, and freezes success before the next tick", () => {
+    vi.stubGlobal("document", {
+      visibilityState: "visible",
+      hasFocus: () => true,
+    });
+    try {
+      const s = assemble("my-first-orbit");
+      const session = s.capabilityRegistry
+        .getAll(standaloneSessionCapability)
+        .find(isStandaloneSession)!;
+      const objective = s.capabilityRegistry
+        .getAll(adventureObjectiveCapability)
+        .find(isAdventureObjective)!;
+      const earth = {
+        id: "planet:earth",
+        position: { x: 0, y: 0, z: 0 },
+        velocity: { x: 30000, y: 0, z: 0 },
+      };
+      const radius = 6371000;
+      const craft = {
+        id: adventureEntityId,
+        position: { x: radius + 400000, y: 0, z: 0 },
+        velocity: {
+          x: 30000,
+          y: Math.sqrt((6.6743e-11 * 5.972802939487484e24) / (radius + 400000)),
+          z: 0,
+        },
+        angularVelocity: { pitch: 0, yaw: 0, roll: 0 },
+        frame: {
+          forward: { x: 0, y: 1, z: 0 },
+          right: { x: 1, y: 0, z: 0 },
+          up: { x: 0, y: 0, z: 1 },
+        },
+      };
+      const world: ExternalWorld = {
+        controllableBodies: [craft],
+        entityStates: [craft, earth],
+        collisionSpheres: [{ id: earth.id, radius, state: earth }],
+        gravityMasses: [
+          { id: earth.id, mass: 5.972802939487484e24, state: earth },
+        ],
+      };
+      const early = s.plugins[3].hooks!.loop!;
+      const final = s.plugins[4].hooks!.loop!;
+      const sim = s.plugins[4].hooks!.simulation as ExternalSimulationPlugin;
+      const scene = s.plugins[4].hooks!.scene!;
+      scene.initScene!({ world } as Parameters<
+        NonNullable<ExternalScenePlugin["initScene"]>
+      >[0]);
+      const params = {
+        nowMs: 0,
+        dtMillis: 250,
+        simTimeMillis: 0,
+        world,
+        mainFocus: { entityId: craft.id, controlledBody: craft },
+        controlInput: {},
+        state: {
+          framePolicy: {
+            advanceSim: true,
+            advanceScene: true,
+            advancePresentation: true,
+          },
+        },
+      } as ExternalLoopUpdateParams;
+      const resolver = getSpacecraftPropulsionResolvers(
+        s.capabilityRegistry,
+      )[0];
+      const frame = (now: number, burn: boolean, observe = true) => {
+        params.nowMs = now;
+        params.controlInput.burnForward = burn;
+        early.updateLoopState!(params);
+        Object.assign(
+          params.state.framePolicy,
+          final.updateLoopState!(params)?.framePolicy,
+        );
+        if (params.state.framePolicy.advanceSim) {
+          sim.beforeVehicleDynamics!(
+            {} as Parameters<
+              NonNullable<ExternalSimulationPlugin["beforeVehicleDynamics"]>
+            >[0],
+          );
+          if (observe)
+            resolver.resolvePropulsionCommand({
+              controlInput: params.controlInput,
+              controlledBody: craft,
+              maxThrustAcceleration: 1000000,
+            } as ExternalSpacecraftPropulsionCommandParams);
+          params.simTimeMillis! += 250;
+        }
+        final.afterFrame!(params);
+      };
+      session.command("begin");
+      frame(0, false);
+      expect(objective.latestSequence).toBe(0);
+      frame(250, true);
+      expect(objective.latestSample?.propulsionActive).toBe(true);
+      expect(objective.status).toBe("recovering");
+      frame(500, false, false);
+      expect(objective.latestSample?.propulsionActive).toBeNull();
+      frame(750, false);
+      expect(objective.status).toBe("confirming");
+      expect(objective.coastMillis).toBe(0);
+      final.afterFrame!(params);
+      expect(objective.latestSequence).toBe(3);
+      for (let now = 1000; now <= 5750; now += 250) frame(now, false);
+      expect(session.phase).toBe("completed");
+      expect(session.getPresentation()?.actions.map((a) => a.command)).toEqual([
+        "retry",
+        "menu",
+      ]);
+      const completedTime = params.simTimeMillis;
+      frame(6000, true);
+      expect(params.simTimeMillis).toBe(completedTime);
+      expect(objective.safeOrbitConfirmed).toBe(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+  it("rejects a later propulsion resolver instead of treating its overwritten command as final", () => {
+    const s = assemble("my-first-orbit");
+    const registry = {
+      getAll: (id: string) =>
+        id === "spacecraft.propulsionResolver.v1"
+          ? [
+              ...s.capabilityRegistry.getAll(id),
+              {
+                resolvePropulsionCommand: () => ({
+                  main: { forward: 1 },
+                  rcs: { right: 0 },
+                }),
+              },
+            ]
+          : s.capabilityRegistry.getAll(id),
+    };
+    expect(() =>
+      s.plugins[4].hooks!.worldModel!.contributeWorldModel(
+        { addEntities: () => {}, setMainFocusEntityId: () => {} },
+        { capabilityRegistry: registry },
+      ),
+    ).toThrow("must be last");
   });
 });

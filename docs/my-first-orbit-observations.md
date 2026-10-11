@@ -2,8 +2,8 @@
 
 This is the step 2 specification. It defines scenario calibration, reusable
 observations, temporal rules, and the external plugin seams needed by the pilot.
-Feature implementation begins after the objective/lifecycle specification in
-step 3. Director priorities and semantic instrument presentation remain steps 4
+Shared observations, completed-frame objective sampling, and the Earth-relative
+alignment reference are implemented alongside the step 3 lifecycle. Director priorities and semantic instrument presentation remain steps 4
 and 5.
 
 ## Calibrated scenario
@@ -179,9 +179,8 @@ terminal samples; and retry with held input and stale sample generations.
 ### Shared telemetry
 
 `plugins/core-pack-v1/src/orbit-telemetry/orbitReadout.ts` already computes
-relative orbital elements, but `orbitTelemetry` currently publishes only a HUD
-panel. Add a reusable orbit-observation capability contract through
-`@solitude/plugin-api/telemetry`, implemented by the orbit telemetry plugin.
+relative orbital elements, and `orbitTelemetry` publishes the reusable `solitude.orbitObservation.v1`
+capability through `@solitude/plugin-api/telemetry`.
 Expose an explicit-entity `sampleInto` operation and validity; the adventure
 sampler owns frame sampling and shares its retained result with objective and
 guidance. Keep Earth thresholds outside that provider.
@@ -224,10 +223,9 @@ allow manual attitude and velocity alignment; clear `alignToBody` and `orbit`
 to keep assistance focused on the lesson. Disallowed requests never select or
 persist an autopilot mode.
 
-The current `V` implementation in `plugins/autopilot/src/logic.ts` normalizes
-world velocity. At the calibration starting location it differs from
-Earth-relative prograde by approximately 86 degrees. Add an opt-in velocity
-reference capability through `@solitude/plugin-api/spacecraft`: an active
+The default `V` implementation normalizes world velocity. At the calibration starting location it differs from
+Earth-relative prograde by approximately 86 degrees. The opt-in `spacecraft.velocityReference.v1` capability through
+`@solitude/plugin-api/spacecraft` lets an active
 adventure provider selects Earth as the reference for the scenario entity, and
 the autopilot subtracts that reference entity's velocity before alignment.
 With no active reference provider, retain world-velocity behavior. Missing or

@@ -1,10 +1,12 @@
 import type { ExternalRuntimeOptions } from "./runtime";
+import type { ExternalOrbitObservation } from "./telemetry";
 
 export const standaloneSessionCapability = "solitude.standaloneSession.v1";
 export const standaloneModeOption = "solitudeStandaloneMode";
 export const standaloneGenerationOption = "solitudeStandaloneGeneration";
 export type StandaloneMode = "my-first-orbit" | "free-flight";
-export type StandalonePhase = "briefing" | "flying" | "paused" | "suspended";
+export type StandalonePhase =
+  "briefing" | "flying" | "paused" | "suspended" | "completed" | "failed";
 export type StandaloneCommand = "begin" | "pause" | "resume" | "retry" | "menu";
 export interface StandalonePresentation {
   title: string;
@@ -51,5 +53,38 @@ export function isStandaloneSession(
     typeof candidate.subscribe === "function" &&
     typeof candidate.attachInputReset === "function" &&
     typeof candidate.labels === "object"
+  );
+}
+
+export const adventureObjectiveCapability = "solitude.adventureObjective.v1";
+export interface AdventureSample extends ExternalOrbitObservation {
+  generation: number;
+  sequence: number;
+  simTimeMillis: number;
+  nowMs: number;
+  earthAltitudeMeters: number | null;
+  propulsionActive: boolean | null;
+}
+export interface AdventureObjective {
+  readonly status: "recovering" | "confirming" | "completed" | "failed";
+  readonly coastMillis: number;
+  readonly latestSequence: number;
+  readonly terminalSequence: number | null;
+  readonly safeOrbit: boolean;
+  /** Retained record, replaced in place on each completed advancing frame. */
+  readonly latestSample: Readonly<AdventureSample> | null;
+  readonly safeOrbitEntered: number;
+  readonly confirmationStarted: number;
+  readonly confirmationReset: number;
+  readonly safeOrbitConfirmed: number;
+  sample: (sample: AdventureSample) => void;
+}
+export function isAdventureObjective(
+  value: unknown,
+): value is AdventureObjective {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as AdventureObjective).sample === "function"
   );
 }

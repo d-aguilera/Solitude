@@ -63,7 +63,24 @@ export function getDominantBodyPrimary(
   world: ExternalWorld,
   position: Vec3,
 ): ExternalGravityPrimary | null {
-  let best: ExternalGravityPrimary | null = null;
+  const firstSphere = world.collisionSpheres[0];
+  if (!firstSphere) return null;
+  const out: ExternalGravityPrimary = {
+    body: firstSphere.state,
+    id: "",
+    mass: 0,
+    radius: 0,
+  };
+  return getDominantBodyPrimaryInto(out, world, position) ? out : null;
+}
+
+/** Writes the selected primary without allocating a lookup result. */
+export function getDominantBodyPrimaryInto(
+  out: ExternalGravityPrimary,
+  world: ExternalWorld,
+  position: Vec3,
+): boolean {
+  let found = false;
   let bestAccelerationFactor = Number.NEGATIVE_INFINITY;
   for (const sphere of world.collisionSpheres) {
     const gravityMass = findGravityMass(world.gravityMasses, sphere.id);
@@ -71,16 +88,15 @@ export function getDominantBodyPrimary(
     const distanceSq = vec3.distSq(sphere.state.position, position);
     const accelerationFactor =
       distanceSq === 0 ? 0 : gravityMass.mass / distanceSq;
-    if (accelerationFactor <= bestAccelerationFactor) continue;
+    if (!(accelerationFactor > bestAccelerationFactor)) continue;
     bestAccelerationFactor = accelerationFactor;
-    best = {
-      body: sphere.state,
-      id: sphere.id,
-      mass: gravityMass.mass,
-      radius: sphere.radius,
-    };
+    out.body = sphere.state;
+    out.id = sphere.id;
+    out.mass = gravityMass.mass;
+    out.radius = sphere.radius;
+    found = true;
   }
-  return best;
+  return found;
 }
 
 export function computeStandardGravitationalParameter(mass: number): number {

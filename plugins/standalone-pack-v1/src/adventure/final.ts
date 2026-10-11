@@ -1,19 +1,54 @@
 import { createKeyboardInputCapability } from "@solitude/plugin-api/input";
+import { vec3 } from "@solitude/plugin-api/math";
 import type { ExternalPlugin } from "@solitude/plugin-api/module";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
-import { createSpacecraftPropulsionResolverProvider } from "@solitude/plugin-api/spacecraft";
 import {
+  createSpacecraftPropulsionResolverProvider,
+  getSpacecraftPropulsionResolvers,
+  spacecraftVelocityReferenceCapability,
+  type ExternalSpacecraftPropulsionCommandParams,
+} from "@solitude/plugin-api/spacecraft";
+import {
+  adventureObjectiveCapability,
   isAdventure,
+  isAdventureObjective,
   isStandaloneSession,
   standaloneSessionCapability,
+  type AdventureObjective,
+  type AdventureSample,
   type StandaloneSession,
 } from "@solitude/plugin-api/standalone-session";
+import {
+  createOrbitObservation,
+  isOrbitObservationProvider,
+  orbitObservationCapability,
+  type ExternalOrbitObservationProvider,
+} from "@solitude/plugin-api/telemetry";
+import type {
+  ExternalControlledBody,
+  ExternalEntityCollisionSphere,
+} from "@solitude/plugin-api/world";
 import { flightActions, viewActions } from "./policy";
-import { adventureEntityId } from "./scenario";
+import { adventureEarthId, adventureEntityId } from "./scenario";
 
 export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
   if (!isAdventure(options)) return { id: "adventureFinalPolicy" };
   let session: StandaloneSession;
+  let objective: AdventureObjective;
+  let observer: ExternalOrbitObservationProvider;
+  let earth: ExternalEntityCollisionSphere | undefined;
+  let craft: ExternalControlledBody | undefined;
+  let propulsionActive: boolean | null = null;
+  let lastCompletedSimTime: number | null = null;
+  const sample: AdventureSample = {
+    ...createOrbitObservation(),
+    generation: 0,
+    sequence: 0,
+    simTimeMillis: 0,
+    nowMs: 0,
+    earthAltitudeMeters: null,
+    propulsionActive: null,
+  };
   const policy = {
     framePolicy: {
       advanceSim: false,
@@ -23,9 +58,40 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
     },
   };
   const command = { main: { forward: 0 }, rcs: { right: 0 } };
+  const resolver = {
+    resolvePropulsionCommand: ({
+      controlInput,
+      controlledBody,
+      maxThrustAcceleration,
+    }: ExternalSpacecraftPropulsionCommandParams) => {
+      const signed =
+        Number(!!controlInput.burnForward) -
+        Number(!!controlInput.burnBackwards);
+      command.main.forward =
+        session.phase === "flying" &&
+        controlledBody.id === adventureEntityId &&
+        Number.isFinite(maxThrustAcceleration) &&
+        maxThrustAcceleration > 0
+          ? (signed * 10) / maxThrustAcceleration
+          : 0;
+      if (controlledBody.id === adventureEntityId)
+        propulsionActive =
+          propulsionActive === true ||
+          command.main.forward !== 0 ||
+          command.rcs.right !== 0;
+      return command;
+    },
+  };
   return {
     id: "adventureFinalPolicy",
     capabilities: [
+      {
+        id: spacecraftVelocityReferenceCapability,
+        value: {
+          getReferenceEntityId: (id: string) =>
+            id === adventureEntityId ? adventureEarthId : null,
+        },
+      },
       createKeyboardInputCapability({
         actions: ["pauseToggle"],
         keyMap: { KeyP: "pauseToggle" },
@@ -48,28 +114,24 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
             !(flightActions.has(action) || viewActions.has(action)),
         }),
       }),
-      createSpacecraftPropulsionResolverProvider({
-        resolvePropulsionCommand: ({
-          controlInput,
-          controlledBody,
-          maxThrustAcceleration,
-        }) => {
-          const signed =
-            Number(!!controlInput.burnForward) -
-            Number(!!controlInput.burnBackwards);
-          command.main.forward =
-            session.phase === "flying" &&
-            controlledBody.id === adventureEntityId &&
-            maxThrustAcceleration > 0
-              ? (signed * 10) / maxThrustAcceleration
-              : 0;
-          return command;
-        },
-      }),
+      createSpacecraftPropulsionResolverProvider(resolver),
     ],
     hooks: {
+      simulation: {
+        beforeVehicleDynamics: () => {
+          propulsionActive = null;
+        },
+      },
       scene: {
         initScene: ({ world }) => {
+          earth = world.collisionSpheres.find(
+            (body) => body.id === adventureEarthId,
+          );
+          craft = world.controllableBodies.find(
+            (body) => body.id === adventureEntityId,
+          );
+          if (!earth || !Number.isFinite(earth.radius) || earth.radius <= 0)
+            throw new Error("Adventure requires Earth's physical sphere");
           if (
             world.controllableBodies.length !== 1 ||
             world.controllableBodies[0].id !== adventureEntityId
@@ -87,9 +149,57 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
           if (sessions.length !== 1)
             throw new Error("Adventure requires one standalone session");
           session = sessions[0];
+          sample.generation = session.generation;
+          const objectives = capabilityRegistry
+            .getAll(adventureObjectiveCapability)
+            .filter(isAdventureObjective);
+          const observers = capabilityRegistry
+            .getAll(orbitObservationCapability)
+            .filter(isOrbitObservationProvider);
+          if (objectives.length !== 1 || observers.length !== 1)
+            throw new Error(
+              "Adventure requires one objective and orbit observer",
+            );
+          objective = objectives[0];
+          observer = observers[0];
+          const resolvers =
+            getSpacecraftPropulsionResolvers(capabilityRegistry);
+          if (resolvers[resolvers.length - 1] !== resolver)
+            throw new Error("Adventure propulsion resolver must be last");
         },
       },
       loop: {
+        afterFrame: ({ state, world, nowMs, simTimeMillis }) => {
+          if (
+            !session.advanceSimulation ||
+            !state.framePolicy.advanceSim ||
+            !(state.framePolicy.simDtMillis! > 0) ||
+            !world ||
+            !Number.isFinite(simTimeMillis) ||
+            (lastCompletedSimTime !== null &&
+              simTimeMillis! <= lastCompletedSimTime)
+          )
+            return;
+          lastCompletedSimTime = simTimeMillis!;
+          // One completed-frame sample shared by objective and future guidance.
+          observer.sampleInto(sample, world, adventureEntityId);
+          sample.sequence++;
+          sample.nowMs = nowMs;
+          sample.simTimeMillis = simTimeMillis!;
+          const altitude =
+            earth &&
+            craft &&
+            world.entityStates.includes(craft) &&
+            world.entityStates.includes(earth.state)
+              ? Math.sqrt(vec3.distSq(craft.position, earth.state.position)) -
+                earth.radius
+              : NaN;
+          sample.earthAltitudeMeters = Number.isFinite(altitude)
+            ? altitude
+            : null;
+          sample.propulsionActive = propulsionActive;
+          objective.sample(sample);
+        },
         updateLoopState: ({ dtMillis, state }) => {
           delete state.framePolicy.tickDtMillis;
           policy.framePolicy.advanceSim = session.advanceSimulation;

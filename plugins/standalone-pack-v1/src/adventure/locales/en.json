@@ -11,6 +11,10 @@
   "paused": "Flight paused",
   "suspended": "Flight suspended",
   "suspensionBody": "Flight stopped while the window was inactive or timing was interrupted. Resume when you are ready.",
-  "briefing": "Automatic orbit recovery is offline. Your current trajectory intersects Earth. Hold Space to thrust forward and raise the lowest point of your orbit. Release to coast. This first adventure is under construction; orbit objectives and guidance are coming next.",
-  "pause": "Pause"
+  "briefing": "Automatic orbit recovery is offline. Your current trajectory intersects Earth. Hold Space to thrust forward and raise the lowest point of your orbit. Aim for periapsis altitude of at least 150 km and apoapsis altitude at most 600 km, then release and coast for five seconds. V aligns to Earth-relative velocity; B thrusts backwards to correct an overshoot. Contextual guidance is coming next.",
+  "pause": "Pause",
+  "completed": "Orbit recovered",
+  "completedBody": "You held a safe Earth orbit for five seconds without propulsion. Recovery complete.",
+  "failed": "Recovery failed",
+  "failedBody": "Your craft crossed the 80 km Earth altitude boundary. Retry to recover the orbit."
 }

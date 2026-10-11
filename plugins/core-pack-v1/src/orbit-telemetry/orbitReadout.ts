@@ -8,6 +8,7 @@ import {
 import type {
   ExternalControlledBody,
   ExternalEntityId,
+  ExternalGravityPrimary,
   ExternalWorld,
 } from "@solitude/plugin-api/world";
 import {
@@ -70,6 +71,14 @@ export function computeOrbitReadoutInto(
   const primary = getDominantBodyPrimary(world, body.position);
   if (!primary) return false;
 
+  return computeOrbitReadoutForPrimaryInto(out, body, primary);
+}
+
+export function computeOrbitReadoutForPrimaryInto(
+  out: OrbitReadout,
+  body: ExternalControlledBody,
+  primary: ExternalGravityPrimary,
+): boolean {
   vec3.subInto(rScratch, body.position, primary.body.position);
   vec3.subInto(vScratch, body.velocity, primary.body.velocity);
 

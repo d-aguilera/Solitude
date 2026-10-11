@@ -11,6 +11,10 @@
   "paused": "Vol en pause",
   "suspended": "Vol suspendu",
   "suspensionBody": "Le vol a été arrêté pendant que la fenêtre était inactive ou que le temps a été interrompu. Reprenez quand vous êtes prêt.",
-  "briefing": "La récupération automatique de l’orbite est hors service. Votre trajectoire actuelle traverse la Terre. Maintenez Espace pour accélérer vers l’avant et relever le point le plus bas de votre orbite. Relâchez pour voler sans propulsion. Cette aventure est en construction ; les objectifs et le guidage seront ajoutés ensuite.",
-  "pause": "Pause"
+  "briefing": "La récupération automatique de l’orbite est hors service. Votre trajectoire actuelle traverse la Terre. Maintenez Espace pour accélérer vers l’avant et relever le point le plus bas de votre orbite. Visez une altitude au périapside d’au moins 150 km et à l’apoapside d’au plus 600 km, puis relâchez et volez cinq secondes sans propulsion. V aligne sur la vitesse relative à la Terre ; B propulse vers l’arrière pour corriger un dépassement. Le guidage contextuel sera ajouté ensuite.",
+  "pause": "Pause",
+  "completed": "Orbite rétablie",
+  "completedBody": "Vous avez maintenu une orbite terrestre sûre pendant cinq secondes sans propulsion. Récupération terminée.",
+  "failed": "Échec de la récupération",
+  "failedBody": "Votre vaisseau a franchi la limite de 80 km d’altitude terrestre. Réessayez pour rétablir l’orbite."
 }
