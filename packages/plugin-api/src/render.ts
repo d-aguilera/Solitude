@@ -1,5 +1,21 @@
 import type { ExternalPluginCapabilityProvider } from "./capabilities";
 
+export const orbitSegmentsStateCapability =
+  "solitude.render.orbitSegmentsState.v1";
+export interface ExternalOrbitSegmentsState {
+  readonly enabled: boolean;
+}
+export function isOrbitSegmentsState(
+  value: unknown,
+): value is ExternalOrbitSegmentsState {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "enabled" in value &&
+    typeof value.enabled === "boolean"
+  );
+}
+
 export type {
   Mesh as ExternalMesh,
   MeshLod as ExternalMeshLod,

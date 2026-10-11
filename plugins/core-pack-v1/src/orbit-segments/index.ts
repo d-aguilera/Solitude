@@ -1,5 +1,6 @@
 import { createKeyboardInputCapability } from "@solitude/plugin-api/input";
 import type { ExternalPlugin } from "@solitude/plugin-api/module";
+import { orbitSegmentsStateCapability } from "@solitude/plugin-api/render";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 import { createOrbitSegmentsController } from "./core";
 
@@ -12,6 +13,14 @@ export function createPlugin(
   return {
     id: "orbitSegments",
     capabilities: [
+      {
+        id: orbitSegmentsStateCapability,
+        value: {
+          get enabled() {
+            return controller.enabled;
+          },
+        },
+      },
       createKeyboardInputCapability({
         actions: [orbitSegmentsToggleAction],
         keyMap: { KeyG: orbitSegmentsToggleAction },

@@ -54,8 +54,23 @@ duration or cooldown: a changed condition replaces stale instructions immediatel
 | 4        | Bound Earth orbit has apoapsis >600 km                                                                                         | “The highest point is too high. Release thrust. Align prograde with V, then use short reverse burns with B while watching the highest point.” Emphasize apoapsis.                                 |
 | 5        | Objective reports safe orbit and final propulsion is active                                                                    | “Safe orbit reached. Release Space/B to begin the five-second coast.” Emphasize periapsis and coast.                                                                                              |
 | 6        | Objective is confirming                                                                                                        | “Keep thrust off while the safe orbit is confirmed.” Emphasize coast; display elapsed time out of five seconds.                                                                                   |
-| 7        | Periapsis <150 km and prograde alignment is unavailable or below cos(10°)                                                      | “Release thrust and point along Earth's relative motion. V can align you; wait for alignment before burning.” Emphasize alignment and periapsis.                                                  |
-| 8        | Periapsis <150 km and prograde aligned                                                                                         | “Hold Space to raise the lowest point to at least 150 km. Watch the highest point stay at or below 600 km.” Emphasize periapsis.                                                                  |
+| 7        | Orbit-line presentation is available and has not yet been enabled in this run                                                  | “Press G to show your predicted orbit line. Inspect its path around Earth before burning.” Emphasize periapsis.                                                                                   |
+| 8        | Periapsis <150 km and prograde alignment is unavailable or below cos(10°)                                                      | “Release thrust and point along Earth's relative motion. V can align you; wait for alignment before burning.” Emphasize alignment and periapsis.                                                  |
+| 9        | Periapsis <150 km and prograde aligned                                                                                         | “Hold Space to raise the lowest point to at least 150 km. Watch the highest point stay at or below 600 km.” Emphasize periapsis.                                                                  |
+
+The orbit-line preparation step observes the generic read-only
+`solitude.render.orbitSegmentsState.v1` capability. It completes when the owner
+applies the toggle and reports enabled, not merely on a keypress. Completion
+persists if the line is later hidden or flight is paused/suspended; fresh Retry
+starts this step again. Headless compositions without orbit-line presentation
+skip this visual instruction. Safety warnings and release/coast always outrank it.
+This is guidance preparation and does not gate manual thrust or change objective
+success predicates.
+
+`V` is the recommended optional alignment assist for this lesson: it points the
+nose along Earth-relative velocity, which is the required forward-burn direction.
+The ship starts aligned, with Earth above. `Z` also controls roll toward the orbit
+reference; the adventure continues to permit `V` and keeps `Z` disabled.
 
 An otherwise inconsistent observation/objective combination uses priority 1. The
 director must not infer confirmation from rounded instruments or start its own

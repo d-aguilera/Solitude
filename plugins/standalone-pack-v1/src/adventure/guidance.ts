@@ -26,6 +26,7 @@ export function createGuidance(
   generation: number,
   locale: ExternalLocale,
   objective: AdventureObjective,
+  orbitLineEnabled: () => boolean,
 ) {
   const messages: typeof en = { en, es, fr }[locale];
   const numberFormat = new Intl.NumberFormat(locale, {
@@ -42,6 +43,7 @@ export function createGuidance(
   let lastSim: number | null = null;
   let activeMillis = 0;
   let aligned = true;
+  let orbitLineSeen = false;
   let previousSafe = false;
   let resetCounter = 0;
   let cue: AdventureCue | null = null;
@@ -175,6 +177,7 @@ export function createGuidance(
       if (cue === "recover")
         hint =
           stallUntil > activeMillis ? messages.hintStall : messages.hintRecover;
+      else if (cue === "showOrbit") hint = messages.hintOrbit;
       else if (cue === "align") hint = messages.hintAlign;
       else if (cue === "release" || cue === "coast") hint = messages.hintCoast;
       else if (cue === "escape" || cue === "highApoapsis")
@@ -387,6 +390,7 @@ export function createGuidance(
         instrumentText(6, messages.recoveryRequired);
       }
       let next: AdventureCue;
+      if (orbitLineEnabled()) orbitLineSeen = true;
       if (
         !finite(sample.earthAltitudeMeters) ||
         !sample.orbitValid ||
@@ -400,6 +404,7 @@ export function createGuidance(
       else if (sample.apoapsisAltitudeMeters! > 600_000) next = "highApoapsis";
       else if (objective.safeOrbit && sample.propulsionActive) next = "release";
       else if (objective.status === "confirming") next = "coast";
+      else if (!orbitLineSeen) next = "showOrbit";
       else if (sample.periapsisAltitudeMeters! < 150_000)
         next = aligned ? "recover" : "align";
       else next = "unavailable";
@@ -410,7 +415,7 @@ export function createGuidance(
       }
       text(
         "warningText",
-        next === "recover" || next === "align"
+        next === "showOrbit" || next === "recover" || next === "align"
           ? sample.periapsisAltitudeMeters! < 0
             ? messages.intersection
             : messages.belowTarget

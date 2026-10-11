@@ -26,7 +26,7 @@
   "release": "Orbite sûre atteinte. Relâchez Space/B pour commencer les cinq secondes sans propulsion.",
   "coast": "Gardez la propulsion arrêtée pendant la confirmation de l’orbite sûre.",
   "align": "Relâchez la propulsion et pointez dans le sens du mouvement relatif à la Terre. V peut vous aligner ; attendez avant de pousser.",
-  "recover": "Maintenez Space pour élever le point le plus bas à au moins 150 km. Gardez le point le plus haut à 600 km maximum.",
+  "recover": "V peut garder le nez aligné sur la vitesse relative à la Terre. Maintenez Espace pour relever le point le plus bas à au moins 150 km ; gardez le plus haut à 600 km maximum.",
   "intersection": "La trajectoire prévue traverse la Terre.",
   "belowTarget": "Le point le plus bas est sous l’objectif de sécurité.",
   "safeEntered": "Prévision d’orbite sûre atteinte.",
@@ -38,5 +38,7 @@
   "hintCoast": "Une prévision sûre ne suffit pas. Relâchez les deux commandes de propulsion pendant cinq secondes actives. Une poussée ou une perte de sécurité recommence la confirmation ; une pause explicite conserve le temps acquis.",
   "hintCorrection": "Relâchez d’abord, alignez en prograde, puis essayez de brèves poussées avec B. La propulsion inverse peut abaisser les deux points ; surveillez les deux limites. Le rétablissement n’est pas garanti. P ouvre la pause et Réessayer.",
   "hintUnavailable": "Les valeurs indisponibles ne prouvent pas la sécurité. Relâchez la propulsion ; si les données terrestres ne reviennent pas, mettez en pause avec P et réessayez.",
-  "hintStall": "Maintenez Space plutôt que de le tapoter ; relâchez quand le point le plus bas atteint l’objectif."
+  "hintStall": "Maintenez Space plutôt que de le tapoter ; relâchez quand le point le plus bas atteint l’objectif.",
+  "showOrbit": "Appuyez sur G pour afficher la ligne de votre orbite prévue. Examinez son trajet autour de la Terre avant de pousser.",
+  "hintOrbit": "G active ou masque la ligne orbitale. Elle montre la trajectoire prévue ; si elle traverse la Terre, il faut la corriger. Ensuite, V peut aligner le nez sur la vitesse relative à la Terre sans propulsion."
 }

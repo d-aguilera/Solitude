@@ -72,6 +72,46 @@ const safe = {
   apoapsisAltitudeMeters: 600000,
 };
 
+it("starts with the actual orbit-line state, then offers velocity alignment and burn advice", () => {
+  const r = ready("en");
+  let enabled = false;
+  r.c.attachOrbitLine({
+    get enabled() {
+      return enabled;
+    },
+  });
+  r.frame();
+  expect(r.g.cue).toBe("showOrbit");
+  expect(r.g.cueText).toContain("Press G");
+  expect(r.g.warningText).toContain("intersects Earth");
+  r.g.setHintsEnabled(r.c.session.generation, true);
+  expect(r.g.hintText).toContain("V");
+  r.frame({ progradeAlignmentCosine: 0 });
+  expect(r.g.cue).toBe("showOrbit");
+  enabled = true;
+  r.frame({ progradeAlignmentCosine: 0 });
+  expect(r.g.cue).toBe("align");
+  r.frame();
+  expect(r.g.cue).toBe("recover");
+  expect(r.g.cueText).toContain("V");
+  enabled = false;
+  r.frame();
+  expect(r.g.cue).toBe("recover");
+  const retry = ready("en", 4);
+  retry.c.attachOrbitLine({ enabled: false });
+  retry.frame();
+  expect(retry.g.cue).toBe("showOrbit");
+});
+
+it("keeps safety and release cues ahead of the orbit-line preparation step", () => {
+  const r = ready("en");
+  r.c.attachOrbitLine({ enabled: false });
+  r.frame({ apoapsisAltitudeMeters: 700000 });
+  expect(r.g.cue).toBe("highApoapsis");
+  r.frame({ ...safe, propulsionActive: true });
+  expect(r.g.cue).toBe("release");
+});
+
 describe("adventure guidance director", () => {
   it("starts without data, teaches negative-periapsis recovery, and retains semantic instruments", () => {
     const r = ready();

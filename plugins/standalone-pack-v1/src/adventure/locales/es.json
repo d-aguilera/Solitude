@@ -11,7 +11,7 @@
   "paused": "Vuelo en pausa",
   "suspended": "Vuelo suspendido",
   "suspensionBody": "El vuelo se detuvo mientras la ventana estaba inactiva o se interrumpió el reloj. Continúa cuando estés listo.",
-  "briefing": "La recuperación automática de órbita está desactivada. Tu trayectoria actual cruza la Tierra. Mantén Espacio para acelerar hacia delante y elevar el punto más bajo de tu órbita. Busca una altitud de periapsis de al menos 150 km y de apoapsis de como máximo 600 km; luego suelta y continúa cinco segundos sin propulsión. V alinea con la velocidad relativa a la Tierra; B acelera hacia atrás para corregir un exceso. La orientación contextual se añadirá después.",
+  "briefing": "La recuperación automática de órbita está fuera de servicio. Tu trayectoria actual atraviesa la Tierra. Primero pulsa G para mostrar la línea de órbita prevista. V puede alinear el morro con la velocidad relativa a la Tierra; la nave ya empieza alineada. Después mantén Espacio para subir el punto más bajo a 150 km o más sin que el más alto supere 600 km. Suelta y vuela sin propulsión durante cinco segundos. B propulsa hacia atrás para corregir un exceso.",
   "pause": "Pausar",
   "completed": "Órbita recuperada",
   "completedBody": "Mantuviste una órbita terrestre segura durante cinco segundos sin propulsión. Recuperación completada.",

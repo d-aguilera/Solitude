@@ -1,7 +1,7 @@
 # My First Orbit adventure
 
 Specifications, gameplay reports, validation, and diagnostic captures for the
-first guided orbit-recovery adventure. Gameplay cases 1–10 pass; case 10 is closed.
+first guided orbit-recovery adventure. All gameplay test cases pass.
 
 - [Current state and next steps](MEMORY_MY_FIRST_ORBIT.md)
 - [Gameplay testing](my-first-orbit-gameplay-testing.md)

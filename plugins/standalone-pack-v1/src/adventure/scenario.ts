@@ -34,12 +34,16 @@ export function createScenario(): ExternalWorldModelPlugin {
       const speed = Math.sqrt(NEWTON_G * earth.mass * (2 / ra - 2 / (ra + rp)));
       if (!Number.isFinite(speed) || speed <= 0 || rp <= 0)
         throw new Error("Invalid My First Orbit Earth data");
-      // Columns are right, forward, up. Face Earth-relative +Y prograde.
+      // Face Earth-relative +Y prograde; roll so Earth (-X) is above the ship.
       const frame = {
         right: vec3.create(1, 0, 0),
         forward: vec3.create(0, 1, 0),
         up: vec3.create(0, 0, 1),
       };
+      const orientation = mat3.zero();
+      mat3.rotAxisInto(orientation, frame.forward, -Math.PI / 2);
+      mat3.mulVec3Into(frame.right, orientation, frame.right);
+      mat3.mulVec3Into(frame.up, orientation, frame.up);
       registry.addEntities([
         providers[0].createEntity({
           color: { r: 0, g: 255, b: 255 },
@@ -47,7 +51,7 @@ export function createScenario(): ExternalWorldModelPlugin {
           placement: {
             angularVelocity: { pitch: 0, roll: 0, yaw: 0 },
             frame,
-            orientation: mat3.copy(mat3.identity, mat3.zero()),
+            orientation,
             position: vec3.addInto(
               vec3.zero(),
               earth.position,

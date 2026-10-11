@@ -7,10 +7,15 @@ import {
   type ExternalDirectControllableEntityPlacement,
 } from "@solitude/plugin-api/controllable-entities";
 import type { ExternalLoopUpdateParams } from "@solitude/plugin-api/loop";
+import { mat3, vec3 } from "@solitude/plugin-api/math";
 import type {
   ExternalPlugin,
   ExternalPluginContext,
 } from "@solitude/plugin-api/module";
+import {
+  orbitSegmentsStateCapability,
+  type ExternalOrbitSegmentsState,
+} from "@solitude/plugin-api/render";
 import type { ExternalScenePlugin } from "@solitude/plugin-api/scene";
 import type { ExternalSimulationPlugin } from "@solitude/plugin-api/simulation";
 import type { ExternalSpacecraftPropulsionCommandParams } from "@solitude/plugin-api/spacecraft";
@@ -26,6 +31,7 @@ import {
   standaloneSessionCapability,
 } from "@solitude/plugin-api/standalone-session";
 import {
+  createOrbitObservation,
   orbitObservationCapability,
   type ExternalOrbitObservation,
 } from "@solitude/plugin-api/telemetry";
@@ -34,7 +40,7 @@ import type {
   ExternalEntityConfig,
   ExternalWorldModelRegistry,
 } from "@solitude/plugin-api/world-model";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createPlugin as createAdventure } from "../adventure";
 import { createPlugin as createFinal } from "../adventure/final";
 import { adventureEntityId } from "../adventure/scenario";
@@ -44,7 +50,12 @@ import { createPlugin as createPlayback } from "../playback";
 import { createPlugin as createShips } from "../ships";
 import { createPlugin as createTimeScale } from "../time-scale";
 
-function assemble(mode: "my-first-orbit" | "free-flight") {
+afterEach(() => vi.unstubAllGlobals());
+
+function assemble(
+  mode: "my-first-orbit" | "free-flight",
+  orbitLine: ExternalOrbitSegmentsState | null = null,
+) {
   const options = {
     locale: "en",
     orbitalSpeedMultiplier: mode === "my-first-orbit" ? "1" : "20",
@@ -61,6 +72,9 @@ function assemble(mode: "my-first-orbit" | "free-flight") {
   const content: ExternalPlugin = {
     id: "testContent",
     capabilities: [
+      ...(orbitLine
+        ? [{ id: orbitSegmentsStateCapability, value: orbitLine }]
+        : []),
       {
         id: orbitObservationCapability,
         value: {
@@ -149,6 +163,69 @@ function assemble(mode: "my-first-orbit" | "free-flight") {
 }
 
 describe("standalone adventure assembly", () => {
+  it("binds orbit-line guidance to the discovered provider state", () => {
+    vi.stubGlobal("document", {
+      visibilityState: "visible",
+      hasFocus: () => true,
+    });
+    let enabled = false;
+    const s = assemble("my-first-orbit", {
+      get enabled() {
+        return enabled;
+      },
+    });
+    const session = s.capabilityRegistry
+      .getAll(standaloneSessionCapability)
+      .find(isStandaloneSession)!;
+    const guidance = s.capabilityRegistry
+      .getAll(adventureGuidanceCapability)
+      .find(isAdventureGuidanceProvider)!;
+    const objective = s.capabilityRegistry
+      .getAll(adventureObjectiveCapability)
+      .find(isAdventureObjective)!;
+    const early = s.plugins[3].hooks!.loop!;
+    for (let i = 0; i <= 30; i++)
+      early.afterFrame!({
+        nowMs: (i * 1000) / 60,
+        dtMillis: 1000 / 60,
+      } as ExternalLoopUpdateParams);
+    session.command("begin");
+    early.updateLoopState!({
+      nowMs: 100,
+      dtMillis: 16,
+      controlInput: {},
+    } as ExternalLoopUpdateParams);
+    const sample = {
+      ...createOrbitObservation(),
+      generation: 7,
+      sequence: 0,
+      nowMs: 0,
+      simTimeMillis: 0,
+      entityId: adventureEntityId,
+      primaryId: "planet:earth",
+      orbitValid: true,
+      isBound: true,
+      periapsisAltitudeMeters: -50000,
+      apoapsisAltitudeMeters: 400000,
+      earthAltitudeMeters: 400000,
+      propulsionActive: false,
+      progradeAlignmentCosine: 1,
+    };
+    for (let i = 1; i <= 2; i++) {
+      early.updateLoopState!({
+        nowMs: 100 + i * 16,
+        dtMillis: 16,
+        controlInput: {},
+      } as ExternalLoopUpdateParams);
+      sample.sequence = i;
+      sample.nowMs = 100 + i * 16;
+      sample.simTimeMillis = i * 16;
+      objective.sample(sample);
+      guidance.sample(sample, "Earth");
+      expect(guidance.guidance.cue).toBe(i === 1 ? "showOrbit" : "recover");
+      enabled = true;
+    }
+  });
   it("creates only the calibrated craft, facing Earth-relative prograde, with no sandbox craft", () => {
     const s = assemble("my-first-orbit");
     const craft = s.entities.filter((entity) => entity.components.controllable);
@@ -169,8 +246,22 @@ describe("standalone adventure assembly", () => {
     expect(2 * a - radius - earth.physicalRadius).toBeCloseTo(-50_000, 4);
     expect(speed).toBeCloseTo(7539.984, 2);
     expect(state.frame?.forward).toEqual({ x: 0, y: 1, z: 0 });
+    const toEarth = vec3.subInto(vec3.zero(), earth.position, state.position);
+    expect(vec3.dot(toEarth, state.frame!.right)).toBeCloseTo(0, 5);
+    expect(vec3.dot(toEarth, state.frame!.forward)).toBeCloseTo(0, 5);
+    expect(vec3.dot(toEarth, state.frame!.up)).toBeCloseTo(radius, 5);
+    const renderedUp = vec3.zero();
+    mat3.mulVec3Into(renderedUp, state.orientation!, vec3.create(0, 0, 1));
+    expect(renderedUp).toEqual(state.frame!.up);
     expect(state.angularVelocity).toEqual({ pitch: 0, roll: 0, yaw: 0 });
     const second = assemble("my-first-orbit");
+    const retryState = second.entities.find(
+      (entity) => entity.id === adventureEntityId,
+    )!.components.state!;
+    if (retryState.kind !== "direct")
+      throw new Error("Expected direct retry state");
+    expect(retryState.frame).toEqual(state.frame);
+    expect(retryState.orientation).toEqual(state.orientation);
     expect(
       second.entities.find((entity) => entity.id === adventureEntityId)
         ?.components.state,

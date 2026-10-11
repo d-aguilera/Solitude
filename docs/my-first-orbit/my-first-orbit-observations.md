@@ -22,8 +22,9 @@ predicted periapsis altitude -50,000 m. For Earth radius `R`, use
 `ra = R + 400000`, `rp = R - 50000`, `a = (ra + rp) / 2`, and
 `v = sqrt(mu * (2 / ra - 1 / a))`. Add Earth's velocity to this tangential
 relative velocity. Initial relative speed is approximately 7,539.984 m/s.
-Set the attitude from the relative velocity, with zero angular velocity and
-autopilot off. `createOrbitingPlacement` constructs a circular orbit and aligns
+Set the attitude from the relative velocity, rolling so the local up axis points
+toward Earth and Earth appears above the ship in the opening view. Start with
+zero angular velocity and autopilot off. `createOrbitingPlacement` constructs a circular orbit and aligns
 to world velocity, so it cannot supply this scenario unchanged.
 
 Use a fixed main-engine acceleration of 10 m/s² while holding forward or reverse

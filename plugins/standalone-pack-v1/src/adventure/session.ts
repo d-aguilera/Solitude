@@ -1,4 +1,5 @@
 import type { ExternalLocale } from "@solitude/plugin-api/localization";
+import type { ExternalOrbitSegmentsState } from "@solitude/plugin-api/render";
 import type {
   StandaloneCommand,
   StandaloneMode,
@@ -33,7 +34,14 @@ export function createSession(
     (result) => changePhase(result),
     () => advance && !lifecycleRequest && phase === "flying",
   );
-  const director = createGuidance(generation, locale, hold.objective);
+  let orbitLine: ExternalOrbitSegmentsState | null = null;
+  const director = createGuidance(
+    generation,
+    locale,
+    hold.objective,
+    // Headless composition has no orbit-line presentation to enable.
+    () => orbitLine === null || orbitLine.enabled,
+  );
   const listeners = new Set<() => void>();
   let resetInput = () => {};
   const notify = () => {
@@ -153,6 +161,9 @@ export function createSession(
     },
   };
   return {
+    attachOrbitLine: (state: ExternalOrbitSegmentsState) => {
+      orbitLine = state;
+    },
     session,
     objective: hold.objective,
     guidance: director.provider,

@@ -3,6 +3,10 @@ import {
   type ExternalKeyboardInputProvider,
 } from "@solitude/plugin-api/input";
 import { vec3 } from "@solitude/plugin-api/math";
+import {
+  isOrbitSegmentsState,
+  orbitSegmentsStateCapability,
+} from "@solitude/plugin-api/render";
 import type {
   ExternalSegmentProviderParams,
   ExternalWorldSegment,
@@ -40,9 +44,12 @@ describe("orbit segments", () => {
     });
     const controller = createOrbitSegmentsController();
 
+    expect(controller.enabled).toBe(false);
     expect(appendSegments(controller, fixture)).toHaveLength(0);
     controller.requestToggle();
+    expect(controller.enabled).toBe(false);
     const segments = appendSegments(controller, fixture);
+    expect(controller.enabled).toBe(true);
 
     expect(segments).toHaveLength(192);
     expect(segments[0].start.x).toBeCloseTo(radius);
@@ -51,6 +58,32 @@ describe("orbit segments", () => {
     expect(segments[48].start.y).toBeCloseTo(radius, 6);
     expect(segments[96].start.x).toBeCloseTo(-radius);
     expect(segments[96].start.y).toBeCloseTo(0, 6);
+  });
+
+  it("publishes read-only orbit-line state from the same keyboard/render controller", () => {
+    const plugin = createPlugin({});
+    const state = plugin.capabilities!.find(
+      ({ id }) => id === orbitSegmentsStateCapability,
+    )!.value;
+    expect(isOrbitSegmentsState(state)).toBe(true);
+    if (!isOrbitSegmentsState(state))
+      throw new Error("Missing orbit-line state");
+    const input = plugin.capabilities!.find(
+      ({ id }) => id === keyboardInputCapability,
+    )!.value as ExternalKeyboardInputProvider;
+    const handler = input.createKeyHandler!(
+      {},
+      { unlockedActions: new Set(["orbitSegmentsToggle"]) },
+    );
+    handler.handleKeyDown!("orbitSegmentsToggle", false);
+    expect(state.enabled).toBe(false);
+    const fixture = createFixture({
+      shipPosition: vec3.create(10000, 0, 0),
+      shipVelocity: vec3.create(0, 630000, 0),
+    });
+    plugin.hooks!.segments!.appendSegments!(createSegmentSink(), fixture);
+    expect(state.enabled).toBe(true);
+    expect(Object.keys(state)).toEqual(["enabled"]);
   });
 
   it("does not draw unbound escape trajectories", () => {

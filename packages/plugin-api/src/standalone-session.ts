@@ -91,6 +91,7 @@ export function isAdventureObjective(
 
 export const adventureGuidanceCapability = "solitude.adventureGuidance.v1";
 export type AdventureCue =
+  | "showOrbit"
   | "unavailable"
   | "primaryChanged"
   | "escape"

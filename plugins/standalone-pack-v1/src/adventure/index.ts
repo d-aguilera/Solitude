@@ -1,5 +1,9 @@
 import { readLocaleRuntimeOption } from "@solitude/plugin-api/localization";
 import type { ExternalPlugin } from "@solitude/plugin-api/module";
+import {
+  isOrbitSegmentsState,
+  orbitSegmentsStateCapability,
+} from "@solitude/plugin-api/render";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 import {
   adventureGuidanceCapability,
@@ -40,7 +44,19 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
     ],
     hooks: adventure
       ? {
-          worldModel: createScenario(),
+          worldModel: {
+            contributeWorldModel: (registry, context) => {
+              createScenario().contributeWorldModel!(registry, context);
+              const states = context.capabilityRegistry
+                .getAll(orbitSegmentsStateCapability)
+                .filter(isOrbitSegmentsState);
+              if (states.length > 1)
+                throw new Error(
+                  "Adventure requires at most one orbit-line state provider",
+                );
+              if (states.length === 1) controller.attachOrbitLine(states[0]);
+            },
+          },
           loop: {
             afterFrame: ({ nowMs, dtMillis }) =>
               controller.observeStartupFrame(nowMs, dtMillis),

@@ -19,6 +19,7 @@ const ORBIT_LINE_WIDTH = 2;
 const ORBIT_COLOR = { r: 96, g: 208, b: 255 };
 
 export interface OrbitSegmentsController {
+  readonly enabled: boolean;
   clearPendingInput: () => void;
   requestToggle: () => void;
   segments: ExternalSegmentPlugin;
@@ -30,6 +31,9 @@ export function createOrbitSegmentsController(): OrbitSegmentsController {
   let toggleRequested = false;
 
   return {
+    get enabled() {
+      return active;
+    },
     clearPendingInput: () => {
       toggleRequested = false;
     },

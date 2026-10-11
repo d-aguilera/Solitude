@@ -26,7 +26,7 @@
   "release": "Safe orbit reached. Release Space/B to begin the five-second coast.",
   "coast": "Keep thrust off while the safe orbit is confirmed.",
   "align": "Release thrust and point along Earth’s relative motion. V can align you; wait for alignment before burning.",
-  "recover": "Hold Space to raise the lowest point to at least 150 km. Keep the highest point at or below 600 km.",
+  "recover": "V can keep your nose aligned with Earth-relative velocity. Hold Space to raise the lowest point to at least 150 km; keep the highest point at or below 600 km.",
   "intersection": "Predicted path intersects Earth.",
   "belowTarget": "The lowest point is below the safety target.",
   "safeEntered": "Safe orbit prediction reached.",
@@ -38,5 +38,7 @@
   "hintCoast": "Safe prediction alone is not completion. Release both thrust controls and coast for five active seconds. A burn or lost safety restarts confirmation; explicit pause preserves earned time.",
   "hintCorrection": "Release first, align prograde, then try short B burns. Reverse thrust may lower both highest and lowest points; watch both limits. Recovery is not guaranteed. P opens pause and Retry.",
   "hintUnavailable": "Unavailable values do not establish safety. Release thrust; if Earth data does not recover, pause with P and Retry.",
-  "hintStall": "Hold Space rather than tapping it; release when the lowest point reaches the target."
+  "hintStall": "Hold Space rather than tapping it; release when the lowest point reaches the target.",
+  "showOrbit": "Press G to show your predicted orbit line. Inspect its path around Earth before burning.",
+  "hintOrbit": "G toggles the orbit line. It shows your predicted path; a path through Earth needs recovery. Next, V can align your nose with Earth-relative velocity without thrust."
 }
