@@ -188,3 +188,59 @@ PASS
 ### Outcome
 
 PASS
+
+## Test case 6 — Pause during coast
+
+### Repro steps
+
+- Start "Mi primera órbita" and click "Comenzar".
+- Hold Space until the lowest point is about 175 km, then release.
+- When "Vuelo seguro sin propulsión" reaches 1–2 seconds, press P.
+- Wait 6 seconds, then click "Continuar".
+
+### Expected result
+
+The countdown keeps its previous progress. Completion takes only the remaining
+coast time; the paused time does not count.
+
+### Outcome
+
+Pending.
+
+## Test case 7 — ALT-tab during coast
+
+### Repro steps
+
+- Start "Mi primera órbita" and click "Comenzar".
+- Hold Space until the lowest point is about 175 km, then release.
+- When "Vuelo seguro sin propulsión" reaches 1–2 seconds, ALT-tab away.
+- Wait 6 seconds, then ALT-tab back.
+- Click "Continuar".
+
+### Expected result
+
+Flight stays suspended until "Continuar". The countdown starts again from zero
+and needs 5 new seconds to complete.
+
+### Outcome
+
+Pending.
+
+## Test case 8 — Retry while holding Space
+
+### Repro steps
+
+- Start "Mi primera órbita" and click "Comenzar".
+- Hold Space and keep it held through the next steps.
+- Press P, then click "Reintentar".
+- In the new briefing, click "Comenzar".
+- Release Space, then press it again.
+
+### Expected result
+
+Retry restores the starting orbit. No thrust occurs after "Comenzar" until Space
+is released and pressed again. The new press raises the lowest point.
+
+### Outcome
+
+Pending.
