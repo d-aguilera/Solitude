@@ -27,6 +27,22 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
     canFly,
   );
   const { session } = controller;
+  const isFlying = () => session.phase === "flying";
+  const reportSuspension = (source: string) => {
+    // Copy only scalar diagnostics at the transition. Chrome's console must not
+    // retain a mutable record that a later suspension can overwrite.
+    console.info("[My First Orbit] Flight suspended", {
+      generation,
+      source,
+      reason: source === "frame" ? controller.suspension.reason : source,
+      nowMs: source === "frame" ? controller.suspension.nowMs : null,
+      dtMillis: source === "frame" ? controller.suspension.dtMillis : null,
+      elapsedMillis:
+        source === "frame" ? controller.suspension.elapsedMillis : null,
+      focused: document.hasFocus(),
+      visibility: document.visibilityState,
+    });
+  };
   return {
     id: "standaloneSession",
     capabilities: [
@@ -43,9 +59,13 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
           worldModel: createScenario(),
           loop: {
             initLoop: () => {
-              const suspend = () => controller.suspend();
-              const visibility = () => {
-                if (!canFly()) suspend();
+              const suspend = (event: Event) => {
+                const flying = isFlying();
+                controller.suspend();
+                if (flying) reportSuspension(event.type);
+              };
+              const visibility = (event: Event) => {
+                if (!canFly()) suspend(event);
                 else controller.refresh();
               };
               document.addEventListener("visibilitychange", visibility);
@@ -63,7 +83,10 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
                   session.phase === "flying" ? "pause" : "resume",
                 );
               sanitizeAdventureInput(controlInput, session.phase === "flying");
+              const flying = isFlying();
               controller.updateFrame(nowMs, dtMillis);
+              if (flying && session.phase === "suspended")
+                reportSuspension("frame");
               return null;
             },
           },

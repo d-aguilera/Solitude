@@ -101,17 +101,17 @@ UI commands and HUD refreshes never evaluate an accomplishment.
 
 ## Commands and transitions
 
-| Current phase | Command or condition                                               | Result                                                                                                               |
-| ------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| Briefing      | Begin, with document visible and window focused                    | Clear input; enter flying with a fresh time baseline.                                                                |
-| Flying        | Pause (`P` or menu action)                                         | Enter paused before the next tick; preserve coast progress and guidance time; clear input and eligibility timestamp. |
-| Paused        | Resume (`P` or Resume), visible and focused                        | Enter flying; first frame rebases time without a physics tick.                                                       |
-| Flying        | Visibility/focus loss, active-flight gap >250 ms, or invalid clock | Enter suspended before physics; reset coast confirmation; clear input and eligibility timestamp.                     |
-| Suspended     | Explicit Resume, visible and focused                               | Enter flying with a fresh baseline; no automatic restart on visibility/focus return.                                 |
-| Flying        | First valid Earth altitude sample ≤80 km                           | Latch failed; freeze subsequent simulation.                                                                          |
-| Flying        | Eligible coast reaches 5,000 ms                                    | Latch completed; freeze subsequent simulation.                                                                       |
-| Any run phase | Retry                                                              | Request replacement; dispose this run; new generation starts at briefing.                                            |
-| Any run phase | Return to menu                                                     | Request disposal; clear run state; show start menu.                                                                  |
+| Current phase | Command or condition                                      | Result                                                                                                               |
+| ------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Briefing      | Begin, with document visible and window focused           | Clear input; enter flying with a fresh time baseline.                                                                |
+| Flying        | Pause (`P` or menu action)                                | Enter paused before the next tick; preserve coast progress and guidance time; clear input and eligibility timestamp. |
+| Paused        | Resume (`P` or Resume), visible and focused               | Enter flying; first frame rebases time without a physics tick.                                                       |
+| Flying        | Visibility/focus loss, gap >250 ms, or nonmonotonic clock | Enter suspended before physics; reset coast confirmation; clear input and eligibility timestamp.                     |
+| Suspended     | Explicit Resume, visible and focused                      | Enter flying with a fresh baseline; no automatic restart on visibility/focus return.                                 |
+| Flying        | First valid Earth altitude sample ≤80 km                  | Latch failed; freeze subsequent simulation.                                                                          |
+| Flying        | Eligible coast reaches 5,000 ms                           | Latch completed; freeze subsequent simulation.                                                                       |
+| Any run phase | Retry                                                     | Request replacement; dispose this run; new generation starts at briefing.                                            |
+| Any run phase | Return to menu                                            | Request disposal; clear run state; show start menu.                                                                  |
 
 Other commands have no effect. Begin cannot skip the briefing through `P`.
 Terminal screens offer Retry and Return to menu, with no Resume. Briefing offers
@@ -137,10 +137,7 @@ hook. `afterFrame` is too late to prevent a stalled frame from advancing physics
 At Begin/Resume, the next callback is a baseline frame: no simulation advance,
 no objective sample, no guidance time credit. Subsequent active frames require
 finite positive delta ≤250 ms and a monotonic timestamp. A delta of exactly
-250 ms is permitted; greater gaps suspend after the run's first physics advance.
-Before that first advance, startup gaps instead rebase and skip the tick with no
-simulation/objective/guidance credit. The next timely positive frame starts
-physics; Pause/Resume never restores this startup allowance. A repeated timestamp advances
+250 ms is permitted; greater gaps suspend. A repeated timestamp advances
 nothing; a backwards or nonfinite clock suspends and resets confirmation. Do
 not clamp a long delta and continue, catch up missed ticks, or credit a suspended
 interval. Visibility and blur notifications suspend immediately, independently

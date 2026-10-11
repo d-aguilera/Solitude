@@ -280,13 +280,17 @@ The "Vuelo suspendido" popup shows up instead. Clicking on "Continuar" resumes t
 
 ### Status
 
-Fixed in code; pending browser confirmation. In Chrome, waiting 3 seconds in the
-retry briefing avoids the symptom. A regression reproduces suspension when a
-startup frame stalls after Begin but before the first physics tick.
+Open. The startup-clock change did not resolve the issue. In Chrome, waiting
+about 1 second in the briefing avoids suspension; textures take longer to load.
+The startup-clock exception has been removed, restoring the original guards.
 
-Startup gaps now rebase without advancing physics or the coast countdown. After
-the first physics tick, gaps over 250 ms still suspend, including after Resume.
-Focus loss and invalid clocks still suspend during startup.
+The updated build logs `[My First Orbit] Flight suspended` once per suspension.
+It records the source, reason, frame duration, elapsed time, generation, focus,
+and visibility. This is diagnostic logging, not a fix.
 
-Retest: pause → Reintentar → Comenzar immediately, without waiting in the briefing.
-Repeat a few times. Flight should start without an unexpected suspension popup.
+### Next check
+
+- Reload the updated build and open Chrome's console.
+- Repeat pause → Reintentar → Comenzar immediately.
+- Copy the `[My First Orbit] Flight suspended` message and its expanded values
+  from the unexpected suspension. Normal ALT-tab suspensions also log this message.

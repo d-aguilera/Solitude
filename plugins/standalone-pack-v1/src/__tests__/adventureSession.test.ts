@@ -24,51 +24,15 @@ describe("adventure session clock and entry", () => {
     controller.updateFrame(20016, 16);
     expect(controller.canAdvance()).toBe(true);
   });
-  it("rebases retry startup stalls before the first physics advance, then suspends real flight gaps", () => {
-    const previous = createSession(1, "my-first-orbit", "es", () => true);
-    previous.session.command("begin");
-    previous.updateFrame(100, 16);
-    previous.updateFrame(116, 16);
-    previous.session.command("pause");
-    previous.session.command("retry");
-    const retry = createSession(2, "my-first-orbit", "es", () => true);
-    retry.session.command("begin");
-    retry.updateFrame(1000, 16);
-    retry.updateFrame(1400, 400);
-    expect(retry.session.phase).toBe("flying");
-    expect(retry.canAdvance()).toBe(false);
-    expect(retry.objective.latestSequence).toBe(0);
-    retry.updateFrame(1800, 400);
-    expect(retry.canAdvance()).toBe(false);
-    retry.updateFrame(1816, 16);
-    expect(retry.canAdvance()).toBe(true);
-    retry.session.command("pause");
-    retry.session.command("resume");
-    retry.updateFrame(2000, 184);
-    retry.updateFrame(2400, 400);
-    expect(retry.session.phase).toBe("suspended");
-    expect(retry.canAdvance()).toBe(false);
-  });
-  it("still suspends on focus loss before the first physics advance", () => {
-    let focused = true;
-    const controller = createSession(1, "my-first-orbit", "en", () => focused);
-    controller.session.command("begin");
-    controller.updateFrame(100, 16);
-    focused = false;
-    controller.updateFrame(500, 400);
-    expect(controller.session.phase).toBe("suspended");
-    expect(controller.canAdvance()).toBe(false);
-  });
   it.each([
-    [367, 251],
-    [115, 16],
+    [351, 251],
+    [99, 16],
     [NaN, 16],
     [116, NaN],
   ])("suspends before a discontinuous tick (%s, %s)", (now, dt) => {
     const controller = createSession(1, "my-first-orbit", "es", () => true);
     controller.session.command("begin");
     controller.updateFrame(100, 16);
-    controller.updateFrame(116, 16);
     controller.updateFrame(now, dt);
     expect(controller.session.phase).toBe("suspended");
     expect(controller.canAdvance()).toBe(false);
