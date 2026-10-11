@@ -50,7 +50,6 @@ it("replays the Chrome capture: Begin rebases a delayed callback, timestamp catc
   frame(39475.1, 39936.6);
   expect(c.session.phase).toBe("suspended");
   expect(c.canAdvance()).toBe(false);
-  expect(c.suspension.elapsedMillis).toBeCloseTo(474.4);
   loop.dispose();
   expect(requests.size).toBe(0);
 });

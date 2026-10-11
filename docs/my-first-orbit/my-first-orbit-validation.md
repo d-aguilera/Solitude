@@ -53,7 +53,7 @@ browser animation loop to the adventure session and replays timestamps from
 callback without flight credit; the next callback runs 1.8 ms later and remains
 flying despite a 499.8 ms jump in the supplied frame timestamp. A later actual
 474.4 ms callback gap still suspends. This verifies the clock correction against
-the captured sequence; fresh Chrome validation is still required.
+the captured sequence; Chrome gameplay validation confirms the Retry issue is resolved.
 
 ## Texture preparation and upload regression
 
@@ -65,7 +65,8 @@ rows upload. Each view allocates storage on one frame and submits at most 2 MiB
 of pixel data per subsequent frame; decoded images close after the last upload
 finishes or is cancelled. CPU preparation is shared across simultaneous views.
 These checks validate scheduling and resource ownership, not a universal GPU
-timing guarantee. Chrome retesting remains required.
+timing guarantee. Chrome gameplay validation confirms no unexpected suspension, correct/faster
+texture loading, and correct ALT-tab behavior.
 
 The row-transfer mechanism follows WebGL2's
 [TexImageSource subrectangle rules](https://registry.khronos.org/webgl/specs/latest/2.0/).

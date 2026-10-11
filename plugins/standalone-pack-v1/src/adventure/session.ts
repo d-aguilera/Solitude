@@ -18,12 +18,6 @@ export function createSession(
   locale: ExternalLocale,
   canFly: () => boolean,
 ) {
-  const suspension: {
-    reason: "focus-or-visibility" | "invalid-clock" | "frame-gap" | null;
-    nowMs: number | null;
-    dtMillis: number | null;
-    elapsedMillis: number | null;
-  } = { reason: null, nowMs: null, dtMillis: null, elapsedMillis: null };
   const messages = { en, es, fr }[locale];
   let phase: StandalonePhase =
     mode === "my-first-orbit" ? "briefing" : "flying";
@@ -55,17 +49,6 @@ export function createSession(
     director.setPhase(next);
     resetInput();
     notify();
-  };
-  const suspendFrame = (
-    reason: NonNullable<typeof suspension.reason>,
-    now: number,
-    dt: number,
-  ) => {
-    suspension.reason = reason;
-    suspension.nowMs = now;
-    suspension.dtMillis = dt;
-    suspension.elapsedMillis = lastNow === null ? null : now - lastNow;
-    changePhase("suspended");
   };
   const session: StandaloneSession = {
     generation,
@@ -170,7 +153,6 @@ export function createSession(
     },
   };
   return {
-    suspension,
     session,
     objective: hold.objective,
     guidance: director.provider,
@@ -209,7 +191,7 @@ export function createSession(
       advance = false;
       if (lifecycleRequest || phase !== "flying") return;
       if (!canFly()) {
-        suspendFrame("focus-or-visibility", now, dt);
+        changePhase("suspended");
         return;
       }
       if (
@@ -218,7 +200,7 @@ export function createSession(
         dt < 0 ||
         (lastNow !== null && now < lastNow)
       ) {
-        suspendFrame("invalid-clock", now, dt);
+        changePhase("suspended");
         return;
       }
       if (baseline) {
@@ -228,7 +210,7 @@ export function createSession(
       }
       const elapsed = now - lastNow!;
       if (elapsed > 250 || dt > 250) {
-        suspendFrame("frame-gap", now, dt);
+        changePhase("suspended");
         return;
       }
       lastNow = now;

@@ -79,8 +79,6 @@ receives it at construction. One retained session record contains:
 
 - Immutable generation, mode, scenario entity ID, and Earth ID.
 - Phase: `briefing`, `flying`, `paused`, `suspended`, `completed`, or `failed`.
-- Suspension reason: hidden document, lost window focus, frame gap, or clock
-  discontinuity; absent outside suspension.
 - Objective status: `recovering`, `confirming`, `completed`, or `failed`;
   accumulated coast milliseconds and a nullable last eligible sample timestamp.
 - Latest sample sequence/validity, latched terminal sequence/reason, active-flight

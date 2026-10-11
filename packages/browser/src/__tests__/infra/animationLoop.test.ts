@@ -33,7 +33,6 @@ describe("animation loop lifetime", () => {
     expect(update.mock.calls[0][1]).toBeCloseTo(500.8);
     expect(update.mock.calls[1][0]).toBe(39462.2);
     expect(update.mock.calls[1][1]).toBeCloseTo(1.8);
-    expect(update.mock.calls[1][2].animationFrameTimeMs).toBe(39458.4);
     loop.dispose();
   });
   it("preserves real callback gaps even when supplied timestamps barely advance", () => {

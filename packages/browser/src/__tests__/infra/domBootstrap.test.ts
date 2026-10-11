@@ -2,7 +2,6 @@ import type { WorldAndSceneConfig } from "@solitude/engine/world";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { bootstrapWith } from "../../infra/domBootstrap";
 import { createBrowserKeyboardHost } from "../../infra/domKeyboardInput";
-import type { FrameGapTiming } from "../../infra/frameTiming";
 import type { BrowserViewPresenterOptions } from "../../infra/viewPresenter";
 
 const mocks = vi.hoisted(() => ({
@@ -123,7 +122,7 @@ describe("browser runtime lifetime", () => {
     requests.delete(id);
     callback(nowMs);
   }
-  it("reads only the shared frame clock with diagnostics off", () => {
+  it("samples the monotonic clock once per callback", () => {
     const clock = vi.fn(() => 0);
     vi.stubGlobal("performance", { now: clock });
     const host = createBrowserKeyboardHost();
@@ -134,68 +133,6 @@ describe("browser runtime lifetime", () => {
     expect(clock).toHaveBeenCalledTimes(3);
     expect(pipelines[0].beginFrame).toHaveBeenCalledTimes(2);
     runtime.dispose();
-    host.dispose();
-  });
-  it("captures render stalls, keeps bounded snapshots across Retry, and preserves loop policy", () => {
-    let time = 0;
-    vi.stubGlobal("performance", { now: () => time });
-    const debug = { timing: true, frameGaps: [] as FrameGapTiming[] };
-    vi.stubGlobal("__solitudeRenderDebug", debug);
-    const report = vi.spyOn(console, "info").mockImplementation(() => {});
-    const host = createBrowserKeyboardHost();
-    for (let generation = 0; generation < 5; generation++) {
-      const runtime = bootstrapWith(config, [], vi.fn(), host);
-      const pipeline = pipelines[generation];
-      pipeline.beginFrame.mockImplementation(() => {
-        time += 2;
-        return {
-          framePolicy: {
-            advancePresentation: true,
-            advanceSim: true,
-            advanceScene: true,
-          },
-          simTimeMillis: 16,
-        };
-      });
-      presenters[generation].renderInto.mockImplementation(() => {
-        time += 400;
-      });
-      pipeline.endFrame.mockImplementation(() => {
-        time += 4;
-      });
-      const base = generation * 1000;
-      frame(base);
-      time = base + 16;
-      frame(base + 16);
-      time = base + 433;
-      frame(base + 433);
-      expect(pipeline.beginFrame).toHaveBeenCalledTimes(2);
-      expect(pipeline.endFrame).toHaveBeenCalledTimes(2);
-      runtime.dispose();
-    }
-    expect(debug.frameGaps).toHaveLength(4);
-    expect(debug.frameGaps[0]).toMatchObject({
-      nowMs: 1433,
-      dtMillis: 417,
-      outsideCallbackMillis: 11,
-      previousFrames: [
-        {
-          nowMs: 1016,
-          pipelineMillis: 2,
-          renderMillis: 400,
-          afterFrameMillis: 4,
-          advanceSim: true,
-          advanceScene: true,
-        },
-      ],
-    });
-    expect(report).toHaveBeenCalledTimes(5);
-    expect(typeof report.mock.calls[0][1]).toBe("string");
-    expect(JSON.parse(report.mock.calls[0][1])).toMatchObject({
-      nowMs: 433,
-      previousFrames: [{ renderMillis: 400 }],
-    });
-    report.mockRestore();
     host.dispose();
   });
   it("supports repeated replacement without extra loops or listeners", () => {

@@ -276,34 +276,18 @@ The adventure restarts.
 
 ### Outcome
 
-The "Vuelo suspendido" popup shows up instead. Clicking on "Continuar" resumes the game without further issues. Only ALT-Tabbing away and back while in "Mi primera órbita" seems to reset this behavior.
+PASS. The user confirms that rushed Retry no longer shows suspension, textures
+load correctly and faster, and ALT-tabbing away and back behaves correctly.
 
 ### Status
 
-Texture-loading fix implemented; pending Chrome confirmation. The
-[Performance trace](my-first-orbit-gameplay-testing-case10-05.json.gz) contains
-five `GpuMeshRenderer` image-load handlers taking 515–587 ms each. Each handler
-synchronously uploads an HTML image, with 243–280 ms of JPEG decoding recorded
-on the main thread. This identifies work outside the frame timings that blocks
-animation callbacks. The export was useful with resource content and source
-maps unchecked.
+Closed — browser-confirmed fixed.
 
-Texture preparation now fetches compressed bytes and asynchronously creates a
-shared decoded bitmap. Views upload original-resolution pixels in strips of at
-most 2 MiB per view per frame, with storage allocation on a separate frame.
-Textures become visible only after the full upload. Completed or cancelled
-uploads release decoded data; Retry aborts unused requests and rejects late
-results for disposed renderers. The flight interruption guard remains strict.
+The [Performance trace](my-first-orbit-gameplay-testing-case10-05.json.gz)
+identified five image-load handlers blocking the main thread for 515–587 ms,
+including synchronous JPEG decoding. Shared asynchronous bitmap preparation and
+bounded GPU transfers resolve the startup stall. Original texture resolution,
+strict flight interruption guards, and explicit Resume after ALT-tab are retained.
 
-### Next check
-
-- Reload with DevTools closed.
-- Start, wait 3 seconds, then press P.
-- Rush “Reintentar” → “Comenzar” as soon as it enables. Repeat 5 times.
-- Check that flight starts and Earth's surface/clouds finish appearing normally.
-- ALT-tab away and back once. “Continuar” should still be required.
-- Open Free Flight and check Earth/Moon textures and controls.
-
-If suspension returns, save one more Performance recording as
-`docs/my-first-orbit-gameplay-testing-case10-06.json.gz`. The same export options
-are fine; resource contents and source maps are not required.
+Temporary console/frame diagnostics have been removed. Captures remain here as
+evidence; no further case-10 testing is needed.

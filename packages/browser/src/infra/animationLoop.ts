@@ -1,6 +1,5 @@
 export interface AnimationLoopState {
   readonly running: boolean;
-  readonly animationFrameTimeMs: number;
 }
 
 /** A retained handle does not retain the frame callback after disposal. */
@@ -12,13 +11,9 @@ export function startAnimationLoop(
   let errorHandler: typeof onError | null = onError;
   let requestId: number | null = null;
   let previousTime: number | null = null;
-  let animationFrameTimeMs = 0;
   const state: AnimationLoopState = {
     get running() {
       return callback !== null;
-    },
-    get animationFrameTimeMs() {
-      return animationFrameTimeMs;
     },
   };
   const dispose = () => {
@@ -27,10 +22,9 @@ export function startAnimationLoop(
     if (requestId !== null) cancelAnimationFrame(requestId);
     requestId = null;
   };
-  const frame = (frameTimeMs: number) => {
+  const frame = () => {
     requestId = null;
     if (!callback) return;
-    animationFrameTimeMs = frameTimeMs;
     // The supplied frame timestamp can lag callback execution, then catch up
     // on the next callback. Use one actual monotonic clock for every loop stage.
     const nowMs = performance.now();

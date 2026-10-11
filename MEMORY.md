@@ -17,7 +17,7 @@
 
 ### Active
 
-- `MEMORY_MY_FIRST_ORBIT.md`: current scope and implementation plan for the first
+- `docs/my-first-orbit/MEMORY_MY_FIRST_ORBIT.md`: current scope and implementation plan for the first
   guided orbit-recovery adventure and its gameplay awareness foundation.
 - `MEMORY_SERVER_PERFORMANCE.md`: active roadmap for establishing a precise,
   reproducible authoritative-server performance baseline, capacity model, and
@@ -42,7 +42,7 @@
 ## Current focus
 
 - **Primary active work**: implement the My First Orbit adventure and its gameplay
-  awareness foundation in `MEMORY_MY_FIRST_ORBIT.md`. Server performance context
+  awareness foundation in `docs/my-first-orbit/MEMORY_MY_FIRST_ORBIT.md`. Server performance context
   remains in `MEMORY_SERVER_PERFORMANCE.md`; headless playback remains dormant.
 - **Current extraction frontier**: physical product-plugin extraction is complete. No product plugin implementation remains in a host package; both products discover `newtonianGravity`, `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` through their Solitude content packs.
 - **Discovery foundation**: browser and server discovery, multi-plugin packs, strict manifests, target-specific assembly, origin/path security, and schema-v3 single-host packs are in place. Preserve the rule that a pack is an atomic host-specific activation unit.
