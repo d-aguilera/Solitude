@@ -280,7 +280,13 @@ The "Vuelo suspendido" popup shows up instead. Clicking on "Continuar" resumes t
 
 ### Status
 
-Pending investigation. Reported in Chrome when flight is meant to start/resume.
-Check whether waiting 3 seconds in the new briefing before clicking "Comenzar"
-changes the result. Existing lifecycle, bootstrap, scenario, and presentation
-checks pass but do not reproduce this browser symptom.
+Fixed in code; pending browser confirmation. In Chrome, waiting 3 seconds in the
+retry briefing avoids the symptom. A regression reproduces suspension when a
+startup frame stalls after Begin but before the first physics tick.
+
+Startup gaps now rebase without advancing physics or the coast countdown. After
+the first physics tick, gaps over 250 ms still suspend, including after Resume.
+Focus loss and invalid clocks still suspend during startup.
+
+Retest: pause → Reintentar → Comenzar immediately, without waiting in the briefing.
+Repeat a few times. Flight should start without an unexpected suspension popup.

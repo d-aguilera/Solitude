@@ -155,11 +155,14 @@ coasting; an autonomous or direct-control burn is propulsion regardless of keys.
 
 Explicit pause preserves accumulated confirmation and freezes all guidance
 timers. Resume requires a fresh eligible sample and rebases its timestamp,
-crediting no paused interval. A frame gap greater than 250 ms is a discontinuity:
-reset confirmation and request suspension before another physics tick. This
+crediting no paused interval. After the run's first physics advance, a frame gap
+greater than 250 ms is a discontinuity: reset confirmation and request suspension
+before another physics tick. This
 prevents tab suspension or a stalled frame from earning five seconds or jumping
 through the Earth boundary. Step 3 must define suspension/resume integration;
-ordinary 30 Hz flight stays well within this bound. Time-warp requests cannot
+ordinary 30 Hz flight stays well within this bound. Before the first physics
+advance, startup gaps only rebase and skip the tick with no time credit; this
+allowance does not reset on Pause/Resume. Time-warp requests cannot
 alter the 1× adventure clock.
 
 The reusable hold rule owns elapsed time and eligibility only. The objective

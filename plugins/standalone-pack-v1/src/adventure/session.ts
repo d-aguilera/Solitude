@@ -23,6 +23,7 @@ export function createSession(
     mode === "my-first-orbit" ? "briefing" : "flying";
   let lifecycleRequest: "retry" | "menu" | null = null;
   let baseline = true;
+  let awaitingFirstAdvance = true;
   let lastNow: number | null = null;
   let advance = false;
   const hold = createObjective(
@@ -178,11 +179,18 @@ export function createSession(
       }
       const elapsed = now - lastNow!;
       if (elapsed > 250 || dt > 250) {
+        // Startup presentation can stall before any physics has run. Rebase
+        // without advancing or crediting time; active-flight gaps still suspend.
+        if (awaitingFirstAdvance) {
+          lastNow = now;
+          return;
+        }
         changePhase("suspended");
         return;
       }
       lastNow = now;
       advance = elapsed > 0 && dt > 0;
+      if (advance) awaitingFirstAdvance = false;
     },
     canAdvance: () => advance && !lifecycleRequest && phase === "flying",
   };
