@@ -124,3 +124,67 @@ retest is required for this issue.
 ### Outcome
 
 PASS
+
+## Test case 3
+
+### Repro steps
+
+- Solitude starts and presents menu
+- Click on "Mi primera órbita"
+- Game loads, "Mi primera órbita" menu is shown
+- Click on "Comenzar"
+- Guide panel is shown at the top-right
+- Hold Space to burn until altitude reaches 601 km
+- The following message is shown: "El punto más alto es demasiado alto. Suelta los controles de propulsión. Alinea en sentido progrado con V y usa impulsos cortos hacia atrás con B observando el punto más alto."
+- Hold B until altitude is 600 km or less
+- Message above disappears
+- "Vuelo seguro sin propulsión" time count starts
+- After 5 seconds the success "Órbita recuperada" menu is displayed
+
+### Outcome
+
+PASS
+
+## Test case 4
+
+### Repro steps
+
+- Solitude starts and presents menu
+- Click on "Mi primera órbita"
+- Game loads, "Mi primera órbita" menu is shown
+- Click on "Comenzar"
+- Press ALT+TAB to switch to another application
+- "Vuelo suspendido" menu is shown with "Continuar", "Reintentar", "Volver al menú" and "Mostrar pistas" buttons
+- The "Continuar" button is disabled
+- Press ALT+TAB again to go back to Solitude
+- The "Continuar" button is now enabled
+- All menu buttons do what they are supposed to do
+
+### Outcome
+
+PASS
+
+## Test case 5
+
+### Repro steps
+
+- Solitude starts and presents menu
+- Click on "Mi primera órbita"
+- Game loads, "Mi primera órbita" menu is shown
+- Click on "Comenzar"
+- Press ALT+TAB to switch to another application
+- "Vuelo suspendido" menu is shown
+- Press ALT+TAB again to go back to Solitude
+- Hold the Space key down
+- Click on "Continuar"
+- Menu is dismissed
+- The "Punto más bajo sobre la Tierra (≥150 km)" value does not increase or decrease
+- Lift Space and hold it down again
+- The "Punto más bajo sobre la Tierra (≥150 km)" value increases
+- Press P to pause
+- "Vuelo en pausa" menu is shown with "Continuar", "Reintentar", "Volver al menú" and "Mostrar pistas" buttons
+- All menu buttons do what they are supposed to do
+
+### Outcome
+
+PASS
