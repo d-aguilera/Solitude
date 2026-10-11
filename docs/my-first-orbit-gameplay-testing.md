@@ -280,35 +280,42 @@ The "Vuelo suspendido" popup shows up instead. Clicking on "Continuar" resumes t
 
 ### Status
 
-Open. The 500 ms briefing readiness gate does not solve this case when rushing.
-The [first capture](my-first-orbit-gameplay-testing-case10.json) shows 450–550 ms
-frame gaps; the [second capture](my-first-orbit-gameplay-testing-case10-02.json)
-shows 400–500 ms gaps, again focused and visible. Neither capture identifies
-which work stalls. The flight guard remains unchanged.
+Clock correction implemented; pending Chrome confirmation. The
+[raw timing log](my-first-orbit-gameplay-testing-case10-03.log) captured the
+unexpected generation-2 suspension: supplied frame timestamps advanced
+499.8 ms, but callback execution advanced only 1.8 ms. The preceding callback
+used a timestamp about 502 ms old. Measured frame work stayed below 2.1 ms.
+The log also contains real delays outside callbacks; their cause is unproven.
 
-Opt-in frame timing now records six completed frames around each gap and keeps
-the last four reports across Retry. It measures the pipeline (including physics
-and scene updates), rendering, overlays, completed-frame hooks, and time outside
-the callbacks. Both console messages now stringify their data at logging time.
-Timing is off by default. This build adds diagnostics, not a fix.
+The browser loop now samples `performance.now()` at callback entry and uses
+that same time and delta for physics, readiness, objectives, and guidance.
+The supplied animation-frame timestamp remains available only for diagnostics.
+Actual gaps over 250 ms still suspend; Begin/Resume still rebase without a tick.
+Both console messages remain stringified. Timing is off by default.
 
 ### Next check
 
-- Reload, open the adventure, then open Chrome's console.
-- Enable timing with:
+- Reload with Chrome's console closed.
+- Start, wait 3 seconds, then press P.
+- Click “Reintentar”, then “Comenzar” as soon as it enables.
+- Repeat 5 times. Flight should start without “Vuelo suspendido”.
+- ALT-tab away and back once. Flight should still require “Continuar”.
+- Open Free Flight once and check that movement and controls work normally.
+
+### Only if it still fails
+
+Enable timing in the console, then click back into the game and retry:
 
 ```js
 Object.assign(window.__solitudeRenderDebug, { timing: true, frameGaps: [] });
 ```
 
-- Click back into the game. Pause → “Reintentar” → “Comenzar” quickly once.
-- After suspension, run this in the console:
+After suspension, copy the retained reports:
 
 ```js
 copy(JSON.stringify(window.__solitudeRenderDebug.frameGaps, null, 2));
 ```
 
-- Save the clipboard to `docs/my-first-orbit-gameplay-testing-case10-03.json`.
-
-The copy command exports complete JSON without console truncation. Timing stays
-on across Retry; reloading turns it off.
+Save the clipboard as `docs/my-first-orbit-gameplay-testing-case10-04.json`.
+Raw console text is also useful. `copy(...)` returning `undefined` is normal:
+it writes to the clipboard. Timing stays on across Retry; reloading turns it off.

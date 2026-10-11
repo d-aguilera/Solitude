@@ -45,6 +45,16 @@ The suite verifies:
   This verifies fresh production instances; the shell's Retry action and held-key
   gate still need browser testing.
 
+## Browser clock regression
+
+Run `npx vitest run scripts/my-first-orbit-clock.test.mjs`. It connects the actual
+browser animation loop to the adventure session and replays timestamps from
+`my-first-orbit-gameplay-testing-case10-03.log`. Begin rebases the delayed
+callback without flight credit; the next callback runs 1.8 ms later and remains
+flying despite a 499.8 ms jump in the supplied frame timestamp. A later actual
+474.4 ms callback gap still suspends. This verifies the clock correction against
+the captured sequence; fresh Chrome validation is still required.
+
 ## Local runtime-cost sample
 
 Run

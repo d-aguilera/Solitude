@@ -4,9 +4,12 @@ import { startAnimationLoop } from "../../infra/animationLoop";
 describe("animation loop lifetime", () => {
   let requests: Map<number, FrameRequestCallback>;
   let nextId: number;
+  let callbackNow: number;
   beforeEach(() => {
     requests = new Map();
     nextId = 0;
+    callbackNow = 0;
+    vi.stubGlobal("performance", { now: () => callbackNow });
     vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
       requests.set(++nextId, callback);
       return nextId;
@@ -14,11 +17,33 @@ describe("animation loop lifetime", () => {
     vi.stubGlobal("cancelAnimationFrame", (id: number) => requests.delete(id));
   });
   afterEach(() => vi.unstubAllGlobals());
-  function frame(nowMs: number) {
+  function frame(nowMs: number, actualNowMs = nowMs) {
+    callbackNow = actualNowMs;
     const [id, callback] = requests.entries().next().value!;
     requests.delete(id);
     callback(nowMs);
   }
+  it("uses actual callback time when captured frame timestamps lag and catch up", () => {
+    const update = vi.fn();
+    const loop = startAnimationLoop(update, vi.fn());
+    frame(38825.3, 38959.6);
+    frame(38958.6, 39460.4);
+    frame(39458.4, 39462.2);
+    expect(update.mock.calls[0][0]).toBe(39460.4);
+    expect(update.mock.calls[0][1]).toBeCloseTo(500.8);
+    expect(update.mock.calls[1][0]).toBe(39462.2);
+    expect(update.mock.calls[1][1]).toBeCloseTo(1.8);
+    expect(update.mock.calls[1][2].animationFrameTimeMs).toBe(39458.4);
+    loop.dispose();
+  });
+  it("preserves real callback gaps even when supplied timestamps barely advance", () => {
+    const update = vi.fn();
+    const loop = startAnimationLoop(update, vi.fn());
+    frame(0, 0);
+    frame(16, 500);
+    expect(update).toHaveBeenCalledWith(500, 500, expect.anything());
+    loop.dispose();
+  });
   it("rebases the first frame and cancels an outstanding callback", () => {
     const update = vi.fn();
     const loop = startAnimationLoop(update, (error) => {

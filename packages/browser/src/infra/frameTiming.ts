@@ -1,6 +1,7 @@
-/** Opt-in investigation of frame gaps; the normal loop does not read this clock. */
+/** Opt-in investigation of frame gaps; normal frames take no diagnostic timing samples. */
 export interface CompletedFrameTiming {
   nowMs: number;
+  animationFrameTimeMs: number;
   dtMillis: number;
   callbackStartMs: number;
   callbackEndMs: number;
@@ -16,6 +17,7 @@ export interface CompletedFrameTiming {
 
 export interface FrameGapTiming {
   nowMs: number;
+  animationFrameTimeMs: number;
   dtMillis: number;
   callbackDelayMillis: number;
   outsideCallbackMillis: number | null;
@@ -36,6 +38,7 @@ export function createFrameTiming(
 ) {
   const frames: CompletedFrameTiming[] = Array.from({ length: 6 }, () => ({
     nowMs: 0,
+    animationFrameTimeMs: 0,
     dtMillis: 0,
     callbackStartMs: 0,
     callbackEndMs: 0,
@@ -53,7 +56,7 @@ export function createFrameTiming(
   let stageStart = 0;
   let current = frames[0];
   return {
-    begin: (nowMs: number, dtMillis: number) => {
+    begin: (nowMs: number, dtMillis: number, animationFrameTimeMs: number) => {
       const started = clock();
       if (dtMillis > 250) {
         const previousFrames: CompletedFrameTiming[] = [];
@@ -63,8 +66,9 @@ export function createFrameTiming(
           });
         report({
           nowMs,
+          animationFrameTimeMs,
           dtMillis,
-          callbackDelayMillis: started - nowMs,
+          callbackDelayMillis: started - animationFrameTimeMs,
           outsideCallbackMillis: count
             ? started - previousFrames[count - 1].callbackEndMs
             : null,
@@ -73,6 +77,7 @@ export function createFrameTiming(
       }
       current = frames[next];
       current.nowMs = nowMs;
+      current.animationFrameTimeMs = animationFrameTimeMs;
       current.dtMillis = dtMillis;
       current.callbackStartMs = started;
       stageStart = started;

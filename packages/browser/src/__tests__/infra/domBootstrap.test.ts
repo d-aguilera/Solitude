@@ -29,6 +29,7 @@ vi.mock("../../infra/viewPresenter", () => ({
 describe("browser runtime lifetime", () => {
   let requests: Map<number, FrameRequestCallback>;
   let nextId: number;
+  let callbackNow: number;
   let windowTarget: EventTarget;
   let documentTarget: EventTarget;
   let removedElements: ReturnType<typeof vi.fn>[];
@@ -48,6 +49,8 @@ describe("browser runtime lifetime", () => {
     vi.stubGlobal("__solitudeRenderDebug", undefined);
     requests = new Map();
     nextId = 0;
+    callbackNow = 0;
+    vi.stubGlobal("performance", { now: () => callbackNow });
     removedElements = [];
     presenters = [];
     pipelines = [];
@@ -115,11 +118,12 @@ describe("browser runtime lifetime", () => {
   });
   afterEach(() => vi.unstubAllGlobals());
   function frame(nowMs: number) {
+    callbackNow = nowMs;
     const [id, callback] = requests.entries().next().value!;
     requests.delete(id);
     callback(nowMs);
   }
-  it("leaves timing off by default without reading the diagnostic clock", () => {
+  it("reads only the shared frame clock with diagnostics off", () => {
     const clock = vi.fn(() => 0);
     vi.stubGlobal("performance", { now: clock });
     const host = createBrowserKeyboardHost();
@@ -127,7 +131,7 @@ describe("browser runtime lifetime", () => {
     frame(0);
     frame(16);
     frame(500);
-    expect(clock).not.toHaveBeenCalled();
+    expect(clock).toHaveBeenCalledTimes(3);
     expect(pipelines[0].beginFrame).toHaveBeenCalledTimes(2);
     runtime.dispose();
     host.dispose();

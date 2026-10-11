@@ -96,7 +96,7 @@ export function runLoop({
           },
         );
       } else timing = null;
-      timing?.begin(nowMs, dtMillis);
+      timing?.begin(nowMs, dtMillis, state.animationFrameTimeMs);
       if (lastOverlayTimeMs === null) lastOverlayTimeMs = nowMs;
       presentationFrameContext.dtMillis = dtMillis;
       presentationFrameContext.nowMs = nowMs;

@@ -129,8 +129,11 @@ Commands are consumed once, not held booleans that repeat every frame.
 
 ## Frame clock, pause, and suspension
 
-Use animation-frame monotonic timestamps for flight/guidance time, not wall-clock
-calendar time. The existing engine applies loop-policy contributors before its
+Use `performance.now()` sampled at animation-callback entry for flight/guidance
+time, not wall-clock calendar time or the supplied animation-frame timestamp.
+The latter can lag actual callback execution and then catch up on a nearby
+callback, creating a false frame gap. The browser loop derives both `nowMs` and
+`dtMillis` from the same actual monotonic clock for all stages. The existing engine applies loop-policy contributors before its
 physics tick, so discontinuity detection belongs in the early adventure loop
 hook. `afterFrame` is too late to prevent a stalled frame from advancing physics.
 

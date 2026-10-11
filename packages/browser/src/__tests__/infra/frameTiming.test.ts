@@ -14,7 +14,7 @@ describe("opt-in frame-gap timing", () => {
       advance: boolean,
     ) => {
       time = now;
-      timing.begin(now, dt);
+      timing.begin(now, dt, now);
       time += 1;
       timing.stage("presentationMillis");
       time += pipeline;
@@ -69,11 +69,24 @@ describe("opt-in frame-gap timing", () => {
     const f = fixture();
     f.frame(0, 16, 1, 1, false);
     f.setTime(510);
-    f.timing.begin(500, 500);
+    f.timing.begin(500, 500, 500);
     expect(f.report.mock.calls[0][0]).toMatchObject({
       callbackDelayMillis: 10,
       outsideCallbackMillis: 498,
       previousFrames: [{ callbackEndMs: 12, advanceSim: false }],
+    });
+  });
+  it("retains the supplied timestamp separately from actual callback time", () => {
+    const f = fixture();
+    f.frame(0, 16, 1, 1, false);
+    f.setTime(510);
+    f.timing.begin(500, 500, 16);
+    expect(f.report.mock.calls[0][0]).toMatchObject({
+      nowMs: 500,
+      dtMillis: 500,
+      animationFrameTimeMs: 16,
+      callbackDelayMillis: 494,
+      outsideCallbackMillis: 498,
     });
   });
 
