@@ -2,8 +2,8 @@
 
 This is the step 4 specification, with the presentation contract for step 5.
 The retained director, localized guidance capability, and frame/lifecycle
-integration are implemented. The flight panel and hint controls are not yet
-connected. The [observation specification](my-first-orbit-observations.md) owns
+integration are implemented. The standalone flight panel and hint controls are connected through the
+guidance capability. The [observation specification](my-first-orbit-observations.md) owns
 physical predicates; the [lifecycle specification](my-first-orbit-lifecycle.md)
 owns flight phases and reset. Guidance explains those decisions without changing
 controls, physics, objective eligibility, or terminal outcomes.
@@ -240,6 +240,10 @@ and DOM teardown follow the existing generation/disposal rules.
 ## Next implementation slice
 
 The pure retained director, typed guidance capability, localized cues/hints, and
-completed-frame/session integration are implemented and tested. Connect the
-adventure flight panel and hint controls in the next presentation slice. Use this specification's identifiers and shared samples;
-do not broaden into a campaign framework or general HUD styling system.
+completed-frame/session integration and retained DOM presentation are implemented
+and tested. The shell renders localized named instruments, text emphasis, a polite
+primary-cue live region, and generation-guarded hint controls in flight and
+pause/suspension. Subscriptions detach before runtime disposal and numeric updates
+preserve keyboard focus. Proceed to step 6 production-physics/browser playtesting
+and runtime-cost measurement; do not broaden into a campaign framework or general
+HUD styling system.

@@ -29,6 +29,14 @@ export function createBrowserKeyboardHost(): BrowserKeyboardHost {
     active?.clear();
   };
   const keyDown = (event: KeyboardEvent) => {
+    // Let native buttons activate with Space/Enter without issuing flight input.
+    // Keep the matching release suppressed too, so its default click survives.
+    if (
+      (event.code === "Space" || event.code === "Enter") &&
+      (event.target as HTMLElement | null)?.tagName === "BUTTON" &&
+      !held.has(event.code)
+    )
+      suppressed.add(event.code);
     // Repeats without a known press can arrive after focus loss or startup.
     if (event.repeat && !held.has(event.code)) suppressed.add(event.code);
     held.add(event.code);

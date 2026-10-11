@@ -1,16 +1,22 @@
 import type {
+  AdventureGuidance,
   StandaloneMode,
   StandaloneSession,
 } from "@solitude/plugin-api/standalone-session";
 
 export interface StandaloneRun {
   session: StandaloneSession;
+  guidance: AdventureGuidance | null;
   clearInput: () => void;
   dispose: () => void;
 }
 export function createStandaloneShell(dependencies: {
   createRun: (mode: StandaloneMode, generation: number) => StandaloneRun;
-  showRun: (session: StandaloneSession) => void;
+  showRun: (
+    session: StandaloneSession,
+    guidance: AdventureGuidance | null,
+  ) => void;
+  hideRun: () => void;
   showMenu: () => void;
   showError: (error: unknown) => void;
   resetUrl: () => void;
@@ -25,6 +31,7 @@ export function createStandaloneShell(dependencies: {
     active = null;
     detach();
     detach = () => {};
+    dependencies.hideRun();
     old?.dispose();
   };
   const menu = () => {
@@ -56,14 +63,14 @@ export function createStandaloneShell(dependencies: {
             if (run.session.lifecycleRequest === "retry") launch(mode);
             else menu();
           });
-        } else dependencies.showRun(run.session);
+        } else dependencies.showRun(run.session, run.guidance);
       });
       detach = () => {
         unsubscribe();
         resetDetach();
       };
       run.clearInput();
-      dependencies.showRun(run.session);
+      dependencies.showRun(run.session, run.guidance);
     } catch (error) {
       if (runGeneration !== generation || disposed) return;
       ++generation;

@@ -83,3 +83,52 @@ body {
   display: flex;
   gap: 0.5rem;
 }
+
+.standalone-flight-panel {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  width: min(25rem, calc(100% - 4rem));
+  max-height: calc(100% - 7rem);
+  overflow-y: auto;
+  pointer-events: auto;
+  padding: 1rem;
+  border: 1px solid #416078;
+  border-radius: 0.5rem;
+  background: #0b1825f2;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.standalone-flight-panel p {
+  margin: 0 0 0.75rem;
+}
+.standalone-flight-panel dl {
+  margin: 0 0 1rem;
+}
+.standalone-flight-panel dl > div {
+  padding: 0.3rem 0.5rem;
+  border-left: 3px solid transparent;
+}
+.standalone-flight-panel dd {
+  margin: 0.15rem 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.standalone-flight-panel .adventure-emphasized {
+  border-left-color: #70d5ff;
+  background: #182f43;
+  font-weight: 700;
+}
+.adventure-cue {
+  font-weight: 700;
+}
+.adventure-warning {
+  color: #ffd58a;
+}
+.standalone-flight-panel button + p,
+.standalone-panel button + p {
+  margin-top: 0.75rem;
+}
+.standalone-panel {
+  max-height: calc(100% - 6rem);
+  overflow-y: auto;
+}

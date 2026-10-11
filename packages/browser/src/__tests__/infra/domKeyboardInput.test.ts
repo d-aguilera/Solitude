@@ -24,14 +24,51 @@ describe("DOM keyboard host", () => {
       createKeyboardInputProvider({ keyMap: { KeyF: "testFire" } }),
     ],
   };
-  function key(type: string, code = "KeyF", repeat = false): Event {
+  function key(
+    type: string,
+    code = "KeyF",
+    repeat = false,
+    target: unknown = windowTarget,
+  ): Event {
     const event = Object.assign(new Event(type, { cancelable: true }), {
       code,
       repeat,
     });
+    Object.defineProperty(event, "target", { value: target });
     windowTarget.dispatchEvent(event);
     return event;
   }
+  it("preserves native button activation without thrust, repeats or a consumed release", () => {
+    const host = createBrowserKeyboardHost();
+    const input = initInput(
+      [
+        {
+          id: "flightInput",
+          capabilities: [
+            createKeyboardInputProvider({
+              keyMap: { Space: "thrust", Enter: "enter" },
+            }),
+          ],
+        },
+      ],
+      host,
+    );
+    const button = { tagName: "BUTTON" };
+    for (const code of ["Space", "Enter"]) {
+      expect(key("keydown", code, false, button).defaultPrevented).toBe(false);
+      expect(key("keydown", code, true, button).defaultPrevented).toBe(false);
+      expect(key("keyup", code, false, button).defaultPrevented).toBe(false);
+    }
+    expect(input.controlInput.thrust).not.toBe(true);
+    expect(input.controlInput.enter).not.toBe(true);
+    key("keydown", "Space");
+    expect(input.controlInput.thrust).toBe(true);
+    // Moving focus to a button during a held burn must still release that burn.
+    key("keyup", "Space", false, button);
+    expect(input.controlInput.thrust).toBe(false);
+    input.dispose();
+    host.dispose();
+  });
   it("dispatches mapped keys, leaving unmapped events alone", () => {
     const host = createBrowserKeyboardHost();
     const input = initInput([plugin], host);

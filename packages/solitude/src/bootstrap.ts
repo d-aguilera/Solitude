@@ -11,6 +11,8 @@ import {
   resolveSolitudeLocale,
 } from "@solitude/localization";
 import {
+  adventureGuidanceCapability,
+  isAdventureGuidanceProvider,
   isStandaloneSession,
   standaloneSessionCapability,
 } from "@solitude/plugin-api/standalone-session";
@@ -71,6 +73,19 @@ async function main(): Promise<void> {
       const options = createRunOptions(launchOptions, mode, generation);
       const plugins = createPlugins(options);
       const session = getSession(plugins);
+      const providers = createPluginCapabilityRegistry(plugins).getAll(
+        adventureGuidanceCapability,
+      );
+      let guidance = null;
+      if (mode === "my-first-orbit") {
+        if (
+          providers.length !== 1 ||
+          !isAdventureGuidanceProvider(providers[0]) ||
+          providers[0].guidance.generation !== generation
+        )
+          throw new Error("Adventure requires one matching guidance provider");
+        guidance = providers[0].guidance;
+      }
       const config = buildWorldAndSceneConfig();
       applyWorldModelPlugins(config, plugins);
       const runtime = bootstrapRendering({
@@ -83,9 +98,10 @@ async function main(): Promise<void> {
             new RenderStartupError(getFatalRenderMessage(options, failure)),
           ),
       });
-      return { ...runtime, session };
+      return { ...runtime, session, guidance };
     },
-    showRun: (session) => presentation.showRun(session),
+    showRun: (session, guidance) => presentation.showRun(session, guidance),
+    hideRun: () => presentation.clearRun(),
     showMenu: () => presentation.showMenu(),
     showError: (error) => {
       console.error("Failed to start flight", error);

@@ -53,6 +53,7 @@ function setup() {
       };
       const run = {
         session,
+        guidance: null,
         clearInput: vi.fn(),
         dispose: vi.fn(() => {
           order.push(`dispose ${generation}`);
@@ -64,6 +65,7 @@ function setup() {
       return run;
     },
     showRun,
+    hideRun: vi.fn(),
     showMenu,
     showError,
     resetUrl,
