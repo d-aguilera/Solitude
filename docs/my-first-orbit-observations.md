@@ -3,8 +3,10 @@
 This is the step 2 specification. It defines scenario calibration, reusable
 observations, temporal rules, and the external plugin seams needed by the pilot.
 Shared observations, completed-frame objective sampling, and the Earth-relative
-alignment reference are implemented alongside the step 3 lifecycle. Director priorities and semantic instrument presentation remain steps 4
-and 5.
+alignment reference are implemented alongside the step 3 lifecycle. The step 4
+retained director and localized guidance capability are also implemented;
+semantic instrument presentation remains step 5. See the
+[guidance specification](my-first-orbit-guidance.md).
 
 ## Calibrated scenario
 

@@ -1,3 +1,5 @@
+import type { ExternalPluginCapabilityRegistry } from "@solitude/plugin-api/capabilities";
+import { formatEntityName } from "@solitude/plugin-api/entity-names";
 import { createKeyboardInputCapability } from "@solitude/plugin-api/input";
 import { vec3 } from "@solitude/plugin-api/math";
 import type { ExternalPlugin } from "@solitude/plugin-api/module";
@@ -9,11 +11,14 @@ import {
   type ExternalSpacecraftPropulsionCommandParams,
 } from "@solitude/plugin-api/spacecraft";
 import {
+  adventureGuidanceCapability,
   adventureObjectiveCapability,
   isAdventure,
+  isAdventureGuidanceProvider,
   isAdventureObjective,
   isStandaloneSession,
   standaloneSessionCapability,
+  type AdventureGuidanceProvider,
   type AdventureObjective,
   type AdventureSample,
   type StandaloneSession,
@@ -36,6 +41,10 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
   let session: StandaloneSession;
   let objective: AdventureObjective;
   let observer: ExternalOrbitObservationProvider;
+  let guidance: AdventureGuidanceProvider;
+  let capabilities: ExternalPluginCapabilityRegistry;
+  let primaryNameId: string | null = null;
+  let primaryName = "";
   let earth: ExternalEntityCollisionSphere | undefined;
   let craft: ExternalControlledBody | undefined;
   let propulsionActive: boolean | null = null;
@@ -150,6 +159,18 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
             throw new Error("Adventure requires one standalone session");
           session = sessions[0];
           sample.generation = session.generation;
+          capabilities = capabilityRegistry;
+          const guides = capabilityRegistry
+            .getAll(adventureGuidanceCapability)
+            .filter(isAdventureGuidanceProvider);
+          if (
+            guides.length !== 1 ||
+            guides[0].guidance.generation !== session.generation
+          )
+            throw new Error(
+              "Adventure requires one current-generation guidance provider",
+            );
+          guidance = guides[0];
           const objectives = capabilityRegistry
             .getAll(adventureObjectiveCapability)
             .filter(isAdventureObjective);
@@ -181,7 +202,7 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
           )
             return;
           lastCompletedSimTime = simTimeMillis!;
-          // One completed-frame sample shared by objective and future guidance.
+          // One completed-frame sample, evaluated by objective before guidance.
           observer.sampleInto(sample, world, adventureEntityId);
           sample.sequence++;
           sample.nowMs = nowMs;
@@ -199,6 +220,14 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
             : null;
           sample.propulsionActive = propulsionActive;
           objective.sample(sample);
+          if (sample.primaryId !== primaryNameId) {
+            primaryNameId = sample.primaryId;
+            primaryName =
+              primaryNameId === null
+                ? ""
+                : formatEntityName(capabilities, primaryNameId, undefined);
+          }
+          guidance.sample(sample, primaryName);
         },
         updateLoopState: ({ dtMillis, state }) => {
           delete state.framePolicy.tickDtMillis;

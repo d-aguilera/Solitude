@@ -6,6 +6,7 @@ import type {
   StandalonePresentation,
   StandaloneSession,
 } from "@solitude/plugin-api/standalone-session";
+import { createGuidance } from "./guidance";
 import en from "./locales/en.json";
 import es from "./locales/es.json";
 import fr from "./locales/fr.json";
@@ -29,6 +30,7 @@ export function createSession(
     (result) => changePhase(result),
     () => advance && !lifecycleRequest && phase === "flying",
   );
+  const director = createGuidance(generation, locale, hold.objective);
   const listeners = new Set<() => void>();
   let resetInput = () => {};
   const notify = () => {
@@ -41,6 +43,7 @@ export function createSession(
     baseline = true;
     lastNow = null;
     advance = false;
+    director.setPhase(next);
     resetInput();
     notify();
   };
@@ -62,6 +65,7 @@ export function createSession(
       if (command === "retry" || command === "menu") {
         lifecycleRequest = command;
         advance = false;
+        director.setPhase(phase, true);
         resetInput();
         notify();
       } else if (mode === "my-first-orbit") {
@@ -143,6 +147,7 @@ export function createSession(
   return {
     session,
     objective: hold.objective,
+    guidance: director.provider,
     refresh: notify,
     suspend: () => {
       resetInput();

@@ -2,6 +2,7 @@ import { readLocaleRuntimeOption } from "@solitude/plugin-api/localization";
 import type { ExternalPlugin } from "@solitude/plugin-api/module";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 import {
+  adventureGuidanceCapability,
   adventureObjectiveCapability,
   isAdventure,
   standaloneGenerationOption,
@@ -31,7 +32,10 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
     capabilities: [
       { id: standaloneSessionCapability, value: session },
       ...(adventure
-        ? [{ id: adventureObjectiveCapability, value: controller.objective }]
+        ? [
+            { id: adventureObjectiveCapability, value: controller.objective },
+            { id: adventureGuidanceCapability, value: controller.guidance },
+          ]
         : []),
     ],
     hooks: adventure

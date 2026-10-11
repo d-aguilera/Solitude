@@ -16,7 +16,9 @@ import type { ExternalSimulationPlugin } from "@solitude/plugin-api/simulation";
 import type { ExternalSpacecraftPropulsionCommandParams } from "@solitude/plugin-api/spacecraft";
 import { getSpacecraftPropulsionResolvers } from "@solitude/plugin-api/spacecraft";
 import {
+  adventureGuidanceCapability,
   adventureObjectiveCapability,
+  isAdventureGuidanceProvider,
   isAdventureObjective,
   isStandaloneSession,
   standaloneGenerationOption,
@@ -183,6 +185,9 @@ describe("standalone adventure assembly", () => {
     ).toEqual(["ship:blue", "ship:red"]);
     expect(s.options.orbitalSpeedMultiplier).toBe("20");
     expect(s.plugins[4].hooks).toBeUndefined();
+    expect(s.capabilityRegistry.getAll(adventureGuidanceCapability)).toEqual(
+      [],
+    );
   });
   it("disables conflicting standalone behavior before diagnostic parsing or side effects", () => {
     const options = assemble("my-first-orbit").options;
@@ -302,6 +307,9 @@ describe("standalone adventure assembly", () => {
       const objective = s.capabilityRegistry
         .getAll(adventureObjectiveCapability)
         .find(isAdventureObjective)!;
+      const guidance = s.capabilityRegistry
+        .getAll(adventureGuidanceCapability)
+        .find(isAdventureGuidanceProvider)!.guidance;
       const earth = {
         id: "planet:earth",
         position: { x: 0, y: 0, z: 0 },
@@ -384,17 +392,21 @@ describe("standalone adventure assembly", () => {
       frame(0, false);
       expect(objective.latestSequence).toBe(0);
       frame(250, true);
+      expect(guidance.cue).toBe("release");
       expect(objective.latestSample?.propulsionActive).toBe(true);
       expect(objective.status).toBe("recovering");
       frame(500, false, false);
+      expect(guidance.cue).toBe("unavailable");
       expect(objective.latestSample?.propulsionActive).toBeNull();
       frame(750, false);
+      expect(guidance.cue).toBe("coast");
       expect(objective.status).toBe("confirming");
       expect(objective.coastMillis).toBe(0);
       final.afterFrame!(params);
       expect(objective.latestSequence).toBe(3);
       for (let now = 1000; now <= 5750; now += 250) frame(now, false);
       expect(session.phase).toBe("completed");
+      expect(guidance.visible).toBe(false);
       expect(session.getPresentation()?.actions.map((a) => a.command)).toEqual([
         "retry",
         "menu",
@@ -430,4 +442,32 @@ describe("standalone adventure assembly", () => {
       ),
     ).toThrow("must be last");
   });
+  it.each(["missing", "duplicate", "retired"] as const)(
+    "rejects %s guidance providers at assembly",
+    (kind) => {
+      const s = assemble("my-first-orbit");
+      const original = s.capabilityRegistry.getAll(
+        adventureGuidanceCapability,
+      )[0];
+      const registry = {
+        getAll: (id: string) => {
+          if (id !== adventureGuidanceCapability)
+            return s.capabilityRegistry.getAll(id);
+          if (kind === "missing") return [];
+          if (kind === "duplicate") return [original, original];
+          if (!isAdventureGuidanceProvider(original))
+            throw new Error("Missing test guidance");
+          return [
+            { ...original, guidance: { ...original.guidance, generation: 6 } },
+          ];
+        },
+      };
+      expect(() =>
+        s.plugins[4].hooks!.worldModel!.contributeWorldModel(
+          { addEntities: () => {}, setMainFocusEntityId: () => {} },
+          { capabilityRegistry: registry },
+        ),
+      ).toThrow("one current-generation guidance provider");
+    },
+  );
 });

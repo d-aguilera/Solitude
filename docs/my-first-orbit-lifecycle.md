@@ -5,8 +5,8 @@ in [the observation specification](my-first-orbit-observations.md). This documen
 chooses runtime ownership, objective state, entry, pause, suspension, and reset.
 The generic browser runtime/input lifetime prerequisite and standalone entry,
 scenario, session, and menu UI are implemented. Completed-frame objective sampling and latched terminal
-outcomes are implemented. Director feedback and instrument
-presentation remain steps 4 and 5.
+outcomes and the retained director/guidance capability are implemented.
+Instrument presentation and hint controls remain step 5.
 
 ## Ownership and reset decision
 
@@ -246,6 +246,6 @@ next director slice; presentation does not advance the objective.
 Director feedback priorities, cues, opt-in hints, cooldowns, semantic instrument
 identifiers, and acceptance cases are specified in
 [the guidance specification](my-first-orbit-guidance.md). The next session
-implements the retained director and guidance capability with completed-frame
-and session integration; the flight panel follows in a separate slice. Real browser playtesting,
+connects the adventure flight panel and hint controls to the implemented retained
+director/guidance capability and its completed-frame/session integration. Real browser playtesting,
 end-to-end production-physics outcomes, and runtime-cost verification remain step 6.

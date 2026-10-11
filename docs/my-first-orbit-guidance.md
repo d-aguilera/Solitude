@@ -1,7 +1,9 @@
 # My First Orbit: director and instrument specification
 
-This is the step 4 design, with the presentation contract for step 5. It is not
-implemented. The [observation specification](my-first-orbit-observations.md) owns
+This is the step 4 specification, with the presentation contract for step 5.
+The retained director, localized guidance capability, and frame/lifecycle
+integration are implemented. The flight panel and hint controls are not yet
+connected. The [observation specification](my-first-orbit-observations.md) owns
 physical predicates; the [lifecycle specification](my-first-orbit-lifecycle.md)
 owns flight phases and reset. Guidance explains those decisions without changing
 controls, physics, objective eligibility, or terminal outcomes.
@@ -84,11 +86,11 @@ state always wins over counter changes. Consume counter baselines even when a
 message is suppressed or flight is hidden. Counter jumps produce at most one
 acknowledgment; do not replay missed transitions on Resume.
 
-`safeOrbitEntered` is not a reliable count of maneuvers: the current objective can
-increment it again across successive propelled safe samples. Acknowledge only a
-false-to-true edge of the director's previous `objective.safeOrbit` value. Never
-treat a counter increment alone as a new accomplishment. Completion comes only
-from the latched objective, never a safe-entry acknowledgment.
+`safeOrbitEntered` counts safe-state entries, not maneuvers or key presses.
+Acknowledge only a false-to-true edge of the director's previous
+`objective.safeOrbit` value. Repeated propelled safe samples preserve that state
+and do not repeat an acknowledgment. Completion comes only from the latched
+objective, never a safe-entry acknowledgment.
 
 Acknowledgments are short secondary context, subordinate to warnings and the
 primary action. Display for at most 3,000 active-flight ms, with an 8,000 ms
@@ -176,8 +178,10 @@ Canvas hit testing is needed for this pilot.
 
 Expose a narrow retained `solitude.adventureGuidance.v1` capability through
 `@solitude/plugin-api/standalone-session`, separate from the lifecycle session
-contract. It provides generation, revision, current cue/message keys, hint
-preference and presentation, instrument values/emphasis, a preference command,
+contract. Its producer exposes completed-frame sampling; its read-only presentation provides
+generation, revision, current cue and localized message text, hint
+preference and presentation, unrounded SI instrument values with cached formatted
+text/emphasis, a generation-guarded preference command,
 and subscribe/unsubscribe. Pack-owned en/es/fr bundles resolve all player prose;
 the generic standalone shell only renders the typed panel and dispatches the
 hint command. Presenters receive read-only values, never objective mutation.
@@ -235,8 +239,7 @@ and DOM teardown follow the existing generation/disposal rules.
 
 ## Next implementation slice
 
-Implement the pure retained director, typed guidance capability, localized cues
-and hints, and completed-frame/session reset integration with acceptance tests.
-Then connect the adventure flight panel and hint controls in a separate
-presentation slice. Use this specification's identifiers and shared samples;
+The pure retained director, typed guidance capability, localized cues/hints, and
+completed-frame/session integration are implemented and tested. Connect the
+adventure flight panel and hint controls in the next presentation slice. Use this specification's identifiers and shared samples;
 do not broaden into a campaign framework or general HUD styling system.
