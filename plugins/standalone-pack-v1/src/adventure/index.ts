@@ -29,19 +29,22 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
   const { session } = controller;
   const isFlying = () => session.phase === "flying";
   const reportSuspension = (source: string) => {
-    // Copy only scalar diagnostics at the transition. Chrome's console must not
-    // retain a mutable record that a later suspension can overwrite.
-    console.info("[My First Orbit] Flight suspended", {
-      generation,
-      source,
-      reason: source === "frame" ? controller.suspension.reason : source,
-      nowMs: source === "frame" ? controller.suspension.nowMs : null,
-      dtMillis: source === "frame" ? controller.suspension.dtMillis : null,
-      elapsedMillis:
-        source === "frame" ? controller.suspension.elapsedMillis : null,
-      focused: document.hasFocus(),
-      visibility: document.visibilityState,
-    });
+    // Serialize scalar diagnostics at the transition for complete copy/paste.
+    // Nonfinite clock values become JSON null; the reason identifies invalid clocks.
+    console.info(
+      "[My First Orbit] Flight suspended",
+      JSON.stringify({
+        generation,
+        source,
+        reason: source === "frame" ? controller.suspension.reason : source,
+        nowMs: source === "frame" ? controller.suspension.nowMs : null,
+        dtMillis: source === "frame" ? controller.suspension.dtMillis : null,
+        elapsedMillis:
+          source === "frame" ? controller.suspension.elapsedMillis : null,
+        focused: document.hasFocus(),
+        visibility: document.visibilityState,
+      }),
+    );
   };
   return {
     id: "standaloneSession",

@@ -1,0 +1,42 @@
+[
+  {
+    "dtMillis": 466.6000000000058,
+    "elapsedMillis": 466.6000000000058,
+    "focused": true,
+    "generation": 12,
+    "nowMs": 111440.6,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  },
+  {
+    "dtMillis": 399.90000000000873,
+    "elapsedMillis": 399.90000000000873,
+    "focused": true,
+    "generation": 13,
+    "nowMs": 115605.8,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  },
+  {
+    "dtMillis": 449.8999999999942,
+    "elapsedMillis": 449.8999999999942,
+    "focused": true,
+    "generation": 14,
+    "nowMs": 119154.7,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  },
+  {
+    "dtMillis": 499.8000000000029,
+    "elapsedMillis": 499.8000000000029,
+    "focused": true,
+    "generation": 15,
+    "nowMs": 123036.6,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  }
+]

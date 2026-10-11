@@ -39,7 +39,7 @@ it("reports the precise frame suspension cause without retaining a mutable diagn
   frame(400, 300);
   expect(log).toHaveBeenCalledExactlyOnceWith(
     "[My First Orbit] Flight suspended",
-    {
+    JSON.stringify({
       generation: 0,
       source: "frame",
       reason: "frame-gap",
@@ -48,23 +48,23 @@ it("reports the precise frame suspension cause without retaining a mutable diagn
       elapsedMillis: 300,
       focused: true,
       visibility: "visible",
-    },
+    }),
   );
-  const firstDiagnostic = log.mock.calls[0][1];
+  const firstDiagnostic = JSON.parse(log.mock.calls[0][1]);
   frame(500, 100);
   expect(log).toHaveBeenCalledOnce();
   session.command("resume");
   frame(600, 16);
   frame(NaN, 16);
-  expect(log.mock.calls[1][1]).toMatchObject({
+  expect(JSON.parse(log.mock.calls[1][1])).toMatchObject({
     reason: "invalid-clock",
-    nowMs: NaN,
+    nowMs: null,
   });
   expect(firstDiagnostic).toMatchObject({ reason: "frame-gap", nowMs: 400 });
   session.command("resume");
   focused = false;
   frame(700, 16);
-  expect(log.mock.calls[2][1]).toMatchObject({
+  expect(JSON.parse(log.mock.calls[2][1])).toMatchObject({
     reason: "focus-or-visibility",
     focused: false,
   });
@@ -93,7 +93,7 @@ it("reports blur/visibility transitions once and detaches diagnostics with the r
     } as ExternalLoopUpdateParams);
   session.command("begin");
   windowTarget.dispatchEvent(new Event("blur"));
-  expect(log.mock.calls[0][1]).toMatchObject({
+  expect(JSON.parse(log.mock.calls[0][1])).toMatchObject({
     source: "blur",
     reason: "blur",
     dtMillis: null,
@@ -103,7 +103,7 @@ it("reports blur/visibility transitions once and detaches diagnostics with the r
   session.command("resume");
   documentTarget.visibilityState = "hidden";
   documentTarget.dispatchEvent(new Event("visibilitychange"));
-  expect(log.mock.calls[1][1]).toMatchObject({
+  expect(JSON.parse(log.mock.calls[1][1])).toMatchObject({
     source: "visibilitychange",
     visibility: "hidden",
   });

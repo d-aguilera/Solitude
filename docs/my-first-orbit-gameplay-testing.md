@@ -280,20 +280,35 @@ The "Vuelo suspendido" popup shows up instead. Clicking on "Continuar" resumes t
 
 ### Status
 
-Candidate fix implemented; pending Chrome confirmation. The
-[captured console records](my-first-orbit-gameplay-testing-case10.json) show
-450–550 ms frame gaps while focused and visible. They do not identify what
-causes the stalls.
+Open. The 500 ms briefing readiness gate does not solve this case when rushing.
+The [first capture](my-first-orbit-gameplay-testing-case10.json) shows 450–550 ms
+frame gaps; the [second capture](my-first-orbit-gameplay-testing-case10-02.json)
+shows 400–500 ms gaps, again focused and visible. Neither capture identifies
+which work stalls. The flight guard remains unchanged.
 
-The briefing now shows disabled “Preparando el vuelo…” until completed frames
-have stayed timely for 500 ms. Then “Comenzar” enables automatically. Waiting
-adds no simulation or coast time. The 250 ms flight interruption guard remains.
-Diagnostic logging stays available until this case is confirmed resolved.
+Opt-in frame timing now records six completed frames around each gap and keeps
+the last four reports across Retry. It measures the pipeline (including physics
+and scene updates), rendering, overlays, completed-frame hooks, and time outside
+the callbacks. Both console messages now stringify their data at logging time.
+Timing is off by default. This build adds diagnostics, not a fix.
 
 ### Next check
 
-- Reload the updated build.
-- Start the adventure, wait 3 seconds, then press P.
-- Click “Reintentar”, then “Comenzar” as soon as it enables.
-- Repeat 5 times. Flight should start without “Vuelo suspendido”.
-- If it fails, save the expanded console record again.
+- Reload, open the adventure, then open Chrome's console.
+- Enable timing with:
+
+```js
+Object.assign(window.__solitudeRenderDebug, { timing: true, frameGaps: [] });
+```
+
+- Click back into the game. Pause → “Reintentar” → “Comenzar” quickly once.
+- After suspension, run this in the console:
+
+```js
+copy(JSON.stringify(window.__solitudeRenderDebug.frameGaps, null, 2));
+```
+
+- Save the clipboard to `docs/my-first-orbit-gameplay-testing-case10-03.json`.
+
+The copy command exports complete JSON without console truncation. Timing stays
+on across Retry; reloading turns it off.

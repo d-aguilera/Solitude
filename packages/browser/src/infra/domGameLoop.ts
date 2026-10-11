@@ -7,6 +7,7 @@ import {
   profiler,
 } from "@solitude/engine/runtime";
 import { startAnimationLoop, type AnimationLoopState } from "./animationLoop";
+import { createFrameTiming, type FrameGapTiming } from "./frameTiming";
 import type { RunLoopParams, RunLoopView } from "./infraPorts";
 import {
   applyBrowserOverlayProviders,
@@ -29,6 +30,8 @@ type RenderDebug = {
   views: Record<string, boolean>;
   passes: RenderPassDebug;
   hud: boolean;
+  timing: boolean;
+  frameGaps: FrameGapTiming[];
 };
 
 type LoopView = RunLoopView & {
@@ -78,9 +81,22 @@ export function runLoop({
       world: worldAndScene.world,
     };
     const renderDebug = getRenderDebug(loopViews);
+    let timing: ReturnType<typeof createFrameTiming> | null = null;
     let lastOverlayTimeMs: number | null = null;
 
     const animation = startAnimationLoop((nowMs, dtMillis, state) => {
+      if (renderDebug.timing) {
+        timing ??= createFrameTiming(
+          () => performance.now(),
+          (gap) => {
+            if (renderDebug.frameGaps.length === 4)
+              renderDebug.frameGaps.shift();
+            renderDebug.frameGaps.push(gap);
+            console.info("[Solitude] Frame gap", JSON.stringify(gap));
+          },
+        );
+      } else timing = null;
+      timing?.begin(nowMs, dtMillis);
       if (lastOverlayTimeMs === null) lastOverlayTimeMs = nowMs;
       presentationFrameContext.dtMillis = dtMillis;
       presentationFrameContext.nowMs = nowMs;
@@ -88,11 +104,18 @@ export function runLoop({
         presentationFrameProviders,
         presentationFrameContext,
       );
+      timing?.stage("presentationMillis");
       if (!state.running) return;
       const frame = pipeline.beginFrame(nowMs, dtMillis);
+      timing?.stage("pipelineMillis");
+      timing?.policy(
+        frame.framePolicy.advanceSim,
+        frame.framePolicy.advanceScene,
+      );
       if (!state.running) return;
       primaryOverlayRasterizer?.beginFrame();
       renderViews(loopViews, pipeline.prepareView, renderDebug, state);
+      timing?.stage("renderMillis");
       if (!state.running) return;
 
       const shouldAdvanceOverlay = nowMs - lastOverlayTimeMs > 100;
@@ -100,6 +123,7 @@ export function runLoop({
         if (!isViewEnabled(renderDebug, view.definition.id)) continue;
         rasterizeView(view.renderedView, view.sceneOverlayRasterizer);
       }
+      timing?.stage("rasterizeMillis");
       if (renderDebug.hud) {
         overlayContext.advanceOverlay =
           shouldAdvanceOverlay && frame.framePolicy.advancePresentation;
@@ -113,7 +137,10 @@ export function runLoop({
         );
         if (shouldAdvanceOverlay) lastOverlayTimeMs = nowMs;
       }
+      timing?.stage("overlayMillis");
       if (state.running) pipeline.endFrame();
+      timing?.stage("afterFrameMillis");
+      timing?.end();
     }, onError);
     return {
       dispose: combineLoopDisposal(animation.dispose, pipeline.dispose),
@@ -228,6 +255,8 @@ function getRenderDebug(views: readonly LoopView[]): RenderDebug {
   if (!root.__solitudeRenderDebug) {
     root.__solitudeRenderDebug = {
       hud: true,
+      timing: false,
+      frameGaps: [],
       passes: { ...defaultRenderPassDebug },
       views: defaultViews,
     };
@@ -241,6 +270,8 @@ function getRenderDebug(views: readonly LoopView[]): RenderDebug {
       ...root.__solitudeRenderDebug.passes,
     };
     root.__solitudeRenderDebug.hud ??= true;
+    root.__solitudeRenderDebug.timing ??= false;
+    root.__solitudeRenderDebug.frameGaps ??= [];
   }
   return root.__solitudeRenderDebug as RenderDebug;
 }
