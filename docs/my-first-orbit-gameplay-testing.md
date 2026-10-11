@@ -205,7 +205,7 @@ coast time; the paused time does not count.
 
 ### Outcome
 
-Pending.
+PASS
 
 ## Test case 7 — ALT-tab during coast
 
@@ -224,7 +224,7 @@ and needs 5 new seconds to complete.
 
 ### Outcome
 
-Pending.
+PASS
 
 ## Test case 8 — Retry while holding Space
 
@@ -243,4 +243,44 @@ is released and pressed again. The new press raises the lowest point.
 
 ### Outcome
 
-Pending.
+PASS
+
+## Test case 9 — Burn during coast
+
+### Repro steps
+
+- Start "Mi primera órbita" and click "Comenzar".
+- Hold Space until the lowest point is about 175 km, then release.
+- When "Vuelo seguro sin propulsión" reaches 1–2 seconds, press and release Space.
+
+### Expected result
+
+The countdown resets.
+
+### Outcome
+
+PASS
+
+## Test case 10 — Retry from pause unexpectedly suspends
+
+### Repro steps
+
+- Start "Mi primera órbita" and click "Comenzar".
+- Wait for 3 seconds and press P to pause.
+- Choose "Reintentar"
+- Click "Comenzar"
+
+### Expected result
+
+The adventure restarts.
+
+### Outcome
+
+The "Vuelo suspendido" popup shows up instead. Clicking on "Continuar" resumes the game without further issues. Only ALT-Tabbing away and back while in "Mi primera órbita" seems to reset this behavior.
+
+### Status
+
+Pending investigation. Reported in Chrome when flight is meant to start/resume.
+Check whether waiting 3 seconds in the new briefing before clicking "Comenzar"
+changes the result. Existing lifecycle, bootstrap, scenario, and presentation
+checks pass but do not reproduce this browser symptom.
