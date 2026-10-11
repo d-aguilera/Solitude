@@ -280,17 +280,20 @@ The "Vuelo suspendido" popup shows up instead. Clicking on "Continuar" resumes t
 
 ### Status
 
-Open. The startup-clock change did not resolve the issue. In Chrome, waiting
-about 1 second in the briefing avoids suspension; textures take longer to load.
-The startup-clock exception has been removed, restoring the original guards.
+Candidate fix implemented; pending Chrome confirmation. The
+[captured console records](my-first-orbit-gameplay-testing-case10.json) show
+450–550 ms frame gaps while focused and visible. They do not identify what
+causes the stalls.
 
-The updated build logs `[My First Orbit] Flight suspended` once per suspension.
-It records the source, reason, frame duration, elapsed time, generation, focus,
-and visibility. This is diagnostic logging, not a fix.
+The briefing now shows disabled “Preparando el vuelo…” until completed frames
+have stayed timely for 500 ms. Then “Comenzar” enables automatically. Waiting
+adds no simulation or coast time. The 250 ms flight interruption guard remains.
+Diagnostic logging stays available until this case is confirmed resolved.
 
 ### Next check
 
-- Reload the updated build and open Chrome's console.
-- Repeat pause → Reintentar → Comenzar immediately.
-- Copy the `[My First Orbit] Flight suspended` message and its expanded values
-  from the unexpected suspension. Normal ALT-tab suspensions also log this message.
+- Reload the updated build.
+- Start the adventure, wait 3 seconds, then press P.
+- Click “Reintentar”, then “Comenzar” as soon as it enables.
+- Repeat 5 times. Flight should start without “Vuelo suspendido”.
+- If it fails, save the expanded console record again.

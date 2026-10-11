@@ -12,7 +12,9 @@ Rendering, browser input dispatch, and shell generation replacement are absent;
 separate adapter/lifecycle tests cover their logic.
 
 A frame runs the adapted loop policies, advances physics only when permitted,
-and invokes completed-frame sampling. Begin rebases without a tick. Tests use
+and invokes completed-frame sampling. The harness completes the briefing
+presentation-readiness gate with simulation time still zero before Begin, which
+rebases without a tick. Tests use
 synthetic monotonic frame time at 1×, so long descents run quickly without
 changing adventure time scale or relaxing its discontinuity rules.
 

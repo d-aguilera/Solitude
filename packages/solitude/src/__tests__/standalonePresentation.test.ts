@@ -217,26 +217,30 @@ describe("standalone adventure presentation", () => {
   it("refreshes lifecycle action availability in the same phase without replacing focused buttons", () => {
     const s = setup();
     let disabled = true;
+    let beginLabel = "Preparing flight…";
     Object.assign(s.session, {
       phase: "briefing",
       getPresentation: () => ({
         title: "Briefing",
         body: "",
         actions: [
-          { command: "begin", label: "Begin", disabled },
+          { command: "begin", label: beginLabel, disabled },
           { command: "menu", label: "Menu", disabled: false },
         ],
       }),
     });
     s.ui.showRun(s.session, s.guidance);
-    const begin = s.byText("Begin");
+    const begin = s.byText("Preparing flight…");
     const menu = s.byText("Menu");
     expect(begin.disabled).toBe(true);
+    expect(begin.textContent).toBe("Preparing flight…");
     expect(focused).toBe(menu);
     disabled = false;
+    beginLabel = "Begin";
     s.ui.showRun(s.session, s.guidance);
     expect(s.byText("Begin")).toBe(begin);
     expect(begin.disabled).toBe(false);
+    expect(begin.textContent).toBe("Begin");
     expect(focused).toBe(menu);
   });
   it("hides flight guidance synchronously and retires subscriptions and saved callbacks", () => {

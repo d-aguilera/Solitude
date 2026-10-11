@@ -16,5 +16,6 @@
   "completed": "Orbite rétablie",
   "completedBody": "Vous avez maintenu une orbite terrestre sûre pendant cinq secondes sans propulsion. Récupération terminée.",
   "failed": "Échec de la récupération",
-  "failedBody": "Votre vaisseau a franchi la limite de 80 km d’altitude terrestre. Réessayez pour rétablir l’orbite."
+  "failedBody": "Votre vaisseau a franchi la limite de 80 km d’altitude terrestre. Réessayez pour rétablir l’orbite.",
+  "preparing": "Préparation du vol…"
 }

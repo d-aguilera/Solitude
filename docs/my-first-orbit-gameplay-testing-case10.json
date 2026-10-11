@@ -1,0 +1,122 @@
+[
+  {
+    "dtMillis": 449.7999999999993,
+    "elapsedMillis": 449.7999999999993,
+    "focused": true,
+    "generation": 1,
+    "nowMs": 12162.9,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  },
+  {
+    "dtMillis": 466.40000000000146,
+    "elapsedMillis": 466.40000000000146,
+    "focused": true,
+    "generation": 2,
+    "nowMs": 22359.4,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  },
+  {
+    "dtMillis": 466.40000000000146,
+    "elapsedMillis": 466.40000000000146,
+    "focused": true,
+    "generation": 3,
+    "nowMs": 31773,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  },
+  {
+    "dtMillis": 483.1999999999971,
+    "elapsedMillis": 483.1999999999971,
+    "focused": true,
+    "generation": 4,
+    "nowMs": 40836.5,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  },
+  {
+    "dtMillis": 466.5,
+    "elapsedMillis": 466.5,
+    "focused": true,
+    "generation": 5,
+    "nowMs": 50450,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  },
+  {
+    "dtMillis": 466.5,
+    "elapsedMillis": 466.5,
+    "focused": true,
+    "generation": 6,
+    "nowMs": 59680.2,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  },
+  {
+    "dtMillis": 499.8999999999942,
+    "elapsedMillis": 499.8999999999942,
+    "focused": true,
+    "generation": 7,
+    "nowMs": 74008.7,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  },
+  {
+    "dtMillis": 466.59999999999127,
+    "elapsedMillis": 466.59999999999127,
+    "focused": true,
+    "generation": 10,
+    "nowMs": 104531.7,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  },
+  {
+    "dtMillis": 466.6000000000058,
+    "elapsedMillis": 466.6000000000058,
+    "focused": true,
+    "generation": 11,
+    "nowMs": 117244.1,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  },
+  {
+    "dtMillis": 516.5,
+    "elapsedMillis": 516.5,
+    "focused": true,
+    "generation": 12,
+    "nowMs": 132055.7,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  },
+  {
+    "dtMillis": 483.19999999998254,
+    "elapsedMillis": 483.19999999998254,
+    "focused": true,
+    "generation": 13,
+    "nowMs": 149816.3,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  },
+  {
+    "dtMillis": 549.8999999999942,
+    "elapsedMillis": 549.8999999999942,
+    "focused": true,
+    "generation": 14,
+    "nowMs": 166960.6,
+    "reason": "frame-gap",
+    "source": "frame",
+    "visibility": "visible"
+  }
+]

@@ -204,8 +204,10 @@ export function createStandalonePresentation(
         updateActions = () => {
           const current = session.getPresentation();
           if (!current) return;
-          for (let i = 0; i < actionButtons.length; i++)
+          for (let i = 0; i < actionButtons.length; i++) {
             actionButtons[i].disabled = current.actions[i].disabled;
+            setText(actionButtons[i], current.actions[i].label);
+          }
         };
         if (
           guidance &&

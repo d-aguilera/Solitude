@@ -28,6 +28,9 @@ export function createSession(
   let phase: StandalonePhase =
     mode === "my-first-orbit" ? "briefing" : "flying";
   let lifecycleRequest: "retry" | "menu" | null = null;
+  let presentationReady = mode !== "my-first-orbit";
+  let startupLastNow: number | null = null;
+  let startupStableMillis = 0;
   let baseline = true;
   let lastNow: number | null = null;
   let advance = false;
@@ -86,7 +89,12 @@ export function createSession(
         resetInput();
         notify();
       } else if (mode === "my-first-orbit") {
-        if (command === "begin" && phase === "briefing" && canFly())
+        if (
+          command === "begin" &&
+          phase === "briefing" &&
+          presentationReady &&
+          canFly()
+        )
           changePhase("flying");
         if (command === "pause" && phase === "flying") changePhase("paused");
         if (
@@ -119,8 +127,8 @@ export function createSession(
       if (phase === "briefing")
         actions.push({
           command: "begin",
-          label: messages.begin,
-          disabled: !canFly(),
+          label: presentationReady ? messages.begin : messages.preparing,
+          disabled: !presentationReady || !canFly(),
         });
       else {
         if (phase === "paused" || phase === "suspended")
@@ -167,7 +175,28 @@ export function createSession(
     objective: hold.objective,
     guidance: director.provider,
     refresh: notify,
+    observeStartupFrame: (now: number, dt: number): void => {
+      if (presentationReady || phase !== "briefing" || lifecycleRequest) return;
+      const elapsed = startupLastNow === null ? 0 : now - startupLastNow;
+      const timely =
+        canFly() &&
+        Number.isFinite(now) &&
+        Number.isFinite(dt) &&
+        dt > 0 &&
+        dt <= 250 &&
+        elapsed > 0 &&
+        elapsed <= 250;
+      startupStableMillis = timely ? startupStableMillis + elapsed : 0;
+      startupLastNow = Number.isFinite(now) ? now : null;
+      // Completed presentation frames establish readiness, never flight credit.
+      if (startupStableMillis >= 500) {
+        presentationReady = true;
+        notify();
+      }
+    },
     suspend: () => {
+      startupLastNow = null;
+      startupStableMillis = 0;
       resetInput();
       if (phase === "flying") changePhase("suspended");
       else {

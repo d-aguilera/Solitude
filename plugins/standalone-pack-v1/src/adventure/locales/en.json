@@ -16,5 +16,6 @@
   "completed": "Orbit recovered",
   "completedBody": "You held a safe Earth orbit for five seconds without propulsion. Recovery complete.",
   "failed": "Recovery failed",
-  "failedBody": "Your craft crossed the 80 km Earth altitude boundary. Retry to recover the orbit."
+  "failedBody": "Your craft crossed the 80 km Earth altitude boundary. Retry to recover the orbit.",
+  "preparing": "Preparing flight…"
 }

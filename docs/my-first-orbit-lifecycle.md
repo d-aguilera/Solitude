@@ -134,6 +134,14 @@ calendar time. The existing engine applies loop-policy contributors before its
 physics tick, so discontinuity detection belongs in the early adventure loop
 hook. `afterFrame` is too late to prevent a stalled frame from advancing physics.
 
+Before Begin, observe completed presentation frames while the briefing freezes
+simulation, objectives, and guidance. Begin stays disabled with a localized
+Preparing flight label until 500 ms of consecutive focused, visible, finite,
+monotonic frames with positive deltas ≤250 ms have completed. A discontinuity
+resets this initial streak. Readiness latches for this generation; Retry starts
+fresh. Return to menu stays available. This startup gate does not relax flight
+interruption rules or establish a texture-loading dependency.
+
 At Begin/Resume, the next callback is a baseline frame: no simulation advance,
 no objective sample, no guidance time credit. Subsequent active frames require
 finite positive delta ≤250 ms and a monotonic timestamp. A delta of exactly

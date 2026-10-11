@@ -3,9 +3,11 @@ import type { AdventureSample } from "@solitude/plugin-api/standalone-session";
 import { createOrbitObservation } from "@solitude/plugin-api/telemetry";
 import { describe, expect, it, vi } from "vitest";
 import { createSession } from "../adventure/session";
+import { prepareStartup } from "./startupFixture";
 
 function ready(locale: ExternalLocale = "en", generation = 3) {
   const c = createSession(generation, "my-first-orbit", locale, () => true);
+  prepareStartup(c);
   const g = c.guidance.guidance;
   // Match the producer: overwrite the same record each completed frame.
   const retained: AdventureSample = {

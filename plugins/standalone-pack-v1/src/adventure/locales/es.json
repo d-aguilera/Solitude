@@ -16,5 +16,6 @@
   "completed": "Órbita recuperada",
   "completedBody": "Mantuviste una órbita terrestre segura durante cinco segundos sin propulsión. Recuperación completada.",
   "failed": "Recuperación fallida",
-  "failedBody": "Tu nave cruzó el límite de 80 km de altitud sobre la Tierra. Reintenta para recuperar la órbita."
+  "failedBody": "Tu nave cruzó el límite de 80 km de altitud sobre la Tierra. Reintenta para recuperar la órbita.",
+  "preparing": "Preparando el vuelo…"
 }

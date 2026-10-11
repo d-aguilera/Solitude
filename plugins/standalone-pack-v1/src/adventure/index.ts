@@ -58,6 +58,8 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
       ? {
           worldModel: createScenario(),
           loop: {
+            afterFrame: ({ nowMs, dtMillis }) =>
+              controller.observeStartupFrame(nowMs, dtMillis),
             initLoop: () => {
               const suspend = (event: Event) => {
                 const flying = isFlying();

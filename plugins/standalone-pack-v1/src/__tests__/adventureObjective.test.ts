@@ -3,6 +3,7 @@ import { createOrbitObservation } from "@solitude/plugin-api/telemetry";
 import { describe, expect, it, vi } from "vitest";
 import { createObjective } from "../adventure/objective";
 import { createSession } from "../adventure/session";
+import { prepareStartup } from "./startupFixture";
 
 function sample(
   sequence: number,
@@ -118,6 +119,7 @@ describe("completed-frame adventure objective", () => {
   });
   it("preserves explicit-pause progress, rebases resume, resets suspension, and blocks terminal ticks", () => {
     const c = createSession(3, "my-first-orbit", "en", () => true);
+    prepareStartup(c);
     c.session.command("begin");
     c.updateFrame(0, 16);
     let sequence = 0;
@@ -150,6 +152,7 @@ describe("completed-frame adventure objective", () => {
     c.session.command("resume");
     expect(c.session.phase).toBe("failed");
     const fresh = createSession(4, "my-first-orbit", "en", () => true);
+    prepareStartup(fresh);
     expect(fresh.objective.coastMillis).toBe(0);
     expect(fresh.objective.latestSequence).toBe(0);
     expect(fresh.session.phase).toBe("briefing");

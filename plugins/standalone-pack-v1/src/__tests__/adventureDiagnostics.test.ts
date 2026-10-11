@@ -28,6 +28,11 @@ it("reports the precise frame suspension cause without retaining a mutable diagn
       dtMillis,
       controlInput: {},
     } as ExternalLoopUpdateParams);
+  for (let i = 0; i <= 30; i++)
+    plugin.hooks!.loop!.afterFrame!({
+      nowMs: (i * 1000) / 60,
+      dtMillis: 1000 / 60,
+    } as ExternalLoopUpdateParams);
   session.command("begin");
   frame(100, 16);
   expect(log).not.toHaveBeenCalled();
@@ -81,6 +86,11 @@ it("reports blur/visibility transitions once and detaches diagnostics with the r
   const dispose = plugin.hooks!.loop!.initLoop!() as () => void;
   windowTarget.dispatchEvent(new Event("blur"));
   expect(log).not.toHaveBeenCalled();
+  for (let i = 0; i <= 30; i++)
+    plugin.hooks!.loop!.afterFrame!({
+      nowMs: (i * 1000) / 60,
+      dtMillis: 1000 / 60,
+    } as ExternalLoopUpdateParams);
   session.command("begin");
   windowTarget.dispatchEvent(new Event("blur"));
   expect(log.mock.calls[0][1]).toMatchObject({

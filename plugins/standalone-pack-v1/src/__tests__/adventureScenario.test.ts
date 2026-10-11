@@ -252,6 +252,11 @@ describe("standalone adventure assembly", () => {
         false,
       );
       expect(Object.values(params.controlInput).some(Boolean)).toBe(false);
+      for (let i = 0; i <= 30; i++)
+        early.afterFrame!({
+          nowMs: (i * 1000) / 60,
+          dtMillis: 1000 / 60,
+        } as ExternalLoopUpdateParams);
       session.command("begin");
       early.updateLoopState!(params);
       expect(final.updateLoopState!(params)?.framePolicy?.advanceSim).toBe(
@@ -388,6 +393,11 @@ describe("standalone adventure assembly", () => {
         }
         final.afterFrame!(params);
       };
+      for (let i = 0; i <= 30; i++)
+        early.afterFrame!({
+          nowMs: (i * 1000) / 60,
+          dtMillis: 1000 / 60,
+        } as ExternalLoopUpdateParams);
       session.command("begin");
       frame(0, false);
       expect(objective.latestSequence).toBe(0);

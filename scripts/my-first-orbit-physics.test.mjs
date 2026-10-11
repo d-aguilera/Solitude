@@ -122,6 +122,7 @@ function createRun(hz, generation = 1) {
       measuredFrames++;
     }
   };
+  while (session.getPresentation().actions[0].disabled) frame();
   session.command("begin");
   frame(); // Begin rebases without advancing physics.
   return {
