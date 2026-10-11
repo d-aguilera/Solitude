@@ -243,7 +243,9 @@ Terminal presentation is localized and offers Retry and Return to menu.
 The objective exposes retained transition counters and its latest sample for the
 next director slice; presentation does not advance the objective.
 
-The next session is design-only: define director feedback priorities, cues,
-opt-in hints, cooldowns, semantic instrument identifiers, and acceptance cases
-before coding guidance and instrument presentation. Real browser playtesting,
+Director feedback priorities, cues, opt-in hints, cooldowns, semantic instrument
+identifiers, and acceptance cases are specified in
+[the guidance specification](my-first-orbit-guidance.md). The next session
+implements the retained director and guidance capability with completed-frame
+and session integration; the flight panel follows in a separate slice. Real browser playtesting,
 end-to-end production-physics outcomes, and runtime-cost verification remain step 6.
