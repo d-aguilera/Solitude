@@ -115,7 +115,7 @@ async function main(): Promise<void> {
       launchOptions = { locale: runtimeOptions.locale ?? "en" };
       window.history.replaceState(null, "", menuUrl(window.location.href));
     },
-    defer: queueMicrotask,
+    defer: (callback) => window.queueMicrotask(callback),
   });
   const presentation = createStandalonePresentation(
     container,
