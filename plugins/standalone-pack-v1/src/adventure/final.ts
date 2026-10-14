@@ -1,6 +1,9 @@
 import type { ExternalPluginCapabilityRegistry } from "@solitude/plugin-api/capabilities";
 import { formatEntityName } from "@solitude/plugin-api/entity-names";
-import { createKeyboardInputCapability } from "@solitude/plugin-api/input";
+import {
+  createKeyboardInputCapability,
+  type ExternalKeyboardInputProvider,
+} from "@solitude/plugin-api/input";
 import { vec3 } from "@solitude/plugin-api/math";
 import type { ExternalPlugin } from "@solitude/plugin-api/module";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
@@ -33,7 +36,8 @@ import type {
   ExternalControlledBody,
   ExternalEntityCollisionSphere,
 } from "@solitude/plugin-api/world";
-import { flightActions, viewActions } from "./policy";
+import { createAdventureAssemblyValidator } from "./assembly";
+import { flightActions, sanitizeAdventureInput, viewActions } from "./policy";
 import { adventureEarthId, adventureEntityId } from "./scenario";
 
 export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
@@ -93,8 +97,29 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
       return command;
     },
   };
+  const keyboard: ExternalKeyboardInputProvider = {
+    actions: ["pauseToggle"],
+    keyMap: { KeyP: "pauseToggle" },
+    createKeyHandler: () => ({
+      handleKeyDown: (action, repeat) => {
+        if (action === "pauseToggle") {
+          if (!repeat)
+            session.command(session.phase === "flying" ? "pause" : "resume");
+          return true;
+        }
+        return !(
+          session.phase === "flying" &&
+          (flightActions.has(action) || viewActions.has(action))
+        );
+      },
+      handleKeyUp: (action) =>
+        action === "pauseToggle" ||
+        !(flightActions.has(action) || viewActions.has(action)),
+    }),
+  };
   return {
     id: "adventureFinalPolicy",
+    validateAssembly: createAdventureAssemblyValidator(keyboard, resolver),
     capabilities: [
       {
         id: spacecraftVelocityReferenceCapability,
@@ -103,33 +128,18 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
             id === adventureEntityId ? adventureEarthId : null,
         },
       },
-      createKeyboardInputCapability({
-        actions: ["pauseToggle"],
-        keyMap: { KeyP: "pauseToggle" },
-        createKeyHandler: () => ({
-          handleKeyDown: (action, repeat) => {
-            if (action === "pauseToggle") {
-              if (!repeat)
-                session.command(
-                  session.phase === "flying" ? "pause" : "resume",
-                );
-              return true;
-            }
-            return !(
-              session.phase === "flying" &&
-              (flightActions.has(action) || viewActions.has(action))
-            );
-          },
-          handleKeyUp: (action) =>
-            action === "pauseToggle" ||
-            !(flightActions.has(action) || viewActions.has(action)),
-        }),
-      }),
+      createKeyboardInputCapability(keyboard),
       createSpacecraftPropulsionResolverProvider(resolver),
     ],
     hooks: {
       simulation: {
-        beforeVehicleDynamics: () => {
+        beforeVehicleDynamics: ({ controlInput, controlInputsByEntityId }) => {
+          sanitizeAdventureInput(controlInput, session.phase === "flying");
+          for (const [id, input] of controlInputsByEntityId)
+            sanitizeAdventureInput(
+              input,
+              id === adventureEntityId && session.phase === "flying",
+            );
           propulsionActive = null;
         },
       },

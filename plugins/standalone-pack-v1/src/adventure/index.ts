@@ -12,8 +12,9 @@ import {
   standaloneGenerationOption,
   standaloneSessionCapability,
 } from "@solitude/plugin-api/standalone-session";
+import { validateAdventureSessionAssembly } from "./assembly";
 import { createAdventureHudCapabilities } from "./hud";
-import { adventureEntityId, createScenario } from "./scenario";
+import { createScenario } from "./scenario";
 import { createSession } from "./session";
 
 import { sanitizeAdventureInput } from "./policy";
@@ -34,6 +35,7 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
   const { session } = controller;
   return {
     id: "standaloneSession",
+    validateAssembly: adventure ? validateAdventureSessionAssembly : undefined,
     capabilities: [
       { id: standaloneSessionCapability, value: session },
       ...(adventure
@@ -85,19 +87,6 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
               sanitizeAdventureInput(controlInput, session.phase === "flying");
               controller.updateFrame(nowMs, dtMillis);
               return null;
-            },
-          },
-          simulation: {
-            beforeVehicleDynamics: ({
-              controlInput,
-              controlInputsByEntityId,
-            }) => {
-              sanitizeAdventureInput(controlInput, session.phase === "flying");
-              for (const [id, input] of controlInputsByEntityId)
-                sanitizeAdventureInput(
-                  input,
-                  id === adventureEntityId && session.phase === "flying",
-                );
             },
           },
         }

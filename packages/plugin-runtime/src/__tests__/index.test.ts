@@ -33,6 +33,28 @@ const secondManifestUrl = `${pluginOrigin}/packs/utility/second.json`;
 const laserEntryUrl = `${pluginOrigin}/packs/targeting/laser/index.js`;
 const secondEntryUrl = `${pluginOrigin}/packs/utility/second.js`;
 
+it("rejects invalid assembly validators and preserves valid external callbacks", async () => {
+  for (const validateAssembly of ["invalid", () => {}]) {
+    const loaded = await loadExternalPlugins({
+      configUrl,
+      fetchJson: async (url) => createDocumentMap().get(url),
+      host: "browser",
+      importModule: async () => ({
+        createPlugin: () => ({ id: "targetingLaser", validateAssembly }),
+      }),
+      pageOrigin,
+    });
+    if (typeof validateAssembly === "function")
+      expect(loaded.catalog.targetingLaser({}).validateAssembly).toBe(
+        validateAssembly,
+      );
+    else
+      expect(() => loaded.catalog.targetingLaser({})).toThrow(
+        "invalid assembly validator",
+      );
+  }
+});
+
 describe("external plugin runtime", () => {
   it("loads explicitly allowed cross-origin plugin packs in order", async () => {
     const initScene = vi.fn();

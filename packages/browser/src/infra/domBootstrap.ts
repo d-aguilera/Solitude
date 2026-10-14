@@ -5,7 +5,10 @@ import { createPluginCapabilityRegistry } from "@solitude/engine/runtime";
 import type { WorldAndSceneConfig } from "@solitude/engine/world";
 import { createDisposalScope } from "./disposal";
 import { runLoop } from "./domGameLoop";
-import { initInput, type BrowserKeyboardHost } from "./domKeyboardInput";
+import {
+  createInputDispatcher,
+  type BrowserKeyboardHost,
+} from "./domKeyboardInput";
 import { initLayout, type LayoutView } from "./domLayout";
 import { getOrCreateDomViewLayers } from "./domView";
 import type { RunLoopView } from "./infraPorts";
@@ -53,8 +56,7 @@ export function bootstrapWith(
       scope,
     );
     scope.add(initLayout(container, views));
-    const input = initInput(plugins, keyboardHost);
-    scope.add(input.dispose);
+    const dispatcher = createInputDispatcher(plugins);
     const pageHide = () => scope.dispose();
     window.addEventListener("pagehide", pageHide);
     scope.add(() => window.removeEventListener("pagehide", pageHide));
@@ -65,10 +67,14 @@ export function bootstrapWith(
         throw error;
       },
       views,
-      controlInput: input.controlInput,
+      controlInput: dispatcher.controlInput,
       plugins,
     });
     scope.add(loop.dispose);
+    // runLoop materializes and validates the pipeline synchronously; no keyboard
+    // events or animation frames reach a rejected composition.
+    const input = keyboardHost.attach(dispatcher);
+    scope.add(input.dispose);
     return { clearInput: input.clear, dispose: scope.dispose };
   } catch (error) {
     scope.dispose();

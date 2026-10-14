@@ -7,8 +7,8 @@ one issue per fresh session. The HUD/screen rearrangement effort is on hold unti
 all six architecture issues are fixed.
 
 - Read `MEMORY.md`, `MEMORY_MY_FIRST_ORBIT.md`, and this document at session start.
-- The next fresh session starts with **issue #1: control restrictions depend on
-  plugin order**. Inspect the actual callback chains before choosing the fix.
+- The next fresh session starts with **issue #2: objective rules import scenario
+  construction**. Issue #1 is complete.
 - Implement and validate the current issue, then update its status here and the
   explicit next task in `MEMORY_MY_FIRST_ORBIT.md`.
 - Continue the exact `My first orbit N` commit series. Inspect Git history for
@@ -26,13 +26,13 @@ existing import checks do not fully assess.
 
 ## Issue #1 — Control restrictions depend on plugin order
 
-**Status:** Pending; next fresh session.
+**Status:** Complete.
 
-**Concern:** Coupling and policy enforcement.
+**Original concern:** Coupling and policy enforcement.
 
-`adventure/final.ts` checks that its propulsion resolver is last, but equivalent
-assumptions for keyboard dispatch and frame-policy overrides are unguarded.
-`adventure/index.ts` sanitizes direct input among ordinary simulation hooks.
+Before the fix, `adventure/final.ts` checked that its propulsion resolver was last, but equivalent
+assumptions for keyboard dispatch and frame-policy overrides were unguarded.
+`adventure/index.ts` sanitized direct input among ordinary simulation hooks.
 Keyboard handlers run in reverse provider order, propulsion resolvers run in
 provider order, and loop callbacks mutate a shared frame policy. Adding or
 reordering plugins can change enforcement.
@@ -57,6 +57,35 @@ cover conflicting/reordered contributors and demonstrate that unsupported
 assembly fails clearly or cannot override adventure restrictions. Preserve
 pause/suspension, manual propulsion, disabled controls, and completed-frame
 objective sampling; retain Free Flight and multiplayer behavior.
+
+**Implemented enforcement:** API v12 exposes a setup-only `validateAssembly`
+callback with ordered contributor identities/capabilities and the actual loop,
+control, and materialized simulation hook lists. Shared browser/headless assembly
+runs validators before loop initialization or simulation; browser keyboard input
+attaches only after pipeline validation succeeds. No validation runs per frame.
+
+The adventure validates session processing first, frame policy last, final input
+sanitization last among pre-dynamics hooks, startup observation first, completed
+sampling last, keyboard guard first in dispatch, collision-free key bindings, and
+propulsion resolution last. Final input sanitization now lives in
+`adventureFinalPolicy`; early session sanitization still protects ordinary loop
+callbacks from direct forbidden requests. Adventure assembly permits only the
+supported spacecraft dynamics and autopilot control contributors, rejects
+post-dynamics simulation hooks and initial-clock overrides, and includes anonymous
+headless additions in validation. The session rejects a missing/inactive final
+policy. Errors identify the policy and violated constraint/contributor. Plugins
+remain trusted same-realm code; these checks enforce supported execution contracts.
+
+**Validation:** all 585 tests pass across the full-suite run and a separate rerun
+of the 11 HTTP/WebSocket tests, which require localhost binding outside the
+sandbox. Full workspace typechecking/package boundaries and standalone production
+build pass. Production-physics recovery/confirmation regressions pass. New real
+pipeline/dispatcher tests cover reordered/conflicting contributors, factory hooks,
+entity-addressed sanitization, pause/resume/suspension, manual forward/reverse
+propulsion, missing final policy, Free Flight, and headless additions. Generic
+assembly tests cover inherited hooks and frozen inspection records. Browser
+startup tests verify rejected pipelines never attach keyboard input. Architecture
+regeneration changes only timestamp/formatting and is restored.
 
 ## Issue #2 — Objective rules import scenario construction
 

@@ -311,8 +311,21 @@ export interface PluginRequirements {
   mainFocus?: readonly FocusCapabilityRequirement[];
 }
 
+/** Materialized contributors in execution order; setup-only policy inspection. */
+export interface PluginAssemblyContributor {
+  readonly id: string;
+  readonly capabilities: readonly PluginCapabilityProvider[];
+  readonly hooks: readonly string[];
+}
+
+export interface PluginAssemblyContext {
+  readonly contributors: readonly PluginAssemblyContributor[];
+  readonly capabilityRegistry: PluginCapabilityRegistry;
+}
+
 export interface GamePlugin {
   id: string;
+  validateAssembly?: (context: PluginAssemblyContext) => void;
   capabilities?: readonly PluginCapabilityProvider[];
   controls?: ControlPlugin;
   gravity?: GravityProvider;

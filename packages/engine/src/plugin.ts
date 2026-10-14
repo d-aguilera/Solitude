@@ -23,6 +23,8 @@ export type {
   LoopUpdateParams,
   LoopUpdateResult,
   MarkerPlugin,
+  PluginAssemblyContext,
+  PluginAssemblyContributor,
   PluginCapabilityProvider,
   PluginCapabilityRegistry,
   PluginRequirements,

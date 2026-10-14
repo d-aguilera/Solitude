@@ -87,8 +87,10 @@ const EXTERNAL_PLUGIN_KEYS = new Set([
   "hooks",
   "id",
   "requirements",
+  "validateAssembly",
 ]);
 const EXTERNAL_SERVER_PLUGIN_KEYS = new Set([
+  "validateAssembly",
   "capabilities",
   "gravity",
   "hooks",
@@ -577,6 +579,14 @@ function validateExternalPlugin(
   if (hasInvalidHookFunctions(plugin.gravity, ["createGravityEngine"])) {
     throw new Error(`External plugin ${expectedId} has invalid gravity`);
   }
+  if (
+    plugin.validateAssembly !== undefined &&
+    typeof plugin.validateAssembly !== "function"
+  ) {
+    throw new Error(
+      `External plugin ${expectedId} has invalid assembly validator`,
+    );
+  }
   const hooks = plugin.hooks;
   const allowedHookKeys =
     host === "browser"
@@ -712,6 +722,7 @@ function adaptExternalPlugin(
   const focusEntityRequirements = plugin.requirements?.focusEntity;
   return {
     id: plugin.id,
+    validateAssembly: plugin.validateAssembly,
     capabilities: plugin.capabilities,
     controls: hooks?.controls as ControlPlugin | undefined,
     gravity: adaptExternalGravity(plugin.gravity),

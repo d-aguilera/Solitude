@@ -1,4 +1,7 @@
-import type { ExternalPluginCapabilityProvider } from "./capabilities";
+import type {
+  ExternalPluginCapabilityProvider,
+  ExternalPluginCapabilityRegistry,
+} from "./capabilities";
 import type { ExternalControlPlugin } from "./controls";
 import type { ExternalGravityProvider } from "./gravity";
 import type { ExternalLoopPlugin } from "./loop";
@@ -38,8 +41,21 @@ export interface ExternalPluginHooks {
   worldModel?: ExternalWorldModelPlugin;
 }
 
+/** Setup-only view of the actual contributors, including simulation factories. */
+export interface ExternalPluginAssemblyContributor {
+  readonly id: string;
+  readonly capabilities: readonly ExternalPluginCapabilityProvider[];
+  readonly hooks: readonly string[];
+}
+
+export interface ExternalPluginAssemblyContext {
+  readonly contributors: readonly ExternalPluginAssemblyContributor[];
+  readonly capabilityRegistry: ExternalPluginCapabilityRegistry;
+}
+
 export interface ExternalPluginBase {
   id: string;
+  validateAssembly?: (context: ExternalPluginAssemblyContext) => void;
   capabilities?: readonly ExternalPluginCapabilityProvider[];
   gravity?: ExternalGravityProvider;
 }

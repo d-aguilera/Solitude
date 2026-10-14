@@ -504,11 +504,17 @@ describe("standalone adventure assembly", () => {
           final.updateLoopState!(params)?.framePolicy,
         );
         if (params.state.framePolicy.advanceSim) {
-          sim.beforeVehicleDynamics!(
-            {} as Parameters<
-              NonNullable<ExternalSimulationPlugin["beforeVehicleDynamics"]>
-            >[0],
-          );
+          sim.beforeVehicleDynamics!({
+            controlInput: params.controlInput,
+            controlInputsByEntityId: new Map(),
+            dtMillis: 250,
+            dtMillisSim: 250,
+            focusEntity: () => {
+              throw new Error("Unexpected focus switch");
+            },
+            mainFocus: params.mainFocus,
+            world,
+          });
           if (observe)
             resolver.resolvePropulsionCommand({
               controlInput: params.controlInput,

@@ -210,6 +210,7 @@ describe("browser runtime lifetime", () => {
   });
   it("cleans listeners and presenters when pipeline startup fails", () => {
     const host = createBrowserKeyboardHost();
+    const attach = vi.spyOn(host, "attach");
     const removeWindow = vi.spyOn(windowTarget, "removeEventListener");
     mocks.pipeline.mockImplementationOnce(() => {
       throw new Error("pipeline failed");
@@ -222,6 +223,8 @@ describe("browser runtime lifetime", () => {
       "pagehide",
       "resize",
     ]);
+    expect(attach).not.toHaveBeenCalled();
+    expect(requests.size).toBe(0);
     const fresh = bootstrapWith(config, [], vi.fn(), host);
     fresh.dispose();
     host.dispose();

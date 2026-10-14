@@ -113,8 +113,15 @@ export function initInput(
   plugins: GamePlugin[],
   host: BrowserKeyboardHost,
 ): BrowserKeyboardInput {
+  return host.attach(createInputDispatcher(plugins));
+}
+
+/** Construct input before pipeline validation, attach only after it succeeds. */
+export function createInputDispatcher(
+  plugins: GamePlugin[],
+): KeyboardHandlerDispatcher {
   const providers = collectKeyboardInputProviders(
     createPluginCapabilityRegistry(plugins),
   );
-  return host.attach(createKeyboardHandlerDispatcher(providers));
+  return createKeyboardHandlerDispatcher(providers);
 }
