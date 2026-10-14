@@ -46,8 +46,8 @@ import type {
 } from "@solitude/plugin-api/world-model";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createPlugin as createAdventure } from "../adventure";
+import { adventureEntityId } from "../adventure/definition";
 import { createPlugin as createFinal } from "../adventure/final";
-import { adventureEntityId } from "../adventure/scenario";
 import { createPlugin as createSwitch } from "../operator-switch";
 import { createPlugin as createPause } from "../pause";
 import { createPlugin as createPlayback } from "../playback";

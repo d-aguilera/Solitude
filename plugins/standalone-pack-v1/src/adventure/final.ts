@@ -37,8 +37,8 @@ import type {
   ExternalEntityCollisionSphere,
 } from "@solitude/plugin-api/world";
 import { createAdventureAssemblyValidator } from "./assembly";
+import { adventureEarthId, adventureEntityId } from "./definition";
 import { flightActions, sanitizeAdventureInput, viewActions } from "./policy";
-import { adventureEarthId, adventureEntityId } from "./scenario";
 
 export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
   if (!isAdventure(options)) return { id: "adventureFinalPolicy" };

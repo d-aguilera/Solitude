@@ -7,8 +7,8 @@ one issue per fresh session. The HUD/screen rearrangement effort is on hold unti
 all six architecture issues are fixed.
 
 - Read `MEMORY.md`, `MEMORY_MY_FIRST_ORBIT.md`, and this document at session start.
-- The next fresh session starts with **issue #2: objective rules import scenario
-  construction**. Issue #1 is complete.
+- The next fresh session starts with **issue #3: gameplay observations are owned by a presentation
+  plugin**. Issues #1–2 are complete.
 - Implement and validate the current issue, then update its status here and the
   explicit next task in `MEMORY_MY_FIRST_ORBIT.md`.
 - Continue the exact `My first orbit N` commit series. Inspect Git history for
@@ -89,11 +89,11 @@ regeneration changes only timestamp/formatting and is restored.
 
 ## Issue #2 — Objective rules import scenario construction
 
-**Status:** Pending.
+**Status:** Complete.
 
 **Concern:** Onion layering.
 
-`adventure/objective.ts` and `adventure/guidance.ts` import entity identifiers
+Before the fix, `adventure/objective.ts` and `adventure/guidance.ts` imported entity identifiers
 from `adventure/scenario.ts`, which also owns provider discovery and world
 construction. Rules therefore depend on an outer setup module. The boundary
 checker enforces onion layers only inside the engine and misses this dependency.
@@ -106,6 +106,21 @@ outside objective rules.
 **Completion criteria:** Objective and guidance rules no longer import scenario
 construction. Their dependencies point inward, and existing scenario and
 objective behavior remains covered by tests.
+
+**Implemented boundary:** `adventure/definition.ts` has no imports and owns
+immutable craft/Earth identifiers, initial apsis altitudes, safe-orbit altitude
+bounds, failure altitude, and coast confirmation duration. Scenario construction,
+objective, guidance, and final sampling/policy import their definitions directly;
+scenario construction no longer exports identifiers. Provider discovery and world
+construction remain in `scenario.ts`. Numeric values and gameplay are unchanged;
+no runtime configuration or per-frame allocations are added. Guidance formatting
+and instrument separation remain scoped to issue #5.
+
+**Validation:** all 585 tests pass, including scenario calibration, exact objective
+thresholds, guidance, and production-physics regressions. Full workspace
+typechecking/package boundaries, standalone production build, and Prettier pass.
+Existing tests retain independent numeric expectations. Architecture regeneration
+changes only timestamp/formatting and is restored.
 
 ## Issue #3 — Gameplay observations are owned by a presentation plugin
 

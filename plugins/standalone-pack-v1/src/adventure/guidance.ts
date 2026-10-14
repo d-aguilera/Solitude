@@ -8,10 +8,15 @@ import type {
   AdventureObjective,
   StandalonePhase,
 } from "@solitude/plugin-api/standalone-session";
+import {
+  adventureEarthId,
+  adventureEntityId,
+  maximumSafeApoapsisAltitudeMeters,
+  minimumSafePeriapsisAltitudeMeters,
+} from "./definition";
 import en from "./locales/guidance.en.json";
 import es from "./locales/guidance.es.json";
 import fr from "./locales/guidance.fr.json";
-import { adventureEarthId, adventureEntityId } from "./scenario";
 
 const alignedEnter = Math.cos((8 * Math.PI) / 180);
 const alignedExit = Math.cos((10 * Math.PI) / 180);
@@ -413,12 +418,17 @@ export function createGuidance(
         next = "unavailable";
       else if (sample.primaryId !== adventureEarthId) next = "primaryChanged";
       else if (!sample.isBound) next = "escape";
-      else if (sample.apoapsisAltitudeMeters! > 600_000) next = "highApoapsis";
+      else if (
+        sample.apoapsisAltitudeMeters! > maximumSafeApoapsisAltitudeMeters
+      )
+        next = "highApoapsis";
       else if (objective.safeOrbit && sample.propulsionActive) next = "release";
       else if (objective.status === "confirming") next = "coast";
       else if (!orbitLineSeen) next = "showOrbit";
       else if (!orbitAttitudeSeen) next = "orientOrbit";
-      else if (sample.periapsisAltitudeMeters! < 150_000)
+      else if (
+        sample.periapsisAltitudeMeters! < minimumSafePeriapsisAltitudeMeters
+      )
         next = aligned ? "recover" : "align";
       else next = "unavailable";
       select(next);

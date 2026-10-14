@@ -8,9 +8,13 @@ import {
 } from "@solitude/plugin-api/controllable-entities";
 import { mat3, vec3 } from "@solitude/plugin-api/math";
 import type { ExternalWorldModelPlugin } from "@solitude/plugin-api/world-model";
+import {
+  adventureEarthId,
+  adventureEntityId,
+  initialApoapsisAltitudeMeters,
+  initialPeriapsisAltitudeMeters,
+} from "./definition";
 
-export const adventureEntityId = "ship:first-orbit";
-export const adventureEarthId = "planet:earth";
 const NEWTON_G = 6.6743e-11;
 
 export function createScenario(): ExternalWorldModelPlugin {
@@ -29,8 +33,8 @@ export function createScenario(): ExternalWorldModelPlugin {
         throw new Error(
           "My First Orbit requires Earth and one polyFighter provider",
         );
-      const ra = earth.physicalRadius + 400_000;
-      const rp = earth.physicalRadius - 50_000;
+      const ra = earth.physicalRadius + initialApoapsisAltitudeMeters;
+      const rp = earth.physicalRadius + initialPeriapsisAltitudeMeters;
       const speed = Math.sqrt(NEWTON_G * earth.mass * (2 / ra - 2 / (ra + rp)));
       if (!Number.isFinite(speed) || speed <= 0 || rp <= 0)
         throw new Error("Invalid My First Orbit Earth data");

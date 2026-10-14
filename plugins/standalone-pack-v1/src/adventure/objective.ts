@@ -2,7 +2,14 @@ import type {
   AdventureObjective,
   AdventureSample,
 } from "@solitude/plugin-api/standalone-session";
-import { adventureEarthId, adventureEntityId } from "./scenario";
+import {
+  adventureEarthId,
+  adventureEntityId,
+  coastConfirmationMillis,
+  failureAltitudeMeters,
+  maximumSafeApoapsisAltitudeMeters,
+  minimumSafePeriapsisAltitudeMeters,
+} from "./definition";
 
 /** A retained hold rule: rendering and commands never credit time. */
 export function createObjective(
@@ -80,7 +87,7 @@ export function createObjective(
       if (
         sample.earthAltitudeMeters !== null &&
         Number.isFinite(sample.earthAltitudeMeters) &&
-        sample.earthAltitudeMeters <= 80_000
+        sample.earthAltitudeMeters <= failureAltitudeMeters
       ) {
         status = "failed";
         terminalSequence = sample.sequence;
@@ -103,10 +110,10 @@ export function createObjective(
         sample.isBound &&
         sample.periapsisAltitudeMeters !== null &&
         Number.isFinite(sample.periapsisAltitudeMeters) &&
-        sample.periapsisAltitudeMeters >= 150_000 &&
+        sample.periapsisAltitudeMeters >= minimumSafePeriapsisAltitudeMeters &&
         sample.apoapsisAltitudeMeters !== null &&
         Number.isFinite(sample.apoapsisAltitudeMeters) &&
-        sample.apoapsisAltitudeMeters <= 600_000;
+        sample.apoapsisAltitudeMeters <= maximumSafeApoapsisAltitudeMeters;
       if (
         !clockValid ||
         !safe ||
@@ -130,7 +137,7 @@ export function createObjective(
       if (lastEligibleNow !== null)
         coastMillis += sample.nowMs - lastEligibleNow;
       lastEligibleNow = sample.nowMs;
-      if (coastMillis >= 5000) {
+      if (coastMillis >= coastConfirmationMillis) {
         status = "completed";
         terminalSequence = sample.sequence;
         safeOrbitConfirmed++;
