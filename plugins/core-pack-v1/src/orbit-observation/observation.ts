@@ -1,16 +1,16 @@
 import { EPS_SPEED_FINE, vec3 } from "@solitude/plugin-api/math";
-import type { ExternalOrbitObservationProvider } from "@solitude/plugin-api/telemetry";
+import {
+  createOrbitReadout,
+  type ExternalOrbitReadoutProvider,
+} from "@solitude/plugin-api/telemetry";
 import {
   getDominantBodyPrimaryInto,
   type ExternalControlledBody,
   type ExternalGravityPrimary,
 } from "@solitude/plugin-api/world";
-import {
-  computeOrbitReadoutForPrimaryInto,
-  createOrbitReadout,
-} from "./orbitReadout";
+import { computeOrbitReadoutForPrimaryInto } from "./orbitReadout";
 
-export function createOrbitObservationProvider(): ExternalOrbitObservationProvider {
+export function createOrbitObservationProvider(): ExternalOrbitReadoutProvider {
   const readout = createOrbitReadout();
   const relativeVelocity = vec3.zero();
   const relativePosition = vec3.zero();
@@ -22,6 +22,28 @@ export function createOrbitObservationProvider(): ExternalOrbitObservationProvid
     body: { id: "", position: vec3.zero(), velocity: vec3.zero() },
   };
   return {
+    readoutInto: (out, world, entityId) => {
+      out.primaryId = "";
+      out.primaryRadius = 0;
+      out.altitudeMeters = null;
+      for (const body of world.controllableBodies) {
+        if (body.id === entityId) {
+          if (!getDominantBodyPrimaryInto(primary, world, body.position))
+            return false;
+          const distance = vec3.length(
+            vec3.subInto(
+              relativePosition,
+              body.position,
+              primary.body.position,
+            ),
+          );
+          if (Number.isFinite(primary.radius) && primary.radius > 0)
+            out.altitudeMeters = distance - primary.radius;
+          return computeOrbitReadoutForPrimaryInto(out, body, primary);
+        }
+      }
+      return false;
+    },
     sampleInto: (out, world, entityId) => {
       out.entityId = entityId;
       out.primaryId = null;

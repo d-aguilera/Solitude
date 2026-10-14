@@ -36,6 +36,9 @@ export default defineConfig({
         "orbit-segments": fileURLToPath(
           new URL("./src/orbit-segments/index.ts", import.meta.url),
         ),
+        "orbit-observation": fileURLToPath(
+          new URL("./src/orbit-observation/index.ts", import.meta.url),
+        ),
         "orbit-telemetry": fileURLToPath(
           new URL("./src/orbit-telemetry/index.ts", import.meta.url),
         ),
@@ -101,6 +104,7 @@ export default defineConfig({
                 "./body-labels/plugin.json",
                 "./main-view-lookaround/plugin.json",
                 "./orbit-segments/plugin.json",
+                "./orbit-observation/plugin.json",
                 "./orbit-telemetry/plugin.json",
                 "./runtime-telemetry/plugin.json",
                 "./solar-system-materials/plugin.json",
@@ -184,6 +188,11 @@ export default defineConfig({
             null,
             2,
           )}\n`,
+          type: "asset",
+        });
+        this.emitFile({
+          fileName: "orbit-observation/plugin.json",
+          source: `${JSON.stringify({ apiVersion: SOLITUDE_PLUGIN_API_VERSION, entry: "./index.js", id: "orbitObservation", schemaVersion: 2 }, null, 2)}\n`,
           type: "asset",
         });
         this.emitFile({

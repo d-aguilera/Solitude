@@ -1,55 +1,49 @@
+import type { ExternalPluginCapabilityRegistry } from "@solitude/plugin-api/capabilities";
 import { formatEntityName } from "@solitude/plugin-api/entity-names";
 import type { ExternalHudPanelProvider } from "@solitude/plugin-api/hud";
-import { vec3 } from "@solitude/plugin-api/math";
 import {
-  getDominantBodyPrimaryInto,
-  type ExternalGravityPrimary,
-} from "@solitude/plugin-api/world";
+  createOrbitReadout,
+  isOrbitReadoutProvider,
+  orbitObservationCapability,
+  type ExternalOrbitReadoutProvider,
+} from "@solitude/plugin-api/telemetry";
 import { formatSimTime } from "../shared/localization";
 import type { OrbitTelemetryLocalization } from "./localization";
-import {
-  computeOrbitReadoutForPrimaryInto,
-  createOrbitReadout,
-} from "./orbitReadout";
-
 export function createHudPanel(
   localization: OrbitTelemetryLocalization,
-): ExternalHudPanelProvider {
+): ExternalHudPanelProvider & {
+  bindObserver: (registry: ExternalPluginCapabilityRegistry) => void;
+} {
   const orbitReadout = createOrbitReadout();
-  const primary: ExternalGravityPrimary = {
-    id: "",
-    mass: 0,
-    radius: 0,
-    body: { id: "", position: vec3.zero(), velocity: vec3.zero() },
-  };
-  const relativePosition = vec3.zero();
+  let observer: ExternalOrbitReadoutProvider | null = null;
   let primaryDisplayNameId = "";
   let primaryDisplayName = "";
   let radialDirection: DeltaVDirection | null = null;
   let tangentialDirection: DeltaVDirection | null = null;
 
+  const bindObserver = (registry: ExternalPluginCapabilityRegistry) => {
+    const providers = registry
+      .getAll(orbitObservationCapability)
+      .filter(isOrbitReadoutProvider);
+    if (providers.length !== 1)
+      throw new Error("Orbit telemetry requires one orbital readout provider");
+    observer = providers[0];
+  };
   return {
+    bindObserver,
     writeHud: (grid, context) => {
       const body = context.mainFocus.controlledBody;
-      const hasPrimary = getDominantBodyPrimaryInto(
-        primary,
+      // Remote presentation hosts do not assemble simulation lifecycle hooks.
+      if (!observer) bindObserver(context.capabilityRegistry);
+      const hasOrbit = observer!.readoutInto(
+        orbitReadout,
         context.world,
-        body.position,
+        body.id,
       );
       const radiusValid =
-        hasPrimary && Number.isFinite(primary.radius) && primary.radius > 0;
-      const altitude = radiusValid
-        ? vec3.length(
-            vec3.subInto(
-              relativePosition,
-              body.position,
-              primary.body.position,
-            ),
-          ) - primary.radius
-        : NaN;
-      const hasOrbit =
-        hasPrimary &&
-        computeOrbitReadoutForPrimaryInto(orbitReadout, body, primary);
+        Number.isFinite(orbitReadout.primaryRadius) &&
+        orbitReadout.primaryRadius > 0;
+      const altitude = orbitReadout.altitudeMeters ?? NaN;
       if (!hasOrbit) {
         primaryDisplayNameId = "";
         primaryDisplayName = "";
@@ -123,7 +117,9 @@ export function createHudPanel(
         "orbit.periapsisAltitude",
         localization.periapsisAltitudePrefix.concat(
           formatApsisDistance(
-            radiusValid ? orbitReadout.periapsis - primary.radius : NaN,
+            radiusValid
+              ? orbitReadout.periapsis - orbitReadout.primaryRadius
+              : NaN,
             localization,
           ),
         ),
@@ -133,7 +129,9 @@ export function createHudPanel(
         "orbit.apoapsisAltitude",
         localization.apoapsisAltitudePrefix.concat(
           formatApsisDistance(
-            radiusValid ? orbitReadout.apoapsis - primary.radius : NaN,
+            radiusValid
+              ? orbitReadout.apoapsis - orbitReadout.primaryRadius
+              : NaN,
             localization,
           ),
         ),

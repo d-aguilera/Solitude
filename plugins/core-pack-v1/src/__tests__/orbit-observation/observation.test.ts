@@ -1,6 +1,6 @@
 import { createOrbitObservation } from "@solitude/plugin-api/telemetry";
 import { describe, expect, it } from "vitest";
-import { createOrbitObservationProvider } from "../../orbit-telemetry/observation";
+import { createOrbitObservationProvider } from "../../orbit-observation/observation";
 import { createTestWorldAndBody } from "../shared/hudTest";
 
 describe("shared validated orbit observations", () => {

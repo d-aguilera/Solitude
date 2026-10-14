@@ -1,8 +1,16 @@
 import { createEntityNameProvider } from "@solitude/plugin-api/entity-names";
 import { vec3 } from "@solitude/plugin-api/math";
+import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
+import {
+  createOrbitObservation,
+  createOrbitReadout,
+  isOrbitReadoutProvider,
+  orbitObservationCapability,
+} from "@solitude/plugin-api/telemetry";
 import { computeStandardGravitationalParameter } from "@solitude/plugin-api/world";
-import { describe, expect, it } from "vitest";
-import { createPlugin } from "../../orbit-telemetry/index";
+import { describe, expect, it, vi } from "vitest";
+import { createPlugin as createObserverPlugin } from "../../orbit-observation/index";
+import { createPlugin as createTelemetryPlugin } from "../../orbit-telemetry/index";
 import {
   columnTexts,
   createTestHudContext,
@@ -162,4 +170,91 @@ it("keeps negative predicted altitude and recomputes altitude for the current pr
   expect(
     grid.columns.left.find((line) => line.key === "orbit.altitude")?.text,
   ).toBe("Altitude: --");
+});
+
+function createPlugin(options: ExternalRuntimeOptions) {
+  const plugin = createTelemetryPlugin(options);
+  const capabilities = createObserverPlugin(options).capabilities!;
+  plugin.validateAssembly!({
+    contributors: [],
+    capabilityRegistry: {
+      getAll: (id) =>
+        capabilities.filter((c) => c.id === id).map((c) => c.value),
+    },
+  });
+  return plugin;
+}
+
+it("uses the independently composed observation service and binds only during assembly", () => {
+  const { world, body } = createTestWorldAndBody();
+  const providerPlugin = createObserverPlugin({});
+  const service = providerPlugin.capabilities![0].value;
+  expect(isOrbitReadoutProvider(service)).toBe(true);
+  if (!isOrbitReadoutProvider(service)) throw new Error("Missing service");
+  const readout = vi.spyOn(service, "readoutInto");
+  const getAll = vi.fn((id: string) =>
+    id === orbitObservationCapability ? [service] : [],
+  );
+  const hud = createTelemetryPlugin({});
+  expect(
+    hud.capabilities!.some((c) => c.id === orbitObservationCapability),
+  ).toBe(false);
+  expect(providerPlugin.capabilities!.length).toBe(1);
+  hud.validateAssembly!({ contributors: [], capabilityRegistry: { getAll } });
+  const panel = getHudPanel(hud);
+  const context = createTestHudContext(world, body);
+  const grid = createTestHudGrid();
+  const observation = createOrbitObservation();
+  service.sampleInto(observation, world, body.id);
+  panel.writeHud(grid, context);
+  const retained = readout.mock.calls[0][0];
+  expect(retained.altitudeMeters).toBe(observation.altitudeMeters);
+  body.velocity.y *= 0.95;
+  service.sampleInto(observation, world, body.id);
+  panel.writeHud(grid, context);
+  expect(readout.mock.calls[1][0]).toBe(retained);
+  expect(retained.periapsis - retained.primaryRadius).toBe(
+    observation.periapsisAltitudeMeters,
+  );
+  expect(getAll).toHaveBeenCalledTimes(1);
+  const missing = createOrbitReadout();
+  expect(service.readoutInto(missing, world, "absent")).toBe(false);
+  expect(missing.altitudeMeters).toBeNull();
+});
+
+it.each([
+  { values: [] },
+  { values: [{ sampleInto: () => {} }] },
+  { values: ["duplicate"] },
+])(
+  "rejects unavailable or ambiguous instrument services at assembly",
+  ({ values }) => {
+    const service = createObserverPlugin({}).capabilities![0].value;
+    const providers = values[0] === "duplicate" ? [service, service] : values;
+    const hud = createTelemetryPlugin({});
+    expect(() =>
+      hud.validateAssembly!({
+        contributors: [],
+        capabilityRegistry: { getAll: () => providers },
+      }),
+    ).toThrow("Orbit telemetry requires one orbital readout provider");
+  },
+);
+
+it("binds the shared observer once in a presentation-only remote host", () => {
+  const { world, body } = createTestWorldAndBody();
+  const service = createObserverPlugin({}).capabilities![0].value;
+  const context = createTestHudContext(world, body);
+  const getAll = vi.fn((id: string) =>
+    id === orbitObservationCapability ? [service] : [],
+  );
+  context.capabilityRegistry.getAll = getAll;
+  const panel = getHudPanel(createTelemetryPlugin({}));
+  const grid = createTestHudGrid();
+  panel.writeHud(grid, context);
+  panel.writeHud(grid, context);
+  expect(columnTexts(grid, "left")[0]).toBe("Orbit: Earth (bound)");
+  expect(
+    getAll.mock.calls.filter(([id]) => id === orbitObservationCapability),
+  ).toHaveLength(1);
 });

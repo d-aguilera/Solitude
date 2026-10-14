@@ -2,10 +2,8 @@ import { createHudPanelCapability } from "@solitude/plugin-api/hud";
 import { readLocaleRuntimeOption } from "@solitude/plugin-api/localization";
 import type { ExternalPlugin } from "@solitude/plugin-api/module";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
-import { orbitObservationCapability } from "@solitude/plugin-api/telemetry";
 import { createHudPanel } from "./hud";
 import { createOrbitTelemetryLocalization } from "./localization";
-import { createOrbitObservationProvider } from "./observation";
 
 export function createPlugin(
   runtimeOptions: ExternalRuntimeOptions,
@@ -13,14 +11,11 @@ export function createPlugin(
   const localization = createOrbitTelemetryLocalization(
     readLocaleRuntimeOption(runtimeOptions),
   );
+  const panel = createHudPanel(localization);
   return {
     id: "orbitTelemetry",
-    capabilities: [
-      createHudPanelCapability(createHudPanel(localization)),
-      {
-        id: orbitObservationCapability,
-        value: createOrbitObservationProvider(),
-      },
-    ],
+    validateAssembly: ({ capabilityRegistry }) =>
+      panel.bindObserver(capabilityRegistry),
+    capabilities: [createHudPanelCapability(panel)],
   };
 }

@@ -12,7 +12,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createSolitudeHeadlessLoop } from "../packages/composition/src/headless.ts";
 import { loadExternalPluginSet } from "../packages/plugin-runtime/src/index.ts";
 import { createPlugin as autopilot } from "../plugins/autopilot/src/index.ts";
-import { createPlugin as orbitTelemetry } from "../plugins/core-pack-v1/src/orbit-telemetry/index.ts";
+import { createPlugin as orbitObservation } from "../plugins/core-pack-v1/src/orbit-observation/index.ts";
 import { createPlugin as gravity } from "../plugins/newtonian-gravity/src/index.ts";
 import { createPlugin as polyFighter } from "../plugins/poly-fighter/src/index.ts";
 import { createPlugin as solarSystem } from "../plugins/solar-system/src/index.ts";
@@ -27,7 +27,7 @@ const factories = {
   autopilot,
   spacecraftOperator,
   polyFighter,
-  orbitTelemetry,
+  orbitObservation,
   standaloneSession,
   adventureFinalPolicy,
 };

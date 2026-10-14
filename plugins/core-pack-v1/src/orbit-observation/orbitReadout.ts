@@ -5,35 +5,12 @@ import {
   EPS_TIME_SEC,
   vec3,
 } from "@solitude/plugin-api/math";
+import type { ExternalOrbitReadout } from "@solitude/plugin-api/telemetry";
 import type {
   ExternalControlledBody,
-  ExternalEntityId,
   ExternalGravityPrimary,
-  ExternalWorld,
 } from "@solitude/plugin-api/world";
-import {
-  computeStandardGravitationalParameter,
-  getDominantBodyPrimary,
-} from "@solitude/plugin-api/world";
-
-export interface OrbitReadout {
-  primaryId: ExternalEntityId;
-  distance: number;
-  speed: number;
-  semiMajorAxis: number;
-  eccentricity: number;
-  inclinationRad: number;
-  periapsis: number;
-  apoapsis: number;
-  isBound: boolean;
-  radialSpeed: number;
-  tangentialSpeed: number;
-  circularSpeed: number;
-  deltaVCircularRadial: number;
-  deltaVCircularTangential: number;
-  timeToPeriapsisSec: number | null;
-  timeToApoapsisSec: number | null;
-}
+import { computeStandardGravitationalParameter } from "@solitude/plugin-api/world";
 
 const rScratch: Vec3 = vec3.zero();
 const vScratch: Vec3 = vec3.zero();
@@ -42,40 +19,8 @@ const rHatScratch: Vec3 = vec3.zero();
 const tempScratch: Vec3 = vec3.zero();
 const eVecScratch: Vec3 = vec3.zero();
 
-export function createOrbitReadout(): OrbitReadout {
-  return {
-    primaryId: "",
-    distance: 0,
-    speed: 0,
-    semiMajorAxis: 0,
-    eccentricity: 0,
-    inclinationRad: 0,
-    periapsis: 0,
-    apoapsis: 0,
-    isBound: false,
-    radialSpeed: 0,
-    tangentialSpeed: 0,
-    circularSpeed: 0,
-    deltaVCircularRadial: 0,
-    deltaVCircularTangential: 0,
-    timeToPeriapsisSec: null,
-    timeToApoapsisSec: null,
-  };
-}
-
-export function computeOrbitReadoutInto(
-  out: OrbitReadout,
-  world: ExternalWorld,
-  body: ExternalControlledBody,
-): boolean {
-  const primary = getDominantBodyPrimary(world, body.position);
-  if (!primary) return false;
-
-  return computeOrbitReadoutForPrimaryInto(out, body, primary);
-}
-
 export function computeOrbitReadoutForPrimaryInto(
-  out: OrbitReadout,
+  out: ExternalOrbitReadout,
   body: ExternalControlledBody,
   primary: ExternalGravityPrimary,
 ): boolean {
@@ -123,6 +68,11 @@ export function computeOrbitReadoutForPrimaryInto(
   const apoapsis = isBound ? semiLatusRectum / (1 - eccentricity) : Infinity;
 
   out.primaryId = primary.id;
+  out.primaryRadius = primary.radius;
+  out.altitudeMeters =
+    Number.isFinite(primary.radius) && primary.radius > 0
+      ? r - primary.radius
+      : null;
   out.distance = r;
   out.speed = v;
   out.semiMajorAxis = semiMajorAxis;
@@ -152,7 +102,7 @@ export function computeOrbitReadoutForPrimaryInto(
 }
 
 function computeApsisTimersInto(
-  out: OrbitReadout,
+  out: ExternalOrbitReadout,
   isBound: boolean,
   eccentricity: number,
   semiMajorAxis: number,

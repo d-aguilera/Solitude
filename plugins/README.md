@@ -172,8 +172,10 @@ or obsolete plugin shapes fail during composition.
     controls for standalone and remote rendering.
   - `orbitSegments`: analytic bound-orbit segments around the focused entity's
     dominant gravity body, with keyboard toggle behavior.
+  - `orbitObservation`: retained explicit-entity orbital observation and detailed
+    readout service, independently composable without a HUD.
   - `orbitTelemetry`: localized orbit state, apsis, circularization, and timing
-    readouts for the focused entity.
+    readouts for the focused entity, consuming `orbitObservation`.
   - `runtimeTelemetry`: shared localized simulation-time and rolling-FPS HUD
     driven by browser presentation-frame samples.
   - `solarSystemMaterials`: Earth and Moon texture materials plus pack-owned

@@ -80,3 +80,67 @@ export function isOrbitObservationProvider(
     typeof (value as ExternalOrbitObservationProvider).sampleInto === "function"
   );
 }
+
+/** Detailed physical readout; apsis distances are from the primary center.
+ * Unbound apoapsis is Infinity; missing timing is null. */
+export interface ExternalOrbitReadout {
+  primaryId: string;
+  primaryRadius: number;
+  altitudeMeters: number | null;
+  distance: number;
+  speed: number;
+  semiMajorAxis: number;
+  eccentricity: number;
+  inclinationRad: number;
+  periapsis: number;
+  apoapsis: number;
+  isBound: boolean;
+  radialSpeed: number;
+  tangentialSpeed: number;
+  circularSpeed: number;
+  deltaVCircularRadial: number;
+  deltaVCircularTangential: number;
+  timeToPeriapsisSec: number | null;
+  timeToApoapsisSec: number | null;
+}
+
+export function createOrbitReadout(): ExternalOrbitReadout {
+  return {
+    primaryId: "",
+    primaryRadius: 0,
+    altitudeMeters: null,
+    distance: 0,
+    speed: 0,
+    semiMajorAxis: 0,
+    eccentricity: 0,
+    inclinationRad: 0,
+    periapsis: 0,
+    apoapsis: 0,
+    isBound: false,
+    radialSpeed: 0,
+    tangentialSpeed: 0,
+    circularSpeed: 0,
+    deltaVCircularRadial: 0,
+    deltaVCircularTangential: 0,
+    timeToPeriapsisSec: null,
+    timeToApoapsisSec: null,
+  };
+}
+
+/** Optional detailed-readout extension used by orbital instruments. */
+export interface ExternalOrbitReadoutProvider extends ExternalOrbitObservationProvider {
+  /** Reuses caller storage. On false, only altitudeMeters is usable. */
+  readoutInto: (
+    out: ExternalOrbitReadout,
+    world: ExternalWorld,
+    entityId: string,
+  ) => boolean;
+}
+export function isOrbitReadoutProvider(
+  value: unknown,
+): value is ExternalOrbitReadoutProvider {
+  return (
+    isOrbitObservationProvider(value) &&
+    typeof (value as ExternalOrbitReadoutProvider).readoutInto === "function"
+  );
+}

@@ -7,8 +7,8 @@ one issue per fresh session. The HUD/screen rearrangement effort is on hold unti
 all six architecture issues are fixed.
 
 - Read `MEMORY.md`, `MEMORY_MY_FIRST_ORBIT.md`, and this document at session start.
-- The next fresh session starts with **issue #3: gameplay observations are owned by a presentation
-  plugin**. Issues #1–2 are complete.
+- The next fresh session starts with **issue #4: session lifecycle, clocks, presentation, and guidance
+  assembly**. Issues #1–3 are complete.
 - Implement and validate the current issue, then update its status here and the
   explicit next task in `MEMORY_MY_FIRST_ORBIT.md`.
 - Continue the exact `My first orbit N` commit series. Inspect Git history for
@@ -124,14 +124,14 @@ changes only timestamp/formatting and is restored.
 
 ## Issue #3 — Gameplay observations are owned by a presentation plugin
 
-**Status:** Pending.
+**Status:** Complete.
 
 **Concern:** Coupling and capability ownership.
 
-`plugins/core-pack-v1/src/orbit-telemetry/index.ts` publishes both the telemetry
+Before the fix, `plugins/core-pack-v1/src/orbit-telemetry/index.ts` published both the telemetry
 HUD and the orbital observation provider implemented in `observation.ts`. The
-adventure requires that provider through `adventure/final.ts`, so removing or
-replacing a presentation plugin also removes a gameplay dependency.
+adventure required that provider through `adventure/final.ts`, so removing or
+replacing a presentation plugin also removed a gameplay dependency.
 
 **Direction:** Give orbital observations an independently composable provider;
 let both HUD and adventure consume it. Preserve the external plugin boundary
@@ -142,6 +142,10 @@ into the host engine.
 the orbital telemetry HUD. HUD and adventure share the observation service with
 unchanged validity, unavailable/escape/negative-altitude semantics, and no new
 per-frame allocation burden.
+
+**Implemented boundary:** `orbitObservation` is a separate runtime plugin entry in the atomic core browser pack, owning physical calculations and the retained explicit-entity sampler. It publishes the unchanged gameplay sampling contract plus a detailed-readout extension for instrument values. `orbitTelemetry` publishes only its HUD and binds the service through capability discovery, with no cross-plugin implementation imports. Assembly validates one detailed provider; presentation-only remote hosts bind it once on first draw. Both consumers retain their output records, and the service retains scratch vectors/readout/primary storage. HUD timing, circularization, center-distance, invalid-radius, negative-altitude, and escape semantics are preserved. Production-physics and policy suites activate the observation provider without the orbital HUD.
+
+**Validation:** All 590 tests pass across the full-suite run and the separate rerun of the 11 localhost HTTP/WebSocket tests outside the sandbox. Full workspace typechecking/package boundaries, standalone production build, and Prettier pass. Architecture regeneration changes only timestamp/formatting and is restored. No browser playtest or CPU/GC trace is performed for this slice.
 
 ## Issue #4 — Session owns lifecycle, clocks, presentation, and guidance assembly
 
