@@ -7,6 +7,7 @@ const hudColumnCount = 5;
 
 interface HudLine {
   readonly text: string;
+  readonly emphasized?: boolean;
 }
 
 interface HudGrid {
@@ -88,10 +89,26 @@ export class CanvasHudRasterizer implements OverlayRasterizer {
             ? columnLeft + columnWidth / 2
             : columnLeft;
       for (let rowIndex = 0; rowIndex < column.length; rowIndex++) {
-        const text = fitHudText(column[rowIndex].text, columnWidth);
+        const emphasized = column[rowIndex].emphasized === true;
+        const text = fitHudText(
+          emphasized
+            ? "▶ ".concat(column[rowIndex].text)
+            : column[rowIndex].text,
+          columnWidth,
+        );
         if (text.length === 0) continue;
 
         const textY = hudInnerTop + rowIndex * hudLineHeight + hudLineAscent;
+        if (emphasized) {
+          ctx.fillStyle = "rgba(255, 210, 70, 0.25)";
+          ctx.fillRect(
+            columnLeft - 3,
+            textY - hudLineAscent,
+            columnWidth + 6,
+            hudLineHeight,
+          );
+        }
+        ctx.fillStyle = emphasized ? "#ffe178" : "white";
         ctx.fillText(text, textX, textY);
       }
     }

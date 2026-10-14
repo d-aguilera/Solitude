@@ -12,6 +12,7 @@ import {
   standaloneGenerationOption,
   standaloneSessionCapability,
 } from "@solitude/plugin-api/standalone-session";
+import { createAdventureHudCapabilities } from "./hud";
 import { adventureEntityId, createScenario } from "./scenario";
 import { createSession } from "./session";
 
@@ -39,6 +40,7 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
         ? [
             { id: adventureObjectiveCapability, value: controller.objective },
             { id: adventureGuidanceCapability, value: controller.guidance },
+            ...createAdventureHudCapabilities(controller.guidance.guidance),
           ]
         : []),
     ],

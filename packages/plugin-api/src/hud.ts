@@ -49,3 +49,19 @@ export function isHudPanelProvider(
     typeof candidate.writeHud === "function"
   );
 }
+
+/** Semantic HUD row emphasis contributed independently of panel ordering. */
+export const hudHighlightCapability = "solitude.hud.highlight.v1";
+export interface ExternalHudHighlightProvider {
+  isHighlighted: (key: string) => boolean;
+}
+export function isHudHighlightProvider(
+  value: unknown,
+): value is ExternalHudHighlightProvider {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "isHighlighted" in value &&
+    typeof value.isHighlighted === "function"
+  );
+}

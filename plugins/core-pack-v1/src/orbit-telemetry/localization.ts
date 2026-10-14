@@ -13,6 +13,9 @@ export interface OrbitTelemetryLocalization extends PluginLocalization {
   readonly apoapsisTimeEmpty: string;
   readonly deltaVRadialPrefix: string;
   readonly deltaVTangentialPrefix: string;
+  readonly altitudePrefix: string;
+  readonly periapsisAltitudePrefix: string;
+  readonly apoapsisAltitudePrefix: string;
   readonly distancePrefix: string;
   readonly eccentricityPrefix: string;
   readonly inbound: string;
@@ -21,12 +24,10 @@ export interface OrbitTelemetryLocalization extends PluginLocalization {
   readonly orbitEscape: string;
   readonly orbitPrefix: string;
   readonly outbound: string;
-  readonly peApEmpty: string;
   readonly periapsisTimeEmpty: string;
   readonly prograde: string;
   readonly retrograde: string;
   apoapsisIn: (time: string) => string;
-  periapsisApoapsis: (periapsis: string, apoapsis: string) => string;
   periapsisIn: (time: string) => string;
 }
 
@@ -46,6 +47,9 @@ export function createOrbitTelemetryLocalization(
     apoapsisTimeEmpty: messages.apoapsisTimeEmpty,
     deltaVRadialPrefix: messages.deltaVRadialPrefix,
     deltaVTangentialPrefix: messages.deltaVTangentialPrefix,
+    altitudePrefix: messages.altitudePrefix,
+    periapsisAltitudePrefix: messages.periapsisAltitudePrefix,
+    apoapsisAltitudePrefix: messages.apoapsisAltitudePrefix,
     distancePrefix: messages.distancePrefix,
     eccentricityPrefix: messages.eccentricityPrefix,
     inbound: messages.inbound,
@@ -54,13 +58,10 @@ export function createOrbitTelemetryLocalization(
     orbitEscape: messages.orbitEscape,
     orbitPrefix: messages.orbitPrefix,
     outbound: messages.outbound,
-    peApEmpty: messages.peApEmpty,
     periapsisTimeEmpty: messages.periapsisTimeEmpty,
     prograde: messages.prograde,
     retrograde: messages.retrograde,
     apoapsisIn: (time) => base.formatMessage(messages.apoapsisIn, { time }),
-    periapsisApoapsis: (periapsis, apoapsis) =>
-      base.formatMessage(messages.periapsisApoapsis, { apoapsis, periapsis }),
     periapsisIn: (time) => base.formatMessage(messages.periapsisIn, { time }),
   };
 }

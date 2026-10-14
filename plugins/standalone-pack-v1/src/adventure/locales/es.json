@@ -11,7 +11,7 @@
   "paused": "Vuelo en pausa",
   "suspended": "Vuelo suspendido",
   "suspensionBody": "El vuelo se detuvo mientras la ventana estaba inactiva o se interrumpió el reloj. Continúa cuando estés listo.",
-  "briefing": "La recuperación automática de órbita está fuera de servicio. Tu trayectoria atraviesa la Tierra. Primero pulsa G para mostrar la línea de órbita prevista con la Tierra a tu izquierda. Después pulsa Z para alinear el morro con la órbita y situar la Tierra arriba de la nave. Espera a que la vista se estabilice y mantén Espacio para subir el punto más bajo a 150 km o más sin que el más alto supere 600 km. Suelta y vuela sin propulsión durante cinco segundos. B propulsa hacia atrás para corregir un exceso.",
+  "briefing": "La recuperación automática de órbita está fuera de servicio. Tu trayectoria atraviesa la Tierra. Primero pulsa G para mostrar la línea de órbita prevista con la Tierra a tu izquierda. Después pulsa Z para alinear el morro con la órbita y situar la Tierra arriba de la nave. Espera a que la vista se estabilice y mantén Espacio mirando Alt Pe en el HUD. Sube Alt Pe a 150 km o más sin que Alt Ap supere 600 km. Estas altitudes se miden desde la superficie terrestre. Suelta y vuela sin propulsión durante cinco segundos. B propulsa hacia atrás para corregir un exceso.",
   "pause": "Pausar",
   "completed": "Órbita recuperada",
   "completedBody": "Mantuviste una órbita terrestre segura durante cinco segundos sin propulsión. Recuperación completada.",

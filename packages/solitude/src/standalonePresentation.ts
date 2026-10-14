@@ -97,34 +97,34 @@ export function createStandalonePresentation(
       const warning = document.createElement("p");
       warning.className = "adventure-warning";
       const acknowledgment = document.createElement("p");
-      const instruments = document.createElement("dl");
+      host.append(objective, cue, warning, acknowledgment);
+      // Canvas HUD readings also have a retained screen-reader representation.
+      const accessibleInstruments = document.createElement("dl");
+      accessibleInstruments.className = "standalone-hud-accessibility";
       const slots = guidance.instruments.map((instrument) => {
         const row = document.createElement("div");
-        row.setAttribute("data-instrument", instrument.id);
+        row.setAttribute("data-hud-instrument", instrument.id);
         const label = document.createElement("dt");
         const value = document.createElement("dd");
         row.append(label, value);
-        instruments.append(row);
-        return { instrument, row, label, value };
+        accessibleInstruments.append(row);
+        return { instrument, label, value };
       });
-      host.append(objective, cue, warning, acknowledgment, instruments);
+      root.append(accessibleInstruments);
       refreshFlight = () => {
         host.hidden =
           session.phase !== "flying" || session.lifecycleRequest !== null;
+        accessibleInstruments.hidden = host.hidden;
+        for (const { instrument, label, value } of slots) {
+          setText(label, instrument.label);
+          setText(value, instrument.text);
+        }
         // Only changed primary cues enter the live region; numeric updates do not.
         setText(cue, guidance.cueText);
         setText(warning, guidance.warningText);
         warning.hidden = !guidance.warningText;
         setText(acknowledgment, guidance.acknowledgmentText);
         acknowledgment.hidden = !guidance.acknowledgmentText;
-        for (const { instrument, row, label, value } of slots) {
-          row.className = instrument.emphasized ? "adventure-emphasized" : "";
-          setText(
-            label,
-            `${instrument.emphasized ? "▶ " : ""}${instrument.label}`,
-          );
-          setText(value, instrument.text);
-        }
       };
     }
     host.append(toggle, hint);

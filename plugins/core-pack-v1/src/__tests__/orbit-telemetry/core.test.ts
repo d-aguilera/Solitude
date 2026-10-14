@@ -21,9 +21,11 @@ describe("orbit telemetry plugin", () => {
 
     expect(columnTexts(grid, "left")[0]).toBe("Orbit: Earth (bound)");
     expect(columnTexts(grid, "left")[1]).toBe("d: 6771 km");
-    expect(columnTexts(grid, "left")[2]).toBe("Pe/Ap: 6771 km / 6771 km");
-    expect(columnTexts(grid, "left")[3]).toBe("e: 0.000");
-    expect(columnTexts(grid, "left")[4]).toBe("i: 0.0°");
+    expect(columnTexts(grid, "left")[2]).toBe("Altitude: 400 km");
+    expect(columnTexts(grid, "left")[3]).toBe("Pe alt: 400 km");
+    expect(columnTexts(grid, "left")[4]).toBe("Ap alt: 400 km");
+    expect(columnTexts(grid, "left")[5]).toBe("e: 0.000");
+    expect(columnTexts(grid, "left")[6]).toBe("i: 0.0°");
     expect(columnTexts(grid, "leftCenter")[0]).toContain("Δv Rad: ");
     expect(columnTexts(grid, "leftCenter")[1]).toContain("Δv Tan: ");
   });
@@ -49,7 +51,9 @@ describe("orbit telemetry plugin", () => {
 
     expect(columnTexts(grid, "left")[0]).toBe("Orbit: Earth (escape)");
     expect(columnTexts(grid, "left")[1]).toBe("d: 25000 km");
-    expect(columnTexts(grid, "left")[2]).toBe("Pe/Ap: 10000 km / --");
+    expect(columnTexts(grid, "left")[2]).toBe("Altitude: 18629 km");
+    expect(columnTexts(grid, "left")[3]).toBe("Pe alt: 3629 km");
+    expect(columnTexts(grid, "left")[4]).toBe("Ap alt: --");
     expect(columnTexts(grid, "leftCenter")[2]).toMatch(/^Pe in: /);
     expect(columnTexts(grid, "leftCenter")[2]).not.toBe("Pe in: --");
     expect(columnTexts(grid, "leftCenter")[3]).toBe("Ap in: --");
@@ -58,7 +62,7 @@ describe("orbit telemetry plugin", () => {
     body.velocity = vec3.create(-radialSpeed, tangentialSpeed, 0);
     panel.writeHud(outboundGrid, context);
 
-    expect(columnTexts(outboundGrid, "left")[2]).toBe("Pe/Ap: 10000 km / --");
+    expect(columnTexts(outboundGrid, "left")[4]).toBe("Ap alt: --");
     expect(columnTexts(outboundGrid, "leftCenter")[2]).toBe("Pe in: --");
     expect(columnTexts(outboundGrid, "leftCenter")[3]).toBe("Ap in: --");
   });
@@ -104,8 +108,8 @@ describe("orbit telemetry plugin", () => {
 
     expect(columnTexts(grid, "left")[0]).toBe("Órbita: Tierra (ligada)");
     expect(columnTexts(grid, "left")[1]).toBe("d: 6771 km");
-    expect(columnTexts(grid, "left")[3]).toBe("e: 0,000");
-    expect(columnTexts(grid, "left")[4]).toBe("i: 0,0°");
+    expect(columnTexts(grid, "left")[5]).toBe("e: 0,000");
+    expect(columnTexts(grid, "left")[6]).toBe("i: 0,0°");
   });
 
   it("writes empty orbit cells when no primary is available", () => {
@@ -117,7 +121,45 @@ describe("orbit telemetry plugin", () => {
 
     panel.writeHud(grid, createTestHudContext(world, body));
 
-    expect(columnTexts(grid, "left")).toEqual(["Orbit: --", "d: --"]);
+    expect(columnTexts(grid, "left")).toEqual([
+      "Orbit: --",
+      "d: --",
+      "Altitude: --",
+    ]);
     expect(columnTexts(grid, "leftCenter")).toEqual([]);
   });
+});
+
+it("keeps negative predicted altitude and recomputes altitude for the current primary radius", () => {
+  const { world, body } = createTestWorldAndBody();
+  const panel = getHudPanel(createPlugin({ locale: "en" }));
+  const context = createTestHudContext(world, body);
+  const mu = computeStandardGravitationalParameter(5.972e24);
+  const apoapsis = 6771000;
+  const periapsis = 6321000;
+  body.velocity = vec3.create(
+    0,
+    Math.sqrt(mu * (2 / apoapsis - 2 / (apoapsis + periapsis))),
+    0,
+  );
+  const grid = createTestHudGrid();
+  panel.writeHud(grid, context);
+  expect(
+    grid.columns.left.find((line) => line.key === "orbit.periapsisAltitude")
+      ?.text,
+  ).toBe("Pe alt: -50 km");
+  // A different dominant body's surface must replace the previous radius.
+  const primary = world.gravityMasses[1];
+  primary.id = "planet:other";
+  world.collisionSpheres[0].id = primary.id;
+  world.collisionSpheres[0].radius = 6000000;
+  panel.writeHud(grid, context);
+  expect(
+    grid.columns.left.find((line) => line.key === "orbit.altitude")?.text,
+  ).toBe("Altitude: 771 km");
+  world.collisionSpheres[0].radius = NaN;
+  panel.writeHud(grid, context);
+  expect(
+    grid.columns.left.find((line) => line.key === "orbit.altitude")?.text,
+  ).toBe("Altitude: --");
 });

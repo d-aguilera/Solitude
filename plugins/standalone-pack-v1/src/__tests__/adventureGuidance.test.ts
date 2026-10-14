@@ -1,7 +1,12 @@
+import {
+  hudHighlightCapability,
+  isHudHighlightProvider,
+} from "@solitude/plugin-api/hud";
 import type { ExternalLocale } from "@solitude/plugin-api/localization";
 import type { AdventureSample } from "@solitude/plugin-api/standalone-session";
 import { createOrbitObservation } from "@solitude/plugin-api/telemetry";
 import { describe, expect, it, vi } from "vitest";
+import { createAdventureHudCapabilities } from "../adventure/hud";
 import { createSession } from "../adventure/session";
 import { prepareStartup } from "./startupFixture";
 
@@ -204,7 +209,7 @@ describe("adventure guidance director", () => {
     const r = ready();
     r.frame({ apoapsisAltitudeMeters: 600001 });
     expect(r.g.cue).toBe("highApoapsis");
-    expect(r.g.cueText).toContain("Align prograde with Z");
+    expect(r.g.cueText).toContain("align prograde with Z");
     expect(r.g.cueText).toContain("reverse burns with B");
     expect(r.g.instruments[2].emphasized).toBe(true);
     r.frame({ isBound: false, apoapsisAltitudeMeters: null });
@@ -288,7 +293,7 @@ describe("adventure guidance director", () => {
     const r = ready();
     r.frame();
     r.g.setHintsEnabled(3, true);
-    expect(r.g.hintText).toContain("Periapsis is");
+    expect(r.g.hintText).toContain("Pe alt is the predicted lowest point");
     r.frames(31);
     expect(r.g.hintText).not.toContain("rather than tapping");
     r.frame();
@@ -401,7 +406,7 @@ describe("adventure guidance director", () => {
     r.frame({ orbitValid: false });
     expect(r.g.hintText).toContain("Unavailable values");
     r.frame();
-    expect(r.g.hintText).toContain("Periapsis is");
+    expect(r.g.hintText).toContain("Pe alt is the predicted lowest point");
   });
   it.each([
     { nowMs: NaN },
@@ -471,4 +476,38 @@ describe("adventure guidance director", () => {
       );
     },
   );
+});
+
+it("highlights mission HUD rows by stage and clears emphasis on pause, terminal state, and retry", () => {
+  const r = ready();
+  const provider = createAdventureHudCapabilities(r.g).find(
+    (c) => c.id === hudHighlightCapability,
+  )!.value;
+  if (!isHudHighlightProvider(provider))
+    throw new Error("Missing highlight provider");
+  r.frame({ progradeAlignmentCosine: 0, earthUpAlignmentCosine: 0 });
+  expect(provider.isHighlighted("autopilot.mode")).toBe(true);
+  expect(provider.isHighlighted("adventure.alignment")).toBe(true);
+  expect(provider.isHighlighted("orbit.periapsisAltitude")).toBe(false);
+  r.frame();
+  expect(provider.isHighlighted("autopilot.mode")).toBe(false);
+  expect(provider.isHighlighted("orbit.periapsisAltitude")).toBe(true);
+  expect(provider.isHighlighted("orbit.apoapsisAltitude")).toBe(true);
+  r.frame({ ...safe, propulsionActive: true });
+  expect(provider.isHighlighted("adventure.propulsion")).toBe(true);
+  r.frame(safe);
+  expect(provider.isHighlighted("adventure.coast")).toBe(true);
+  expect(provider.isHighlighted("orbit.periapsisAltitude")).toBe(false);
+  r.c.session.command("pause");
+  expect(provider.isHighlighted("adventure.coast")).toBe(false);
+  r.c.session.command("resume");
+  r.frame({ ...safe, earthAltitudeMeters: 80000 });
+  expect(provider.isHighlighted("adventure.coast")).toBe(false);
+  const retry = ready("en", 4);
+  const fresh = createAdventureHudCapabilities(retry.g).find(
+    (c) => c.id === hudHighlightCapability,
+  )!.value;
+  if (!isHudHighlightProvider(fresh))
+    throw new Error("Missing fresh highlight provider");
+  expect(fresh.isHighlighted("orbit.periapsisAltitude")).toBe(false);
 });

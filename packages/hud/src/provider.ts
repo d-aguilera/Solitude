@@ -19,6 +19,7 @@ export type HudColumnId = (typeof hudColumnIds)[number];
 export interface HudLine {
   readonly key: string;
   text: string;
+  emphasized: boolean;
 }
 
 export type HudColumns = [
@@ -69,7 +70,7 @@ export function createHudGrid(): HudGrid {
         return;
       }
 
-      lines.push({ key, text });
+      lines.push({ key, text, emphasized: false });
     },
     appendLine: (column, key, text, separator) => {
       if (text.length === 0) return;
@@ -81,7 +82,7 @@ export function createHudGrid(): HudGrid {
         return;
       }
 
-      lines.push({ key, text });
+      lines.push({ key, text, emphasized: false });
     },
   };
 }
@@ -122,5 +123,21 @@ export function isHudPanelProvider(value: unknown): value is HudPanelProvider {
     value !== null &&
     "writeHud" in value &&
     typeof value.writeHud === "function"
+  );
+}
+
+/** Semantic HUD row emphasis contributed independently of panel ordering. */
+export const hudHighlightCapability = "solitude.hud.highlight.v1";
+export interface HudHighlightProvider {
+  isHighlighted: (key: string) => boolean;
+}
+export function isHudHighlightProvider(
+  value: unknown,
+): value is HudHighlightProvider {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "isHighlighted" in value &&
+    typeof value.isHighlighted === "function"
   );
 }

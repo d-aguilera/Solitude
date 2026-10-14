@@ -5,9 +5,12 @@ import type {
 import {
   clearHudGrid,
   createHudGrid,
+  hudHighlightCapability,
   hudPanelCapability,
+  isHudHighlightProvider,
   isHudPanelProvider,
   type HudContext,
+  type HudHighlightProvider,
   type HudPanelProvider,
 } from "@solitude/hud/provider";
 import {
@@ -19,6 +22,7 @@ import {
 export function createBrowserHudOverlayAdapter(): GamePlugin {
   const grid = createHudGrid();
   const hudContextScratch = {} as HudContext;
+  let highlights: readonly HudHighlightProvider[] | null = null;
   let providers: readonly HudPanelProvider[] | null = null;
 
   const renderOverlay = (
@@ -28,6 +32,10 @@ export function createBrowserHudOverlayAdapter(): GamePlugin {
     providers ??= capabilityRegistry
       .getAll(hudPanelCapability)
       .filter(isHudPanelProvider);
+
+    highlights ??= capabilityRegistry
+      .getAll(hudHighlightCapability)
+      .filter(isHudHighlightProvider);
 
     if (context.advanceOverlay) {
       clearHudGrid(grid);
@@ -42,6 +50,17 @@ export function createBrowserHudOverlayAdapter(): GamePlugin {
       }
     }
 
+    for (const column of grid.columns) {
+      for (const line of column) {
+        line.emphasized = false;
+        for (const provider of highlights) {
+          if (provider.isHighlighted(line.key)) {
+            line.emphasized = true;
+            break;
+          }
+        }
+      }
+    }
     context.primaryOverlayRasterizer?.drawHud(grid);
   };
 

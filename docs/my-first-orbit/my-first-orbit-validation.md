@@ -96,9 +96,12 @@ Start `npm run dev`, select My First Orbit, or open `?mode=my-first-orbit&locale
 Repeat the presentation checks with `locale=es` and `locale=fr`.
 
 1. Begin with default guidance. Check that the initially negative lowest-point
-   altitude is understandable. Hold Space until the release cue, then release;
+   altitude in the HUD (Pe alt) is understandable, distinct from current Altitude
+   and center distance. Confirm stage highlights and that the prose panel leaves the HUD visible. Hold Space until the release cue, then release;
    completion should follow about five seconds later. Check cue timing and whether
-   the instruments make the effect of the burn clear. Rounded values alone must
+   the HUD instruments make the effect of the burn clear. Alignment/autopilot, both
+   apsides during recovery/correction, propulsion on release, and coast progress
+   should receive visible marker/background emphasis; pause and terminal states clear it. Rounded values alone must
    not cause completion.
 2. Retry and burn for about 20 seconds. Check the high-apoapsis warning; use `B`
    to correct it, release, and confirm completion. Try `G` then `Z` from the initial Earth-left view; Z should roll Earth above

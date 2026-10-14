@@ -202,14 +202,14 @@ export function createGuidance(
           : next === "primaryChanged" || next === "escape"
             ? i === 0
             : next === "highApoapsis"
-              ? i === 2
+              ? i === 1 || i === 2
               : next === "release"
-                ? i === 1 || i === 6
+                ? i === 1 || i === 2 || i === 5 || i === 6
                 : next === "coast"
                   ? i === 6
                   : next === "align" || next === "orientOrbit"
-                    ? i === 1 || i === 4
-                    : i === 1;
+                    ? i === 4
+                    : i === 1 || i === 2;
       if (instruments[i].emphasized !== emphasized) {
         instruments[i].emphasized = emphasized;
         dirty = true;

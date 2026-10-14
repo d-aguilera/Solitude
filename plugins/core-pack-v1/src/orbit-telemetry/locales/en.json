@@ -11,10 +11,11 @@
   "orbitEscape": "escape",
   "orbitPrefix": "Orbit: ",
   "outbound": "out",
-  "peApEmpty": "Pe/Ap: --",
-  "periapsisApoapsis": "Pe/Ap: {periapsis} / {apoapsis}",
   "periapsisIn": "Pe in: {time}",
   "periapsisTimeEmpty": "Pe in: --",
   "prograde": "pro",
-  "retrograde": "retro"
+  "retrograde": "retro",
+  "altitudePrefix": "Altitude: ",
+  "periapsisAltitudePrefix": "Pe alt: ",
+  "apoapsisAltitudePrefix": "Ap alt: "
 }

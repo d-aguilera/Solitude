@@ -1,13 +1,28 @@
 import { formatEntityName } from "@solitude/plugin-api/entity-names";
 import type { ExternalHudPanelProvider } from "@solitude/plugin-api/hud";
+import { vec3 } from "@solitude/plugin-api/math";
+import {
+  getDominantBodyPrimaryInto,
+  type ExternalGravityPrimary,
+} from "@solitude/plugin-api/world";
 import { formatSimTime } from "../shared/localization";
 import type { OrbitTelemetryLocalization } from "./localization";
-import { computeOrbitReadoutInto, createOrbitReadout } from "./orbitReadout";
+import {
+  computeOrbitReadoutForPrimaryInto,
+  createOrbitReadout,
+} from "./orbitReadout";
 
 export function createHudPanel(
   localization: OrbitTelemetryLocalization,
 ): ExternalHudPanelProvider {
   const orbitReadout = createOrbitReadout();
+  const primary: ExternalGravityPrimary = {
+    id: "",
+    mass: 0,
+    radius: 0,
+    body: { id: "", position: vec3.zero(), velocity: vec3.zero() },
+  };
+  const relativePosition = vec3.zero();
   let primaryDisplayNameId = "";
   let primaryDisplayName = "";
   let radialDirection: DeltaVDirection | null = null;
@@ -15,11 +30,26 @@ export function createHudPanel(
 
   return {
     writeHud: (grid, context) => {
-      const hasOrbit = computeOrbitReadoutInto(
-        orbitReadout,
+      const body = context.mainFocus.controlledBody;
+      const hasPrimary = getDominantBodyPrimaryInto(
+        primary,
         context.world,
-        context.mainFocus.controlledBody,
+        body.position,
       );
+      const radiusValid =
+        hasPrimary && Number.isFinite(primary.radius) && primary.radius > 0;
+      const altitude = radiusValid
+        ? vec3.length(
+            vec3.subInto(
+              relativePosition,
+              body.position,
+              primary.body.position,
+            ),
+          ) - primary.radius
+        : NaN;
+      const hasOrbit =
+        hasPrimary &&
+        computeOrbitReadoutForPrimaryInto(orbitReadout, body, primary);
       if (!hasOrbit) {
         primaryDisplayNameId = "";
         primaryDisplayName = "";
@@ -34,6 +64,13 @@ export function createHudPanel(
           "left",
           "orbit.distance",
           localization.distancePrefix.concat("--"),
+        );
+        grid.addLine(
+          "left",
+          "orbit.altitude",
+          localization.altitudePrefix.concat(
+            formatApsisDistance(altitude, localization),
+          ),
         );
         return;
       }
@@ -76,13 +113,30 @@ export function createHudPanel(
       );
       grid.addLine(
         "left",
-        "orbit.peAp",
-        Number.isFinite(orbitReadout.periapsis)
-          ? localization.periapsisApoapsis(
-              formatSignedDistance(orbitReadout.periapsis, localization),
-              formatApsisDistance(orbitReadout.apoapsis, localization),
-            )
-          : localization.peApEmpty,
+        "orbit.altitude",
+        localization.altitudePrefix.concat(
+          formatApsisDistance(altitude, localization),
+        ),
+      );
+      grid.addLine(
+        "left",
+        "orbit.periapsisAltitude",
+        localization.periapsisAltitudePrefix.concat(
+          formatApsisDistance(
+            radiusValid ? orbitReadout.periapsis - primary.radius : NaN,
+            localization,
+          ),
+        ),
+      );
+      grid.addLine(
+        "left",
+        "orbit.apoapsisAltitude",
+        localization.apoapsisAltitudePrefix.concat(
+          formatApsisDistance(
+            radiusValid ? orbitReadout.apoapsis - primary.radius : NaN,
+            localization,
+          ),
+        ),
       );
       grid.addLine(
         "left",

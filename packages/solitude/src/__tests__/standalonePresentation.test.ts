@@ -152,7 +152,7 @@ function setup() {
   };
 }
 describe("standalone adventure presentation", () => {
-  it("shows awaiting instruments before the first sample and hides immediately on retry", () => {
+  it("keeps guidance before the first sample and hides immediately on retry", () => {
     const s = setup();
     Object.assign(s.guidance, { visible: false, cueText: "", warningText: "" });
     s.instrument.text = "Awaiting flight data";
@@ -161,19 +161,19 @@ describe("standalone adventure presentation", () => {
       (node) => node.className === "standalone-flight-panel",
     );
     expect(flight.hidden).toBe(false);
-    expect(s.byText("Awaiting flight data")).toBeDefined();
+    expect(
+      s.container.all().some((node) => node.attributes.has("data-instrument")),
+    ).toBe(false);
     Object.assign(s.session, { lifecycleRequest: "retry" });
     s.notify();
     expect(flight.hidden).toBe(true);
   });
-  it("renders supplied instruments and text emphasis; retains nodes and focus on numeric and hint updates", () => {
+  it("leaves instruments to the HUD and retains guidance nodes and focus on updates", () => {
     const s = setup();
     s.ui.showRun(s.session, s.guidance);
-    const row = s.find(
-      (node) => node.attributes.get("data-instrument") === s.instrument.id,
-    );
-    expect(row.className).toBe("adventure-emphasized");
-    expect(s.byText("▶ Lowest point above Earth (≥150 km)")).toBeDefined();
+    expect(
+      s.container.all().some((node) => node.attributes.has("data-instrument")),
+    ).toBe(false);
     const value = s.byText("-50 km");
     const cue = s.byText("Hold Space");
     expect(cue.attributes.get("aria-live")).toBe("polite");
@@ -187,6 +187,9 @@ describe("standalone adventure presentation", () => {
     s.notify();
     s.ui.showRun(s.session, s.guidance);
     expect(s.byText("150 km")).toBe(value);
+    expect(
+      s.find((node) => node.className === "standalone-hud-accessibility"),
+    ).toBeDefined();
     expect(s.byText("Hold Space")).toBe(cue);
     expect(focused).toBe(toggle);
     expect(s.listeners.size).toBe(1);

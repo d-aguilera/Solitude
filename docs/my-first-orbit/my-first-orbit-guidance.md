@@ -190,13 +190,24 @@ Show the full safety targets alongside the current values. Rounded values near
 a threshold must not display “safe” unless the objective says so. Confirmation
 time rounds down (one decimal second); never show 5.0/5 before completion.
 
-The existing `orbit.peAp` HUD row shows center-distance apsides, not altitude,
-and `orbit.distance` is also center distance. Do not reuse those row keys or
-silently reinterpret their values. The pilot adds a compact adventure-owned
-flight panel with the identifiers above; the core telemetry remains diagnostic.
-Highlight the panel's named instruments using a visible text marker and emphasis,
-with labels/state text as well as color. No general HUD highlight protocol or
-Canvas hit testing is needed for this pilot.
+The shared orbit HUD retains `orbit.distance` as center distance and displays
+`orbit.altitude`, `orbit.periapsisAltitude`, and `orbit.apoapsisAltitude` relative
+to the current dominant body's surface. Periapsis and apoapsis have separate rows;
+negative predictions remain negative, missing/escape apoapsis shows `--`.
+Guidance directs burns using Pe alt and Ap alt in the HUD; current altitude alone
+does not establish orbital safety. Targets remain in the objective and briefing.
+
+The adventure supplies alignment, applied propulsion, and coast rows in the HUD.
+Its `solitude.hud.highlight.v1` provider maps semantic instruments to row keys.
+The generic browser adapter applies highlights after all panels write, independent
+of panel order. The Canvas rasterizer uses a triangle marker, gold text, and a
+background. Alignment highlights alignment/autopilot, recovery and reverse
+correction highlight both apsides, release also highlights propulsion, and coast
+highlights its countdown. Hidden/paused/terminal guidance clears emphasis.
+The hints panel contains prose and hint controls without duplicate numeric
+instruments. A separate visually hidden retained DOM instrument list preserves
+screen-reader access without announcing numeric updates; only cue changes enter
+the polite live region. The flight panel starts below the HUD to keep it visible.
 
 Expose a narrow retained `solitude.adventureGuidance.v1` capability through
 `@solitude/plugin-api/standalone-session`, separate from the lifecycle session
@@ -255,15 +266,15 @@ and DOM teardown follow the existing generation/disposal rules.
     target units, and controls. Keyboard-only hint access and text emphasis work;
     numeric refresh does not steal focus or repeatedly announce live-region text.
 13. Repeated presentation reads do not sample, mutate objective/director, accrue
-    time, or allocate event queues/world snapshots. Free Flight/multiplayer retain
-    their current instruments and controls. Production physics/browser completion,
+    time, or allocate event queues/world snapshots. Free Flight/multiplayer share the new surface-relative altitude rows and retain
+    their controls without adventure highlights. Production physics/browser completion,
     very late recovery, and runtime-cost measurements remain step 6 checks.
 
 ## Next implementation slice
 
 The pure retained director, typed guidance capability, localized cues/hints, and
 completed-frame/session integration and retained DOM presentation are implemented
-and tested. The shell renders localized named instruments, text emphasis, a polite
+and tested. The HUD renders surface-relative apsides and mission-stage emphasis. The shell renders accessible instrument equivalents, a polite
 primary-cue live region, and generation-guarded hint controls in flight and
 pause/suspension. Subscriptions detach before runtime disposal and numeric updates
 preserve keyboard focus. Proceed to step 6 production-physics/browser playtesting
