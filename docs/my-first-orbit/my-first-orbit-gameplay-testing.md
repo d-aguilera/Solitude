@@ -86,17 +86,11 @@ suspend @ index.js:786
 
 ### Status
 
-PASS — fix confirmed in browser. All menu options work as expected, and clicking
-buttons or ALT-tabbing produces no console errors.
+PASS — fix confirmed in browser. All menu options work as expected, and clicking buttons or ALT-tabbing produces no console errors.
 
-The bootstrap now schedules lifecycle callbacks through
-`window.queueMicrotask(callback)`, preserving the receiver required by the browser.
-The previous unbound function was called as a shell dependency method and threw
-`Illegal invocation`. The regression test reproduces that error with the original
-wiring and passes with the fix for Retry, Return to menu, and fatal-error cleanup.
+The bootstrap now schedules lifecycle callbacks through `window.queueMicrotask(callback)`, preserving the receiver required by the browser. The previous unbound function was called as a shell dependency method and threw `Illegal invocation`. The regression test reproduces that error with the original wiring and passes with the fix for Retry, Return to menu, and fatal-error cleanup.
 
-Browser confirmation covers menu actions and ALT-tab transitions. No further
-retest is required for this issue.
+Browser confirmation covers menu actions and ALT-tab transitions. No further retest is required for this issue.
 
 ## Test case 2
 
@@ -200,8 +194,7 @@ PASS
 
 ### Expected result
 
-The countdown keeps its previous progress. Completion takes only the remaining
-coast time; the paused time does not count.
+The countdown keeps its previous progress. Completion takes only the remaining coast time; the paused time does not count.
 
 ### Outcome
 
@@ -219,8 +212,7 @@ PASS
 
 ### Expected result
 
-Flight stays suspended until "Continuar". The countdown starts again from zero
-and needs 5 new seconds to complete.
+Flight stays suspended until "Continuar". The countdown starts again from zero and needs 5 new seconds to complete.
 
 ### Outcome
 
@@ -238,8 +230,7 @@ PASS
 
 ### Expected result
 
-Retry restores the starting orbit. No thrust occurs after "Comenzar" until Space
-is released and pressed again. The new press raises the lowest point.
+Retry restores the starting orbit. No thrust occurs after "Comenzar" until Space is released and pressed again. The new press raises the lowest point.
 
 ### Outcome
 
@@ -276,28 +267,19 @@ The adventure restarts.
 
 ### Outcome
 
-PASS. The user confirms that rushed Retry no longer shows suspension, textures
-load correctly and faster, and ALT-tabbing away and back behaves correctly.
+PASS. The user confirms that rushed Retry no longer shows suspension, textures load correctly and faster, and ALT-tabbing away and back behaves correctly.
 
 ### Status
 
 Closed — browser-confirmed fixed.
 
-The [Performance trace](my-first-orbit-gameplay-testing-case10-05.json.gz)
-identified five image-load handlers blocking the main thread for 515–587 ms,
-including synchronous JPEG decoding. Shared asynchronous bitmap preparation and
-bounded GPU transfers resolve the startup stall. Original texture resolution,
-strict flight interruption guards, and explicit Resume after ALT-tab are retained.
+The [Performance trace](my-first-orbit-gameplay-testing-case10-05.json.gz) identified five image-load handlers blocking the main thread for 515–587 ms, including synchronous JPEG decoding. Shared asynchronous bitmap preparation and bounded GPU transfers resolve the startup stall. Original texture resolution, strict flight interruption guards, and explicit Resume after ALT-tab are retained.
 
-Temporary console/frame diagnostics have been removed. Captures remain here as
-evidence; no further case-10 testing is needed.
+Temporary console/frame diagnostics have been removed. Captures remain here as evidence; no further case-10 testing is needed.
 
 ## Presentation feedback — opening view and orbit attitude
 
-Implemented: the opening view restores Earth to the left. The first recovery
-cue asks for G to show the orbit line; the next asks for Z to align the nose along
-the orbit and roll Earth above. Guidance waits for the measured attitude before
-showing the burn instruction. Z is enabled during flight and applies no thrust.
+Implemented: the opening view restores Earth to the left. The first recovery cue asks for G to show the orbit line; the next asks for Z to align the nose along the orbit and roll Earth above. Guidance waits for the measured attitude before showing the burn instruction. Z is enabled during flight and applies no thrust.
 
 ### Visual check
 

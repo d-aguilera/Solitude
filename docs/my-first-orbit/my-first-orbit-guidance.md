@@ -1,49 +1,20 @@
 # My First Orbit: director and instrument specification
 
-This is the step 4 specification, with the presentation contract for step 5.
-The retained director, localized guidance capability, and frame/lifecycle
-integration are implemented. The standalone flight panel and hint controls are connected through the
-guidance capability. The [observation specification](my-first-orbit-observations.md) owns
-physical predicates; the [lifecycle specification](my-first-orbit-lifecycle.md)
-owns flight phases and reset. Guidance explains those decisions without changing
-controls, physics, objective eligibility, or terminal outcomes.
+This is the step 4 specification, with the presentation contract for step 5. The retained director, localized guidance capability, and frame/lifecycle integration are implemented. The standalone flight panel and hint controls are connected through the guidance capability. The [observation specification](my-first-orbit-observations.md) owns physical predicates; the [lifecycle specification](my-first-orbit-lifecycle.md) owns flight phases and reset. Guidance explains those decisions without changing controls, physics, objective eligibility, or terminal outcomes.
 
 ## Ownership and evaluation
 
-Keep a pure, retained director in the external standalone pack's `adventure/`
-implementation. The existing final policy calls it immediately after
-`objective.sample(sample)` in its completed-frame hook. This explicit ordering
-avoids a new plugin that would have to run after `adventureFinalPolicy`. The
-early session owns the director and its presentation/preference state, alongside
-the objective. Free Flight contributes no adventure guidance.
+Keep a pure, retained director in the external standalone pack's `adventure/` implementation. The existing final policy calls it immediately after `objective.sample(sample)` in its completed-frame hook. This explicit ordering avoids a new plugin that would have to run after `adventureFinalPolicy`. The early session owns the director and its presentation/preference state, alongside the objective. Free Flight contributes no adventure guidance.
 
-Consume the same retained `AdventureSample`, objective status, coast time, and
-transition counters. Do not call the orbit provider again, scan the world, read
-keyboard state as evidence of propulsion, or evaluate objectives from a presenter.
-Keep previous scalar values, sequence, counters, and timestamps; do not retain a
-previous sample reference because that record is overwritten in place.
+Consume the same retained `AdventureSample`, objective status, coast time, and transition counters. Do not call the orbit provider again, scan the world, read keyboard state as evidence of propulsion, or evaluate objectives from a presenter. Keep previous scalar values, sequence, counters, and timestamps; do not retain a previous sample reference because that record is overwritten in place.
 
-Process each generation/sequence once. Reject retired generations, wrong entities,
-duplicate sequences, nonfinite clocks, and nonadvancing simulation times. A
-discontinuity invalidates guidance history rather than manufacturing progress.
-Only consecutive advancing flight samples separated by at most 250 ms accrue
-active guidance milliseconds. The first sample after Begin/Resume rebases and
-credits zero; pause preserves accrued timers, suspension clears transient trend
-and dwell baselines, and neither phase consumes cooldown time. Retry constructs a
-fresh director, zero timers/counters/history, and expanded hints off.
+Process each generation/sequence once. Reject retired generations, wrong entities, duplicate sequences, nonfinite clocks, and nonadvancing simulation times. A discontinuity invalidates guidance history rather than manufacturing progress. Only consecutive advancing flight samples separated by at most 250 ms accrue active guidance milliseconds. The first sample after Begin/Resume rebases and credits zero; pause preserves accrued timers, suspension clears transient trend and dwell baselines, and neither phase consumes cooldown time. Retry constructs a fresh director, zero timers/counters/history, and expanded hints off.
 
-Phase transitions synchronously hide flight cues in briefing, pause, suspension,
-and terminal phases. A terminal objective from the current sample wins before
-any release/coast message. The existing modal presentation owns those phases.
-No guidance timer uses `setTimeout`, wall time between UI reads, or rendering
-cadence.
+Phase transitions synchronously hide flight cues in briefing, pause, suspension, and terminal phases. A terminal objective from the current sample wins before any release/coast message. The existing modal presentation owns those phases. No guidance timer uses `setTimeout`, wall time between UI reads, or rendering cadence.
 
 ## Priority and contextual cues
 
-Show one persistent primary cue, one objective summary, and at most one optional
-expanded hint. Select the first applicable row below on every accepted sample.
-Conditions use finite, unrounded values. Persistent cues have no minimum display
-duration or cooldown: a changed condition replaces stale instructions immediately.
+Show one persistent primary cue, one objective summary, and at most one optional expanded hint. Select the first applicable row below on every accepted sample. Conditions use finite, unrounded values. Persistent cues have no minimum display duration or cooldown: a changed condition replaces stale instructions immediately.
 
 | Priority | Condition                                                                                                                      | Primary cue and emphasis                                                                                                                                                                          |
 | -------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -59,87 +30,33 @@ duration or cooldown: a changed condition replaces stale instructions immediatel
 | 9        | Periapsis <150 km and prograde alignment is unavailable or below cos(10°)                                                      | “Release thrust and point along Earth's relative motion. Z can align you; wait for alignment before burning.” Emphasize alignment and periapsis.                                                  |
 | 10       | Periapsis <150 km and prograde aligned                                                                                         | “Hold Space to raise the lowest point to at least 150 km. Watch the highest point stay at or below 600 km.” Emphasize periapsis.                                                                  |
 
-The orbit-line preparation step observes the generic read-only
-`solitude.render.orbitSegmentsState.v1` capability. It completes when the owner
-applies the toggle and reports enabled, not merely on a keypress. Completion
-persists if the line is later hidden or flight is paused/suspended; fresh Retry
-starts this step again. Headless compositions without orbit-line presentation
-skip this visual instruction. Safety warnings and release/coast always outrank it.
-This is guidance preparation and does not gate manual thrust or change objective
-success predicates.
+The orbit-line preparation step observes the generic read-only `solitude.render.orbitSegmentsState.v1` capability. It completes when the owner applies the toggle and reports enabled, not merely on a keypress. Completion persists if the line is later hidden or flight is paused/suspended; fresh Retry starts this step again. Headless compositions without orbit-line presentation skip this visual instruction. Safety warnings and release/coast always outrank it. This is guidance preparation and does not gate manual thrust or change objective success predicates.
 
-After G, the next preparation cue asks for Z. Completed samples expose
-`earthUpAlignmentCosine`, the dot product of normalized ship-up and direction
-toward Earth. The step finishes only when this and Earth-relative prograde
-alignment are both within 8 degrees, not merely when Z is pressed. It latches
-for the run and resets on Retry. Invalid/missing alignment never completes it.
+After G, the next preparation cue asks for Z. Completed samples expose `earthUpAlignmentCosine`, the dot product of normalized ship-up and direction toward Earth. The step finishes only when this and Earth-relative prograde alignment are both within 8 degrees, not merely when Z is pressed. It latches for the run and resets on Retry. Invalid/missing alignment never completes it.
 
-Z aligns the nose along relative motion and controls roll to place Earth above
-the ship. The initial roll keeps Earth on the left to make inspecting the orbit
-line easier. V remains available for nose-only alignment. Both assists leave
-propulsion manual, and safety/release/coast retain higher priority.
+Z aligns the nose along relative motion and controls roll to place Earth above the ship. The initial roll keeps Earth on the left to make inspecting the orbit line easier. V remains available for nose-only alignment. Both assists leave propulsion manual, and safety/release/coast retain higher priority.
 
-An otherwise inconsistent observation/objective combination uses priority 1. The
-director must not infer confirmation from rounded instruments or start its own
-five-second hold. Prograde alignment is advice only; a qualifying orbit can coast
-and complete at any attitude. Apoapsis correction wins when both apsis limits are
-unmet. Once apoapsis returns within bounds, choose the current periapsis/alignment
-cue, rather than continuing reverse-burn advice.
+An otherwise inconsistent observation/objective combination uses priority 1. The director must not infer confirmation from rounded instruments or start its own five-second hold. Prograde alignment is advice only; a qualifying orbit can coast and complete at any attitude. Apoapsis correction wins when both apsis limits are unmet. Once apoapsis returns within bounds, choose the current periapsis/alignment cue, rather than continuing reverse-burn advice.
 
-The initial negative periapsis is a warning (“Predicted path intersects Earth”)
-within the recovery cue, not a separate alarm blocking the intended Space action.
-For 0–150 km, describe the lowest point as below the safety target. Always
-distinguish predicted periapsis from actual Earth altitude. Do not claim that
-impact is imminent, introduce a new failure/time threshold, or suggest X.
+The initial negative periapsis is a warning (“Predicted path intersects Earth”) within the recovery cue, not a separate alarm blocking the intended Space action. For 0–150 km, describe the lowest point as below the safety target. Always distinguish predicted periapsis from actual Earth altitude. Do not claim that impact is imminent, introduce a new failure/time threshold, or suggest X.
 
-Reverse-burn guidance always states the required prograde attitude: B decelerates
-along the ship's axis, not automatically along the orbit. The retained sample
-only reports whether propulsion occurred, so do not assert that the player is
-holding Space or B, diagnose burn direction, or celebrate a prescribed key press.
-Alignment does not prove a maneuver will recover every late or unusual orbit.
+Reverse-burn guidance always states the required prograde attitude: B decelerates along the ship's axis, not automatically along the orbit. The retained sample only reports whether propulsion occurred, so do not assert that the player is holding Space or B, diagnose burn direction, or celebrate a prescribed key press. Alignment does not prove a maneuver will recover every late or unusual orbit.
 
 ## Feedback, stability, and cooldowns
 
-Objective transitions select current cues; they do not create a queue of messages.
-`safeOrbitEntered` allows first-entry acknowledgment in the release cue;
-`confirmationStarted` selects coast; `confirmationReset` removes coast progress
-and allows “Confirmation restarted” context with the current reason. The current
-state always wins over counter changes. Consume counter baselines even when a
-message is suppressed or flight is hidden. Counter jumps produce at most one
-acknowledgment; do not replay missed transitions on Resume.
+Objective transitions select current cues; they do not create a queue of messages. `safeOrbitEntered` allows first-entry acknowledgment in the release cue; `confirmationStarted` selects coast; `confirmationReset` removes coast progress and allows “Confirmation restarted” context with the current reason. The current state always wins over counter changes. Consume counter baselines even when a message is suppressed or flight is hidden. Counter jumps produce at most one acknowledgment; do not replay missed transitions on Resume.
 
-`safeOrbitEntered` counts safe-state entries, not maneuvers or key presses.
-Acknowledge only a false-to-true edge of the director's previous
-`objective.safeOrbit` value. Repeated propelled safe samples preserve that state
-and do not repeat an acknowledgment. Completion comes only from the latched
-objective, never a safe-entry acknowledgment.
+`safeOrbitEntered` counts safe-state entries, not maneuvers or key presses. Acknowledge only a false-to-true edge of the director's previous `objective.safeOrbit` value. Repeated propelled safe samples preserve that state and do not repeat an acknowledgment. Completion comes only from the latched objective, never a safe-entry acknowledgment.
 
-Acknowledgments are short secondary context, subordinate to warnings and the
-primary action. Display for at most 3,000 active-flight ms, with an 8,000 ms
-cooldown per acknowledgment kind; clear immediately if its supporting condition
-ends. The first qualifying edge is allowed immediately. Cooldowns suppress
-repeated celebration/reset prose, never release instructions or warnings.
-If confirmation resets without an available cause, say “Confirmation restarted;
-check the safe-orbit limits and keep thrust off,” rather than blaming a burn.
+Acknowledgments are short secondary context, subordinate to warnings and the primary action. Display for at most 3,000 active-flight ms, with an 8,000 ms cooldown per acknowledgment kind; clear immediately if its supporting condition ends. The first qualifying edge is allowed immediately. Cooldowns suppress repeated celebration/reset prose, never release instructions or warnings. If confirmation resets without an available cause, say “Confirmation restarted; check the safe-orbit limits and keep thrust off,” rather than blaming a burn.
 
-Alignment guidance uses an assistance-only exit deadband: after entering the
-misaligned cue below cos(10°), keep it until alignment reaches cos(8°).
-Never delay an unavailable-data cue or apply this hysteresis to safe-orbit
-thresholds. Exact 150/600 km boundaries remain the objective's decision.
+Alignment guidance uses an assistance-only exit deadband: after entering the misaligned cue below cos(10°), keep it until alignment reaches cos(8°). Never delay an unavailable-data cue or apply this hysteresis to safe-orbit thresholds. Exact 150/600 km boundaries remain the objective's decision.
 
 ## Opt-in expanded hints
 
-Contextual cues and instruments are always on. An accessible “Show hints” toggle
-in the flight panel and pause/suspension presentation enables expanded explanation;
-“Hide hints” removes it immediately. The preference survives pause and suspension
-within a run, is initially off, and resets on Retry. Toggling hints neither
-resumes nor pauses flight, changes propulsion, nor clears confirmation. It is a
-presentation command distinct from Begin/Resume and receives generation guards.
+Contextual cues and instruments are always on. An accessible “Show hints” toggle in the flight panel and pause/suspension presentation enables expanded explanation; “Hide hints” removes it immediately. The preference survives pause and suspension within a run, is initially off, and resets on Retry. Toggling hints neither resumes nor pauses flight, changes propulsion, nor clears confirmation. It is a presentation command distinct from Begin/Resume and receives generation guards.
 
-On enabling hints, show the explanation for the current cue immediately. One
-hint replaces another on a cue-category change. Hints for warnings and release
-update immediately; no tutorial queue or scheduled auto-opening is permitted.
-Re-enabling hints shows the current explanation, not a remembered prior cue.
+On enabling hints, show the explanation for the current cue immediately. One hint replaces another on a cue-category change. Hints for warnings and release update immediately; no tutorial queue or scheduled auto-opening is permitted. Re-enabling hints shows the current explanation, not a remembered prior cue.
 
 | Context                     | Expanded explanation                                                                                                                                                                                                                               |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -149,27 +66,13 @@ Re-enabling hints shows the current explanation, not a remembered prior cue.
 | High apoapsis/escape        | Release first, align prograde, then try short B burns. Reverse thrust can lower the highest point but may also lower periapsis; watch both limits. Retry is available through P.                                                                   |
 | Unavailable/changed primary | Values marked unavailable do not establish safety. Release thrust; if Earth data does not recover, pause with P and Retry.                                                                                                                         |
 
-With hints enabled, an aligned, valid low-periapsis recovery that makes no
-meaningful progress for 8,000 active-flight ms may replace its explanation with
-“Hold Space rather than tapping it; release when the lowest point reaches the
-target.” Meaningful progress is at least a 1,000 m increase over the retained
-periapsis baseline, resetting the stall timer and baseline. Falling periapsis
-does not reset that timer. Entering a different cue or losing valid data clears
-the window. This advice is only for the calibrated recovery cue, never high
-apoapsis/escape. It does not assume a key or propulsion direction.
+With hints enabled, an aligned, valid low-periapsis recovery that makes no meaningful progress for 8,000 active-flight ms may replace its explanation with “Hold Space rather than tapping it; release when the lowest point reaches the target.” Meaningful progress is at least a 1,000 m increase over the retained periapsis baseline, resetting the stall timer and baseline. Falling periapsis does not reset that timer. Entering a different cue or losing valid data clears the window. This advice is only for the calibrated recovery cue, never high apoapsis/escape. It does not assume a key or propulsion direction.
 
-Allow that stall hint immediately at its first deadline, then at most once per
-20,000 active-flight ms while the condition persists. Keep it for at most
-5,000 active-flight ms, then return to the ordinary explanation. Progress,
-warning, release, hint disable, or suspension clears it immediately. Hints off
-means no hidden stall reminders to replay later. These timing/1 km values are
-initial presentation tuning, not physical acceptance thresholds or measured UX.
+Allow that stall hint immediately at its first deadline, then at most once per 20,000 active-flight ms while the condition persists. Keep it for at most 5,000 active-flight ms, then return to the ordinary explanation. Progress, warning, release, hint disable, or suspension clears it immediately. Hints off means no hidden stall reminders to replay later. These timing/1 km values are initial presentation tuning, not physical acceptance thresholds or measured UX.
 
 ## Semantic instruments and presentation contract
 
-Use identifiers owned by the adventure presentation; rules return identifiers,
-message keys, and scalar values, never coordinates, CSS selectors, localized
-text comparisons, or another plugin's HUD row index.
+Use identifiers owned by the adventure presentation; rules return identifiers, message keys, and scalar values, never coordinates, CSS selectors, localized text comparisons, or another plugin's HUD row index.
 
 | Identifier                           | Label and source                                                                                                                 |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -181,102 +84,20 @@ text comparisons, or another plugin's HUD row index.
 | `adventure.flight.propulsion`        | Applied propulsion: active, off, or unavailable from the final-command sample.                                                   |
 | `adventure.objective.coast`          | Safe coast: objective `coastMillis` / 5,000 ms, or recovery required.                                                            |
 
-Earth apsis labels/values are unavailable if the primary differs from Earth or
-the orbit is invalid. Unbound apoapsis reads “No highest point (escape)”; missing
-bound apoapsis reads “Unavailable.” Preserve negative periapsis and distinguish
-it from missing data. Instruments read the retained sample and do not calculate
-new orbital values. Before the first sample they read “Awaiting flight data.”
-Show the full safety targets alongside the current values. Rounded values near
-a threshold must not display “safe” unless the objective says so. Confirmation
-time rounds down (one decimal second); never show 5.0/5 before completion.
+Earth apsis labels/values are unavailable if the primary differs from Earth or the orbit is invalid. Unbound apoapsis reads “No highest point (escape)”; missing bound apoapsis reads “Unavailable.” Preserve negative periapsis and distinguish it from missing data. Instruments read the retained sample and do not calculate new orbital values. Before the first sample they read “Awaiting flight data.” Show the full safety targets alongside the current values. Rounded values near a threshold must not display “safe” unless the objective says so. Confirmation time rounds down (one decimal second); never show 5.0/5 before completion.
 
-The shared orbit HUD retains `orbit.distance` as center distance and displays
-`orbit.altitude`, `orbit.periapsisAltitude`, and `orbit.apoapsisAltitude` relative
-to the current dominant body's surface. Periapsis and apoapsis have separate rows;
-negative predictions remain negative, missing/escape apoapsis shows `--`.
-Guidance directs burns using Pe alt and Ap alt in the HUD; current altitude alone
-does not establish orbital safety. Targets remain in the objective and briefing.
+The shared orbit HUD retains `orbit.distance` as center distance and displays `orbit.altitude`, `orbit.periapsisAltitude`, and `orbit.apoapsisAltitude` relative to the current dominant body's surface. Periapsis and apoapsis have separate rows; negative predictions remain negative, missing/escape apoapsis shows `--`. Guidance directs burns using Pe alt and Ap alt in the HUD; current altitude alone does not establish orbital safety. Targets remain in the objective and briefing.
 
-The adventure supplies alignment, applied propulsion, and coast rows in the HUD.
-Its `solitude.hud.highlight.v1` provider maps semantic instruments to row keys.
-The generic browser adapter applies highlights after all panels write, independent
-of panel order. The Canvas rasterizer uses a triangle marker, gold text, and a
-background. Alignment highlights alignment/autopilot, recovery and reverse
-correction highlight both apsides, release also highlights propulsion, and coast
-highlights its countdown. Hidden/paused/terminal guidance clears emphasis.
-The hints panel contains prose and hint controls without duplicate numeric
-instruments. A separate visually hidden retained DOM instrument list preserves
-screen-reader access without announcing numeric updates; only cue changes enter
-the polite live region. The flight panel starts below the HUD to keep it visible.
+The adventure supplies alignment, applied propulsion, and coast rows in the HUD. Its `solitude.hud.highlight.v1` provider maps semantic instruments to row keys. The generic browser adapter applies highlights after all panels write, independent of panel order. The Canvas rasterizer uses a triangle marker, gold text, and a background. Alignment highlights alignment/autopilot, recovery and reverse correction highlight both apsides, release also highlights propulsion, and coast highlights its countdown. Hidden/paused/terminal guidance clears emphasis. The hints panel contains prose and hint controls without duplicate numeric instruments. A separate visually hidden retained DOM instrument list preserves screen-reader access without announcing numeric updates; only cue changes enter the polite live region. The flight panel starts below the HUD to keep it visible.
 
-Expose a narrow retained `solitude.adventureGuidance.v1` capability through
-`@solitude/plugin-api/standalone-session`, separate from the lifecycle session
-contract. Its producer exposes completed-frame sampling; its read-only presentation provides
-generation, revision, current cue and localized message text, hint
-preference and presentation, unrounded SI instrument values with cached formatted
-text/emphasis, a generation-guarded preference command,
-and subscribe/unsubscribe. Pack-owned en/es/fr bundles resolve all player prose;
-the generic standalone shell only renders the typed panel and dispatches the
-hint command. Presenters receive read-only values, never objective mutation.
-Resolve/validate one guidance provider for adventure assembly; Free Flight and
-multiplayer neither require nor render it.
+Expose a narrow retained `solitude.adventureGuidance.v1` capability through `@solitude/plugin-api/standalone-session`, separate from the lifecycle session contract. Its producer exposes completed-frame sampling; its read-only presentation provides generation, revision, current cue and localized message text, hint preference and presentation, unrounded SI instrument values with cached formatted text/emphasis, a generation-guarded preference command, and subscribe/unsubscribe. Pack-owned en/es/fr bundles resolve all player prose; the generic standalone shell only renders the typed panel and dispatches the hint command. Presenters receive read-only values, never objective mutation. Resolve/validate one guidance provider for adventure assembly; Free Flight and multiplayer neither require nor render it.
 
-Notify on cue, preference, emphasis, acknowledgment, or displayed numeric changes,
-not every sample. Use one retained record and fixed instrument slots; format
-strings only when displayed values change. Do not rebuild DOM on every frame or
-announce continuously changing numbers. A polite live region announces changed
-primary cues; terminal dialogs retain existing focus handling. Hints use a real
-button with expanded state; preserve focus when values update. Shell subscription
-and DOM teardown follow the existing generation/disposal rules.
+Notify on cue, preference, emphasis, acknowledgment, or displayed numeric changes, not every sample. Use one retained record and fixed instrument slots; format strings only when displayed values change. Do not rebuild DOM on every frame or announce continuously changing numbers. A polite live region announces changed primary cues; terminal dialogs retain existing focus handling. Hints use a real button with expanded state; preserve focus when values update. Shell subscription and DOM teardown follow the existing generation/disposal rules.
 
 ## Acceptance cases for implementation
 
-1. Begin with the calibrated negative periapsis: show the predicted-intersection
-   warning, forward-thrust instruction, and altitude target; no imminent-impact
-   claim, automatic hint expansion, or new timer.
-2. At exactly 150 km periapsis and 600 km apoapsis, an active burn selects Release
-   immediately; the first off sample starts coast at zero. Misalignment does not
-   block confirmation. At 149,999 m, rounded “150 km” does not imply safe.
-3. Actual Earth altitude ≤80 km on an otherwise safe sample shows failure only;
-   five seconds shows completion only. No final-frame coast/release flash.
-4. Both limits unmet selects high-apoapsis correction. Returning below its limit
-   selects alignment/recovery as appropriate. Reverse advice states prograde
-   orientation and monitors both limits; escape never supplies a finite apoapsis.
-5. Invalid orbit, missing Earth distance, missing bound apsis, changed primary,
-   or unknown applied propulsion removes stale burn advice and stale safety text.
-   Valid data restoration selects the current cue without replaying messages.
-6. Alignment crosses 10°/8° repeatedly: only the assistance cue uses the deadband.
-   Unavailable alignment requests release/alignment; no safety threshold hysteresis.
-7. Success without V or the prescribed key sequence gets the same terminal result.
-   Active propulsion is reported from the sample even when rendered thrust level
-   is zero. A held key with zero applied propulsion is not labeled a burn.
-8. Repeated propelled safe samples/counter increments do not repeat acknowledgments.
-   Confirmation resets explain only known causes; warning/release cannot be
-   suppressed by any cooldown. Several transitions in one sample produce one cue.
-9. Hints off shows no expanded hints. Enabling/disabling updates immediately without
-   changing flight; toggling during pause does not Resume. An 8 s stall shows one
-   reminder, ≥1 km progress clears it, and repeated reminders obey 20 s cooldown.
-10. Pause freezes dwell/cooldown/acknowledgment timers and preserves confirmation;
-    Resume rebases without credit. Suspension clears transient windows, preserves
-    hint preference, and requires Resume. Neither replays expired messages.
-11. Duplicate, retired, backwards, and discontinuous samples earn no guidance time.
-    Retry clears all director history/preferences; stale callbacks cannot update
-    its panel. Return to menu removes subscriptions and all flight guidance.
-12. All three locales show matching labels, negative/unavailable/escape states,
-    target units, and controls. Keyboard-only hint access and text emphasis work;
-    numeric refresh does not steal focus or repeatedly announce live-region text.
-13. Repeated presentation reads do not sample, mutate objective/director, accrue
-    time, or allocate event queues/world snapshots. Free Flight/multiplayer share the new surface-relative altitude rows and retain
-    their controls without adventure highlights. Production physics/browser completion,
-    very late recovery, and runtime-cost measurements remain step 6 checks.
+1. Begin with the calibrated negative periapsis: show the predicted-intersection warning, forward-thrust instruction, and altitude target; no imminent-impact claim, automatic hint expansion, or new timer. 2. At exactly 150 km periapsis and 600 km apoapsis, an active burn selects Release immediately; the first off sample starts coast at zero. Misalignment does not block confirmation. At 149,999 m, rounded “150 km” does not imply safe. 3. Actual Earth altitude ≤80 km on an otherwise safe sample shows failure only; five seconds shows completion only. No final-frame coast/release flash. 4. Both limits unmet selects high-apoapsis correction. Returning below its limit selects alignment/recovery as appropriate. Reverse advice states prograde orientation and monitors both limits; escape never supplies a finite apoapsis. 5. Invalid orbit, missing Earth distance, missing bound apsis, changed primary, or unknown applied propulsion removes stale burn advice and stale safety text. Valid data restoration selects the current cue without replaying messages. 6. Alignment crosses 10°/8° repeatedly: only the assistance cue uses the deadband. Unavailable alignment requests release/alignment; no safety threshold hysteresis. 7. Success without V or the prescribed key sequence gets the same terminal result. Active propulsion is reported from the sample even when rendered thrust level is zero. A held key with zero applied propulsion is not labeled a burn. 8. Repeated propelled safe samples/counter increments do not repeat acknowledgments. Confirmation resets explain only known causes; warning/release cannot be suppressed by any cooldown. Several transitions in one sample produce one cue. 9. Hints off shows no expanded hints. Enabling/disabling updates immediately without changing flight; toggling during pause does not Resume. An 8 s stall shows one reminder, ≥1 km progress clears it, and repeated reminders obey 20 s cooldown. 10. Pause freezes dwell/cooldown/acknowledgment timers and preserves confirmation; Resume rebases without credit. Suspension clears transient windows, preserves hint preference, and requires Resume. Neither replays expired messages. 11. Duplicate, retired, backwards, and discontinuous samples earn no guidance time. Retry clears all director history/preferences; stale callbacks cannot update its panel. Return to menu removes subscriptions and all flight guidance. 12. All three locales show matching labels, negative/unavailable/escape states, target units, and controls. Keyboard-only hint access and text emphasis work; numeric refresh does not steal focus or repeatedly announce live-region text. 13. Repeated presentation reads do not sample, mutate objective/director, accrue time, or allocate event queues/world snapshots. Free Flight/multiplayer share the new surface-relative altitude rows and retain their controls without adventure highlights. Production physics/browser completion, very late recovery, and runtime-cost measurements remain step 6 checks.
 
 ## Next implementation slice
 
-The pure retained director, typed guidance capability, localized cues/hints, and
-completed-frame/session integration and retained DOM presentation are implemented
-and tested. The HUD renders surface-relative apsides and mission-stage emphasis. The shell renders accessible instrument equivalents, a polite
-primary-cue live region, and generation-guarded hint controls in flight and
-pause/suspension. Subscriptions detach before runtime disposal and numeric updates
-preserve keyboard focus. Proceed to step 6 production-physics/browser playtesting
-and runtime-cost measurement; do not broaden into a campaign framework or general
-HUD styling system.
+The pure retained director, typed guidance capability, localized cues/hints, and completed-frame/session integration and retained DOM presentation are implemented and tested. The HUD renders surface-relative apsides and mission-stage emphasis. The shell renders accessible instrument equivalents, a polite primary-cue live region, and generation-guarded hint controls in flight and pause/suspension. Subscriptions detach before runtime disposal and numeric updates preserve keyboard focus. Proceed to step 6 production-physics/browser playtesting and runtime-cost measurement; do not broaden into a campaign framework or general HUD styling system.

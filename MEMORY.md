@@ -12,23 +12,19 @@
 - Keep this file as a **current-state snapshot and router**.
 - Put detailed migration logs, completed slices, and long tactical notes in the relevant spin-off memory doc.
 - When a topic grows beyond a few bullets here, move the detail into the spin-off and leave a pointer.
+- **Markdown formatting preference**: keep each prose paragraph on a single physical line, including paragraphs in list items and blockquotes; do not hard-wrap prose. Preserve code-block line breaks, separate list items, tables, intentional hard breaks, and callout marker lines. Use Prettier's `proseWrap: "preserve"` to retain this layout without changing table alignment.
 
 ## Spin-off memory docs
 
 ### Active
 
-- `docs/my-first-orbit/MEMORY_MY_FIRST_ORBIT.md`: current scope and implementation plan for the first
-  guided orbit-recovery adventure and its gameplay awareness foundation.
-- `MEMORY_SERVER_PERFORMANCE.md`: active roadmap for establishing a precise,
-  reproducible authoritative-server performance baseline, capacity model, and
-  later regression gates.
+- `docs/my-first-orbit/MEMORY_MY_FIRST_ORBIT.md`: current scope and implementation plan for the first guided orbit-recovery adventure and its gameplay awareness foundation.
+- `MEMORY_SERVER_PERFORMANCE.md`: active roadmap for establishing a precise, reproducible authoritative-server performance baseline, capacity model, and later regression gates.
 - `MEMORY_HEADLESS_PLAYBACK.md`: unresolved but currently deprioritized work for running recorded playback scenarios end-to-end without the browser.
 
 ### Complete / Archived
 
-- `archive/MEMORY_GRAVITY_PLUGIN.md`: completed current-state reference for the
-  required external Newtonian gravity provider, bounded high-time-scale
-  integration, and typed-array CPU implementation.
+- `archive/MEMORY_GRAVITY_PLUGIN.md`: completed current-state reference for the required external Newtonian gravity provider, bounded high-time-scale integration, and typed-array CPU implementation.
 - `archive/MEMORY_PACKAGE_DECOUPLING.md`: completed roadmap for external plugin packages, runtime discovery, single-host packs, and physical extraction.
 - `archive/MEMORY_PACKAGE_SPLIT.md`: archived package-split record for `@solitude/engine`, `@solitude/browser`, and `solitude`; consult before package boundary/export changes.
 - `archive/MEMORY_OPERATOR_MODEL.md`: archived strategy for moving main ship/control/camera behavior into plugin-defined operator modes around a generic focused entity.
@@ -41,10 +37,7 @@
 
 ## Current focus
 
-- **Primary active work**: implement the My First Orbit adventure and its gameplay
-  awareness foundation in `docs/my-first-orbit/MEMORY_MY_FIRST_ORBIT.md`. Architecture issues #1–3
-  are complete; the next session addresses issue #4 (session lifecycle, clock/readiness, and presentation ownership). Server performance context
-  remains in `MEMORY_SERVER_PERFORMANCE.md`; headless playback remains dormant.
+- **Primary active work**: implement the My First Orbit adventure and its gameplay awareness foundation in `docs/my-first-orbit/MEMORY_MY_FIRST_ORBIT.md`. Architecture issues #1–3 are complete; the next session addresses issue #4 (session lifecycle, clock/readiness, and presentation ownership). Server performance context remains in `MEMORY_SERVER_PERFORMANCE.md`; headless playback remains dormant.
 - **Current extraction frontier**: physical product-plugin extraction is complete. No product plugin implementation remains in a host package; both products discover `newtonianGravity`, `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` through their Solitude content packs.
 - **Discovery foundation**: browser and server discovery, multi-plugin packs, strict manifests, target-specific assembly, origin/path security, and schema-v3 single-host packs are in place. Preserve the rule that a pack is an atomic host-specific activation unit.
 - **Headless playback**: still unresolved and not archived, but it is a dormant backlog item rather than the active path. See `MEMORY_HEADLESS_PLAYBACK.md`.
@@ -59,17 +52,9 @@
 - Organize imports at the top of modified source files. Prettier uses `prettier-plugin-organize-imports`, but verify when imports move across packages.
 - Run: `npm run typecheck`
 - Run: `npm run test`
-- Run: `npm run map:architecture`, inspect every generated change, and include
-  substantive slice-related map updates. Restore the file when `generatedAt`
-  is the only change.
-- Exception: for changes strictly limited to the static architecture-map viewer
-  or docs under `docs/architecture-map/`, `npm run typecheck` and
-  `npm run test` are optional. Still run Prettier on modified files, run
-  `node --check docs/architecture-map/app.js` when that file changes, and run
-  `npm run map:architecture` when the generator or `architecture.json` could be
-  affected.
-- If you did not run an otherwise-required command, explicitly say “Not run” in
-  the response.
+- Run: `npm run map:architecture`, inspect every generated change, and include substantive slice-related map updates. Restore the file when `generatedAt` is the only change.
+- Exception: for changes strictly limited to the static architecture-map viewer or docs under `docs/architecture-map/`, `npm run typecheck` and `npm run test` are optional. Still run Prettier on modified files, run `node --check docs/architecture-map/app.js` when that file changes, and run `npm run map:architecture` when the generator or `architecture.json` could be affected.
+- If you did not run an otherwise-required command, explicitly say “Not run” in the response.
 
 ## Non-negotiables and exceptions
 
@@ -139,10 +124,7 @@
 - The host-neutral `autopilot` plugin contributes control behavior and capabilities through both Solitude content packs. Its `autopilotInput` and `autopilotHud` siblings in `core-pack-v1` own browser keyboard bindings and the localized HUD panel/message bundles respectively; server/headless composition does not instantiate either browser-facing plugin.
 - Runtime focus switching lives in the external `operatorSwitch` plugin in `standalone-pack-v1`; `Tab` swaps foreground focus between `ship:blue` and `ship:red` through the loop API's controlled focus operation.
 - During playback, `Tab` may switch the viewed focus while recorded controls continue applying to the entity focused when each playback phase was recorded.
-- Core owns generic focus, primary-view plumbing, simulation phase order,
-  gravity contracts/state orchestration, spin, collision, setup, render
-  preparation, and plugin port/capability contracts. The external
-  `newtonianGravity` provider owns concrete gravity integration.
+- Core owns generic focus, primary-view plumbing, simulation phase order, gravity contracts/state orchestration, spin, collision, setup, render preparation, and plugin port/capability contracts. The external `newtonianGravity` provider owns concrete gravity integration.
 - The engine-owned configured game pipeline constructs standalone runtime state and coordinates frame policy, simulation, scene/view updates, and render contributions. Browser runtime code is limited to frame scheduling and presentation adapters.
 - API v12 plugin `validateAssembly` callbacks inspect ordered capabilities and materialized loop/control/simulation contributors during setup. Browser/headless assembly rejects unsupported policy composition before loop initialization or simulation; browser keyboard input attaches after validation. My First Orbit uses this to enforce complete policy precedence without per-frame validation.
 - Standalone and headless runtimes share simulation-plugin capability/control assembly through `packages/engine/src/app/pluginRuntime.ts`. Solitude headless composition accepts one required ordered `plugins` collection; callers instantiate static and discovered factories with runtime options before creating the loop.
@@ -242,14 +224,8 @@
 
 ## Next Steps Snapshot
 
-- The server performance baseline roadmap is complete and has continued into
-  separate-host orchestration, host identity capture, and harness-starvation
-  fixes. Current reference state, measured saturation findings, and remaining
-  capture work live in `MEMORY_SERVER_PERFORMANCE.md`.
-- Gravity plugin extraction is complete: both products discover the required
-  external Newtonian provider, high-time-scale intervals use bounded provider
-  steps, and the measured typed-array force loop is retained. See
-  `archive/MEMORY_GRAVITY_PLUGIN.md`.
+- The server performance baseline roadmap is complete and has continued into separate-host orchestration, host identity capture, and harness-starvation fixes. Current reference state, measured saturation findings, and remaining capture work live in `MEMORY_SERVER_PERFORMANCE.md`.
+- Gravity plugin extraction is complete: both products discover the required external Newtonian provider, high-time-scale intervals use bounded provider steps, and the measured typed-array force loop is retained. See `archive/MEMORY_GRAVITY_PLUGIN.md`.
 - Physical package decoupling is complete: product behavior is selected through independently built runtime deployment units, with only generic host adapters remaining static.
 - Headless playback remains unresolved and active as a tracked topic, but is deprioritized until explicitly resumed. See `MEMORY_HEADLESS_PLAYBACK.md`.
 - Operator runtime focus switching is extracted and closed; foreground/background UX and declarative input lock policy remain deferred in `archive/MEMORY_OPERATOR_MODEL.md`.
@@ -261,9 +237,6 @@
 - Default Solitude plugin order is behaviorally significant; preserve ordering-sensitive tests when moving operator switch, profiling, or input plugins.
 - Server external plugins support capabilities, control-state/attitude resolution, and the pre-runtime world-model phase. Do not extract authoritative simulation or loop behavior by bypassing that contract; design those lifecycle phases explicitly first.
 - Browser plugin discovery allows only explicitly trusted origins and is reinforced by page CSP; server discovery accepts only an explicitly configured contained local plugin set. Loaded plugins remain same-realm trusted code. Unloading, sandboxing, signatures, and inter-plugin dependency resolution are not implemented.
-- Newtonian gravity uses provider-owned integration steps bounded to 10
-  simulated seconds by default. Extreme time warp preserves that bound by
-  spending more wall-clock time, so presentation or server catch-up can become
-  compute-bound.
+- Newtonian gravity uses provider-owned integration steps bounded to 10 simulated seconds by default. Extreme time warp preserves that bound by spending more wall-clock time, so presentation or server catch-up can become compute-bound.
 - WebGL2 availability and runtime context loss are hard failures with localized WebGL-required UX; there is no fallback solid-mesh backend.
 - Controls are keyboard-only with no in-app help; consider a help overlay or onboarding prompt.

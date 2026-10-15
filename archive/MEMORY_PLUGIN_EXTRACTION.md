@@ -91,8 +91,7 @@ Known remaining static pieces:
 
 ### Auxiliary PiP / Axial Views
 
-Status: extraction implemented. First pass landed on 2026-04-18; leftover
-frame-update helpers were moved into `src/plugins/axialViews/` on 2026-04-25.
+Status: extraction implemented. First pass landed on 2026-04-18; leftover frame-update helpers were moved into `src/plugins/axialViews/` on 2026-04-25.
 
 What changed:
 

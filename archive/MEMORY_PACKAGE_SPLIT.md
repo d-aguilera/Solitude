@@ -228,8 +228,7 @@ Purpose: reduce risk before moving directories.
 
 ## Next Implementation Slice
 
-Package split migration is closed. Future work should be treated as normal API
-curation rather than migration:
+Package split migration is closed. Future work should be treated as normal API curation rather than migration:
 
 1. Add or remove explicit package subpath exports only when real consumers need them.
 2. Consider package-level API docs if the packages become published or reused outside this workspace.
@@ -244,8 +243,7 @@ Active strategic work has moved back to `MEMORY_OPERATOR_MODEL.md`.
 What changed:
 
 1. Hardened workspace boundaries with `scripts/check-package-boundaries.mjs`, wired root typecheck through boundary checks and package-local workspace typechecks, and kept package tarballs free of tests.
-2. Replaced the broad internal-looking `@solitude/engine` export surface with six curated facade subpaths:
-   `assets`, `math`, `plugin`, `render`, `runtime`, and `world`.
+2. Replaced the broad internal-looking `@solitude/engine` export surface with six curated facade subpaths: `assets`, `math`, `plugin`, `render`, `runtime`, and `world`.
 3. Migrated browser and Solitude callers to those facades, then removed the old granular compatibility exports from `packages/engine/package.json`.
 
 Resulting engine shape:
@@ -564,8 +562,7 @@ Current production import directions line up with the target split:
 
 Remaining expected churn:
 
-- `src/bootstrap.ts` is now a compatibility shim; real product composition lives
-  in `packages/solitude/src/bootstrap.ts`.
+- `src/bootstrap.ts` is now a compatibility shim; real product composition lives in `packages/solitude/src/bootstrap.ts`.
 - The old root `src/plugins` compatibility shims have been removed; the real Solitude plugin catalog lives in `packages/solitude/src/plugins/index.ts`.
 - `src/rasterize` should move with browser adapters.
 - `src/config/obj.ts` is a generic OBJ mesh parser used by Solitude content and should move to engine.

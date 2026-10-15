@@ -119,8 +119,7 @@ Trade-offs:
 
 Best first slice.
 
-1. Add a generic render material field to engine render config and scene
-   objects, for example:
+1. Add a generic render material field to engine render config and scene objects, for example:
 
    ```ts
    export type RenderMaterial =

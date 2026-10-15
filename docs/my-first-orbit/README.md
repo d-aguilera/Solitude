@@ -1,7 +1,6 @@
 # My First Orbit adventure
 
-Specifications, gameplay reports, validation, and diagnostic captures for the
-first guided orbit-recovery adventure. All gameplay test cases pass.
+Specifications, gameplay reports, validation, and diagnostic captures for the first guided orbit-recovery adventure. All gameplay test cases pass.
 
 - [Current state and next steps](MEMORY_MY_FIRST_ORBIT.md)
 - [Gameplay testing](my-first-orbit-gameplay-testing.md)
@@ -10,5 +9,4 @@ first guided orbit-recovery adventure. All gameplay test cases pass.
 - [Lifecycle rules](my-first-orbit-lifecycle.md)
 - [Guidance design](my-first-orbit-guidance.md)
 
-Case-10 captures stay alongside the report as evidence of the resolved
-texture-loading stall.
+Case-10 captures stay alongside the report as evidence of the resolved texture-loading stall.
