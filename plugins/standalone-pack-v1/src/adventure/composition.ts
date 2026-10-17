@@ -1,6 +1,6 @@
 import type { ExternalLocale } from "@solitude/plugin-api/localization";
 import type { ExternalOrbitSegmentsState } from "@solitude/plugin-api/render";
-import type { StandaloneMode } from "@solitude/plugin-api/standalone-session";
+import type { StandaloneMode } from "@solitude/plugin-api/standalone-entry";
 import { createSessionClock } from "./clock";
 import { createGuidance } from "./guidance";
 import { createObjective } from "./objective";

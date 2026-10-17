@@ -2,8 +2,10 @@ import { SOLITUDE_PLUGIN_API_VERSION } from "@solitude/plugin-api/manifest";
 import {
   adventureGuidanceCapability,
   adventureObjectiveCapability,
+} from "@solitude/plugin-api/my-first-orbit";
+import { standaloneModeOption } from "@solitude/plugin-api/standalone-entry";
+import {
   standaloneGenerationOption,
-  standaloneModeOption,
   standaloneSessionCapability,
 } from "@solitude/plugin-api/standalone-session";
 import { performance } from "node:perf_hooks";

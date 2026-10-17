@@ -1,9 +1,9 @@
 import type { RuntimeOptions } from "@solitude/engine/plugin";
 import {
-  standaloneGenerationOption,
   standaloneModeOption,
   type StandaloneMode,
-} from "@solitude/plugin-api/standalone-session";
+} from "@solitude/plugin-api/standalone-entry";
+import { standaloneGenerationOption } from "@solitude/plugin-api/standalone-session";
 
 export type StandaloneEntry =
   { kind: "menu" } | { kind: "error" } | { kind: "run"; mode: StandaloneMode };

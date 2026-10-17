@@ -1,7 +1,7 @@
 import type {
+  StandaloneEntrySession,
   StandaloneMode,
-  StandaloneSession,
-} from "@solitude/plugin-api/standalone-session";
+} from "@solitude/plugin-api/standalone-entry";
 import { describe, expect, it, vi } from "vitest";
 import { createStandaloneShell, type StandaloneRun } from "../standaloneShell";
 
@@ -21,7 +21,7 @@ function setup() {
       if (shouldFail) throw new Error("startup");
       let listener = () => {};
       let oldListener = () => {};
-      const session: StandaloneSession = {
+      const session: StandaloneEntrySession = {
         mode,
         generation,
         phase: "briefing",

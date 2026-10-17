@@ -1,7 +1,5 @@
-import {
-  standaloneGenerationOption,
-  standaloneModeOption,
-} from "@solitude/plugin-api/standalone-session";
+import { standaloneModeOption } from "@solitude/plugin-api/standalone-entry";
+import { standaloneGenerationOption } from "@solitude/plugin-api/standalone-session";
 import { describe, expect, it } from "vitest";
 import {
   createRunOptions,

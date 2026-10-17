@@ -1,10 +1,12 @@
 import { bootstrapRendering } from "@solitude/browser/dom/renderingBootstrap";
 import type { GamePlugin } from "@solitude/engine/plugin";
 import {
-  standaloneGenerationOption,
   standaloneModeOption,
+  type StandaloneEntrySession,
+} from "@solitude/plugin-api/standalone-entry";
+import {
+  standaloneGenerationOption,
   standaloneSessionCapability,
-  type StandaloneSession,
 } from "@solitude/plugin-api/standalone-session";
 import { loadBrowserPlugins } from "@solitude/plugin-runtime";
 import { afterEach, expect, it, vi } from "vitest";
@@ -75,9 +77,9 @@ it("defers menu, retry, and fatal-error retirement with the browser scheduler re
     catalog: {
       standaloneSession: (options): GamePlugin => {
         let listener = () => {};
-        const session: StandaloneSession = {
+        const session: StandaloneEntrySession = {
           generation: Number(options[standaloneGenerationOption]),
-          mode: options[standaloneModeOption] as StandaloneSession["mode"],
+          mode: options[standaloneModeOption] as StandaloneEntrySession["mode"],
           phase: "flying",
           advanceSimulation: true,
           lifecycleRequest: null,
@@ -115,12 +117,14 @@ it("defers menu, retry, and fatal-error retirement with the browser scheduler re
   try {
     await import("../bootstrap");
     await vi.waitFor(() => expect(presentation.showRun).toHaveBeenCalledOnce());
-    const first = presentation.showRun.mock.calls[0][0] as StandaloneSession;
+    const first = presentation.showRun.mock
+      .calls[0][0] as StandaloneEntrySession;
     first.command("retry");
     expect(dispose).not.toHaveBeenCalled();
     pending.shift()!();
     expect(dispose).toHaveBeenCalledOnce();
-    const second = presentation.showRun.mock.calls[1][0] as StandaloneSession;
+    const second = presentation.showRun.mock
+      .calls[1][0] as StandaloneEntrySession;
     expect(second.generation).toBe(first.generation + 1);
     second.command("menu");
     pending.shift()!();

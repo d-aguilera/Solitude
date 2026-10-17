@@ -1,11 +1,11 @@
+import type { AdventureGuidance } from "@solitude/plugin-api/my-first-orbit";
 import type {
-  AdventureGuidance,
+  StandaloneEntrySession,
   StandaloneMode,
-  StandaloneSession,
-} from "@solitude/plugin-api/standalone-session";
+} from "@solitude/plugin-api/standalone-entry";
 
 export interface StandaloneRun {
-  session: StandaloneSession;
+  session: StandaloneEntrySession;
   guidance: AdventureGuidance | null;
   clearInput: () => void;
   dispose: () => void;
@@ -13,7 +13,7 @@ export interface StandaloneRun {
 export function createStandaloneShell(dependencies: {
   createRun: (mode: StandaloneMode, generation: number) => StandaloneRun;
   showRun: (
-    session: StandaloneSession,
+    session: StandaloneEntrySession,
     guidance: AdventureGuidance | null,
   ) => void;
   hideRun: () => void;

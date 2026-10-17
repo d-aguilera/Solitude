@@ -3,8 +3,8 @@ import type {
   AdventureGuidance,
   AdventureGuidanceProvider,
   AdventureObjective,
-  StandalonePhase,
-} from "@solitude/plugin-api/standalone-session";
+} from "@solitude/plugin-api/my-first-orbit";
+import type { StandalonePhase } from "@solitude/plugin-api/standalone-session";
 import { createGuidanceDirector } from "./guidanceDirector";
 import { createGuidancePresentation } from "./guidancePresentation";
 

@@ -1,7 +1,7 @@
 import type {
   AdventureObjective,
   AdventureSample,
-} from "@solitude/plugin-api/standalone-session";
+} from "@solitude/plugin-api/my-first-orbit";
 import {
   adventureEarthId,
   adventureEntityId,

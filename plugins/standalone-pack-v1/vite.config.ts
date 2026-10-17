@@ -21,19 +21,23 @@ export default defineConfig({
         memory: fileURLToPath(
           new URL("./src/memory/index.ts", import.meta.url),
         ),
-        pause: fileURLToPath(new URL("./src/pause/index.ts", import.meta.url)),
+        pause: fileURLToPath(
+          new URL("./src/composition/pause.ts", import.meta.url),
+        ),
         playback: fileURLToPath(
-          new URL("./src/playback/index.ts", import.meta.url),
+          new URL("./src/composition/playback.ts", import.meta.url),
         ),
         "time-scale": fileURLToPath(
-          new URL("./src/time-scale/index.ts", import.meta.url),
+          new URL("./src/composition/time-scale.ts", import.meta.url),
         ),
         profiling: fileURLToPath(
           new URL("./src/profiling/index.ts", import.meta.url),
         ),
-        ships: fileURLToPath(new URL("./src/ships/index.ts", import.meta.url)),
+        ships: fileURLToPath(
+          new URL("./src/composition/ships.ts", import.meta.url),
+        ),
         "operator-switch": fileURLToPath(
-          new URL("./src/operator-switch/index.ts", import.meta.url),
+          new URL("./src/composition/operator-switch.ts", import.meta.url),
         ),
       },
       formats: ["es"],

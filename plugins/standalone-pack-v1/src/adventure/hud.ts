@@ -6,7 +6,7 @@ import {
 import type {
   AdventureGuidance,
   AdventureInstrumentId,
-} from "@solitude/plugin-api/standalone-session";
+} from "@solitude/plugin-api/my-first-orbit";
 
 const instrumentKeys: Record<AdventureInstrumentId, string> = {
   "adventure.orbit.primary": "orbit.primary",

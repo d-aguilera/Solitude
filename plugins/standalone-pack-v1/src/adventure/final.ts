@@ -6,6 +6,15 @@ import {
 } from "@solitude/plugin-api/input";
 import { vec3 } from "@solitude/plugin-api/math";
 import type { ExternalPlugin } from "@solitude/plugin-api/module";
+import {
+  adventureGuidanceCapability,
+  adventureObjectiveCapability,
+  isAdventureGuidanceProvider,
+  isAdventureObjective,
+  type AdventureGuidanceProvider,
+  type AdventureObjective,
+  type AdventureSample,
+} from "@solitude/plugin-api/my-first-orbit";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 import {
   createSpacecraftPropulsionResolverProvider,
@@ -14,18 +23,10 @@ import {
   type ExternalSpacecraftPropulsionCommandParams,
 } from "@solitude/plugin-api/spacecraft";
 import {
-  adventureGuidanceCapability,
-  adventureObjectiveCapability,
-  isAdventure,
-  isAdventureGuidanceProvider,
-  isAdventureObjective,
-  isStandaloneSession,
-  standaloneSessionCapability,
-  type AdventureGuidanceProvider,
-  type AdventureObjective,
-  type AdventureSample,
-  type StandaloneSession,
-} from "@solitude/plugin-api/standalone-session";
+  isStandaloneEntrySession,
+  type StandaloneEntrySession,
+} from "@solitude/plugin-api/standalone-entry";
+import { standaloneSessionCapability } from "@solitude/plugin-api/standalone-session";
 import {
   createOrbitObservation,
   isOrbitObservationProvider,
@@ -36,13 +37,14 @@ import type {
   ExternalControlledBody,
   ExternalEntityCollisionSphere,
 } from "@solitude/plugin-api/world";
+import { isFirstOrbit } from "../composition/runSelection";
 import { createAdventureAssemblyValidator } from "./assembly";
 import { adventureEarthId, adventureEntityId } from "./definition";
 import { flightActions, sanitizeAdventureInput, viewActions } from "./policy";
 
 export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
-  if (!isAdventure(options)) return { id: "adventureFinalPolicy" };
-  let session: StandaloneSession;
+  if (!isFirstOrbit(options)) return { id: "adventureFinalPolicy" };
+  let session: StandaloneEntrySession;
   let objective: AdventureObjective;
   let observer: ExternalOrbitObservationProvider;
   let guidance: AdventureGuidanceProvider;
@@ -166,7 +168,7 @@ export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
         contributeWorldModel: (_registry, { capabilityRegistry }) => {
           const sessions = capabilityRegistry
             .getAll(standaloneSessionCapability)
-            .filter(isStandaloneSession);
+            .filter(isStandaloneEntrySession);
           if (sessions.length !== 1)
             throw new Error("Adventure requires one standalone session");
           session = sessions[0];

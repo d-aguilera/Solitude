@@ -1,7 +1,5 @@
-import type {
-  AdventureGuidance,
-  StandaloneSession,
-} from "@solitude/plugin-api/standalone-session";
+import type { AdventureGuidance } from "@solitude/plugin-api/my-first-orbit";
+import type { StandaloneEntrySession } from "@solitude/plugin-api/standalone-entry";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createStandalonePresentation } from "../standalonePresentation";
 
@@ -68,7 +66,7 @@ function setup() {
     menu: "Menu",
     pause: "Pause",
   };
-  const session: StandaloneSession = {
+  const session: StandaloneEntrySession = {
     generation: 1,
     mode: "my-first-orbit",
     phase: "flying",

@@ -8,7 +8,6 @@ import type {
 } from "@solitude/plugin-api/loop";
 import type { ExternalPlugin } from "@solitude/plugin-api/module";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
-import { isAdventure } from "@solitude/plugin-api/standalone-session";
 import { createOperatorSwitchController } from "./core";
 
 const swapFocusAction = "operatorSwapFocus";
@@ -22,9 +21,8 @@ const FOCUS_SWAP_LOOP_UPDATE: ExternalLoopUpdateResult = {
 };
 
 export function createPlugin(
-  runtimeOptions: ExternalRuntimeOptions,
+  _runtimeOptions: ExternalRuntimeOptions,
 ): ExternalPlugin {
-  if (isAdventure(runtimeOptions)) return { id: "operatorSwitch" };
   const controller = createOperatorSwitchController(defaultFocusTargets);
   return {
     id: "operatorSwitch",

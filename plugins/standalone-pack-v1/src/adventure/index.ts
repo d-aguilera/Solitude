@@ -1,17 +1,19 @@
 import { readLocaleRuntimeOption } from "@solitude/plugin-api/localization";
 import type { ExternalPlugin } from "@solitude/plugin-api/module";
 import {
+  adventureGuidanceCapability,
+  adventureObjectiveCapability,
+} from "@solitude/plugin-api/my-first-orbit";
+import {
   isOrbitSegmentsState,
   orbitSegmentsStateCapability,
 } from "@solitude/plugin-api/render";
 import type { ExternalRuntimeOptions } from "@solitude/plugin-api/runtime";
 import {
-  adventureGuidanceCapability,
-  adventureObjectiveCapability,
-  isAdventure,
   standaloneGenerationOption,
   standaloneSessionCapability,
 } from "@solitude/plugin-api/standalone-session";
+import { isFirstOrbit } from "../composition/runSelection";
 import { validateAdventureSessionAssembly } from "./assembly";
 import { createSession } from "./composition";
 import { createAdventureHudCapabilities } from "./hud";
@@ -20,7 +22,7 @@ import { createScenario } from "./scenario";
 import { sanitizeAdventureInput } from "./policy";
 
 export function createPlugin(options: ExternalRuntimeOptions): ExternalPlugin {
-  const adventure = isAdventure(options);
+  const adventure = isFirstOrbit(options);
   const generation = Number(options[standaloneGenerationOption] ?? 0);
   if (!Number.isSafeInteger(generation) || generation < 0)
     throw new Error("Invalid standalone run generation");

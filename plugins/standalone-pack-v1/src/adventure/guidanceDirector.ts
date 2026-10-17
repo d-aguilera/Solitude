@@ -2,8 +2,8 @@ import type {
   AdventureCue,
   AdventureObjective,
   AdventureSample,
-  StandalonePhase,
-} from "@solitude/plugin-api/standalone-session";
+} from "@solitude/plugin-api/my-first-orbit";
+import type { StandalonePhase } from "@solitude/plugin-api/standalone-session";
 import {
   adventureEarthId,
   adventureEntityId,

@@ -13,9 +13,9 @@ import {
 import {
   adventureGuidanceCapability,
   isAdventureGuidanceProvider,
-  isStandaloneSession,
-  standaloneSessionCapability,
-} from "@solitude/plugin-api/standalone-session";
+} from "@solitude/plugin-api/my-first-orbit";
+import { isStandaloneEntrySession } from "@solitude/plugin-api/standalone-entry";
+import { standaloneSessionCapability } from "@solitude/plugin-api/standalone-session";
 import {
   appendExternalPluginSet,
   loadBrowserPlugins,
@@ -53,7 +53,7 @@ async function main(): Promise<void> {
   const getSession = (plugins: ReturnType<typeof createPlugins>) => {
     const sessions = createPluginCapabilityRegistry(plugins)
       .getAll(standaloneSessionCapability)
-      .filter(isStandaloneSession);
+      .filter(isStandaloneEntrySession);
     if (sessions.length !== 1)
       throw new Error("Standalone requires one session capability");
     return sessions[0];

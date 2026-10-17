@@ -1,8 +1,10 @@
 import type {
-  StandaloneCommand,
+  StandaloneEntrySession,
   StandaloneMode,
+} from "@solitude/plugin-api/standalone-entry";
+import type {
+  StandaloneCommand,
   StandalonePhase,
-  StandaloneSession,
 } from "@solitude/plugin-api/standalone-session";
 import type { createSessionClock } from "./clock";
 import type { createSessionPresentation } from "./presentation";
@@ -36,7 +38,7 @@ export function createSessionLifecycle(
     resetInput();
     notify();
   };
-  const session: StandaloneSession = {
+  const session: StandaloneEntrySession = {
     generation,
     mode,
     get advanceSimulation() {

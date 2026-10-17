@@ -1,7 +1,7 @@
 import type {
   AdventureInstrumentId,
   AdventureSample,
-} from "@solitude/plugin-api/standalone-session";
+} from "@solitude/plugin-api/my-first-orbit";
 import { createOrbitObservation } from "@solitude/plugin-api/telemetry";
 import { expect, it, vi } from "vitest";
 import { createGuidance } from "../adventure/guidance";

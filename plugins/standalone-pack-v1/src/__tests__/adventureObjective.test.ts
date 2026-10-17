@@ -1,4 +1,4 @@
-import type { AdventureSample } from "@solitude/plugin-api/standalone-session";
+import type { AdventureSample } from "@solitude/plugin-api/my-first-orbit";
 import { createOrbitObservation } from "@solitude/plugin-api/telemetry";
 import { describe, expect, it, vi } from "vitest";
 import { createSession } from "../adventure/composition";

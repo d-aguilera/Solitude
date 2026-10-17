@@ -17,6 +17,12 @@ import type {
   ExternalPluginContext,
 } from "@solitude/plugin-api/module";
 import {
+  adventureGuidanceCapability,
+  adventureObjectiveCapability,
+  isAdventureGuidanceProvider,
+  isAdventureObjective,
+} from "@solitude/plugin-api/my-first-orbit";
+import {
   orbitSegmentsStateCapability,
   type ExternalOrbitSegmentsState,
 } from "@solitude/plugin-api/render";
@@ -25,13 +31,11 @@ import type { ExternalSimulationPlugin } from "@solitude/plugin-api/simulation";
 import type { ExternalSpacecraftPropulsionCommandParams } from "@solitude/plugin-api/spacecraft";
 import { getSpacecraftPropulsionResolvers } from "@solitude/plugin-api/spacecraft";
 import {
-  adventureGuidanceCapability,
-  adventureObjectiveCapability,
-  isAdventureGuidanceProvider,
-  isAdventureObjective,
-  isStandaloneSession,
-  standaloneGenerationOption,
+  isStandaloneEntrySession,
   standaloneModeOption,
+} from "@solitude/plugin-api/standalone-entry";
+import {
+  standaloneGenerationOption,
   standaloneSessionCapability,
 } from "@solitude/plugin-api/standalone-session";
 import {
@@ -48,11 +52,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { createPlugin as createAdventure } from "../adventure";
 import { adventureEntityId } from "../adventure/definition";
 import { createPlugin as createFinal } from "../adventure/final";
-import { createPlugin as createSwitch } from "../operator-switch";
-import { createPlugin as createPause } from "../pause";
-import { createPlugin as createPlayback } from "../playback";
-import { createPlugin as createShips } from "../ships";
-import { createPlugin as createTimeScale } from "../time-scale";
+import { createPlugin as createSwitch } from "../composition/operator-switch";
+import { createPlugin as createPause } from "../composition/pause";
+import { createPlugin as createPlayback } from "../composition/playback";
+import { createPlugin as createShips } from "../composition/ships";
+import { createPlugin as createTimeScale } from "../composition/time-scale";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -175,7 +179,7 @@ describe("standalone adventure assembly", () => {
     const s = assemble("my-first-orbit");
     const session = s.capabilityRegistry
       .getAll(standaloneSessionCapability)
-      .find(isStandaloneSession)!;
+      .find(isStandaloneEntrySession)!;
     const input = s.plugins[4].capabilities!.find(
       ({ id }) => id === keyboardInputCapability,
     )!.value as ExternalKeyboardInputProvider;
@@ -206,7 +210,7 @@ describe("standalone adventure assembly", () => {
     });
     const session = s.capabilityRegistry
       .getAll(standaloneSessionCapability)
-      .find(isStandaloneSession)!;
+      .find(isStandaloneEntrySession)!;
     const guidance = s.capabilityRegistry
       .getAll(adventureGuidanceCapability)
       .find(isAdventureGuidanceProvider)!;
@@ -345,7 +349,7 @@ describe("standalone adventure assembly", () => {
       const s = assemble("my-first-orbit");
       const session = s.capabilityRegistry
         .getAll(standaloneSessionCapability)
-        .find(isStandaloneSession)!;
+        .find(isStandaloneEntrySession)!;
       const early = s.plugins[3].hooks!.loop!;
       const final = s.plugins[4].hooks!.loop!;
       const params = {
@@ -434,7 +438,7 @@ describe("standalone adventure assembly", () => {
       const s = assemble("my-first-orbit");
       const session = s.capabilityRegistry
         .getAll(standaloneSessionCapability)
-        .find(isStandaloneSession)!;
+        .find(isStandaloneEntrySession)!;
       const objective = s.capabilityRegistry
         .getAll(adventureObjectiveCapability)
         .find(isAdventureObjective)!;

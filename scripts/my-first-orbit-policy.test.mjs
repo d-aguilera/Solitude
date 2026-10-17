@@ -9,11 +9,9 @@ import {
   createKeyboardHandlerDispatcher,
 } from "@solitude/input/keyboard";
 import { SOLITUDE_PLUGIN_API_VERSION } from "@solitude/plugin-api/manifest";
-import {
-  adventureObjectiveCapability,
-  standaloneModeOption,
-  standaloneSessionCapability,
-} from "@solitude/plugin-api/standalone-session";
+import { adventureObjectiveCapability } from "@solitude/plugin-api/my-first-orbit";
+import { standaloneModeOption } from "@solitude/plugin-api/standalone-entry";
+import { standaloneSessionCapability } from "@solitude/plugin-api/standalone-session";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildWorldAndSceneConfig } from "../packages/composition/src/worldAndSceneConfig.ts";
 import { loadExternalPluginSet } from "../packages/plugin-runtime/src/index.ts";
@@ -26,7 +24,7 @@ import { createPlugin as solarSystem } from "../plugins/solar-system/src/index.t
 import { createPlugin as spacecraftOperator } from "../plugins/spacecraft-operator/src/index.ts";
 import { createPlugin as adventureFinalPolicy } from "../plugins/standalone-pack-v1/src/adventure/final.ts";
 import { createPlugin as standaloneSession } from "../plugins/standalone-pack-v1/src/adventure/index.ts";
-import { createPlugin as ships } from "../plugins/standalone-pack-v1/src/ships/index.ts";
+import { createPlugin as ships } from "../plugins/standalone-pack-v1/src/composition/ships.ts";
 
 // Use production discovery/adaptation and physics, including factory-produced hooks.
 const factories = {

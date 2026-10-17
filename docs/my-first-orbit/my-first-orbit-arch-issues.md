@@ -2,9 +2,9 @@
 
 ## Current effort and session rules
 
-All six issues below are accepted and important. Resolve them in numbered order, one issue per fresh session. The HUD/screen rearrangement effort is on hold until all six architecture issues are fixed.
+All six issues below are accepted and important. All six issues are now complete. Resume the deferred HUD/screen rearrangement effort next.
 
-- The next fresh session starts with **issue #6: reusable standalone plugins and session contract scope**. Issues #1–5 are complete.
+- The next fresh session resumes **HUD/PiP layout**, then the remaining browser acceptance checks.
 - Implement and validate the current issue, then update its status here and the explicit next task in `MEMORY_MY_FIRST_ORBIT.md`.
 - Continue the exact `My first orbit N` commit series. Inspect Git history for the next number; keep each issue's changes separate from the other issues.
 - Preserve gameplay behavior, physical thresholds, plugin boundaries, and the CPU/allocation constraints in `MEMORY.md`. Avoid building a general campaign system as part of these fixes.
@@ -106,15 +106,21 @@ Before the fix, `adventure/guidance.ts` combined formatting, positional instrume
 
 ## Issue #6 — Reusable standalone plugins know the specific adventure
 
-**Status:** Pending.
+**Status:** Complete.
 
 **Concern:** Coupling and contract scope.
 
-The pause, playback, time-scale, ships, and operator-switch plugins each disable themselves through `isAdventure()`. The shared contract in `packages/plugin-api/src/standalone-session.ts` also hardcodes the adventure mode and Earth-specific samples. Another adventure would require changes across these otherwise reusable components.
+Before the fix, pause, playback, time-scale, ships, and operator-switch each disabled themselves through `isAdventure()`. The shared contract in `packages/plugin-api/src/standalone-session.ts` also hardcoded the adventure mode and Earth-specific samples. Another adventure would require changes across these otherwise reusable components.
 
 **Direction:** Prefer composition-owned feature selection or a run policy that expresses allowed capabilities. Separate reusable session contracts from first-orbit-specific objective, sample, and guidance contracts where justified. Keep content behavior in external plugins and preserve atomic host-specific pack activation.
 
 **Completion criteria:** Reusable plugins do not branch on the specific first-orbit adventure identity. Session and policy contracts have explicit scope; scenario-specific data does not expand the generic session surface. Preserve menu/URL entry, fresh Retry generations, Free Flight, and multiplayer composition without introducing a general campaign system.
+
+**Implemented boundary:** `standalone-pack-v1/src/composition/` owns run selection and the five sandbox deployment entries. First Orbit receives identity-only inactive entries before any reusable factory constructs state; Free Flight and legacy direct compositions retain the real features. Deployment entries forward runtime options and the host context unchanged. Reusable pause, playback, time-scale, ships, and operator-switch implementations no longer import session contracts or inspect scenario identity. The atomic browser pack, manifest IDs, and plugin order are unchanged. Selection happens at factory construction, adding no frame work or retained feature state in adventure runs.
+
+The dependency-free `@solitude/plugin-api/standalone-session` surface now contains only reusable lifecycle, generation, commands, and dialog contracts, with an opaque content mode. `standalone-entry` explicitly scopes Solitude's two-mode selection and localized menu/session extension. `my-first-orbit` owns the existing Earth-specific samples, objective, guidance, and instrument contracts. Consumers import directly from their owning subpaths; there are no compatibility forwarding exports or new campaign abstractions. Existing capability IDs, samples, physical thresholds, and gameplay behavior are unchanged.
+
+**Validation:** All 607 tests pass across the full-suite run and a separate rerun of the 11 localhost HTTP/WebSocket tests outside the sandbox. Full workspace typechecking/package boundaries, standalone production build, and Prettier pass. New regressions verify that composition skips factory construction, forwards host context, and selects all five features while their reusable factories ignore adventure identity. A reusable lifecycle fixture requires no Solitude menu labels or First Orbit data. Existing menu/URL, Retry generations, policy precedence, production-physics, pause/suspension, guidance, Free Flight, and multiplayer regressions pass. Architecture regeneration changes only timestamp/formatting and is restored. No browser playtest or CPU/GC trace is performed for this slice.
 
 ## Deferred HUD/screen effort
 

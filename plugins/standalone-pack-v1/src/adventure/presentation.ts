@@ -1,7 +1,7 @@
 import type { ExternalLocale } from "@solitude/plugin-api/localization";
+import type { StandaloneMode } from "@solitude/plugin-api/standalone-entry";
 import type {
   StandaloneCommand,
-  StandaloneMode,
   StandalonePhase,
   StandalonePresentation,
 } from "@solitude/plugin-api/standalone-session";

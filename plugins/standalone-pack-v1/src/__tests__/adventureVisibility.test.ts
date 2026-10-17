@@ -1,8 +1,8 @@
 import type { ExternalLoopUpdateParams } from "@solitude/plugin-api/loop";
 import {
-  isStandaloneSession,
+  isStandaloneEntrySession,
   standaloneModeOption,
-} from "@solitude/plugin-api/standalone-session";
+} from "@solitude/plugin-api/standalone-entry";
 import { afterEach, expect, it, vi } from "vitest";
 import { createPlugin } from "../adventure";
 
@@ -22,7 +22,7 @@ it("suspends on blur/visibility loss and detaches listeners with the run", () =>
   const plugin = createPlugin({ [standaloneModeOption]: "my-first-orbit" });
   const session = plugin
     .capabilities!.map((p) => p.value)
-    .find(isStandaloneSession)!;
+    .find(isStandaloneEntrySession)!;
   const dispose = plugin.hooks!.loop!.initLoop!() as () => void;
   windowTarget.dispatchEvent(new Event("blur"));
   expect(session.phase).toBe("briefing");

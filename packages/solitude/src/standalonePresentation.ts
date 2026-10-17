@@ -1,21 +1,21 @@
+import type { AdventureGuidance } from "@solitude/plugin-api/my-first-orbit";
 import type {
-  AdventureGuidance,
+  StandaloneEntrySession,
   StandaloneMode,
-  StandaloneSession,
-} from "@solitude/plugin-api/standalone-session";
+} from "@solitude/plugin-api/standalone-entry";
 
 export function createStandalonePresentation(
   container: Element,
-  labels: StandaloneSession["labels"],
+  labels: StandaloneEntrySession["labels"],
   launch: (mode: StandaloneMode) => void,
   menu: () => void,
 ) {
   const root = document.createElement("div");
   root.className = "standalone-ui";
   container.append(root);
-  let active: StandaloneSession | null = null;
+  let active: StandaloneEntrySession | null = null;
   let activeGuidance: AdventureGuidance | null = null;
-  let phase: StandaloneSession["phase"] | null = null;
+  let phase: StandaloneEntrySession["phase"] | null = null;
   let unsubscribe = () => {};
   let updateGuidance = () => {};
   let updateActions = () => {};
@@ -65,7 +65,7 @@ export function createStandalonePresentation(
     if (element.textContent !== text) element.textContent = text;
   };
   const connectGuidance = (
-    session: StandaloneSession,
+    session: StandaloneEntrySession,
     guidance: AdventureGuidance,
     host: HTMLElement,
     flight: boolean,
@@ -165,7 +165,7 @@ export function createStandalonePresentation(
       focusFirst();
     },
     showRun: (
-      session: StandaloneSession,
+      session: StandaloneEntrySession,
       guidance: AdventureGuidance | null,
     ) => {
       if (disposed) return;
@@ -182,7 +182,9 @@ export function createStandalonePresentation(
       active = session;
       activeGuidance = guidance;
       phase = session.phase;
-      const command = (action: Parameters<StandaloneSession["command"]>[0]) => {
+      const command = (
+        action: Parameters<StandaloneEntrySession["command"]>[0],
+      ) => {
         if (active === session && !session.lifecycleRequest)
           session.command(action);
       };

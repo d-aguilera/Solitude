@@ -33,7 +33,9 @@
     "./views": "./src/views.ts",
     "./world": "./src/world.ts",
     "./world-model": "./src/world-model.ts",
-    "./standalone-session": "./src/standalone-session.ts"
+    "./standalone-session": "./src/standalone-session.ts",
+    "./standalone-entry": "./src/standalone-entry.ts",
+    "./my-first-orbit": "./src/my-first-orbit.ts"
   },
   "dependencies": {
     "@solitude/engine": "0.0.0",
