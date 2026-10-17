@@ -4,7 +4,7 @@
 
 All six issues below are accepted and important. Resolve them in numbered order, one issue per fresh session. The HUD/screen rearrangement effort is on hold until all six architecture issues are fixed.
 
-- The next fresh session starts with **issue #5: guidance decisions and instrument presentation**. Issues #1–4 are complete.
+- The next fresh session starts with **issue #6: reusable standalone plugins and session contract scope**. Issues #1–5 are complete.
 - Implement and validate the current issue, then update its status here and the explicit next task in `MEMORY_MY_FIRST_ORBIT.md`.
 - Continue the exact `My first orbit N` commit series. Inspect Git history for the next number; keep each issue's changes separate from the other issues.
 - Preserve gameplay behavior, physical thresholds, plugin boundaries, and the CPU/allocation constraints in `MEMORY.md`. Avoid building a general campaign system as part of these fixes.
@@ -90,15 +90,19 @@ Before the fix, `adventure/session.ts` managed phase transitions, simulation eli
 
 ## Issue #5 — Guidance mixes decisions with instrument presentation
 
-**Status:** Pending.
+**Status:** Complete.
 
 **Concern:** Single responsibility and coupling.
 
-`adventure/guidance.ts` combines formatting, positional instrument indexing, cue selection, cooldowns, and progress detection. It repeats the objective's 150 km/600 km safety thresholds and five-second confirmation duration. Tuning the objective can leave advice and displayed progress inconsistent; changing instrument order can silently change which reading receives an update or emphasis.
+Before the fix, `adventure/guidance.ts` combined formatting, positional instrument indexing, cue selection, cooldowns, and progress detection. Instrument text repeated the objective's 150 km/600 km safety thresholds and five-second confirmation duration. Tuning the objective can leave advice and displayed progress inconsistent; changing instrument order can silently change which reading receives an update or emphasis.
 
 **Direction:** Centralize rule parameters, separate cue decisions from presentation updates, and address instruments through their semantic IDs. Reuse the dependency-free definitions established by issue #2.
 
 **Completion criteria:** Objective, guidance, and progress formatting consume one authoritative set of rule parameters. Instrument updates and emphasis do not rely on numeric positions. Preserve cue priority, hysteresis, cooldowns, pause/suspension behavior, localized text, retained objects, and accessible presentation.
+
+**Implemented boundary:** `adventure/guidanceDirector.ts` owns retained cue decisions, alignment hysteresis, progress detection, acknowledgments, hint preferences, and active-flight cooldowns without localization or instrument dependencies. `adventure/guidancePresentation.ts` owns localized text, instrument values/formatting/emphasis, display revisions, and subscriptions. `adventure/guidance.ts` composes them behind the unchanged capability. Instrument updates, numeric caches, and emphasis use semantic IDs independently of display order. Guidance templates in en/es/fr interpolate rule parameters once per run from `adventure/definition.ts`; coast formatting uses the same confirmation duration as the objective, including the pre-completion display cap. Raw SI readings and all presentation/decision records remain retained, and numeric text is cached by displayed precision.
+
+**Validation:** All 600 tests pass across the full-suite run and a separate rerun of the 11 localhost HTTP/WebSocket tests outside the sandbox. Full workspace typechecking/package boundaries, standalone production build, and Prettier pass. New tests run decisions independently of presentation, reorder instruments while checking identity/value/emphasis retention, and deliberately change authoritative rule parameters to verify objective decisions, advice, localized targets, and coast progress in en/es/fr. Existing cue priority, hysteresis, cooldowns, pause/suspension, subscriptions, accessible DOM, and production-physics regressions pass. Architecture regeneration changes only timestamp/formatting and is restored. No browser playtest or CPU/GC trace is performed for this slice.
 
 ## Issue #6 — Reusable standalone plugins know the specific adventure
 
