@@ -4,7 +4,7 @@ This is the step 4 specification, with the presentation contract for step 5. The
 
 ## Ownership and evaluation
 
-Keep a pure, retained director in the external standalone pack's `adventure/` implementation. The existing final policy calls it immediately after `objective.sample(sample)` in its completed-frame hook. This explicit ordering avoids a new plugin that would have to run after `adventureFinalPolicy`. The early session owns the director and its presentation/preference state, alongside the objective. Free Flight contributes no adventure guidance.
+Keep a pure, retained director in the external standalone pack's `my-first-orbit/` implementation. The existing final policy calls it immediately after `objective.sample(sample)` in its completed-frame hook. This explicit ordering avoids a new plugin that would have to run after `adventureFinalPolicy`. The early session owns the director and its presentation/preference state, alongside the objective. Free Flight contributes no adventure guidance.
 
 Consume the same retained `AdventureSample`, objective status, coast time, and transition counters. Do not call the orbit provider again, scan the world, read keyboard state as evidence of propulsion, or evaluate objectives from a presenter. Keep previous scalar values, sequence, counters, and timestamps; do not retain a previous sample reference because that record is overwritten in place.
 

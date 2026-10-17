@@ -4,7 +4,7 @@ import {
   standaloneModeOption,
 } from "@solitude/plugin-api/standalone-entry";
 import { afterEach, expect, it, vi } from "vitest";
-import { createPlugin } from "../adventure";
+import { createPlugin } from "../my-first-orbit";
 
 afterEach(() => {
   vi.restoreAllMocks();

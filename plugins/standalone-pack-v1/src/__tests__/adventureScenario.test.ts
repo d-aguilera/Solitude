@@ -49,14 +49,14 @@ import type {
   ExternalWorldModelRegistry,
 } from "@solitude/plugin-api/world-model";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createPlugin as createAdventure } from "../adventure";
-import { adventureEntityId } from "../adventure/definition";
-import { createPlugin as createFinal } from "../adventure/final";
 import { createPlugin as createSwitch } from "../composition/operator-switch";
 import { createPlugin as createPause } from "../composition/pause";
 import { createPlugin as createPlayback } from "../composition/playback";
 import { createPlugin as createShips } from "../composition/ships";
 import { createPlugin as createTimeScale } from "../composition/time-scale";
+import { createPlugin as createAdventure } from "../my-first-orbit";
+import { adventureEntityId } from "../my-first-orbit/definition";
+import { createPlugin as createFinal } from "../my-first-orbit/final";
 
 afterEach(() => vi.unstubAllGlobals());
 

@@ -18,13 +18,13 @@ The review found no direct engine onion or external-plugin import violations. `n
 
 **Original concern:** Coupling and policy enforcement.
 
-Before the fix, `adventure/final.ts` checked that its propulsion resolver was last, but equivalent assumptions for keyboard dispatch and frame-policy overrides were unguarded. `adventure/index.ts` sanitized direct input among ordinary simulation hooks. Keyboard handlers run in reverse provider order, propulsion resolvers run in provider order, and loop callbacks mutate a shared frame policy. Adding or reordering plugins can change enforcement.
+Before the fix, `my-first-orbit/final.ts` checked that its propulsion resolver was last, but equivalent assumptions for keyboard dispatch and frame-policy overrides were unguarded. `my-first-orbit/index.ts` sanitized direct input among ordinary simulation hooks. Keyboard handlers run in reverse provider order, propulsion resolvers run in provider order, and loop callbacks mutate a shared frame policy. Adding or reordering plugins can change enforcement.
 
 Relevant code:
 
-- `plugins/standalone-pack-v1/src/adventure/final.ts`
-- `plugins/standalone-pack-v1/src/adventure/index.ts`
-- `plugins/standalone-pack-v1/src/adventure/policy.ts`
+- `plugins/standalone-pack-v1/src/my-first-orbit/final.ts`
+- `plugins/standalone-pack-v1/src/my-first-orbit/index.ts`
+- `plugins/standalone-pack-v1/src/my-first-orbit/policy.ts`
 - `packages/input/src/keyboard.ts`
 - `packages/engine/src/app/gamePipeline.ts`
 - `packages/engine/src/app/pluginRuntime.ts`
@@ -46,13 +46,13 @@ The adventure validates session processing first, frame policy last, final input
 
 **Concern:** Onion layering.
 
-Before the fix, `adventure/objective.ts` and `adventure/guidance.ts` imported entity identifiers from `adventure/scenario.ts`, which also owns provider discovery and world construction. Rules therefore depend on an outer setup module. The boundary checker enforces onion layers only inside the engine and misses this dependency.
+Before the fix, `my-first-orbit/objective.ts` and `my-first-orbit/guidance.ts` imported entity identifiers from `my-first-orbit/scenario.ts`, which also owns provider discovery and world construction. Rules therefore depend on an outer setup module. The boundary checker enforces onion layers only inside the engine and misses this dependency.
 
 **Direction:** Move scenario identifiers and rule parameters into a dependency-free definition consumed by both setup and rules, or supply them through explicit parameters. Keep world construction and capability discovery outside objective rules.
 
 **Completion criteria:** Objective and guidance rules no longer import scenario construction. Their dependencies point inward, and existing scenario and objective behavior remains covered by tests.
 
-**Implemented boundary:** `adventure/definition.ts` has no imports and owns immutable craft/Earth identifiers, initial apsis altitudes, safe-orbit altitude bounds, failure altitude, and coast confirmation duration. Scenario construction, objective, guidance, and final sampling/policy import their definitions directly; scenario construction no longer exports identifiers. Provider discovery and world construction remain in `scenario.ts`. Numeric values and gameplay are unchanged; no runtime configuration or per-frame allocations are added. Guidance formatting and instrument separation remain scoped to issue #5.
+**Implemented boundary:** `my-first-orbit/definition.ts` has no imports and owns immutable craft/Earth identifiers, initial apsis altitudes, safe-orbit altitude bounds, failure altitude, and coast confirmation duration. Scenario construction, objective, guidance, and final sampling/policy import their definitions directly; scenario construction no longer exports identifiers. Provider discovery and world construction remain in `scenario.ts`. Numeric values and gameplay are unchanged; no runtime configuration or per-frame allocations are added. Guidance formatting and instrument separation remain scoped to issue #5.
 
 **Validation:** all 585 tests pass, including scenario calibration, exact objective thresholds, guidance, and production-physics regressions. Full workspace typechecking/package boundaries, standalone production build, and Prettier pass. Existing tests retain independent numeric expectations. Architecture regeneration changes only timestamp/formatting and is restored.
 
@@ -62,7 +62,7 @@ Before the fix, `adventure/objective.ts` and `adventure/guidance.ts` imported en
 
 **Concern:** Coupling and capability ownership.
 
-Before the fix, `plugins/core-pack-v1/src/orbit-telemetry/index.ts` published both the telemetry HUD and the orbital observation provider implemented in `observation.ts`. The adventure required that provider through `adventure/final.ts`, so removing or replacing a presentation plugin also removed a gameplay dependency.
+Before the fix, `plugins/core-pack-v1/src/orbit-telemetry/index.ts` published both the telemetry HUD and the orbital observation provider implemented in `observation.ts`. The adventure required that provider through `my-first-orbit/final.ts`, so removing or replacing a presentation plugin also removed a gameplay dependency.
 
 **Direction:** Give orbital observations an independently composable provider; let both HUD and adventure consume it. Preserve the external plugin boundary and the retained, explicit-entity sampler rather than moving scenario knowledge into the host engine.
 
@@ -78,13 +78,13 @@ Before the fix, `plugins/core-pack-v1/src/orbit-telemetry/index.ts` published bo
 
 **Concern:** Single responsibility.
 
-Before the fix, `adventure/session.ts` managed phase transitions, simulation eligibility, startup frame stability, localized dialog construction, objective creation, guidance creation, and orbit-line state. These responsibilities change for different reasons and make lifecycle changes harder to assess independently.
+Before the fix, `my-first-orbit/session.ts` managed phase transitions, simulation eligibility, startup frame stability, localized dialog construction, objective creation, guidance creation, and orbit-line state. These responsibilities change for different reasons and make lifecycle changes harder to assess independently.
 
 **Direction:** Extract clock/readiness policy and presentation projection. Keep the session focused on lifecycle transitions and orchestration, with explicit dependencies for objective and guidance behavior.
 
 **Completion criteria:** Lifecycle, clock/readiness policy, and presentation projection have clear ownership. Preserve zero-tick Begin/Resume baselines, startup readiness, explicit-pause coast preservation, suspension resets, generation guards, and input clearing.
 
-**Implemented boundary:** `adventure/clock.ts` owns retained startup readiness and flight timestamp policy, returning hold/advance/suspend decisions without per-frame allocations. `adventure/presentation.ts` owns localized dialog projection from explicit mode, phase, readiness, and focus values. `adventure/session.ts` owns lifecycle commands, transitions, subscriptions, input clearing, and orchestration through injected clock, presentation, and rule-effect dependencies; it no longer imports objective/guidance implementations, locale bundles, or orbit-line state. `adventure/composition.ts` constructs each fresh objective/director and connects their lifecycle effects and orbit-line dependency. The plugin and test callers consume that composition directly, without forwarding exports or shared API changes.
+**Implemented boundary:** `my-first-orbit/clock.ts` owns retained startup readiness and flight timestamp policy, returning hold/advance/suspend decisions without per-frame allocations. `my-first-orbit/presentation.ts` owns localized dialog projection from explicit mode, phase, readiness, and focus values. `my-first-orbit/session.ts` owns lifecycle commands, transitions, subscriptions, input clearing, and orchestration through injected clock, presentation, and rule-effect dependencies; it no longer imports objective/guidance implementations, locale bundles, or orbit-line state. `my-first-orbit/composition.ts` constructs each fresh objective/director and connects their lifecycle effects and orbit-line dependency. The plugin and test callers consume that composition directly, without forwarding exports or shared API changes.
 
 **Validation:** All 595 tests pass across the full-suite run and a separate rerun of the 11 localhost HTTP/WebSocket tests outside the sandbox. Full workspace typechecking/package boundaries, standalone production build, and Prettier pass. New boundary tests cover injected lifecycle effects, input/listener ordering, independent readiness/flight baselines, and dialog actions/content in en/es/fr. Existing production-physics, captured-clock, objective/guidance, pause/suspension, fresh-generation, held-input, Free Flight, and multiplayer regressions pass. Architecture regeneration changes only timestamp/formatting and is restored. No browser playtest or CPU/GC trace is performed for this slice.
 
@@ -94,13 +94,13 @@ Before the fix, `adventure/session.ts` managed phase transitions, simulation eli
 
 **Concern:** Single responsibility and coupling.
 
-Before the fix, `adventure/guidance.ts` combined formatting, positional instrument indexing, cue selection, cooldowns, and progress detection. Instrument text repeated the objective's 150 km/600 km safety thresholds and five-second confirmation duration. Tuning the objective can leave advice and displayed progress inconsistent; changing instrument order can silently change which reading receives an update or emphasis.
+Before the fix, `my-first-orbit/guidance.ts` combined formatting, positional instrument indexing, cue selection, cooldowns, and progress detection. Instrument text repeated the objective's 150 km/600 km safety thresholds and five-second confirmation duration. Tuning the objective can leave advice and displayed progress inconsistent; changing instrument order can silently change which reading receives an update or emphasis.
 
 **Direction:** Centralize rule parameters, separate cue decisions from presentation updates, and address instruments through their semantic IDs. Reuse the dependency-free definitions established by issue #2.
 
 **Completion criteria:** Objective, guidance, and progress formatting consume one authoritative set of rule parameters. Instrument updates and emphasis do not rely on numeric positions. Preserve cue priority, hysteresis, cooldowns, pause/suspension behavior, localized text, retained objects, and accessible presentation.
 
-**Implemented boundary:** `adventure/guidanceDirector.ts` owns retained cue decisions, alignment hysteresis, progress detection, acknowledgments, hint preferences, and active-flight cooldowns without localization or instrument dependencies. `adventure/guidancePresentation.ts` owns localized text, instrument values/formatting/emphasis, display revisions, and subscriptions. `adventure/guidance.ts` composes them behind the unchanged capability. Instrument updates, numeric caches, and emphasis use semantic IDs independently of display order. Guidance templates in en/es/fr interpolate rule parameters once per run from `adventure/definition.ts`; coast formatting uses the same confirmation duration as the objective, including the pre-completion display cap. Raw SI readings and all presentation/decision records remain retained, and numeric text is cached by displayed precision.
+**Implemented boundary:** `my-first-orbit/guidanceDirector.ts` owns retained cue decisions, alignment hysteresis, progress detection, acknowledgments, hint preferences, and active-flight cooldowns without localization or instrument dependencies. `my-first-orbit/guidancePresentation.ts` owns localized text, instrument values/formatting/emphasis, display revisions, and subscriptions. `my-first-orbit/guidance.ts` composes them behind the unchanged capability. Instrument updates, numeric caches, and emphasis use semantic IDs independently of display order. Guidance templates in en/es/fr interpolate rule parameters once per run from `my-first-orbit/definition.ts`; coast formatting uses the same confirmation duration as the objective, including the pre-completion display cap. Raw SI readings and all presentation/decision records remain retained, and numeric text is cached by displayed precision.
 
 **Validation:** All 600 tests pass across the full-suite run and a separate rerun of the 11 localhost HTTP/WebSocket tests outside the sandbox. Full workspace typechecking/package boundaries, standalone production build, and Prettier pass. New tests run decisions independently of presentation, reorder instruments while checking identity/value/emphasis retention, and deliberately change authoritative rule parameters to verify objective decisions, advice, localized targets, and coast progress in en/es/fr. Existing cue priority, hysteresis, cooldowns, pause/suspension, subscriptions, accessible DOM, and production-physics regressions pass. Architecture regeneration changes only timestamp/formatting and is restored. No browser playtest or CPU/GC trace is performed for this slice.
 

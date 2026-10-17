@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { startAnimationLoop } from "../packages/browser/src/infra/animationLoop";
-import { createSession } from "../plugins/standalone-pack-v1/src/adventure/composition";
+import { createSession } from "../plugins/standalone-pack-v1/src/my-first-orbit/composition";
 
 afterEach(() => vi.unstubAllGlobals());
 

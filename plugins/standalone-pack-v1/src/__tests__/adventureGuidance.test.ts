@@ -6,8 +6,8 @@ import type { ExternalLocale } from "@solitude/plugin-api/localization";
 import type { AdventureSample } from "@solitude/plugin-api/my-first-orbit";
 import { createOrbitObservation } from "@solitude/plugin-api/telemetry";
 import { describe, expect, it, vi } from "vitest";
-import { createSession } from "../adventure/composition";
-import { createAdventureHudCapabilities } from "../adventure/hud";
+import { createSession } from "../my-first-orbit/composition";
+import { createAdventureHudCapabilities } from "../my-first-orbit/hud";
 import { prepareStartup } from "./startupFixture";
 
 function ready(locale: ExternalLocale = "en", generation = 3) {

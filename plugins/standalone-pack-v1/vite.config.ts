@@ -13,10 +13,10 @@ export default defineConfig({
     lib: {
       entry: {
         "standalone-session": fileURLToPath(
-          new URL("./src/adventure/index.ts", import.meta.url),
+          new URL("./src/my-first-orbit/index.ts", import.meta.url),
         ),
         "adventure-final": fileURLToPath(
-          new URL("./src/adventure/final.ts", import.meta.url),
+          new URL("./src/my-first-orbit/final.ts", import.meta.url),
         ),
         memory: fileURLToPath(
           new URL("./src/memory/index.ts", import.meta.url),

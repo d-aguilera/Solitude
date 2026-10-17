@@ -1,8 +1,8 @@
 import type { AdventureSample } from "@solitude/plugin-api/my-first-orbit";
 import { createOrbitObservation } from "@solitude/plugin-api/telemetry";
 import { describe, expect, it, vi } from "vitest";
-import { createSession } from "../adventure/composition";
-import { createObjective } from "../adventure/objective";
+import { createSession } from "../my-first-orbit/composition";
+import { createObjective } from "../my-first-orbit/objective";
 import { prepareStartup } from "./startupFixture";
 
 function sample(

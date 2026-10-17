@@ -4,14 +4,14 @@ import type {
 } from "@solitude/plugin-api/my-first-orbit";
 import { createOrbitObservation } from "@solitude/plugin-api/telemetry";
 import { expect, it, vi } from "vitest";
-import { createGuidance } from "../adventure/guidance";
-import { createGuidanceDirector } from "../adventure/guidanceDirector";
-import { createGuidancePresentation } from "../adventure/guidancePresentation";
-import { createObjective } from "../adventure/objective";
+import { createGuidance } from "../my-first-orbit/guidance";
+import { createGuidanceDirector } from "../my-first-orbit/guidanceDirector";
+import { createGuidancePresentation } from "../my-first-orbit/guidancePresentation";
+import { createObjective } from "../my-first-orbit/objective";
 
 // Deliberately different rules catch literals in decisions, text, and progress.
-vi.mock("../adventure/definition", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../adventure/definition")>()),
+vi.mock("../my-first-orbit/definition", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../my-first-orbit/definition")>()),
   minimumSafePeriapsisAltitudeMeters: 175_000,
   maximumSafeApoapsisAltitudeMeters: 550_000,
   coastConfirmationMillis: 6_500,

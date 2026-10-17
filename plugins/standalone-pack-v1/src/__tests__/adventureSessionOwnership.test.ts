@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createSessionClock } from "../adventure/clock";
-import { createSessionPresentation } from "../adventure/presentation";
-import { createSessionLifecycle } from "../adventure/session";
+import { createSessionClock } from "../my-first-orbit/clock";
+import { createSessionPresentation } from "../my-first-orbit/presentation";
+import { createSessionLifecycle } from "../my-first-orbit/session";
 
 describe("session responsibility boundaries", () => {
   it("coordinates injected rules after publishing a blocked phase and before notifying input/listeners", () => {

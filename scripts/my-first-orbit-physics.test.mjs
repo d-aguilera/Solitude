@@ -19,8 +19,8 @@ import { createPlugin as gravity } from "../plugins/newtonian-gravity/src/index.
 import { createPlugin as polyFighter } from "../plugins/poly-fighter/src/index.ts";
 import { createPlugin as solarSystem } from "../plugins/solar-system/src/index.ts";
 import { createPlugin as spacecraftOperator } from "../plugins/spacecraft-operator/src/index.ts";
-import { createPlugin as adventureFinalPolicy } from "../plugins/standalone-pack-v1/src/adventure/final.ts";
-import { createPlugin as standaloneSession } from "../plugins/standalone-pack-v1/src/adventure/index.ts";
+import { createPlugin as adventureFinalPolicy } from "../plugins/standalone-pack-v1/src/my-first-orbit/final.ts";
+import { createPlugin as standaloneSession } from "../plugins/standalone-pack-v1/src/my-first-orbit/index.ts";
 
 // Exercise the production adapter and gameplay plugins without DOM presentation.
 const factories = {
