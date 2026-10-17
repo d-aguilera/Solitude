@@ -13,9 +13,9 @@ import {
   standaloneSessionCapability,
 } from "@solitude/plugin-api/standalone-session";
 import { validateAdventureSessionAssembly } from "./assembly";
+import { createSession } from "./composition";
 import { createAdventureHudCapabilities } from "./hud";
 import { createScenario } from "./scenario";
-import { createSession } from "./session";
 
 import { sanitizeAdventureInput } from "./policy";
 

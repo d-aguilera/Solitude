@@ -4,7 +4,7 @@
 
 All six issues below are accepted and important. Resolve them in numbered order, one issue per fresh session. The HUD/screen rearrangement effort is on hold until all six architecture issues are fixed.
 
-- The next fresh session starts with **issue #4: session lifecycle, clocks, presentation, and guidance assembly**. Issues #1–3 are complete.
+- The next fresh session starts with **issue #5: guidance decisions and instrument presentation**. Issues #1–4 are complete.
 - Implement and validate the current issue, then update its status here and the explicit next task in `MEMORY_MY_FIRST_ORBIT.md`.
 - Continue the exact `My first orbit N` commit series. Inspect Git history for the next number; keep each issue's changes separate from the other issues.
 - Preserve gameplay behavior, physical thresholds, plugin boundaries, and the CPU/allocation constraints in `MEMORY.md`. Avoid building a general campaign system as part of these fixes.
@@ -74,15 +74,19 @@ Before the fix, `plugins/core-pack-v1/src/orbit-telemetry/index.ts` published bo
 
 ## Issue #4 — Session owns lifecycle, clocks, presentation, and guidance assembly
 
-**Status:** Pending.
+**Status:** Complete.
 
 **Concern:** Single responsibility.
 
-`adventure/session.ts` manages phase transitions, simulation eligibility, startup frame stability, localized dialog construction, objective creation, guidance creation, and orbit-line state. These responsibilities change for different reasons and make lifecycle changes harder to assess independently.
+Before the fix, `adventure/session.ts` managed phase transitions, simulation eligibility, startup frame stability, localized dialog construction, objective creation, guidance creation, and orbit-line state. These responsibilities change for different reasons and make lifecycle changes harder to assess independently.
 
 **Direction:** Extract clock/readiness policy and presentation projection. Keep the session focused on lifecycle transitions and orchestration, with explicit dependencies for objective and guidance behavior.
 
 **Completion criteria:** Lifecycle, clock/readiness policy, and presentation projection have clear ownership. Preserve zero-tick Begin/Resume baselines, startup readiness, explicit-pause coast preservation, suspension resets, generation guards, and input clearing.
+
+**Implemented boundary:** `adventure/clock.ts` owns retained startup readiness and flight timestamp policy, returning hold/advance/suspend decisions without per-frame allocations. `adventure/presentation.ts` owns localized dialog projection from explicit mode, phase, readiness, and focus values. `adventure/session.ts` owns lifecycle commands, transitions, subscriptions, input clearing, and orchestration through injected clock, presentation, and rule-effect dependencies; it no longer imports objective/guidance implementations, locale bundles, or orbit-line state. `adventure/composition.ts` constructs each fresh objective/director and connects their lifecycle effects and orbit-line dependency. The plugin and test callers consume that composition directly, without forwarding exports or shared API changes.
+
+**Validation:** All 595 tests pass across the full-suite run and a separate rerun of the 11 localhost HTTP/WebSocket tests outside the sandbox. Full workspace typechecking/package boundaries, standalone production build, and Prettier pass. New boundary tests cover injected lifecycle effects, input/listener ordering, independent readiness/flight baselines, and dialog actions/content in en/es/fr. Existing production-physics, captured-clock, objective/guidance, pause/suspension, fresh-generation, held-input, Free Flight, and multiplayer regressions pass. Architecture regeneration changes only timestamp/formatting and is restored. No browser playtest or CPU/GC trace is performed for this slice.
 
 ## Issue #5 — Guidance mixes decisions with instrument presentation
 

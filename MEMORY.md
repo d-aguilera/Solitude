@@ -37,7 +37,7 @@
 
 ## Current focus
 
-- **Primary active work**: implement the My First Orbit adventure and its gameplay awareness foundation in `docs/my-first-orbit/MEMORY_MY_FIRST_ORBIT.md`. Architecture issues #1–3 are complete; the next session addresses issue #4 (session lifecycle, clock/readiness, and presentation ownership). Server performance context remains in `MEMORY_SERVER_PERFORMANCE.md`; headless playback remains dormant.
+- **Primary active work**: implement the My First Orbit adventure and its gameplay awareness foundation in `docs/my-first-orbit/MEMORY_MY_FIRST_ORBIT.md`. Architecture issues #1–4 are complete; the next session addresses issue #5 (guidance decisions, semantic instruments, and presentation ownership). Server performance context remains in `MEMORY_SERVER_PERFORMANCE.md`; headless playback remains dormant.
 - **Current extraction frontier**: physical product-plugin extraction is complete. No product plugin implementation remains in a host package; both products discover `newtonianGravity`, `solarSystem`, `autopilot`, `spacecraftOperator`, and `polyFighter` through their Solitude content packs.
 - **Discovery foundation**: browser and server discovery, multi-plugin packs, strict manifests, target-specific assembly, origin/path security, and schema-v3 single-host packs are in place. Preserve the rule that a pack is an atomic host-specific activation unit.
 - **Headless playback**: still unresolved and not archived, but it is a dormant backlog item rather than the active path. See `MEMORY_HEADLESS_PLAYBACK.md`.

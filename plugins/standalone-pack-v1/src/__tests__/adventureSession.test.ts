@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createSession } from "../adventure/session";
+import { createSession } from "../adventure/composition";
 import { prepareStartup } from "./startupFixture";
 
 describe("adventure session clock and entry", () => {
