@@ -2,13 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 import { CanvasHudRasterizer } from "../../../rasterize/canvas/CanvasHudRasterizer";
 
 describe("HUD emphasis", () => {
-  it("draws a marker and background for highlighted rows and restores normal text on the next row", () => {
+  it("outlines text without backgrounds and preserves highlighted markers and colors", () => {
     const texts: [string, unknown][] = [];
     const ctx = {
       canvas: { width: 1500, height: 800 },
       save: vi.fn(),
       restore: vi.fn(),
       fillRect: vi.fn(),
+      setTransform: vi.fn(),
+      strokeText: vi.fn(),
       measureText: () => ({
         width: 10,
         actualBoundingBoxAscent: 12,
@@ -37,7 +39,8 @@ describe("HUD emphasis", () => {
       ["▶ Pe alt: -50 km", "#ffe178"],
       ["Ap alt: 400 km", "white"],
     ]);
-    expect(ctx.fillRect).toHaveBeenCalledTimes(2);
+    expect(ctx.fillRect).not.toHaveBeenCalled();
+    expect(ctx.strokeText).toHaveBeenCalledTimes(2);
     texts.length = 0;
     rasterizer.drawHud({
       columns: [

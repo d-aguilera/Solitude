@@ -6,7 +6,6 @@ import type { ExternalFocusContext, ExternalLocalFrame } from "./world";
 export type ExternalViewLayout =
   | { kind: "primary" }
   | {
-      avoidHud?: boolean;
       horizontal: "left" | "right";
       kind: "pip";
       vertical: "top" | "bottom";

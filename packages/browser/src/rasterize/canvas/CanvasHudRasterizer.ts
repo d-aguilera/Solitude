@@ -1,7 +1,11 @@
 import type { OverlayRasterizer } from "../../infra/overlayPorts";
+import {
+  pipAspectRatio,
+  pipMargin,
+  pipWidthRatio,
+} from "../../infra/viewportLayout";
 
-const hudMargin = 10;
-const hudPadding = 10;
+const hudMargin = 20;
 const hudColumnGap = 12;
 const hudColumnCount = 5;
 
@@ -14,14 +18,11 @@ interface HudGrid {
   readonly columns: readonly (readonly HudLine[])[];
 }
 
-let hudLineHeight = 0;
-let hudLineAscent = 0;
-let hudLineDescent = 0;
-let hudCanvasWidth = -1;
-let hudCanvasHeight = -1;
-let hudCharacterWidth = 0;
-
 export class CanvasHudRasterizer implements OverlayRasterizer {
+  private characterWidth = 0;
+  private readonly fontSizes = [0, 0, 0, 0, 0];
+  private readonly fonts = ["", "", "", "", ""];
+
   constructor(
     private readonly ctx: CanvasRenderingContext2D,
     private readonly clearAtFrameStart: boolean,
@@ -37,51 +38,71 @@ export class CanvasHudRasterizer implements OverlayRasterizer {
     if (!isHudGrid(hud)) return;
 
     const ctx = this.ctx;
-    const canvasWidth = ctx.canvas.width;
-    const canvasHeight = ctx.canvas.height;
-    const hudLength = getHudLineCount(hud);
+    // Layout uses CSS pixels, matching the DOM PiPs at every device pixel ratio.
+    const width = ctx.canvas.clientWidth || ctx.canvas.width;
+    const height = ctx.canvas.clientHeight || ctx.canvas.height;
+    if (width <= 0 || height <= 0) return;
 
     ctx.save();
+    ctx.setTransform(
+      ctx.canvas.width / width,
+      0,
+      0,
+      ctx.canvas.height / height,
+      0,
+      0,
+    );
     ctx.font = "16px monospace";
-    if (hudCanvasWidth !== canvasWidth || hudCanvasHeight !== canvasHeight) {
-      const metrics = ctx.measureText("█");
-      hudLineAscent = metrics.actualBoundingBoxAscent;
-      hudLineDescent = metrics.actualBoundingBoxDescent;
-      hudLineHeight = hudLineAscent + hudLineDescent;
-      hudCharacterWidth = metrics.width;
-      hudCanvasWidth = canvasWidth;
-      hudCanvasHeight = canvasHeight;
-    }
-    if (hudLineHeight <= 0 || hudCharacterWidth <= 0) {
+    if (this.characterWidth <= 0)
+      this.characterWidth = ctx.measureText("M").width;
+    if (this.characterWidth <= 0) {
       ctx.restore();
       return;
     }
+    ctx.textBaseline = "middle";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 3;
+    ctx.lineJoin = "round";
 
-    const hudLeft = hudMargin;
-    const hudRight = ctx.canvas.width - hudMargin;
-    const hudInnerLeft = hudLeft + hudPadding;
-    const hudInnerRight = hudRight - hudPadding;
-    const hudTop = hudMargin;
-    const hudInnerTop = hudTop + hudPadding;
-    const hudHeight = 2 * hudPadding + hudLength * hudLineHeight;
-    const hudInnerWidth = Math.max(0, hudInnerRight - hudInnerLeft);
-    const columnWidth = Math.max(
-      0,
-      (hudInnerWidth - hudColumnGap * (hudColumnCount - 1)) / hudColumnCount,
-    );
-
-    ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-    ctx.fillRect(hudLeft, hudTop, hudRight - hudLeft, hudHeight);
-
-    ctx.fillStyle = "white";
+    const pipWidth = width * pipWidthRatio;
+    const sideTop = pipMargin + pipWidth / pipAspectRatio + hudColumnGap;
+    const sideHeight = Math.max(0, height - 2 * sideTop);
+    const centerLeft = pipMargin + pipWidth + hudColumnGap;
+    const centerWidth = Math.max(0, width - 2 * centerLeft);
+    const middleColumnWidth = Math.max(0, (centerWidth - 2 * hudColumnGap) / 3);
 
     for (let columnIndex = 0; columnIndex < hudColumnCount; columnIndex++) {
       const column = hud.columns[columnIndex];
+      if (column.length === 0) continue;
+      const side = columnIndex === 0 || columnIndex === 4;
+      const availableHeight = side
+        ? sideHeight
+        : Math.max(0, height - 2 * hudMargin);
+      const fontSize = Math.min(
+        side ? 16 : 14,
+        availableHeight / column.length / 1.25,
+      );
+      if (fontSize <= 0) continue;
+      const lineHeight = fontSize * 1.25;
+      const columnWidth = side
+        ? Math.max(0, pipWidth + pipMargin - hudMargin)
+        : middleColumnWidth;
       const columnLeft =
-        hudInnerLeft + columnIndex * (columnWidth + hudColumnGap);
+        columnIndex === 0
+          ? hudMargin
+          : columnIndex === 4
+            ? width - hudMargin - columnWidth
+            : centerLeft + (columnIndex - 1) * (columnWidth + hudColumnGap);
+      const columnTop = side
+        ? (height - column.length * lineHeight) / 2
+        : hudMargin;
       const textAlign = getColumnTextAlign(columnIndex);
+      if (this.fontSizes[columnIndex] !== fontSize) {
+        this.fontSizes[columnIndex] = fontSize;
+        this.fonts[columnIndex] = `${fontSize}px monospace`;
+      }
+      ctx.font = this.fonts[columnIndex];
       ctx.textAlign = textAlign;
-
       const textX =
         textAlign === "right"
           ? columnLeft + columnWidth
@@ -95,20 +116,12 @@ export class CanvasHudRasterizer implements OverlayRasterizer {
             ? "▶ ".concat(column[rowIndex].text)
             : column[rowIndex].text,
           columnWidth,
+          (this.characterWidth * fontSize) / 16,
         );
         if (text.length === 0) continue;
-
-        const textY = hudInnerTop + rowIndex * hudLineHeight + hudLineAscent;
-        if (emphasized) {
-          ctx.fillStyle = "rgba(255, 210, 70, 0.25)";
-          ctx.fillRect(
-            columnLeft - 3,
-            textY - hudLineAscent,
-            columnWidth + 6,
-            hudLineHeight,
-          );
-        }
+        const textY = columnTop + (rowIndex + 0.5) * lineHeight;
         ctx.fillStyle = emphasized ? "#ffe178" : "white";
+        ctx.strokeText(text, textX, textY);
         ctx.fillText(text, textX, textY);
       }
     }
@@ -136,26 +149,20 @@ function isHudGrid(value: unknown): value is HudGrid {
   return true;
 }
 
-function getHudLineCount(hud: HudGrid): number {
-  let lineCount = 0;
-  for (const column of hud.columns) {
-    if (column.length > lineCount) {
-      lineCount = column.length;
-    }
-  }
-  return lineCount;
-}
-
 function getColumnTextAlign(columnIndex: number): CanvasTextAlign {
   if (columnIndex === 3 || columnIndex === 4) return "right";
   if (columnIndex === 2) return "center";
   return "left";
 }
 
-function fitHudText(text: string, width: number): string {
+function fitHudText(
+  text: string,
+  width: number,
+  characterWidth: number,
+): string {
   if (width <= 0) return "";
 
-  const maxCharacters = Math.floor(width / hudCharacterWidth);
+  const maxCharacters = Math.floor(width / characterWidth);
   if (text.length <= maxCharacters) return text;
   if (maxCharacters <= 1) return "";
 

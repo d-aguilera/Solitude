@@ -15,7 +15,6 @@ export type ViewLayout =
       kind: "pip";
       horizontal: "left" | "right";
       vertical: "top" | "bottom";
-      avoidHud?: boolean;
     };
 
 export interface ViewFrameUpdateParams {

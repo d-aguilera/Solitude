@@ -1,4 +1,5 @@
 import type { ViewLayout } from "@solitude/engine/render";
+import { pipAspectRatio, pipMargin, pipWidthRatio } from "./viewportLayout";
 
 export interface LayoutView {
   element: HTMLElement;
@@ -62,10 +63,9 @@ function resizeCanvases(container: Element, views: LayoutView[]): void {
 
   const containerWidth = container.clientWidth;
   const containerHeight = container.clientHeight;
-  const aspectRatio = 16 / 9;
 
-  let primaryWidth = containerWidth;
-  let primaryHeight = containerHeight;
+  const primaryWidth = containerWidth;
+  const primaryHeight = containerHeight;
 
   const primaryView = views.find((view) => view.layout.kind === "primary");
   if (primaryView) {
@@ -77,11 +77,8 @@ function resizeCanvases(container: Element, views: LayoutView[]): void {
   }
 
   // PiP views: 20% of container width, fixed aspect ratio.
-  const pipWidth = containerWidth * 0.2;
-  const pipHeight = pipWidth / aspectRatio;
-  const pipMargin = 16;
-  // Reserve vertical space so top PiP views sit below the HUD block.
-  const hudTopInset = 130;
+  const pipWidth = containerWidth * pipWidthRatio;
+  const pipHeight = pipWidth / pipAspectRatio;
 
   for (const view of views) {
     if (view.layout.kind !== "pip") continue;
@@ -92,11 +89,6 @@ function resizeCanvases(container: Element, views: LayoutView[]): void {
     element.style.top = "auto";
     element.style.bottom = "auto";
 
-    const verticalInset =
-      layout.vertical === "top" && layout.avoidHud
-        ? hudTopInset + pipMargin
-        : pipMargin;
-
     if (layout.horizontal === "left") {
       element.style.left = `${pipMargin}px`;
     } else {
@@ -104,9 +96,9 @@ function resizeCanvases(container: Element, views: LayoutView[]): void {
     }
 
     if (layout.vertical === "top") {
-      element.style.top = `${verticalInset}px`;
+      element.style.top = `${pipMargin}px`;
     } else {
-      element.style.bottom = `${verticalInset}px`;
+      element.style.bottom = `${pipMargin}px`;
     }
 
     resizeViewToCssBox(view, pipWidth, pipHeight);
